@@ -323,7 +323,7 @@
             var quality = $('#selectQuality', page).val();
 
             if (quality == 'custom') {
-                quality = $('#txtBitrate', page).val();
+                quality = parseFloat($('#txtBitrate', page).val()) * 1000000;
             }
 
             job.Name = $('#txtSyncJobName', page).val();

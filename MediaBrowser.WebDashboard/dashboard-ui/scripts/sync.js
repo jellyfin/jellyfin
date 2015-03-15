@@ -27,7 +27,7 @@
         var quality = $('#selectQuality', form).val();
 
         if (quality == 'custom') {
-            quality = $('#txtBitrate', form).val();
+            quality = parseFloat($('#txtBitrate', form).val()) * 1000000;
         }
 
         var options = {

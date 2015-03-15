@@ -1,7 +1,8 @@
 ﻿using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Sync;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Model.Sync
+namespace MediaBrowser.Api.Sync
 {
     public static class SyncHelper
     {

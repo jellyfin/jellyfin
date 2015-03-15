@@ -476,22 +476,17 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private bool IsOriginalQuality(SyncJob job)
-        {
-            return string.IsNullOrWhiteSpace(job.Quality) ||
-                   string.Equals(job.Quality, "original", StringComparison.OrdinalIgnoreCase);
-        }
-
         private async Task Sync(SyncJobItem jobItem, SyncJob job, Video item, User user, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var options = _syncManager.GetVideoOptions(jobItem, job);
+            var jobOptions = _syncManager.GetVideoOptions(jobItem, job);
+            var conversionOptions = jobOptions.ConversionOptions;
 
-            options.DeviceId = jobItem.TargetId;
-            options.Context = EncodingContext.Static;
-            options.ItemId = item.Id.ToString("N");
-            options.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, false, user).ToList();
+            conversionOptions.DeviceId = jobItem.TargetId;
+            conversionOptions.Context = EncodingContext.Static;
+            conversionOptions.ItemId = item.Id.ToString("N");
+            conversionOptions.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, false, user).ToList();
 
-            var streamInfo = new StreamBuilder().BuildVideoItem(options);
+            var streamInfo = new StreamBuilder().BuildVideoItem(conversionOptions);
             var mediaSource = streamInfo.MediaSource;
 
             // No sense creating external subs if we're already burning one into the video
@@ -500,7 +495,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 streamInfo.GetExternalSubtitles(false);
 
             // Mark as requiring conversion if transcoding the video, or if any subtitles need to be extracted
-            var requiresVideoTranscoding = streamInfo.PlayMethod == PlayMethod.Transcode && IsOriginalQuality(job);
+            var requiresVideoTranscoding = streamInfo.PlayMethod == PlayMethod.Transcode && jobOptions.IsConverting;
             var requiresConversion = requiresVideoTranscoding || externalSubs.Any(i => RequiresExtraction(i, mediaSource));
 
             if (requiresConversion && !enableConversion)
@@ -538,7 +533,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                         }
                     });
 
-                    jobItem.OutputPath = await _mediaEncoder.EncodeVideo(new EncodingJobOptions(streamInfo, options.Profile)
+                    jobItem.OutputPath = await _mediaEncoder.EncodeVideo(new EncodingJobOptions(streamInfo, conversionOptions.Profile)
                     {
                         OutputDirectory = jobItem.TemporaryPath
 
@@ -676,20 +671,21 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private async Task Sync(SyncJobItem jobItem, SyncJob job, Audio item, User user, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var options = _syncManager.GetAudioOptions(jobItem, job);
+            var jobOptions = _syncManager.GetAudioOptions(jobItem, job);
+            var conversionOptions = jobOptions.ConversionOptions;
 
-            options.DeviceId = jobItem.TargetId;
-            options.Context = EncodingContext.Static;
-            options.ItemId = item.Id.ToString("N");
-            options.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, false, user).ToList();
+            conversionOptions.DeviceId = jobItem.TargetId;
+            conversionOptions.Context = EncodingContext.Static;
+            conversionOptions.ItemId = item.Id.ToString("N");
+            conversionOptions.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, false, user).ToList();
 
-            var streamInfo = new StreamBuilder().BuildAudioItem(options);
+            var streamInfo = new StreamBuilder().BuildAudioItem(conversionOptions);
             var mediaSource = streamInfo.MediaSource;
 
             jobItem.MediaSourceId = streamInfo.MediaSourceId;
             jobItem.TemporaryPath = GetTemporaryPath(jobItem);
 
-            if (streamInfo.PlayMethod == PlayMethod.Transcode && !IsOriginalQuality(job))
+            if (streamInfo.PlayMethod == PlayMethod.Transcode && jobOptions.IsConverting)
             {
                 if (!enableConversion)
                 {
@@ -716,7 +712,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                         }
                     });
 
-                    jobItem.OutputPath = await _mediaEncoder.EncodeAudio(new EncodingJobOptions(streamInfo, options.Profile)
+                    jobItem.OutputPath = await _mediaEncoder.EncodeAudio(new EncodingJobOptions(streamInfo, conversionOptions.Profile)
                     {
                         OutputDirectory = jobItem.TemporaryPath
 
