@@ -1393,6 +1393,8 @@
     "LabelEnableInternetMetadataForTvPrograms": "Download internet metadata for:",
     "OptionTVMovies": "TV Movies",
     "HeaderUpcomingMovies": "Upcoming Movies",
-    "HeaderUpcomingPrograms":  "Upcoming Programs",
-    "ButtonMoreItems": "More..."
+    "HeaderUpcomingPrograms": "Upcoming Programs",
+    "ButtonMoreItems": "More...",
+    "LabelShowLibraryTileNames": "Show library tile names",
+    "LabelShowLibraryTileNamesHelp": "Determines if labels will be displayed underneath library tiles on the home page"
 }
