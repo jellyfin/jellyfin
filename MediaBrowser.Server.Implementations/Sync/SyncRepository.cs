@@ -441,6 +441,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 if (!string.IsNullOrWhiteSpace(query.TargetId))
                 {
                     whereClauses.Add("TargetId=@TargetId");
+                    cmd.Parameters.Add(cmd, "@TargetId", DbType.String).Value = query.TargetId;
                 }
                 if (!string.IsNullOrWhiteSpace(query.UserId))
                 {
@@ -453,6 +454,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                     cmd.Parameters.Add(cmd, "@SyncNewContent", DbType.Boolean).Value = query.SyncNewContent.Value;
                 }
 
+                cmd.CommandText += " mainTable";
+
                 var whereTextWithoutPaging = whereClauses.Count == 0 ?
                     string.Empty :
                     " where " + string.Join(" AND ", whereClauses.ToArray());
@@ -460,7 +463,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 var startIndex = query.StartIndex ?? 0;
                 if (startIndex > 0)
                 {
-                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM SyncJobs ORDER BY (Select Max(DateLastModified) from SyncJobs where TargetId=@TargetId) DESC, DateLastModified DESC LIMIT {0})",
+                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM SyncJobs ORDER BY (Select Max(DateLastModified) from SyncJobs where TargetId=mainTable.TargetId) DESC, DateLastModified DESC LIMIT {0})",
                         startIndex.ToString(_usCulture)));
                 }
 
@@ -469,8 +472,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     cmd.CommandText += " where " + string.Join(" AND ", whereClauses.ToArray());
                 }
 
-                cmd.CommandText += " ORDER BY (Select Max(DateLastModified) from SyncJobs where TargetId=@TargetId) DESC, DateLastModified DESC";
-                cmd.Parameters.Add(cmd, "@TargetId", DbType.String).Value = query.TargetId;
+                cmd.CommandText += " ORDER BY (Select Max(DateLastModified) from SyncJobs where TargetId=mainTable.TargetId) DESC, DateLastModified DESC";
 
                 if (query.Limit.HasValue)
                 {
