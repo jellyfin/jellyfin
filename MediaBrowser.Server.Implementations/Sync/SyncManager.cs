@@ -982,23 +982,34 @@ namespace MediaBrowser.Server.Implementations.Sync
             return _repo.GetLibraryItemIds(query);
         }
 
-        public AudioOptions GetAudioOptions(SyncJobItem jobItem, SyncJob job)
+        private bool IsOriginalQuality(SyncJob job)
         {
-            var profile = GetDeviceProfile(jobItem.TargetId, null, null);
-
-            return new AudioOptions
+            return string.IsNullOrWhiteSpace(job.Quality) ||
+                   string.Equals(job.Quality, "original", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(job.Profile, "original", StringComparison.OrdinalIgnoreCase);
+        }
+        
+        public SyncJobOptions<AudioOptions> GetAudioOptions(SyncJobItem jobItem, SyncJob job)
+        {
+            return new SyncJobOptions<AudioOptions>
             {
-                Profile = profile
+                ConversionOptions = new AudioOptions
+                {
+                    Profile = GetDeviceProfile(jobItem.TargetId, null, null)
+                },
+                IsConverting = !IsOriginalQuality(job)
             };
         }
 
-        public VideoOptions GetVideoOptions(SyncJobItem jobItem, SyncJob job)
+        public SyncJobOptions<VideoOptions> GetVideoOptions(SyncJobItem jobItem, SyncJob job)
         {
-            var profile = GetDeviceProfile(jobItem.TargetId, job.Profile, job.Quality);
-
-            return new VideoOptions
+            return new SyncJobOptions<VideoOptions>
             {
-                Profile = profile
+                ConversionOptions = new VideoOptions
+                {
+                    Profile = GetDeviceProfile(jobItem.TargetId, job.Profile, job.Quality)
+                },
+                IsConverting = !IsOriginalQuality(job)
             };
         }
 
@@ -1033,21 +1044,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         private DeviceProfile GetDeviceProfile(string profile, string quality)
         {
             var deviceProfile = new CloudSyncProfile(true, false);
-            var maxBitrate = deviceProfile.MaxStaticBitrate;
-
-            if (maxBitrate.HasValue)
-            {
-                if (string.Equals(quality, "medium", StringComparison.OrdinalIgnoreCase))
-                {
-                    maxBitrate = Convert.ToInt32(maxBitrate.Value * .75);
-                }
-                else if (string.Equals(quality, "low", StringComparison.OrdinalIgnoreCase))
-                {
-                    maxBitrate = Convert.ToInt32(maxBitrate.Value * .5);
-                }
-
-                deviceProfile.MaxStaticBitrate = maxBitrate;
-            }
+            deviceProfile.MaxStaticBitrate = SyncHelper.AdjustBitrate(deviceProfile.MaxStaticBitrate, quality);
 
             return deviceProfile;
         }
@@ -1139,16 +1136,16 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             list.Add(new SyncProfileOption
             {
-                Name = "Web - H264/AAC, MP3",
-                Id = "mobile",
-                Description = "Designed for compatibility with all devices, including web browsers."
+                Name = "Baseline",
+                Id = "baseline",
+                Description = "Designed for compatibility with all devices, including web browsers. Targets H264/AAC video and MP3 audio."
             });
 
             list.Add(new SyncProfileOption
             {
-                Name = "General - H264/AAC/AC3, MP3",
+                Name = "General",
                 Id = "general",
-                Description = "Designed for compatibility with Chromecast, Roku, Smart TV's, and other similar devices.",
+                Description = "Designed for compatibility with Chromecast, Roku, Smart TV's, and other similar devices. Targets H264/AAC/AC3 video and MP3 audio.",
                 IsDefault = true
             });
 

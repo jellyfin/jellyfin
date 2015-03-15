@@ -1100,9 +1100,6 @@
     <Compile Include="..\MediaBrowser.Model\Sync\SyncedItem.cs">
       <Link>Sync\SyncedItem.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\Sync\SyncHelper.cs">
-      <Link>Sync\SyncHelper.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\SyncJob.cs">
       <Link>Sync\SyncJob.cs</Link>
     </Compile>
