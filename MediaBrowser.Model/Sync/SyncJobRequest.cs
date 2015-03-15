@@ -59,6 +59,11 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The limit.</value>
         public int? ItemLimit { get; set; }
+        /// <summary>
+        /// Gets or sets the bitrate.
+        /// </summary>
+        /// <value>The bitrate.</value>
+        public int? Bitrate { get; set; }
 
         public SyncJobRequest()
         {

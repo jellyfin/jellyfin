@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
@@ -16,14 +15,6 @@ namespace MediaBrowser.Server.Implementations.Sync
                 else if (string.Equals(quality, "low", StringComparison.OrdinalIgnoreCase))
                 {
                     profileBitrate = Convert.ToInt32(profileBitrate.Value*.5);
-                }
-                else
-                {
-                    int value;
-                    if (int.TryParse(quality, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
-                    {
-                        profileBitrate = value;
-                    }
                 }
             }
 
