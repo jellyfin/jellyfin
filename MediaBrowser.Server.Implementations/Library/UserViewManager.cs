@@ -52,8 +52,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 .OfType<Folder>()
                 .ToList();
 
-            var list = new List<Folder>();
-
             var excludeFolderIds = user.Configuration.ExcludeFoldersFromGrouping.Select(i => new Guid(i)).ToList();
 
             var standaloneFolders = folders
@@ -65,7 +63,21 @@ namespace MediaBrowser.Server.Implementations.Library
                 .OfType<ICollectionFolder>()
                 .ToList();
 
-            list.AddRange(standaloneFolders);
+            var list = new List<Folder>();
+
+            if (_config.Configuration.EnableUserSpecificUserViews)
+            {
+                foreach (var folder in standaloneFolders)
+                {
+                    var collectionFolder = folder as ICollectionFolder;
+                    var folderViewType = collectionFolder == null ? null : collectionFolder.CollectionType;
+                    list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, string.Empty, user, cancellationToken).ConfigureAwait(false));
+                }
+            }
+            else
+            {
+                list.AddRange(standaloneFolders);
+            }
 
             if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase)) ||
                 foldersWithViewTypes.Any(i => string.IsNullOrWhiteSpace(i.CollectionType)))
@@ -167,6 +179,11 @@ namespace MediaBrowser.Server.Implementations.Library
             var name = _localizationManager.GetLocalizedString("ViewType" + type);
 
             return _libraryManager.GetNamedView(user, name, type, sortName, cancellationToken);
+        }
+
+        public Task<UserView> GetUserView(Guid parentId, string name, string type, string sortName, User user, CancellationToken cancellationToken)
+        {
+            return _libraryManager.GetNamedView(user, name, parentId.ToString("N"), type, sortName, cancellationToken);
         }
 
         public List<Tuple<BaseItem, List<BaseItem>>> GetLatestItems(LatestItemsQuery request)
