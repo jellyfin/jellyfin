@@ -147,7 +147,7 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             {
                 OnReceive = ProcessWebSocketMessageReceived,
                 Url = e.Url,
-                QueryString = new NameValueCollection(e.QueryString)
+                QueryString = new NameValueCollection(e.QueryString ?? new NameValueCollection())
             };
 
             _webSocketConnections.Add(connection);

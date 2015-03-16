@@ -120,7 +120,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
             {
                 var endpoint = ctx.Request.RemoteEndPoint.ToString();
                 var url = ctx.Request.RawUrl;
-                var queryString = new NameValueCollection(ctx.Request.QueryString);
+                var queryString = new NameValueCollection(ctx.Request.QueryString ?? new NameValueCollection());
 
                 var connectingArgs = new WebSocketConnectingEventArgs
                 {
