@@ -146,6 +146,13 @@ namespace MediaBrowser.Model.ApiClient
         Task ExchangePin(PinCreationResult pin);
 
         /// <summary>
+        /// Gets the server information.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task&lt;ServerInfo&gt;.</returns>
+        Task<ServerInfo> GetServerInfo(string id);
+
+        /// <summary>
         /// Gets the available servers.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
