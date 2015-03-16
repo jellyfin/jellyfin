@@ -1037,7 +1037,9 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private SyncJobOptions GetDefaultSyncJobOptions(string profile, string quality)
         {
-            var deviceProfile = new CloudSyncProfile(true, false);
+            var supportsAc3 = string.Equals(profile, "general", StringComparison.OrdinalIgnoreCase);
+
+            var deviceProfile = new CloudSyncProfile(supportsAc3, false);
             deviceProfile.MaxStaticBitrate = SyncHelper.AdjustBitrate(deviceProfile.MaxStaticBitrate, quality);
 
             return new SyncJobOptions
