@@ -41,6 +41,8 @@ RUN chmod u+x  /start.sh
 
 # Default MB3 HTTP/tcp server port
 EXPOSE 8096/tcp
+# Default MB3 HTTPS/tcp server port
+EXPOSE 8920/tcp
 # UDP server port
 EXPOSE 7359/udp
 # ssdp port for UPnP / DLNA discovery
