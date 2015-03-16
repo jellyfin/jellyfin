@@ -77,35 +77,35 @@ namespace MediaBrowser.Providers.FolderImages
 
             if (string.Equals(viewType, CollectionType.Books, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "books.png";
+                return null;
             }
             if (string.Equals(viewType, CollectionType.Games, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "games.png";
+                return null;
             }
             if (string.Equals(viewType, CollectionType.Music, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "music.png";
+                return null;
             }
             if (string.Equals(viewType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "photos.png";
+                return null;
             }
             if (string.Equals(viewType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "tv.png";
+                return null;
             }
             if (string.Equals(viewType, CollectionType.Channels, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "channels.png";
+                return null;
             }
             if (string.Equals(viewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "livetv.png";
+                return null;
             }
             if (string.Equals(viewType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase))
             {
-                return urlPrefix + "movies.png";
+                return null;
             }
 
             if (isSubView)

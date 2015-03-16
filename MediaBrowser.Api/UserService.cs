@@ -253,18 +253,14 @@ namespace MediaBrowser.Api
         /// The _user manager
         /// </summary>
         private readonly IUserManager _userManager;
-        private readonly IDtoService _dtoService;
         private readonly ISessionManager _sessionMananger;
         private readonly IServerConfigurationManager _config;
         private readonly INetworkManager _networkManager;
         private readonly IDeviceManager _deviceManager;
 
-        public IAuthorizationContext AuthorizationContext { get; set; }
-
-        public UserService(IUserManager userManager, IDtoService dtoService, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager, IDeviceManager deviceManager)
+        public UserService(IUserManager userManager, ISessionManager sessionMananger, IServerConfigurationManager config, INetworkManager networkManager, IDeviceManager deviceManager)
         {
             _userManager = userManager;
-            _dtoService = dtoService;
             _sessionMananger = sessionMananger;
             _config = config;
             _networkManager = networkManager;
@@ -589,22 +585,6 @@ namespace MediaBrowser.Api
             var task = _userManager.UpdateConfiguration(request.Id, request);
 
             Task.WaitAll(task);
-        }
-
-        private void AssertCanUpdateUser(string userId)
-        {
-            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
-
-            // If they're going to update the record of another user, they must be an administrator
-            if (!string.Equals(userId, auth.UserId, StringComparison.OrdinalIgnoreCase))
-            {
-                var authenticatedUser = _userManager.GetUserById(auth.UserId);
-
-                if (!authenticatedUser.Policy.IsAdministrator)
-                {
-                    throw new SecurityException("Unauthorized access.");
-                }
-            }
         }
 
         public void Post(UpdateUserPolicy request)

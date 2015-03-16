@@ -227,7 +227,9 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 CollectionType.BoxSets,
                 CollectionType.Playlists,
                 CollectionType.Channels,
-                CollectionType.LiveTv
+                CollectionType.LiveTv,
+                CollectionType.Books,
+                CollectionType.Photos
             };
 
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
@@ -235,6 +237,11 @@ namespace MediaBrowser.Server.Implementations.UserViews
 
         protected override Task<Stream> CreateImageAsync(IHasImages item, List<BaseItem> itemsWithImages, ImageType imageType, int imageIndex)
         {
+            if (itemsWithImages.Count == 0)
+            {
+                return null;
+            }
+
             var view = (UserView)item;
             if (imageType == ImageType.Primary && IsUsingCollectionStrip(view))
             {

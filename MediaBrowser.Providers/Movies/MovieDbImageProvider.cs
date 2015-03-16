@@ -61,9 +61,7 @@ namespace MediaBrowser.Providers.Movies
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
         {
-            var channelItem = item as ChannelVideoItem;
-
-            if (channelItem != null)
+            if (item is ChannelVideoItem || item is LiveTvProgram)
             {
                 // Too many channel items to allow backdrops here
                 return new List<ImageType>

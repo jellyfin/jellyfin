@@ -41,6 +41,8 @@ namespace MediaBrowser.Api
         public ISessionContext SessionContext { get; set; }
         public IAuthorizationContext AuthorizationContext { get; set; }
 
+        public IUserManager UserManager { get; set; }
+        
         public string GetHeader(string name)
         {
             return Request.Headers[name];
@@ -73,6 +75,29 @@ namespace MediaBrowser.Api
             return ResultFactory.GetOptimizedResultUsingCache(Request, cacheKey, lastDateModified, cacheDuration, factoryFn);
         }
 
+        protected void AssertCanUpdateUser(string userId)
+        {
+            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+
+            var authenticatedUser = UserManager.GetUserById(auth.UserId);
+
+            // If they're going to update the record of another user, they must be an administrator
+            if (!string.Equals(userId, auth.UserId, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!authenticatedUser.Policy.IsAdministrator)
+                {
+                    throw new SecurityException("Unauthorized access.");
+                }
+            }
+            else
+            {
+                if (!authenticatedUser.Policy.EnableUserPreferenceAccess)
+                {
+                    throw new SecurityException("Unauthorized access.");
+                }
+            }
+        }
+        
         /// <summary>
         /// To the optimized serialized result using cache.
         /// </summary>

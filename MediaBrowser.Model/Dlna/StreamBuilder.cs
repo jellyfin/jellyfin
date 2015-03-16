@@ -25,19 +25,14 @@ namespace MediaBrowser.Model.Dlna
         {
             ValidateAudioInput(options);
 
-            List<MediaSourceInfo> mediaSources = options.MediaSources;
-
-            // If the client wants a specific media source, filter now
-            if (!string.IsNullOrEmpty(options.MediaSourceId))
+            List<MediaSourceInfo> mediaSources = new List<MediaSourceInfo>();
+            foreach (MediaSourceInfo i in options.MediaSources)
             {
-                List<MediaSourceInfo> newMediaSources = new List<MediaSourceInfo>();
-                foreach (MediaSourceInfo i in mediaSources)
+                if (!string.IsNullOrEmpty(options.MediaSourceId) ||
+                    StringHelper.EqualsIgnoreCase(i.Id, options.MediaSourceId))
                 {
-                    if (StringHelper.EqualsIgnoreCase(i.Id, options.MediaSourceId))
-                        newMediaSources.Add(i);
+                    mediaSources.Add(i);
                 }
-
-                mediaSources = newMediaSources;
             }
 
             List<StreamInfo> streams = new List<StreamInfo>();
@@ -63,19 +58,14 @@ namespace MediaBrowser.Model.Dlna
         {
             ValidateInput(options);
 
-            List<MediaSourceInfo> mediaSources = options.MediaSources;
-
-            // If the client wants a specific media source, filter now
-            if (!string.IsNullOrEmpty(options.MediaSourceId))
+            List<MediaSourceInfo> mediaSources = new List<MediaSourceInfo>();
+            foreach (MediaSourceInfo i in options.MediaSources)
             {
-                List<MediaSourceInfo> newMediaSources = new List<MediaSourceInfo>();
-                foreach (MediaSourceInfo i in mediaSources)
+                if (!string.IsNullOrEmpty(options.MediaSourceId) ||
+                    StringHelper.EqualsIgnoreCase(i.Id, options.MediaSourceId))
                 {
-                    if (StringHelper.EqualsIgnoreCase(i.Id, options.MediaSourceId))
-                        newMediaSources.Add(i);
+                    mediaSources.Add(i);
                 }
-
-                mediaSources = newMediaSources;
             }
 
             List<StreamInfo> streams = new List<StreamInfo>();

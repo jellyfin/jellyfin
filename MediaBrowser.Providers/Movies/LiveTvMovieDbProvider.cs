@@ -2,14 +2,13 @@
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Providers;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Providers.Movies
 {
-    public class LiveTvMovieDbProvider : IRemoteMetadataProvider<LiveTvProgram, LiveTvProgramLookupInfo>, IDisposable, IHasOrder
+    public class LiveTvMovieDbProvider : IRemoteMetadataProvider<LiveTvProgram, LiveTvProgramLookupInfo>, IHasOrder
     {
         public Task<IEnumerable<RemoteSearchResult>> GetSearchResults(LiveTvProgramLookupInfo searchInfo, CancellationToken cancellationToken)
         {
@@ -29,10 +28,6 @@ namespace MediaBrowser.Providers.Movies
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)
         {
             return MovieDbProvider.Current.GetImageResponse(url, cancellationToken);
-        }
-
-        public void Dispose()
-        {
         }
 
         public int Order
