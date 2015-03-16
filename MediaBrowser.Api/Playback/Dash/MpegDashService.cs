@@ -37,7 +37,7 @@ namespace MediaBrowser.Api.Playback.Dash
         }
     }
 
-    [Route("/Videos/{Id}/dash/{SegmentType}/{SegmentId}.m4s", "GET")]
+    [Route("/Videos/{Id}/dash/{RepresentationId}/{SegmentId}.m4s", "GET")]
     public class GetDashSegment : VideoStreamRequest
     {
         /// <summary>
@@ -47,10 +47,10 @@ namespace MediaBrowser.Api.Playback.Dash
         public string SegmentId { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the segment.
+        /// Gets or sets the representation identifier.
         /// </summary>
-        /// <value>The type of the segment.</value>
-        public string SegmentType { get; set; }
+        /// <value>The representation identifier.</value>
+        public string RepresentationId { get; set; }
     }
 
     public class MpegDashService : BaseHlsService
@@ -106,10 +106,10 @@ namespace MediaBrowser.Api.Playback.Dash
 
         public object Get(GetDashSegment request)
         {
-            return GetDynamicSegment(request, request.SegmentId, request.SegmentType).Result;
+            return GetDynamicSegment(request, request.SegmentId, request.RepresentationId).Result;
         }
 
-        private async Task<object> GetDynamicSegment(VideoStreamRequest request, string segmentId, string segmentType)
+        private async Task<object> GetDynamicSegment(VideoStreamRequest request, string segmentId, string representationId)
         {
             if ((request.StartTimeTicks ?? 0) > 0)
             {
@@ -127,7 +127,7 @@ namespace MediaBrowser.Api.Playback.Dash
 
             var segmentExtension = GetSegmentFileExtension(state);
 
-            var segmentPath = GetSegmentPath(playlistPath, segmentType, segmentExtension, index);
+            var segmentPath = GetSegmentPath(playlistPath, representationId, segmentExtension, index);
             var segmentLength = state.SegmentLength;
 
             TranscodingJob job = null;
@@ -248,7 +248,7 @@ namespace MediaBrowser.Api.Playback.Dash
             CancellationToken cancellationToken)
         {
             // If all transcoding has completed, just return immediately
-            if (!IsTranscoding(playlistPath))
+            if (transcodingJob != null && transcodingJob.HasExited)
             {
                 return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
             }
@@ -327,13 +327,6 @@ namespace MediaBrowser.Api.Playback.Dash
             });
         }
 
-        private bool IsTranscoding(string playlistPath)
-        {
-            var job = ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
-
-            return job != null && !job.HasExited;
-        }
-
         public int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
         {
             var file = GetLastTranscodingFile(playlist, segmentExtension, FileSystem);
@@ -397,25 +390,12 @@ namespace MediaBrowser.Api.Playback.Dash
             }
         }
 
-        private string GetSegmentPath(string playlist, string segmentType, string segmentExtension, int index)
+        private string GetSegmentPath(string playlist, string representationId, string segmentExtension, int index)
         {
             var folder = Path.GetDirectoryName(playlist);
 
-            var id = string.Equals(segmentType, "video", StringComparison.OrdinalIgnoreCase)
-                ? "0"
-                : "1";
-
-            string filename;
-
-            if (index == 0)
-            {
-                filename = "init-stream" + id + segmentExtension;
-            }
-            else
-            {
-                var number = index.ToString("00000", CultureInfo.InvariantCulture);
-                filename = "chunk-stream" + id + "-" + number + segmentExtension;
-            }
+            var number = index.ToString("00000", CultureInfo.InvariantCulture);
+            var filename = "chunk-stream" + representationId + "-" + number + segmentExtension;
 
             return Path.Combine(folder, filename);
         }
@@ -500,7 +480,7 @@ namespace MediaBrowser.Api.Playback.Dash
 
             var inputModifier = GetInputModifier(state);
 
-            var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts {5} -f dash -use_template 0 -min_seg_duration {6} -y \"{7}\"",
+            var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts {5} -f dash -init_seg_name \"chunk-stream$RepresentationID$-00000.m4s\" -use_template 0 -min_seg_duration {6} -y \"{7}\"",
                 inputModifier,
                 GetInputArgument(transcodingJobId, state),
                 threads,
@@ -514,20 +494,23 @@ namespace MediaBrowser.Api.Playback.Dash
             return args;
         }
 
-        //private string GetCurrentTranscodingIndex(string outputPath)
-        //{
+        protected override int GetStartNumber(StreamState state)
+        {
+            return GetStartNumber(state.VideoRequest);
+        }
 
-        //}
+        private int GetStartNumber(VideoStreamRequest request)
+        {
+            var segmentId = "0";
 
-        //private string GetNextTranscodingIndex(string outputPath)
-        //{
-            
-        //}
+            var segmentRequest = request as GetDashSegment;
+            if (segmentRequest != null)
+            {
+                segmentId = segmentRequest.SegmentId;
+            }
 
-        //private string GetActualPlaylistPath(string outputPath, string transcodingIndex)
-        //{
-            
-        //}
+            return int.Parse(segmentId, NumberStyles.Integer, UsCulture);
+        }
 
         /// <summary>
         /// Gets the segment file extension.

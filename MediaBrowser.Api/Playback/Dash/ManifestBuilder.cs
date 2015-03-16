@@ -43,7 +43,7 @@ namespace MediaBrowser.Api.Playback.Dash
             builder.Append("<AdaptationSet id=\"video\" segmentAlignment=\"true\" bitstreamSwitching=\"true\">");
             builder.Append(GetVideoRepresentationOpenElement(state));
 
-            AppendSegmentList(state, builder, "video", playlistUrl);
+            AppendSegmentList(state, builder, "0", playlistUrl);
 
             builder.Append("</Representation>");
             builder.Append("</AdaptationSet>");
@@ -60,7 +60,7 @@ namespace MediaBrowser.Api.Playback.Dash
 
             builder.Append("<AudioChannelConfiguration schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\" value=\"6\" />");
 
-            AppendSegmentList(state, builder, "audio", playlistUrl);
+            AppendSegmentList(state, builder, "1", playlistUrl);
 
             builder.Append("</Representation>");
             builder.Append("</AdaptationSet>");
