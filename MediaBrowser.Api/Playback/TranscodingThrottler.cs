@@ -51,16 +51,16 @@ namespace MediaBrowser.Api.Playback
             if (!_isPaused)
             {
                 _logger.Debug("Sending pause command to ffmpeg");
-            }
 
-            try
-            {
-                _job.Process.StandardInput.WriteLine("p");
-                _isPaused = true;
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error pausing transcoding", ex);
+                try
+                {
+                    _job.Process.StandardInput.Write("c");
+                    _isPaused = true;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error pausing transcoding", ex);
+                }
             }
         }
 
@@ -69,16 +69,16 @@ namespace MediaBrowser.Api.Playback
             if (_isPaused)
             {
                 _logger.Debug("Sending unpause command to ffmpeg");
-            }
 
-            try
-            {
-                _job.Process.StandardInput.WriteLine("u");
-                _isPaused = false;
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error unpausing transcoding", ex);
+                try
+                {
+                    _job.Process.StandardInput.WriteLine();
+                    _isPaused = false;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error unpausing transcoding", ex);
+                }
             }
         }
 
