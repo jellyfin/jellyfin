@@ -159,11 +159,10 @@ namespace MediaBrowser.Api.Playback.Dash
 
                             if (currentTranscodingIndex.HasValue)
                             {
-                                DeleteLastFile(playlistPath, segmentExtension, 0);
+                                DeleteLastFile(playlistPath, segmentExtension, 0, 0);
                             }
 
-                            var startSeconds = index * state.SegmentLength;
-                            request.StartTimeTicks = TimeSpan.FromSeconds(startSeconds).Ticks;
+                            request.StartTimeTicks = GetPositionTicks(state, index);
 
                             job = await StartFfMpeg(state, playlistPath, cancellationTokenSource, Path.GetDirectoryName(playlistPath)).ConfigureAwait(false);
                         }
@@ -191,6 +190,12 @@ namespace MediaBrowser.Api.Playback.Dash
             Logger.Info("returning {0}", segmentPath);
             job = job ?? ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
             return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
+        }
+
+        private long GetPositionTicks(StreamState state, int segmentIndex)
+        {
+            var startSeconds = segmentIndex * state.SegmentLength;
+            return TimeSpan.FromSeconds(startSeconds).Ticks;
         }
 
         protected override async Task WaitForMinimumSegmentCount(string playlist, int segmentCount, CancellationToken cancellationToken)
@@ -329,41 +334,49 @@ namespace MediaBrowser.Api.Playback.Dash
 
         public int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
         {
-            var file = GetLastTranscodingFile(playlist, segmentExtension, FileSystem);
+            var file = GetLastTranscodingFiles(playlist, segmentExtension, FileSystem, 1).FirstOrDefault();
 
             if (file == null)
             {
                 return null;
             }
 
-            var playlistFilename = Path.GetFileNameWithoutExtension(playlist);
-
-            var indexString = Path.GetFileNameWithoutExtension(file.Name).Substring(playlistFilename.Length);
+            var indexString = Path.GetFileNameWithoutExtension(file.Name).Split('-').LastOrDefault();
 
             return int.Parse(indexString, NumberStyles.Integer, UsCulture);
         }
 
-        private void DeleteLastFile(string path, string segmentExtension, int retryCount)
+        private void DeleteLastFile(string path, string segmentExtension, int retryCount, int numDeleted)
         {
+            const int numToDelete = 2;
+
             if (retryCount >= 5)
             {
                 return;
             }
 
-            var file = GetLastTranscodingFile(path, segmentExtension, FileSystem);
+            var filesToGet = numToDelete - numDeleted;
 
-            if (file != null)
+            if (filesToGet < 1)
+            {
+                return;
+            }
+
+            var files = GetLastTranscodingFiles(path, segmentExtension, FileSystem, filesToGet);
+
+            foreach (var file in files)
             {
                 try
                 {
                     FileSystem.DeleteFile(file.FullName);
+                    numDeleted++;
                 }
                 catch (IOException ex)
                 {
                     Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, file.FullName);
 
                     Thread.Sleep(100);
-                    DeleteLastFile(path, segmentExtension, retryCount + 1);
+                    DeleteLastFile(path, segmentExtension, retryCount + 1, numDeleted);
                 }
                 catch (Exception ex)
                 {
@@ -372,7 +385,7 @@ namespace MediaBrowser.Api.Playback.Dash
             }
         }
 
-        private static FileInfo GetLastTranscodingFile(string playlist, string segmentExtension, IFileSystem fileSystem)
+        private static List<FileInfo> GetLastTranscodingFiles(string playlist, string segmentExtension, IFileSystem fileSystem, int count)
         {
             var folder = Path.GetDirectoryName(playlist);
 
@@ -382,11 +395,12 @@ namespace MediaBrowser.Api.Playback.Dash
                     .EnumerateFiles("*", SearchOption.TopDirectoryOnly)
                     .Where(i => string.Equals(i.Extension, segmentExtension, StringComparison.OrdinalIgnoreCase))
                     .OrderByDescending(fileSystem.GetLastWriteTimeUtc)
-                    .FirstOrDefault();
+                    .Take(count)
+                    .ToList();
             }
             catch (DirectoryNotFoundException)
             {
-                return null;
+                return new List<FileInfo>();
             }
         }
 
@@ -395,7 +409,7 @@ namespace MediaBrowser.Api.Playback.Dash
             var folder = Path.GetDirectoryName(playlist);
 
             var number = index.ToString("00000", CultureInfo.InvariantCulture);
-            var filename = "chunk-stream" + representationId + "-" + number + segmentExtension;
+            var filename = "stream" + representationId + "-" + number + segmentExtension;
 
             return Path.Combine(folder, filename);
         }
@@ -479,14 +493,20 @@ namespace MediaBrowser.Api.Playback.Dash
             var threads = GetNumberOfThreads(state, false);
 
             var inputModifier = GetInputModifier(state);
+            var startNumber = GetStartNumber(state);
 
-            var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts {5} -f dash -init_seg_name \"chunk-stream$RepresentationID$-00000.m4s\" -use_template 0 -min_seg_duration {6} -y \"{7}\"",
+            var initSegmentName = "stream$RepresentationID$-00000.m4s";
+            var segmentName = "stream$RepresentationID$-$Number%05d$.m4s";
+
+            var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts {5} -f dash -init_seg_name \"{6}\" -media_seg_name \"{7}\" -use_template 0 -use_timeline 1 -min_seg_duration {8} -y \"{9}\"",
                 inputModifier,
                 GetInputArgument(transcodingJobId, state),
                 threads,
                 GetMapArgs(state),
                 GetVideoArguments(state),
                 GetAudioArguments(state),
+                initSegmentName,
+                segmentName,
                 (state.SegmentLength * 1000000).ToString(CultureInfo.InvariantCulture),
                 outputPath
                 ).Trim();
