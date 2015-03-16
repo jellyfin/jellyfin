@@ -196,8 +196,12 @@ namespace MediaBrowser.Api.Playback.Dash
 
             while (seconds > 0)
             {
+                var filename = index == 0
+                    ? "init"
+                    : (index - 1).ToString(UsCulture);
+
                 var segmentUrl = string.Format("dash/{3}/{0}{1}{2}",
-                    index.ToString(UsCulture),
+                    filename,
                     extension,
                     SecurityElement.Escape(queryString),
                     type);

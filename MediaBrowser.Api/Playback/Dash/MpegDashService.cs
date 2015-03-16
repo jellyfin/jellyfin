@@ -119,7 +119,9 @@ namespace MediaBrowser.Api.Playback.Dash
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
-            var index = int.Parse(segmentId, NumberStyles.Integer, UsCulture);
+            var index = string.Equals(segmentId, "init", StringComparison.OrdinalIgnoreCase) ?
+                -1 :
+                int.Parse(segmentId, NumberStyles.Integer, UsCulture);
 
             var state = await GetState(request, cancellationToken).ConfigureAwait(false);
 
@@ -148,31 +150,36 @@ namespace MediaBrowser.Api.Playback.Dash
                 }
                 else
                 {
-                    var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
-
-                    if (currentTranscodingIndex == null || index < currentTranscodingIndex.Value || (index - currentTranscodingIndex.Value) > 4)
+                    if (string.Equals(representationId, "0", StringComparison.OrdinalIgnoreCase))
                     {
-                        // If the playlist doesn't already exist, startup ffmpeg
-                        try
+                        var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
+                        Logger.Debug("Current transcoding index is {0}", currentTranscodingIndex ?? -2);
+                        if (currentTranscodingIndex == null || index < currentTranscodingIndex.Value || (index - currentTranscodingIndex.Value) > 4)
                         {
-                            ApiEntryPoint.Instance.KillTranscodingJobs(j => j.Type == TranscodingJobType && string.Equals(j.DeviceId, request.DeviceId, StringComparison.OrdinalIgnoreCase), p => !string.Equals(p, playlistPath, StringComparison.OrdinalIgnoreCase));
-
-                            if (currentTranscodingIndex.HasValue)
+                            // If the playlist doesn't already exist, startup ffmpeg
+                            try
                             {
-                                DeleteLastFile(playlistPath, segmentExtension, 0, 0);
+                                KillTranscodingJobs(request.DeviceId, playlistPath);
+
+                                if (currentTranscodingIndex.HasValue)
+                                {
+                                    DeleteTranscodedFiles(playlistPath, 0);
+                                }
+
+                                var positionTicks = GetPositionTicks(state, index);
+                                request.StartTimeTicks = positionTicks;
+
+                                job = await StartFfMpeg(state, playlistPath, cancellationTokenSource, Path.GetDirectoryName(playlistPath)).ConfigureAwait(false);
+                                Task.Run(() => MonitorDashProcess(playlistPath, positionTicks == 0, job, cancellationToken));
+                            }
+                            catch
+                            {
+                                state.Dispose();
+                                throw;
                             }
 
-                            request.StartTimeTicks = GetPositionTicks(state, index);
-
-                            job = await StartFfMpeg(state, playlistPath, cancellationTokenSource, Path.GetDirectoryName(playlistPath)).ConfigureAwait(false);
+                            await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
                         }
-                        catch
-                        {
-                            state.Dispose();
-                            throw;
-                        }
-
-                        await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }
             }
@@ -188,12 +195,22 @@ namespace MediaBrowser.Api.Playback.Dash
             }
 
             Logger.Info("returning {0}", segmentPath);
-            job = job ?? ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
-            return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
+
+            return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job ?? ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType), cancellationToken).ConfigureAwait(false);
+        }
+
+        private void KillTranscodingJobs(string deviceId, string playlistPath)
+        {
+            ApiEntryPoint.Instance.KillTranscodingJobs(j => j.Type == TranscodingJobType && string.Equals(j.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase), p => !string.Equals(p, playlistPath, StringComparison.OrdinalIgnoreCase));
         }
 
         private long GetPositionTicks(StreamState state, int segmentIndex)
         {
+            if (segmentIndex <= 1)
+            {
+                return 0;
+            }
+
             var startSeconds = segmentIndex * state.SegmentLength;
             return TimeSpan.FromSeconds(startSeconds).Ticks;
         }
@@ -202,10 +219,6 @@ namespace MediaBrowser.Api.Playback.Dash
         {
             var tmpPath = playlist + ".tmp";
             Logger.Debug("Waiting for {0} segments in {1}", segmentCount, playlist);
-            // Double since audio and video are split
-            segmentCount = segmentCount * 2;
-            // Account for the initial segments
-            segmentCount += 2;
 
             while (true)
             {
@@ -223,20 +236,14 @@ namespace MediaBrowser.Api.Playback.Dash
                 {
                     using (var reader = new StreamReader(fileStream))
                     {
-                        var count = 0;
-
                         while (!reader.EndOfStream)
                         {
                             var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
-                            if (line.IndexOf(".m4s", StringComparison.OrdinalIgnoreCase) != -1)
+                            if (line.IndexOf("stream0-" + segmentCount.ToString("00000", CultureInfo.InvariantCulture) + ".m4s", StringComparison.OrdinalIgnoreCase) != -1)
                             {
-                                count++;
-                                if (count >= segmentCount)
-                                {
-                                    Logger.Debug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
-                                    return;
-                                }
+                                Logger.Debug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
+                                return;
                             }
                         }
                         await Task.Delay(100, cancellationToken).ConfigureAwait(false);
@@ -257,29 +264,6 @@ namespace MediaBrowser.Api.Playback.Dash
             {
                 return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
             }
-
-            var segmentFilename = Path.GetFileName(segmentPath);
-
-            using (var fileStream = FileSystem.GetFileStream(playlistPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
-            {
-                using (var reader = new StreamReader(fileStream))
-                {
-                    var text = await reader.ReadToEndAsync().ConfigureAwait(false);
-
-                    // If it appears in the playlist, it's done
-                    if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
-                    {
-                        return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
-                    }
-                }
-            }
-
-            // if a different file is encoding, it's done
-            //var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath);
-            //if (currentTranscodingIndex > segmentIndex)
-            //{
-            //return GetSegmentResult(segmentPath, segmentIndex);
-            //}
 
             // Wait for the file to stop being written to, then stream it
             var length = new FileInfo(segmentPath).Length;
@@ -308,7 +292,7 @@ namespace MediaBrowser.Api.Playback.Dash
                 length = newLength;
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
-
+            
             return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
         }
 
@@ -341,47 +325,26 @@ namespace MediaBrowser.Api.Playback.Dash
                 return null;
             }
 
-            var indexString = Path.GetFileNameWithoutExtension(file.Name).Split('-').LastOrDefault();
-
-            return int.Parse(indexString, NumberStyles.Integer, UsCulture);
+            return GetIndex(file.Name);
         }
 
-        private void DeleteLastFile(string path, string segmentExtension, int retryCount, int numDeleted)
+        public int GetIndex(string segmentFile)
         {
-            const int numToDelete = 2;
+            var indexString = Path.GetFileNameWithoutExtension(segmentFile).Split('-').LastOrDefault();
+
+            if (string.Equals(indexString, "init", StringComparison.OrdinalIgnoreCase))
+            {
+                return -1;
+            }
+            return int.Parse(indexString, NumberStyles.Integer, UsCulture) - 1;
+        }
+
+        private void DeleteTranscodedFiles(string path, int retryCount)
+        {
 
             if (retryCount >= 5)
             {
                 return;
-            }
-
-            var filesToGet = numToDelete - numDeleted;
-
-            if (filesToGet < 1)
-            {
-                return;
-            }
-
-            var files = GetLastTranscodingFiles(path, segmentExtension, FileSystem, filesToGet);
-
-            foreach (var file in files)
-            {
-                try
-                {
-                    FileSystem.DeleteFile(file.FullName);
-                    numDeleted++;
-                }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, file.FullName);
-
-                    Thread.Sleep(100);
-                    DeleteLastFile(path, segmentExtension, retryCount + 1, numDeleted);
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error deleting partial stream file(s) {0}", ex, file.FullName);
-                }
             }
         }
 
@@ -408,10 +371,13 @@ namespace MediaBrowser.Api.Playback.Dash
         {
             var folder = Path.GetDirectoryName(playlist);
 
-            var number = index.ToString("00000", CultureInfo.InvariantCulture);
+            var number = index == -1 ?
+                "init" :
+                index.ToString("00000", CultureInfo.InvariantCulture);
+
             var filename = "stream" + representationId + "-" + number + segmentExtension;
 
-            return Path.Combine(folder, filename);
+            return Path.Combine(folder, "completed", filename);
         }
 
         protected override string GetAudioArguments(StreamState state)
@@ -493,9 +459,9 @@ namespace MediaBrowser.Api.Playback.Dash
             var threads = GetNumberOfThreads(state, false);
 
             var inputModifier = GetInputModifier(state);
-            var startNumber = GetStartNumber(state);
+            //var startNumber = GetStartNumber(state);
 
-            var initSegmentName = "stream$RepresentationID$-00000.m4s";
+            var initSegmentName = "stream$RepresentationID$-init.m4s";
             var segmentName = "stream$RepresentationID$-$Number%05d$.m4s";
 
             var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts {5} -f dash -init_seg_name \"{6}\" -media_seg_name \"{7}\" -use_template 0 -use_timeline 1 -min_seg_duration {8} -y \"{9}\"",
@@ -529,6 +495,11 @@ namespace MediaBrowser.Api.Playback.Dash
                 segmentId = segmentRequest.SegmentId;
             }
 
+            if (string.Equals(segmentId, "init", StringComparison.OrdinalIgnoreCase))
+            {
+                return -1;
+            }
+
             return int.Parse(segmentId, NumberStyles.Integer, UsCulture);
         }
 
@@ -547,6 +518,111 @@ namespace MediaBrowser.Api.Playback.Dash
             get
             {
                 return TranscodingJobType.Dash;
+            }
+        }
+
+        private async void MonitorDashProcess(string playlist, bool moveInitSegment, TranscodingJob transcodingJob, CancellationToken cancellationToken)
+        {
+            var directory = new DirectoryInfo(Path.GetDirectoryName(playlist));
+            var completedDirectory = Path.Combine(Path.GetDirectoryName(playlist), "completed");
+            Directory.CreateDirectory(completedDirectory);
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    var files = directory.EnumerateFiles("*.m4s", SearchOption.TopDirectoryOnly)
+                        .OrderBy(FileSystem.GetCreationTimeUtc)
+                        .ToList();
+
+                    foreach (var file in files)
+                    {
+                        var fileIndex = GetIndex(file.Name);
+
+                        if (fileIndex == -1 && !moveInitSegment)
+                        {
+                            continue;
+                        }
+
+                        await WaitForFileToBeComplete(file.FullName, playlist, transcodingJob, cancellationToken).ConfigureAwait(false);
+
+                        var newName = fileIndex == -1
+                            ? "init.m4s"
+                            : fileIndex.ToString("00000", CultureInfo.InvariantCulture) + ".m4s";
+
+                        var representationId = file.FullName.IndexOf("stream0", StringComparison.OrdinalIgnoreCase) != -1 ?
+                            "0" :
+                            "1";
+
+                        newName = "stream" + representationId + "-" + newName;
+
+                        File.Copy(file.FullName, Path.Combine(completedDirectory, newName), true);
+
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+
+                    await Task.Delay(250, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (IOException)
+                {
+
+                }
+            }
+        }
+
+        private async Task WaitForFileToBeComplete(string segmentPath, string playlistPath, TranscodingJob transcodingJob, CancellationToken cancellationToken)
+        {
+            // If all transcoding has completed, just return immediately
+            if (transcodingJob != null && transcodingJob.HasExited)
+            {
+                return;
+            }
+
+            var segmentFilename = Path.GetFileName(segmentPath);
+            using (var fileStream = FileSystem.GetFileStream(playlistPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+            {
+                using (var reader = new StreamReader(fileStream))
+                {
+                    var text = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                    // If it appears in the playlist, it's done
+                    if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                    {
+                        return;
+                    }
+                }
+            }
+
+            // Wait for the file to stop being written to, then stream it
+            var length = new FileInfo(segmentPath).Length;
+            var eofCount = 0;
+
+            while (eofCount < 10)
+            {
+                var info = new FileInfo(segmentPath);
+
+                if (!info.Exists)
+                {
+                    break;
+                }
+
+                var newLength = info.Length;
+
+                if (newLength == length)
+                {
+                    eofCount++;
+                }
+                else
+                {
+                    eofCount = 0;
+                }
+
+                length = newLength;
+                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
         }
     }
