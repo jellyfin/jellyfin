@@ -1687,16 +1687,11 @@ namespace MediaBrowser.Server.Implementations.Session
                 AccessToken = token
             });
 
-            if (result.Items.Length == 0)
-            {
-                return null;
-            }
-
-            var info = result.Items[0];
+            var info = result.Items.FirstOrDefault();
 
             if (info == null)
             {
-                return null;
+                return Task.FromResult<SessionInfo>(null);
             }
 
             return GetSessionByAuthenticationToken(info, deviceId, remoteEndpoint, null);
