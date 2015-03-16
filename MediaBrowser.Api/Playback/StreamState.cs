@@ -64,8 +64,8 @@ namespace MediaBrowser.Api.Playback
 
         public string LiveTvStreamId { get; set; }
 
-        public int SegmentLength = 6;
-
+        public int SegmentLength = 3;
+        public bool EnableGenericHlsSegmenter;
         public int HlsListSize
         {
             get

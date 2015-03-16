@@ -730,7 +730,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailImageProgressContainer {
     position: absolute;
-    bottom: 3px;
+    bottom: 2px;
     right: 0;
     left: 0;
     text-align: center;
