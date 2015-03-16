@@ -279,7 +279,7 @@ namespace MediaBrowser.Api.Playback.Hls
             CancellationToken cancellationToken)
         {
             // If all transcoding has completed, just return immediately
-            if (!IsTranscoding(playlistPath))
+            if (transcodingJob != null && transcodingJob.HasExited)
             {
                 return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
             }
@@ -356,13 +356,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 }
             });
-        }
-
-        private bool IsTranscoding(string playlistPath)
-        {
-            var job = ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
-
-            return job != null && !job.HasExited;
         }
 
         private async Task<object> GetAsync(GetMasterHlsVideoStream request, string method)
