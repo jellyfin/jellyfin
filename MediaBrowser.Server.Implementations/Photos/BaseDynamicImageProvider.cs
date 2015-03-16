@@ -60,7 +60,7 @@ namespace MediaBrowser.Server.Implementations.Photos
         protected async Task<ItemUpdateType> FetchAsync(IHasImages item, ImageType imageType, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var items = await GetItemsWithImages(item).ConfigureAwait(false);
-            var cacheKey = GetConfigurationCacheKey(items);
+            var cacheKey = GetConfigurationCacheKey(items, item.Name);
 
             if (!HasChanged(item, imageType, cacheKey))
             {
@@ -110,7 +110,7 @@ namespace MediaBrowser.Server.Implementations.Photos
         public async Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken)
         {
             var items = await GetItemsWithImages(item).ConfigureAwait(false);
-            var cacheKey = GetConfigurationCacheKey(items);
+            var cacheKey = GetConfigurationCacheKey(items, item.Name);
 
             var result = await CreateImageAsync(item, items, type, 0).ConfigureAwait(false);
 
@@ -126,9 +126,9 @@ namespace MediaBrowser.Server.Implementations.Photos
         protected abstract Task<List<BaseItem>> GetItemsWithImages(IHasImages item);
 
         private const string Version = "3";
-        protected string GetConfigurationCacheKey(List<BaseItem> items)
+        protected string GetConfigurationCacheKey(List<BaseItem> items, string itemName)
         {
-            return (Version + "_" + string.Join(",", items.Select(i => i.Id.ToString("N")).ToArray())).GetMD5().ToString("N");
+            return (Version + "_" + (itemName ?? string.Empty) + "_" + string.Join(",", items.Select(i => i.Id.ToString("N")).ToArray())).GetMD5().ToString("N");
         }
 
         protected Task<Stream> GetThumbCollage(List<BaseItem> items)
@@ -185,7 +185,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             }
 
             var items = GetItemsWithImages(item).Result;
-            var cacheKey = GetConfigurationCacheKey(items);
+            var cacheKey = GetConfigurationCacheKey(items, item.Name);
 
             return HasChanged(item, ImageType.Primary, cacheKey) || HasChanged(item, ImageType.Thumb, cacheKey);
         }

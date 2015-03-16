@@ -37,7 +37,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
     public class LiveTvManager : ILiveTvManager, IDisposable
     {
         private readonly IServerConfigurationManager _config;
-        private readonly IFileSystem _fileSystem;
         private readonly ILogger _logger;
         private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
@@ -63,10 +62,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly SemaphoreSlim _refreshSemaphore = new SemaphoreSlim(1, 1);
 
-        public LiveTvManager(IApplicationHost appHost, IServerConfigurationManager config, IFileSystem fileSystem, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer, IProviderManager providerManager)
+        public LiveTvManager(IApplicationHost appHost, IServerConfigurationManager config, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer, IProviderManager providerManager)
         {
             _config = config;
-            _fileSystem = fileSystem;
             _logger = logger;
             _itemRepo = itemRepo;
             _userManager = userManager;
@@ -474,11 +472,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return item;
         }
 
-        private LiveTvProgram GetProgram(ProgramInfo info, ChannelType channelType, string serviceName, CancellationToken cancellationToken)
+        private async Task<LiveTvProgram> GetProgram(ProgramInfo info, ChannelType channelType, string serviceName, CancellationToken cancellationToken)
         {
             var id = _tvDtoService.GetInternalProgramId(serviceName, info.Id);
 
-            var item = _itemRepo.RetrieveItem(id) as LiveTvProgram;
+            var item = _libraryManager.GetItemById(id) as LiveTvProgram;
 
             if (item == null)
             {
@@ -520,6 +518,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.RunTimeTicks = (info.EndDate - info.StartDate).Ticks;
             item.StartDate = info.StartDate;
             item.ProductionYear = info.ProductionYear;
+
+            await item.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
 
             return item;
         }
@@ -992,9 +992,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                     var channelPrograms = await service.GetProgramsAsync(currentChannel.ExternalId, start, end, cancellationToken).ConfigureAwait(false);
 
-                    var programEntities = channelPrograms.Select(program => GetProgram(program, currentChannel.ChannelType, service.Name, cancellationToken));
-
-                    programs.AddRange(programEntities);
+                    foreach (var program in channelPrograms)
+                    {
+                        programs.Add(await GetProgram(program, currentChannel.ChannelType, service.Name, cancellationToken).ConfigureAwait(false));
+                    }
                 }
                 catch (OperationCanceledException)
                 {

@@ -88,10 +88,6 @@
 
             var elem = $('.itemsContainer', page).html(html).lazyChildren();
 
-            if (trigger) {
-                $(elem).trigger('create');
-            }
-
             $(pagingHtml).appendTo(elem).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {

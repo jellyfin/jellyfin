@@ -56,7 +56,7 @@ namespace MediaBrowser.Api.Images
     /// Class UpdateItemImageIndex
     /// </summary>
     [Route("/Items/{Id}/Images/{Type}/{Index}/Index", "POST", Summary = "Updates the index for an item image")]
-    [Authenticated]
+    [Authenticated(Roles = "admin")]
     public class UpdateItemImageIndex : IReturnVoid
     {
         /// <summary>
@@ -64,7 +64,7 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the image.
@@ -143,7 +143,7 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -151,7 +151,7 @@ namespace MediaBrowser.Api.Images
     /// </summary>
     [Route("/Items/{Id}/Images/{Type}", "DELETE")]
     [Route("/Items/{Id}/Images/{Type}/{Index}", "DELETE")]
-    [Authenticated]
+    [Authenticated(Roles = "admin")]
     public class DeleteItemImage : DeleteImageRequest, IReturnVoid
     {
         /// <summary>
@@ -159,7 +159,7 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -175,7 +175,7 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -191,7 +191,7 @@ namespace MediaBrowser.Api.Images
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// The raw Http Request Input Stream
@@ -206,7 +206,7 @@ namespace MediaBrowser.Api.Images
     [Route("/Items/{Id}/Images/{Type}", "POST")]
     [Route("/Items/{Id}/Images/{Type}/{Index}", "POST")]
     [Api(Description = "Posts an item image")]
-    [Authenticated]
+    [Authenticated(Roles = "admin")]
     public class PostItemImage : DeleteImageRequest, IRequiresRequestStream, IReturnVoid
     {
         /// <summary>
@@ -417,11 +417,12 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         public void Post(PostUserImage request)
         {
-            var id = new Guid(GetPathValue(1));
+            var userId = GetPathValue(1);
+            AssertCanUpdateUser(userId);
 
             request.Type = (ImageType)Enum.Parse(typeof(ImageType), GetPathValue(3), true);
 
-            var item = _userManager.GetUserById(id);
+            var item = _userManager.GetUserById(userId);
 
             var task = PostImage(item, request.RequestStream, request.Type, Request.ContentType);
 
@@ -434,7 +435,7 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         public void Post(PostItemImage request)
         {
-            var id = new Guid(GetPathValue(1));
+            var id = GetPathValue(1);
 
             request.Type = (ImageType)Enum.Parse(typeof(ImageType), GetPathValue(3), true);
 
@@ -451,7 +452,10 @@ namespace MediaBrowser.Api.Images
         /// <param name="request">The request.</param>
         public void Delete(DeleteUserImage request)
         {
-            var item = _userManager.GetUserById(request.Id);
+            var userId = request.Id;
+            AssertCanUpdateUser(userId);
+
+            var item = _userManager.GetUserById(userId);
 
             var task = item.DeleteImage(request.Type, request.Index ?? 0);
 
@@ -492,7 +496,6 @@ namespace MediaBrowser.Api.Images
         /// <param name="currentIndex">Index of the current.</param>
         /// <param name="newIndex">The new index.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="System.ArgumentException">The change index operation is only applicable to backdrops and screenshots</exception>
         private Task UpdateItemIndex(IHasImages item, ImageType type, int currentIndex, int newIndex)
         {
             return item.SwapImages(type, currentIndex, newIndex);
