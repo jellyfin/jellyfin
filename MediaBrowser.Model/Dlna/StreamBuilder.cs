@@ -28,7 +28,7 @@ namespace MediaBrowser.Model.Dlna
             List<MediaSourceInfo> mediaSources = new List<MediaSourceInfo>();
             foreach (MediaSourceInfo i in options.MediaSources)
             {
-                if (!string.IsNullOrEmpty(options.MediaSourceId) ||
+                if (string.IsNullOrEmpty(options.MediaSourceId) ||
                     StringHelper.EqualsIgnoreCase(i.Id, options.MediaSourceId))
                 {
                     mediaSources.Add(i);
@@ -61,7 +61,7 @@ namespace MediaBrowser.Model.Dlna
             List<MediaSourceInfo> mediaSources = new List<MediaSourceInfo>();
             foreach (MediaSourceInfo i in options.MediaSources)
             {
-                if (!string.IsNullOrEmpty(options.MediaSourceId) ||
+                if (string.IsNullOrEmpty(options.MediaSourceId) ||
                     StringHelper.EqualsIgnoreCase(i.Id, options.MediaSourceId))
                 {
                     mediaSources.Add(i);
