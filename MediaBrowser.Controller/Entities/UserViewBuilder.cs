@@ -112,6 +112,11 @@ namespace MediaBrowser.Controller.Entities
                         return GetResult(result, queryParent, query);
                     }
 
+                case CollectionType.Books:
+                case CollectionType.Photos:
+                case CollectionType.HomeVideos:
+                    return GetResult(queryParent.GetChildren(user, true), queryParent, query);
+
                 case CollectionType.Folders:
                     return GetResult(user.RootFolder.GetChildren(user, true), queryParent, query);
 

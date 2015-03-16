@@ -237,14 +237,14 @@ namespace MediaBrowser.Server.Implementations.UserViews
 
         protected override Task<Stream> CreateImageAsync(IHasImages item, List<BaseItem> itemsWithImages, ImageType imageType, int imageIndex)
         {
-            if (itemsWithImages.Count == 0)
-            {
-                return null;
-            }
-
             var view = (UserView)item;
             if (imageType == ImageType.Primary && IsUsingCollectionStrip(view))
             {
+                if (itemsWithImages.Count == 0 && !string.Equals(view.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
+                {
+                    return null;
+                }
+
                 var stream = new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(itemsWithImages, view.ViewType), item.Name, 960, 540);
                 return Task.FromResult(stream);
             }

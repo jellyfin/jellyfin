@@ -1673,7 +1673,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("viewType");
             }
 
-            var id = GetNewItemId("31_namedview_" + name + user.Id.ToString("N") + (parentId ?? string.Empty), typeof(UserView));
+            var id = GetNewItemId("35_namedview_" + name + user.Id.ToString("N") + (parentId ?? string.Empty), typeof(UserView));
 
             var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views", id.ToString("N"));
 
