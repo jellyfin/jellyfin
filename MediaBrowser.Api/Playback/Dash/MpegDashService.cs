@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Api.Playback.Hls;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -15,13 +16,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Security;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MimeTypes = MediaBrowser.Model.Net.MimeTypes;
 
-namespace MediaBrowser.Api.Playback.Hls
+namespace MediaBrowser.Api.Playback.Dash
 {
     /// <summary>
     /// Options is needed for chromecast. Threw Head in there since it's related
@@ -88,16 +87,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private async Task<object> GetAsync(GetMasterManifest request, string method)
         {
-            if (string.Equals(request.AudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("Audio codec copy is not allowed here.");
-            }
-
-            if (string.Equals(request.VideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ArgumentException("Video codec copy is not allowed here.");
-            }
-
             if (string.IsNullOrEmpty(request.MediaSourceId))
             {
                 throw new ArgumentException("MediaSourceId is required");
@@ -109,223 +98,15 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (string.Equals(method, "GET", StringComparison.OrdinalIgnoreCase))
             {
-                playlistText = GetManifestText(state);
+                playlistText = new ManifestBuilder().GetManifestText(state, Request.RawUrl);
             }
 
             return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.mpd"), new Dictionary<string, string>());
         }
 
-        private string GetManifestText(StreamState state)
-        {
-            var builder = new StringBuilder();
-
-            var time = TimeSpan.FromTicks(state.RunTimeTicks.Value);
-
-            var duration = "PT" + time.Hours.ToString("00", UsCulture) + "H" + time.Minutes.ToString("00", UsCulture) + "M" + time.Seconds.ToString("00", UsCulture) + ".00S";
-
-            builder.Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-
-            builder.AppendFormat(
-                "<MPD xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"urn:mpeg:dash:schema:mpd:2011\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xsi:schemaLocation=\"urn:mpeg:DASH:schema:MPD:2011 http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-DASH_schema_files/DASH-MPD.xsd\" profiles=\"urn:mpeg:dash:profile:isoff-live:2011\" type=\"static\" mediaPresentationDuration=\"{0}\" minBufferTime=\"PT5.0S\">",
-                duration);
-
-            builder.Append("<ProgramInformation>");
-            builder.Append("</ProgramInformation>");
-
-            builder.Append("<Period start=\"PT0S\">");
-            builder.Append(GetVideoAdaptationSet(state));
-            builder.Append(GetAudioAdaptationSet(state));
-            builder.Append("</Period>");
-
-            builder.Append("</MPD>");
-
-            return builder.ToString();
-        }
-
-        private string GetVideoAdaptationSet(StreamState state)
-        {
-            var builder = new StringBuilder();
-
-            builder.Append("<AdaptationSet id=\"video\" segmentAlignment=\"true\" bitstreamSwitching=\"true\">");
-            builder.Append(GetVideoRepresentationOpenElement(state));
-
-            AppendSegmentList(state, builder, "video");
-
-            builder.Append("</Representation>");
-            builder.Append("</AdaptationSet>");
-
-            return builder.ToString();
-        }
-
-        private string GetAudioAdaptationSet(StreamState state)
-        {
-            var builder = new StringBuilder();
-
-            builder.Append("<AdaptationSet id=\"audio\" segmentAlignment=\"true\" bitstreamSwitching=\"true\">");
-            builder.Append(GetAudioRepresentationOpenElement(state));
-
-            builder.Append("<AudioChannelConfiguration schemeIdUri=\"urn:mpeg:dash:23003:3:audio_channel_configuration:2011\" value=\"6\" />");
-
-            AppendSegmentList(state, builder, "audio");
-
-            builder.Append("</Representation>");
-            builder.Append("</AdaptationSet>");
-
-            return builder.ToString();
-        }
-
-        private string GetVideoRepresentationOpenElement(StreamState state)
-        {
-            var codecs = GetVideoCodecDescriptor(state);
-
-            var mime = "video/mp4";
-
-            var xml = "<Representation id=\"0\" mimeType=\"" + mime + "\" codecs=\"" + codecs + "\"";
-
-            if (state.OutputWidth.HasValue)
-            {
-                xml += " width=\"" + state.OutputWidth.Value.ToString(UsCulture) + "\"";
-            }
-            if (state.OutputHeight.HasValue)
-            {
-                xml += " height=\"" + state.OutputHeight.Value.ToString(UsCulture) + "\"";
-            }
-            if (state.OutputVideoBitrate.HasValue)
-            {
-                xml += " bandwidth=\"" + state.OutputVideoBitrate.Value.ToString(UsCulture) + "\"";
-            }
-
-            xml += ">";
-
-            return xml;
-        }
-
-        private string GetAudioRepresentationOpenElement(StreamState state)
-        {
-            var codecs = GetAudioCodecDescriptor(state);
-
-            var mime = "audio/mp4";
-
-            var xml = "<Representation id=\"1\" mimeType=\"" + mime + "\" codecs=\"" + codecs + "\"";
-
-            if (state.OutputAudioSampleRate.HasValue)
-            {
-                xml += " audioSamplingRate=\"" + state.OutputAudioSampleRate.Value.ToString(UsCulture) + "\"";
-            }
-            if (state.OutputAudioBitrate.HasValue)
-            {
-                xml += " bandwidth=\"" + state.OutputAudioBitrate.Value.ToString(UsCulture) + "\"";
-            }
-
-            xml += ">";
-
-            return xml;
-        }
-
-        private string GetVideoCodecDescriptor(StreamState state)
-        {
-            // https://developer.apple.com/library/ios/documentation/networkinginternet/conceptual/streamingmediaguide/FrequentlyAskedQuestions/FrequentlyAskedQuestions.html
-            // http://www.chipwreck.de/blog/2010/02/25/html-5-video-tag-and-attributes/
-
-            var level = state.TargetVideoLevel ?? 0;
-            var profile = state.TargetVideoProfile ?? string.Empty;
-
-            if (profile.IndexOf("high", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                if (level >= 4.1)
-                {
-                    return "avc1.640028";
-                }
-
-                if (level >= 4)
-                {
-                    return "avc1.640028";
-                }
-
-                return "avc1.64001f";
-            }
-
-            if (profile.IndexOf("main", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                if (level >= 4)
-                {
-                    return "avc1.4d0028";
-                }
-
-                if (level >= 3.1)
-                {
-                    return "avc1.4d001f";
-                }
-
-                return "avc1.4d001e";
-            }
-
-            if (level >= 3.1)
-            {
-                return "avc1.42001f";
-            }
-
-            return "avc1.42E01E";
-        }
-
-        private string GetAudioCodecDescriptor(StreamState state)
-        {
-            // https://developer.apple.com/library/ios/documentation/networkinginternet/conceptual/streamingmediaguide/FrequentlyAskedQuestions/FrequentlyAskedQuestions.html
-
-            if (string.Equals(state.OutputAudioCodec, "mp3", StringComparison.OrdinalIgnoreCase))
-            {
-                return "mp4a.40.34";
-            }
-
-            // AAC 5ch
-            if (state.OutputAudioChannels.HasValue && state.OutputAudioChannels.Value >= 5)
-            {
-                return "mp4a.40.5";
-            }
-
-            // AAC 2ch
-            return "mp4a.40.2";
-        }
-
         public object Get(GetDashSegment request)
         {
             return GetDynamicSegment(request, request.SegmentId, request.SegmentType).Result;
-        }
-
-        private void AppendSegmentList(StreamState state, StringBuilder builder, string type)
-        {
-            var extension = GetSegmentFileExtension(state);
-
-            var seconds = TimeSpan.FromTicks(state.RunTimeTicks ?? 0).TotalSeconds;
-
-            var queryStringIndex = Request.RawUrl.IndexOf('?');
-            var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
-
-            var index = 0;
-            var duration = 1000000 * state.SegmentLength;
-            builder.AppendFormat("<SegmentList timescale=\"1000000\" duration=\"{0}\" startNumber=\"1\">", duration.ToString(CultureInfo.InvariantCulture));
-
-            while (seconds > 0)
-            {
-                var segmentUrl = string.Format("dash/{3}/{0}{1}{2}",
-                    index.ToString(UsCulture),
-                    extension,
-                    SecurityElement.Escape(queryString),
-                    type);
-
-                if (index == 0)
-                {
-                    builder.AppendFormat("<Initialization sourceURL=\"{0}\"/>", segmentUrl);
-                }
-                else
-                {
-                    builder.AppendFormat("<SegmentURL media=\"{0}\"/>", segmentUrl);
-                }
-
-                seconds -= state.SegmentLength;
-                index++;
-            }
-            builder.Append("</SegmentList>");
         }
 
         private async Task<object> GetDynamicSegment(VideoStreamRequest request, string segmentId, string segmentType)
@@ -616,24 +397,6 @@ namespace MediaBrowser.Api.Playback.Hls
             }
         }
 
-        protected override int GetStartNumber(StreamState state)
-        {
-            return GetStartNumber(state.VideoRequest);
-        }
-
-        private int GetStartNumber(VideoStreamRequest request)
-        {
-            var segmentId = "0";
-
-            var segmentRequest = request as GetDynamicHlsVideoSegment;
-            if (segmentRequest != null)
-            {
-                segmentId = segmentRequest.SegmentId;
-            }
-
-            return int.Parse(segmentId, NumberStyles.Integer, UsCulture);
-        }
-
         private string GetSegmentPath(string playlist, string segmentType, string segmentExtension, int index)
         {
             var folder = Path.GetDirectoryName(playlist);
@@ -750,6 +513,21 @@ namespace MediaBrowser.Api.Playback.Hls
 
             return args;
         }
+
+        //private string GetCurrentTranscodingIndex(string outputPath)
+        //{
+
+        //}
+
+        //private string GetNextTranscodingIndex(string outputPath)
+        //{
+            
+        //}
+
+        //private string GetActualPlaylistPath(string outputPath, string transcodingIndex)
+        //{
+            
+        //}
 
         /// <summary>
         /// Gets the segment file extension.
