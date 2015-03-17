@@ -7,6 +7,7 @@ namespace MediaBrowser.Model.Sync
         Quality = 1,
         UnwatchedOnly = 2,
         SyncNewContent = 3,
-        ItemLimit = 4
+        ItemLimit = 4,
+        Profile = 5
     }
 }
