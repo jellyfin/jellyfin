@@ -28,7 +28,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var jobItemResult = _syncManager.GetJobItems(new SyncJobItemQuery
             {
                 AddMetadata = false,
-                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Synced },
+                Statuses = new SyncJobItemStatus[] { SyncJobItemStatus.Synced },
                 ItemId = item.Id.ToString("N")
             });
 

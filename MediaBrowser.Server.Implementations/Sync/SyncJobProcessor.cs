@@ -364,7 +364,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             // If it already has a converting status then is must have been aborted during conversion
             var result = _syncRepo.GetJobItems(new SyncJobItemQuery
             {
-                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting }
+                Statuses = new SyncJobItemStatus[] { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting }
             });
 
             await SyncJobItems(result.Items, true, progress, cancellationToken).ConfigureAwait(false);
@@ -386,7 +386,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             // If it already has a converting status then is must have been aborted during conversion
             var result = _syncRepo.GetJobItems(new SyncJobItemQuery
             {
-                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
+                Statuses = new SyncJobItemStatus[] { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
                 TargetId = targetId
             });
 
