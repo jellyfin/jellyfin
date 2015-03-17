@@ -79,6 +79,14 @@ namespace MediaBrowser.Api
     {
     }
 
+    [Route("/Connect/Supporters", "DELETE")]
+    [Authenticated(Roles = "Admin")]
+    public class RemoveConnectSupporter : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public string Id { get; set; }
+    }
+
     public class ConnectService : BaseApiService
     {
         private readonly IConnectManager _connectManager;
@@ -95,6 +103,13 @@ namespace MediaBrowser.Api
             var result = await _connectManager.GetConnectSupporterSummary().ConfigureAwait(false);
 
             return ToOptimizedResult(result);
+        }
+
+        public void Delete(RemoveConnectSupporter request)
+        {
+            var task = _connectManager.RemoveConnectSupporter(request.Id);
+
+            Task.WaitAll(task);
         }
 
         public object Post(CreateConnectLink request)
