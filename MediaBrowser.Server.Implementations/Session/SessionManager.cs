@@ -314,7 +314,10 @@ namespace MediaBrowser.Server.Implementations.Session
                 if (!string.Equals(info.ItemId, info.MediaSourceId) &&
                     !string.IsNullOrWhiteSpace(info.MediaSourceId))
                 {
-                    runtimeTicks = _libraryManager.GetItemById(new Guid(info.MediaSourceId)).RunTimeTicks;
+                    var runtimeItem = _libraryManager.GetItemById(new Guid(info.MediaSourceId)) ??
+                                      _libraryManager.GetItemById(info.ItemId);
+
+                    runtimeTicks = runtimeItem.RunTimeTicks;
                 }
 
                 var current = session.NowPlayingItem;
