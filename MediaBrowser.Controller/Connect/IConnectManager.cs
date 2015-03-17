@@ -82,5 +82,12 @@ namespace MediaBrowser.Controller.Connect
         /// <param name="id">The identifier.</param>
         /// <returns>Task.</returns>
         Task RemoveConnectSupporter(string id);
+
+        /// <summary>
+        /// Adds the connect supporter.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns>Task.</returns>
+        Task AddConnectSupporter(string id);
     }
 }

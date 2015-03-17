@@ -124,6 +124,36 @@ $(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
 
 (function () {
 
+    var connectSupporterInfo;
+
+    function showAddUserForm(page) {
+
+        $('.popupAddUser', page).popup('open');
+
+        $('#selectUserToAdd', page).html(connectSupporterInfo.EligibleUsers.map(function (u) {
+
+            return '<option value="' + u.ConnectUserId + '">' + u.Name + '</option>';
+
+        }).join('')).selectmenu('refresh');
+    }
+
+    function addUser(page, id) {
+
+        Dashboard.showLoadingMsg();
+
+        ApiClient.ajax({
+            type: "POST",
+            url: ApiClient.getUrl('Connect/Supporters', {
+                Id: id
+            })
+
+        }).done(function () {
+
+            $('.popupAddUser', page).popup('close');
+            loadConnectSupporters(page);
+        });
+    }
+
     function removeUser(page, id) {
 
         Dashboard.confirm(Globalize.translate('MessageConfirmRemoveConnectSupporter'), Globalize.translate('HeaderConfirmRemoveUser'), function (result) {
@@ -195,6 +225,8 @@ $(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
 
     function loadConnectSupporters(page) {
 
+        Dashboard.showLoadingMsg();
+
         Dashboard.suppressAjaxErrors = true;
 
         ApiClient.ajax({
@@ -204,7 +236,10 @@ $(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
 
         }).done(function (result) {
 
+            connectSupporterInfo = result;
             renderUsers(page, result);
+
+            Dashboard.hideLoadingMsg();
 
         }).fail(function () {
 
@@ -218,10 +253,28 @@ $(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
 
     }
 
-    $(document).on('pageshow', "#supporterKeyPage", function () {
+    $(document).on('pageinit', "#supporterKeyPage", function () {
+
+        var page = this;
+        $('#btnAddConnectUser', page).on('click', function () {
+            showAddUserForm(page);
+        });
+
+    }).on('pageshow', "#supporterKeyPage", function () {
 
         var page = this;
         loadConnectSupporters(page);
     });
+
+    window.SupporterKeyPage.onAddConnectUserSubmit = function () {
+
+        var page = $(this).parents('.page');
+
+        var id = $('#selectUserToAdd', page).val();
+
+        addUser(page, id);
+
+        return false;
+    };
 
 })();
