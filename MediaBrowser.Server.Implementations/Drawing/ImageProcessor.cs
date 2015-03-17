@@ -130,7 +130,44 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
         public ImageFormat[] GetSupportedImageOutputFormats()
         {
-            return new[] { ImageFormat.Webp, ImageFormat.Gif, ImageFormat.Jpg, ImageFormat.Png };
+            if (_webpAvailable)
+            {
+                return new[] { ImageFormat.Webp, ImageFormat.Gif, ImageFormat.Jpg, ImageFormat.Png };
+            }
+            return new[] { ImageFormat.Gif, ImageFormat.Jpg, ImageFormat.Png };
+        }
+
+        private bool _webpAvailable = true;
+        private void TestWebp()
+        {
+            try
+            {
+                var tmpPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".webp");
+                Directory.CreateDirectory(Path.GetDirectoryName(tmpPath));
+                
+                using (var wand = new MagickWand(1, 1, new PixelWand("none", 1)))
+                {
+                    wand.SaveImage(tmpPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error loading webp: ", ex);
+                _webpAvailable = false;
+            }
+        }
+
+        private void LogImageMagickVersionVersion()
+        {
+            try
+            {
+                _logger.Info("ImageMagick version: " + Wand.VersionString);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error loading ImageMagick: ", ex);
+            }
+            TestWebp();
         }
 
         public async Task<string> ProcessImage(ImageProcessingOptions options)
@@ -179,7 +216,8 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             var quality = options.Quality ?? 90;
 
-            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, options.OutputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.BackgroundColor);
+            var outputFormat = GetOutputFormat(options.OutputFormat);
+            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, outputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.BackgroundColor);
 
             var semaphore = GetLock(cacheFilePath);
 
@@ -250,16 +288,14 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
         }
 
-        private void LogImageMagickVersionVersion()
+        private ImageFormat GetOutputFormat(ImageFormat requestedFormat)
         {
-            try
+            if (requestedFormat == ImageFormat.Webp && !_webpAvailable)
             {
-                _logger.Info("ImageMagick version: " + Wand.VersionString);
+                return ImageFormat.Png;
             }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error loading ImageMagick: ", ex);
-            }
+
+            return requestedFormat;
         }
 
         /// <summary>
