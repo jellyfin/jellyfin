@@ -51,6 +51,16 @@
         var page = this;
 
         reloadList(page);
+
+        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+
+            if (pluginSecurityInfo.IsMBSupporter) {
+                $('.syncPromotion', page).hide();
+            } else {
+                $('.syncPromotion', page).show();
+            }
+        });
+
     });
 
 })(jQuery, document);

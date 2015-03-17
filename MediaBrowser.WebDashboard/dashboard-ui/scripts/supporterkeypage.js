@@ -121,3 +121,47 @@
 };
 
 $(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
+
+(function () {
+
+    function loadConnectSupporters(page) {
+
+        $('.linkSupporterKeyMessage', page).html(Globalize.translate('MessageLinkYourSupporterKey', 5));
+
+        Dashboard.suppressAjaxErrors = true;
+
+        ApiClient.ajax({
+            type: "GET",
+            url: ApiClient.getUrl('Connect/Supporters'),
+            dataType: "json",
+
+            error: function () {
+                // Don't show normal dashboard errors
+            },
+
+            enableGlobalAjaxListener: false
+
+        }).done(function () {
+
+
+
+
+        }).fail(function () {
+
+            $('.supporters', page).html('<p>' + Globalize.translate('MessageErrorLoadingSupporterInfo') + '</p>');
+
+        }).always(function () {
+
+            Dashboard.suppressAjaxErrors = false;
+
+        });
+
+    }
+
+    $(document).on('pageshow', "#supporterKeyPage", function () {
+
+        var page = this;
+        loadConnectSupporters(page);
+    });
+
+})();

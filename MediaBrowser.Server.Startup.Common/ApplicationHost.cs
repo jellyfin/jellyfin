@@ -457,7 +457,7 @@ namespace MediaBrowser.Server.Startup.Common
             var encryptionManager = new EncryptionManager();
             RegisterSingleInstance<IEncryptionManager>(encryptionManager);
 
-            ConnectManager = new ConnectManager(LogManager.GetLogger("Connect"), ApplicationPaths, JsonSerializer, encryptionManager, HttpClient, this, ServerConfigurationManager, UserManager, ProviderManager);
+            ConnectManager = new ConnectManager(LogManager.GetLogger("Connect"), ApplicationPaths, JsonSerializer, encryptionManager, HttpClient, this, ServerConfigurationManager, UserManager, ProviderManager, SecurityManager);
             RegisterSingleInstance(ConnectManager);
 
             DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, LogManager.GetLogger("DeviceManager"), FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ConfigurationManager, LogManager.GetLogger("DeviceManager"));

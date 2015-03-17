@@ -68,7 +68,6 @@ var Dashboard = {
             }
             return;
         }
-
         Dashboard.hideLoadingMsg();
 
         if (!Dashboard.suppressAjaxErrors) {

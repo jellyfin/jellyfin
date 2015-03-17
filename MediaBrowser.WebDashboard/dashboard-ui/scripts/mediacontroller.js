@@ -76,8 +76,7 @@
 
         var keys = new bindKeys(self);
 
-        $(window).on("keydown", keys.keyBinding);
-        $(window).on("keypress keyup", keys.keyPrevent);
+        $(window).on("keydown", keys.keyBinding).on("keypress keyup", keys.keyPrevent);
 
         self.registerPlayer = function (player) {
 

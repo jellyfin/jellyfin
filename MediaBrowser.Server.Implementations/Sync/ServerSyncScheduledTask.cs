@@ -59,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             return new ITaskTrigger[]
                 {
-                    new IntervalTrigger { Interval = TimeSpan.FromHours(6) }
+                    new IntervalTrigger { Interval = TimeSpan.FromHours(3) }
                 };
         }
 

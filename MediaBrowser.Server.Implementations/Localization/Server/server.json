@@ -48,6 +48,8 @@
     "LabelDashboardSourcePathHelp": "If running the server from source, specify the path to the dashboard-ui folder. All web client files will be served from this location.",
     "ButtonConvertMedia": "Convert media",
     "ButtonOrganize": "Organize",
+    "LinkedToMediaBrowserConnect": "Linked to Media Browser Connect",
+    "HeaderSupporterBenefits": "Supporter Benefits",
     "LabelPinCode": "Pin code:",
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancel",
