@@ -130,6 +130,7 @@
     <Compile Include="Entities\Game.cs" />
     <Compile Include="Entities\GameGenre.cs" />
     <Compile Include="Entities\GameSystem.cs" />
+    <Compile Include="Entities\IArchivable.cs" />
     <Compile Include="Entities\IByReferenceItem.cs" />
     <Compile Include="Entities\IHasAspectRatio.cs" />
     <Compile Include="Entities\IHasBudget.cs" />
