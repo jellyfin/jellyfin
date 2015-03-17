@@ -69,5 +69,11 @@ namespace MediaBrowser.Controller.Connect
         /// <param name="token">The token.</param>
         /// <returns><c>true</c> if [is authorization token valid] [the specified token]; otherwise, <c>false</c>.</returns>
         bool IsAuthorizationTokenValid(string token);
+
+        /// <summary>
+        /// Gets the connect supporter summary.
+        /// </summary>
+        /// <returns>Task&lt;ConnectSupporterSummary&gt;.</returns>
+        Task<ConnectSupporterSummary> GetConnectSupporterSummary();
     }
 }

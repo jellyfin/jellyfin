@@ -73,6 +73,12 @@ namespace MediaBrowser.Api
         public string ConnectUserId { get; set; }
     }
 
+    [Route("/Connect/Supporters", "GET")]
+    [Authenticated(Roles = "Admin")]
+    public class GetConnectSupporterSummary : IReturn<ConnectSupporterSummary>
+    {
+    }
+
     public class ConnectService : BaseApiService
     {
         private readonly IConnectManager _connectManager;
@@ -82,6 +88,13 @@ namespace MediaBrowser.Api
         {
             _connectManager = connectManager;
             _userManager = userManager;
+        }
+
+        public async Task<object> Get(GetConnectSupporterSummary request)
+        {
+            var result = await _connectManager.GetConnectSupporterSummary().ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
         }
 
         public object Post(CreateConnectLink request)

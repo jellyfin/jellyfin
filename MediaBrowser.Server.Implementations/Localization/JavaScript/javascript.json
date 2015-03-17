@@ -36,6 +36,8 @@
     "MessageKeyUpdated": "Thank you. Your supporter key has been updated.",
     "MessageKeyRemoved": "Thank you. Your supporter key has been removed.",
     "ErrorLaunchingChromecast": "There was an error launching chromecast. Please ensure your device is connected to your wireless network.",
+    "MessageErrorLoadingSupporterInfo": "There was an error loading supporter information. Please try again later.",
+    "MessageLinkYourSupporterKey": "Link your supporter key with up to {0} Media Browser Connect members to enjoy free access to the following apps:",
     "ValueTimeLimitSingleHour": "Time limit: 1 hour",
     "ValueTimeLimitMultiHour": "Time limit: {0} hours",
     "PluginCategoryGeneral": "General",
