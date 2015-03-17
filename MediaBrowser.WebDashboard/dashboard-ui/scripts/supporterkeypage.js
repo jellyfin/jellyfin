@@ -186,7 +186,7 @@ $(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
         var imgUrl = user.ImageUrl || 'css/images/userflyoutdefault.png';
         html += '<img src="' + imgUrl + '" />';
         html += '<h3>';
-        html += user.DisplayName;
+        html += (user.DisplayName || user.Name);
         html += '</h3>';
         html += '<p>';
         html += user.Email;
