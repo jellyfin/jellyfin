@@ -23,6 +23,7 @@ namespace MediaBrowser.Model.Dto
         public long? RunTimeTicks { get; set; }
         public bool ReadAtNativeFramerate { get; set; }
         public bool SupportsTranscoding { get; set; }
+        public bool SupportsDirectStream { get; set; }
 
         public VideoType? VideoType { get; set; }
 
@@ -47,6 +48,7 @@ namespace MediaBrowser.Model.Dto
             RequiredHttpHeaders = new Dictionary<string, string>();
             PlayableStreamFileNames = new List<string>();
             SupportsTranscoding = true;
+            SupportsDirectStream = true;
         }
 
         public int? DefaultAudioStreamIndex { get; set; }

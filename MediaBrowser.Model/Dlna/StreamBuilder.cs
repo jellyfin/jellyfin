@@ -275,7 +275,7 @@ namespace MediaBrowser.Model.Dlna
             if (directPlayProfile != null)
             {
                 // While options takes the network and other factors into account. Only applies to direct stream
-                if (IsAudioEligibleForDirectPlay(item, options.GetMaxBitrate()))
+                if (item.SupportsDirectStream && IsAudioEligibleForDirectPlay(item, options.GetMaxBitrate()))
                 {
                     playMethods.Add(PlayMethod.DirectStream);
                 }
@@ -580,6 +580,11 @@ namespace MediaBrowser.Model.Dlna
                 {
                     return PlayMethod.DirectPlay;
                 }
+            }
+
+            if (!mediaSource.SupportsDirectStream)
+            {
+                return null;
             }
             
             return PlayMethod.DirectStream;

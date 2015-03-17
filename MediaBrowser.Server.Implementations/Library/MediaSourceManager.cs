@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Channels;
+﻿using System.IO;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -11,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -160,6 +162,12 @@ namespace MediaBrowser.Server.Implementations.Library
             foreach (var source in dynamicMediaSources)
             {
                 source.SupportsTranscoding = false;
+
+                if (source.Protocol == MediaProtocol.File)
+                {
+                    source.SupportsDirectStream = File.Exists(source.Path);
+                }
+
                 list.Add(source);
             }
 
