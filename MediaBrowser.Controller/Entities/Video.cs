@@ -24,7 +24,8 @@ namespace MediaBrowser.Controller.Entities
         IHasMediaSources,
         IHasShortOverview,
         IHasPreferredMetadataLanguage,
-        IThemeMedia
+        IThemeMedia,
+        IArchivable
     {
         public Guid? PrimaryVersionId { get; set; }
 

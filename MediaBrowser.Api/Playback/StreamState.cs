@@ -56,6 +56,7 @@ namespace MediaBrowser.Api.Playback
         public MediaProtocol InputProtocol { get; set; }
 
         public bool IsInputVideo { get; set; }
+        public bool IsInputArchive { get; set; }
 
         public VideoType VideoType { get; set; }
         public IsoType? IsoType { get; set; }
@@ -112,6 +113,7 @@ namespace MediaBrowser.Api.Playback
         public long? EncodingDurationTicks { get; set; }
 
         public string ItemType { get; set; }
+        public string ItemId { get; set; }
 
         public string GetMimeType(string outputPath)
         {

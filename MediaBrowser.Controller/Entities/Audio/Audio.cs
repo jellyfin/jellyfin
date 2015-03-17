@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -22,7 +21,8 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasLookupInfo<SongInfo>,
         IHasTags,
         IHasMediaSources,
-        IThemeMedia
+        IThemeMedia,
+        IArchivable
     {
         public string FormatName { get; set; }
         public long? Size { get; set; }
