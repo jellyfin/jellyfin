@@ -272,7 +272,7 @@
             return supportsTextTracks;
         };
 
-        self.canPlayVideoDirect = function (mediaSource, videoStream, audioStream, subtitleStream, maxWidth, bitrate) {
+        self.getVideoDirectPlayMethod = function (mediaSource, videoStream, audioStream, subtitleStream, maxWidth, bitrate) {
 
             if (!mediaSource) {
                 throw new Error('Null mediaSource');
@@ -280,34 +280,34 @@
 
             if (!videoStream) {
                 console.log('Cannot direct play without videoStream info');
-                return false;
+                return null;
             }
 
             if (mediaSource.Protocol.toLowerCase() == "rtmp" || mediaSource.Protocol.toLowerCase() == "rtsp") {
                 //console.log('Transcoding because the content is not a video file');
-                return false;
+                return null;
             }
 
             if (mediaSource.VideoType && mediaSource.VideoType != "VideoFile") {
                 //console.log('Transcoding because the content is not a video file');
-                return false;
+                return null;
             }
 
             var isH264 = (videoStream.Codec || '').toLowerCase().indexOf('h264') != -1;
 
             if (!isH264) {
                 console.log('Transcoding because the content is not h264');
-                return false;
+                return null;
             }
 
             if (audioStream && !canPlayAudioStreamDirect(audioStream)) {
                 console.log('Transcoding because the audio cannot be played directly.');
-                return false;
+                return null;
             }
 
             if (subtitleStream && (!subtitleStream.SupportsExternalStream || !subtitleStream.IsTextSubtitleStream || !self.supportsTextTracks())) {
                 console.log('Transcoding because subtitles are required');
-                return false;
+                return null;
             }
 
             if (videoStream.IsCabac != null && !videoStream.IsCabac) {
@@ -317,27 +317,27 @@
 
             if (!videoStream.Width) {
                 console.log('Transcoding because resolution is unknown');
-                return false;
+                return null;
             }
 
             if (videoStream.Width > maxWidth) {
                 console.log('Transcoding because resolution is too high');
-                return false;
+                return null;
             }
 
             if (videoStream && videoStream.IsAnamorphic) {
                 console.log('Transcoding because video is anamorphic');
-                return false;
+                return null;
             }
 
             if (!mediaSource.Bitrate) {
                 console.log('Transcoding because bitrate is unknown');
-                return false;
+                return null;
             }
 
             if (mediaSource.Bitrate > bitrate) {
                 console.log('Transcoding because bitrate is too high');
-                return false;
+                return null;
             }
 
             var extension = (mediaSource.Container || '').toLowerCase();
@@ -347,20 +347,27 @@
             // only support high, baseline variants and main variants
             if (isH264 && profile != 'high' && profile.indexOf('baseline') == -1 && profile.indexOf('main') == -1) {
                 console.log('Transcoding because of unsupported h264 profile');
-                return false;
+                return null;
             }
 
             if (mediaSource.Protocol == 'Http') {
                 if (Dashboard.isConnectMode()) {
-                    return false;
+                    return null;
                 }
+                return 'DirectPlay';
+            }
+
+            if (extension == 'mp4') {
+                return 'DirectStream';
             }
 
             if (extension == 'm4v' || extension == 'mkv') {
-                return $.browser.chrome != null;
+                if ($.browser.chrome) {
+                    return 'DirectStream';
+                }
             }
 
-            return extension == 'mp4';
+            return null;
         };
 
         self.getFinalVideoParams = function (mediaSource, maxWidth, bitrate, audioStreamIndex, subtitleStreamIndex, transcodingExtension) {
@@ -379,14 +386,14 @@
                 return stream.Index === subtitleStreamIndex && stream.Type == 'Subtitle';
             })[0];
 
-            var canPlayDirect = self.canPlayVideoDirect(mediaSource, videoStream, audioStream, subtitleStream, maxWidth, bitrate);
+            var directPlayMethod = self.getVideoDirectPlayMethod(mediaSource, videoStream, audioStream, subtitleStream, maxWidth, bitrate);
 
             var audioBitrate = bitrate >= 700000 ? 192000 : 64000;
 
             var videoBitrate = bitrate - audioBitrate;
 
             var params = {
-                isStatic: canPlayDirect,
+                isStatic: directPlayMethod != null,
                 maxWidth: maxWidth,
                 audioCodec: transcodingExtension == '.webm' ? 'vorbis' : 'aac',
                 videoCodec: transcodingExtension == '.webm' ? 'vpx' : 'h264',
@@ -542,14 +549,21 @@
                         return s.Type == 'Audio';
                     })[0];
 
-                    return self.canPlayVideoDirect(v, videoStream, audioStream, null, maxAllowedWidth, bitrateSetting);
+                    var directPlayMethod = self.getVideoDirectPlayMethod(v, videoStream, audioStream, null, maxAllowedWidth, bitrateSetting);
+
+                    if (directPlayMethod == 'DirectPlay') {
+                        return true;
+                    }
+
+                    return v.SupportsDirectStream && directPlayMethod == 'DirectStream';
 
                 })[0];
+
             } else {
 
                 optimalVersion = versions.filter(function (v) {
 
-                    return canPlayAudioMediaSourceDirect(v);
+                    return v.SupportsDirectStream && canPlayAudioMediaSourceDirect(v);
 
                 })[0];
             }
