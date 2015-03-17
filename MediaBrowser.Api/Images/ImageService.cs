@@ -418,7 +418,7 @@ namespace MediaBrowser.Api.Images
         public void Post(PostUserImage request)
         {
             var userId = GetPathValue(1);
-            AssertCanUpdateUser(userId);
+            AssertCanUpdateUser(_userManager, userId);
 
             request.Type = (ImageType)Enum.Parse(typeof(ImageType), GetPathValue(3), true);
 
@@ -453,7 +453,7 @@ namespace MediaBrowser.Api.Images
         public void Delete(DeleteUserImage request)
         {
             var userId = request.Id;
-            AssertCanUpdateUser(userId);
+            AssertCanUpdateUser(_userManager, userId);
 
             var item = _userManager.GetUserById(userId);
 

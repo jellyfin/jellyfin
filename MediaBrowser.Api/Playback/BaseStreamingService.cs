@@ -72,12 +72,14 @@ namespace MediaBrowser.Api.Playback
         protected ISubtitleEncoder SubtitleEncoder { get; private set; }
         protected IProcessManager ProcessManager { get; private set; }
         protected IMediaSourceManager MediaSourceManager { get; private set; }
+        protected IZipClient ZipClient { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
-        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IProcessManager processManager, IMediaSourceManager mediaSourceManager)
+        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IProcessManager processManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient)
         {
+            ZipClient = zipClient;
             MediaSourceManager = mediaSourceManager;
             ProcessManager = processManager;
             DeviceManager = deviceManager;
@@ -1656,6 +1658,9 @@ namespace MediaBrowser.Api.Playback
             List<MediaStream> mediaStreams = null;
 
             state.ItemType = item.GetType().Name;
+            state.ItemId = item.Id.ToString("N");
+            var archivable = item as IArchivable;
+            state.IsInputArchive = archivable != null && archivable.IsArchive;
 
             if (item is ILiveTvRecording)
             {
@@ -1670,7 +1675,7 @@ namespace MediaBrowser.Api.Playback
                 var source = string.IsNullOrEmpty(request.MediaSourceId)
                     ? recording.GetMediaSources(false).First()
                     : MediaSourceManager.GetStaticMediaSource(recording, request.MediaSourceId, false);
-                
+
                 mediaStreams = source.MediaStreams;
 
                 // Just to prevent this from being null and causing other methods to fail

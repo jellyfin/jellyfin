@@ -319,7 +319,7 @@
 
         currentDialogOptions = options;
 
-        if (options.ProfileOptions.length) {
+        if (options.ProfileOptions.length && options.Options.indexOf('Profile') != -1) {
             $('.fldProfile', form).show();
             $('#selectProfile', form).attr('required', 'required');
         } else {

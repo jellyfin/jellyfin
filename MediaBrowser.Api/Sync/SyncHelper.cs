@@ -22,6 +22,7 @@ namespace MediaBrowser.Api.Sync
                     if (item.IsVideo)
                     {
                         options.Add(SyncJobOption.Quality);
+                        options.Add(SyncJobOption.Profile);
                         if (items.Count > 1)
                         {
                             options.Add(SyncJobOption.UnwatchedOnly);
@@ -31,6 +32,7 @@ namespace MediaBrowser.Api.Sync
                     if (item.IsFolder && !item.IsMusicGenre && !item.IsArtist && !item.IsType("musicalbum") && !item.IsGameGenre)
                     {
                         options.Add(SyncJobOption.Quality);
+                        options.Add(SyncJobOption.Profile);
                         options.Add(SyncJobOption.UnwatchedOnly);
                         break;
                     }
@@ -65,6 +67,7 @@ namespace MediaBrowser.Api.Sync
 
             options.Add(SyncJobOption.Name);
             options.Add(SyncJobOption.Quality);
+            options.Add(SyncJobOption.Profile);
             options.Add(SyncJobOption.UnwatchedOnly);
             options.Add(SyncJobOption.SyncNewContent);
             options.Add(SyncJobOption.ItemLimit);
