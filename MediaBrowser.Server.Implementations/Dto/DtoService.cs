@@ -161,7 +161,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             var result = _syncManager.GetLibraryItemIds(new SyncJobItemQuery
             {
                 TargetId = deviceId,
-                Statuses = new List<SyncJobItemStatus>
+                Statuses = new SyncJobItemStatus[]
                 {
                     SyncJobItemStatus.Converting,
                     SyncJobItemStatus.Queued,

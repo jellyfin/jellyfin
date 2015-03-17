@@ -440,7 +440,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 var whereClauses = new List<string>();
 
-                if (query.Statuses.Count > 0)
+                if (query.Statuses.Length > 0)
                 {
                     var statuses = string.Join(",", query.Statuses.Select(i => "'" + i.ToString() + "'").ToArray());
 
@@ -571,7 +571,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     cmd.Parameters.Add(cmd, "@TargetId", DbType.String).Value = query.TargetId;
                 }
 
-                if (query.Statuses.Count > 0)
+                if (query.Statuses.Length > 0)
                 {
                     var statuses = string.Join(",", query.Statuses.Select(i => "'" + i.ToString() + "'").ToArray());
 

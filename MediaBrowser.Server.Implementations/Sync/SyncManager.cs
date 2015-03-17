@@ -183,7 +183,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             // If it already has a converting status then is must have been aborted during conversion
             var jobItemsResult = _repo.GetJobItems(new SyncJobItemQuery
             {
-                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
+                Statuses = new SyncJobItemStatus[] { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
                 JobId = jobId
             });
 
@@ -192,7 +192,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             jobItemsResult = _repo.GetJobItems(new SyncJobItemQuery
             {
-                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
+                Statuses = new SyncJobItemStatus[] { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
                 JobId = jobId
             });
 
@@ -719,7 +719,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var jobItemResult = GetJobItems(new SyncJobItemQuery
             {
                 TargetId = targetId,
-                Statuses = new List<SyncJobItemStatus>
+                Statuses = new SyncJobItemStatus[]
                 {
                     SyncJobItemStatus.ReadyToTransfer
                 }
@@ -736,7 +736,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var jobItemResult = GetJobItems(new SyncJobItemQuery
             {
                 TargetId = request.TargetId,
-                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Synced }
+                Statuses = new SyncJobItemStatus[] { SyncJobItemStatus.Synced }
             });
 
             var response = new SyncDataResponse();
