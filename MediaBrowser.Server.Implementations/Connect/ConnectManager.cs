@@ -1068,7 +1068,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             url += "?serverId=" + ConnectServerId;
             url += "&supporterKey=" + _securityManager.SupporterKey;
-            
+
             var options = new HttpRequestOptions
             {
                 Url = url,
@@ -1082,6 +1082,34 @@ namespace MediaBrowser.Server.Implementations.Connect
             using (var stream = (await _httpClient.SendAsync(options, "GET").ConfigureAwait(false)).Content)
             {
                 return _json.DeserializeFromStream<ConnectSupporterSummary>(stream);
+            }
+        }
+
+        public async Task RemoveConnectSupporter(string id)
+        {
+            if (!_securityManager.IsMBSupporter)
+            {
+                throw new InvalidOperationException();
+            }
+
+            var url = GetConnectUrl("keyAssociation");
+
+            url += "?serverId=" + ConnectServerId;
+            url += "&supporterKey=" + _securityManager.SupporterKey;
+            url += "&userId=" + id;
+     
+            var options = new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = CancellationToken.None
+            };
+
+            SetServerAccessToken(options);
+            SetApplicationHeader(options);
+
+            // No need to examine the response
+            using (var stream = (await _httpClient.SendAsync(options, "DELETE").ConfigureAwait(false)).Content)
+            {
             }
         }
 

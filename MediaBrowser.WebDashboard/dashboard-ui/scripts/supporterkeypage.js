@@ -124,27 +124,87 @@ $(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
 
 (function () {
 
-    function loadConnectSupporters(page) {
+    function removeUser(page, id) {
 
-        $('.linkSupporterKeyMessage', page).html(Globalize.translate('MessageLinkYourSupporterKey', 5));
+        Dashboard.confirm(Globalize.translate('MessageConfirmRemoveConnectSupporter'), Globalize.translate('HeaderConfirmRemoveUser'), function (result) {
+
+            if (result) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.ajax({
+                    type: "DELETE",
+                    url: ApiClient.getUrl('Connect/Supporters', {
+                        Id: id
+                    })
+
+                }).done(function () {
+
+                    loadConnectSupporters(page);
+                });
+            }
+
+        });
+    }
+
+    function getUserHtml(user) {
+
+        var html = '';
+
+        html += '<li>';
+        html += '<a href="#">';
+        var imgUrl = user.ImageUrl || 'css/images/userflyoutdefault.png';
+        html += '<img src="' + imgUrl + '" />';
+        html += '<h3>';
+        html += user.DisplayName;
+        html += '</h3>';
+        html += '<p>';
+        html += user.Email;
+        html += '</p>';
+        html += '</a>';
+        html += '<a href="#" data-icon="delete" class="btnRemoveUser" data-id="' + user.Id + '">';
+        html += '</a>';
+        html += '</li>';
+
+        return html;
+    }
+
+    function renderUsers(page, result) {
+
+        $('.linkSupporterKeyMessage', page).html(Globalize.translate('MessageLinkYourSupporterKey', result.MaxUsers));
+
+        var html = '';
+
+        if (result.Users.length) {
+
+            html += '<ul data-role="listview" data-inset="true">';
+
+            html += result.Users.map(getUserHtml).join('');
+
+            html += '</ul>';
+        }
+
+        var elem = $('.supporters', page).html(html).trigger('create');
+
+        $('.btnRemoveUser', elem).on('click', function () {
+
+            removeUser(page, this.getAttribute('data-id'));
+
+        });
+    }
+
+    function loadConnectSupporters(page) {
 
         Dashboard.suppressAjaxErrors = true;
 
         ApiClient.ajax({
             type: "GET",
             url: ApiClient.getUrl('Connect/Supporters'),
-            dataType: "json",
+            dataType: "json"
 
-            error: function () {
-                // Don't show normal dashboard errors
-            },
+        }).done(function (result) {
 
-            enableGlobalAjaxListener: false
-
-        }).done(function () {
-
-
-
+            renderUsers(page, result);
 
         }).fail(function () {
 
