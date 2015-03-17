@@ -39,7 +39,7 @@
     "MessageErrorLoadingSupporterInfo": "There was an error loading supporter information. Please try again later.",
     "MessageLinkYourSupporterKey": "Link your supporter key with up to {0} Media Browser Connect members to enjoy free access to the following apps:",
     "HeaderConfirmRemoveUser": "Remove User",
-    "MessageConfirmRemoveConnectSupporter": "Are you sure you wish to remove the additional supporter benefits from this user?",
+    "MessageConfirmRemoveConnectSupporter": "Are you sure you wish to remove additional supporter benefits from this user?",
     "ValueTimeLimitSingleHour": "Time limit: 1 hour",
     "ValueTimeLimitMultiHour": "Time limit: {0} hours",
     "PluginCategoryGeneral": "General",
