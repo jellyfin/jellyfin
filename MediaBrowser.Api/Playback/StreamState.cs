@@ -52,6 +52,7 @@ namespace MediaBrowser.Api.Playback
         public IIsoMount IsoMount { get; set; }
 
         public string MediaPath { get; set; }
+        public string WaitForPath { get; set; }
 
         public MediaProtocol InputProtocol { get; set; }
 

@@ -130,8 +130,8 @@ namespace MediaBrowser.Api.Playback.Hls
                 else
                 {
                     var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
-
-                    if (currentTranscodingIndex == null || index < currentTranscodingIndex.Value || (index - currentTranscodingIndex.Value) > 4)
+                    var segmentGapRequiringTranscodingChange = 24/state.SegmentLength;
+                    if (currentTranscodingIndex == null || index < currentTranscodingIndex.Value || (index - currentTranscodingIndex.Value) > segmentGapRequiringTranscodingChange)
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
                         try

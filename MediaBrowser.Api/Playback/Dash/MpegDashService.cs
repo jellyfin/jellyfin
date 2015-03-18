@@ -55,7 +55,8 @@ namespace MediaBrowser.Api.Playback.Dash
 
     public class MpegDashService : BaseHlsService
     {
-        public MpegDashService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IProcessManager processManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, INetworkManager networkManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, subtitleEncoder, deviceManager, processManager, mediaSourceManager, zipClient)
+        public MpegDashService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IProcessManager processManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, INetworkManager networkManager)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, subtitleEncoder, deviceManager, processManager, mediaSourceManager, zipClient)
         {
             NetworkManager = networkManager;
         }
@@ -118,7 +119,7 @@ namespace MediaBrowser.Api.Playback.Dash
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
-            var index = string.Equals(segmentId, "init", StringComparison.OrdinalIgnoreCase) ?
+            var requestedIndex = string.Equals(segmentId, "init", StringComparison.OrdinalIgnoreCase) ?
                 -1 :
                 int.Parse(segmentId, NumberStyles.Integer, UsCulture);
 
@@ -128,32 +129,35 @@ namespace MediaBrowser.Api.Playback.Dash
 
             var segmentExtension = GetSegmentFileExtension(state);
 
-            var segmentPath = GetSegmentPath(playlistPath, representationId, segmentExtension, index);
+            var segmentPath = FindSegment(playlistPath, representationId, segmentExtension, requestedIndex);
             var segmentLength = state.SegmentLength;
 
             TranscodingJob job = null;
 
-            if (File.Exists(segmentPath))
+            if (!string.IsNullOrWhiteSpace(segmentPath))
             {
                 job = ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
-                return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
+                return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
             }
 
             await ApiEntryPoint.Instance.TranscodingStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
             try
             {
-                if (File.Exists(segmentPath))
+                segmentPath = FindSegment(playlistPath, representationId, segmentExtension, requestedIndex);
+                if (!string.IsNullOrWhiteSpace(segmentPath))
                 {
                     job = ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
-                    return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
+                    return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     if (string.Equals(representationId, "0", StringComparison.OrdinalIgnoreCase))
                     {
+                        job = ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
                         var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
-                        Logger.Debug("Current transcoding index is {0}", currentTranscodingIndex ?? -2);
-                        if (currentTranscodingIndex == null || index < currentTranscodingIndex.Value || (index - currentTranscodingIndex.Value) > 4)
+                        var segmentGapRequiringTranscodingChange = 24 / state.SegmentLength;
+                        Logger.Debug("Current transcoding index is {0}. requestedIndex={1}. segmentGapRequiringTranscodingChange={2}", currentTranscodingIndex ?? -2, requestedIndex, segmentGapRequiringTranscodingChange);
+                        if (currentTranscodingIndex == null || requestedIndex < currentTranscodingIndex.Value || (requestedIndex - currentTranscodingIndex.Value) > segmentGapRequiringTranscodingChange)
                         {
                             // If the playlist doesn't already exist, startup ffmpeg
                             try
@@ -162,22 +166,25 @@ namespace MediaBrowser.Api.Playback.Dash
 
                                 if (currentTranscodingIndex.HasValue)
                                 {
-                                    DeleteTranscodedFiles(playlistPath, 0);
+                                    DeleteLastTranscodedFiles(playlistPath, 0);
                                 }
 
-                                var positionTicks = GetPositionTicks(state, index);
+                                var positionTicks = GetPositionTicks(state, requestedIndex);
                                 request.StartTimeTicks = positionTicks;
 
-                                job = await StartFfMpeg(state, playlistPath, cancellationTokenSource, Path.GetDirectoryName(playlistPath)).ConfigureAwait(false);
-                                Task.Run(() => MonitorDashProcess(playlistPath, positionTicks == 0, job, cancellationToken));
+                                var startNumber = GetStartNumber(state);
+
+                                var workingDirectory = Path.Combine(Path.GetDirectoryName(playlistPath), (startNumber == -1 ? 0 : startNumber).ToString(CultureInfo.InvariantCulture));
+                                state.WaitForPath = Path.Combine(workingDirectory, Path.GetFileName(playlistPath));
+                                Directory.CreateDirectory(workingDirectory);
+                                job = await StartFfMpeg(state, playlistPath, cancellationTokenSource, workingDirectory).ConfigureAwait(false);
+                                await WaitForMinimumDashSegmentCount(Path.Combine(workingDirectory, Path.GetFileName(playlistPath)), 1, cancellationTokenSource.Token).ConfigureAwait(false);
                             }
                             catch
                             {
                                 state.Dispose();
                                 throw;
                             }
-
-                            await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
                         }
                     }
                 }
@@ -187,15 +194,14 @@ namespace MediaBrowser.Api.Playback.Dash
                 ApiEntryPoint.Instance.TranscodingStartLock.Release();
             }
 
-            Logger.Info("waiting for {0}", segmentPath);
-            while (!File.Exists(segmentPath))
+            while (string.IsNullOrWhiteSpace(segmentPath))
             {
+                segmentPath = FindSegment(playlistPath, representationId, segmentExtension, requestedIndex);
                 await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             }
 
             Logger.Info("returning {0}", segmentPath);
-
-            return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job ?? ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType), cancellationToken).ConfigureAwait(false);
+            return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job ?? ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType), cancellationToken).ConfigureAwait(false);
         }
 
         private void KillTranscodingJobs(string deviceId, string playlistPath)
@@ -214,41 +220,9 @@ namespace MediaBrowser.Api.Playback.Dash
             return TimeSpan.FromSeconds(startSeconds).Ticks;
         }
 
-        protected override async Task WaitForMinimumSegmentCount(string playlist, int segmentCount, CancellationToken cancellationToken)
+        protected  Task WaitForMinimumDashSegmentCount(string playlist, int segmentCount, CancellationToken cancellationToken)
         {
-            var tmpPath = playlist + ".tmp";
-            Logger.Debug("Waiting for {0} segments in {1}", segmentCount, playlist);
-
-            while (true)
-            {
-                FileStream fileStream;
-                try
-                {
-                    fileStream = FileSystem.GetFileStream(tmpPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
-                }
-                catch (IOException)
-                {
-                    fileStream = FileSystem.GetFileStream(playlist, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
-                }
-                // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
-                using (fileStream)
-                {
-                    using (var reader = new StreamReader(fileStream))
-                    {
-                        while (!reader.EndOfStream)
-                        {
-                            var line = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                            if (line.IndexOf("stream0-" + segmentCount.ToString("00000", CultureInfo.InvariantCulture) + ".m4s", StringComparison.OrdinalIgnoreCase) != -1)
-                            {
-                                Logger.Debug("Finished waiting for {0} segments in {1}", segmentCount, playlist);
-                                return;
-                            }
-                        }
-                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-                    }
-                }
-            }
+            return WaitForSegment(playlist, "stream0-" + segmentCount.ToString("00000", CultureInfo.InvariantCulture) + ".m4s", cancellationToken);
         }
 
         private async Task<object> GetSegmentResult(string playlistPath,
@@ -291,7 +265,7 @@ namespace MediaBrowser.Api.Playback.Dash
                 length = newLength;
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
-            
+
             return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
         }
 
@@ -324,23 +298,24 @@ namespace MediaBrowser.Api.Playback.Dash
                 return null;
             }
 
-            return GetIndex(file.Name);
+            return GetIndex(file.FullName);
         }
 
-        public int GetIndex(string segmentFile)
+        public int GetIndex(string segmentPath)
         {
-            var indexString = Path.GetFileNameWithoutExtension(segmentFile).Split('-').LastOrDefault();
+            var indexString = Path.GetFileNameWithoutExtension(segmentPath).Split('-').LastOrDefault();
 
             if (string.Equals(indexString, "init", StringComparison.OrdinalIgnoreCase))
             {
                 return -1;
             }
-            return int.Parse(indexString, NumberStyles.Integer, UsCulture) - 1;
+            var startNumber = int.Parse(Path.GetFileNameWithoutExtension(Path.GetDirectoryName(segmentPath)), NumberStyles.Integer, UsCulture);
+
+            return startNumber + int.Parse(indexString, NumberStyles.Integer, UsCulture) - 1;
         }
 
-        private void DeleteTranscodedFiles(string path, int retryCount)
+        private void DeleteLastTranscodedFiles(string playlistPath, int retryCount)
         {
-
             if (retryCount >= 5)
             {
                 return;
@@ -354,7 +329,7 @@ namespace MediaBrowser.Api.Playback.Dash
             try
             {
                 return new DirectoryInfo(folder)
-                    .EnumerateFiles("*", SearchOption.TopDirectoryOnly)
+                    .EnumerateFiles("*", SearchOption.AllDirectories)
                     .Where(i => string.Equals(i.Extension, segmentExtension, StringComparison.OrdinalIgnoreCase))
                     .OrderByDescending(fileSystem.GetLastWriteTimeUtc)
                     .Take(count)
@@ -366,17 +341,35 @@ namespace MediaBrowser.Api.Playback.Dash
             }
         }
 
-        private string GetSegmentPath(string playlist, string representationId, string segmentExtension, int index)
+        private string FindSegment(string playlist, string representationId, string segmentExtension, int index)
         {
             var folder = Path.GetDirectoryName(playlist);
 
-            var number = index == -1 ?
-                "init" :
-                index.ToString("00000", CultureInfo.InvariantCulture);
+            if (index == -1)
+            {
+                var path = Path.Combine(folder, "0", "stream" + representationId + "-" + "init" + segmentExtension);
+                return File.Exists(path) ? path : null;
+            }
 
-            var filename = "stream" + representationId + "-" + number + segmentExtension;
+            try
+            {
+                foreach (var subfolder in new DirectoryInfo(folder).EnumerateDirectories().ToList())
+                {
+                    int startNumber;
+                    if (int.TryParse(Path.GetFileNameWithoutExtension(subfolder.FullName), NumberStyles.Any, UsCulture, out startNumber))
+                    {
+                        var segmentIndex = index - startNumber + 1;
+                        var path = Path.Combine(folder, "0", "stream" + representationId + "-" + segmentIndex.ToString("00000", CultureInfo.InvariantCulture) + segmentExtension);
+                        return File.Exists(path) ? path : null;
+                    }
+                }
+            }
+            catch (DirectoryNotFoundException)
+            {
+                
+            }
 
-            return Path.Combine(folder, "completed", filename);
+            return null;
         }
 
         protected override string GetAudioArguments(StreamState state)
@@ -458,7 +451,6 @@ namespace MediaBrowser.Api.Playback.Dash
             var threads = GetNumberOfThreads(state, false);
 
             var inputModifier = GetInputModifier(state);
-            //var startNumber = GetStartNumber(state);
 
             var initSegmentName = "stream$RepresentationID$-init.m4s";
             var segmentName = "stream$RepresentationID$-$Number%05d$.m4s";
@@ -473,7 +465,7 @@ namespace MediaBrowser.Api.Playback.Dash
                 initSegmentName,
                 segmentName,
                 (state.SegmentLength * 1000000).ToString(CultureInfo.InvariantCulture),
-                outputPath
+                state.WaitForPath
                 ).Trim();
 
             return args;
@@ -520,108 +512,43 @@ namespace MediaBrowser.Api.Playback.Dash
             }
         }
 
-        private async void MonitorDashProcess(string playlist, bool moveInitSegment, TranscodingJob transcodingJob, CancellationToken cancellationToken)
+        private async Task WaitForSegment(string playlist, string segment, CancellationToken cancellationToken)
         {
-            var directory = new DirectoryInfo(Path.GetDirectoryName(playlist));
-            var completedDirectory = Path.Combine(Path.GetDirectoryName(playlist), "completed");
-            Directory.CreateDirectory(completedDirectory);
+            var tmpPath = playlist + ".tmp";
 
-            while (!cancellationToken.IsCancellationRequested)
+            var segmentFilename = Path.GetFileName(segment);
+
+            Logger.Debug("Waiting for {0} in {1}", segmentFilename, playlist);
+
+            while (true)
             {
+                FileStream fileStream;
                 try
                 {
-                    var files = directory.EnumerateFiles("*.m4s", SearchOption.TopDirectoryOnly)
-                        .OrderBy(FileSystem.GetCreationTimeUtc)
-                        .ToList();
-
-                    foreach (var file in files)
-                    {
-                        var fileIndex = GetIndex(file.Name);
-
-                        if (fileIndex == -1 && !moveInitSegment)
-                        {
-                            continue;
-                        }
-
-                        await WaitForFileToBeComplete(file.FullName, playlist, transcodingJob, cancellationToken).ConfigureAwait(false);
-
-                        var newName = fileIndex == -1
-                            ? "init.m4s"
-                            : fileIndex.ToString("00000", CultureInfo.InvariantCulture) + ".m4s";
-
-                        var representationId = file.FullName.IndexOf("stream0", StringComparison.OrdinalIgnoreCase) != -1 ?
-                            "0" :
-                            "1";
-
-                        newName = "stream" + representationId + "-" + newName;
-
-                        File.Copy(file.FullName, Path.Combine(completedDirectory, newName), true);
-
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
-
-                    await Task.Delay(250, cancellationToken).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    break;
+                    fileStream = FileSystem.GetFileStream(tmpPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
                 }
                 catch (IOException)
                 {
-
+                    fileStream = FileSystem.GetFileStream(playlist, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
                 }
-            }
-        }
-
-        private async Task WaitForFileToBeComplete(string segmentPath, string playlistPath, TranscodingJob transcodingJob, CancellationToken cancellationToken)
-        {
-            // If all transcoding has completed, just return immediately
-            if (transcodingJob != null && transcodingJob.HasExited)
-            {
-                return;
-            }
-
-            var segmentFilename = Path.GetFileName(segmentPath);
-            using (var fileStream = FileSystem.GetFileStream(playlistPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
-            {
-                using (var reader = new StreamReader(fileStream))
+                // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
+                using (fileStream)
                 {
-                    var text = await reader.ReadToEndAsync().ConfigureAwait(false);
-
-                    // If it appears in the playlist, it's done
-                    if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                    using (var reader = new StreamReader(fileStream))
                     {
-                        return;
+                        while (!reader.EndOfStream)
+                        {
+                            var line = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                            if (line.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                            {
+                                Logger.Debug("Finished waiting for {0} in {1}", segmentFilename, playlist);
+                                return;
+                            }
+                        }
+                        await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                     }
                 }
-            }
-
-            // Wait for the file to stop being written to, then stream it
-            var length = new FileInfo(segmentPath).Length;
-            var eofCount = 0;
-
-            while (eofCount < 10)
-            {
-                var info = new FileInfo(segmentPath);
-
-                if (!info.Exists)
-                {
-                    break;
-                }
-
-                var newLength = info.Length;
-
-                if (newLength == length)
-                {
-                    eofCount++;
-                }
-                else
-                {
-                    eofCount = 0;
-                }
-
-                length = newLength;
-                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
         }
     }
