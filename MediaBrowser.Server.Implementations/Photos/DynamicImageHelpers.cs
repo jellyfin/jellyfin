@@ -21,6 +21,11 @@ namespace MediaBrowser.Server.Implementations.Photos
                 throw new ArgumentException("Empty file found in files list");
             }
 
+            if (files.Count == 0)
+            {
+                return null;
+            }
+
             if (files.Count < 3)
             {
                 return await GetSingleImage(files, fileSystem).ConfigureAwait(false);
@@ -66,6 +71,11 @@ namespace MediaBrowser.Server.Implementations.Photos
             if (files.Any(string.IsNullOrWhiteSpace))
             {
                 throw new ArgumentException("Empty file found in files list");
+            }
+
+            if (files.Count == 0)
+            {
+                return null;
             }
 
             if (files.Count < 4)

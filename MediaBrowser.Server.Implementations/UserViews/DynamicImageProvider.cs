@@ -229,7 +229,9 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 CollectionType.Channels,
                 CollectionType.LiveTv,
                 CollectionType.Books,
-                CollectionType.Photos
+                CollectionType.Photos,
+                CollectionType.HomeVideos,
+                string.Empty
             };
 
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
