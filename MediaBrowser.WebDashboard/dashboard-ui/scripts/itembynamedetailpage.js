@@ -366,7 +366,7 @@
     function addCurrentItemToQuery(query) {
 
         if (currentItem.Type == "Person") {
-            query.Person = currentItem.Name;
+            query.PersonIds = currentItem.Id;
         }
         else if (currentItem.Type == "Genre") {
             query.Genres = currentItem.Name;
