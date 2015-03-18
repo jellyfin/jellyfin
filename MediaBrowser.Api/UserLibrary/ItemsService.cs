@@ -983,9 +983,17 @@ namespace MediaBrowser.Api.UserLibrary
                 
                 // Apply person filter
                 var personIds = request.GetPersonIds();
-                if (personIds.Length > 0 && !(personIds.Any(v => i.People.Select(p => p.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
+                if (personIds.Length > 0)
                 {
-                    return false;
+                    var names = personIds
+                        .Select(libraryManager.GetItemById)
+                        .Select(p => p == null ? "-1" : p.Name)
+                        .ToList();
+
+                    if (!(names.Any(v => i.People.Select(p => p.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
+                    {
+                        return false;
+                    }
                 }
 
                 // Apply person filter

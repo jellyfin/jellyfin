@@ -1638,9 +1638,18 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Apply person filter
-            if (query.PersonIds.Length > 0 && !(query.PersonIds.Any(v => item.People.Select(i => i.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
+            if (query.PersonIds.Length > 0)
             {
-                return false;
+                var names = query.PersonIds
+                    .Select(libraryManager.GetItemById)
+                    .Select(i => i == null ? "-1" : i.Name)
+                    .ToList();
+
+                if (!(names.Any(
+                        v => item.People.Select(i => i.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
+                {
+                    return false;
+                }
             }
 
             // Apply person filter
