@@ -209,6 +209,8 @@ $(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
 
             html += '<ul data-role="listview" data-inset="true">';
 
+            html += '<li data-role="list-divider">' + Globalize.translate('HeaderUsers');
+
             html += result.Users.map(getUserHtml).join('');
 
             html += '</ul>';

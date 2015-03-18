@@ -15,6 +15,7 @@
 
     function reload(page) {
 
+        unbindItemChanged(page);
         Dashboard.showLoadingMsg();
 
         var promise1 = MetadataEditor.getItemPromise();
@@ -94,6 +95,7 @@
                 }
 
                 Dashboard.hideLoadingMsg();
+                bindItemChanged(page);
             });
 
         });
@@ -924,12 +926,16 @@
 
         self.submitUpdatedItem = function (form, item) {
 
+            var page = $(form).parents('.page');
+            unbindItemChanged(page);
+
             function afterContentTypeUpdated() {
 
                 Dashboard.alert(Globalize.translate('MessageItemSaved'));
 
                 MetadataEditor.getItemPromise().done(function (i) {
-                    $(form).parents('.page').trigger('itemsaved', [i]);
+                    page.trigger('itemsaved', [i]);
+                    bindItemChanged(page);
                 });
             }
 
@@ -1338,6 +1344,30 @@
         });
     }
 
+    function onWebSocketMessageReceived(e, data) {
+
+        var msg = data;
+
+        if (msg.MessageType === "LibraryChanged") {
+
+            if (msg.Data.ItemsUpdated.indexOf(currentItem.Id) != -1) {
+
+                console.log('Item updated - reloading metadata');
+                reload($.mobile.activePage);
+            }
+        }
+    }
+
+    function bindItemChanged(page) {
+
+        $(ApiClient).on("websocketmessage", onWebSocketMessageReceived);
+    }
+
+    function unbindItemChanged(page) {
+
+        $(ApiClient).off("websocketmessage", onWebSocketMessageReceived);
+    }
+
     $(document).on('pageinit', "#editItemMetadataPage", function () {
 
         var page = this;
@@ -1412,11 +1442,10 @@
 
     }).on('pagehide', "#editItemMetadataPage", function () {
 
+        var page = this;
         $(LibraryBrowser).off('itemdeleting.editor');
 
-        var page = this;
-
-        reload(page);
+        unbindItemChanged(page);
 
     });
 

@@ -365,6 +365,12 @@
                 currentPlayer.seek(Math.floor(newPositionTicks));
             }
         });
+
+        $(page).on('swipedown', function () {
+
+            document.title = new Date().getTime();
+            history.back();
+        });
     }
 
     function onPlaybackStart(e, state) {
@@ -592,6 +598,18 @@
         updateSupportedCommands(page, supportedCommands);
     }
 
+    function showIntro() {
+        
+        if (store.getItem('remotecontrolswipedown') != '1') {
+            Dashboard.alert({
+                message: Globalize.translate('MessageSwipeDownOnRemoteControl'),
+                title: Globalize.translate('HeaderAlert')
+            });
+            store.setItem('remotecontrolswipedown', '1');
+        }
+
+    }
+
     $(document).on('pageinit', "#nowPlayingPage", function () {
 
         var page = this;
@@ -614,6 +632,9 @@
             bindToPlayer(page, MediaController.getCurrentPlayer());
 
         });
+
+
+        showIntro();
 
     }).on('pagehide', "#nowPlayingPage", function () {
 

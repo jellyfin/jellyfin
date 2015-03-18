@@ -506,7 +506,7 @@
         html += '<div class="players"></div>';
 
         html += '<br/>';
-        html += '<p><a href="nowplaying.html" data-role="button" data-icon="remote">' + Globalize.translate('ButtonRemoteControl') + '</a></p>';
+        html += '<p><a href="nowplaying.html" data-role="button" data-icon="remote" data-transition="slideup">' + Globalize.translate('ButtonRemoteControl') + '</a></p>';
 
         html += '</div>';
 
