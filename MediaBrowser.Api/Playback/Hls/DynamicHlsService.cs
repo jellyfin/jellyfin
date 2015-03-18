@@ -100,13 +100,13 @@ namespace MediaBrowser.Api.Playback.Hls
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
-            var index = int.Parse(segmentId, NumberStyles.Integer, UsCulture);
+            var requestedIndex = int.Parse(segmentId, NumberStyles.Integer, UsCulture);
 
             var state = await GetState(request, cancellationToken).ConfigureAwait(false);
 
             var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");
 
-            var segmentPath = GetSegmentPath(playlistPath, index);
+            var segmentPath = GetSegmentPath(playlistPath, requestedIndex);
             var segmentLength = state.SegmentLength;
 
             var segmentExtension = GetSegmentFileExtension(state);
@@ -116,7 +116,7 @@ namespace MediaBrowser.Api.Playback.Hls
             if (File.Exists(segmentPath))
             {
                 job = ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
-                return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
+                return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
             }
 
             await ApiEntryPoint.Instance.TranscodingStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
@@ -125,13 +125,13 @@ namespace MediaBrowser.Api.Playback.Hls
                 if (File.Exists(segmentPath))
                 {
                     job = ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
-                    return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
+                    return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
                     var segmentGapRequiringTranscodingChange = 24/state.SegmentLength;
-                    if (currentTranscodingIndex == null || index < currentTranscodingIndex.Value || (index - currentTranscodingIndex.Value) > segmentGapRequiringTranscodingChange)
+                    if (currentTranscodingIndex == null || requestedIndex < currentTranscodingIndex.Value || (requestedIndex - currentTranscodingIndex.Value) > segmentGapRequiringTranscodingChange)
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
@@ -143,8 +143,7 @@ namespace MediaBrowser.Api.Playback.Hls
                                 DeleteLastFile(playlistPath, segmentExtension, 0);
                             }
 
-                            var startSeconds = index * state.SegmentLength;
-                            request.StartTimeTicks = TimeSpan.FromSeconds(startSeconds).Ticks;
+                            request.StartTimeTicks = GetSeekPositionTicks(state, requestedIndex);
 
                             job = await StartFfMpeg(state, playlistPath, cancellationTokenSource).ConfigureAwait(false);
                         }
@@ -171,11 +170,26 @@ namespace MediaBrowser.Api.Playback.Hls
 
             Logger.Info("returning {0}", segmentPath);
             job = job ?? ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
-            return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
+            return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
+        }
+
+        private long GetSeekPositionTicks(StreamState state, int requestedIndex)
+        {
+            var startSeconds = requestedIndex * state.SegmentLength;
+            var position = TimeSpan.FromSeconds(startSeconds).Ticks;
+
+            return position;
         }
 
         public int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
         {
+            var job = ApiEntryPoint.Instance.GetTranscodingJob(playlist, TranscodingJobType);
+
+            if (job == null || job.HasExited)
+            {
+                return null;
+            }
+
             var file = GetLastTranscodingFile(playlist, segmentExtension, FileSystem);
 
             if (file == null)

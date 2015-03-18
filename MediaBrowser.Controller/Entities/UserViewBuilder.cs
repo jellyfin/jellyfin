@@ -115,6 +115,7 @@ namespace MediaBrowser.Controller.Entities
                 case CollectionType.Books:
                 case CollectionType.Photos:
                 case CollectionType.HomeVideos:
+                case CollectionType.MusicVideos:
                     return GetResult(queryParent.GetChildren(user, true), queryParent, query);
 
                 case CollectionType.Folders:
@@ -1056,6 +1057,11 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            if (request.PersonIds.Length > 0)
+            {
+                return false;
+            }
+
             if (request.Studios.Length > 0)
             {
                 return false;
@@ -1632,7 +1638,13 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Apply person filter
-            if (!string.IsNullOrEmpty(query.Person))
+            if (query.PersonIds.Length > 0 && !(query.PersonIds.Any(v => item.People.Select(i => i.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
+            {
+                return false;
+            }
+
+            // Apply person filter
+            if (!string.IsNullOrWhiteSpace(query.Person))
             {
                 var personTypes = query.PersonTypes;
 

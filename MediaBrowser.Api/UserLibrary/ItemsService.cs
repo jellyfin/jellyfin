@@ -39,6 +39,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Person", Description = "Optional. If specified, results will be filtered to include only those containing the specified person.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Person { get; set; }
 
+        [ApiMember(Name = "PersonIds", Description = "Optional. If specified, results will be filtered to include only those containing the specified person.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string PersonIds { get; set; }
+
         /// <summary>
         /// If the Person filter is used, this can also be used to restrict to a specific person type
         /// </summary>
@@ -242,6 +245,11 @@ namespace MediaBrowser.Api.UserLibrary
         public string[] GetPersonTypes()
         {
             return (PersonTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string[] GetPersonIds()
+        {
+            return (PersonIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public VideoType[] GetVideoTypes()
@@ -477,6 +485,7 @@ namespace MediaBrowser.Api.UserLibrary
                 Studios = request.GetStudios(),
                 StudioIds = request.GetStudioIds(),
                 Person = request.Person,
+                PersonIds = request.GetPersonIds(),
                 PersonTypes = request.GetPersonTypes(),
                 Years = request.GetYears(),
                 ImageTypes = request.GetImageTypes().ToArray(),
@@ -968,6 +977,13 @@ namespace MediaBrowser.Api.UserLibrary
                 // Apply year filter
                 var years = request.GetYears();
                 if (years.Length > 0 && !(i.ProductionYear.HasValue && years.Contains(i.ProductionYear.Value)))
+                {
+                    return false;
+                }            
+                
+                // Apply person filter
+                var personIds = request.GetPersonIds();
+                if (personIds.Length > 0 && !(personIds.Any(v => i.People.Select(p => p.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
                 {
                     return false;
                 }
