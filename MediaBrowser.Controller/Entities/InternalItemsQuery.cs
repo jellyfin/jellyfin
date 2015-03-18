@@ -41,6 +41,7 @@ namespace MediaBrowser.Controller.Entities
         public string NameLessThan { get; set; }
 
         public string Person { get; set; }
+        public string[] PersonIds { get; set; }
         public string AdjacentTo { get; set; }
         public string[] PersonTypes { get; set; }
 
@@ -87,6 +88,7 @@ namespace MediaBrowser.Controller.Entities
             VideoTypes = new VideoType[] { };
             Years = new int[] { };
             PersonTypes = new string[] { };
+            PersonIds = new string[] { };
         }
     }
 }

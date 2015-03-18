@@ -231,6 +231,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 CollectionType.Books,
                 CollectionType.Photos,
                 CollectionType.HomeVideos,
+                CollectionType.MusicVideos,
                 string.Empty
             };
 

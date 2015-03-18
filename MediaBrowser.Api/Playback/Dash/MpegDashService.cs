@@ -209,14 +209,14 @@ namespace MediaBrowser.Api.Playback.Dash
             ApiEntryPoint.Instance.KillTranscodingJobs(j => j.Type == TranscodingJobType && string.Equals(j.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase), p => !string.Equals(p, playlistPath, StringComparison.OrdinalIgnoreCase));
         }
 
-        private long GetPositionTicks(StreamState state, int segmentIndex)
+        private long GetPositionTicks(StreamState state, int requestedIndex)
         {
-            if (segmentIndex <= 1)
+            if (requestedIndex <= 0)
             {
                 return 0;
             }
 
-            var startSeconds = segmentIndex * state.SegmentLength;
+            var startSeconds = requestedIndex * state.SegmentLength;
             return TimeSpan.FromSeconds(startSeconds).Ticks;
         }
 
@@ -291,6 +291,13 @@ namespace MediaBrowser.Api.Playback.Dash
 
         public int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
         {
+            var job = ApiEntryPoint.Instance.GetTranscodingJob(playlist, TranscodingJobType);
+
+            if (job == null || job.HasExited)
+            {
+                return null;
+            }
+
             var file = GetLastTranscodingFiles(playlist, segmentExtension, FileSystem, 1).FirstOrDefault();
 
             if (file == null)
@@ -341,11 +348,11 @@ namespace MediaBrowser.Api.Playback.Dash
             }
         }
 
-        private string FindSegment(string playlist, string representationId, string segmentExtension, int index)
+        private string FindSegment(string playlist, string representationId, string segmentExtension, int requestedIndex)
         {
             var folder = Path.GetDirectoryName(playlist);
 
-            if (index == -1)
+            if (requestedIndex == -1)
             {
                 var path = Path.Combine(folder, "0", "stream" + representationId + "-" + "init" + segmentExtension);
                 return File.Exists(path) ? path : null;
@@ -355,12 +362,16 @@ namespace MediaBrowser.Api.Playback.Dash
             {
                 foreach (var subfolder in new DirectoryInfo(folder).EnumerateDirectories().ToList())
                 {
+                    var subfolderName = Path.GetFileNameWithoutExtension(subfolder.FullName);
                     int startNumber;
-                    if (int.TryParse(Path.GetFileNameWithoutExtension(subfolder.FullName), NumberStyles.Any, UsCulture, out startNumber))
+                    if (int.TryParse(subfolderName, NumberStyles.Any, UsCulture, out startNumber))
                     {
-                        var segmentIndex = index - startNumber + 1;
-                        var path = Path.Combine(folder, "0", "stream" + representationId + "-" + segmentIndex.ToString("00000", CultureInfo.InvariantCulture) + segmentExtension);
-                        return File.Exists(path) ? path : null;
+                        var segmentIndex = requestedIndex - startNumber + 1;
+                        var path = Path.Combine(folder, subfolderName, "stream" + representationId + "-" + segmentIndex.ToString("00000", CultureInfo.InvariantCulture) + segmentExtension);
+                        if (File.Exists(path))
+                        {
+                            return path;
+                        }
                     }
                 }
             }

@@ -120,7 +120,7 @@ namespace MediaBrowser.Model.Querying
         /// Limit results to items containing a specific person
         /// </summary>
         /// <value>The person.</value>
-        public string Person { get; set; }
+        public string[] PersonIds { get; set; }
 
         /// <summary>
         /// If the Person filter is used, this can also be used to restrict to a specific person type
@@ -307,6 +307,7 @@ namespace MediaBrowser.Model.Querying
             PersonTypes = new string[] { };
             Ids = new string[] { };
             ArtistIds = new string[] { };
+            PersonIds = new string[] { };
 
             ImageTypes = new ImageType[] { };
             AirDays = new DayOfWeek[] { };

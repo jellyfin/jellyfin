@@ -71,7 +71,15 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     var collectionFolder = folder as ICollectionFolder;
                     var folderViewType = collectionFolder == null ? null : collectionFolder.CollectionType;
-                    list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, string.Empty, user, cancellationToken).ConfigureAwait(false));
+
+                    if (string.IsNullOrWhiteSpace(folderViewType))
+                    {
+                        list.Add(folder);
+                    }
+                    else
+                    {
+                        list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, string.Empty, user, cancellationToken).ConfigureAwait(false));
+                    }
                 }
             }
             else
