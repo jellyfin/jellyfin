@@ -1479,6 +1479,12 @@ namespace MediaBrowser.Model.ApiClient
         /// <returns>Task&lt;SyncOptions&gt;.</returns>
         Task<SyncDialogOptions> GetSyncOptions(SyncJobRequest jobInfo);
         /// <summary>
+        /// Gets the synchronize options.
+        /// </summary>
+        /// <param name="jobInfo">The job information.</param>
+        /// <returns>Task&lt;SyncDialogOptions&gt;.</returns>
+        Task<SyncDialogOptions> GetSyncOptions(SyncJob jobInfo);
+        /// <summary>
         /// Gets the movie recommendations.
         /// </summary>
         /// <param name="query">The query.</param>
