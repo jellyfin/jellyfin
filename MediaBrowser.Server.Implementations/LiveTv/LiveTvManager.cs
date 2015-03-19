@@ -1122,77 +1122,75 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<QueryResult<BaseItem>> GetInternalRecordings(RecordingQuery query, CancellationToken cancellationToken)
         {
-            var service = ActiveService;
-
-            if (service == null)
+            var tasks = _services.Select(async i =>
             {
-                return new QueryResult<BaseItem>
+                try
                 {
-                    Items = new BaseItem[] { }
-                };
-            }
+                    var recs = await i.GetRecordingsAsync(cancellationToken).ConfigureAwait(false);
+                    return recs.Select(r => new Tuple<RecordingInfo, ILiveTvService>(r, i));
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting recordings", ex);
+                    return new List<Tuple<RecordingInfo, ILiveTvService>>();
+                }
+            });
+            var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+            var recordings = results.SelectMany(i => i.ToList());
 
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
 
-            var recordings = await service.GetRecordingsAsync(cancellationToken).ConfigureAwait(false);
-
             if (user != null && !IsLiveTvEnabled(user))
             {
-                recordings = new List<RecordingInfo>();
+                recordings = new List<Tuple<RecordingInfo, ILiveTvService>>();
             }
 
             if (!string.IsNullOrEmpty(query.ChannelId))
             {
                 var guid = new Guid(query.ChannelId);
 
-                var currentServiceName = service.Name;
-
                 recordings = recordings
-                    .Where(i => _tvDtoService.GetInternalChannelId(currentServiceName, i.ChannelId) == guid);
+                    .Where(i => _tvDtoService.GetInternalChannelId(i.Item2.Name, i.Item1.ChannelId) == guid);
             }
 
             if (!string.IsNullOrEmpty(query.Id))
             {
                 var guid = new Guid(query.Id);
 
-                var currentServiceName = service.Name;
-
                 recordings = recordings
-                    .Where(i => _tvDtoService.GetInternalRecordingId(currentServiceName, i.Id) == guid);
+                    .Where(i => _tvDtoService.GetInternalRecordingId(i.Item2.Name, i.Item1.Id) == guid);
             }
 
             if (!string.IsNullOrEmpty(query.GroupId))
             {
                 var guid = new Guid(query.GroupId);
 
-                recordings = recordings.Where(i => GetRecordingGroupIds(i).Contains(guid));
+                recordings = recordings.Where(i => GetRecordingGroupIds(i.Item1).Contains(guid));
             }
 
             if (query.IsInProgress.HasValue)
             {
                 var val = query.IsInProgress.Value;
-                recordings = recordings.Where(i => (i.Status == RecordingStatus.InProgress) == val);
+                recordings = recordings.Where(i => (i.Item1.Status == RecordingStatus.InProgress) == val);
             }
 
             if (query.Status.HasValue)
             {
                 var val = query.Status.Value;
-                recordings = recordings.Where(i => (i.Status == val));
+                recordings = recordings.Where(i => (i.Item1.Status == val));
             }
 
             if (!string.IsNullOrEmpty(query.SeriesTimerId))
             {
                 var guid = new Guid(query.SeriesTimerId);
 
-                var currentServiceName = service.Name;
-
                 recordings = recordings
-                    .Where(i => _tvDtoService.GetInternalSeriesTimerId(currentServiceName, i.SeriesTimerId) == guid);
+                    .Where(i => _tvDtoService.GetInternalSeriesTimerId(i.Item2.Name, i.Item1.SeriesTimerId) == guid);
             }
 
-            recordings = recordings.OrderByDescending(i => i.StartDate);
+            recordings = recordings.OrderByDescending(i => i.Item1.StartDate);
 
-            IEnumerable<ILiveTvRecording> entities = await GetEntities(recordings, service.Name, cancellationToken).ConfigureAwait(false);
+            IEnumerable<ILiveTvRecording> entities = await GetEntities(recordings, cancellationToken).ConfigureAwait(false);
 
             if (user != null)
             {
@@ -1243,9 +1241,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
         }
 
-        private Task<ILiveTvRecording[]> GetEntities(IEnumerable<RecordingInfo> recordings, string serviceName, CancellationToken cancellationToken)
+        private Task<ILiveTvRecording[]> GetEntities(IEnumerable<Tuple<RecordingInfo, ILiveTvService>> recordings, CancellationToken cancellationToken)
         {
-            var tasks = recordings.Select(i => GetRecording(i, serviceName, cancellationToken));
+            var tasks = recordings.Select(i => GetRecording(i.Item1, i.Item2.Name, cancellationToken));
 
             return Task.WhenAll(tasks);
         }
