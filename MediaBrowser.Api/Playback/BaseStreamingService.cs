@@ -134,7 +134,7 @@ namespace MediaBrowser.Api.Playback
             var data = GetCommandLineArguments("dummy\\dummy", "dummyTranscodingId", state, false);
 
             data += "-" + (state.Request.DeviceId ?? string.Empty);
-            data += "-" + (state.Request.ClientTime ?? string.Empty);
+            data += "-" + (state.Request.StreamId ?? state.Request.ClientTime ?? string.Empty);
 
             var dataHash = data.GetMD5().ToString("N");
 
@@ -1054,6 +1054,7 @@ namespace MediaBrowser.Api.Playback
             }
 
             var transcodingJob = ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath,
+                state.Request.StreamId ?? state.Request.ClientTime,
                 transcodingId,
                 TranscodingJobType,
                 process,
@@ -1523,7 +1524,7 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 16)
                 {
-                    request.ClientTime = val;
+                    request.StreamId = val;
                 }
                 else if (i == 17)
                 {

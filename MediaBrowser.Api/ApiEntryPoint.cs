@@ -132,6 +132,7 @@ namespace MediaBrowser.Api
         /// Called when [transcode beginning].
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="streamId">The stream identifier.</param>
         /// <param name="transcodingJobId">The transcoding job identifier.</param>
         /// <param name="type">The type.</param>
         /// <param name="process">The process.</param>
@@ -140,6 +141,7 @@ namespace MediaBrowser.Api
         /// <param name="cancellationTokenSource">The cancellation token source.</param>
         /// <returns>TranscodingJob.</returns>
         public TranscodingJob OnTranscodeBeginning(string path,
+            string streamId,
             string transcodingJobId,
             TranscodingJobType type,
             Process process,
@@ -157,7 +159,8 @@ namespace MediaBrowser.Api
                     ActiveRequestCount = 1,
                     DeviceId = deviceId,
                     CancellationTokenSource = cancellationTokenSource,
-                    Id = transcodingJobId
+                    Id = transcodingJobId,
+                    StreamId = streamId
                 };
 
                 _activeTranscodingJobs.Add(job);
@@ -316,17 +319,26 @@ namespace MediaBrowser.Api
         /// Kills the single transcoding job.
         /// </summary>
         /// <param name="deviceId">The device id.</param>
+        /// <param name="streamId">The stream identifier.</param>
         /// <param name="deleteFiles">The delete files.</param>
         /// <returns>Task.</returns>
-        /// <exception cref="ArgumentNullException">deviceId</exception>
-        internal void KillTranscodingJobs(string deviceId, Func<string, bool> deleteFiles)
+        internal void KillTranscodingJobs(string deviceId, string streamId, Func<string, bool> deleteFiles)
         {
             if (string.IsNullOrEmpty(deviceId))
             {
                 throw new ArgumentNullException("deviceId");
             }
 
-            KillTranscodingJobs(j => string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase), deleteFiles);
+            KillTranscodingJobs(j =>
+            {
+                if (string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return string.IsNullOrWhiteSpace(streamId) || string.Equals(streamId, j.StreamId, StringComparison.OrdinalIgnoreCase);
+                }
+
+                return false;
+
+            }, deleteFiles);
         }
 
         /// <summary>
@@ -335,7 +347,7 @@ namespace MediaBrowser.Api
         /// <param name="killJob">The kill job.</param>
         /// <param name="deleteFiles">The delete files.</param>
         /// <returns>Task.</returns>
-        internal void KillTranscodingJobs(Func<TranscodingJob, bool> killJob, Func<string, bool> deleteFiles)
+        private void KillTranscodingJobs(Func<TranscodingJob, bool> killJob, Func<string, bool> deleteFiles)
         {
             var jobs = new List<TranscodingJob>();
 
@@ -516,6 +528,11 @@ namespace MediaBrowser.Api
     /// </summary>
     public class TranscodingJob
     {
+        /// <summary>
+        /// Gets or sets the stream identifier.
+        /// </summary>
+        /// <value>The stream identifier.</value>
+        public string StreamId { get; set; }
         /// <summary>
         /// Gets or sets the path.
         /// </summary>

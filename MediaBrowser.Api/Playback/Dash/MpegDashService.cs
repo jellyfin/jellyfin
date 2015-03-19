@@ -162,7 +162,7 @@ namespace MediaBrowser.Api.Playback.Dash
                             // If the playlist doesn't already exist, startup ffmpeg
                             try
                             {
-                                KillTranscodingJobs(request.DeviceId, playlistPath);
+                                ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.StreamId, p => false);
 
                                 if (currentTranscodingIndex.HasValue)
                                 {
@@ -202,11 +202,6 @@ namespace MediaBrowser.Api.Playback.Dash
 
             Logger.Info("returning {0}", segmentPath);
             return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job ?? ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType), cancellationToken).ConfigureAwait(false);
-        }
-
-        private void KillTranscodingJobs(string deviceId, string playlistPath)
-        {
-            ApiEntryPoint.Instance.KillTranscodingJobs(j => j.Type == TranscodingJobType && string.Equals(j.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase), p => !string.Equals(p, playlistPath, StringComparison.OrdinalIgnoreCase));
         }
 
         private long GetPositionTicks(StreamState state, int requestedIndex)
