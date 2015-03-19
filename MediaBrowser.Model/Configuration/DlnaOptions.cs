@@ -10,6 +10,7 @@ namespace MediaBrowser.Model.Configuration
         public int ClientDiscoveryIntervalSeconds { get; set; }
         public int BlastAliveMessageIntervalSeconds { get; set; }
         public string DefaultUserId { get; set; }
+        public bool EnableEnhancedMovies { get; set; }
 
         public DlnaOptions()
         {
@@ -18,6 +19,7 @@ namespace MediaBrowser.Model.Configuration
             BlastAliveMessages = true;
             ClientDiscoveryIntervalSeconds = 60;
             BlastAliveMessageIntervalSeconds = 30;
+            EnableEnhancedMovies = true;
         }
     }
 }

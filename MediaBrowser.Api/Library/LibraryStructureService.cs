@@ -212,24 +212,26 @@ namespace MediaBrowser.Api.Library
 
                     File.Create(path);
                 }
-
-                // Need to add a delay here or directory watchers may still pick up the changes
-                var task = Task.Delay(1000);
-                // Have to block here to allow exceptions to bubble
-                Task.WaitAll(task);
             }
             finally
             {
-                // No need to start if scanning the library because it will handle it
-                if (!request.RefreshLibrary)
+                Task.Run(() =>
                 {
-                    _libraryMonitor.Start();
-                }
-            }
-
-            if (request.RefreshLibrary)
-            {
-                _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                    // No need to start if scanning the library because it will handle it
+                    if (request.RefreshLibrary)
+                    {
+                        _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                    }
+                    else
+                    {
+                        // Need to add a delay here or directory watchers may still pick up the changes
+                        var task = Task.Delay(1000);
+                        // Have to block here to allow exceptions to bubble
+                        Task.WaitAll(task);
+                        
+                        _libraryMonitor.Start();
+                    }
+                });
             }
         }
 
@@ -279,24 +281,26 @@ namespace MediaBrowser.Api.Library
                 }
 
                 Directory.Move(currentPath, newPath);
-
-                // Need to add a delay here or directory watchers may still pick up the changes
-                var task = Task.Delay(1000);
-                // Have to block here to allow exceptions to bubble
-                Task.WaitAll(task);
             }
             finally
             {
-                // No need to start if scanning the library because it will handle it
-                if (!request.RefreshLibrary)
+                Task.Run(() =>
                 {
-                    _libraryMonitor.Start();
-                }
-            }
+                    // No need to start if scanning the library because it will handle it
+                    if (request.RefreshLibrary)
+                    {
+                        _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                    }
+                    else
+                    {
+                        // Need to add a delay here or directory watchers may still pick up the changes
+                        var task = Task.Delay(1000);
+                        // Have to block here to allow exceptions to bubble
+                        Task.WaitAll(task);
 
-            if (request.RefreshLibrary)
-            {
-                _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                        _libraryMonitor.Start();
+                    }
+                });
             }
         }
 
@@ -325,24 +329,26 @@ namespace MediaBrowser.Api.Library
             try
             {
                 _fileSystem.DeleteDirectory(path, true);
-
-                // Need to add a delay here or directory watchers may still pick up the changes
-                var delayTask = Task.Delay(1000);
-                // Have to block here to allow exceptions to bubble
-                Task.WaitAll(delayTask);
             }
             finally
             {
-                // No need to start if scanning the library because it will handle it
-                if (!request.RefreshLibrary)
+                Task.Run(() =>
                 {
-                    _libraryMonitor.Start();
-                }
-            }
+                    // No need to start if scanning the library because it will handle it
+                    if (request.RefreshLibrary)
+                    {
+                        _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                    }
+                    else
+                    {
+                        // Need to add a delay here or directory watchers may still pick up the changes
+                        var task = Task.Delay(1000);
+                        // Have to block here to allow exceptions to bubble
+                        Task.WaitAll(task);
 
-            if (request.RefreshLibrary)
-            {
-                _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                        _libraryMonitor.Start();
+                    }
+                });
             }
         }
 
@@ -362,24 +368,26 @@ namespace MediaBrowser.Api.Library
             try
             {
                 LibraryHelpers.AddMediaPath(_fileSystem, request.Name, request.Path, _appPaths);
-
-                // Need to add a delay here or directory watchers may still pick up the changes
-                var task = Task.Delay(1000);
-                // Have to block here to allow exceptions to bubble
-                Task.WaitAll(task);
             }
             finally
             {
-                // No need to start if scanning the library because it will handle it
-                if (!request.RefreshLibrary)
+                Task.Run(() =>
                 {
-                    _libraryMonitor.Start();
-                }
-            }
+                    // No need to start if scanning the library because it will handle it
+                    if (request.RefreshLibrary)
+                    {
+                        _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                    }
+                    else
+                    {
+                        // Need to add a delay here or directory watchers may still pick up the changes
+                        var task = Task.Delay(1000);
+                        // Have to block here to allow exceptions to bubble
+                        Task.WaitAll(task);
 
-            if (request.RefreshLibrary)
-            {
-                _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                        _libraryMonitor.Start();
+                    }
+                });
             }
         }
 
@@ -399,24 +407,26 @@ namespace MediaBrowser.Api.Library
             try
             {
                 LibraryHelpers.RemoveMediaPath(_fileSystem, request.Name, request.Path, _appPaths);
-
-                // Need to add a delay here or directory watchers may still pick up the changes
-                var task = Task.Delay(1000);
-                // Have to block here to allow exceptions to bubble
-                Task.WaitAll(task);
             }
             finally
             {
-                // No need to start if scanning the library because it will handle it
-                if (!request.RefreshLibrary)
+                Task.Run(() =>
                 {
-                    _libraryMonitor.Start();
-                }
-            }
+                    // No need to start if scanning the library because it will handle it
+                    if (request.RefreshLibrary)
+                    {
+                        _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                    }
+                    else
+                    {
+                        // Need to add a delay here or directory watchers may still pick up the changes
+                        var task = Task.Delay(1000);
+                        // Have to block here to allow exceptions to bubble
+                        Task.WaitAll(task);
 
-            if (request.RefreshLibrary)
-            {
-                _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None);
+                        _libraryMonitor.Start();
+                    }
+                });
             }
         }
     }

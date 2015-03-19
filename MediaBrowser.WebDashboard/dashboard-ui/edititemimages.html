@@ -8,8 +8,7 @@
         <div data-role="content editPageContent">
             <div class="editPageSidebar">
                 <div class="libraryTree">
-                    <ul>
-                    </ul>
+                    <ul></ul>
                 </div>
             </div>
 
@@ -60,7 +59,7 @@
             </div>
         </div>
 
-        <div data-role="popup" id="popupUpload" data-theme="a" data-corners="false">
+        <div data-role="popup" id="popupUpload" data-theme="a">
             <form id="uploadItemImageForm" style="max-width: 100%; margin: 0 1.5em 1.5em;">
                 <h2>${HeaderAddUpdateImage}</h2>
                 <div>
@@ -82,6 +81,7 @@
                                 <option value="Box">${OptionBox}</option>
                                 <option value="BoxRear">${OptionBoxRear}</option>
                                 <option value="Disc">${OptionDisc}</option>
+                                <option value="Icon">${OptionIcon}</option>
                                 <option value="Logo">${OptionLogo}</option>
                                 <option value="Menu">${OptionMenu}</option>
                                 <option value="Screenshot">${OptionScreenshot}</option>
@@ -98,8 +98,8 @@
         <div data-role="popup" class="popup popupDownload" data-theme="a">
 
             <a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right" data-theme="b">${ButtonClose}</a>
-            <div class="ui-bar-b" style="text-align: center; padding: 0 20px;">
-                <h3 style="margin: .5em 0;">${HeaderBrowseOnlineImages}</h3>
+            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+                <h3>${HeaderBrowseOnlineImages}</h3>
             </div>
 
             <div data-role="content">
@@ -125,6 +125,7 @@
                             <option value="Box">${OptionBox}</option>
                             <option value="BoxRear">${OptionBoxRear}</option>
                             <option value="Disc">${OptionDisc}</option>
+                            <option value="Icon">${OptionIcon}</option>
                             <option value="Logo">${OptionLogo}</option>
                             <option value="Menu">${OptionMenu}</option>
                             <option value="Screenshot">${OptionScreenshot}</option>

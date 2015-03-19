@@ -7,7 +7,6 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Dlna.Channels;
@@ -30,13 +29,13 @@ namespace MediaBrowser.Dlna.Main
         private PlayToManager _manager;
         private readonly ISessionManager _sessionManager;
         private readonly IHttpClient _httpClient;
-        private readonly IItemRepository _itemRepo;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
         private readonly IImageProcessor _imageProcessor;
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
         private SsdpHandler _ssdpHandler;
         private DeviceDiscovery _deviceDiscovery;
@@ -44,20 +43,20 @@ namespace MediaBrowser.Dlna.Main
         private readonly List<string> _registeredServerIds = new List<string>();
         private bool _dlnaServerStarted;
 
-        public DlnaEntryPoint(IServerConfigurationManager config, ILogManager logManager, IServerApplicationHost appHost, INetworkManager network, ISessionManager sessionManager, IHttpClient httpClient, IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IImageProcessor imageProcessor, IUserDataManager userDataManager, ILocalizationManager localization)
+        public DlnaEntryPoint(IServerConfigurationManager config, ILogManager logManager, IServerApplicationHost appHost, INetworkManager network, ISessionManager sessionManager, IHttpClient httpClient, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IImageProcessor imageProcessor, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager)
         {
             _config = config;
             _appHost = appHost;
             _network = network;
             _sessionManager = sessionManager;
             _httpClient = httpClient;
-            _itemRepo = itemRepo;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
             _imageProcessor = imageProcessor;
             _userDataManager = userDataManager;
             _localization = localization;
+            _mediaSourceManager = mediaSourceManager;
             _logger = logManager.GetLogger("Dlna");
         }
 
@@ -217,7 +216,6 @@ namespace MediaBrowser.Dlna.Main
                 {
                     _manager = new PlayToManager(_logger,
                         _sessionManager,
-                        _itemRepo,
                         _libraryManager,
                         _userManager,
                         _dlnaManager,
@@ -227,7 +225,8 @@ namespace MediaBrowser.Dlna.Main
                         _httpClient,
                         _config,
                         _userDataManager,
-                        _localization);
+                        _localization,
+                        _mediaSourceManager);
 
                     _manager.Start();
                 }

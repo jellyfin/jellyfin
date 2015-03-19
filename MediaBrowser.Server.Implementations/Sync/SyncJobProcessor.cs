@@ -38,8 +38,9 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ISubtitleEncoder _subtitleEncoder;
         private readonly IConfigurationManager _config;
         private readonly IFileSystem _fileSystem;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
-        public SyncJobProcessor(ILibraryManager libraryManager, ISyncRepository syncRepo, SyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder, ISubtitleEncoder subtitleEncoder, IConfigurationManager config, IFileSystem fileSystem)
+        public SyncJobProcessor(ILibraryManager libraryManager, ISyncRepository syncRepo, SyncManager syncManager, ILogger logger, IUserManager userManager, ITVSeriesManager tvSeriesManager, IMediaEncoder mediaEncoder, ISubtitleEncoder subtitleEncoder, IConfigurationManager config, IFileSystem fileSystem, IMediaSourceManager mediaSourceManager)
         {
             _libraryManager = libraryManager;
             _syncRepo = syncRepo;
@@ -51,6 +52,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _subtitleEncoder = subtitleEncoder;
             _config = config;
             _fileSystem = fileSystem;
+            _mediaSourceManager = mediaSourceManager;
         }
 
         public async Task EnsureJobItems(SyncJob job)
@@ -362,7 +364,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             // If it already has a converting status then is must have been aborted during conversion
             var result = _syncRepo.GetJobItems(new SyncJobItemQuery
             {
-                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting }
+                Statuses = new SyncJobItemStatus[] { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting }
             });
 
             await SyncJobItems(result.Items, true, progress, cancellationToken).ConfigureAwait(false);
@@ -384,7 +386,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             // If it already has a converting status then is must have been aborted during conversion
             var result = _syncRepo.GetJobItems(new SyncJobItemQuery
             {
-                Statuses = new List<SyncJobItemStatus> { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
+                Statuses = new SyncJobItemStatus[] { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
                 TargetId = targetId
             });
 
@@ -448,15 +450,6 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return;
             }
 
-            var deviceProfile = _syncManager.GetDeviceProfile(jobItem.TargetId);
-            if (deviceProfile == null)
-            {
-                jobItem.Status = SyncJobItemStatus.Failed;
-                _logger.Error("Unable to locate SyncTarget for JobItem {0}, SyncTargetId {1}", jobItem.Id, jobItem.TargetId);
-                await _syncManager.UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
-                return;
-            }
-
             jobItem.Progress = 0;
 
             var user = _userManager.GetUserById(job.UserId);
@@ -464,17 +457,17 @@ namespace MediaBrowser.Server.Implementations.Sync
             var video = item as Video;
             if (video != null)
             {
-                await Sync(jobItem, job, video, user, deviceProfile, enableConversion, progress, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, job, video, user, enableConversion, progress, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Audio)
             {
-                await Sync(jobItem, job, (Audio)item, user, deviceProfile, enableConversion, progress, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, job, (Audio)item, user, enableConversion, progress, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Photo)
             {
-                await Sync(jobItem, (Photo)item, deviceProfile, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, (Photo)item, cancellationToken).ConfigureAwait(false);
             }
 
             else
@@ -483,17 +476,20 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private async Task Sync(SyncJobItem jobItem, SyncJob job, Video item, User user, DeviceProfile profile, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, SyncJob job, Video item, User user, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var options = _syncManager.GetVideoOptions(jobItem, job);
+            var jobOptions = _syncManager.GetVideoOptions(jobItem, job);
+            var conversionOptions = new VideoOptions
+            {
+                Profile = jobOptions.DeviceProfile
+            };
 
-            options.DeviceId = jobItem.TargetId;
-            options.Context = EncodingContext.Static;
-            options.Profile = profile;
-            options.ItemId = item.Id.ToString("N");
-            options.MediaSources = item.GetMediaSources(false, user).ToList();
+            conversionOptions.DeviceId = jobItem.TargetId;
+            conversionOptions.Context = EncodingContext.Static;
+            conversionOptions.ItemId = item.Id.ToString("N");
+            conversionOptions.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, false, user).ToList();
 
-            var streamInfo = new StreamBuilder().BuildVideoItem(options);
+            var streamInfo = new StreamBuilder().BuildVideoItem(conversionOptions);
             var mediaSource = streamInfo.MediaSource;
 
             // No sense creating external subs if we're already burning one into the video
@@ -502,7 +498,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 streamInfo.GetExternalSubtitles(false);
 
             // Mark as requiring conversion if transcoding the video, or if any subtitles need to be extracted
-            var requiresVideoTranscoding = streamInfo.PlayMethod == PlayMethod.Transcode && job.Quality != SyncQuality.Original;
+            var requiresVideoTranscoding = streamInfo.PlayMethod == PlayMethod.Transcode && jobOptions.IsConverting;
             var requiresConversion = requiresVideoTranscoding || externalSubs.Any(i => RequiresExtraction(i, mediaSource));
 
             if (requiresConversion && !enableConversion)
@@ -540,7 +536,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                         }
                     });
 
-                    jobItem.OutputPath = await _mediaEncoder.EncodeVideo(new EncodingJobOptions(streamInfo, profile)
+                    jobItem.OutputPath = await _mediaEncoder.EncodeVideo(new EncodingJobOptions(streamInfo, conversionOptions.Profile)
                     {
                         OutputDirectory = jobItem.TemporaryPath
 
@@ -582,6 +578,8 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 jobItem.MediaSource = mediaSource;
             }
+
+            jobItem.MediaSource.SupportsTranscoding = false;
 
             if (externalSubs.Count > 0)
             {
@@ -674,23 +672,26 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private const int DatabaseProgressUpdateIntervalSeconds = 2;
 
-        private async Task Sync(SyncJobItem jobItem, SyncJob job, Audio item, User user, DeviceProfile profile, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, SyncJob job, Audio item, User user, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var options = _syncManager.GetAudioOptions(jobItem);
+            var jobOptions = _syncManager.GetAudioOptions(jobItem, job);
+            var conversionOptions = new AudioOptions
+            {
+                Profile = jobOptions.DeviceProfile
+            };
 
-            options.DeviceId = jobItem.TargetId;
-            options.Context = EncodingContext.Static;
-            options.Profile = profile;
-            options.ItemId = item.Id.ToString("N");
-            options.MediaSources = item.GetMediaSources(false, user).ToList();
+            conversionOptions.DeviceId = jobItem.TargetId;
+            conversionOptions.Context = EncodingContext.Static;
+            conversionOptions.ItemId = item.Id.ToString("N");
+            conversionOptions.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, false, user).ToList();
 
-            var streamInfo = new StreamBuilder().BuildAudioItem(options);
+            var streamInfo = new StreamBuilder().BuildAudioItem(conversionOptions);
             var mediaSource = streamInfo.MediaSource;
 
             jobItem.MediaSourceId = streamInfo.MediaSourceId;
             jobItem.TemporaryPath = GetTemporaryPath(jobItem);
 
-            if (streamInfo.PlayMethod == PlayMethod.Transcode && job.Quality != SyncQuality.Original)
+            if (streamInfo.PlayMethod == PlayMethod.Transcode && jobOptions.IsConverting)
             {
                 if (!enableConversion)
                 {
@@ -717,7 +718,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                         }
                     });
 
-                    jobItem.OutputPath = await _mediaEncoder.EncodeAudio(new EncodingJobOptions(streamInfo, profile)
+                    jobItem.OutputPath = await _mediaEncoder.EncodeAudio(new EncodingJobOptions(streamInfo, conversionOptions.Profile)
                     {
                         OutputDirectory = jobItem.TemporaryPath
 
@@ -760,12 +761,14 @@ namespace MediaBrowser.Server.Implementations.Sync
                 jobItem.MediaSource = mediaSource;
             }
 
+            jobItem.MediaSource.SupportsTranscoding = false;
+
             jobItem.Progress = 50;
             jobItem.Status = SyncJobItemStatus.ReadyToTransfer;
             await _syncManager.UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
         }
 
-        private async Task Sync(SyncJobItem jobItem, Photo item, DeviceProfile profile, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, Photo item, CancellationToken cancellationToken)
         {
             jobItem.OutputPath = item.Path;
 

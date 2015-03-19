@@ -4,12 +4,13 @@
     <title>${TitleMediaBrowser}</title>
 </head>
 <body>
-    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage" data-contextname="${TitleRemoteControl}">
+    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage" data-contextname="${TitleRemoteControl}" data-theme="b">
 
         <div class="libraryViewNav">
             <a href="#" class="ui-btn-active tabButton" data-tab="tabNowPlaying">${TabNowPlaying}</a>
             <a href="#" class="tabButton" data-tab="tabNavigation">${TabControls}</a>
             <a href="#" class="tabButton" data-tab="tabAdvanced">${TabAdvanced}</a>
+            <a href="#" class="tabButton tabButtonPlaylist" data-tab="tabPlaylist">${TabPlaylist}</a>
         </div>
 
         <div data-role="content" style="padding: 1em 0;">
@@ -125,6 +126,15 @@
                     </div>
 
                 </div>
+                <div class="tabPlaylist tabContent" style="display: none;">
+
+                    <div class="readOnlyContent" style="margin: 0 auto; padding: 0 1em;">
+
+                        <div class="playlist detailTableContainer">
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
 
@@ -135,7 +145,7 @@
         <div data-role="popup" id="popupSubtitleTrackMenu" data-transition="flip">
             <div class="trackList"></div>
         </div>
-        
+
         <div class="chapterMenuOverlay" style="display: none;"></div>
         <div class="chapterMenu" style="display: none;">
             <div class="chapterMenuInner">
@@ -146,6 +156,7 @@
             $('.sendMessageForm').off('submit', NowPlayingPage.onMessageSubmit).on('submit', NowPlayingPage.onMessageSubmit);
             $('.typeTextForm').off('submit', NowPlayingPage.onSendStringSubmit).on('submit', NowPlayingPage.onSendStringSubmit);
         </script>
+
     </div>
 </body>
 </html>

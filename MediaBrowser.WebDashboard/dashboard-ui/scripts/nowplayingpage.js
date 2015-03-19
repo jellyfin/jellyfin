@@ -30,10 +30,10 @@
             }
 
             var dataSrc = ' data-src="' + imgUrl + '"';
-
+            // TODO: This markup needs to be converted to the newer card layout pattern
             html += '<div class="posterItemImage lazy"' + dataSrc + '>';
 
-            html += '<div class="posterItemTextOverlay">';
+            html += '<div class="posterItemTextOverlay" style="position:absolute;bottom:0;left:0;right:0;">';
 
             if (chapter.Name) {
                 html += "<div class='posterItemText'>";
@@ -43,7 +43,7 @@
 
             html += "<div class='posterItemProgress posterItemText'>";
             var pct = 100 * (chapter.StartPositionTicks / runtimeTicks);
-            html += '<progress class="itemProgressBar" min="0" max="100" value="' + pct + '" style="opacity:.8;"></progress>';
+            html += '<progress class="itemProgressBar" min="0" max="100" value="' + pct + '" style="opacity:.8;width:100%;"></progress>';
             html += "</div>";
 
             html += "</div>";
@@ -53,7 +53,7 @@
             html += "</div>";
         }
 
-        elem.html(html).trigger('create');
+        elem.html(html).trigger('create').lazyChildren();
     }
 
     function selectCurrentChapter(elem, positionTicks) {
@@ -246,7 +246,7 @@
         $('.chapterMenu', page).on('click', '.chapterPosterItem', function () {
 
             if (currentPlayer) {
-                var ticks = this.getAttribute('data-positionticks');
+                var ticks = this.getAttribute('data-positionticks') || '0';
 
                 currentPlayer.seek(parseInt(ticks));
             }
@@ -364,6 +364,27 @@
 
                 currentPlayer.seek(Math.floor(newPositionTicks));
             }
+        });
+
+        $(page).on('swipedown', function () {
+
+            document.title = new Date().getTime();
+            history.back();
+        });
+
+        $(page).on('click', '.lnkPlayFromIndex', function () {
+
+            var index = parseInt(this.getAttribute('data-index'));
+
+            MediaController.currentPlaylistIndex(index);
+            loadPlaylist(page);
+
+        }).on('click', '.lnkRemoveFromPlaylist', function () {
+
+            var index = parseInt(this.getAttribute('data-index'));
+
+            MediaController.removeFromPlaylist(index);
+            loadPlaylist(page);
         });
     }
 
@@ -592,6 +613,75 @@
         updateSupportedCommands(page, supportedCommands);
     }
 
+    function showIntro() {
+        
+        if (store.getItem('remotecontrolswipedown') != '1') {
+            Dashboard.alert({
+                message: Globalize.translate('MessageSwipeDownOnRemoteControl'),
+                title: Globalize.translate('HeaderAlert')
+            });
+            store.setItem('remotecontrolswipedown', '1');
+        }
+
+    }
+
+    function loadPlaylist(page) {
+        
+        var html = '';
+
+        html += '<table class="detailTable">';
+
+        html += '<thead><tr>';
+        html += '<th></th>';
+        html += '<th>' + Globalize.translate('HeaderName') + '</th>';
+        html += '<th>' + Globalize.translate('HeaderAlbum') + '</th>';
+        html += '<th>' + Globalize.translate('HeaderArtist') + '</th>';
+        html += '<th>' + Globalize.translate('HeaderAlbumArtist') + '</th>';
+        html += '<th>' + Globalize.translate('HeaderTime') + '</th>';
+        html += '</tr></thead>';
+
+        html += '<tbody>';
+
+        $.each(MediaController.playlist(), function (i, item) {
+
+            var name = LibraryBrowser.getPosterViewDisplayName(item);
+
+            var parentName = item.SeriesName || item.Album;
+
+            html += '<tr>';
+            html += '<td><button type="button" data-index="' + i + '" class="lnkPlayFromIndex" data-icon="play" data-iconpos="notext">' + Globalize.translate('ButtonPlay') + '</button></td>';
+            html += '<td>';
+            html += '<a href="itemdetails.html?id=' + item.Id + '">' + name + '</a>';
+            html += '</td>';
+
+            html += '<td>';
+            if (parentName) {
+                var parentId = item.AlbumId || item.SeriesId || item.ParentId;
+                html += '<a href="itemdetails.html?id=' + parentId + '">' + parentName + '</a>';
+            }
+            html += '</td>';
+
+            html += '<td>';
+            html += LibraryBrowser.getArtistLinksHtml(item.ArtistItems || []);
+            html += '</td>';
+
+            html += '<td>';
+            if (item.AlbumArtist) {
+                html += LibraryBrowser.getArtistLinksHtml(item.AlbumArtists || []);
+            }
+            html += '</td>';
+
+            html += '<td>' + Dashboard.getDisplayTime(item.RunTimeTicks) + '</td>';
+            html += '<td><button type="button" data-index="' + i + '" class="lnkRemoveFromIndex" data-icon="delete" data-iconpos="notext">' + Globalize.translate('ButtonRemove') + '</button></td>';
+            html += '</tr>';
+        });
+
+        html += '</tbody>';
+        html += '</table>';
+
+        $(".playlist", page).html(html).trigger('create');
+    }
+
     $(document).on('pageinit', "#nowPlayingPage", function () {
 
         var page = this;
@@ -602,7 +692,12 @@
 
         var page = this;
 
-        $('.tabButton:first', page).trigger('click');
+        var tab = getParameterByName('tab');
+        if (tab) {
+            $('.tabButton' + tab, page).trigger('click');
+        } else {
+            $('.tabButton:first', page).trigger('click');
+        }
 
         $(function () {
 
@@ -614,6 +709,9 @@
             bindToPlayer(page, MediaController.getCurrentPlayer());
 
         });
+
+        showIntro();
+        loadPlaylist(page);
 
     }).on('pagehide', "#nowPlayingPage", function () {
 

@@ -1584,15 +1584,22 @@ namespace MediaBrowser.Server.Implementations.Library
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
 
-        public async Task<UserView> GetNamedView(string name,
-            string type,
+        public async Task<UserView> GetNamedView(User user,
+            string name,
+            string viewType,
             string sortName,
             CancellationToken cancellationToken)
         {
+            if (ConfigurationManager.Configuration.EnableUserSpecificUserViews)
+            {
+                return await GetNamedViewInternal(user, name, null, viewType, sortName, cancellationToken)
+                            .ConfigureAwait(false);
+            }
+
             var path = Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath,
                             "views");
 
-            path = Path.Combine(path, _fileSystem.GetValidFilename(type));
+            path = Path.Combine(path, _fileSystem.GetValidFilename(viewType));
 
             var id = GetNewItemId(path + "_namedview_" + name, typeof(UserView));
 
@@ -1611,7 +1618,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     Id = id,
                     DateCreated = DateTime.UtcNow,
                     Name = name,
-                    ViewType = type,
+                    ViewType = viewType,
                     ForcedSortName = sortName
                 };
 
@@ -1627,17 +1634,29 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (refresh)
             {
-                await item.RefreshMetadata(new MetadataRefreshOptions
-                {
-                    ForceSave = true
-
-                }, cancellationToken).ConfigureAwait(false);
+                await item.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None).ConfigureAwait(false);
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions());
             }
 
             return item;
         }
 
-        public async Task<UserView> GetSpecialFolder(User user,
+        public Task<UserView> GetNamedView(User user,
+            string name,
+            string parentId,
+            string viewType,
+            string sortName,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(parentId))
+            {
+                throw new ArgumentNullException("parentId");
+            }
+
+            return GetNamedViewInternal(user, name, parentId, viewType, sortName, cancellationToken);
+        }
+
+        private async Task<UserView> GetNamedViewInternal(User user,
             string name,
             string parentId,
             string viewType,
@@ -1649,23 +1668,18 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("name");
             }
 
-            if (string.IsNullOrWhiteSpace(parentId))
-            {
-                throw new ArgumentNullException("parentId");
-            }
-
             if (string.IsNullOrWhiteSpace(viewType))
             {
                 throw new ArgumentNullException("viewType");
             }
 
-            var id = GetNewItemId("7_namedview_" + name + user.Id.ToString("N") + parentId, typeof(UserView));
+            var id = GetNewItemId("37_namedview_" + name + user.Id.ToString("N") + (parentId ?? string.Empty), typeof(UserView));
 
-            var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views", "specialviews", id.ToString("N"));
+            var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views", id.ToString("N"));
 
             var item = GetItemById(id) as UserView;
 
-            var refresh = false;
+            var isNew = false;
 
             if (item == null)
             {
@@ -1679,27 +1693,24 @@ namespace MediaBrowser.Server.Implementations.Library
                     Name = name,
                     ViewType = viewType,
                     ForcedSortName = sortName,
-                    UserId = user.Id,
-                    ParentId = new Guid(parentId)
+                    UserId = user.Id
                 };
+
+                if (!string.IsNullOrWhiteSpace(parentId))
+                {
+                    item.ParentId = new Guid(parentId);
+                }
 
                 await CreateItem(item, cancellationToken).ConfigureAwait(false);
 
-                refresh = true;
+                isNew = true;
             }
 
-            if (!refresh && item != null)
-            {
-                refresh = (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 24;
-            }
+            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 6;
 
             if (refresh)
             {
-                await item.RefreshMetadata(new MetadataRefreshOptions
-                {
-                    ForceSave = true
-
-                }, cancellationToken).ConfigureAwait(false);
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions());
             }
 
             return item;
@@ -1845,6 +1856,10 @@ namespace MediaBrowser.Server.Implementations.Library
         public NamingOptions GetNamingOptions()
         {
             var options = new ExtendedNamingOptions();
+
+            // These cause apps to have problems
+            options.AudioFileExtensions.Remove(".m3u");
+            options.AudioFileExtensions.Remove(".wpl");
 
             if (!ConfigurationManager.Configuration.EnableAudioArchiveFiles)
             {

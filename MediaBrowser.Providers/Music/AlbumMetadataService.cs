@@ -104,14 +104,15 @@ namespace MediaBrowser.Providers.Music
         {
             var updateType = ItemUpdateType.None;
             
-            var albumArtists = songs
+            var artists = songs
                 .SelectMany(i => i.AlbumArtists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(i => i)
                 .ToList();
 
-            if (!item.AlbumArtists.SequenceEqual(albumArtists, StringComparer.OrdinalIgnoreCase))
+            if (!item.AlbumArtists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
             {
-                item.AlbumArtists = albumArtists;
+                item.AlbumArtists = artists;
                 updateType = updateType | ItemUpdateType.MetadataEdit;
             }
 
@@ -122,14 +123,15 @@ namespace MediaBrowser.Providers.Music
         {
             var updateType = ItemUpdateType.None;
 
-            var currentList = item.Artists.ToList();
-
-            item.Artists = songs.SelectMany(i => i.Artists)
+            var artists = songs
+                .SelectMany(i => i.Artists)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(i => i)
                 .ToList();
 
-            if (currentList.Count != item.Artists.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Artists.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))
+            if (!item.Artists.SequenceEqual(artists, StringComparer.OrdinalIgnoreCase))
             {
+                item.Artists = artists;
                 updateType = updateType | ItemUpdateType.MetadataEdit;
             }
 

@@ -161,7 +161,7 @@
         for (var i = 0, length = jobs.length; i < length; i++) {
 
             var job = jobs[i];
-            var targetName = job.TargetName;
+            var targetName = job.TargetName || 'Unknown';
 
             if (targetName != lastTargetName) {
 
@@ -173,7 +173,7 @@
 
                 lastTargetName = targetName;
 
-                html += '<div class="detailSectionHeader" style="padding: .85em 0 .85em 1em;">';
+                html += '<div class="detailSectionHeader">';
 
                 html += '<div style="display:inline-block;vertical-align:middle;">' + targetName + '</div>';
 

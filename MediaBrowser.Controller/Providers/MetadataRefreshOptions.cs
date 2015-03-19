@@ -1,6 +1,4 @@
-﻿using MediaBrowser.Model.Entities;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -12,7 +10,7 @@ namespace MediaBrowser.Controller.Providers
         public bool ReplaceAllMetadata { get; set; }
 
         public bool IsPostRecursiveRefresh { get; set; }
-        
+
         public MetadataRefreshMode MetadataRefreshMode { get; set; }
 
         public bool ForceSave { get; set; }
@@ -28,7 +26,7 @@ namespace MediaBrowser.Controller.Providers
             MetadataRefreshMode = MetadataRefreshMode.Default;
         }
 
-        public MetadataRefreshOptions( MetadataRefreshOptions copy)
+        public MetadataRefreshOptions(MetadataRefreshOptions copy)
             : base(copy.DirectoryService)
         {
             MetadataRefreshMode = copy.MetadataRefreshMode;
@@ -39,75 +37,5 @@ namespace MediaBrowser.Controller.Providers
             ReplaceAllImages = copy.ReplaceAllImages;
             ReplaceImages = copy.ReplaceImages.ToList();
         }
-    }
-
-    public class ImageRefreshOptions
-    {
-        public ImageRefreshMode ImageRefreshMode { get; set; }
-        public IDirectoryService DirectoryService { get; private set; }
-
-        public bool ReplaceAllImages { get; set; }
-
-        public List<ImageType> ReplaceImages { get; set; }
-
-        public ImageRefreshOptions(IDirectoryService directoryService)
-        {
-            ImageRefreshMode = ImageRefreshMode.Default;
-            DirectoryService = directoryService;
-
-            ReplaceImages = new List<ImageType>();
-        }
-
-        public bool IsReplacingImage(ImageType type)
-        {
-            return ImageRefreshMode == ImageRefreshMode.FullRefresh &&
-                (ReplaceAllImages || ReplaceImages.Contains(type));
-        }
-    }
-
-    public enum MetadataRefreshMode
-    {
-        /// <summary>
-        /// The none
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// The validation only
-        /// </summary>
-        ValidationOnly = 1,
-
-        /// <summary>
-        /// Providers will be executed based on default rules
-        /// </summary>
-        Default = 2,
-
-        /// <summary>
-        /// All providers will be executed to search for new metadata
-        /// </summary>
-        FullRefresh = 3
-    }
-
-    public enum ImageRefreshMode
-    {
-        /// <summary>
-        /// The none
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// The default
-        /// </summary>
-        Default = 1,
-
-        /// <summary>
-        /// Existing images will be validated
-        /// </summary>
-        ValidationOnly = 2,
-
-        /// <summary>
-        /// All providers will be executed to search for new metadata
-        /// </summary>
-        FullRefresh = 3
     }
 }

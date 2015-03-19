@@ -344,7 +344,6 @@
         }
     }
 
-
     function initializeApiClient(apiClient) {
         $(apiClient).on("websocketmessage", onWebSocketMessageReceived).on("websocketopen", onWebSocketConnectionChange);
     }

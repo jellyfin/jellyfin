@@ -239,6 +239,11 @@ namespace MediaBrowser.Controller.Entities
             get { return this.GetImagePath(ImageType.Primary); }
         }
 
+        public virtual bool IsInternetMetadataEnabled()
+        {
+            return ConfigurationManager.Configuration.EnableInternetProviders;
+        }
+
         public virtual bool CanDelete()
         {
             var locationType = LocationType;
@@ -717,7 +722,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>true if a provider reports we changed</returns>
-        public async Task RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken)
+        public async Task<ItemUpdateType> RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var locationType = LocationType;
 
@@ -744,15 +749,16 @@ namespace MediaBrowser.Controller.Entities
                 }
             }
 
-            var dateLastSaved = DateLastSaved;
+            var refreshOptions = requiresSave
+                ? new MetadataRefreshOptions(options)
+                {
+                    ForceSave = true
+                }
+                : options;
 
-            await ProviderManager.RefreshMetadata(this, options, cancellationToken).ConfigureAwait(false);
+            var result = await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
 
-            // If it wasn't saved by the provider process, save now
-            if (requiresSave && dateLastSaved == DateLastSaved)
-            {
-                await UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
-            }
+            return result;
         }
 
         [IgnoreDataMember]
@@ -1245,13 +1251,6 @@ namespace MediaBrowser.Controller.Entities
                     {
                         if (string.Equals(i.GetType().Name, info.ItemType, StringComparison.OrdinalIgnoreCase))
                         {
-                            if (info.ItemYear.HasValue)
-                            {
-                                if (info.ItemYear.Value != (i.ProductionYear ?? -1))
-                                {
-                                    return false;
-                                }
-                            }
                             return true;
                         }
                     }
@@ -1461,7 +1460,8 @@ namespace MediaBrowser.Controller.Entities
         /// <returns>Task.</returns>
         public virtual Task ChangedExternally()
         {
-            return RefreshMetadata(CancellationToken.None);
+            ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions());
+            return Task.FromResult(true);
         }
 
         /// <summary>

@@ -184,6 +184,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value><c>true</c> if [always scan internal metadata path]; otherwise, <c>false</c>.</value>
         bool AlwaysScanInternalMetadataPath { get; }
+
+        /// <summary>
+        /// Determines whether [is internet metadata enabled].
+        /// </summary>
+        /// <returns><c>true</c> if [is internet metadata enabled]; otherwise, <c>false</c>.</returns>
+        bool IsInternetMetadataEnabled();
     }
 
     public static class HasImagesExtensions

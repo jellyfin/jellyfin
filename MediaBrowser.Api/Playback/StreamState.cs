@@ -1,17 +1,16 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.LiveTv;
+﻿using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
-using MediaBrowser.Model.Net;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -23,6 +22,7 @@ namespace MediaBrowser.Api.Playback
         public string RequestedUrl { get; set; }
 
         public StreamRequest Request { get; set; }
+        public TranscodingThrottler TranscodingThrottler { get; set; }
 
         public VideoStreamRequest VideoRequest
         {
@@ -52,10 +52,12 @@ namespace MediaBrowser.Api.Playback
         public IIsoMount IsoMount { get; set; }
 
         public string MediaPath { get; set; }
+        public string WaitForPath { get; set; }
 
         public MediaProtocol InputProtocol { get; set; }
 
         public bool IsInputVideo { get; set; }
+        public bool IsInputArchive { get; set; }
 
         public VideoType VideoType { get; set; }
         public IsoType? IsoType { get; set; }
@@ -64,8 +66,8 @@ namespace MediaBrowser.Api.Playback
 
         public string LiveTvStreamId { get; set; }
 
-        public int SegmentLength = 6;
-
+        public int SegmentLength = 3;
+        public bool EnableGenericHlsSegmenter = false;
         public int HlsListSize
         {
             get
@@ -112,6 +114,7 @@ namespace MediaBrowser.Api.Playback
         public long? EncodingDurationTicks { get; set; }
 
         public string ItemType { get; set; }
+        public string ItemId { get; set; }
 
         public string GetMimeType(string outputPath)
         {
@@ -125,6 +128,7 @@ namespace MediaBrowser.Api.Playback
 
         public void Dispose()
         {
+            DisposeTranscodingThrottler();
             DisposeLiveStream();
             DisposeLogStream();
             DisposeIsoMount();
@@ -144,6 +148,23 @@ namespace MediaBrowser.Api.Playback
                 }
 
                 LogFileStream = null;
+            }
+        }
+
+        private void DisposeTranscodingThrottler()
+        {
+            if (TranscodingThrottler != null)
+            {
+                try
+                {
+                    TranscodingThrottler.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error disposing TranscodingThrottler", ex);
+                }
+
+                TranscodingThrottler = null;
             }
         }
 

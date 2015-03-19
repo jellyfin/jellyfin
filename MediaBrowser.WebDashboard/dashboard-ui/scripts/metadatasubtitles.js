@@ -18,7 +18,7 @@
 
     function populateLanguages(page, config, languages) {
 
-        var html = '<div data-role="controlgroup" data-corners="false" style="margin:0;">';
+        var html = '<div data-role="controlgroup" style="margin:0;">';
 
         for (var i = 0, length = languages.length; i < length; i++) {
 

@@ -15,6 +15,7 @@
 
     function reload(page) {
 
+        unbindItemChanged(page);
         Dashboard.showLoadingMsg();
 
         var promise1 = MetadataEditor.getItemPromise();
@@ -45,12 +46,6 @@
 
             Dashboard.populateLanguages($('#selectLanguage', page), languages);
             Dashboard.populateCountries($('#selectCountry', page), countries);
-
-            $('.btnRefresh', page).buttonEnabled(true);
-            $('#btnDelete', page).buttonEnabled(true);
-            $('.btnSave', page).buttonEnabled(true);
-
-            $('#refreshLoading', page).hide();
 
             LibraryBrowser.renderName(item, $('.itemName', page), true);
 
@@ -100,6 +95,7 @@
                 }
 
                 Dashboard.hideLoadingMsg();
+                bindItemChanged(page);
             });
 
         });
@@ -501,12 +497,20 @@
         $('#txtAirsBeforeEpisode', page).val(('AirsBeforeEpisodeNumber' in item) ? item.AirsBeforeEpisodeNumber : "");
 
         $('#txtAlbum', page).val(item.Album || "");
-        $('#txtAlbumArtist', page).val(item.AlbumArtist || "");
+
+        $('#txtAlbumArtist', page).val((item.AlbumArtists || []).map(function (a) {
+
+            return a.Name;
+
+        }).join(';'));
 
         $('#selectDisplayOrder', page).val(item.DisplayOrder).selectmenu('refresh');
 
-        var artists = item.Artists || [];
-        $('#txtArtist', page).val(artists.join(';'));
+        $('#txtArtist', page).val((item.ArtistItems || []).map(function (a) {
+
+            return a.Name;
+
+        }).join(';'));
 
         var date;
 
@@ -802,6 +806,26 @@
             .jstree("delete_node", '#' + id);
     }
 
+    function getAlbumArtists(form) {
+
+        return $('#txtAlbumArtist', form).val().split(';').map(function (a) {
+
+            return {
+                Name: a
+            };
+        });
+    }
+
+    function getArtists(form) {
+
+        return $('#txtArtist', form).val().split(';').map(function (a) {
+
+            return {
+                Name: a
+            };
+        });
+    }
+
     function editItemMetadataPage() {
 
         var self = this;
@@ -834,8 +858,8 @@
                 DisplayOrder: $('#selectDisplayOrder', form).val(),
                 Players: $('#txtPlayers', form).val(),
                 Album: $('#txtAlbum', form).val(),
-                AlbumArtist: $('#txtAlbumArtist', form).val(),
-                Artists: $('#txtArtist', form).val().split(';'),
+                AlbumArtist: getAlbumArtists(form),
+                ArtistItems: getArtists(form),
                 Metascore: $('#txtMetascore', form).val(),
                 AwardSummary: $('#txtAwardSummary', form).val(),
                 Overview: $('#txtOverview', form).val(),
@@ -902,12 +926,16 @@
 
         self.submitUpdatedItem = function (form, item) {
 
+            var page = $(form).parents('.page');
+            unbindItemChanged(page);
+
             function afterContentTypeUpdated() {
 
                 Dashboard.alert(Globalize.translate('MessageItemSaved'));
 
                 MetadataEditor.getItemPromise().done(function (i) {
-                    $(form).parents('.page').trigger('itemsaved', [i]);
+                    page.trigger('itemsaved', [i]);
+                    bindItemChanged(page);
                 });
             }
 
@@ -1309,16 +1337,35 @@
     }
 
     function refreshWithOptions(page, options) {
-        $('#refreshLoading', page).show();
-
-        $('#btnDelete', page).buttonEnabled(false);
-        $('.btnRefresh', page).buttonEnabled(false);
-        $('.btnSave', page).buttonEnabled(false);
 
         ApiClient.refreshItem(currentItem.Id, options).done(function () {
 
-            reload(page);
+            Dashboard.alert(Globalize.translate('MessageRefreshQueued'));
         });
+    }
+
+    function onWebSocketMessageReceived(e, data) {
+
+        var msg = data;
+
+        if (msg.MessageType === "LibraryChanged") {
+
+            if (msg.Data.ItemsUpdated.indexOf(currentItem.Id) != -1) {
+
+                console.log('Item updated - reloading metadata');
+                reload($.mobile.activePage);
+            }
+        }
+    }
+
+    function bindItemChanged(page) {
+
+        $(ApiClient).on("websocketmessage", onWebSocketMessageReceived);
+    }
+
+    function unbindItemChanged(page) {
+
+        $(ApiClient).off("websocketmessage", onWebSocketMessageReceived);
     }
 
     $(document).on('pageinit', "#editItemMetadataPage", function () {
@@ -1389,17 +1436,21 @@
         $(LibraryBrowser).on('itemdeleting.editor', function (e, itemId) {
 
             if (currentItem && currentItem.Id == itemId) {
-                Dashboard.navigate('edititemmetadata.html');
+
+                if (currentItem.ParentId) {
+                    Dashboard.navigate('edititemmetadata.html?id=' + currentItem.ParentId);
+                } else {
+                    Dashboard.navigate('edititemmetadata.html');
+                }
             }
         });
 
     }).on('pagehide', "#editItemMetadataPage", function () {
 
+        var page = this;
         $(LibraryBrowser).off('itemdeleting.editor');
 
-        var page = this;
-
-        reload(page);
+        unbindItemChanged(page);
 
     });
 

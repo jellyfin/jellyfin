@@ -1,12 +1,14 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
@@ -44,6 +46,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         {
             get { return _webSocketConnections; }
         }
+
+        public event EventHandler<GenericEventArgs<IWebSocketConnection>> WebSocketConnected;
 
         /// <summary>
         /// The _logger
@@ -141,10 +145,17 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         {
             var connection = new WebSocketConnection(e.WebSocket, e.Endpoint, _jsonSerializer, _logger)
             {
-                OnReceive = ProcessWebSocketMessageReceived
+                OnReceive = ProcessWebSocketMessageReceived,
+                Url = e.Url,
+                QueryString = new NameValueCollection(e.QueryString ?? new NameValueCollection())
             };
 
             _webSocketConnections.Add(connection);
+
+            if (WebSocketConnected != null)
+            {
+                EventHelper.FireEventIfNotNull(WebSocketConnected, this, new GenericEventArgs<IWebSocketConnection> (connection), _logger);
+            }
         }
 
         /// <summary>

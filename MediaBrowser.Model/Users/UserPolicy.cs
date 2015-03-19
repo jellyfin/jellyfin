@@ -59,6 +59,8 @@ namespace MediaBrowser.Model.Users
         public string[] EnabledFolders { get; set; }
         public bool EnableAllFolders { get; set; }
 
+        public int InvalidLoginAttemptCount { get; set; }
+        
         public UserPolicy()
         {
             EnableLiveTvManagement = true;

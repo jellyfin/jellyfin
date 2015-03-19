@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Net;
+﻿using System.Collections.Specialized;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.Logging;
 using ServiceStack;
@@ -18,9 +19,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         private readonly ILogger _logger;
         private readonly Action<string> _endpointListener;
-        private readonly string  _certificatePath ;
+        private readonly string _certificatePath;
 
-        public WebSocketSharpListener(ILogger logger, Action<string> endpointListener, 
+        public WebSocketSharpListener(ILogger logger, Action<string> endpointListener,
             string certificatePath)
         {
             _logger = logger;
@@ -32,7 +33,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         public Func<IHttpRequest, Uri, Task> RequestHandler { get; set; }
 
-        public Action<WebSocketConnectEventArgs> WebSocketHandler { get; set; }
+        public Action<WebSocketConnectingEventArgs> WebSocketConnecting { get; set; }
+
+        public Action<WebSocketConnectEventArgs> WebSocketConnected { get; set; }
 
         public void Start(IEnumerable<string> urlPrefixes)
         {
@@ -115,15 +118,44 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
         {
             try
             {
-                var webSocketContext = ctx.AcceptWebSocket(null);
+                var endpoint = ctx.Request.RemoteEndPoint.ToString();
+                var url = ctx.Request.RawUrl;
+                var queryString = new NameValueCollection(ctx.Request.QueryString ?? new NameValueCollection());
 
-                if (WebSocketHandler != null)
+                var connectingArgs = new WebSocketConnectingEventArgs
                 {
-                    WebSocketHandler(new WebSocketConnectEventArgs
+                    Url = url,
+                    QueryString = queryString,
+                    Endpoint = endpoint
+                };
+
+                if (WebSocketConnecting != null)
+                {
+                    WebSocketConnecting(connectingArgs);
+                }
+
+                if (connectingArgs.AllowConnection)
+                {
+                    _logger.Debug("Web socket connection allowed");
+
+                    var webSocketContext = ctx.AcceptWebSocket(null);
+
+                    if (WebSocketConnected != null)
                     {
-                        WebSocket = new SharpWebSocket(webSocketContext.WebSocket, _logger),
-                        Endpoint = ctx.Request.RemoteEndPoint.ToString()
-                    });
+                        WebSocketConnected(new WebSocketConnectEventArgs
+                        {
+                            Url = url,
+                            QueryString = queryString,
+                            WebSocket = new SharpWebSocket(webSocketContext.WebSocket, _logger),
+                            Endpoint = endpoint
+                        });
+                    }
+                }
+                else
+                {
+                    _logger.Warn("Web socket connection not allowed");
+                    ctx.Response.StatusCode = 401;
+                    ctx.Response.Close();
                 }
             }
             catch (Exception ex)

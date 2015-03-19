@@ -20,7 +20,7 @@
     left: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, .85);
-    z-index: 999;
+    z-index: 998;
     display: none;
 }
 
@@ -410,14 +410,6 @@
 }
 
 
-@media all and (min-width: 2300px) {
-
-    .squareCard {
-        width: 9.0909090909090909090909090909091%;
-    }
-}
-
-
 /** detailPage169 */
 .detailPage169Card .cardPadder {
     padding-bottom: 56.25%;
@@ -531,4 +523,38 @@
     .homePageSmallBackdropCard {
         width: 12.5%;
     }
+}
+
+
+
+/** horizontalBackdropCard */
+.horizontalBackdropCard .cardPadder {
+    padding-bottom: 56.25%;
+}
+
+
+.horizontalBackdropCard {
+    width: 75%;
+}
+
+@media all and (min-width: 500px) {
+
+    .horizontalBackdropCard {
+        width: 50%;
+    }
+}
+
+@media all and (min-width: 800px) {
+
+    .horizontalBackdropCard {
+        width: 31%;
+    }
+}
+
+.horizontalBackdropCard .cardImage {
+    border-radius: 4px;
+}
+
+.horizontalBackdropCard .cardBox {
+    margin: 2px !important;
 }

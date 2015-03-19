@@ -33,5 +33,22 @@ namespace MediaBrowser.Providers.Movies
                 target.TmdbCollectionName = source.TmdbCollectionName;
             }
         }
+
+        protected override bool IsFullLocalMetadata(Movie item)
+        {
+            if (string.IsNullOrWhiteSpace(item.Name))
+            {
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(item.Overview))
+            {
+                return false;
+            }
+            if (!item.ProductionYear.HasValue)
+            {
+                return false;
+            }
+            return base.IsFullLocalMetadata(item);
+        }
     }
 }

@@ -45,8 +45,9 @@ namespace MediaBrowser.Server.Implementations.Dto
         private readonly ISyncManager _syncManager;
         private readonly IApplicationHost _appHost;
         private readonly Func<IDeviceManager> _deviceManager;
+        private readonly Func<IMediaSourceManager> _mediaSourceManager;
 
-        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory, ISyncManager syncManager, IApplicationHost appHost, Func<IDeviceManager> deviceManager)
+        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory, ISyncManager syncManager, IApplicationHost appHost, Func<IDeviceManager> deviceManager, Func<IMediaSourceManager> mediaSourceManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -60,6 +61,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             _syncManager = syncManager;
             _appHost = appHost;
             _deviceManager = deviceManager;
+            _mediaSourceManager = mediaSourceManager;
         }
 
         /// <summary>
@@ -159,7 +161,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             var result = _syncManager.GetLibraryItemIds(new SyncJobItemQuery
             {
                 TargetId = deviceId,
-                Statuses = new List<SyncJobItemStatus>
+                Statuses = new SyncJobItemStatus[]
                 {
                     SyncJobItemStatus.Converting,
                     SyncJobItemStatus.Queued,
@@ -257,7 +259,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                     else
                     {
-                        dto.MediaSources = hasMediaSources.GetMediaSources(true, user).ToList();
+                        dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(hasMediaSources, true, user).ToList();
                     }
                 }
             }
@@ -395,6 +397,18 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                 }
             }
+
+            var userView = item as UserView;
+            if (userView != null)
+            {
+                dto.HasDynamicCategories = userView.ContainsDynamicCategories(user);
+            }
+
+            var collectionFolder = item as ICollectionFolder;
+            if (collectionFolder != null)
+            {
+                dto.HasDynamicCategories = false;
+            }
         }
 
         private int GetChildCount(Folder folder, User user)
@@ -490,7 +504,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             dto.Album = item.Album;
-            dto.Artists = item.Artists;
         }
 
         private void SetGameProperties(BaseItemDto dto, Game item)
@@ -911,7 +924,8 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             // Prevent implicitly captured closure
             var currentItem = item;
-            foreach (var image in currentItem.ImageInfos.Where(i => !currentItem.AllowsMultipleImages(i.Type)))
+            foreach (var image in currentItem.ImageInfos.Where(i => !currentItem.AllowsMultipleImages(i.Type))
+                .ToList())
             {
                 if (options.GetImageLimit(image.Type) > 0)
                 {
@@ -1127,7 +1141,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (audio != null)
             {
                 dto.Album = audio.Album;
-                dto.Artists = audio.Artists;
 
                 var albumParent = audio.FindParent<MusicAlbum>();
 
@@ -1148,18 +1161,65 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (album != null)
             {
-                dto.Artists = album.Artists;
-
                 dto.SoundtrackIds = album.SoundtrackIds
                     .Select(i => i.ToString("N"))
                     .ToArray();
             }
 
-            var hasAlbumArtist = item as IHasAlbumArtist;
+            var hasArtist = item as IHasArtist;
+            if (hasArtist != null)
+            {
+                dto.Artists = hasArtist.Artists;
 
+                dto.ArtistItems = hasArtist
+                    .Artists
+                    .Select(i =>
+                    {
+                        try
+                        {
+                            var artist = _libraryManager.GetArtist(i);
+                            return new NameIdPair
+                            {
+                                Name = artist.Name,
+                                Id = artist.Id.ToString("N")
+                            };
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error getting artist", ex);
+                            return null;
+                        }
+                    })
+                    .Where(i => i != null)
+                    .ToList();
+            }
+
+            var hasAlbumArtist = item as IHasAlbumArtist;
             if (hasAlbumArtist != null)
             {
                 dto.AlbumArtist = hasAlbumArtist.AlbumArtists.FirstOrDefault();
+
+                dto.AlbumArtists = hasAlbumArtist
+                    .AlbumArtists
+                    .Select(i =>
+                    {
+                        try
+                        {
+                            var artist = _libraryManager.GetArtist(i);
+                            return new NameIdPair
+                            {
+                                Name = artist.Name,
+                                Id = artist.Id.ToString("N")
+                            };
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error getting album artist", ex);
+                            return null;
+                        }
+                    })
+                    .Where(i => i != null)
+                    .ToList();
             }
 
             // Add video info
@@ -1216,7 +1276,6 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             // Add MovieInfo
             var movie = item as Movie;
-
             if (movie != null)
             {
                 if (fields.Contains(ItemFields.TmdbCollectionName))
@@ -1226,7 +1285,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             var hasSpecialFeatures = item as IHasSpecialFeatures;
-
             if (hasSpecialFeatures != null)
             {
                 var specialFeatureCount = hasSpecialFeatures.SpecialFeatureIds.Count;
@@ -1239,7 +1297,6 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             // Add EpisodeInfo
             var episode = item as Episode;
-
             if (episode != null)
             {
                 dto.IndexNumberEnd = episode.IndexNumberEnd;
@@ -1281,7 +1338,6 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             // Add SeriesInfo
             var series = item as Series;
-
             if (series != null)
             {
                 dto.AirDays = series.AirDays;
@@ -1331,7 +1387,6 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             // Add SeasonInfo
             var season = item as Season;
-
             if (season != null)
             {
                 series = season.Series;
@@ -1365,7 +1420,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             var musicVideo = item as MusicVideo;
-
             if (musicVideo != null)
             {
                 SetMusicVideoProperties(dto, musicVideo);
@@ -1597,14 +1651,11 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             var path = imageInfo.Path;
 
-            // See if we can avoid a file system lookup by looking for the file in ResolveArgs
-            var dateModified = imageInfo.DateModified;
-
             ImageSize size;
 
             try
             {
-                size = _imageProcessor.GetImageSize(path, dateModified);
+                size = _imageProcessor.GetImageSize(imageInfo);
             }
             catch (FileNotFoundException)
             {

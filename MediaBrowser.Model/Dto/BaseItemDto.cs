@@ -67,6 +67,7 @@ namespace MediaBrowser.Model.Dto
         public float? Metascore { get; set; }
 
         public bool? IsUnidentified { get; set; }
+        public bool? HasDynamicCategories { get; set; }
 
         public int? AnimeSeriesIndex { get; set; }
 
@@ -466,6 +467,12 @@ namespace MediaBrowser.Model.Dto
         public List<string> Artists { get; set; }
 
         /// <summary>
+        /// Gets or sets the artist items.
+        /// </summary>
+        /// <value>The artist items.</value>
+        public List<NameIdPair> ArtistItems { get; set; }
+
+        /// <summary>
         /// Gets or sets the album.
         /// </summary>
         /// <value>The album.</value>
@@ -506,6 +513,12 @@ namespace MediaBrowser.Model.Dto
         /// <value>The album artist.</value>
         public string AlbumArtist { get; set; }
 
+        /// <summary>
+        /// Gets or sets the album artists.
+        /// </summary>
+        /// <value>The album artists.</value>
+        public List<NameIdPair> AlbumArtists { get; set; }
+        
         /// <summary>
         /// Gets or sets the name of the season.
         /// </summary>

@@ -45,6 +45,11 @@ namespace MediaBrowser.Controller.Net
         event EventHandler<WebSocketConnectEventArgs> WebSocketConnected;
 
         /// <summary>
+        /// Occurs when [web socket connecting].
+        /// </summary>
+        event EventHandler<WebSocketConnectingEventArgs> WebSocketConnecting;
+
+        /// <summary>
         /// Inits this instance.
         /// </summary>
         void Init(IEnumerable<IRestfulService> services);

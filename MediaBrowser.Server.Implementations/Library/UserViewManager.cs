@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Collections;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
@@ -11,12 +10,12 @@ using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MoreLinq;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -53,8 +52,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 .OfType<Folder>()
                 .ToList();
 
-            var list = new List<Folder>();
-
             var excludeFolderIds = user.Configuration.ExcludeFoldersFromGrouping.Select(i => new Guid(i)).ToList();
 
             var standaloneFolders = folders
@@ -66,46 +63,68 @@ namespace MediaBrowser.Server.Implementations.Library
                 .OfType<ICollectionFolder>()
                 .ToList();
 
-            list.AddRange(standaloneFolders);
+            var list = new List<Folder>();
+
+            if (_config.Configuration.EnableUserSpecificUserViews)
+            {
+                foreach (var folder in standaloneFolders)
+                {
+                    var collectionFolder = folder as ICollectionFolder;
+                    var folderViewType = collectionFolder == null ? null : collectionFolder.CollectionType;
+
+                    if (string.IsNullOrWhiteSpace(folderViewType))
+                    {
+                        list.Add(folder);
+                    }
+                    else
+                    {
+                        list.Add(await GetUserView(folder.Id, folder.Name, folderViewType, string.Empty, user, cancellationToken).ConfigureAwait(false));
+                    }
+                }
+            }
+            else
+            {
+                list.AddRange(standaloneFolders);
+            }
 
             if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.TvShows, StringComparison.OrdinalIgnoreCase)) ||
                 foldersWithViewTypes.Any(i => string.IsNullOrWhiteSpace(i.CollectionType)))
             {
-                list.Add(await GetUserView(CollectionType.TvShows, string.Empty, cancellationToken).ConfigureAwait(false));
+                list.Add(await GetUserView(CollectionType.TvShows, string.Empty, user, cancellationToken).ConfigureAwait(false));
             }
 
             if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase)) ||
                 foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase)))
             {
-                list.Add(await GetUserView(CollectionType.Music, string.Empty, cancellationToken).ConfigureAwait(false));
+                list.Add(await GetUserView(CollectionType.Music, string.Empty, user, cancellationToken).ConfigureAwait(false));
             }
 
             if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.Movies, StringComparison.OrdinalIgnoreCase)) ||
                 foldersWithViewTypes.Any(i => string.IsNullOrWhiteSpace(i.CollectionType)))
             {
-                list.Add(await GetUserView(CollectionType.Movies, string.Empty, cancellationToken).ConfigureAwait(false));
+                list.Add(await GetUserView(CollectionType.Movies, string.Empty, user, cancellationToken).ConfigureAwait(false));
             }
 
-            if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.Games, StringComparison.OrdinalIgnoreCase))
-                || _config.Configuration.EnableLegacyCollectionInView)
+            if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.Games, StringComparison.OrdinalIgnoreCase)))
             {
-                list.Add(await GetUserView(CollectionType.Games, string.Empty, cancellationToken).ConfigureAwait(false));
+                list.Add(await GetUserView(CollectionType.Games, string.Empty, user, cancellationToken).ConfigureAwait(false));
             }
 
             if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.BoxSets, StringComparison.OrdinalIgnoreCase)))
             {
                 //list.Add(_collectionManager.GetCollectionsFolder(user.Id.ToString("N")));
-                list.Add(await GetUserView(CollectionType.BoxSets, string.Empty, cancellationToken).ConfigureAwait(false));
+                list.Add(await GetUserView(CollectionType.BoxSets, string.Empty, user, cancellationToken).ConfigureAwait(false));
             }
 
             if (foldersWithViewTypes.Any(i => string.Equals(i.CollectionType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase)))
             {
-                list.Add(_playlists.GetPlaylistsFolder(user.Id.ToString("N")));
+                //list.Add(_playlists.GetPlaylistsFolder(user.Id.ToString("N")));
+                list.Add(await GetUserView(CollectionType.Playlists, string.Empty, user, cancellationToken).ConfigureAwait(false));
             }
 
             if (user.Configuration.DisplayFoldersView)
             {
-                list.Add(await GetUserView(CollectionType.Folders, "zz_" + CollectionType.Folders, cancellationToken).ConfigureAwait(false));
+                list.Add(await GetUserView(CollectionType.Folders, "zz_" + CollectionType.Folders, user, cancellationToken).ConfigureAwait(false));
             }
 
             if (query.IncludeExternalContent)
@@ -131,7 +150,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 if (_liveTvManager.GetEnabledUsers().Select(i => i.Id.ToString("N")).Contains(query.UserId))
                 {
-                    list.Add(await _liveTvManager.GetInternalLiveTvFolder(query.UserId, cancellationToken).ConfigureAwait(false));
+                    //list.Add(await _liveTvManager.GetInternalLiveTvFolder(query.UserId, cancellationToken).ConfigureAwait(false));
+                    list.Add(await GetUserView(CollectionType.LiveTv, string.Empty, user, cancellationToken).ConfigureAwait(false));
                 }
             }
 
@@ -150,23 +170,28 @@ namespace MediaBrowser.Server.Implementations.Library
                 .ThenBy(i => i.SortName);
         }
 
-        public Task<UserView> GetUserView(string name, string parentId, string type, User user, string sortName, CancellationToken cancellationToken)
+        public Task<UserView> GetUserSubView(string name, string parentId, string type, User user, string sortName, CancellationToken cancellationToken)
         {
-            return _libraryManager.GetSpecialFolder(user, name, parentId, type, sortName, cancellationToken);
+            return _libraryManager.GetNamedView(user, name, parentId, type, sortName, cancellationToken);
         }
 
-        public Task<UserView> GetUserView(string parentId, string type, User user, string sortName, CancellationToken cancellationToken)
+        public Task<UserView> GetUserSubView(string parentId, string type, User user, string sortName, CancellationToken cancellationToken)
         {
             var name = _localizationManager.GetLocalizedString("ViewType" + type);
 
-            return GetUserView(name, parentId, type, user, sortName, cancellationToken);
+            return GetUserSubView(name, parentId, type, user, sortName, cancellationToken);
         }
 
-        public Task<UserView> GetUserView(string type, string sortName, CancellationToken cancellationToken)
+        public Task<UserView> GetUserView(string type, string sortName, User user, CancellationToken cancellationToken)
         {
             var name = _localizationManager.GetLocalizedString("ViewType" + type);
 
-            return _libraryManager.GetNamedView(name, type, sortName, cancellationToken);
+            return _libraryManager.GetNamedView(user, name, type, sortName, cancellationToken);
+        }
+
+        public Task<UserView> GetUserView(Guid parentId, string name, string type, string sortName, User user, CancellationToken cancellationToken)
+        {
+            return _libraryManager.GetNamedView(user, name, parentId.ToString("N"), type, sortName, cancellationToken);
         }
 
         public List<Tuple<BaseItem, List<BaseItem>>> GetLatestItems(LatestItemsQuery request)

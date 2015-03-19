@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace MediaBrowser.Providers.Movies
 {
     public class GenericMovieDbInfo<T>
-        where T : Video, new()
+        where T : BaseItem, new()
     {
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
@@ -111,7 +111,13 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="movieData">The movie data.</param>
         private void ProcessMainInfo(T movie, string preferredCountryCode, MovieDbProvider.CompleteMovieData movieData)
         {
-            movie.Name = movieData.title ?? movieData.original_title ?? movieData.name ?? movie.Name;
+            movie.Name = movieData.GetTitle() ?? movie.Name;
+
+            var hasOriginalTitle = movie as IHasOriginalTitle;
+            if (hasOriginalTitle != null)
+            {
+                hasOriginalTitle.OriginalTitle = movieData.GetOriginalTitle();
+            }
 
             // Bug in Mono: WebUtility.HtmlDecode should return null if the string is null but in Mono it generate an System.ArgumentNullException.
             movie.Overview = movieData.overview != null ? WebUtility.HtmlDecode(movieData.overview) : null;

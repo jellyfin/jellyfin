@@ -26,7 +26,7 @@ namespace MediaBrowser.Providers.Manager
     /// <summary>
     /// Class ProviderManager
     /// </summary>
-    public class ProviderManager : IProviderManager
+    public class ProviderManager : IProviderManager, IDisposable
     {
         /// <summary>
         /// The _logger
@@ -63,6 +63,8 @@ namespace MediaBrowser.Providers.Manager
 
         private IExternalId[] _externalIds;
 
+        private readonly Func<ILibraryManager> _libraryManagerFactory;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ProviderManager" /> class.
         /// </summary>
@@ -71,7 +73,7 @@ namespace MediaBrowser.Providers.Manager
         /// <param name="libraryMonitor">The directory watchers.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="fileSystem">The file system.</param>
-        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem, IServerApplicationPaths appPaths)
+        public ProviderManager(IHttpClient httpClient, IServerConfigurationManager configurationManager, ILibraryMonitor libraryMonitor, ILogManager logManager, IFileSystem fileSystem, IServerApplicationPaths appPaths, Func<ILibraryManager> libraryManagerFactory)
         {
             _logger = logManager.GetLogger("ProviderManager");
             _httpClient = httpClient;
@@ -79,6 +81,7 @@ namespace MediaBrowser.Providers.Manager
             _libraryMonitor = libraryMonitor;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
+            _libraryManagerFactory = libraryManagerFactory;
         }
 
         /// <summary>
@@ -108,7 +111,7 @@ namespace MediaBrowser.Providers.Manager
             _externalIds = externalIds.OrderBy(i => i.Name).ToArray();
         }
 
-        public Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        public Task<ItemUpdateType> RefreshSingleItem(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
         {
             var service = _metadataServices.FirstOrDefault(i => i.CanRefresh(item));
 
@@ -118,7 +121,7 @@ namespace MediaBrowser.Providers.Manager
             }
 
             _logger.Error("Unable to find a metadata service for item of type " + item.GetType().Name);
-            return Task.FromResult(true);
+            return Task.FromResult(ItemUpdateType.None);
         }
 
         public async Task SaveImage(IHasImages item, string url, SemaphoreSlim resourcePool, ImageType type, int? imageIndex, CancellationToken cancellationToken)
@@ -309,7 +312,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (provider is IRemoteMetadataProvider)
                 {
-                    if (!ConfigurationManager.Configuration.EnableInternetProviders)
+                    if (!item.IsInternetMetadataEnabled())
                     {
                         return false;
                     }
@@ -357,7 +360,7 @@ namespace MediaBrowser.Providers.Manager
 
                     if (provider is IRemoteImageProvider)
                     {
-                        if (!ConfigurationManager.Configuration.EnableInternetProviders)
+                        if (!item.IsInternetMetadataEnabled())
                         {
                             return false;
                         }
@@ -512,7 +515,7 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.LocalMetadataProvider
             }));
 
-            if (ConfigurationManager.Configuration.EnableInternetProviders)
+            if (item.IsInternetMetadataEnabled())
             {
                 // Fetchers
                 list.AddRange(providers.Where(i => (i is IRemoteMetadataProvider)).Select(i => new MetadataPlugin
@@ -544,7 +547,7 @@ namespace MediaBrowser.Providers.Manager
                 Type = MetadataPluginType.LocalImageProvider
             }));
 
-            var enableInternet = ConfigurationManager.Configuration.EnableInternetProviders;
+            var enableInternet = item.IsInternetMetadataEnabled();
 
             // Fetchers
             list.AddRange(imageProviders.Where(i => i is IDynamicImageProvider || (enableInternet && i is IRemoteImageProvider)).Select(i => new MetadataPlugin
@@ -840,6 +843,158 @@ namespace MediaBrowser.Providers.Manager
                     UrlFormatString = i.UrlFormatString
 
                 });
+        }
+
+        private readonly ConcurrentQueue<Tuple<Guid, MetadataRefreshOptions>> _refreshQueue =
+            new ConcurrentQueue<Tuple<Guid, MetadataRefreshOptions>>();
+
+        private readonly object _refreshTimerLock = new object();
+        private Timer _refreshTimer;
+
+        public void QueueRefresh(Guid id, MetadataRefreshOptions options)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _refreshQueue.Enqueue(new Tuple<Guid, MetadataRefreshOptions>(id, options));
+            StartRefreshTimer();
+        }
+
+        private void StartRefreshTimer()
+        {
+            lock (_refreshTimerLock)
+            {
+                if (_refreshTimer == null)
+                {
+                    _refreshTimer = new Timer(RefreshTimerCallback, null, 100, Timeout.Infinite);
+                }
+            }
+        }
+
+        private void StopRefreshTimer()
+        {
+            lock (_refreshTimerLock)
+            {
+                if (_refreshTimer != null)
+                {
+                    _refreshTimer.Dispose();
+                    _refreshTimer = null;
+                }
+            }
+        }
+
+        private async void RefreshTimerCallback(object state)
+        {
+            Tuple<Guid, MetadataRefreshOptions> refreshItem;
+            var libraryManager = _libraryManagerFactory();
+
+            while (_refreshQueue.TryDequeue(out refreshItem))
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                var item = libraryManager.GetItemById(refreshItem.Item1);
+                if (item != null)
+                {
+                    try
+                    {
+                        var artist = item as MusicArtist;
+                        var task = artist == null
+                            ? RefreshItem(item, refreshItem.Item2, CancellationToken.None)
+                            : RefreshArtist(artist, refreshItem.Item2);
+
+                        await task.ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error refreshing item", ex);
+                    }
+                }
+            }
+
+            StopRefreshTimer();
+        }
+
+        private async Task RefreshItem(BaseItem item, MetadataRefreshOptions options, CancellationToken cancellationToken)
+        {
+            await item.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
+
+            if (item.IsFolder)
+            {
+                // Collection folders don't validate their children so we'll have to simulate that here
+                var collectionFolder = item as CollectionFolder;
+
+                if (collectionFolder != null)
+                {
+                    await RefreshCollectionFolderChildren(options, collectionFolder).ConfigureAwait(false);
+                }
+                else
+                {
+                    var folder = (Folder)item;
+
+                    await folder.ValidateChildren(new Progress<double>(), cancellationToken, options).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private async Task RefreshCollectionFolderChildren(MetadataRefreshOptions options, CollectionFolder collectionFolder)
+        {
+            foreach (var child in collectionFolder.Children.ToList())
+            {
+                await child.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
+
+                if (child.IsFolder)
+                {
+                    var folder = (Folder)child;
+
+                    await folder.ValidateChildren(new Progress<double>(), CancellationToken.None).ConfigureAwait(false);
+                }
+            }
+        }
+
+        private async Task RefreshArtist(MusicArtist item, MetadataRefreshOptions options)
+        {
+            var cancellationToken = CancellationToken.None;
+
+            var albums = _libraryManagerFactory().RootFolder
+                                        .GetRecursiveChildren()
+                                        .OfType<MusicAlbum>()
+                                        .Where(i => i.HasAnyArtist(item.Name))
+                                        .ToList();
+
+            var musicArtists = albums
+                .Select(i => i.Parent)
+                .OfType<MusicArtist>()
+                .ToList();
+
+            var musicArtistRefreshTasks = musicArtists.Select(i => i.ValidateChildren(new Progress<double>(), cancellationToken, options, true));
+
+            await Task.WhenAll(musicArtistRefreshTasks).ConfigureAwait(false);
+
+            try
+            {
+                await item.RefreshMetadata(options, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error refreshing library", ex);
+            }
+        }
+
+        public Task RefreshFullItem(IHasMetadata item, MetadataRefreshOptions options,
+            CancellationToken cancellationToken)
+        {
+            return RefreshItem((BaseItem)item, options, cancellationToken);
+        }
+
+        private bool _disposed;
+        public void Dispose()
+        {
+            _disposed = true;
         }
     }
 }

@@ -25,11 +25,6 @@
                     <div class="metadataFormFields">
 
                         <div>
-                            <div id="refreshLoading" style="display: none;">
-                                <div class="circle"></div>
-                                <div class="circle1"></div>
-                                <div style="margin-top: -15px;"></div>
-                            </div>
                             <button class="btnSave" type="submit" data-theme="a" data-icon="check" data-mini="true" data-inline="true">
                                 ${ButtonSave}
                             </button>
@@ -73,8 +68,8 @@
                                 <input type="text" id="txtArtist" placeholder="${LabelArtistsHelp}" />
                             </div>
                             <div data-role="fieldcontain" id="fldAlbumArtist" style="display: none;">
-                                <label for="txtAlbumArtist">${LabelAlbumArtist}</label>
-                                <input type="text" id="txtAlbumArtist" />
+                                <label for="txtAlbumArtist">${LabelAlbumArtists}</label>
+                                <input type="text" id="txtAlbumArtist" placeholder="${LabelArtistsHelp}" />
                             </div>
                             <div data-role="fieldcontain" id="fldAlbum" style="display: none;">
                                 <label for="txtAlbum">${LabelAlbum}</label>
@@ -454,7 +449,7 @@
         <div data-role="popup" id="popupEditPerson" class="popup" data-theme="a">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3 style="margin: .5em;">${HeaderPersonInfo}</h3>
+                <h3>${HeaderPersonInfo}</h3>
             </div>
 
             <div data-role="content">
@@ -501,7 +496,7 @@
         <div data-role="popup" class="popup popupAdvancedRefresh" data-theme="a">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3 style="margin: .5em;">${HeaderRefreshMetadata}</h3>
+                <h3>${HeaderRefreshMetadata}</h3>
             </div>
 
             <div data-role="content">

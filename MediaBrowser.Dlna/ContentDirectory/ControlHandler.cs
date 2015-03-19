@@ -11,6 +11,7 @@ using MediaBrowser.Dlna.Didl;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Dlna.Service;
 using MediaBrowser.Model.Channels;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -31,6 +32,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
         private readonly ILibraryManager _libraryManager;
         private readonly IChannelManager _channelManager;
         private readonly IUserDataManager _userDataManager;
+        private readonly IServerConfigurationManager _config;
         private readonly User _user;
 
         private const string NS_DC = "http://purl.org/dc/elements/1.1/";
@@ -45,7 +47,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private readonly DeviceProfile _profile;
 
-        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, string accessToken, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization, IChannelManager channelManager)
+        public ControlHandler(ILogger logger, ILibraryManager libraryManager, DeviceProfile profile, string serverAddress, string accessToken, IImageProcessor imageProcessor, IUserDataManager userDataManager, User user, int systemUpdateId, IServerConfigurationManager config, ILocalizationManager localization, IChannelManager channelManager, IMediaSourceManager mediaSourceManager)
             : base(config, logger)
         {
             _libraryManager = libraryManager;
@@ -54,8 +56,9 @@ namespace MediaBrowser.Dlna.ContentDirectory
             _systemUpdateId = systemUpdateId;
             _channelManager = channelManager;
             _profile = profile;
+            _config = config;
 
-            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization);
+            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager);
         }
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)
@@ -465,12 +468,14 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
             }).ConfigureAwait(false);
 
+            var options = _config.GetDlnaConfiguration();
+
             var serverItems = queryResult
                 .Items
                 .Select(i => new ServerItem
                 {
                     Item = i,
-                    StubType = GetDisplayStubType(i, item)
+                    StubType = GetDisplayStubType(i, item, options)
                 })
                 .ToArray();
 
@@ -539,23 +544,23 @@ namespace MediaBrowser.Dlna.ContentDirectory
             return result;
         }
 
-        private StubType? GetDisplayStubType(BaseItem item, BaseItem context)
+        private StubType? GetDisplayStubType(BaseItem item, BaseItem context, DlnaOptions options)
         {
             if (context == null || context.IsFolder)
             {
                 var movie = item as Movie;
-                if (movie != null)
+                if (movie != null && options.EnableEnhancedMovies)
                 {
                     if (movie.GetTrailerIds().Count > 0 ||
                         movie.SpecialFeatureIds.Count > 0)
                     {
                         return StubType.Folder;
                     }
-                }
 
-                if (EnablePeopleDisplay(item))
-                {
-                    return StubType.Folder;
+                    if (EnablePeopleDisplay(item))
+                    {
+                        return StubType.Folder;
+                    }
                 }
             }
 

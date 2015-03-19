@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using WebSocketState = MediaBrowser.Model.Net.WebSocketState;
@@ -65,7 +66,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         void socket_OnMessage(object sender, SocketHttpListener.MessageEventArgs e)
         {
-            if (OnReceive != null)
+            //if (!string.IsNullOrWhiteSpace(e.Data))
+            //{
+            //    if (OnReceive != null)
+            //    {
+            //        OnReceive(e.Data);
+            //    }
+            //    return;
+            //}
+            if (OnReceiveBytes != null)
             {
                 OnReceiveBytes(e.RawData);
             }
@@ -141,7 +150,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
                 WebSocket.OnMessage -= socket_OnMessage;
                 WebSocket.OnClose -= socket_OnClose;
                 WebSocket.OnError -= socket_OnError;
-                
+
                 _cancellationTokenSource.Cancel();
 
                 WebSocket.Close();

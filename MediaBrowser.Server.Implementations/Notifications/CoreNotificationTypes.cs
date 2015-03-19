@@ -143,6 +143,13 @@ namespace MediaBrowser.Server.Implementations.Notifications
                      Type = NotificationType.CameraImageUploaded.ToString(),
                      DefaultTitle = "A new camera image has been uploaded from {DeviceName}.",
                      Variables = new List<string>{"DeviceName"}
+                },
+
+                new NotificationTypeInfo
+                {
+                     Type = NotificationType.UserLockedOut.ToString(),
+                     DefaultTitle = "{UserName} has been locked out.",
+                     Variables = new List<string>{"UserName"}
                 }
             };
 
@@ -184,6 +191,10 @@ namespace MediaBrowser.Server.Implementations.Notifications
             else if (note.Type.IndexOf("CameraImageUploaded", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 note.Category = _localization.GetLocalizedString("CategorySync");
+            }
+            else if (note.Type.IndexOf("UserLockedOut", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                note.Category = _localization.GetLocalizedString("CategoryUser");
             }
             else
             {

@@ -5,6 +5,7 @@ using SharpCompress.Archive.Tar;
 using SharpCompress.Common;
 using SharpCompress.Reader;
 using SharpCompress.Reader.Zip;
+using System;
 using System.IO;
 
 namespace MediaBrowser.Common.Implementations.Archiving

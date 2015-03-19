@@ -23,9 +23,9 @@
         html += '<div class="nowPlayingBar" style="display:none;">';
         html += '<div style="display:inline-block;width:12px;"></div>';
 
-        html += '<a class="mediaButton remoteControlButton" title="' + Globalize.translate('ButtonRemoteControl') + '" href="nowplaying.html" data-role="button" data-icon="remote" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonRemoteControl') + '</a>';
+        html += '<a class="mediaButton remoteControlButton" title="' + Globalize.translate('ButtonRemoteControl') + '" href="nowplaying.html" data-transition="slideup" data-role="button" data-icon="remote" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonRemoteControl') + '</a>';
 
-        html += '<a id="playlistButton" class="mediaButton playlistButton" href="playlist.html" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" title="' + Globalize.translate('ButtonPlaylist') + '">' + Globalize.translate('ButtonPlaylist') + '</a>';
+        html += '<a id="playlistButton" class="mediaButton playlistButton" href="nowplaying.html?tab=Playlist" data-transition="slideup" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" title="' + Globalize.translate('ButtonPlaylist') + '">' + Globalize.translate('ButtonPlaylist') + '</a>';
         html += '<button id="previousTrackButton" class="mediaButton previousTrackButton" title="' + Globalize.translate('ButtonPreviousTrack') + '" type="button" data-icon="previous-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPreviousTrack') + '</button>';
 
         html += '<button id="playButton" class="mediaButton unpauseButton" title="' + Globalize.translate('ButtonPlay') + '" type="button" data-icon="play" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPlay') + '</button>';
@@ -61,6 +61,10 @@
         currentTimeElement = $('.currentTime', elem);
         nowPlayingImageElement = $('.nowPlayingImage', elem);
         nowPlayingTextElement = $('.nowPlayingText', elem);
+
+        $(elem).on('swipeup', function () {
+            Dashboard.navigate('nowplaying.html');
+        });
 
         unmuteButton = $('.unmuteButton', elem).on('click', function () {
 
@@ -156,11 +160,11 @@
 
         return elem;
     }
-    
+
     function showButton(button) {
         button.removeClass('hide');
     }
-    
+
     function hideButton(button) {
         button.addClass('hide');
     }
@@ -294,7 +298,7 @@
         nowPlayingTextElement.html(nameHtml);
 
         var url;
-        
+
         var nowPlayingItem = state.NowPlayingItem;
 
         if (nowPlayingItem.PrimaryImageTag) {
@@ -338,7 +342,7 @@
         }
 
         currentImgUrl = url;
-        
+
         nowPlayingImageElement.html('<img src="' + url + '" />');
     }
 
@@ -405,8 +409,8 @@
 
         var player = this;
 
-        player.getPlayerState().done(function(state) {
-            
+        player.getPlayerState().done(function (state) {
+
             if (player.isDefaultPlayer && state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
                 return;
             }
@@ -427,7 +431,7 @@
                 player.beginPlayerUpdates();
             }
 
-            onStateChanged.call(player, {type: 'init'}, state);
+            onStateChanged.call(player, { type: 'init' }, state);
         });
 
         $(player).on('playbackstart.nowplayingbar', onPlaybackStart)

@@ -197,6 +197,7 @@ namespace MediaBrowser.Server.Startup.Common
         private ITVSeriesManager TVSeriesManager { get; set; }
         private ICollectionManager CollectionManager { get; set; }
         private IMediaSourceManager MediaSourceManager { get; set; }
+        private IPlaylistManager PlaylistManager { get; set; }
 
         private readonly StartupOptions _startupOptions;
         private readonly string _remotePackageName;
@@ -380,6 +381,8 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance(ServerConfigurationManager);
 
+            RegisterSingleInstance(NativeApp.GetProcessManager());
+
             LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer);
             RegisterSingleInstance(LocalizationManager);
 
@@ -421,7 +424,7 @@ namespace MediaBrowser.Server.Startup.Common
             LibraryMonitor = new LibraryMonitor(LogManager, TaskManager, LibraryManager, ServerConfigurationManager, FileSystemManager);
             RegisterSingleInstance(LibraryMonitor);
 
-            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ApplicationPaths);
+            ProviderManager = new ProviderManager(HttpClient, ServerConfigurationManager, LibraryMonitor, LogManager, FileSystemManager, ApplicationPaths, () => LibraryManager);
             RegisterSingleInstance(ProviderManager);
 
             SeriesOrderManager = new SeriesOrderManager();
@@ -439,32 +442,26 @@ namespace MediaBrowser.Server.Startup.Common
             var innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p => progress.Report((.75 * p) + 15));
 
-            ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, MediaEncoder);
+            ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer);
             RegisterSingleInstance(ImageProcessor);
 
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager);
             RegisterSingleInstance(TVSeriesManager);
 
-            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager);
+            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager, () => MediaSourceManager, JsonSerializer);
             RegisterSingleInstance(SyncManager);
 
-            DtoService = new DtoService(Logger, LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager);
+            DtoService = new DtoService(LogManager.GetLogger("DtoService"), LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager, () => MediaSourceManager);
             RegisterSingleInstance(DtoService);
 
             var encryptionManager = new EncryptionManager();
             RegisterSingleInstance<IEncryptionManager>(encryptionManager);
 
-            ConnectManager = new ConnectManager(LogManager.GetLogger("Connect"), ApplicationPaths, JsonSerializer, encryptionManager, HttpClient, this, ServerConfigurationManager, UserManager, ProviderManager);
+            ConnectManager = new ConnectManager(LogManager.GetLogger("Connect"), ApplicationPaths, JsonSerializer, encryptionManager, HttpClient, this, ServerConfigurationManager, UserManager, ProviderManager, SecurityManager);
             RegisterSingleInstance(ConnectManager);
 
-            DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, Logger, FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ConfigurationManager, LogManager.GetLogger("DeviceManager"));
+            DeviceManager = new DeviceManager(new DeviceRepository(ApplicationPaths, JsonSerializer, LogManager.GetLogger("DeviceManager"), FileSystemManager), UserManager, FileSystemManager, LibraryMonitor, ConfigurationManager, LogManager.GetLogger("DeviceManager"));
             RegisterSingleInstance(DeviceManager);
-
-            MediaSourceManager = new MediaSourceManager(ItemRepository);
-            RegisterSingleInstance(MediaSourceManager);
-
-            SessionManager = new SessionManager(UserDataManager, Logger, UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
-            RegisterSingleInstance(SessionManager);
 
             var newsService = new Implementations.News.NewsService(ApplicationPaths, JsonSerializer);
             RegisterSingleInstance<INewsService>(newsService);
@@ -474,8 +471,14 @@ namespace MediaBrowser.Server.Startup.Common
 
             progress.Report(15);
 
-            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, Logger, ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager, HttpClient);
+            ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LogManager.GetLogger("ChannelManager"), ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager, HttpClient);
             RegisterSingleInstance(ChannelManager);
+
+            MediaSourceManager = new MediaSourceManager(ItemRepository, UserManager, LibraryManager, ChannelManager, LogManager.GetLogger("MediaSourceManager"));
+            RegisterSingleInstance(MediaSourceManager);
+
+            SessionManager = new SessionManager(UserDataManager, LogManager.GetLogger("SessionManager"), UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);
+            RegisterSingleInstance(SessionManager);
 
             var appThemeManager = new AppThemeManager(ApplicationPaths, FileSystemManager, JsonSerializer, Logger);
             RegisterSingleInstance<IAppThemeManager>(appThemeManager);
@@ -489,16 +492,16 @@ namespace MediaBrowser.Server.Startup.Common
             CollectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("CollectionManager"));
             RegisterSingleInstance(CollectionManager);
 
-            var playlistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("PlaylistManager"), UserManager);
-            RegisterSingleInstance<IPlaylistManager>(playlistManager);
+            PlaylistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("PlaylistManager"), UserManager);
+            RegisterSingleInstance<IPlaylistManager>(PlaylistManager);
 
-            LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, FileSystemManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer);
+            LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, ProviderManager);
             RegisterSingleInstance(LiveTvManager);
 
-            UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, playlistManager, CollectionManager, ServerConfigurationManager);
+            UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, PlaylistManager, CollectionManager, ServerConfigurationManager);
             RegisterSingleInstance(UserViewManager);
 
-            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager, ChannelManager);
+            var contentDirectory = new ContentDirectory(dlnaManager, UserDataManager, ImageProcessor, LibraryManager, ServerConfigurationManager, UserManager, LogManager.GetLogger("UpnpContentDirectory"), HttpClient, LocalizationManager, ChannelManager, MediaSourceManager);
             RegisterSingleInstance<IContentDirectory>(contentDirectory);
 
             var mediaRegistrar = new MediaReceiverRegistrar(LogManager.GetLogger("MediaReceiverRegistrar"), HttpClient, ServerConfigurationManager);
@@ -571,7 +574,8 @@ namespace MediaBrowser.Server.Startup.Common
                 LibraryManager,
                 ChannelManager,
                 SessionManager,
-                () => SubtitleEncoder);
+                () => SubtitleEncoder,
+                () => MediaSourceManager);
             RegisterSingleInstance(MediaEncoder);
         }
 
@@ -699,6 +703,7 @@ namespace MediaBrowser.Server.Startup.Common
             BaseItem.LiveTvManager = LiveTvManager;
             Folder.UserViewManager = UserViewManager;
             UserView.TVSeriesManager = TVSeriesManager;
+            UserView.PlaylistManager = PlaylistManager;
             BaseItem.CollectionManager = CollectionManager;
             BaseItem.MediaSourceManager = MediaSourceManager;
         }
@@ -752,6 +757,8 @@ namespace MediaBrowser.Server.Startup.Common
 
             ChannelManager.AddParts(GetExports<IChannel>(), GetExports<IChannelFactory>());
 
+            MediaSourceManager.AddParts(GetExports<IMediaSourceProvider>());
+            
             NotificationManager.AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
             SyncManager.AddParts(GetExports<ISyncProvider>());
         }

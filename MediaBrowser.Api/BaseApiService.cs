@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using System.Threading.Tasks;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -72,6 +73,29 @@ namespace MediaBrowser.Api
             return ResultFactory.GetOptimizedResultUsingCache(Request, cacheKey, lastDateModified, cacheDuration, factoryFn);
         }
 
+        protected void AssertCanUpdateUser(IUserManager userManager, string userId)
+        {
+            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+
+            var authenticatedUser = userManager.GetUserById(auth.UserId);
+
+            // If they're going to update the record of another user, they must be an administrator
+            if (!string.Equals(userId, auth.UserId, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!authenticatedUser.Policy.IsAdministrator)
+                {
+                    throw new SecurityException("Unauthorized access.");
+                }
+            }
+            else
+            {
+                if (!authenticatedUser.Policy.EnableUserPreferenceAccess)
+                {
+                    throw new SecurityException("Unauthorized access.");
+                }
+            }
+        }
+        
         /// <summary>
         /// To the optimized serialized result using cache.
         /// </summary>
@@ -88,9 +112,9 @@ namespace MediaBrowser.Api
         /// Gets the session.
         /// </summary>
         /// <returns>SessionInfo.</returns>
-        protected SessionInfo GetSession()
+        protected async Task<SessionInfo> GetSession()
         {
-            var session = SessionContext.GetSession(Request);
+            var session = await SessionContext.GetSession(Request).ConfigureAwait(false);
 
             if (session == null)
             {

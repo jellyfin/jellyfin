@@ -106,7 +106,7 @@ namespace MediaBrowser.Controller.Playlists
                 Func<BaseItem, bool> filter = i =>
                 {
                     var audio = i as Audio;
-                    return audio != null && audio.HasArtist(musicArtist.Name);
+                    return audio != null && audio.HasAnyArtist(musicArtist.Name);
                 };
 
                 var items = user == null

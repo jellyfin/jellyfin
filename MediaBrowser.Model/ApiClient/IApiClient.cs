@@ -251,12 +251,12 @@ namespace MediaBrowser.Model.ApiClient
         Task<ItemsResult> GetAdditionalParts(string itemId, string userId);
 
         /// <summary>
-        /// Gets the live media information.
+        /// Gets the playback information.
         /// </summary>
         /// <param name="itemId">The item identifier.</param>
         /// <param name="userId">The user identifier.</param>
         /// <returns>Task&lt;LiveMediaInfoResult&gt;.</returns>
-        Task<LiveMediaInfoResult> GetLiveMediaInfo(string itemId, string userId);
+        Task<LiveMediaInfoResult> GetPlaybackInfo(string itemId, string userId);
 
         /// <summary>
         /// Gets the users async.
@@ -344,14 +344,14 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetInstantMixFromArtistAsync(SimilarItemsByNameQuery query);
+        Task<ItemsResult> GetInstantMixFromArtistAsync(SimilarItemsQuery query);
 
         /// <summary>
         /// Gets the instant mix from music genre async.
         /// </summary>
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetInstantMixFromMusicGenreAsync(SimilarItemsByNameQuery query);
+        Task<ItemsResult> GetInstantMixFromMusicGenreAsync(SimilarItemsQuery query);
 
         /// <summary>
         /// Gets the similar movies async.
@@ -416,15 +416,6 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         Task<ItemsResult> GetAlbumArtistsAsync(ArtistsQuery query);
-
-        /// <summary>
-        /// Gets a studio
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>Task{BaseItemDto}.</returns>
-        /// <exception cref="ArgumentNullException">userId</exception>
-        Task<BaseItemDto> GetStudioAsync(string name, string userId);
 
         /// <summary>
         /// Gets the next up async.
@@ -493,15 +484,6 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="userId">The user id.</param>
         /// <returns>Task{BaseItemDto}.</returns>
         Task<BaseItemDto> GetGameGenreAsync(string name, string userId);
-
-        /// <summary>
-        /// Gets the artist async.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="userId">The user id.</param>
-        /// <returns>Task{BaseItemDto}.</returns>
-        /// <exception cref="ArgumentNullException">name</exception>
-        Task<BaseItemDto> GetArtistAsync(string name, string userId);
 
         /// <summary>
         /// Restarts the server.
@@ -1014,14 +996,6 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Gets an image url that can be used to download an image from the api
         /// </summary>
-        /// <param name="year">The year.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        string GetYearImageUrl(int year, ImageOptions options);
-
-        /// <summary>
-        /// Gets an image url that can be used to download an image from the api
-        /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
@@ -1043,24 +1017,6 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="options">The options.</param>
         /// <returns>System.String.</returns>
         string GetGameGenreImageUrl(string name, ImageOptions options);
-
-        /// <summary>
-        /// Gets an image url that can be used to download an image from the api
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">name</exception>
-        string GetStudioImageUrl(string name, ImageOptions options);
-
-        /// <summary>
-        /// Gets the artist image URL.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        /// <exception cref="ArgumentNullException">name</exception>
-        string GetArtistImageUrl(string name, ImageOptions options);
 
         /// <summary>
         /// This is a helper to get a list of backdrop url's from a given ApiBaseItemWrapper. If the actual item does not have any backdrops it will return backdrops from the first parent that does.
@@ -1362,7 +1318,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendContextMessageAsync(string itemType, string itemId, string itemName, string context,
-            CancellationToken cancellationToken);
+            CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Gets the content upload history.
@@ -1380,7 +1336,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <returns>Task.</returns>
         Task UploadFile(Stream stream,
             LocalFileInfo file,
-            CancellationToken cancellationToken);
+            CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Gets the devices options options.
@@ -1436,7 +1392,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="id">The identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;Stream&gt;.</returns>
-        Task<Stream> GetSyncJobItemFile(string id, CancellationToken cancellationToken);
+        Task<Stream> GetSyncJobItemFile(string id, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Gets the synchronize job item additional file.
@@ -1519,11 +1475,20 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Gets the synchronize options.
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
-        /// <param name="itemIds">The item ids.</param>
-        /// <param name="parentId">The parent identifier.</param>
-        /// <param name="category">The category.</param>
+        /// <param name="jobInfo">The job information.</param>
         /// <returns>Task&lt;SyncOptions&gt;.</returns>
-        Task<SyncDialogOptions> GetSyncOptions(IEnumerable<string> itemIds, string userId, string parentId = null, SyncCategory? category = null);
+        Task<SyncDialogOptions> GetSyncOptions(SyncJobRequest jobInfo);
+        /// <summary>
+        /// Gets the synchronize options.
+        /// </summary>
+        /// <param name="jobInfo">The job information.</param>
+        /// <returns>Task&lt;SyncDialogOptions&gt;.</returns>
+        Task<SyncDialogOptions> GetSyncOptions(SyncJob jobInfo);
+        /// <summary>
+        /// Gets the movie recommendations.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>Task&lt;List&lt;RecommendationDto&gt;&gt;.</returns>
+        Task<List<RecommendationDto>> GetMovieRecommendations(MovieRecommendationQuery query);
     }
 }

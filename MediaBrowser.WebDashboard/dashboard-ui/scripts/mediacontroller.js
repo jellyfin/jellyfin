@@ -76,8 +76,7 @@
 
         var keys = new bindKeys(self);
 
-        $(window).on("keydown", keys.keyBinding);
-        $(window).on("keypress keyup", keys.keyPrevent);
+        $(window).on("keydown", keys.keyBinding).on("keypress keyup", keys.keyPrevent);
 
         self.registerPlayer = function (player) {
 
@@ -507,7 +506,7 @@
         html += '<div class="players"></div>';
 
         html += '<br/>';
-        html += '<p><a href="nowplaying.html" data-role="button" data-icon="remote">' + Globalize.translate('ButtonRemoteControl') + '</a></p>';
+        html += '<p><a href="nowplaying.html" data-role="button" data-icon="remote" data-transition="slideup">' + Globalize.translate('ButtonRemoteControl') + '</a></p>';
 
         html += '</div>';
 

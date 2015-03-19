@@ -337,7 +337,13 @@
 
         self.openWebSocket = function () {
 
+            if (!accessToken) {
+                throw new Error("Cannot open web socket without access token.");
+            }
+
             var url = serverAddress.replace('http', 'ws');
+            url += "?api_key=" + accessToken;
+            url += "&deviceId=" + deviceId;
 
             webSocket = new WebSocket(url);
 
@@ -351,12 +357,8 @@
 
                 logger.log('web socket connection opened');
                 setTimeout(function () {
-
-                    self.sendWebSocketMessage("Identity", clientName + "|" + deviceId + "|" + applicationVersion + "|" + deviceName);
-
                     Events.trigger(self, 'websocketopen');
-
-                }, 500);
+                }, 0);
             };
             webSocket.onerror = function () {
                 setTimeout(function () {
@@ -3222,18 +3224,6 @@
                 throw new Error("null options");
             }
 
-            if (self.isWebSocketOpen()) {
-
-                var deferred = DeferredBuilder.Deferred();
-
-                var msg = JSON.stringify(options);
-
-                self.sendWebSocketMessage("ReportPlaybackStart", msg);
-
-                deferred.resolveWith(null, []);
-                return deferred.promise();
-            }
-
             var url = self.getUrl("Sessions/Playing");
 
             return self.ajax({
@@ -3286,18 +3276,6 @@
 
             if (!options) {
                 throw new Error("null options");
-            }
-
-            if (self.isWebSocketOpen()) {
-
-                var deferred = DeferredBuilder.Deferred();
-
-                var msg = JSON.stringify(options);
-
-                self.sendWebSocketMessage("ReportPlaybackStopped", msg);
-
-                deferred.resolveWith(null, []);
-                return deferred.promise();
             }
 
             var url = self.getUrl("Sessions/Playing/Stopped");

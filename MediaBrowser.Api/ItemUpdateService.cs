@@ -41,8 +41,8 @@ namespace MediaBrowser.Api
         [ApiMember(Name = "ContentType", Description = "The content type of the item", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string ContentType { get; set; }
     }
-    
-    [Authenticated]
+
+    [Authenticated(Roles = "admin")]
     public class ItemUpdateService : BaseApiService
     {
         private readonly ILibraryManager _libraryManager;
@@ -61,7 +61,7 @@ namespace MediaBrowser.Api
         public object Get(GetMetadataEditorInfo request)
         {
             var item = _libraryManager.GetItemById(request.ItemId);
-            
+
             var info = new MetadataEditorInfo
             {
                 ParentalRatingOptions = _localizationManager.GetParentalRatings().ToList(),
@@ -131,7 +131,7 @@ namespace MediaBrowser.Api
                     Value = ""
                 });
             }
-            
+
             list.Add(new NameValuePair
             {
                 Name = "FolderTypeMovies",
@@ -389,20 +389,33 @@ namespace MediaBrowser.Api
                 game.PlayersSupported = request.Players;
             }
 
-            var song = item as Audio;
+            var hasAlbumArtists = item as IHasAlbumArtist;
+            if (hasAlbumArtists != null)
+            {
+                hasAlbumArtists.AlbumArtists = request
+                    .AlbumArtists
+                    .Select(i => i.Name)
+                    .ToList();
+            }
 
+            var hasArtists = item as IHasArtist;
+            if (hasArtists != null)
+            {
+                hasArtists.Artists = request
+                    .ArtistItems
+                    .Select(i => i.Name)
+                    .ToList();
+            }
+
+            var song = item as Audio;
             if (song != null)
             {
                 song.Album = request.Album;
-                song.AlbumArtists = string.IsNullOrWhiteSpace(request.AlbumArtist) ? new List<string>() : new List<string> { request.AlbumArtist };
-                song.Artists = request.Artists.ToList();
             }
 
             var musicVideo = item as MusicVideo;
-
             if (musicVideo != null)
             {
-                musicVideo.Artists = request.Artists.ToList();
                 musicVideo.Album = request.Album;
             }
 

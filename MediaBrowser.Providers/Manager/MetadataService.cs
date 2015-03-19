@@ -87,7 +87,7 @@ namespace MediaBrowser.Providers.Manager
             return ProviderRepo.GetMetadataStatus(item.Id) ?? new MetadataStatus { ItemId = item.Id };
         }
 
-        public async Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
+        public async Task<ItemUpdateType> RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
             var itemOfType = (TItemType)item;
             var config = ProviderManager.GetMetadataOptions(item);
@@ -163,7 +163,8 @@ namespace MediaBrowser.Providers.Manager
                 }
             }
 
-            updateType = updateType | (await BeforeSave(itemOfType, item.DateLastSaved == default(DateTime) || refreshOptions.ReplaceAllMetadata, updateType).ConfigureAwait(false));
+            var beforeSaveResult = await BeforeSave(itemOfType, item.DateLastSaved == default(DateTime) || refreshOptions.ReplaceAllMetadata || refreshOptions.MetadataRefreshMode == MetadataRefreshMode.FullRefresh, updateType).ConfigureAwait(false);
+            updateType = updateType | beforeSaveResult;
 
             // Save if changes were made, or it's never been saved before
             if (refreshOptions.ForceSave || updateType > ItemUpdateType.None || item.DateLastSaved == default(DateTime) || refreshOptions.ReplaceAllMetadata)
@@ -184,6 +185,8 @@ namespace MediaBrowser.Providers.Manager
             }
 
             await AfterMetadataRefresh(itemOfType, refreshOptions, cancellationToken).ConfigureAwait(false);
+
+            return updateType;
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);
@@ -397,7 +400,10 @@ namespace MediaBrowser.Providers.Manager
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
-                        hasLocalMetadata = true;
+                        if (IsFullLocalMetadata(localItem.Item))
+                        {
+                            hasLocalMetadata = true;
+                        }
                         successfulProviderCount++;
                         break;
                     }
@@ -471,6 +477,11 @@ namespace MediaBrowser.Providers.Manager
             await ImportUserData(item, userDataList, cancellationToken).ConfigureAwait(false);
 
             return refreshResult;
+        }
+
+        protected virtual bool IsFullLocalMetadata(TItemType item)
+        {
+            return true;
         }
 
         private async Task ImportUserData(TItemType item, List<UserItemData> userDataList, CancellationToken cancellationToken)

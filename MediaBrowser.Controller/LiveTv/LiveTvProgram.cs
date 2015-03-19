@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Users;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public class LiveTvProgram : BaseItem
+    public class LiveTvProgram : BaseItem, ILiveTvItem, IHasLookupInfo<LiveTvProgramLookupInfo>
     {
         /// <summary>
         /// Gets the user data key.
@@ -219,6 +220,24 @@ namespace MediaBrowser.Controller.LiveTv
         public override bool CanDelete()
         {
             return false;
+        }
+
+        public override bool IsInternetMetadataEnabled()
+        {
+            if (IsMovie)
+            {
+                var options = (LiveTvOptions)ConfigurationManager.GetConfiguration("livetv");
+                return options.EnableMovieProviders;
+            }
+
+            return false;
+        }
+
+        public LiveTvProgramLookupInfo GetLookupInfo()
+        {
+            var info = GetItemLookupInfo<LiveTvProgramLookupInfo>();
+            info.IsMovie = IsMovie; 
+            return info;
         }
     }
 }

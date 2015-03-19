@@ -1,11 +1,43 @@
-﻿function htmlEncode(value) {
-    //create a in-memory div, set it's inner text(which jQuery automatically encodes)
-    //then grab the encoded contents back out.  The div never exists on the page.
-    return $('<div/>').text(value).html();
+﻿// Regular Expressions for parsing tags and attributes
+var SURROGATE_PAIR_REGEXP = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g,
+  // Match everything outside of normal chars and " (quote character)
+  NON_ALPHANUMERIC_REGEXP = /([^\#-~| |!])/g;
+
+var hiddenPre = document.createElement("pre");
+/**
+ * decodes all entities into regular string
+ * @param value
+ * @returns {string} A string with decoded entities.
+ */
+function htmlDecode(value) {
+    if (!value) { return ''; }
+
+    hiddenPre.innerHTML = value.replace(/</g, "&lt;");
+    // innerText depends on styling as it doesn't display hidden elements.
+    // Therefore, it's better to use textContent not to cause unnecessary reflows.
+    return hiddenPre.textContent;
 }
 
-function htmlDecode(value) {
-    return $('<div/>').html(value).text();
+/**
+ * Escapes all potentially dangerous characters, so that the
+ * resulting string can be safely inserted into attribute or
+ * element text.
+ * @param value
+ * @returns {string} escaped text
+ */
+function htmlEncode(value) {
+    return value.
+      replace(/&/g, '&amp;').
+      replace(SURROGATE_PAIR_REGEXP, function (value) {
+          var hi = value.charCodeAt(0);
+          var low = value.charCodeAt(1);
+          return '&#' + (((hi - 0xD800) * 0x400) + (low - 0xDC00) + 0x10000) + ';';
+      }).
+      replace(NON_ALPHANUMERIC_REGEXP, function (value) {
+          return '&#' + value.charCodeAt(0) + ';';
+      }).
+      replace(/</g, '&lt;').
+      replace(/>/g, '&gt;');
 }
 
 // Array Remove - By John Resig (MIT Licensed)
@@ -476,59 +508,6 @@ function ticks_to_human(str) {
     return time;
 };
 
-/******************************************************************************/
-/*********************************** EASING ***********************************/
-/******************************************************************************/
-
-(function () {
-
-    // based on easing equations from Robert Penner (http://www.robertpenner.com/easing)
-
-    var baseEasings = {};
-
-    $.each(["Quad", "Cubic", "Quart", "Quint", "Expo"], function (i, name) {
-        baseEasings[name] = function (p) {
-            return Math.pow(p, i + 2);
-        };
-    });
-
-    $.extend(baseEasings, {
-        Sine: function (p) {
-            return 1 - Math.cos(p * Math.PI / 2);
-        },
-        Circ: function (p) {
-            return 1 - Math.sqrt(1 - p * p);
-        },
-        Elastic: function (p) {
-            return p === 0 || p === 1 ? p :
-                -Math.pow(2, 8 * (p - 1)) * Math.sin(((p - 1) * 80 - 7.5) * Math.PI / 15);
-        },
-        Back: function (p) {
-            return p * p * (3 * p - 2);
-        },
-        Bounce: function (p) {
-            var pow2,
-                bounce = 4;
-
-            while (p < ((pow2 = Math.pow(2, --bounce)) - 1) / 11) { }
-            return 1 / Math.pow(4, 3 - bounce) - 7.5625 * Math.pow((pow2 * 3 - 2) / 22 - p, 2);
-        }
-    });
-
-    $.each(baseEasings, function (name, easeIn) {
-        $.easing["easeIn" + name] = easeIn;
-        $.easing["easeOut" + name] = function (p) {
-            return 1 - easeIn(1 - p);
-        };
-        $.easing["easeInOut" + name] = function (p) {
-            return p < 0.5 ?
-                easeIn(p * 2) / 2 :
-                1 - easeIn(p * -2 + 2) / 2;
-        };
-    });
-
-})();
-
 (function (window) {
 
     // Mimic Globalize api
@@ -551,3 +530,72 @@ function ticks_to_human(str) {
     };
 
 })(window);
+
+(function () {
+    var supportTouch = $.support.touch,
+            scrollEvent = "touchmove scroll",
+            touchStartEvent = supportTouch ? "touchstart" : "mousedown",
+            touchStopEvent = supportTouch ? "touchend" : "mouseup",
+            touchMoveEvent = supportTouch ? "touchmove" : "mousemove";
+    $.event.special.swipeupdown = {
+        setup: function () {
+            var thisObject = this;
+            var $this = $(thisObject);
+            $this.bind(touchStartEvent, function (event) {
+                var data = event.originalEvent.touches ?
+                        event.originalEvent.touches[0] :
+                        event,
+                        start = {
+                            time: (new Date).getTime(),
+                            coords: [data.pageX, data.pageY],
+                            origin: $(event.target)
+                        },
+                        stop;
+
+                function moveHandler(event) {
+                    if (!start) {
+                        return;
+                    }
+                    var data = event.originalEvent.touches ?
+                            event.originalEvent.touches[0] :
+                            event;
+                    stop = {
+                        time: (new Date).getTime(),
+                        coords: [data.pageX, data.pageY]
+                    };
+
+                    // prevent scrolling
+                    if (Math.abs(start.coords[1] - stop.coords[1]) > 10) {
+                        event.preventDefault();
+                    }
+                }
+                $this
+                        .bind(touchMoveEvent, moveHandler)
+                        .one(touchStopEvent, function (event) {
+                            $this.unbind(touchMoveEvent, moveHandler);
+                            if (start && stop) {
+                                if (stop.time - start.time < 1000 &&
+                                        Math.abs(start.coords[1] - stop.coords[1]) > 30 &&
+                                        Math.abs(start.coords[0] - stop.coords[0]) < 75) {
+                                    start.origin
+                                            .trigger("swipeupdown")
+                                            .trigger(start.coords[1] > stop.coords[1] ? "swipeup" : "swipedown");
+                                }
+                            }
+                            start = stop = undefined;
+                        });
+            });
+        }
+    };
+    $.each({
+        swipedown: "swipeupdown",
+        swipeup: "swipeupdown"
+    }, function (event, sourceEvent) {
+        $.event.special[event] = {
+            setup: function () {
+                $(this).bind(sourceEvent, $.noop);
+            }
+        };
+    });
+
+})();

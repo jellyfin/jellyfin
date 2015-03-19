@@ -419,6 +419,8 @@ namespace MediaBrowser.Providers.MediaInfo
             return _blurayExaminer.GetDiscInfo(path);
         }
 
+        public const int MaxSubtitleDescriptionExtractionLength = 100; // When extracting subtitles, the maximum length to consider (to avoid invalid filenames)
+        
         private void FetchWtvInfo(Video video, InternalMediaInfoResult data)
         {
             if (data.format == null || data.format.tags == null)
@@ -426,76 +428,120 @@ namespace MediaBrowser.Providers.MediaInfo
                 return;
             }
 
-            if (video.Genres.Count == 0)
+            if (!video.LockedFields.Contains(MetadataFields.Genres))
             {
-                if (!video.LockedFields.Contains(MetadataFields.Genres))
-                {
-                    var genres = FFProbeHelpers.GetDictionaryValue(data.format.tags, "genre");
+                var genres = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/Genre");
 
-                    if (!string.IsNullOrEmpty(genres))
-                    {
-                        video.Genres = genres.Split(new[] { ';', '/', ',' }, StringSplitOptions.RemoveEmptyEntries)
-                            .Where(i => !string.IsNullOrWhiteSpace(i))
-                            .Select(i => i.Trim())
-                            .ToList();
-                    }
+                if (!string.IsNullOrWhiteSpace(genres))
+                {
+                    //genres = FFProbeHelpers.GetDictionaryValue(data.format.tags, "genre");
+                }
+
+                if (!string.IsNullOrWhiteSpace(genres))
+                {
+                    video.Genres = genres.Split(new[] { ';', '/', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Where(i => !string.IsNullOrWhiteSpace(i))
+                        .Select(i => i.Trim())
+                        .ToList();
                 }
             }
 
-            if (string.IsNullOrEmpty(video.Overview))
-            {
-                if (!video.LockedFields.Contains(MetadataFields.Overview))
-                {
-                    var overview = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/SubTitleDescription");
-
-                    if (!string.IsNullOrWhiteSpace(overview))
-                    {
-                        video.Overview = overview;
-                    }
-                }
-            }
-
-            if (string.IsNullOrEmpty(video.OfficialRating))
+            if (!video.LockedFields.Contains(MetadataFields.OfficialRating))
             {
                 var officialRating = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/ParentalRating");
 
                 if (!string.IsNullOrWhiteSpace(officialRating))
                 {
-                    if (!video.LockedFields.Contains(MetadataFields.OfficialRating))
+                    video.OfficialRating = officialRating;
+                }
+            }
+
+            if (!video.LockedFields.Contains(MetadataFields.Cast))
+            {
+                var people = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/MediaCredits");
+
+                if (!string.IsNullOrEmpty(people))
+                {
+                    video.People = people.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Where(i => !string.IsNullOrWhiteSpace(i))
+                        .Select(i => new PersonInfo { Name = i.Trim(), Type = PersonType.Actor })
+                        .ToList();
+                }
+            }
+
+            var year = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/OriginalReleaseTime");
+            if (!string.IsNullOrWhiteSpace(year))
+            {
+                int val;
+
+                if (int.TryParse(year, NumberStyles.Integer, _usCulture, out val))
+                {
+                    video.ProductionYear = val;
+                }
+            }
+
+            var premiereDateString = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/MediaOriginalBroadcastDateTime");
+            if (!string.IsNullOrWhiteSpace(premiereDateString))
+            {
+                DateTime val;
+
+                // Credit to MCEBuddy: https://mcebuddy2x.codeplex.com/
+                // DateTime is reported along with timezone info (typically Z i.e. UTC hence assume None)
+                if (DateTime.TryParse(year, null, DateTimeStyles.None, out val))
+                {
+                    video.PremiereDate = val.ToUniversalTime();
+                }
+            }
+
+            var description = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/SubTitleDescription");
+            
+            var episode = video as Episode;
+            if (episode != null)
+            {
+                var subTitle = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/SubTitle");
+
+                // For below code, credit to MCEBuddy: https://mcebuddy2x.codeplex.com/
+
+                // Sometimes for TV Shows the Subtitle field is empty and the subtitle description contains the subtitle, extract if possible. See ticket https://mcebuddy2x.codeplex.com/workitem/1910
+                // The format is -> EPISODE/TOTAL_EPISODES_IN_SEASON. SUBTITLE: DESCRIPTION
+                // OR -> COMMENT. SUBTITLE: DESCRIPTION
+                // e.g. -> 4/13. The Doctor's Wife: Science fiction drama. When he follows a Time Lord distress signal, the Doctor puts Amy, Rory and his beloved TARDIS in grave danger. Also in HD. [AD,S]
+                // e.g. -> CBeebies Bedtime Hour. The Mystery: Animated adventures of two friends who live on an island in the middle of the big city. Some of Abney and Teal's favourite objects are missing. [S]
+                if (String.IsNullOrWhiteSpace(subTitle) && !String.IsNullOrWhiteSpace(description) && description.Substring(0, Math.Min(description.Length, MaxSubtitleDescriptionExtractionLength)).Contains(":")) // Check within the Subtitle size limit, otherwise from description it can get too long creating an invalid filename
+                {
+                    string[] parts = description.Split(':');
+                    if (parts.Length > 0)
                     {
-                        video.OfficialRating = officialRating;
+                        string subtitle = parts[0];
+                        try
+                        {
+                            if (subtitle.Contains("/")) // It contains a episode number and season number
+                            {
+                                string[] numbers = subtitle.Split(' ');
+                                episode.IndexNumber = int.Parse(numbers[0].Replace(".", "").Split('/')[0]);
+                                int totalEpisodesInSeason = int.Parse(numbers[0].Replace(".", "").Split('/')[1]);
+
+                                description = String.Join(" ", numbers, 1, numbers.Length - 1).Trim(); // Skip the first, concatenate the rest, clean up spaces and save it
+                            }
+                            else
+                                throw new Exception(); // Switch to default parsing
+                        }
+                        catch // Default parsing
+                        {
+                            if (subtitle.Contains(".")) // skip the comment, keep the subtitle
+                                description = String.Join(".", subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
+                            else
+                                description = subtitle.Trim(); // Clean up whitespaces and save it
+                        }
                     }
                 }
             }
 
-            if (video.People.Count == 0)
+            if (!video.LockedFields.Contains(MetadataFields.Overview))
             {
-                if (!video.LockedFields.Contains(MetadataFields.Cast))
+                if (!string.IsNullOrWhiteSpace(description))
                 {
-                    var people = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/MediaCredits");
-
-                    if (!string.IsNullOrEmpty(people))
-                    {
-                        video.People = people.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
-                            .Where(i => !string.IsNullOrWhiteSpace(i))
-                            .Select(i => new PersonInfo { Name = i.Trim(), Type = PersonType.Actor })
-                            .ToList();
-                    }
-                }
-            }
-
-            if (!video.ProductionYear.HasValue)
-            {
-                var year = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/OriginalReleaseTime");
-
-                if (!string.IsNullOrWhiteSpace(year))
-                {
-                    int val;
-
-                    if (int.TryParse(year, NumberStyles.Integer, _usCulture, out val))
-                    {
-                        video.ProductionYear = val;
-                    }
+                    video.Overview = description;
                 }
             }
         }

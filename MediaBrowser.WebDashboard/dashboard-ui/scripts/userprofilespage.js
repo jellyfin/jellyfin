@@ -122,7 +122,11 @@
             imgUrl = 'css/images/userflyoutdefault.png';
         }
 
-        html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');">';
+        var imageClass = 'cardImage';
+        if (user.Policy.IsDisabled) {
+            imageClass += ' disabledUser';
+        }
+        html += '<div class="' + imageClass + '" style="background-image:url(\'' + imgUrl + '\');">';
 
         if (user.ConnectUserId && addConnectIndicator) {
             html += '<div class="playedIndicator" title="' + Globalize.translate('TooltipLinkedToMediaBrowserConnect') + '"><div class="ui-icon-cloud ui-btn-icon-notext"></div></div>';

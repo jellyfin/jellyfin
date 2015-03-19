@@ -1,49 +1,69 @@
-﻿using System.Drawing;
+﻿using ImageMagickSharp;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Drawing;
+using System.Globalization;
 
 namespace MediaBrowser.Server.Implementations.Drawing
 {
     public class UnplayedCountIndicator
     {
-        private const int IndicatorHeight = 41;
-        public const int IndicatorWidth = 41;
-        private const int OffsetFromTopRightCorner = 10;
+        private const int OffsetFromTopRightCorner = 38;
 
-        public void DrawUnplayedCountIndicator(Graphics graphics, Size imageSize, int count)
+        private readonly IApplicationPaths _appPaths;
+
+        public UnplayedCountIndicator(IApplicationPaths appPaths)
         {
-            var x = imageSize.Width - IndicatorWidth - OffsetFromTopRightCorner;
+            _appPaths = appPaths;
+        }
 
-            using (var backdroundBrush = new SolidBrush(Color.FromArgb(225, 82, 181, 75)))
+        public void DrawUnplayedCountIndicator(MagickWand wand, ImageSize imageSize, int count)
+        {
+            var x = imageSize.Width - OffsetFromTopRightCorner;
+            var text = count.ToString(CultureInfo.InvariantCulture);
+
+            using (var draw = new DrawingWand())
             {
-                graphics.FillEllipse(backdroundBrush, x, OffsetFromTopRightCorner, IndicatorWidth, IndicatorHeight);
-
-                var text = count.ToString();
-
-                x = imageSize.Width - IndicatorWidth - OffsetFromTopRightCorner;
-                var y = OffsetFromTopRightCorner + 6;
-                var fontSize = 24;
-
-                if (text.Length == 1)
+                using (PixelWand pixel = new PixelWand())
                 {
-                    x += 10;
-                }
-                else if (text.Length == 2)
-                {
-                    x += 3;
-                }
-                else if (text.Length == 3)
-                {
-                    x += 1;
-                    y += 1;
-                    fontSize = 20;
-                }
+                    pixel.Color = "#52B54B";
+                    pixel.Opacity = 0.2;
+                    draw.FillColor = pixel;
+                    draw.DrawCircle(x, OffsetFromTopRightCorner, x - 20, OffsetFromTopRightCorner - 20);
 
-                using (var font = new Font("Sans-Serif", fontSize, FontStyle.Regular, GraphicsUnit.Pixel))
-                {
-                    using (var fontBrush = new SolidBrush(Color.White))
+                    pixel.Opacity = 0;
+                    pixel.Color = "white";
+                    draw.FillColor = pixel;
+                    draw.Font = PlayedIndicatorDrawer.ExtractFont("robotoregular.ttf", _appPaths);
+                    draw.FontStyle = FontStyleType.NormalStyle;
+                    draw.TextAlignment = TextAlignType.CenterAlign;
+                    draw.FontWeight = FontWeightType.RegularStyle;
+                    draw.TextAntialias = true;
+
+                    var fontSize = 30;
+                    var y = OffsetFromTopRightCorner + 11;
+
+                    if (text.Length == 1)
                     {
-                        graphics.DrawString(text, font, fontBrush, x, y);
+                        x += 1;
                     }
+                    else if (text.Length == 2)
+                    {
+                        x += 1;
+                    }
+                    else if (text.Length >= 3)
+                    {
+                        //x += 1;
+                        y -= 2;
+                        fontSize = 24;
+                    }
+
+                    draw.FontSize = fontSize;
+                    draw.DrawAnnotation(x, y, text);
+
+                    draw.FillColor = pixel;
+                    wand.CurrentImage.DrawImage(draw);
                 }
+
             }
         }
     }

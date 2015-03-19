@@ -1,6 +1,7 @@
-﻿using System.Threading;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
+using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -20,7 +21,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="refreshOptions">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken);
+        Task<ItemUpdateType> RefreshMetadata(IHasMetadata item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the order.

@@ -34,7 +34,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var genres = user.RootFolder
                 .GetRecursiveChildren(user, i => i is Audio)
                 .Cast<Audio>()
-                .Where(i => i.HasArtist(name))
+                .Where(i => i.HasAnyArtist(name))
                 .SelectMany(i => i.Genres)
                 .Concat(artist.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase);

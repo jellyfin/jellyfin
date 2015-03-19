@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Sync;
+﻿using MediaBrowser.Model.Sync;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Sync
@@ -18,13 +17,12 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="userId">The user identifier.</param>
         /// <returns>IEnumerable&lt;SyncTarget&gt;.</returns>
         IEnumerable<SyncTarget> GetSyncTargets(string userId);
-        
+
         /// <summary>
-        /// Gets the device profile.
+        /// Gets all synchronize targets.
         /// </summary>
-        /// <param name="target">The target.</param>
-        /// <returns>DeviceProfile.</returns>
-        DeviceProfile GetDeviceProfile(SyncTarget target);
+        /// <returns>IEnumerable&lt;SyncTarget&gt;.</returns>
+        IEnumerable<SyncTarget> GetAllSyncTargets();
     }
 
     public interface IHasUniqueTargetIds

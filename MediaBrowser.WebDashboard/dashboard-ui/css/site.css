@@ -268,6 +268,7 @@ h1 .imageLink {
     border: 0;
     padding: 0;
     cursor: pointer;
+    outline: none;
 }
 
     .imageButton:hover {
@@ -316,7 +317,7 @@ h1 .imageLink {
 }
 
 .content-secondary {
-    z-index: 1000;
+    z-index: 999;
     border: 0;
     display: none;
     text-align: left;
@@ -909,7 +910,7 @@ progress {
     height: 7px;
     width: 100%;
     opacity: .95;
-    z-index: 1000;
+    z-index: 999;
 }
 
 .activeDevicesCollapsible .ui-collapsible-content {
@@ -958,7 +959,7 @@ progress {
     height: 5px;
     width: 100%;
     opacity: .9;
-    z-index: 1000;
+    z-index: 999;
     position: absolute;
 }
 
@@ -1029,7 +1030,7 @@ progress {
     opacity: .5;
 }
 
-.accentButton .fa:not(.notext) {
+.accentButton:not(.accentButtonRight) .fa:not(.notext) {
     margin-right: 7px;
 }
 
@@ -1039,6 +1040,10 @@ h1 + .accentButton {
 
 .detailSectionHeader .accentButton {
     font-size: 13px;
+}
+
+.accentButtonRight .fa:not(.notext) {
+    margin-left: 7px;
 }
 
 .dashboardFooter {
@@ -1072,4 +1077,13 @@ h1 + .accentButton {
         right: 20px;
         margin: 0;
     }
+}
+
+.disabledUser {
+    -webkit-filter: grayscale(100%);
+    filter: grayscale(100%);
+}
+
+.disabledUserBanner {
+    margin: 0 0 2em;
 }

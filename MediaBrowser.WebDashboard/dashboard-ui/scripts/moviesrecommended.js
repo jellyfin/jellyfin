@@ -77,7 +77,7 @@
 
             $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                preferBackdrop: true,
+                preferThumb: true,
                 shape: 'backdrop',
                 overlayText: true,
                 showTitle: true,

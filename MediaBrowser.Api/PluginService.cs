@@ -5,6 +5,7 @@ using MediaBrowser.Common.Updates;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Registration;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using ServiceStack.Web;
@@ -106,6 +107,14 @@ namespace MediaBrowser.Api
         public string Mb2Equivalent { get; set; }
     }
 
+    [Route("/Registrations/{Name}", "GET", Summary = "Gets registration status for a feature")]
+    [Authenticated]
+    public class GetRegistration : IReturn<RegistrationInfo>
+    {
+        [ApiMember(Name = "Name", Description = "Feature Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Name { get; set; }
+    }
+
     /// <summary>
     /// Class PluginsService
     /// </summary>
@@ -144,11 +153,24 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetRegistrationStatus request)
+        public async Task<object> Get(GetRegistrationStatus request)
         {
-            var result = _securityManager.GetRegistrationStatus(request.Name, request.Mb2Equivalent).Result;
+            var result = await _securityManager.GetRegistrationStatus(request.Name, request.Mb2Equivalent).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
+        }
+
+        public async Task<object> Get(GetRegistration request)
+        {
+            var result = await _securityManager.GetRegistrationStatus(request.Name).ConfigureAwait(false);
+
+            return ToOptimizedResult(new RegistrationInfo
+            {
+                ExpirationDate = result.ExpirationDate,
+                IsRegistered = result.IsRegistered,
+                IsTrial = result.TrialVersion,
+                Name = request.Name
+            });
         }
 
         /// <summary>
@@ -178,7 +200,7 @@ namespace MediaBrowser.Api
             }
             catch
             {
-                
+
             }
 
             return ToOptimizedSerializedResultUsingCache(result);

@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -22,7 +21,8 @@ namespace MediaBrowser.Controller.Entities.Audio
         IHasLookupInfo<SongInfo>,
         IHasTags,
         IHasMediaSources,
-        IThemeMedia
+        IThemeMedia,
+        IArchivable
     {
         public string FormatName { get; set; }
         public long? Size { get; set; }
@@ -172,16 +172,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         }
 
         /// <summary>
-        /// Determines whether the specified name has artist.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns><c>true</c> if the specified name has artist; otherwise, <c>false</c>.</returns>
-        public bool HasArtist(string name)
-        {
-            return AllArtists.Contains(name, StringComparer.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>
@@ -239,7 +229,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             {
                 Id = i.Id.ToString("N"),
                 Protocol = locationType == LocationType.Remote ? MediaProtocol.Http : MediaProtocol.File,
-                MediaStreams = MediaSourceManager.GetMediaStreams(new MediaStreamQuery { ItemId = i.Id }).ToList(),
+                MediaStreams = MediaSourceManager.GetMediaStreams(i.Id).ToList(),
                 Name = i.Name,
                 Path = enablePathSubstituion ? GetMappedPath(i.Path, locationType) : i.Path,
                 RunTimeTicks = i.RunTimeTicks,

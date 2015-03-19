@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
@@ -47,15 +48,20 @@ namespace MediaBrowser.Providers.Movies
                 return true;
             }
 
+            // Supports images for tv movies
+            var tvProgram = item as LiveTvProgram;
+            if (tvProgram != null && tvProgram.IsMovie)
+            {
+                return true;
+            }
+
             // Don't support local trailers
             return item is Movie || item is MusicVideo;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
         {
-            var channelItem = item as ChannelVideoItem;
-
-            if (channelItem != null)
+            if (item is ChannelVideoItem || item is LiveTvProgram)
             {
                 // Too many channel items to allow backdrops here
                 return new List<ImageType>

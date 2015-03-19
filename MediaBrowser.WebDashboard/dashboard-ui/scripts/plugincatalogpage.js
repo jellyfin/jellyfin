@@ -15,20 +15,45 @@
         var promise2 = ApiClient.getInstalledPlugins();
 
         $.when(promise1, promise2).done(function (response1, response2) {
-            populateList(page, response1[0], response2[0]);
+            populateList({
+
+                catalogElement: $('#pluginTiles', page),
+                noItemsElement: $("#noPlugins", page),
+                availablePlugins: response1[0],
+                installedPlugins: response2[0]
+
+            });
         });
     }
 
-    function populateList(page, availablePlugins, installedPlugins) {
+    function populateList(options) {
 
-        Dashboard.showLoadingMsg();
+        var availablePlugins = options.availablePlugins;
+        var installedPlugins = options.installedPlugins;
 
         availablePlugins = availablePlugins.filter(function (p) {
+
+            p.category = p.category || "General";
+            p.categoryDisplayName = Globalize.translate('PluginCategory' + p.category.replace(' ', ''));
+
+            if (options.categories) {
+                if (options.categories.indexOf(p.category) == -1) {
+                    return false;
+                }
+            }
+
+            if (options.targetSystem) {
+                if (p.targetSystem != options.targetSystem) {
+                    return false;
+                }
+            }
+
             return p.type == "UserInstalled";
+
         }).sort(function (a, b) {
 
-            var aName = (a.category || "General") + " " + a.name;
-            var bame = (b.category || "General") + " " + b.name;
+            var aName = (a.category) + " " + a.name;
+            var bame = (b.category) + " " + b.name;
 
             return aName > bame ? 1 : -1;
         });
@@ -41,22 +66,28 @@
             var html = '';
             var plugin = availablePlugins[i];
 
-            var category = plugin.category || "General";
+            var category = plugin.categoryDisplayName;
 
             if (category != currentCategory) {
 
-                if (currentCategory) {
-                    html += '<br/>';
-                    html += '<br/>';
-                    html += '<br/>';
-                }
+                if (options.showCategory !== false) {
+                    if (currentCategory) {
+                        html += '<br/>';
+                        html += '<br/>';
+                        html += '<br/>';
+                    }
 
-                html += '<div class="detailSectionHeader">' + category + '</div>';
+                    html += '<div class="detailSectionHeader">' + category + '</div>';
+                }
 
                 currentCategory = category;
             }
 
             var href = plugin.externalUrl ? plugin.externalUrl : "addplugin.html?name=" + encodeURIComponent(plugin.name) + "&guid=" + plugin.guid;
+
+            if (options.context) {
+                href += "&context=" + options.context;
+            }
             var target = plugin.externalUrl ? ' target="_blank"' : '';
 
             html += "<div class='card backdropCard alternateHover bottomPaddedCard'>";
@@ -107,7 +138,7 @@
             }
 
             var installedPlugin = plugin.isApp ? null : installedPlugins.filter(function (ip) {
-                return ip.Name == plugin.name;
+                return ip.Id == plugin.guid;
             })[0];
 
             html += "<div class='cardText'>";
@@ -132,11 +163,11 @@
 
         }
 
-        if (!availablePlugins.length) {
-            $("#noPlugins", page).hide();
+        if (!availablePlugins.length && options.noItemsElement) {
+            $(options.noItemsElement).hide();
         }
 
-        $('#pluginTiles', page).html(pluginhtml);
+        $(options.catalogElement).html(pluginhtml);
 
         Dashboard.hideLoadingMsg();
     }
@@ -144,8 +175,6 @@
     $(document).on('pageinit', "#pluginCatalogPage", function () {
 
         var page = this;
-
-        reloadList(page);
 
         $('.chkPremiumFilter', page).on('change', function () {
 
@@ -189,6 +218,12 @@
             this.checked = filters;
 
         }).checkboxradio('refresh');
+
+        reloadList(page);
     });
+
+    window.PluginCatalog = {
+        renderCatalog: populateList
+    };
 
 })(jQuery, document);

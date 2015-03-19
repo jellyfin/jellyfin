@@ -265,6 +265,26 @@
 
         });
 
+    }).on('pagebeforeshow pageinit', "#addPluginPage", function () {
+
+        var page = this;
+
+        var context = getParameterByName('context');
+
+        if (context == 'sync') {
+            $('.syncTabs', page).show();
+            $('.pluginTabs', page).hide();
+
+            page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Sync');
+            Dashboard.setPageTitle(Globalize.translate('TitleSync'));
+        } else {
+            $('.syncTabs', page).hide();
+            $('.pluginTabs', page).show();
+
+            page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Plugins');
+            Dashboard.setPageTitle(Globalize.translate('TitlePlugins'));
+        }
+
     });
 
     function performInstallation(packageName, guid, updateClass, version) {

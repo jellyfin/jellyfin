@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -18,12 +17,10 @@ namespace MediaBrowser.Providers.Photos
     public class PhotoProvider : ICustomMetadataProvider<Photo>, IHasItemChangeMonitor, IForcedProvider
     {
         private readonly ILogger _logger;
-        private readonly IImageProcessor _imageProcessor;
 
-        public PhotoProvider(ILogger logger, IImageProcessor imageProcessor)
+        public PhotoProvider(ILogger logger)
         {
             _logger = logger;
-            _imageProcessor = imageProcessor;
         }
 
         public Task<ItemUpdateType> FetchAsync(Photo item, MetadataRefreshOptions options, CancellationToken cancellationToken)
@@ -75,9 +72,12 @@ namespace MediaBrowser.Providers.Photos
                         }
                     }
                 }
-
+                
                 item.CameraMake = image.ImageTag.Make;
                 item.CameraModel = image.ImageTag.Model;
+
+                item.Width = image.Properties.PhotoWidth;
+                item.Height = image.Properties.PhotoHeight;
 
                 var rating = image.ImageTag.Rating;
                 if (rating.HasValue)
@@ -141,20 +141,6 @@ namespace MediaBrowser.Providers.Photos
             {
                 _logger.ErrorException("Image Provider - Error reading image tag for {0}", e, item.Path);
             }
-
-            var imageInfo = item.GetImageInfo(ImageType.Primary, 0);
-            
-            try
-            {
-                var size = _imageProcessor.GetImageSize(imageInfo.Path, imageInfo.DateModified);
-
-                item.Width = Convert.ToInt32(size.Width);
-                item.Height = Convert.ToInt32(size.Height);
-            }
-            catch
-            {
-
-            } 
 
             const ItemUpdateType result = ItemUpdateType.ImageUpdate | ItemUpdateType.MetadataImport;
             return Task.FromResult(result);

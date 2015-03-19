@@ -46,7 +46,8 @@
                     preferThumb: true,
                     context: 'tv',
                     showItemCounts: true,
-                    centerText: true
+                    centerText: true,
+                    lazy: true
                 });
             }
             else if (view == "ThumbCard") {
@@ -58,7 +59,8 @@
                     context: 'tv',
                     showItemCounts: true,
                     cardLayout: true,
-                    showTitle: true
+                    showTitle: true,
+                    lazy: true
                 });
             }
             else if (view == "Poster") {

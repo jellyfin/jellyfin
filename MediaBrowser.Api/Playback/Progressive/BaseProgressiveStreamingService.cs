@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Diagnostics;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
@@ -15,7 +15,6 @@ using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,7 +28,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         protected readonly IImageProcessor ImageProcessor;
         protected readonly IHttpClient HttpClient;
 
-        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IImageProcessor imageProcessor, IHttpClient httpClient) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder, deviceManager)
+        protected BaseProgressiveStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IProcessManager processManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IImageProcessor imageProcessor, IHttpClient httpClient) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, subtitleEncoder, deviceManager, processManager, mediaSourceManager, zipClient)
         {
             ImageProcessor = imageProcessor;
             HttpClient = httpClient;
@@ -153,49 +152,12 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 using (state)
                 {
-                    var job = string.IsNullOrEmpty(request.TranscodingJobId) ?
-                        null :
-                        ApiEntryPoint.Instance.GetTranscodingJob(request.TranscodingJobId);
-
-                    var limits = new List<long>();
-                    if (state.InputBitrate.HasValue)
-                    {
-                        // Bytes per second
-                        limits.Add((state.InputBitrate.Value / 8));
-                    }
-                    if (state.InputFileSize.HasValue && state.RunTimeTicks.HasValue)
-                    {
-                        var totalSeconds = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalSeconds;
-
-                        if (totalSeconds > 1)
-                        {
-                            var timeBasedLimit = state.InputFileSize.Value / totalSeconds;
-                            limits.Add(Convert.ToInt64(timeBasedLimit));
-                        }
-                    }
-
-                    // Take the greater of the above to methods, just to be safe
-                    var throttleLimit = limits.Count > 0 ? limits.First() : 0;
-
-                    // Pad to play it safe
-                    var bytesPerSecond = Convert.ToInt64(1.05 * throttleLimit);
-
-                    // Don't even start evaluating this until at least two minutes have content have been consumed
-                    var targetGap = throttleLimit * 120;
-
                     return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
                     {
                         ResponseHeaders = responseHeaders,
                         ContentType = contentType,
                         IsHeadRequest = isHeadRequest,
-                        Path = state.MediaPath,
-                        Throttle = request.Throttle,
-
-                        ThrottleLimit = bytesPerSecond,
-
-                        MinThrottlePosition = targetGap,
-
-                        ThrottleCallback = (l1, l2) => ThrottleCallack(l1, l2, bytesPerSecond, job)
+                        Path = state.MediaPath
                     });
                 }
             }
@@ -232,67 +194,6 @@ namespace MediaBrowser.Api.Playback.Progressive
 
                 throw;
             }
-        }
-
-        private readonly long _gapLengthInTicks = TimeSpan.FromMinutes(3).Ticks;
-
-        private long ThrottleCallack(long currentBytesPerSecond, long bytesWritten, long originalBytesPerSecond, TranscodingJob job)
-        {
-            var bytesDownloaded = job.BytesDownloaded ?? 0;
-            var transcodingPositionTicks = job.TranscodingPositionTicks ?? 0;
-            var downloadPositionTicks = job.DownloadPositionTicks ?? 0;
-
-            var path = job.Path;
-
-            if (bytesDownloaded > 0 && transcodingPositionTicks > 0)
-            {
-                // Progressive Streaming - byte-based consideration
-
-                try
-                {
-                    var bytesTranscoded = job.BytesTranscoded ?? new FileInfo(path).Length;
-
-                    // Estimate the bytes the transcoder should be ahead
-                    double gapFactor = _gapLengthInTicks;
-                    gapFactor /= transcodingPositionTicks;
-                    var targetGap = bytesTranscoded * gapFactor;
-
-                    var gap = bytesTranscoded - bytesDownloaded;
-
-                    if (gap < targetGap)
-                    {
-                        //Logger.Debug("Not throttling transcoder gap {0} target gap {1} bytes downloaded {2}", gap, targetGap, bytesDownloaded);
-                        return 0;
-                    }
-
-                    //Logger.Debug("Throttling transcoder gap {0} target gap {1} bytes downloaded {2}", gap, targetGap, bytesDownloaded);
-                }
-                catch
-                {
-                    //Logger.Error("Error getting output size");
-                }
-            }
-            else if (downloadPositionTicks > 0 && transcodingPositionTicks > 0)
-            {
-                // HLS - time-based consideration
-
-                var targetGap = _gapLengthInTicks;
-                var gap = transcodingPositionTicks - downloadPositionTicks;
-
-                if (gap < targetGap)
-                {
-                    //Logger.Debug("Not throttling transcoder gap {0} target gap {1}", gap, targetGap);
-                    return 0;
-                }
-
-                //Logger.Debug("Throttling transcoder gap {0} target gap {1}", gap, targetGap);
-            }
-            else
-            {
-                //Logger.Debug("No throttle data for " + path);
-            }
-
-            return originalBytesPerSecond;
         }
 
         /// <summary>

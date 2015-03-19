@@ -669,13 +669,16 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
 .ui-page-theme-a .detailSectionHeader {
-    background-color: #ddd;
+    background-color: transparent;
     border: 1px solid #ddd;
-    border-radius: 2px;
+    border-width: 0 0 1px 0;
+    border-radius: 0;
+    padding: 0 0 .25em .25em;
+    margin-bottom: .5em;
 }
 
     .ui-page-theme-a .detailSectionHeader, .ui-page-theme-a .detailSectionHeader h3 {
-        font-weight: 500;
+        font-size: 20px;
     }
 
 .ui-page-theme-b .detailSectionHeader {
@@ -727,7 +730,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailImageProgressContainer {
     position: absolute;
-    bottom: 3px;
+    bottom: 2px;
     right: 0;
     left: 0;
     text-align: center;
@@ -1035,7 +1038,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     right: 2px;
     bottom: 5px;
     width: 27px;
-    z-index: 1000;
+    z-index: 999;
     text-align: center;
     font-size: 13px;
     display: none;
@@ -1080,7 +1083,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     right: 0;
     height: 55px;
     background-color: rgba(0, 0, 0, .85);
-    z-index: 1000;
+    z-index: 999;
     text-align: center;
     padding: 1em;
 }
@@ -1387,7 +1390,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .listItem a + a {
     background-color: transparent !important;
-    z-index: 1000;
+    z-index: 999;
 }
 
 .ui-page-theme-a .listItem:hover a {
