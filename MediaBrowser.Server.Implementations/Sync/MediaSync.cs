@@ -203,7 +203,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             foreach (var localItem in localItems)
             {
-                var files = await GetFiles(provider, localItem, target);
+                var files = await GetFiles(provider, localItem, target, cancellationToken);
 
                 foreach (var file in files)
                 {
@@ -326,12 +326,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             return _fileSystem.GetValidFilename(filename);
         }
 
-        private async Task<List<ItemFileInfo>> GetFiles(IServerSyncProvider provider, LocalItem item, SyncTarget target)
+        private async Task<List<ItemFileInfo>> GetFiles(IServerSyncProvider provider, LocalItem item, SyncTarget target, CancellationToken cancellationToken)
         {
             var path = item.LocalPath;
             path = provider.GetParentDirectoryPath(path, target);
 
-            var list = await provider.GetFileSystemEntries(path, target).ConfigureAwait(false);
+            var list = await provider.GetFileSystemEntries(path, target, cancellationToken).ConfigureAwait(false);
 
             var itemFiles = new List<ItemFileInfo>();
 
