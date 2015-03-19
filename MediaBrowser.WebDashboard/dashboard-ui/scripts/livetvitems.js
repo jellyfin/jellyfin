@@ -52,8 +52,7 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
-                showLimit: false,
-                addSelectionButton: true
+                showLimit: false
             });
 
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
@@ -69,6 +68,7 @@
                     showTitle: false,
                     centerText: true,
                     lazy: true,
+                    showStartDateIndex: true,
                     overlayText: false,
                     showProgramAirInfo: true
                 });
@@ -79,6 +79,7 @@
                     shape: "portrait",
                     context: 'livetv',
                     showTitle: true,
+                    showStartDateIndex: true,
                     lazy: true,
                     cardLayout: true,
                     showProgramAirInfo: true
