@@ -1075,7 +1075,7 @@
             if (isStatic) {
                 mp4VideoUrl += seekParam;
             } else {
-                mp4VideoUrl += "&ClientTime=" + new Date().getTime();
+                mp4VideoUrl += "&StreamId=" + new Date().getTime();
             }
 
             var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
@@ -1085,7 +1085,7 @@
                 videoBitrate: webmQuality.videoBitrate,
                 audioBitrate: webmQuality.audioBitrate,
                 EnableAutoStreamCopy: false,
-                ClientTime: new Date().getTime()
+                StreamId: new Date().getTime()
             }));
 
             var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/master.m3u8', $.extend({}, baseParams, {
@@ -1097,7 +1097,7 @@
                 profile: 'high',
                 level: '41',
                 StartTimeTicks: 0,
-                ClientTime: new Date().getTime()
+                StreamId: new Date().getTime()
 
             })) + seekParam;
 

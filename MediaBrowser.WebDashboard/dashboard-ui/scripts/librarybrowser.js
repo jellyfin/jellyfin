@@ -1456,6 +1456,19 @@
 
             }
 
+            if (options.showProgramAirInfo) {
+
+                var date = parseISO8601Date(item.StartDate, { toLocal: true });
+
+                var text = item.StartDate ?
+                    date.toLocaleString() :
+                    '';
+
+                lines.push(text || '&nbsp;');
+
+                lines.push(item.ChannelName || '&nbsp;');
+            }
+
             html += LibraryBrowser.getCardTextLines(lines, cssClass, !options.overlayText);
 
             if (options.overlayText) {

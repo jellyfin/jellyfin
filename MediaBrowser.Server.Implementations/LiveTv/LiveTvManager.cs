@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
-using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Channels;
@@ -24,7 +23,6 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -747,8 +745,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 programs = programs.Where(p => p.IsMovie == query.IsMovie.Value);
             }
 
-            var serviceName = ActiveService.Name;
-
             var programList = programs.ToList();
 
             var genres = programList.SelectMany(i => i.Genres)
@@ -757,7 +753,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             programs = programList.OrderBy(i => i.HasImage(ImageType.Primary) ? 0 : 1)
-                .ThenByDescending(i => GetRecommendationScore(i, user.Id, serviceName, genres))
+                .ThenByDescending(i => GetRecommendationScore(i, user.Id, genres))
                 .ThenBy(i => i.StartDate);
 
             if (query.Limit.HasValue)
@@ -807,7 +803,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return result;
         }
 
-        private int GetRecommendationScore(LiveTvProgram program, Guid userId, string serviceName, Dictionary<string, Genre> genres)
+        private int GetRecommendationScore(LiveTvProgram program, Guid userId, Dictionary<string, Genre> genres)
         {
             var score = 0;
 
@@ -821,7 +817,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 score++;
             }
 
-            var internalChannelId = _tvDtoService.GetInternalChannelId(serviceName, program.ExternalChannelId);
+            var internalChannelId = _tvDtoService.GetInternalChannelId(program.ServiceName, program.ExternalChannelId);
             var channel = GetInternalChannel(internalChannelId);
 
             var channelUserdata = _userDataManager.GetUserData(userId, channel.GetUserDataKey());
@@ -879,11 +875,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private async Task AddRecordingInfo(IEnumerable<ProgramInfoDto> programs, CancellationToken cancellationToken)
         {
-            var timers = await ActiveService.GetTimersAsync(cancellationToken).ConfigureAwait(false);
-            var timerList = timers.ToList();
+            var timers = new Dictionary<string, List<TimerInfo>>();
 
             foreach (var program in programs)
             {
+                List<TimerInfo> timerList;
+                if (!timers.TryGetValue(program.ServiceName, out timerList))
+                {
+                    var tempTimers = await GetService(program.ServiceName).GetTimersAsync(cancellationToken).ConfigureAwait(false);
+                    timers[program.ServiceName] = timerList = tempTimers.ToList();
+                }
+
                 var timer = timerList.FirstOrDefault(i => string.Equals(i.ProgramId, program.ExternalId, StringComparison.OrdinalIgnoreCase));
 
                 if (timer != null)
@@ -922,15 +924,43 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private async Task RefreshChannelsInternal(IProgress<double> progress, CancellationToken cancellationToken)
         {
-            // Avoid implicitly captured closure
-            var service = ActiveService;
+            var numComplete = 0;
+            double progressPerService = _services.Count == 0
+                ? 0
+                : 1 / _services.Count;
 
-            if (service == null)
+            foreach (var service in _services)
             {
-                progress.Report(100);
-                return;
+                cancellationToken.ThrowIfCancellationRequested();
+
+                try
+                {
+                    var innerProgress = new ActionableProgress<double>();
+                    innerProgress.RegisterAction(p => progress.Report(p * progressPerService));
+
+                    await RefreshChannelsInternal(service, innerProgress, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error refreshing channels for service", ex);
+                }
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= _services.Count;
+
+                progress.Report(100 * percent);
             }
 
+            progress.Report(100);
+        }
+
+        private async Task RefreshChannelsInternal(ILiveTvService service, IProgress<double> progress, CancellationToken cancellationToken)
+        {
             progress.Report(10);
 
             var allChannels = await GetChannels(service, cancellationToken).ConfigureAwait(false);
@@ -1192,16 +1222,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<QueryResult<RecordingInfoDto>> GetRecordings(RecordingQuery query, CancellationToken cancellationToken)
         {
-            var service = ActiveService;
-
-            if (service == null)
-            {
-                return new QueryResult<RecordingInfoDto>
-                {
-                    Items = new RecordingInfoDto[] { }
-                };
-            }
-
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
 
             var internalResult = await GetInternalRecordings(query, cancellationToken).ConfigureAwait(false);
@@ -1209,6 +1229,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var returnArray = internalResult.Items.Cast<ILiveTvRecording>()
                 .Select(i =>
                 {
+                    var service = GetService(i);
+
                     var channel = string.IsNullOrEmpty(i.RecordingInfo.ChannelId) ? null : GetInternalChannel(_tvDtoService.GetInternalChannelId(service.Name, i.RecordingInfo.ChannelId));
                     return _tvDtoService.GetRecordingInfoDto(i, channel, service, user);
                 })
@@ -1413,8 +1435,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return program;
         }
 
-        private async Task<SeriesTimerInfo> GetNewTimerDefaultsInternal(CancellationToken cancellationToken, LiveTvProgram program = null)
+        private async Task<Tuple<SeriesTimerInfo,ILiveTvService>> GetNewTimerDefaultsInternal(CancellationToken cancellationToken, LiveTvProgram program = null)
         {
+            var service = program != null && !string.IsNullOrWhiteSpace(program.ServiceName) ?
+                GetService(program) :
+                _services.FirstOrDefault();
+
             ProgramInfo programInfo = null;
 
             if (program != null)
@@ -1448,18 +1474,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 };
             }
 
-            var info = await ActiveService.GetNewTimerDefaultsAsync(cancellationToken, programInfo).ConfigureAwait(false);
+            var info = await service.GetNewTimerDefaultsAsync(cancellationToken, programInfo).ConfigureAwait(false);
 
             info.Id = null;
 
-            return info;
+            return new Tuple<SeriesTimerInfo, ILiveTvService>(info, service);
         }
 
         public async Task<SeriesTimerInfoDto> GetNewTimerDefaults(CancellationToken cancellationToken)
         {
             var info = await GetNewTimerDefaultsInternal(cancellationToken).ConfigureAwait(false);
 
-            var obj = _tvDtoService.GetSeriesTimerInfoDto(info, ActiveService, null);
+            var obj = _tvDtoService.GetSeriesTimerInfoDto(info.Item1, info.Item2, null);
 
             return obj;
         }
@@ -1470,7 +1496,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var programDto = await GetProgram(programId, cancellationToken).ConfigureAwait(false);
 
             var defaults = await GetNewTimerDefaultsInternal(cancellationToken, program).ConfigureAwait(false);
-            var info = _tvDtoService.GetSeriesTimerInfoDto(defaults, ActiveService, null);
+            var info = _tvDtoService.GetSeriesTimerInfoDto(defaults.Item1, defaults.Item2, null);
 
             info.Days = new List<DayOfWeek>
             {

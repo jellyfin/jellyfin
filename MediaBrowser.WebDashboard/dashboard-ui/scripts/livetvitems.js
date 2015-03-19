@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
+    var view = LibraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard');
 
     var currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
@@ -69,7 +69,8 @@
                     showTitle: false,
                     centerText: true,
                     lazy: true,
-                    overlayText: false
+                    overlayText: false,
+                    showProgramAirInfo: true
                 });
             }
             else if (view == "PosterCard") {
@@ -78,9 +79,9 @@
                     shape: "portrait",
                     context: 'livetv',
                     showTitle: true,
-                    showYear: true,
                     lazy: true,
-                    cardLayout: true
+                    cardLayout: true,
+                    showProgramAirInfo: true
                 });
             }
 

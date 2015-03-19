@@ -47,6 +47,9 @@ namespace MediaBrowser.Api.Playback.Hls
     {
         [ApiMember(Name = "DeviceId", Description = "The device id of the client requesting. Used to stop encoding processes when needed.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
         public string DeviceId { get; set; }
+
+        [ApiMember(Name = "StreamId", Description = "The stream id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public string StreamId { get; set; }
     }
 
     public class HlsSegmentService : BaseApiService
@@ -69,7 +72,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         public void Delete(StopEncodingProcess request)
         {
-            ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, path => true);
+            ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.StreamId, path => true);
         }
 
         /// <summary>
