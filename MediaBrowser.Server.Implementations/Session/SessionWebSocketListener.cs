@@ -1,10 +1,11 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Net;
+﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Session;
 using System;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +15,7 @@ namespace MediaBrowser.Server.Implementations.Session
     /// <summary>
     /// Class SessionWebSocketListener
     /// </summary>
-    public class SessionWebSocketListener : IWebSocketListener
+    public class SessionWebSocketListener : IWebSocketListener, IDisposable
     {
         /// <summary>
         /// The _true task result
@@ -36,17 +37,86 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         private readonly IJsonSerializer _json;
 
+        private readonly IHttpServer _httpServer;
+        private readonly IServerManager _serverManager;
+
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionWebSocketListener" /> class.
         /// </summary>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="logManager">The log manager.</param>
         /// <param name="json">The json.</param>
-        public SessionWebSocketListener(ISessionManager sessionManager, ILogManager logManager, IJsonSerializer json)
+        /// <param name="httpServer">The HTTP server.</param>
+        /// <param name="serverManager">The server manager.</param>
+        public SessionWebSocketListener(ISessionManager sessionManager, ILogManager logManager, IJsonSerializer json, IHttpServer httpServer, IServerManager serverManager)
         {
             _sessionManager = sessionManager;
             _logger = logManager.GetLogger(GetType().Name);
             _json = json;
+            _httpServer = httpServer;
+            _serverManager = serverManager;
+            httpServer.WebSocketConnecting += _httpServer_WebSocketConnecting;
+            serverManager.WebSocketConnected += _serverManager_WebSocketConnected;
+        }
+
+        async void _serverManager_WebSocketConnected(object sender, GenericEventArgs<IWebSocketConnection> e)
+        {
+            var session = await GetSession(e.Argument.QueryString, e.Argument.RemoteEndPoint).ConfigureAwait(false);
+
+            if (session != null)
+            {
+                var controller = session.SessionController as WebSocketController;
+
+                if (controller == null)
+                {
+                    controller = new WebSocketController(session, _logger, _sessionManager);
+                }
+
+                controller.AddWebSocket(e.Argument);
+
+                session.SessionController = controller;
+            }
+            else
+            {
+                _logger.Warn("Unable to determine session based on url: {0}", e.Argument.Url);
+            }
+        }
+
+        async void _httpServer_WebSocketConnecting(object sender, WebSocketConnectingEventArgs e)
+        {
+            var token = e.QueryString["api_key"];
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                var session = await GetSession(e.QueryString, e.Endpoint).ConfigureAwait(false);
+
+                if (session == null)
+                {
+                    e.AllowConnection = false;
+                }
+            }
+        }
+
+        private Task<SessionInfo> GetSession(NameValueCollection queryString, string remoteEndpoint)
+        {
+            if (queryString == null)
+            {
+                throw new ArgumentNullException("queryString");
+            }
+
+            var token = queryString["api_key"];
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return Task.FromResult<SessionInfo>(null);
+            }
+            var deviceId = queryString["deviceId"];
+            return _sessionManager.GetSessionByAuthenticationToken(token, deviceId, remoteEndpoint);
+        }
+
+        public void Dispose()
+        {
+            _httpServer.WebSocketConnecting -= _httpServer_WebSocketConnecting;
+            _serverManager.WebSocketConnected -= _serverManager_WebSocketConnected;
         }
 
         /// <summary>

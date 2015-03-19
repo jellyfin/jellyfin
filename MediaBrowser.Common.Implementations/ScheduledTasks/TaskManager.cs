@@ -29,7 +29,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <summary>
         /// The _task queue
         /// </summary>
-        private readonly List<Type> _taskQueue = new List<Type>();
+        private readonly SortedDictionary<Type, TaskExecutionOptions> _taskQueue = new SortedDictionary<Type, TaskExecutionOptions>();
 
         /// <summary>
         /// Gets or sets the json serializer.
@@ -69,13 +69,20 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// Cancels if running and queue.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        public void CancelIfRunningAndQueue<T>()
+        /// <param name="options">Task options.</param>
+        public void CancelIfRunningAndQueue<T>(TaskExecutionOptions options)
                  where T : IScheduledTask
         {
             var task = ScheduledTasks.First(t => t.ScheduledTask.GetType() == typeof(T));
             ((ScheduledTaskWorker)task).CancelIfRunning();
 
-            QueueScheduledTask<T>();
+            QueueScheduledTask<T>(options);
+        }
+
+        public void CancelIfRunningAndQueue<T>()
+               where T : IScheduledTask
+        {
+            CancelIfRunningAndQueue<T>(new TaskExecutionOptions());
         }
 
         /// <summary>
@@ -93,30 +100,39 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// Queues the scheduled task.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        public void QueueScheduledTask<T>()
+        /// <param name="options">Task options</param>
+        public void QueueScheduledTask<T>(TaskExecutionOptions options)
             where T : IScheduledTask
         {
             var scheduledTask = ScheduledTasks.First(t => t.ScheduledTask.GetType() == typeof(T));
 
-            QueueScheduledTask(scheduledTask);
+            QueueScheduledTask(scheduledTask, options);
         }
 
+        public void QueueScheduledTask<T>()
+            where T : IScheduledTask
+        {
+            QueueScheduledTask<T>(new TaskExecutionOptions());
+        }
+        
         /// <summary>
         /// Queues the scheduled task.
         /// </summary>
         /// <param name="task">The task.</param>
-        public void QueueScheduledTask(IScheduledTask task)
+        /// <param name="options">The task options.</param>
+        public void QueueScheduledTask(IScheduledTask task, TaskExecutionOptions options)
         {
             var scheduledTask = ScheduledTasks.First(t => t.ScheduledTask.GetType() == task.GetType());
 
-            QueueScheduledTask(scheduledTask);
+            QueueScheduledTask(scheduledTask, options);
         }
 
         /// <summary>
         /// Queues the scheduled task.
         /// </summary>
         /// <param name="task">The task.</param>
-        private void QueueScheduledTask(IScheduledTaskWorker task)
+        /// <param name="options">The task options.</param>
+        private void QueueScheduledTask(IScheduledTaskWorker task, TaskExecutionOptions options)
         {
             var type = task.ScheduledTask.GetType();
 
@@ -125,17 +141,18 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 // If it's idle just execute immediately
                 if (task.State == TaskState.Idle)
                 {
-                    Execute(task);
+                    Execute(task, options);
                     return;
                 }
 
-                if (!_taskQueue.Contains(type))
+                if (!_taskQueue.ContainsKey(type))
                 {
                     Logger.Info("Queueing task {0}", type.Name);
-                    _taskQueue.Add(type);
+                    _taskQueue.Add(type, options);
                 }
                 else
                 {
+                    _taskQueue[type] = options;
                     Logger.Info("Task already queued: {0}", type.Name);
                 }
             }
@@ -181,9 +198,9 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             ((ScheduledTaskWorker)task).Cancel();
         }
 
-        public Task Execute(IScheduledTaskWorker task)
+        public Task Execute(IScheduledTaskWorker task, TaskExecutionOptions options)
         {
-            return ((ScheduledTaskWorker)task).Execute();
+            return ((ScheduledTaskWorker)task).Execute(options);
         }
 
         /// <summary>
@@ -224,15 +241,15 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             // Execute queued tasks
             lock (_taskQueue)
             {
-                foreach (var type in _taskQueue.ToList())
+                foreach (var enqueuedType in _taskQueue.ToList())
                 {
-                    var scheduledTask = ScheduledTasks.First(t => t.ScheduledTask.GetType() == type);
+                    var scheduledTask = ScheduledTasks.First(t => t.ScheduledTask.GetType() == enqueuedType.Key);
 
                     if (scheduledTask.State == TaskState.Idle)
                     {
-                        Execute(scheduledTask);
+                        Execute(scheduledTask, enqueuedType.Value);
 
-                        _taskQueue.Remove(type);
+                        _taskQueue.Remove(enqueuedType.Key);
                     }
                 }
             }

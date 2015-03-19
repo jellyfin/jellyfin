@@ -57,6 +57,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                     
                     "Language",
                     "LocalTitle",
+                    "OriginalTitle",
                     "LockData",
                     "LockedFields",
                     "Format3D",
@@ -272,6 +273,15 @@ namespace MediaBrowser.LocalMetadata.Savers
             if (!string.IsNullOrEmpty(item.Overview))
             {
                 builder.Append("<Overview><![CDATA[" + item.Overview + "]]></Overview>");
+            }
+
+            var hasOriginalTitle = item as IHasOriginalTitle;
+            if (hasOriginalTitle != null)
+            {
+                if (!string.IsNullOrEmpty(hasOriginalTitle.OriginalTitle))
+                {
+                    builder.Append("<OriginalTitle>" + SecurityElement.Escape(hasOriginalTitle.OriginalTitle) + "</OriginalTitle>");
+                }
             }
             
             var hasShortOverview = item as IHasShortOverview;
@@ -749,11 +759,6 @@ namespace MediaBrowser.LocalMetadata.Savers
                 if (!string.IsNullOrWhiteSpace(link.ItemType))
                 {
                     builder.Append("<Type>" + SecurityElement.Escape(link.ItemType) + "</Type>");
-                }
-
-                if (link.ItemYear.HasValue)
-                {
-                    builder.Append("<Year>" + SecurityElement.Escape(link.ItemYear.Value.ToString(UsCulture)) + "</Year>");
                 }
 
                 if (!string.IsNullOrWhiteSpace(link.Path))

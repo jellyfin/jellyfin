@@ -46,41 +46,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <exception cref="ArgumentException">The image was of an unrecognised format.</exception>
         public static ImageSize GetDimensions(string path, ILogger logger, IFileSystem fileSystem)
         {
-            try
+            using (var fs = File.OpenRead(path))
             {
-                using (var fs = File.OpenRead(path))
+                using (var binaryReader = new BinaryReader(fs))
                 {
-                    using (var binaryReader = new BinaryReader(fs))
-                    {
-                        return GetDimensions(binaryReader);
-                    }
-                }
-            }
-            catch
-            {
-                logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
-            }
-
-            // Buffer to memory stream to avoid image locking file
-            using (var fs = fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                using (var memoryStream = new MemoryStream())
-                {
-                    fs.CopyTo(memoryStream);
-
-                    memoryStream.Position = 0;
-
-                    // Co it the old fashioned way
-                    using (var b = System.Drawing.Image.FromStream(memoryStream, true, false))
-                    {
-                        var size = b.Size;
-
-                        return new ImageSize
-                        {
-                            Width = size.Width,
-                            Height = size.Height
-                        };
-                    }
+                    return GetDimensions(binaryReader);
                 }
             }
         }

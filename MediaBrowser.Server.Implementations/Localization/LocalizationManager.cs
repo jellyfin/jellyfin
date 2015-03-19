@@ -374,6 +374,7 @@ namespace MediaBrowser.Server.Implementations.Localization
                 new LocalizatonOption{ Name="German", Value="de"},
                 new LocalizatonOption{ Name="Greek", Value="el"},
                 new LocalizatonOption{ Name="Hebrew", Value="he"},
+                new LocalizatonOption{ Name="Hungarian", Value="hu"},
                 new LocalizatonOption{ Name="Italian", Value="it"},
                 new LocalizatonOption{ Name="Kazakh", Value="kk"},
                 new LocalizatonOption{ Name="Norwegian Bokmål", Value="nb"},

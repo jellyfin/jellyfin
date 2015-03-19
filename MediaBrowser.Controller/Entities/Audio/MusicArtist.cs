@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Users;
@@ -148,12 +149,15 @@ namespace MediaBrowser.Controller.Entities.Audio
             var totalItems = songs.Count + others.Count;
             var numComplete = 0;
 
+            var childUpdateType = ItemUpdateType.None;
+
             // Refresh songs
             foreach (var item in songs)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                var updateType = await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                childUpdateType = childUpdateType | updateType;
 
                 numComplete++;
                 double percent = numComplete;
@@ -161,15 +165,22 @@ namespace MediaBrowser.Controller.Entities.Audio
                 progress.Report(percent * 100);
             }
 
+            var parentRefreshOptions = refreshOptions;
+            if (childUpdateType > ItemUpdateType.None)
+            {
+                parentRefreshOptions = new MetadataRefreshOptions(refreshOptions);
+                parentRefreshOptions.MetadataRefreshMode = MetadataRefreshMode.FullRefresh;
+            }
+
             // Refresh current item
-            await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+            await RefreshMetadata(parentRefreshOptions, cancellationToken).ConfigureAwait(false);
 
             // Refresh all non-songs
             foreach (var item in others)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                var updateType = await item.RefreshMetadata(parentRefreshOptions, cancellationToken).ConfigureAwait(false);
 
                 numComplete++;
                 double percent = numComplete;
@@ -202,7 +213,7 @@ namespace MediaBrowser.Controller.Entities.Audio
             return i =>
             {
                 var hasArtist = i as IHasArtist;
-                return hasArtist != null && hasArtist.HasArtist(Name);
+                return hasArtist != null && hasArtist.HasAnyArtist(Name);
             };
         }
     }

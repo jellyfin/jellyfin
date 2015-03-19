@@ -200,24 +200,15 @@ namespace MediaBrowser.Api
             //}
             item.ProviderIds = request.ProviderIds;
 
-            var service = new ItemRefreshService(_libraryManager)
+            var task = _providerManager.RefreshFullItem(item, new MetadataRefreshOptions
             {
-                Logger = Logger,
-                Request = Request,
-                ResultFactory = ResultFactory,
-                SessionContext = SessionContext,
-                AuthorizationContext = AuthorizationContext
-            };
-
-            service.Post(new RefreshItem
-            {
-                Id = request.Id,
                 MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                 ImageRefreshMode = ImageRefreshMode.FullRefresh,
                 ReplaceAllMetadata = true,
-                ReplaceAllImages = request.ReplaceAllImages,
-                Recursive = true
-            });
+                ReplaceAllImages = request.ReplaceAllImages
+
+            }, CancellationToken.None);
+            Task.WaitAll(task);
         }
 
         /// <summary>

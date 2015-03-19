@@ -15,12 +15,6 @@ namespace MediaBrowser.Controller.LiveTv
     public interface ILiveTvManager
     {
         /// <summary>
-        /// Gets the active service.
-        /// </summary>
-        /// <value>The active service.</value>
-        ILiveTvService ActiveService { get; }
-
-        /// <summary>
         /// Gets the services.
         /// </summary>
         /// <value>The services.</value>

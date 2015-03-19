@@ -52,17 +52,16 @@ namespace MediaBrowser.Providers.TV
             Current = this;
         }
 
-        private const string RootUrl = "http://www.thetvdb.com/api/";
-        private const string SeriesQuery = "GetSeries.php?seriesname={0}";
+        private const string SeriesSearchUrl = "http://www.thetvdb.com/api/GetSeries.php?seriesname={0}&language={1}";
         private const string SeriesGetZip = "http://www.thetvdb.com/api/{0}/series/{1}/all/{2}.zip";
 
         public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
         {
             var seriesId = searchInfo.GetProviderId(MetadataProviders.Tvdb);
 
-            if (string.IsNullOrEmpty(seriesId))
+            if (string.IsNullOrWhiteSpace(seriesId))
             {
-                return await FindSeries(searchInfo.Name, cancellationToken).ConfigureAwait(false);
+                return await FindSeries(searchInfo.Name, searchInfo.MetadataLanguage, cancellationToken).ConfigureAwait(false);
             }
 
             var metadata = await GetMetadata(searchInfo, cancellationToken).ConfigureAwait(false);
@@ -92,14 +91,14 @@ namespace MediaBrowser.Providers.TV
 
             var seriesId = itemId.GetProviderId(MetadataProviders.Tvdb);
 
-            if (string.IsNullOrEmpty(seriesId))
+            if (string.IsNullOrWhiteSpace(seriesId))
             {
                 seriesId = itemId.Identities
                                  .Where(id => id.Type == MetadataProviders.Tvdb.ToString())
                                  .Select(id => id.Id)
                                  .FirstOrDefault();
 
-                if (string.IsNullOrEmpty(seriesId))
+                if (string.IsNullOrWhiteSpace(seriesId))
                 {
                     var srch = await GetSearchResults(itemId, cancellationToken).ConfigureAwait(false);
 
@@ -114,7 +113,7 @@ namespace MediaBrowser.Providers.TV
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!string.IsNullOrEmpty(seriesId))
+            if (!string.IsNullOrWhiteSpace(seriesId))
             {
                 await EnsureSeriesInfo(seriesId, itemId.MetadataLanguage, cancellationToken).ConfigureAwait(false);
 
@@ -282,29 +281,30 @@ namespace MediaBrowser.Providers.TV
         /// Finds the series.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="language">The language.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.String}.</returns>
-        private async Task<IEnumerable<RemoteSearchResult>> FindSeries(string name, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RemoteSearchResult>> FindSeries(string name, string language, CancellationToken cancellationToken)
         {
-            var results = (await FindSeriesInternal(name, cancellationToken).ConfigureAwait(false)).ToList();
+            var results = (await FindSeriesInternal(name, language, cancellationToken).ConfigureAwait(false)).ToList();
 
             if (results.Count == 0)
             {
                 var parsedName = _libraryManager.ParseName(name);
                 var nameWithoutYear = parsedName.Name;
 
-                if (!string.IsNullOrEmpty(nameWithoutYear) && !string.Equals(nameWithoutYear, name, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(nameWithoutYear) && !string.Equals(nameWithoutYear, name, StringComparison.OrdinalIgnoreCase))
                 {
-                    results = (await FindSeriesInternal(nameWithoutYear, cancellationToken).ConfigureAwait(false)).ToList();
+                    results = (await FindSeriesInternal(nameWithoutYear, language, cancellationToken).ConfigureAwait(false)).ToList();
                 }
             }
 
             return results;
         }
 
-        private async Task<IEnumerable<RemoteSearchResult>> FindSeriesInternal(string name, CancellationToken cancellationToken)
+        private async Task<IEnumerable<RemoteSearchResult>> FindSeriesInternal(string name, string language, CancellationToken cancellationToken)
         {
-            var url = string.Format(RootUrl + SeriesQuery, WebUtility.UrlEncode(name));
+            var url = string.Format(SeriesSearchUrl, WebUtility.UrlEncode(name), language.ToLower());
             var doc = new XmlDocument();
 
             using (var results = await _httpClient.Get(new HttpRequestOptions
@@ -683,7 +683,7 @@ namespace MediaBrowser.Providers.TV
 
             personInfo.Type = PersonType.Actor;
 
-            if (!string.IsNullOrEmpty(personInfo.Name))
+            if (!string.IsNullOrWhiteSpace(personInfo.Name))
             {
                 series.AddPerson(personInfo);
             }
@@ -1057,7 +1057,7 @@ namespace MediaBrowser.Providers.TV
             }
 
             var hasEpisodeChanged = true;
-            if (!string.IsNullOrEmpty(lastUpdateString) && lastTvDbUpdateTime.HasValue)
+            if (!string.IsNullOrWhiteSpace(lastUpdateString) && lastTvDbUpdateTime.HasValue)
             {
                 long num;
                 if (long.TryParse(lastUpdateString, NumberStyles.Any, _usCulture, out num))
@@ -1217,7 +1217,7 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (!string.IsNullOrEmpty(tvdbId))
+            if (!string.IsNullOrWhiteSpace(tvdbId))
             {
                 return new SeriesIdentity { Type = MetadataProviders.Tvdb.ToString(), Id = tvdbId };
             }

@@ -1,19 +1,18 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
-using System;
-using System.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Naming.Common;
 using MediaBrowser.Naming.IO;
 using MediaBrowser.Naming.TV;
 using MediaBrowser.Server.Implementations.Logging;
-using EpisodeInfo = MediaBrowser.Controller.Providers.EpisodeInfo;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
 {

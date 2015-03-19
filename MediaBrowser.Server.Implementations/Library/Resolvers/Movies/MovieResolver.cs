@@ -62,6 +62,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 return ResolveVideos<Video>(parent, files, directoryService, collectionType, false);
             }
 
+            if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
+            {
+                return ResolveVideos<Video>(parent, files, directoryService, collectionType, false);
+            }
+
             if (string.IsNullOrEmpty(collectionType))
             {
                 // Owned items should just use the plain video type
@@ -225,6 +230,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             {
                 item = ResolveVideo<Video>(args, false);
             }
+            else if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
+            {
+                item = ResolveVideo<Video>(args, false);
+            }
             else if (string.IsNullOrEmpty(collectionType))
             {
                 if (args.HasParent<Series>())
@@ -358,6 +367,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             }
 
             var supportsMultiVersion = !string.Equals(collectionType, CollectionType.HomeVideos) &&
+                                    !string.Equals(collectionType, CollectionType.Photos) &&
                                     !string.Equals(collectionType, CollectionType.MusicVideos);
 
             var result = ResolveVideos<T>(parent, fileSystemEntries, directoryService, collectionType, supportsMultiVersion);
@@ -474,7 +484,8 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
                 CollectionType.Movies,
                 CollectionType.HomeVideos,
                 CollectionType.MusicVideos,
-                CollectionType.Movies
+                CollectionType.Movies,
+                CollectionType.Photos
             };
 
             return !validCollectionTypes.Contains(collectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);

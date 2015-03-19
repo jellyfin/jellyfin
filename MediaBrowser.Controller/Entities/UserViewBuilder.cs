@@ -5,7 +5,7 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
@@ -18,7 +18,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MoreLinq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -32,8 +31,9 @@ namespace MediaBrowser.Controller.Entities
         private readonly IUserDataManager _userDataManager;
         private readonly ITVSeriesManager _tvSeriesManager;
         private readonly ICollectionManager _collectionManager;
+        private readonly IPlaylistManager _playlistManager;
 
-        public UserViewBuilder(IUserViewManager userViewManager, ILiveTvManager liveTvManager, IChannelManager channelManager, ILibraryManager libraryManager, ILogger logger, IUserDataManager userDataManager, ITVSeriesManager tvSeriesManager, ICollectionManager collectionManager)
+        public UserViewBuilder(IUserViewManager userViewManager, ILiveTvManager liveTvManager, IChannelManager channelManager, ILibraryManager libraryManager, ILogger logger, IUserDataManager userDataManager, ITVSeriesManager tvSeriesManager, ICollectionManager collectionManager, IPlaylistManager playlistManager)
         {
             _userViewManager = userViewManager;
             _liveTvManager = liveTvManager;
@@ -43,6 +43,7 @@ namespace MediaBrowser.Controller.Entities
             _userDataManager = userDataManager;
             _tvSeriesManager = tvSeriesManager;
             _collectionManager = collectionManager;
+            _playlistManager = playlistManager;
         }
 
         public async Task<QueryResult<BaseItem>> GetUserItems(Folder queryParent, Folder displayParent, string viewType, InternalItemsQuery query)
@@ -111,11 +112,20 @@ namespace MediaBrowser.Controller.Entities
                         return GetResult(result, queryParent, query);
                     }
 
+                case CollectionType.Books:
+                case CollectionType.Photos:
+                case CollectionType.HomeVideos:
+                case CollectionType.MusicVideos:
+                    return GetResult(queryParent.GetChildren(user, true), queryParent, query);
+
                 case CollectionType.Folders:
                     return GetResult(user.RootFolder.GetChildren(user, true), queryParent, query);
 
                 case CollectionType.Games:
                     return await GetGameView(user, queryParent, query).ConfigureAwait(false);
+
+                case CollectionType.Playlists:
+                    return await GetPlaylistsView(queryParent, user, query).ConfigureAwait(false);
 
                 case CollectionType.BoxSets:
                     return await GetBoxsetView(queryParent, user, query).ConfigureAwait(false);
@@ -574,6 +584,11 @@ namespace MediaBrowser.Controller.Entities
             return GetResult(items, queryParent, query);
         }
 
+        private async Task<QueryResult<BaseItem>> GetPlaylistsView(Folder parent, User user, InternalItemsQuery query)
+        {
+            return GetResult(_playlistManager.GetPlaylists(user.Id.ToString("N")), parent, query);
+        }
+
         private async Task<QueryResult<BaseItem>> GetBoxsetView(Folder parent, User user, InternalItemsQuery query)
         {
             return GetResult(GetMediaFolders(user).SelectMany(i =>
@@ -937,11 +952,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            if (request.AllGenres.Length > 0)
-            {
-                return false;
-            }
-
             if (request.Genres.Length > 0)
             {
                 return false;
@@ -1047,7 +1057,17 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            if (request.PersonIds.Length > 0)
+            {
+                return false;
+            }
+
             if (request.Studios.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.StudioIds.Length > 0)
             {
                 return false;
             }
@@ -1571,12 +1591,6 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            // Apply genre filter
-            if (query.AllGenres.Length > 0 && !query.AllGenres.All(v => item.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)))
-            {
-                return false;
-            }
-
             // Filter by VideoType
             if (query.VideoTypes.Length > 0)
             {
@@ -1598,6 +1612,16 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            // Apply studio filter
+            if (query.StudioIds.Length > 0 && !query.StudioIds.Any(id =>
+            {
+                var studioItem = libraryManager.GetItemById(id);
+                return studioItem != null && item.Studios.Contains(studioItem.Name, StringComparer.OrdinalIgnoreCase);
+            }))
+            {
+                return false;
+            }
+
             // Apply year filter
             if (query.Years.Length > 0)
             {
@@ -1614,7 +1638,22 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Apply person filter
-            if (!string.IsNullOrEmpty(query.Person))
+            if (query.PersonIds.Length > 0)
+            {
+                var names = query.PersonIds
+                    .Select(libraryManager.GetItemById)
+                    .Select(i => i == null ? "-1" : i.Name)
+                    .ToList();
+
+                if (!(names.Any(
+                        v => item.People.Select(i => i.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
+                {
+                    return false;
+                }
+            }
+
+            // Apply person filter
+            if (!string.IsNullOrWhiteSpace(query.Person))
             {
                 var personTypes = query.PersonTypes;
 
@@ -1716,7 +1755,7 @@ namespace MediaBrowser.Controller.Entities
 
             var parent = user.RootFolder;
 
-            //list.Add(await GetUserView(SpecialFolder.LiveTvNowPlaying, user, "0", parent).ConfigureAwait(false));
+            //list.Add(await GetUserSubView(SpecialFolder.LiveTvNowPlaying, user, "0", parent).ConfigureAwait(false));
             list.Add(await GetUserView(SpecialFolder.LiveTvChannels, user, string.Empty, parent).ConfigureAwait(false));
             list.Add(await GetUserView(SpecialFolder.LiveTvRecordingGroups, user, string.Empty, parent).ConfigureAwait(false));
 
@@ -1725,7 +1764,7 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<UserView> GetUserView(string name, string type, User user, string sortName, BaseItem parent)
         {
-            var view = await _userViewManager.GetUserView(name, parent.Id.ToString("N"), type, user, sortName, CancellationToken.None)
+            var view = await _userViewManager.GetUserSubView(name, parent.Id.ToString("N"), type, user, sortName, CancellationToken.None)
                         .ConfigureAwait(false);
 
             return view;
@@ -1733,7 +1772,7 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<UserView> GetUserView(string type, User user, string sortName, BaseItem parent)
         {
-            var view = await _userViewManager.GetUserView(parent.Id.ToString("N"), type, user, sortName, CancellationToken.None)
+            var view = await _userViewManager.GetUserSubView(parent.Id.ToString("N"), type, user, sortName, CancellationToken.None)
                         .ConfigureAwait(false);
 
             return view;

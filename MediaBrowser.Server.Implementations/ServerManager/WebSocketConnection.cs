@@ -1,12 +1,15 @@
-﻿using MediaBrowser.Common.Events;
+﻿using System.Text;
+using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using UniversalDetector;
 
 namespace MediaBrowser.Server.Implementations.ServerManager
 {
@@ -66,6 +69,17 @@ namespace MediaBrowser.Server.Implementations.ServerManager
         public Guid Id { get; private set; }
 
         /// <summary>
+        /// Gets or sets the URL.
+        /// </summary>
+        /// <value>The URL.</value>
+        public string Url { get; set; }
+        /// <summary>
+        /// Gets or sets the query string.
+        /// </summary>
+        /// <value>The query string.</value>
+        public NameValueCollection QueryString { get; set; }
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="WebSocketConnection" /> class.
         /// </summary>
         /// <param name="socket">The socket.</param>
@@ -120,29 +134,43 @@ namespace MediaBrowser.Server.Implementations.ServerManager
             {
                 return;
             }
+            var charset = DetectCharset(bytes);
+
+            if (string.Equals(charset, "utf-8", StringComparison.OrdinalIgnoreCase))
+            {
+                OnReceiveInternal(Encoding.UTF8.GetString(bytes));
+            }
+            else
+            {
+                OnReceiveInternal(Encoding.ASCII.GetString(bytes));
+            }
+        }
+        private string DetectCharset(byte[] bytes)
+        {
             try
             {
-                WebSocketMessageInfo info;
-
-                using (var memoryStream = new MemoryStream(bytes))
+                using (var ms = new MemoryStream(bytes))
                 {
-                    var stub = (WebSocketMessage<object>)_jsonSerializer.DeserializeFromStream(memoryStream, typeof(WebSocketMessage<object>));
+                    var detector = new CharsetDetector();
+                    detector.Feed(ms);
+                    detector.DataEnd();
 
-                    info = new WebSocketMessageInfo
+                    var charset = detector.Charset;
+
+                    if (!string.IsNullOrWhiteSpace(charset))
                     {
-                        MessageType = stub.MessageType,
-                        Data = stub.Data == null ? null : stub.Data.ToString()
-                    };
+                        //_logger.Debug("UniversalDetector detected charset {0}", charset);
+                    }
+
+                    return charset;
                 }
-
-                info.Connection = this;
-
-                OnReceive(info);
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
-                _logger.ErrorException("Error processing web socket message", ex);
+                _logger.ErrorException("Error attempting to determine web socket message charset", ex);
             }
+
+            return null;
         }
 
         private void OnReceiveInternal(string message)

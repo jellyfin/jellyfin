@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -17,13 +18,29 @@ namespace MediaBrowser.Controller.Providers
     public interface IProviderManager
     {
         /// <summary>
+        /// Queues the refresh.
+        /// </summary>
+        /// <param name="itemId">The item identifier.</param>
+        /// <param name="options">The options.</param>
+        void QueueRefresh(Guid itemId, MetadataRefreshOptions options);
+
+        /// <summary>
+        /// Refreshes the full item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task RefreshFullItem(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken);
+        
+        /// <summary>
         /// Refreshes the metadata.
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task RefreshMetadata(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken);
+        Task<ItemUpdateType> RefreshSingleItem(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Saves the image.

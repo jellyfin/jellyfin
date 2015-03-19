@@ -1,7 +1,7 @@
-﻿using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Entities;
+﻿using System;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.MediaInfo;
 using ServiceStack;
@@ -22,51 +22,54 @@ namespace MediaBrowser.Api.Playback
         public string UserId { get; set; }
     }
 
+    [Route("/Items/{Id}/PlaybackInfo", "GET", Summary = "Gets live playback media info for an item")]
+    public class GetPlaybackInfo : IReturn<LiveMediaInfoResult>
+    {
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string UserId { get; set; }
+    }
+
     [Authenticated]
     public class MediaInfoService : BaseApiService
     {
-        private readonly ILibraryManager _libraryManager;
-        private readonly IChannelManager _channelManager;
-        private readonly IUserManager _userManager;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
-        public MediaInfoService(ILibraryManager libraryManager, IChannelManager channelManager, IUserManager userManager)
+        public MediaInfoService(IMediaSourceManager mediaSourceManager)
         {
-            _libraryManager = libraryManager;
-            _channelManager = channelManager;
-            _userManager = userManager;
+            _mediaSourceManager = mediaSourceManager;
         }
 
-        public async Task<object> Get(GetLiveMediaInfo request)
+        public Task<object> Get(GetPlaybackInfo request)
         {
-            var item = _libraryManager.GetItemById(request.Id);
+            return GetPlaybackInfo(request.Id, request.UserId);
+        }
+
+        public Task<object> Get(GetLiveMediaInfo request)
+        {
+            return GetPlaybackInfo(request.Id, request.UserId);
+        }
+
+        private async Task<object> GetPlaybackInfo(string id, string userId)
+        {
             IEnumerable<MediaSourceInfo> mediaSources;
+            var result = new LiveMediaInfoResult();
 
-            var channelItem = item as IChannelMediaItem;
-            var user = _userManager.GetUserById(request.UserId);
-
-            if (channelItem != null)
+            try
             {
-                mediaSources = await _channelManager.GetChannelItemMediaSources(request.Id, true, CancellationToken.None)
-                        .ConfigureAwait(false);
+                mediaSources = await _mediaSourceManager.GetPlayackMediaSources(id, userId, true, CancellationToken.None).ConfigureAwait(false);
             }
-            else
+            catch (PlaybackException ex)
             {
-                var hasMediaSources = (IHasMediaSources)item;
-
-                if (user == null)
-                {
-                    mediaSources = hasMediaSources.GetMediaSources(true);
-                }
-                else
-                {
-                    mediaSources = hasMediaSources.GetMediaSources(true, user);
-                }
+                mediaSources = new List<MediaSourceInfo>();
+                result.ErrorCode = ex.ErrorCode;
             }
 
-            return ToOptimizedResult(new LiveMediaInfoResult
-            {
-                MediaSources = mediaSources.ToList()
-            });
+            result.MediaSources = mediaSources.ToList();
+
+            return ToOptimizedResult(result);
         }
     }
 }

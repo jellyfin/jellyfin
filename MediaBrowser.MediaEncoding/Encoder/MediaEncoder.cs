@@ -70,8 +70,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected readonly IChannelManager ChannelManager;
         protected readonly ISessionManager SessionManager;
         protected readonly Func<ISubtitleEncoder> SubtitleEncoder;
+        protected readonly Func<IMediaSourceManager> MediaSourceManager;
 
-        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder)
+        public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
@@ -84,6 +85,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ChannelManager = channelManager;
             SessionManager = sessionManager;
             SubtitleEncoder = subtitleEncoder;
+            MediaSourceManager = mediaSourceManager;
             FFProbePath = ffProbePath;
             FFMpegPath = ffMpegPath;
         }
@@ -580,7 +582,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 LibraryManager,
                 ChannelManager,
                 SessionManager,
-                SubtitleEncoder())
+                SubtitleEncoder(),
+                MediaSourceManager())
                 .Start(options, progress, cancellationToken).ConfigureAwait(false);
 
             await job.TaskCompletionSource.Task.ConfigureAwait(false);
@@ -601,7 +604,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 LibraryManager,
                 ChannelManager,
                 SessionManager,
-                SubtitleEncoder())
+                SubtitleEncoder(),
+                MediaSourceManager())
                 .Start(options, progress, cancellationToken).ConfigureAwait(false);
 
             await job.TaskCompletionSource.Task.ConfigureAwait(false);

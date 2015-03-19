@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Net;
 using System;
+using System.Collections.Specialized;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ namespace MediaBrowser.Controller.Net
         /// Occurs when [closed].
         /// </summary>
         event EventHandler<EventArgs> Closed;
-        
+
         /// <summary>
         /// Gets the id.
         /// </summary>
@@ -23,6 +24,17 @@ namespace MediaBrowser.Controller.Net
         /// </summary>
         /// <value>The last activity date.</value>
         DateTime LastActivityDate { get; }
+
+        /// <summary>
+        /// Gets or sets the URL.
+        /// </summary>
+        /// <value>The URL.</value>
+        string Url { get; set; }
+        /// <summary>
+        /// Gets or sets the query string.
+        /// </summary>
+        /// <value>The query string.</value>
+        NameValueCollection QueryString { get; set; }
 
         /// <summary>
         /// Gets or sets the receive action.

@@ -15,11 +15,12 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IHasSpecialFeatures, IMetadataContainer
+    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IHasSpecialFeatures, IMetadataContainer, IHasOriginalTitle
     {
         public List<Guid> SpecialFeatureIds { get; set; }
         public List<Guid> SoundtrackIds { get; set; }
 
+        public string OriginalTitle { get; set; }
         public int SeasonCount { get; set; }
 
         public int? AnimeSeriesIndex { get; set; }
@@ -260,7 +261,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 progress.Report(percent * 100);
             }
 
-            await ProviderManager.RefreshMetadata(this, refreshOptions, cancellationToken).ConfigureAwait(false);
+            await ProviderManager.RefreshSingleItem(this, refreshOptions, cancellationToken).ConfigureAwait(false);
 
             progress.Report(100);
         }

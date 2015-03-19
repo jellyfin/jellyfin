@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Logging;
@@ -22,7 +21,6 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly ILogger _logger;
         private readonly ISessionManager _sessionManager;
 
-        private readonly IItemRepository _itemRepository;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IDlnaManager _dlnaManager;
@@ -34,12 +32,12 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly ILocalizationManager _localization;
 
         private readonly DeviceDiscovery _deviceDiscovery;
-        
-        public PlayToManager(ILogger logger, ISessionManager sessionManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, DeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization)
+        private readonly IMediaSourceManager _mediaSourceManager;
+
+        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, DeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager)
         {
             _logger = logger;
             _sessionManager = sessionManager;
-            _itemRepository = itemRepository;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _dlnaManager = dlnaManager;
@@ -50,6 +48,7 @@ namespace MediaBrowser.Dlna.PlayTo
             _config = config;
             _userDataManager = userDataManager;
             _localization = localization;
+            _mediaSourceManager = mediaSourceManager;
         }
 
         public void Start()
@@ -102,7 +101,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
                         sessionInfo.SessionController = controller = new PlayToController(sessionInfo,
                             _sessionManager,
-                            _itemRepository,
                             _libraryManager,
                             _logger,
                             _dlnaManager,
@@ -112,7 +110,8 @@ namespace MediaBrowser.Dlna.PlayTo
                             accessToken,
                             _deviceDiscovery,
                             _userDataManager,
-                            _localization);
+                            _localization,
+                            _mediaSourceManager);
 
                         controller.Init(device);
 

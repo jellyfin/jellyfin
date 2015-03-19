@@ -1,9 +1,8 @@
-﻿using MediaBrowser.Controller.Devices;
-using MediaBrowser.Model.Extensions;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
+using MediaBrowser.Controller.Diagnostics;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -11,6 +10,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using ServiceStack;
 using System;
@@ -63,7 +63,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
     public class DynamicHlsService : BaseHlsService
     {
-        public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, IChannelManager channelManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, INetworkManager networkManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, channelManager, subtitleEncoder, deviceManager)
+        public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IProcessManager processManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, INetworkManager networkManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, subtitleEncoder, deviceManager, processManager, mediaSourceManager, zipClient)
         {
             NetworkManager = networkManager;
         }
@@ -100,13 +100,13 @@ namespace MediaBrowser.Api.Playback.Hls
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
-            var index = int.Parse(segmentId, NumberStyles.Integer, UsCulture);
+            var requestedIndex = int.Parse(segmentId, NumberStyles.Integer, UsCulture);
 
             var state = await GetState(request, cancellationToken).ConfigureAwait(false);
 
             var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");
 
-            var segmentPath = GetSegmentPath(playlistPath, index);
+            var segmentPath = GetSegmentPath(playlistPath, requestedIndex);
             var segmentLength = state.SegmentLength;
 
             var segmentExtension = GetSegmentFileExtension(state);
@@ -115,7 +115,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (File.Exists(segmentPath))
             {
-                return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
+                job = ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
+                return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
             }
 
             await ApiEntryPoint.Instance.TranscodingStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
@@ -123,26 +124,26 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 if (File.Exists(segmentPath))
                 {
-                    return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
+                    job = ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
+                    return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
                     var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
-
-                    if (currentTranscodingIndex == null || index < currentTranscodingIndex.Value || (index - currentTranscodingIndex.Value) > 4)
+                    var segmentGapRequiringTranscodingChange = 24/state.SegmentLength;
+                    if (currentTranscodingIndex == null || requestedIndex < currentTranscodingIndex.Value || (requestedIndex - currentTranscodingIndex.Value) > segmentGapRequiringTranscodingChange)
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
-                            ApiEntryPoint.Instance.KillTranscodingJobs(j => j.Type == TranscodingJobType && string.Equals(j.DeviceId, request.DeviceId, StringComparison.OrdinalIgnoreCase), p => !string.Equals(p, playlistPath, StringComparison.OrdinalIgnoreCase));
+                            ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.StreamId ?? request.ClientTime, p => false);
 
                             if (currentTranscodingIndex.HasValue)
                             {
                                 DeleteLastFile(playlistPath, segmentExtension, 0);
                             }
 
-                            var startSeconds = index * state.SegmentLength;
-                            request.StartTimeTicks = TimeSpan.FromSeconds(startSeconds).Ticks;
+                            request.StartTimeTicks = GetSeekPositionTicks(state, requestedIndex);
 
                             job = await StartFfMpeg(state, playlistPath, cancellationTokenSource).ConfigureAwait(false);
                         }
@@ -152,7 +153,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        await WaitForMinimumSegmentCount(playlistPath, 2, cancellationTokenSource.Token).ConfigureAwait(false);
+                        await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }
             }
@@ -169,11 +170,26 @@ namespace MediaBrowser.Api.Playback.Hls
 
             Logger.Info("returning {0}", segmentPath);
             job = job ?? ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
-            return await GetSegmentResult(playlistPath, segmentPath, index, segmentLength, job, cancellationToken).ConfigureAwait(false);
+            return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
+        }
+
+        private long GetSeekPositionTicks(StreamState state, int requestedIndex)
+        {
+            var startSeconds = requestedIndex * state.SegmentLength;
+            var position = TimeSpan.FromSeconds(startSeconds).Ticks;
+
+            return position;
         }
 
         public int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
         {
+            var job = ApiEntryPoint.Instance.GetTranscodingJob(playlist, TranscodingJobType);
+
+            if (job == null || job.HasExited)
+            {
+                return null;
+            }
+
             var file = GetLastTranscodingFile(playlist, segmentExtension, FileSystem);
 
             if (file == null)
@@ -204,7 +220,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 return;
             }
-            
+
             try
             {
                 FileSystem.DeleteFile(file.FullName);
@@ -277,7 +293,7 @@ namespace MediaBrowser.Api.Playback.Hls
             CancellationToken cancellationToken)
         {
             // If all transcoding has completed, just return immediately
-            if (!IsTranscoding(playlistPath))
+            if (transcodingJob != null && transcodingJob.HasExited)
             {
                 return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
             }
@@ -288,12 +304,15 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 using (var reader = new StreamReader(fileStream))
                 {
-                    var text = await reader.ReadToEndAsync().ConfigureAwait(false);
-
-                    // If it appears in the playlist, it's done
-                    if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                    while (!reader.EndOfStream)
                     {
-                        return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
+                        var text = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                        // If it appears in the playlist, it's done
+                        if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                        {
+                            return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
+                        }
                     }
                 }
             }
@@ -354,13 +373,6 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 }
             });
-        }
-
-        private bool IsTranscoding(string playlistPath)
-        {
-            var job = ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
-
-            return job != null && !job.HasExited;
         }
 
         private async Task<object> GetAsync(GetMasterHlsVideoStream request, string method)
@@ -681,20 +693,36 @@ namespace MediaBrowser.Api.Playback.Hls
             // If isEncoding is true we're actually starting ffmpeg
             var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
 
-            var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts -flags -global_header {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
-                inputModifier,
-                GetInputArgument(transcodingJobId, state),
-                threads,
-                GetMapArgs(state),
-                GetVideoArguments(state),
-                GetAudioArguments(state),
-                state.SegmentLength.ToString(UsCulture),
-                startNumberParam,
-                state.HlsListSize.ToString(UsCulture),
-                outputPath
-                ).Trim();
+            if (state.EnableGenericHlsSegmenter)
+            {
+                var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d.ts";
 
-            return args;
+                return string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts -flags -global_header {5} -f segment -segment_time {6} -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
+                    inputModifier,
+                    GetInputArgument(transcodingJobId, state),
+                    threads,
+                    GetMapArgs(state),
+                    GetVideoArguments(state),
+                    GetAudioArguments(state),
+                    state.SegmentLength.ToString(UsCulture),
+                    startNumberParam,
+                    outputPath,
+                    outputTsArg
+                    ).Trim();
+            }
+
+            return string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts -flags -global_header {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
+                            inputModifier,
+                            GetInputArgument(transcodingJobId, state),
+                            threads,
+                            GetMapArgs(state),
+                            GetVideoArguments(state),
+                            GetAudioArguments(state),
+                            state.SegmentLength.ToString(UsCulture),
+                            startNumberParam,
+                            state.HlsListSize.ToString(UsCulture),
+                            outputPath
+                            ).Trim();
         }
 
         /// <summary>

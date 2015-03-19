@@ -74,5 +74,22 @@ namespace MediaBrowser.Providers.TV
                 await provider.Run(item, CancellationToken.None).ConfigureAwait(false);
             }
         }
+
+        protected override bool IsFullLocalMetadata(Series item)
+        {
+            if (string.IsNullOrWhiteSpace(item.Name))
+            {
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(item.Overview))
+            {
+                return false;
+            }
+            if (!item.ProductionYear.HasValue)
+            {
+                return false;
+            }
+            return base.IsFullLocalMetadata(item);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using System.Text;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Data;
@@ -172,6 +173,37 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 json.SerializeToStream(obj, stream);
                 return stream.ToArray();
             }
+        }
+
+        public static void AddColumn(this IDbConnection connection, ILogger logger, string table, string columnName, string type)
+        {
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(" + table + ")";
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(1))
+                        {
+                            var name = reader.GetString(1);
+
+                            if (string.Equals(name, columnName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var builder = new StringBuilder();
+
+            builder.AppendLine("alter table " + table);
+            builder.AppendLine("add column " + columnName + " " + type);
+
+            connection.RunQueries(new[] { builder.ToString() }, logger);
         }
     }
 }

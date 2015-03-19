@@ -211,7 +211,7 @@ namespace MediaBrowser.Api
                 result.SongCount = album.Tracks.Count();
 
                 result.Artists = album.Artists.ToArray();
-                result.AlbumArtist = album.AlbumArtists.FirstOrDefault();
+                result.AlbumArtist = album.AlbumArtist;
             }
 
             var song = item as Audio;

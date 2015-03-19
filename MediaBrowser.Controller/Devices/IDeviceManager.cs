@@ -25,9 +25,10 @@ namespace MediaBrowser.Controller.Devices
         /// <param name="reportedId">The reported identifier.</param>
         /// <param name="name">The name.</param>
         /// <param name="appName">Name of the application.</param>
+        /// <param name="appVersion">The application version.</param>
         /// <param name="usedByUserId">The used by user identifier.</param>
         /// <returns>Task.</returns>
-        Task<DeviceInfo> RegisterDevice(string reportedId, string name, string appName, string usedByUserId);
+        Task<DeviceInfo> RegisterDevice(string reportedId, string name, string appName, string appVersion, string usedByUserId);
 
         /// <summary>
         /// Saves the capabilities.

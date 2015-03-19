@@ -50,7 +50,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             string[] queries = {
 
-                                "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Quality TEXT NOT NULL, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, Category TEXT, ParentId TEXT, UnwatchedOnly BIT, ItemLimit INT, SyncNewContent BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
+                                "create table if not exists SyncJobs (Id GUID PRIMARY KEY, TargetId TEXT NOT NULL, Name TEXT NOT NULL, Profile TEXT, Quality TEXT, Bitrate INT, Status TEXT NOT NULL, Progress FLOAT, UserId TEXT NOT NULL, ItemIds TEXT NOT NULL, Category TEXT, ParentId TEXT, UnwatchedOnly BIT, ItemLimit INT, SyncNewContent BIT, DateCreated DateTime, DateLastModified DateTime, ItemCount int)",
                                 "create index if not exists idx_SyncJobs on SyncJobs(Id)",
 
                                 "create table if not exists SyncJobItems (Id GUID PRIMARY KEY, ItemId TEXT, ItemName TEXT, MediaSourceId TEXT, JobId TEXT, TemporaryPath TEXT, OutputPath TEXT, Status TEXT, TargetId TEXT, DateCreated DateTime, Progress FLOAT, AdditionalFiles TEXT, MediaSource TEXT, IsMarkedForRemoval BIT, JobItemIndex INT)",
@@ -64,6 +64,9 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             _connection.RunQueries(queries, _logger);
 
+            _connection.AddColumn(_logger, "SyncJobs", "Profile", "TEXT");
+            _connection.AddColumn(_logger, "SyncJobs", "Bitrate", "INT");
+         
             PrepareStatements();
         }
 
@@ -81,12 +84,14 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             // _insertJobCommand
             _insertJobCommand = _connection.CreateCommand();
-            _insertJobCommand.CommandText = "insert into SyncJobs (Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount) values (@Id, @TargetId, @Name, @Quality, @Status, @Progress, @UserId, @ItemIds, @Category, @ParentId, @UnwatchedOnly, @ItemLimit, @SyncNewContent, @DateCreated, @DateLastModified, @ItemCount)";
+            _insertJobCommand.CommandText = "insert into SyncJobs (Id, TargetId, Name, Profile, Quality, Bitrate, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount) values (@Id, @TargetId, @Name, @Profile, @Quality, @Bitrate, @Status, @Progress, @UserId, @ItemIds, @Category, @ParentId, @UnwatchedOnly, @ItemLimit, @SyncNewContent, @DateCreated, @DateLastModified, @ItemCount)";
 
             _insertJobCommand.Parameters.Add(_insertJobCommand, "@Id");
             _insertJobCommand.Parameters.Add(_insertJobCommand, "@TargetId");
             _insertJobCommand.Parameters.Add(_insertJobCommand, "@Name");
+            _insertJobCommand.Parameters.Add(_insertJobCommand, "@Profile");
             _insertJobCommand.Parameters.Add(_insertJobCommand, "@Quality");
+            _insertJobCommand.Parameters.Add(_insertJobCommand, "@Bitrate");
             _insertJobCommand.Parameters.Add(_insertJobCommand, "@Status");
             _insertJobCommand.Parameters.Add(_insertJobCommand, "@Progress");
             _insertJobCommand.Parameters.Add(_insertJobCommand, "@UserId");
@@ -102,12 +107,14 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             // _updateJobCommand
             _updateJobCommand = _connection.CreateCommand();
-            _updateJobCommand.CommandText = "update SyncJobs set TargetId=@TargetId,Name=@Name,Quality=@Quality,Status=@Status,Progress=@Progress,UserId=@UserId,ItemIds=@ItemIds,Category=@Category,ParentId=@ParentId,UnwatchedOnly=@UnwatchedOnly,ItemLimit=@ItemLimit,SyncNewContent=@SyncNewContent,DateCreated=@DateCreated,DateLastModified=@DateLastModified,ItemCount=@ItemCount where Id=@ID";
+            _updateJobCommand.CommandText = "update SyncJobs set TargetId=@TargetId,Name=@Name,Profile=@Profile,Quality=@Quality,Bitrate=@Bitrate,Status=@Status,Progress=@Progress,UserId=@UserId,ItemIds=@ItemIds,Category=@Category,ParentId=@ParentId,UnwatchedOnly=@UnwatchedOnly,ItemLimit=@ItemLimit,SyncNewContent=@SyncNewContent,DateCreated=@DateCreated,DateLastModified=@DateLastModified,ItemCount=@ItemCount where Id=@ID";
 
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@Id");
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@TargetId");
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@Name");
+            _updateJobCommand.Parameters.Add(_updateJobCommand, "@Profile");
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@Quality");
+            _updateJobCommand.Parameters.Add(_updateJobCommand, "@Bitrate");
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@Status");
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@Progress");
             _updateJobCommand.Parameters.Add(_updateJobCommand, "@UserId");
@@ -162,7 +169,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _updateJobItemCommand.Parameters.Add(_updateJobItemCommand, "@JobItemIndex");
         }
 
-        private const string BaseJobSelectText = "select Id, TargetId, Name, Quality, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount from SyncJobs";
+        private const string BaseJobSelectText = "select Id, TargetId, Name, Profile, Quality, Bitrate, Status, Progress, UserId, ItemIds, Category, ParentId, UnwatchedOnly, ItemLimit, SyncNewContent, DateCreated, DateLastModified, ItemCount from SyncJobs";
         private const string BaseJobItemSelectText = "select Id, ItemId, ItemName, MediaSourceId, JobId, TemporaryPath, OutputPath, Status, TargetId, DateCreated, Progress, AdditionalFiles, MediaSource, IsMarkedForRemoval, JobItemIndex from SyncJobItems";
 
         public SyncJob GetJob(string id)
@@ -210,54 +217,64 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (!reader.IsDBNull(3))
             {
-                info.Quality = (SyncQuality)Enum.Parse(typeof(SyncQuality), reader.GetString(3), true);
+                info.Profile = reader.GetString(3);
             }
 
             if (!reader.IsDBNull(4))
             {
-                info.Status = (SyncJobStatus)Enum.Parse(typeof(SyncJobStatus), reader.GetString(4), true);
+                info.Quality = reader.GetString(4);
             }
 
             if (!reader.IsDBNull(5))
             {
-                info.Progress = reader.GetDouble(5);
+                info.Bitrate = reader.GetInt32(5);
             }
 
             if (!reader.IsDBNull(6))
             {
-                info.UserId = reader.GetString(6);
+                info.Status = (SyncJobStatus)Enum.Parse(typeof(SyncJobStatus), reader.GetString(6), true);
             }
 
             if (!reader.IsDBNull(7))
             {
-                info.RequestedItemIds = reader.GetString(7).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                info.Progress = reader.GetDouble(7);
             }
 
             if (!reader.IsDBNull(8))
             {
-                info.Category = (SyncCategory)Enum.Parse(typeof(SyncCategory), reader.GetString(8), true);
+                info.UserId = reader.GetString(8);
             }
 
             if (!reader.IsDBNull(9))
             {
-                info.ParentId = reader.GetString(9);
+                info.RequestedItemIds = reader.GetString(9).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
             }
 
             if (!reader.IsDBNull(10))
             {
-                info.UnwatchedOnly = reader.GetBoolean(10);
+                info.Category = (SyncCategory)Enum.Parse(typeof(SyncCategory), reader.GetString(10), true);
             }
 
             if (!reader.IsDBNull(11))
             {
-                info.ItemLimit = reader.GetInt32(11);
+                info.ParentId = reader.GetString(11);
             }
 
-            info.SyncNewContent = reader.GetBoolean(12);
+            if (!reader.IsDBNull(12))
+            {
+                info.UnwatchedOnly = reader.GetBoolean(12);
+            }
 
-            info.DateCreated = reader.GetDateTime(13).ToUniversalTime();
-            info.DateLastModified = reader.GetDateTime(14).ToUniversalTime();
-            info.ItemCount = reader.GetInt32(15);
+            if (!reader.IsDBNull(13))
+            {
+                info.ItemLimit = reader.GetInt32(13);
+            }
+
+            info.SyncNewContent = reader.GetBoolean(14);
+
+            info.DateCreated = reader.GetDateTime(15).ToUniversalTime();
+            info.DateLastModified = reader.GetDateTime(16).ToUniversalTime();
+            info.ItemCount = reader.GetInt32(17);
 
             return info;
         }
@@ -294,7 +311,9 @@ namespace MediaBrowser.Server.Implementations.Sync
                 cmd.GetParameter(index++).Value = new Guid(job.Id);
                 cmd.GetParameter(index++).Value = job.TargetId;
                 cmd.GetParameter(index++).Value = job.Name;
+                cmd.GetParameter(index++).Value = job.Profile;
                 cmd.GetParameter(index++).Value = job.Quality;
+                cmd.GetParameter(index++).Value = job.Bitrate;
                 cmd.GetParameter(index++).Value = job.Status.ToString();
                 cmd.GetParameter(index++).Value = job.Progress;
                 cmd.GetParameter(index++).Value = job.UserId;
@@ -421,7 +440,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 var whereClauses = new List<string>();
 
-                if (query.Statuses.Count > 0)
+                if (query.Statuses.Length > 0)
                 {
                     var statuses = string.Join(",", query.Statuses.Select(i => "'" + i.ToString() + "'").ToArray());
 
@@ -430,6 +449,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 if (!string.IsNullOrWhiteSpace(query.TargetId))
                 {
                     whereClauses.Add("TargetId=@TargetId");
+                    cmd.Parameters.Add(cmd, "@TargetId", DbType.String).Value = query.TargetId;
                 }
                 if (!string.IsNullOrWhiteSpace(query.UserId))
                 {
@@ -442,6 +462,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                     cmd.Parameters.Add(cmd, "@SyncNewContent", DbType.Boolean).Value = query.SyncNewContent.Value;
                 }
 
+                cmd.CommandText += " mainTable";
+
                 var whereTextWithoutPaging = whereClauses.Count == 0 ?
                     string.Empty :
                     " where " + string.Join(" AND ", whereClauses.ToArray());
@@ -449,7 +471,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 var startIndex = query.StartIndex ?? 0;
                 if (startIndex > 0)
                 {
-                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM SyncJobs ORDER BY (Select Max(DateLastModified) from SyncJobs where TargetId=@TargetId) DESC, DateLastModified DESC LIMIT {0})",
+                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM SyncJobs ORDER BY (Select Max(DateLastModified) from SyncJobs where TargetId=mainTable.TargetId) DESC, DateLastModified DESC LIMIT {0})",
                         startIndex.ToString(_usCulture)));
                 }
 
@@ -458,8 +480,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     cmd.CommandText += " where " + string.Join(" AND ", whereClauses.ToArray());
                 }
 
-                cmd.CommandText += " ORDER BY (Select Max(DateLastModified) from SyncJobs where TargetId=@TargetId) DESC, DateLastModified DESC";
-                cmd.Parameters.Add(cmd, "@TargetId", DbType.String).Value = query.TargetId;
+                cmd.CommandText += " ORDER BY (Select Max(DateLastModified) from SyncJobs where TargetId=mainTable.TargetId) DESC, DateLastModified DESC";
 
                 if (query.Limit.HasValue)
                 {
@@ -539,13 +560,18 @@ namespace MediaBrowser.Server.Implementations.Sync
                     whereClauses.Add("JobId=@JobId");
                     cmd.Parameters.Add(cmd, "@JobId", DbType.String).Value = query.JobId;
                 }
+                if (!string.IsNullOrWhiteSpace(query.ItemId))
+                {
+                    whereClauses.Add("ItemId=@ItemId");
+                    cmd.Parameters.Add(cmd, "@ItemId", DbType.String).Value = query.ItemId;
+                }
                 if (!string.IsNullOrWhiteSpace(query.TargetId))
                 {
                     whereClauses.Add("TargetId=@TargetId");
                     cmd.Parameters.Add(cmd, "@TargetId", DbType.String).Value = query.TargetId;
                 }
 
-                if (query.Statuses.Count > 0)
+                if (query.Statuses.Length > 0)
                 {
                     var statuses = string.Join(",", query.Statuses.Select(i => "'" + i.ToString() + "'").ToArray());
 

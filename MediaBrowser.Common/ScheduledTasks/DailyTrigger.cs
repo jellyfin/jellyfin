@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Common.ScheduledTasks
 {
@@ -19,6 +20,14 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// </summary>
         /// <value>The timer.</value>
         private Timer Timer { get; set; }
+
+        /// <summary>
+        /// Gets the execution properties of this task.
+        /// </summary>
+        /// <value>
+        /// The execution properties of this task.
+        /// </value>
+        public TaskExecutionOptions TaskOptions { get; set; }
 
         /// <summary>
         /// Stars waiting for the trigger action
@@ -58,7 +67,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <summary>
         /// Occurs when [triggered].
         /// </summary>
-        public event EventHandler<EventArgs> Triggered;
+        public event EventHandler<GenericEventArgs<TaskExecutionOptions>> Triggered;
 
         /// <summary>
         /// Called when [triggered].
@@ -67,7 +76,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         {
             if (Triggered != null)
             {
-                Triggered(this, EventArgs.Empty);
+                Triggered(this, new GenericEventArgs<TaskExecutionOptions>(TaskOptions));
             }
         }
     }

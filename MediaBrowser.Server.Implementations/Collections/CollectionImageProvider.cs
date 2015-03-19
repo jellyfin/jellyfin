@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
@@ -13,10 +14,9 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Collections
 {
-    public class CollectionImageProvider : BaseDynamicImageProvider<BoxSet>, ICustomMetadataProvider<BoxSet>
+    public class CollectionImageProvider : BaseDynamicImageProvider<BoxSet>
     {
-        public CollectionImageProvider(IFileSystem fileSystem, IProviderManager providerManager)
-            : base(fileSystem, providerManager)
+        public CollectionImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths) : base(fileSystem, providerManager, applicationPaths)
         {
         }
 

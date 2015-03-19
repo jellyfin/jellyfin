@@ -74,6 +74,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="Diagnostics\LinuxProcessManager.cs" />
     <Compile Include="Native\BaseMonoApp.cs" />
     <Compile Include="Networking\CertificateGenerator.cs" />
     <Compile Include="Program.cs" />
@@ -137,10 +138,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\ThirdParty\libwebp\osx\libwebp.5.dylib">
-      <Link>libwebp\osx\libwebp.5.dylib</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="..\ThirdParty\MediaInfo\osx\libmediainfo.dylib">
       <Link>MediaInfo\osx\libmediainfo.dylib</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -154,7 +151,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="app.config" />
-    <None Include="Imazen.WebP.dll.config">
+    <None Include="ImageMagickSharp.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="MediaBrowser.MediaInfo.dll.config">

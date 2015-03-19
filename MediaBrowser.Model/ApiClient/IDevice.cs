@@ -39,6 +39,6 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="apiClient">The API client.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task UploadFile(LocalFileInfo file, IApiClient apiClient, CancellationToken cancellationToken);
+        Task UploadFile(LocalFileInfo file, IApiClient apiClient, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

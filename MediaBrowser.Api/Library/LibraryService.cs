@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Activity;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -9,11 +8,9 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
-using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;

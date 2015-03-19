@@ -325,7 +325,7 @@ namespace MediaBrowser.Common.Plugins
                 AssemblyFileName = AssemblyFileName,
                 ConfigurationDateLastModified = ConfigurationDateLastModified,
                 Description = Description,
-                Id = Id.ToString("N"),
+                Id = Id.ToString(),
                 ConfigurationFileName = ConfigurationFileName
             };
 

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.TV;
+﻿using MediaBrowser.Controller.Playlists;
+using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using System;
@@ -15,7 +16,13 @@ namespace MediaBrowser.Controller.Entities
         public Guid? UserId { get; set; }
 
         public static ITVSeriesManager TVSeriesManager;
+        public static IPlaylistManager PlaylistManager;
 
+        public bool ContainsDynamicCategories(User user)
+        {
+            return true;
+        }
+        
         public override Task<QueryResult<BaseItem>> GetItems(InternalItemsQuery query)
         {
             var parent = this as Folder;
@@ -25,7 +32,7 @@ namespace MediaBrowser.Controller.Entities
                 parent = LibraryManager.GetItemById(ParentId) as Folder ?? parent;
             }
 
-            return new UserViewBuilder(UserViewManager, LiveTvManager, ChannelManager, LibraryManager, Logger, UserDataManager, TVSeriesManager, CollectionManager)
+            return new UserViewBuilder(UserViewManager, LiveTvManager, ChannelManager, LibraryManager, Logger, UserDataManager, TVSeriesManager, CollectionManager, PlaylistManager)
                 .GetUserItems(parent, this, ViewType, query);
         }
 
@@ -43,6 +50,11 @@ namespace MediaBrowser.Controller.Entities
         public override bool CanDelete()
         {
             return false;
+        }
+
+        public override bool IsSaveLocalMetadataEnabled()
+        {
+            return true;
         }
 
         public override IEnumerable<BaseItem> GetRecursiveChildren(User user, Func<BaseItem, bool> filter)

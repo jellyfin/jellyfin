@@ -17,6 +17,14 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Cancels if running and queue.
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <param name="options">Task options.</param>
+        void CancelIfRunningAndQueue<T>(TaskExecutionOptions options)
+            where T : IScheduledTask;
+
+        /// <summary>
+        /// Cancels if running and queue.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
         void CancelIfRunningAndQueue<T>()
             where T : IScheduledTask;
 
@@ -31,6 +39,14 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Queues the scheduled task.
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <param name="options">Task options.</param>
+        void QueueScheduledTask<T>(TaskExecutionOptions options)
+            where T : IScheduledTask;
+
+        /// <summary>
+        /// Queues the scheduled task.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
         void QueueScheduledTask<T>()
             where T : IScheduledTask;
 
@@ -38,7 +54,8 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// Queues the scheduled task.
         /// </summary>
         /// <param name="task">The task.</param>
-        void QueueScheduledTask(IScheduledTask task);
+        /// <param name="options">The task run options.</param>
+        void QueueScheduledTask(IScheduledTask task, TaskExecutionOptions options = null);
 
         /// <summary>
         /// Adds the tasks.
@@ -47,7 +64,7 @@ namespace MediaBrowser.Common.ScheduledTasks
         void AddTasks(IEnumerable<IScheduledTask> tasks);
 
         void Cancel(IScheduledTaskWorker task);
-        Task Execute(IScheduledTaskWorker task);
+        Task Execute(IScheduledTaskWorker task, TaskExecutionOptions options = null);
 
         event EventHandler<GenericEventArgs<IScheduledTaskWorker>> TaskExecuting;
         event EventHandler<TaskCompletionEventArgs> TaskCompleted;

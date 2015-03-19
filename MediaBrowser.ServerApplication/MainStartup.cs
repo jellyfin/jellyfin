@@ -40,6 +40,7 @@ namespace MediaBrowser.ServerApplication
 
             var applicationPath = currentProcess.MainModule.FileName;
 
+            //Wand.SetMagickCoderModulePath(Path.Combine(Path.GetDirectoryName(applicationPath), "ImageMagickCoders", "x86"));
             var appPaths = CreateApplicationPaths(applicationPath, _isRunningAsService);
 
             var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");

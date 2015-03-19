@@ -39,15 +39,15 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Person", Description = "Optional. If specified, results will be filtered to include only those containing the specified person.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Person { get; set; }
 
+        [ApiMember(Name = "PersonIds", Description = "Optional. If specified, results will be filtered to include only those containing the specified person.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string PersonIds { get; set; }
+
         /// <summary>
         /// If the Person filter is used, this can also be used to restrict to a specific person type
         /// </summary>
         /// <value>The type of the person.</value>
         [ApiMember(Name = "PersonTypes", Description = "Optional. If specified, along with Person, results will be filtered to include only those containing the specified person and PersonType. Allows multiple, comma-delimited", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string PersonTypes { get; set; }
-
-        [ApiMember(Name = "AllGenres", Description = "Optional. If specified, results will be filtered based on genre. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string AllGenres { get; set; }
 
         /// <summary>
         /// Limit results to items containing specific studios
@@ -56,6 +56,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Studios", Description = "Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Studios { get; set; }
 
+        [ApiMember(Name = "StudioIds", Description = "Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string StudioIds { get; set; }
+        
         /// <summary>
         /// Gets or sets the studios.
         /// </summary>
@@ -63,6 +66,9 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "Artists", Description = "Optional. If specified, results will be filtered based on artist. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Artists { get; set; }
 
+        [ApiMember(Name = "ArtistIds", Description = "Optional. If specified, results will be filtered based on artist. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
+        public string ArtistIds { get; set; }
+        
         [ApiMember(Name = "Albums", Description = "Optional. If specified, results will be filtered based on album. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Albums { get; set; }
 
@@ -226,14 +232,14 @@ namespace MediaBrowser.Api.UserLibrary
         [ApiMember(Name = "CollapseBoxSetItems", Description = "Whether or not to hide items behind their boxsets.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? CollapseBoxSetItems { get; set; }
 
-        public string[] GetAllGenres()
-        {
-            return (AllGenres ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-        }
-
         public string[] GetStudios()
         {
             return (Studios ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public string[] GetStudioIds()
+        {
+            return (StudioIds ?? string.Empty).Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public string[] GetPersonTypes()
@@ -241,7 +247,12 @@ namespace MediaBrowser.Api.UserLibrary
             return (PersonTypes ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        public IEnumerable<VideoType> GetVideoTypes()
+        public string[] GetPersonIds()
+        {
+            return (PersonIds ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public VideoType[] GetVideoTypes()
         {
             var val = VideoTypes;
 
@@ -250,7 +261,7 @@ namespace MediaBrowser.Api.UserLibrary
                 return new VideoType[] { };
             }
 
-            return val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (VideoType)Enum.Parse(typeof(VideoType), v, true));
+            return val.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => (VideoType)Enum.Parse(typeof(VideoType), v, true)).ToArray();
         }
     }
 
@@ -471,9 +482,10 @@ namespace MediaBrowser.Api.UserLibrary
                 Tags = request.GetTags(),
                 OfficialRatings = request.GetOfficialRatings(),
                 Genres = request.GetGenres(),
-                AllGenres = request.GetAllGenres(),
                 Studios = request.GetStudios(),
+                StudioIds = request.GetStudioIds(),
                 Person = request.Person,
+                PersonIds = request.GetPersonIds(),
                 PersonTypes = request.GetPersonTypes(),
                 Years = request.GetYears(),
                 ImageTypes = request.GetImageTypes().ToArray(),
@@ -609,6 +621,8 @@ namespace MediaBrowser.Api.UserLibrary
 
         private bool ApplyAdditionalFilters(GetItems request, BaseItem i, User user, bool isPreFiltered, ILibraryManager libraryManager)
         {
+            var video = i as Video;
+            
             if (!isPreFiltered)
             {
                 var mediaTypes = request.GetMediaTypes();
@@ -656,7 +670,6 @@ namespace MediaBrowser.Api.UserLibrary
                 if (request.Is3D.HasValue)
                 {
                     var val = request.Is3D.Value;
-                    var video = i as Video;
 
                     if (video == null || val != video.Video3DFormat.HasValue)
                     {
@@ -667,7 +680,6 @@ namespace MediaBrowser.Api.UserLibrary
                 if (request.IsHD.HasValue)
                 {
                     var val = request.IsHD.Value;
-                    var video = i as Video;
 
                     if (video == null || val != video.IsHD)
                     {
@@ -809,8 +821,6 @@ namespace MediaBrowser.Api.UserLibrary
                 {
                     var val = request.HasSubtitles.Value;
 
-                    var video = i as Video;
-
                     if (video == null || val != video.HasSubtitles)
                     {
                         return false;
@@ -930,23 +940,11 @@ namespace MediaBrowser.Api.UserLibrary
                     return false;
                 }
 
-                // Apply genre filter
-                var allGenres = request.GetAllGenres();
-                if (allGenres.Length > 0 && !allGenres.All(v => i.Genres.Contains(v, StringComparer.OrdinalIgnoreCase)))
+                // Filter by VideoType
+                var videoTypes = request.GetVideoTypes();
+                if (videoTypes.Length > 0 && (video == null || !videoTypes.Contains(video.VideoType)))
                 {
                     return false;
-                }
-
-                // Filter by VideoType
-                if (!string.IsNullOrEmpty(request.VideoTypes))
-                {
-                    var types = request.VideoTypes.Split(',');
-
-                    var video = i as Video;
-                    if (video == null || !types.Contains(video.VideoType.ToString(), StringComparer.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
                 }
 
                 var imageTypes = request.GetImageTypes().ToList();
@@ -965,11 +963,37 @@ namespace MediaBrowser.Api.UserLibrary
                     return false;
                 }
 
+                // Apply studio filter
+                var studioIds = request.GetStudioIds();
+                if (studioIds.Length > 0 && !studioIds.Any(id =>
+                {
+                    var studioItem = libraryManager.GetItemById(id);
+                    return studioItem != null && i.Studios.Contains(studioItem.Name, StringComparer.OrdinalIgnoreCase);
+                }))
+                {
+                    return false;
+                }
+
                 // Apply year filter
                 var years = request.GetYears();
                 if (years.Length > 0 && !(i.ProductionYear.HasValue && years.Contains(i.ProductionYear.Value)))
                 {
                     return false;
+                }            
+                
+                // Apply person filter
+                var personIds = request.GetPersonIds();
+                if (personIds.Length > 0)
+                {
+                    var names = personIds
+                        .Select(libraryManager.GetItemById)
+                        .Select(p => p == null ? "-1" : p.Name)
+                        .ToList();
+
+                    if (!(names.Any(v => i.People.Select(p => p.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
+                    {
+                        return false;
+                    }
                 }
 
                 // Apply person filter
@@ -1031,13 +1055,30 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             // Artists
+            if (!string.IsNullOrEmpty(request.ArtistIds))
+            {
+                var artistIds = request.ArtistIds.Split('|');
+
+                var audio = i as IHasArtist;
+
+                if (!(audio != null && artistIds.Any(id =>
+                {
+                    var artistItem = libraryManager.GetItemById(id);
+                    return artistItem != null && audio.HasAnyArtist(artistItem.Name);
+                })))
+                {
+                    return false;
+                }
+            }
+
+            // Artists
             if (!string.IsNullOrEmpty(request.Artists))
             {
                 var artists = request.Artists.Split('|');
 
                 var audio = i as IHasArtist;
 
-                if (!(audio != null && artists.Any(audio.HasArtist)))
+                if (!(audio != null && artists.Any(audio.HasAnyArtist)))
                 {
                     return false;
                 }

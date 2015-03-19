@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Library;
 using System.Threading;
@@ -6,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public interface ILiveTvRecording : IHasImages, IHasMediaSources, IHasUserData
+    public interface ILiveTvRecording : IHasImages, IHasMediaSources, IHasUserData, ILiveTvItem
     {
-        string ServiceName { get; set; }
-
         string MediaType { get; }
 
         string Container { get; }
@@ -22,7 +21,7 @@ namespace MediaBrowser.Controller.LiveTv
 
         bool IsParentalAllowed(User user);
 
-        Task RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken);
+        Task<ItemUpdateType> RefreshMetadata(MetadataRefreshOptions options, CancellationToken cancellationToken);
 
         PlayAccess GetPlayAccess(User user);
 

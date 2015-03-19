@@ -94,6 +94,9 @@ namespace MediaBrowser.Api.Sync
         [ApiMember(Name = "ParentId", Description = "ParentId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ParentId { get; set; }
 
+        [ApiMember(Name = "TargetId", Description = "TargetId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string TargetId { get; set; }
+
         [ApiMember(Name = "Category", Description = "Category", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public SyncCategory? Category { get; set; }
     }
@@ -225,6 +228,21 @@ namespace MediaBrowser.Api.Sync
 
             result.Targets = _syncManager.GetSyncTargets(request.UserId)
                 .ToList();
+
+            if (!string.IsNullOrWhiteSpace(request.TargetId))
+            {
+                result.Targets = result.Targets
+                    .Where(i => string.Equals(i.Id, request.TargetId, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                result.QualityOptions = _syncManager
+                    .GetQualityOptions(request.TargetId)
+                    .ToList();
+
+                result.ProfileOptions = _syncManager
+                    .GetProfileOptions(request.TargetId)
+                    .ToList();
+            }
 
             if (request.Category.HasValue)
             {

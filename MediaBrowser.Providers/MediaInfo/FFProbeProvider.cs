@@ -35,7 +35,8 @@ namespace MediaBrowser.Providers.MediaInfo
         ICustomMetadataProvider<Audio>,
         IHasItemChangeMonitor,
         IHasOrder,
-        IForcedProvider
+        IForcedProvider,
+        IPreRefreshProvider
     {
         private readonly ILogger _logger;
         private readonly IIsoManager _isoManager;

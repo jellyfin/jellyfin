@@ -773,7 +773,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         {
             try
             {
-                using (var file = new FileStream(path, FileMode.Open))
+                using (var file = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     var detector = new CharsetDetector();
                     detector.Feed(file);
@@ -797,12 +797,12 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             return null;
         }
 
-        private static Encoding GetFileEncoding(string srcFile)
+        private Encoding GetFileEncoding(string srcFile)
         {
             // *** Detect byte order mark if any - otherwise assume default
             var buffer = new byte[5];
 
-            using (var file = new FileStream(srcFile, FileMode.Open))
+            using (var file = _fileSystem.GetFileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
                 file.Read(buffer, 0, 5);
             }

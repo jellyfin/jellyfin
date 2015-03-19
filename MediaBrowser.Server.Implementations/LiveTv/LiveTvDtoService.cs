@@ -387,7 +387,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsPremiere = item.IsPremiere,
                 Type = "Program",
                 MediaType = item.MediaType,
-                ServerId = _appHost.SystemId
+                ServerId = _appHost.SystemId,
+                ProductionYear = item.ProductionYear
             };
 
             if (item.EndDate.HasValue)
@@ -442,7 +443,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return null;
         }
 
-        private const string InternalVersionNumber = "3";
+        private const string InternalVersionNumber = "4";
 
         public Guid GetInternalChannelId(string serviceName, string externalId)
         {
