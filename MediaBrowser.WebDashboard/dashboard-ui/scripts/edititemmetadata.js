@@ -1436,7 +1436,12 @@
         $(LibraryBrowser).on('itemdeleting.editor', function (e, itemId) {
 
             if (currentItem && currentItem.Id == itemId) {
-                Dashboard.navigate('edititemmetadata.html');
+
+                if (currentItem.ParentId) {
+                    Dashboard.navigate('edititemmetadata.html?id=' + currentItem.ParentId);
+                } else {
+                    Dashboard.navigate('edititemmetadata.html');
+                }
             }
         });
 

@@ -1,7 +1,7 @@
 ﻿(function ($, document) {
 
     // 30 mins
-    var cellCurationMinutes = 30;
+    var cellCurationMinutes = 10;
     var cellDurationMs = cellCurationMinutes * 60 * 1000;
 
     var gridLocalStartDateMs;
@@ -109,7 +109,13 @@
 
             html += '<div class="timeslotHeader">';
             html += '<div class="timeslotHeaderInner">';
-            html += LiveTvHelpers.getDisplayTime(date);
+
+            var minutes = date.getMinutes();
+            if (minutes == 0 || minutes == 30) {
+                html += LiveTvHelpers.getDisplayTime(date);
+            } else {
+                html += '&nbsp;';
+            }
             html += '</div>';
             html += '</div>';
 
@@ -176,7 +182,7 @@
         }
 
         if (width > 300) {
-            width += (width / 100) - 3;
+            width += (width / 100) + 3;
         }
 
         return width;
@@ -203,7 +209,12 @@
 
             var program = findProgramStartingInCell(programs, 0, date, cellEndDate, cellIndex);
 
-            html += '<div class="timeslotCell">';
+            var minutes = date.getMinutes();
+            if (minutes == 0 || minutes == 30) {
+                html += '<div class="timeslotCell">';
+            } else {
+                html += '<div class="timeslotCell" style="border-left-color:transparent;">';
+            }
 
             var cellTagName;
             var href;
