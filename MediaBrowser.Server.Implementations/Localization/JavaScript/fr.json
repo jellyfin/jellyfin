@@ -39,7 +39,7 @@
     "MessageErrorLoadingSupporterInfo": "Il y a eu une erreur lors du chargement des informations de supporter. Veuillez r\u00e9essayer plus tard.",
     "MessageLinkYourSupporterKey": "Liez votre cl\u00e9 de supporteur avec {0} utilisateurs de Media Browser Connect au maximum et profitez d'un acc\u00e8s gratuit aux applications suivantes :",
     "HeaderConfirmRemoveUser": "Supprimer l'utilisateur",
-    "MessageSwipeDownOnRemoteControl": "Welcome to remote control. Swipe down anywhere on this screen to go back to where you came from.",
+    "MessageSwipeDownOnRemoteControl": "Bienvenue dans le contr\u00f4le \u00e0 distance. Glissez vers le base n'importe o\u00f9 sur cet \u00e9cran pour revenir l\u00e0 d'o\u00f9 vous venez",
     "MessageConfirmRemoveConnectSupporter": "Etes-vous s\u00fbr de vouloir supprimer les avantages additionnels de supporteur pour cet utilisateur ?",
     "ValueTimeLimitSingleHour": "Limite de temps : 1 heure",
     "ValueTimeLimitMultiHour": "Limite de temps : {0} heures",

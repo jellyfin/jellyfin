@@ -39,7 +39,7 @@
     "MessageErrorLoadingSupporterInfo": "Se present\u00f3 un error al cargar la informaci\u00f3n del aficionado. Por favor int\u00e9ntelo m\u00e1s tarde.",
     "MessageLinkYourSupporterKey": "Ligue su clave de aficionado con hasta {0} miembros de Media Browser Connect para disfrutar de acceso gratuito a las siguientes apps:",
     "HeaderConfirmRemoveUser": "Eliminar Usuario",
-    "MessageSwipeDownOnRemoteControl": "Welcome to remote control. Swipe down anywhere on this screen to go back to where you came from.",
+    "MessageSwipeDownOnRemoteControl": "Bienvenido a control remoto. Deslice hacia abajo en cualquier parte de esta pantalla para regresar al sitio anterior.",
     "MessageConfirmRemoveConnectSupporter": "\u00bfEst\u00e1 seguro de querer eliminar los beneficios adicionales de aficionado de este usuario?",
     "ValueTimeLimitSingleHour": "L\u00edmite de tiempo: 1 hora",
     "ValueTimeLimitMultiHour": "L\u00edmite de tiempo: {0} horas",

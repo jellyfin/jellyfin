@@ -39,7 +39,7 @@
     "MessageErrorLoadingSupporterInfo": "Es trat ein Fehler beim laden der Unterst\u00fctzer-Informationen auf. Bitte versuchen Sie es sp\u00e4ter erneut.",
     "MessageLinkYourSupporterKey": "Verkn\u00fcpfen Sie Ihren Unterst\u00fctzer-Schl\u00fcssel mit bis zu {0} Media Browser Connect Anwendern um Zugriff auf folgende Apps zu erhalten:",
     "HeaderConfirmRemoveUser": "Entferne Benutzer",
-    "MessageSwipeDownOnRemoteControl": "Welcome to remote control. Swipe down anywhere on this screen to go back to where you came from.",
+    "MessageSwipeDownOnRemoteControl": "Willkommen zur Fernsteuerung. Streichen Sie irgendwo auf dem Bildschirm nach unten um dorthin zur\u00fcck zu gehen, von wo aus Sie kamen.",
     "MessageConfirmRemoveConnectSupporter": "M\u00f6chten Sie wirklich zus\u00e4tzliche Unterst\u00fctzer-Features von diesem Anwender entfernen?",
     "ValueTimeLimitSingleHour": "Zeitlimit: 1 Stunde",
     "ValueTimeLimitMultiHour": "Zeitlimit: {0} Stunden",
