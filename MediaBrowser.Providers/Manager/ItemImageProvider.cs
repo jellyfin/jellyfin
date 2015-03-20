@@ -386,6 +386,7 @@ namespace MediaBrowser.Providers.Manager
                     else
                     {
                         currentImage.DateModified = _fileSystem.GetLastWriteTimeUtc(image.FileInfo);
+                        currentImage.Length = ((FileInfo) image.FileInfo).Length;
                     }
                 }
             }

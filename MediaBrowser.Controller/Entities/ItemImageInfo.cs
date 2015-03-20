@@ -12,6 +12,12 @@ namespace MediaBrowser.Controller.Entities
         public string Path { get; set; }
 
         /// <summary>
+        /// Gets or sets the length.
+        /// </summary>
+        /// <value>The length.</value>
+        public long Length { get; set; }
+
+        /// <summary>
         /// Gets or sets the type.
         /// </summary>
         /// <value>The type.</value>
