@@ -138,6 +138,7 @@
 
                 var transcodingExtension;
                 var isStatic;
+                var currentStreamId = getParameterByName('StreamId', currentSrc);
 
                 if (self.currentItem.MediaType == "Video") {
 
@@ -172,6 +173,7 @@
 
                     if (finalParams.isStatic) {
                         currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
+                        currentSrc = replaceQueryString(currentSrc, 'StreamId', '');
                     } else {
                         currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension).replace('.mkv', transcodingExtension).replace('.webm', transcodingExtension);
                         currentSrc = replaceQueryString(currentSrc, 'StreamId', new Date().getTime());
@@ -209,7 +211,7 @@
                 });
 
                 if (self.currentItem.MediaType == "Video") {
-                    ApiClient.stopActiveEncodings().done(function () {
+                    ApiClient.stopActiveEncodings(currentStreamId).done(function () {
 
                         self.startTimeTicksOffset = ticks;
                         element.src = currentSrc;
@@ -1269,6 +1271,8 @@
 
             var playerElement = this;
 
+            var currentStreamId = getParameterByName('StreamId', playerElement.currentSrc);
+
             $(playerElement).off('.mediaplayerevent').off('ended.playbackstopped');
 
             self.cleanup(playerElement);
@@ -1279,7 +1283,8 @@
             var mediaSource = self.currentMediaSource;
 
             if (item.MediaType == "Video") {
-                ApiClient.stopActiveEncodings();
+
+                ApiClient.stopActiveEncodings(currentStreamId);
                 if (self.isFullScreen()) {
                     self.exitFullScreen();
                 }
