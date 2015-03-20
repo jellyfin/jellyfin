@@ -589,7 +589,7 @@
 
             var mediaSource;
 
-            ApiClient.getJSON(ApiClient.getUrl('Items/' + item.Id + '/MediaInfo', {
+            ApiClient.getJSON(ApiClient.getUrl('Items/' + item.Id + '/PlaybackInfo', {
                 userId: Dashboard.getCurrentUserId()
 
             })).done(function (result) {

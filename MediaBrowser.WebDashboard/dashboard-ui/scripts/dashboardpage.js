@@ -60,7 +60,6 @@
 
         $('#cachePath', page).html(systemInfo.CachePath);
         $('#logPath', page).html(systemInfo.LogPath);
-        $('#imagesByNamePath', page).html(systemInfo.ItemsByNamePath);
         $('#transcodingTemporaryPath', page).html(systemInfo.TranscodingTempPath);
         $('#metadataPath', page).html(systemInfo.InternalMetadataPath);
     },

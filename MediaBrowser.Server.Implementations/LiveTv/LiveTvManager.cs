@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common;
+﻿using System.Globalization;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Progress;
@@ -14,6 +15,7 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -304,12 +306,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
 
-        public async Task<ChannelMediaInfo> GetRecordingStream(string id, CancellationToken cancellationToken)
+        public async Task<MediaSourceInfo> GetRecordingStream(string id, CancellationToken cancellationToken)
         {
             return await GetLiveStream(id, false, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<ChannelMediaInfo> GetChannelStream(string id, CancellationToken cancellationToken)
+        public async Task<MediaSourceInfo> GetChannelStream(string id, CancellationToken cancellationToken)
         {
             return await GetLiveStream(id, true, cancellationToken).ConfigureAwait(false);
         }
@@ -324,20 +326,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return _services.FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
         }
 
-        private async Task<ChannelMediaInfo> GetLiveStream(string id, bool isChannel, CancellationToken cancellationToken)
+        private async Task<MediaSourceInfo> GetLiveStream(string id, bool isChannel, CancellationToken cancellationToken)
         {
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
-                ChannelMediaInfo info;
+                MediaSourceInfo info;
 
                 if (isChannel)
                 {
                     var channel = GetInternalChannel(id);
                     var service = GetService(channel);
                     _logger.Info("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
-                    info = await service.GetChannelStream(channel.ExternalId, cancellationToken).ConfigureAwait(false);
+                    info = await service.GetChannelStream(channel.ExternalId, null, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -345,7 +347,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     var service = GetService(recording);
 
                     _logger.Info("Opening recording stream from {0}, external recording Id: {1}", service.Name, recording.RecordingInfo.Id);
-                    info = await service.GetRecordingStream(recording.RecordingInfo.Id, cancellationToken).ConfigureAwait(false);
+                    info = await service.GetRecordingStream(recording.RecordingInfo.Id, null, cancellationToken).ConfigureAwait(false);
                 }
 
                 _logger.Info("Live stream info: {0}", _jsonSerializer.SerializeToString(info));
@@ -375,41 +377,73 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
-        private void Sanitize(ChannelMediaInfo info)
+        private void Sanitize(MediaSourceInfo mediaSource)
         {
-            // Clean some bad data coming from providers
+            if (mediaSource.MediaStreams.Count == 0)
+            {
+                mediaSource.MediaStreams.AddRange(new List<MediaStream>
+                {
+                    new MediaStream
+                    {
+                        Type = MediaStreamType.Video,
+                        // Set the index to -1 because we don't know the exact index of the video stream within the container
+                        Index = -1
+                    },
+                    new MediaStream
+                    {
+                        Type = MediaStreamType.Audio,
+                        // Set the index to -1 because we don't know the exact index of the audio stream within the container
+                        Index = -1
+                    }
+                });
+            }
 
-            if (info.AudioBitrate.HasValue && info.AudioBitrate <= 0)
+            // Clean some bad data coming from providers
+            foreach (var stream in mediaSource.MediaStreams)
             {
-                info.AudioBitrate = null;
+                if (stream.BitRate.HasValue && stream.BitRate <= 0)
+                {
+                    stream.BitRate = null;
+                }
+                if (stream.Channels.HasValue && stream.Channels <= 0)
+                {
+                    stream.Channels = null;
+                }
+                if (stream.AverageFrameRate.HasValue && stream.AverageFrameRate <= 0)
+                {
+                    stream.AverageFrameRate = null;
+                }
+                if (stream.RealFrameRate.HasValue && stream.RealFrameRate <= 0)
+                {
+                    stream.RealFrameRate = null;
+                }
+                if (stream.Width.HasValue && stream.Width <= 0)
+                {
+                    stream.Width = null;
+                }
+                if (stream.Height.HasValue && stream.Height <= 0)
+                {
+                    stream.Height = null;
+                }
+                if (stream.SampleRate.HasValue && stream.SampleRate <= 0)
+                {
+                    stream.SampleRate = null;
+                }
+                if (stream.Level.HasValue && stream.Level <= 0)
+                {
+                    stream.Level = null;
+                }
             }
-            if (info.VideoBitrate.HasValue && info.VideoBitrate <= 0)
+
+            var indexes = mediaSource.MediaStreams.Select(i => i.Index).Distinct().ToList();
+
+            // If there are duplicate stream indexes, set them all to unknown
+            if (indexes.Count != mediaSource.MediaStreams.Count)
             {
-                info.VideoBitrate = null;
-            }
-            if (info.AudioChannels.HasValue && info.AudioChannels <= 0)
-            {
-                info.AudioChannels = null;
-            }
-            if (info.Framerate.HasValue && info.Framerate <= 0)
-            {
-                info.Framerate = null;
-            }
-            if (info.Width.HasValue && info.Width <= 0)
-            {
-                info.Width = null;
-            }
-            if (info.Height.HasValue && info.Height <= 0)
-            {
-                info.Height = null;
-            }
-            if (info.AudioSampleRate.HasValue && info.AudioSampleRate <= 0)
-            {
-                info.AudioSampleRate = null;
-            }
-            if (info.VideoLevel.HasValue && info.VideoLevel <= 0)
-            {
-                info.VideoLevel = null;
+                foreach (var stream in mediaSource.MediaStreams)
+                {
+                    stream.Index = -1;
+                }
             }
         }
 
@@ -1433,7 +1467,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return program;
         }
 
-        private async Task<Tuple<SeriesTimerInfo,ILiveTvService>> GetNewTimerDefaultsInternal(CancellationToken cancellationToken, LiveTvProgram program = null)
+        private async Task<Tuple<SeriesTimerInfo, ILiveTvService>> GetNewTimerDefaultsInternal(CancellationToken cancellationToken, LiveTvProgram program = null)
         {
             var service = program != null && !string.IsNullOrWhiteSpace(program.ServiceName) ?
                 GetService(program) :
@@ -1679,7 +1713,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         class LiveStreamData
         {
-            internal ChannelMediaInfo Info;
+            internal MediaSourceInfo Info;
             internal int ConsumerCount;
             internal string ItemId;
             internal bool IsChannel;
