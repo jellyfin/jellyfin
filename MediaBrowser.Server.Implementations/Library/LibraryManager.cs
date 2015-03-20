@@ -886,7 +886,14 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (type == typeof(Person))
             {
-                subFolderPrefix = validFilename.Substring(0, 1);
+                var subFolderIndex = 0;
+
+                while (!char.IsLetterOrDigit(validFilename[subFolderIndex]))
+                {
+                    subFolderIndex++;
+                }
+
+                subFolderPrefix = validFilename.Substring(subFolderIndex, 1);
             }
 
             var fullPath = string.IsNullOrEmpty(subFolderPrefix) ?
