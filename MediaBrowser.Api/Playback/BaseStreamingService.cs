@@ -1816,12 +1816,10 @@ namespace MediaBrowser.Api.Playback
         }
 
         private void AttachMediaStreamInfo(StreamState state,
-          ChannelMediaInfo mediaInfo,
+          MediaSourceInfo mediaSource,
           VideoStreamRequest videoRequest,
           string requestedUrl)
         {
-            var mediaSource = mediaInfo.ToMediaSource();
-
             state.InputProtocol = mediaSource.Protocol;
             state.MediaPath = mediaSource.Path;
             state.RunTimeTicks = mediaSource.RunTimeTicks;
