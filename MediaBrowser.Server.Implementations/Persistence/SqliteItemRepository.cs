@@ -522,7 +522,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
         
-        public IEnumerable<BaseItem> GetItemsOfType(Type type)
+        public IEnumerable<string> GetItemsOfType(Type type)
         {
             if (type == null)
             {
@@ -533,7 +533,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select type,data from TypedBaseItems where type = @type";
+                cmd.CommandText = "select guid from TypedBaseItems where type = @type";
 
                 cmd.Parameters.Add(cmd, "@type", DbType.String).Value = type.FullName;
 
@@ -541,12 +541,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     while (reader.Read())
                     {
-                        var item = GetItem(reader);
-
-                        if (item != null)
-                        {
-                            yield return item;
-                        }
+                        yield return reader.GetString(0);
                     }
                 }
             }

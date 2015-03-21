@@ -1111,13 +1111,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var numComplete = 0;
 
-            foreach (var program in list)
+            foreach (var programId in list)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (!currentIdList.Contains(program.Id))
+                if (!currentIdList.Contains(new Guid(programId)))
                 {
-                    await _libraryManager.DeleteItem(program).ConfigureAwait(false);
+                    var program = _libraryManager.GetItemById(programId);
+
+                    if (program != null)
+                    {
+                        await _libraryManager.DeleteItem(program).ConfigureAwait(false);
+                    }
                 }
 
                 numComplete++;

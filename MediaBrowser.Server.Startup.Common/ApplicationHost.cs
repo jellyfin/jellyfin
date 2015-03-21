@@ -432,7 +432,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", "web/index.html");
+            HttpServer = ServerFactory.CreateServer(this, LogManager, "Emby", "web/index.html");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 
