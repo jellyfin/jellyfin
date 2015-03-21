@@ -7,13 +7,13 @@
       <HttpHeaderInfo name="User-Agent" value="SEC_" match="Substring" />
     </Headers>
   </Identification>
-  <FriendlyName>Media Browser</FriendlyName>
-  <Manufacturer>Media Browser</Manufacturer>
-  <ManufacturerUrl>http://mediabrowser.tv/</ManufacturerUrl>
-  <ModelName>Media Browser</ModelName>
-  <ModelDescription>Media Browser</ModelDescription>
-  <ModelNumber>Media Browser</ModelNumber>
-  <ModelUrl>http://mediabrowser.tv/</ModelUrl>
+  <FriendlyName>Emby</FriendlyName>
+  <Manufacturer>Emby</Manufacturer>
+  <ManufacturerUrl>http://emby.media/</ManufacturerUrl>
+  <ModelName>Emby</ModelName>
+  <ModelDescription>Emby</ModelDescription>
+  <ModelNumber>Emby</ModelNumber>
+  <ModelUrl>http://emby.media/</ModelUrl>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <EnableAlbumArtInDidl>true</EnableAlbumArtInDidl>
   <EnableSingleAlbumArtLimit>false</EnableSingleAlbumArtLimit>
