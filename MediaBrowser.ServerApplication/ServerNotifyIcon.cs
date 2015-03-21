@@ -178,7 +178,7 @@ namespace MediaBrowser.ServerApplication
             cmdSwagger.Text = _localization.GetLocalizedString("LabelApiDocumentation");
             cmdApiDocs.Text = _localization.GetLocalizedString("LabelDeveloperResources");
             cmdBrowse.Text = _localization.GetLocalizedString("LabelBrowseLibrary");
-            cmdConfigure.Text = _localization.GetLocalizedString("LabelConfigureMediaBrowser");
+            cmdConfigure.Text = _localization.GetLocalizedString("LabelConfigureServer");
             cmdRestart.Text = _localization.GetLocalizedString("LabelRestartServer");
         }
 

@@ -2238,7 +2238,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="dashboard-ui\css\fonts\mblogo.woff">
+    <None Include="dashboard-ui\css\fonts\Montserrat.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="dashboard-ui\css\fonts\RobotoBold.woff">
