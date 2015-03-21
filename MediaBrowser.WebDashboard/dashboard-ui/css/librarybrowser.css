@@ -704,8 +704,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .libraryPanelHeader {
     margin: 5px 0 15px 0;
     font-size: 15px;
-    font-family: MBLogo;
-    font-weight: 200;
+    font-family: Montserrat;
 }
 
     .libraryPanelHeader a {
@@ -723,10 +722,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         vertical-align: middle;
         font-weight: 300;
     }
-
-.mediaBrowserAccent {
-    color: #52B54B !important;
-}
 
 .detailImageProgressContainer {
     position: absolute;

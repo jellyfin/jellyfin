@@ -174,7 +174,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var notification = new NotificationRequest
             {
-                Description = "Please see mediabrowser.tv for details.",
+                Description = "Please see emby.media for details.",
                 NotificationType = type
             };
 

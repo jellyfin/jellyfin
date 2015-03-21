@@ -571,7 +571,7 @@
 
             } else {
 
-                $('.tourHeader', elem).html(Globalize.translate('HeaderWelcomeToMediaBrowserWebClient'));
+                $('.tourHeader', elem).html(Globalize.translate('HeaderWelcomeToProjectWebClient'));
                 $('.tourButtonText', elem).html(Globalize.translate('ButtonTakeTheTour'));
             }
         }

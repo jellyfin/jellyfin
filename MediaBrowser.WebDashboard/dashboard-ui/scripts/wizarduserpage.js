@@ -10,11 +10,11 @@
 
         if (result.UserLinkResult) {
 
-            var msgKey = result.UserLinkResult.IsPending ? 'MessagePendingMediaBrowserAccountAdded' : 'MessageMediaBrowserAccountAdded';
+            var msgKey = result.UserLinkResult.IsPending ? 'MessagePendingEmbyAccountAdded' : 'MessageEmbyAccountAdded';
 
             Dashboard.alert({
                 message: Globalize.translate(msgKey),
-                title: Globalize.translate('HeaderMediaBrowserAccountAdded'),
+                title: Globalize.translate('HeaderEmbyAccountAdded'),
 
                 callback: function () {
                     Dashboard.navigate('wizardlibrary.html');
