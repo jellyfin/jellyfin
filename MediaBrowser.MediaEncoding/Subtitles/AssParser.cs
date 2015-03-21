@@ -42,6 +42,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
                     subEvent.StartPositionTicks = GetTicks(sections[headers["Start"]]);
                     subEvent.EndPositionTicks = GetTicks(sections[headers["End"]]);
+
+                    //RemoteNativeFormatting(subEvent);
+                    
                     subEvent.Text = string.Join(",", sections.Skip(headers["Text"]));
                     subEvent.Text = subEvent.Text.Replace(@"\N", ParserValues.NewLine, StringComparison.OrdinalIgnoreCase);
                     subEvent.Text = Regex.Replace(subEvent.Text, @"\{(\\[\w]+\(?([\w\d]+,?)+\)?)+\}", string.Empty, RegexOptions.IgnoreCase);
@@ -49,7 +52,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
                     trackInfo.TrackEvents.Add(subEvent);
                 }
             }
-            RemoteNativeFormatting(trackInfo);
             return trackInfo;
         }
 
@@ -74,46 +76,43 @@ namespace MediaBrowser.MediaEncoding.Subtitles
         /// <summary>
         /// Credit: https://github.com/SubtitleEdit/subtitleedit/blob/master/src/Logic/SubtitleFormats/AdvancedSubStationAlpha.cs
         /// </summary>
-        private void RemoteNativeFormatting(SubtitleTrackInfo subtitle)
+        private void RemoteNativeFormatting(SubtitleTrackEvent p)
         {
-            foreach (var p in subtitle.TrackEvents)
+            int indexOfBegin = p.Text.IndexOf('{');
+            string pre = string.Empty;
+            while (indexOfBegin >= 0 && p.Text.IndexOf('}') > indexOfBegin)
             {
-                int indexOfBegin = p.Text.IndexOf('{');
-                string pre = string.Empty;
-                while (indexOfBegin >= 0 && p.Text.IndexOf('}') > indexOfBegin)
+                string s = p.Text.Substring(indexOfBegin);
+                if (s.StartsWith("{\\an1}", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an2}", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an3}", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an4}", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an5}", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an6}", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an7}", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an8}", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an9}", StringComparison.Ordinal))
                 {
-                    string s = p.Text.Substring(indexOfBegin);
-                    if (s.StartsWith("{\\an1}", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an2}", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an3}", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an4}", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an5}", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an6}", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an7}", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an8}", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an9}", StringComparison.Ordinal))
-                    {
-                        pre = s.Substring(0, 6);
-                    }
-                    else if (s.StartsWith("{\\an1\\", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an2\\", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an3\\", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an4\\", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an5\\", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an6\\", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an7\\", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an8\\", StringComparison.Ordinal) ||
-                        s.StartsWith("{\\an9\\", StringComparison.Ordinal))
-                    {
-                        pre = s.Substring(0, 5) + "}";
-                    }
-                    int indexOfEnd = p.Text.IndexOf('}');
-                    p.Text = p.Text.Remove(indexOfBegin, (indexOfEnd - indexOfBegin) + 1);
-
-                    indexOfBegin = p.Text.IndexOf('{');
+                    pre = s.Substring(0, 6);
                 }
-                p.Text = pre + p.Text;
+                else if (s.StartsWith("{\\an1\\", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an2\\", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an3\\", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an4\\", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an5\\", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an6\\", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an7\\", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an8\\", StringComparison.Ordinal) ||
+                    s.StartsWith("{\\an9\\", StringComparison.Ordinal))
+                {
+                    pre = s.Substring(0, 5) + "}";
+                }
+                int indexOfEnd = p.Text.IndexOf('}');
+                p.Text = p.Text.Remove(indexOfBegin, (indexOfEnd - indexOfBegin) + 1);
+
+                indexOfBegin = p.Text.IndexOf('{');
             }
+            p.Text = pre + p.Text;
         }
     }
 }

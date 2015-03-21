@@ -150,7 +150,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             if (string.IsNullOrWhiteSpace(wanApiAddress))
             {
-                _logger.Warn("Cannot update Media Browser Connect information without a WanApiAddress");
+                _logger.Warn("Cannot update Emby Connect information without a WanApiAddress");
                 return;
             }
 
@@ -411,7 +411,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             if (!connectUser.IsActive)
             {
-                throw new ArgumentException("The Media Browser account has been disabled.");
+                throw new ArgumentException("The Emby account has been disabled.");
             }
 
             var user = GetUser(userId);
@@ -517,7 +517,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                 if (!connectUser.IsActive)
                 {
-                    throw new ArgumentException("The Media Browser account has been disabled.");
+                    throw new ArgumentException("The Emby account has been disabled.");
                 }
 
                 connectUserId = connectUser.Id;

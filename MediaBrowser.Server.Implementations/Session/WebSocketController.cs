@@ -30,17 +30,28 @@ namespace MediaBrowser.Server.Implementations.Session
             Sockets = new List<IWebSocketConnection>();
         }
 
-        public bool IsSessionActive
+        private bool HasOpenSockets
         {
-            get
-            {
-                return Sockets.Any(i => i.State == WebSocketState.Open);
-            }
+            get { return GetActiveSockets().Any(); }
         }
 
         public bool SupportsMediaControl
         {
-            get { return GetActiveSockets().Any(); }
+            get { return HasOpenSockets; }
+        }
+
+        private bool _isActive;
+        public bool IsSessionActive
+        {
+            get
+            {
+                return _isActive;
+            }
+        }
+
+        public void OnActivity()
+        {
+            _isActive = true;
         }
 
         private IEnumerable<IWebSocketConnection> GetActiveSockets()
@@ -64,6 +75,8 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             if (!GetActiveSockets().Any())
             {
+                _isActive = false;
+
                 try
                 {
                     _sessionManager.ReportSessionEnded(Session.Id);

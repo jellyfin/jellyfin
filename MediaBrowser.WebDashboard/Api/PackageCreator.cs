@@ -180,10 +180,8 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\">");
             //sb.Append("<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">");
             sb.Append("<meta name=\"mobile-web-app-capable\" content=\"yes\">");
-            sb.Append("<meta name=\"application-name\" content=\"Media Browser\">");
+            sb.Append("<meta name=\"application-name\" content=\"Emby\">");
             //sb.Append("<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">");
-
-            sb.Append("<meta name=\"application-name\" content=\"Media Browser\">");
 
             sb.Append("<meta name=\"robots\" content=\"noindex, nofollow, noarchive\" />");
 

@@ -47,6 +47,10 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
+        public void OnActivity()
+        {
+        }
+
         public bool SupportsMediaControl
         {
             get { return IsSessionActive; }
