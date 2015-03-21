@@ -78,7 +78,7 @@ namespace MediaBrowser.Server.Implementations.News
 
             var requestOptions = new HttpRequestOptions
             {
-                Url = "http://mediabrowser3.com/community/index.php?/blog/rss/1-media-browser-developers-blog",
+                Url = "http://emby.media/community/index.php?/blog/rss/1-media-browser-developers-blog",
                 Progress = new Progress<double>()
             };
 

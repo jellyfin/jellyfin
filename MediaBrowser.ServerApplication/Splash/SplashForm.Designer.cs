@@ -121,7 +121,7 @@
             this.lblStatus.Location = new System.Drawing.Point(3, 0);
             this.lblStatus.MaximumSize = new System.Drawing.Size(0, 100);
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(469, 59);
+            this.lblStatus.Size = new System.Drawing.Size(423, 59);
             this.lblStatus.TabIndex = 0;
             this.lblStatus.Text = "Loading Emby Server";
             this.lblStatus.UseWaitCursor = true;
