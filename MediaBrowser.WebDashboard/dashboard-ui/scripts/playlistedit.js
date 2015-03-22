@@ -41,8 +41,9 @@
         Dashboard.showLoadingMsg();
 
         query.ParentId = getParameterByName('id');
+        query.UserId = Dashboard.getCurrentUserId();
 
-        var promise1 = ApiClient.getJSON(ApiClient.getUrl('Playlists/' + query.ParentId + '/Items', { userId: Dashboard.getCurrentUserId() }));
+        var promise1 = ApiClient.getJSON(ApiClient.getUrl('Playlists/' + query.ParentId + '/Items', query));
         var promise2 = Dashboard.getCurrentUser();
         var promise3 = ApiClient.getItem(Dashboard.getCurrentUserId(), query.ParentId);
 
@@ -108,7 +109,7 @@
                 $('.noItemsMessage', page).show();
             }
 
-            $('.itemsContainer', page).html(html).trigger('create');
+            $('.itemsContainer', page).html(html).trigger('create').lazyChildren();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
