@@ -825,17 +825,8 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 if (item != null)
                 {
-                    var usersWithAccess = new List<User>();
-
-                    foreach (var user in users)
-                    {
-                        if (IsUserVisible(item, user))
-                        {
-                            usersWithAccess.Add(user);
-                        }
-                    }
-
                     response.ItemUserAccess[itemId] = users
+                        .Where(i => IsUserVisible(item, i))
                         .Select(i => i.Id.ToString("N"))
                         .OrderBy(i => i)
                         .ToList();
