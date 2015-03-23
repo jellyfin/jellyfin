@@ -13,10 +13,10 @@ namespace MediaBrowser.Model.MediaInfo
         public List<MediaSourceInfo> MediaSources { get; set; }
 
         /// <summary>
-        /// Gets or sets the live stream identifier.
+        /// Gets or sets the stream identifier.
         /// </summary>
-        /// <value>The live stream identifier.</value>
-        public string LiveStreamId { get; set; }
+        /// <value>The stream identifier.</value>
+        public string StreamId { get; set; }
 
         /// <summary>
         /// Gets or sets the error code.

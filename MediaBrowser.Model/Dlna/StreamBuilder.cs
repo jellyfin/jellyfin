@@ -93,6 +93,13 @@ namespace MediaBrowser.Model.Dlna
             // If that doesn't produce anything, just take the first
             foreach (StreamInfo i in streams)
             {
+                if (i.PlayMethod == PlayMethod.DirectPlay && i.MediaSource.Protocol == MediaProtocol.File)
+                {
+                    return i;
+                }
+            }
+            foreach (StreamInfo i in streams)
+            {
                 if (i.PlayMethod == PlayMethod.DirectPlay)
                 {
                     return i;
@@ -128,12 +135,12 @@ namespace MediaBrowser.Model.Dlna
                 DeviceProfile = options.Profile
             };
 
-            List<PlayMethod> directPlayMethods = GetAudioDirectPlayMethods(item, options);
+            MediaStream audioStream = item.GetDefaultAudioStream(null);
+
+            List<PlayMethod> directPlayMethods = GetAudioDirectPlayMethods(item, audioStream, options);
 
             if (directPlayMethods.Count > 0)
             {
-                MediaStream audioStream = item.DefaultAudioStream;
-
                 string audioCodec = audioStream == null ? null : audioStream.Codec;
 
                 // Make sure audio codec profiles are satisfied
@@ -256,10 +263,8 @@ namespace MediaBrowser.Model.Dlna
             return playlistItem;
         }
 
-        private List<PlayMethod> GetAudioDirectPlayMethods(MediaSourceInfo item, AudioOptions options)
+        private List<PlayMethod> GetAudioDirectPlayMethods(MediaSourceInfo item, MediaStream audioStream, AudioOptions options)
         {
-            MediaStream audioStream = item.DefaultAudioStream;
-            
             DirectPlayProfile directPlayProfile = null;
             foreach (DirectPlayProfile i in options.Profile.DirectPlayProfiles)
             {
@@ -303,11 +308,11 @@ namespace MediaBrowser.Model.Dlna
                 DeviceProfile = options.Profile
             };
 
-            int? audioStreamIndex = options.AudioStreamIndex ?? item.DefaultAudioStreamIndex;
             playlistItem.SubtitleStreamIndex = options.SubtitleStreamIndex ?? item.DefaultSubtitleStreamIndex;
-
-            MediaStream audioStream = audioStreamIndex.HasValue ? item.GetMediaStream(MediaStreamType.Audio, audioStreamIndex.Value) : null;
             MediaStream subtitleStream = playlistItem.SubtitleStreamIndex.HasValue ? item.GetMediaStream(MediaStreamType.Subtitle, playlistItem.SubtitleStreamIndex.Value) : null;
+
+            MediaStream audioStream = item.GetDefaultAudioStream(options.AudioStreamIndex ?? item.DefaultAudioStreamIndex);
+            int? audioStreamIndex = audioStream == null ? (int?)null : audioStream.Index;
 
             MediaStream videoStream = item.VideoStream;
 
@@ -325,7 +330,7 @@ namespace MediaBrowser.Model.Dlna
 
                     if (subtitleStream != null)
                     {
-                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile, options.Context);
+                        SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, options.Context);
 
                         playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                         playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -355,7 +360,7 @@ namespace MediaBrowser.Model.Dlna
 
                 if (subtitleStream != null)
                 {
-                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile, options.Context);
+                    SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, options.Context);
 
                     playlistItem.SubtitleDeliveryMethod = subtitleProfile.Method;
                     playlistItem.SubtitleFormat = subtitleProfile.Format;
@@ -597,7 +602,7 @@ namespace MediaBrowser.Model.Dlna
         {
             if (subtitleStream != null)
             {
-                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile, options.Context);
+                SubtitleProfile subtitleProfile = GetSubtitleProfile(subtitleStream, options.Profile.SubtitleProfiles, options.Context);
 
                 if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
@@ -608,10 +613,10 @@ namespace MediaBrowser.Model.Dlna
             return IsAudioEligibleForDirectPlay(item, maxBitrate);
         }
 
-        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, DeviceProfile deviceProfile, EncodingContext context)
+        public static SubtitleProfile GetSubtitleProfile(MediaStream subtitleStream, SubtitleProfile[] subtitleProfiles, EncodingContext context)
         {
             // Look for an external profile that matches the stream type (text/graphical)
-            foreach (SubtitleProfile profile in deviceProfile.SubtitleProfiles)
+            foreach (SubtitleProfile profile in subtitleProfiles)
             {
                 if (profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {
@@ -628,7 +633,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            foreach (SubtitleProfile profile in deviceProfile.SubtitleProfiles)
+            foreach (SubtitleProfile profile in subtitleProfiles)
             {
                 if (profile.Method == SubtitleDeliveryMethod.Embed && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {

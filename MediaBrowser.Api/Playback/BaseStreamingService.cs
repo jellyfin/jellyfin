@@ -134,7 +134,8 @@ namespace MediaBrowser.Api.Playback
             var data = GetCommandLineArguments("dummy\\dummy", "dummyTranscodingId", state, false);
 
             data += "-" + (state.Request.DeviceId ?? string.Empty);
-            data += "-" + (state.Request.StreamId ?? state.Request.ClientTime ?? string.Empty);
+            data += "-" + (state.Request.StreamId ?? string.Empty);
+            data += "-" + (state.Request.ClientTime ?? string.Empty);
 
             var dataHash = data.GetMD5().ToString("N");
 
@@ -1054,7 +1055,7 @@ namespace MediaBrowser.Api.Playback
             }
 
             var transcodingJob = ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath,
-                state.Request.StreamId ?? state.Request.ClientTime,
+                state.Request.StreamId,
                 transcodingId,
                 TranscodingJobType,
                 process,
@@ -1524,7 +1525,7 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 16)
                 {
-                    request.StreamId = val;
+                    request.ClientTime = val;
                 }
                 else if (i == 17)
                 {
@@ -1553,6 +1554,10 @@ namespace MediaBrowser.Api.Playback
                     {
                         videoRequest.Cabac = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     }
+                }
+                else if (i == 21)
+                {
+                    request.StreamId = val;
                 }
             }
         }

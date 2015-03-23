@@ -38,11 +38,6 @@ namespace MediaBrowser.Model.ApiClient
         event EventHandler<GenericEventArgs<RemoteLogoutReason>> RemoteLoggedOut;
 
         /// <summary>
-        /// Occurs when [authenticated].
-        /// </summary>
-        event EventHandler<GenericEventArgs<AuthenticationResult>> Authenticated;
-
-        /// <summary>
         /// Gets the API URL.
         /// </summary>
         /// <param name="handler">The handler.</param>
