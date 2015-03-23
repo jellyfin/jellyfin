@@ -316,12 +316,14 @@ namespace MediaBrowser.Model.Dlna
 
             MediaStream videoStream = item.VideoStream;
 
-            int? maxBitrateSetting = options.GetMaxBitrate();
+            // TODO: This doesn't accout for situation of device being able to handle media bitrate, but wifi connection not fast enough
+            bool isEligibleForDirectPlay = IsEligibleForDirectPlay(item, options.Profile.MaxStaticBitrate, subtitleStream, options);
+            bool isEligibleForDirectStream = IsEligibleForDirectPlay(item, options.GetMaxBitrate(), subtitleStream, options);
 
-            if (IsEligibleForDirectPlay(item, maxBitrateSetting, subtitleStream, options))
+            if (isEligibleForDirectPlay || isEligibleForDirectStream)
             {
                 // See if it can be direct played
-                var directPlay = GetVideoDirectPlayProfile(options, options.Profile, item, videoStream, audioStream);
+                PlayMethod? directPlay = GetVideoDirectPlayProfile(options.Profile, item, videoStream, audioStream, isEligibleForDirectPlay, isEligibleForDirectStream);
 
                 if (directPlay != null)
                 {
@@ -416,6 +418,7 @@ namespace MediaBrowser.Model.Dlna
                     playlistItem.AudioBitrate = GetAudioBitrate(playlistItem.TargetAudioChannels, playlistItem.TargetAudioCodec);
                 }
 
+                int? maxBitrateSetting = options.GetMaxBitrate();
                 // Honor max rate
                 if (maxBitrateSetting.HasValue)
                 {
@@ -448,11 +451,12 @@ namespace MediaBrowser.Model.Dlna
             return 128000;
         }
 
-        private PlayMethod? GetVideoDirectPlayProfile(VideoOptions options,
-            DeviceProfile profile,
+        private PlayMethod? GetVideoDirectPlayProfile(DeviceProfile profile,
             MediaSourceInfo mediaSource,
             MediaStream videoStream,
-            MediaStream audioStream)
+            MediaStream audioStream,
+            bool isEligibleForDirectPlay,
+            bool isEligibleForDirectStream)
         {
             // See if it can be direct played
             DirectPlayProfile directPlay = null;
@@ -571,28 +575,34 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            if (mediaSource.Protocol == MediaProtocol.Http)
+            if (isEligibleForDirectPlay)
             {
-                if (_localPlayer.CanAccessUrl(mediaSource.Path, mediaSource.RequiredHttpHeaders.Count > 0))
+                if (mediaSource.Protocol == MediaProtocol.Http)
                 {
-                    return PlayMethod.DirectPlay;
+                    if (_localPlayer.CanAccessUrl(mediaSource.Path, mediaSource.RequiredHttpHeaders.Count > 0))
+                    {
+                        return PlayMethod.DirectPlay;
+                    }
+                }
+
+                else if (mediaSource.Protocol == MediaProtocol.File)
+                {
+                    if (_localPlayer.CanAccessFile(mediaSource.Path))
+                    {
+                        return PlayMethod.DirectPlay;
+                    }
                 }
             }
 
-            else if (mediaSource.Protocol == MediaProtocol.File)
+            if (isEligibleForDirectStream)
             {
-                if (_localPlayer.CanAccessFile(mediaSource.Path))
+                if (mediaSource.SupportsDirectStream)
                 {
-                    return PlayMethod.DirectPlay;
+                    return PlayMethod.DirectStream;
                 }
             }
 
-            if (!mediaSource.SupportsDirectStream)
-            {
-                return null;
-            }
-            
-            return PlayMethod.DirectStream;
+            return null;
         }
 
         private bool IsEligibleForDirectPlay(MediaSourceInfo item,
