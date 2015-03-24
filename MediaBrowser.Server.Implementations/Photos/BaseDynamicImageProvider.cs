@@ -128,7 +128,10 @@ namespace MediaBrowser.Server.Implementations.Photos
         private const string Version = "3";
         protected string GetConfigurationCacheKey(List<BaseItem> items, string itemName)
         {
-            return (Version + "_" + (itemName ?? string.Empty) + "_" + string.Join(",", items.Select(i => i.Id.ToString("N")).ToArray())).GetMD5().ToString("N");
+            var parts = Version + "_" + (itemName ?? string.Empty) + "_" +
+                        string.Join(",", items.Select(i => i.Id.ToString("N")).ToArray());
+
+            return parts.GetMD5().ToString("N");
         }
 
         protected Task<Stream> GetThumbCollage(List<BaseItem> items)
@@ -224,7 +227,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             var random = new Random(GetWeekOfYear()).Next();
 
             return items
-                .OrderBy(i => random - items.IndexOf(i))
+                .OrderBy(i => (random + "" + items.IndexOf(i)).GetMD5())
                 .Take(limit)
                 .OrderBy(i => i.Name)
                 .ToList();
@@ -232,6 +235,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         private int GetWeekOfYear()
         {
+            return DateTime.Now.Second;
             var usCulture = new CultureInfo("en-US");
             var weekNo = usCulture.Calendar.GetWeekOfYear(
                             DateTime.Now,
