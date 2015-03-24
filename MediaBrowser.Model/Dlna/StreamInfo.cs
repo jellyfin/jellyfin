@@ -151,6 +151,9 @@ namespace MediaBrowser.Model.Dlna
             list.Add(item.VideoProfile ?? string.Empty);
             list.Add(item.Cabac.HasValue ? item.Cabac.Value.ToString() : string.Empty);
 
+            string streamId = item.PlaybackInfo == null ? null : item.PlaybackInfo.StreamId;
+            list.Add(streamId ?? string.Empty);
+            
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
         }
 
