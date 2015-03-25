@@ -877,10 +877,6 @@
             atts.push('data-locationtype="' + (item.LocationType || '') + '"');
             atts.push('data-index="' + index + '"');
 
-            if (item.IsPlaceHolder) {
-                atts.push('data-placeholder="true"');
-            }
-
             var html = atts.join(' ');
 
             if (html) {

@@ -114,7 +114,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (File.Exists(segmentPath))
             {
-                job = ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
+                job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                 return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
             }
 
@@ -123,7 +123,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 if (File.Exists(segmentPath))
                 {
-                    job = ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
+                    job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
                     return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
                 }
                 else
@@ -145,6 +145,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             request.StartTimeTicks = GetSeekPositionTicks(state, requestedIndex);
 
                             job = await StartFfMpeg(state, playlistPath, cancellationTokenSource).ConfigureAwait(false);
+                            ApiEntryPoint.Instance.OnTranscodeBeginRequest(job);
                         }
                         catch
                         {
@@ -168,7 +169,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             Logger.Info("returning {0}", segmentPath);
-            job = job ?? ApiEntryPoint.Instance.GetTranscodingJob(playlistPath, TranscodingJobType);
+            job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
             return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
         }
 
@@ -368,8 +369,8 @@ namespace MediaBrowser.Api.Playback.Hls
                     if (transcodingJob != null)
                     {
                         transcodingJob.DownloadPositionTicks = Math.Max(transcodingJob.DownloadPositionTicks ?? segmentEndingPositionTicks, segmentEndingPositionTicks);
+                        ApiEntryPoint.Instance.OnTranscodeEndRequest(transcodingJob);
                     }
-
                 }
             });
         }
