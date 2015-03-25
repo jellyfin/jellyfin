@@ -139,6 +139,12 @@ namespace MediaBrowser.Api.Playback
             return false;
         }
 
+        public void Stop()
+        {
+            DisposeTimer();
+            UnpauseTranscoding();
+        }
+
         public void Dispose()
         {
             DisposeTimer();

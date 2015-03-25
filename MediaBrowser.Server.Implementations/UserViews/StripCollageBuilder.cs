@@ -20,7 +20,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
 
         public Stream BuildThumbCollage(IEnumerable<string> paths, string text, int width, int height)
         {
-            using (var wand = BuildThumbCollageWandWithText(paths, text, width, height))
+            using (var wand = BuildThumbCollageWand(paths, width, height))
             {
                 return DynamicImageHelpers.GetStream(wand, _appPaths);
             }

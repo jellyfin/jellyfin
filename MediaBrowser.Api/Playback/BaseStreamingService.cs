@@ -1123,7 +1123,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && state.IsInputVideo)
                 {
-                    state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, Logger);
+                    transcodingJob.TranscodingThrottler = state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, Logger);
                     state.TranscodingThrottler.Start();
                 }
             }

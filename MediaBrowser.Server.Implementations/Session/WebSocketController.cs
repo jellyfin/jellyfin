@@ -45,7 +45,7 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             get
             {
-                return _isActive;
+                return HasOpenSockets;
             }
         }
 
