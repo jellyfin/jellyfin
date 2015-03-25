@@ -168,6 +168,17 @@ namespace MediaBrowser.Server.Implementations.Sync
                 // Create db record
                 await dataProvider.AddOrUpdate(target, localItem).ConfigureAwait(false);
 
+                if (localItem.Item.MediaSources != null)
+                {
+                    var mediaSource = localItem.Item.MediaSources.FirstOrDefault();
+                    if (mediaSource != null)
+                    {
+                        mediaSource.Path = sendFileResult.Path;
+                        mediaSource.Protocol = sendFileResult.Protocol;
+                        mediaSource.SupportsTranscoding = false;
+                    }
+                }
+
                 progress.Report(92);
 
                 transferSuccess = true;
@@ -190,6 +201,20 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 throw transferException;
             }
+        }
+
+        private async Task SendSubtitles(LocalItem localItem, MediaSourceInfo mediaSource, IServerSyncProvider provider, ISyncDataProvider dataProvider, SyncTarget target, CancellationToken cancellationToken)
+        {
+            foreach (var mediaStream in mediaSource.MediaStreams
+                .Where(i => i.Type == MediaStreamType.Subtitle && i.IsExternal)
+                .ToList())
+            {
+                var sendFileResult = await SendFile(provider, mediaStream.Path, localItem, target, cancellationToken).ConfigureAwait(false);
+
+                mediaStream.Path = sendFileResult.Path;
+                
+                await dataProvider.AddOrUpdate(target, localItem).ConfigureAwait(false);
+            }   
         }
 
         private async Task RemoveItem(IServerSyncProvider provider,
@@ -216,6 +241,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private async Task<SendFileResult> SendFile(IServerSyncProvider provider, string inputPath, LocalItem item, SyncTarget target, CancellationToken cancellationToken)
         {
+            _logger.Debug("Sending {0} to {1}. Remote path: {2}", inputPath, provider.Name, item.LocalPath);
             using (var stream = _fileSystem.GetFileStream(inputPath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
             {
                 return await provider.SendFile(stream, item.LocalPath, target, new Progress<double>(), cancellationToken).ConfigureAwait(false);
