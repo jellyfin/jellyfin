@@ -765,11 +765,14 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (!string.IsNullOrEmpty(chapterInfo.ImagePath))
             {
+                var file = new FileInfo(chapterInfo.ImagePath);
+
                 dto.ImageTag = GetImageCacheTag(item, new ItemImageInfo
                 {
                     Path = chapterInfo.ImagePath,
                     Type = ImageType.Chapter,
-                    DateModified = _fileSystem.GetLastWriteTimeUtc(chapterInfo.ImagePath)
+                    DateModified = _fileSystem.GetLastWriteTimeUtc(file),
+                    Length = file.Length
                 });
             }
 

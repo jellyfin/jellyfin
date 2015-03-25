@@ -100,9 +100,8 @@
 }
 
 .logoLibraryMenuButtonText {
-    font-family: MBLogo;
-    font-weight: 200;
-    color: #000;
+    font-family: Montserrat;
+    color: #333;
 }
 
 .ui-page-theme-b .logoLibraryMenuButtonText, .ui-bar-b .logoLibraryMenuButtonText {

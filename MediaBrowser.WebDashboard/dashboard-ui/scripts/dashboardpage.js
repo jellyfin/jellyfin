@@ -60,7 +60,6 @@
 
         $('#cachePath', page).html(systemInfo.CachePath);
         $('#logPath', page).html(systemInfo.LogPath);
-        $('#imagesByNamePath', page).html(systemInfo.ItemsByNamePath);
         $('#transcodingTemporaryPath', page).html(systemInfo.TranscodingTempPath);
         $('#metadataPath', page).html(systemInfo.InternalMetadataPath);
     },
@@ -803,7 +802,7 @@
         } else {
 
             imgUrl = "css/images/supporter/nonsupporterbadge.png";
-            text = Globalize.translate('MessagePleaseSupportMediaBrowser');
+            text = Globalize.translate('MessagePleaseSupportProject');
 
             $('.supporterIconContainer', page).html('<a class="imageLink supporterIcon" href="supporter.html" title="' + text + '"><img src="' + imgUrl + '" style="height:32px;vertical-align: middle; margin-right: .5em;" /><span style="position:relative;top:2px;text-decoration:none;">' + text + '</span></a>');
         }
@@ -1290,7 +1289,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
 
                 } else {
                     
-                    $('.tourHeader', elem).html(Globalize.translate('HeaderWelcomeToMediaBrowserServerDashboard'));
+                    $('.tourHeader', elem).html(Globalize.translate('HeaderWelcomeToProjectServerDashboard'));
                     $('.tourButtonText', elem).html(Globalize.translate('ButtonTakeTheTour'));
                 }
             }

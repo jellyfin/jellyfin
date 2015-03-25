@@ -144,7 +144,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             {
                 var tmpPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".webp");
                 Directory.CreateDirectory(Path.GetDirectoryName(tmpPath));
-                
+
                 using (var wand = new MagickWand(1, 1, new PixelWand("none", 1)))
                 {
                     wand.SaveImage(tmpPath);
@@ -186,21 +186,31 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
 
             var dateModified = options.Image.DateModified;
+            var length = options.Image.Length;
 
             if (options.CropWhiteSpace)
             {
-                var tuple = await GetWhitespaceCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
+                var tuple = await GetWhitespaceCroppedImage(originalImagePath, dateModified, length).ConfigureAwait(false);
 
                 originalImagePath = tuple.Item1;
                 dateModified = tuple.Item2;
+                length = tuple.Item3;
             }
 
             if (options.Enhancers.Count > 0)
             {
-                var tuple = await GetEnhancedImage(options.Image, options.Item, options.ImageIndex, options.Enhancers).ConfigureAwait(false);
+                var tuple = await GetEnhancedImage(new ItemImageInfo
+                {
+                    Length = length,
+                    DateModified = dateModified,
+                    Type = options.Image.Type,
+                    Path = originalImagePath
+
+                }, options.Item, options.ImageIndex, options.Enhancers).ConfigureAwait(false);
 
                 originalImagePath = tuple.Item1;
                 dateModified = tuple.Item2;
+                length = tuple.Item3;
             }
 
             var originalImageSize = GetImageSize(originalImagePath, dateModified);
@@ -217,7 +227,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             var quality = options.Quality ?? 90;
 
             var outputFormat = GetOutputFormat(options.OutputFormat);
-            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, outputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.BackgroundColor);
+            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, length, outputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.BackgroundColor);
 
             var semaphore = GetLock(cacheFilePath);
 
@@ -341,13 +351,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <summary>
         /// Crops whitespace from an image, caches the result, and returns the cached path
         /// </summary>
-        /// <param name="originalImagePath">The original image path.</param>
-        /// <param name="dateModified">The date modified.</param>
-        /// <returns>System.String.</returns>
-        private async Task<Tuple<string, DateTime>> GetWhitespaceCroppedImage(string originalImagePath, DateTime dateModified)
+        private async Task<Tuple<string, DateTime, long>> GetWhitespaceCroppedImage(string originalImagePath, DateTime dateModified, long length)
         {
             var name = originalImagePath;
             name += "datemodified=" + dateModified.Ticks;
+            name += "length=" + length;
 
             var croppedImagePath = GetCachePath(CroppedWhitespaceImageCachePath, name, Path.GetExtension(originalImagePath));
 
@@ -359,7 +367,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             if (File.Exists(croppedImagePath))
             {
                 semaphore.Release();
-                return new Tuple<string, DateTime>(croppedImagePath, _fileSystem.GetLastWriteTimeUtc(croppedImagePath));
+                return GetResult(croppedImagePath);
             }
 
             try
@@ -377,14 +385,21 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 // We have to have a catch-all here because some of the .net image methods throw a plain old Exception
                 _logger.ErrorException("Error cropping image {0}", ex, originalImagePath);
 
-                return new Tuple<string, DateTime>(originalImagePath, dateModified);
+                return new Tuple<string, DateTime, long>(originalImagePath, dateModified, length);
             }
             finally
             {
                 semaphore.Release();
             }
 
-            return new Tuple<string, DateTime>(croppedImagePath, _fileSystem.GetLastWriteTimeUtc(croppedImagePath));
+            return GetResult(croppedImagePath);
+        }
+
+        private Tuple<string, DateTime, long> GetResult(string path)
+        {
+            var file = new FileInfo(path);
+
+            return new Tuple<string, DateTime, long>(path, _fileSystem.GetLastWriteTimeUtc(file), file.Length);
         }
 
         /// <summary>
@@ -395,7 +410,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         /// <summary>
         /// Gets the cache file path based on a set of parameters
         /// </summary>
-        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, string backgroundColor)
+        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, long length, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, string backgroundColor)
         {
             var filename = originalPath;
 
@@ -406,6 +421,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             filename += "quality=" + quality;
 
             filename += "datemodified=" + dateModified.Ticks;
+            filename += "length=" + length;
 
             filename += "f=" + format;
 
@@ -601,16 +617,17 @@ namespace MediaBrowser.Server.Implementations.Drawing
             var originalImagePath = image.Path;
             var dateModified = image.DateModified;
             var imageType = image.Type;
+            var length = image.Length;
 
             // Optimization
             if (imageEnhancers.Count == 0)
             {
-                return (originalImagePath + dateModified.Ticks).GetMD5().ToString("N");
+                return (originalImagePath + dateModified.Ticks + string.Empty + length).GetMD5().ToString("N");
             }
 
             // Cache name is created with supported enhancers combined with the last config change so we pick up new config changes
             var cacheKeys = imageEnhancers.Select(i => i.GetConfigurationCacheKey(item, imageType)).ToList();
-            cacheKeys.Add(originalImagePath + dateModified.Ticks);
+            cacheKeys.Add(originalImagePath + dateModified.Ticks + string.Empty + length);
 
             return string.Join("|", cacheKeys.ToArray()).GetMD5().ToString("N");
         }
@@ -633,7 +650,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             return result.Item1;
         }
 
-        private async Task<Tuple<string, DateTime>> GetEnhancedImage(ItemImageInfo image,
+        private async Task<Tuple<string, DateTime, long>> GetEnhancedImage(ItemImageInfo image,
             IHasImages item,
             int imageIndex,
             List<IImageEnhancer> enhancers)
@@ -641,6 +658,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             var originalImagePath = image.Path;
             var dateModified = image.DateModified;
             var imageType = image.Type;
+            var length = image.Length;
 
             try
             {
@@ -652,9 +670,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 // If the path changed update dateModified
                 if (!ehnancedImagePath.Equals(originalImagePath, StringComparison.OrdinalIgnoreCase))
                 {
-                    dateModified = _fileSystem.GetLastWriteTimeUtc(ehnancedImagePath);
-
-                    return new Tuple<string, DateTime>(ehnancedImagePath, dateModified);
+                    return GetResult(ehnancedImagePath);
                 }
             }
             catch (Exception ex)
@@ -662,7 +678,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
                 _logger.Error("Error enhancing image", ex);
             }
 
-            return new Tuple<string, DateTime>(originalImagePath, dateModified);
+            return new Tuple<string, DateTime, long>(originalImagePath, dateModified, length);
         }
 
         /// <summary>

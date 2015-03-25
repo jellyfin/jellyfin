@@ -25,11 +25,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         {
             var authorization = _authContext.GetAuthorizationInfo(requestContext);
 
-            if (!string.IsNullOrWhiteSpace(authorization.Token))
-            {
-                var auth = GetTokenInfo(requestContext);
-                return _sessionManager.GetSessionByAuthenticationToken(auth, authorization.DeviceId, requestContext.RemoteIp, authorization.Version);
-            }
+            //if (!string.IsNullOrWhiteSpace(authorization.Token))
+            //{
+            //    var auth = GetTokenInfo(requestContext);
+            //    if (auth != null)
+            //    {
+            //        return _sessionManager.GetSessionByAuthenticationToken(auth, authorization.DeviceId, requestContext.RemoteIp, authorization.Version);
+            //    }
+            //}
 
             var session = _sessionManager.GetSession(authorization.DeviceId, authorization.Client, authorization.Version);
             return Task.FromResult(session);

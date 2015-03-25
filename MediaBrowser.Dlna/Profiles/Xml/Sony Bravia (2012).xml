@@ -8,11 +8,11 @@
       <HttpHeaderInfo name="X-AV-Client-Info" value=".*KDL-\d{2}[A-Z]X\d5(\d|G).*" match="Regex" />
     </Headers>
   </Identification>
-  <FriendlyName>Media Browser</FriendlyName>
+  <FriendlyName>Emby</FriendlyName>
   <Manufacturer>Microsoft Corporation</Manufacturer>
   <ManufacturerUrl>http://www.microsoft.com/</ManufacturerUrl>
   <ModelName>Windows Media Player Sharing</ModelName>
-  <ModelDescription>Media Browser</ModelDescription>
+  <ModelDescription>Emby</ModelDescription>
   <ModelNumber>3.0</ModelNumber>
   <ModelUrl>http://www.microsoft.com/</ModelUrl>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>

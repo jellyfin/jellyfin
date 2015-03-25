@@ -396,7 +396,6 @@
 
                 ApiClient.markUnplayed(userId, item.Id);
             }
-
         });
 
         $(".playstateSlider", elem).on("change", function (e) {

@@ -33,7 +33,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             var options = new HttpRequestOptions
             {
                 CancellationToken = cancellationToken,
-                UserAgent = "Media Browser",
+                UserAgent = "Emby",
                 RequestContentType = "text/xml; charset=\"utf-8\"",
                 LogErrorResponseBody = true,
                 Url = request.ContentDirectoryUrl

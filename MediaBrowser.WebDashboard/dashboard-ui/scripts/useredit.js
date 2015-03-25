@@ -168,8 +168,8 @@
 
                     Dashboard.alert({
 
-                        message: Globalize.translate('MessageMediaBrowserAccontRemoved'),
-                        title: Globalize.translate('HeaderMediaBrowserAccountRemoved'),
+                        message: Globalize.translate('MessageEmbyAccontRemoved'),
+                        title: Globalize.translate('HeaderEmbyAccountRemoved'),
 
                         callback: actionCallback
 
@@ -190,11 +190,11 @@
 
                 }).done(function (result) {
 
-                    var msgKey = result.IsPending ? 'MessagePendingMediaBrowserAccountAdded' : 'MessageMediaBrowserAccountAdded';
+                    var msgKey = result.IsPending ? 'MessagePendingEmbyAccountAdded' : 'MessageEmbyAccountAdded';
 
                     Dashboard.alert({
                         message: Globalize.translate(msgKey),
-                        title: Globalize.translate('HeaderMediaBrowserAccountAdded'),
+                        title: Globalize.translate('HeaderEmbyAccountAdded'),
 
                         callback: actionCallback
 

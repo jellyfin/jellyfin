@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -53,8 +52,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            var returnArtists = new List<MusicArtist>(allArtists.Count);
-
             var numComplete = 0;
             var numArtists = allArtists.Count;
 
@@ -67,8 +64,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                     var artistItem = _libraryManager.GetArtist(artist);
 
                     await artistItem.RefreshMetadata(cancellationToken).ConfigureAwait(false);
-
-                    returnArtists.Add(artistItem);
                 }
                 catch (IOException ex)
                 {

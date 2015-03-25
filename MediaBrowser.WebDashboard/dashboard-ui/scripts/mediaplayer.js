@@ -138,6 +138,7 @@
 
                 var transcodingExtension;
                 var isStatic;
+                var currentStreamId = getParameterByName('StreamId', currentSrc);
 
                 if (self.currentItem.MediaType == "Video") {
 
@@ -172,9 +173,10 @@
 
                     if (finalParams.isStatic) {
                         currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
+                        currentSrc = replaceQueryString(currentSrc, 'ClientTime', '');
                     } else {
                         currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension).replace('.mkv', transcodingExtension).replace('.webm', transcodingExtension);
-                        currentSrc = replaceQueryString(currentSrc, 'StreamId', new Date().getTime());
+                        currentSrc = replaceQueryString(currentSrc, 'ClientTime', new Date().getTime());
                     }
 
                     currentSrc = replaceQueryString(currentSrc, 'AudioBitrate', finalParams.audioBitrate);
@@ -209,7 +211,7 @@
                 });
 
                 if (self.currentItem.MediaType == "Video") {
-                    ApiClient.stopActiveEncodings().done(function () {
+                    ApiClient.stopActiveEncodings(currentStreamId).done(function () {
 
                         self.startTimeTicksOffset = ticks;
                         element.src = currentSrc;
@@ -589,7 +591,7 @@
 
             var mediaSource;
 
-            ApiClient.getJSON(ApiClient.getUrl('Items/' + item.Id + '/MediaInfo', {
+            ApiClient.getJSON(ApiClient.getUrl('Items/' + item.Id + '/PlaybackInfo', {
                 userId: Dashboard.getCurrentUserId()
 
             })).done(function (result) {
@@ -605,14 +607,14 @@
 
                         if (item.MediaType === "Video") {
 
-                            self.currentMediaElement = self.playVideo(item, self.currentMediaSource, startPosition);
+                            self.currentMediaElement = self.playVideo(result, item, self.currentMediaSource, startPosition);
                             self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
 
                             self.updateNowPlayingInfo(item);
 
                         } else if (item.MediaType === "Audio") {
 
-                            self.currentMediaElement = playAudio(item, self.currentMediaSource, startPosition);
+                            self.currentMediaElement = playAudio(result, item, self.currentMediaSource, startPosition);
                             self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
                         }
 
@@ -1269,6 +1271,8 @@
 
             var playerElement = this;
 
+            var currentStreamId = getParameterByName('StreamId', playerElement.currentSrc);
+
             $(playerElement).off('.mediaplayerevent').off('ended.playbackstopped');
 
             self.cleanup(playerElement);
@@ -1279,7 +1283,8 @@
             var mediaSource = self.currentMediaSource;
 
             if (item.MediaType == "Video") {
-                ApiClient.stopActiveEncodings();
+
+                ApiClient.stopActiveEncodings(currentStreamId);
                 if (self.isFullScreen()) {
                     self.exitFullScreen();
                 }
@@ -1397,7 +1402,7 @@
 
         var supportsAac = document.createElement('audio').canPlayType('audio/aac').replace(/no/, '');
 
-        function playAudio(item, mediaSource, startPositionTicks) {
+        function playAudio(playbackInfo, item, mediaSource, startPositionTicks) {
 
             startPositionTicks = startPositionTicks || 0;
 
@@ -1407,7 +1412,8 @@
                 StartTimeTicks: startPositionTicks,
                 mediaSourceId: mediaSource.Id,
                 deviceId: ApiClient.deviceId(),
-                api_key: ApiClient.accessToken()
+                api_key: ApiClient.accessToken(),
+                StreamId: playbackInfo.StreamId
             };
 
             var sourceContainer = (mediaSource.Container || '').toLowerCase();
@@ -1422,7 +1428,7 @@
                 var seekParam = startPositionTicks ? '#t=' + (startPositionTicks / 10000000) : '';
                 audioUrl += "&static=true" + seekParam;
             } else {
-                audioUrl += "&StreamId=" + new Date().getTime();
+                audioUrl += "&ClientTime=" + new Date().getTime();
             }
 
             self.startTimeTicksOffset = isStatic ? 0 : startPositionTicks;

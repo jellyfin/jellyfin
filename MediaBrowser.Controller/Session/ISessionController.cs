@@ -115,5 +115,10 @@ namespace MediaBrowser.Controller.Session
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SendMessage<T>(string name, T data, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Called when [activity].
+        /// </summary>
+        void OnActivity();
     }
 }

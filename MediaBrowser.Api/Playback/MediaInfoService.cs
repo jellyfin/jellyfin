@@ -1,10 +1,10 @@
-﻿using System;
-using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.MediaInfo;
 using ServiceStack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -68,6 +68,7 @@ namespace MediaBrowser.Api.Playback
             }
 
             result.MediaSources = mediaSources.ToList();
+            result.StreamId = Guid.NewGuid().ToString("N");
 
             return ToOptimizedResult(result);
         }

@@ -38,11 +38,6 @@ namespace MediaBrowser.Model.ApiClient
         event EventHandler<GenericEventArgs<RemoteLogoutReason>> RemoteLoggedOut;
 
         /// <summary>
-        /// Occurs when [authenticated].
-        /// </summary>
-        event EventHandler<GenericEventArgs<AuthenticationResult>> Authenticated;
-
-        /// <summary>
         /// Gets the API URL.
         /// </summary>
         /// <param name="handler">The handler.</param>
@@ -690,8 +685,9 @@ namespace MediaBrowser.Model.ApiClient
         /// Stops the transcoding processes.
         /// </summary>
         /// <param name="deviceId">The device identifier.</param>
+        /// <param name="streamId">The stream identifier.</param>
         /// <returns>Task.</returns>
-        Task StopTranscodingProcesses(string deviceId);
+        Task StopTranscodingProcesses(string deviceId, string streamId);
 
         /// <summary>
         /// Sets the index of the audio stream.

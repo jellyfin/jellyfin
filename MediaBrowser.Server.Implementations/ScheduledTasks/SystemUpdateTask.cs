@@ -108,7 +108,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
             }
             else
             {
-                Logger.Info("A new version of Media Browser is available.");
+                Logger.Info("A new version of " + _appHost.Name + " is available.");
             }
 
             progress.Report(100);

@@ -3,7 +3,6 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Diagnostics;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -70,18 +69,16 @@ namespace MediaBrowser.Api.Playback
         protected IDlnaManager DlnaManager { get; private set; }
         protected IDeviceManager DeviceManager { get; private set; }
         protected ISubtitleEncoder SubtitleEncoder { get; private set; }
-        protected IProcessManager ProcessManager { get; private set; }
         protected IMediaSourceManager MediaSourceManager { get; private set; }
         protected IZipClient ZipClient { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
-        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IProcessManager processManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient)
+        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient)
         {
             ZipClient = zipClient;
             MediaSourceManager = mediaSourceManager;
-            ProcessManager = processManager;
             DeviceManager = deviceManager;
             SubtitleEncoder = subtitleEncoder;
             DlnaManager = dlnaManager;
@@ -134,7 +131,8 @@ namespace MediaBrowser.Api.Playback
             var data = GetCommandLineArguments("dummy\\dummy", "dummyTranscodingId", state, false);
 
             data += "-" + (state.Request.DeviceId ?? string.Empty);
-            data += "-" + (state.Request.StreamId ?? state.Request.ClientTime ?? string.Empty);
+            data += "-" + (state.Request.StreamId ?? string.Empty);
+            data += "-" + (state.Request.ClientTime ?? string.Empty);
 
             var dataHash = data.GetMD5().ToString("N");
 
@@ -1054,7 +1052,7 @@ namespace MediaBrowser.Api.Playback
             }
 
             var transcodingJob = ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath,
-                state.Request.StreamId ?? state.Request.ClientTime,
+                state.Request.StreamId,
                 transcodingId,
                 TranscodingJobType,
                 process,
@@ -1125,7 +1123,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && state.IsInputVideo)
                 {
-                    state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, Logger, ProcessManager);
+                    transcodingJob.TranscodingThrottler = state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, Logger);
                     state.TranscodingThrottler.Start();
                 }
             }
@@ -1524,7 +1522,7 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 16)
                 {
-                    request.StreamId = val;
+                    request.ClientTime = val;
                 }
                 else if (i == 17)
                 {
@@ -1553,6 +1551,10 @@ namespace MediaBrowser.Api.Playback
                     {
                         videoRequest.Cabac = string.Equals("true", val, StringComparison.OrdinalIgnoreCase);
                     }
+                }
+                else if (i == 21)
+                {
+                    request.StreamId = val;
                 }
             }
         }
@@ -1816,12 +1818,10 @@ namespace MediaBrowser.Api.Playback
         }
 
         private void AttachMediaStreamInfo(StreamState state,
-          ChannelMediaInfo mediaInfo,
+          MediaSourceInfo mediaSource,
           VideoStreamRequest videoRequest,
           string requestedUrl)
         {
-            var mediaSource = mediaInfo.ToMediaSource();
-
             state.InputProtocol = mediaSource.Protocol;
             state.MediaPath = mediaSource.Path;
             state.RunTimeTicks = mediaSource.RunTimeTicks;

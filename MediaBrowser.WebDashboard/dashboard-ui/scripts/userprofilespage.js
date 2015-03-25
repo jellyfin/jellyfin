@@ -129,7 +129,7 @@
         html += '<div class="' + imageClass + '" style="background-image:url(\'' + imgUrl + '\');">';
 
         if (user.ConnectUserId && addConnectIndicator) {
-            html += '<div class="playedIndicator" title="' + Globalize.translate('TooltipLinkedToMediaBrowserConnect') + '"><div class="ui-icon-cloud ui-btn-icon-notext"></div></div>';
+            html += '<div class="playedIndicator" title="' + Globalize.translate('TooltipLinkedToEmbyConnect') + '"><div class="ui-icon-cloud ui-btn-icon-notext"></div></div>';
         }
 
         html += "</div>";
@@ -417,7 +417,7 @@
 
                 msg += '<br/>';
                 msg += '<br/>';
-                msg += '<a href="useredit.html?userId=' + user.Id + '">' + Globalize.translate('ButtonLinkMyMediaBrowserAccount') + '</a>';
+                msg += '<a href="useredit.html?userId=' + user.Id + '">' + Globalize.translate('ButtonLinkMyEmbyAccount') + '</a>';
                 msg += '<br/>';
 
                 Dashboard.alert({

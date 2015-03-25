@@ -181,7 +181,6 @@ namespace MediaBrowser.Server.Implementations.Playlists
             }
 
             var list = new List<LinkedChild>();
-            var itemList = new List<BaseItem>();
 
             var items = GetPlaylistItems(itemIds, playlist.MediaType, user)
                 .Where(i => i.SupportsAddingToPlaylist)
@@ -189,7 +188,6 @@ namespace MediaBrowser.Server.Implementations.Playlists
 
             foreach (var item in items)
             {
-                itemList.Add(item);
                 list.Add(LinkedChild.Create(item));
             }
 

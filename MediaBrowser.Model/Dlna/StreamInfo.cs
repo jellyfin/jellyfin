@@ -69,6 +69,8 @@ namespace MediaBrowser.Model.Dlna
         public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
         public string SubtitleFormat { get; set; }
 
+        public LiveMediaInfoResult PlaybackInfo { get; set; }
+
         public string MediaSourceId
         {
             get
@@ -149,6 +151,9 @@ namespace MediaBrowser.Model.Dlna
             list.Add(item.VideoProfile ?? string.Empty);
             list.Add(item.Cabac.HasValue ? item.Cabac.Value.ToString() : string.Empty);
 
+            string streamId = item.PlaybackInfo == null ? null : item.PlaybackInfo.StreamId;
+            list.Add(streamId ?? string.Empty);
+            
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
         }
 
@@ -262,7 +267,7 @@ namespace MediaBrowser.Model.Dlna
 
         private SubtitleStreamInfo GetSubtitleStreamInfo(MediaStream stream)
         {
-            SubtitleProfile subtitleProfile = StreamBuilder.GetSubtitleProfile(stream, DeviceProfile, Context);
+            SubtitleProfile subtitleProfile = StreamBuilder.GetSubtitleProfile(stream, DeviceProfile.SubtitleProfiles, Context);
 
             if (subtitleProfile.Method != SubtitleDeliveryMethod.External)
             {
@@ -288,17 +293,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (MediaSource != null)
                 {
-                    if (AudioStreamIndex.HasValue)
-                    {
-                        foreach (MediaStream i in MediaSource.MediaStreams)
-                        {
-                            if (i.Index == AudioStreamIndex.Value && i.Type == MediaStreamType.Audio)
-                                return i;
-                        }
-                        return null;
-                    }
-
-                    return MediaSource.DefaultAudioStream;
+                    return MediaSource.GetDefaultAudioStream(AudioStreamIndex);
                 }
 
                 return null;

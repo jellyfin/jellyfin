@@ -14,7 +14,7 @@
         html += '</div>';
         html += '</button>';
 
-        html += '<div class="libraryMenuButtonText headerButton"><span>MEDIA</span><span class="mediaBrowserAccent">BROWSER</span></div>';
+        html += '<div class="libraryMenuButtonText headerButton"><span>EMBY</span></div>';
 
         if (user.localUser) {
 
@@ -390,7 +390,7 @@
 
             //}
         else if ($(page).hasClass('allLibraryPage') || $(page).hasClass('type-interior')) {
-            $('.libraryMenuButtonText').html('<span class="logoLibraryMenuButtonText">MEDIA</span><span class="logoLibraryMenuButtonText mediaBrowserAccent">BROWSER</span>');
+            $('.libraryMenuButtonText').html('<span class="logoLibraryMenuButtonText">EMBY</span>');
         }
     }
 

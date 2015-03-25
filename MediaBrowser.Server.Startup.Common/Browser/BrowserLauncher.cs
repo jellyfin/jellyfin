@@ -38,7 +38,7 @@ namespace MediaBrowser.Server.Startup.Common.Browser
         /// <param name="logger">The logger.</param>
         public static void OpenCommunity(ILogger logger)
         {
-            OpenUrl("http://mediabrowser.tv/community", logger);
+            OpenUrl("http://emby.media/community", logger);
         }
 
         /// <summary>

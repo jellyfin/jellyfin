@@ -13,13 +13,13 @@ namespace MediaBrowser.Model.Dlna.Profiles
 
             XDlnaDoc = "DMS-1.50";
 
-            FriendlyName = "Media Browser";
-            Manufacturer = "Media Browser";
-            ModelDescription = "Media Browser";
-            ModelName = "Media Browser";
-            ModelNumber = "Media Browser";
-            ModelUrl = "http://mediabrowser.tv/";
-            ManufacturerUrl = "http://mediabrowser.tv/";
+            FriendlyName = "Emby";
+            Manufacturer = "Emby";
+            ModelDescription = "Emby";
+            ModelName = "Emby";
+            ModelNumber = "Emby";
+            ModelUrl = "http://emby.media/";
+            ManufacturerUrl = "http://emby.media/";
 
             AlbumArtPn = "JPEG_SM";
 

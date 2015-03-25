@@ -10,6 +10,7 @@ using MediaBrowser.MediaEncoding.Subtitles;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -527,11 +528,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         private void AttachMediaStreamInfo(EncodingJob state,
-          ChannelMediaInfo mediaInfo,
+          MediaSourceInfo mediaSource,
           EncodingJobOptions videoRequest)
         {
-            var mediaSource = mediaInfo.ToMediaSource();
-
             state.InputProtocol = mediaSource.Protocol;
             state.MediaPath = mediaSource.Path;
             state.RunTimeTicks = mediaSource.RunTimeTicks;

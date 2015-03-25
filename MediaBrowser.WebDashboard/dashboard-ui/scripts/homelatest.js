@@ -1,6 +1,8 @@
 ﻿(function ($, document) {
 
-    function loadSections(page, userId) {
+    function loadSections(page, user) {
+
+        var userId = user.Id;
 
         var i, length;
         var sectionCount = 3;
@@ -21,7 +23,7 @@
 
         var latestMediElem = $('.section0', page);
 
-        Sections.loadRecentlyAdded(latestMediElem, userId, context).done(function () {
+        Sections.loadRecentlyAdded(latestMediElem, user, context).done(function () {
 
             $('h1', latestMediElem).addClass('firstListHeader');
         });
@@ -33,9 +35,9 @@
 
         var page = this;
 
-        var userId = Dashboard.getCurrentUserId();
-
-        loadSections(page, userId);
+        Dashboard.getCurrentUser().done(function (user) {
+            loadSections(page, user);
+        });
 
     });
 

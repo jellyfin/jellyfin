@@ -47,6 +47,10 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
+        public void OnActivity()
+        {
+        }
+
         public bool SupportsMediaControl
         {
             get { return IsSessionActive; }
@@ -128,11 +132,6 @@ namespace MediaBrowser.Dlna.PlayTo
                     _logger.ErrorException("Error in ReportSessionEnded", ex);
                 }
             }
-        }
-
-        private string GetServerAddress()
-        {
-            return _serverAddress;
         }
 
         async void _device_MediaChanged(object sender, MediaChangedEventArgs e)

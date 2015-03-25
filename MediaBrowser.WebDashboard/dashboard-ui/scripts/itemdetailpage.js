@@ -101,6 +101,12 @@
             } else {
                 $('.btnMoreCommands', page).show();
             }
+
+            if (user.Policy.IsAdministrator) {
+                $('.chapterSettingsButton', page).show();
+            } else {
+                $('.chapterSettingsButton', page).hide();
+            }
         });
 
         if (item.LocationType == "Offline") {

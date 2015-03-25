@@ -174,7 +174,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
 
             var notification = new NotificationRequest
             {
-                Description = "Please see mediabrowser.tv for details.",
+                Description = "Please see emby.media for details.",
                 NotificationType = type
             };
 
@@ -389,7 +389,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
             var notification = new NotificationRequest
             {
                 UserIds = new List<string> { e.Argument.Id.ToString("N") },
-                Name = "Welcome to Media Browser!",
+                Name = "Welcome to Emby!",
                 Description = "Check back here for more notifications."
             };
 

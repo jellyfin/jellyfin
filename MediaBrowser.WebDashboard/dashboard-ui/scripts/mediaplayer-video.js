@@ -1007,7 +1007,7 @@
             }
         };
 
-        self.playVideo = function (item, mediaSource, startPosition) {
+        self.playVideo = function (playbackInfo, item, mediaSource, startPosition) {
 
             var mediaStreams = mediaSource.MediaStreams || [];
 
@@ -1027,7 +1027,8 @@
                 deviceId: ApiClient.deviceId(),
                 Static: false,
                 mediaSourceId: mediaSource.Id,
-                api_key: ApiClient.accessToken()
+                api_key: ApiClient.accessToken(),
+                StreamId: playbackInfo.StreamId
             };
 
             if (selectedSubtitleStream && (!self.supportsSubtitleStreamExternally(selectedSubtitleStream) || !self.supportsTextTracks())) {
@@ -1334,7 +1335,7 @@
                 length = self.playlist.length,
                 requiresNativeControls = !self.canAutoPlayVideo(),
                 controls = $(requiresNativeControls ? '.videoAdvancedControls' : '.videoControls');
-            
+
             if (length < 2) {
                 $('.videoTrackControl').hide();
                 return;

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -172,18 +173,36 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets the recording stream.
         /// </summary>
         /// <param name="recordingId">The recording identifier.</param>
+        /// <param name="streamId">The stream identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
-        Task<ChannelMediaInfo> GetRecordingStream(string recordingId, CancellationToken cancellationToken);
+        Task<MediaSourceInfo> GetRecordingStream(string recordingId, string streamId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the channel stream.
         /// </summary>
         /// <param name="channelId">The channel identifier.</param>
+        /// <param name="streamId">The stream identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{Stream}.</returns>
-        Task<ChannelMediaInfo> GetChannelStream(string channelId, CancellationToken cancellationToken);
+        Task<MediaSourceInfo> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Gets the channel stream media sources.
+        /// </summary>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;List&lt;MediaSourceInfo&gt;&gt;.</returns>
+        Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the recording stream media sources.
+        /// </summary>
+        /// <param name="recordingId">The recording identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;List&lt;MediaSourceInfo&gt;&gt;.</returns>
+        Task<List<MediaSourceInfo>> GetRecordingStreamMediaSources(string recordingId, CancellationToken cancellationToken);
+        
         /// <summary>
         /// Closes the live stream.
         /// </summary>

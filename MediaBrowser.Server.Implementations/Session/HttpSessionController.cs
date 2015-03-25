@@ -43,6 +43,10 @@ namespace MediaBrowser.Server.Implementations.Session
             ResetPingTimer();
         }
 
+        public void OnActivity()
+        {
+        }
+
         private string PostUrl
         {
             get

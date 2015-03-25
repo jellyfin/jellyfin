@@ -266,7 +266,7 @@ namespace MediaBrowser.XbmcMetadata.Images
 
         public string Name
         {
-            get { return "Media Browser/Plex/Xbmc Images"; }
+            get { return "Emby/Plex/Xbmc Images"; }
         }
     }
 }

@@ -294,7 +294,7 @@ namespace MediaBrowser.Common.Implementations
 
         public static void LogEnvironmentInfo(ILogger logger, IApplicationPaths appPaths, bool isStartup)
         {
-            logger.LogMultiline("Media Browser", LogSeverity.Info, GetBaseExceptionMessage(appPaths));
+            logger.LogMultiline("Emby", LogSeverity.Info, GetBaseExceptionMessage(appPaths));
         }
 
         protected static StringBuilder GetBaseExceptionMessage(IApplicationPaths appPaths)

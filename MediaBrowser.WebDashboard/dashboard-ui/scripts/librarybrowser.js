@@ -986,19 +986,41 @@
 
                 primaryImageAspectRatio = LibraryBrowser.getAveragePrimaryImageAspectRatio([item]);
 
-                var futureDateText;
+                if (options.showPremiereDateIndex) {
 
-                if (item.PremiereDate) {
-                    try {
+                    var futureDateText;
 
-                        futureDateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.PremiereDate, { toLocal: true }), true);
+                    if (item.PremiereDate) {
+                        try {
 
-                    } catch (err) {
+                            futureDateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.PremiereDate, { toLocal: true }), true);
 
+                        } catch (err) {
+
+                        }
+                    }
+
+                    var val = futureDateText || Globalize.translate('HeaderUnknownDate');
+
+                    if (val != currentIndexValue) {
+
+                        html += '<h2 class="timelineHeader detailSectionHeader" style="text-align:center;">' + val + '</h2>';
+                        currentIndexValue = val;
                     }
                 }
+                else if (options.showStartDateIndex) {
 
-                if (options.showPremiereDateIndex && futureDateText) {
+                    var futureDateText;
+
+                    if (item.StartDate) {
+                        try {
+
+                            futureDateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.StartDate, { toLocal: true }), true);
+
+                        } catch (err) {
+
+                        }
+                    }
 
                     var val = futureDateText || Globalize.translate('HeaderUnknownDate');
 

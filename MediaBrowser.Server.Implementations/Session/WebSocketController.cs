@@ -30,17 +30,36 @@ namespace MediaBrowser.Server.Implementations.Session
             Sockets = new List<IWebSocketConnection>();
         }
 
-        public bool IsSessionActive
+        private bool HasOpenSockets
         {
-            get
-            {
-                return Sockets.Any(i => i.State == WebSocketState.Open);
-            }
+            get { return GetActiveSockets().Any(); }
         }
 
         public bool SupportsMediaControl
         {
-            get { return GetActiveSockets().Any(); }
+            get { return HasOpenSockets; }
+        }
+
+        private bool _isActive;
+        private DateTime _lastActivityDate;
+        public bool IsSessionActive
+        {
+            get
+            {
+                if (HasOpenSockets)
+                {
+                    return true;
+                }
+
+                //return false;
+                return _isActive && (DateTime.UtcNow - _lastActivityDate).TotalMinutes <= 10;
+            }
+        }
+
+        public void OnActivity()
+        {
+            _isActive = true;
+            _lastActivityDate = DateTime.UtcNow;
         }
 
         private IEnumerable<IWebSocketConnection> GetActiveSockets()
@@ -64,6 +83,8 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             if (!GetActiveSockets().Any())
             {
+                _isActive = false;
+
                 try
                 {
                     _sessionManager.ReportSessionEnded(Session.Id);
@@ -233,8 +254,6 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private Task SendMessageInternal<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
         {
-            if (SkipSending()) return Task.FromResult(true);
-
             var socket = GetActiveSocket();
 
             return socket.SendAsync(message, cancellationToken);
@@ -242,8 +261,6 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private Task SendMessagesInternal<T>(WebSocketMessage<T> message, CancellationToken cancellationToken)
         {
-            if (SkipSending()) return Task.FromResult(true);
-
             var tasks = GetActiveSockets().Select(i => Task.Run(async () =>
             {
                 try
@@ -258,27 +275,6 @@ namespace MediaBrowser.Server.Implementations.Session
             }, cancellationToken));
 
             return Task.WhenAll(tasks);
-        }
-
-        private bool SkipSending()
-        {
-            if (Session != null)
-            {
-                if (string.Equals(Session.Client, "mb-classic", StringComparison.OrdinalIgnoreCase))
-                {
-                    Version version;
-
-                    if (!string.IsNullOrWhiteSpace(Session.ApplicationVersion) && Version.TryParse(Session.ApplicationVersion, out version))
-                    {
-                        if (version < new Version(3, 0, 196))
-                        {
-                            _logger.Debug("Skipping web socket message to MBC version {0}.", version);
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
         }
 
         public void Dispose()
