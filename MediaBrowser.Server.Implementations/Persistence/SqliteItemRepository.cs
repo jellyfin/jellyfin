@@ -521,8 +521,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
             }
         }
-        
-        public IEnumerable<string> GetItemsOfType(Type type)
+
+        public IEnumerable<Guid> GetItemsOfType(Type type)
         {
             if (type == null)
             {
@@ -541,7 +541,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     while (reader.Read())
                     {
-                        yield return reader.GetString(0);
+                        yield return reader.GetGuid(0);
                     }
                 }
             }

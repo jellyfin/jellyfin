@@ -107,7 +107,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>IEnumerable{Guid}.</returns>
-        IEnumerable<string> GetItemsOfType(Type type);
+        IEnumerable<Guid> GetItemsOfType(Type type);
 
         /// <summary>
         /// Saves the children.

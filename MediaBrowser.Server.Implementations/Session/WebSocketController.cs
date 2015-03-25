@@ -41,17 +41,25 @@ namespace MediaBrowser.Server.Implementations.Session
         }
 
         private bool _isActive;
+        private DateTime _lastActivityDate;
         public bool IsSessionActive
         {
             get
             {
-                return HasOpenSockets;
+                if (HasOpenSockets)
+                {
+                    return true;
+                }
+
+                //return false;
+                return _isActive && (DateTime.UtcNow - _lastActivityDate).TotalMinutes <= 10;
             }
         }
 
         public void OnActivity()
         {
             _isActive = true;
+            _lastActivityDate = DateTime.UtcNow;
         }
 
         private IEnumerable<IWebSocketConnection> GetActiveSockets()
