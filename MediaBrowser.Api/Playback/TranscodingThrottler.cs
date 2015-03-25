@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Diagnostics;
-using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Threading;
@@ -10,17 +9,15 @@ namespace MediaBrowser.Api.Playback
     {
         private readonly TranscodingJob _job;
         private readonly ILogger _logger;
-        private readonly IProcessManager _processManager;
         private Timer _timer;
         private bool _isPaused;
 
         private readonly long _gapLengthInTicks = TimeSpan.FromMinutes(2).Ticks;
 
-        public TranscodingThrottler(TranscodingJob job, ILogger logger, IProcessManager processManager)
+        public TranscodingThrottler(TranscodingJob job, ILogger logger)
         {
             _job = job;
             _logger = logger;
-            _processManager = processManager;
         }
 
         public void Start()

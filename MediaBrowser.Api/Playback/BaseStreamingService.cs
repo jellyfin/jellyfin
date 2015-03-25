@@ -3,7 +3,6 @@ using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Diagnostics;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -70,18 +69,16 @@ namespace MediaBrowser.Api.Playback
         protected IDlnaManager DlnaManager { get; private set; }
         protected IDeviceManager DeviceManager { get; private set; }
         protected ISubtitleEncoder SubtitleEncoder { get; private set; }
-        protected IProcessManager ProcessManager { get; private set; }
         protected IMediaSourceManager MediaSourceManager { get; private set; }
         protected IZipClient ZipClient { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
-        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IProcessManager processManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient)
+        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient)
         {
             ZipClient = zipClient;
             MediaSourceManager = mediaSourceManager;
-            ProcessManager = processManager;
             DeviceManager = deviceManager;
             SubtitleEncoder = subtitleEncoder;
             DlnaManager = dlnaManager;
@@ -1126,7 +1123,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && state.IsInputVideo)
                 {
-                    state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, Logger, ProcessManager);
+                    state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, Logger);
                     state.TranscodingThrottler.Start();
                 }
             }

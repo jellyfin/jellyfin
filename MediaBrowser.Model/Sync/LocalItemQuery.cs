@@ -4,7 +4,7 @@ namespace MediaBrowser.Model.Sync
     public class LocalItemQuery
     {
         public string ServerId { get; set; }
-        public string AlbumArtist { get; set; }
+        public string AlbumArtistId { get; set; }
         public string AlbumId { get; set; }
         public string SeriesId { get; set; }
         public string Type { get; set; }

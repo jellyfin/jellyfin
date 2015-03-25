@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Diagnostics;
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using System.Reflection;
@@ -85,11 +84,5 @@ namespace MediaBrowser.Server.Startup.Common
         /// Prevents the system stand by.
         /// </summary>
         void PreventSystemStandby();
-
-        /// <summary>
-        /// Gets the process manager.
-        /// </summary>
-        /// <returns>IProcessManager.</returns>
-        IProcessManager GetProcessManager();
     }
 }
