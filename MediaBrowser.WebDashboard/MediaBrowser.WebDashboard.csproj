@@ -190,7 +190,7 @@
     <Content Include="dashboard-ui\thirdparty\apiclient\deferred.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\deferredAlt.js">
+    <Content Include="dashboard-ui\thirdparty\apiclient\alt\deferred.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\apiclient\device.js">
@@ -202,7 +202,7 @@
     <Content Include="dashboard-ui\thirdparty\apiclient\logger.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\mediabrowser.apiclient.js">
+    <Content Include="dashboard-ui\thirdparty\apiclient\apiclient.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\channelitems.html">

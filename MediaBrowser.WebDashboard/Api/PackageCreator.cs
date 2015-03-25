@@ -288,7 +288,7 @@ namespace MediaBrowser.WebDashboard.Api
                 "thirdparty/apiclient/ajax.js",
                 "thirdparty/apiclient/events.js",
                 "thirdparty/apiclient/deferred.js",
-                "thirdparty/apiclient/mediabrowser.apiclient.js",
+                "thirdparty/apiclient/apiclient.js",
                 "thirdparty/apiclient/connectservice.js",
                 "thirdparty/apiclient/serverdiscovery.js",
                 "thirdparty/apiclient/connectionmanager.js"
