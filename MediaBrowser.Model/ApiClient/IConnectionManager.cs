@@ -35,7 +35,13 @@ namespace MediaBrowser.Model.ApiClient
         /// Occurs when [remote logged out].
         /// </summary>
         event EventHandler<EventArgs> RemoteLoggedOut;
-        
+
+        /// <summary>
+        /// Gets the device.
+        /// </summary>
+        /// <value>The device.</value>
+        IDevice Device { get; }
+
         /// <summary>
         /// Gets the connect user.
         /// </summary>

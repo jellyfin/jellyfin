@@ -121,9 +121,9 @@
             this.lblStatus.Location = new System.Drawing.Point(3, 0);
             this.lblStatus.MaximumSize = new System.Drawing.Size(0, 100);
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(469, 59);
+            this.lblStatus.Size = new System.Drawing.Size(423, 59);
             this.lblStatus.TabIndex = 0;
-            this.lblStatus.Text = "Loading Media Browser";
+            this.lblStatus.Text = "Loading Emby Server";
             this.lblStatus.UseWaitCursor = true;
             // 
             // panel1
@@ -162,7 +162,7 @@
             this.Name = "SplashForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Media Browser";
+            this.Text = "Emby";
             this.UseWaitCursor = true;
             this.panelMainContainer.ResumeLayout(false);
             this.panel2.ResumeLayout(false);

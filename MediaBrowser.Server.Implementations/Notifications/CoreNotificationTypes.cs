@@ -27,7 +27,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 {
                      Type = NotificationType.ApplicationUpdateInstalled.ToString(),
                      DefaultDescription = "{ReleaseNotes}",
-                     DefaultTitle = "A new version of Media Browser Server has been installed.",
+                     DefaultTitle = "A new version of Emby Server has been installed.",
                      Variables = new List<string>{"Version"}
                 },
 
@@ -71,7 +71,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 new NotificationTypeInfo
                 {
                      Type = NotificationType.ServerRestartRequired.ToString(),
-                     DefaultTitle = "Please restart Media Browser Server to finish updating."
+                     DefaultTitle = "Please restart Emby Server to finish updating."
                 },
 
                 new NotificationTypeInfo
@@ -158,7 +158,7 @@ namespace MediaBrowser.Server.Implementations.Notifications
                 knownTypes.Add(new NotificationTypeInfo
                 {
                     Type = NotificationType.ApplicationUpdateAvailable.ToString(),
-                    DefaultTitle = "A new version of Media Browser Server is available for download."
+                    DefaultTitle = "A new version of Emby Server is available for download."
                 });
             }
 

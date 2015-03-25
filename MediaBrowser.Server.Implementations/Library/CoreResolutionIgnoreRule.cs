@@ -29,7 +29,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 "extrafanart",
                 "extrathumbs",
                 ".actors",
-                ".wd_tv"
+                ".wd_tv",
+
+                // Synology
+                "eaDir"
 
         };
         

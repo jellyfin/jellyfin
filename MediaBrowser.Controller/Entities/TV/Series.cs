@@ -232,7 +232,10 @@ namespace MediaBrowser.Controller.Entities.TV
             refreshOptions = new MetadataRefreshOptions(refreshOptions);
             refreshOptions.IsPostRecursiveRefresh = true;
 
-            // Refresh songs
+            // Refresh current item
+            await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+            // Refresh TV
             foreach (var item in seasons)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -244,9 +247,6 @@ namespace MediaBrowser.Controller.Entities.TV
                 percent /= totalItems;
                 progress.Report(percent * 100);
             }
-
-            // Refresh current item
-            await RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
 
             // Refresh all non-songs
             foreach (var item in otherItems)

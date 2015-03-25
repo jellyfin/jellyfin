@@ -2,7 +2,6 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
-using MediaBrowser.Controller.Diagnostics;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -63,7 +62,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
     public class DynamicHlsService : BaseHlsService
     {
-        public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IProcessManager processManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, INetworkManager networkManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, subtitleEncoder, deviceManager, processManager, mediaSourceManager, zipClient)
+        public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, INetworkManager networkManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient)
         {
             NetworkManager = networkManager;
         }
@@ -136,7 +135,7 @@ namespace MediaBrowser.Api.Playback.Hls
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
-                            ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.StreamId ?? request.ClientTime, p => false);
+                            ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.StreamId, p => false);
 
                             if (currentTranscodingIndex.HasValue)
                             {

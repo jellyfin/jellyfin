@@ -236,34 +236,44 @@ namespace MediaBrowser.Server.Implementations.Session
             }
 
             var activityDate = DateTime.UtcNow;
-
             var session = await GetSessionInfo(appName, appVersion, deviceId, deviceName, remoteEndPoint, user).ConfigureAwait(false);
-
+            var lastActivityDate = session.LastActivityDate;
             session.LastActivityDate = activityDate;
 
-            if (user == null)
+            if (user != null)
             {
-                return session;
+                var userLastActivityDate = user.LastActivityDate ?? DateTime.MinValue;
+                user.LastActivityDate = activityDate;
+
+                // Don't log in the db anymore frequently than 10 seconds
+                if ((activityDate - userLastActivityDate).TotalSeconds > 10)
+                {
+                    try
+                    {
+                        // Save this directly. No need to fire off all the events for this.
+                        await _userRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error updating user", ex);
+                    }
+                }
             }
 
-            var lastActivityDate = user.LastActivityDate;
-
-            user.LastActivityDate = activityDate;
-
-            // Don't log in the db anymore frequently than 10 seconds
-            if (lastActivityDate.HasValue && (activityDate - lastActivityDate.Value).TotalSeconds < 10)
+            if ((activityDate - lastActivityDate).TotalSeconds > 10)
             {
-                return session;
+                EventHelper.FireEventIfNotNull(SessionActivity, this, new SessionEventArgs
+                {
+                    SessionInfo = session
+
+                }, _logger);
             }
 
-            // Save this directly. No need to fire off all the events for this.
-            await _userRepository.SaveUser(user, CancellationToken.None).ConfigureAwait(false);
-
-            EventHelper.FireEventIfNotNull(SessionActivity, this, new SessionEventArgs
+            var controller = session.SessionController;
+            if (controller != null)
             {
-                SessionInfo = session
-
-            }, _logger);
+                controller.OnActivity();
+            }
 
             return session;
         }
@@ -1680,7 +1690,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 deviceId = info.DeviceId;
             }
 
-            return GetSessionInfo(appName, appVersion, deviceId, deviceName, remoteEndpoint, user);
+            return LogSessionActivity(appName, appVersion, deviceId, deviceName, remoteEndpoint, user);
         }
 
         public Task<SessionInfo> GetSessionByAuthenticationToken(string token, string deviceId, string remoteEndpoint)

@@ -381,8 +381,6 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance(ServerConfigurationManager);
 
-            RegisterSingleInstance(NativeApp.GetProcessManager());
-
             LocalizationManager = new LocalizationManager(ServerConfigurationManager, FileSystemManager, JsonSerializer);
             RegisterSingleInstance(LocalizationManager);
 
@@ -432,7 +430,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            HttpServer = ServerFactory.CreateServer(this, LogManager, "Media Browser", "web/index.html");
+            HttpServer = ServerFactory.CreateServer(this, LogManager, "Emby", "web/index.html");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 

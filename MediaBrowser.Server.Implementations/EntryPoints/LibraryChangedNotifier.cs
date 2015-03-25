@@ -294,7 +294,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             }
 
             // Return it only if it's in the user's library
-            if (includeIfNotFound || allRecursiveChildren.ContainsKey(item.Id))
+            if (includeIfNotFound || allRecursiveChildren.ContainsKey(item.Id) || (item.Parents.Any(i => i is BasePluginFolder) && item.IsVisibleStandalone(user)))
             {
                 return new[] { item };
             }

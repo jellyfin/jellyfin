@@ -407,6 +407,11 @@ namespace MediaBrowser.Api
                 {
                     try
                     {
+                        if (job.TranscodingThrottler != null)
+                        {
+                            job.TranscodingThrottler.Stop();
+                        }
+
                         Logger.Info("Killing ffmpeg process for {0}", job.Path);
 
                         //process.Kill();
@@ -577,6 +582,8 @@ namespace MediaBrowser.Api
 
         public long? TranscodingPositionTicks { get; set; }
         public long? DownloadPositionTicks { get; set; }
+
+        public TranscodingThrottler TranscodingThrottler { get; set; }
 
         public void DisposeKillTimer()
         {

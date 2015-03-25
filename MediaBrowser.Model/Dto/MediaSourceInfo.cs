@@ -57,39 +57,41 @@ namespace MediaBrowser.Model.Dto
         [IgnoreDataMember]
         public MediaStream DefaultAudioStream
         {
-            get
+            get { return GetDefaultAudioStream(DefaultAudioStreamIndex); }
+        }
+
+        public MediaStream GetDefaultAudioStream(int? defaultIndex)
+        {
+            if (defaultIndex.HasValue)
             {
-                if (DefaultAudioStreamIndex.HasValue)
-                {
-                    var val = DefaultAudioStreamIndex.Value;
-
-                    foreach (MediaStream i in MediaStreams)
-                    {
-                        if (i.Type == MediaStreamType.Audio && i.Index == val)
-                        {
-                            return i;
-                        }
-                    }
-                }
+                var val = defaultIndex.Value;
 
                 foreach (MediaStream i in MediaStreams)
                 {
-                    if (i.Type == MediaStreamType.Audio && i.IsDefault)
+                    if (i.Type == MediaStreamType.Audio && i.Index == val)
                     {
                         return i;
                     }
                 }
-
-                foreach (MediaStream i in MediaStreams)
-                {
-                    if (i.Type == MediaStreamType.Audio)
-                    {
-                        return i;
-                    }
-                }
-
-                return null;
             }
+
+            foreach (MediaStream i in MediaStreams)
+            {
+                if (i.Type == MediaStreamType.Audio && i.IsDefault)
+                {
+                    return i;
+                }
+            }
+
+            foreach (MediaStream i in MediaStreams)
+            {
+                if (i.Type == MediaStreamType.Audio)
+                {
+                    return i;
+                }
+            }
+
+            return null;
         }
 
         [IgnoreDataMember]

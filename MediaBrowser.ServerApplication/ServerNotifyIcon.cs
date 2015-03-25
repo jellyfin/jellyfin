@@ -75,7 +75,7 @@ namespace MediaBrowser.ServerApplication
             // 
             notifyIcon1.ContextMenuStrip = contextMenuStrip1;
             notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")));
-            notifyIcon1.Text = "Media Browser";
+            notifyIcon1.Text = "Emby";
             notifyIcon1.Visible = true;
             // 
             // contextMenuStrip1
@@ -162,7 +162,7 @@ namespace MediaBrowser.ServerApplication
 
             if (_appHost.IsFirstRun)
             {
-                Action action = () => notifyIcon1.ShowBalloonTip(5000, "Media Browser", "Welcome to Media Browser Server!", ToolTipIcon.Info);
+                Action action = () => notifyIcon1.ShowBalloonTip(5000, "Emby", "Welcome to Emby Server!", ToolTipIcon.Info);
 
                 contextMenuStrip1.Invoke(action);
             }
@@ -178,7 +178,7 @@ namespace MediaBrowser.ServerApplication
             cmdSwagger.Text = _localization.GetLocalizedString("LabelApiDocumentation");
             cmdApiDocs.Text = _localization.GetLocalizedString("LabelDeveloperResources");
             cmdBrowse.Text = _localization.GetLocalizedString("LabelBrowseLibrary");
-            cmdConfigure.Text = _localization.GetLocalizedString("LabelConfigureMediaBrowser");
+            cmdConfigure.Text = _localization.GetLocalizedString("LabelConfigureServer");
             cmdRestart.Text = _localization.GetLocalizedString("LabelRestartServer");
         }
 

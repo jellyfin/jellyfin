@@ -56,7 +56,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer.SocketSharp
 
         void socket_OnError(object sender, SocketHttpListener.ErrorEventArgs e)
         {
-            EventHelper.FireEventIfNotNull(Closed, this, EventArgs.Empty, _logger);
+            _logger.Error("Error in SharpWebSocket: {0}", e.Message ?? string.Empty);
+            //EventHelper.FireEventIfNotNull(Closed, this, EventArgs.Empty, _logger);
         }
 
         void socket_OnClose(object sender, SocketHttpListener.CloseEventArgs e)

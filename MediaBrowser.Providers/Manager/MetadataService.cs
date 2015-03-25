@@ -447,18 +447,21 @@ namespace MediaBrowser.Providers.Manager
                 successfulProviderCount += remoteResult.Successes;
             }
 
-            // If no local providers and doing a full refresh, take data from item itself
-            if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh &&
-                localProviders.Count == 0 &&
-                refreshResult.UpdateType > ItemUpdateType.None)
+            if (providers.Any(i => !(i is ICustomMetadataProvider)))
             {
-                // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
-                MergeData(item, temp, new List<MetadataFields>(), false, true);
-            }
+                // If no local providers and doing a full refresh, take data from item itself
+                if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh &&
+                    localProviders.Count == 0 &&
+                    refreshResult.UpdateType > ItemUpdateType.None)
+                {
+                    // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
+                    MergeData(item, temp, new List<MetadataFields>(), false, true);
+                }
 
-            if (refreshResult.UpdateType > ItemUpdateType.None)
-            {
-                MergeData(temp, item, item.LockedFields, true, true);
+                if (refreshResult.UpdateType > ItemUpdateType.None)
+                {
+                    MergeData(temp, item, item.LockedFields, true, true);
+                }
             }
 
             var isUnidentified = failedProviderCount > 0 && successfulProviderCount == 0;

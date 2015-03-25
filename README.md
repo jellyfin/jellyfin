@@ -1,7 +1,7 @@
-Media Browser
+Emby Server
 ============
 
-Media Browser Server is a home media server built on top of other popular open source technologies such as **Service Stack**, **jQuery**, **jQuery mobile**, and **Mono**.
+Emby Server is a home media server built on top of other popular open source technologies such as **Service Stack**, **jQuery**, **jQuery mobile**, and **Mono**.
 
 It features a REST-based api with built-in documention to facilitate client development. We also have client libraries for our api to enable rapid development.
 
@@ -17,12 +17,12 @@ We have several client apps released and in production:
 - Windows Media Center
 - [Windows Phone](http://www.windowsphone.com/s?appid=f4971ed9-f651-4bf6-84bb-94fd98613b86 "Windows Phone")
 - [Windows 8](http://apps.microsoft.com/windows/en-us/app/media-browser/ad55a2f0-9897-47bd-8944-bed3aefd5d06 "Windows 8.1")
-- [Xbmc](http://mediabrowser.tv/download/ "Xbmc")
+- [Xbmc](http://emby.media/download/ "Xbmc")
 
 
 ## New Users ##
 
-If you're a new user looking to install Media Browser Server, please head over to [mediabrowser.tv](http://www.mediabrowser.tv/ "mediabrowser.tv")
+If you're a new user looking to install Emby Server, please head over to [emby.media](http://www.emby.media/ "emby.media")
 
 ## Developer Info ##
 
@@ -33,7 +33,7 @@ If you're a new user looking to install Media Browser Server, please head over t
 
 ## Visit our community: ##
 
-http://mediabrowser.tv/community
+http://emby.media/community
 
 ## Images
 
@@ -42,8 +42,8 @@ http://mediabrowser.tv/community
 ![Html5](https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/apps/html5.png)
 ![iOS](https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/apps/ios_1.jpg)
 ![iOS](https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/ios_2.jpg)
-![Media Browser Theater](https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/mbt.png)
-![Media Browser Theater](https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/mbt1.png)
+![Emby Theater](https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/mbt.png)
+![Emby Theater](https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/mbt1.png)
 ![Windows Phone](https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/winphone.png)
 ![Roku](https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/roku2.jpg)
 ![iOS](https://raw.github.com/MediaBrowser/MediaBrowser.Resources/master/apps/ios_3.jpg)
