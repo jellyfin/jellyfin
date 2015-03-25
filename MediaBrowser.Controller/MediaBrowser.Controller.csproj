@@ -105,7 +105,6 @@
     <Compile Include="Devices\CameraImageUploadInfo.cs" />
     <Compile Include="Devices\IDeviceManager.cs" />
     <Compile Include="Devices\IDeviceRepository.cs" />
-    <Compile Include="Diagnostics\IProcessManager.cs" />
     <Compile Include="Dlna\ControlRequest.cs" />
     <Compile Include="Dlna\ControlResponse.cs" />
     <Compile Include="Dlna\EventSubscriptionResponse.cs" />

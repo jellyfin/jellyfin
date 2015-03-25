@@ -119,7 +119,7 @@
         });
     }
 
-    function loadRecentlyAdded(elem, userId, context) {
+    function loadRecentlyAdded(elem, user, context) {
 
         var options = {
 
@@ -130,14 +130,18 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        return ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
+        return ApiClient.getJSON(ApiClient.getUrl('Users/' + user.Id + '/Items/Latest', options)).done(function (items) {
 
             var html = '';
 
             if (items.length) {
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
-                html += '<a href="mypreferencesdisplay.html" class="accentButton"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</a>';
+
+                if (user.Policy.EnableUserPreferenceAccess) {
+                    html += '<a href="mypreferencesdisplay.html" class="accentButton"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</a>';
+                }
+
                 html += '</div>';
                 html += '<div class="itemsContainer">';
                 html += LibraryBrowser.getPosterViewHtml({
@@ -192,7 +196,7 @@
         });
     }
 
-    function loadLibraryTiles(elem, userId, shape, index, autoHideOnMobile, showTitles) {
+    function loadLibraryTiles(elem, user, shape, index, autoHideOnMobile, showTitles) {
 
         if (autoHideOnMobile) {
             $(elem).addClass('hiddenSectionOnMobile');
@@ -200,7 +204,7 @@
             $(elem).removeClass('hiddenSectionOnMobile');
         }
 
-        getUserViews(userId).done(function (items) {
+        getUserViews(user.Id).done(function (items) {
 
             var html = '';
 
@@ -210,7 +214,11 @@
 
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderMyViews') + '</h1>';
-                html += '<a href="mypreferencesdisplay.html" class="accentButton"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</a>';
+
+                if (user.Policy.EnableUserPreferenceAccess) {
+                    html += '<a href="mypreferencesdisplay.html" class="accentButton"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</a>';
+                }
+
                 html += '</div>';
 
                 html += '<div>';
@@ -475,7 +483,9 @@
 
     }
 
-    function loadSection(page, userId, displayPreferences, index) {
+    function loadSection(page, user, displayPreferences, index) {
+
+        var userId = user.Id;
 
         var section = displayPreferences.CustomPrefs['home' + index] || getDefaultSection(index);
 
@@ -484,19 +494,19 @@
         var elem = $('.section' + index, page);
 
         if (section == 'latestmedia') {
-            Sections.loadRecentlyAdded(elem, userId);
+            Sections.loadRecentlyAdded(elem, user);
         }
         else if (section == 'librarytiles') {
-            Sections.loadLibraryTiles(elem, userId, 'backdrop', index, false, showLibraryTileNames);
+            Sections.loadLibraryTiles(elem, user, 'backdrop', index, false, showLibraryTileNames);
         }
         else if (section == 'smalllibrarytiles') {
-            Sections.loadLibraryTiles(elem, userId, 'homePageSmallBackdrop', index, false, showLibraryTileNames);
+            Sections.loadLibraryTiles(elem, user, 'homePageSmallBackdrop', index, false, showLibraryTileNames);
         }
         else if (section == 'smalllibrarytiles-automobile') {
-            Sections.loadLibraryTiles(elem, userId, 'homePageSmallBackdrop', index, true, showLibraryTileNames);
+            Sections.loadLibraryTiles(elem, user, 'homePageSmallBackdrop', index, true, showLibraryTileNames);
         }
         else if (section == 'librarytiles-automobile') {
-            Sections.loadLibraryTiles(elem, userId, 'backdrop', index, true, showLibraryTileNames);
+            Sections.loadLibraryTiles(elem, user, 'backdrop', index, true, showLibraryTileNames);
         }
         else if (section == 'librarybuttons') {
             Sections.loadlibraryButtons(elem, userId, index);
@@ -521,7 +531,7 @@
         }
     }
 
-    function loadSections(page, userId, displayPreferences) {
+    function loadSections(page, user, displayPreferences) {
 
         var i, length;
         var sectionCount = 4;
@@ -540,7 +550,7 @@
 
         for (i = 0, length = sectionCount; i < length; i++) {
 
-            loadSection(page, userId, displayPreferences, i);
+            loadSection(page, user, displayPreferences, i);
         }
     }
 
@@ -623,7 +633,11 @@
         ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
 
             showWelcomeIfNeeded(page, result);
-            loadSections(page, userId, result);
+
+            Dashboard.getCurrentUser().done(function (user) {
+
+                loadSections(page, user, result);
+            });
         });
 
     });
