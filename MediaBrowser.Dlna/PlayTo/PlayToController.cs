@@ -134,11 +134,6 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        private string GetServerAddress()
-        {
-            return _serverAddress;
-        }
-
         async void _device_MediaChanged(object sender, MediaChangedEventArgs e)
         {
             try

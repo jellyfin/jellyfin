@@ -1115,7 +1115,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                if (!currentIdList.Contains(new Guid(programId)))
+                if (!currentIdList.Contains(programId))
                 {
                     var program = _libraryManager.GetItemById(programId);
 
