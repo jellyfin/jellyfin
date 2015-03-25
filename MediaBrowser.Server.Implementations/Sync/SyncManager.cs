@@ -646,6 +646,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 SyncJobItemId = jobItem.Id,
                 ServerId = _appHost.SystemId,
                 UserId = job.UserId,
+                SyncJobName = job.Name,
+                SyncJobDateCreated = job.DateCreated,
                 AdditionalFiles = jobItem.AdditionalFiles.Select(i => new ItemFileInfo
                 {
                     ImageType = i.ImageType,

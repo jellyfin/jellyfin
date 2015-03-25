@@ -143,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var fileTransferProgress = new ActionableProgress<double>();
             fileTransferProgress.RegisterAction(pct => progress.Report(pct * .92));
 
-            var localItem = CreateLocalItem(provider, jobItem.SyncJobId, jobItem.SyncJobItemId, target, libraryItem, serverId, jobItem.OriginalFileName);
+            var localItem = CreateLocalItem(provider, jobItem, target, libraryItem, serverId, jobItem.OriginalFileName);
 
             await _syncManager.ReportSyncJobItemTransferBeginning(internalSyncJobItem.Id);
 
@@ -232,6 +232,8 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 foreach (var file in files)
                 {
+                    _logger.Debug("Removing {0} from {1}.", file.Path, target.Name);
+
                     await provider.DeleteFile(file.Path, target, cancellationToken).ConfigureAwait(false);
                 }
 
@@ -263,9 +265,9 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        public LocalItem CreateLocalItem(IServerSyncProvider provider, string syncJobId, string syncJobItemId, SyncTarget target, BaseItemDto libraryItem, string serverId, string originalFileName)
+        public LocalItem CreateLocalItem(IServerSyncProvider provider, SyncedItem syncedItem, SyncTarget target, BaseItemDto libraryItem, string serverId, string originalFileName)
         {
-            var path = GetDirectoryPath(provider, syncJobId, libraryItem, serverId);
+            var path = GetDirectoryPath(provider, syncedItem, libraryItem, serverId);
             path.Add(GetLocalFileName(provider, libraryItem, originalFileName));
 
             var localPath = provider.GetFullPath(path, target);
@@ -282,16 +284,25 @@ namespace MediaBrowser.Server.Implementations.Sync
                 ItemId = libraryItem.Id,
                 ServerId = serverId,
                 LocalPath = localPath,
-                Id = GetLocalId(syncJobItemId, libraryItem.Id)
+                Id = GetLocalId(syncedItem.SyncJobItemId, libraryItem.Id)
             };
         }
 
-        private List<string> GetDirectoryPath(IServerSyncProvider provider, string syncJobId, BaseItemDto item, string serverId)
+        private string GetSyncJobFolderName(SyncedItem syncedItem, IServerSyncProvider provider)
+        {
+            var name = syncedItem.SyncJobName + syncedItem.SyncJobDateCreated.ToLocalTime().ToString("g");
+
+            name = GetValidFilename(provider, name);
+
+            return name;
+        }
+
+        private List<string> GetDirectoryPath(IServerSyncProvider provider, SyncedItem syncedItem, BaseItemDto item, string serverId)
         {
             var parts = new List<string>
             {
                 serverId,
-                syncJobId
+                GetSyncJobFolderName(syncedItem, provider)
             };
 
             if (item.IsType("episode"))
