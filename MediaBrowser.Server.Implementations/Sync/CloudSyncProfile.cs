@@ -75,7 +75,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                         {
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.RefFrames,
-                            Value = "12",
+                            Value = "4",
                             IsRequired = false
                         }
                     }
