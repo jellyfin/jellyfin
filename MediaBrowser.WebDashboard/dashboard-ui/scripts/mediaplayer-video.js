@@ -933,68 +933,17 @@
 
         self.playVideo = function (deviceProfile, playbackInfo, item, mediaSource, startPosition) {
 
-            var videoUrl;
-            var contentType;
+            var streamInfo = self.createStreamInfo('video', item, mediaSource, startPosition);
+
+            var videoUrl = streamInfo.url;
+            var contentType = streamInfo.contentType;
+            var startPositionInSeekParam = streamInfo.startPositionInSeekParam;
+            self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
 
             var mediaStreams = mediaSource.MediaStreams || [];
             var subtitleStreams = mediaStreams.filter(function (s) {
                 return s.Type == 'Subtitle';
             });
-
-            if (mediaSource.enableDirectPlay) {
-                videoUrl = mediaSource.Path;
-                self.startTimeTicksOffset = 0;
-                contentType = 'video/' + mediaSource.Container;
-            } else {
-
-                var selectedSubtitleStream = subtitleStreams.filter(function (s) {
-                    return s.Index == mediaSource.DefaultSubtitleStreamIndex;
-
-                })[0];
-
-                var transcodingParams = {
-                    audioChannels: 2,
-                    StartTimeTicks: startPosition,
-                    AudioStreamIndex: mediaSource.DefaultAudioStreamIndex,
-                    deviceId: ApiClient.deviceId(),
-                    mediaSourceId: mediaSource.Id,
-                    api_key: ApiClient.accessToken(),
-                    StreamId: playbackInfo.StreamId,
-                    ClientTime: new Date().getTime()
-                };
-
-                if (selectedSubtitleStream && (!self.supportsSubtitleStreamExternally(selectedSubtitleStream) || !self.supportsTextTracks())) {
-                    transcodingParams.SubtitleStreamIndex = mediaSource.DefaultSubtitleStreamIndex;
-                }
-
-                self.startTimeTicksOffset = mediaSource.SupportsDirectStream ? 0 : startPosition || 0;
-                var startPositionInSeekParam = startPosition ? (startPosition / 10000000) : 0;
-                var seekParam = startPositionInSeekParam ? '#t=' + startPositionInSeekParam : '';
-
-                if (mediaSource.SupportsDirectStream) {
-
-                    videoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.' + mediaSource.Container, {
-                        Static: true,
-                        mediaSourceId: mediaSource.Id,
-                        api_key: ApiClient.accessToken()
-                    });
-                    videoUrl += seekParam;
-                    contentType = 'video/' + mediaSource.Container;
-
-                } else {
-                    videoUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
-
-                    if (mediaSource.TranscodingSubProtocol == 'hls') {
-
-                        videoUrl += seekParam;
-                        contentType = 'application/x-mpegURL';
-                    }
-                    else {
-
-                        contentType = 'video/' + mediaSource.TranscodingContainer;
-                    }
-                }
-            }
 
             //======================================================================================>
 

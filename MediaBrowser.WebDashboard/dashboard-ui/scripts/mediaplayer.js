@@ -378,101 +378,102 @@
             if (canClientSeek && params == null) {
 
                 element.currentTime = ticks / (1000 * 10000);
+                return;
+            }
+
+            params = params || {};
+
+            var currentSrc = element.currentSrc;
+
+            var currentStreamId = getParameterByName('StreamId', currentSrc);
+
+            //if (self.currentItem.MediaType == "Video") {
+
+            //    transcodingExtension = self.getVideoTranscodingExtension(currentSrc);
+
+            //    if (params.AudioStreamIndex != null) {
+            //        currentSrc = replaceQueryString(currentSrc, 'AudioStreamIndex', params.AudioStreamIndex);
+            //    }
+            //    if (params.SubtitleStreamIndex != null) {
+            //        currentSrc = replaceQueryString(currentSrc, 'SubtitleStreamIndex', (params.SubtitleStreamIndex == -1 ? '' : params.SubtitleStreamIndex));
+            //    }
+
+            //    var audioStreamIndex = params.AudioStreamIndex == null ? getParameterByName('AudioStreamIndex', currentSrc) : params.AudioStreamIndex;
+            //    if (typeof (audioStreamIndex) == 'string') {
+            //        audioStreamIndex = parseInt(audioStreamIndex);
+            //    }
+            //    var subtitleStreamIndex = self.currentSubtitleStreamIndex;
+            //    var videoBitrate = parseInt(getParameterByName('VideoBitrate', currentSrc) || '0');
+            //    var audioBitrate = parseInt(getParameterByName('AudioBitrate', currentSrc) || '0');
+            //    var bitrate = params.Bitrate || (videoBitrate + audioBitrate);
+
+            //    var finalParams = self.getFinalVideoParams(self.currentMediaSource, bitrate, audioStreamIndex, subtitleStreamIndex, transcodingExtension);
+
+            //    currentSrc = replaceQueryString(currentSrc, 'VideoBitrate', finalParams.videoBitrate);
+
+            //    currentSrc = replaceQueryString(currentSrc, 'VideoCodec', finalParams.videoCodec);
+
+            //    currentSrc = replaceQueryString(currentSrc, 'profile', finalParams.profile || '');
+            //    currentSrc = replaceQueryString(currentSrc, 'level', finalParams.level || '');
+
+            //    if (finalParams.isStatic) {
+            //        currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
+            //        currentSrc = replaceQueryString(currentSrc, 'ClientTime', '');
+            //    } else {
+            //        currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension).replace('.mkv', transcodingExtension).replace('.webm', transcodingExtension);
+            //        currentSrc = replaceQueryString(currentSrc, 'ClientTime', new Date().getTime());
+            //    }
+
+            //    currentSrc = replaceQueryString(currentSrc, 'AudioBitrate', finalParams.audioBitrate);
+            //    currentSrc = replaceQueryString(currentSrc, 'Static', finalParams.isStatic);
+            //    currentSrc = replaceQueryString(currentSrc, 'AudioCodec', finalParams.audioCodec);
+            //    isStatic = finalParams.isStatic;
+            //}
+
+            if (params.AudioStreamIndex == null && params.SubtitleStreamIndex == null && params.Bitrate == null) {
+
+                var transcodingProfile = self.getDeviceProfile().TranscodingProfiles.filter(function (t) {
+
+                    return t.Type == self.currentItem.MediaType;
+                })[0];
 
             } else {
 
-                params = params || {};
+                currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks || 0);
+                changeStreamToUrl(currentStreamId, currentSrc, ticks);
+            }
+        };
 
-                var currentSrc = element.currentSrc;
+        function changeStreamToUrl(currentStreamId, url, newPositionTicks) {
 
-                var transcodingExtension;
-                var isStatic;
-                var currentStreamId = getParameterByName('StreamId', currentSrc);
+            clearProgressInterval();
 
-                if (self.currentItem.MediaType == "Video") {
+            $(element).off('ended.playbackstopped').off('ended.playnext').one("play", function () {
 
-                    transcodingExtension = self.getVideoTranscodingExtension(currentSrc);
+                self.updateCanClientSeek(this);
 
-                    if (params.AudioStreamIndex != null) {
-                        currentSrc = replaceQueryString(currentSrc, 'AudioStreamIndex', params.AudioStreamIndex);
-                    }
-                    if (params.SubtitleStreamIndex != null) {
-                        currentSrc = replaceQueryString(currentSrc, 'SubtitleStreamIndex', (params.SubtitleStreamIndex == -1 ? '' : params.SubtitleStreamIndex));
-                    }
+                $(this).on('ended.playbackstopped', self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
 
-                    var audioStreamIndex = params.AudioStreamIndex == null ? getParameterByName('AudioStreamIndex', currentSrc) : params.AudioStreamIndex;
-                    if (typeof (audioStreamIndex) == 'string') {
-                        audioStreamIndex = parseInt(audioStreamIndex);
-                    }
-                    var subtitleStreamIndex = self.currentSubtitleStreamIndex;
-                    var videoBitrate = parseInt(getParameterByName('VideoBitrate', currentSrc) || '0');
-                    var audioBitrate = parseInt(getParameterByName('AudioBitrate', currentSrc) || '0');
-                    var bitrate = params.Bitrate || (videoBitrate + audioBitrate);
+                self.startProgressInterval();
+                sendProgressUpdate();
 
-                    var finalParams = self.getFinalVideoParams(self.currentMediaSource, bitrate, audioStreamIndex, subtitleStreamIndex, transcodingExtension);
+            });
 
-                    currentSrc = replaceQueryString(currentSrc, 'VideoBitrate', finalParams.videoBitrate);
+            if (self.currentItem.MediaType == "Video") {
+                ApiClient.stopActiveEncodings(currentStreamId).done(function () {
 
-                    currentSrc = replaceQueryString(currentSrc, 'VideoCodec', finalParams.videoCodec);
-
-                    currentSrc = replaceQueryString(currentSrc, 'profile', finalParams.profile || '');
-                    currentSrc = replaceQueryString(currentSrc, 'level', finalParams.level || '');
-
-                    if (finalParams.isStatic) {
-                        currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
-                        currentSrc = replaceQueryString(currentSrc, 'ClientTime', '');
-                    } else {
-                        currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension).replace('.mkv', transcodingExtension).replace('.webm', transcodingExtension);
-                        currentSrc = replaceQueryString(currentSrc, 'ClientTime', new Date().getTime());
-                    }
-
-                    currentSrc = replaceQueryString(currentSrc, 'AudioBitrate', finalParams.audioBitrate);
-                    currentSrc = replaceQueryString(currentSrc, 'Static', finalParams.isStatic);
-                    currentSrc = replaceQueryString(currentSrc, 'AudioCodec', finalParams.audioCodec);
-                    isStatic = finalParams.isStatic;
-                } else {
-                    transcodingExtension = '.mp3';
-                }
-
-                var isSeekableMedia = self.currentMediaSource.RunTimeTicks;
-                var isClientSeekable = isStatic || (isSeekableMedia && transcodingExtension == '.m3u8');
-
-                if (isClientSeekable || !ticks || !isSeekableMedia) {
-                    currentSrc = replaceQueryString(currentSrc, 'starttimeticks', '');
-                }
-                else {
-                    currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks);
-                }
-
-                clearProgressInterval();
-
-                $(element).off('ended.playbackstopped').off('ended.playnext').one("play", function () {
-
-                    self.updateCanClientSeek(this);
-
-                    $(this).on('ended.playbackstopped', self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
-
-                    self.startProgressInterval();
-                    sendProgressUpdate();
+                    self.startTimeTicksOffset = newPositionTicks;
+                    element.src = url;
 
                 });
 
-                if (self.currentItem.MediaType == "Video") {
-                    ApiClient.stopActiveEncodings(currentStreamId).done(function () {
-
-                        self.startTimeTicksOffset = ticks;
-                        element.src = currentSrc;
-
-                    });
-
-                    self.updateTextStreamUrls(ticks || 0);
-                } else {
-                    self.startTimeTicksOffset = ticks;
-                    element.src = currentSrc;
-                    element.play();
-                }
+                self.updateTextStreamUrls(newPositionTicks || 0);
+            } else {
+                self.startTimeTicksOffset = newPositionTicks;
+                element.src = url;
+                element.play();
             }
-        };
+        }
 
         self.setCurrentTime = function (ticks, positionSlider, currentTimeElement) {
 
@@ -791,6 +792,106 @@
             })[0];
         }
 
+        function getPlaybackInfo(itemId, deviceProfile, startPosition) {
+
+            return ApiClient.ajax({
+                url: ApiClient.getUrl('Items/' + itemId + '/PlaybackInfo', {
+                    UserId: Dashboard.getCurrentUserId(),
+                    StartPositionTicks: startPosition || 0
+                }),
+                type: 'POST',
+                data: JSON.stringify({
+                    DeviceProfile: deviceProfile
+                }),
+                contentType: "application/json",
+                dataType: "json"
+
+            });
+        }
+
+        self.createStreamInfo = function (type, item, mediaSource, startPosition) {
+
+            var mediaUrl;
+            var contentType;
+            var startTimeTicksOffset = 0;
+
+            var startPositionInSeekParam = startPosition ? (startPosition / 10000000) : 0;
+            var seekParam = startPositionInSeekParam ? '#t=' + startPositionInSeekParam : '';
+
+            if (type == 'video') {
+
+                contentType = 'video/' + mediaSource.Container;
+
+                if (mediaSource.enableDirectPlay) {
+                    mediaUrl = mediaSource.Path;
+                } else {
+
+                    if (mediaSource.SupportsDirectStream) {
+
+                        mediaUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.' + mediaSource.Container, {
+                            Static: true,
+                            mediaSourceId: mediaSource.Id,
+                            api_key: ApiClient.accessToken()
+                        });
+                        mediaUrl += seekParam;
+
+                    } else {
+
+                        startTimeTicksOffset = startPosition || 0;
+                        mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
+
+                        if (mediaSource.TranscodingSubProtocol == 'hls') {
+
+                            mediaUrl += seekParam;
+                            contentType = 'application/x-mpegURL';
+                        } else {
+
+                            contentType = 'video/' + mediaSource.TranscodingContainer;
+                        }
+                    }
+                }
+
+            } else {
+
+                contentType = 'audio/' + mediaSource.Container;
+
+                if (mediaSource.enableDirectPlay) {
+
+                    mediaUrl = mediaSource.Path;
+
+                } else {
+
+                    var isDirectStream = mediaSource.SupportsDirectStream;
+
+                    if (isDirectStream) {
+
+                        var outputContainer = (mediaSource.Container || '').toLowerCase();
+
+                        mediaUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.' + outputContainer, {
+                            mediaSourceId: mediaSource.Id,
+                            deviceId: ApiClient.deviceId(),
+                            api_key: ApiClient.accessToken()
+                        });
+                        mediaUrl += "&static=true" + seekParam;
+                    } else {
+
+                        contentType = 'audio/' + mediaSource.TranscodingContainer;
+
+                        mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
+                    }
+
+                    startTimeTicksOffset = startPosition || 0;
+                }
+            }
+
+            return {
+                url: mediaUrl,
+                contentType: contentType,
+                startTimeTicksOffset: startTimeTicksOffset,
+                startPositionInSeekParam: startPositionInSeekParam
+            };
+        };
+
         self.playInternal = function (item, startPosition, callback) {
 
             if (item == null) {
@@ -813,20 +914,7 @@
             var mediaSource;
             var deviceProfile = self.getDeviceProfile();
 
-            ApiClient.ajax({
-
-                url: ApiClient.getUrl('Items/' + item.Id + '/PlaybackInfo', {
-                    userId: Dashboard.getCurrentUserId()
-
-                }),
-                type: 'POST',
-                data: JSON.stringify({
-                    DeviceProfile: deviceProfile
-                }),
-                contentType: "application/json",
-                dataType: "json"
-
-            }).done(function (result) {
+            getPlaybackInfo(item.Id, deviceProfile, startPosition).done(function (result) {
 
                 if (validatePlaybackInfoResult(result)) {
 
@@ -846,7 +934,7 @@
 
                         } else if (item.MediaType === "Audio") {
 
-                            self.currentMediaElement = playAudio(result, item, self.currentMediaSource, startPosition);
+                            self.currentMediaElement = playAudio(item, self.currentMediaSource, startPosition);
                             self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
                         }
 
@@ -1607,36 +1695,11 @@
             return $('.mediaPlayerAudio');
         }
 
-        function playAudio(playbackInfo, item, mediaSource, startPositionTicks) {
+        function playAudio(item, mediaSource, startPositionTicks) {
 
-            var audioUrl;
-            if (mediaSource.enableDirectPlay) {
-
-                audioUrl = mediaSource.Path;
-                self.startTimeTicksOffset = 0;
-
-            } else {
-
-                var isDirectStream = mediaSource.SupportsDirectStream;
-                startPositionTicks = startPositionTicks || 0;
-
-                if (isDirectStream) {
-
-                    var outputContainer = (mediaSource.Container || '').toLowerCase();
-
-                    var seekParam = startPositionTicks ? '#t=' + (startPositionTicks / 10000000) : '';
-                    audioUrl = ApiClient.getUrl('Audio/' + item.Id + '/stream.' + outputContainer, {
-                        mediaSourceId: mediaSource.Id,
-                        deviceId: ApiClient.deviceId(),
-                        api_key: ApiClient.accessToken()
-                    });
-                    audioUrl += "&static=true" + seekParam;
-                } else {
-                    audioUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
-                }
-
-                self.startTimeTicksOffset = isDirectStream ? 0 : startPositionTicks;
-            }
+            var streamInfo = self.createStreamInfo('audio', item, mediaSource, startPositionTicks);
+            var audioUrl = streamInfo.url;
+            self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
 
             var initialVolume = self.getSavedVolume();
 
