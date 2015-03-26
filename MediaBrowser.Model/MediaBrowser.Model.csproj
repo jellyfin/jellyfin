@@ -140,7 +140,8 @@
     <Compile Include="Dto\MetadataEditorInfo.cs" />
     <Compile Include="Dto\NameIdPair.cs" />
     <Compile Include="Dto\NameValuePair.cs" />
-    <Compile Include="MediaInfo\LiveMediaInfoResult.cs" />
+    <Compile Include="MediaInfo\PlaybackInfoRequest.cs" />
+    <Compile Include="MediaInfo\PlaybackInfoResponse.cs" />
     <Compile Include="Dto\MediaSourceType.cs" />
     <Compile Include="Configuration\DynamicDayOfWeek.cs" />
     <Compile Include="Entities\ExtraType.cs" />

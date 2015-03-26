@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Model.MediaInfo
 {
-    public class LiveMediaInfoResult
+    public class PlaybackInfoResponse
     {
         /// <summary>
         /// Gets or sets the media sources.
@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.MediaInfo
         /// <value>The error code.</value>
         public PlaybackErrorCode? ErrorCode { get; set; }
 
-        public LiveMediaInfoResult()
+        public PlaybackInfoResponse()
         {
             MediaSources = new List<MediaSourceInfo>();
         }

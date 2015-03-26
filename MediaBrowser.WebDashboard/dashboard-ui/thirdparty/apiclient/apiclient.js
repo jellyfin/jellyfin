@@ -306,7 +306,13 @@
                 throw new Error("Url name cannot be empty");
             }
 
-            var url = serverAddress + "/" + name;
+            var url = serverAddress;
+
+            if (name.charAt(0) != '/') {
+                url += '/';
+            }
+
+            url += name;
 
             if (params) {
                 url += "?" + AjaxApi.param(params);
