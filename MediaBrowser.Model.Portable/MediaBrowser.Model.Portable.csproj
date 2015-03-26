@@ -800,11 +800,14 @@
     <Compile Include="..\MediaBrowser.Model\MediaInfo\IBlurayExaminer.cs">
       <Link>MediaInfo\IBlurayExaminer.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\MediaInfo\LiveMediaInfoResult.cs">
-      <Link>MediaInfo\LiveMediaInfoResult.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\MediaInfo\MediaProtocol.cs">
       <Link>MediaInfo\MediaProtocol.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\MediaInfo\PlaybackInfoRequest.cs">
+      <Link>MediaInfo\PlaybackInfoRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\MediaInfo\PlaybackInfoResponse.cs">
+      <Link>MediaInfo\PlaybackInfoResponse.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\MediaInfo\SubtitleFormat.cs">
       <Link>MediaInfo\SubtitleFormat.cs</Link>

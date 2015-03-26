@@ -118,9 +118,7 @@ namespace MediaBrowser.Model.Dlna
                 return stream;
             }
 
-            PlaybackException error = new PlaybackException();
-            error.ErrorCode = PlaybackErrorCode.NoCompatibleStream;
-            throw error;
+            return null;
         }
 
         private StreamInfo BuildAudioItem(MediaSourceInfo item, AudioOptions options)
@@ -221,7 +219,7 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.EstimateContentLength = transcodingProfile.EstimateContentLength;
                 playlistItem.Container = transcodingProfile.Container;
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec;
-                playlistItem.Protocol = transcodingProfile.Protocol;
+                playlistItem.SubProtocol = transcodingProfile.Protocol;
 
                 List<CodecProfile> audioCodecProfiles = new List<CodecProfile>();
                 foreach (CodecProfile i in options.Profile.CodecProfiles)
@@ -374,7 +372,7 @@ namespace MediaBrowser.Model.Dlna
                 playlistItem.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
                 playlistItem.AudioCodec = transcodingProfile.AudioCodec.Split(',')[0];
                 playlistItem.VideoCodec = transcodingProfile.VideoCodec;
-                playlistItem.Protocol = transcodingProfile.Protocol;
+                playlistItem.SubProtocol = transcodingProfile.Protocol;
                 playlistItem.AudioStreamIndex = audioStreamIndex;
 
                 List<ProfileCondition> videoTranscodingConditions = new List<ProfileCondition>();

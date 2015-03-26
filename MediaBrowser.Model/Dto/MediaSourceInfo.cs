@@ -24,6 +24,7 @@ namespace MediaBrowser.Model.Dto
         public bool ReadAtNativeFramerate { get; set; }
         public bool SupportsTranscoding { get; set; }
         public bool SupportsDirectStream { get; set; }
+        public bool SupportsDirectPlay { get; set; }
 
         public VideoType? VideoType { get; set; }
 
@@ -39,7 +40,11 @@ namespace MediaBrowser.Model.Dto
         public int? Bitrate { get; set; }
 
         public TransportStreamTimestamp? Timestamp { get; set; }
-        public Dictionary<string, string> RequiredHttpHeaders { get; set; }
+        public Dictionary<string, string> RequiredHttpHeaders { get; set; }        
+        
+        public string TranscodingUrl { get; set; }
+        public string TranscodingSubProtocol { get; set; }
+        public string TranscodingContainer { get; set; }
 
         public MediaSourceInfo()
         {
@@ -49,6 +54,7 @@ namespace MediaBrowser.Model.Dto
             PlayableStreamFileNames = new List<string>();
             SupportsTranscoding = true;
             SupportsDirectStream = true;
+            SupportsDirectPlay = true;
         }
 
         public int? DefaultAudioStreamIndex { get; set; }

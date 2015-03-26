@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.Dlna
 
         public string Container { get; set; }
 
-        public string Protocol { get; set; }
+        public string SubProtocol { get; set; }
 
         public long StartPositionTicks { get; set; }
 
@@ -69,7 +69,7 @@ namespace MediaBrowser.Model.Dlna
         public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
         public string SubtitleFormat { get; set; }
 
-        public LiveMediaInfoResult PlaybackInfo { get; set; }
+        public PlaybackInfoResponse PlaybackInfo { get; set; }
 
         public string MediaSourceId
         {
@@ -115,7 +115,7 @@ namespace MediaBrowser.Model.Dlna
                 return string.Format("{0}/audio/{1}/stream{2}?{3}", baseUrl, ItemId, extension, dlnaCommand);
             }
 
-            if (StringHelper.EqualsIgnoreCase(Protocol, "hls"))
+            if (StringHelper.EqualsIgnoreCase(SubProtocol, "hls"))
             {
                 return string.Format("{0}/videos/{1}/master.m3u8?{2}", baseUrl, ItemId, dlnaCommand);
             }
@@ -207,7 +207,7 @@ namespace MediaBrowser.Model.Dlna
             List<SubtitleStreamInfo> list = new List<SubtitleStreamInfo>();
 
             // HLS will preserve timestamps so we can just grab the full subtitle stream
-            long startPositionTicks = StringHelper.EqualsIgnoreCase(Protocol, "hls")
+            long startPositionTicks = StringHelper.EqualsIgnoreCase(SubProtocol, "hls")
                 ? 0
                 : StartPositionTicks;
 

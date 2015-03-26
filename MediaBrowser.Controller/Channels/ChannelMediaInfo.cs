@@ -62,7 +62,8 @@ namespace MediaBrowser.Controller.Channels
                 RunTimeTicks = RunTimeTicks,
                 Name = id,
                 Id = id,
-                ReadAtNativeFramerate = ReadAtNativeFramerate
+                ReadAtNativeFramerate = ReadAtNativeFramerate,
+                SupportsDirectStream = Protocol == MediaProtocol.File || Protocol == MediaProtocol.Http
             };
 
             var bitrate = (AudioBitrate ?? 0) + (VideoBitrate ?? 0);
