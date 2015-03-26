@@ -97,13 +97,16 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (byName != null && !(item is LiveTvChannel))
                 {
-                    var itemFilter = byName.GetItemFilter();
+                    //if (options.Fields.Contains(ItemFields.ItemCounts))
+                    {
+                        var itemFilter = byName.GetItemFilter();
 
-                    var libraryItems = user != null ?
-                       user.RootFolder.GetRecursiveChildren(user, itemFilter) :
-                       _libraryManager.RootFolder.GetRecursiveChildren(itemFilter);
+                        var libraryItems = user != null ?
+                           user.RootFolder.GetRecursiveChildren(user, itemFilter) :
+                           _libraryManager.RootFolder.GetRecursiveChildren(itemFilter);
 
-                    SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
+                        SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
+                    }
                 }
 
                 FillSyncInfo(dto, item, itemIdsWithSyncJobs, options, user);
@@ -122,13 +125,16 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (byName != null && !(item is LiveTvChannel))
             {
-                var itemFilter = byName.GetItemFilter();
+                //if (options.Fields.Contains(ItemFields.ItemCounts))
+                {
+                    var itemFilter = byName.GetItemFilter();
 
-                var libraryItems = user != null ?
-                   user.RootFolder.GetRecursiveChildren(user, itemFilter) :
-                   _libraryManager.RootFolder.GetRecursiveChildren(itemFilter);
+                    var libraryItems = user != null ?
+                       user.RootFolder.GetRecursiveChildren(user, itemFilter) :
+                       _libraryManager.RootFolder.GetRecursiveChildren(itemFilter);
 
-                SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
+                    SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
+                }
 
                 FillSyncInfo(dto, item, options, user);
                 return dto;
@@ -311,7 +317,11 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             var dto = GetBaseItemDtoInternal(item, options, user);
 
-            SetItemByNameInfo(item, dto, taggedItems, user);
+            //if (options.Fields.Contains(ItemFields.ItemCounts))
+            {
+                SetItemByNameInfo(item, dto, taggedItems, user);
+            }
+
             FillSyncInfo(dto, item, options, user);
 
             return dto;
