@@ -102,10 +102,29 @@ namespace MediaBrowser.Model.Dlna
             List<string> list = new List<string>();
             foreach (NameValuePair pair in BuildParams(this, accessToken))
             {
-                if (!string.IsNullOrEmpty(pair.Value))
+                if (string.IsNullOrEmpty(pair.Value))
                 {
-                    list.Add(string.Format("{0}={1}", pair.Name, pair.Value));
+                    continue;
                 }
+
+                // Try to keep the url clean by omitting defaults
+                if (StringHelper.EqualsIgnoreCase(pair.Name, "StartTimeTicks") &&
+                    StringHelper.EqualsIgnoreCase(pair.Value, "0"))
+                {
+                    continue;
+                }
+                if (StringHelper.EqualsIgnoreCase(pair.Name, "SubtitleStreamIndex") &&
+                    StringHelper.EqualsIgnoreCase(pair.Value, "-1"))
+                {
+                    continue;
+                }
+                if (StringHelper.EqualsIgnoreCase(pair.Name, "Static") &&
+                    StringHelper.EqualsIgnoreCase(pair.Value, "false"))
+                {
+                    continue;
+                }
+
+                list.Add(string.Format("{0}={1}", pair.Name, pair.Value));
             }
 
             string queryString = string.Join("&", list.ToArray());
