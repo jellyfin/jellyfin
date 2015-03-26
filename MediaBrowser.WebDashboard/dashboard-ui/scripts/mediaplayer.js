@@ -120,7 +120,7 @@
 
             profile.MaxStreamingBitrate = bitrateSetting;
             profile.MaxStaticBitrate = 40000000;
-            profile.MusicStreamingTranscodingBitrate = 128000;
+            profile.MusicStreamingTranscodingBitrate = Math.min(bitrateSetting, 192000);
 
             profile.DirectPlayProfiles = [];
             profile.DirectPlayProfiles.push({
@@ -232,12 +232,14 @@
                 {
                     Condition: 'Equals',
                     Property: 'IsCabac',
-                    Value: 'true'
+                    Value: 'true',
+                    IsRequired: false
                 },
                 {
                     Condition: 'NotEquals',
                     Property: 'IsAnamorphic',
-                    Value: 'true'
+                    Value: 'true',
+                    IsRequired: false
                 },
                 {
                     Condition: 'EqualsAny',
@@ -263,7 +265,8 @@
                 {
                     Condition: 'NotEquals',
                     Property: 'IsAnamorphic',
-                    Value: 'true'
+                    Value: 'true',
+                    IsRequired: false
                 },
                 {
                     Condition: 'LessThanEqual',
@@ -622,11 +625,23 @@
             });
         };
 
+        function supportsDirectPlay(mediaSource) {
+
+            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == 'Http' && !mediaSource.RequiredHttpHeaders.length) {
+
+                // TODO: Need to verify the host is going to be reachable
+                return true;
+            }
+
+            return false;
+        }
+
         function getOptimalMediaSource(mediaType, versions) {
 
+            alert(JSON.stringify(versions));
             var optimalVersion = versions.filter(function (v) {
 
-                v.enableDirectPlay = v.SupportsDirectPlay && v.Protocol == 'Http' && !v.RequiredHttpHeaders.length;
+                v.enableDirectPlay = supportsDirectPlay(v);
 
                 return v.enableDirectPlay;
 

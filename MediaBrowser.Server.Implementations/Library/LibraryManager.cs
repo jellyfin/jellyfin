@@ -1713,11 +1713,15 @@ namespace MediaBrowser.Server.Implementations.Library
                 isNew = true;
             }
 
-            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 6;
+            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 12;
 
             if (refresh)
             {
-                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions());
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions
+                {
+                    // Need to force save to increment DateLastSaved
+                    ForceSave = true
+                });
             }
 
             return item;

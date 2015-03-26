@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,16 +11,24 @@ namespace MediaBrowser.Model.Dlna
         {
             return streams.OrderBy(i =>
             {
+                // Nothing beats direct playing a file
+                if (i.PlayMethod == PlayMethod.DirectPlay && i.MediaSource.Protocol == MediaProtocol.File)
+                {
+                    return 0;
+                }
+
+                return 1;
+
+            }).ThenBy(i =>
+            {
                 switch (i.PlayMethod)
                 {
+                    // Let's assume direct streaming a file is just as desirable as direct playing a remote url
+                    case PlayMethod.DirectStream:
                     case PlayMethod.DirectPlay:
                         return 0;
-                    case PlayMethod.DirectStream:
-                        return 1;
-                    case PlayMethod.Transcode:
-                        return 2;
                     default:
-                        throw new ArgumentException("Unrecognized PlayMethod");
+                        return 2;
                 }
 
             }).ThenBy(i =>

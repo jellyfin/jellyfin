@@ -86,14 +86,14 @@ namespace MediaBrowser.Api.Playback
             var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
 
             var profile = request.DeviceProfile;
-            //if (profile == null)
-            //{
-            //    var caps = _deviceManager.GetCapabilities(authInfo.DeviceId);
-            //    if (caps != null)
-            //    {
-            //        profile = caps.DeviceProfile;
-            //    }
-            //}
+            if (profile == null)
+            {
+                var caps = _deviceManager.GetCapabilities(authInfo.DeviceId);
+                if (caps != null)
+                {
+                    profile = caps.DeviceProfile;
+                }
+            }
 
             if (profile != null)
             {
