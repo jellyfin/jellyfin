@@ -162,7 +162,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
 
                                 wandList.AddImage(mwr);
                                 int ex = (int)(wand.CurrentImage.Width - mwg.CurrentImage.Width) / 2;
-                                wand.CurrentImage.CompositeImage(wandList.AppendImages(true), CompositeOperator.AtopCompositeOp, ex, Convert.ToInt32(height * .08));
+                                wand.CurrentImage.CompositeImage(wandList.AppendImages(true), CompositeOperator.AtopCompositeOp, ex, Convert.ToInt32(height * .085));
                             }
                         }
                     }

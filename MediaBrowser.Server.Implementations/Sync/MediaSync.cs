@@ -176,6 +176,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                         mediaSource.Path = sendFileResult.Path;
                         mediaSource.Protocol = sendFileResult.Protocol;
                         mediaSource.SupportsTranscoding = false;
+
+                        await SendSubtitles(localItem, mediaSource, provider, dataProvider, target, cancellationToken).ConfigureAwait(false);
                     }
                 }
 
@@ -205,16 +207,37 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private async Task SendSubtitles(LocalItem localItem, MediaSourceInfo mediaSource, IServerSyncProvider provider, ISyncDataProvider dataProvider, SyncTarget target, CancellationToken cancellationToken)
         {
+            var failedSubtitles = new List<MediaStream>();
+            var requiresSave = false;
+
             foreach (var mediaStream in mediaSource.MediaStreams
                 .Where(i => i.Type == MediaStreamType.Subtitle && i.IsExternal)
                 .ToList())
             {
-                var sendFileResult = await SendFile(provider, mediaStream.Path, localItem, target, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    var sendFileResult = await SendFile(provider, mediaStream.Path, localItem, target, cancellationToken).ConfigureAwait(false);
 
-                mediaStream.Path = sendFileResult.Path;
-                
+                    mediaStream.Path = sendFileResult.Path;
+                    requiresSave = true;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error sending subtitle stream", ex);
+                    failedSubtitles.Add(mediaStream);
+                }
+            }
+
+            if (failedSubtitles.Count > 0)
+            {
+                mediaSource.MediaStreams = mediaSource.MediaStreams.Except(failedSubtitles).ToList();
+                requiresSave = true;
+            }
+
+            if (requiresSave)
+            {
                 await dataProvider.AddOrUpdate(target, localItem).ConfigureAwait(false);
-            }   
+            }
         }
 
         private async Task RemoveItem(IServerSyncProvider provider,
@@ -374,7 +397,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             var name = Path.GetFileNameWithoutExtension(item.LocalPath);
 
-            foreach (var file in list.Where(f => f.Name.Contains(name)))
+            foreach (var file in list.Where(f => f.Name.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1))
             {
                 var itemFile = new ItemFileInfo
                 {

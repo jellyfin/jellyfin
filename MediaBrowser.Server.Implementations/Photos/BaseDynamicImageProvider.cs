@@ -125,7 +125,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected abstract Task<List<BaseItem>> GetItemsWithImages(IHasImages item);
 
-        private const string Version = "4";
+        private const string Version = "5";
         protected string GetConfigurationCacheKey(List<BaseItem> items, string itemName)
         {
             var parts = Version + "_" + (itemName ?? string.Empty) + "_" +
@@ -223,8 +223,8 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected virtual List<BaseItem> GetFinalItems(List<BaseItem> items, int limit)
         {
-            // Rotate the images once every 7 days
-            var random = DateTime.Now.DayOfYear % 7;
+            // Rotate the images once every x days
+            var random = DateTime.Now.DayOfYear % 4;
 
             return items
                 .OrderBy(i => (random + "" + items.IndexOf(i)).GetMD5())
