@@ -43,6 +43,15 @@ namespace MediaBrowser.Api.Playback
 
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }
+
+        [ApiMember(Name = "StartTimeTicks", Description = "Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public long? StartTimeTicks { get; set; }
+
+        [ApiMember(Name = "AudioStreamIndex", Description = "Optional. The index of the audio stream to use. If omitted the first audio stream will be used.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? AudioStreamIndex { get; set; }
+
+        [ApiMember(Name = "SubtitleStreamIndex", Description = "Optional. The index of the subtitle stream to use. If omitted no subtitles will be used.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? SubtitleStreamIndex { get; set; }
     }
 
     [Authenticated]
@@ -73,7 +82,7 @@ namespace MediaBrowser.Api.Playback
 
         public async Task<object> Post(GetPostedPlaybackInfo request)
         {
-            var info = await GetPlaybackInfo(request.Id, request.UserId).ConfigureAwait(false);
+            var info = await GetPlaybackInfo(request.Id, request.UserId, request.MediaSource).ConfigureAwait(false);
             var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
 
             var profile = request.DeviceProfile;
@@ -88,28 +97,37 @@ namespace MediaBrowser.Api.Playback
 
             if (profile != null)
             {
-                SetDeviceSpecificData(request.Id, info, profile, authInfo, null);
+                var mediaSourceId = request.MediaSource == null ? null : request.MediaSource.Id;
+                SetDeviceSpecificData(request.Id, info, profile, authInfo, null, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex);
             }
 
             return ToOptimizedResult(info);
         }
 
-        private async Task<PlaybackInfoResponse> GetPlaybackInfo(string id, string userId)
+        private async Task<PlaybackInfoResponse> GetPlaybackInfo(string id, string userId, MediaSourceInfo mediaSource = null)
         {
-            IEnumerable<MediaSourceInfo> mediaSources;
             var result = new PlaybackInfoResponse();
 
-            try
+            if (mediaSource == null)
             {
-                mediaSources = await _mediaSourceManager.GetPlayackMediaSources(id, userId, true, CancellationToken.None).ConfigureAwait(false);
-            }
-            catch (PlaybackException ex)
-            {
-                mediaSources = new List<MediaSourceInfo>();
-                result.ErrorCode = ex.ErrorCode;
-            }
+                IEnumerable<MediaSourceInfo> mediaSources;
 
-            result.MediaSources = mediaSources.ToList();
+                try
+                {
+                    mediaSources = await _mediaSourceManager.GetPlayackMediaSources(id, userId, true, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (PlaybackException ex)
+                {
+                    mediaSources = new List<MediaSourceInfo>();
+                    result.ErrorCode = ex.ErrorCode;
+                }
+
+                result.MediaSources = mediaSources.ToList();
+            }
+            else
+            {
+                result.MediaSources = new List<MediaSourceInfo> { mediaSource };
+            }
 
             if (result.MediaSources.Count == 0)
             {
@@ -126,7 +144,15 @@ namespace MediaBrowser.Api.Playback
             return result;
         }
 
-        private void SetDeviceSpecificData(string itemId, PlaybackInfoResponse result, DeviceProfile profile, AuthorizationInfo auth, int? maxBitrate)
+        private void SetDeviceSpecificData(string itemId, 
+            PlaybackInfoResponse result, 
+            DeviceProfile profile, 
+            AuthorizationInfo auth, 
+            int? maxBitrate, 
+            long startTimeTicks,
+            string mediaSourceId,
+            int? audioStreamIndex,
+            int? subtitleStreamIndex)
         {
             var streamBuilder = new StreamBuilder();
 
@@ -144,13 +170,20 @@ namespace MediaBrowser.Api.Playback
                     MaxBitrate = maxBitrate
                 };
 
+                if (string.Equals(mediaSourceId, mediaSource.Id, StringComparison.OrdinalIgnoreCase))
+                {
+                    options.MediaSourceId = mediaSourceId;
+                    options.AudioStreamIndex = audioStreamIndex;
+                    options.SubtitleStreamIndex = subtitleStreamIndex;
+                }
+
                 if (mediaSource.SupportsDirectPlay)
                 {
                     var supportsDirectStream = mediaSource.SupportsDirectStream;
 
                     // Dummy this up to fool StreamBuilder
                     mediaSource.SupportsDirectStream = true;
-                    
+
                     // The MediaSource supports direct stream, now test to see if the client supports it
                     var streamInfo = item is Video ?
                         streamBuilder.BuildVideoItem(options) :
@@ -187,6 +220,7 @@ namespace MediaBrowser.Api.Playback
 
                     if (streamInfo != null && streamInfo.PlayMethod == PlayMethod.Transcode)
                     {
+                        streamInfo.StartPositionTicks = startTimeTicks;
                         mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).Substring(1);
                         mediaSource.TranscodingContainer = streamInfo.Container;
                         mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;

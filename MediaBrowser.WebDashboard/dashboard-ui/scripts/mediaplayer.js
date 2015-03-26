@@ -114,6 +114,8 @@
 
             var bitrateSetting = AppSettings.maxStreamingBitrate();
 
+            var canPlayWebm = self.canPlayWebm();
+
             var profile = {};
 
             profile.MaxStreamingBitrate = bitrateSetting;
@@ -135,10 +137,6 @@
                     VideoCodec: 'h264',
                     AudioCodec: 'aac,mp3'
                 });
-                profile.DirectPlayProfiles.push({
-                    Container: 'flv',
-                    Type: 'Video'
-                });
             }
 
             profile.DirectPlayProfiles.push({
@@ -149,6 +147,17 @@
             if (supportsAac) {
                 profile.DirectPlayProfiles.push({
                     Container: 'aac',
+                    Type: 'Audio'
+                });
+            }
+
+            if (canPlayWebm) {
+                profile.DirectPlayProfiles.push({
+                    Container: 'webm',
+                    Type: 'Video'
+                });
+                profile.DirectPlayProfiles.push({
+                    Container: 'webm,webma',
                     Type: 'Audio'
                 });
             }
@@ -173,7 +182,7 @@
                 });
             }
 
-            if (self.canPlayWebm()) {
+            if (canPlayWebm) {
 
                 profile.TranscodingProfiles.push({
                     Container: 'webm',
@@ -387,64 +396,39 @@
 
             var currentStreamId = getParameterByName('StreamId', currentSrc);
 
-            //if (self.currentItem.MediaType == "Video") {
-
-            //    transcodingExtension = self.getVideoTranscodingExtension(currentSrc);
-
-            //    if (params.AudioStreamIndex != null) {
-            //        currentSrc = replaceQueryString(currentSrc, 'AudioStreamIndex', params.AudioStreamIndex);
-            //    }
-            //    if (params.SubtitleStreamIndex != null) {
-            //        currentSrc = replaceQueryString(currentSrc, 'SubtitleStreamIndex', (params.SubtitleStreamIndex == -1 ? '' : params.SubtitleStreamIndex));
-            //    }
-
-            //    var audioStreamIndex = params.AudioStreamIndex == null ? getParameterByName('AudioStreamIndex', currentSrc) : params.AudioStreamIndex;
-            //    if (typeof (audioStreamIndex) == 'string') {
-            //        audioStreamIndex = parseInt(audioStreamIndex);
-            //    }
-            //    var subtitleStreamIndex = self.currentSubtitleStreamIndex;
-            //    var videoBitrate = parseInt(getParameterByName('VideoBitrate', currentSrc) || '0');
-            //    var audioBitrate = parseInt(getParameterByName('AudioBitrate', currentSrc) || '0');
-            //    var bitrate = params.Bitrate || (videoBitrate + audioBitrate);
-
-            //    var finalParams = self.getFinalVideoParams(self.currentMediaSource, bitrate, audioStreamIndex, subtitleStreamIndex, transcodingExtension);
-
-            //    currentSrc = replaceQueryString(currentSrc, 'VideoBitrate', finalParams.videoBitrate);
-
-            //    currentSrc = replaceQueryString(currentSrc, 'VideoCodec', finalParams.videoCodec);
-
-            //    currentSrc = replaceQueryString(currentSrc, 'profile', finalParams.profile || '');
-            //    currentSrc = replaceQueryString(currentSrc, 'level', finalParams.level || '');
-
-            //    if (finalParams.isStatic) {
-            //        currentSrc = currentSrc.replace('.webm', '.mp4').replace('.m3u8', '.mp4');
-            //        currentSrc = replaceQueryString(currentSrc, 'ClientTime', '');
-            //    } else {
-            //        currentSrc = currentSrc.replace('.mp4', transcodingExtension).replace('.m4v', transcodingExtension).replace('.mkv', transcodingExtension).replace('.webm', transcodingExtension);
-            //        currentSrc = replaceQueryString(currentSrc, 'ClientTime', new Date().getTime());
-            //    }
-
-            //    currentSrc = replaceQueryString(currentSrc, 'AudioBitrate', finalParams.audioBitrate);
-            //    currentSrc = replaceQueryString(currentSrc, 'Static', finalParams.isStatic);
-            //    currentSrc = replaceQueryString(currentSrc, 'AudioCodec', finalParams.audioCodec);
-            //    isStatic = finalParams.isStatic;
-            //}
-
             if (params.AudioStreamIndex == null && params.SubtitleStreamIndex == null && params.Bitrate == null) {
 
-                var transcodingProfile = self.getDeviceProfile().TranscodingProfiles.filter(function (t) {
-
-                    return t.Type == self.currentItem.MediaType;
-                })[0];
-
-            } else {
-
                 currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks || 0);
-                changeStreamToUrl(currentStreamId, currentSrc, ticks);
+                changeStreamToUrl(element, currentStreamId, currentSrc, ticks);
+                return;
             }
+
+            var deviceProfile = self.getDeviceProfile();
+
+            var audioStreamIndex = params.AudioStreamIndex == null ? getParameterByName('AudioStreamIndex', currentSrc) : params.AudioStreamIndex;
+            if (typeof (audioStreamIndex) == 'string') {
+                audioStreamIndex = parseInt(audioStreamIndex);
+            }
+
+            var subtitleStreamIndex = params.SubtitleStreamIndex == null ? getParameterByName('SubtitleStreamIndex', currentSrc) : params.SubtitleStreamIndex;
+            if (typeof (subtitleStreamIndex) == 'string') {
+                subtitleStreamIndex = parseInt(subtitleStreamIndex);
+            }
+
+            getPlaybackInfo(self.currentItem.Id, deviceProfile, ticks, self.currentMediaSource, audioStreamIndex, subtitleStreamIndex).done(function (result) {
+
+                if (validatePlaybackInfoResult(result)) {
+
+                    self.currentMediaSource = result.MediaSources[0];
+                    self.currentSubtitleStreamIndex = subtitleStreamIndex;
+
+                    currentSrc = ApiClient.getUrl(self.currentMediaSource.TranscodingUrl);
+                    changeStreamToUrl(element, currentStreamId, currentSrc, ticks);
+                }
+            });
         };
 
-        function changeStreamToUrl(currentStreamId, url, newPositionTicks) {
+        function changeStreamToUrl(element, currentStreamId, url, newPositionTicks) {
 
             clearProgressInterval();
 
@@ -792,17 +776,32 @@
             })[0];
         }
 
-        function getPlaybackInfo(itemId, deviceProfile, startPosition) {
+        function getPlaybackInfo(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex) {
+
+            var postData = {
+                DeviceProfile: deviceProfile
+            };
+
+            if (mediaSource) {
+                postData.MediaSource = mediaSource;
+            }
+
+            var query = {
+                UserId: Dashboard.getCurrentUserId(),
+                StartTimeTicks: startPosition || 0
+            };
+
+            if (audioStreamIndex != null) {
+                query.AudioStreamIndex = audioStreamIndex;
+            }
+            if (subtitleStreamIndex != null) {
+                query.SubtitleStreamIndex = subtitleStreamIndex;
+            }
 
             return ApiClient.ajax({
-                url: ApiClient.getUrl('Items/' + itemId + '/PlaybackInfo', {
-                    UserId: Dashboard.getCurrentUserId(),
-                    StartPositionTicks: startPosition || 0
-                }),
+                url: ApiClient.getUrl('Items/' + itemId + '/PlaybackInfo', query),
                 type: 'POST',
-                data: JSON.stringify({
-                    DeviceProfile: deviceProfile
-                }),
+                data: JSON.stringify(postData),
                 contentType: "application/json",
                 dataType: "json"
 
