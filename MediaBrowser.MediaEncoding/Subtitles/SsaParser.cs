@@ -148,8 +148,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
         public static string GetFormattedText(string text)
         {
-            text = text.Replace("\\n", ParserValues.NewLine, StringComparison.OrdinalIgnoreCase)
-                .Replace("\\n", ParserValues.NewLine, StringComparison.OrdinalIgnoreCase);
+            text = text.Replace("\\n", ParserValues.NewLine, StringComparison.OrdinalIgnoreCase);
 
             bool italic = false;
 

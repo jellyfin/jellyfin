@@ -589,6 +589,11 @@
                 throw new Error("Unrecognized media type");
             }
 
+            if (item.IsPlaceHolder) {
+                showPlaybackInfoErrorMessage('PlaceHolder');
+                return;
+            }
+
             var mediaSource;
 
             ApiClient.getJSON(ApiClient.getUrl('Items/' + item.Id + '/PlaybackInfo', {

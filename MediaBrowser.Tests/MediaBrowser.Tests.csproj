@@ -86,13 +86,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="MediaEncoding\Subtitles\TestSubtitles\expected.vtt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="MediaEncoding\Subtitles\TestSubtitles\data.ass">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="MediaEncoding\Subtitles\TestSubtitles\data2.ass">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="MediaEncoding\Subtitles\TestSubtitles\unit.srt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <Choose>

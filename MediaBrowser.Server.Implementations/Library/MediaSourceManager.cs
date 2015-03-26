@@ -1,5 +1,4 @@
-﻿using System.IO;
-using MediaBrowser.Controller.Channels;
+﻿using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -7,12 +6,13 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -166,6 +166,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 if (source.Protocol == MediaProtocol.File)
                 {
                     source.SupportsDirectStream = File.Exists(source.Path);
+                }
+                else
+                {
+                    source.SupportsDirectStream = false;
                 }
 
                 list.Add(source);

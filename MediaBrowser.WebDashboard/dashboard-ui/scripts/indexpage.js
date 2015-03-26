@@ -221,7 +221,7 @@
 
                 html += '</div>';
 
-                html += '<div>';
+                html += '<div class="homeTopViews">';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,
                     shape: shape,
