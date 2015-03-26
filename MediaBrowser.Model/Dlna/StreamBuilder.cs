@@ -89,29 +89,7 @@ namespace MediaBrowser.Model.Dlna
 
         private StreamInfo GetOptimalStream(List<StreamInfo> streams)
         {
-            // Grab the first one that can be direct streamed
-            // If that doesn't produce anything, just take the first
-            foreach (StreamInfo i in streams)
-            {
-                if (i.PlayMethod == PlayMethod.DirectPlay && i.MediaSource.Protocol == MediaProtocol.File)
-                {
-                    return i;
-                }
-            }
-            foreach (StreamInfo i in streams)
-            {
-                if (i.PlayMethod == PlayMethod.DirectPlay)
-                {
-                    return i;
-                }
-            }
-            foreach (StreamInfo i in streams)
-            {
-                if (i.PlayMethod == PlayMethod.DirectStream)
-                {
-                    return i;
-                }
-            }
+            streams = StreamInfoSorter.SortMediaSources(streams);
 
             foreach (StreamInfo stream in streams)
             {

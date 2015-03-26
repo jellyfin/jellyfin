@@ -413,6 +413,9 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\StreamInfo.cs">
       <Link>Dlna\StreamInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\StreamInfoSorter.cs">
+      <Link>Dlna\StreamInfoSorter.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\SubtitleDeliveryMethod.cs">
       <Link>Dlna\SubtitleDeliveryMethod.cs</Link>
     </Compile>

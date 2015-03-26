@@ -223,26 +223,14 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected virtual List<BaseItem> GetFinalItems(List<BaseItem> items, int limit)
         {
-            // Rotate the images no more than once per week
-            var random = new Random(GetWeekOfYear()).Next();
+            // Rotate the images once every 7 days
+            var random = DateTime.Now.DayOfYear % 7;
 
             return items
                 .OrderBy(i => (random + "" + items.IndexOf(i)).GetMD5())
                 .Take(limit)
                 .OrderBy(i => i.Name)
                 .ToList();
-        }
-
-        private int GetWeekOfYear()
-        {
-            return DateTime.Now.Second;
-            var usCulture = new CultureInfo("en-US");
-            var weekNo = usCulture.Calendar.GetWeekOfYear(
-                            DateTime.Now,
-                            usCulture.DateTimeFormat.CalendarWeekRule,
-                            usCulture.DateTimeFormat.FirstDayOfWeek);
-
-            return weekNo;
         }
 
         public int Order
