@@ -1286,12 +1286,10 @@
                 self.currentMediaSource = null;
             }
 
-            if (self.currentItem && self.currentItem.MediaType == "Video") {
-                if (self.isFullScreen()) {
-                    self.exitFullScreen();
-                }
-                self.resetEnhancements();
+            if (self.isFullScreen()) {
+                self.exitFullScreen();
             }
+            self.resetEnhancements();
         };
 
         self.isPlaying = function () {

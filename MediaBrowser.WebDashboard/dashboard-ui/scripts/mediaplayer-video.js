@@ -1125,7 +1125,6 @@
                     message: errorMsg
                 });
 
-
             }).on("click.mediaplayerevent", function (e) {
 
                 if (this.paused) {
