@@ -1102,6 +1102,31 @@
 
             })) + seekParam;
 
+            // Get Video Poster (Code from librarybrowser.js)
+            var screenWidth = Math.max(screen.height, screen.width),
+                posterUrl;
+
+            if (item.BackdropImageTags && item.BackdropImageTags.length) {
+
+                posterUrl = ApiClient.getScaledImageUrl(item.Id, {
+                    type: "Backdrop",
+                    index: 0,
+                    maxWidth: screenWidth,
+                    tag: item.BackdropImageTags[0]
+                });
+
+            }
+            else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
+
+                posterUrl = ApiClient.getScaledImageUrl(item.ParentBackdropItemId, {
+                    type: 'Backdrop',
+                    index: 0,
+                    maxWidth: screenWidth,
+                    tag: item.ParentBackdropImageTags[0]                    
+                });
+
+            }
+
             //======================================================================================>
 
             // Create video player
@@ -1111,11 +1136,11 @@
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresNativeControls) {
-                html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay="autoplay" controls="controls">';
+                html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay="autoplay" controls="controls" poster="' + posterUrl + '">';
             } else {
 
                 // Chrome 35 won't play with preload none
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay poster="' + posterUrl + '">';
             }
 
             if (!isStatic) {
