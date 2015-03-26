@@ -405,12 +405,12 @@
 
             var deviceProfile = self.getDeviceProfile();
 
-            var audioStreamIndex = params.AudioStreamIndex == null ? getParameterByName('AudioStreamIndex', currentSrc) : params.AudioStreamIndex;
+            var audioStreamIndex = params.AudioStreamIndex == null ? (getParameterByName('AudioStreamIndex', currentSrc) || null) : params.AudioStreamIndex;
             if (typeof (audioStreamIndex) == 'string') {
                 audioStreamIndex = parseInt(audioStreamIndex);
             }
 
-            var subtitleStreamIndex = params.SubtitleStreamIndex == null ? getParameterByName('SubtitleStreamIndex', currentSrc) : params.SubtitleStreamIndex;
+            var subtitleStreamIndex = params.SubtitleStreamIndex == null ? (getParameterByName('SubtitleStreamIndex', currentSrc) || null) : params.SubtitleStreamIndex;
             if (typeof (subtitleStreamIndex) == 'string') {
                 subtitleStreamIndex = parseInt(subtitleStreamIndex);
             }

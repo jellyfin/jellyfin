@@ -268,8 +268,6 @@ namespace MediaBrowser.Server.Implementations.Drawing
                         originalImage.CurrentImage.CompressionQuality = quality;
 
                         originalImage.SaveImage(cacheFilePath);
-
-                        return cacheFilePath;
                     }
                 }
                 else
@@ -286,8 +284,6 @@ namespace MediaBrowser.Server.Implementations.Drawing
                             wand.CurrentImage.CompressionQuality = quality;
 
                             wand.SaveImage(cacheFilePath);
-
-                            return cacheFilePath;
                         }
                     }
                 }
@@ -296,6 +292,8 @@ namespace MediaBrowser.Server.Implementations.Drawing
             {
                 semaphore.Release();
             }
+
+            return cacheFilePath;
         }
 
         private ImageFormat GetOutputFormat(ImageFormat requestedFormat)

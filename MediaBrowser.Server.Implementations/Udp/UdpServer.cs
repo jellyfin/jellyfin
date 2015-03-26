@@ -51,6 +51,7 @@ namespace MediaBrowser.Server.Implementations.Udp
 
             AddMessageResponder("who is MediaBrowserServer?", RespondToV1Message);
             AddMessageResponder("who is MediaBrowserServer_v2?", RespondToV2Message);
+            AddMessageResponder("who is EmbyServer_v2?", RespondToV2Message);
         }
 
         private void AddMessageResponder(string message, Action<string> responder)
