@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Model.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MediaBrowser.Model.ApiClient
 {
@@ -24,7 +23,12 @@ namespace MediaBrowser.Model.ApiClient
                 throw new ArgumentNullException("server");
             }
 
-            var list = Servers.ToList();
+            // Clone the existing list of servers
+            var list = new List<ServerInfo>();
+            foreach (ServerInfo serverInfo in Servers)
+            {
+                list.Add(serverInfo);
+            }
 
             var index = FindIndex(list, server.Id);
 
@@ -32,8 +36,11 @@ namespace MediaBrowser.Model.ApiClient
             {
                 var existing = list[index];
 
-                // Merge the data
-                existing.DateLastAccessed = new[] { existing.DateLastAccessed, server.DateLastAccessed }.Max();
+                // Take the most recent DateLastAccessed
+                if (server.DateLastAccessed > existing.DateLastAccessed)
+                {
+                    existing.DateLastAccessed = server.DateLastAccessed;
+                }
 
                 existing.UserLinkType = server.UserLinkType;
 
@@ -64,7 +71,11 @@ namespace MediaBrowser.Model.ApiClient
                 }
                 if (server.WakeOnLanInfos != null && server.WakeOnLanInfos.Count > 0)
                 {
-                    existing.WakeOnLanInfos = server.WakeOnLanInfos.ToList();
+                    existing.WakeOnLanInfos = new List<WakeOnLanInfo>();
+                    foreach (WakeOnLanInfo info in server.WakeOnLanInfos)
+                    {
+                        existing.WakeOnLanInfos.Add(info);
+                    }
                 }
                 if (server.LastConnectionMode.HasValue)
                 {

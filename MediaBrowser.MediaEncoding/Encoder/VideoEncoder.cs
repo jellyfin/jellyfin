@@ -73,10 +73,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     args;
             }
 
-            var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
-                5.ToString(UsCulture));
+            if (state.Options.Context == EncodingContext.Streaming)
+            {
+                var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
+                    5.ToString(UsCulture));
 
-            args += keyFrameArg;
+                args += keyFrameArg;
+            }
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 

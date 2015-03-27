@@ -28,7 +28,7 @@ namespace MediaBrowser.Model.Dlna
                     case PlayMethod.DirectPlay:
                         return 0;
                     default:
-                        return 2;
+                        return 1;
                 }
 
             }).ThenBy(i =>

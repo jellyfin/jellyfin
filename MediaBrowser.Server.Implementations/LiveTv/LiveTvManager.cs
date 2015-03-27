@@ -333,10 +333,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             try
             {
                 MediaSourceInfo info;
+                var isVideo = true;
 
                 if (isChannel)
                 {
                     var channel = GetInternalChannel(id);
+                    isVideo = channel.ChannelType == ChannelType.TV;
                     var service = GetService(channel);
                     _logger.Info("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
                     info = await service.GetChannelStream(channel.ExternalId, null, cancellationToken).ConfigureAwait(false);
@@ -344,6 +346,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 else
                 {
                     var recording = await GetInternalRecording(id, cancellationToken).ConfigureAwait(false);
+                    isVideo = !string.Equals(recording.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase);
                     var service = GetService(recording);
 
                     _logger.Info("Opening recording stream from {0}, external recording Id: {1}", service.Name, recording.RecordingInfo.Id);
@@ -351,7 +354,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
 
                 _logger.Info("Live stream info: {0}", _jsonSerializer.SerializeToString(info));
-                Sanitize(info);
+                Normalize(info, isVideo);
 
                 var data = new LiveStreamData
                 {
@@ -377,25 +380,40 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
         }
 
-        private void Sanitize(MediaSourceInfo mediaSource)
+        private void Normalize(MediaSourceInfo mediaSource, bool isVideo)
         {
             if (mediaSource.MediaStreams.Count == 0)
             {
-                mediaSource.MediaStreams.AddRange(new List<MediaStream>
+                if (isVideo)
                 {
-                    new MediaStream
+                    mediaSource.MediaStreams.AddRange(new List<MediaStream>
                     {
-                        Type = MediaStreamType.Video,
-                        // Set the index to -1 because we don't know the exact index of the video stream within the container
-                        Index = -1
-                    },
-                    new MediaStream
+                        new MediaStream
+                        {
+                            Type = MediaStreamType.Video,
+                            // Set the index to -1 because we don't know the exact index of the video stream within the container
+                            Index = -1
+                        },
+                        new MediaStream
+                        {
+                            Type = MediaStreamType.Audio,
+                            // Set the index to -1 because we don't know the exact index of the audio stream within the container
+                            Index = -1
+                        }
+                    });
+                }
+                else
+                {
+                    mediaSource.MediaStreams.AddRange(new List<MediaStream>
                     {
-                        Type = MediaStreamType.Audio,
-                        // Set the index to -1 because we don't know the exact index of the audio stream within the container
-                        Index = -1
-                    }
-                });
+                        new MediaStream
+                        {
+                            Type = MediaStreamType.Audio,
+                            // Set the index to -1 because we don't know the exact index of the audio stream within the container
+                            Index = -1
+                        }
+                    });
+                }
             }
 
             // Clean some bad data coming from providers

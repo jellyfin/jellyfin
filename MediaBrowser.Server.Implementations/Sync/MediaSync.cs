@@ -1,5 +1,4 @@
-﻿using System.IO;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Sync;
@@ -10,6 +9,7 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Sync;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -140,9 +140,6 @@ namespace MediaBrowser.Server.Implementations.Sync
             var libraryItem = jobItem.Item;
             var internalSyncJobItem = _syncManager.GetJobItem(jobItem.SyncJobItemId);
 
-            var fileTransferProgress = new ActionableProgress<double>();
-            fileTransferProgress.RegisterAction(pct => progress.Report(pct * .92));
-
             var localItem = CreateLocalItem(provider, jobItem, target, libraryItem, serverId, jobItem.OriginalFileName);
 
             await _syncManager.ReportSyncJobItemTransferBeginning(internalSyncJobItem.Id);
@@ -152,6 +149,9 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             try
             {
+                var fileTransferProgress = new ActionableProgress<double>();
+                fileTransferProgress.RegisterAction(pct => progress.Report(pct * .92));
+
                 var sendFileResult = await SendFile(provider, internalSyncJobItem.OutputPath, localItem.LocalPath, target, fileTransferProgress, cancellationToken).ConfigureAwait(false);
 
                 if (localItem.Item.MediaSources != null)
@@ -342,7 +342,10 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private string GetSyncJobFolderName(SyncedItem syncedItem, IServerSyncProvider provider)
         {
-            var name = syncedItem.SyncJobName + syncedItem.SyncJobDateCreated.ToLocalTime().ToString("g");
+            var name = syncedItem.SyncJobName + "-" + syncedItem.SyncJobDateCreated
+                .ToLocalTime()
+                .ToString("g")
+                .Replace(" ", "-");
 
             name = GetValidFilename(provider, name);
 
