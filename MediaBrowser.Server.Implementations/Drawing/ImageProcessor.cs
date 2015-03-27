@@ -233,57 +233,45 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
             await semaphore.WaitAsync().ConfigureAwait(false);
 
-            // Check again in case of lock contention
-            try
-            {
-                if (File.Exists(cacheFilePath))
-                {
-                    semaphore.Release();
-                    return cacheFilePath;
-                }
-            }
-            catch
-            {
-                semaphore.Release();
-                throw;
-            }
-
             try
             {
                 CheckDisposed();
 
-                var newWidth = Convert.ToInt32(newSize.Width);
-                var newHeight = Convert.ToInt32(newSize.Height);
-
-                Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
-
-                if (string.IsNullOrWhiteSpace(options.BackgroundColor))
+                if (!File.Exists(cacheFilePath))
                 {
-                    using (var originalImage = new MagickWand(originalImagePath))
-                    {
-                        originalImage.CurrentImage.ResizeImage(newWidth, newHeight);
+                    var newWidth = Convert.ToInt32(newSize.Width);
+                    var newHeight = Convert.ToInt32(newSize.Height);
 
-                        DrawIndicator(originalImage, newWidth, newHeight, options);
+                    Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
 
-                        originalImage.CurrentImage.CompressionQuality = quality;
-
-                        originalImage.SaveImage(cacheFilePath);
-                    }
-                }
-                else
-                {
-                    using (var wand = new MagickWand(newWidth, newHeight, options.BackgroundColor))
+                    if (string.IsNullOrWhiteSpace(options.BackgroundColor))
                     {
                         using (var originalImage = new MagickWand(originalImagePath))
                         {
                             originalImage.CurrentImage.ResizeImage(newWidth, newHeight);
 
-                            wand.CurrentImage.CompositeImage(originalImage, CompositeOperator.OverCompositeOp, 0, 0);
-                            DrawIndicator(wand, newWidth, newHeight, options);
+                            DrawIndicator(originalImage, newWidth, newHeight, options);
 
-                            wand.CurrentImage.CompressionQuality = quality;
+                            originalImage.CurrentImage.CompressionQuality = quality;
 
-                            wand.SaveImage(cacheFilePath);
+                            originalImage.SaveImage(cacheFilePath);
+                        }
+                    }
+                    else
+                    {
+                        using (var wand = new MagickWand(newWidth, newHeight, options.BackgroundColor))
+                        {
+                            using (var originalImage = new MagickWand(originalImagePath))
+                            {
+                                originalImage.CurrentImage.ResizeImage(newWidth, newHeight);
+
+                                wand.CurrentImage.CompositeImage(originalImage, CompositeOperator.OverCompositeOp, 0, 0);
+                                DrawIndicator(wand, newWidth, newHeight, options);
+
+                                wand.CurrentImage.CompressionQuality = quality;
+
+                                wand.SaveImage(cacheFilePath);
+                            }
                         }
                     }
                 }

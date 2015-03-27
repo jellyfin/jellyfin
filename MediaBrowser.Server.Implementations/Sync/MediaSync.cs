@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.IO;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Sync;
@@ -9,7 +10,6 @@ using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Sync;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -152,7 +152,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             try
             {
-                var sendFileResult = await SendFile(provider, internalSyncJobItem.OutputPath, localItem, target, cancellationToken).ConfigureAwait(false);
+                var sendFileResult = await SendFile(provider, internalSyncJobItem.OutputPath, localItem.LocalPath, target, cancellationToken).ConfigureAwait(false);
 
                 if (localItem.Item.MediaSources != null)
                 {
@@ -173,10 +173,6 @@ namespace MediaBrowser.Server.Implementations.Sync
                     var mediaSource = localItem.Item.MediaSources.FirstOrDefault();
                     if (mediaSource != null)
                     {
-                        mediaSource.Path = sendFileResult.Path;
-                        mediaSource.Protocol = sendFileResult.Protocol;
-                        mediaSource.SupportsTranscoding = false;
-
                         await SendSubtitles(localItem, mediaSource, provider, dataProvider, target, cancellationToken).ConfigureAwait(false);
                     }
                 }
@@ -216,7 +212,8 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 try
                 {
-                    var sendFileResult = await SendFile(provider, mediaStream.Path, localItem, target, cancellationToken).ConfigureAwait(false);
+                    var remotePath = GetRemoteSubtitlePath(localItem, mediaStream, provider, target);
+                    var sendFileResult = await SendFile(provider, mediaStream.Path, remotePath, target, cancellationToken).ConfigureAwait(false);
 
                     mediaStream.Path = sendFileResult.Path;
                     requiresSave = true;
@@ -238,6 +235,38 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 await dataProvider.AddOrUpdate(target, localItem).ConfigureAwait(false);
             }
+        }
+
+        private string GetRemoteSubtitlePath(LocalItem item, MediaStream stream, IServerSyncProvider provider, SyncTarget target)
+        {
+            var path = item.LocalPath;
+
+            var filename = GetSubtitleSaveFileName(item, stream.Language, stream.IsForced) + "." + stream.Codec.ToLower();
+
+            var parentPath = provider.GetParentDirectoryPath(path, target);
+
+            path = Path.Combine(parentPath, filename);
+
+            return path;
+        }
+
+        private string GetSubtitleSaveFileName(LocalItem item, string language, bool isForced)
+        {
+            var path = item.LocalPath;
+
+            var name = Path.GetFileNameWithoutExtension(path);
+
+            if (!string.IsNullOrWhiteSpace(language))
+            {
+                name += "." + language.ToLower();
+            }
+
+            if (isForced)
+            {
+                name += ".foreign";
+            }
+
+            return name;
         }
 
         private async Task RemoveItem(IServerSyncProvider provider,
@@ -264,12 +293,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private async Task<SendFileResult> SendFile(IServerSyncProvider provider, string inputPath, LocalItem item, SyncTarget target, CancellationToken cancellationToken)
+        private async Task<SendFileResult> SendFile(IServerSyncProvider provider, string inputPath, string remotePath, SyncTarget target, CancellationToken cancellationToken)
         {
-            _logger.Debug("Sending {0} to {1}. Remote path: {2}", inputPath, provider.Name, item.LocalPath);
+            _logger.Debug("Sending {0} to {1}. Remote path: {2}", inputPath, provider.Name, remotePath);
             using (var stream = _fileSystem.GetFileStream(inputPath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
             {
-                return await provider.SendFile(stream, item.LocalPath, target, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+                return await provider.SendFile(stream, remotePath, target, new Progress<double>(), cancellationToken).ConfigureAwait(false);
             }
         }
 
