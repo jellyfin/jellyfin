@@ -971,7 +971,9 @@
                 for (var i = 0, length = textStreams.length; i < length; i++) {
 
                     var textStream = textStreams[i];
-                    var textStreamUrl = ApiClient.getUrl('Videos/' + item.Id + '/' + mediaSource.Id + '/Subtitles/' + textStream.Index + '/Stream.vtt', {
+                    var textStreamUrl = mediaSource.Protocol == 'Http' ?
+                        textStream.Path :
+                        ApiClient.getUrl('Videos/' + item.Id + '/' + mediaSource.Id + '/Subtitles/' + textStream.Index + '/Stream.vtt', {
                         startPositionTicks: (startPosition || 0),
                         api_key: ApiClient.accessToken()
                     });
