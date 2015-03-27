@@ -638,7 +638,6 @@
 
         function getOptimalMediaSource(mediaType, versions) {
 
-            alert(JSON.stringify(versions));
             var optimalVersion = versions.filter(function (v) {
 
                 v.enableDirectPlay = supportsDirectPlay(v);

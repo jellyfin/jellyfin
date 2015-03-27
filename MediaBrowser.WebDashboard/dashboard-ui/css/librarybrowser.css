@@ -1448,5 +1448,4 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .homeTopViews .cardText{
-    font-size: 14px;
 }

@@ -632,7 +632,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                     IsExternal = true,
                     Language = subtitle.Language,
                     Path = fileInfo.Path,
-                    SupportsExternalStream = true
+                    SupportsExternalStream = true,
+                    Type = MediaStreamType.Subtitle
                 });
 
                 startingIndex++;
