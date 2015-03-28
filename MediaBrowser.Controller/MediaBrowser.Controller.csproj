@@ -393,6 +393,7 @@
     <Compile Include="Subtitles\SubtitleDownloadEventArgs.cs" />
     <Compile Include="Subtitles\SubtitleResponse.cs" />
     <Compile Include="Subtitles\SubtitleSearchRequest.cs" />
+    <Compile Include="Sync\IRequiresDynamicAccess.cs" />
     <Compile Include="Sync\IServerSyncProvider.cs" />
     <Compile Include="Sync\ISyncDataProvider.cs" />
     <Compile Include="Sync\ISyncManager.cs" />

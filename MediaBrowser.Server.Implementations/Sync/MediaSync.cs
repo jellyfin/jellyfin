@@ -215,6 +215,13 @@ namespace MediaBrowser.Server.Implementations.Sync
                     var remotePath = GetRemoteSubtitlePath(localItem, mediaStream, provider, target);
                     var sendFileResult = await SendFile(provider, mediaStream.Path, remotePath, target, new Progress<double>(), cancellationToken).ConfigureAwait(false);
 
+                    // This is the path that will be used when talking to the provider
+                    mediaStream.ExternalId = remotePath;
+
+                    // Keep track of all additional files for cleanup later.
+                    localItem.AdditionalFiles.Add(remotePath);
+
+                    // This is the public path clients will use
                     mediaStream.Path = sendFileResult.Path;
                     requiresSave = true;
                 }
@@ -280,13 +287,14 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             foreach (var localItem in localItems)
             {
-                var files = await GetFiles(provider, localItem, target, cancellationToken);
+                var files = localItem.AdditionalFiles.ToList();
+                files.Insert(0, localItem.LocalPath);
 
                 foreach (var file in files)
                 {
-                    _logger.Debug("Removing {0} from {1}.", file.Path, target.Name);
+                    _logger.Debug("Removing {0} from {1}.", file, target.Name);
 
-                    await provider.DeleteFile(file.Path, target, cancellationToken).ConfigureAwait(false);
+                    await provider.DeleteFile(file, target, cancellationToken).ConfigureAwait(false);
                 }
 
                 await dataProvider.Delete(target, localItem.Id).ConfigureAwait(false);
@@ -416,44 +424,6 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             // We can always add this method to the sync provider if it's really needed
             return _fileSystem.GetValidFilename(filename);
-        }
-
-        private async Task<List<ItemFileInfo>> GetFiles(IServerSyncProvider provider, LocalItem item, SyncTarget target, CancellationToken cancellationToken)
-        {
-            var path = item.LocalPath;
-            path = provider.GetParentDirectoryPath(path, target);
-
-            var list = await provider.GetFileSystemEntries(path, target, cancellationToken).ConfigureAwait(false);
-
-            var itemFiles = new List<ItemFileInfo>();
-
-            var name = Path.GetFileNameWithoutExtension(item.LocalPath);
-
-            foreach (var file in list.Where(f => f.Name.IndexOf(name, StringComparison.OrdinalIgnoreCase) != -1))
-            {
-                var itemFile = new ItemFileInfo
-                {
-                    Path = file.Path,
-                    Name = file.Name
-                };
-
-                if (IsSubtitleFile(file.Name))
-                {
-                    itemFile.Type = ItemFileType.Subtitles;
-                }
-
-                itemFiles.Add(itemFile);
-            }
-
-            return itemFiles;
-        }
-
-        private static readonly string[] SupportedSubtitleExtensions = { ".srt", ".vtt" };
-        private bool IsSubtitleFile(string path)
-        {
-            var ext = Path.GetExtension(path) ?? string.Empty;
-
-            return SupportedSubtitleExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase);
         }
     }
 }

@@ -7,7 +7,7 @@
         SortOrder: "Ascending",
         MediaTypes: "Game",
         Recursive: true,
-        Fields: "UserData",
+        Fields: "ItemCounts",
         StartIndex: 0
     };
 

@@ -54,14 +54,5 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="target">The target.</param>
         /// <returns>System.String.</returns>
         string GetParentDirectoryPath(string path, SyncTarget target);
-
-        /// <summary>
-        /// Gets the file system entries.
-        /// </summary>
-        /// <param name="path">The path.</param>
-        /// <param name="target">The target.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task&lt;List&lt;DeviceFileInfo&gt;&gt;.</returns>
-        Task<List<DeviceFileInfo>> GetFileSystemEntries(string path, SyncTarget target, CancellationToken cancellationToken);
     }
 }
