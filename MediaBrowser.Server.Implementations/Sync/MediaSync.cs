@@ -301,7 +301,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private async Task<SendFileResult> SendFile(IServerSyncProvider provider, string inputPath, string remotePath, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task<SyncedFileInfo> SendFile(IServerSyncProvider provider, string inputPath, string remotePath, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken)
         {
             _logger.Debug("Sending {0} to {1}. Remote path: {2}", inputPath, provider.Name, remotePath);
             using (var stream = _fileSystem.GetFileStream(inputPath, FileMode.Open, FileAccess.Read, FileShare.Read, true))

@@ -78,7 +78,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             SyncTarget target,
             CancellationToken cancellationToken)
         {
-            var requiresDynamicAccess = provider as IRequiresDynamicAccess;
+            var requiresDynamicAccess = provider as IHasDynamicAccess;
 
             if (requiresDynamicAccess == null)
             {
@@ -88,11 +88,11 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             try
             {
-                var dynamicInfo = await requiresDynamicAccess.GetFileInfo(item.LocalPath, target, cancellationToken).ConfigureAwait(false);
+                var dynamicInfo = await requiresDynamicAccess.GetSyncedFileInfo(item.LocalPath, target, cancellationToken).ConfigureAwait(false);
 
                 foreach (var stream in mediaSource.MediaStreams)
                 {
-                    var dynamicStreamInfo = await requiresDynamicAccess.GetFileInfo(stream.ExternalId, target, cancellationToken).ConfigureAwait(false);
+                    var dynamicStreamInfo = await requiresDynamicAccess.GetSyncedFileInfo(stream.ExternalId, target, cancellationToken).ConfigureAwait(false);
 
                     stream.Path = dynamicStreamInfo.Path;
                 }
