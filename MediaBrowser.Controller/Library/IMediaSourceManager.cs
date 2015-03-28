@@ -65,6 +65,14 @@ namespace MediaBrowser.Controller.Library
         IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution, User user);
 
         /// <summary>
+        /// Gets the static media sources.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
+        /// <returns>IEnumerable&lt;MediaSourceInfo&gt;.</returns>
+        IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution);
+        
+        /// <summary>
         /// Gets the static media source.
         /// </summary>
         /// <param name="item">The item.</param>
@@ -72,5 +80,21 @@ namespace MediaBrowser.Controller.Library
         /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
         /// <returns>MediaSourceInfo.</returns>
         MediaSourceInfo GetStaticMediaSource(IHasMediaSources item, string mediaSourceId, bool enablePathSubstitution);
+
+        /// <summary>
+        /// Opens the media source.
+        /// </summary>
+        /// <param name="openKey">The open key.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
+        Task<MediaSourceInfo> OpenMediaSource(string openKey, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Closes the media source.
+        /// </summary>
+        /// <param name="closeKey">The close key.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task CloseMediaSource(string closeKey, CancellationToken cancellationToken);
     }
 }

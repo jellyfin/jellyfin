@@ -90,17 +90,23 @@ namespace MediaBrowser.Controller.Channels
 
         public override IEnumerable<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
         {
-            var list = base.GetMediaSources(enablePathSubstitution).ToList();
-
-            var sources = ChannelManager.GetChannelItemMediaSources(Id.ToString("N"), false, CancellationToken.None)
-                    .Result.ToList();
+            var sources = ChannelManager.GetStaticMediaSources(this, false, CancellationToken.None)
+                       .Result.ToList();
 
             if (sources.Count > 0)
             {
                 return sources;
             }
 
-            list.InsertRange(0, sources);
+            var list = base.GetMediaSources(enablePathSubstitution).ToList();
+
+            foreach (var mediaSource in list)
+            {
+                if (string.IsNullOrWhiteSpace(mediaSource.Path))
+                {
+                    mediaSource.Type = MediaSourceType.Placeholder;
+                }
+            }
 
             return list;
         }

@@ -239,6 +239,16 @@ namespace MediaBrowser.Model.Dlna
             return playlistItem;
         }
 
+        private int? GetBitrateForDirectPlayCheck(MediaSourceInfo item, AudioOptions options)
+        {
+            if (item.Protocol == MediaProtocol.File)
+            {
+                return options.Profile.MaxStaticBitrate;
+            }
+
+            return options.GetMaxBitrate();
+        }
+
         private List<PlayMethod> GetAudioDirectPlayMethods(MediaSourceInfo item, MediaStream audioStream, AudioOptions options)
         {
             DirectPlayProfile directPlayProfile = null;
@@ -263,7 +273,7 @@ namespace MediaBrowser.Model.Dlna
                 
                 // The profile describes what the device supports
                 // If device requirements are satisfied then allow both direct stream and direct play
-                if (IsAudioEligibleForDirectPlay(item, options.Profile.MaxStaticBitrate))
+                if (IsAudioEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options)))
                 {
                     playMethods.Add(PlayMethod.DirectPlay);
                 }
@@ -293,7 +303,7 @@ namespace MediaBrowser.Model.Dlna
             MediaStream videoStream = item.VideoStream;
 
             // TODO: This doesn't accout for situation of device being able to handle media bitrate, but wifi connection not fast enough
-            bool isEligibleForDirectPlay = IsEligibleForDirectPlay(item, options.Profile.MaxStaticBitrate, subtitleStream, options);
+            bool isEligibleForDirectPlay = IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options), subtitleStream, options);
             bool isEligibleForDirectStream = IsEligibleForDirectPlay(item, options.GetMaxBitrate(), subtitleStream, options);
 
             if (isEligibleForDirectPlay || isEligibleForDirectStream)
@@ -604,6 +614,11 @@ namespace MediaBrowser.Model.Dlna
             // Look for an external profile that matches the stream type (text/graphical)
             foreach (SubtitleProfile profile in subtitleProfiles)
             {
+                if (!profile.SupportsLanguage(subtitleStream.Language))
+                {
+                    continue;
+                }
+
                 if (profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {
                     if (subtitleStream.SupportsExternalStream)
@@ -621,6 +636,11 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (SubtitleProfile profile in subtitleProfiles)
             {
+                if (!profile.SupportsLanguage(subtitleStream.Language))
+                {
+                    continue;
+                }
+
                 if (profile.Method == SubtitleDeliveryMethod.Embed && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {
                     return profile;

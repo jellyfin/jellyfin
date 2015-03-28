@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sync;
@@ -61,7 +62,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                         {
                             foreach (var mediaSource in localItem.Item.MediaSources)
                             {
-                                await TryAddMediaSource(list, localItem, mediaSource, syncProvider, syncTarget, cancellationToken).ConfigureAwait(false);
+                                AddMediaSource(list, localItem, mediaSource, syncProvider, syncTarget);
                             }
                         }
                     }
@@ -71,41 +72,70 @@ namespace MediaBrowser.Server.Implementations.Sync
             return list;
         }
 
-        private async Task TryAddMediaSource(List<MediaSourceInfo> list,
+        private void AddMediaSource(List<MediaSourceInfo> list,
             LocalItem item,
             MediaSourceInfo mediaSource,
             IServerSyncProvider provider,
-            SyncTarget target,
-            CancellationToken cancellationToken)
+            SyncTarget target)
         {
+            SetStaticMediaSourceInfo(item, mediaSource);
+
             var requiresDynamicAccess = provider as IHasDynamicAccess;
 
-            if (requiresDynamicAccess == null)
+            if (requiresDynamicAccess != null)
             {
-                list.Add(mediaSource);
-                return;
+                mediaSource.RequiresOpening = true;
+
+                var keyList = new List<string>();
+                keyList.Add(provider.GetType().FullName.GetMD5().ToString("N"));
+                keyList.Add(target.Id.GetMD5().ToString("N"));
+                keyList.Add(item.Id);
+                mediaSource.OpenKey = string.Join("|", keyList.ToArray());
+            }
+        }
+
+        public async Task<MediaSourceInfo> OpenMediaSource(string openKey, CancellationToken cancellationToken)
+        {
+            var openKeys = openKey.Split(new[] { '|' }, 3);
+
+            var provider = _syncManager.ServerSyncProviders
+                .FirstOrDefault(i => string.Equals(openKeys[0], i.GetType().FullName.GetMD5().ToString("N"), StringComparison.OrdinalIgnoreCase));
+
+            var target = provider.GetAllSyncTargets()
+                .FirstOrDefault(i => string.Equals(openKeys[1], i.Id.GetMD5().ToString("N"), StringComparison.OrdinalIgnoreCase));
+
+            var dataProvider = _syncManager.GetDataProvider(provider, target);
+            var localItem = await dataProvider.Get(target, openKeys[2]).ConfigureAwait(false);
+
+            var requiresDynamicAccess = (IHasDynamicAccess)provider;
+            var dynamicInfo = await requiresDynamicAccess.GetSyncedFileInfo(localItem.LocalPath, target, cancellationToken).ConfigureAwait(false);
+
+            var mediaSource = localItem.Item.MediaSources.First();
+            SetStaticMediaSourceInfo(localItem, mediaSource);
+
+            foreach (var stream in mediaSource.MediaStreams)
+            {
+                var dynamicStreamInfo = await requiresDynamicAccess.GetSyncedFileInfo(stream.ExternalId, target, cancellationToken).ConfigureAwait(false);
+
+                stream.Path = dynamicStreamInfo.Path;
             }
 
-            try
-            {
-                var dynamicInfo = await requiresDynamicAccess.GetSyncedFileInfo(item.LocalPath, target, cancellationToken).ConfigureAwait(false);
+            mediaSource.Path = dynamicInfo.Path;
+            mediaSource.Protocol = dynamicInfo.Protocol;
+            mediaSource.RequiredHttpHeaders = dynamicInfo.RequiredHttpHeaders;
 
-                foreach (var stream in mediaSource.MediaStreams)
-                {
-                    var dynamicStreamInfo = await requiresDynamicAccess.GetSyncedFileInfo(stream.ExternalId, target, cancellationToken).ConfigureAwait(false);
+            return mediaSource;
+        }
 
-                    stream.Path = dynamicStreamInfo.Path;
-                }
+        private void SetStaticMediaSourceInfo(LocalItem item, MediaSourceInfo mediaSource)
+        {
+            mediaSource.Id = item.Id;
+            mediaSource.SupportsTranscoding = false;
+        }
 
-                mediaSource.Path = dynamicInfo.Path;
-                mediaSource.Protocol = dynamicInfo.Protocol;
-
-                list.Add(mediaSource);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error getting dynamic media source info", ex);
-            }
+        public Task CloseMediaSource(string closeKey, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

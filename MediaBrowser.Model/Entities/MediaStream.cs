@@ -141,6 +141,11 @@ namespace MediaBrowser.Model.Entities
             {
                 if (Type != MediaStreamType.Subtitle) return false;
 
+                if (string.IsNullOrEmpty(Codec) && !IsExternal)
+                {
+                    return false;
+                }
+
                 return IsTextFormat(Codec);
             }
         }

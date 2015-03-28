@@ -476,7 +476,7 @@ namespace MediaBrowser.Dlna.PlayTo
             var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
             playlistItem.StreamInfo.StartPositionTicks = startPostionTicks;
 
-            playlistItem.StreamUrl = playlistItem.StreamInfo.ToUrl(_serverAddress, _accessToken);
+            playlistItem.StreamUrl = playlistItem.StreamInfo.ToDlnaUrl(_serverAddress, _accessToken);
 
             var itemXml = new DidlBuilder(profile, user, _imageProcessor, _serverAddress, _accessToken, _userDataManager, _localization, _mediaSourceManager)
                 .GetItemDidl(item, null, _session.DeviceId, new Filter(), playlistItem.StreamInfo);

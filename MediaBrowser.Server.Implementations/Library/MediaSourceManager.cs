@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Channels;
+﻿using System.Collections.Concurrent;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -13,25 +14,24 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Server.Implementations.LiveTv;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
-    public class MediaSourceManager : IMediaSourceManager
+    public class MediaSourceManager : IMediaSourceManager, IDisposable
     {
         private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly IChannelManager _channelManager;
 
         private IMediaSourceProvider[] _providers;
         private readonly ILogger _logger;
 
-        public MediaSourceManager(IItemRepository itemRepo, IUserManager userManager, ILibraryManager libraryManager, IChannelManager channelManager, ILogger logger)
+        public MediaSourceManager(IItemRepository itemRepo, IUserManager userManager, ILibraryManager libraryManager, ILogger logger)
         {
             _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
-            _channelManager = channelManager;
             _logger = logger;
         }
 
@@ -133,24 +133,15 @@ namespace MediaBrowser.Server.Implementations.Library
             IEnumerable<MediaSourceInfo> mediaSources;
 
             var hasMediaSources = (IHasMediaSources)item;
-            var channelItem = item as IChannelMediaItem;
 
-            if (channelItem != null)
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                mediaSources = await _channelManager.GetChannelItemMediaSources(id, true, cancellationToken)
-                        .ConfigureAwait(false);
+                mediaSources = hasMediaSources.GetMediaSources(enablePathSubstitution);
             }
             else
             {
-                if (string.IsNullOrWhiteSpace(userId))
-                {
-                    mediaSources = hasMediaSources.GetMediaSources(enablePathSubstitution);
-                }
-                else
-                {
-                    var user = _userManager.GetUserById(userId);
-                    mediaSources = GetStaticMediaSources(hasMediaSources, enablePathSubstitution, user);
-                }
+                var user = _userManager.GetUserById(userId);
+                mediaSources = GetStaticMediaSources(hasMediaSources, enablePathSubstitution, user);
             }
 
             var dynamicMediaSources = await GetDynamicMediaSources(hasMediaSources, cancellationToken).ConfigureAwait(false);
@@ -161,11 +152,16 @@ namespace MediaBrowser.Server.Implementations.Library
 
             foreach (var source in dynamicMediaSources)
             {
-                source.SupportsTranscoding = false;
-
                 if (source.Protocol == MediaProtocol.File)
                 {
                     source.SupportsDirectStream = File.Exists(source.Path);
+
+                    // TODO: Path substitution
+                }
+                else if (source.Protocol == MediaProtocol.Http)
+                {
+                    // TODO: Allow this when the source is plain http, e.g. not HLS or Mpeg Dash
+                    source.SupportsDirectStream = false;
                 }
                 else
                 {
@@ -175,7 +171,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 list.Add(source);
             }
 
-            return SortMediaSources(list);
+            return SortMediaSources(list).Where(i => i.Type != MediaSourceType.Placeholder);
         }
 
         private async Task<IEnumerable<MediaSourceInfo>> GetDynamicMediaSources(IHasMediaSources item, CancellationToken cancellationToken)
@@ -190,12 +186,35 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             try
             {
-                return await provider.GetMediaSources(item, cancellationToken).ConfigureAwait(false);
+                var sources = await provider.GetMediaSources(item, cancellationToken).ConfigureAwait(false);
+                var list = sources.ToList();
+
+                foreach (var mediaSource in list)
+                {
+                    SetKeyProperties(provider, mediaSource);
+                }
+
+                return list;
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error getting media sources", ex);
                 return new List<MediaSourceInfo>();
+            }
+        }
+
+        private void SetKeyProperties(IMediaSourceProvider provider, MediaSourceInfo mediaSource)
+        {
+            var prefix = provider.GetType().FullName.GetMD5().ToString("N") + "|";
+
+            if (!string.IsNullOrWhiteSpace(mediaSource.OpenKey) && !mediaSource.OpenKey.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                mediaSource.OpenKey = prefix + mediaSource.OpenKey;
+            }
+
+            if (!string.IsNullOrWhiteSpace(mediaSource.CloseKey) && !mediaSource.CloseKey.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                mediaSource.CloseKey = prefix + mediaSource.CloseKey;
             }
         }
 
@@ -293,6 +312,91 @@ namespace MediaBrowser.Server.Implementations.Library
         public MediaSourceInfo GetStaticMediaSource(IHasMediaSources item, string mediaSourceId, bool enablePathSubstitution)
         {
             return GetStaticMediaSources(item, enablePathSubstitution).FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private readonly ConcurrentDictionary<string, string> _openStreams =
+         new ConcurrentDictionary<string, string>();
+        private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
+        public async Task<MediaSourceInfo> OpenMediaSource(string openKey, CancellationToken cancellationToken)
+        {
+            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                var tuple = GetProvider(openKey);
+                var provider = tuple.Item1;
+
+                var mediaSource = await provider.OpenMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
+
+                SetKeyProperties(provider, mediaSource);
+
+                _openStreams.AddOrUpdate(mediaSource.CloseKey, mediaSource.CloseKey, (key, i) => mediaSource.CloseKey);
+                
+                return mediaSource;
+            }
+            finally
+            {
+                _liveStreamSemaphore.Release();
+            }
+        }
+
+        public async Task CloseMediaSource(string closeKey, CancellationToken cancellationToken)
+        {
+            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                var tuple = GetProvider(closeKey);
+
+                await tuple.Item1.OpenMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
+
+                string removedKey;
+                _openStreams.TryRemove(closeKey, out removedKey);
+            }
+            finally
+            {
+                _liveStreamSemaphore.Release();
+            }
+        }
+
+        private Tuple<IMediaSourceProvider, string> GetProvider(string key)
+        {
+            var keys = key.Split(new[] { '|' }, 2);
+
+            var provider = _providers.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N"), keys[0], StringComparison.OrdinalIgnoreCase));
+
+            return new Tuple<IMediaSourceProvider, string>(provider, keys[1]);
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        private readonly object _disposeLock = new object();
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                lock (_disposeLock)
+                {
+                    foreach (var key in _openStreams.Keys.ToList())
+                    {
+                        var task = CloseMediaSource(key, CancellationToken.None);
+
+                        Task.WaitAll(task);
+                    }
+
+                    _openStreams.Clear();
+                }
+            }
         }
     }
 }

@@ -62,7 +62,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
     public class DynamicHlsService : BaseHlsService
     {
-        public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, INetworkManager networkManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient)
+        public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, INetworkManager networkManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient)
         {
             NetworkManager = networkManager;
         }
@@ -414,7 +414,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var request = (GetMasterHlsVideoStream)state.Request;
 
-            var subtitleStreams = state.AllMediaStreams
+            var subtitleStreams = state.MediaSource
+                .MediaStreams
                 .Where(i => i.IsTextSubtitleStream)
                 .ToList();
 
@@ -684,7 +685,7 @@ namespace MediaBrowser.Api.Playback.Hls
             return args;
         }
 
-        protected override string GetCommandLineArguments(string outputPath, string transcodingJobId, StreamState state, bool isEncoding)
+        protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
         {
             var threads = GetNumberOfThreads(state, false);
 
@@ -699,7 +700,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 return string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts -flags -global_header {5} -f segment -segment_time {6} -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
                     inputModifier,
-                    GetInputArgument(transcodingJobId, state),
+                    GetInputArgument(state),
                     threads,
                     GetMapArgs(state),
                     GetVideoArguments(state),
@@ -713,7 +714,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             return string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts -flags -global_header {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
                             inputModifier,
-                            GetInputArgument(transcodingJobId, state),
+                            GetInputArgument(state),
                             threads,
                             GetMapArgs(state),
                             GetVideoArguments(state),

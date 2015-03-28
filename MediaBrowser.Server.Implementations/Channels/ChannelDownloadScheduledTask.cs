@@ -169,7 +169,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             foreach (var item in result.Items)
             {
-                var channelItem = (IChannelItem)item;
+                var channelItem = (IChannelMediaItem)item;
 
                 var channelFeatures = _manager.GetChannelFeatures(channelItem.ChannelId);
 
@@ -179,7 +179,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                     {
                         try
                         {
-                            await DownloadChannelItem(item, options, cancellationToken, path);
+                            await DownloadChannelItem(channelItem, options, cancellationToken, path);
                         }
                         catch (OperationCanceledException)
                         {
@@ -210,13 +210,13 @@ namespace MediaBrowser.Server.Implementations.Channels
             return channelOptions.DownloadSizeLimit;
         }
 
-        private async Task DownloadChannelItem(BaseItem item,
+        private async Task DownloadChannelItem(IChannelMediaItem item,
             ChannelOptions channelOptions,
             CancellationToken cancellationToken,
             string path)
         {
             var itemId = item.Id.ToString("N");
-            var sources = await _manager.GetChannelItemMediaSources(itemId, false, cancellationToken)
+            var sources = await _manager.GetStaticMediaSources(item, true, cancellationToken)
                 .ConfigureAwait(false);
 
             var cachedVersions = sources.Where(i => i.Protocol == MediaProtocol.File).ToList();
@@ -237,11 +237,9 @@ namespace MediaBrowser.Server.Implementations.Channels
                 }
             }
 
-            var channelItem = (IChannelMediaItem)item;
+            var destination = Path.Combine(path, item.ChannelId, itemId);
 
-            var destination = Path.Combine(path, channelItem.ChannelId, itemId);
-
-            await _manager.DownloadChannelItem(channelItem, destination, new Progress<double>(), cancellationToken)
+            await _manager.DownloadChannelItem(item, destination, new Progress<double>(), cancellationToken)
                     .ConfigureAwait(false);
 
             await RefreshMediaSourceItem(destination, cancellationToken).ConfigureAwait(false);
