@@ -665,10 +665,6 @@
                 DeviceProfile: deviceProfile
             };
 
-            if (mediaSource) {
-                postData.MediaSource = mediaSource;
-            }
-
             var query = {
                 UserId: Dashboard.getCurrentUserId(),
                 StartTimeTicks: startPosition || 0
@@ -679,6 +675,9 @@
             }
             if (subtitleStreamIndex != null) {
                 query.SubtitleStreamIndex = subtitleStreamIndex;
+            }
+            if (mediaSource) {
+                query.MediaSourceId = mediaSource.Id;
             }
 
             return ApiClient.ajax({

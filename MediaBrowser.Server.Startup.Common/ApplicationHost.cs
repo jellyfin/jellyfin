@@ -472,7 +472,7 @@ namespace MediaBrowser.Server.Startup.Common
             ChannelManager = new ChannelManager(UserManager, DtoService, LibraryManager, LogManager.GetLogger("ChannelManager"), ServerConfigurationManager, FileSystemManager, UserDataManager, JsonSerializer, LocalizationManager, HttpClient);
             RegisterSingleInstance(ChannelManager);
 
-            MediaSourceManager = new MediaSourceManager(ItemRepository, UserManager, LibraryManager, ChannelManager, LogManager.GetLogger("MediaSourceManager"));
+            MediaSourceManager = new MediaSourceManager(ItemRepository, UserManager, LibraryManager, LogManager.GetLogger("MediaSourceManager"));
             RegisterSingleInstance(MediaSourceManager);
 
             SessionManager = new SessionManager(UserDataManager, LogManager.GetLogger("SessionManager"), UserRepository, LibraryManager, UserManager, musicManager, DtoService, ImageProcessor, JsonSerializer, this, HttpClient, AuthenticationRepository, DeviceManager, MediaSourceManager);

@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Session;
 using ServiceStack;
@@ -38,20 +39,23 @@ namespace MediaBrowser.Api.Playback
     [Route("/Items/{Id}/PlaybackInfo", "POST", Summary = "Gets live playback media info for an item")]
     public class GetPostedPlaybackInfo : PlaybackInfoRequest, IReturn<PlaybackInfoResponse>
     {
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string Id { get; set; }
 
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string UserId { get; set; }
 
-        [ApiMember(Name = "StartTimeTicks", Description = "Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "StartTimeTicks", Description = "Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
         public long? StartTimeTicks { get; set; }
 
-        [ApiMember(Name = "AudioStreamIndex", Description = "Optional. The index of the audio stream to use. If omitted the first audio stream will be used.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "AudioStreamIndex", Description = "Optional. The index of the audio stream to use. If omitted the first audio stream will be used.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
         public int? AudioStreamIndex { get; set; }
 
-        [ApiMember(Name = "SubtitleStreamIndex", Description = "Optional. The index of the subtitle stream to use. If omitted no subtitles will be used.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        [ApiMember(Name = "SubtitleStreamIndex", Description = "Optional. The index of the subtitle stream to use. If omitted no subtitles will be used.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
         public int? SubtitleStreamIndex { get; set; }
+
+        [ApiMember(Name = "MediaSourceId", Description = "The media version id, if playing an alternate version", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string MediaSourceId { get; set; }
     }
 
     [Authenticated]
@@ -82,7 +86,7 @@ namespace MediaBrowser.Api.Playback
 
         public async Task<object> Post(GetPostedPlaybackInfo request)
         {
-            var info = await GetPlaybackInfo(request.Id, request.UserId, request.MediaSource).ConfigureAwait(false);
+            var info = await GetPlaybackInfo(request.Id, request.UserId, request.MediaSourceId).ConfigureAwait(false);
             var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
 
             var profile = request.DeviceProfile;
@@ -97,36 +101,36 @@ namespace MediaBrowser.Api.Playback
 
             if (profile != null)
             {
-                var mediaSourceId = request.MediaSource == null ? null : request.MediaSource.Id;
+                var mediaSourceId = request.MediaSourceId;
                 SetDeviceSpecificData(request.Id, info, profile, authInfo, null, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex);
             }
 
             return ToOptimizedResult(info);
         }
 
-        private async Task<PlaybackInfoResponse> GetPlaybackInfo(string id, string userId, MediaSourceInfo mediaSource = null)
+        private async Task<PlaybackInfoResponse> GetPlaybackInfo(string id, string userId, string mediaSourceId = null)
         {
             var result = new PlaybackInfoResponse();
 
-            if (mediaSource == null)
+            IEnumerable<MediaSourceInfo> mediaSources;
+
+            try
             {
-                IEnumerable<MediaSourceInfo> mediaSources;
-
-                try
-                {
-                    mediaSources = await _mediaSourceManager.GetPlayackMediaSources(id, userId, true, CancellationToken.None).ConfigureAwait(false);
-                }
-                catch (PlaybackException ex)
-                {
-                    mediaSources = new List<MediaSourceInfo>();
-                    result.ErrorCode = ex.ErrorCode;
-                }
-
-                result.MediaSources = mediaSources.ToList();
+                mediaSources = await _mediaSourceManager.GetPlayackMediaSources(id, userId, true, CancellationToken.None).ConfigureAwait(false);
             }
-            else
+            catch (PlaybackException ex)
             {
-                result.MediaSources = new List<MediaSourceInfo> { mediaSource };
+                mediaSources = new List<MediaSourceInfo>();
+                result.ErrorCode = ex.ErrorCode;
+            }
+
+            result.MediaSources = mediaSources.ToList();
+
+            if (!string.IsNullOrWhiteSpace(mediaSourceId))
+            {
+                result.MediaSources = result.MediaSources
+                    .Where(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
             }
 
             if (result.MediaSources.Count == 0)
@@ -185,9 +189,9 @@ namespace MediaBrowser.Api.Playback
                     mediaSource.SupportsDirectStream = true;
 
                     // The MediaSource supports direct stream, now test to see if the client supports it
-                    var streamInfo = item is Video ?
-                        streamBuilder.BuildVideoItem(options) :
-                        streamBuilder.BuildAudioItem(options);
+                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
+                        streamBuilder.BuildAudioItem(options) :
+                        streamBuilder.BuildVideoItem(options);
 
                     if (streamInfo == null || !streamInfo.IsDirectStream)
                     {
@@ -201,9 +205,9 @@ namespace MediaBrowser.Api.Playback
                 if (mediaSource.SupportsDirectStream)
                 {
                     // The MediaSource supports direct stream, now test to see if the client supports it
-                    var streamInfo = item is Video ?
-                        streamBuilder.BuildVideoItem(options) :
-                        streamBuilder.BuildAudioItem(options);
+                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
+                        streamBuilder.BuildAudioItem(options) :
+                        streamBuilder.BuildVideoItem(options);
 
                     if (streamInfo == null || !streamInfo.IsDirectStream)
                     {
@@ -214,9 +218,9 @@ namespace MediaBrowser.Api.Playback
                 if (mediaSource.SupportsTranscoding)
                 {
                     // The MediaSource supports direct stream, now test to see if the client supports it
-                    var streamInfo = item is Video ?
-                        streamBuilder.BuildVideoItem(options) :
-                        streamBuilder.BuildAudioItem(options);
+                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
+                        streamBuilder.BuildAudioItem(options) :
+                        streamBuilder.BuildVideoItem(options);
 
                     if (streamInfo != null && streamInfo.PlayMethod == PlayMethod.Transcode)
                     {
@@ -227,6 +231,46 @@ namespace MediaBrowser.Api.Playback
                     }
                 }
             }
+
+            SortMediaSources(result);
+        }
+
+        private void SortMediaSources(PlaybackInfoResponse result)
+        {
+            var originalList = result.MediaSources.ToList();
+
+            result.MediaSources = result.MediaSources.OrderBy(i =>
+            {
+                // Nothing beats direct playing a file
+                if (i.SupportsDirectPlay && i.Protocol == MediaProtocol.File)
+                {
+                    return 0;
+                }
+
+                return 1;
+
+            }).ThenBy(i =>
+            {
+                // Let's assume direct streaming a file is just as desirable as direct playing a remote url
+                if (i.SupportsDirectPlay || i.SupportsDirectStream)
+                {
+                    return 0;
+                }
+
+                return 1;
+
+            }).ThenBy(i =>
+            {
+                switch (i.Protocol)
+                {
+                    case MediaProtocol.File:
+                        return 0;
+                    default:
+                        return 1;
+                }
+
+            }).ThenBy(originalList.IndexOf)
+            .ToList();
         }
     }
 }

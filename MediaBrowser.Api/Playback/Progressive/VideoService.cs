@@ -62,7 +62,7 @@ namespace MediaBrowser.Api.Playback.Progressive
     /// </summary>
     public class VideoService : BaseProgressiveStreamingService
     {
-        public VideoService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IImageProcessor imageProcessor, IHttpClient httpClient) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, imageProcessor, httpClient)
+        public VideoService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IImageProcessor imageProcessor, IHttpClient httpClient) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, imageProcessor, httpClient)
         {
         }
 
@@ -86,7 +86,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             return ProcessRequest(request, true);
         }
 
-        protected override string GetCommandLineArguments(string outputPath, string transcodingJobId, StreamState state, bool isEncoding)
+        protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
         {
             // Get the output codec name
             var videoCodec = state.OutputVideoCodec;
@@ -106,7 +106,7 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             return string.Format("{0} {1}{2} {3} {4} -map_metadata -1 -threads {5} {6}{7} -y \"{8}\"",
                 inputModifier,
-                GetInputArgument(transcodingJobId, state),
+                GetInputArgument(state),
                 keyFrame,
                 GetMapArgs(state),
                 GetVideoArguments(state, videoCodec),

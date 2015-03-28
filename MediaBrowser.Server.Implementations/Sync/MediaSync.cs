@@ -161,6 +161,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     {
                         mediaSource.Path = sendFileResult.Path;
                         mediaSource.Protocol = sendFileResult.Protocol;
+                        mediaSource.RequiredHttpHeaders = sendFileResult.RequiredHttpHeaders;
                         mediaSource.SupportsTranscoding = false;
                     }
                 }

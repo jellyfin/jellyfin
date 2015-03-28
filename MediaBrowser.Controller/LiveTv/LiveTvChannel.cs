@@ -127,7 +127,7 @@ namespace MediaBrowser.Controller.LiveTv
                 Name = Name,
                 Path = Path,
                 RunTimeTicks = RunTimeTicks,
-                Type = MediaSourceType.Default
+                Type = MediaSourceType.Placeholder
             };
 
             list.Add(info);
