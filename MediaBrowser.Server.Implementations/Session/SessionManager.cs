@@ -1225,7 +1225,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 throw new UnauthorizedAccessException("Invalid user or password entered.");
             }
 
-            var token = await GetAuthorizationToken(user.Id.ToString("N"), request.DeviceId, request.App, request.DeviceName).ConfigureAwait(false);
+            var token = await GetAuthorizationToken(user.Id.ToString("N"), request.DeviceId, request.App, request.AppVersion, request.DeviceName).ConfigureAwait(false);
 
             EventHelper.FireEventIfNotNull(AuthenticationSucceeded, this, new GenericEventArgs<AuthenticationRequest>(request), _logger);
 
@@ -1246,7 +1246,7 @@ namespace MediaBrowser.Server.Implementations.Session
             };
         }
 
-        private async Task<string> GetAuthorizationToken(string userId, string deviceId, string app, string deviceName)
+        private async Task<string> GetAuthorizationToken(string userId, string deviceId, string app, string appVersion, string deviceName)
         {
             var existing = _authRepo.Get(new AuthenticationInfoQuery
             {
@@ -1265,6 +1265,7 @@ namespace MediaBrowser.Server.Implementations.Session
             var newToken = new AuthenticationInfo
             {
                 AppName = app,
+                AppVersion = appVersion,
                 DateCreated = DateTime.UtcNow,
                 DeviceId = deviceId,
                 DeviceName = deviceName,
@@ -1688,6 +1689,12 @@ namespace MediaBrowser.Server.Implementations.Session
             else
             {
                 deviceId = info.DeviceId;
+            }
+
+            // Prevent argument exception
+            if (string.IsNullOrWhiteSpace(appVersion))
+            {
+                appVersion = "1";
             }
 
             return LogSessionActivity(appName, appVersion, deviceId, deviceName, remoteEndpoint, user);
