@@ -169,6 +169,12 @@ namespace MediaBrowser.Model.Entities
         public string Path { get; set; }
 
         /// <summary>
+        /// Gets or sets the external identifier.
+        /// </summary>
+        /// <value>The external identifier.</value>
+        public string ExternalId { get; set; }
+
+        /// <summary>
         /// Gets or sets the pixel format.
         /// </summary>
         /// <value>The pixel format.</value>

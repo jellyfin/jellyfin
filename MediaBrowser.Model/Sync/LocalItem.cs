@@ -35,9 +35,15 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The user ids with access.</value>
         public List<string> UserIdsWithAccess { get; set; }
+        /// <summary>
+        /// Gets or sets the additional files.
+        /// </summary>
+        /// <value>The additional files.</value>
+        public List<string> AdditionalFiles { get; set; }
 
         public LocalItem()
         {
+            AdditionalFiles = new List<string>();
             UserIdsWithAccess = new List<string>();
         }
     }
