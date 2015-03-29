@@ -14,6 +14,7 @@ using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Devices;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Library;
@@ -304,13 +305,21 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
+        private async Task<MediaSourceInfo> GetMediaSource(BaseItem item, string mediaSourceId)
+        {
+            var sources = await _mediaSourceManager.GetPlayackMediaSources(item.Id.ToString("N"), false, CancellationToken.None)
+                        .ConfigureAwait(false);
+
+            return sources.FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
+        }
+
         /// <summary>
         /// Updates the now playing item id.
         /// </summary>
         /// <param name="session">The session.</param>
         /// <param name="info">The information.</param>
         /// <param name="libraryItem">The library item.</param>
-        private void UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem)
+        private async Task UpdateNowPlayingItem(SessionInfo session, PlaybackProgressInfo info, BaseItem libraryItem)
         {
             if (string.IsNullOrWhiteSpace(info.MediaSourceId))
             {
@@ -319,29 +328,27 @@ namespace MediaBrowser.Server.Implementations.Session
 
             if (!string.IsNullOrWhiteSpace(info.ItemId) && info.Item == null && libraryItem != null)
             {
-                var runtimeTicks = libraryItem.RunTimeTicks;
-
-                if (!string.Equals(info.ItemId, info.MediaSourceId) &&
-                    !string.IsNullOrWhiteSpace(info.MediaSourceId))
-                {
-                    var runtimeItem = _libraryManager.GetItemById(new Guid(info.MediaSourceId)) ??
-                                      _libraryManager.GetItemById(info.ItemId);
-
-                    runtimeTicks = runtimeItem.RunTimeTicks;
-                }
-
                 var current = session.NowPlayingItem;
 
                 if (current == null || !string.Equals(current.Id, info.ItemId, StringComparison.OrdinalIgnoreCase))
                 {
-                    info.Item = GetItemInfo(libraryItem, libraryItem, info.MediaSourceId);
+                    var runtimeTicks = libraryItem.RunTimeTicks;
+
+                    var mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId).ConfigureAwait(false);
+
+                    if (mediaSource != null)
+                    {
+                        runtimeTicks = mediaSource.RunTimeTicks;
+                    }
+
+                    info.Item = GetItemInfo(libraryItem, libraryItem, mediaSource);
+
+                    info.Item.RunTimeTicks = runtimeTicks;
                 }
                 else
                 {
                     info.Item = current;
                 }
-
-                info.Item.RunTimeTicks = runtimeTicks;
             }
 
             session.NowPlayingItem = info.Item;
@@ -431,6 +438,12 @@ namespace MediaBrowser.Server.Implementations.Session
                 }
 
                 device = device ?? _deviceManager.GetDevice(deviceId);
+
+                if (device == null)
+                {
+                    var userIdString = userId.HasValue ? userId.Value.ToString("N") : null;
+                    device = await _deviceManager.RegisterDevice(deviceId, deviceName, appName, appVersion, userIdString).ConfigureAwait(false);
+                }
 
                 if (device != null)
                 {
@@ -570,7 +583,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 ? null
                 : _libraryManager.GetItemById(new Guid(info.ItemId));
 
-            UpdateNowPlayingItem(session, info, libraryItem);
+            await UpdateNowPlayingItem(session, info, libraryItem).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(session.DeviceId) && info.PlayMethod != PlayMethod.Transcode)
             {
@@ -652,7 +665,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 ? null
                 : _libraryManager.GetItemById(new Guid(info.ItemId));
 
-            UpdateNowPlayingItem(session, info, libraryItem);
+            await UpdateNowPlayingItem(session, info, libraryItem).ConfigureAwait(false);
 
             var users = GetUsers(session);
 
@@ -731,7 +744,9 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 if (current == null || !string.Equals(current.Id, info.ItemId, StringComparison.OrdinalIgnoreCase))
                 {
-                    info.Item = GetItemInfo(libraryItem, libraryItem, info.MediaSourceId);
+                    var mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId).ConfigureAwait(false);
+
+                    info.Item = GetItemInfo(libraryItem, libraryItem, mediaSource);
                 }
                 else
                 {
@@ -1439,10 +1454,10 @@ namespace MediaBrowser.Server.Implementations.Session
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="chapterOwner">The chapter owner.</param>
-        /// <param name="mediaSourceId">The media source identifier.</param>
+        /// <param name="mediaSource">The media source.</param>
         /// <returns>BaseItemInfo.</returns>
         /// <exception cref="System.ArgumentNullException">item</exception>
-        private BaseItemInfo GetItemInfo(BaseItem item, BaseItem chapterOwner, string mediaSourceId)
+        private BaseItemInfo GetItemInfo(BaseItem item, BaseItem chapterOwner, MediaSourceInfo mediaSource)
         {
             if (item == null)
             {
@@ -1593,9 +1608,9 @@ namespace MediaBrowser.Server.Implementations.Session
                 info.Chapters = _dtoService.GetChapterInfoDtos(chapterOwner).ToList();
             }
 
-            if (!string.IsNullOrWhiteSpace(mediaSourceId))
+            if (mediaSource != null)
             {
-                info.MediaStreams = _mediaSourceManager.GetMediaStreams(mediaSourceId).ToList();
+                info.MediaStreams = mediaSource.MediaStreams;
             }
 
             return info;

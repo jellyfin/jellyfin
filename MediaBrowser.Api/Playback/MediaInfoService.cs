@@ -61,14 +61,12 @@ namespace MediaBrowser.Api.Playback
         public string MediaSourceId { get; set; }
     }
 
-    [Route("/MediaSources/Open", "POST", Summary = "Opens a media source")]
-    public class OpenMediaSource : IReturn<MediaSourceInfo>
+    [Route("/LiveStreams/Open", "POST", Summary = "Opens a media source")]
+    public class OpenMediaSource : LiveStreamRequest, IReturn<LiveStreamResponse>
     {
-        [ApiMember(Name = "OpenToken", Description = "OpenToken", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string OpenToken { get; set; }
     }
 
-    [Route("/MediaSources/Close", "POST", Summary = "Closes a media source")]
+    [Route("/LiveStreams/Close", "POST", Summary = "Closes a media source")]
     public class CloseMediaSource : IReturnVoid
     {
         [ApiMember(Name = "LiveStreamId", Description = "LiveStreamId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
@@ -103,7 +101,32 @@ namespace MediaBrowser.Api.Playback
 
         public async Task<object> Post(OpenMediaSource request)
         {
-            var result = await _mediaSourceManager.OpenLiveStream(request.OpenToken, false, CancellationToken.None).ConfigureAwait(false);
+            var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
+
+            var result = await _mediaSourceManager.OpenLiveStream(request, false, CancellationToken.None).ConfigureAwait(false);
+
+            var profile = request.DeviceProfile;
+            if (profile == null)
+            {
+                var caps = _deviceManager.GetCapabilities(authInfo.DeviceId);
+                if (caps != null)
+                {
+                    profile = caps.DeviceProfile;
+                }
+            }
+
+            if (profile != null)
+            {
+                var item = _libraryManager.GetItemById(request.ItemId);
+
+                SetDeviceSpecificData(item, result.MediaSource, profile, authInfo, request.MaxStreamingBitrate, request.StartTimeTicks ?? 0, result.MediaSource.Id, request.AudioStreamIndex, request.SubtitleStreamIndex);
+            }
+
+            if (!string.IsNullOrWhiteSpace(result.MediaSource.TranscodingUrl))
+            {
+                result.MediaSource.TranscodingUrl += "&LiveStreamId=" + result.MediaSource.LiveStreamId;
+            }
+
             return ToOptimizedResult(result);
         }
 
@@ -177,11 +200,11 @@ namespace MediaBrowser.Api.Playback
             return result;
         }
 
-        private void SetDeviceSpecificData(string itemId, 
-            PlaybackInfoResponse result, 
-            DeviceProfile profile, 
-            AuthorizationInfo auth, 
-            int? maxBitrate, 
+        private void SetDeviceSpecificData(string itemId,
+            PlaybackInfoResponse result,
+            DeviceProfile profile,
+            AuthorizationInfo auth,
+            int? maxBitrate,
             long startTimeTicks,
             string mediaSourceId,
             int? audioStreamIndex,

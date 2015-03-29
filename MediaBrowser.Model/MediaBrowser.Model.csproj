@@ -141,6 +141,8 @@
     <Compile Include="Dto\MetadataEditorInfo.cs" />
     <Compile Include="Dto\NameIdPair.cs" />
     <Compile Include="Dto\NameValuePair.cs" />
+    <Compile Include="MediaInfo\LiveStreamRequest.cs" />
+    <Compile Include="MediaInfo\LiveStreamResponse.cs" />
     <Compile Include="MediaInfo\PlaybackInfoRequest.cs" />
     <Compile Include="MediaInfo\PlaybackInfoResponse.cs" />
     <Compile Include="Dto\MediaSourceType.cs" />
