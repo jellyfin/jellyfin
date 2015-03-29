@@ -432,9 +432,12 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 device = device ?? _deviceManager.GetDevice(deviceId);
 
-                if (!string.IsNullOrEmpty(device.CustomName))
+                if (device != null)
                 {
-                    deviceName = device.CustomName;
+                    if (!string.IsNullOrEmpty(device.CustomName))
+                    {
+                        deviceName = device.CustomName;
+                    }
                 }
 
                 sessionInfo.DeviceName = deviceName;
