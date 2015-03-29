@@ -12,5 +12,24 @@ namespace MediaBrowser.Model.MediaInfo
         public int? SubtitleStreamIndex { get; set; }
         public string ItemId { get; set; }
         public DeviceProfile DeviceProfile { get; set; }
+
+        public LiveStreamRequest()
+        {
+            
+        }
+
+        public LiveStreamRequest(AudioOptions options)
+        {
+            MaxStreamingBitrate = options.MaxBitrate;
+            ItemId = options.ItemId;
+            DeviceProfile = options.Profile;
+
+            VideoOptions videoOptions = options as VideoOptions;
+            if (videoOptions != null)
+            {
+                AudioStreamIndex = videoOptions.AudioStreamIndex;
+                SubtitleStreamIndex = videoOptions.SubtitleStreamIndex;
+            }
+        }
     }
 }

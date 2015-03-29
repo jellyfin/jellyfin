@@ -1513,6 +1513,10 @@ namespace MediaBrowser.Api.Playback
                 {
                     request.StreamId = val;
                 }
+                else if (i == 22)
+                {
+                    request.LiveStreamId = val;
+                }
             }
         }
 

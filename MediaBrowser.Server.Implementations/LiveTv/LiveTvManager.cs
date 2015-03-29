@@ -356,7 +356,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     _logger.Info("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
                     info = await service.GetChannelStream(channel.ExternalId, null, cancellationToken).ConfigureAwait(false);
                     info.RequiresClosing = true;
-                    info.LiveStreamId = info.Id;
+
+                    if (info.RequiresClosing)
+                    {
+                        info.LiveStreamId = info.Id;
+                    }
                 }
                 else
                 {
@@ -367,7 +371,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     _logger.Info("Opening recording stream from {0}, external recording Id: {1}", service.Name, recording.RecordingInfo.Id);
                     info = await service.GetRecordingStream(recording.RecordingInfo.Id, null, cancellationToken).ConfigureAwait(false);
                     info.RequiresClosing = true;
-                    info.LiveStreamId = info.Id;
+
+                    if (info.RequiresClosing)
+                    {
+                        info.LiveStreamId = info.Id;
+                    }
                 }
 
                 _logger.Info("Live stream info: {0}", _jsonSerializer.SerializeToString(info));

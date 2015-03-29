@@ -679,6 +679,18 @@ namespace MediaBrowser.Server.Implementations.Session
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(info.LiveStreamId))
+            {
+                try
+                {
+                    await _mediaSourceManager.PingLiveStream(info.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error closing live stream", ex);
+                }
+            }
+
             EventHelper.FireEventIfNotNull(PlaybackProgress, this, new PlaybackProgressEventArgs
             {
                 Item = libraryItem,
@@ -766,6 +778,18 @@ namespace MediaBrowser.Server.Implementations.Session
                 foreach (var user in users)
                 {
                     playedToCompletion = await OnPlaybackStopped(user.Id, key, libraryItem, info.PositionTicks).ConfigureAwait(false);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(info.LiveStreamId))
+            {
+                try
+                {
+                    await _mediaSourceManager.CloseLiveStream(info.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error closing live stream", ex);
                 }
             }
 

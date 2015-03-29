@@ -187,7 +187,7 @@ namespace MediaBrowser.Api
 
             if (!string.IsNullOrWhiteSpace(deviceId))
             {
-                var audioCodec = state.ActualOutputVideoCodec;
+                var audioCodec = state.ActualOutputAudioCodec;
                 var videoCodec = state.ActualOutputVideoCodec;
 
                 _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
