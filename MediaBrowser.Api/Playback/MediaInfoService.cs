@@ -194,7 +194,7 @@ namespace MediaBrowser.Api.Playback
             }
             else
             {
-                result.StreamId = Guid.NewGuid().ToString("N");
+                result.PlaySessionId = Guid.NewGuid().ToString("N");
             }
 
             return result;

@@ -71,7 +71,7 @@ namespace MediaBrowser.Api.Playback
 
         public string Params { get; set; }
         public string ClientTime { get; set; }
-        public string StreamId { get; set; }
+        public string PlaySessionId { get; set; }
         public string LiveStreamId { get; set; }
     }
 

@@ -206,8 +206,8 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("Profile", item.VideoProfile ?? string.Empty));
             list.Add(new NameValuePair("Cabac", item.Cabac.HasValue ? item.Cabac.Value.ToString() : string.Empty));
 
-            string streamId = item.PlaybackInfo == null ? null : item.PlaybackInfo.StreamId;
-            list.Add(new NameValuePair("StreamId", streamId ?? string.Empty));
+            string playSessionId = item.PlaybackInfo == null ? null : item.PlaybackInfo.PlaySessionId;
+            list.Add(new NameValuePair("PlaySessionId", playSessionId ?? string.Empty));
             list.Add(new NameValuePair("api_key", accessToken ?? string.Empty));
 
             string liveStreamId = item.MediaSource == null ? null : item.MediaSource.LiveStreamId;
