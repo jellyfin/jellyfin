@@ -676,14 +676,16 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             syncedItem.Item.MediaSources = new List<MediaSourceInfo>();
 
-            // This will be null for items that are not audio/video
-            if (mediaSource == null)
-            {
-                syncedItem.OriginalFileName = Path.GetFileName(libraryItem.Path);
-            }
-            else
+            syncedItem.OriginalFileName = Path.GetFileName(libraryItem.Path);
+
+            if (string.IsNullOrWhiteSpace(syncedItem.OriginalFileName))
             {
                 syncedItem.OriginalFileName = Path.GetFileName(mediaSource.Path);
+            }
+
+            // This will be null for items that are not audio/video
+            if (mediaSource != null)
+            {
                 syncedItem.Item.MediaSources.Add(mediaSource);
             }
 
