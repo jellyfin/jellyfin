@@ -1887,14 +1887,14 @@
             });
         };
 
-        self.stopActiveEncodings = function (streamId) {
+        self.stopActiveEncodings = function (playSessionId) {
 
             var options = {
                 deviceId: deviceId
             };
 
-            if (streamId) {
-                options.streamId = streamId;
+            if (playSessionId) {
+                options.PlaySessionId = playSessionId;
             }
 
             var url = self.getUrl("Videos/ActiveEncodings", options);

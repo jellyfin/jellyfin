@@ -54,8 +54,8 @@ namespace MediaBrowser.Api.Playback.Hls
         [ApiMember(Name = "DeviceId", Description = "The device id of the client requesting. Used to stop encoding processes when needed.", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
         public string DeviceId { get; set; }
 
-        [ApiMember(Name = "StreamId", Description = "The stream id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
-        public string StreamId { get; set; }
+        [ApiMember(Name = "PlaySessionId", Description = "The play session id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public string PlaySessionId { get; set; }
     }
 
     /// <summary>
@@ -95,7 +95,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         public void Delete(StopEncodingProcess request)
         {
-            ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.StreamId, path => true);
+            ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.PlaySessionId, path => true);
         }
 
         /// <summary>

@@ -160,7 +160,7 @@ namespace MediaBrowser.Api.Playback.Dash
                             // If the playlist doesn't already exist, startup ffmpeg
                             try
                             {
-                                ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.StreamId, p => false);
+                                ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.PlaySessionId, p => false);
 
                                 if (currentTranscodingIndex.HasValue)
                                 {

@@ -397,12 +397,12 @@
 
             var currentSrc = element.currentSrc;
 
-            var currentStreamId = getParameterByName('StreamId', currentSrc);
+            var playSessionId = getParameterByName('PlaySessionId', currentSrc);
 
             if (params.AudioStreamIndex == null && params.SubtitleStreamIndex == null && params.Bitrate == null) {
 
                 currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks || 0);
-                changeStreamToUrl(element, currentStreamId, currentSrc, ticks);
+                changeStreamToUrl(element, playSessionId, currentSrc, ticks);
                 return;
             }
 
@@ -426,12 +426,12 @@
                     self.currentSubtitleStreamIndex = subtitleStreamIndex;
 
                     currentSrc = ApiClient.getUrl(self.currentMediaSource.TranscodingUrl);
-                    changeStreamToUrl(element, currentStreamId, currentSrc, ticks);
+                    changeStreamToUrl(element, playSessionId, currentSrc, ticks);
                 }
             });
         };
 
-        function changeStreamToUrl(element, currentStreamId, url, newPositionTicks) {
+        function changeStreamToUrl(element, playSessionId, url, newPositionTicks) {
 
             clearProgressInterval();
 
@@ -447,7 +447,7 @@
             });
 
             if (self.currentItem.MediaType == "Video") {
-                ApiClient.stopActiveEncodings(currentStreamId).done(function () {
+                ApiClient.stopActiveEncodings(playSessionId).done(function () {
 
                     self.startTimeTicksOffset = newPositionTicks;
                     element.src = url;
@@ -1513,7 +1513,7 @@
 
             var playerElement = this;
 
-            var currentStreamId = getParameterByName('StreamId', playerElement.currentSrc);
+            var playSessionId = getParameterByName('PlaySessionId', playerElement.currentSrc);
 
             $(playerElement).off('.mediaplayerevent').off('ended.playbackstopped');
 
@@ -1526,7 +1526,7 @@
 
             if (item.MediaType == "Video") {
 
-                ApiClient.stopActiveEncodings(currentStreamId);
+                ApiClient.stopActiveEncodings(playSessionId);
                 if (self.isFullScreen()) {
                     self.exitFullScreen();
                 }
