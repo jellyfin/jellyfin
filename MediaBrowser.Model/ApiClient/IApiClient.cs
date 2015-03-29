@@ -1486,5 +1486,12 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <returns>Task&lt;List&lt;RecommendationDto&gt;&gt;.</returns>
         Task<List<RecommendationDto>> GetMovieRecommendations(MovieRecommendationQuery query);
+        /// <summary>
+        /// Opens the live stream.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;LiveStreamResponse&gt;.</returns>
+        Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken);
     }
 }

@@ -210,6 +210,9 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("StreamId", streamId ?? string.Empty));
             list.Add(new NameValuePair("api_key", accessToken ?? string.Empty));
 
+            string liveStreamId = item.MediaSource == null ? null : item.MediaSource.LiveStreamId;
+            list.Add(new NameValuePair("LiveStreamId", liveStreamId ?? string.Empty));
+
             return list;
         }
 
