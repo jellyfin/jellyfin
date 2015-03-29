@@ -371,7 +371,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             if (item.IsType("episode"))
             {
-                parts.Add("TV");
+                //parts.Add("TV");
                 if (!string.IsNullOrWhiteSpace(item.SeriesName))
                 {
                     parts.Add(item.SeriesName);
@@ -379,12 +379,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
             else if (item.IsVideo)
             {
-                parts.Add("Videos");
+                //parts.Add("Videos");
                 parts.Add(item.Name);
             }
             else if (item.IsAudio)
             {
-                parts.Add("Music");
+                //parts.Add("Music");
 
                 if (!string.IsNullOrWhiteSpace(item.AlbumArtist))
                 {
@@ -398,7 +398,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
             else if (string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase))
             {
-                parts.Add("Photos");
+                //parts.Add("Photos");
 
                 if (!string.IsNullOrWhiteSpace(item.Album))
                 {

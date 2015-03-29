@@ -316,7 +316,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return GetStaticMediaSources(item, enablePathSubstitution).FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
         }
 
-        private readonly ConcurrentDictionary<string, LiveStreamInfo> _openStreams = new ConcurrentDictionary<string, LiveStreamInfo>();
+        private readonly ConcurrentDictionary<string, LiveStreamInfo> _openStreams = new ConcurrentDictionary<string, LiveStreamInfo>(StringComparer.OrdinalIgnoreCase);
         private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
 
         public async Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, bool enableAutoClose, CancellationToken cancellationToken)
@@ -329,6 +329,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 var provider = tuple.Item1;
 
                 var mediaSource = await provider.OpenMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
+
+                if (string.IsNullOrWhiteSpace(mediaSource.LiveStreamId))
+                {
+                    throw new InvalidOperationException(string.Format("{0} returned null LiveStreamId", provider.GetType().Name));
+                }
 
                 SetKeyProperties(provider, mediaSource);
 
@@ -368,6 +373,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public async Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentNullException("id");
+            }
+
+            _logger.Debug("Getting live stream {0}", id);
+
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try

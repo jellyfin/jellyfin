@@ -92,6 +92,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 keyList.Add(item.Id);
                 mediaSource.OpenToken = string.Join("|", keyList.ToArray());
             }
+
+            list.Add(mediaSource);
         }
 
         public async Task<MediaSourceInfo> OpenMediaSource(string openToken, CancellationToken cancellationToken)
@@ -111,13 +113,16 @@ namespace MediaBrowser.Server.Implementations.Sync
             var dynamicInfo = await requiresDynamicAccess.GetSyncedFileInfo(localItem.LocalPath, target, cancellationToken).ConfigureAwait(false);
 
             var mediaSource = localItem.Item.MediaSources.First();
+            mediaSource.LiveStreamId = Guid.NewGuid().ToString();
             SetStaticMediaSourceInfo(localItem, mediaSource);
 
             foreach (var stream in mediaSource.MediaStreams)
             {
-                var dynamicStreamInfo = await requiresDynamicAccess.GetSyncedFileInfo(stream.ExternalId, target, cancellationToken).ConfigureAwait(false);
-
-                stream.Path = dynamicStreamInfo.Path;
+                if (!string.IsNullOrWhiteSpace(stream.ExternalId))
+                {
+                    var dynamicStreamInfo = await requiresDynamicAccess.GetSyncedFileInfo(stream.ExternalId, target, cancellationToken).ConfigureAwait(false);
+                    stream.Path = dynamicStreamInfo.Path;
+                }
             }
 
             mediaSource.Path = dynamicInfo.Path;

@@ -837,6 +837,7 @@
 
                             getLiveStream(item.Id, deviceProfile, startPosition, mediaSource, null, null).done(function (openLiveStreamResult) {
 
+                                openLiveStreamResult.MediaSource.enableDirectPlay = supportsDirectPlay(openLiveStreamResult.MediaSource);
                                 playInternalPostMediaSourceSelection(item, openLiveStreamResult.MediaSource, startPosition, callback);
                             });
 
