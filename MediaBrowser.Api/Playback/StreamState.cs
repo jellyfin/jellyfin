@@ -182,11 +182,11 @@ namespace MediaBrowser.Api.Playback
 
         private async void DisposeLiveStream()
         {
-            if (MediaSource.RequiresClosing)
+            if (MediaSource.RequiresClosing && string.IsNullOrWhiteSpace(Request.LiveStreamId))
             {
                 try
                 {
-                    await _mediaSourceManager.CloseMediaSource(MediaSource.CloseKey, CancellationToken.None).ConfigureAwait(false);
+                    await _mediaSourceManager.CloseLiveStream(MediaSource.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

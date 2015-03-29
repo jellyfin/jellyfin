@@ -84,17 +84,34 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Opens the media source.
         /// </summary>
-        /// <param name="openKey">The open key.</param>
+        /// <param name="openToken">The open token.</param>
+        /// <param name="enableAutoClose">if set to <c>true</c> [enable automatic close].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
-        Task<MediaSourceInfo> OpenMediaSource(string openKey, CancellationToken cancellationToken);
+        Task<MediaSourceInfo> OpenLiveStream(string openToken, bool enableAutoClose, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the live stream.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
+        Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken);
+        
+        /// <summary>
+        /// Pings the media source.
+        /// </summary>
+        /// <param name="id">The live stream identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task PingLiveStream(string id, CancellationToken cancellationToken);
 
         /// <summary>
         /// Closes the media source.
         /// </summary>
-        /// <param name="closeKey">The close key.</param>
+        /// <param name="id">The live stream identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task CloseMediaSource(string closeKey, CancellationToken cancellationToken);
+        Task CloseLiveStream(string id, CancellationToken cancellationToken);
     }
 }

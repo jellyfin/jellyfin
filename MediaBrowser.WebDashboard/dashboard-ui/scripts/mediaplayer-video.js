@@ -931,7 +931,7 @@
             }
         };
 
-        self.playVideo = function (deviceProfile, playbackInfo, item, mediaSource, startPosition) {
+        self.playVideo = function (item, mediaSource, startPosition) {
 
             var streamInfo = self.createStreamInfo('video', item, mediaSource, startPosition);
 

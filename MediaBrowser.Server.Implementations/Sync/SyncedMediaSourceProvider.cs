@@ -90,13 +90,13 @@ namespace MediaBrowser.Server.Implementations.Sync
                 keyList.Add(provider.GetType().FullName.GetMD5().ToString("N"));
                 keyList.Add(target.Id.GetMD5().ToString("N"));
                 keyList.Add(item.Id);
-                mediaSource.OpenKey = string.Join("|", keyList.ToArray());
+                mediaSource.OpenToken = string.Join("|", keyList.ToArray());
             }
         }
 
-        public async Task<MediaSourceInfo> OpenMediaSource(string openKey, CancellationToken cancellationToken)
+        public async Task<MediaSourceInfo> OpenMediaSource(string openToken, CancellationToken cancellationToken)
         {
-            var openKeys = openKey.Split(new[] { '|' }, 3);
+            var openKeys = openToken.Split(new[] { '|' }, 3);
 
             var provider = _syncManager.ServerSyncProviders
                 .FirstOrDefault(i => string.Equals(openKeys[0], i.GetType().FullName.GetMD5().ToString("N"), StringComparison.OrdinalIgnoreCase));
@@ -133,7 +133,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             mediaSource.SupportsTranscoding = false;
         }
 
-        public Task CloseMediaSource(string closeKey, CancellationToken cancellationToken)
+        public Task CloseMediaSource(string liveStreamId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

@@ -2,6 +2,8 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,10 +15,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
     public class LiveTvMediaSourceProvider : IMediaSourceProvider
     {
         private readonly ILiveTvManager _liveTvManager;
+        private readonly IJsonSerializer _jsonSerializer;
+        private readonly ILogger _logger;
 
-        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager)
+        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, IJsonSerializer jsonSerializer, ILogManager logManager)
         {
             _liveTvManager = liveTvManager;
+            _jsonSerializer = jsonSerializer;
+            _logger = logManager.GetLogger(GetType().Name);
         }
 
         public Task<IEnumerable<MediaSourceInfo>> GetMediaSources(IHasMediaSources item, CancellationToken cancellationToken)
@@ -38,28 +44,51 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private async Task<IEnumerable<MediaSourceInfo>> GetMediaSourcesInternal(ILiveTvItem item, CancellationToken cancellationToken)
         {
-            var hasMediaSources = (IHasMediaSources)item;
+            IEnumerable<MediaSourceInfo> sources;
 
-            var sources = hasMediaSources.GetMediaSources(false)
-                .ToList();
+            try
+            {
+                if (item is ILiveTvRecording)
+                {
+                    sources = await _liveTvManager.GetRecordingMediaSources(item.Id.ToString("N"), cancellationToken)
+                                .ConfigureAwait(false);
+                }
+                else
+                {
+                    sources = await _liveTvManager.GetChannelMediaSources(item.Id.ToString("N"), cancellationToken)
+                                .ConfigureAwait(false);
+                }
+            }
+            catch (NotImplementedException)
+            {
+                var hasMediaSources = (IHasMediaSources)item;
 
-            foreach (var source in sources)
+                sources = hasMediaSources.GetMediaSources(false)
+                   .ToList();
+            }
+
+            var list = sources.ToList();
+
+            foreach (var source in list)
             {
                 source.Type = MediaSourceType.Default;
                 source.RequiresOpening = true;
+                source.BufferMs = source.BufferMs ?? 1500;
 
                 var openKeys = new List<string>();
                 openKeys.Add(item.GetType().Name);
                 openKeys.Add(item.Id.ToString("N"));
-                source.OpenKey = string.Join("|", openKeys.ToArray());
+                source.OpenToken = string.Join("|", openKeys.ToArray());
             }
 
-            return sources;
+            _logger.Debug("MediaSources: {0}", _jsonSerializer.SerializeToString(list));
+
+            return list;
         }
 
-        public async Task<MediaSourceInfo> OpenMediaSource(string openKey, CancellationToken cancellationToken)
+        public async Task<MediaSourceInfo> OpenMediaSource(string openToken, CancellationToken cancellationToken)
         {
-            var keys = openKey.Split(new[] { '|' }, 2);
+            var keys = openToken.Split(new[] { '|' }, 2);
 
             if (string.Equals(keys[0], typeof(LiveTvChannel).Name, StringComparison.OrdinalIgnoreCase))
             {
@@ -69,9 +98,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return await _liveTvManager.GetRecordingStream(keys[1], cancellationToken).ConfigureAwait(false);
         }
 
-        public Task CloseMediaSource(string closeKey, CancellationToken cancellationToken)
+        public Task CloseMediaSource(string liveStreamId, CancellationToken cancellationToken)
         {
-            return _liveTvManager.CloseLiveStream(closeKey, cancellationToken);
+            return _liveTvManager.CloseLiveStream(liveStreamId, cancellationToken);
         }
     }
 }

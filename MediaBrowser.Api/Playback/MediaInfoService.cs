@@ -45,6 +45,9 @@ namespace MediaBrowser.Api.Playback
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string UserId { get; set; }
 
+        [ApiMember(Name = "MaxStreamingBitrate", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
+        public int? MaxStreamingBitrate { get; set; }
+
         [ApiMember(Name = "StartTimeTicks", Description = "Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
         public long? StartTimeTicks { get; set; }
 
@@ -56,6 +59,20 @@ namespace MediaBrowser.Api.Playback
 
         [ApiMember(Name = "MediaSourceId", Description = "The media version id, if playing an alternate version", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string MediaSourceId { get; set; }
+    }
+
+    [Route("/MediaSources/Open", "POST", Summary = "Opens a media source")]
+    public class OpenMediaSource : IReturn<MediaSourceInfo>
+    {
+        [ApiMember(Name = "OpenToken", Description = "OpenToken", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string OpenToken { get; set; }
+    }
+
+    [Route("/MediaSources/Close", "POST", Summary = "Closes a media source")]
+    public class CloseMediaSource : IReturnVoid
+    {
+        [ApiMember(Name = "LiveStreamId", Description = "LiveStreamId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string LiveStreamId { get; set; }
     }
 
     [Authenticated]
@@ -84,6 +101,18 @@ namespace MediaBrowser.Api.Playback
             return ToOptimizedResult(result);
         }
 
+        public async Task<object> Post(OpenMediaSource request)
+        {
+            var result = await _mediaSourceManager.OpenLiveStream(request.OpenToken, false, CancellationToken.None).ConfigureAwait(false);
+            return ToOptimizedResult(result);
+        }
+
+        public void Post(CloseMediaSource request)
+        {
+            var task = _mediaSourceManager.CloseLiveStream(request.LiveStreamId, CancellationToken.None);
+            Task.WaitAll(task);
+        }
+
         public async Task<object> Post(GetPostedPlaybackInfo request)
         {
             var info = await GetPlaybackInfo(request.Id, request.UserId, request.MediaSourceId).ConfigureAwait(false);
@@ -102,7 +131,7 @@ namespace MediaBrowser.Api.Playback
             if (profile != null)
             {
                 var mediaSourceId = request.MediaSourceId;
-                SetDeviceSpecificData(request.Id, info, profile, authInfo, null, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex);
+                SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex);
             }
 
             return ToOptimizedResult(info);
@@ -158,81 +187,94 @@ namespace MediaBrowser.Api.Playback
             int? audioStreamIndex,
             int? subtitleStreamIndex)
         {
-            var streamBuilder = new StreamBuilder();
-
             var item = _libraryManager.GetItemById(itemId);
 
             foreach (var mediaSource in result.MediaSources)
             {
-                var options = new VideoOptions
-                {
-                    MediaSources = new List<MediaSourceInfo> { mediaSource },
-                    Context = EncodingContext.Streaming,
-                    DeviceId = auth.DeviceId,
-                    ItemId = item.Id.ToString("N"),
-                    Profile = profile,
-                    MaxBitrate = maxBitrate
-                };
-
-                if (string.Equals(mediaSourceId, mediaSource.Id, StringComparison.OrdinalIgnoreCase))
-                {
-                    options.MediaSourceId = mediaSourceId;
-                    options.AudioStreamIndex = audioStreamIndex;
-                    options.SubtitleStreamIndex = subtitleStreamIndex;
-                }
-
-                if (mediaSource.SupportsDirectPlay)
-                {
-                    var supportsDirectStream = mediaSource.SupportsDirectStream;
-
-                    // Dummy this up to fool StreamBuilder
-                    mediaSource.SupportsDirectStream = true;
-
-                    // The MediaSource supports direct stream, now test to see if the client supports it
-                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
-                        streamBuilder.BuildAudioItem(options) :
-                        streamBuilder.BuildVideoItem(options);
-
-                    if (streamInfo == null || !streamInfo.IsDirectStream)
-                    {
-                        mediaSource.SupportsDirectPlay = false;
-                    }
-
-                    // Set this back to what it was
-                    mediaSource.SupportsDirectStream = supportsDirectStream;
-                }
-
-                if (mediaSource.SupportsDirectStream)
-                {
-                    // The MediaSource supports direct stream, now test to see if the client supports it
-                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
-                        streamBuilder.BuildAudioItem(options) :
-                        streamBuilder.BuildVideoItem(options);
-
-                    if (streamInfo == null || !streamInfo.IsDirectStream)
-                    {
-                        mediaSource.SupportsDirectStream = false;
-                    }
-                }
-
-                if (mediaSource.SupportsTranscoding)
-                {
-                    // The MediaSource supports direct stream, now test to see if the client supports it
-                    var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
-                        streamBuilder.BuildAudioItem(options) :
-                        streamBuilder.BuildVideoItem(options);
-
-                    if (streamInfo != null && streamInfo.PlayMethod == PlayMethod.Transcode)
-                    {
-                        streamInfo.StartPositionTicks = startTimeTicks;
-                        mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).Substring(1);
-                        mediaSource.TranscodingContainer = streamInfo.Container;
-                        mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
-                    }
-                }
+                SetDeviceSpecificData(item, mediaSource, profile, auth, maxBitrate, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
             }
 
             SortMediaSources(result);
+        }
+
+        private void SetDeviceSpecificData(BaseItem item,
+            MediaSourceInfo mediaSource,
+            DeviceProfile profile,
+            AuthorizationInfo auth,
+            int? maxBitrate,
+            long startTimeTicks,
+            string mediaSourceId,
+            int? audioStreamIndex,
+            int? subtitleStreamIndex)
+        {
+            var streamBuilder = new StreamBuilder();
+
+            var options = new VideoOptions
+            {
+                MediaSources = new List<MediaSourceInfo> { mediaSource },
+                Context = EncodingContext.Streaming,
+                DeviceId = auth.DeviceId,
+                ItemId = item.Id.ToString("N"),
+                Profile = profile,
+                MaxBitrate = maxBitrate
+            };
+
+            if (string.Equals(mediaSourceId, mediaSource.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                options.MediaSourceId = mediaSourceId;
+                options.AudioStreamIndex = audioStreamIndex;
+                options.SubtitleStreamIndex = subtitleStreamIndex;
+            }
+
+            if (mediaSource.SupportsDirectPlay)
+            {
+                var supportsDirectStream = mediaSource.SupportsDirectStream;
+
+                // Dummy this up to fool StreamBuilder
+                mediaSource.SupportsDirectStream = true;
+
+                // The MediaSource supports direct stream, now test to see if the client supports it
+                var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
+                    streamBuilder.BuildAudioItem(options) :
+                    streamBuilder.BuildVideoItem(options);
+
+                if (streamInfo == null || !streamInfo.IsDirectStream)
+                {
+                    mediaSource.SupportsDirectPlay = false;
+                }
+
+                // Set this back to what it was
+                mediaSource.SupportsDirectStream = supportsDirectStream;
+            }
+
+            if (mediaSource.SupportsDirectStream)
+            {
+                // The MediaSource supports direct stream, now test to see if the client supports it
+                var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
+                    streamBuilder.BuildAudioItem(options) :
+                    streamBuilder.BuildVideoItem(options);
+
+                if (streamInfo == null || !streamInfo.IsDirectStream)
+                {
+                    mediaSource.SupportsDirectStream = false;
+                }
+            }
+
+            if (mediaSource.SupportsTranscoding)
+            {
+                // The MediaSource supports direct stream, now test to see if the client supports it
+                var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
+                    streamBuilder.BuildAudioItem(options) :
+                    streamBuilder.BuildVideoItem(options);
+
+                if (streamInfo != null && streamInfo.PlayMethod == PlayMethod.Transcode)
+                {
+                    streamInfo.StartPositionTicks = startTimeTicks;
+                    mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).Substring(1);
+                    mediaSource.TranscodingContainer = streamInfo.Container;
+                    mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
+                }
+            }
         }
 
         private void SortMediaSources(PlaybackInfoResponse result)

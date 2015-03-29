@@ -803,26 +803,24 @@
 
                     if (mediaSource) {
 
-                        self.currentMediaSource = mediaSource;
-                        self.currentItem = item;
+                        if (mediaSource.RequiresOpening1) {
 
-                        if (item.MediaType === "Video") {
+                            ApiClient.ajax({
+                                url: ApiClient.getUrl('MediaSources/Open', {
+                                    OpenToken: mediaSource.OpenToken
+                                }),
+                                type: 'POST',
+                                dataType: "json"
 
-                            self.currentMediaElement = self.playVideo(deviceProfile, result, item, self.currentMediaSource, startPosition);
-                            self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+                            }).done(function (openLiveStreamResult) {
 
-                            self.updateNowPlayingInfo(item);
+                                mediaSource = openLiveStreamResult;
+                                playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback);
+                            });
 
-                        } else if (item.MediaType === "Audio") {
-
-                            self.currentMediaElement = playAudio(item, self.currentMediaSource, startPosition);
-                            self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+                        } else {
+                            playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback);
                         }
-
-                        if (callback) {
-                            callback();
-                        }
-
                     } else {
                         showPlaybackInfoErrorMessage('NoCompatibleStream');
                     }
@@ -830,6 +828,29 @@
 
             });
         };
+
+        function playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback) {
+
+            self.currentMediaSource = mediaSource;
+            self.currentItem = item;
+
+            if (item.MediaType === "Video") {
+
+                self.currentMediaElement = self.playVideo(item, self.currentMediaSource, startPosition);
+                self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+
+                self.updateNowPlayingInfo(item);
+
+            } else if (item.MediaType === "Audio") {
+
+                self.currentMediaElement = playAudio(item, self.currentMediaSource, startPosition);
+                self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+            }
+
+            if (callback) {
+                callback();
+            }
+        }
 
         function validatePlaybackInfoResult(result) {
 

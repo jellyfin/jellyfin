@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
@@ -937,7 +936,7 @@ namespace MediaBrowser.Api.Playback
 
             if (state.MediaSource.RequiresOpening)
             {
-                var mediaSource = await MediaSourceManager.OpenMediaSource(state.MediaSource.OpenKey, cancellationTokenSource.Token)
+                var mediaSource = await MediaSourceManager.OpenLiveStream(state.MediaSource.OpenToken, false, cancellationTokenSource.Token)
                             .ConfigureAwait(false);
 
                 AttachMediaSourceInfo(state, mediaSource, state.VideoRequest, state.RequestedUrl);
@@ -946,9 +945,11 @@ namespace MediaBrowser.Api.Playback
                 {
                     TryStreamCopy(state, state.VideoRequest);
                 }
+            }
 
-                // TODO: This is only needed for live tv
-                await Task.Delay(1500, cancellationTokenSource.Token).ConfigureAwait(false);
+            if (state.MediaSource.BufferMs.HasValue)
+            {
+                await Task.Delay(state.MediaSource.BufferMs.Value, cancellationTokenSource.Token).ConfigureAwait(false);
             }
         }
 
@@ -1616,12 +1617,20 @@ namespace MediaBrowser.Api.Playback
             var archivable = item as IArchivable;
             state.IsInputArchive = archivable != null && archivable.IsArchive;
 
-            var mediaSources = await MediaSourceManager.GetPlayackMediaSources(request.Id, false, cancellationToken).ConfigureAwait(false);
+            MediaSourceInfo mediaSource = null;
+            if (string.IsNullOrWhiteSpace(request.LiveStreamId))
+            {
+                var mediaSources = await MediaSourceManager.GetPlayackMediaSources(request.Id, false, cancellationToken).ConfigureAwait(false);
 
-            var mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
-                ? mediaSources.First()
-                : mediaSources.First(i => string.Equals(i.Id, request.MediaSourceId));
-            
+                mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
+                   ? mediaSources.First()
+                   : mediaSources.First(i => string.Equals(i.Id, request.MediaSourceId));
+            }
+            else
+            {
+                mediaSource = await MediaSourceManager.GetLiveStream(request.LiveStreamId, cancellationToken).ConfigureAwait(false);
+            }
+
             var videoRequest = request as VideoStreamRequest;
 
             AttachMediaSourceInfo(state, mediaSource, videoRequest, url);
@@ -1699,7 +1708,7 @@ namespace MediaBrowser.Api.Playback
             state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
             state.RunTimeTicks = mediaSource.RunTimeTicks;
             state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
-            
+
             if (mediaSource.VideoType.HasValue)
             {
                 state.VideoType = mediaSource.VideoType.Value;
@@ -1713,7 +1722,7 @@ namespace MediaBrowser.Api.Playback
             {
                 state.InputTimestamp = mediaSource.Timestamp.Value;
             }
-            
+
             state.InputProtocol = mediaSource.Protocol;
             state.MediaPath = mediaSource.Path;
             state.RunTimeTicks = mediaSource.RunTimeTicks;

@@ -313,6 +313,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return await GetLiveStream(id, true, cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task<IEnumerable<MediaSourceInfo>> GetRecordingMediaSources(string id, CancellationToken cancellationToken)
+        {
+            var item = await GetInternalRecording(id, cancellationToken).ConfigureAwait(false);
+            var service = GetService(item);
+
+            return await service.GetRecordingStreamMediaSources(id, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<MediaSourceInfo>> GetChannelMediaSources(string id, CancellationToken cancellationToken)
+        {
+            var item = GetInternalChannel(id);
+            var service = GetService(item);
+
+            return await service.GetChannelStreamMediaSources(id, cancellationToken).ConfigureAwait(false);
+        }
+
         private ILiveTvService GetService(ILiveTvItem item)
         {
             return GetService(item.ServiceName);
@@ -330,7 +346,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             try
             {
                 MediaSourceInfo info;
-                var isVideo = true;
+                bool isVideo;
 
                 if (isChannel)
                 {
@@ -340,7 +356,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     _logger.Info("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
                     info = await service.GetChannelStream(channel.ExternalId, null, cancellationToken).ConfigureAwait(false);
                     info.RequiresClosing = true;
-                    info.CloseKey = info.Id;
+                    info.LiveStreamId = info.Id;
                 }
                 else
                 {
@@ -351,7 +367,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     _logger.Info("Opening recording stream from {0}, external recording Id: {1}", service.Name, recording.RecordingInfo.Id);
                     info = await service.GetRecordingStream(recording.RecordingInfo.Id, null, cancellationToken).ConfigureAwait(false);
                     info.RequiresClosing = true;
-                    info.CloseKey = info.Id;
+                    info.LiveStreamId = info.Id;
                 }
 
                 _logger.Info("Live stream info: {0}", _jsonSerializer.SerializeToString(info));
@@ -393,7 +409,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                         {
                             Type = MediaStreamType.Video,
                             // Set the index to -1 because we don't know the exact index of the video stream within the container
-                            Index = -1
+                            Index = -1,
+
+                            // Set to true if unknown to enable deinterlacing
+                            IsInterlaced = true
                         },
                         new MediaStream
                         {

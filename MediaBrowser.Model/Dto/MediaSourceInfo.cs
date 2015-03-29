@@ -27,10 +27,11 @@ namespace MediaBrowser.Model.Dto
         public bool SupportsDirectPlay { get; set; }
 
         public bool RequiresOpening { get; set; }
-        public string OpenKey { get; set; }
+        public string OpenToken { get; set; }
         public bool RequiresClosing { get; set; }
-        public string CloseKey { get; set; }
-   
+        public string LiveStreamId { get; set; }
+        public int? BufferMs { get; set; }
+
         public VideoType? VideoType { get; set; }
 
         public IsoType? IsoType { get; set; }
