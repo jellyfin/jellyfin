@@ -1556,7 +1556,8 @@
 
         function sendProgressUpdate() {
 
-            var state = self.getPlayerStateInternal(self.currentMediaElement, self.currentItem, self.currentMediaSource);
+            var element = self.currentMediaElement;
+            var state = self.getPlayerStateInternal(element, self.currentItem, self.currentMediaSource);
 
             var info = {
                 QueueableMediaTypes: state.NowPlayingItem.MediaType,
@@ -1565,6 +1566,14 @@
             };
 
             info = $.extend(info, state.PlayState);
+
+            if (element) {
+                var currentSrc = element.currentSrc;
+                var liveStreamId = getParameterByName('LiveStreamId', currentSrc);
+                if (liveStreamId) {
+                    info.LiveStreamId = liveStreamId;
+                }
+            }
 
             ApiClient.reportPlaybackProgress(info);
         }
