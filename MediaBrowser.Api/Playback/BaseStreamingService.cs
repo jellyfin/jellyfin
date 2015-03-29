@@ -936,10 +936,13 @@ namespace MediaBrowser.Api.Playback
 
             if (state.MediaSource.RequiresOpening)
             {
-                var mediaSource = await MediaSourceManager.OpenLiveStream(state.MediaSource.OpenToken, false, cancellationTokenSource.Token)
-                            .ConfigureAwait(false);
+                var liveStreamResponse = await MediaSourceManager.OpenLiveStream(new LiveStreamRequest
+                {
+                    OpenToken = state.MediaSource.OpenToken
 
-                AttachMediaSourceInfo(state, mediaSource, state.VideoRequest, state.RequestedUrl);
+                }, false, cancellationTokenSource.Token).ConfigureAwait(false);
+
+                AttachMediaSourceInfo(state, liveStreamResponse.MediaSource, state.VideoRequest, state.RequestedUrl);
 
                 if (state.VideoRequest != null)
                 {

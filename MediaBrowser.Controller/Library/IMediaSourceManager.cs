@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -84,11 +85,11 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Opens the media source.
         /// </summary>
-        /// <param name="openToken">The open token.</param>
+        /// <param name="request">The request.</param>
         /// <param name="enableAutoClose">if set to <c>true</c> [enable automatic close].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
-        Task<MediaSourceInfo> OpenLiveStream(string openToken, bool enableAutoClose, CancellationToken cancellationToken);
+        Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, bool enableAutoClose, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the live stream.

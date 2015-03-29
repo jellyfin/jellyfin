@@ -690,6 +690,36 @@
             });
         }
 
+        function getLiveStream(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex) {
+
+            var postData = {
+                DeviceProfile: deviceProfile,
+                OpenToken: mediaSource.OpenToken
+            };
+
+            var query = {
+                UserId: Dashboard.getCurrentUserId(),
+                StartTimeTicks: startPosition || 0,
+                ItemId: itemId
+            };
+
+            if (audioStreamIndex != null) {
+                query.AudioStreamIndex = audioStreamIndex;
+            }
+            if (subtitleStreamIndex != null) {
+                query.SubtitleStreamIndex = subtitleStreamIndex;
+            }
+
+            return ApiClient.ajax({
+                url: ApiClient.getUrl('LiveStreams/Open', query),
+                type: 'POST',
+                data: JSON.stringify(postData),
+                contentType: "application/json",
+                dataType: "json"
+
+            });
+        }
+
         self.createStreamInfo = function (type, item, mediaSource, startPosition) {
 
             var mediaUrl;
@@ -803,19 +833,11 @@
 
                     if (mediaSource) {
 
-                        if (mediaSource.RequiresOpening1) {
+                        if (mediaSource.RequiresOpening) {
 
-                            ApiClient.ajax({
-                                url: ApiClient.getUrl('MediaSources/Open', {
-                                    OpenToken: mediaSource.OpenToken
-                                }),
-                                type: 'POST',
-                                dataType: "json"
+                            getLiveStream(item.Id, deviceProfile, startPosition, mediaSource, null, null).done(function (openLiveStreamResult) {
 
-                            }).done(function (openLiveStreamResult) {
-
-                                mediaSource = openLiveStreamResult;
-                                playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback);
+                                playInternalPostMediaSourceSelection(item, openLiveStreamResult.MediaSource, startPosition, callback);
                             });
 
                         } else {

@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -8,13 +7,14 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Server.Implementations.LiveTv;
 
 namespace MediaBrowser.Server.Implementations.Library
 {
@@ -23,16 +23,18 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly IItemRepository _itemRepo;
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
+        private readonly IJsonSerializer _jsonSerializer;
 
         private IMediaSourceProvider[] _providers;
         private readonly ILogger _logger;
 
-        public MediaSourceManager(IItemRepository itemRepo, IUserManager userManager, ILibraryManager libraryManager, ILogger logger)
+        public MediaSourceManager(IItemRepository itemRepo, IUserManager userManager, ILibraryManager libraryManager, ILogger logger, IJsonSerializer jsonSerializer)
         {
             _itemRepo = itemRepo;
             _userManager = userManager;
             _libraryManager = libraryManager;
             _logger = logger;
+            _jsonSerializer = jsonSerializer;
         }
 
         public void AddParts(IEnumerable<IMediaSourceProvider> providers)
@@ -317,13 +319,13 @@ namespace MediaBrowser.Server.Implementations.Library
         private readonly ConcurrentDictionary<string, LiveStreamInfo> _openStreams = new ConcurrentDictionary<string, LiveStreamInfo>();
         private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
 
-        public async Task<MediaSourceInfo> OpenLiveStream(string openToken, bool enableAutoClose, CancellationToken cancellationToken)
+        public async Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, bool enableAutoClose, CancellationToken cancellationToken)
         {
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
-                var tuple = GetProvider(openToken);
+                var tuple = GetProvider(request.OpenToken);
                 var provider = tuple.Item1;
 
                 var mediaSource = await provider.OpenMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
@@ -344,12 +346,19 @@ namespace MediaBrowser.Server.Implementations.Library
                     StartCloseTimer();
                 }
 
-                if (!string.IsNullOrWhiteSpace(mediaSource.TranscodingUrl))
+                var json = _jsonSerializer.SerializeToString(mediaSource);
+                var clone = _jsonSerializer.DeserializeFromString<MediaSourceInfo>(json);
+
+                if (!string.IsNullOrWhiteSpace(request.UserId))
                 {
-                    mediaSource.TranscodingUrl += "&LiveStreamId=" + mediaSource.LiveStreamId;
+                    var user = _userManager.GetUserById(request.UserId);
+                    SetUserProperties(clone, user);
                 }
 
-                return mediaSource;
+                return new LiveStreamResponse
+                {
+                    MediaSource = clone
+                };
             }
             finally
             {
