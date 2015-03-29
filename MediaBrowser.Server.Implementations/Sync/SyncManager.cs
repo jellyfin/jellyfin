@@ -721,7 +721,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var jobItemResult = GetJobItems(new SyncJobItemQuery
             {
                 TargetId = targetId,
-                Statuses = new SyncJobItemStatus[]
+                Statuses = new[]
                 {
                     SyncJobItemStatus.ReadyToTransfer
                 }

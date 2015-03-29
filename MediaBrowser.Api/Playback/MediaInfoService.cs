@@ -119,12 +119,16 @@ namespace MediaBrowser.Api.Playback
             {
                 var item = _libraryManager.GetItemById(request.ItemId);
 
-                SetDeviceSpecificData(item, result.MediaSource, profile, authInfo, request.MaxStreamingBitrate, request.StartTimeTicks ?? 0, result.MediaSource.Id, request.AudioStreamIndex, request.SubtitleStreamIndex);
+                SetDeviceSpecificData(item, result.MediaSource, profile, authInfo, request.MaxStreamingBitrate,
+                    request.StartTimeTicks ?? 0, result.MediaSource.Id, request.AudioStreamIndex,
+                    request.SubtitleStreamIndex);
             }
-
-            if (!string.IsNullOrWhiteSpace(result.MediaSource.TranscodingUrl))
+            else
             {
-                result.MediaSource.TranscodingUrl += "&LiveStreamId=" + result.MediaSource.LiveStreamId;
+                if (!string.IsNullOrWhiteSpace(result.MediaSource.TranscodingUrl))
+                {
+                    result.MediaSource.TranscodingUrl += "&LiveStreamId=" + result.MediaSource.LiveStreamId;
+                }
             }
 
             return ToOptimizedResult(result);
