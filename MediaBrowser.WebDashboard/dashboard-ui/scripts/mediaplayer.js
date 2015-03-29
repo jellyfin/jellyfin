@@ -1390,6 +1390,8 @@
                     state.PlayState.PlayMethod = getParameterByName('static', currentSrc) == 'true' ?
                         'DirectStream' :
                         'Transcode';
+
+                    state.PlayState.LiveStreamId = getParameterByName('LiveStreamId', currentSrc);
                 }
             }
 
@@ -1566,14 +1568,6 @@
             };
 
             info = $.extend(info, state.PlayState);
-
-            if (element) {
-                var currentSrc = element.currentSrc;
-                var liveStreamId = getParameterByName('LiveStreamId', currentSrc);
-                if (liveStreamId) {
-                    info.LiveStreamId = liveStreamId;
-                }
-            }
 
             ApiClient.reportPlaybackProgress(info);
         }
