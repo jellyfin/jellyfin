@@ -19,17 +19,17 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Opens the media source.
         /// </summary>
-        /// <param name="openKey">The open key.</param>
+        /// <param name="openToken">The open token.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
-        Task<MediaSourceInfo> OpenMediaSource(string openKey, CancellationToken cancellationToken);
+        Task<MediaSourceInfo> OpenMediaSource(string openToken, CancellationToken cancellationToken);
 
         /// <summary>
         /// Closes the media source.
         /// </summary>
-        /// <param name="closeKey">The close key.</param>
+        /// <param name="liveStreamId">The live stream identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task CloseMediaSource(string closeKey, CancellationToken cancellationToken);
+        Task CloseMediaSource(string liveStreamId, CancellationToken cancellationToken);
     }
 }

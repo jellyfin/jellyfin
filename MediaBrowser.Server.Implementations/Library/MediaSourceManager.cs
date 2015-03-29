@@ -207,14 +207,14 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var prefix = provider.GetType().FullName.GetMD5().ToString("N") + "|";
 
-            if (!string.IsNullOrWhiteSpace(mediaSource.OpenKey) && !mediaSource.OpenKey.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(mediaSource.OpenToken) && !mediaSource.OpenToken.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
-                mediaSource.OpenKey = prefix + mediaSource.OpenKey;
+                mediaSource.OpenToken = prefix + mediaSource.OpenToken;
             }
 
-            if (!string.IsNullOrWhiteSpace(mediaSource.CloseKey) && !mediaSource.CloseKey.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(mediaSource.LiveStreamId) && !mediaSource.LiveStreamId.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
-                mediaSource.CloseKey = prefix + mediaSource.CloseKey;
+                mediaSource.LiveStreamId = prefix + mediaSource.LiveStreamId;
             }
         }
 
@@ -314,24 +314,41 @@ namespace MediaBrowser.Server.Implementations.Library
             return GetStaticMediaSources(item, enablePathSubstitution).FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
         }
 
-        private readonly ConcurrentDictionary<string, string> _openStreams =
-         new ConcurrentDictionary<string, string>();
+        private readonly ConcurrentDictionary<string, LiveStreamInfo> _openStreams = new ConcurrentDictionary<string, LiveStreamInfo>();
         private readonly SemaphoreSlim _liveStreamSemaphore = new SemaphoreSlim(1, 1);
-        public async Task<MediaSourceInfo> OpenMediaSource(string openKey, CancellationToken cancellationToken)
+
+        public async Task<MediaSourceInfo> OpenLiveStream(string openToken, bool enableAutoClose, CancellationToken cancellationToken)
         {
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
-                var tuple = GetProvider(openKey);
+                var tuple = GetProvider(openToken);
                 var provider = tuple.Item1;
 
                 var mediaSource = await provider.OpenMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
 
                 SetKeyProperties(provider, mediaSource);
 
-                _openStreams.AddOrUpdate(mediaSource.CloseKey, mediaSource.CloseKey, (key, i) => mediaSource.CloseKey);
-                
+                var info = new LiveStreamInfo
+                {
+                    Date = DateTime.UtcNow,
+                    EnableCloseTimer = enableAutoClose,
+                    Id = mediaSource.LiveStreamId,
+                    MediaSource = mediaSource
+                };
+                _openStreams.AddOrUpdate(mediaSource.LiveStreamId, info, (key, i) => info);
+
+                if (enableAutoClose)
+                {
+                    StartCloseTimer();
+                }
+
+                if (!string.IsNullOrWhiteSpace(mediaSource.TranscodingUrl))
+                {
+                    mediaSource.TranscodingUrl += "&LiveStreamId=" + mediaSource.LiveStreamId;
+                }
+
                 return mediaSource;
             }
             finally
@@ -340,18 +357,70 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
-        public async Task CloseMediaSource(string closeKey, CancellationToken cancellationToken)
+        public async Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken)
         {
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
-                var tuple = GetProvider(closeKey);
+                LiveStreamInfo info;
+                if (_openStreams.TryGetValue(id, out info))
+                {
+                    return info.MediaSource;
+                }
+                else
+                {
+                    throw new ResourceNotFoundException();
+                }
+            }
+            finally
+            {
+                _liveStreamSemaphore.Release();
+            }
+        }
 
-                await tuple.Item1.OpenMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
+        public async Task PingLiveStream(string id, CancellationToken cancellationToken)
+        {
+            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-                string removedKey;
-                _openStreams.TryRemove(closeKey, out removedKey);
+            try
+            {
+                LiveStreamInfo info;
+                if (_openStreams.TryGetValue(id, out info))
+                {
+                    info.Date = DateTime.UtcNow;
+                }
+                else
+                {
+                    _logger.Error("Failed to update MediaSource timestamp for {0}", id);
+                }
+            }
+            finally
+            {
+                _liveStreamSemaphore.Release();
+            }
+        }
+
+        public async Task CloseLiveStream(string id, CancellationToken cancellationToken)
+        {
+            await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                var tuple = GetProvider(id);
+
+                await tuple.Item1.CloseMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
+
+                LiveStreamInfo removed;
+                if (_openStreams.TryRemove(id, out removed))
+                {
+                    removed.Closed = true;
+                }
+
+                if (_openStreams.Count == 0)
+                {
+                    StopCloseTimer();
+                }
             }
             finally
             {
@@ -368,11 +437,56 @@ namespace MediaBrowser.Server.Implementations.Library
             return new Tuple<IMediaSourceProvider, string>(provider, keys[1]);
         }
 
+        private Timer _closeTimer;
+        private readonly TimeSpan _openStreamMaxAge = TimeSpan.FromSeconds(40);
+
+        private void StartCloseTimer()
+        {
+            StopCloseTimer();
+
+            _closeTimer = new Timer(CloseTimerCallback, null, _openStreamMaxAge, _openStreamMaxAge);
+        }
+
+        private void StopCloseTimer()
+        {
+            var timer = _closeTimer;
+
+            if (timer != null)
+            {
+                _closeTimer = null;
+                timer.Dispose();
+            }
+        }
+
+        private async void CloseTimerCallback(object state)
+        {
+            var infos = _openStreams
+                .Values
+                .Where(i => i.EnableCloseTimer && (DateTime.UtcNow - i.Date) > _openStreamMaxAge)
+                .ToList();
+
+            foreach (var info in infos)
+            {
+                if (!info.Closed)
+                {
+                    try
+                    {
+                        await CloseLiveStream(info.Id, CancellationToken.None).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error closing media source", ex);
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
         {
+            StopCloseTimer();
             Dispose(true);
         }
 
@@ -389,7 +503,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     foreach (var key in _openStreams.Keys.ToList())
                     {
-                        var task = CloseMediaSource(key, CancellationToken.None);
+                        var task = CloseLiveStream(key, CancellationToken.None);
 
                         Task.WaitAll(task);
                     }
@@ -397,6 +511,15 @@ namespace MediaBrowser.Server.Implementations.Library
                     _openStreams.Clear();
                 }
             }
+        }
+
+        private class LiveStreamInfo
+        {
+            public DateTime Date;
+            public bool EnableCloseTimer;
+            public string Id;
+            public bool Closed;
+            public MediaSourceInfo MediaSource;
         }
     }
 }
