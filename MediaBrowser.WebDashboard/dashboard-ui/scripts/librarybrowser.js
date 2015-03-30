@@ -1257,10 +1257,6 @@
 
                 if (options.showChildCountIndicator && item.ChildCount) {
                     cssClass += ' groupedCard';
-
-                    if (item.Type == 'Series') {
-                        cssClass += ' unplayedGroupings';
-                    }
                 }
 
                 if (options.showTitle && !options.overlayText) {

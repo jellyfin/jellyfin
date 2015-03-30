@@ -85,8 +85,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             get { return _services; }
         }
 
-        public ILiveTvService ActiveService { get; private set; }
-
         private LiveTvOptions GetConfiguration()
         {
             return _config.GetConfiguration<LiveTvOptions>("livetv");
@@ -99,8 +97,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public void AddParts(IEnumerable<ILiveTvService> services)
         {
             _services.AddRange(services);
-
-            ActiveService = _services.FirstOrDefault();
 
             foreach (var service in _services)
             {
@@ -359,7 +355,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                     if (info.RequiresClosing)
                     {
-                        info.LiveStreamId = info.Id;
+                        var idPrefix = service.GetType().FullName.GetMD5().ToString("N") + "_";
+
+                        info.LiveStreamId = idPrefix + info.Id;
                     }
                 }
                 else
@@ -374,7 +372,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                     if (info.RequiresClosing)
                     {
-                        info.LiveStreamId = info.Id;
+                        var idPrefix = service.GetType().FullName.GetMD5().ToString("N") + "_";
+
+                        info.LiveStreamId = idPrefix + info.Id;
                     }
                 }
 
@@ -384,7 +384,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 var data = new LiveStreamData
                 {
                     Info = info,
-                    ConsumerCount = 1,
                     IsChannel = isChannel,
                     ItemId = id
                 };
@@ -1788,7 +1787,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         class LiveStreamData
         {
             internal MediaSourceInfo Info;
-            internal int ConsumerCount;
             internal string ItemId;
             internal bool IsChannel;
         }
@@ -1799,19 +1797,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             try
             {
-                var service = ActiveService;
+                var parts = id.Split(new[] { '_' }, 2);
+
+                var service = _services.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N"), parts[0], StringComparison.OrdinalIgnoreCase));
+
+                if (service == null)
+                {
+                    throw new ArgumentException("Service not found.");
+                }
+
+                id = parts[1];
 
                 LiveStreamData data;
-                if (_openStreams.TryGetValue(id, out data))
-                {
-                    if (data.ConsumerCount > 1)
-                    {
-                        data.ConsumerCount--;
-                        _logger.Info("Decrementing live stream client count.");
-                        return;
-                    }
-
-                }
                 _openStreams.TryRemove(id, out data);
 
                 _logger.Info("Closing live stream from {0}, stream Id: {1}", service.Name, id);
@@ -1892,6 +1889,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 Name = service.Name
             };
 
+            var tunerIdPrefix = service.GetType().FullName.GetMD5().ToString("N") + "_";
+
             try
             {
                 var statusInfo = await service.GetStatusInfoAsync(cancellationToken).ConfigureAwait(false);
@@ -1913,7 +1912,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                         channelName = channel == null ? null : channel.Name;
                     }
 
-                    return _tvDtoService.GetTunerInfoDto(service.Name, i, channelName);
+                    var dto = _tvDtoService.GetTunerInfoDto(service.Name, i, channelName);
+
+                    dto.Id = tunerIdPrefix + dto.Id;
+
+                    return dto;
 
                 }).ToList();
             }
@@ -1966,7 +1969,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         /// <returns>Task.</returns>
         public Task ResetTuner(string id, CancellationToken cancellationToken)
         {
-            return ActiveService.ResetTuner(id, cancellationToken);
+            var parts = id.Split(new[] { '_' }, 2);
+
+            var service = _services.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N"), parts[0], StringComparison.OrdinalIgnoreCase));
+
+            if (service == null)
+            {
+                throw new ArgumentException("Service not found.");
+            }
+
+            return service.ResetTuner(parts[1], cancellationToken);
         }
 
         public async Task<BaseItemDto> GetLiveTvFolder(string userId, CancellationToken cancellationToken)
