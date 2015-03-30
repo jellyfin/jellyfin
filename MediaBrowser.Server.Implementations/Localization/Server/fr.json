@@ -47,7 +47,7 @@
     "LabelDashboardSourcePathHelp": "Si vous ex\u00e9cutez le serveur \u00e0 partir des sources, veuillez sp\u00e9cifier le chemin du r\u00e9pertoire dashboard-ui. Tous les fichiers du client web seront servis \u00e0 partir de cet endroit.",
     "ButtonConvertMedia": "Convertir le m\u00e9dia",
     "ButtonOrganize": "Organiser",
-    "LinkedToEmbyConnect": "Connect\u00e9 \u00e0 Elmby",
+    "LinkedToEmbyConnect": "Connect\u00e9 \u00e0 Emby",
     "HeaderSupporterBenefits": "Avantages de supporteur",
     "HeaderAddUser": "Ajouter un utilisateur",
     "LabelAddConnectSupporterHelp": "Pour ajouter un utilisateur non list\u00e9, vous devrez d'abord lier son compte \u00e0 Emby Connect depuis sa page de profil utilisateur.",
@@ -108,7 +108,7 @@
     "LabelCountry": "Pays:",
     "LabelLanguage": "Langue:",
     "LabelTimeLimitHours": "Limite de temps (heures) :",
-    "ButtonJoinTheDevelopmentTeam": "Joignez-vous \u00e0 l'\u00e9quipe de d\u00e9veloppement",
+    "ButtonJoinTheDevelopmentTeam": "Rejoignez l'\u00e9quipe de d\u00e9veloppement",
     "HeaderPreferredMetadataLanguage": "Langue pr\u00e9f\u00e9r\u00e9e pour les m\u00e9tadonn\u00e9es:",
     "LabelSaveLocalMetadata": "Enregistrer les images et m\u00e9tadonn\u00e9es dans les r\u00e9pertoires de m\u00e9dia",
     "LabelSaveLocalMetadataHelp": "L'enregistrement des images et des m\u00e9tadonn\u00e9es dans le r\u00e9pertoire de m\u00e9dia les placera \u00e0 un endroit o\u00f9 elles seront facilement modifiables.",
@@ -180,7 +180,7 @@
     "OptionFavorite": "Favoris",
     "OptionLikes": "Aim\u00e9s",
     "OptionDislikes": "Non aim\u00e9s",
-    "OptionActors": "Acteur(e)s",
+    "OptionActors": "Acteur(trice)s",
     "OptionGuestStars": "Invit\u00e9s sp\u00e9ciaux",
     "OptionDirectors": "R\u00e9alisateurs",
     "OptionWriters": "Auteur(e)s",
@@ -1384,5 +1384,7 @@
     "HeaderUpcomingPrograms": "Programmes \u00e0 venir",
     "ButtonMoreItems": "Plus...",
     "LabelShowLibraryTileNames": "Voir les noms des affiches de la biblioth\u00e8que",
-    "LabelShowLibraryTileNamesHelp": "D\u00e9termine si les noms doivent \u00eatre affich\u00e9s en dessous des affiches de la biblioth\u00e8que sur la page d'accueil"
+    "LabelShowLibraryTileNamesHelp": "D\u00e9termine si les noms doivent \u00eatre affich\u00e9s en dessous des affiches de la biblioth\u00e8que sur la page d'accueil",
+    "OptionEnableTranscodingThrottle": "Enable throttling",
+    "OptionEnableTranscodingThrottleHelp": "Throttling will automatically adjust transcoding speed in order to minimize server cpu utilization during playback."
 }
