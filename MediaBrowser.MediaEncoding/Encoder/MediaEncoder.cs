@@ -577,10 +577,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _logger,
                 ConfigurationManager,
                 FileSystem,
-                LiveTvManager,
                 IsoManager,
                 LibraryManager,
-                ChannelManager,
                 SessionManager,
                 SubtitleEncoder(),
                 MediaSourceManager())
@@ -599,10 +597,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _logger,
                 ConfigurationManager,
                 FileSystem,
-                LiveTvManager,
                 IsoManager,
                 LibraryManager,
-                ChannelManager,
                 SessionManager,
                 SubtitleEncoder(),
                 MediaSourceManager())

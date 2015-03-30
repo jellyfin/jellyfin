@@ -15,7 +15,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 {
     public class VideoEncoder : BaseEncoder
     {
-        public VideoEncoder(MediaEncoder mediaEncoder, ILogger logger, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager) : base(mediaEncoder, logger, configurationManager, fileSystem, liveTvManager, isoManager, libraryManager, channelManager, sessionManager, subtitleEncoder, mediaSourceManager)
+        public VideoEncoder(MediaEncoder mediaEncoder, ILogger logger, IServerConfigurationManager configurationManager, IFileSystem fileSystem, IIsoManager isoManager, ILibraryManager libraryManager, ISessionManager sessionManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager) : base(mediaEncoder, logger, configurationManager, fileSystem, isoManager, libraryManager, sessionManager, subtitleEncoder, mediaSourceManager)
         {
         }
 

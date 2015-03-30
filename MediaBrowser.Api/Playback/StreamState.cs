@@ -346,6 +346,42 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
+        public int? TargetVideoStreamCount
+        {
+            get
+            {
+                if (Request.Static)
+                {
+                    return GetMediaStreamCount(MediaStreamType.Video, int.MaxValue);
+                }
+                return GetMediaStreamCount(MediaStreamType.Video, 1);
+            }
+        }
+
+        public int? TargetAudioStreamCount
+        {
+            get
+            {
+                if (Request.Static)
+                {
+                    return GetMediaStreamCount(MediaStreamType.Audio, int.MaxValue);
+                }
+                return GetMediaStreamCount(MediaStreamType.Audio, 1);
+            }
+        }
+
+        private int? GetMediaStreamCount(MediaStreamType type, int limit)
+        {
+            var count = MediaSource.GetStreamCount(type);
+
+            if (count.HasValue)
+            {
+                count = Math.Min(count.Value, limit);
+            }
+
+            return count;
+        }
+
         /// <summary>
         /// Predicts the audio sample rate that will be in the output stream
         /// </summary>

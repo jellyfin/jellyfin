@@ -46,8 +46,8 @@ namespace MediaBrowser.Model.Dto
         public int? Bitrate { get; set; }
 
         public TransportStreamTimestamp? Timestamp { get; set; }
-        public Dictionary<string, string> RequiredHttpHeaders { get; set; }        
-        
+        public Dictionary<string, string> RequiredHttpHeaders { get; set; }
+
         public string TranscodingUrl { get; set; }
         public string TranscodingSubProtocol { get; set; }
         public string TranscodingContainer { get; set; }
@@ -130,6 +130,36 @@ namespace MediaBrowser.Model.Dto
                 if (i.Type == type && i.Index == index)
                 {
                     return i;
+                }
+            }
+
+            return null;
+        }
+
+        public int? GetStreamCount(MediaStreamType type)
+        {
+            int numMatches = 0;
+            int numStreams = 0;
+
+            foreach (MediaStream i in MediaStreams)
+            {
+                numStreams++;
+                if (i.Type == type)
+                {
+                    numMatches++;
+                }
+            }
+
+            return numStreams == 0 ? (int?)null : numMatches;
+        }
+
+        public bool? IsSecondaryAudio(MediaStream stream)
+        {
+            foreach (MediaStream currentStream in MediaStreams)
+            {
+                if (currentStream.Type == MediaStreamType.Audio)
+                {
+                    return currentStream.Index != stream.Index;
                 }
             }
 
