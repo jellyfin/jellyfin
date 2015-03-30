@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Net;
 using System;
 using System.Collections.Generic;
@@ -75,12 +74,12 @@ namespace MediaBrowser.Controller.Net
                 throw new ArgumentNullException("message");
             }
 
-            if (message.MessageType.Equals(Name + "Start", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(message.MessageType, Name + "Start", StringComparison.OrdinalIgnoreCase))
             {
                 Start(message);
             }
 
-            if (message.MessageType.Equals(Name + "Stop", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(message.MessageType, Name + "Stop", StringComparison.OrdinalIgnoreCase))
             {
                 Stop(message);
             }

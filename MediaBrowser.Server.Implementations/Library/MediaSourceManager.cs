@@ -430,14 +430,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var tuple = GetProvider(id);
 
-                try
-                {
-                    await tuple.Item1.CloseMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
-                }
-                catch (NotImplementedException)
-                {
-                    
-                }
+                await tuple.Item1.CloseMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
 
                 LiveStreamInfo removed;
                 if (_openStreams.TryRemove(id, out removed))
