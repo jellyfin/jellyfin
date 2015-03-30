@@ -51,7 +51,7 @@ namespace MediaBrowser.Model.Dlna
 
         public int? MaxVideoBitDepth { get; set; }
         public int? MaxRefFrames { get; set; }
-        
+
         public float? MaxFramerate { get; set; }
 
         public DeviceProfile DeviceProfile { get; set; }
@@ -81,7 +81,8 @@ namespace MediaBrowser.Model.Dlna
 
         public bool IsDirectStream
         {
-            get { 
+            get
+            {
                 return PlayMethod == PlayMethod.DirectStream ||
                     PlayMethod == PlayMethod.DirectPlay;
             }
@@ -175,7 +176,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 list.Add(pair.Value);
             }
-            
+
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
         }
 
@@ -199,7 +200,7 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("MaxHeight", item.MaxHeight.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxHeight.Value) : string.Empty));
             list.Add(new NameValuePair("StartTimeTicks", StringHelper.ToStringCultureInvariant(item.StartPositionTicks)));
             list.Add(new NameValuePair("Level", item.VideoLevel.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoLevel.Value) : string.Empty));
-            
+
             list.Add(new NameValuePair("ClientTime", item.IsDirectStream ? string.Empty : DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture)));
             list.Add(new NameValuePair("MaxRefFrames", item.MaxRefFrames.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxRefFrames.Value) : string.Empty));
             list.Add(new NameValuePair("MaxVideoBitDepth", item.MaxVideoBitDepth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxVideoBitDepth.Value) : string.Empty));
@@ -216,53 +217,25 @@ namespace MediaBrowser.Model.Dlna
             return list;
         }
 
-        public List<SubtitleStreamInfo> GetExternalSubtitles(bool includeSelectedTrackOnly)
+        public List<SubtitleStreamInfo> GetExternalSubtitles(bool includeSelectedTrackOnly, string baseUrl, string accessToken)
         {
-            List<SubtitleStreamInfo> list = new List<SubtitleStreamInfo>();
+            List<SubtitleStreamInfo> list = GetSubtitleProfiles(includeSelectedTrackOnly, baseUrl, accessToken);
+            List<SubtitleStreamInfo> newList = new List<SubtitleStreamInfo>();
 
             // First add the selected track
-            if (SubtitleStreamIndex.HasValue)
+            foreach (SubtitleStreamInfo stream in list)
             {
-                foreach (MediaStream stream in MediaSource.MediaStreams)
+                if (stream.DeliveryMethod == SubtitleDeliveryMethod.External)
                 {
-                    if (stream.Type == MediaStreamType.Subtitle && stream.Index == SubtitleStreamIndex.Value)
-                    {
-                        SubtitleStreamInfo info = GetSubtitleStreamInfo(stream);
-
-                        if (info != null)
-                        {
-                            list.Add(info);
-                        }
-                    }
+                    newList.Add(stream);
                 }
             }
 
-            if (!includeSelectedTrackOnly)
-            {
-                foreach (MediaStream stream in MediaSource.MediaStreams)
-                {
-                    if (stream.Type == MediaStreamType.Subtitle && (!SubtitleStreamIndex.HasValue || stream.Index != SubtitleStreamIndex.Value))
-                    {
-                        SubtitleStreamInfo info = GetSubtitleStreamInfo(stream);
-
-                        if (info != null)
-                        {
-                            list.Add(info);
-                        }
-                    }
-                }
-            }
-
-            return list;
+            return newList;
         }
 
-        public List<SubtitleStreamInfo> GetExternalSubtitles(string baseUrl, string accessToken, bool includeSelectedTrackOnly)
+        public List<SubtitleStreamInfo> GetSubtitleProfiles(bool includeSelectedTrackOnly, string baseUrl, string accessToken)
         {
-            if (string.IsNullOrEmpty(baseUrl))
-            {
-                throw new ArgumentNullException(baseUrl);
-            }
-
             List<SubtitleStreamInfo> list = new List<SubtitleStreamInfo>();
 
             // HLS will preserve timestamps so we can just grab the full subtitle stream
@@ -279,10 +252,7 @@ namespace MediaBrowser.Model.Dlna
                     {
                         SubtitleStreamInfo info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks);
 
-                        if (info != null)
-                        {
-                            list.Add(info);
-                        }
+                        list.Add(info);
                     }
                 }
             }
@@ -295,14 +265,11 @@ namespace MediaBrowser.Model.Dlna
                     {
                         SubtitleStreamInfo info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks);
 
-                        if (info != null)
-                        {
-                            list.Add(info);
-                        }
+                        list.Add(info);
                     }
                 }
             }
-            
+
             return list;
         }
 
@@ -310,15 +277,22 @@ namespace MediaBrowser.Model.Dlna
         {
             SubtitleStreamInfo info = GetSubtitleStreamInfo(stream);
 
-            if (info != null)
+            if (info.DeliveryMethod == SubtitleDeliveryMethod.External)
             {
-                info.Url = string.Format("{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}",
-                    baseUrl,
-                    ItemId,
-                    MediaSourceId,
-                    StringHelper.ToStringCultureInvariant(stream.Index),
-                    StringHelper.ToStringCultureInvariant(startPositionTicks),
-                    SubtitleFormat);
+                if (MediaSource.Protocol == MediaProtocol.Http)
+                {
+                    info.Url = stream.Path;
+                }
+                else if (!string.IsNullOrEmpty(baseUrl))
+                {
+                    info.Url = string.Format("{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}",
+                        baseUrl,
+                        ItemId,
+                        MediaSourceId,
+                        StringHelper.ToStringCultureInvariant(stream.Index),
+                        StringHelper.ToStringCultureInvariant(startPositionTicks),
+                        SubtitleFormat);
+                }
             }
 
             return info;
@@ -328,18 +302,14 @@ namespace MediaBrowser.Model.Dlna
         {
             SubtitleProfile subtitleProfile = StreamBuilder.GetSubtitleProfile(stream, DeviceProfile.SubtitleProfiles, Context);
 
-            if (subtitleProfile.Method != SubtitleDeliveryMethod.External)
-            {
-                return null;
-            }
-
             return new SubtitleStreamInfo
             {
                 IsForced = stream.IsForced,
                 Language = stream.Language,
                 Name = stream.Language ?? "Unknown",
                 Format = SubtitleFormat,
-                Index = stream.Index
+                Index = stream.Index,
+                DeliveryMethod = subtitleProfile.Method
             };
         }
 

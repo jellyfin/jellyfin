@@ -272,6 +272,11 @@ namespace MediaBrowser.Api.Playback
 
                 // Set this back to what it was
                 mediaSource.SupportsDirectStream = supportsDirectStream;
+
+                if (streamInfo != null)
+                {
+                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                }
             }
 
             if (mediaSource.SupportsDirectStream)
@@ -285,6 +290,11 @@ namespace MediaBrowser.Api.Playback
                 {
                     mediaSource.SupportsDirectStream = false;
                 }
+
+                if (streamInfo != null)
+                {
+                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                }
             }
 
             if (mediaSource.SupportsTranscoding)
@@ -297,9 +307,35 @@ namespace MediaBrowser.Api.Playback
                 if (streamInfo != null && streamInfo.PlayMethod == PlayMethod.Transcode)
                 {
                     streamInfo.StartPositionTicks = startTimeTicks;
-                    mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).Substring(1);
+                    mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
                     mediaSource.TranscodingContainer = streamInfo.Container;
                     mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
+                }
+
+                if (streamInfo != null)
+                {
+                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                }
+            }
+        }
+
+        private void SetDeviceSpecificSubtitleInfo(StreamInfo info, MediaSourceInfo mediaSource, string accessToken)
+        {
+            var profiles = info.GetSubtitleProfiles(false, "-", accessToken);
+
+            foreach (var profile in profiles)
+            {
+                foreach (var stream in mediaSource.MediaStreams)
+                {
+                    if (stream.Type == MediaStreamType.Subtitle && stream.Index == profile.Index)
+                    {
+                        stream.DeliveryMethod = profile.DeliveryMethod;
+
+                        if (profile.DeliveryMethod == SubtitleDeliveryMethod.External)
+                        {
+                            stream.DeliveryUrl = profile.Url.TrimStart('-');
+                        }
+                    }
                 }
             }
         }

@@ -227,6 +227,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     Format = "srt",
                     Method = SubtitleDeliveryMethod.External
+                },
+                new SubtitleProfile
+                {
+                    Format = "vtt",
+                    Method = SubtitleDeliveryMethod.External
                 }
             };
 
