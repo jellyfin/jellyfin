@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Extensions;
+﻿using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Extensions;
 using System.Diagnostics;
 
 namespace MediaBrowser.Model.Entities
@@ -134,6 +135,17 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value><c>true</c> if this instance is external; otherwise, <c>false</c>.</value>
         public bool IsExternal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the method.
+        /// </summary>
+        /// <value>The method.</value>
+        public SubtitleDeliveryMethod? DeliveryMethod { get; set; }
+        /// <summary>
+        /// Gets or sets the delivery URL.
+        /// </summary>
+        /// <value>The delivery URL.</value>
+        public string DeliveryUrl { get; set; }
 
         public bool IsTextSubtitleStream
         {

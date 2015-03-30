@@ -66,7 +66,7 @@
 
     }
 
-    $(document).on('pagebeforeshow pageinit', "#appServicesPage", function () {
+    $(document).on('pagebeforeshow pageinit pageshow', "#appServicesPage", function () {
 
         // This needs both events for the helpurl to get done at the right time
 

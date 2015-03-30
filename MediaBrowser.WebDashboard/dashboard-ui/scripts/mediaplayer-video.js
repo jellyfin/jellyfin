@@ -143,10 +143,6 @@
             self.changeStream(self.getCurrentTicks(), { AudioStreamIndex: index });
         };
 
-        self.supportsSubtitleStreamExternally = function (stream) {
-            return stream.Type == 'Subtitle' && stream.IsTextSubtitleStream && stream.SupportsExternalStream;
-        }
-
         self.setSubtitleStreamIndex = function (index) {
 
             if (!self.supportsTextTracks()) {
@@ -166,7 +162,7 @@
 
             if (currentStream && !newStream) {
 
-                if (!self.supportsSubtitleStreamExternally(currentStream)) {
+                if (currentStream.DeliveryMethod != 'External') {
 
                     // Need to change the transcoded stream to remove subs
                     self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: -1 });
@@ -174,7 +170,7 @@
             }
             else if (!currentStream && newStream) {
 
-                if (self.supportsSubtitleStreamExternally(newStream)) {
+                if (newStream.DeliveryMethod == 'External') {
                     selectedTrackElementIndex = index;
                 } else {
 
@@ -184,10 +180,10 @@
             }
             else if (currentStream && newStream) {
 
-                if (self.supportsSubtitleStreamExternally(newStream)) {
+                if (newStream.DeliveryMethod == 'External') {
                     selectedTrackElementIndex = index;
 
-                    if (!self.supportsSubtitleStreamExternally(currentStream)) {
+                    if (currentStream.DeliveryMethod != 'External') {
                         self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: -1 });
                     }
                 } else {
@@ -207,7 +203,7 @@
             var modes = ['disabled', 'showing', 'hidden'];
 
             var textStreams = self.currentMediaSource.MediaStreams.filter(function (s) {
-                return self.supportsSubtitleStreamExternally(s);
+                return s.DeliveryMethod == 'External';
             });
 
             var newStream = textStreams.filter(function (s) {
@@ -963,25 +959,18 @@
 
             html += '<source type="' + contentType + '" src="' + videoUrl + '" />';
 
-            if (self.supportsTextTracks()) {
-                var textStreams = subtitleStreams.filter(function (s) {
-                    return self.supportsSubtitleStreamExternally(s);
-                });
+            var textStreams = subtitleStreams.filter(function (s) {
+                return s.DeliveryMethod == 'External';
+            });
 
-                for (var i = 0, length = textStreams.length; i < length; i++) {
+            for (var i = 0, length = textStreams.length; i < length; i++) {
 
-                    var textStream = textStreams[i];
-                    var textStreamUrl = mediaSource.Protocol == 'Http' ?
-                        textStream.Path :
-                        ApiClient.getUrl('Videos/' + item.Id + '/' + mediaSource.Id + '/Subtitles/' + textStream.Index + '/Stream.vtt', {
-                        startPositionTicks: (startPosition || 0),
-                        api_key: ApiClient.accessToken()
-                    });
+                var textStream = textStreams[i];
+                var textStreamUrl = textStream.DeliveryUrl;
 
-                    var defaultAttribute = textStream.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';
+                var defaultAttribute = textStream.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';
 
-                    html += '<track kind="subtitles" src="' + textStreamUrl + '" srclang="' + (textStream.Language || 'und') + '"' + defaultAttribute + '></track>';
-                }
+                html += '<track kind="subtitles" src="' + textStreamUrl + '" srclang="' + (textStream.Language || 'und') + '"' + defaultAttribute + '></track>';
             }
 
             html += '</video>';

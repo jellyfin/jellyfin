@@ -266,7 +266,7 @@
         });
 
 
-    }).on('pagebeforeshow pageinit', "#addPluginPage", function () {
+    }).on('pagebeforeshow pageinit pageshow', "#addPluginPage", function () {
 
         // This needs both events for the helpurl to get done at the right time
 

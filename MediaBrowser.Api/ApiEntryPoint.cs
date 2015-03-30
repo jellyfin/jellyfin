@@ -296,7 +296,7 @@ namespace MediaBrowser.Api
                 // TODO: Lower this hls timeout
                 var timerDuration = job.Type == TranscodingJobType.Progressive ?
                     1000 :
-                    14400000;
+                    7200000;
 
                 if (job.KillTimer == null)
                 {

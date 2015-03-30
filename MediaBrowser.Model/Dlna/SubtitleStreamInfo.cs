@@ -8,5 +8,6 @@ namespace MediaBrowser.Model.Dlna
         public bool IsForced { get; set; }
         public string Format { get; set; }
         public int Index { get; set; }
+        public SubtitleDeliveryMethod DeliveryMethod { get; set; }
     }
 }
