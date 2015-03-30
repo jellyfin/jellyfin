@@ -1,7 +1,8 @@
-﻿using MediaBrowser.Controller.LiveTv;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -26,7 +27,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public EncodingJobOptions Options { get; set; }
         public string InputContainer { get; set; }
-        public List<MediaStream> AllMediaStreams { get; set; }
+        public MediaSourceInfo MediaSource { get; set; }
         public MediaStream AudioStream { get; set; }
         public MediaStream VideoStream { get; set; }
         public MediaStream SubtitleStream { get; set; }
@@ -76,12 +77,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
         }
 
         private readonly ILogger _logger;
-        private readonly ILiveTvManager _liveTvManager;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
-        public EncodingJob(ILogger logger, ILiveTvManager liveTvManager)
+        public EncodingJob(ILogger logger, IMediaSourceManager mediaSourceManager)
         {
             _logger = logger;
-            _liveTvManager = liveTvManager;
+            _mediaSourceManager = mediaSourceManager;
             Id = Guid.NewGuid().ToString("N");
 
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -89,7 +90,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             SupportedAudioCodecs = new List<string>();
             PlayableStreamFileNames = new List<string>();
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            AllMediaStreams = new List<MediaStream>();
             TaskCompletionSource = new TaskCompletionSource<bool>();
         }
 
@@ -136,15 +136,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private async void DisposeLiveStream()
         {
-            if (!string.IsNullOrEmpty(LiveTvStreamId))
+            if (MediaSource.RequiresClosing)
             {
                 try
                 {
-                    await _liveTvManager.CloseLiveStream(LiveTvStreamId, CancellationToken.None).ConfigureAwait(false);
+                    await _mediaSourceManager.CloseLiveStream(MediaSource.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error closing live tv stream", ex);
+                    _logger.ErrorException("Error closing media source", ex);
                 }
             }
         }
@@ -392,6 +392,42 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 return true;
             }
+        }
+
+        public int? TargetVideoStreamCount
+        {
+            get
+            {
+                if (Options.Static)
+                {
+                    return GetMediaStreamCount(MediaStreamType.Video, int.MaxValue);
+                }
+                return GetMediaStreamCount(MediaStreamType.Video, 1);
+            }
+        }
+
+        public int? TargetAudioStreamCount
+        {
+            get
+            {
+                if (Options.Static)
+                {
+                    return GetMediaStreamCount(MediaStreamType.Audio, int.MaxValue);
+                }
+                return GetMediaStreamCount(MediaStreamType.Audio, 1);
+            }
+        }
+
+        private int? GetMediaStreamCount(MediaStreamType type, int limit)
+        {
+            var count = MediaSource.GetStreamCount(type);
+
+            if (count.HasValue)
+            {
+                count = Math.Min(count.Value, limit);
+            }
+
+            return count;
         }
 
         public void ReportTranscodingProgress(TimeSpan? transcodingPosition, float? framerate, double? percentComplete, long? bytesTranscoded)

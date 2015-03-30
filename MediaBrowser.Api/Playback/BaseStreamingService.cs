@@ -1080,7 +1080,7 @@ namespace MediaBrowser.Api.Playback
             {
                 if (state.RunTimeTicks.Value >= TimeSpan.FromMinutes(5).Ticks && state.IsInputVideo)
                 {
-                    transcodingJob.TranscodingThrottler = state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, Logger);
+                    transcodingJob.TranscodingThrottler = state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, Logger, ServerConfigurationManager);
                     state.TranscodingThrottler.Start();
                 }
             }
@@ -2012,7 +2012,6 @@ namespace MediaBrowser.Api.Playback
             }
 
             var audioCodec = state.ActualOutputAudioCodec;
-
             var videoCodec = state.ActualOutputVideoCodec;
 
             var mediaProfile = state.VideoRequest == null ?
@@ -2033,7 +2032,9 @@ namespace MediaBrowser.Api.Playback
                 state.TargetTimestamp,
                 state.IsTargetAnamorphic,
                 state.IsTargetCabac,
-                state.TargetRefFrames);
+                state.TargetRefFrames,
+                state.TargetVideoStreamCount,
+                state.TargetAudioStreamCount);
 
             if (mediaProfile != null)
             {
@@ -2118,7 +2119,9 @@ namespace MediaBrowser.Api.Playback
                     state.TranscodeSeekInfo,
                     state.IsTargetAnamorphic,
                     state.IsTargetCabac,
-                    state.TargetRefFrames
+                    state.TargetRefFrames,
+                    state.TargetVideoStreamCount,
+                    state.TargetAudioStreamCount
 
                     ).FirstOrDefault() ?? string.Empty;
             }

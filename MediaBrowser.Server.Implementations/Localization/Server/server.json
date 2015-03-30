@@ -1400,5 +1400,7 @@
     "HeaderUpcomingPrograms": "Upcoming Programs",
     "ButtonMoreItems": "More...",
     "LabelShowLibraryTileNames": "Show library tile names",
-    "LabelShowLibraryTileNamesHelp": "Determines if labels will be displayed underneath library tiles on the home page"
+    "LabelShowLibraryTileNamesHelp": "Determines if labels will be displayed underneath library tiles on the home page",
+    "OptionEnableTranscodingThrottle": "Enable throttling",
+    "OptionEnableTranscodingThrottleHelp": "Throttling will automatically adjust transcoding speed in order to minimize server cpu utilization during playback."
 }
