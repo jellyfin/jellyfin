@@ -399,6 +399,7 @@
             var currentSrc = element.currentSrc;
 
             var playSessionId = getParameterByName('PlaySessionId', currentSrc);
+            var liveStreamId = getParameterByName('LiveStreamId', currentSrc);
 
             if (params.AudioStreamIndex == null && params.SubtitleStreamIndex == null && params.Bitrate == null) {
 
@@ -419,14 +420,14 @@
                 subtitleStreamIndex = parseInt(subtitleStreamIndex);
             }
 
-            getPlaybackInfo(self.currentItem.Id, deviceProfile, ticks, self.currentMediaSource, audioStreamIndex, subtitleStreamIndex).done(function (result) {
+            getPlaybackInfo(self.currentItem.Id, deviceProfile, ticks, self.currentMediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).done(function (result) {
 
                 if (validatePlaybackInfoResult(result)) {
 
                     self.currentMediaSource = result.MediaSources[0];
                     self.currentSubtitleStreamIndex = subtitleStreamIndex;
 
-                    currentSrc = ApiClient.getUrl(self.currentMediaSource.TranscodingUrl);
+                    currentSrc = self.currentMediaSource.TranscodingUrl;
                     changeStreamToUrl(element, playSessionId, currentSrc, ticks);
                 }
             });
@@ -660,7 +661,7 @@
             })[0];
         }
 
-        function getPlaybackInfo(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex) {
+        function getPlaybackInfo(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId) {
 
             var postData = {
                 DeviceProfile: deviceProfile
@@ -679,6 +680,9 @@
             }
             if (mediaSource) {
                 query.MediaSourceId = mediaSource.Id;
+            }
+            if (liveStreamId) {
+                query.LiveStreamId = liveStreamId;
             }
 
             return ApiClient.ajax({
@@ -750,7 +754,7 @@
                     } else {
 
                         startTimeTicksOffset = startPosition || 0;
-                        mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
+                        mediaUrl = mediaSource.TranscodingUrl;
 
                         if (mediaSource.TranscodingSubProtocol == 'hls') {
 
@@ -789,7 +793,7 @@
 
                         contentType = 'audio/' + mediaSource.TranscodingContainer;
 
-                        mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
+                        mediaUrl = mediaSource.TranscodingUrl;
                     }
 
                     startTimeTicksOffset = startPosition || 0;

@@ -52,6 +52,7 @@
     "HeaderAddUser": "Add User",
     "LabelAddConnectSupporterHelp": "To add a user who isn't listed, you'll need to first link their account to Emby Connect from their user profile page.",
     "LabelPinCode": "Pin code:",
+    "OptionHideWatchedContentFromLatestMedia": "Hide watched content from latest media",
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancel",
     "ButtonExit": "Exit",

@@ -261,7 +261,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     if (user == null)
                     {
-                        dto.MediaSources = hasMediaSources.GetMediaSources(true).ToList();
+                        dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(hasMediaSources, true).ToList();
                     }
                     else
                     {
@@ -269,7 +269,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                 }
             }
-
+            
             if (fields.Contains(ItemFields.Studios))
             {
                 AttachStudios(dto, item);
@@ -1280,7 +1280,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                     else
                     {
-                        mediaStreams = iHasMediaSources.GetMediaSources(true).First().MediaStreams;
+                        mediaStreams = _mediaSourceManager().GetStaticMediaSources(iHasMediaSources, true).First().MediaStreams;
                     }
 
                     dto.MediaStreams = mediaStreams;
@@ -1453,7 +1453,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             var tvChannel = item as LiveTvChannel;
             if (tvChannel != null)
             {
-                dto.MediaSources = tvChannel.GetMediaSources(true).ToList();
+                dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(tvChannel, true).ToList();
             }
 
             var channelItem = item as IChannelItem;

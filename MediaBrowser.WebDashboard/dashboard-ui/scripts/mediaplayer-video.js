@@ -950,11 +950,11 @@
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresNativeControls) {
-                html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay="autoplay" controls="controls">';
+                html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay="autoplay" crossorigin="anonymous" controls="controls">';
             } else {
 
                 // Chrome 35 won't play with preload none
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" crossorigin="anonymous" autoplay>';
             }
 
             html += '<source type="' + contentType + '" src="' + videoUrl + '" />';
@@ -967,7 +967,6 @@
 
                 var textStream = textStreams[i];
                 var textStreamUrl = textStream.DeliveryUrl;
-
                 var defaultAttribute = textStream.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';
 
                 html += '<track kind="subtitles" src="' + textStreamUrl + '" srclang="' + (textStream.Language || 'und') + '"' + defaultAttribute + '></track>';

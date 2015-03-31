@@ -495,7 +495,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             // No sense creating external subs if we're already burning one into the video
             var externalSubs = streamInfo.SubtitleDeliveryMethod == SubtitleDeliveryMethod.Encode ?
                 new List<SubtitleStreamInfo>() :
-                streamInfo.GetExternalSubtitles(false, null, null);
+                streamInfo.GetExternalSubtitles(false, true, null, null);
 
             // Mark as requiring conversion if transcoding the video, or if any subtitles need to be extracted
             var requiresVideoTranscoding = streamInfo.PlayMethod == PlayMethod.Transcode && jobOptions.IsConverting;
@@ -823,7 +823,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             var hasMediaSources = item as IHasMediaSources;
 
-            var mediaSources = hasMediaSources.GetMediaSources(false).ToList();
+            var mediaSources = _mediaSourceManager.GetStaticMediaSources(hasMediaSources, false).ToList();
 
             var preferredAudio = string.IsNullOrEmpty(user.Configuration.AudioLanguagePreference)
                 ? new string[] { }

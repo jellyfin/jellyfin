@@ -135,6 +135,7 @@ namespace MediaBrowser.Server.Implementations.Library
             IEnumerable<MediaSourceInfo> mediaSources;
 
             var hasMediaSources = (IHasMediaSources)item;
+            User user = null;
 
             if (string.IsNullOrWhiteSpace(userId))
             {
@@ -142,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
             else
             {
-                var user = _userManager.GetUserById(userId);
+                user = _userManager.GetUserById(userId);
                 mediaSources = GetStaticMediaSources(hasMediaSources, enablePathSubstitution, user);
             }
 
@@ -154,6 +155,10 @@ namespace MediaBrowser.Server.Implementations.Library
 
             foreach (var source in dynamicMediaSources)
             {
+                if (user != null)
+                {
+                    SetUserProperties(source, user);
+                }
                 if (source.Protocol == MediaProtocol.File)
                 {
                     source.SupportsDirectStream = File.Exists(source.Path);
@@ -225,6 +230,11 @@ namespace MediaBrowser.Server.Implementations.Library
             return GetPlayackMediaSources(id, null, enablePathSubstitution, cancellationToken);
         }
 
+        public MediaSourceInfo GetStaticMediaSource(IHasMediaSources item, string mediaSourceId, bool enablePathSubstitution)
+        {
+            return GetStaticMediaSources(item, enablePathSubstitution).FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
+        }
+
         public IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution)
         {
             if (item == null)
@@ -288,6 +298,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 preferredSubs,
                 user.Configuration.SubtitleMode,
                 audioLangage);
+
+            MediaStreamSelector.SetSubtitleStreamScores(source.MediaStreams, preferredSubs,
+                user.Configuration.SubtitleMode, audioLangage);
         }
 
         private IEnumerable<MediaSourceInfo> SortMediaSources(IEnumerable<MediaSourceInfo> sources)
@@ -309,11 +322,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 return stream == null || stream.Width == null ? 0 : stream.Width.Value;
             })
             .ToList();
-        }
-
-        public MediaSourceInfo GetStaticMediaSource(IHasMediaSources item, string mediaSourceId, bool enablePathSubstitution)
-        {
-            return GetStaticMediaSources(item, enablePathSubstitution).FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
         }
 
         private readonly ConcurrentDictionary<string, LiveStreamInfo> _openStreams = new ConcurrentDictionary<string, LiveStreamInfo>(StringComparer.OrdinalIgnoreCase);
@@ -428,9 +436,16 @@ namespace MediaBrowser.Server.Implementations.Library
 
             try
             {
-                var tuple = GetProvider(id);
+                LiveStreamInfo current;
+                if (_openStreams.TryGetValue(id, out current))
+                {
+                    if (current.MediaSource.RequiresClosing)
+                    {
+                        var tuple = GetProvider(id);
 
-                await tuple.Item1.CloseMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
+                        await tuple.Item1.CloseMediaSource(tuple.Item2, cancellationToken).ConfigureAwait(false);
+                    }
+                }
 
                 LiveStreamInfo removed;
                 if (_openStreams.TryRemove(id, out removed))

@@ -54,6 +54,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] LatestItemsExcludes { get; set; }
 
         public bool HasMigratedToPolicy { get; set; }
+        public bool HidePlayedInLatest { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.

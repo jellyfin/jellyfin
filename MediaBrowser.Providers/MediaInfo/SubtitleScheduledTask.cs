@@ -6,15 +6,14 @@ using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Subtitles;
-using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Providers;
 
 namespace MediaBrowser.Providers.MediaInfo
 {
@@ -23,14 +22,16 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
+        private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILogger _logger;
 
-        public SubtitleScheduledTask(ILibraryManager libraryManager, IServerConfigurationManager config, ISubtitleManager subtitleManager, ILogger logger)
+        public SubtitleScheduledTask(ILibraryManager libraryManager, IServerConfigurationManager config, ISubtitleManager subtitleManager, ILogger logger, IMediaSourceManager mediaSourceManager)
         {
             _libraryManager = libraryManager;
             _config = config;
             _subtitleManager = subtitleManager;
             _logger = logger;
+            _mediaSourceManager = mediaSourceManager;
         }
 
         public string Name
@@ -107,7 +108,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 (options.DownloadMovieSubtitles &&
                 video is Movie))
             {
-                var mediaStreams = video.GetMediaSources(false).First().MediaStreams;
+                var mediaStreams = _mediaSourceManager.GetStaticMediaSources(video, false).First().MediaStreams;
 
                 var downloadedLanguages = await new SubtitleDownloader(_logger,
                     _subtitleManager)
