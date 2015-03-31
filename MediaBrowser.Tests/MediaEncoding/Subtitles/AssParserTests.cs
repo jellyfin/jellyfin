@@ -1,4 +1,5 @@
-﻿using MediaBrowser.MediaEncoding.Subtitles;
+﻿using System.Text;
+using MediaBrowser.MediaEncoding.Subtitles;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.IO;
@@ -52,6 +53,30 @@ namespace MediaBrowser.Tests.MediaEncoding.Subtitles {
                 Assert.AreEqual(expectedSubs.TrackEvents[i].StartPositionTicks, result.TrackEvents[i].StartPositionTicks);
                 Assert.AreEqual(expectedSubs.TrackEvents[i].EndPositionTicks, result.TrackEvents[i].EndPositionTicks);
                 Assert.AreEqual(expectedSubs.TrackEvents[i].Text, result.TrackEvents[i].Text);
+            }
+
+        }
+
+        [TestMethod]
+        public void TestParse2()
+        {
+
+            var sut = new AssParser();
+
+            var stream = File.OpenRead(@"MediaEncoding\Subtitles\TestSubtitles\data2.ass");
+
+            var result = sut.Parse(stream, CancellationToken.None);
+
+            Assert.IsNotNull(result);
+
+            using (var ms = new MemoryStream())
+            {
+                var writer = new SrtWriter();
+                writer.Write(result, ms, CancellationToken.None);
+
+                ms.Position = 0;
+                var text = Encoding.UTF8.GetString(ms.ToArray());
+                var b = text;
             }
 
         }

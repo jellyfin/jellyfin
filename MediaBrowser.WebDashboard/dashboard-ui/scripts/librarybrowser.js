@@ -877,10 +877,6 @@
             atts.push('data-locationtype="' + (item.LocationType || '') + '"');
             atts.push('data-index="' + index + '"');
 
-            if (item.IsPlaceHolder) {
-                atts.push('data-placeholder="true"');
-            }
-
             var html = atts.join(' ');
 
             if (html) {
@@ -1261,10 +1257,6 @@
 
                 if (options.showChildCountIndicator && item.ChildCount) {
                     cssClass += ' groupedCard';
-
-                    if (item.Type == 'Series') {
-                        cssClass += ' unplayedGroupings';
-                    }
                 }
 
                 if (options.showTitle && !options.overlayText) {

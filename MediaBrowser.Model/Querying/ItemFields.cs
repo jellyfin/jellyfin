@@ -96,6 +96,11 @@
         IndexOptions,
 
         /// <summary>
+        /// The item counts
+        /// </summary>
+        ItemCounts,
+
+        /// <summary>
         /// The keywords
         /// </summary>
         Keywords,

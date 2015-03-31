@@ -288,7 +288,7 @@ namespace MediaBrowser.WebDashboard.Api
                 "thirdparty/apiclient/ajax.js",
                 "thirdparty/apiclient/events.js",
                 "thirdparty/apiclient/deferred.js",
-                "thirdparty/apiclient/mediabrowser.apiclient.js",
+                "thirdparty/apiclient/apiclient.js",
                 "thirdparty/apiclient/connectservice.js",
                 "thirdparty/apiclient/serverdiscovery.js",
                 "thirdparty/apiclient/connectionmanager.js"
@@ -364,7 +364,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "backdrops.js",
                                 "sync.js",
                                 "syncjob.js",
-                                "syncservices.js",
+                                "appservices.js",
                                 "playlistmanager.js",
 
                                 "mediaplayer.js",

@@ -107,30 +107,40 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         private WebRequest GetRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
         {
-            var request = (HttpWebRequest)WebRequest.Create(options.Url);
+            var request = WebRequest.Create(options.Url);
+            var httpWebRequest = request as HttpWebRequest;
 
-            AddRequestHeaders(request, options);
+            if (httpWebRequest != null)
+            {
+                AddRequestHeaders(httpWebRequest, options);
 
-            request.AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None;
+                httpWebRequest.AutomaticDecompression = enableHttpCompression ? DecompressionMethods.Deflate : DecompressionMethods.None;
+            }
 
             request.CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
 
-            if (options.EnableKeepAlive)
+            if (httpWebRequest != null)
             {
-                request.KeepAlive = true;
+                if (options.EnableKeepAlive)
+                {
+                    httpWebRequest.KeepAlive = true;
+                }
             }
 
             request.Method = method;
             request.Timeout = options.TimeoutMs;
 
-            if (!string.IsNullOrEmpty(options.Host))
+            if (httpWebRequest != null)
             {
-                request.Host = options.Host;
-            }
+                if (!string.IsNullOrEmpty(options.Host))
+                {
+                    httpWebRequest.Host = options.Host;
+                }
 
-            if (!string.IsNullOrEmpty(options.Referer))
-            {
-                request.Referer = options.Referer;
+                if (!string.IsNullOrEmpty(options.Referer))
+                {
+                    httpWebRequest.Referer = options.Referer;
+                }
             }
 
             //request.ServicePoint.BindIPEndPointDelegate = BindIPEndPointCallback;

@@ -125,7 +125,6 @@
 
             Limit: 24,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
-            IsPlayed: false,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
@@ -221,7 +220,7 @@
 
                 html += '</div>';
 
-                html += '<div>';
+                html += '<div class="homeTopViews">';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,
                     shape: shape,

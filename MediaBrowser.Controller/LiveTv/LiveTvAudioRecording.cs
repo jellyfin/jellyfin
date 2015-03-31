@@ -1,10 +1,12 @@
-﻿using System.Runtime.Serialization;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Users;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -98,6 +100,21 @@ namespace MediaBrowser.Controller.LiveTv
         public override bool IsAuthorizedToDelete(User user)
         {
             return user.Policy.EnableLiveTvManagement;
+        }
+
+        public override IEnumerable<MediaSourceInfo> GetMediaSources(bool enablePathSubstitution)
+        {
+            var list = base.GetMediaSources(enablePathSubstitution).ToList();
+
+            foreach (var mediaSource in list)
+            {
+                if (string.IsNullOrWhiteSpace(mediaSource.Path))
+                {
+                    mediaSource.Type = MediaSourceType.Placeholder;
+                }
+            }
+
+            return list;
         }
     }
 }

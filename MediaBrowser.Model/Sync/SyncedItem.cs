@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Dto;
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Sync
@@ -15,6 +16,16 @@ namespace MediaBrowser.Model.Sync
         /// </summary>
         /// <value>The synchronize job identifier.</value>
         public string SyncJobId { get; set; }
+        /// <summary>
+        /// Gets or sets the name of the synchronize job.
+        /// </summary>
+        /// <value>The name of the synchronize job.</value>
+        public string SyncJobName { get; set; }
+        /// <summary>
+        /// Gets or sets the synchronize job date created.
+        /// </summary>
+        /// <value>The synchronize job date created.</value>
+        public DateTime SyncJobDateCreated { get; set; }
         /// <summary>
         /// Gets or sets the synchronize job item identifier.
         /// </summary>

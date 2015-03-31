@@ -31,13 +31,24 @@ namespace MediaBrowser.Model.Sync
         /// <value>The item identifier.</value>
         public string ItemId { get; set; }
         /// <summary>
+        /// Gets or sets the synchronize job item identifier.
+        /// </summary>
+        /// <value>The synchronize job item identifier.</value>
+        public string SyncJobItemId { get; set; }
+        /// <summary>
         /// Gets or sets the user ids with access.
         /// </summary>
         /// <value>The user ids with access.</value>
         public List<string> UserIdsWithAccess { get; set; }
+        /// <summary>
+        /// Gets or sets the additional files.
+        /// </summary>
+        /// <value>The additional files.</value>
+        public List<string> AdditionalFiles { get; set; }
 
         public LocalItem()
         {
+            AdditionalFiles = new List<string>();
             UserIdsWithAccess = new List<string>();
         }
     }

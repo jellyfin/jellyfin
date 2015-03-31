@@ -374,7 +374,6 @@
         var playbackPositionTicks = parseInt(card.getAttribute('data-positionticks') || '0');
         var playAccess = card.getAttribute('data-playaccess');
         var locationType = card.getAttribute('data-locationtype');
-        var isPlaceHolder = card.getAttribute('data-placeholder') == 'true';
         var index = card.getAttribute('data-index');
 
         $(card).addClass('hasContextMenu');
@@ -413,7 +412,7 @@
 
             if (options.showPlayOptions !== false) {
 
-                if (MediaController.canPlayByAttributes(itemType, mediaType, playAccess, locationType, isPlaceHolder)) {
+                if (MediaController.canPlayByAttributes(itemType, mediaType, playAccess, locationType)) {
                     html += '<li data-icon="play"><a href="#" class="btnPlay" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlay') + '</a></li>';
 
                     if (commands.indexOf('playfromhere') != -1) {
@@ -512,10 +511,6 @@
             ParentId: itemId,
             GroupItems: false
         };
-
-        if ($(card).hasClass('unplayedGroupings')) {
-            options.IsPlayed = false;
-        }
 
         var promise2 = ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options));
 

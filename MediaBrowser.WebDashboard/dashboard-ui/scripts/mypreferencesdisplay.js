@@ -133,6 +133,8 @@
         $('#chkDisplayCollectionView', page).checked(user.Configuration.DisplayCollectionsView || false).checkboxradio("refresh");
         $('#chkDisplayFolderView', page).checked(user.Configuration.DisplayFoldersView || false).checkboxradio("refresh");
 
+        $('#chkHidePlayedFromLatest', page).checked(user.Configuration.HidePlayedInLatest || false).checkboxradio("refresh");
+
         var promise1 = ApiClient.getItems(user.Id, {
             sortBy: "SortName"
         });
@@ -162,6 +164,8 @@
 
         user.Configuration.DisplayCollectionsView = $('#chkDisplayCollectionView', page).checked();
         user.Configuration.DisplayFoldersView = $('#chkDisplayFolderView', page).checked();
+
+        user.Configuration.HidePlayedInLatest = $('#chkHidePlayedFromLatest', page).checked();
 
         user.Configuration.IncludeTrailersInSuggestions = $('#chkDisplayTrailersWithinMovieSuggestions', page).checked();
 

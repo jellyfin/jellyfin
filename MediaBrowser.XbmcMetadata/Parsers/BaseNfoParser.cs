@@ -138,6 +138,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                     xml = xml.Substring(0, index + 1);
                 }
+                else
+                {
+                    // If the file is just an Imdb url, handle that
+
+                    var imdbId = xml.Split('/')
+                        .FirstOrDefault(i => i.StartsWith("tt", StringComparison.OrdinalIgnoreCase));
+
+                    if (!string.IsNullOrWhiteSpace(imdbId))
+                    {
+                        item.SetProviderId(MetadataProviders.Imdb, imdbId);
+                    }
+
+                    return;
+                }
 
                 using (var ms = new MemoryStream())
                 {

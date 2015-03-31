@@ -215,7 +215,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 if (request.IsPlayed.HasValue)
                 {
                     var val = request.IsPlayed.Value;
-                    if (i.IsPlayed(currentUser) != val)
+                    if (i is Video && i.IsPlayed(currentUser) != val)
                     {
                         return false;
                     }

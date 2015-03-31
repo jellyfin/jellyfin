@@ -35,6 +35,12 @@ namespace MediaBrowser.Controller.LiveTv
         public string ExternalChannelId { get; set; }
 
         /// <summary>
+        /// Gets or sets the original air date.
+        /// </summary>
+        /// <value>The original air date.</value>
+        public DateTime? OriginalAirDate { get; set; }
+        
+        /// <summary>
         /// Gets or sets the type of the channel.
         /// </summary>
         /// <value>The type of the channel.</value>

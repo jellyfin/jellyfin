@@ -304,6 +304,14 @@ namespace MediaBrowser.Api.UserLibrary
         {
             var user = _userManager.GetUserById(request.UserId);
 
+            if (!request.IsPlayed.HasValue)
+            {
+                if (user.Configuration.HidePlayedInLatest)
+                {
+                    request.IsPlayed = false;
+                }
+            }
+
             var list = _userViewManager.GetLatestItems(new LatestItemsQuery
             {
                 GroupItems = request.GroupItems,

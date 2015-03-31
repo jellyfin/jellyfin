@@ -53,13 +53,17 @@
 
         }).on('playbackstop.mediacontroller', function (e, state) {
 
-            ApiClient.reportPlaybackStopped({
-
+            var stopInfo = {
                 itemId: state.NowPlayingItem.Id,
                 mediaSourceId: state.PlayState.MediaSourceId,
                 positionTicks: state.PlayState.PositionTicks
+            };
 
-            });
+            if (state.PlayState.LiveStreamId) {
+                stopInfo.LiveStreamId = state.PlayState.LiveStreamId;
+            }
+
+            ApiClient.reportPlaybackStopped(stopInfo);
 
         }).on('positionchange.mediacontroller', function (e, state) {
 
@@ -210,16 +214,16 @@
 
         self.canPlay = function (item) {
 
-            return self.canPlayByAttributes(item.Type, item.MediaType, item.PlayAccess, item.LocationType, item.IsPlaceHolder);
+            return self.canPlayByAttributes(item.Type, item.MediaType, item.PlayAccess, item.LocationType);
         };
 
-        self.canPlayByAttributes = function (itemType, mediaType, playAccess, locationType, isPlaceHolder) {
+        self.canPlayByAttributes = function (itemType, mediaType, playAccess, locationType) {
 
             if (playAccess != 'Full') {
                 return false;
             }
 
-            if (locationType == "Virtual" || isPlaceHolder) {
+            if (locationType == "Virtual") {
                 return false;
             }
 

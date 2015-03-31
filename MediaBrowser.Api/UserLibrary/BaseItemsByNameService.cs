@@ -55,21 +55,29 @@ namespace MediaBrowser.Api.UserLibrary
         /// <returns>Task{ItemsResult}.</returns>
         protected ItemsResult GetResult(GetItemsByName request)
         {
+            var dtoOptions = GetDtoOptions(request);
+
             User user = null;
             BaseItem parentItem;
-            List<BaseItem> libraryItems;
+            List<BaseItem> libraryItems = null;
 
             if (request.UserId.HasValue)
             {
                 user = UserManager.GetUserById(request.UserId.Value);
                 parentItem = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : LibraryManager.GetItemById(request.ParentId);
-                libraryItems = user.RootFolder.GetRecursiveChildren(user).ToList();
 
+                if (RequiresLibraryItems(request, dtoOptions))
+                {
+                    libraryItems = user.RootFolder.GetRecursiveChildren(user).ToList();
+                }
             }
             else
             {
                 parentItem = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.RootFolder : LibraryManager.GetItemById(request.ParentId);
-                libraryItems = LibraryManager.RootFolder.GetRecursiveChildren().ToList();
+                if (RequiresLibraryItems(request, dtoOptions))
+                {
+                    libraryItems = LibraryManager.RootFolder.GetRecursiveChildren().ToList();
+                }
             }
 
             IEnumerable<BaseItem> items;
@@ -133,15 +141,44 @@ namespace MediaBrowser.Api.UserLibrary
 
             }
 
-            var tuples = ibnItems.Select(i => new Tuple<TItemType, List<BaseItem>>(i, i.GetTaggedItems(libraryItems).ToList()));
+            IEnumerable<Tuple<TItemType, List<BaseItem>>> tuples;
+            if (dtoOptions.Fields.Contains(ItemFields.ItemCounts) || true)
+            {
+                tuples = ibnItems.Select(i => new Tuple<TItemType, List<BaseItem>>(i, i.GetTaggedItems(libraryItems).ToList()));
+            }
+            else
+            {
+                tuples = ibnItems.Select(i => new Tuple<TItemType, List<BaseItem>>(i, new List<BaseItem>()));
+            }
 
-            var dtoOptions = GetDtoOptions(request);
-
-            var dtos = tuples.Select(i => GetDto(i.Item1, user, dtoOptions, i.Item2));
+            var dtos = tuples.Select(i => DtoService.GetItemByNameDto(i.Item1, dtoOptions, i.Item2, user));
 
             result.Items = dtos.Where(i => i != null).ToArray();
 
             return result;
+        }
+
+        private bool RequiresLibraryItems(GetItemsByName request, DtoOptions options)
+        {
+            var filters = request.GetFilters().ToList();
+
+            if (filters.Contains(ItemFilter.IsPlayed))
+            {
+                return true;
+            }
+
+            if (filters.Contains(ItemFilter.IsUnplayed))
+            {
+                return true;
+            }
+
+            if (request.IsPlayed.HasValue)
+            {
+                return true;
+            }
+
+            return true;
+            return options.Fields.Contains(ItemFields.ItemCounts);
         }
 
         private IEnumerable<TItemType> FilterByLibraryItems(GetItemsByName request, IEnumerable<TItemType> items, User user, IEnumerable<BaseItem> libraryItems)
@@ -340,21 +377,6 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Task{`0}}.</returns>
         protected abstract IEnumerable<TItemType> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items);
-
-        /// <summary>
-        /// Gets the dto.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="user">The user.</param>
-        /// <param name="options">The options.</param>
-        /// <param name="libraryItems">The library items.</param>
-        /// <returns>Task{DtoBaseItem}.</returns>
-        private BaseItemDto GetDto(TItemType item, User user, DtoOptions options, List<BaseItem> libraryItems)
-        {
-            var dto = DtoService.GetItemByNameDto(item, options, libraryItems, user);
-
-            return dto;
-        }
     }
 
     /// <summary>

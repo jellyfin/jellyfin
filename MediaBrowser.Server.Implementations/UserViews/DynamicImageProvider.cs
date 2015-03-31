@@ -238,7 +238,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
         }
 
-        protected override Task<Stream> CreateImageAsync(IHasImages item, List<BaseItem> itemsWithImages, ImageType imageType, int imageIndex)
+        protected override async Task<Stream> CreateImageAsync(IHasImages item, List<BaseItem> itemsWithImages, ImageType imageType, int imageIndex)
         {
             var view = (UserView)item;
             if (imageType == ImageType.Primary && IsUsingCollectionStrip(view))
@@ -249,10 +249,10 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 }
 
                 var stream = new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(itemsWithImages, view.ViewType), item.Name, 960, 540);
-                return Task.FromResult(stream);
+                return stream;
             }
 
-            return base.CreateImageAsync(item, itemsWithImages, imageType, imageIndex);
+            return await base.CreateImageAsync(item, itemsWithImages, imageType, imageIndex);
         }
 
         private IEnumerable<String> GetStripCollageImagePaths(IEnumerable<BaseItem> items, string viewType)

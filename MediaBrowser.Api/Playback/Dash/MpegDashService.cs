@@ -54,7 +54,7 @@ namespace MediaBrowser.Api.Playback.Dash
 
     public class MpegDashService : BaseHlsService
     {
-        public MpegDashService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, ILiveTvManager liveTvManager, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, INetworkManager networkManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, liveTvManager, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient)
+        public MpegDashService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, INetworkManager networkManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient)
         {
             NetworkManager = networkManager;
         }
@@ -160,7 +160,7 @@ namespace MediaBrowser.Api.Playback.Dash
                             // If the playlist doesn't already exist, startup ffmpeg
                             try
                             {
-                                ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.StreamId, p => false);
+                                ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.PlaySessionId, p => false);
 
                                 if (currentTranscodingIndex.HasValue)
                                 {
@@ -447,7 +447,7 @@ namespace MediaBrowser.Api.Playback.Dash
             return args;
         }
 
-        protected override string GetCommandLineArguments(string outputPath, string transcodingJobId, StreamState state, bool isEncoding)
+        protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
         {
             // test url http://192.168.1.2:8096/videos/233e8905d559a8f230db9bffd2ac9d6d/master.mpd?mediasourceid=233e8905d559a8f230db9bffd2ac9d6d&videocodec=h264&audiocodec=aac&maxwidth=1280&videobitrate=500000&audiobitrate=128000&profile=baseline&level=3
             // Good info on i-frames http://blog.streamroot.io/encode-multi-bitrate-videos-mpeg-dash-mse-based-media-players/
@@ -461,7 +461,7 @@ namespace MediaBrowser.Api.Playback.Dash
 
             var args = string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -copyts {5} -f dash -init_seg_name \"{6}\" -media_seg_name \"{7}\" -use_template 0 -use_timeline 1 -min_seg_duration {8} -y \"{9}\"",
                 inputModifier,
-                GetInputArgument(transcodingJobId, state),
+                GetInputArgument(state),
                 threads,
                 GetMapArgs(state),
                 GetVideoArguments(state),

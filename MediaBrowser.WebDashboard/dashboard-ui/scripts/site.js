@@ -756,6 +756,9 @@ var Dashboard = {
 
         var pageElem = page[0];
 
+        var isServicesPage = page.hasClass('appServicesPage');
+        var context = getParameterByName('context');
+
         return [{
             name: Globalize.translate('TabServer'),
             href: "dashboard.html",
@@ -793,7 +796,7 @@ var Dashboard = {
         }, {
             name: Globalize.translate('TabSync'),
             href: "syncactivity.html",
-            selected: page.hasClass('syncConfigurationPage'),
+            selected: page.hasClass('syncConfigurationPage') || (isServicesPage && context == 'sync'),
             icon: 'fa-cloud'
         }, {
             divider: true,
@@ -813,7 +816,7 @@ var Dashboard = {
         }, {
             name: Globalize.translate('TabLiveTV'),
             href: "livetvstatus.html",
-            selected: page.hasClass("liveTvSettingsPage"),
+            selected: page.hasClass("liveTvSettingsPage") || (isServicesPage && context == 'livetv'),
             icon: 'fa-video-camera',
             color: '#293AAE'
         }, {

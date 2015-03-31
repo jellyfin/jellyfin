@@ -172,5 +172,11 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="rememberCredentials">if set to <c>true</c> [remember credentials].</param>
         /// <returns>Task.</returns>
         Task AuthenticateOffline(UserDto user, string password, bool rememberCredentials);
+
+        /// <summary>
+        /// Gets the offline users.
+        /// </summary>
+        /// <returns>Task&lt;List&lt;UserDto&gt;&gt;.</returns>
+        Task<List<UserDto>> GetOfflineUsers();
     }
 }
