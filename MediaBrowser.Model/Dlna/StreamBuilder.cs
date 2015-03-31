@@ -341,7 +341,11 @@ namespace MediaBrowser.Model.Dlna
             MediaStream subtitleStream = playlistItem.SubtitleStreamIndex.HasValue ? item.GetMediaStream(MediaStreamType.Subtitle, playlistItem.SubtitleStreamIndex.Value) : null;
 
             MediaStream audioStream = item.GetDefaultAudioStream(options.AudioStreamIndex ?? item.DefaultAudioStreamIndex);
-            int? audioStreamIndex = audioStream == null ? (int?)null : audioStream.Index;
+            int? audioStreamIndex = null;
+            if (audioStream != null)
+            {
+                audioStreamIndex = audioStream.Index;
+            }
 
             MediaStream videoStream = item.VideoStream;
 

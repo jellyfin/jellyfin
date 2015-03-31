@@ -150,7 +150,12 @@ namespace MediaBrowser.Model.Dto
                 }
             }
 
-            return numStreams == 0 ? (int?)null : numMatches;
+            if (numStreams == 0)
+            {
+                return null;
+            }
+
+            return numMatches;
         }
 
         public bool? IsSecondaryAudio(MediaStream stream)
