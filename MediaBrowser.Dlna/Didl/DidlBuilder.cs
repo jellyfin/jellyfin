@@ -124,7 +124,7 @@ namespace MediaBrowser.Dlna.Didl
         {
             if (streamInfo == null)
             {
-                var sources = _user == null ? video.GetMediaSources(true).ToList() : _mediaSourceManager.GetStaticMediaSources(video, true, _user).ToList();
+                var sources = _user == null ? _mediaSourceManager.GetStaticMediaSources(video, true).ToList() : _mediaSourceManager.GetStaticMediaSources(video, true, _user).ToList();
 
                 streamInfo = new StreamBuilder().BuildVideoItem(new VideoOptions
                 {
@@ -351,7 +351,7 @@ namespace MediaBrowser.Dlna.Didl
 
             if (streamInfo == null)
             {
-                var sources = _user == null ? audio.GetMediaSources(true).ToList() : _mediaSourceManager.GetStaticMediaSources(audio, true, _user).ToList();
+                var sources = _user == null ? _mediaSourceManager.GetStaticMediaSources(audio, true).ToList() : _mediaSourceManager.GetStaticMediaSources(audio, true, _user).ToList();
 
                 streamInfo = new StreamBuilder().BuildAudioItem(new AudioOptions
                {

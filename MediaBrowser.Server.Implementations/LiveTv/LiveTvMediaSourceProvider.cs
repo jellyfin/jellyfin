@@ -17,11 +17,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly ILiveTvManager _liveTvManager;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly ILogger _logger;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
-        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, IJsonSerializer jsonSerializer, ILogManager logManager)
+        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, IJsonSerializer jsonSerializer, ILogManager logManager, IMediaSourceManager mediaSourceManager)
         {
             _liveTvManager = liveTvManager;
             _jsonSerializer = jsonSerializer;
+            _mediaSourceManager = mediaSourceManager;
             _logger = logManager.GetLogger(GetType().Name);
         }
 
@@ -63,7 +65,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 var hasMediaSources = (IHasMediaSources)item;
 
-                sources = hasMediaSources.GetMediaSources(false)
+                sources = _mediaSourceManager.GetStaticMediaSources(hasMediaSources, false)
                    .ToList();
             }
 

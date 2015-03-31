@@ -59,6 +59,9 @@ namespace MediaBrowser.Api.Playback
 
         [ApiMember(Name = "MediaSourceId", Description = "The media version id, if playing an alternate version", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
         public string MediaSourceId { get; set; }
+
+        [ApiMember(Name = "LiveStreamId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
+        public string LiveStreamId { get; set; }
     }
 
     [Route("/LiveStreams/Open", "POST", Summary = "Opens a media source")]
@@ -142,7 +145,7 @@ namespace MediaBrowser.Api.Playback
 
         public async Task<object> Post(GetPostedPlaybackInfo request)
         {
-            var info = await GetPlaybackInfo(request.Id, request.UserId, request.MediaSourceId).ConfigureAwait(false);
+            var info = await GetPlaybackInfo(request.Id, request.UserId, request.MediaSourceId, request.LiveStreamId).ConfigureAwait(false);
             var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
 
             var profile = request.DeviceProfile;
@@ -164,29 +167,37 @@ namespace MediaBrowser.Api.Playback
             return ToOptimizedResult(info);
         }
 
-        private async Task<PlaybackInfoResponse> GetPlaybackInfo(string id, string userId, string mediaSourceId = null)
+        private async Task<PlaybackInfoResponse> GetPlaybackInfo(string id, string userId, string mediaSourceId = null, string liveStreamId = null)
         {
             var result = new PlaybackInfoResponse();
 
-            IEnumerable<MediaSourceInfo> mediaSources;
-
-            try
+            if (string.IsNullOrWhiteSpace(liveStreamId))
             {
-                mediaSources = await _mediaSourceManager.GetPlayackMediaSources(id, userId, true, CancellationToken.None).ConfigureAwait(false);
+                IEnumerable<MediaSourceInfo> mediaSources;
+                try
+                {
+                    mediaSources = await _mediaSourceManager.GetPlayackMediaSources(id, userId, true, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (PlaybackException ex)
+                {
+                    mediaSources = new List<MediaSourceInfo>();
+                    result.ErrorCode = ex.ErrorCode;
+                }
+
+                result.MediaSources = mediaSources.ToList();
+
+                if (!string.IsNullOrWhiteSpace(mediaSourceId))
+                {
+                    result.MediaSources = result.MediaSources
+                        .Where(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
             }
-            catch (PlaybackException ex)
+            else
             {
-                mediaSources = new List<MediaSourceInfo>();
-                result.ErrorCode = ex.ErrorCode;
-            }
+                var mediaSource = await _mediaSourceManager.GetLiveStream(liveStreamId, CancellationToken.None).ConfigureAwait(false);
 
-            result.MediaSources = mediaSources.ToList();
-
-            if (!string.IsNullOrWhiteSpace(mediaSourceId))
-            {
-                result.MediaSources = result.MediaSources
-                    .Where(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+                result.MediaSources = new List<MediaSourceInfo> { mediaSource };
             }
 
             if (result.MediaSources.Count == 0)
@@ -236,6 +247,8 @@ namespace MediaBrowser.Api.Playback
         {
             var streamBuilder = new StreamBuilder();
 
+            var baseUrl = GetServerAddress();
+
             var options = new VideoOptions
             {
                 MediaSources = new List<MediaSourceInfo> { mediaSource },
@@ -275,7 +288,7 @@ namespace MediaBrowser.Api.Playback
 
                 if (streamInfo != null)
                 {
-                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, baseUrl, auth.Token);
                 }
             }
 
@@ -293,7 +306,7 @@ namespace MediaBrowser.Api.Playback
 
                 if (streamInfo != null)
                 {
-                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, baseUrl, auth.Token);
                 }
             }
 
@@ -307,21 +320,22 @@ namespace MediaBrowser.Api.Playback
                 if (streamInfo != null && streamInfo.PlayMethod == PlayMethod.Transcode)
                 {
                     streamInfo.StartPositionTicks = startTimeTicks;
-                    mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
+                    mediaSource.TranscodingUrl = streamInfo.ToUrl(baseUrl, auth.Token);
                     mediaSource.TranscodingContainer = streamInfo.Container;
                     mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                 }
 
                 if (streamInfo != null)
                 {
-                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
+                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, baseUrl, auth.Token);
                 }
             }
         }
 
-        private void SetDeviceSpecificSubtitleInfo(StreamInfo info, MediaSourceInfo mediaSource, string accessToken)
+        private void SetDeviceSpecificSubtitleInfo(StreamInfo info, MediaSourceInfo mediaSource, string baseUrl, string accessToken)
         {
-            var profiles = info.GetSubtitleProfiles(false, "-", accessToken);
+            var profiles = info.GetSubtitleProfiles(false, baseUrl, accessToken);
+            mediaSource.DefaultSubtitleStreamIndex = info.SubtitleStreamIndex;
 
             foreach (var profile in profiles)
             {
@@ -333,7 +347,7 @@ namespace MediaBrowser.Api.Playback
 
                         if (profile.DeliveryMethod == SubtitleDeliveryMethod.External)
                         {
-                            stream.DeliveryUrl = profile.Url.TrimStart('-');
+                            stream.DeliveryUrl = profile.Url;
                         }
                     }
                 }

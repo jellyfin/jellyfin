@@ -282,6 +282,49 @@ namespace MediaBrowser.Model.Dlna
             return playMethods;
         }
 
+        private int? GetDefaultSubtitleStreamIndex(MediaSourceInfo item, SubtitleProfile[] subtitleProfiles)
+        {
+            int highestScore = -1;
+
+            foreach (MediaStream stream in item.MediaStreams)
+            {
+                if (stream.Type == MediaStreamType.Subtitle && stream.Score.HasValue)
+                {
+                    if (stream.Score.Value > highestScore)
+                    {
+                        highestScore = stream.Score.Value;
+                    }
+                }    
+            }
+
+            List<MediaStream> topStreams = new List<MediaStream>();
+            foreach (MediaStream stream in item.MediaStreams)
+            {
+                if (stream.Type == MediaStreamType.Subtitle && stream.Score.HasValue && stream.Score.Value == highestScore)
+                {
+                    topStreams.Add(stream);
+                }
+            }
+
+            // If multiple streams have an equal score, try to pick the most efficient one
+            if (topStreams.Count > 1)
+            {
+                foreach (MediaStream stream in topStreams)
+                {
+                    foreach (SubtitleProfile profile in subtitleProfiles)
+                    {
+                        if (profile.Method == SubtitleDeliveryMethod.External && StringHelper.EqualsIgnoreCase(profile.Format, stream.Codec))
+                        {
+                            return stream.Index;
+                        }
+                    }
+                }
+            }
+
+            // If no optimization panned out, just use the original default
+            return item.DefaultSubtitleStreamIndex;
+        }
+
         private StreamInfo BuildVideoItem(MediaSourceInfo item, VideoOptions options)
         {
             StreamInfo playlistItem = new StreamInfo
@@ -294,7 +337,7 @@ namespace MediaBrowser.Model.Dlna
                 DeviceProfile = options.Profile
             };
 
-            playlistItem.SubtitleStreamIndex = options.SubtitleStreamIndex ?? item.DefaultSubtitleStreamIndex;
+            playlistItem.SubtitleStreamIndex = options.SubtitleStreamIndex ?? GetDefaultSubtitleStreamIndex(item, options.Profile.SubtitleProfiles);
             MediaStream subtitleStream = playlistItem.SubtitleStreamIndex.HasValue ? item.GetMediaStream(MediaStreamType.Subtitle, playlistItem.SubtitleStreamIndex.Value) : null;
 
             MediaStream audioStream = item.GetDefaultAudioStream(options.AudioStreamIndex ?? item.DefaultAudioStreamIndex);
@@ -618,6 +661,8 @@ namespace MediaBrowser.Model.Dlna
             // Look for an external profile that matches the stream type (text/graphical)
             foreach (SubtitleProfile profile in subtitleProfiles)
             {
+                bool requiresConversion = !StringHelper.EqualsIgnoreCase(subtitleStream.Codec, profile.Format);
+
                 if (!profile.SupportsLanguage(subtitleStream.Language))
                 {
                     continue;
@@ -625,6 +670,11 @@ namespace MediaBrowser.Model.Dlna
 
                 if (profile.Method == SubtitleDeliveryMethod.External && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {
+                    if (!requiresConversion)
+                    {
+                        return profile;
+                    }
+
                     if (subtitleStream.SupportsExternalStream)
                     {
                         return profile;
@@ -640,6 +690,8 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (SubtitleProfile profile in subtitleProfiles)
             {
+                bool requiresConversion = !StringHelper.EqualsIgnoreCase(subtitleStream.Codec, profile.Format);
+
                 if (!profile.SupportsLanguage(subtitleStream.Language))
                 {
                     continue;
@@ -647,6 +699,11 @@ namespace MediaBrowser.Model.Dlna
 
                 if (profile.Method == SubtitleDeliveryMethod.Embed && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {
+                    if (!requiresConversion)
+                    {
+                        return profile;
+                    }
+
                     return profile;
                 }
             }

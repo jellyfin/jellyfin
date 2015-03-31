@@ -217,9 +217,9 @@ namespace MediaBrowser.Model.Dlna
             return list;
         }
 
-        public List<SubtitleStreamInfo> GetExternalSubtitles(bool includeSelectedTrackOnly, string baseUrl, string accessToken)
+        public List<SubtitleStreamInfo> GetExternalSubtitles(bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
         {
-            List<SubtitleStreamInfo> list = GetSubtitleProfiles(includeSelectedTrackOnly, baseUrl, accessToken);
+            List<SubtitleStreamInfo> list = GetSubtitleProfiles(includeSelectedTrackOnly, enableAllProfiles, baseUrl, accessToken);
             List<SubtitleStreamInfo> newList = new List<SubtitleStreamInfo>();
 
             // First add the selected track
@@ -236,6 +236,11 @@ namespace MediaBrowser.Model.Dlna
 
         public List<SubtitleStreamInfo> GetSubtitleProfiles(bool includeSelectedTrackOnly, string baseUrl, string accessToken)
         {
+            return GetSubtitleProfiles(includeSelectedTrackOnly, false, baseUrl, accessToken);
+        }
+
+        public List<SubtitleStreamInfo> GetSubtitleProfiles(bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
+        {
             List<SubtitleStreamInfo> list = new List<SubtitleStreamInfo>();
 
             // HLS will preserve timestamps so we can just grab the full subtitle stream
@@ -250,9 +255,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     if (stream.Type == MediaStreamType.Subtitle && stream.Index == SubtitleStreamIndex.Value)
                     {
-                        SubtitleStreamInfo info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks);
-
-                        list.Add(info);
+                        AddSubtitleProfiles(list, stream, enableAllProfiles, baseUrl, accessToken, startPositionTicks);
                     }
                 }
             }
@@ -263,9 +266,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     if (stream.Type == MediaStreamType.Subtitle && (!SubtitleStreamIndex.HasValue || stream.Index != SubtitleStreamIndex.Value))
                     {
-                        SubtitleStreamInfo info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks);
-
-                        list.Add(info);
+                        AddSubtitleProfiles(list, stream, enableAllProfiles, baseUrl, accessToken, startPositionTicks);
                     }
                 }
             }
@@ -273,17 +274,41 @@ namespace MediaBrowser.Model.Dlna
             return list;
         }
 
-        private SubtitleStreamInfo GetSubtitleStreamInfo(MediaStream stream, string baseUrl, string accessToken, long startPositionTicks)
+        private void AddSubtitleProfiles(List<SubtitleStreamInfo> list, MediaStream stream, bool enableAllProfiles, string baseUrl, string accessToken, long startPositionTicks)
         {
-            SubtitleStreamInfo info = GetSubtitleStreamInfo(stream);
+            if (enableAllProfiles)
+            {
+                foreach (SubtitleProfile profile in DeviceProfile.SubtitleProfiles)
+                {
+                    SubtitleStreamInfo info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks, new[] { profile });
+
+                    list.Add(info);
+                }
+            }
+            else
+            {
+                SubtitleStreamInfo info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks, DeviceProfile.SubtitleProfiles);
+
+                list.Add(info);
+            }
+        }
+
+        private SubtitleStreamInfo GetSubtitleStreamInfo(MediaStream stream, string baseUrl, string accessToken, long startPositionTicks, SubtitleProfile[] subtitleProfiles)
+        {
+            SubtitleProfile subtitleProfile = StreamBuilder.GetSubtitleProfile(stream, subtitleProfiles, Context);
+            SubtitleStreamInfo info = new SubtitleStreamInfo
+            {
+                IsForced = stream.IsForced,
+                Language = stream.Language,
+                Name = stream.Language ?? "Unknown",
+                Format = subtitleProfile.Format,
+                Index = stream.Index,
+                DeliveryMethod = subtitleProfile.Method
+            };
 
             if (info.DeliveryMethod == SubtitleDeliveryMethod.External)
             {
-                if (MediaSource.Protocol == MediaProtocol.Http)
-                {
-                    info.Url = stream.Path;
-                }
-                else if (!string.IsNullOrEmpty(baseUrl))
+                if (MediaSource.Protocol == MediaProtocol.File || !StringHelper.EqualsIgnoreCase(stream.Codec, subtitleProfile.Format))
                 {
                     info.Url = string.Format("{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}",
                         baseUrl,
@@ -291,26 +316,15 @@ namespace MediaBrowser.Model.Dlna
                         MediaSourceId,
                         StringHelper.ToStringCultureInvariant(stream.Index),
                         StringHelper.ToStringCultureInvariant(startPositionTicks),
-                        SubtitleFormat);
+                        subtitleProfile.Format);
+                }
+                else
+                {
+                    info.Url = stream.Path;
                 }
             }
 
             return info;
-        }
-
-        private SubtitleStreamInfo GetSubtitleStreamInfo(MediaStream stream)
-        {
-            SubtitleProfile subtitleProfile = StreamBuilder.GetSubtitleProfile(stream, DeviceProfile.SubtitleProfiles, Context);
-
-            return new SubtitleStreamInfo
-            {
-                IsForced = stream.IsForced,
-                Language = stream.Language,
-                Name = stream.Language ?? "Unknown",
-                Format = SubtitleFormat,
-                Index = stream.Index,
-                DeliveryMethod = subtitleProfile.Method
-            };
         }
 
         /// <summary>

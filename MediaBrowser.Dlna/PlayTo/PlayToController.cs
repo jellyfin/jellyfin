@@ -467,10 +467,10 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
                 _dlnaManager.GetDefaultProfile();
-
+            
             var hasMediaSources = item as IHasMediaSources;
             var mediaSources = hasMediaSources != null
-                ? (user == null ? hasMediaSources.GetMediaSources(true) : _mediaSourceManager.GetStaticMediaSources(hasMediaSources, true, user)).ToList()
+                ? (user == null ? _mediaSourceManager.GetStaticMediaSources(hasMediaSources, true) : _mediaSourceManager.GetStaticMediaSources(hasMediaSources, true, user)).ToList()
                 : new List<MediaSourceInfo>();
 
             var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId, mediaSourceId, audioStreamIndex, subtitleStreamIndex);

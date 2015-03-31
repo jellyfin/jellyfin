@@ -198,8 +198,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var maxAudioChannels = supportsAc3 || supportsDca ? "5" : "2";
             codecProfiles.Add(new CodecProfile
             {
-                Type = CodecType.Audio,
-                Codec = "mpeg4",
+                Type = CodecType.VideoAudio,
                 Conditions = new[]
                     {
                         new ProfileCondition
@@ -207,7 +206,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.AudioChannels,
                             Value = maxAudioChannels,
-                            IsRequired = false
+                            IsRequired = true
                         },
                         new ProfileCondition
                         {
