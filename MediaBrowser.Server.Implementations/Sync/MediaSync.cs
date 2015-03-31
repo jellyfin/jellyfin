@@ -67,12 +67,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             SyncTarget target,
             CancellationToken cancellationToken)
         {
-            var localIds = await dataProvider.GetServerItemIds(target, serverId).ConfigureAwait(false);
+            var jobItemIds = await dataProvider.GetSyncJobItemIds(target, serverId).ConfigureAwait(false);
 
             var result = await _syncManager.SyncData(new SyncDataRequest
             {
                 TargetId = target.Id,
-                LocalItemIds = localIds
+                SyncJobItemIds = jobItemIds
 
             }).ConfigureAwait(false);
 
@@ -285,11 +285,11 @@ namespace MediaBrowser.Server.Implementations.Sync
         private async Task RemoveItem(IServerSyncProvider provider,
             ISyncDataProvider dataProvider,
             string serverId,
-            string itemId,
+            string syncJobItemId,
             SyncTarget target,
             CancellationToken cancellationToken)
         {
-            var localItems = await dataProvider.GetCachedItems(target, serverId, itemId);
+            var localItems = await dataProvider.GetCachedItemsBySyncJobItemId(target, serverId, syncJobItemId);
 
             foreach (var localItem in localItems)
             {
@@ -350,7 +350,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 ItemId = libraryItem.Id,
                 ServerId = serverId,
                 LocalPath = localPath,
-                Id = GetLocalId(syncedItem.SyncJobItemId, libraryItem.Id)
+                Id = GetLocalId(syncedItem.SyncJobItemId, libraryItem.Id),
+                SyncJobItemId = syncedItem.SyncJobItemId
             };
         }
 

@@ -31,6 +31,11 @@ namespace MediaBrowser.Model.Sync
         /// <value>The item identifier.</value>
         public string ItemId { get; set; }
         /// <summary>
+        /// Gets or sets the synchronize job item identifier.
+        /// </summary>
+        /// <value>The synchronize job item identifier.</value>
+        public string SyncJobItemId { get; set; }
+        /// <summary>
         /// Gets or sets the user ids with access.
         /// </summary>
         /// <value>The user ids with access.</value>

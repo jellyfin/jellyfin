@@ -589,13 +589,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.Name = info.Name;
             item.OfficialRating = info.OfficialRating;
             item.Overview = info.Overview;
-            item.PremiereDate = info.OriginalAirDate;
+            item.OriginalAirDate = info.OriginalAirDate;
             item.ProviderImagePath = info.ImagePath;
             item.ProviderImageUrl = info.ImageUrl;
             item.RunTimeTicks = (info.EndDate - info.StartDate).Ticks;
             item.StartDate = info.StartDate;
-            item.ProductionYear = info.ProductionYear;
 
+            item.ProductionYear = info.ProductionYear;
+            item.PremiereDate = item.PremiereDate ?? info.OriginalAirDate;
+            
             await item.UpdateToRepository(ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
 
             return item;
