@@ -129,6 +129,11 @@ namespace MediaBrowser.Server.Implementations.Library
             return list;
         }
 
+        public Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, bool enablePathSubstitution, CancellationToken cancellationToken)
+        {
+            return GetPlayackMediaSources(id, null, enablePathSubstitution, cancellationToken);
+        }
+
         public async Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, string userId, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
             var item = _libraryManager.GetItemById(id);
@@ -223,11 +228,6 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 mediaSource.LiveStreamId = prefix + mediaSource.LiveStreamId;
             }
-        }
-
-        public Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, bool enablePathSubstitution, CancellationToken cancellationToken)
-        {
-            return GetPlayackMediaSources(id, null, enablePathSubstitution, cancellationToken);
         }
 
         public MediaSourceInfo GetStaticMediaSource(IHasMediaSources item, string mediaSourceId, bool enablePathSubstitution)

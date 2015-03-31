@@ -39,29 +39,6 @@ namespace MediaBrowser.Api.Playback
     [Route("/Items/{Id}/PlaybackInfo", "POST", Summary = "Gets live playback media info for an item")]
     public class GetPostedPlaybackInfo : PlaybackInfoRequest, IReturn<PlaybackInfoResponse>
     {
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string Id { get; set; }
-
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public string UserId { get; set; }
-
-        [ApiMember(Name = "MaxStreamingBitrate", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
-        public int? MaxStreamingBitrate { get; set; }
-
-        [ApiMember(Name = "StartTimeTicks", Description = "Optional. Specify a starting offset, in ticks. 1 tick = 10000 ms", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
-        public long? StartTimeTicks { get; set; }
-
-        [ApiMember(Name = "AudioStreamIndex", Description = "Optional. The index of the audio stream to use. If omitted the first audio stream will be used.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
-        public int? AudioStreamIndex { get; set; }
-
-        [ApiMember(Name = "SubtitleStreamIndex", Description = "Optional. The index of the subtitle stream to use. If omitted no subtitles will be used.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "POST")]
-        public int? SubtitleStreamIndex { get; set; }
-
-        [ApiMember(Name = "MediaSourceId", Description = "The media version id, if playing an alternate version", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string MediaSourceId { get; set; }
-
-        [ApiMember(Name = "LiveStreamId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public string LiveStreamId { get; set; }
     }
 
     [Route("/LiveStreams/Open", "POST", Summary = "Opens a media source")]
