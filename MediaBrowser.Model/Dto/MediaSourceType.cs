@@ -4,6 +4,6 @@ namespace MediaBrowser.Model.Dto
     {
         Default = 0,
         Grouping = 1,
-        Cache = 2
+        Placeholder = 2
     }
 }

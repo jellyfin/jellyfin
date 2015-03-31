@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -26,11 +27,11 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IJsonSerializer _json;
         private readonly IFileSystem _fileSystem;
         private readonly IApplicationPaths _appPaths;
-        private readonly string _serverId;
+        private readonly IServerApplicationHost _appHost;
 
         private readonly SemaphoreSlim _cacheFileLock = new SemaphoreSlim(1, 1);
 
-        public TargetDataProvider(IServerSyncProvider provider, SyncTarget target, string serverId, ILogger logger, IJsonSerializer json, IFileSystem fileSystem, IApplicationPaths appPaths)
+        public TargetDataProvider(IServerSyncProvider provider, SyncTarget target, IServerApplicationHost appHost, ILogger logger, IJsonSerializer json, IFileSystem fileSystem, IApplicationPaths appPaths)
         {
             _logger = logger;
             _json = json;
@@ -38,7 +39,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _target = target;
             _fileSystem = fileSystem;
             _appPaths = appPaths;
-            _serverId = serverId;
+            _appHost = appHost;
         }
 
         private string GetCachePath()
@@ -50,11 +51,19 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             var parts = new List<string>
             {
-                _serverId,
+                _appHost.FriendlyName,
                 "data.json"
             };
 
+            parts = parts.Select(i => GetValidFilename(_provider, i)).ToList();
+
             return _provider.GetFullPath(parts, _target);
+        }
+
+        private string GetValidFilename(IServerSyncProvider provider, string filename)
+        {
+            // We can always add this method to the sync provider if it's really needed
+            return _fileSystem.GetValidFilename(filename);
         }
 
         private async Task CacheData(Stream stream)
@@ -167,6 +176,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             return GetData(items => items.Where(i => string.Equals(i.ServerId, serverId, StringComparison.OrdinalIgnoreCase)).Select(i => i.ItemId).ToList());
         }
 
+        public Task<List<string>> GetSyncJobItemIds(SyncTarget target, string serverId)
+        {
+            return GetData(items => items.Where(i => string.Equals(i.ServerId, serverId, StringComparison.OrdinalIgnoreCase)).Select(i => i.SyncJobItemId).Where(i => !string.IsNullOrWhiteSpace(i)).ToList());
+        }
+
         public Task AddOrUpdate(SyncTarget target, LocalItem item)
         {
             return UpdateData(items =>
@@ -237,6 +251,14 @@ namespace MediaBrowser.Server.Implementations.Sync
             var items = await GetCachedData().ConfigureAwait(false);
 
             return items.Where(i => string.Equals(i.ServerId, serverId, StringComparison.OrdinalIgnoreCase) && string.Equals(i.ItemId, itemId, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+        }
+
+        public async Task<List<LocalItem>> GetCachedItemsBySyncJobItemId(SyncTarget target, string serverId, string syncJobItemId)
+        {
+            var items = await GetCachedData().ConfigureAwait(false);
+
+            return items.Where(i => string.Equals(i.ServerId, serverId, StringComparison.OrdinalIgnoreCase) && string.Equals(i.SyncJobItemId, syncJobItemId, StringComparison.OrdinalIgnoreCase))
                     .ToList();
         }
     }

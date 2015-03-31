@@ -6,6 +6,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,7 +30,8 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <summary>
         /// The _task queue
         /// </summary>
-        private readonly SortedDictionary<Type, TaskExecutionOptions> _taskQueue = new SortedDictionary<Type, TaskExecutionOptions>();
+        private readonly ConcurrentQueue<Tuple<Type, TaskExecutionOptions>> _taskQueue =
+            new ConcurrentQueue<Tuple<Type, TaskExecutionOptions>>();
 
         /// <summary>
         /// Gets or sets the json serializer.
@@ -136,25 +138,17 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         {
             var type = task.ScheduledTask.GetType();
 
+            Logger.Info("Queueing task {0}", type.Name);
+
             lock (_taskQueue)
             {
-                // If it's idle just execute immediately
                 if (task.State == TaskState.Idle)
                 {
                     Execute(task, options);
                     return;
                 }
 
-                if (!_taskQueue.ContainsKey(type))
-                {
-                    Logger.Info("Queueing task {0}", type.Name);
-                    _taskQueue.Add(type, options);
-                }
-                else
-                {
-                    _taskQueue[type] = options;
-                    Logger.Info("Task already queued: {0}", type.Name);
-                }
+                _taskQueue.Enqueue(new Tuple<Type, TaskExecutionOptions>(type, options));
             }
         }
 
@@ -241,15 +235,24 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             // Execute queued tasks
             lock (_taskQueue)
             {
-                foreach (var enqueuedType in _taskQueue.ToList())
+                var list = new List<Tuple<Type, TaskExecutionOptions>>();
+
+                Tuple<Type, TaskExecutionOptions> item;
+                while (_taskQueue.TryDequeue(out item))
                 {
-                    var scheduledTask = ScheduledTasks.First(t => t.ScheduledTask.GetType() == enqueuedType.Key);
+                    if (list.All(i => i.Item1 != item.Item1))
+                    {
+                        list.Add(item);
+                    }
+                }
+
+                foreach (var enqueuedType in list)
+                {
+                    var scheduledTask = ScheduledTasks.First(t => t.ScheduledTask.GetType() == enqueuedType.Item1);
 
                     if (scheduledTask.State == TaskState.Idle)
                     {
-                        Execute(scheduledTask, enqueuedType.Value);
-
-                        _taskQueue.Remove(enqueuedType.Key);
+                        Execute(scheduledTask, enqueuedType.Item2);
                     }
                 }
             }

@@ -248,10 +248,9 @@ namespace MediaBrowser.Model.ApiClient
         /// <summary>
         /// Gets the playback information.
         /// </summary>
-        /// <param name="itemId">The item identifier.</param>
-        /// <param name="userId">The user identifier.</param>
+        /// <param name="request">The request.</param>
         /// <returns>Task&lt;LiveMediaInfoResult&gt;.</returns>
-        Task<LiveMediaInfoResult> GetPlaybackInfo(string itemId, string userId);
+        Task<PlaybackInfoResponse> GetPlaybackInfo(PlaybackInfoRequest request);
 
         /// <summary>
         /// Gets the users async.
@@ -1486,5 +1485,12 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <returns>Task&lt;List&lt;RecommendationDto&gt;&gt;.</returns>
         Task<List<RecommendationDto>> GetMovieRecommendations(MovieRecommendationQuery query);
+        /// <summary>
+        /// Opens the live stream.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;LiveStreamResponse&gt;.</returns>
+        Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken);
     }
 }

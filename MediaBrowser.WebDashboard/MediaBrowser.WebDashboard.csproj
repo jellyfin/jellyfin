@@ -151,7 +151,7 @@
     <Content Include="dashboard-ui\scripts\syncjob.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\scripts\syncservices.js">
+    <Content Include="dashboard-ui\scripts\appservices.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\scripts\syncsettings.js">
@@ -175,7 +175,7 @@
     <Content Include="dashboard-ui\syncjob.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\syncservices.html">
+    <Content Include="dashboard-ui\appservices.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\syncsettings.html">
@@ -184,13 +184,22 @@
     <Content Include="dashboard-ui\thirdparty\apiclient\ajax.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\thirdparty\apiclient\alt\ajax.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\apiclient\alt\bean.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\apiclient\alt\events.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\thirdparty\apiclient\connectservice.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\apiclient\deferred.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\deferredAlt.js">
+    <Content Include="dashboard-ui\thirdparty\apiclient\alt\deferred.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\apiclient\device.js">
@@ -202,7 +211,7 @@
     <Content Include="dashboard-ui\thirdparty\apiclient\logger.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\mediabrowser.apiclient.js">
+    <Content Include="dashboard-ui\thirdparty\apiclient\apiclient.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\channelitems.html">

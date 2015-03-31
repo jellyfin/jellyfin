@@ -373,7 +373,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 StartDate = item.StartDate,
                 OfficialRating = item.OfficialRating,
                 IsHD = item.IsHD,
-                OriginalAirDate = item.PremiereDate,
+                OriginalAirDate = item.OriginalAirDate,
                 Audio = item.Audio,
                 CommunityRating = GetClientCommunityRating(item.CommunityRating),
                 IsRepeat = item.IsRepeat,

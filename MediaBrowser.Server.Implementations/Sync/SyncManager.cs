@@ -3,6 +3,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Dto;
@@ -42,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ILogger _logger;
         private readonly IUserManager _userManager;
         private readonly Func<IDtoService> _dtoService;
-        private readonly IApplicationHost _appHost;
+        private readonly IServerApplicationHost _appHost;
         private readonly ITVSeriesManager _tvSeriesManager;
         private readonly Func<IMediaEncoder> _mediaEncoder;
         private readonly IFileSystem _fileSystem;
@@ -60,7 +61,7 @@ namespace MediaBrowser.Server.Implementations.Sync
         public event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemUpdated;
         public event EventHandler<GenericEventArgs<SyncJobItem>> SyncJobItemCreated;
 
-        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder, IFileSystem fileSystem, Func<ISubtitleEncoder> subtitleEncoder, IConfigurationManager config, IUserDataManager userDataManager, Func<IMediaSourceManager> mediaSourceManager, IJsonSerializer json)
+        public SyncManager(ILibraryManager libraryManager, ISyncRepository repo, IImageProcessor imageProcessor, ILogger logger, IUserManager userManager, Func<IDtoService> dtoService, IServerApplicationHost appHost, ITVSeriesManager tvSeriesManager, Func<IMediaEncoder> mediaEncoder, IFileSystem fileSystem, Func<ISubtitleEncoder> subtitleEncoder, IConfigurationManager config, IUserDataManager userDataManager, Func<IMediaSourceManager> mediaSourceManager, IJsonSerializer json)
         {
             _libraryManager = libraryManager;
             _repo = repo;
@@ -94,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public ISyncDataProvider GetDataProvider(IServerSyncProvider provider, SyncTarget target)
         {
-            return _dataProviders.GetOrAdd(target.Id, key => new TargetDataProvider(provider, target, _appHost.SystemId, _logger, _json, _fileSystem, _config.CommonApplicationPaths));
+            return _dataProviders.GetOrAdd(target.Id, key => new TargetDataProvider(provider, target, _appHost, _logger, _json, _fileSystem, _config.CommonApplicationPaths));
         }
 
         public async Task<SyncJobCreationResult> CreateJob(SyncJobRequest request)
@@ -646,6 +647,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 SyncJobItemId = jobItem.Id,
                 ServerId = _appHost.SystemId,
                 UserId = job.UserId,
+                SyncJobName = job.Name,
+                SyncJobDateCreated = job.DateCreated,
                 AdditionalFiles = jobItem.AdditionalFiles.Select(i => new ItemFileInfo
                 {
                     ImageType = i.ImageType,
@@ -674,14 +677,16 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             syncedItem.Item.MediaSources = new List<MediaSourceInfo>();
 
-            // This will be null for items that are not audio/video
-            if (mediaSource == null)
-            {
-                syncedItem.OriginalFileName = Path.GetFileName(libraryItem.Path);
-            }
-            else
+            syncedItem.OriginalFileName = Path.GetFileName(libraryItem.Path);
+            if (string.IsNullOrWhiteSpace(syncedItem.OriginalFileName))
             {
                 syncedItem.OriginalFileName = Path.GetFileName(mediaSource.Path);
+            }
+
+            // This will be null for items that are not audio/video
+            if (mediaSource != null)
+            {
+                syncedItem.OriginalFileName = Path.ChangeExtension(syncedItem.OriginalFileName, Path.GetExtension(mediaSource.Path));
                 syncedItem.Item.MediaSources.Add(mediaSource);
             }
 
@@ -719,7 +724,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var jobItemResult = GetJobItems(new SyncJobItemQuery
             {
                 TargetId = targetId,
-                Statuses = new SyncJobItemStatus[]
+                Statuses = new[]
                 {
                     SyncJobItemStatus.ReadyToTransfer
                 }
@@ -733,10 +738,15 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public async Task<SyncDataResponse> SyncData(SyncDataRequest request)
         {
+            if (request.SyncJobItemIds != null)
+            {
+                return await SyncDataUsingSyncJobItemIds(request).ConfigureAwait(false);
+            }
+
             var jobItemResult = GetJobItems(new SyncJobItemQuery
             {
                 TargetId = request.TargetId,
-                Statuses = new SyncJobItemStatus[] { SyncJobItemStatus.Synced }
+                Statuses = new[] { SyncJobItemStatus.Synced }
             });
 
             var response = new SyncDataResponse();
@@ -798,6 +808,87 @@ namespace MediaBrowser.Server.Implementations.Sync
                 if (!jobItemResult.Items.Any(i => string.Equals(itemId, i.ItemId, StringComparison.OrdinalIgnoreCase)))
                 {
                     response.ItemIdsToRemove.Add(itemId);
+                }
+            }
+
+            response.ItemIdsToRemove = response.ItemIdsToRemove.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+            var itemsOnDevice = request.LocalItemIds
+                .Except(response.ItemIdsToRemove)
+                .ToList();
+
+            SetUserAccess(request, response, itemsOnDevice);
+
+            return response;
+        }
+
+        private async Task<SyncDataResponse> SyncDataUsingSyncJobItemIds(SyncDataRequest request)
+        {
+            var jobItemResult = GetJobItems(new SyncJobItemQuery
+            {
+                TargetId = request.TargetId,
+                Statuses = new[] { SyncJobItemStatus.Synced }
+            });
+
+            var response = new SyncDataResponse();
+
+            foreach (var jobItem in jobItemResult.Items)
+            {
+                if (request.SyncJobItemIds.Contains(jobItem.Id, StringComparer.OrdinalIgnoreCase))
+                {
+                    var job = _repo.GetJob(jobItem.JobId);
+                    var user = _userManager.GetUserById(job.UserId);
+
+                    if (jobItem.IsMarkedForRemoval)
+                    {
+                        // Tell the device to remove it since it has been marked for removal
+                        response.ItemIdsToRemove.Add(jobItem.Id);
+                    }
+                    else if (user == null)
+                    {
+                        // Tell the device to remove it since the user is gone now
+                        response.ItemIdsToRemove.Add(jobItem.Id);
+                    }
+                    else if (job.UnwatchedOnly)
+                    {
+                        var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
+
+                        if (IsLibraryItemAvailable(libraryItem))
+                        {
+                            if (libraryItem.IsPlayed(user) && libraryItem is Video)
+                            {
+                                // Tell the device to remove it since it has been played
+                                response.ItemIdsToRemove.Add(jobItem.Id);
+                            }
+                        }
+                        else
+                        {
+                            // Tell the device to remove it since it's no longer available
+                            response.ItemIdsToRemove.Add(jobItem.Id);
+                        }
+                    }
+                }
+                else
+                {
+                    // Content is no longer on the device
+                    jobItem.Status = SyncJobItemStatus.RemovedFromDevice;
+                    await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
+                }
+            }
+
+            // Now check each item that's on the device
+            foreach (var syncJobItemId in request.SyncJobItemIds)
+            {
+                // See if it's already marked for removal
+                if (response.ItemIdsToRemove.Contains(syncJobItemId, StringComparer.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                // If there isn't a sync job for this item, mark it for removal
+                if (!jobItemResult.Items.Any(i => string.Equals(syncJobItemId, i.Id, StringComparison.OrdinalIgnoreCase)))
+                {
+                    response.ItemIdsToRemove.Add(syncJobItemId);
                 }
             }
 

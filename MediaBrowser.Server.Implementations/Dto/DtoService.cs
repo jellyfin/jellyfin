@@ -97,13 +97,16 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (byName != null && !(item is LiveTvChannel))
                 {
-                    var itemFilter = byName.GetItemFilter();
+                    //if (options.Fields.Contains(ItemFields.ItemCounts))
+                    {
+                        var itemFilter = byName.GetItemFilter();
 
-                    var libraryItems = user != null ?
-                       user.RootFolder.GetRecursiveChildren(user, itemFilter) :
-                       _libraryManager.RootFolder.GetRecursiveChildren(itemFilter);
+                        var libraryItems = user != null ?
+                           user.RootFolder.GetRecursiveChildren(user, itemFilter) :
+                           _libraryManager.RootFolder.GetRecursiveChildren(itemFilter);
 
-                    SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
+                        SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
+                    }
                 }
 
                 FillSyncInfo(dto, item, itemIdsWithSyncJobs, options, user);
@@ -122,13 +125,16 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (byName != null && !(item is LiveTvChannel))
             {
-                var itemFilter = byName.GetItemFilter();
+                //if (options.Fields.Contains(ItemFields.ItemCounts))
+                {
+                    var itemFilter = byName.GetItemFilter();
 
-                var libraryItems = user != null ?
-                   user.RootFolder.GetRecursiveChildren(user, itemFilter) :
-                   _libraryManager.RootFolder.GetRecursiveChildren(itemFilter);
+                    var libraryItems = user != null ?
+                       user.RootFolder.GetRecursiveChildren(user, itemFilter) :
+                       _libraryManager.RootFolder.GetRecursiveChildren(itemFilter);
 
-                SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
+                    SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
+                }
 
                 FillSyncInfo(dto, item, options, user);
                 return dto;
@@ -255,7 +261,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     if (user == null)
                     {
-                        dto.MediaSources = hasMediaSources.GetMediaSources(true).ToList();
+                        dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(hasMediaSources, true).ToList();
                     }
                     else
                     {
@@ -263,7 +269,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                 }
             }
-
+            
             if (fields.Contains(ItemFields.Studios))
             {
                 AttachStudios(dto, item);
@@ -311,7 +317,11 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             var dto = GetBaseItemDtoInternal(item, options, user);
 
-            SetItemByNameInfo(item, dto, taggedItems, user);
+            //if (options.Fields.Contains(ItemFields.ItemCounts))
+            {
+                SetItemByNameInfo(item, dto, taggedItems, user);
+            }
+
             FillSyncInfo(dto, item, options, user);
 
             return dto;
@@ -1270,7 +1280,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                     else
                     {
-                        mediaStreams = iHasMediaSources.GetMediaSources(true).First().MediaStreams;
+                        mediaStreams = _mediaSourceManager().GetStaticMediaSources(iHasMediaSources, true).First().MediaStreams;
                     }
 
                     dto.MediaStreams = mediaStreams;
@@ -1443,7 +1453,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             var tvChannel = item as LiveTvChannel;
             if (tvChannel != null)
             {
-                dto.MediaSources = tvChannel.GetMediaSources(true).ToList();
+                dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(tvChannel, true).ToList();
             }
 
             var channelItem = item as IChannelItem;

@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -14,6 +13,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,10 +31,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected readonly ILogger Logger;
         protected readonly IServerConfigurationManager ConfigurationManager;
         protected readonly IFileSystem FileSystem;
-        protected readonly ILiveTvManager LiveTvManager;
         protected readonly IIsoManager IsoManager;
         protected readonly ILibraryManager LibraryManager;
-        protected readonly IChannelManager ChannelManager;
         protected readonly ISessionManager SessionManager;
         protected readonly ISubtitleEncoder SubtitleEncoder;
         protected readonly IMediaSourceManager MediaSourceManager;
@@ -45,20 +43,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ILogger logger,
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
-            ILiveTvManager liveTvManager,
             IIsoManager isoManager,
             ILibraryManager libraryManager,
-            IChannelManager channelManager,
-            ISessionManager sessionManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager)
+            ISessionManager sessionManager, 
+            ISubtitleEncoder subtitleEncoder, 
+            IMediaSourceManager mediaSourceManager)
         {
             MediaEncoder = mediaEncoder;
             Logger = logger;
             ConfigurationManager = configurationManager;
             FileSystem = fileSystem;
-            LiveTvManager = liveTvManager;
             IsoManager = isoManager;
             LibraryManager = libraryManager;
-            ChannelManager = channelManager;
             SessionManager = sessionManager;
             SubtitleEncoder = subtitleEncoder;
             MediaSourceManager = mediaSourceManager;
@@ -68,7 +64,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IProgress<double> progress,
             CancellationToken cancellationToken)
         {
-            var encodingJob = await new EncodingJobFactory(Logger, LiveTvManager, LibraryManager, ChannelManager, MediaSourceManager)
+            var encodingJob = await new EncodingJobFactory(Logger, LibraryManager, MediaSourceManager)
                 .CreateJob(options, IsVideoEncoder, progress, cancellationToken).ConfigureAwait(false);
 
             encodingJob.OutputFilePath = GetOutputFilePath(encodingJob);
@@ -477,53 +473,25 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 state.IsoMount = await IsoManager.Mount(state.MediaPath, cancellationToken).ConfigureAwait(false);
             }
 
-            if (string.IsNullOrEmpty(state.MediaPath))
+            if (state.MediaSource.RequiresOpening)
             {
-                var checkCodecs = false;
-
-                if (string.Equals(state.ItemType, typeof(LiveTvChannel).Name))
+                var liveStreamResponse = await MediaSourceManager.OpenLiveStream(new LiveStreamRequest
                 {
-                    var streamInfo = await LiveTvManager.GetChannelStream(state.Options.ItemId, cancellationToken).ConfigureAwait(false);
+                    OpenToken = state.MediaSource.OpenToken
 
-                    state.LiveTvStreamId = streamInfo.Id;
+                }, false, cancellationToken).ConfigureAwait(false);
 
-                    state.MediaPath = streamInfo.Path;
-                    state.InputProtocol = streamInfo.Protocol;
+                AttachMediaStreamInfo(state, liveStreamResponse.MediaSource, state.Options);
 
-                    await Task.Delay(1500, cancellationToken).ConfigureAwait(false);
-
-                    AttachMediaStreamInfo(state, streamInfo, state.Options);
-                    checkCodecs = true;
-                }
-
-                else if (string.Equals(state.ItemType, typeof(LiveTvVideoRecording).Name) ||
-                    string.Equals(state.ItemType, typeof(LiveTvAudioRecording).Name))
+                if (state.IsVideoRequest)
                 {
-                    var streamInfo = await LiveTvManager.GetRecordingStream(state.Options.ItemId, cancellationToken).ConfigureAwait(false);
-
-                    state.LiveTvStreamId = streamInfo.Id;
-
-                    state.MediaPath = streamInfo.Path;
-                    state.InputProtocol = streamInfo.Protocol;
-
-                    await Task.Delay(1500, cancellationToken).ConfigureAwait(false);
-
-                    AttachMediaStreamInfo(state, streamInfo, state.Options);
-                    checkCodecs = true;
+                    EncodingJobFactory.TryStreamCopy(state, state.Options);
                 }
+            }
 
-                if (state.IsVideoRequest && checkCodecs)
-                {
-                    if (state.VideoStream != null && EncodingJobFactory.CanStreamCopyVideo(state.Options, state.VideoStream))
-                    {
-                        state.OutputVideoCodec = "copy";
-                    }
-
-                    if (state.AudioStream != null && EncodingJobFactory.CanStreamCopyAudio(state.Options, state.AudioStream, state.SupportedAudioCodecs))
-                    {
-                        state.OutputAudioCodec = "copy";
-                    }
-                }
+            if (state.MediaSource.BufferMs.HasValue)
+            {
+                await Task.Delay(state.MediaSource.BufferMs.Value, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -531,22 +499,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
           MediaSourceInfo mediaSource,
           EncodingJobOptions videoRequest)
         {
-            state.InputProtocol = mediaSource.Protocol;
-            state.MediaPath = mediaSource.Path;
-            state.RunTimeTicks = mediaSource.RunTimeTicks;
-            state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
-            state.InputBitrate = mediaSource.Bitrate;
-            state.InputFileSize = mediaSource.Size;
-            state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
-
-            if (state.ReadInputAtNativeFramerate)
-            {
-                state.OutputAudioSync = "1000";
-                state.InputVideoSync = "-1";
-                state.InputAudioSync = "1";
-            }
-
-            EncodingJobFactory.AttachMediaStreamInfo(state, mediaSource.MediaStreams, videoRequest);
+            EncodingJobFactory.AttachMediaStreamInfo(state, mediaSource, videoRequest);
         }
 
         /// <summary>
@@ -998,7 +951,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (!string.IsNullOrEmpty(state.SubtitleStream.Language))
                 {
-                    var charenc = SubtitleEncoder.GetSubtitleFileCharacterSet(subtitlePath);
+                    var charenc = SubtitleEncoder.GetSubtitleFileCharacterSet(subtitlePath, state.MediaSource.Protocol, CancellationToken.None).Result;
 
                     if (!string.IsNullOrEmpty(charenc))
                     {
