@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Globalization;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Sync;
@@ -142,8 +143,9 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             var libraryItem = jobItem.Item;
             var internalSyncJobItem = _syncManager.GetJobItem(jobItem.SyncJobItemId);
+            var internalSyncJob = _syncManager.GetJob(jobItem.SyncJobId);
 
-            var localItem = CreateLocalItem(provider, jobItem, target, libraryItem, serverId, serverName, jobItem.OriginalFileName);
+            var localItem = CreateLocalItem(provider, jobItem, internalSyncJob, target, libraryItem, serverId, serverName, jobItem.OriginalFileName);
 
             await _syncManager.ReportSyncJobItemTransferBeginning(internalSyncJobItem.Id);
 
@@ -329,9 +331,9 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        public LocalItem CreateLocalItem(IServerSyncProvider provider, SyncedItem syncedItem, SyncTarget target, BaseItemDto libraryItem, string serverId, string serverName, string originalFileName)
+        public LocalItem CreateLocalItem(IServerSyncProvider provider, SyncedItem syncedItem, SyncJob job, SyncTarget target, BaseItemDto libraryItem, string serverId, string serverName, string originalFileName)
         {
-            var path = GetDirectoryPath(provider, syncedItem, libraryItem, serverId, serverName);
+            var path = GetDirectoryPath(provider, job, syncedItem, libraryItem, serverName);
             path.Add(GetLocalFileName(provider, libraryItem, originalFileName));
 
             var localPath = provider.GetFullPath(path, target);
@@ -352,29 +354,51 @@ namespace MediaBrowser.Server.Implementations.Sync
             };
         }
 
-        private string GetSyncJobFolderName(SyncedItem syncedItem, IServerSyncProvider provider)
-        {
-            var name = syncedItem.SyncJobName + "-" + syncedItem.SyncJobDateCreated
-                .ToLocalTime()
-                .ToString("g")
-                .Replace(" ", "-");
-
-            name = GetValidFilename(provider, name);
-
-            return name;
-        }
-
-        private List<string> GetDirectoryPath(IServerSyncProvider provider, SyncedItem syncedItem, BaseItemDto item, string serverId, string serverName)
+        private List<string> GetDirectoryPath(IServerSyncProvider provider, SyncJob job, SyncedItem syncedItem, BaseItemDto item, string serverName)
         {
             var parts = new List<string>
             {
-                serverName,
-                GetSyncJobFolderName(syncedItem, provider)
+                serverName
             };
+
+            var profileOption = _syncManager.GetProfileOptions(job.TargetId)
+                .FirstOrDefault(i => string.Equals(i.Id, job.Profile, StringComparison.OrdinalIgnoreCase));
+
+            string name;
+
+            if (profileOption != null && !string.IsNullOrWhiteSpace(profileOption.Name))
+            {
+                name = profileOption.Name;
+
+                if (job.Bitrate.HasValue)
+                {
+                    name += "-" + job.Bitrate.Value.ToString(CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    var qualityOption = _syncManager.GetQualityOptions(job.TargetId)
+                        .FirstOrDefault(i => string.Equals(i.Id, job.Quality, StringComparison.OrdinalIgnoreCase));
+
+                    if (qualityOption != null && !string.IsNullOrWhiteSpace(qualityOption.Name))
+                    {
+                        name += "-" + qualityOption.Name;
+                    }
+                }
+            }
+            else
+            {
+                name = syncedItem.SyncJobName + "-" + syncedItem.SyncJobDateCreated
+                   .ToLocalTime()
+                   .ToString("g")
+                   .Replace(" ", "-");
+            }
+
+            name = GetValidFilename(provider, name);
+            parts.Add(name);
 
             if (item.IsType("episode"))
             {
-                //parts.Add("TV");
+                parts.Add("TV");
                 if (!string.IsNullOrWhiteSpace(item.SeriesName))
                 {
                     parts.Add(item.SeriesName);
@@ -382,12 +406,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
             else if (item.IsVideo)
             {
-                //parts.Add("Videos");
+                parts.Add("Videos");
                 parts.Add(item.Name);
             }
             else if (item.IsAudio)
             {
-                //parts.Add("Music");
+                parts.Add("Music");
 
                 if (!string.IsNullOrWhiteSpace(item.AlbumArtist))
                 {
@@ -401,7 +425,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
             else if (string.Equals(item.MediaType, MediaType.Photo, StringComparison.OrdinalIgnoreCase))
             {
-                //parts.Add("Photos");
+                parts.Add("Photos");
 
                 if (!string.IsNullOrWhiteSpace(item.Album))
                 {
