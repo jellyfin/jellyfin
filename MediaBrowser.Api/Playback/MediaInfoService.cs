@@ -101,7 +101,7 @@ namespace MediaBrowser.Api.Playback
 
                 SetDeviceSpecificData(item, result.MediaSource, profile, authInfo, request.MaxStreamingBitrate,
                     request.StartTimeTicks ?? 0, result.MediaSource.Id, request.AudioStreamIndex,
-                    request.SubtitleStreamIndex);
+                    request.SubtitleStreamIndex, request.PlaySessionId);
             }
             else
             {
@@ -206,7 +206,7 @@ namespace MediaBrowser.Api.Playback
 
             foreach (var mediaSource in result.MediaSources)
             {
-                SetDeviceSpecificData(item, mediaSource, profile, auth, maxBitrate, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
+                SetDeviceSpecificData(item, mediaSource, profile, auth, maxBitrate, startTimeTicks, mediaSourceId, audioStreamIndex, subtitleStreamIndex, result.PlaySessionId);
             }
 
             SortMediaSources(result);
@@ -220,7 +220,8 @@ namespace MediaBrowser.Api.Playback
             long startTimeTicks,
             string mediaSourceId,
             int? audioStreamIndex,
-            int? subtitleStreamIndex)
+            int? subtitleStreamIndex,
+            string playSessionId)
         {
             var streamBuilder = new StreamBuilder();
 
@@ -294,17 +295,18 @@ namespace MediaBrowser.Api.Playback
                     streamBuilder.BuildAudioItem(options) :
                     streamBuilder.BuildVideoItem(options);
 
+                if (streamInfo != null)
+                {
+                    streamInfo.PlaySessionId = playSessionId;
+                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, baseUrl, auth.Token);
+                }
+
                 if (streamInfo != null && streamInfo.PlayMethod == PlayMethod.Transcode)
                 {
                     streamInfo.StartPositionTicks = startTimeTicks;
                     mediaSource.TranscodingUrl = streamInfo.ToUrl(baseUrl, auth.Token);
                     mediaSource.TranscodingContainer = streamInfo.Container;
                     mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
-                }
-
-                if (streamInfo != null)
-                {
-                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, baseUrl, auth.Token);
                 }
             }
         }
