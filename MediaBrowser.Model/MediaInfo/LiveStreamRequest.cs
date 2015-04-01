@@ -6,6 +6,7 @@ namespace MediaBrowser.Model.MediaInfo
     {
         public string OpenToken { get; set; }
         public string UserId { get; set; }
+        public string PlaySessionId { get; set; }
         public int? MaxStreamingBitrate { get; set; }
         public long? StartTimeTicks { get; set; }
         public int? AudioStreamIndex { get; set; }
@@ -15,7 +16,7 @@ namespace MediaBrowser.Model.MediaInfo
 
         public LiveStreamRequest()
         {
-            
+
         }
 
         public LiveStreamRequest(AudioOptions options)
