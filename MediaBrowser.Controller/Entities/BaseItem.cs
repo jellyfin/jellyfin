@@ -1219,18 +1219,6 @@ namespace MediaBrowser.Controller.Entities
 
         private BaseItem FindLinkedChild(LinkedChild info)
         {
-            if (!string.IsNullOrWhiteSpace(info.ItemName))
-            {
-                if (string.Equals(info.ItemType, "musicgenre", StringComparison.OrdinalIgnoreCase))
-                {
-                    return LibraryManager.GetMusicGenre(info.ItemName);
-                }
-                if (string.Equals(info.ItemType, "musicartist", StringComparison.OrdinalIgnoreCase))
-                {
-                    return LibraryManager.GetArtist(info.ItemName);
-                }
-            }
-
             if (!string.IsNullOrEmpty(info.Path))
             {
                 var itemByPath = LibraryManager.RootFolder.FindByPath(info.Path);
@@ -1241,23 +1229,6 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 return itemByPath;
-            }
-
-            if (!string.IsNullOrWhiteSpace(info.ItemName) && !string.IsNullOrWhiteSpace(info.ItemType))
-            {
-                return LibraryManager.RootFolder.GetRecursiveChildren(i =>
-                {
-                    if (string.Equals(i.Name, info.ItemName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (string.Equals(i.GetType().Name, info.ItemType, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
-                    }
-
-                    return false;
-
-                }).FirstOrDefault();
             }
 
             return null;

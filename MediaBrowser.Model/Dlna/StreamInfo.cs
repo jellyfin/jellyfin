@@ -217,6 +217,11 @@ namespace MediaBrowser.Model.Dlna
             return list;
         }
 
+        public List<SubtitleStreamInfo> GetExternalSubtitles(bool includeSelectedTrackOnly, string baseUrl, string accessToken)
+        {
+            return GetExternalSubtitles(includeSelectedTrackOnly, false, baseUrl, accessToken);
+        }
+
         public List<SubtitleStreamInfo> GetExternalSubtitles(bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
         {
             List<SubtitleStreamInfo> list = GetSubtitleProfiles(includeSelectedTrackOnly, enableAllProfiles, baseUrl, accessToken);
