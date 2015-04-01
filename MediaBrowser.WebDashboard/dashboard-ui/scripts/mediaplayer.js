@@ -1398,6 +1398,7 @@
                         'Transcode';
 
                     state.PlayState.LiveStreamId = getParameterByName('LiveStreamId', currentSrc);
+                    state.PlayState.PlaySessionId = getParameterByName('PlaySessionId', currentSrc);
                 }
             }
 

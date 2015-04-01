@@ -63,6 +63,10 @@
                 stopInfo.LiveStreamId = state.PlayState.LiveStreamId;
             }
 
+            if (state.PlayState.PlaySessionId) {
+                stopInfo.PlaySessionId = state.PlayState.PlaySessionId;
+            }
+
             ApiClient.reportPlaybackStopped(stopInfo);
 
         }).on('positionchange.mediacontroller', function (e, state) {
