@@ -455,7 +455,10 @@
         self.isLoggedIntoConnect = function () {
 
             // Make sure it returns true or false
-            return (self.connectToken() && self.connectUserId()) == true;
+            if (!self.connectToken() || !self.connectUserId()) {
+                return false;
+            }
+            return true;
         };
 
         self.logout = function () {
