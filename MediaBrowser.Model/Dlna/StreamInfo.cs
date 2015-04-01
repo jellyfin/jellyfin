@@ -69,7 +69,7 @@ namespace MediaBrowser.Model.Dlna
         public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
         public string SubtitleFormat { get; set; }
 
-        public PlaybackInfoResponse PlaybackInfo { get; set; }
+        public string PlaySessionId { get; set; }
 
         public string MediaSourceId
         {
@@ -207,8 +207,7 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("Profile", item.VideoProfile ?? string.Empty));
             list.Add(new NameValuePair("Cabac", item.Cabac.HasValue ? item.Cabac.Value.ToString() : string.Empty));
 
-            string playSessionId = item.PlaybackInfo == null ? null : item.PlaybackInfo.PlaySessionId;
-            list.Add(new NameValuePair("PlaySessionId", playSessionId ?? string.Empty));
+            list.Add(new NameValuePair("PlaySessionId", item.PlaySessionId ?? string.Empty));
             list.Add(new NameValuePair("api_key", accessToken ?? string.Empty));
 
             string liveStreamId = item.MediaSource == null ? null : item.MediaSource.LiveStreamId;
