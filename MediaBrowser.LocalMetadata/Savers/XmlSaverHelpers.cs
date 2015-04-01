@@ -756,11 +756,6 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 builder.Append("<" + singularNodeName + ">");
 
-                if (!string.IsNullOrWhiteSpace(link.ItemType))
-                {
-                    builder.Append("<Type>" + SecurityElement.Escape(link.ItemType) + "</Type>");
-                }
-
                 if (!string.IsNullOrWhiteSpace(link.Path))
                 {
                     builder.Append("<Path>" + SecurityElement.Escape((link.Path)) + "</Path>");

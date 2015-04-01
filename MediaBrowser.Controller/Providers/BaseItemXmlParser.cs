@@ -1404,21 +1404,9 @@ namespace MediaBrowser.Controller.Providers
                 {
                     switch (reader.Name)
                     {
-                        case "Name":
-                            {
-                                linkedItem.ItemName = reader.ReadElementContentAsString();
-                                break;
-                            }
-
                         case "Path":
                             {
                                 linkedItem.Path = reader.ReadElementContentAsString();
-                                break;
-                            }
-
-                        case "Type":
-                            {
-                                linkedItem.ItemType = reader.ReadElementContentAsString();
                                 break;
                             }
 
@@ -1435,7 +1423,7 @@ namespace MediaBrowser.Controller.Providers
                 return linkedItem;
             }
 
-            return string.IsNullOrWhiteSpace(linkedItem.ItemName) || string.IsNullOrWhiteSpace(linkedItem.ItemType) ? null : linkedItem;
+            return null;
         }
 
 

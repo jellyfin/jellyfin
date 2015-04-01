@@ -334,22 +334,9 @@ namespace MediaBrowser.Controller.Entities
         {
             if (this is ICollectionFolder && !(this is BasePluginFolder))
             {
-                if (user.Policy.BlockedMediaFolders != null)
+                if (!user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
                 {
-                    if (user.Policy.BlockedMediaFolders.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase) ||
-
-                        // Backwards compatibility
-                        user.Policy.BlockedMediaFolders.Contains(Name, StringComparer.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    if (!user.Policy.EnableAllFolders && !user.Policy.EnabledFolders.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
 
