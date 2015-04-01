@@ -470,7 +470,7 @@ namespace MediaBrowser.Dlna.PlayTo
             
             var hasMediaSources = item as IHasMediaSources;
             var mediaSources = hasMediaSources != null
-                ? (user == null ? _mediaSourceManager.GetStaticMediaSources(hasMediaSources, true) : _mediaSourceManager.GetStaticMediaSources(hasMediaSources, true, user)).ToList()
+                ? (_mediaSourceManager.GetStaticMediaSources(hasMediaSources, true, user)).ToList()
                 : new List<MediaSourceInfo>();
 
             var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId, mediaSourceId, audioStreamIndex, subtitleStreamIndex);

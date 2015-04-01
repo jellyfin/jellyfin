@@ -235,7 +235,7 @@ namespace MediaBrowser.Server.Implementations.Library
             return GetStaticMediaSources(item, enablePathSubstitution).FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
         }
 
-        public IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution)
+        public IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution, User user = null)
         {
             if (item == null)
             {
@@ -245,33 +245,16 @@ namespace MediaBrowser.Server.Implementations.Library
             if (!(item is Video))
             {
                 return item.GetMediaSources(enablePathSubstitution);
-            }
-
-            return item.GetMediaSources(enablePathSubstitution);
-        }
-
-        public IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution, User user)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            if (!(item is Video))
-            {
-                return item.GetMediaSources(enablePathSubstitution);
-            }
-
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
             }
 
             var sources = item.GetMediaSources(enablePathSubstitution).ToList();
 
-            foreach (var source in sources)
+            if (user != null)
             {
-                SetUserProperties(source, user);
+                foreach (var source in sources)
+                {
+                    SetUserProperties(source, user);
+                }
             }
 
             return sources;

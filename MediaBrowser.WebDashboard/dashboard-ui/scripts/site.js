@@ -185,8 +185,7 @@ var Dashboard = {
         var url = getWindowUrl().toLowerCase();
 
         return url.indexOf('mediabrowser.tv') != -1 ||
-			url.indexOf('emby.media') != -1 ||
-			url.indexOf('mediabrowser.github') != -1;
+			url.indexOf('emby.media') != -1;
     },
 
     logout: function (logoutWithServer) {
@@ -1355,7 +1354,9 @@ var Dashboard = {
         });
 
         if (!Dashboard.isServerlessPage()) {
+
             if (Dashboard.serverAddress() && Dashboard.getCurrentUserId() && Dashboard.getAccessToken()) {
+
                 window.ApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId);
 
                 ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
@@ -1364,6 +1365,7 @@ var Dashboard = {
 
                 ConnectionManager.addApiClient(ApiClient, true).fail(Dashboard.logout);
             } else {
+
                 Dashboard.logout();
                 return;
             }

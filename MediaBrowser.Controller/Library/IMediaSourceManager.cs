@@ -63,15 +63,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable&lt;MediaSourceInfo&gt;.</returns>
-        IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution, User user);
-
-        /// <summary>
-        /// Gets the static media sources.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
-        /// <returns>IEnumerable&lt;MediaSourceInfo&gt;.</returns>
-        IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution);
+        IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution, User user = null);
         
         /// <summary>
         /// Gets the static media source.
