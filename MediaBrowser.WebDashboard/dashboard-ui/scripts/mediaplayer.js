@@ -427,7 +427,7 @@
                     self.currentMediaSource = result.MediaSources[0];
                     self.currentSubtitleStreamIndex = subtitleStreamIndex;
 
-                    currentSrc = self.currentMediaSource.TranscodingUrl;
+                    currentSrc = ApiClient.getUrl(self.currentMediaSource.TranscodingUrl);
                     changeStreamToUrl(element, playSessionId, currentSrc, ticks);
                 }
             });
@@ -754,7 +754,7 @@
                     } else {
 
                         startTimeTicksOffset = startPosition || 0;
-                        mediaUrl = mediaSource.TranscodingUrl;
+                        mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
 
                         if (mediaSource.TranscodingSubProtocol == 'hls') {
 
@@ -793,7 +793,7 @@
 
                         contentType = 'audio/' + mediaSource.TranscodingContainer;
 
-                        mediaUrl = mediaSource.TranscodingUrl;
+                        mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
                     }
 
                     startTimeTicksOffset = startPosition || 0;
