@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Server.Implementations.UserViews;
 
 namespace MediaBrowser.Server.Implementations.Photos
 {
@@ -134,30 +135,25 @@ namespace MediaBrowser.Server.Implementations.Photos
             return parts.GetMD5().ToString("N");
         }
 
-        protected Task<Stream> GetThumbCollage(List<BaseItem> items)
+        protected Task<Stream> GetThumbCollage(IHasImages primaryItem, List<BaseItem> items)
         {
-            var files = items
-                .Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb))
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .ToList();
+            var stream = new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(items), primaryItem.Name, 960, 540);
 
-            return DynamicImageHelpers.GetThumbCollage(files,
-                FileSystem,
-                1600,
-                900,
-                ApplicationPaths);
+            return Task.FromResult(stream);
         }
 
-        protected Task<Stream> GetSquareCollage(List<BaseItem> items)
+        private IEnumerable<String> GetStripCollageImagePaths(IEnumerable<BaseItem> items)
         {
-            var files = items
+            return items
                 .Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb))
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .ToList();
+                .Where(i => !string.IsNullOrWhiteSpace(i));
+        }
 
-            return DynamicImageHelpers.GetSquareCollage(files,
-                FileSystem,
-                800, ApplicationPaths);
+        protected Task<Stream> GetSquareCollage(IHasImages primaryItem, List<BaseItem> items)
+        {
+            var stream = new StripCollageBuilder(ApplicationPaths).BuildSquareCollage(GetStripCollageImagePaths(items), primaryItem.Name, 800, 800);
+
+            return Task.FromResult(stream);
         }
 
         public string Name
@@ -176,8 +172,8 @@ namespace MediaBrowser.Server.Implementations.Photos
             }
 
             return imageType == ImageType.Thumb ?
-                await GetThumbCollage(itemsWithImages).ConfigureAwait(false) :
-                await GetSquareCollage(itemsWithImages).ConfigureAwait(false);
+                await GetThumbCollage(item, itemsWithImages).ConfigureAwait(false) :
+                await GetSquareCollage(item, itemsWithImages).ConfigureAwait(false);
         }
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
