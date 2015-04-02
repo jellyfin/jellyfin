@@ -248,7 +248,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
                     return null;
                 }
 
-                return new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(itemsWithImages, view.ViewType), item.Name, 960, 540);
+                return new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(itemsWithImages, view.ViewType), 960, 540, false, item.Name);
             }
 
             return await base.CreateImageAsync(item, itemsWithImages, imageType, imageIndex);
