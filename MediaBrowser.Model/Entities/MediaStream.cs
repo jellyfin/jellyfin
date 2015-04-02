@@ -135,7 +135,7 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The score.</value>
         public int? Score { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is external.
         /// </summary>
@@ -152,6 +152,11 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The delivery URL.</value>
         public string DeliveryUrl { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is external URL.
+        /// </summary>
+        /// <value><c>null</c> if [is external URL] contains no value, <c>true</c> if [is external URL]; otherwise, <c>false</c>.</value>
+        public bool? IsExternalUrl { get; set; }
 
         public bool IsTextSubtitleStream
         {
