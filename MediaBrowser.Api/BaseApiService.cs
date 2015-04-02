@@ -73,17 +73,6 @@ namespace MediaBrowser.Api
             return ResultFactory.GetOptimizedResultUsingCache(Request, cacheKey, lastDateModified, cacheDuration, factoryFn);
         }
 
-        /// <summary>
-        /// Infers the server address from the url
-        /// </summary>
-        /// <returns></returns>
-        protected string GetServerAddress()
-        {
-            var index = Request.AbsoluteUri.IndexOf(Request.PathInfo, StringComparison.OrdinalIgnoreCase);
-
-            return Request.AbsoluteUri.Substring(0, index);
-        }
-
         protected void AssertCanUpdateUser(IUserManager userManager, string userId)
         {
             var auth = AuthorizationContext.GetAuthorizationInfo(Request);
