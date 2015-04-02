@@ -966,7 +966,7 @@
             for (var i = 0, length = textStreams.length; i < length; i++) {
 
                 var textStream = textStreams[i];
-                var textStreamUrl = textStream.DeliveryUrl;
+                var textStreamUrl = !textStream.IsExternalUrl ? ApiClient.getUrl(textStream.DeliveryUrl) : textStream.DeliveryUrl;
                 var defaultAttribute = textStream.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';
 
                 html += '<track kind="subtitles" src="' + textStreamUrl + '" srclang="' + (textStream.Language || 'und') + '"' + defaultAttribute + '></track>';

@@ -225,8 +225,6 @@ namespace MediaBrowser.Api.Playback
         {
             var streamBuilder = new StreamBuilder();
 
-            var baseUrl = GetServerAddress();
-
             var options = new VideoOptions
             {
                 MediaSources = new List<MediaSourceInfo> { mediaSource },
@@ -266,7 +264,7 @@ namespace MediaBrowser.Api.Playback
 
                 if (streamInfo != null)
                 {
-                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, baseUrl, auth.Token);
+                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
                 }
             }
 
@@ -284,7 +282,7 @@ namespace MediaBrowser.Api.Playback
 
                 if (streamInfo != null)
                 {
-                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, baseUrl, auth.Token);
+                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
                 }
             }
 
@@ -298,22 +296,22 @@ namespace MediaBrowser.Api.Playback
                 if (streamInfo != null)
                 {
                     streamInfo.PlaySessionId = playSessionId;
-                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, baseUrl, auth.Token);
+                    SetDeviceSpecificSubtitleInfo(streamInfo, mediaSource, auth.Token);
                 }
 
                 if (streamInfo != null && streamInfo.PlayMethod == PlayMethod.Transcode)
                 {
                     streamInfo.StartPositionTicks = startTimeTicks;
-                    mediaSource.TranscodingUrl = streamInfo.ToUrl(baseUrl, auth.Token);
+                    mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-').TrimStart('-');
                     mediaSource.TranscodingContainer = streamInfo.Container;
                     mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                 }
             }
         }
 
-        private void SetDeviceSpecificSubtitleInfo(StreamInfo info, MediaSourceInfo mediaSource, string baseUrl, string accessToken)
+        private void SetDeviceSpecificSubtitleInfo(StreamInfo info, MediaSourceInfo mediaSource, string accessToken)
         {
-            var profiles = info.GetSubtitleProfiles(false, baseUrl, accessToken);
+            var profiles = info.GetSubtitleProfiles(false, "-", accessToken);
             mediaSource.DefaultSubtitleStreamIndex = info.SubtitleStreamIndex;
 
             foreach (var profile in profiles)
@@ -326,7 +324,8 @@ namespace MediaBrowser.Api.Playback
 
                         if (profile.DeliveryMethod == SubtitleDeliveryMethod.External)
                         {
-                            stream.DeliveryUrl = profile.Url;
+                            stream.DeliveryUrl = profile.Url.TrimStart('-').TrimStart('-');
+                            stream.IsExternalUrl = profile.IsExternalUrl;
                         }
                     }
                 }
