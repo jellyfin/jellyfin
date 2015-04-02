@@ -286,26 +286,64 @@ namespace MediaBrowser.Api
 
             job.DisposeKillTimer();
         }
-        
+
         public void OnTranscodeEndRequest(TranscodingJob job)
         {
             job.ActiveRequestCount--;
 
             if (job.ActiveRequestCount == 0)
             {
-                // TODO: Lower this hls timeout
-                var timerDuration = job.Type == TranscodingJobType.Progressive ?
-                    1000 :
-                    1800000;
+                PingTimer(job, true);
+            }
+        }
+        internal void PingTranscodingJob(string deviceId, string playSessionId)
+        {
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                throw new ArgumentNullException("deviceId");
+            }
 
-                if (job.KillTimer == null)
+            var jobs = new List<TranscodingJob>();
+
+            lock (_activeTranscodingJobs)
+            {
+                // This is really only needed for HLS. 
+                // Progressive streams can stop on their own reliably
+                jobs = jobs.Where(j =>
+                {
+                    if (string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    return false;
+
+                }).ToList();
+            }
+
+            foreach (var job in jobs)
+            {
+                PingTimer(job, false);
+            }
+        }
+
+        private void PingTimer(TranscodingJob job, bool startTimerIfNeeded)
+        {
+            // TODO: Lower this hls timeout
+            var timerDuration = job.Type == TranscodingJobType.Progressive ?
+                1000 :
+                1800000;
+
+            if (job.KillTimer == null)
+            {
+                if (startTimerIfNeeded)
                 {
                     job.KillTimer = new Timer(OnTranscodeKillTimerStopped, job, timerDuration, Timeout.Infinite);
                 }
-                else
-                {
-                    job.KillTimer.Change(timerDuration, Timeout.Infinite);
-                }
+            }
+            else
+            {
+                job.KillTimer.Change(timerDuration, Timeout.Infinite);
             }
         }
 
