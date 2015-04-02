@@ -3,17 +3,17 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Server.Implementations.UserViews;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Server.Implementations.UserViews;
 
 namespace MediaBrowser.Server.Implementations.Photos
 {
@@ -126,7 +126,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected abstract Task<List<BaseItem>> GetItemsWithImages(IHasImages item);
 
-        private const string Version = "5";
+        private const string Version = "9";
         protected string GetConfigurationCacheKey(List<BaseItem> items, string itemName)
         {
             var parts = Version + "_" + (itemName ?? string.Empty) + "_" +
@@ -137,7 +137,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected Task<Stream> GetThumbCollage(IHasImages primaryItem, List<BaseItem> items)
         {
-            var stream = new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(items), primaryItem.Name, 960, 540);
+            var stream = new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(items), 960, 540, true, primaryItem.Name);
 
             return Task.FromResult(stream);
         }
@@ -149,9 +149,16 @@ namespace MediaBrowser.Server.Implementations.Photos
                 .Where(i => !string.IsNullOrWhiteSpace(i));
         }
 
+        protected Task<Stream> GetPosterCollage(IHasImages primaryItem, List<BaseItem> items)
+        {
+            var stream = new StripCollageBuilder(ApplicationPaths).BuildSquareCollage(GetStripCollageImagePaths(items), 800, 800, true, primaryItem.Name);
+
+            return Task.FromResult(stream);
+        }
+
         protected Task<Stream> GetSquareCollage(IHasImages primaryItem, List<BaseItem> items)
         {
-            var stream = new StripCollageBuilder(ApplicationPaths).BuildSquareCollage(GetStripCollageImagePaths(items), primaryItem.Name, 800, 800);
+            var stream = new StripCollageBuilder(ApplicationPaths).BuildSquareCollage(GetStripCollageImagePaths(items), 800, 800, true, primaryItem.Name);
 
             return Task.FromResult(stream);
         }
@@ -171,9 +178,19 @@ namespace MediaBrowser.Server.Implementations.Photos
                 return null;
             }
 
-            return imageType == ImageType.Thumb ?
-                await GetThumbCollage(item, itemsWithImages).ConfigureAwait(false) :
-                await GetSquareCollage(item, itemsWithImages).ConfigureAwait(false);
+            if (imageType == ImageType.Thumb)
+            {
+                return await GetThumbCollage(item, itemsWithImages).ConfigureAwait(false);
+            }
+
+            if (imageType == ImageType.Primary)
+            {
+                return item is PhotoAlbum || item is Playlist ?
+                    await GetSquareCollage(item, itemsWithImages).ConfigureAwait(false) :
+                    await GetPosterCollage(item, itemsWithImages).ConfigureAwait(false);
+            }
+
+            throw new ArgumentException("Unexpected image type");
         }
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
