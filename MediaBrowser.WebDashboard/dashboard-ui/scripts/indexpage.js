@@ -469,7 +469,7 @@
         switch (index) {
 
             case 0:
-                return 'smalllibrarytiles-automobile';
+                return 'librarytiles-automobile';
             case 1:
                 return 'resume';
             case 2:
