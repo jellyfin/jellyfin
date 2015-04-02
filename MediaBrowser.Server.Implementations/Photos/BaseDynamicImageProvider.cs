@@ -126,7 +126,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected abstract Task<List<BaseItem>> GetItemsWithImages(IHasImages item);
 
-        private const string Version = "9";
+        private const string Version = "15";
         protected string GetConfigurationCacheKey(List<BaseItem> items, string itemName)
         {
             var parts = Version + "_" + (itemName ?? string.Empty) + "_" +
@@ -151,7 +151,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected Task<Stream> GetPosterCollage(IHasImages primaryItem, List<BaseItem> items)
         {
-            var stream = new StripCollageBuilder(ApplicationPaths).BuildSquareCollage(GetStripCollageImagePaths(items), 800, 800, true, primaryItem.Name);
+            var stream = new StripCollageBuilder(ApplicationPaths).BuildPosterCollage(GetStripCollageImagePaths(items), 600, 900, true, primaryItem.Name);
 
             return Task.FromResult(stream);
         }
