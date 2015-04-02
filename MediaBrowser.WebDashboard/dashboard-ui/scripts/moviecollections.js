@@ -74,6 +74,17 @@
                         lazy: true
                     });
                 }
+                else if (view == "Thumb") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "backdrop",
+                        context: 'movies',
+                        showTitle: true,
+                        centerText: true,
+                        lazy: true,
+                        preferThumb: true
+                    });
+                }
 
                 $('.noItemsMessage', page).hide();
 
