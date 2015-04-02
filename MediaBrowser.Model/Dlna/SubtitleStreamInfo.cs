@@ -9,5 +9,6 @@ namespace MediaBrowser.Model.Dlna
         public string Format { get; set; }
         public int Index { get; set; }
         public SubtitleDeliveryMethod DeliveryMethod { get; set; }
+        public bool IsExternalUrl { get; set; }
     }
 }

@@ -321,10 +321,13 @@ namespace MediaBrowser.Model.Dlna
                         StringHelper.ToStringCultureInvariant(stream.Index),
                         StringHelper.ToStringCultureInvariant(startPositionTicks),
                         subtitleProfile.Format);
+
+                    info.IsExternalUrl = false;
                 }
                 else
                 {
                     info.Url = stream.Path;
+                    info.IsExternalUrl = true;
                 }
             }
 
