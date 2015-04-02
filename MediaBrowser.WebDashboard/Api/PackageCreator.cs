@@ -451,7 +451,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "moviegenres.js",
                                 "moviecollections.js",
                                 "movies.js",
-                                "movieslatest.js",
                                 "moviepeople.js",
                                 "moviesrecommended.js",
                                 "moviestudios.js",

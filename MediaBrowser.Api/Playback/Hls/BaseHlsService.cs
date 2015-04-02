@@ -186,7 +186,7 @@ namespace MediaBrowser.Api.Playback.Hls
             while (true)
             {
                 // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
-                using (var fileStream = FileSystem.GetFileStream(playlist, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+                using (var fileStream = GetPlaylistFileStream(playlist))
                 {
                     using (var reader = new StreamReader(fileStream))
                     {
@@ -209,6 +209,20 @@ namespace MediaBrowser.Api.Playback.Hls
                         await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                     }
                 }
+            }
+        }
+
+        protected Stream GetPlaylistFileStream(string path)
+        {
+            var tmpPath = path + ".tmp";
+
+            try
+            {
+                return FileSystem.GetFileStream(tmpPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
+            }
+            catch (IOException)
+            {
+                return FileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
             }
         }
 

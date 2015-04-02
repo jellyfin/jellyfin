@@ -1,5 +1,29 @@
 ﻿(function ($, document) {
 
+    function loadLatest(page, userId, parentId) {
+
+        var options = {
+
+            IncludeItemTypes: "Movie",
+            Limit: 20,
+            Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
+            ParentId: parentId,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+        };
+
+        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
+
+            $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
+                items: items,
+                lazy: true,
+                shape: 'portrait',
+                overlayText: false
+
+            })).lazyChildren().trigger('create');
+        });
+    }
+
     function getRecommendationHtml(recommendation) {
 
         var html = '';
@@ -51,6 +75,7 @@
         var screenWidth = $(window).width();
 
         var page = this;
+        var userId = Dashboard.getCurrentUserId();
 
         var options = {
 
@@ -58,7 +83,7 @@
             SortOrder: "Descending",
             IncludeItemTypes: "Movie",
             Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 12 : (screenWidth >= 1600 ? 8 : 6),
+            Limit: screenWidth >= 1920 ? 6 : (screenWidth >= 1600 ? 4 : 3),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
             CollapseBoxSetItems: false,
@@ -67,7 +92,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
+        ApiClient.getItems(userId, options).done(function (result) {
 
             if (result.Items.length) {
                 $('#resumableSection', page).show();
@@ -87,9 +112,11 @@
 
         });
 
+        loadLatest(page, userId, parentId);
+
         var url = ApiClient.getUrl("Movies/Recommendations", {
 
-            userId: Dashboard.getCurrentUserId(),
+            userId: userId,
             categoryLimit: screenWidth >= 1200 ? 4 : 3,
             ItemLimit: screenWidth >= 1920 ? 10 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 7 : 6)),
             Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
