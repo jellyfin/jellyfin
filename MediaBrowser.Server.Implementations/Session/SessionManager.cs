@@ -305,7 +305,7 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
-        private async Task<MediaSourceInfo> GetMediaSource(BaseItem item, string mediaSourceId)
+        private async Task<MediaSourceInfo> GetMediaSource(IHasMediaSources item, string mediaSourceId)
         {
             var sources = await _mediaSourceManager.GetPlayackMediaSources(item.Id.ToString("N"), false, CancellationToken.None)
                         .ConfigureAwait(false);
@@ -334,11 +334,16 @@ namespace MediaBrowser.Server.Implementations.Session
                 {
                     var runtimeTicks = libraryItem.RunTimeTicks;
 
-                    var mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId).ConfigureAwait(false);
-
-                    if (mediaSource != null)
+                    MediaSourceInfo mediaSource = null;
+                    var hasMediaSources = libraryItem as IHasMediaSources;
+                    if (hasMediaSources != null)
                     {
-                        runtimeTicks = mediaSource.RunTimeTicks;
+                        mediaSource = await GetMediaSource(hasMediaSources, info.MediaSourceId).ConfigureAwait(false);
+
+                        if (mediaSource != null)
+                        {
+                            runtimeTicks = mediaSource.RunTimeTicks;
+                        }
                     }
 
                     info.Item = GetItemInfo(libraryItem, libraryItem, mediaSource);
@@ -414,12 +419,12 @@ namespace MediaBrowser.Server.Implementations.Session
                 if (!_activeConnections.TryGetValue(key, out sessionInfo))
                 {
                     sessionInfo = new SessionInfo
-                   {
-                       Client = appName,
-                       DeviceId = deviceId,
-                       ApplicationVersion = appVersion,
-                       Id = key.GetMD5().ToString("N")
-                   };
+                    {
+                        Client = appName,
+                        DeviceId = deviceId,
+                        ApplicationVersion = appVersion,
+                        Id = key.GetMD5().ToString("N")
+                    };
 
                     sessionInfo.DeviceName = deviceName;
                     sessionInfo.UserId = userId;
@@ -756,7 +761,13 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 if (current == null || !string.Equals(current.Id, info.ItemId, StringComparison.OrdinalIgnoreCase))
                 {
-                    var mediaSource = await GetMediaSource(libraryItem, info.MediaSourceId).ConfigureAwait(false);
+                    MediaSourceInfo mediaSource = null;
+
+                    var hasMediaSources = libraryItem as IHasMediaSources;
+                    if (hasMediaSources != null)
+                    {
+                        mediaSource = await GetMediaSource(hasMediaSources, info.MediaSourceId).ConfigureAwait(false);
+                    }
 
                     info.Item = GetItemInfo(libraryItem, libraryItem, mediaSource);
                 }
