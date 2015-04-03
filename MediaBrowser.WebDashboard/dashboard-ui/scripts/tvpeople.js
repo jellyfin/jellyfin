@@ -9,7 +9,7 @@
         SortOrder: "Ascending",
         IncludeItemTypes: "Series,Episode",
         Recursive: true,
-        Fields: "DateCreated",
+        Fields: "DateCreated,ItemCounts",
         PersonTypes: "",
         StartIndex: 0,
         Limit: 100

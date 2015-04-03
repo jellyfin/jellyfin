@@ -52,6 +52,7 @@
     "HeaderAddUser": "Add User",
     "LabelAddConnectSupporterHelp": "To add a user who isn't listed, you'll need to first link their account to Emby Connect from their user profile page.",
     "LabelPinCode": "Pin code:",
+    "OptionHideWatchedContentFromLatestMedia": "Hide watched content from latest media",
     "ButtonOk": "Ok",
     "ButtonCancel": "Cancel",
     "ButtonExit": "Exit",
@@ -167,6 +168,7 @@
     "MessageNothingHere": "Nothing here.",
     "MessagePleaseEnsureInternetMetadata": "Please ensure downloading of internet metadata is enabled.",
     "TabSuggested": "Suggested",
+    "TabSuggestions": "Suggestions",
     "TabLatest": "Latest",
     "TabUpcoming": "Upcoming",
     "TabShows": "Shows",
@@ -911,8 +913,8 @@
     "OptionDefaultSort": "Default",
     "OptionCommunityMostWatchedSort": "Most Watched",
     "TabNextUp": "Next Up",
+    "PlaceholderUsername": "Username",
     "HeaderBecomeProjectSupporter": "Become an Emby Supporter",
-    "TextEnjoyBonusFeatures": "Enjoy Bonus Features",
     "MessageNoMovieSuggestionsAvailable": "No movie suggestions are currently available. Start watching and rating your movies, and then come back to view your recommendations.",
     "MessageNoCollectionsAvailable": "Collections allow you to enjoy personalized groupings of Movies, Series, Albums, Books and Games. Click the + button to start creating Collections.",
     "MessageNoPlaylistsAvailable": "Playlists allow you to create lists of content to play consecutively at a time. To add items to playlists, right click or tap and hold, then select Add to Playlist.",
@@ -1397,8 +1399,11 @@
     "LabelEnableInternetMetadataForTvPrograms": "Download internet metadata for:",
     "OptionTVMovies": "TV Movies",
     "HeaderUpcomingMovies": "Upcoming Movies",
+    "HeaderUpcomingSports": "Upcoming Sports",
     "HeaderUpcomingPrograms": "Upcoming Programs",
     "ButtonMoreItems": "More...",
     "LabelShowLibraryTileNames": "Show library tile names",
-    "LabelShowLibraryTileNamesHelp": "Determines if labels will be displayed underneath library tiles on the home page"
+    "LabelShowLibraryTileNamesHelp": "Determines if labels will be displayed underneath library tiles on the home page",
+    "OptionEnableTranscodingThrottle": "Enable throttling",
+    "OptionEnableTranscodingThrottleHelp": "Throttling will automatically adjust transcoding speed in order to minimize server cpu utilization during playback."
 }

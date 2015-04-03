@@ -51,11 +51,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 var response = await _httpClient.GetResponse(options).ConfigureAwait(false);
 
-                if (response.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                var contentType = response.ContentType;
+
+                if (contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                 {
                     imageResponse.HasImage = true;
                     imageResponse.Stream = response.Content;
-                    imageResponse.SetFormatFromMimeType(response.ContentType);
+                    imageResponse.SetFormatFromMimeType(contentType);
                 }
                 else
                 {

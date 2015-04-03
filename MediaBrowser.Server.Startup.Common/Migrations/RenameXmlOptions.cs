@@ -44,7 +44,12 @@ namespace MediaBrowser.Server.Startup.Common.Migrations
                 {
                     if (string.Equals(options[i], "Media Browser Legacy Xml", StringComparison.OrdinalIgnoreCase))
                     {
-                        options[i] = "Media Browser Xml";
+                        options[i] = "Emby Xml";
+                        changed = true;
+                    }
+                    else if (string.Equals(options[i], "Media Browser Xml", StringComparison.OrdinalIgnoreCase))
+                    {
+                        options[i] = "Emby Xml";
                         changed = true;
                     }
                 }

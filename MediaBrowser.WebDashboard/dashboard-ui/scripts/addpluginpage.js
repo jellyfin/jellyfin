@@ -265,7 +265,10 @@
 
         });
 
-    }).on('pagebeforeshow pageinit', "#addPluginPage", function () {
+
+    }).on('pagebeforeshow pageinit pageshow', "#addPluginPage", function () {
+
+        // This needs both events for the helpurl to get done at the right time
 
         var page = this;
 
@@ -274,12 +277,24 @@
         if (context == 'sync') {
             $('.syncTabs', page).show();
             $('.pluginTabs', page).hide();
+            $('.livetvTabs', page).hide();
 
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Sync');
             Dashboard.setPageTitle(Globalize.translate('TitleSync'));
-        } else {
+        }
+        else if (context == 'livetv') {
+
+            $('.syncTabs', page).hide();
+            $('.pluginTabs', page).hide();
+            $('.livetvTabs', page).show();
+
+            Dashboard.setPageTitle(Globalize.translate('TitleLiveTV'));
+            page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Live%20TV');
+        }
+        else {
             $('.syncTabs', page).hide();
             $('.pluginTabs', page).show();
+            $('.livetvTabs', page).hide();
 
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Plugins');
             Dashboard.setPageTitle(Globalize.translate('TitlePlugins'));

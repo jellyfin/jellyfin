@@ -1,6 +1,7 @@
-﻿using MediaBrowser.Controller.LiveTv;
+﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -17,7 +18,7 @@ namespace MediaBrowser.Api.Playback
     public class StreamState : IDisposable
     {
         private readonly ILogger _logger;
-        private readonly ILiveTvManager _liveTvManager;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
         public string RequestedUrl { get; set; }
 
@@ -39,7 +40,7 @@ namespace MediaBrowser.Api.Playback
 
         public string InputContainer { get; set; }
 
-        public List<MediaStream> AllMediaStreams { get; set; }
+        public MediaSourceInfo MediaSource { get; set; }
         
         public MediaStream AudioStream { get; set; }
         public MediaStream VideoStream { get; set; }
@@ -64,8 +65,6 @@ namespace MediaBrowser.Api.Playback
 
         public List<string> PlayableStreamFileNames { get; set; }
 
-        public string LiveTvStreamId { get; set; }
-
         public int SegmentLength = 3;
         public bool EnableGenericHlsSegmenter = false;
         public int HlsListSize
@@ -86,14 +85,13 @@ namespace MediaBrowser.Api.Playback
 
         public List<string> SupportedAudioCodecs { get; set; }
 
-        public StreamState(ILiveTvManager liveTvManager, ILogger logger)
+        public StreamState(IMediaSourceManager mediaSourceManager, ILogger logger)
         {
-            _liveTvManager = liveTvManager;
+            _mediaSourceManager = mediaSourceManager;
             _logger = logger;
             SupportedAudioCodecs = new List<string>();
             PlayableStreamFileNames = new List<string>();
             RemoteHttpHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            AllMediaStreams = new List<MediaStream>();
         }
 
         public string InputAudioSync { get; set; }
@@ -112,9 +110,6 @@ namespace MediaBrowser.Api.Playback
         public TranscodeSeekInfo TranscodeSeekInfo { get; set; }
 
         public long? EncodingDurationTicks { get; set; }
-
-        public string ItemType { get; set; }
-        public string ItemId { get; set; }
 
         public string GetMimeType(string outputPath)
         {
@@ -187,15 +182,15 @@ namespace MediaBrowser.Api.Playback
 
         private async void DisposeLiveStream()
         {
-            if (!string.IsNullOrEmpty(LiveTvStreamId))
+            if (MediaSource.RequiresClosing && string.IsNullOrWhiteSpace(Request.LiveStreamId))
             {
                 try
                 {
-                    await _liveTvManager.CloseLiveStream(LiveTvStreamId, CancellationToken.None).ConfigureAwait(false);
+                    await _mediaSourceManager.CloseLiveStream(MediaSource.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error closing live tv stream", ex);
+                    _logger.ErrorException("Error closing media source", ex);
                 }
             }
         }
@@ -349,6 +344,42 @@ namespace MediaBrowser.Api.Playback
                 var stream = VideoStream;
                 return stream == null || !Request.Static ? null : stream.RefFrames;
             }
+        }
+
+        public int? TargetVideoStreamCount
+        {
+            get
+            {
+                if (Request.Static)
+                {
+                    return GetMediaStreamCount(MediaStreamType.Video, int.MaxValue);
+                }
+                return GetMediaStreamCount(MediaStreamType.Video, 1);
+            }
+        }
+
+        public int? TargetAudioStreamCount
+        {
+            get
+            {
+                if (Request.Static)
+                {
+                    return GetMediaStreamCount(MediaStreamType.Audio, int.MaxValue);
+                }
+                return GetMediaStreamCount(MediaStreamType.Audio, 1);
+            }
+        }
+
+        private int? GetMediaStreamCount(MediaStreamType type, int limit)
+        {
+            var count = MediaSource.GetStreamCount(type);
+
+            if (count.HasValue)
+            {
+                count = Math.Min(count.Value, limit);
+            }
+
+            return count;
         }
 
         /// <summary>

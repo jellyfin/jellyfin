@@ -53,13 +53,21 @@
 
         }).on('playbackstop.mediacontroller', function (e, state) {
 
-            ApiClient.reportPlaybackStopped({
-
+            var stopInfo = {
                 itemId: state.NowPlayingItem.Id,
                 mediaSourceId: state.PlayState.MediaSourceId,
                 positionTicks: state.PlayState.PositionTicks
+            };
 
-            });
+            if (state.PlayState.LiveStreamId) {
+                stopInfo.LiveStreamId = state.PlayState.LiveStreamId;
+            }
+
+            if (state.PlayState.PlaySessionId) {
+                stopInfo.PlaySessionId = state.PlayState.PlaySessionId;
+            }
+
+            ApiClient.reportPlaybackStopped(stopInfo);
 
         }).on('positionchange.mediacontroller', function (e, state) {
 

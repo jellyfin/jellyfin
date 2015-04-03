@@ -165,7 +165,7 @@
             itemHtml += '<li class="liSchedule" data-day="' + a.DayOfWeek + '" data-start="' + a.StartHour + '" data-end="' + a.EndHour + '">';
 
             itemHtml += '<a href="#">';
-            itemHtml += '<h3>' + a.DayOfWeek + '</h3>';
+            itemHtml += '<h3>' + Globalize.translate('Option' + a.DayOfWeek) + '</h3>';
             itemHtml += '<p>' + getDisplayTime(a.StartHour) + ' - ' + getDisplayTime(a.EndHour) + '</p>';
             itemHtml += '</a>';
 

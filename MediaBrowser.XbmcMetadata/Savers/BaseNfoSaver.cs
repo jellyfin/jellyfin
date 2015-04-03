@@ -153,7 +153,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         {
             return GetLocalSavePath(item);
         }
-        
+
         /// <summary>
         /// Gets the save path.
         /// </summary>
@@ -184,7 +184,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
         public void Save(IHasMetadata item, CancellationToken cancellationToken)
         {
             var path = GetSavePath(item);
-                
+
             using (var memoryStream = new MemoryStream())
             {
                 Save(item, memoryStream, path);
@@ -274,6 +274,10 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 catch (DirectoryNotFoundException)
                 {
 
+                }
+                catch (XmlException ex)
+                {
+                    Logger.ErrorException("Error reading existng nfo", ex);
                 }
 
                 writer.WriteEndElement();
@@ -466,8 +470,8 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 {
                     writer.WriteElementString("originaltitle", hasOriginalTitle.OriginalTitle ?? string.Empty);
                 }
-            } 
-            
+            }
+
             var directors = item.People
                 .Where(i => IsPersonType(i, PersonType.Director))
                 .Select(i => i.Name)
@@ -852,16 +856,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 writer.WriteStartElement("collectionitem");
 
-                if (!string.IsNullOrWhiteSpace(link.ItemName))
-                {
-                    writer.WriteElementString("name", link.ItemName);
-                }
-
-                if (!string.IsNullOrWhiteSpace(link.ItemType))
-                {
-                    writer.WriteElementString("type", link.ItemType);
-                }
-
                 if (!string.IsNullOrWhiteSpace(link.Path))
                 {
                     writer.WriteElementString("path", link.Path);
@@ -978,7 +972,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 {
                     writer.WriteElementString("type", person.Type);
                 }
-                
+
                 if (person.SortOrder.HasValue)
                 {
                     writer.WriteElementString("sortorder", person.SortOrder.Value.ToString(UsCulture));

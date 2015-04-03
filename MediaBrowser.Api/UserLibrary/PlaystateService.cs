@@ -294,6 +294,11 @@ namespace MediaBrowser.Api.UserLibrary
 
         public void Post(ReportPlaybackProgress request)
         {
+            if (!string.IsNullOrWhiteSpace(request.PlaySessionId))
+            {
+                ApiEntryPoint.Instance.PingTranscodingJob(AuthorizationContext.GetAuthorizationInfo(Request).DeviceId, request.PlaySessionId);
+            }
+
             request.SessionId = GetSession().Result.Id;
 
             var task = _sessionManager.OnPlaybackProgress(request);
@@ -317,6 +322,11 @@ namespace MediaBrowser.Api.UserLibrary
 
         public void Post(ReportPlaybackStopped request)
         {
+            if (!string.IsNullOrWhiteSpace(request.PlaySessionId))
+            {
+                ApiEntryPoint.Instance.KillTranscodingJobs(AuthorizationContext.GetAuthorizationInfo(Request).DeviceId, request.PlaySessionId, s => true);
+            }
+
             request.SessionId = GetSession().Result.Id;
 
             var task = _sessionManager.OnPlaybackStopped(request);

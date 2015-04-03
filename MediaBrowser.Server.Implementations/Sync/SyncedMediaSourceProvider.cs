@@ -1,8 +1,10 @@
-﻿using MediaBrowser.Controller;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Sync;
 using System;
 using System.Collections.Generic;
@@ -16,10 +18,12 @@ namespace MediaBrowser.Server.Implementations.Sync
     {
         private readonly SyncManager _syncManager;
         private readonly IServerApplicationHost _appHost;
+        private readonly ILogger _logger;
 
-        public SyncedMediaSourceProvider(ISyncManager syncManager, IServerApplicationHost appHost)
+        public SyncedMediaSourceProvider(ISyncManager syncManager, IServerApplicationHost appHost, ILogger logger)
         {
             _appHost = appHost;
+            _logger = logger;
             _syncManager = (SyncManager)syncManager;
         }
 
@@ -28,7 +32,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             var jobItemResult = _syncManager.GetJobItems(new SyncJobItemQuery
             {
                 AddMetadata = false,
-                Statuses = new SyncJobItemStatus[] { SyncJobItemStatus.Synced },
+                Statuses = new[] { SyncJobItemStatus.Synced },
                 ItemId = item.Id.ToString("N")
             });
 
@@ -49,20 +53,94 @@ namespace MediaBrowser.Server.Implementations.Sync
                     if (targetTuple != null)
                     {
                         var syncTarget = targetTuple.Item2;
-
+                        var syncProvider = targetTuple.Item1;
                         var dataProvider = _syncManager.GetDataProvider(targetTuple.Item1, syncTarget);
 
                         var localItems = await dataProvider.GetCachedItems(syncTarget, serverId, item.Id.ToString("N")).ConfigureAwait(false);
 
                         foreach (var localItem in localItems)
                         {
-                            list.AddRange(localItem.Item.MediaSources);
+                            foreach (var mediaSource in localItem.Item.MediaSources)
+                            {
+                                AddMediaSource(list, localItem, mediaSource, syncProvider, syncTarget);
+                            }
                         }
                     }
                 }
             }
 
             return list;
+        }
+
+        private void AddMediaSource(List<MediaSourceInfo> list,
+            LocalItem item,
+            MediaSourceInfo mediaSource,
+            IServerSyncProvider provider,
+            SyncTarget target)
+        {
+            SetStaticMediaSourceInfo(item, mediaSource);
+
+            var requiresDynamicAccess = provider as IHasDynamicAccess;
+
+            if (requiresDynamicAccess != null)
+            {
+                mediaSource.RequiresOpening = true;
+
+                var keyList = new List<string>();
+                keyList.Add(provider.GetType().FullName.GetMD5().ToString("N"));
+                keyList.Add(target.Id.GetMD5().ToString("N"));
+                keyList.Add(item.Id);
+                mediaSource.OpenToken = string.Join("|", keyList.ToArray());
+            }
+
+            list.Add(mediaSource);
+        }
+
+        public async Task<MediaSourceInfo> OpenMediaSource(string openToken, CancellationToken cancellationToken)
+        {
+            var openKeys = openToken.Split(new[] { '|' }, 3);
+
+            var provider = _syncManager.ServerSyncProviders
+                .FirstOrDefault(i => string.Equals(openKeys[0], i.GetType().FullName.GetMD5().ToString("N"), StringComparison.OrdinalIgnoreCase));
+
+            var target = provider.GetAllSyncTargets()
+                .FirstOrDefault(i => string.Equals(openKeys[1], i.Id.GetMD5().ToString("N"), StringComparison.OrdinalIgnoreCase));
+
+            var dataProvider = _syncManager.GetDataProvider(provider, target);
+            var localItem = await dataProvider.Get(target, openKeys[2]).ConfigureAwait(false);
+
+            var requiresDynamicAccess = (IHasDynamicAccess)provider;
+            var dynamicInfo = await requiresDynamicAccess.GetSyncedFileInfo(localItem.LocalPath, target, cancellationToken).ConfigureAwait(false);
+
+            var mediaSource = localItem.Item.MediaSources.First();
+            mediaSource.LiveStreamId = Guid.NewGuid().ToString();
+            SetStaticMediaSourceInfo(localItem, mediaSource);
+
+            foreach (var stream in mediaSource.MediaStreams)
+            {
+                if (!string.IsNullOrWhiteSpace(stream.ExternalId))
+                {
+                    var dynamicStreamInfo = await requiresDynamicAccess.GetSyncedFileInfo(stream.ExternalId, target, cancellationToken).ConfigureAwait(false);
+                    stream.Path = dynamicStreamInfo.Path;
+                }
+            }
+
+            mediaSource.Path = dynamicInfo.Path;
+            mediaSource.Protocol = dynamicInfo.Protocol;
+            mediaSource.RequiredHttpHeaders = dynamicInfo.RequiredHttpHeaders;
+
+            return mediaSource;
+        }
+
+        private void SetStaticMediaSourceInfo(LocalItem item, MediaSourceInfo mediaSource)
+        {
+            mediaSource.Id = item.Id;
+            mediaSource.SupportsTranscoding = false;
+        }
+
+        public Task CloseMediaSource(string liveStreamId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

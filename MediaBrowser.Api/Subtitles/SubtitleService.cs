@@ -192,7 +192,7 @@ namespace MediaBrowser.Api.Subtitles
             {
                 var item = (Video)_libraryManager.GetItemById(new Guid(request.Id));
 
-                var mediaSource = item.GetMediaSources(false)
+                var mediaSource = _mediaSourceManager.GetStaticMediaSources(item, false, null)
                     .First(i => string.Equals(i.Id, request.MediaSourceId ?? request.Id));
 
                 var subtitleStream = mediaSource.MediaStreams

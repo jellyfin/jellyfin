@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Dlna;
+﻿using System.Collections.Generic;
+using MediaBrowser.Model.Dlna;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
@@ -25,6 +26,9 @@ namespace MediaBrowser.Server.Implementations.Sync
                 mkvAudio += ",dca";
             }
 
+            var videoProfile = "high|main|baseline|constrained baseline";
+            var videoLevel = "41";
+
             DirectPlayProfiles = new[]
             {
                 new DirectPlayProfile
@@ -48,13 +52,37 @@ namespace MediaBrowser.Server.Implementations.Sync
                 }
             };
 
-            ContainerProfiles = new ContainerProfile[] { };
+            ContainerProfiles = new[]
+            {
+                new ContainerProfile
+                { 
+                    Type = DlnaProfileType.Video,
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.NotEquals,
+                            Property = ProfileConditionValue.NumAudioStreams,
+                            Value = "0",
+                            IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.EqualsAny,
+                            Property = ProfileConditionValue.NumVideoStreams,
+                            Value = "1",
+                            IsRequired = false
+                        }
+                    }
+                }
+            };
 
-            CodecProfiles = new[]
+            var codecProfiles = new List<CodecProfile>
             {
                 new CodecProfile
                 {
                     Type = CodecType.Video,
+                    Codec = "h264",
                     Conditions = new []
                     {
                         new ProfileCondition
@@ -67,26 +95,141 @@ namespace MediaBrowser.Server.Implementations.Sync
                         new ProfileCondition
                         {
                             Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.Width,
+                            Value = "1920",
+                            IsRequired = true
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.Height,
                             Value = "1080",
-                            IsRequired = false
+                            IsRequired = true
                         },
                         new ProfileCondition
                         {
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.RefFrames,
-                            Value = "12",
+                            Value = "4",
+                            IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoFramerate,
+                            Value = "30",
+                            IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.Equals,
+                            Property = ProfileConditionValue.IsAnamorphic,
+                            Value = "false",
+                            IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoLevel,
+                            Value = videoLevel,
+                            IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.EqualsAny,
+                            Property = ProfileConditionValue.VideoProfile,
+                            Value = videoProfile,
+                            IsRequired = false
+                        }
+                    }
+                },
+                new CodecProfile
+                {
+                    Type = CodecType.Video,
+                    Codec = "mpeg4",
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoBitDepth,
+                            Value = "8",
+                            IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.Width,
+                            Value = "1920",
+                            IsRequired = true
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.Height,
+                            Value = "1080",
+                            IsRequired = true
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.RefFrames,
+                            Value = "4",
+                            IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoFramerate,
+                            Value = "30",
+                            IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.Equals,
+                            Property = ProfileConditionValue.IsAnamorphic,
+                            Value = "false",
                             IsRequired = false
                         }
                     }
                 }
             };
 
+            var maxAudioChannels = supportsAc3 || supportsDca ? "5" : "2";
+            codecProfiles.Add(new CodecProfile
+            {
+                Type = CodecType.VideoAudio,
+                Conditions = new[]
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.AudioChannels,
+                            Value = maxAudioChannels,
+                            IsRequired = true
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.Equals,
+                            Property = ProfileConditionValue.IsSecondaryAudio,
+                            Value = "false",
+                            IsRequired = false
+                        }
+                    }
+            });
+
+            CodecProfiles = codecProfiles.ToArray();
+
             SubtitleProfiles = new[]
             {
                 new SubtitleProfile
                 {
                     Format = "srt",
+                    Method = SubtitleDeliveryMethod.External
+                },
+                new SubtitleProfile
+                {
+                    Format = "vtt",
                     Method = SubtitleDeliveryMethod.External
                 }
             };

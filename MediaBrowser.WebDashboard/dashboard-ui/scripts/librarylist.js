@@ -512,10 +512,6 @@
             GroupItems: false
         };
 
-        if ($(card).hasClass('unplayedGroupings')) {
-            options.IsPlayed = false;
-        }
-
         var promise2 = ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options));
 
         $.when(promise1, promise2).done(function (response1, response2) {

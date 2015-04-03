@@ -7,12 +7,6 @@ namespace MediaBrowser.Model.Configuration
     public class UserConfiguration
     {
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is administrator.
-        /// </summary>
-        /// <value><c>true</c> if this instance is administrator; otherwise, <c>false</c>.</value>
-        public bool IsAdministrator { get; set; }
-
-        /// <summary>
         /// Gets or sets the audio language preference.
         /// </summary>
         /// <value>The audio language preference.</value>
@@ -53,13 +47,14 @@ namespace MediaBrowser.Model.Configuration
 
         public string[] LatestItemsExcludes { get; set; }
 
-        public bool HasMigratedToPolicy { get; set; }
+        public bool HidePlayedInLatest { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserConfiguration" /> class.
         /// </summary>
         public UserConfiguration()
         {
+            HidePlayedInLatest = true;
             PlayDefaultAudioTrack = true;
 
             LatestItemsExcludes = new string[] { };

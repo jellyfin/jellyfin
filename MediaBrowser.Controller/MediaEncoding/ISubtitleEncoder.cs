@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using MediaBrowser.Model.MediaInfo;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,8 +48,9 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// Gets the subtitle language encoding parameter.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="protocol">The protocol.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>System.String.</returns>
-        string GetSubtitleFileCharacterSet(string path);
-
+        Task<string> GetSubtitleFileCharacterSet(string path, MediaProtocol protocol, CancellationToken cancellationToken);
     }
 }

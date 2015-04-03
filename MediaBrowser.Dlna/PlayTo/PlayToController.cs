@@ -467,16 +467,16 @@ namespace MediaBrowser.Dlna.PlayTo
 
             var profile = _dlnaManager.GetProfile(deviceInfo.ToDeviceIdentification()) ??
                 _dlnaManager.GetDefaultProfile();
-
+            
             var hasMediaSources = item as IHasMediaSources;
             var mediaSources = hasMediaSources != null
-                ? (user == null ? hasMediaSources.GetMediaSources(true) : _mediaSourceManager.GetStaticMediaSources(hasMediaSources, true, user)).ToList()
+                ? (_mediaSourceManager.GetStaticMediaSources(hasMediaSources, true, user)).ToList()
                 : new List<MediaSourceInfo>();
 
             var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
             playlistItem.StreamInfo.StartPositionTicks = startPostionTicks;
 
-            playlistItem.StreamUrl = playlistItem.StreamInfo.ToUrl(_serverAddress, _accessToken);
+            playlistItem.StreamUrl = playlistItem.StreamInfo.ToDlnaUrl(_serverAddress, _accessToken);
 
             var itemXml = new DidlBuilder(profile, user, _imageProcessor, _serverAddress, _accessToken, _userDataManager, _localization, _mediaSourceManager)
                 .GetItemDidl(item, null, _session.DeviceId, new Filter(), playlistItem.StreamInfo);
@@ -526,7 +526,9 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.TranscodeSeekInfo,
                     streamInfo.IsTargetAnamorphic,
                     streamInfo.IsTargetCabac,
-                    streamInfo.TargetRefFrames);
+                    streamInfo.TargetRefFrames,
+                    streamInfo.TargetVideoStreamCount,
+                    streamInfo.TargetAudioStreamCount);
 
                 return list.FirstOrDefault();
             }

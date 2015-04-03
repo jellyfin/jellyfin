@@ -113,7 +113,7 @@ $.fn.taskButton = function (options) {
             ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
         }
 
-    } else {
+    } else if (this.length) {
 
         this.on('click.taskbutton', function () {
 

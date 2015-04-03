@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace MediaBrowser.Model.MediaInfo
 {
-    public class LiveMediaInfoResult
+    public class PlaybackInfoResponse
     {
         /// <summary>
         /// Gets or sets the media sources.
@@ -13,10 +13,10 @@ namespace MediaBrowser.Model.MediaInfo
         public List<MediaSourceInfo> MediaSources { get; set; }
 
         /// <summary>
-        /// Gets or sets the stream identifier.
+        /// Gets or sets the play session identifier.
         /// </summary>
-        /// <value>The stream identifier.</value>
-        public string StreamId { get; set; }
+        /// <value>The play session identifier.</value>
+        public string PlaySessionId { get; set; }
 
         /// <summary>
         /// Gets or sets the error code.
@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.MediaInfo
         /// <value>The error code.</value>
         public PlaybackErrorCode? ErrorCode { get; set; }
 
-        public LiveMediaInfoResult()
+        public PlaybackInfoResponse()
         {
             MediaSources = new List<MediaSourceInfo>();
         }

@@ -125,7 +125,6 @@
 
             Limit: 24,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
-            IsPlayed: false,
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
@@ -470,7 +469,7 @@
         switch (index) {
 
             case 0:
-                return 'smalllibrarytiles-automobile';
+                return 'librarytiles-automobile';
             case 1:
                 return 'resume';
             case 2:

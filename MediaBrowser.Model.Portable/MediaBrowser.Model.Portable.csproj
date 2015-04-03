@@ -413,6 +413,9 @@
     <Compile Include="..\MediaBrowser.Model\Dlna\StreamInfo.cs">
       <Link>Dlna\StreamInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dlna\StreamInfoSorter.cs">
+      <Link>Dlna\StreamInfoSorter.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dlna\SubtitleDeliveryMethod.cs">
       <Link>Dlna\SubtitleDeliveryMethod.cs</Link>
     </Compile>
@@ -800,11 +803,20 @@
     <Compile Include="..\MediaBrowser.Model\MediaInfo\IBlurayExaminer.cs">
       <Link>MediaInfo\IBlurayExaminer.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\MediaInfo\LiveMediaInfoResult.cs">
-      <Link>MediaInfo\LiveMediaInfoResult.cs</Link>
+    <Compile Include="..\MediaBrowser.Model\MediaInfo\LiveStreamRequest.cs">
+      <Link>MediaInfo\LiveStreamRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\MediaInfo\LiveStreamResponse.cs">
+      <Link>MediaInfo\LiveStreamResponse.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\MediaInfo\MediaProtocol.cs">
       <Link>MediaInfo\MediaProtocol.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\MediaInfo\PlaybackInfoRequest.cs">
+      <Link>MediaInfo\PlaybackInfoRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\MediaInfo\PlaybackInfoResponse.cs">
+      <Link>MediaInfo\PlaybackInfoResponse.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\MediaInfo\SubtitleFormat.cs">
       <Link>MediaInfo\SubtitleFormat.cs</Link>

@@ -123,7 +123,7 @@ namespace MediaBrowser.Api
 
         public void Post(AutoSetMetadataOptions request)
         {
-            _configurationManager.DisableMetadataService("Media Browser Xml");
+            _configurationManager.DisableMetadataService("Emby Xml");
             _configurationManager.SaveConfiguration();
         }
 

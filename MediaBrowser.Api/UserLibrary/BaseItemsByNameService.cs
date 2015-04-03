@@ -142,7 +142,7 @@ namespace MediaBrowser.Api.UserLibrary
             }
 
             IEnumerable<Tuple<TItemType, List<BaseItem>>> tuples;
-            if (dtoOptions.Fields.Contains(ItemFields.ItemCounts) || true)
+            if (dtoOptions.Fields.Contains(ItemFields.ItemCounts))
             {
                 tuples = ibnItems.Select(i => new Tuple<TItemType, List<BaseItem>>(i, i.GetTaggedItems(libraryItems).ToList()));
             }
@@ -177,7 +177,6 @@ namespace MediaBrowser.Api.UserLibrary
                 return true;
             }
 
-            return true;
             return options.Fields.Contains(ItemFields.ItemCounts);
         }
 

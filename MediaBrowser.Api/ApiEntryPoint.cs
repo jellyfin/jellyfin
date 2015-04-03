@@ -132,7 +132,7 @@ namespace MediaBrowser.Api
         /// Called when [transcode beginning].
         /// </summary>
         /// <param name="path">The path.</param>
-        /// <param name="streamId">The stream identifier.</param>
+        /// <param name="playSessionId">The play session identifier.</param>
         /// <param name="transcodingJobId">The transcoding job identifier.</param>
         /// <param name="type">The type.</param>
         /// <param name="process">The process.</param>
@@ -141,7 +141,7 @@ namespace MediaBrowser.Api
         /// <param name="cancellationTokenSource">The cancellation token source.</param>
         /// <returns>TranscodingJob.</returns>
         public TranscodingJob OnTranscodeBeginning(string path,
-            string streamId,
+            string playSessionId,
             string transcodingJobId,
             TranscodingJobType type,
             Process process,
@@ -160,7 +160,7 @@ namespace MediaBrowser.Api
                     DeviceId = deviceId,
                     CancellationTokenSource = cancellationTokenSource,
                     Id = transcodingJobId,
-                    StreamId = streamId
+                    PlaySessionId = playSessionId
                 };
 
                 _activeTranscodingJobs.Add(job);
@@ -187,7 +187,7 @@ namespace MediaBrowser.Api
 
             if (!string.IsNullOrWhiteSpace(deviceId))
             {
-                var audioCodec = state.ActualOutputVideoCodec;
+                var audioCodec = state.ActualOutputAudioCodec;
                 var videoCodec = state.ActualOutputVideoCodec;
 
                 _sessionManager.ReportTranscodingInfo(deviceId, new TranscodingInfo
@@ -286,26 +286,64 @@ namespace MediaBrowser.Api
 
             job.DisposeKillTimer();
         }
-        
+
         public void OnTranscodeEndRequest(TranscodingJob job)
         {
             job.ActiveRequestCount--;
 
             if (job.ActiveRequestCount == 0)
             {
-                // TODO: Lower this hls timeout
-                var timerDuration = job.Type == TranscodingJobType.Progressive ?
-                    1000 :
-                    14400000;
+                PingTimer(job, true);
+            }
+        }
+        internal void PingTranscodingJob(string deviceId, string playSessionId)
+        {
+            if (string.IsNullOrEmpty(deviceId))
+            {
+                throw new ArgumentNullException("deviceId");
+            }
 
-                if (job.KillTimer == null)
+            var jobs = new List<TranscodingJob>();
+
+            lock (_activeTranscodingJobs)
+            {
+                // This is really only needed for HLS. 
+                // Progressive streams can stop on their own reliably
+                jobs = jobs.Where(j =>
+                {
+                    if (string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase);
+                    }
+
+                    return false;
+
+                }).ToList();
+            }
+
+            foreach (var job in jobs)
+            {
+                PingTimer(job, false);
+            }
+        }
+
+        private void PingTimer(TranscodingJob job, bool startTimerIfNeeded)
+        {
+            // TODO: Lower this hls timeout
+            var timerDuration = job.Type == TranscodingJobType.Progressive ?
+                1000 :
+                1800000;
+
+            if (job.KillTimer == null)
+            {
+                if (startTimerIfNeeded)
                 {
                     job.KillTimer = new Timer(OnTranscodeKillTimerStopped, job, timerDuration, Timeout.Infinite);
                 }
-                else
-                {
-                    job.KillTimer.Change(timerDuration, Timeout.Infinite);
-                }
+            }
+            else
+            {
+                job.KillTimer.Change(timerDuration, Timeout.Infinite);
             }
         }
 
@@ -324,10 +362,10 @@ namespace MediaBrowser.Api
         /// Kills the single transcoding job.
         /// </summary>
         /// <param name="deviceId">The device id.</param>
-        /// <param name="streamId">The stream identifier.</param>
+        /// <param name="playSessionId">The play session identifier.</param>
         /// <param name="deleteFiles">The delete files.</param>
         /// <returns>Task.</returns>
-        internal void KillTranscodingJobs(string deviceId, string streamId, Func<string, bool> deleteFiles)
+        internal void KillTranscodingJobs(string deviceId, string playSessionId, Func<string, bool> deleteFiles)
         {
             if (string.IsNullOrEmpty(deviceId))
             {
@@ -338,7 +376,7 @@ namespace MediaBrowser.Api
             {
                 if (string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase))
                 {
-                    return string.IsNullOrWhiteSpace(streamId) || string.Equals(streamId, j.StreamId, StringComparison.OrdinalIgnoreCase);
+                    return string.IsNullOrWhiteSpace(playSessionId) || string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase);
                 }
 
                 return false;
@@ -539,10 +577,10 @@ namespace MediaBrowser.Api
     public class TranscodingJob
     {
         /// <summary>
-        /// Gets or sets the stream identifier.
+        /// Gets or sets the play session identifier.
         /// </summary>
-        /// <value>The stream identifier.</value>
-        public string StreamId { get; set; }
+        /// <value>The play session identifier.</value>
+        public string PlaySessionId { get; set; }
         /// <summary>
         /// Gets or sets the path.
         /// </summary>

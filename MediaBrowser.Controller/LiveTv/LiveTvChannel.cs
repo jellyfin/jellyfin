@@ -82,6 +82,15 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value><c>null</c> if [has image] contains no value, <c>true</c> if [has image]; otherwise, <c>false</c>.</value>
         public bool? HasProviderImage { get; set; }
 
+        public override LocationType LocationType
+        {
+            get
+            {
+                // TODO: This should be removed
+                return LocationType.Remote;
+            }
+        }
+
         protected override string CreateSortName()
         {
             double number = 0;
@@ -127,7 +136,7 @@ namespace MediaBrowser.Controller.LiveTv
                 Name = Name,
                 Path = Path,
                 RunTimeTicks = RunTimeTicks,
-                Type = MediaSourceType.Default
+                Type = MediaSourceType.Placeholder
             };
 
             list.Add(info);

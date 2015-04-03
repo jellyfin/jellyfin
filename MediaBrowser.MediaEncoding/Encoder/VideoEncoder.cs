@@ -15,7 +15,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 {
     public class VideoEncoder : BaseEncoder
     {
-        public VideoEncoder(MediaEncoder mediaEncoder, ILogger logger, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager) : base(mediaEncoder, logger, configurationManager, fileSystem, liveTvManager, isoManager, libraryManager, channelManager, sessionManager, subtitleEncoder, mediaSourceManager)
+        public VideoEncoder(MediaEncoder mediaEncoder, ILogger logger, IServerConfigurationManager configurationManager, IFileSystem fileSystem, IIsoManager isoManager, ILibraryManager libraryManager, ISessionManager sessionManager, ISubtitleEncoder subtitleEncoder, IMediaSourceManager mediaSourceManager) : base(mediaEncoder, logger, configurationManager, fileSystem, isoManager, libraryManager, sessionManager, subtitleEncoder, mediaSourceManager)
         {
         }
 
@@ -73,10 +73,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     args;
             }
 
-            var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
-                5.ToString(UsCulture));
+            if (state.Options.Context == EncodingContext.Streaming)
+            {
+                var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
+                    5.ToString(UsCulture));
 
-            args += keyFrameArg;
+                args += keyFrameArg;
+            }
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 

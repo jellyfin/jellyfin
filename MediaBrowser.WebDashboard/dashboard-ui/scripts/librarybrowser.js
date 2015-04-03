@@ -477,7 +477,7 @@
 
             if (context != 'folders') {
                 if (item.CollectionType == 'movies') {
-                    return 'movieslatest.html?topParentId=' + item.Id;
+                    return 'moviesrecommended.html?topParentId=' + item.Id;
                 }
 
                 if (item.CollectionType == 'boxsets') {
@@ -1257,10 +1257,6 @@
 
                 if (options.showChildCountIndicator && item.ChildCount) {
                     cssClass += ' groupedCard';
-
-                    if (item.Type == 'Series') {
-                        cssClass += ' unplayedGroupings';
-                    }
                 }
 
                 if (options.showTitle && !options.overlayText) {

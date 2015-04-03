@@ -14,12 +14,7 @@
 
             var id = 'mediaFolder' + i;
 
-            var isChecked;
-            if (user.Policy.BlockedMediaFolders != null) {
-                isChecked = user.Policy.BlockedMediaFolders.indexOf(folder.Id) == -1 && user.Policy.BlockedMediaFolders.indexOf(folder.Name) == -1;
-            } else {
-                isChecked = user.Policy.EnableAllFolders || user.Policy.EnabledFolders.indexOf(folder.Id) != -1;
-            }
+            var isChecked = user.Policy.EnableAllFolders || user.Policy.EnabledFolders.indexOf(folder.Id) != -1;
             var checkedAttribute = isChecked ? ' checked="checked"' : '';
 
             html += '<input class="chkFolder" data-id="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
@@ -30,11 +25,7 @@
 
         $('.folderAccess', page).html(html).trigger('create');
 
-        if (user.Policy.BlockedMediaFolders != null) {
-            $('#chkEnableAllFolders', page).checked(user.Policy.BlockedMediaFolders.length == 0).checkboxradio('refresh').trigger('change');
-        } else {
-            $('#chkEnableAllFolders', page).checked(user.Policy.EnableAllFolders).checkboxradio('refresh').trigger('change');
-        }
+        $('#chkEnableAllFolders', page).checked(user.Policy.EnableAllFolders).checkboxradio('refresh').trigger('change');
     }
 
     function loadChannels(page, user, channels) {
@@ -51,12 +42,7 @@
 
             var id = 'channels' + i;
 
-            var isChecked;
-            if (user.Policy.BlockedChannels != null) {
-                isChecked = user.Policy.BlockedChannels.indexOf(folder.Id) == -1;
-            } else {
-                isChecked = user.Policy.EnableAllChannels || user.Policy.EnabledChannels.indexOf(folder.Id) != -1;
-            }
+            var isChecked = user.Policy.EnableAllChannels || user.Policy.EnabledChannels.indexOf(folder.Id) != -1;
             var checkedAttribute = isChecked ? ' checked="checked"' : '';
 
             html += '<input class="chkChannel" data-id="' + folder.Id + '" type="checkbox" id="' + id + '"' + checkedAttribute + ' />';
@@ -73,11 +59,7 @@
             $('.channelAccessContainer', page).hide();
         }
 
-        if (user.Policy.BlockedChannels != null) {
-            $('#chkEnableAllChannels', page).checked(user.Policy.BlockedChannels.length == 0).checkboxradio('refresh').trigger('change');
-        } else {
-            $('#chkEnableAllChannels', page).checked(user.Policy.EnableAllChannels).checkboxradio('refresh').trigger('change');
-        }
+        $('#chkEnableAllChannels', page).checked(user.Policy.EnableAllChannels).checkboxradio('refresh').trigger('change');
     }
 
     function loadDevices(page, user, devices) {
@@ -140,7 +122,6 @@
                 return this.getAttribute('data-id');
 
             }).get();
-        user.Policy.BlockedMediaFolders = null;
 
         user.Policy.EnableAllChannels = $('#chkEnableAllChannels', page).checked();
         user.Policy.EnabledChannels = user.Policy.EnableAllChannels ?
@@ -150,7 +131,6 @@
                 return this.getAttribute('data-id');
 
             }).get();
-        user.Policy.BlockedChannels = null;
 
         user.Policy.EnableAllDevices = $('#chkEnableAllDevices', page).checked();
         user.Policy.EnabledDevices = user.Policy.EnableAllDevices ?

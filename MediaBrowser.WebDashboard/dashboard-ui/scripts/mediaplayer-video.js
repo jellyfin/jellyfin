@@ -143,10 +143,6 @@
             self.changeStream(self.getCurrentTicks(), { AudioStreamIndex: index });
         };
 
-        self.supportsSubtitleStreamExternally = function (stream) {
-            return stream.Type == 'Subtitle' && stream.IsTextSubtitleStream && stream.SupportsExternalStream;
-        }
-
         self.setSubtitleStreamIndex = function (index) {
 
             if (!self.supportsTextTracks()) {
@@ -166,7 +162,7 @@
 
             if (currentStream && !newStream) {
 
-                if (!self.supportsSubtitleStreamExternally(currentStream)) {
+                if (currentStream.DeliveryMethod != 'External') {
 
                     // Need to change the transcoded stream to remove subs
                     self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: -1 });
@@ -174,7 +170,7 @@
             }
             else if (!currentStream && newStream) {
 
-                if (self.supportsSubtitleStreamExternally(newStream)) {
+                if (newStream.DeliveryMethod == 'External') {
                     selectedTrackElementIndex = index;
                 } else {
 
@@ -184,10 +180,10 @@
             }
             else if (currentStream && newStream) {
 
-                if (self.supportsSubtitleStreamExternally(newStream)) {
+                if (newStream.DeliveryMethod == 'External') {
                     selectedTrackElementIndex = index;
 
-                    if (!self.supportsSubtitleStreamExternally(currentStream)) {
+                    if (currentStream.DeliveryMethod != 'External') {
                         self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: -1 });
                     }
                 } else {
@@ -207,7 +203,7 @@
             var modes = ['disabled', 'showing', 'hidden'];
 
             var textStreams = self.currentMediaSource.MediaStreams.filter(function (s) {
-                return self.supportsSubtitleStreamExternally(s);
+                return s.DeliveryMethod == 'External';
             });
 
             var newStream = textStreams.filter(function (s) {
@@ -428,14 +424,12 @@
 
                 if (!$(this).hasClass('selectedMediaPopupOption')) {
 
-                    var maxWidth = parseInt(this.getAttribute('data-maxwidth'));
                     var bitrate = parseInt(this.getAttribute('data-bitrate'));
 
                     AppSettings.maxStreamingBitrate(bitrate);
 
                     self.changeStream(self.getCurrentTicks(), {
 
-                        MaxWidth: maxWidth,
                         Bitrate: bitrate
                     });
                 }
@@ -796,7 +790,12 @@
             var currentSrc = self.getCurrentSrc(self.currentMediaElement).toLowerCase();
             var isStatic = currentSrc.indexOf('static=true') != -1;
 
-            var options = getVideoQualityOptions(self.currentMediaSource.MediaStreams);
+            var videoStream = self.currentMediaSource.MediaStreams.filter(function (stream) {
+                return stream.Type == "Video";
+            })[0];
+            var videoWidth = videoStream ? videoStream.Width : null;
+
+            var options = self.getVideoQualityOptions(videoWidth);
 
             if (isStatic) {
                 options[0].name = "Direct";
@@ -819,7 +818,7 @@
                     cssClass += ' selectedMediaPopupOption';
                 }
 
-                var optionHtml = '<li><a data-maxwidth="' + option.maxWidth + '" data-bitrate="' + option.bitrate + '" class="' + cssClass + '" href="#">';
+                var optionHtml = '<li><a data-bitrate="' + option.bitrate + '" class="' + cssClass + '" href="#">';
 
                 optionHtml += '<p style="margin:0;">';
 
@@ -843,85 +842,6 @@
             html += '</div>';
 
             return html;
-        }
-
-        function getVideoQualityOptions(mediaStreams) {
-
-            var videoStream = mediaStreams.filter(function (stream) {
-                return stream.Type == "Video";
-            })[0];
-
-            var bitrateSetting = AppSettings.maxStreamingBitrate();
-
-            var maxAllowedWidth = self.getMaxPlayableWidth();
-
-            var options = [];
-
-            // We have media info
-            if (videoStream && videoStream.Width) {
-
-                maxAllowedWidth = videoStream.Width;
-            }
-
-            // Some 1080- videos are reported as 1912?
-            if (maxAllowedWidth >= 1900) {
-                options.push({ name: '1080p - 30Mbps', maxWidth: 1920, bitrate: 30000000 });
-                options.push({ name: '1080p - 25Mbps', maxWidth: 1920, bitrate: 25000000 });
-                options.push({ name: '1080p - 20Mbps', maxWidth: 1920, bitrate: 20000000 });
-                options.push({ name: '1080p - 15Mbps', maxWidth: 1920, bitrate: 15000000 });
-                options.push({ name: '1080p - 10Mbps', maxWidth: 1920, bitrate: 10000000 });
-                options.push({ name: '1080p - 8Mbps', maxWidth: 1920, bitrate: 8000000 });
-                options.push({ name: '1080p - 6Mbps', maxWidth: 1920, bitrate: 6000000 });
-                options.push({ name: '1080p - 5Mbps', maxWidth: 1920, bitrate: 5000000 });
-            }
-            else if (maxAllowedWidth >= 1260) {
-                options.push({ name: '720p - 10Mbps', maxWidth: 1280, bitrate: 10000000 });
-                options.push({ name: '720p - 8Mbps', maxWidth: 1280, bitrate: 8000000 });
-                options.push({ name: '720p - 6Mbps', maxWidth: 1280, bitrate: 6000000 });
-                options.push({ name: '720p - 5Mbps', maxWidth: 1280, bitrate: 5000000 });
-            }
-            else if (maxAllowedWidth >= 460) {
-                options.push({ name: '480p - 4Mbps', maxWidth: 720, bitrate: 4000000 });
-                options.push({ name: '480p - 3Mbps', maxWidth: 720, bitrate: 3000000 });
-                options.push({ name: '480p - 2.5Mbps', maxWidth: 720, bitrate: 2500000 });
-                options.push({ name: '480p - 2Mbps', maxWidth: 720, bitrate: 2000000 });
-                options.push({ name: '480p - 1.5Mbps', maxWidth: 720, bitrate: 1500000 });
-            }
-
-            if (maxAllowedWidth >= 1260) {
-                options.push({ name: '720p - 4Mbps', maxWidth: 1280, bitrate: 4000000 });
-                options.push({ name: '720p - 3Mbps', maxWidth: 1280, bitrate: 3000000 });
-                options.push({ name: '720p - 2Mbps', maxWidth: 1280, bitrate: 2000000 });
-
-                // The extra 1 is because they're keyed off the bitrate value
-                options.push({ name: '720p - 1Mbps', maxWidth: 1280, bitrate: 1000001 });
-            }
-
-            options.push({ name: '480p - 1.0Mbps', maxWidth: 720, bitrate: 1000000 });
-            options.push({ name: '480p - 720kbps', maxWidth: 720, bitrate: 720000 });
-            options.push({ name: '480p - 420kbps', maxWidth: 720, bitrate: 420000 });
-            options.push({ name: '360p', maxWidth: 640, bitrate: 400000 });
-            options.push({ name: '240p', maxWidth: 426, bitrate: 320000 });
-
-            var i, length, option;
-            var selectedIndex = -1;
-            for (i = 0, length = options.length; i < length; i++) {
-
-                option = options[i];
-
-                if (selectedIndex == -1 && option.bitrate <= bitrateSetting) {
-                    selectedIndex = i;
-                }
-            }
-
-            if (selectedIndex == -1) {
-
-                selectedIndex = options.length - 1;
-            }
-
-            options[selectedIndex].selected = true;
-
-            return options;
         }
 
         function bindEventsForPlayback() {
@@ -1007,100 +927,19 @@
             }
         };
 
-        self.playVideo = function (playbackInfo, item, mediaSource, startPosition) {
+        self.playVideo = function (item, mediaSource, startPosition) {
+
+            var streamInfo = self.createStreamInfo('video', item, mediaSource, startPosition);
+
+            var videoUrl = streamInfo.url;
+            var contentType = streamInfo.contentType;
+            var startPositionInSeekParam = streamInfo.startPositionInSeekParam;
+            self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
 
             var mediaStreams = mediaSource.MediaStreams || [];
-
             var subtitleStreams = mediaStreams.filter(function (s) {
                 return s.Type == 'Subtitle';
             });
-
-            var selectedSubtitleStream = subtitleStreams.filter(function (s) {
-                return s.Index == mediaSource.DefaultSubtitleStreamIndex;
-
-            })[0];
-
-            var baseParams = {
-                audioChannels: 2,
-                StartTimeTicks: startPosition,
-                AudioStreamIndex: mediaSource.DefaultAudioStreamIndex,
-                deviceId: ApiClient.deviceId(),
-                Static: false,
-                mediaSourceId: mediaSource.Id,
-                api_key: ApiClient.accessToken(),
-                StreamId: playbackInfo.StreamId
-            };
-
-            if (selectedSubtitleStream && (!self.supportsSubtitleStreamExternally(selectedSubtitleStream) || !self.supportsTextTracks())) {
-                baseParams.SubtitleStreamIndex = mediaSource.DefaultSubtitleStreamIndex;
-            }
-
-            var mp4Quality = getVideoQualityOptions(mediaStreams).filter(function (opt) {
-                return opt.selected;
-            })[0];
-            mp4Quality = $.extend(mp4Quality, self.getFinalVideoParams(mediaSource, mp4Quality.maxWidth, mp4Quality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.mp4'));
-
-            var webmQuality = getVideoQualityOptions(mediaStreams).filter(function (opt) {
-                return opt.selected;
-            })[0];
-            webmQuality = $.extend(webmQuality, self.getFinalVideoParams(mediaSource, webmQuality.maxWidth, webmQuality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.webm'));
-
-            var m3U8Quality = getVideoQualityOptions(mediaStreams).filter(function (opt) {
-                return opt.selected;
-            })[0];
-            m3U8Quality = $.extend(m3U8Quality, self.getFinalVideoParams(mediaSource, mp4Quality.maxWidth, mp4Quality.bitrate, baseParams.AudioStreamIndex, baseParams.SubtitleStreamIndex, '.mp4'));
-
-            var isStatic = mp4Quality.isStatic;
-
-            self.startTimeTicksOffset = isStatic ? 0 : startPosition || 0;
-
-            var startPositionInSeekParam = startPosition ? (startPosition / 10000000) : 0;
-            var seekParam = startPositionInSeekParam ? '#t=' + startPositionInSeekParam : '';
-
-            var mp4VideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.mp4', $.extend({}, baseParams, {
-                Static: isStatic,
-                maxWidth: mp4Quality.maxWidth,
-                videoBitrate: mp4Quality.videoBitrate,
-                audioBitrate: mp4Quality.audioBitrate,
-                VideoCodec: mp4Quality.videoCodec,
-                AudioCodec: mp4Quality.audioCodec,
-                profile: 'high',
-                //EnableAutoStreamCopy: false,
-                level: '41'
-            }));
-
-            if (isStatic && mediaSource.Protocol == 'Http' && !mediaSource.RequiredHttpHeaders.length) {
-                mp4VideoUrl = mediaSource.Path;
-            }
-
-            if (isStatic) {
-                mp4VideoUrl += seekParam;
-            } else {
-                mp4VideoUrl += "&StreamId=" + new Date().getTime();
-            }
-
-            var webmVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/stream.webm', $.extend({}, baseParams, {
-                VideoCodec: 'vpx',
-                AudioCodec: 'Vorbis',
-                maxWidth: webmQuality.maxWidth,
-                videoBitrate: webmQuality.videoBitrate,
-                audioBitrate: webmQuality.audioBitrate,
-                EnableAutoStreamCopy: false,
-                StreamId: new Date().getTime()
-            }));
-
-            var hlsVideoUrl = ApiClient.getUrl('Videos/' + item.Id + '/master.m3u8', $.extend({}, baseParams, {
-                maxWidth: m3U8Quality.maxWidth,
-                videoBitrate: m3U8Quality.videoBitrate,
-                audioBitrate: m3U8Quality.audioBitrate,
-                VideoCodec: m3U8Quality.videoCodec,
-                AudioCodec: m3U8Quality.audioCodec,
-                profile: 'high',
-                level: '41',
-                StartTimeTicks: 0,
-                StreamId: new Date().getTime()
-
-            })) + seekParam;
 
             // Get Video Poster (Code from librarybrowser.js)
             var screenWidth = Math.max(screen.height, screen.width),
@@ -1136,52 +975,26 @@
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresNativeControls) {
-                html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay="autoplay" controls="controls"' + posterCode + '>';
+                html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay="autoplay" crossorigin="anonymous" controls="controls"' + posterCode + '>';
             } else {
 
                 // Chrome 35 won't play with preload none
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay' + posterCode + '>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" crossorigin="anonymous" autoplay' + posterCode + '>';
             }
 
-            if (!isStatic) {
-                // HLS must be at the top for safari
-                html += '<source type="application/x-mpegURL" src="' + hlsVideoUrl + '" />';
-            }
+            html += '<source type="' + contentType + '" src="' + videoUrl + '" />';
 
-            var mp4BeforeWebm = self.getVideoTranscodingExtension() != '.webm';
+            var textStreams = subtitleStreams.filter(function (s) {
+                return s.DeliveryMethod == 'External';
+            });
 
-            if (mp4BeforeWebm) {
-                html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
-            }
+            for (var i = 0, length = textStreams.length; i < length; i++) {
 
-            // Have to put webm ahead of mp4 because it will play in fast forward in chrome
-            // And firefox doesn't like fragmented mp4
-            if (!isStatic) {
+                var textStream = textStreams[i];
+                var textStreamUrl = !textStream.IsExternalUrl ? ApiClient.getUrl(textStream.DeliveryUrl) : textStream.DeliveryUrl;
+                var defaultAttribute = textStream.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';
 
-                html += '<source type="video/webm" src="' + webmVideoUrl + '" />';
-            }
-
-            if (!mp4BeforeWebm) {
-                html += '<source type="video/mp4" src="' + mp4VideoUrl + '" />';
-            }
-
-            if (self.supportsTextTracks()) {
-                var textStreams = subtitleStreams.filter(function (s) {
-                    return self.supportsSubtitleStreamExternally(s);
-                });
-
-                for (var i = 0, length = textStreams.length; i < length; i++) {
-
-                    var textStream = textStreams[i];
-                    var textStreamUrl = ApiClient.getUrl('Videos/' + item.Id + '/' + mediaSource.Id + '/Subtitles/' + textStream.Index + '/Stream.vtt', {
-                        startPositionTicks: (startPosition || 0),
-                        api_key: ApiClient.accessToken()
-                    });
-
-                    var defaultAttribute = textStream.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';
-
-                    html += '<track kind="subtitles" src="' + textStreamUrl + '" srclang="' + (textStream.Language || 'und') + '"' + defaultAttribute + '></track>';
-                }
+                html += '<track kind="subtitles" src="' + textStreamUrl + '" srclang="' + (textStream.Language || 'und') + '"' + defaultAttribute + '></track>';
             }
 
             html += '</video>';
@@ -1303,8 +1116,6 @@
 
                 self.stop();
 
-                console.dir(this);
-
                 var errorCode = this.error ? this.error.code : '';
                 console.log('Html5 Video error code: ' + errorCode);
 
@@ -1328,7 +1139,6 @@
                     title: Globalize.translate('HeaderVideoError'),
                     message: errorMsg
                 });
-
 
             }).on("click.mediaplayerevent", function (e) {
 

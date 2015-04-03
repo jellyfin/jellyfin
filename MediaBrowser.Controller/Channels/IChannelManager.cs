@@ -112,11 +112,11 @@ namespace MediaBrowser.Controller.Channels
         /// <summary>
         /// Gets the channel item media sources.
         /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="includeDynamicSources">if set to <c>true</c> [include dynamic sources].</param>
+        /// <param name="item">The item.</param>
+        /// <param name="includeCachedVersions">if set to <c>true</c> [include cached versions].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{IEnumerable{MediaSourceInfo}}.</returns>
-        Task<IEnumerable<MediaSourceInfo>> GetChannelItemMediaSources(string id, bool includeDynamicSources, CancellationToken cancellationToken);
+        Task<IEnumerable<MediaSourceInfo>> GetStaticMediaSources(IChannelMediaItem item, bool includeCachedVersions, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the channel folder.

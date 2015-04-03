@@ -306,7 +306,13 @@
                 throw new Error("Url name cannot be empty");
             }
 
-            var url = serverAddress + "/" + name;
+            var url = serverAddress;
+
+            if (name.charAt(0) != '/') {
+                url += '/';
+            }
+
+            url += name;
 
             if (params) {
                 url += "?" + AjaxApi.param(params);
@@ -1881,14 +1887,14 @@
             });
         };
 
-        self.stopActiveEncodings = function (streamId) {
+        self.stopActiveEncodings = function (playSessionId) {
 
             var options = {
                 deviceId: deviceId
             };
 
-            if (streamId) {
-                options.streamId = streamId;
+            if (playSessionId) {
+                options.PlaySessionId = playSessionId;
             }
 
             var url = self.getUrl("Videos/ActiveEncodings", options);

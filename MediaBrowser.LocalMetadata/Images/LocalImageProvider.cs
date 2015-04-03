@@ -186,16 +186,15 @@ namespace MediaBrowser.LocalMetadata.Images
                 names.Add("movie");
             }
 
-            foreach (var name in names)
-            {
-                AddImage(files, images, imagePrefix + name, ImageType.Primary);
-            }
-
             var fileNameWithoutExtension = item.FileNameWithoutExtension;
-
             if (!string.IsNullOrEmpty(fileNameWithoutExtension))
             {
                 AddImage(files, images, fileNameWithoutExtension, ImageType.Primary);
+            }
+
+            foreach (var name in names)
+            {
+                AddImage(files, images, imagePrefix + name, ImageType.Primary);
             }
 
             if (!isInMixedFolder)

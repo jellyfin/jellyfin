@@ -2,17 +2,17 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>MediaBrowser.Common.Internal</id>
-        <version>3.0.598</version>
+        <version>3.0.612</version>
         <title>MediaBrowser.Common.Internal</title>
         <authors>Luke</authors>
         <owners>ebr,Luke,scottisafool</owners>
         <projectUrl>https://github.com/MediaBrowser/MediaBrowser</projectUrl>
         <iconUrl>http://www.mb3admin.com/images/mb3icons1-1.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Contains common components shared by Media Browser Theater and Media Browser Server. Not intended for plugin developer consumption.</description>
-        <copyright>Copyright © Media Browser 2013</copyright>
+        <description>Contains common components shared by Emby Theater and Emby Server. Not intended for plugin developer consumption.</description>
+        <copyright>Copyright © Emby 2013</copyright>
         <dependencies>
-            <dependency id="MediaBrowser.Common" version="3.0.598" />
+            <dependency id="MediaBrowser.Common" version="3.0.612" />
             <dependency id="NLog" version="3.2.0.0" />
             <dependency id="SimpleInjector" version="2.7.0" />
         </dependencies>
