@@ -302,7 +302,7 @@ namespace MediaBrowser.Api.Playback
                 if (streamInfo != null && streamInfo.PlayMethod == PlayMethod.Transcode)
                 {
                     streamInfo.StartPositionTicks = startTimeTicks;
-                    mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-').TrimStart('-');
+                    mediaSource.TranscodingUrl = streamInfo.ToUrl("-", auth.Token).TrimStart('-');
                     mediaSource.TranscodingContainer = streamInfo.Container;
                     mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                 }
@@ -324,7 +324,7 @@ namespace MediaBrowser.Api.Playback
 
                         if (profile.DeliveryMethod == SubtitleDeliveryMethod.External)
                         {
-                            stream.DeliveryUrl = profile.Url.TrimStart('-').TrimStart('-');
+                            stream.DeliveryUrl = profile.Url.TrimStart('-');
                             stream.IsExternalUrl = profile.IsExternalUrl;
                         }
                     }
