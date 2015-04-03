@@ -61,6 +61,7 @@ namespace MediaBrowser.Model.Users
         
         public UserPolicy()
         {
+            EnableSync = true;
             EnableLiveTvManagement = true;
             EnableMediaPlayback = true;
             EnableLiveTvAccess = true;

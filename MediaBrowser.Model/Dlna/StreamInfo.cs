@@ -198,7 +198,16 @@ namespace MediaBrowser.Model.Dlna
             list.Add(new NameValuePair("MaxFramerate", item.MaxFramerate.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxFramerate.Value) : string.Empty));
             list.Add(new NameValuePair("MaxWidth", item.MaxWidth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxWidth.Value) : string.Empty));
             list.Add(new NameValuePair("MaxHeight", item.MaxHeight.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxHeight.Value) : string.Empty));
-            list.Add(new NameValuePair("StartTimeTicks", StringHelper.ToStringCultureInvariant(item.StartPositionTicks)));
+
+            if (StringHelper.EqualsIgnoreCase(item.SubProtocol, "hls"))
+            {
+                list.Add(new NameValuePair("StartTimeTicks", string.Empty));
+            }
+            else
+            {
+                list.Add(new NameValuePair("StartTimeTicks", StringHelper.ToStringCultureInvariant(item.StartPositionTicks)));
+            }
+
             list.Add(new NameValuePair("Level", item.VideoLevel.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoLevel.Value) : string.Empty));
 
             list.Add(new NameValuePair("ClientTime", item.IsDirectStream ? string.Empty : DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture)));
