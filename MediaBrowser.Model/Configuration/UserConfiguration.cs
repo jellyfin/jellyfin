@@ -61,6 +61,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         public UserConfiguration()
         {
+            HidePlayedInLatest = true;
             PlayDefaultAudioTrack = true;
 
             LatestItemsExcludes = new string[] { };
