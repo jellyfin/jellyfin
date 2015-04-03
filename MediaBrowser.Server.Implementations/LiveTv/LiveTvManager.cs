@@ -761,6 +761,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 programs = programs.Where(p => p.IsMovie == query.IsMovie);
             }
 
+            if (query.IsSports.HasValue)
+            {
+                programs = programs.Where(p => p.IsSports == query.IsSports);
+            }
+
             programs = _libraryManager.Sort(programs, user, query.SortBy, query.SortOrder ?? SortOrder.Ascending)
                 .Cast<LiveTvProgram>();
 
@@ -824,6 +829,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (query.IsMovie.HasValue)
             {
                 programs = programs.Where(p => p.IsMovie == query.IsMovie.Value);
+            }
+
+            if (query.IsSports.HasValue)
+            {
+                programs = programs.Where(p => p.IsSports == query.IsSports.Value);
             }
 
             var programList = programs.ToList();
@@ -996,6 +1006,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 innerProgress = new ActionableProgress<double>();
                 innerProgress.RegisterAction(p => progress.Report(90 + (p * .1)));
                 await CleanDatabaseInternal(progress, cancellationToken).ConfigureAwait(false);
+
+                foreach (var program in _programs.Values
+                    .Where(i => (i.StartDate - DateTime.UtcNow).TotalDays <= 1)
+                    .ToList())
+                {
+                    RefreshIfNeeded(program);
+                }
             }
             finally
             {

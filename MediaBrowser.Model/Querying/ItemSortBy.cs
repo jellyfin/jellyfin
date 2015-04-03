@@ -43,6 +43,7 @@ namespace MediaBrowser.Model.Querying
         /// The premiere date
         /// </summary>
         public const string PremiereDate = "PremiereDate";
+        public const string StartDate = "StartDate";
         /// <summary>
         /// The sort name
         /// </summary>

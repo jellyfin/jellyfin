@@ -33,7 +33,8 @@
             IsAiring: false,
             HasAired: false,
             limit: 10,
-            IsMovie: false
+            IsMovie: false,
+            IsSports: false
 
         }).done(function (result) {
 
@@ -72,6 +73,28 @@
             });
 
             $('.upcomingTvMovieItems', page).html(html).lazyChildren();
+        });
+
+        ApiClient.getLiveTvRecommendedPrograms({
+
+            userId: Dashboard.getCurrentUserId(),
+            IsAiring: false,
+            HasAired: false,
+            limit: 10,
+            IsSports: true
+
+        }).done(function (result) {
+
+            var html = LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                shape: "auto",
+                showTitle: true,
+                coverImage: true,
+                overlayText: false,
+                lazy: true
+            });
+
+            $('.upcomingSportsItems', page).html(html).lazyChildren();
         });
     }
 

@@ -54,6 +54,12 @@ namespace MediaBrowser.Model.LiveTv
         public bool? IsMovie { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is sports.
+        /// </summary>
+        /// <value><c>null</c> if [is sports] contains no value, <c>true</c> if [is sports]; otherwise, <c>false</c>.</value>
+        public bool? IsSports { get; set; }
+        
+        /// <summary>
         /// Skips over a given number of items within the results. Use for paging.
         /// </summary>
         public int? StartIndex { get; set; }
