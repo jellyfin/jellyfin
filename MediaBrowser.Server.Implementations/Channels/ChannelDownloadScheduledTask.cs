@@ -169,29 +169,32 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             foreach (var item in result.Items)
             {
-                var channelItem = (IChannelMediaItem)item;
+                var channelItem = item as IChannelMediaItem;
 
-                var channelFeatures = _manager.GetChannelFeatures(channelItem.ChannelId);
-
-                if (channelFeatures.SupportsContentDownloading)
+                if (channelItem != null)
                 {
-                    if (options.DownloadingChannels.Contains(channelItem.ChannelId))
+                    var channelFeatures = _manager.GetChannelFeatures(channelItem.ChannelId);
+
+                    if (channelFeatures.SupportsContentDownloading)
                     {
-                        try
+                        if (options.DownloadingChannels.Contains(channelItem.ChannelId))
                         {
-                            await DownloadChannelItem(channelItem, options, cancellationToken, path);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            break;
-                        }
-                        catch (ChannelDownloadException)
-                        {
-                            // Logged at lower levels
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error downloading channel content for {0}", ex, item.Name);
+                            try
+                            {
+                                await DownloadChannelItem(channelItem, options, cancellationToken, path);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                break;
+                            }
+                            catch (ChannelDownloadException)
+                            {
+                                // Logged at lower levels
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.ErrorException("Error downloading channel content for {0}", ex, item.Name);
+                            }
                         }
                     }
                 }
