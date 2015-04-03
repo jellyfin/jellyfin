@@ -1535,7 +1535,6 @@
 
             if (item.MediaType == "Video") {
 
-                ApiClient.stopActiveEncodings(playSessionId);
                 if (self.isFullScreen()) {
                     self.exitFullScreen();
                 }

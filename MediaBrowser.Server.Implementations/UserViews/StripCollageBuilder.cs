@@ -155,17 +155,17 @@ namespace MediaBrowser.Server.Implementations.UserViews
 
         private MagickWand BuildPosterCollageWand(IEnumerable<string> paths, int width, int height)
         {
-            var inputPaths = ProjectPaths(paths, 3);
+            var inputPaths = ProjectPaths(paths, 4);
             using (var wandImages = new MagickWand(inputPaths))
             {
                 var wand = new MagickWand(width, height);
                 wand.OpenImage("gradient:#111111-#111111");
                 using (var draw = new DrawingWand())
                 {
-                    var iSlice = Convert.ToInt32(width * .3);
+                    var iSlice = Convert.ToInt32(width * 0.225);
                     int iTrans = Convert.ToInt32(height * .25);
                     int iHeight = Convert.ToInt32(height * .65);
-                    var horizontalImagePadding = Convert.ToInt32(width * 0.025);
+                    var horizontalImagePadding = Convert.ToInt32(width * 0.0275);
 
                     foreach (var element in wandImages.ImageList)
                     {
@@ -211,7 +211,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
 
         private MagickWand BuildPosterCollageWandWithText(IEnumerable<string> paths, string label, int width, int height)
         {
-            var inputPaths = ProjectPaths(paths, 3);
+            var inputPaths = ProjectPaths(paths, 4);
             using (var wandImages = new MagickWand(inputPaths))
             {
                 var wand = new MagickWand(width, height);
@@ -231,10 +231,10 @@ namespace MediaBrowser.Server.Implementations.UserViews
                     var textContainerY = Convert.ToInt32(height * .165);
                     wand.CurrentImage.AnnotateImage(draw, (width - fontMetrics.TextWidth) / 2, textContainerY, 0.0, label);
 
-                    var iSlice = Convert.ToInt32(width * .3);
+                    var iSlice = Convert.ToInt32(width * 0.225);
                     int iTrans = Convert.ToInt32(height * 0.2);
                     int iHeight = Convert.ToInt32(height * 0.46296296296296296296296296296296);
-                    var horizontalImagePadding = Convert.ToInt32(width * 0.025);
+                    var horizontalImagePadding = Convert.ToInt32(width * 0.0275);
 
                     foreach (var element in wandImages.ImageList)
                     {
