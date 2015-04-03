@@ -107,7 +107,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 User = _userManager.GetUserById(view.UserId.Value),
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
-                ExcludeItemTypes = new[] { "UserView", "CollectionFolder" }
+                ExcludeItemTypes = new[] { "UserView", "CollectionFolder", "Playlist" }
 
             }).ConfigureAwait(false);
 
@@ -248,8 +248,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
                     return null;
                 }
 
-                var stream = new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(itemsWithImages, view.ViewType), item.Name, 960, 540);
-                return stream;
+                return new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(itemsWithImages, view.ViewType), 960, 540, false, item.Name);
             }
 
             return await base.CreateImageAsync(item, itemsWithImages, imageType, imageIndex);

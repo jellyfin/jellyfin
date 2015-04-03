@@ -6,6 +6,7 @@ namespace MediaBrowser.Model.Sync
     {
         public List<string> LocalItemIds { get; set; }
         public List<string> OfflineUserIds { get; set; }
+        public List<string> SyncJobItemIds { get; set; }
 
         public string TargetId { get; set; }
 

@@ -24,7 +24,7 @@ namespace MediaBrowser.Model.Dlna
 
         public string Container { get; set; }
 
-        public string Protocol { get; set; }
+        public string SubProtocol { get; set; }
 
         public long StartPositionTicks { get; set; }
 
@@ -51,7 +51,7 @@ namespace MediaBrowser.Model.Dlna
 
         public int? MaxVideoBitDepth { get; set; }
         public int? MaxRefFrames { get; set; }
-        
+
         public float? MaxFramerate { get; set; }
 
         public DeviceProfile DeviceProfile { get; set; }
@@ -69,7 +69,7 @@ namespace MediaBrowser.Model.Dlna
         public SubtitleDeliveryMethod SubtitleDeliveryMethod { get; set; }
         public string SubtitleFormat { get; set; }
 
-        public LiveMediaInfoResult PlaybackInfo { get; set; }
+        public string PlaySessionId { get; set; }
 
         public string MediaSourceId
         {
@@ -81,18 +81,14 @@ namespace MediaBrowser.Model.Dlna
 
         public bool IsDirectStream
         {
-            get { 
+            get
+            {
                 return PlayMethod == PlayMethod.DirectStream ||
                     PlayMethod == PlayMethod.DirectPlay;
             }
         }
 
         public string ToUrl(string baseUrl, string accessToken)
-        {
-            return ToDlnaUrl(baseUrl, accessToken);
-        }
-
-        public string ToDlnaUrl(string baseUrl, string accessToken)
         {
             if (PlayMethod == PlayMethod.DirectPlay)
             {
@@ -104,7 +100,56 @@ namespace MediaBrowser.Model.Dlna
                 throw new ArgumentNullException(baseUrl);
             }
 
-            string dlnaCommand = BuildDlnaParam(this);
+            List<string> list = new List<string>();
+            foreach (NameValuePair pair in BuildParams(this, accessToken))
+            {
+                if (string.IsNullOrEmpty(pair.Value))
+                {
+                    continue;
+                }
+
+                // Try to keep the url clean by omitting defaults
+                if (StringHelper.EqualsIgnoreCase(pair.Name, "StartTimeTicks") &&
+                    StringHelper.EqualsIgnoreCase(pair.Value, "0"))
+                {
+                    continue;
+                }
+                if (StringHelper.EqualsIgnoreCase(pair.Name, "SubtitleStreamIndex") &&
+                    StringHelper.EqualsIgnoreCase(pair.Value, "-1"))
+                {
+                    continue;
+                }
+                if (StringHelper.EqualsIgnoreCase(pair.Name, "Static") &&
+                    StringHelper.EqualsIgnoreCase(pair.Value, "false"))
+                {
+                    continue;
+                }
+
+                list.Add(string.Format("{0}={1}", pair.Name, pair.Value));
+            }
+
+            string queryString = string.Join("&", list.ToArray());
+
+            return GetUrl(baseUrl, queryString);
+        }
+
+        public string ToDlnaUrl(string baseUrl, string accessToken)
+        {
+            if (PlayMethod == PlayMethod.DirectPlay)
+            {
+                return MediaSource.Path;
+            }
+
+            string dlnaCommand = BuildDlnaParam(this, accessToken);
+            return GetUrl(baseUrl, dlnaCommand);
+        }
+
+        private string GetUrl(string baseUrl, string queryString)
+        {
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                throw new ArgumentNullException(baseUrl);
+            }
 
             string extension = string.IsNullOrEmpty(Container) ? string.Empty : "." + Container;
 
@@ -112,102 +157,107 @@ namespace MediaBrowser.Model.Dlna
 
             if (MediaType == DlnaProfileType.Audio)
             {
-                return string.Format("{0}/audio/{1}/stream{2}?{3}", baseUrl, ItemId, extension, dlnaCommand);
+                return string.Format("{0}/audio/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
             }
 
-            if (StringHelper.EqualsIgnoreCase(Protocol, "hls"))
+            if (StringHelper.EqualsIgnoreCase(SubProtocol, "hls"))
             {
-                return string.Format("{0}/videos/{1}/master.m3u8?{2}", baseUrl, ItemId, dlnaCommand);
+                return string.Format("{0}/videos/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
             }
 
-            return string.Format("{0}/videos/{1}/stream{2}?{3}", baseUrl, ItemId, extension, dlnaCommand);
+            return string.Format("{0}/videos/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
         }
 
-        private static string BuildDlnaParam(StreamInfo item)
+        private static string BuildDlnaParam(StreamInfo item, string accessToken)
         {
-            List<string> list = new List<string>
+            List<string> list = new List<string>();
+
+            foreach (NameValuePair pair in BuildParams(item, accessToken))
             {
-                item.DeviceProfileId ?? string.Empty,
-                item.DeviceId ?? string.Empty,
-                item.MediaSourceId ?? string.Empty,
-                (item.IsDirectStream).ToString().ToLower(),
-                item.VideoCodec ?? string.Empty,
-                item.AudioCodec ?? string.Empty,
-                item.AudioStreamIndex.HasValue ? StringHelper.ToStringCultureInvariant(item.AudioStreamIndex.Value) : string.Empty,
-                item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? StringHelper.ToStringCultureInvariant(item.SubtitleStreamIndex.Value) : string.Empty,
-                item.VideoBitrate.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoBitrate.Value) : string.Empty,
-                item.AudioBitrate.HasValue ? StringHelper.ToStringCultureInvariant(item.AudioBitrate.Value) : string.Empty,
-                item.MaxAudioChannels.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxAudioChannels.Value) : string.Empty,
-                item.MaxFramerate.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxFramerate.Value) : string.Empty,
-                item.MaxWidth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxWidth.Value) : string.Empty,
-                item.MaxHeight.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxHeight.Value) : string.Empty,
-                StringHelper.ToStringCultureInvariant(item.StartPositionTicks),
-                item.VideoLevel.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoLevel.Value) : string.Empty
-            };
+                list.Add(pair.Value);
+            }
 
-            list.Add(item.IsDirectStream ? string.Empty : DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture));
-            list.Add(item.MaxRefFrames.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxRefFrames.Value) : string.Empty);
-            list.Add(item.MaxVideoBitDepth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxVideoBitDepth.Value) : string.Empty);
-            list.Add(item.VideoProfile ?? string.Empty);
-            list.Add(item.Cabac.HasValue ? item.Cabac.Value.ToString() : string.Empty);
-
-            string streamId = item.PlaybackInfo == null ? null : item.PlaybackInfo.StreamId;
-            list.Add(streamId ?? string.Empty);
-            
             return string.Format("Params={0}", string.Join(";", list.ToArray()));
         }
 
-        public List<SubtitleStreamInfo> GetExternalSubtitles(bool includeSelectedTrackOnly)
+        private static List<NameValuePair> BuildParams(StreamInfo item, string accessToken)
         {
-            List<SubtitleStreamInfo> list = new List<SubtitleStreamInfo>();
+            List<NameValuePair> list = new List<NameValuePair>();
 
-            // First add the selected track
-            if (SubtitleStreamIndex.HasValue)
+            list.Add(new NameValuePair("DeviceProfileId", item.DeviceProfileId ?? string.Empty));
+            list.Add(new NameValuePair("DeviceId", item.DeviceId ?? string.Empty));
+            list.Add(new NameValuePair("MediaSourceId", item.MediaSourceId ?? string.Empty));
+            list.Add(new NameValuePair("Static", (item.IsDirectStream).ToString().ToLower()));
+            list.Add(new NameValuePair("VideoCodec", item.VideoCodec ?? string.Empty));
+            list.Add(new NameValuePair("AudioCodec", item.AudioCodec ?? string.Empty));
+            list.Add(new NameValuePair("AudioStreamIndex", item.AudioStreamIndex.HasValue ? StringHelper.ToStringCultureInvariant(item.AudioStreamIndex.Value) : string.Empty));
+            list.Add(new NameValuePair("SubtitleStreamIndex", item.SubtitleStreamIndex.HasValue && item.SubtitleDeliveryMethod != SubtitleDeliveryMethod.External ? StringHelper.ToStringCultureInvariant(item.SubtitleStreamIndex.Value) : string.Empty));
+            list.Add(new NameValuePair("VideoBitrate", item.VideoBitrate.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoBitrate.Value) : string.Empty));
+            list.Add(new NameValuePair("AudioBitrate", item.AudioBitrate.HasValue ? StringHelper.ToStringCultureInvariant(item.AudioBitrate.Value) : string.Empty));
+            list.Add(new NameValuePair("MaxAudioChannels", item.MaxAudioChannels.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxAudioChannels.Value) : string.Empty));
+            list.Add(new NameValuePair("MaxFramerate", item.MaxFramerate.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxFramerate.Value) : string.Empty));
+            list.Add(new NameValuePair("MaxWidth", item.MaxWidth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxWidth.Value) : string.Empty));
+            list.Add(new NameValuePair("MaxHeight", item.MaxHeight.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxHeight.Value) : string.Empty));
+
+            if (StringHelper.EqualsIgnoreCase(item.SubProtocol, "hls"))
             {
-                foreach (MediaStream stream in MediaSource.MediaStreams)
-                {
-                    if (stream.Type == MediaStreamType.Subtitle && stream.Index == SubtitleStreamIndex.Value)
-                    {
-                        SubtitleStreamInfo info = GetSubtitleStreamInfo(stream);
-
-                        if (info != null)
-                        {
-                            list.Add(info);
-                        }
-                    }
-                }
+                list.Add(new NameValuePair("StartTimeTicks", string.Empty));
+            }
+            else
+            {
+                list.Add(new NameValuePair("StartTimeTicks", StringHelper.ToStringCultureInvariant(item.StartPositionTicks)));
             }
 
-            if (!includeSelectedTrackOnly)
-            {
-                foreach (MediaStream stream in MediaSource.MediaStreams)
-                {
-                    if (stream.Type == MediaStreamType.Subtitle && (!SubtitleStreamIndex.HasValue || stream.Index != SubtitleStreamIndex.Value))
-                    {
-                        SubtitleStreamInfo info = GetSubtitleStreamInfo(stream);
+            list.Add(new NameValuePair("Level", item.VideoLevel.HasValue ? StringHelper.ToStringCultureInvariant(item.VideoLevel.Value) : string.Empty));
 
-                        if (info != null)
-                        {
-                            list.Add(info);
-                        }
-                    }
-                }
-            }
+            list.Add(new NameValuePair("ClientTime", item.IsDirectStream ? string.Empty : DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture)));
+            list.Add(new NameValuePair("MaxRefFrames", item.MaxRefFrames.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxRefFrames.Value) : string.Empty));
+            list.Add(new NameValuePair("MaxVideoBitDepth", item.MaxVideoBitDepth.HasValue ? StringHelper.ToStringCultureInvariant(item.MaxVideoBitDepth.Value) : string.Empty));
+            list.Add(new NameValuePair("Profile", item.VideoProfile ?? string.Empty));
+            list.Add(new NameValuePair("Cabac", item.Cabac.HasValue ? item.Cabac.Value.ToString() : string.Empty));
+
+            list.Add(new NameValuePair("PlaySessionId", item.PlaySessionId ?? string.Empty));
+            list.Add(new NameValuePair("api_key", accessToken ?? string.Empty));
+
+            string liveStreamId = item.MediaSource == null ? null : item.MediaSource.LiveStreamId;
+            list.Add(new NameValuePair("LiveStreamId", liveStreamId ?? string.Empty));
 
             return list;
         }
 
-        public List<SubtitleStreamInfo> GetExternalSubtitles(string baseUrl, string accessToken, bool includeSelectedTrackOnly)
+        public List<SubtitleStreamInfo> GetExternalSubtitles(bool includeSelectedTrackOnly, string baseUrl, string accessToken)
         {
-            if (string.IsNullOrEmpty(baseUrl))
+            return GetExternalSubtitles(includeSelectedTrackOnly, false, baseUrl, accessToken);
+        }
+
+        public List<SubtitleStreamInfo> GetExternalSubtitles(bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
+        {
+            List<SubtitleStreamInfo> list = GetSubtitleProfiles(includeSelectedTrackOnly, enableAllProfiles, baseUrl, accessToken);
+            List<SubtitleStreamInfo> newList = new List<SubtitleStreamInfo>();
+
+            // First add the selected track
+            foreach (SubtitleStreamInfo stream in list)
             {
-                throw new ArgumentNullException(baseUrl);
+                if (stream.DeliveryMethod == SubtitleDeliveryMethod.External)
+                {
+                    newList.Add(stream);
+                }
             }
 
+            return newList;
+        }
+
+        public List<SubtitleStreamInfo> GetSubtitleProfiles(bool includeSelectedTrackOnly, string baseUrl, string accessToken)
+        {
+            return GetSubtitleProfiles(includeSelectedTrackOnly, false, baseUrl, accessToken);
+        }
+
+        public List<SubtitleStreamInfo> GetSubtitleProfiles(bool includeSelectedTrackOnly, bool enableAllProfiles, string baseUrl, string accessToken)
+        {
             List<SubtitleStreamInfo> list = new List<SubtitleStreamInfo>();
 
             // HLS will preserve timestamps so we can just grab the full subtitle stream
-            long startPositionTicks = StringHelper.EqualsIgnoreCase(Protocol, "hls")
+            long startPositionTicks = StringHelper.EqualsIgnoreCase(SubProtocol, "hls")
                 ? 0
                 : StartPositionTicks;
 
@@ -218,12 +268,7 @@ namespace MediaBrowser.Model.Dlna
                 {
                     if (stream.Type == MediaStreamType.Subtitle && stream.Index == SubtitleStreamIndex.Value)
                     {
-                        SubtitleStreamInfo info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks);
-
-                        if (info != null)
-                        {
-                            list.Add(info);
-                        }
+                        AddSubtitleProfiles(list, stream, enableAllProfiles, baseUrl, accessToken, startPositionTicks);
                     }
                 }
             }
@@ -234,54 +279,68 @@ namespace MediaBrowser.Model.Dlna
                 {
                     if (stream.Type == MediaStreamType.Subtitle && (!SubtitleStreamIndex.HasValue || stream.Index != SubtitleStreamIndex.Value))
                     {
-                        SubtitleStreamInfo info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks);
-
-                        if (info != null)
-                        {
-                            list.Add(info);
-                        }
+                        AddSubtitleProfiles(list, stream, enableAllProfiles, baseUrl, accessToken, startPositionTicks);
                     }
                 }
             }
-            
+
             return list;
         }
 
-        private SubtitleStreamInfo GetSubtitleStreamInfo(MediaStream stream, string baseUrl, string accessToken, long startPositionTicks)
+        private void AddSubtitleProfiles(List<SubtitleStreamInfo> list, MediaStream stream, bool enableAllProfiles, string baseUrl, string accessToken, long startPositionTicks)
         {
-            SubtitleStreamInfo info = GetSubtitleStreamInfo(stream);
-
-            if (info != null)
+            if (enableAllProfiles)
             {
-                info.Url = string.Format("{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}",
-                    baseUrl,
-                    ItemId,
-                    MediaSourceId,
-                    StringHelper.ToStringCultureInvariant(stream.Index),
-                    StringHelper.ToStringCultureInvariant(startPositionTicks),
-                    SubtitleFormat);
-            }
+                foreach (SubtitleProfile profile in DeviceProfile.SubtitleProfiles)
+                {
+                    SubtitleStreamInfo info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks, new[] { profile });
 
-            return info;
+                    list.Add(info);
+                }
+            }
+            else
+            {
+                SubtitleStreamInfo info = GetSubtitleStreamInfo(stream, baseUrl, accessToken, startPositionTicks, DeviceProfile.SubtitleProfiles);
+
+                list.Add(info);
+            }
         }
 
-        private SubtitleStreamInfo GetSubtitleStreamInfo(MediaStream stream)
+        private SubtitleStreamInfo GetSubtitleStreamInfo(MediaStream stream, string baseUrl, string accessToken, long startPositionTicks, SubtitleProfile[] subtitleProfiles)
         {
-            SubtitleProfile subtitleProfile = StreamBuilder.GetSubtitleProfile(stream, DeviceProfile.SubtitleProfiles, Context);
-
-            if (subtitleProfile.Method != SubtitleDeliveryMethod.External)
-            {
-                return null;
-            }
-
-            return new SubtitleStreamInfo
+            SubtitleProfile subtitleProfile = StreamBuilder.GetSubtitleProfile(stream, subtitleProfiles, Context);
+            SubtitleStreamInfo info = new SubtitleStreamInfo
             {
                 IsForced = stream.IsForced,
                 Language = stream.Language,
                 Name = stream.Language ?? "Unknown",
-                Format = SubtitleFormat,
-                Index = stream.Index
+                Format = subtitleProfile.Format,
+                Index = stream.Index,
+                DeliveryMethod = subtitleProfile.Method
             };
+
+            if (info.DeliveryMethod == SubtitleDeliveryMethod.External)
+            {
+                if (MediaSource.Protocol == MediaProtocol.File || !StringHelper.EqualsIgnoreCase(stream.Codec, subtitleProfile.Format))
+                {
+                    info.Url = string.Format("{0}/Videos/{1}/{2}/Subtitles/{3}/{4}/Stream.{5}",
+                        baseUrl,
+                        ItemId,
+                        MediaSourceId,
+                        StringHelper.ToStringCultureInvariant(stream.Index),
+                        StringHelper.ToStringCultureInvariant(startPositionTicks),
+                        subtitleProfile.Format);
+
+                    info.IsExternalUrl = false;
+                }
+                else
+                {
+                    info.Url = stream.Path;
+                    info.IsExternalUrl = true;
+                }
+            }
+
+            return info;
         }
 
         /// <summary>
@@ -611,6 +670,42 @@ namespace MediaBrowser.Model.Dlna
 
                 return MaxHeight;
             }
+        }
+
+        public int? TargetVideoStreamCount
+        {
+            get
+            {
+                if (IsDirectStream)
+                {
+                    return GetMediaStreamCount(MediaStreamType.Video, int.MaxValue);
+                }
+                return GetMediaStreamCount(MediaStreamType.Video, 1);
+            }
+        }
+
+        public int? TargetAudioStreamCount
+        {
+            get
+            {
+                if (IsDirectStream)
+                {
+                    return GetMediaStreamCount(MediaStreamType.Audio, int.MaxValue);
+                }
+                return GetMediaStreamCount(MediaStreamType.Audio, 1);
+            }
+        }
+
+        private int? GetMediaStreamCount(MediaStreamType type, int limit)
+        {
+            var count = MediaSource.GetStreamCount(type);
+
+            if (count.HasValue)
+            {
+                count = Math.Min(count.Value, limit);
+            }
+
+            return count;
         }
 
         public List<MediaStream> GetSelectableAudioStreams()

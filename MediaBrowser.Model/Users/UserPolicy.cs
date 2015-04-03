@@ -32,8 +32,6 @@ namespace MediaBrowser.Model.Users
         public bool EnableUserPreferenceAccess { get; set; }
         public AccessSchedule[] AccessSchedules { get; set; }
         public UnratedItem[] BlockUnratedItems { get; set; }
-        public string[] BlockedMediaFolders { get; set; }
-        public string[] BlockedChannels { get; set; }
         public bool EnableRemoteControlOfOtherUsers { get; set; }
         public bool EnableSharedDeviceControl { get; set; }
 
@@ -63,6 +61,7 @@ namespace MediaBrowser.Model.Users
         
         public UserPolicy()
         {
+            EnableSync = true;
             EnableLiveTvManagement = true;
             EnableMediaPlayback = true;
             EnableLiveTvAccess = true;

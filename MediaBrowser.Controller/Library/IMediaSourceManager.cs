@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -62,8 +63,8 @@ namespace MediaBrowser.Controller.Library
         /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable&lt;MediaSourceInfo&gt;.</returns>
-        IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution, User user);
-
+        IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution, User user = null);
+        
         /// <summary>
         /// Gets the static media source.
         /// </summary>
@@ -72,5 +73,38 @@ namespace MediaBrowser.Controller.Library
         /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
         /// <returns>MediaSourceInfo.</returns>
         MediaSourceInfo GetStaticMediaSource(IHasMediaSources item, string mediaSourceId, bool enablePathSubstitution);
+
+        /// <summary>
+        /// Opens the media source.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="enableAutoClose">if set to <c>true</c> [enable automatic close].</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
+        Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, bool enableAutoClose, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the live stream.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
+        Task<MediaSourceInfo> GetLiveStream(string id, CancellationToken cancellationToken);
+        
+        /// <summary>
+        /// Pings the media source.
+        /// </summary>
+        /// <param name="id">The live stream identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task PingLiveStream(string id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Closes the media source.
+        /// </summary>
+        /// <param name="id">The live stream identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task.</returns>
+        Task CloseLiveStream(string id, CancellationToken cancellationToken);
     }
 }

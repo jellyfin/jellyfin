@@ -3,12 +3,13 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Server.Implementations.UserViews;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -125,7 +126,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected abstract Task<List<BaseItem>> GetItemsWithImages(IHasImages item);
 
-        private const string Version = "4";
+        private const string Version = "18";
         protected string GetConfigurationCacheKey(List<BaseItem> items, string itemName)
         {
             var parts = Version + "_" + (itemName ?? string.Empty) + "_" +
@@ -134,30 +135,32 @@ namespace MediaBrowser.Server.Implementations.Photos
             return parts.GetMD5().ToString("N");
         }
 
-        protected Task<Stream> GetThumbCollage(List<BaseItem> items)
+        protected Task<Stream> GetThumbCollage(IHasImages primaryItem, List<BaseItem> items)
         {
-            var files = items
-                .Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb))
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .ToList();
+            var stream = new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(items), 960, 540, true, primaryItem.Name);
 
-            return DynamicImageHelpers.GetThumbCollage(files,
-                FileSystem,
-                1600,
-                900,
-                ApplicationPaths);
+            return Task.FromResult(stream);
         }
 
-        protected Task<Stream> GetSquareCollage(List<BaseItem> items)
+        private IEnumerable<String> GetStripCollageImagePaths(IEnumerable<BaseItem> items)
         {
-            var files = items
+            return items
                 .Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb))
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .ToList();
+                .Where(i => !string.IsNullOrWhiteSpace(i));
+        }
 
-            return DynamicImageHelpers.GetSquareCollage(files,
-                FileSystem,
-                800, ApplicationPaths);
+        protected Task<Stream> GetPosterCollage(IHasImages primaryItem, List<BaseItem> items)
+        {
+            var stream = new StripCollageBuilder(ApplicationPaths).BuildPosterCollage(GetStripCollageImagePaths(items), 600, 900, true, primaryItem.Name);
+
+            return Task.FromResult(stream);
+        }
+
+        protected Task<Stream> GetSquareCollage(IHasImages primaryItem, List<BaseItem> items)
+        {
+            var stream = new StripCollageBuilder(ApplicationPaths).BuildSquareCollage(GetStripCollageImagePaths(items), 800, 800, true, primaryItem.Name);
+
+            return Task.FromResult(stream);
         }
 
         public string Name
@@ -175,9 +178,19 @@ namespace MediaBrowser.Server.Implementations.Photos
                 return null;
             }
 
-            return imageType == ImageType.Thumb ?
-                await GetThumbCollage(itemsWithImages).ConfigureAwait(false) :
-                await GetSquareCollage(itemsWithImages).ConfigureAwait(false);
+            if (imageType == ImageType.Thumb)
+            {
+                return await GetThumbCollage(item, itemsWithImages).ConfigureAwait(false);
+            }
+
+            if (imageType == ImageType.Primary)
+            {
+                return item is PhotoAlbum || item is Playlist ?
+                    await GetSquareCollage(item, itemsWithImages).ConfigureAwait(false) :
+                    await GetPosterCollage(item, itemsWithImages).ConfigureAwait(false);
+            }
+
+            throw new ArgumentException("Unexpected image type");
         }
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
@@ -223,26 +236,14 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected virtual List<BaseItem> GetFinalItems(List<BaseItem> items, int limit)
         {
-            // Rotate the images no more than once per week
-            var random = new Random(GetWeekOfYear()).Next();
+            // Rotate the images once every x days
+            var random = DateTime.Now.DayOfYear % 4;
 
             return items
                 .OrderBy(i => (random + "" + items.IndexOf(i)).GetMD5())
                 .Take(limit)
                 .OrderBy(i => i.Name)
                 .ToList();
-        }
-
-        private int GetWeekOfYear()
-        {
-            return DateTime.Now.Second;
-            var usCulture = new CultureInfo("en-US");
-            var weekNo = usCulture.Calendar.GetWeekOfYear(
-                            DateTime.Now,
-                            usCulture.DateTimeFormat.CalendarWeekRule,
-                            usCulture.DateTimeFormat.FirstDayOfWeek);
-
-            return weekNo;
         }
 
         public int Order

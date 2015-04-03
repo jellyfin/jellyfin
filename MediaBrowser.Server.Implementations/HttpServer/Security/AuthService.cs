@@ -140,7 +140,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                 return true;
             }
 
-            return _config.Configuration.InsecureApps8.Contains(auth.Client ?? string.Empty,
+            return _config.Configuration.InsecureApps9.Contains(auth.Client ?? string.Empty,
                 StringComparer.OrdinalIgnoreCase);
         }
 

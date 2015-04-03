@@ -117,7 +117,9 @@ namespace MediaBrowser.Model.Dlna
             TranscodeSeekInfo transcodeSeekInfo,
             bool? isAnamorphic,
             bool? isCabac,
-            int? refFrames)
+            int? refFrames,
+            int? numVideoStreams,
+            int? numAudioStreams)
         {
             // first bit means Time based seek supported, second byte range seek supported (not sure about the order now), so 01 = only byte seek, 10 = time based, 11 = both, 00 = none
             string orgOp = ";DLNA.ORG_OP=" + DlnaMaps.GetOrgOpValue(runtimeTicks.HasValue, isDirectStream, transcodeSeekInfo);
@@ -158,7 +160,9 @@ namespace MediaBrowser.Model.Dlna
                 timestamp,
                 isAnamorphic,
                 isCabac,
-                refFrames);
+                refFrames,
+                numVideoStreams,
+                numAudioStreams);
 
             List<string> orgPnValues = new List<string>();
 

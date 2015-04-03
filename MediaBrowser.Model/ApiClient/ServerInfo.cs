@@ -3,7 +3,6 @@ using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.System;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MediaBrowser.Model.ApiClient
 {
@@ -83,7 +82,12 @@ namespace MediaBrowser.Model.ApiClient
                 throw new ArgumentNullException("user");
             }
 
-            var list = Users.ToList();
+            // Clone the existing list of users
+            var list = new List<ServerUserInfo>();
+            foreach (ServerUserInfo serverUserInfo in Users)
+            {
+                list.Add(serverUserInfo);
+            }
 
             var index = FindIndex(list, user.Id);
 

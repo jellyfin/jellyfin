@@ -124,7 +124,7 @@ namespace MediaBrowser.Dlna.Didl
         {
             if (streamInfo == null)
             {
-                var sources = _user == null ? video.GetMediaSources(true).ToList() : _mediaSourceManager.GetStaticMediaSources(video, true, _user).ToList();
+                var sources = _mediaSourceManager.GetStaticMediaSources(video, true, _user).ToList();
 
                 streamInfo = new StreamBuilder().BuildVideoItem(new VideoOptions
                 {
@@ -158,16 +158,21 @@ namespace MediaBrowser.Dlna.Didl
                 streamInfo.TranscodeSeekInfo,
                 streamInfo.IsTargetAnamorphic,
                 streamInfo.IsTargetCabac,
-                streamInfo.TargetRefFrames);
+                streamInfo.TargetRefFrames,
+                streamInfo.TargetVideoStreamCount,
+                streamInfo.TargetAudioStreamCount);
 
             foreach (var contentFeature in contentFeatureList)
             {
                 AddVideoResource(container, video, deviceId, filter, contentFeature, streamInfo);
             }
 
-            foreach (var subtitle in streamInfo.GetExternalSubtitles(_serverAddress, _accessToken, false))
+            foreach (var subtitle in streamInfo.GetSubtitleProfiles(false, _serverAddress, _accessToken))
             {
-                AddSubtitleElement(container, subtitle);
+                if (subtitle.DeliveryMethod == SubtitleDeliveryMethod.External)
+                {
+                    AddSubtitleElement(container, subtitle);
+                }
             }
         }
 
@@ -280,7 +285,9 @@ namespace MediaBrowser.Dlna.Didl
                 streamInfo.TargetTimestamp,
                 streamInfo.IsTargetAnamorphic,
                 streamInfo.IsTargetCabac,
-                streamInfo.TargetRefFrames);
+                streamInfo.TargetRefFrames,
+                streamInfo.TargetVideoStreamCount,
+                streamInfo.TargetAudioStreamCount);
 
             var filename = url.Substring(0, url.IndexOf('?'));
 
@@ -344,7 +351,7 @@ namespace MediaBrowser.Dlna.Didl
 
             if (streamInfo == null)
             {
-                var sources = _user == null ? audio.GetMediaSources(true).ToList() : _mediaSourceManager.GetStaticMediaSources(audio, true, _user).ToList();
+                var sources = _mediaSourceManager.GetStaticMediaSources(audio, true, _user).ToList();
 
                 streamInfo = new StreamBuilder().BuildAudioItem(new AudioOptions
                {

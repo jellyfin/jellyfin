@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Model.Logging;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Threading;
@@ -11,13 +13,18 @@ namespace MediaBrowser.Api.Playback
         private readonly ILogger _logger;
         private Timer _timer;
         private bool _isPaused;
+        private readonly IConfigurationManager _config;
 
-        private readonly long _gapLengthInTicks = TimeSpan.FromMinutes(2).Ticks;
-
-        public TranscodingThrottler(TranscodingJob job, ILogger logger)
+        public TranscodingThrottler(TranscodingJob job, ILogger logger, IConfigurationManager config)
         {
             _job = job;
             _logger = logger;
+            _config = config;
+        }
+
+        private EncodingOptions GetOptions()
+        {
+            return _config.GetConfiguration<EncodingOptions>("encoding");
         }
 
         public void Start()
@@ -33,7 +40,9 @@ namespace MediaBrowser.Api.Playback
                 return;
             }
 
-            if (IsThrottleAllowed(_job))
+            var options = GetOptions();
+
+            if (/*options.EnableThrottling &&*/ IsThrottleAllowed(_job, options.ThrottleThresholdSeconds))
             {
                 PauseTranscoding();
             }
@@ -79,19 +88,20 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        private bool IsThrottleAllowed(TranscodingJob job)
+        private bool IsThrottleAllowed(TranscodingJob job, int thresholdSeconds)
         {
             var bytesDownloaded = job.BytesDownloaded ?? 0;
             var transcodingPositionTicks = job.TranscodingPositionTicks ?? 0;
             var downloadPositionTicks = job.DownloadPositionTicks ?? 0;
 
             var path = job.Path;
+            var gapLengthInTicks = TimeSpan.FromSeconds(thresholdSeconds).Ticks;
 
             if (downloadPositionTicks > 0 && transcodingPositionTicks > 0)
             {
                 // HLS - time-based consideration
 
-                var targetGap = _gapLengthInTicks;
+                var targetGap = gapLengthInTicks;
                 var gap = transcodingPositionTicks - downloadPositionTicks;
 
                 if (gap < targetGap)
@@ -113,7 +123,7 @@ namespace MediaBrowser.Api.Playback
                     var bytesTranscoded = job.BytesTranscoded ?? new FileInfo(path).Length;
 
                     // Estimate the bytes the transcoder should be ahead
-                    double gapFactor = _gapLengthInTicks;
+                    double gapFactor = gapLengthInTicks;
                     gapFactor /= transcodingPositionTicks;
                     var targetGap = bytesTranscoded * gapFactor;
 

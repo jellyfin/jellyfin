@@ -241,10 +241,25 @@ namespace MediaBrowser.Server.Implementations.Channels
             return item;
         }
 
-        public async Task<IEnumerable<MediaSourceInfo>> GetChannelItemMediaSources(string id, bool includeDynamicSources, CancellationToken cancellationToken)
+        public async Task<IEnumerable<MediaSourceInfo>> GetStaticMediaSources(IChannelMediaItem item, bool includeCachedVersions, CancellationToken cancellationToken)
         {
-            var item = (IChannelMediaItem)_libraryManager.GetItemById(id);
+            IEnumerable<ChannelMediaInfo> results = item.ChannelMediaSources;
 
+            var sources = SortMediaInfoResults(results)
+                .Select(i => GetMediaSource(item, i))
+                .ToList();
+
+            if (includeCachedVersions)
+            {
+                var cachedVersions = GetCachedChannelItemMediaSources(item);
+                sources.InsertRange(0, cachedVersions);
+            }
+
+            return sources.Where(IsValidMediaSource);
+        }
+
+        public async Task<IEnumerable<MediaSourceInfo>> GetDynamicMediaSources(IChannelMediaItem item, CancellationToken cancellationToken)
+        {
             var channel = GetChannel(item.ChannelId);
             var channelPlugin = GetChannelProvider(channel);
 
@@ -252,24 +267,25 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             IEnumerable<ChannelMediaInfo> results;
 
-            if (requiresCallback != null && includeDynamicSources)
+            if (requiresCallback != null)
             {
                 results = await GetChannelItemMediaSourcesInternal(requiresCallback, item.ExternalId, cancellationToken)
-                            .ConfigureAwait(false);
+                    .ConfigureAwait(false);
             }
             else
             {
-                results = item.ChannelMediaSources;
+                results = new List<ChannelMediaInfo>();
             }
 
-            var sources = SortMediaInfoResults(results).Select(i => GetMediaSource(item, i))
+            var list = SortMediaInfoResults(results)
+                .Select(i => GetMediaSource(item, i))
+                .Where(IsValidMediaSource)
                 .ToList();
 
             var cachedVersions = GetCachedChannelItemMediaSources(item);
+            list.InsertRange(0, cachedVersions);
 
-            sources.InsertRange(0, cachedVersions);
-
-            return sources.Where(IsValidMediaSource);
+            return list;
         }
 
         private readonly ConcurrentDictionary<string, Tuple<DateTime, List<ChannelMediaInfo>>> _channelItemMediaInfo =
@@ -297,14 +313,7 @@ namespace MediaBrowser.Server.Implementations.Channels
             return list;
         }
 
-        public IEnumerable<MediaSourceInfo> GetCachedChannelItemMediaSources(string id)
-        {
-            var item = (IChannelMediaItem)_libraryManager.GetItemById(id);
-
-            return GetCachedChannelItemMediaSources(item);
-        }
-
-        public IEnumerable<MediaSourceInfo> GetCachedChannelItemMediaSources(IChannelMediaItem item)
+        private IEnumerable<MediaSourceInfo> GetCachedChannelItemMediaSources(IChannelMediaItem item)
         {
             var filenamePrefix = item.Id.ToString("N");
             var parentPath = Path.Combine(ChannelDownloadPath, item.ChannelId);
@@ -339,7 +348,6 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                             if (source != null)
                             {
-                                source.Type = MediaSourceType.Cache;
                                 return new[] { source };
                             }
                         }
@@ -1408,8 +1416,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         public async Task DownloadChannelItem(IChannelMediaItem item, string destination,
             IProgress<double> progress, CancellationToken cancellationToken)
         {
-            var itemId = item.Id.ToString("N");
-            var sources = await GetChannelItemMediaSources(itemId, true, cancellationToken)
+            var sources = await GetDynamicMediaSources(item, cancellationToken)
                 .ConfigureAwait(false);
 
             var list = sources.Where(i => i.Protocol == MediaProtocol.Http).ToList();

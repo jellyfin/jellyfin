@@ -501,7 +501,8 @@ namespace MediaBrowser.Controller.Entities
                 Formats = (i.FormatName ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList(),
                 Timestamp = i.Timestamp,
                 Type = type,
-                PlayableStreamFileNames = i.PlayableStreamFileNames.ToList()
+                PlayableStreamFileNames = i.PlayableStreamFileNames.ToList(),
+                SupportsDirectStream = i.VideoType == VideoType.VideoFile
             };
 
             if (i.IsShortcut)

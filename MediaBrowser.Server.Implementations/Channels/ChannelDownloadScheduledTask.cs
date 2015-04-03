@@ -169,29 +169,32 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             foreach (var item in result.Items)
             {
-                var channelItem = (IChannelItem)item;
+                var channelItem = item as IChannelMediaItem;
 
-                var channelFeatures = _manager.GetChannelFeatures(channelItem.ChannelId);
-
-                if (channelFeatures.SupportsContentDownloading)
+                if (channelItem != null)
                 {
-                    if (options.DownloadingChannels.Contains(channelItem.ChannelId))
+                    var channelFeatures = _manager.GetChannelFeatures(channelItem.ChannelId);
+
+                    if (channelFeatures.SupportsContentDownloading)
                     {
-                        try
+                        if (options.DownloadingChannels.Contains(channelItem.ChannelId))
                         {
-                            await DownloadChannelItem(item, options, cancellationToken, path);
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            break;
-                        }
-                        catch (ChannelDownloadException)
-                        {
-                            // Logged at lower levels
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error downloading channel content for {0}", ex, item.Name);
+                            try
+                            {
+                                await DownloadChannelItem(channelItem, options, cancellationToken, path);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                break;
+                            }
+                            catch (ChannelDownloadException)
+                            {
+                                // Logged at lower levels
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.ErrorException("Error downloading channel content for {0}", ex, item.Name);
+                            }
                         }
                     }
                 }
@@ -210,13 +213,13 @@ namespace MediaBrowser.Server.Implementations.Channels
             return channelOptions.DownloadSizeLimit;
         }
 
-        private async Task DownloadChannelItem(BaseItem item,
+        private async Task DownloadChannelItem(IChannelMediaItem item,
             ChannelOptions channelOptions,
             CancellationToken cancellationToken,
             string path)
         {
             var itemId = item.Id.ToString("N");
-            var sources = await _manager.GetChannelItemMediaSources(itemId, false, cancellationToken)
+            var sources = await _manager.GetStaticMediaSources(item, true, cancellationToken)
                 .ConfigureAwait(false);
 
             var cachedVersions = sources.Where(i => i.Protocol == MediaProtocol.File).ToList();
@@ -237,11 +240,9 @@ namespace MediaBrowser.Server.Implementations.Channels
                 }
             }
 
-            var channelItem = (IChannelMediaItem)item;
+            var destination = Path.Combine(path, item.ChannelId, itemId);
 
-            var destination = Path.Combine(path, channelItem.ChannelId, itemId);
-
-            await _manager.DownloadChannelItem(channelItem, destination, new Progress<double>(), cancellationToken)
+            await _manager.DownloadChannelItem(item, destination, new Progress<double>(), cancellationToken)
                     .ConfigureAwait(false);
 
             await RefreshMediaSourceItem(destination, cancellationToken).ConfigureAwait(false);

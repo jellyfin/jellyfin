@@ -20,7 +20,9 @@ namespace MediaBrowser.Model.Dlna
             TransportStreamTimestamp? timestamp,
             bool? isAnamorphic,
             bool? isCabac,
-            int? refFrames)
+            int? refFrames,
+            int? numVideoStreams,
+            int? numAudioStreams)
         {
             switch (condition.Property)
             {
@@ -56,6 +58,10 @@ namespace MediaBrowser.Model.Dlna
                     return IsConditionSatisfied(condition, width);
                 case ProfileConditionValue.RefFrames:
                     return IsConditionSatisfied(condition, refFrames);
+                case ProfileConditionValue.NumAudioStreams:
+                    return IsConditionSatisfied(condition, numAudioStreams);
+                case ProfileConditionValue.NumVideoStreams:
+                    return IsConditionSatisfied(condition, numVideoStreams);
                 case ProfileConditionValue.VideoTimestamp:
                     return IsConditionSatisfied(condition, timestamp);
                 default:
@@ -92,7 +98,8 @@ namespace MediaBrowser.Model.Dlna
         public bool IsVideoAudioConditionSatisfied(ProfileCondition condition, 
             int? audioChannels, 
             int? audioBitrate,
-            string audioProfile)
+            string audioProfile,
+            bool? isSecondaryTrack)
         {
             switch (condition.Property)
             {
@@ -102,6 +109,8 @@ namespace MediaBrowser.Model.Dlna
                     return IsConditionSatisfied(condition, audioBitrate);
                 case ProfileConditionValue.AudioChannels:
                     return IsConditionSatisfied(condition, audioChannels);
+                case ProfileConditionValue.IsSecondaryAudio:
+                    return IsConditionSatisfied(condition, isSecondaryTrack);
                 default:
                     throw new ArgumentException("Unexpected condition on audio file: " + condition.Property);
             }

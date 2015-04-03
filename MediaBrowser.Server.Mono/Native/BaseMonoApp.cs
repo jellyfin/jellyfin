@@ -139,7 +139,6 @@ namespace MediaBrowser.Server.Mono.Native
             }
             else if (string.Equals(sysName, "BSD", StringComparison.OrdinalIgnoreCase))
             {
-                // TODO: How to detect BSD?
                 info.OperatingSystem = Startup.Common.OperatingSystem.Bsd;
             }
 

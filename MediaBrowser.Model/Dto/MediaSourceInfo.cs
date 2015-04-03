@@ -24,6 +24,13 @@ namespace MediaBrowser.Model.Dto
         public bool ReadAtNativeFramerate { get; set; }
         public bool SupportsTranscoding { get; set; }
         public bool SupportsDirectStream { get; set; }
+        public bool SupportsDirectPlay { get; set; }
+
+        public bool RequiresOpening { get; set; }
+        public string OpenToken { get; set; }
+        public bool RequiresClosing { get; set; }
+        public string LiveStreamId { get; set; }
+        public int? BufferMs { get; set; }
 
         public VideoType? VideoType { get; set; }
 
@@ -41,6 +48,10 @@ namespace MediaBrowser.Model.Dto
         public TransportStreamTimestamp? Timestamp { get; set; }
         public Dictionary<string, string> RequiredHttpHeaders { get; set; }
 
+        public string TranscodingUrl { get; set; }
+        public string TranscodingSubProtocol { get; set; }
+        public string TranscodingContainer { get; set; }
+
         public MediaSourceInfo()
         {
             Formats = new List<string>();
@@ -49,6 +60,7 @@ namespace MediaBrowser.Model.Dto
             PlayableStreamFileNames = new List<string>();
             SupportsTranscoding = true;
             SupportsDirectStream = true;
+            SupportsDirectPlay = true;
         }
 
         public int? DefaultAudioStreamIndex { get; set; }
@@ -118,6 +130,41 @@ namespace MediaBrowser.Model.Dto
                 if (i.Type == type && i.Index == index)
                 {
                     return i;
+                }
+            }
+
+            return null;
+        }
+
+        public int? GetStreamCount(MediaStreamType type)
+        {
+            int numMatches = 0;
+            int numStreams = 0;
+
+            foreach (MediaStream i in MediaStreams)
+            {
+                numStreams++;
+                if (i.Type == type)
+                {
+                    numMatches++;
+                }
+            }
+
+            if (numStreams == 0)
+            {
+                return null;
+            }
+
+            return numMatches;
+        }
+
+        public bool? IsSecondaryAudio(MediaStream stream)
+        {
+            foreach (MediaStream currentStream in MediaStreams)
+            {
+                if (currentStream.Type == MediaStreamType.Audio)
+                {
+                    return currentStream.Index != stream.Index;
                 }
             }
 

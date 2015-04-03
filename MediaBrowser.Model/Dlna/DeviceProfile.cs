@@ -281,7 +281,9 @@ namespace MediaBrowser.Model.Dlna
             TransportStreamTimestamp timestamp,
             bool? isAnamorphic,
             bool? isCabac,
-            int? refFrames)
+            int? refFrames,
+            int? numVideoStreams,
+            int? numAudioStreams)
         {
             container = StringHelper.TrimStart((container ?? string.Empty), '.');
 
@@ -315,7 +317,7 @@ namespace MediaBrowser.Model.Dlna
                 var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
                 {
-                    if (!conditionProcessor.IsVideoConditionSatisfied(c, audioBitrate, audioChannels, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames))
+                    if (!conditionProcessor.IsVideoConditionSatisfied(c, audioBitrate, audioChannels, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
                     {
                         anyOff = true;
                         break;

@@ -38,6 +38,7 @@ namespace MediaBrowser.Controller.Channels
         public string Id { get; set; }
 
         public bool ReadAtNativeFramerate { get; set; }
+        public bool SupportsDirectPlay { get; set; }
 
         public ChannelMediaInfo()
         {
@@ -45,6 +46,7 @@ namespace MediaBrowser.Controller.Channels
 
             // This is most common
             Protocol = MediaProtocol.Http;
+            SupportsDirectPlay = true;
         }
 
         public MediaSourceInfo ToMediaSource()
@@ -62,7 +64,9 @@ namespace MediaBrowser.Controller.Channels
                 RunTimeTicks = RunTimeTicks,
                 Name = id,
                 Id = id,
-                ReadAtNativeFramerate = ReadAtNativeFramerate
+                ReadAtNativeFramerate = ReadAtNativeFramerate,
+                SupportsDirectStream = Protocol == MediaProtocol.File || Protocol == MediaProtocol.Http,
+                SupportsDirectPlay = SupportsDirectPlay
             };
 
             var bitrate = (AudioBitrate ?? 0) + (VideoBitrate ?? 0);

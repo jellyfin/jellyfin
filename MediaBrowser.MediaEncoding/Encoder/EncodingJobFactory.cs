@@ -1,9 +1,10 @@
-﻿using MediaBrowser.Controller.Channels;
+﻿using System.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -19,19 +20,15 @@ namespace MediaBrowser.MediaEncoding.Encoder
     public class EncodingJobFactory
     {
         private readonly ILogger _logger;
-        private readonly ILiveTvManager _liveTvManager;
         private readonly ILibraryManager _libraryManager;
-        private readonly IChannelManager _channelManager;
         private readonly IMediaSourceManager _mediaSourceManager;
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
         
-        public EncodingJobFactory(ILogger logger, ILiveTvManager liveTvManager, ILibraryManager libraryManager, IChannelManager channelManager, IMediaSourceManager mediaSourceManager)
+        public EncodingJobFactory(ILogger logger, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager)
         {
             _logger = logger;
-            _liveTvManager = liveTvManager;
             _libraryManager = libraryManager;
-            _channelManager = channelManager;
             _mediaSourceManager = mediaSourceManager;
         }
 
@@ -42,9 +39,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
             if (string.IsNullOrEmpty(request.AudioCodec))
             {
                 request.AudioCodec = InferAudioCodec(request.OutputContainer);
-            } 
-            
-            var state = new EncodingJob(_logger, _liveTvManager)
+            }
+
+            var state = new EncodingJob(_logger, _mediaSourceManager)
             {
                 Options = options,
                 IsVideoRequest = isVideoRequest,
@@ -58,106 +55,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             var item = _libraryManager.GetItemById(request.ItemId);
-
-            List<MediaStream> mediaStreams = null;
-
             state.ItemType = item.GetType().Name;
 
-            if (item is ILiveTvRecording)
-            {
-                var recording = await _liveTvManager.GetInternalRecording(request.ItemId, cancellationToken).ConfigureAwait(false);
+            state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
 
-                state.VideoType = VideoType.VideoFile;
-                state.IsInputVideo = string.Equals(recording.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
+            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.ItemId, false, cancellationToken).ConfigureAwait(false);
 
-                var path = recording.RecordingInfo.Path;
-                var mediaUrl = recording.RecordingInfo.Url;
-                
-                var source = string.IsNullOrEmpty(request.MediaSourceId)
-                    ? recording.GetMediaSources(false).First()
-                    : _mediaSourceManager.GetStaticMediaSource(recording, request.MediaSourceId, false);
+            var mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
+               ? mediaSources.First()
+               : mediaSources.First(i => string.Equals(i.Id, request.MediaSourceId));
 
-                mediaStreams = source.MediaStreams;
-
-                // Just to prevent this from being null and causing other methods to fail
-                state.MediaPath = string.Empty;
-
-                if (!string.IsNullOrEmpty(path))
-                {
-                    state.MediaPath = path;
-                    state.InputProtocol = MediaProtocol.File;
-                }
-                else if (!string.IsNullOrEmpty(mediaUrl))
-                {
-                    state.MediaPath = mediaUrl;
-                    state.InputProtocol = MediaProtocol.Http;
-                }
-
-                state.RunTimeTicks = recording.RunTimeTicks;
-                state.DeInterlace = true;
-                state.OutputAudioSync = "1000";
-                state.InputVideoSync = "-1";
-                state.InputAudioSync = "1";
-                state.InputContainer = recording.Container;
-                state.ReadInputAtNativeFramerate = source.ReadAtNativeFramerate;
-            }
-            else if (item is LiveTvChannel)
-            {
-                var channel = _liveTvManager.GetInternalChannel(request.ItemId);
-
-                state.VideoType = VideoType.VideoFile;
-                state.IsInputVideo = string.Equals(channel.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
-                mediaStreams = new List<MediaStream>();
-
-                state.DeInterlace = true;
-
-                // Just to prevent this from being null and causing other methods to fail
-                state.MediaPath = string.Empty;
-            }
-            else
-            {
-                var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.ItemId, false, cancellationToken).ConfigureAwait(false);
-
-                var mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
-                    ? mediaSources.First()
-                    : mediaSources.First(i => string.Equals(i.Id, request.MediaSourceId));
-
-                mediaStreams = mediaSource.MediaStreams;
-
-                state.MediaPath = mediaSource.Path;
-                state.InputProtocol = mediaSource.Protocol;
-                state.InputContainer = mediaSource.Container;
-                state.InputFileSize = mediaSource.Size;
-                state.InputBitrate = mediaSource.Bitrate;
-                state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
-                state.RunTimeTicks = mediaSource.RunTimeTicks;
-                state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
-
-                var video = item as Video;
-
-                if (video != null)
-                {
-                    state.IsInputVideo = true;
-
-                    if (mediaSource.VideoType.HasValue)
-                    {
-                        state.VideoType = mediaSource.VideoType.Value;
-                    }
-
-                    state.IsoType = mediaSource.IsoType;
-
-                    state.PlayableStreamFileNames = mediaSource.PlayableStreamFileNames.ToList();
-
-                    if (mediaSource.Timestamp.HasValue)
-                    {
-                        state.InputTimestamp = mediaSource.Timestamp.Value;
-                    }
-                }
-
-                state.RunTimeTicks = mediaSource.RunTimeTicks;
-            }
-
-            AttachMediaStreamInfo(state, mediaStreams, request);
+            AttachMediaStreamInfo(state, mediaSource, options);
 
             state.OutputAudioBitrate = GetAudioBitrateParam(request, state.AudioStream);
             state.OutputAudioSampleRate = request.AudioSampleRate;
@@ -185,26 +93,73 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             ApplyDeviceProfileSettings(state);
 
-            if (isVideoRequest)
-            {
-                if (state.VideoStream != null && CanStreamCopyVideo(request, state.VideoStream))
-                {
-                    state.OutputVideoCodec = "copy";
-                }
-
-                if (state.AudioStream != null && CanStreamCopyAudio(request, state.AudioStream, state.SupportedAudioCodecs))
-                {
-                    state.OutputAudioCodec = "copy";
-                }
-            }
+            TryStreamCopy(state, request);
 
             return state;
         }
 
-        internal static void AttachMediaStreamInfo(EncodingJob state,
-            List<MediaStream> mediaStreams,
+        internal static void TryStreamCopy(EncodingJob state,
             EncodingJobOptions videoRequest)
         {
+            if (state.IsVideoRequest)
+            {
+                if (state.VideoStream != null && CanStreamCopyVideo(videoRequest, state.VideoStream))
+                {
+                    state.OutputVideoCodec = "copy";
+                }
+
+                if (state.AudioStream != null && CanStreamCopyAudio(videoRequest, state.AudioStream, state.SupportedAudioCodecs))
+                {
+                    state.OutputAudioCodec = "copy";
+                }
+            }
+        }
+
+        internal static void AttachMediaStreamInfo(EncodingJob state,
+            MediaSourceInfo mediaSource,
+            EncodingJobOptions videoRequest)
+        {
+            state.MediaPath = mediaSource.Path;
+            state.InputProtocol = mediaSource.Protocol;
+            state.InputContainer = mediaSource.Container;
+            state.InputFileSize = mediaSource.Size;
+            state.InputBitrate = mediaSource.Bitrate;
+            state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
+            state.RunTimeTicks = mediaSource.RunTimeTicks;
+            state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
+
+            if (mediaSource.VideoType.HasValue)
+            {
+                state.VideoType = mediaSource.VideoType.Value;
+            }
+
+            state.IsoType = mediaSource.IsoType;
+
+            state.PlayableStreamFileNames = mediaSource.PlayableStreamFileNames.ToList();
+
+            if (mediaSource.Timestamp.HasValue)
+            {
+                state.InputTimestamp = mediaSource.Timestamp.Value;
+            }
+
+            state.InputProtocol = mediaSource.Protocol;
+            state.MediaPath = mediaSource.Path;
+            state.RunTimeTicks = mediaSource.RunTimeTicks;
+            state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
+            state.InputBitrate = mediaSource.Bitrate;
+            state.InputFileSize = mediaSource.Size;
+            state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
+
+            if (state.ReadInputAtNativeFramerate ||
+                mediaSource.Protocol == MediaProtocol.File && string.Equals(mediaSource.Container, "wtv", StringComparison.OrdinalIgnoreCase))
+            {
+                state.OutputAudioSync = "1000";
+                state.InputVideoSync = "-1";
+                state.InputAudioSync = "1";
+            }
+
+            var mediaStreams = mediaSource.MediaStreams;
+
             if (videoRequest != null)
             {
                 if (string.IsNullOrEmpty(videoRequest.VideoCodec))
@@ -233,7 +188,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 state.AudioStream = GetMediaStream(mediaStreams, null, MediaStreamType.Audio, true);
             }
 
-            state.AllMediaStreams = mediaStreams;
+            state.MediaSource = mediaSource;
         }
 
         /// <summary>
@@ -771,7 +726,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 state.TargetTimestamp,
                 state.IsTargetAnamorphic,
                 state.IsTargetCabac,
-                state.TargetRefFrames);
+                state.TargetRefFrames,
+                state.TargetVideoStreamCount,
+                state.TargetAudioStreamCount);
 
             if (mediaProfile != null)
             {
