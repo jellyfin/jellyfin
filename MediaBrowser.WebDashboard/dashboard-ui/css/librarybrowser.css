@@ -1446,6 +1446,3 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         padding-left: 1em;
     }
 }
-
-.homeTopViews .cardText{
-}

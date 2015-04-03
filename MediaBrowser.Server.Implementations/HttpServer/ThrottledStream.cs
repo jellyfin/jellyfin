@@ -15,8 +15,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// </summary>
         public const long Infinite = 0;
 
-        public Func<long, long, long> ThrottleCallback { get; set; }
-        
         #region Private members
         /// <summary>
         /// The base stream.
@@ -291,16 +289,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             if (_maximumBytesPerSecond <= 0 || bufferSizeInBytes <= 0)
             {
                 return false;
-            }
-
-            if (ThrottleCallback != null)
-            {
-                var val = ThrottleCallback(_maximumBytesPerSecond, _bytesWritten);
-
-                if (val == 0)
-                {
-                    return false;
-                }
             }
 
             return true;
