@@ -289,7 +289,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             SyncTarget target,
             CancellationToken cancellationToken)
         {
-            var localItems = await dataProvider.GetCachedItemsBySyncJobItemId(target, serverId, syncJobItemId);
+            var localItems = await dataProvider.GetItemsBySyncJobItemId(target, serverId, syncJobItemId);
 
             foreach (var localItem in localItems)
             {

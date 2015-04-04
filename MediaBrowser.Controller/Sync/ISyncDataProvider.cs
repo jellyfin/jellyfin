@@ -21,7 +21,7 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="serverId">The server identifier.</param>
         /// <returns>Task&lt;List&lt;System.String&gt;&gt;.</returns>
         Task<List<string>> GetSyncJobItemIds(SyncTarget target, string serverId);
-        
+
         /// <summary>
         /// Adds the or update.
         /// </summary>
@@ -53,7 +53,7 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="serverId">The server identifier.</param>
         /// <param name="itemId">The item identifier.</param>
         /// <returns>Task&lt;LocalItem&gt;.</returns>
-        Task<List<LocalItem>> GetCachedItems(SyncTarget target, string serverId, string itemId);
+        Task<List<LocalItem>> GetItems(SyncTarget target, string serverId, string itemId);
         /// <summary>
         /// Gets the cached items by synchronize job item identifier.
         /// </summary>
@@ -61,6 +61,6 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="serverId">The server identifier.</param>
         /// <param name="syncJobItemId">The synchronize job item identifier.</param>
         /// <returns>Task&lt;List&lt;LocalItem&gt;&gt;.</returns>
-        Task<List<LocalItem>> GetCachedItemsBySyncJobItemId(SyncTarget target, string serverId, string syncJobItemId);
+        Task<List<LocalItem>> GetItemsBySyncJobItemId(SyncTarget target, string serverId, string syncJobItemId);
     }
 }

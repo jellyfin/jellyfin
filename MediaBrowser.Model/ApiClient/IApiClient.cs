@@ -1359,7 +1359,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="job">The job.</param>
         /// <returns>Task.</returns>
         Task UpdateSyncJob(SyncJob job);
-        
+
         /// <summary>
         /// Gets the synchronize jobs.
         /// </summary>
@@ -1492,5 +1492,12 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;LiveStreamResponse&gt;.</returns>
         Task<LiveStreamResponse> OpenLiveStream(LiveStreamRequest request, CancellationToken cancellationToken);
+        /// <summary>
+        /// Cancels the synchronize library items.
+        /// </summary>
+        /// <param name="targetId">The target identifier.</param>
+        /// <param name="itemIds">The item ids.</param>
+        /// <returns>Task.</returns>
+        Task CancelSyncLibraryItems(string targetId, IEnumerable<string> itemIds);
     }
 }

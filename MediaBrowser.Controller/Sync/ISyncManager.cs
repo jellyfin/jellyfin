@@ -74,6 +74,14 @@ namespace MediaBrowser.Controller.Sync
         Task CancelJob(string id);
 
         /// <summary>
+        /// Cancels the items.
+        /// </summary>
+        /// <param name="targetId">The target identifier.</param>
+        /// <param name="itemIds">The item ids.</param>
+        /// <returns>Task.</returns>
+        Task CancelItems(string targetId, IEnumerable<string> itemIds);
+
+        /// <summary>
         /// Adds the parts.
         /// </summary>
         void AddParts(IEnumerable<ISyncProvider> providers);
