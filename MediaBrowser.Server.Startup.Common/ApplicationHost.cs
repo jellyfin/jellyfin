@@ -525,7 +525,7 @@ namespace MediaBrowser.Server.Startup.Common
             RegisterSingleInstance(activityLogRepo);
             RegisterSingleInstance<IActivityManager>(new ActivityManager(LogManager.GetLogger("ActivityManager"), activityLogRepo, UserManager));
 
-            var authContext = new AuthorizationContext(AuthenticationRepository);
+            var authContext = new AuthorizationContext(AuthenticationRepository, ConnectManager);
             RegisterSingleInstance<IAuthorizationContext>(authContext);
             RegisterSingleInstance<ISessionContext>(new SessionContext(UserManager, authContext, SessionManager));
             RegisterSingleInstance<IAuthService>(new AuthService(UserManager, authContext, ServerConfigurationManager, ConnectManager, SessionManager, DeviceManager));
@@ -756,7 +756,7 @@ namespace MediaBrowser.Server.Startup.Common
             ChannelManager.AddParts(GetExports<IChannel>(), GetExports<IChannelFactory>());
 
             MediaSourceManager.AddParts(GetExports<IMediaSourceProvider>());
-            
+
             NotificationManager.AddParts(GetExports<INotificationService>(), GetExports<INotificationTypeFactory>());
             SyncManager.AddParts(GetExports<ISyncProvider>());
         }
