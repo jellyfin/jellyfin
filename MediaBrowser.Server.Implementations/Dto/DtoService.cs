@@ -282,7 +282,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                 }
             }
-            
+
             if (fields.Contains(ItemFields.Studios))
             {
                 AttachStudios(dto, item);
