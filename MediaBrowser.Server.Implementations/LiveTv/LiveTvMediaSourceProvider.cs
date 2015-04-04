@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -18,12 +19,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly IJsonSerializer _jsonSerializer;
         private readonly ILogger _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IMediaEncoder _mediaEncoder;
 
-        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, IJsonSerializer jsonSerializer, ILogManager logManager, IMediaSourceManager mediaSourceManager)
+        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, IJsonSerializer jsonSerializer, ILogManager logManager, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
         {
             _liveTvManager = liveTvManager;
             _jsonSerializer = jsonSerializer;
             _mediaSourceManager = mediaSourceManager;
+            _mediaEncoder = mediaEncoder;
             _logger = logManager.GetLogger(GetType().Name);
         }
 
@@ -90,14 +93,86 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<MediaSourceInfo> OpenMediaSource(string openToken, CancellationToken cancellationToken)
         {
+            MediaSourceInfo stream;
+            var isAudio = false;
+
             var keys = openToken.Split(new[] { '|' }, 2);
 
             if (string.Equals(keys[0], typeof(LiveTvChannel).Name, StringComparison.OrdinalIgnoreCase))
             {
-                return await _liveTvManager.GetChannelStream(keys[1], cancellationToken).ConfigureAwait(false);
+                stream = await _liveTvManager.GetChannelStream(keys[1], cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                stream = await _liveTvManager.GetRecordingStream(keys[1], cancellationToken).ConfigureAwait(false);
             }
 
-            return await _liveTvManager.GetRecordingStream(keys[1], cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await AddMediaInfo(stream, isAudio, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error probing live tv stream", ex);
+            }
+
+            return stream;
+        }
+
+        private async Task AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
+        {
+            var inputPaths = new[] { mediaSource.Path };
+
+            var info = await _mediaEncoder.GetMediaInfo(inputPaths, mediaSource.Path, mediaSource.Protocol, isAudio, false, cancellationToken)
+                        .ConfigureAwait(false);
+
+            mediaSource.Bitrate = info.Bitrate;
+            mediaSource.Container = info.Container;
+            mediaSource.Formats = info.Formats;
+            mediaSource.MediaStreams = info.MediaStreams;
+            mediaSource.RunTimeTicks = info.RunTimeTicks;
+            mediaSource.Size = info.Size;
+            mediaSource.Timestamp = info.Timestamp;
+            mediaSource.Video3DFormat = info.Video3DFormat;
+            mediaSource.VideoType = info.VideoType;
+
+            mediaSource.DefaultSubtitleStreamIndex = null;
+
+            var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == Model.Entities.MediaStreamType.Audio);
+
+            if (audioStream == null || audioStream.Index == -1)
+            {
+                mediaSource.DefaultAudioStreamIndex = null;
+            }
+            else
+            {
+                mediaSource.DefaultAudioStreamIndex = audioStream.Index;
+            }
+
+            // Try to estimate this
+            if (!mediaSource.Bitrate.HasValue)
+            {
+                var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == Model.Entities.MediaStreamType.Video);
+                if (videoStream != null)
+                {
+                    var width = videoStream.Width ?? 1920;
+
+                    if (width >= 1900)
+                    {
+                        mediaSource.Bitrate = 10000000;
+                    }
+
+                    else if (width >= 1260)
+                    {
+                        mediaSource.Bitrate = 6000000;
+                    }
+
+                    else if (width >= 700)
+                    {
+                        mediaSource.Bitrate = 4000000;
+                    }
+                }
+            }
         }
 
         public Task CloseMediaSource(string liveStreamId, CancellationToken cancellationToken)

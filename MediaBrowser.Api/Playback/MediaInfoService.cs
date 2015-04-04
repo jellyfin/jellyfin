@@ -223,7 +223,7 @@ namespace MediaBrowser.Api.Playback
             int? subtitleStreamIndex,
             string playSessionId)
         {
-            var streamBuilder = new StreamBuilder();
+            var streamBuilder = new StreamBuilder(Logger);
 
             var options = new VideoOptions
             {

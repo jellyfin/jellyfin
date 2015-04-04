@@ -493,7 +493,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             conversionOptions.ItemId = item.Id.ToString("N");
             conversionOptions.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, false, user).ToList();
 
-            var streamInfo = new StreamBuilder().BuildVideoItem(conversionOptions);
+            var streamInfo = new StreamBuilder(_logger).BuildVideoItem(conversionOptions);
             var mediaSource = streamInfo.MediaSource;
 
             // No sense creating external subs if we're already burning one into the video
@@ -690,7 +690,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             conversionOptions.ItemId = item.Id.ToString("N");
             conversionOptions.MediaSources = _mediaSourceManager.GetStaticMediaSources(item, false, user).ToList();
 
-            var streamInfo = new StreamBuilder().BuildAudioItem(conversionOptions);
+            var streamInfo = new StreamBuilder(_logger).BuildAudioItem(conversionOptions);
             var mediaSource = streamInfo.MediaSource;
 
             jobItem.MediaSourceId = streamInfo.MediaSourceId;

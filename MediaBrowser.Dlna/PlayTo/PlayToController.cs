@@ -542,7 +542,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder().BuildVideoItem(new VideoOptions
+                    StreamInfo = new StreamBuilder(_logger).BuildVideoItem(new VideoOptions
                     {
                         ItemId = item.Id.ToString("N"),
                         MediaSources = mediaSources,
@@ -562,7 +562,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder().BuildAudioItem(new AudioOptions
+                    StreamInfo = new StreamBuilder(_logger).BuildAudioItem(new AudioOptions
                     {
                         ItemId = item.Id.ToString("N"),
                         MediaSources = mediaSources,
