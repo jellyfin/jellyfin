@@ -63,16 +63,18 @@ namespace MediaBrowser.Controller.MediaEncoding
             string filenamePrefix, 
             int? maxWidth,
             CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the media info.
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
+        /// <param name="primaryPath">The primary path.</param>
         /// <param name="protocol">The protocol.</param>
         /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
+        /// <param name="extractChapters">if set to <c>true</c> [extract chapters].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task<InternalMediaInfoResult> GetMediaInfo(string[] inputFiles, MediaProtocol protocol, bool isAudio, CancellationToken cancellationToken);
+        Task<MediaInfo> GetMediaInfo(string[] inputFiles, string primaryPath, MediaProtocol protocol, bool isAudio, bool extractChapters, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the probe size argument.

@@ -70,6 +70,7 @@ namespace MediaBrowser.Model.Dlna
         public string SubtitleFormat { get; set; }
 
         public string PlaySessionId { get; set; }
+        public List<MediaSourceInfo> AllMediaSources { get; set; }
 
         public string MediaSourceId
         {

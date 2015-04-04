@@ -13,7 +13,6 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Subtitles;
-using MediaBrowser.MediaInfo;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -116,10 +115,6 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                FFProbeHelpers.NormalizeFFProbeResult(result);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 await Fetch(item, cancellationToken, result, isoMount, blurayDiscInfo, options).ConfigureAwait(false);
 
             }
@@ -136,7 +131,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private const string SchemaVersion = "1";
 
-        private async Task<InternalMediaInfoResult> GetMediaInfo(Video item,
+        private async Task<Model.Entities.MediaInfo> GetMediaInfo(Video item,
             IIsoMount isoMount,
             CancellationToken cancellationToken)
         {
@@ -149,7 +144,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             try
             {
-                return _json.DeserializeFromFile<InternalMediaInfoResult>(cachePath);
+                return _json.DeserializeFromFile<Model.Entities.MediaInfo>(cachePath);
             }
             catch (FileNotFoundException)
             {
@@ -165,7 +160,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             var inputPath = MediaEncoderHelpers.GetInputArgument(item.Path, protocol, isoMount, item.PlayableStreamFileNames);
 
-            var result = await _mediaEncoder.GetMediaInfo(inputPath, protocol, false, cancellationToken).ConfigureAwait(false);
+            var result = await _mediaEncoder.GetMediaInfo(inputPath, item.Path, protocol, false, true, cancellationToken).ConfigureAwait(false);
 
             Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
             _json.SerializeToFile(result, cachePath);
@@ -175,52 +170,37 @@ namespace MediaBrowser.Providers.MediaInfo
 
         protected async Task Fetch(Video video,
             CancellationToken cancellationToken,
-            InternalMediaInfoResult data,
+            Model.Entities.MediaInfo mediaInfo,
             IIsoMount isoMount,
             BlurayDiscInfo blurayInfo,
             MetadataRefreshOptions options)
         {
-            var mediaInfo = MediaEncoderHelpers.GetMediaInfo(data);
             var mediaStreams = mediaInfo.MediaStreams;
 
-            video.TotalBitrate = mediaInfo.TotalBitrate;
-            video.FormatName = (mediaInfo.Format ?? string.Empty)
+            video.TotalBitrate = mediaInfo.Bitrate;
+            video.FormatName = (mediaInfo.Container ?? string.Empty)
                 .Replace("matroska", "mkv", StringComparison.OrdinalIgnoreCase);
 
-            if (data.format != null)
+            // For dvd's this may not always be accurate, so don't set the runtime if the item already has one
+            var needToSetRuntime = video.VideoType != VideoType.Dvd || video.RunTimeTicks == null || video.RunTimeTicks.Value == 0;
+
+            if (needToSetRuntime)
             {
-                // For dvd's this may not always be accurate, so don't set the runtime if the item already has one
-                var needToSetRuntime = video.VideoType != VideoType.Dvd || video.RunTimeTicks == null || video.RunTimeTicks.Value == 0;
-
-                if (needToSetRuntime && !string.IsNullOrEmpty(data.format.duration))
-                {
-                    video.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.format.duration, _usCulture)).Ticks;
-                }
-
-                if (video.VideoType == VideoType.VideoFile)
-                {
-                    var extension = (Path.GetExtension(video.Path) ?? string.Empty).TrimStart('.');
-
-                    video.Container = extension;
-                }
-                else
-                {
-                    video.Container = null;
-                }
-
-                if (!string.IsNullOrEmpty(data.format.size))
-                {
-                    video.Size = long.Parse(data.format.size, _usCulture);
-                }
-                else
-                {
-                    video.Size = null;
-                }
+                video.RunTimeTicks = mediaInfo.RunTimeTicks;
             }
 
-            var mediaChapters = (data.Chapters ?? new MediaChapter[] { }).ToList();
-            var chapters = mediaChapters.Select(GetChapterInfo).ToList();
+            if (video.VideoType == VideoType.VideoFile)
+            {
+                var extension = (Path.GetExtension(video.Path) ?? string.Empty).TrimStart('.');
 
+                video.Container = extension;
+            }
+            else
+            {
+                video.Container = null;
+            }
+
+            var chapters = mediaInfo.Chapters ?? new List<ChapterInfo>();
             if (video.VideoType == VideoType.BluRay || (video.IsoType.HasValue && video.IsoType.Value == IsoType.BluRay))
             {
                 FetchBdInfo(video, chapters, mediaStreams, blurayInfo);
@@ -228,7 +208,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             await AddExternalSubtitles(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
-            FetchWtvInfo(video, data);
+            FetchEmbeddedInfo(video, mediaInfo);
 
             video.IsHD = mediaStreams.Any(i => i.Type == MediaStreamType.Video && i.Width.HasValue && i.Width.Value >= 1270);
 
@@ -238,9 +218,7 @@ namespace MediaBrowser.Providers.MediaInfo
             video.DefaultVideoStreamIndex = videoStream == null ? (int?)null : videoStream.Index;
 
             video.HasSubtitles = mediaStreams.Any(i => i.Type == MediaStreamType.Subtitle);
-
-            ExtractTimestamp(video);
-            UpdateFromMediaInfo(video, videoStream);
+            video.Timestamp = mediaInfo.Timestamp;
 
             await _itemRepo.SaveMediaStreams(video.Id, mediaStreams, cancellationToken).ConfigureAwait(false);
 
@@ -283,29 +261,6 @@ namespace MediaBrowser.Providers.MediaInfo
             }
         }
 
-        private void UpdateFromMediaInfo(Video video, MediaStream videoStream)
-        {
-            if (video.VideoType == VideoType.VideoFile && video.LocationType != LocationType.Remote && video.LocationType != LocationType.Virtual)
-            {
-                if (videoStream != null)
-                {
-                    try
-                    {
-                        var result = new MediaInfoLib().GetVideoInfo(video.Path);
-
-                        videoStream.IsCabac = result.IsCabac ?? videoStream.IsCabac;
-                        videoStream.IsInterlaced = result.IsInterlaced ?? videoStream.IsInterlaced;
-                        videoStream.BitDepth = result.BitDepth ?? videoStream.BitDepth;
-                        videoStream.RefFrames = result.RefFrames;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error running MediaInfo on {0}", ex, video.Path);
-                    }
-                }
-            }
-        }
-
         private void NormalizeChapterNames(List<ChapterInfo> chapters)
         {
             var index = 1;
@@ -323,32 +278,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
                 index++;
             }
-        }
-
-        private ChapterInfo GetChapterInfo(MediaChapter chapter)
-        {
-            var info = new ChapterInfo();
-
-            if (chapter.tags != null)
-            {
-                string name;
-                if (chapter.tags.TryGetValue("title", out name))
-                {
-                    info.Name = name;
-                }
-            }
-
-            // Limit accuracy to milliseconds to match xml saving
-            var secondsString = chapter.start_time;
-            double seconds;
-
-            if (double.TryParse(secondsString, NumberStyles.Any, CultureInfo.InvariantCulture, out seconds))
-            {
-                var ms = Math.Round(TimeSpan.FromSeconds(seconds).TotalMilliseconds);
-                info.StartPositionTicks = TimeSpan.FromMilliseconds(ms).Ticks;
-            }
-
-            return info;
         }
 
         private void FetchBdInfo(BaseItem item, List<ChapterInfo> chapters, List<MediaStream> mediaStreams, BlurayDiscInfo blurayInfo)
@@ -419,129 +348,79 @@ namespace MediaBrowser.Providers.MediaInfo
             return _blurayExaminer.GetDiscInfo(path);
         }
 
-        public const int MaxSubtitleDescriptionExtractionLength = 100; // When extracting subtitles, the maximum length to consider (to avoid invalid filenames)
-        
-        private void FetchWtvInfo(Video video, InternalMediaInfoResult data)
+        private void FetchEmbeddedInfo(Video video, Model.Entities.MediaInfo data)
         {
-            if (data.format == null || data.format.tags == null)
-            {
-                return;
-            }
-
-            if (!video.LockedFields.Contains(MetadataFields.Genres))
-            {
-                var genres = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/Genre");
-
-                if (!string.IsNullOrWhiteSpace(genres))
-                {
-                    //genres = FFProbeHelpers.GetDictionaryValue(data.format.tags, "genre");
-                }
-
-                if (!string.IsNullOrWhiteSpace(genres))
-                {
-                    video.Genres = genres.Split(new[] { ';', '/', ',' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Where(i => !string.IsNullOrWhiteSpace(i))
-                        .Select(i => i.Trim())
-                        .ToList();
-                }
-            }
-
             if (!video.LockedFields.Contains(MetadataFields.OfficialRating))
             {
-                var officialRating = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/ParentalRating");
-
-                if (!string.IsNullOrWhiteSpace(officialRating))
+                if (!string.IsNullOrWhiteSpace(data.OfficialRating))
                 {
-                    video.OfficialRating = officialRating;
+                    video.OfficialRating = data.OfficialRating;
                 }
             }
 
             if (!video.LockedFields.Contains(MetadataFields.Cast))
             {
-                var people = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/MediaCredits");
+                video.People.Clear();
 
-                if (!string.IsNullOrEmpty(people))
+                foreach (var person in data.People)
                 {
-                    video.People = people.Split(new[] { ';', '/' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Where(i => !string.IsNullOrWhiteSpace(i))
-                        .Select(i => new PersonInfo { Name = i.Trim(), Type = PersonType.Actor })
-                        .ToList();
-                }
-            }
-
-            var year = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/OriginalReleaseTime");
-            if (!string.IsNullOrWhiteSpace(year))
-            {
-                int val;
-
-                if (int.TryParse(year, NumberStyles.Integer, _usCulture, out val))
-                {
-                    video.ProductionYear = val;
-                }
-            }
-
-            var premiereDateString = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/MediaOriginalBroadcastDateTime");
-            if (!string.IsNullOrWhiteSpace(premiereDateString))
-            {
-                DateTime val;
-
-                // Credit to MCEBuddy: https://mcebuddy2x.codeplex.com/
-                // DateTime is reported along with timezone info (typically Z i.e. UTC hence assume None)
-                if (DateTime.TryParse(year, null, DateTimeStyles.None, out val))
-                {
-                    video.PremiereDate = val.ToUniversalTime();
-                }
-            }
-
-            var description = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/SubTitleDescription");
-            
-            var episode = video as Episode;
-            if (episode != null)
-            {
-                var subTitle = FFProbeHelpers.GetDictionaryValue(data.format.tags, "WM/SubTitle");
-
-                // For below code, credit to MCEBuddy: https://mcebuddy2x.codeplex.com/
-
-                // Sometimes for TV Shows the Subtitle field is empty and the subtitle description contains the subtitle, extract if possible. See ticket https://mcebuddy2x.codeplex.com/workitem/1910
-                // The format is -> EPISODE/TOTAL_EPISODES_IN_SEASON. SUBTITLE: DESCRIPTION
-                // OR -> COMMENT. SUBTITLE: DESCRIPTION
-                // e.g. -> 4/13. The Doctor's Wife: Science fiction drama. When he follows a Time Lord distress signal, the Doctor puts Amy, Rory and his beloved TARDIS in grave danger. Also in HD. [AD,S]
-                // e.g. -> CBeebies Bedtime Hour. The Mystery: Animated adventures of two friends who live on an island in the middle of the big city. Some of Abney and Teal's favourite objects are missing. [S]
-                if (String.IsNullOrWhiteSpace(subTitle) && !String.IsNullOrWhiteSpace(description) && description.Substring(0, Math.Min(description.Length, MaxSubtitleDescriptionExtractionLength)).Contains(":")) // Check within the Subtitle size limit, otherwise from description it can get too long creating an invalid filename
-                {
-                    string[] parts = description.Split(':');
-                    if (parts.Length > 0)
+                    video.AddPerson(new PersonInfo
                     {
-                        string subtitle = parts[0];
-                        try
-                        {
-                            if (subtitle.Contains("/")) // It contains a episode number and season number
-                            {
-                                string[] numbers = subtitle.Split(' ');
-                                episode.IndexNumber = int.Parse(numbers[0].Replace(".", "").Split('/')[0]);
-                                int totalEpisodesInSeason = int.Parse(numbers[0].Replace(".", "").Split('/')[1]);
-
-                                description = String.Join(" ", numbers, 1, numbers.Length - 1).Trim(); // Skip the first, concatenate the rest, clean up spaces and save it
-                            }
-                            else
-                                throw new Exception(); // Switch to default parsing
-                        }
-                        catch // Default parsing
-                        {
-                            if (subtitle.Contains(".")) // skip the comment, keep the subtitle
-                                description = String.Join(".", subtitle.Split('.'), 1, subtitle.Split('.').Length - 1).Trim(); // skip the first
-                            else
-                                description = subtitle.Trim(); // Clean up whitespaces and save it
-                        }
-                    }
+                        Name = person.Name,
+                        Type = person.Type,
+                        Role = person.Role
+                    });
                 }
+            }
+
+            if (!video.LockedFields.Contains(MetadataFields.Genres))
+            {
+                video.Genres.Clear();
+
+                foreach (var genre in data.Genres)
+                {
+                    video.AddGenre(genre);
+                }
+            }
+
+            if (!video.LockedFields.Contains(MetadataFields.Studios))
+            {
+                video.Studios.Clear();
+
+                foreach (var studio in data.Studios)
+                {
+                    video.AddStudio(studio);
+                }
+            }
+
+            if (data.ProductionYear.HasValue)
+            {
+                video.ProductionYear = data.ProductionYear;
+            }
+            if (data.PremiereDate.HasValue)
+            {
+                video.PremiereDate = data.PremiereDate;
+            }
+            if (data.IndexNumber.HasValue)
+            {
+                video.IndexNumber = data.IndexNumber;
+            }
+            if (data.ParentIndexNumber.HasValue)
+            {
+                video.ParentIndexNumber = data.ParentIndexNumber;
+            }
+
+            // If we don't have a ProductionYear try and get it from PremiereDate
+            if (video.PremiereDate.HasValue && !video.ProductionYear.HasValue)
+            {
+                video.ProductionYear = video.PremiereDate.Value.ToLocalTime().Year;
             }
 
             if (!video.LockedFields.Contains(MetadataFields.Overview))
             {
-                if (!string.IsNullOrWhiteSpace(description))
+                if (!string.IsNullOrWhiteSpace(data.Overview))
                 {
-                    video.Overview = description;
+                    video.Overview = data.Overview;
                 }
             }
         }
@@ -707,56 +586,6 @@ namespace MediaBrowser.Providers.MediaInfo
             {
                 item.PlayableStreamFileNames = blurayDiscInfo.Files.ToList();
             }
-        }
-
-        private void ExtractTimestamp(Video video)
-        {
-            if (video.VideoType == VideoType.VideoFile)
-            {
-                if (string.Equals(video.Container, "mpeg2ts", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(video.Container, "m2ts", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(video.Container, "ts", StringComparison.OrdinalIgnoreCase))
-                {
-                    try
-                    {
-                        video.Timestamp = GetMpegTimestamp(video.Path);
-
-                        _logger.Debug("Video has {0} timestamp", video.Timestamp);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error extracting timestamp info from {0}", ex, video.Path);
-                        video.Timestamp = null;
-                    }
-                }
-            }
-        }
-
-        private TransportStreamTimestamp GetMpegTimestamp(string path)
-        {
-            var packetBuffer = new byte['Å'];
-
-            using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                fs.Read(packetBuffer, 0, packetBuffer.Length);
-            }
-
-            if (packetBuffer[0] == 71)
-            {
-                return TransportStreamTimestamp.None;
-            }
-
-            if ((packetBuffer[4] == 71) && (packetBuffer['Ä'] == 71))
-            {
-                if ((packetBuffer[0] == 0) && (packetBuffer[1] == 0) && (packetBuffer[2] == 0) && (packetBuffer[3] == 0))
-                {
-                    return TransportStreamTimestamp.Zero;
-                }
-
-                return TransportStreamTimestamp.Valid;
-            }
-
-            return TransportStreamTimestamp.None;
         }
 
         private void FetchFromDvdLib(Video item, IIsoMount mount)

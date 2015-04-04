@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -103,15 +104,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// Gets the media info.
         /// </summary>
         /// <param name="inputFiles">The input files.</param>
+        /// <param name="primaryPath">The primary path.</param>
         /// <param name="protocol">The protocol.</param>
         /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
+        /// <param name="extractChapters">if set to <c>true</c> [extract chapters].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task<InternalMediaInfoResult> GetMediaInfo(string[] inputFiles, MediaProtocol protocol, bool isAudio,
-            CancellationToken cancellationToken)
+        public Task<Model.Entities.MediaInfo> GetMediaInfo(string[] inputFiles, string primaryPath, MediaProtocol protocol, bool isAudio,
+            bool extractChapters, CancellationToken cancellationToken)
         {
-            return GetMediaInfoInternal(GetInputArgument(inputFiles, protocol), !isAudio,
-                GetProbeSizeArgument(inputFiles, protocol), cancellationToken);
+            return GetMediaInfoInternal(GetInputArgument(inputFiles, protocol), primaryPath, protocol, !isAudio && extractChapters,
+                GetProbeSizeArgument(inputFiles, protocol), isAudio, cancellationToken);
         }
 
         /// <summary>
@@ -141,13 +144,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// Gets the media info internal.
         /// </summary>
         /// <param name="inputPath">The input path.</param>
+        /// <param name="primaryPath">The primary path.</param>
+        /// <param name="protocol">The protocol.</param>
         /// <param name="extractChapters">if set to <c>true</c> [extract chapters].</param>
         /// <param name="probeSizeArgument">The probe size argument.</param>
+        /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MediaInfoResult}.</returns>
         /// <exception cref="System.ApplicationException"></exception>
-        private async Task<InternalMediaInfoResult> GetMediaInfoInternal(string inputPath, bool extractChapters,
+        private async Task<Model.Entities.MediaInfo> GetMediaInfoInternal(string inputPath, string primaryPath, MediaProtocol protocol, bool extractChapters,
             string probeSizeArgument,
+            bool isAudio,
             CancellationToken cancellationToken)
         {
             var args = extractChapters
@@ -244,7 +251,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
             }
 
-            return result;
+            return new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, isAudio, primaryPath, protocol);
         }
 
         /// <summary>
