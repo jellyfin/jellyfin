@@ -42,6 +42,13 @@ namespace MediaBrowser.Controller.Connect
         Task<List<ConnectAuthorization>> GetPendingGuests();
 
         /// <summary>
+        /// Gets the user from exchange token.
+        /// </summary>
+        /// <param name="token">The token.</param>
+        /// <returns>User.</returns>
+        User GetUserFromExchangeToken(string token);
+
+        /// <summary>
         /// Cancels the authorization.
         /// </summary>
         /// <param name="id">The identifier.</param>
