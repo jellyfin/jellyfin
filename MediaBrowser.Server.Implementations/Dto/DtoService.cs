@@ -97,7 +97,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (byName != null && !(item is LiveTvChannel))
                 {
-                    //if (options.Fields.Contains(ItemFields.ItemCounts))
+                    if (options.Fields.Contains(ItemFields.ItemCounts))
                     {
                         var itemFilter = byName.GetItemFilter();
 
@@ -125,7 +125,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (byName != null && !(item is LiveTvChannel))
             {
-                //if (options.Fields.Contains(ItemFields.ItemCounts))
+                if (options.Fields.Contains(ItemFields.ItemCounts))
                 {
                     var itemFilter = byName.GetItemFilter();
 
@@ -330,7 +330,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             var dto = GetBaseItemDtoInternal(item, options, user);
 
-            //if (options.Fields.Contains(ItemFields.ItemCounts))
+            if (options.Fields.Contains(ItemFields.ItemCounts))
             {
                 SetItemByNameInfo(item, dto, taggedItems, user);
             }
