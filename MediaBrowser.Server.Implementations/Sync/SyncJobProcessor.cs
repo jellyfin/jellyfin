@@ -67,9 +67,10 @@ namespace MediaBrowser.Server.Implementations.Sync
             var items = (await GetItemsForSync(job.Category, job.ParentId, job.RequestedItemIds, user, job.UnwatchedOnly).ConfigureAwait(false))
                 .ToList();
 
-            var jobItems = _syncRepo.GetJobItems(new SyncJobItemQuery
+            var jobItems = _syncManager.GetJobItems(new SyncJobItemQuery
             {
-                JobId = job.Id
+                JobId = job.Id,
+                AddMetadata = false
 
             }).Items.ToList();
 
@@ -140,9 +141,10 @@ namespace MediaBrowser.Server.Implementations.Sync
                 throw new ArgumentNullException("job");
             }
 
-            var result = _syncRepo.GetJobItems(new SyncJobItemQuery
+            var result = _syncManager.GetJobItems(new SyncJobItemQuery
             {
-                JobId = job.Id
+                JobId = job.Id,
+                AddMetadata = false
             });
 
             return UpdateJobStatus(job, result.Items.ToList());
@@ -362,9 +364,10 @@ namespace MediaBrowser.Server.Implementations.Sync
             await EnsureSyncJobItems(null, cancellationToken).ConfigureAwait(false);
 
             // If it already has a converting status then is must have been aborted during conversion
-            var result = _syncRepo.GetJobItems(new SyncJobItemQuery
+            var result = _syncManager.GetJobItems(new SyncJobItemQuery
             {
-                Statuses = new SyncJobItemStatus[] { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting }
+                Statuses = new[] { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
+                AddMetadata = false
             });
 
             await SyncJobItems(result.Items, true, progress, cancellationToken).ConfigureAwait(false);
@@ -384,10 +387,11 @@ namespace MediaBrowser.Server.Implementations.Sync
             await EnsureSyncJobItems(targetId, cancellationToken).ConfigureAwait(false);
 
             // If it already has a converting status then is must have been aborted during conversion
-            var result = _syncRepo.GetJobItems(new SyncJobItemQuery
+            var result = _syncManager.GetJobItems(new SyncJobItemQuery
             {
-                Statuses = new SyncJobItemStatus[] { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
-                TargetId = targetId
+                Statuses = new[] { SyncJobItemStatus.Queued, SyncJobItemStatus.Converting },
+                TargetId = targetId,
+                AddMetadata = false
             });
 
             await SyncJobItems(result.Items, true, progress, cancellationToken).ConfigureAwait(false);
