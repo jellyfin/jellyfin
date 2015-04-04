@@ -29,19 +29,19 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The server identifier.</value>
         public string ServerId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
         /// <value>The id.</value>
         public string Id { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the playlist item identifier.
         /// </summary>
         /// <value>The playlist item identifier.</value>
         public string PlaylistItemId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the date created.
         /// </summary>
@@ -50,7 +50,7 @@ namespace MediaBrowser.Model.Dto
 
         public DateTime? DateLastMediaAdded { get; set; }
         public ExtraType? ExtraType { get; set; }
-      
+
         public int? AirsBeforeSeasonNumber { get; set; }
         public int? AirsAfterSeasonNumber { get; set; }
         public int? AirsBeforeEpisodeNumber { get; set; }
@@ -71,8 +71,21 @@ namespace MediaBrowser.Model.Dto
 
         public int? AnimeSeriesIndex { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [supports synchronize].
+        /// </summary>
+        /// <value><c>null</c> if [supports synchronize] contains no value, <c>true</c> if [supports synchronize]; otherwise, <c>false</c>.</value>
         public bool? SupportsSync { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has synchronize job.
+        /// </summary>
+        /// <value><c>null</c> if [has synchronize job] contains no value, <c>true</c> if [has synchronize job]; otherwise, <c>false</c>.</value>
         public bool? HasSyncJob { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is synced.
+        /// </summary>
+        /// <value><c>null</c> if [is synced] contains no value, <c>true</c> if [is synced]; otherwise, <c>false</c>.</value>
+        public bool? IsSynced { get; set; }
 
         /// <summary>
         /// Gets or sets the DVD season number.
@@ -84,7 +97,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The DVD episode number.</value>
         public float? DvdEpisodeNumber { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name of the sort.
         /// </summary>
@@ -97,7 +110,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The video3 D format.</value>
         public Video3DFormat? Video3DFormat { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the premiere date.
         /// </summary>
@@ -115,7 +128,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The media versions.</value>
         public List<MediaSourceInfo> MediaSources { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the critic rating.
         /// </summary>
@@ -127,7 +140,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The game system.</value>
         public string GameSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the critic rating summary.
         /// </summary>
@@ -135,13 +148,13 @@ namespace MediaBrowser.Model.Dto
         public string CriticRatingSummary { get; set; }
 
         public List<string> MultiPartGameFiles { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
         public string Path { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the official rating.
         /// </summary>
@@ -178,7 +191,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The name of the TMDB collection.</value>
         public string TmdbCollectionName { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the taglines.
         /// </summary>
@@ -196,7 +209,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The series genres.</value>
         public List<string> SeriesGenres { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the community rating.
         /// </summary>
@@ -220,7 +233,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The original run time ticks.</value>
         public long? OriginalRunTimeTicks { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the run time ticks.
         /// </summary>
@@ -232,7 +245,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The play access.</value>
         public PlayAccess PlayAccess { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the aspect ratio.
         /// </summary>
@@ -250,7 +263,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The season count.</value>
         public int? SeasonCount { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the players supported by a game.
         /// </summary>
@@ -262,7 +275,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value><c>null</c> if [is place holder] contains no value, <c>true</c> if [is place holder]; otherwise, <c>false</c>.</value>
         public bool? IsPlaceHolder { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the index number.
         /// </summary>
@@ -292,7 +305,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The soundtrack ids.</value>
         public string[] SoundtrackIds { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the provider ids.
         /// </summary>
@@ -304,7 +317,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value><c>null</c> if [is HD] contains no value, <c>true</c> if [is HD]; otherwise, <c>false</c>.</value>
         public bool? IsHD { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether this instance is folder.
         /// </summary>
@@ -399,7 +412,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The season identifier.</value>
         public string SeasonId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the special feature count.
         /// </summary>
@@ -447,7 +460,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The keywords.</value>
         public List<string> Keywords { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the primary image aspect ratio, after image enhancements.
         /// </summary>
@@ -483,13 +496,13 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The type of the collection.</value>
         public string CollectionType { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the display order.
         /// </summary>
         /// <value>The display order.</value>
         public string DisplayOrder { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the album id.
         /// </summary>
@@ -506,7 +519,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The series primary image tag.</value>
         public string SeriesPrimaryImageTag { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the album artist.
         /// </summary>
@@ -518,13 +531,13 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The album artists.</value>
         public List<NameIdPair> AlbumArtists { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name of the season.
         /// </summary>
         /// <value>The name of the season.</value>
         public string SeasonName { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the media streams.
         /// </summary>
@@ -629,7 +642,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The series studio.</value>
         public string SeriesStudio { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the parent thumb item id.
         /// </summary>
@@ -749,7 +762,7 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The music video count.</value>
         public int? MusicVideoCount { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether [enable internet providers].
         /// </summary>
