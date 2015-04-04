@@ -65,6 +65,16 @@ namespace MediaBrowser.Api.Sync
         public string Id { get; set; }
     }
 
+    [Route("/Sync/{TargetId}/Items", "DELETE", Summary = "Cancels items from a sync target")]
+    public class CancelItems : IReturnVoid
+    {
+        [ApiMember(Name = "TargetId", Description = "TargetId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "Items")]
+        public string TargetId { get; set; }
+
+        [ApiMember(Name = "ItemIds", Description = "ItemIds", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "Items")]
+        public string ItemIds { get; set; }
+    }
+
     [Route("/Sync/Jobs", "GET", Summary = "Gets sync jobs.")]
     public class GetSyncJobs : SyncJobQuery, IReturn<QueryResult<SyncJob>>
     {
@@ -200,6 +210,15 @@ namespace MediaBrowser.Api.Sync
             return ToOptimizedResult(result);
         }
 
+        public void Delete(CancelItems request)
+        {
+            var itemIds = request.ItemIds.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+            var task = _syncManager.CancelItems(request.TargetId, itemIds);
+
+            Task.WaitAll(task);
+        }
+
         public void Post(ReportSyncJobItemTransferred request)
         {
             var task = _syncManager.ReportSyncJobItemTransferred(request.Id);
@@ -261,7 +280,7 @@ namespace MediaBrowser.Api.Sync
                 var auth = AuthorizationContext.GetAuthorizationInfo(Request);
 
                 var authenticatedUser = _userManager.GetUserById(auth.UserId);
-                
+
                 var items = request.ItemIds.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(_libraryManager.GetItemById)
                     .Where(i => i != null);
