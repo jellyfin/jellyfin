@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Net;
+﻿using MediaBrowser.Controller.Connect;
+using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Security;
 using ServiceStack.Web;
 using System;
@@ -10,10 +11,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
     public class AuthorizationContext : IAuthorizationContext
     {
         private readonly IAuthenticationRepository _authRepo;
+        private readonly IConnectManager _connectManager;
 
-        public AuthorizationContext(IAuthenticationRepository authRepo)
+        public AuthorizationContext(IAuthenticationRepository authRepo, IConnectManager connectManager)
         {
             _authRepo = authRepo;
+            _connectManager = connectManager;
         }
 
         public AuthorizationInfo GetAuthorizationInfo(object requestContext)
@@ -142,6 +145,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
                     if (string.IsNullOrWhiteSpace(info.DeviceId))
                     {
                         info.DeviceId = tokenInfo.DeviceId;
+                    }
+                }
+                else
+                {
+                    var user = _connectManager.GetUserFromExchangeToken(token);
+                    if (user != null)
+                    {
+                        info.UserId = user.Id.ToString("N");
                     }
                 }
                 httpReq.Items["OriginalAuthenticationInfo"] = tokenInfo;

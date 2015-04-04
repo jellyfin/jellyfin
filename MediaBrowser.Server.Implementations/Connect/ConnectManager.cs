@@ -1125,7 +1125,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             url += "?serverId=" + ConnectServerId;
             url += "&supporterKey=" + _securityManager.SupporterKey;
             url += "&userId=" + id;
-     
+
             var options = new HttpRequestOptions
             {
                 Url = url,
@@ -1242,6 +1242,16 @@ namespace MediaBrowser.Server.Implementations.Connect
 
             return _userManager.Users
                 .FirstOrDefault(i => string.Equals(i.ConnectUserId, connectUserId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public User GetUserFromExchangeToken(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new ArgumentNullException("token");
+            }
+
+            return _userManager.Users.FirstOrDefault(u => string.Equals(token, u.ConnectAccessKey, StringComparison.OrdinalIgnoreCase));
         }
 
         public bool IsAuthorizationTokenValid(string token)
