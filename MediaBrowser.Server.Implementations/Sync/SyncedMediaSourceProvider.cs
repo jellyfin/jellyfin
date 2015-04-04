@@ -56,7 +56,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                         var syncProvider = targetTuple.Item1;
                         var dataProvider = _syncManager.GetDataProvider(targetTuple.Item1, syncTarget);
 
-                        var localItems = await dataProvider.GetCachedItems(syncTarget, serverId, item.Id.ToString("N")).ConfigureAwait(false);
+                        var localItems = await dataProvider.GetItems(syncTarget, serverId, item.Id.ToString("N")).ConfigureAwait(false);
 
                         foreach (var localItem in localItems)
                         {
