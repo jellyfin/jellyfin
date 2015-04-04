@@ -394,7 +394,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 AddMetadata = false
             });
 
-            await SyncJobItems(result.Items, true, progress, cancellationToken).ConfigureAwait(false);
+            await SyncJobItems(result.Items, enableConversion, progress, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task SyncJobItems(SyncJobItem[] items, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
