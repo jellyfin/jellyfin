@@ -248,6 +248,9 @@ namespace MediaBrowser.Api.Sync
             result.Targets = _syncManager.GetSyncTargets(request.UserId)
                 .ToList();
 
+            var auth = AuthorizationContext.GetAuthorizationInfo(Request);
+            var authenticatedUser = _userManager.GetUserById(auth.UserId);
+
             if (!string.IsNullOrWhiteSpace(request.TargetId))
             {
                 result.Targets = result.Targets
@@ -255,11 +258,11 @@ namespace MediaBrowser.Api.Sync
                     .ToList();
 
                 result.QualityOptions = _syncManager
-                    .GetQualityOptions(request.TargetId)
+                    .GetQualityOptions(request.TargetId, authenticatedUser)
                     .ToList();
 
                 result.ProfileOptions = _syncManager
-                    .GetProfileOptions(request.TargetId)
+                    .GetProfileOptions(request.TargetId, authenticatedUser)
                     .ToList();
             }
 
@@ -276,10 +279,6 @@ namespace MediaBrowser.Api.Sync
                         ItemFields.SyncInfo
                     }
                 };
-
-                var auth = AuthorizationContext.GetAuthorizationInfo(Request);
-
-                var authenticatedUser = _userManager.GetUserById(auth.UserId);
 
                 var items = request.ItemIds.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(_libraryManager.GetItemById)

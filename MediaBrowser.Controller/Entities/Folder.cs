@@ -991,8 +991,9 @@ namespace MediaBrowser.Controller.Entities
             }
 
             var locations = user.RootFolder
-                .GetChildren(user, true)
+                .Children
                 .OfType<CollectionFolder>()
+                .Where(i => i.IsVisible(user))
                 .SelectMany(i => i.PhysicalLocations)
                 .ToList();
 

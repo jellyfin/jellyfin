@@ -1,5 +1,6 @@
 ﻿using DvdLib.Ifo;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Chapters;
@@ -129,9 +130,9 @@ namespace MediaBrowser.Providers.MediaInfo
             return ItemUpdateType.MetadataImport;
         }
 
-        private const string SchemaVersion = "1";
+        private const string SchemaVersion = "2";
 
-        private async Task<Model.Entities.MediaInfo> GetMediaInfo(Video item,
+        private async Task<Model.MediaInfo.MediaInfo> GetMediaInfo(Video item,
             IIsoMount isoMount,
             CancellationToken cancellationToken)
         {
@@ -144,7 +145,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             try
             {
-                return _json.DeserializeFromFile<Model.Entities.MediaInfo>(cachePath);
+                return _json.DeserializeFromFile<Model.MediaInfo.MediaInfo>(cachePath);
             }
             catch (FileNotFoundException)
             {
@@ -158,9 +159,17 @@ namespace MediaBrowser.Providers.MediaInfo
                 ? MediaProtocol.Http
                 : MediaProtocol.File;
 
-            var inputPath = MediaEncoderHelpers.GetInputArgument(item.Path, protocol, isoMount, item.PlayableStreamFileNames);
+            var result = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
+            {
+                PlayableStreamFileNames = item.PlayableStreamFileNames,
+                MountedIso = isoMount,
+                ExtractChapters = true,
+                VideoType = item.VideoType,
+                MediaType = DlnaProfileType.Video,
+                InputPath = item.Path,
+                Protocol = protocol
 
-            var result = await _mediaEncoder.GetMediaInfo(inputPath, item.Path, protocol, false, true, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
 
             Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
             _json.SerializeToFile(result, cachePath);
@@ -170,7 +179,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         protected async Task Fetch(Video video,
             CancellationToken cancellationToken,
-            Model.Entities.MediaInfo mediaInfo,
+            Model.MediaInfo.MediaInfo mediaInfo,
             IIsoMount isoMount,
             BlurayDiscInfo blurayInfo,
             MetadataRefreshOptions options)
@@ -348,7 +357,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return _blurayExaminer.GetDiscInfo(path);
         }
 
-        private void FetchEmbeddedInfo(Video video, Model.Entities.MediaInfo data)
+        private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data)
         {
             if (!video.LockedFields.Contains(MetadataFields.OfficialRating))
             {

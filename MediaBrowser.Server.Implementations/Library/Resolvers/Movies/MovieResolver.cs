@@ -64,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
 
             if (string.Equals(collectionType, CollectionType.Photos, StringComparison.OrdinalIgnoreCase))
             {
-                return ResolveVideos<Video>(parent, files, directoryService, collectionType, false);
+                //return ResolveVideos<Video>(parent, files, directoryService, collectionType, false);
             }
 
             if (string.IsNullOrEmpty(collectionType))

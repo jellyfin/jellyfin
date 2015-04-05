@@ -44,7 +44,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public string Name
         {
-            get { return "App Sync"; }
+            get { return "Mobile Sync"; }
         }
 
         public IEnumerable<SyncTarget> GetAllSyncTargets()

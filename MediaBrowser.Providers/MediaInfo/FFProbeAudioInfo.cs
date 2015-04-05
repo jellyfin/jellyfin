@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
@@ -53,7 +54,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
         private const string SchemaVersion = "2";
 
-        private async Task<Model.Entities.MediaInfo> GetMediaInfo(BaseItem item, CancellationToken cancellationToken)
+        private async Task<Model.MediaInfo.MediaInfo> GetMediaInfo(BaseItem item, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -64,7 +65,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             try
             {
-                return _json.DeserializeFromFile<Model.Entities.MediaInfo>(cachePath);
+                return _json.DeserializeFromFile<Model.MediaInfo.MediaInfo>(cachePath);
             }
             catch (FileNotFoundException)
             {
@@ -74,9 +75,13 @@ namespace MediaBrowser.Providers.MediaInfo
             {
             }
 
-            var inputPath = new[] { item.Path };
+            var result = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
+            {
+                InputPath = item.Path,
+                MediaType = DlnaProfileType.Audio,
+                Protocol = MediaProtocol.File
 
-            var result = await _mediaEncoder.GetMediaInfo(inputPath, item.Path, MediaProtocol.File, true, false, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
 
             Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
             _json.SerializeToFile(result, cachePath);
@@ -91,7 +96,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="mediaInfo">The media information.</param>
         /// <returns>Task.</returns>
-        protected Task Fetch(Audio audio, CancellationToken cancellationToken, Model.Entities.MediaInfo mediaInfo)
+        protected Task Fetch(Audio audio, CancellationToken cancellationToken, Model.MediaInfo.MediaInfo mediaInfo)
         {
             var mediaStreams = mediaInfo.MediaStreams;
 
@@ -115,7 +120,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="audio">The audio.</param>
         /// <param name="data">The data.</param>
-        private void FetchDataFromTags(Audio audio, Model.Entities.MediaInfo data)
+        private void FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo data)
         {
             // Only set Name if title was found in the dictionary
             if (!string.IsNullOrEmpty(data.Title))

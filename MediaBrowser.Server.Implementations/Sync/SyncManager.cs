@@ -1168,13 +1168,18 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public IEnumerable<SyncQualityOption> GetQualityOptions(string targetId)
         {
+            return GetQualityOptions(targetId, null);
+        }
+
+        public IEnumerable<SyncQualityOption> GetQualityOptions(string targetId, User user)
+        {
             foreach (var provider in _providers)
             {
                 foreach (var target in GetSyncTargets(provider))
                 {
                     if (string.Equals(target.Id, targetId, StringComparison.OrdinalIgnoreCase))
                     {
-                        return GetQualityOptions(provider, target);
+                        return GetQualityOptions(provider, target, user);
                     }
                 }
             }
@@ -1182,12 +1187,19 @@ namespace MediaBrowser.Server.Implementations.Sync
             return new List<SyncQualityOption>();
         }
 
-        private IEnumerable<SyncQualityOption> GetQualityOptions(ISyncProvider provider, SyncTarget target)
+        private IEnumerable<SyncQualityOption> GetQualityOptions(ISyncProvider provider, SyncTarget target, User user)
         {
             var hasQuality = provider as IHasSyncQuality;
             if (hasQuality != null)
             {
-                return hasQuality.GetQualityOptions(target);
+                var options = hasQuality.GetQualityOptions(target);
+
+                if (user != null && !user.Policy.EnableSyncTranscoding)
+                {
+                    options = options.Where(i => i.IsOriginalQuality);
+                }
+
+                return options;
             }
 
             // Default options for providers that don't override
@@ -1217,7 +1229,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             };
         }
 
-        public IEnumerable<SyncProfileOption> GetProfileOptions(string targetId)
+        public IEnumerable<SyncProfileOption> GetProfileOptions(string targetId, User user)
         {
             foreach (var provider in _providers)
             {
@@ -1225,7 +1237,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     if (string.Equals(target.Id, targetId, StringComparison.OrdinalIgnoreCase))
                     {
-                        return GetProfileOptions(provider, target);
+                        return GetProfileOptions(provider, target, user);
                     }
                 }
             }
@@ -1233,7 +1245,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             return new List<SyncProfileOption>();
         }
 
-        private IEnumerable<SyncProfileOption> GetProfileOptions(ISyncProvider provider, SyncTarget target)
+        public IEnumerable<SyncProfileOption> GetProfileOptions(string targetId)
+        {
+            return GetProfileOptions(targetId, null);
+        }
+
+        private IEnumerable<SyncProfileOption> GetProfileOptions(ISyncProvider provider, SyncTarget target, User user)
         {
             var hasQuality = provider as IHasSyncQuality;
             if (hasQuality != null)
@@ -1251,20 +1268,23 @@ namespace MediaBrowser.Server.Implementations.Sync
                 EnableQualityOptions = false
             });
 
-            list.Add(new SyncProfileOption
+            if (user == null || user.Policy.EnableSyncTranscoding)
             {
-                Name = "Baseline",
-                Id = "baseline",
-                Description = "Designed for compatibility with all devices, including web browsers. Targets H264/AAC video and MP3 audio."
-            });
+                list.Add(new SyncProfileOption
+                {
+                    Name = "Baseline",
+                    Id = "baseline",
+                    Description = "Designed for compatibility with all devices, including web browsers. Targets H264/AAC video and MP3 audio."
+                });
 
-            list.Add(new SyncProfileOption
-            {
-                Name = "General",
-                Id = "general",
-                Description = "Designed for compatibility with Chromecast, Roku, Smart TV's, and other similar devices. Targets H264/AAC/AC3 video and MP3 audio.",
-                IsDefault = true
-            });
+                list.Add(new SyncProfileOption
+                {
+                    Name = "General",
+                    Id = "general",
+                    Description = "Designed for compatibility with Chromecast, Roku, Smart TV's, and other similar devices. Targets H264/AAC/AC3 video and MP3 audio.",
+                    IsDefault = true
+                });
+            }
 
             return list;
         }

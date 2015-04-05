@@ -180,7 +180,6 @@
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpListener.cs" />
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpRequest.cs" />
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpResponse.cs" />
-    <Compile Include="HttpServer\ThrottledStream.cs" />
     <Compile Include="Intros\DefaultIntroProvider.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
