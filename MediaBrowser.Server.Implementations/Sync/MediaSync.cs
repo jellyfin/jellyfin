@@ -1,7 +1,9 @@
 ﻿using System.Globalization;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
+using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Sync;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -25,13 +27,15 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
+        private readonly IConfigurationManager _config;
 
-        public MediaSync(ILogger logger, ISyncManager syncManager, IServerApplicationHost appHost, IFileSystem fileSystem)
+        public MediaSync(ILogger logger, ISyncManager syncManager, IServerApplicationHost appHost, IFileSystem fileSystem, IConfigurationManager config)
         {
             _logger = logger;
             _syncManager = syncManager;
             _appHost = appHost;
             _fileSystem = fileSystem;
+            _config = config;
         }
 
         public async Task Sync(IServerSyncProvider provider,
@@ -152,12 +156,14 @@ namespace MediaBrowser.Server.Implementations.Sync
             var transferSuccess = false;
             Exception transferException = null;
 
+            var options = _config.GetSyncOptions();
+
             try
             {
                 var fileTransferProgress = new ActionableProgress<double>();
                 fileTransferProgress.RegisterAction(pct => progress.Report(pct * .92));
 
-                var sendFileResult = await SendFile(provider, internalSyncJobItem.OutputPath, localItem.LocalPath, target, fileTransferProgress, cancellationToken).ConfigureAwait(false);
+                var sendFileResult = await SendFile(provider, internalSyncJobItem.OutputPath, localItem.LocalPath, target, options, fileTransferProgress, cancellationToken).ConfigureAwait(false);
 
                 if (localItem.Item.MediaSources != null)
                 {
@@ -179,7 +185,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     var mediaSource = localItem.Item.MediaSources.FirstOrDefault();
                     if (mediaSource != null)
                     {
-                        await SendSubtitles(localItem, mediaSource, provider, dataProvider, target, cancellationToken).ConfigureAwait(false);
+                        await SendSubtitles(localItem, mediaSource, provider, dataProvider, target, options, cancellationToken).ConfigureAwait(false);
                     }
                 }
 
@@ -207,7 +213,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private async Task SendSubtitles(LocalItem localItem, MediaSourceInfo mediaSource, IServerSyncProvider provider, ISyncDataProvider dataProvider, SyncTarget target, CancellationToken cancellationToken)
+        private async Task SendSubtitles(LocalItem localItem, MediaSourceInfo mediaSource, IServerSyncProvider provider, ISyncDataProvider dataProvider, SyncTarget target, SyncOptions options, CancellationToken cancellationToken)
         {
             var failedSubtitles = new List<MediaStream>();
             var requiresSave = false;
@@ -219,7 +225,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 try
                 {
                     var remotePath = GetRemoteSubtitlePath(localItem, mediaStream, provider, target);
-                    var sendFileResult = await SendFile(provider, mediaStream.Path, remotePath, target, new Progress<double>(), cancellationToken).ConfigureAwait(false);
+                    var sendFileResult = await SendFile(provider, mediaStream.Path, remotePath, target, options, new Progress<double>(), cancellationToken).ConfigureAwait(false);
 
                     // This is the path that will be used when talking to the provider
                     mediaStream.ExternalId = remotePath;
@@ -307,11 +313,18 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private async Task<SyncedFileInfo> SendFile(IServerSyncProvider provider, string inputPath, string remotePath, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task<SyncedFileInfo> SendFile(IServerSyncProvider provider, string inputPath, string remotePath, SyncTarget target, SyncOptions options, IProgress<double> progress, CancellationToken cancellationToken)
         {
             _logger.Debug("Sending {0} to {1}. Remote path: {2}", inputPath, provider.Name, remotePath);
-            using (var stream = _fileSystem.GetFileStream(inputPath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
+            using (var fileStream = _fileSystem.GetFileStream(inputPath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
             {
+                Stream stream = fileStream;
+
+                if (options.UploadSpeedLimitBytes > 0 && provider is IRemoteSyncProvider)
+                {
+                    stream = new ThrottledStream(stream, options.UploadSpeedLimitBytes);
+                }
+
                 return await provider.SendFile(stream, remotePath, target, progress, cancellationToken).ConfigureAwait(false);
             }
         }

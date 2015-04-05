@@ -174,6 +174,13 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="targetId">The target identifier.</param>
         /// <returns>IEnumerable&lt;SyncQualityOption&gt;.</returns>
         IEnumerable<SyncQualityOption> GetQualityOptions(string targetId);
+        /// <summary>
+        /// Gets the quality options.
+        /// </summary>
+        /// <param name="targetId">The target identifier.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable&lt;SyncQualityOption&gt;.</returns>
+        IEnumerable<SyncQualityOption> GetQualityOptions(string targetId, User user);
 
         /// <summary>
         /// Gets the profile options.
@@ -181,5 +188,12 @@ namespace MediaBrowser.Controller.Sync
         /// <param name="targetId">The target identifier.</param>
         /// <returns>IEnumerable&lt;SyncQualityOption&gt;.</returns>
         IEnumerable<SyncProfileOption> GetProfileOptions(string targetId);
+        /// <summary>
+        /// Gets the profile options.
+        /// </summary>
+        /// <param name="targetId">The target identifier.</param>
+        /// <param name="user">The user.</param>
+        /// <returns>IEnumerable&lt;SyncProfileOption&gt;.</returns>
+        IEnumerable<SyncProfileOption> GetProfileOptions(string targetId, User user);
     }
 }

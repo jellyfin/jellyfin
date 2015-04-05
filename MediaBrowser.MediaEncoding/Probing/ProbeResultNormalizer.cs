@@ -25,9 +25,9 @@ namespace MediaBrowser.MediaEncoding.Probing
             _fileSystem = fileSystem;
         }
 
-        public Model.Entities.MediaInfo GetMediaInfo(InternalMediaInfoResult data, bool isAudio, string path, MediaProtocol protocol)
+        public Model.MediaInfo.MediaInfo GetMediaInfo(InternalMediaInfoResult data, bool isAudio, string path, MediaProtocol protocol)
         {
-            var info = new Model.Entities.MediaInfo
+            var info = new Model.MediaInfo.MediaInfo
             {
                 Path = path,
                 Protocol = protocol
@@ -342,7 +342,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             return null;
         }
 
-        private void SetAudioRuntimeTicks(InternalMediaInfoResult result, Model.Entities.MediaInfo data)
+        private void SetAudioRuntimeTicks(InternalMediaInfoResult result, Model.MediaInfo.MediaInfo data)
         {
             if (result.streams != null)
             {
@@ -369,7 +369,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
         }
 
-        private void SetSize(InternalMediaInfoResult data, Model.Entities.MediaInfo info)
+        private void SetSize(InternalMediaInfoResult data, Model.MediaInfo.MediaInfo info)
         {
             if (data.format != null)
             {
@@ -384,7 +384,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
         }
 
-        private void SetAudioInfoFromTags(Model.Entities.MediaInfo audio, Dictionary<string, string> tags)
+        private void SetAudioInfoFromTags(Model.MediaInfo.MediaInfo audio, Dictionary<string, string> tags)
         {
             var title = FFProbeHelpers.GetDictionaryValue(tags, "title");
 
@@ -591,7 +591,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <param name="audio">The audio.</param>
         /// <param name="tags">The tags.</param>
         /// <param name="tagName">Name of the tag.</param>
-        private void FetchStudios(Model.Entities.MediaInfo audio, Dictionary<string, string> tags, string tagName)
+        private void FetchStudios(Model.MediaInfo.MediaInfo audio, Dictionary<string, string> tags, string tagName)
         {
             var val = FFProbeHelpers.GetDictionaryValue(tags, tagName);
 
@@ -626,7 +626,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// </summary>
         /// <param name="info">The information.</param>
         /// <param name="tags">The tags.</param>
-        private void FetchGenres(Model.Entities.MediaInfo info, Dictionary<string, string> tags)
+        private void FetchGenres(Model.MediaInfo.MediaInfo info, Dictionary<string, string> tags)
         {
             var val = FFProbeHelpers.GetDictionaryValue(tags, "genre");
 
@@ -697,7 +697,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private const int MaxSubtitleDescriptionExtractionLength = 100; // When extracting subtitles, the maximum length to consider (to avoid invalid filenames)
 
-        private void FetchWtvInfo(Model.Entities.MediaInfo video, InternalMediaInfoResult data)
+        private void FetchWtvInfo(Model.MediaInfo.MediaInfo video, InternalMediaInfoResult data)
         {
             if (data.format == null || data.format.tags == null)
             {
@@ -806,7 +806,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
         }
 
-        private void ExtractTimestamp(Model.Entities.MediaInfo video)
+        private void ExtractTimestamp(Model.MediaInfo.MediaInfo video)
         {
             if (video.VideoType == VideoType.VideoFile)
             {

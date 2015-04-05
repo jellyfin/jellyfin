@@ -28,11 +28,15 @@
                                 ${LabelSyncTempPathHelp}
                             </div>
                         </li>
+                        <li>
+                            <label for="txtUploadRateLimit">${LabelUploadSpeedLimit}</label>
+                            <input type="number" id="txtUploadSpeedLimit" min="0" step=".5" required="required" />
+                        </li>
                     </ul>
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            <button type="submit" data-theme="b" data-icon="check">
                                 ${ButtonSave}
                             </button>
                         </li>

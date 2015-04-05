@@ -6,6 +6,7 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.MediaEncoding.Probing;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -103,18 +104,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <summary>
         /// Gets the media info.
         /// </summary>
-        /// <param name="inputFiles">The input files.</param>
-        /// <param name="primaryPath">The primary path.</param>
-        /// <param name="protocol">The protocol.</param>
-        /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
-        /// <param name="extractChapters">if set to <c>true</c> [extract chapters].</param>
+        /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task<Model.Entities.MediaInfo> GetMediaInfo(string[] inputFiles, string primaryPath, MediaProtocol protocol, bool isAudio,
-            bool extractChapters, CancellationToken cancellationToken)
+        public Task<Model.MediaInfo.MediaInfo> GetMediaInfo(MediaInfoRequest request, CancellationToken cancellationToken)
         {
-            return GetMediaInfoInternal(GetInputArgument(inputFiles, protocol), primaryPath, protocol, !isAudio && extractChapters,
-                GetProbeSizeArgument(inputFiles, protocol), isAudio, cancellationToken);
+            var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
+
+            var inputFiles = MediaEncoderHelpers.GetInputArgument(request.InputPath, request.Protocol, request.MountedIso, request.PlayableStreamFileNames);
+
+            return GetMediaInfoInternal(GetInputArgument(inputFiles, request.Protocol), request.InputPath, request.Protocol, extractChapters,
+                GetProbeSizeArgument(inputFiles, request.Protocol), request.MediaType == DlnaProfileType.Audio, cancellationToken);
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MediaInfoResult}.</returns>
         /// <exception cref="System.ApplicationException"></exception>
-        private async Task<Model.Entities.MediaInfo> GetMediaInfoInternal(string inputPath, string primaryPath, MediaProtocol protocol, bool extractChapters,
+        private async Task<Model.MediaInfo.MediaInfo> GetMediaInfoInternal(string inputPath, string primaryPath, MediaProtocol protocol, bool extractChapters,
             string probeSizeArgument,
             bool isAudio,
             CancellationToken cancellationToken)

@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
@@ -123,7 +124,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var inputPaths = new[] { mediaSource.Path };
 
-            var info = await _mediaEncoder.GetMediaInfo(inputPaths, mediaSource.Path, mediaSource.Protocol, isAudio, false, cancellationToken)
+            var info = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
+            {
+                InputPath = mediaSource.Path,
+                Protocol = mediaSource.Protocol,
+                MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
+                ExtractChapters = false
+
+            }, cancellationToken)
                         .ConfigureAwait(false);
 
             mediaSource.Bitrate = info.Bitrate;

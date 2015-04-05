@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Sync;
@@ -18,13 +19,15 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
+        private readonly IConfigurationManager _config;
 
-        public MultiProviderSync(SyncManager syncManager, IServerApplicationHost appHost, ILogger logger, IFileSystem fileSystem)
+        public MultiProviderSync(SyncManager syncManager, IServerApplicationHost appHost, ILogger logger, IFileSystem fileSystem, IConfigurationManager config)
         {
             _syncManager = syncManager;
             _appHost = appHost;
             _logger = logger;
             _fileSystem = fileSystem;
+            _config = config;
         }
 
         public async Task Sync(IEnumerable<IServerSyncProvider> providers, IProgress<double> progress, CancellationToken cancellationToken)
@@ -56,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                 var dataProvider = _syncManager.GetDataProvider(target.Item1, target.Item2);
 
-                await new MediaSync(_logger, _syncManager, _appHost, _fileSystem)
+                await new MediaSync(_logger, _syncManager, _appHost, _fileSystem, _config)
                     .Sync(target.Item1, dataProvider, target.Item2, innerProgress, cancellationToken)
                     .ConfigureAwait(false);
 

@@ -3,6 +3,7 @@
     function loadPage(page, config) {
 
         $('#txtSyncTempPath', page).val(config.TemporaryPath || '');
+        $('#txtUploadSpeedLimit', page).val(config.UploadSpeedLimitBytes / 1000000);
 
         Dashboard.hideLoadingMsg();
     }
@@ -51,6 +52,7 @@
             ApiClient.getNamedConfiguration("sync").done(function (config) {
 
                 config.TemporaryPath = $('#txtSyncTempPath', form).val();
+                config.UploadSpeedLimitBytes = parseInt(parseFloat(($('#txtUploadSpeedLimit', form).val() || '0')) * 1000000);
 
                 ApiClient.updateNamedConfiguration("sync", config).done(Dashboard.processServerConfigurationUpdateResult);
             });

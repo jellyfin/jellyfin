@@ -137,21 +137,16 @@ namespace MediaBrowser.Server.Implementations.Library
         public async Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, string userId, bool enablePathSubstitution, CancellationToken cancellationToken)
         {
             var item = _libraryManager.GetItemById(id);
-            IEnumerable<MediaSourceInfo> mediaSources;
 
             var hasMediaSources = (IHasMediaSources)item;
             User user = null;
 
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                mediaSources = hasMediaSources.GetMediaSources(enablePathSubstitution);
-            }
-            else
+            if (!string.IsNullOrWhiteSpace(userId))
             {
                 user = _userManager.GetUserById(userId);
-                mediaSources = GetStaticMediaSources(hasMediaSources, enablePathSubstitution, user);
             }
 
+            var mediaSources = GetStaticMediaSources(hasMediaSources, enablePathSubstitution, user);
             var dynamicMediaSources = await GetDynamicMediaSources(hasMediaSources, cancellationToken).ConfigureAwait(false);
 
             var list = new List<MediaSourceInfo>();
@@ -166,9 +161,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
                 if (source.Protocol == MediaProtocol.File)
                 {
-                    source.SupportsDirectStream = File.Exists(source.Path);
-
                     // TODO: Path substitution
+                    if (!File.Exists(source.Path))
+                    {
+                        source.SupportsDirectStream = false;
+                    }
                 }
                 else if (source.Protocol == MediaProtocol.Http)
                 {
@@ -181,6 +178,17 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
 
                 list.Add(source);
+            }
+
+            foreach (var source in list)
+            {
+                if (user != null)
+                {
+                    if (!user.Policy.EnableMediaPlaybackTranscoding)
+                    {
+                        source.SupportsTranscoding = false;
+                    }
+                }
             }
 
             return SortMediaSources(list).Where(i => i.Type != MediaSourceType.Placeholder);
@@ -343,6 +351,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
 
                 var json = _jsonSerializer.SerializeToString(mediaSource);
+                _logger.Debug("Live stream opened: " + json);
                 var clone = _jsonSerializer.DeserializeFromString<MediaSourceInfo>(json);
 
                 if (!string.IsNullOrWhiteSpace(request.UserId))

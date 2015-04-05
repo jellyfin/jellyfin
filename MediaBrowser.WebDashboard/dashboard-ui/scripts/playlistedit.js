@@ -53,6 +53,8 @@
             var user = response2[0];
             var item = response3[0];
 
+            $('.playlistName', page).html(item.Name);
+
             _childrenItemsFunction = getItemsFunction(query);
 
             currentItem = item;

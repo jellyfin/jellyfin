@@ -34,7 +34,6 @@
         $('#chkRemoteControlSharedDevices', page).checked(user.Policy.EnableSharedDeviceControl).checkboxradio("refresh");
         $('#chkEnableRemoteControlOtherUsers', page).checked(user.Policy.EnableRemoteControlOfOtherUsers).checkboxradio("refresh");
 
-        $('#chkEnableMediaPlayback', page).checked(user.Policy.EnableMediaPlayback).checkboxradio("refresh");
         $('#chkEnableDownloading', page).checked(user.Policy.EnableContentDownloading).checkboxradio("refresh");
 
         $('#chkManageLiveTv', page).checked(user.Policy.EnableLiveTvManagement).checkboxradio("refresh");
@@ -43,7 +42,11 @@
 
         $('#chkDisableUserPreferences', page).checked((!user.Policy.EnableUserPreferenceAccess)).checkboxradio("refresh");
 
+        $('#chkEnableMediaPlayback', page).checked(user.Policy.EnableMediaPlayback).checkboxradio("refresh");
+        $('#chkEnableMediaPlaybackTranscoding', page).checked(user.Policy.EnableMediaPlaybackTranscoding).checkboxradio("refresh");
+
         $('#chkEnableSync', page).checked(user.Policy.EnableSync).checkboxradio("refresh");
+        $('#chkEnableSyncTranscoding', page).checked(user.Policy.EnableSyncTranscoding).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -82,9 +85,12 @@
         user.Policy.EnableSharedDeviceControl = $('#chkRemoteControlSharedDevices', page).checked();
 
         user.Policy.EnableMediaPlayback = $('#chkEnableMediaPlayback', page).checked();
+        user.Policy.EnableMediaPlaybackTranscoding = $('#chkEnableMediaPlaybackTranscoding', page).checked();
+
         user.Policy.EnableContentDownloading = $('#chkEnableDownloading', page).checked();
 
         user.Policy.EnableSync = $('#chkEnableSync', page).checked();
+        user.Policy.EnableSyncTranscoding = $('#chkEnableSyncTranscoding', page).checked();
 
         ApiClient.updateUser(user).done(function () {
 
