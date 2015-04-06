@@ -45,11 +45,11 @@ namespace MediaBrowser.Server.Implementations.Playlists
         }
     }
 
-    public class PlaylistssDynamicFolder : IVirtualFolderCreator
+    public class PlaylistsDynamicFolder : IVirtualFolderCreator
     {
         private readonly IApplicationPaths _appPaths;
 
-        public PlaylistssDynamicFolder(IApplicationPaths appPaths)
+        public PlaylistsDynamicFolder(IApplicationPaths appPaths)
         {
             _appPaths = appPaths;
         }

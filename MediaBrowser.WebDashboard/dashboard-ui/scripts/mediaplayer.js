@@ -725,7 +725,7 @@
             });
         }
 
-        self.createStreamInfo = function (type, item, mediaSource, startPosition) {
+        self.createStreamInfo = function (item, mediaSource, startPosition) {
 
             var mediaUrl;
             var contentType;
@@ -733,6 +733,8 @@
 
             var startPositionInSeekParam = startPosition ? (startPosition / 10000000) : 0;
             var seekParam = startPositionInSeekParam ? '#t=' + startPositionInSeekParam : '';
+
+            var type = item.MediaType.toLowerCase();
 
             if (type == 'video') {
 
@@ -827,14 +829,13 @@
                 return;
             }
 
-            var mediaSource;
             var deviceProfile = self.getDeviceProfile();
 
             getPlaybackInfo(item.Id, deviceProfile, startPosition).done(function (result) {
 
                 if (validatePlaybackInfoResult(result)) {
 
-                    mediaSource = getOptimalMediaSource(item.MediaType, result.MediaSources);
+                    var mediaSource = getOptimalMediaSource(item.MediaType, result.MediaSources);
 
                     if (mediaSource) {
 
@@ -1522,8 +1523,6 @@
 
             var playerElement = this;
 
-            var playSessionId = getParameterByName('PlaySessionId', playerElement.currentSrc);
-
             $(playerElement).off('.mediaplayerevent').off('ended.playbackstopped');
 
             self.cleanup(playerElement);
@@ -1618,7 +1617,7 @@
                 html += '<div class="mediaPlayerAudioContainer" style="display:none;"><div class="mediaPlayerAudioContainerInner">';;
             }
 
-            html += '<audio class="mediaPlayerAudio" controls>';
+            html += '<audio class="mediaPlayerAudio" crossorigin="anonymous" controls>';
             html += '</audio></div></div>';
 
             $(document.body).append(html);

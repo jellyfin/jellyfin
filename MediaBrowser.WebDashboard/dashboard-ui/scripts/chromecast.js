@@ -82,7 +82,7 @@
         // v4 Id F4EB2E8E
         // default receiver chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
 
-        var applicationID = "69C59853";
+        var applicationID = "F4EB2E8E";
 
         // request session
         var sessionRequest = new chrome.cast.SessionRequest(applicationID);
