@@ -245,23 +245,17 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             var collections = user.RootFolder.GetChildren(user, true).ToList();
 
-            var allRecursiveChildren = user.RootFolder
-                .GetRecursiveChildren(user)
-                .Select(i => i.Id)
-                .Distinct()
-                .ToDictionary(i => i);
-
             return new LibraryUpdateInfo
             {
-                ItemsAdded = itemsAdded.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id.ToString("N")).Distinct().ToList(),
+                ItemsAdded = itemsAdded.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections)).Select(i => i.Id.ToString("N")).Distinct().ToList(),
 
-                ItemsUpdated = itemsUpdated.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id.ToString("N")).Distinct().ToList(),
+                ItemsUpdated = itemsUpdated.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections)).Select(i => i.Id.ToString("N")).Distinct().ToList(),
 
-                ItemsRemoved = itemsRemoved.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren, true)).Select(i => i.Id.ToString("N")).Distinct().ToList(),
+                ItemsRemoved = itemsRemoved.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, true)).Select(i => i.Id.ToString("N")).Distinct().ToList(),
 
-                FoldersAddedTo = foldersAddedTo.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id.ToString("N")).Distinct().ToList(),
+                FoldersAddedTo = foldersAddedTo.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections)).Select(i => i.Id.ToString("N")).Distinct().ToList(),
 
-                FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections, allRecursiveChildren)).Select(i => i.Id.ToString("N")).Distinct().ToList()
+                FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user, collections)).Select(i => i.Id.ToString("N")).Distinct().ToList()
             };
         }
 
@@ -272,10 +266,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="collections">The collections.</param>
-        /// <param name="allRecursiveChildren">All recursive children.</param>
         /// <param name="includeIfNotFound">if set to <c>true</c> [include if not found].</param>
         /// <returns>IEnumerable{``0}.</returns>
-        private IEnumerable<T> TranslatePhysicalItemToUserLibrary<T>(T item, User user, IEnumerable<BaseItem> collections, Dictionary<Guid, Guid> allRecursiveChildren, bool includeIfNotFound = false)
+        private IEnumerable<T> TranslatePhysicalItemToUserLibrary<T>(T item, User user, IEnumerable<BaseItem> collections, bool includeIfNotFound = false)
             where T : BaseItem
         {
             // If the physical root changed, return the user root
@@ -294,7 +287,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             }
 
             // Return it only if it's in the user's library
-            if (includeIfNotFound || allRecursiveChildren.ContainsKey(item.Id) || (item.Parents.Any(i => i is BasePluginFolder) && item.IsVisibleStandalone(user)))
+            if (includeIfNotFound || item.IsVisibleStandalone(user))
             {
                 return new[] { item };
             }

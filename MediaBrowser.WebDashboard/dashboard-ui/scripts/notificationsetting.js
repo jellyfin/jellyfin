@@ -14,7 +14,7 @@
 
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
-            return '<label for="' + id + '">' + u.Name + '</label><input class="' + cssClass + '" type="checkbox" data-itemid="' + u.Id + '" data-mini="true" id="' + id + '"' + checkedHtml + ' />';
+            return '<label for="' + id + '">' + u.Name + '</label><input class="' + cssClass + '" type="checkbox" data-itemid="' + u.Id + '" id="' + id + '"' + checkedHtml + ' />';
 
         }).join('');
 

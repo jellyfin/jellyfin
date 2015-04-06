@@ -28,6 +28,9 @@
         else if (context == 'livetv') {
             categories.push('Live TV');
         }
+        else if (context == 'notifications') {
+            categories.push('Notifications');
+        }
 
         return categories;
     }
@@ -84,6 +87,10 @@
         else if (context == 'livetv') {
             Dashboard.setPageTitle(Globalize.translate('TitleLiveTV'));
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Live%20TV');
+        }
+        else if (context == 'notifications') {
+            Dashboard.setPageTitle(Globalize.translate('TitleNotifications'));
+            page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Notifications');
         }
 
     }).on('pageshow', "#appServicesPage", function () {
