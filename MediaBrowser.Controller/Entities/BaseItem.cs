@@ -1154,9 +1154,19 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            // TODO: Need some work here, e.g. is in user library, for channels, can user access channel, etc.
+            var topParent = Parents.LastOrDefault() ?? this;
 
-            return true;
+            if (string.IsNullOrWhiteSpace(topParent.Path))
+            {
+                return true;
+            }
+
+            var locations = user.RootFolder
+                .GetChildren(user, true)
+                .OfType<CollectionFolder>()
+                .SelectMany(i => i.PhysicalLocations);
+
+            return locations.Any(l => FileSystem.ContainsSubPath(l, topParent.Path));
         }
 
         /// <summary>
