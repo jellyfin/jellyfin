@@ -732,7 +732,12 @@ namespace MediaBrowser.Server.Implementations.Library
                         }
                     }
 
-                    folder = GetItemById(folder.Id) as BasePluginFolder ?? folder;
+                    var dbItem = GetItemById(folder.Id) as BasePluginFolder;
+
+                    if (dbItem != null && string.Equals(dbItem.Path, folder.Path, StringComparison.OrdinalIgnoreCase))
+                    {
+                        folder = dbItem;
+                    }
 
                     rootFolder.AddVirtualChild(folder);
 
