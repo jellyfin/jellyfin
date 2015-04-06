@@ -1,7 +1,7 @@
 
 
    ----------------------------------------------------------------------
-              README file for Web Markup Minifier: Core 0.9.11
+              README file for Web Markup Minifier: Core 0.9.12
 
    ----------------------------------------------------------------------
 
@@ -46,8 +46,8 @@
    =============
    RELEASE NOTES
    =============
-   WebMarkupMin.Configuration.xsd file moved to the
-   WebMarkupMin.ConfigurationIntelliSense package.
+   Fixed a bug #16 «Minify AngularJS binding expressions causes exception
+   with `ngRepeat`».
 
    =============
    DOCUMENTATION
