@@ -192,6 +192,42 @@
       <IsCxx>False</IsCxx>
       <Kind>Dynamic</Kind>
     </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagick++-6.Q16.5.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagick++-6.Q16.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagick++-6.Q16.la">
+      <IsCxx>False</IsCxx>
+      <Kind>Static</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickCore-6.Q16.2.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickCore-6.Q16.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickCore-6.Q16.la">
+      <IsCxx>False</IsCxx>
+      <Kind>Static</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickWand-6.Q16.2.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickWand-6.Q16.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickWand-6.Q16.la">
+      <IsCxx>False</IsCxx>
+      <Kind>Static</Kind>
+    </NativeReference>
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="..\ThirdParty\ServiceStack\swagger-ui\index.html">
