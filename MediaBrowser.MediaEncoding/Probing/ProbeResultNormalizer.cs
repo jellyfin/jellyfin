@@ -63,6 +63,11 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
             else
             {
+                if (data.format != null && !string.IsNullOrEmpty(data.format.duration))
+                {
+                    info.RunTimeTicks = TimeSpan.FromSeconds(double.Parse(data.format.duration, _usCulture)).Ticks;
+                }
+
                 FetchWtvInfo(info, data);
 
                 if (data.Chapters != null)

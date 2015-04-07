@@ -1624,14 +1624,19 @@ namespace MediaBrowser.Api.Playback
             var archivable = item as IArchivable;
             state.IsInputArchive = archivable != null && archivable.IsArchive;
 
-            MediaSourceInfo mediaSource = null;
+            MediaSourceInfo mediaSource;
             if (string.IsNullOrWhiteSpace(request.LiveStreamId))
             {
-                var mediaSources = await MediaSourceManager.GetPlayackMediaSources(request.Id, false, cancellationToken).ConfigureAwait(false);
+                var mediaSources = (await MediaSourceManager.GetPlayackMediaSources(request.Id, false, cancellationToken).ConfigureAwait(false)).ToList();
 
                 mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
                    ? mediaSources.First()
-                   : mediaSources.First(i => string.Equals(i.Id, request.MediaSourceId));
+                   : mediaSources.FirstOrDefault(i => string.Equals(i.Id, request.MediaSourceId));
+
+                if (mediaSource == null && string.Equals(request.Id, request.MediaSourceId, StringComparison.OrdinalIgnoreCase))
+                {
+                    mediaSource = mediaSources.First();
+                }
             }
             else
             {
