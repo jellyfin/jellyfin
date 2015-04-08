@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace MediaBrowser.Server.Implementations.Drawing
+namespace Emby.Drawing.Common
 {
     /// <summary>
     /// Taken from http://stackoverflow.com/questions/111345/getting-image-dimensions-without-reading-the-entire-file/111349

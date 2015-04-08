@@ -3,7 +3,7 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Model.Drawing;
 using System.Globalization;
 
-namespace MediaBrowser.Server.Implementations.Drawing
+namespace Emby.Drawing.ImageMagick
 {
     public class UnplayedCountIndicator
     {

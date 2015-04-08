@@ -115,6 +115,7 @@
     <Compile Include="Dlna\IMediaReceiverRegistrar.cs" />
     <Compile Include="Dlna\IUpnpService.cs" />
     <Compile Include="Drawing\IImageProcessor.cs" />
+    <Compile Include="Drawing\ImageCollageOptions.cs" />
     <Compile Include="Drawing\ImageProcessingOptions.cs" />
     <Compile Include="Drawing\ImageProcessorExtensions.cs" />
     <Compile Include="Drawing\ImageStream.cs" />

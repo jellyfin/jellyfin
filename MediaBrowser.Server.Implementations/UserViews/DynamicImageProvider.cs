@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
@@ -22,8 +23,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
 
-        public DynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IUserManager userManager, ILibraryManager libraryManager)
-            : base(fileSystem, providerManager, applicationPaths)
+        public DynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, IUserManager userManager, ILibraryManager libraryManager) : base(fileSystem, providerManager, applicationPaths, imageProcessor)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -238,7 +238,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
         }
 
-        protected override async Task<Stream> CreateImageAsync(IHasImages item, List<BaseItem> itemsWithImages, ImageType imageType, int imageIndex)
+        protected override Stream CreateImageAsync(IHasImages item, List<BaseItem> itemsWithImages, ImageType imageType, int imageIndex)
         {
             var view = (UserView)item;
             if (imageType == ImageType.Primary && IsUsingCollectionStrip(view))
@@ -248,15 +248,17 @@ namespace MediaBrowser.Server.Implementations.UserViews
                     return null;
                 }
 
-                return new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(itemsWithImages, view.ViewType), 960, 540, false, item.Name);
+                return GetThumbCollage(item, itemsWithImages, 960, 540, false, item.Name);
             }
 
-            return await base.CreateImageAsync(item, itemsWithImages, imageType, imageIndex);
+            return base.CreateImageAsync(item, itemsWithImages, imageType, imageIndex);
         }
 
-        private IEnumerable<String> GetStripCollageImagePaths(IEnumerable<BaseItem> items, string viewType)
+        protected override IEnumerable<String> GetStripCollageImagePaths(IHasImages primaryItem, IEnumerable<BaseItem> items)
         {
-            if (string.Equals(viewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
+            var userView = primaryItem as UserView;
+
+            if (userView != null && string.Equals(userView.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
             {
                 var list = new List<string>();
                 for (int i = 1; i <= 8; i++)
@@ -266,9 +268,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 return list;
             }
 
-            return items
-                .Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb))
-                .Where(i => !string.IsNullOrWhiteSpace(i));
+            return base.GetStripCollageImagePaths(primaryItem, items);
         }
 
         private string ExtractLiveTvResource(string name, IApplicationPaths paths)

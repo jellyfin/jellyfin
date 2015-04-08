@@ -1,4 +1,4 @@
-﻿using ImageMagickSharp;
+﻿using Emby.Drawing.Common;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
@@ -18,7 +18,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.Drawing
+namespace Emby.Drawing
 {
     /// <summary>
     /// Class ImageProcessor
@@ -50,12 +50,14 @@ namespace MediaBrowser.Server.Implementations.Drawing
         private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationPaths _appPaths;
+        private readonly IImageEncoder _imageEncoder;
 
-        public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem, IJsonSerializer jsonSerializer)
+        public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IImageEncoder imageEncoder)
         {
             _logger = logger;
             _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
+            _imageEncoder = imageEncoder;
             _appPaths = appPaths;
 
             _saveImageSizeTimer = new Timer(SaveImageSizeCallback, null, Timeout.Infinite, Timeout.Infinite);
@@ -85,8 +87,14 @@ namespace MediaBrowser.Server.Implementations.Drawing
             }
 
             _cachedImagedSizes = new ConcurrentDictionary<Guid, ImageSize>(sizeDictionary);
+        }
 
-            LogImageMagickVersionVersion();
+        public string[] SupportedInputFormats
+        {
+            get
+            {
+                return _imageEncoder.SupportedInputFormats;
+            }
         }
 
         private string ResizedImageCachePath
@@ -130,44 +138,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
         public ImageFormat[] GetSupportedImageOutputFormats()
         {
-            if (_webpAvailable)
-            {
-                return new[] { ImageFormat.Webp, ImageFormat.Gif, ImageFormat.Jpg, ImageFormat.Png };
-            }
-            return new[] { ImageFormat.Gif, ImageFormat.Jpg, ImageFormat.Png };
-        }
-
-        private bool _webpAvailable = true;
-        private void TestWebp()
-        {
-            try
-            {
-                var tmpPath = Path.Combine(_appPaths.TempDirectory, Guid.NewGuid() + ".webp");
-                Directory.CreateDirectory(Path.GetDirectoryName(tmpPath));
-
-                using (var wand = new MagickWand(1, 1, new PixelWand("none", 1)))
-                {
-                    wand.SaveImage(tmpPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error loading webp: ", ex);
-                _webpAvailable = false;
-            }
-        }
-
-        private void LogImageMagickVersionVersion()
-        {
-            try
-            {
-                _logger.Info("ImageMagick version: " + Wand.VersionString);
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error loading ImageMagick: ", ex);
-            }
-            TestWebp();
+            return _imageEncoder.SupportedOutputFormats;
         }
 
         public async Task<string> ProcessImage(ImageProcessingOptions options)
@@ -244,36 +215,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
 
-                    if (string.IsNullOrWhiteSpace(options.BackgroundColor))
-                    {
-                        using (var originalImage = new MagickWand(originalImagePath))
-                        {
-                            originalImage.CurrentImage.ResizeImage(newWidth, newHeight);
-
-                            DrawIndicator(originalImage, newWidth, newHeight, options);
-
-                            originalImage.CurrentImage.CompressionQuality = quality;
-
-                            originalImage.SaveImage(cacheFilePath);
-                        }
-                    }
-                    else
-                    {
-                        using (var wand = new MagickWand(newWidth, newHeight, options.BackgroundColor))
-                        {
-                            using (var originalImage = new MagickWand(originalImagePath))
-                            {
-                                originalImage.CurrentImage.ResizeImage(newWidth, newHeight);
-
-                                wand.CurrentImage.CompositeImage(originalImage, CompositeOperator.OverCompositeOp, 0, 0);
-                                DrawIndicator(wand, newWidth, newHeight, options);
-
-                                wand.CurrentImage.CompressionQuality = quality;
-
-                                wand.SaveImage(cacheFilePath);
-                            }
-                        }
-                    }
+                    _imageEncoder.EncodeImage(originalImagePath, cacheFilePath, newWidth, newHeight, quality, options);
                 }
             }
             finally
@@ -286,52 +228,12 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
         private ImageFormat GetOutputFormat(ImageFormat requestedFormat)
         {
-            if (requestedFormat == ImageFormat.Webp && !_webpAvailable)
+            if (requestedFormat == ImageFormat.Webp && !_imageEncoder.SupportedOutputFormats.Contains(ImageFormat.Webp))
             {
                 return ImageFormat.Png;
             }
 
             return requestedFormat;
-        }
-
-        /// <summary>
-        /// Draws the indicator.
-        /// </summary>
-        /// <param name="wand">The wand.</param>
-        /// <param name="imageWidth">Width of the image.</param>
-        /// <param name="imageHeight">Height of the image.</param>
-        /// <param name="options">The options.</param>
-        private void DrawIndicator(MagickWand wand, int imageWidth, int imageHeight, ImageProcessingOptions options)
-        {
-            if (!options.AddPlayedIndicator && !options.UnplayedCount.HasValue && options.PercentPlayed.Equals(0))
-            {
-                return;
-            }
-
-            try
-            {
-                if (options.AddPlayedIndicator)
-                {
-                    var currentImageSize = new ImageSize(imageWidth, imageHeight);
-
-                    new PlayedIndicatorDrawer(_appPaths).DrawPlayedIndicator(wand, currentImageSize);
-                }
-                else if (options.UnplayedCount.HasValue)
-                {
-                    var currentImageSize = new ImageSize(imageWidth, imageHeight);
-
-                    new UnplayedCountIndicator(_appPaths).DrawUnplayedCountIndicator(wand, currentImageSize, options.UnplayedCount.Value);
-                }
-
-                if (options.PercentPlayed > 0)
-                {
-                    new PercentPlayedDrawer().Process(wand, options.PercentPlayed);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error drawing indicator overlay", ex);
-            }
         }
 
         /// <summary>
@@ -360,11 +262,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(croppedImagePath));
 
-                using (var wand = new MagickWand(originalImagePath))
-                {
-                    wand.CurrentImage.TrimImage(10);
-                    wand.SaveImage(croppedImagePath);
-                }
+                _imageEncoder.CropWhiteSpace(originalImagePath, croppedImagePath);
             }
             catch (Exception ex)
             {
@@ -500,17 +398,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
 
                 CheckDisposed();
 
-                using (var wand = new MagickWand())
-                {
-                    wand.PingImage(path);
-                    var img = wand.CurrentImage;
-
-                    size = new ImageSize
-                    {
-                        Width = img.Width,
-                        Height = img.Height
-                    };
-                }
+                size = _imageEncoder.GetImageSize(path);
             }
 
             StartSaveImageSizeTimer();
@@ -838,6 +726,11 @@ namespace MediaBrowser.Server.Implementations.Drawing
             return Path.Combine(path, filename);
         }
 
+        public void CreateImageCollage(ImageCollageOptions options)
+        {
+            _imageEncoder.CreateImageCollage(options);
+        }
+
         public IEnumerable<IImageEnhancer> GetSupportedEnhancers(IHasImages item, ImageType imageType)
         {
             return ImageEnhancers.Where(i =>
@@ -860,7 +753,7 @@ namespace MediaBrowser.Server.Implementations.Drawing
         public void Dispose()
         {
             _disposed = true;
-            Wand.CloseEnvironment();
+            _imageEncoder.Dispose();
             _saveImageSizeTimer.Dispose();
         }
 

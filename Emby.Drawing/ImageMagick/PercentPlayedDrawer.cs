@@ -1,7 +1,7 @@
 ﻿using ImageMagickSharp;
 using System;
 
-namespace MediaBrowser.Server.Implementations.Drawing
+namespace Emby.Drawing.ImageMagick
 {
     public class PercentPlayedDrawer
     {
