@@ -48,6 +48,7 @@
     <Compile Include="..\SharedVersion.cs">
       <Link>Properties\SharedVersion.cs</Link>
     </Compile>
+    <Compile Include="GDI\DynamicImageHelpers.cs" />
     <Compile Include="GDI\GDIImageEncoder.cs" />
     <Compile Include="GDI\ImageExtensions.cs" />
     <Compile Include="GDI\PercentPlayedDrawer.cs" />

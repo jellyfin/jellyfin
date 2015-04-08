@@ -23,7 +23,8 @@ namespace MediaBrowser.Server.Implementations.UserViews
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
 
-        public DynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, IUserManager userManager, ILibraryManager libraryManager) : base(fileSystem, providerManager, applicationPaths, imageProcessor)
+        public DynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, IUserManager userManager, ILibraryManager libraryManager)
+            : base(fileSystem, providerManager, applicationPaths, imageProcessor)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -238,20 +239,21 @@ namespace MediaBrowser.Server.Implementations.UserViews
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
         }
 
-        protected override Stream CreateImageAsync(IHasImages item, List<BaseItem> itemsWithImages, ImageType imageType, int imageIndex)
+        protected override bool CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPath, ImageType imageType, int imageIndex)
         {
             var view = (UserView)item;
             if (imageType == ImageType.Primary && IsUsingCollectionStrip(view))
             {
                 if (itemsWithImages.Count == 0 && !string.Equals(view.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
                 {
-                    return null;
+                    return false;
                 }
 
-                return GetThumbCollage(item, itemsWithImages, 960, 540, false, item.Name);
+                CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540, false, item.Name);
+                return true;
             }
 
-            return base.CreateImageAsync(item, itemsWithImages, imageType, imageIndex);
+            return base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex);
         }
 
         protected override IEnumerable<String> GetStripCollageImagePaths(IHasImages primaryItem, IEnumerable<BaseItem> items)

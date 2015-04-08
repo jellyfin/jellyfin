@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Linq;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Logging;
@@ -224,6 +225,21 @@ namespace Emby.Drawing.GDI
 
         public void CreateImageCollage(ImageCollageOptions options)
         {
+            double ratio = options.Width;
+            ratio /= options.Height;
+
+            if (ratio >= 1.4)
+            {
+                DynamicImageHelpers.CreateThumbCollage(options.InputPaths.ToList(), _fileSystem, options.OutputPath, options.Width, options.Height);
+            }
+            else if (ratio >= .9)
+            {
+                DynamicImageHelpers.CreateSquareCollage(options.InputPaths.ToList(), _fileSystem, options.OutputPath, options.Width, options.Height);
+            }
+            else
+            {
+                DynamicImageHelpers.CreateSquareCollage(options.InputPaths.ToList(), _fileSystem, options.OutputPath, options.Width, options.Width);
+            }
         }
 
         public void Dispose()

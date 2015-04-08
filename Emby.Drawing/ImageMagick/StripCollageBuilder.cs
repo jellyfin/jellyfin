@@ -69,7 +69,7 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        private string[] ProjectPaths(IEnumerable<string> paths, int count)
+        internal static string[] ProjectPaths(IEnumerable<string> paths, int count)
         {
             var clone = paths.ToList();
             var list = new List<string>();
