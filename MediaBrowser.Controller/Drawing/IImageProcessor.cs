@@ -14,6 +14,12 @@ namespace MediaBrowser.Controller.Drawing
     public interface IImageProcessor
     {
         /// <summary>
+        /// Gets the supported input formats.
+        /// </summary>
+        /// <value>The supported input formats.</value>
+        string[] SupportedInputFormats { get; }
+        
+        /// <summary>
         /// Gets the image enhancers.
         /// </summary>
         /// <value>The image enhancers.</value>
@@ -93,5 +99,11 @@ namespace MediaBrowser.Controller.Drawing
         /// </summary>
         /// <returns>ImageOutputFormat[].</returns>
         ImageFormat[] GetSupportedImageOutputFormats();
+
+        /// <summary>
+        /// Creates the image collage.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        void CreateImageCollage(ImageCollageOptions options);
     }
 }

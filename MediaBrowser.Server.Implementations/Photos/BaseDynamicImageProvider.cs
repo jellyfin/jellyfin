@@ -1,13 +1,13 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Server.Implementations.UserViews;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,12 +23,14 @@ namespace MediaBrowser.Server.Implementations.Photos
         protected IFileSystem FileSystem { get; private set; }
         protected IProviderManager ProviderManager { get; private set; }
         protected IApplicationPaths ApplicationPaths { get; private set; }
+        protected IImageProcessor ImageProcessor { get; set; }
 
-        protected BaseDynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths)
+        protected BaseDynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor)
         {
             ApplicationPaths = applicationPaths;
             ProviderManager = providerManager;
             FileSystem = fileSystem;
+            ImageProcessor = imageProcessor;
         }
 
         public virtual bool Supports(IHasImages item)
@@ -77,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             string cacheKey,
             CancellationToken cancellationToken)
         {
-            var stream = await CreateImageAsync(item, itemsWithImages, imageType, 0).ConfigureAwait(false);
+            var stream = CreateImageAsync(item, itemsWithImages, imageType, 0);
 
             if (stream == null)
             {
@@ -113,7 +115,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             var items = await GetItemsWithImages(item).ConfigureAwait(false);
             var cacheKey = GetConfigurationCacheKey(items, item.Name);
 
-            var result = await CreateImageAsync(item, items, type, 0).ConfigureAwait(false);
+            var result = CreateImageAsync(item, items, type, 0);
 
             return new DynamicImageResponse
             {
@@ -126,7 +128,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected abstract Task<List<BaseItem>> GetItemsWithImages(IHasImages item);
 
-        private const string Version = "19";
+        private const string Version = "20";
         protected string GetConfigurationCacheKey(List<BaseItem> items, string itemName)
         {
             var parts = Version + "_" + (itemName ?? string.Empty) + "_" +
@@ -135,32 +137,53 @@ namespace MediaBrowser.Server.Implementations.Photos
             return parts.GetMD5().ToString("N");
         }
 
-        protected Task<Stream> GetThumbCollage(IHasImages primaryItem, List<BaseItem> items)
+        protected Stream GetThumbCollage(IHasImages primaryItem, List<BaseItem> items)
         {
-            var stream = new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(items), 960, 540, true, primaryItem.Name);
-
-            return Task.FromResult(stream);
+            return GetThumbCollage(primaryItem, items, 960, 540, true, primaryItem.Name);
         }
 
-        private IEnumerable<String> GetStripCollageImagePaths(IEnumerable<BaseItem> items)
+        protected virtual IEnumerable<String> GetStripCollageImagePaths(IHasImages primaryItem, IEnumerable<BaseItem> items)
         {
             return items
                 .Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb))
                 .Where(i => !string.IsNullOrWhiteSpace(i));
         }
 
-        protected Task<Stream> GetPosterCollage(IHasImages primaryItem, List<BaseItem> items)
+        protected Stream GetPosterCollage(IHasImages primaryItem, List<BaseItem> items)
         {
-            var stream = new StripCollageBuilder(ApplicationPaths).BuildPosterCollage(GetStripCollageImagePaths(items), 600, 900, true, primaryItem.Name);
-
-            return Task.FromResult(stream);
+            var path = CreateCollage(primaryItem, items, 600, 900, true, primaryItem.Name);
+            return FileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
         }
 
-        protected Task<Stream> GetSquareCollage(IHasImages primaryItem, List<BaseItem> items)
+        protected Stream GetSquareCollage(IHasImages primaryItem, List<BaseItem> items)
         {
-            var stream = new StripCollageBuilder(ApplicationPaths).BuildSquareCollage(GetStripCollageImagePaths(items), 800, 800, true, primaryItem.Name);
+            var path = CreateCollage(primaryItem, items, 800, 800, true, primaryItem.Name);
+            return FileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        }
 
-            return Task.FromResult(stream);
+        protected Stream GetThumbCollage(IHasImages primaryItem, List<BaseItem> items, int width, int height, bool drawText, string text)
+        {
+            var path = CreateCollage(primaryItem, items, width, height, drawText, text);
+            return FileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        }
+
+        private string CreateCollage(IHasImages primaryItem, List<BaseItem> items, int width, int height, bool drawText, string text)
+        {
+            var outputPath = Path.Combine(ApplicationPaths.TempDirectory, Guid.NewGuid() + ".png");
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+
+            var options = new ImageCollageOptions
+            {
+                Height = height,
+                Width = width,
+                OutputPath = outputPath,
+                Text = drawText ? text : null,
+                InputPaths = GetStripCollageImagePaths(primaryItem, items).ToArray()
+            };
+
+            ImageProcessor.CreateImageCollage(options);
+
+            return outputPath;
         }
 
         public string Name
@@ -168,7 +191,7 @@ namespace MediaBrowser.Server.Implementations.Photos
             get { return "Dynamic Image Provider"; }
         }
 
-        protected virtual async Task<Stream> CreateImageAsync(IHasImages item,
+        protected virtual Stream CreateImageAsync(IHasImages item,
             List<BaseItem> itemsWithImages,
             ImageType imageType,
             int imageIndex)
@@ -180,14 +203,14 @@ namespace MediaBrowser.Server.Implementations.Photos
 
             if (imageType == ImageType.Thumb)
             {
-                return await GetThumbCollage(item, itemsWithImages).ConfigureAwait(false);
+                return GetThumbCollage(item, itemsWithImages);
             }
 
             if (imageType == ImageType.Primary)
             {
                 return item is PhotoAlbum || item is Playlist ?
-                    await GetSquareCollage(item, itemsWithImages).ConfigureAwait(false) :
-                    await GetPosterCollage(item, itemsWithImages).ConfigureAwait(false);
+                     GetSquareCollage(item, itemsWithImages) :
+                     GetPosterCollage(item, itemsWithImages);
             }
 
             throw new ArgumentException("Unexpected image type");

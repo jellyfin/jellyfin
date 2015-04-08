@@ -242,8 +242,6 @@
     <Compile Include="Persistence\SqliteShrinkMemoryTimer.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />
     <Compile Include="Photos\BaseDynamicImageProvider.cs" />
-    <Compile Include="Photos\DynamicImageHelpers.cs" />
-    <Compile Include="UserViews\StripCollageBuilder.cs" />
     <Compile Include="Playlists\ManualPlaylistsFolder.cs" />
     <Compile Include="Photos\PhotoAlbumImageProvider.cs" />
     <Compile Include="Playlists\PlaylistImageProvider.cs" />

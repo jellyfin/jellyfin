@@ -1,13 +1,10 @@
 ﻿using ImageMagickSharp;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Server.Implementations.Drawing;
-using MediaBrowser.Server.Implementations.Photos;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
-namespace MediaBrowser.Server.Implementations.UserViews
+namespace Emby.Drawing.ImageMagick
 {
     public class StripCollageBuilder
     {
@@ -18,48 +15,57 @@ namespace MediaBrowser.Server.Implementations.UserViews
             _appPaths = appPaths;
         }
 
-        public Stream BuildPosterCollage(IEnumerable<string> paths, int width, int height, bool renderWithText, string text)
+        public void BuildPosterCollage(IEnumerable<string> paths, string outputPath, int width, int height, string text)
         {
-            if (renderWithText)
+            if (!string.IsNullOrWhiteSpace(text))
             {
                 using (var wand = BuildPosterCollageWandWithText(paths, text, width, height))
                 {
-                    return DynamicImageHelpers.GetStream(wand, _appPaths);
+                    wand.SaveImage(outputPath);
                 }
             }
-            using (var wand = BuildPosterCollageWand(paths, width, height))
+            else
             {
-                return DynamicImageHelpers.GetStream(wand, _appPaths);
+                using (var wand = BuildPosterCollageWand(paths, width, height))
+                {
+                    wand.SaveImage(outputPath);
+                }
             }
         }
 
-        public Stream BuildSquareCollage(IEnumerable<string> paths, int width, int height, bool renderWithText, string text)
+        public void BuildSquareCollage(IEnumerable<string> paths, string outputPath, int width, int height, string text)
         {
-            if (renderWithText)
+            if (!string.IsNullOrWhiteSpace(text))
             {
                 using (var wand = BuildSquareCollageWandWithText(paths, text, width, height))
                 {
-                    return DynamicImageHelpers.GetStream(wand, _appPaths);
+                    wand.SaveImage(outputPath);
                 }
             }
-            using (var wand = BuildSquareCollageWand(paths, width, height))
+            else
             {
-                return DynamicImageHelpers.GetStream(wand, _appPaths);
+                using (var wand = BuildSquareCollageWand(paths, width, height))
+                {
+                    wand.SaveImage(outputPath);
+                }
             }
         }
 
-        public Stream BuildThumbCollage(IEnumerable<string> paths, int width, int height, bool renderWithText, string text)
+        public void BuildThumbCollage(IEnumerable<string> paths, string outputPath, int width, int height, string text)
         {
-            if (renderWithText)
+            if (!string.IsNullOrWhiteSpace(text))
             {
                 using (var wand = BuildThumbCollageWandWithText(paths, text, width, height))
                 {
-                    return DynamicImageHelpers.GetStream(wand, _appPaths);
+                    wand.SaveImage(outputPath);
                 }
             }
-            using (var wand = BuildThumbCollageWand(paths, width, height))
+            else
             {
-                return DynamicImageHelpers.GetStream(wand, _appPaths);
+                using (var wand = BuildThumbCollageWand(paths, width, height))
+                {
+                    wand.SaveImage(outputPath);
+                }
             }
         }
 
