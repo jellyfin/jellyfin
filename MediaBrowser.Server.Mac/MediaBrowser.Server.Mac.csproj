@@ -110,10 +110,10 @@
     <None Include="MediaBrowser.MediaInfo.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Imazen.WebP.dll.config">
+    <None Include="packages.config" />
+    <None Include="ImageMagickSharp.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -186,10 +186,6 @@
       <IsCxx>False</IsCxx>
       <Kind>Dynamic</Kind>
     </NativeReference>
-    <NativeReference Include="..\ThirdParty\libwebp\osx\libwebp.5.dylib">
-      <IsCxx>False</IsCxx>
-      <Kind>Dynamic</Kind>
-    </NativeReference>
     <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.0.dylib">
       <IsCxx>False</IsCxx>
       <Kind>Dynamic</Kind>
@@ -197,6 +193,42 @@
     <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.dylib">
       <IsCxx>False</IsCxx>
       <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagick++-6.Q16.5.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagick++-6.Q16.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagick++-6.Q16.la">
+      <IsCxx>False</IsCxx>
+      <Kind>Static</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickCore-6.Q16.2.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickCore-6.Q16.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickCore-6.Q16.la">
+      <IsCxx>False</IsCxx>
+      <Kind>Static</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickWand-6.Q16.2.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickWand-6.Q16.dylib">
+      <IsCxx>False</IsCxx>
+      <Kind>Dynamic</Kind>
+    </NativeReference>
+    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickWand-6.Q16.la">
+      <IsCxx>False</IsCxx>
+      <Kind>Static</Kind>
     </NativeReference>
   </ItemGroup>
   <ItemGroup>
@@ -270,6 +302,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\advanced.html">
       <Link>Resources\dashboard-ui\advanced.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\appservices.html">
+      <Link>Resources\dashboard-ui\appservices.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\autoorganizelog.html">
       <Link>Resources\dashboard-ui\autoorganizelog.html</Link>
@@ -388,6 +423,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\itemlist.html">
       <Link>Resources\dashboard-ui\itemlist.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\kids.html">
+      <Link>Resources\dashboard-ui\kids.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\library.html">
       <Link>Resources\dashboard-ui\library.html</Link>
     </BundleResource>
@@ -405,6 +443,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvguide.html">
       <Link>Resources\dashboard-ui\livetvguide.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvitems.html">
+      <Link>Resources\dashboard-ui\livetvitems.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\livetvnewrecording.html">
       <Link>Resources\dashboard-ui\livetvnewrecording.html</Link>
@@ -534,9 +575,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\playbackconfiguration.html">
       <Link>Resources\dashboard-ui\playbackconfiguration.html</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\playlist.html">
-      <Link>Resources\dashboard-ui\playlist.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\playlistedit.html">
       <Link>Resources\dashboard-ui\playlistedit.html</Link>
@@ -706,6 +744,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\userimage.css">
       <Link>Resources\dashboard-ui\css\userimage.css</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\fonts\Montserrat.woff">
+      <Link>Resources\dashboard-ui\css\fonts\Montserrat.woff</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\fonts\RobotoBold.woff">
       <Link>Resources\dashboard-ui\css\fonts\RobotoBold.woff</Link>
     </BundleResource>
@@ -720,9 +761,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\fonts\RobotoThin.woff">
       <Link>Resources\dashboard-ui\css\fonts\RobotoThin.woff</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\fonts\mblogo.woff">
-      <Link>Resources\dashboard-ui\css\fonts\mblogo.woff</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\checkmarkblack.png">
       <Link>Resources\dashboard-ui\css\images\checkmarkblack.png</Link>
@@ -819,6 +857,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\clients\android.png">
       <Link>Resources\dashboard-ui\css\images\clients\android.png</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\clients\androidtv-tile.png">
+      <Link>Resources\dashboard-ui\css\images\clients\androidtv-tile.png</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\clients\chrome.png">
       <Link>Resources\dashboard-ui\css\images\clients\chrome.png</Link>
@@ -997,6 +1038,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\items\searchhintsv2\tv.png">
       <Link>Resources\dashboard-ui\css\images\items\searchhintsv2\tv.png</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\kids\bg.jpg">
+      <Link>Resources\dashboard-ui\css\images\kids\bg.jpg</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\media\chapterflyout.png">
       <Link>Resources\dashboard-ui\css\images\media\chapterflyout.png</Link>
     </BundleResource>
@@ -1132,6 +1176,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\alphapicker.js">
       <Link>Resources\dashboard-ui\scripts\alphapicker.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\appservices.js">
+      <Link>Resources\dashboard-ui\scripts\appservices.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\autoorganizelog.js">
       <Link>Resources\dashboard-ui\scripts\autoorganizelog.js</Link>
     </BundleResource>
@@ -1261,6 +1308,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\itemlistpage.js">
       <Link>Resources\dashboard-ui\scripts\itemlistpage.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\kids.js">
+      <Link>Resources\dashboard-ui\scripts\kids.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\librarybrowser.js">
       <Link>Resources\dashboard-ui\scripts\librarybrowser.js</Link>
     </BundleResource>
@@ -1284,6 +1334,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvguide.js">
       <Link>Resources\dashboard-ui\scripts\livetvguide.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvitems.js">
+      <Link>Resources\dashboard-ui\scripts\livetvitems.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\livetvnewrecording.js">
       <Link>Resources\dashboard-ui\scripts\livetvnewrecording.js</Link>
@@ -1429,9 +1482,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\playbackconfiguration.js">
       <Link>Resources\dashboard-ui\scripts\playbackconfiguration.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\playlist.js">
-      <Link>Resources\dashboard-ui\scripts\playlist.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\playlistedit.js">
       <Link>Resources\dashboard-ui\scripts\playlistedit.js</Link>
     </BundleResource>
@@ -1573,6 +1623,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\ajax.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\ajax.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\apiclient.js">
+      <Link>Resources\dashboard-ui\thirdparty\apiclient\apiclient.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\connectionmanager.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\connectionmanager.js</Link>
     </BundleResource>
@@ -1584,9 +1637,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\deferred.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\deferred.js</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\deferredAlt.js">
-      <Link>Resources\dashboard-ui\thirdparty\apiclient\deferredAlt.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\device.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\device.js</Link>
@@ -1600,9 +1650,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\md5.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\md5.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\mediabrowser.apiclient.js">
-      <Link>Resources\dashboard-ui\thirdparty\apiclient\mediabrowser.apiclient.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\network.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\network.js</Link>
     </BundleResource>
@@ -1614,6 +1661,18 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\store.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\store.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\alt\ajax.js">
+      <Link>Resources\dashboard-ui\thirdparty\apiclient\alt\ajax.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\alt\bean.js">
+      <Link>Resources\dashboard-ui\thirdparty\apiclient\alt\bean.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\alt\deferred.js">
+      <Link>Resources\dashboard-ui\thirdparty\apiclient\alt\deferred.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\alt\events.js">
+      <Link>Resources\dashboard-ui\thirdparty\apiclient\alt\events.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\css\font-awesome.css">
       <Link>Resources\dashboard-ui\thirdparty\fontawesome\css\font-awesome.css</Link>
