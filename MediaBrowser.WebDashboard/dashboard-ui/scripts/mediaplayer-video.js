@@ -929,7 +929,7 @@
 
         self.playVideo = function (item, mediaSource, startPosition) {
 
-            var streamInfo = self.createStreamInfo('video', item, mediaSource, startPosition);
+            var streamInfo = self.createStreamInfo('Video', item, mediaSource, startPosition);
 
             var videoUrl = streamInfo.url;
             var contentType = streamInfo.contentType;

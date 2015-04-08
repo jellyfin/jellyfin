@@ -1026,7 +1026,7 @@ namespace MediaBrowser.Api.Playback
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             state.LogFileStream = FileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
 
-            var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(commandLineLogMessage + Environment.NewLine + Environment.NewLine);
+            var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(Request.AbsoluteUri + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             await state.LogFileStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length, cancellationTokenSource.Token).ConfigureAwait(false);
 
             process.Exited += (sender, args) => OnFfMpegProcessExited(process, transcodingJob, state);

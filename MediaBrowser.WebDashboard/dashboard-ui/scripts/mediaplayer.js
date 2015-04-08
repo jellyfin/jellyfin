@@ -725,7 +725,7 @@
             });
         }
 
-        self.createStreamInfo = function (item, mediaSource, startPosition) {
+        self.createStreamInfo = function (type, item, mediaSource, startPosition) {
 
             var mediaUrl;
             var contentType;
@@ -734,9 +734,7 @@
             var startPositionInSeekParam = startPosition ? (startPosition / 10000000) : 0;
             var seekParam = startPositionInSeekParam ? '#t=' + startPositionInSeekParam : '';
 
-            var type = item.MediaType.toLowerCase();
-
-            if (type == 'video') {
+            if (type == 'Video') {
 
                 contentType = 'video/' + mediaSource.Container;
 
@@ -1627,7 +1625,7 @@
 
         function playAudio(item, mediaSource, startPositionTicks) {
 
-            var streamInfo = self.createStreamInfo('audio', item, mediaSource, startPositionTicks);
+            var streamInfo = self.createStreamInfo('Audio', item, mediaSource, startPositionTicks);
             var audioUrl = streamInfo.url;
             self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
 
