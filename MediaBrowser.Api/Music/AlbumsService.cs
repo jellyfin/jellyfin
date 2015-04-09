@@ -79,12 +79,12 @@ namespace MediaBrowser.Api.Music
 
             var artists1 = album1
                 .AllArtists
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .ToList();
 
             var artists2 = album2
                 .AllArtists
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
             return points + artists1.Where(artists2.ContainsKey).Sum(i => 5);

@@ -283,7 +283,7 @@ namespace MediaBrowser.Controller.Entities
             var tasks = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
                 .Where(i => !i.IsFolder)
                 .SelectMany(i => i.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .Select(i =>
                 {
                     try
@@ -313,7 +313,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i.Genres.Contains(displayParent.Name, StringComparer.OrdinalIgnoreCase))
                 .OfType<IHasAlbumArtist>()
                 .SelectMany(i => i.AlbumArtists)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .Select(i =>
                 {
                     try
@@ -337,7 +337,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => !i.IsFolder)
                 .OfType<IHasAlbumArtist>()
                 .SelectMany(i => i.AlbumArtists)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .Select(i =>
                 {
                     try
@@ -361,7 +361,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => !i.IsFolder)
                 .OfType<IHasArtist>()
                 .SelectMany(i => i.Artists)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .Select(i =>
                 {
                     try
@@ -385,7 +385,7 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => !i.IsFolder)
                 .OfType<IHasAlbumArtist>()
                 .SelectMany(i => i.AlbumArtists)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .Select(i =>
                 {
                     try
@@ -552,7 +552,7 @@ namespace MediaBrowser.Controller.Entities
             var tasks = GetRecursiveChildren(parent, user, new[] { CollectionType.Movies, CollectionType.BoxSets, string.Empty })
                 .Where(i => i is Movie)
                 .SelectMany(i => i.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .Select(i =>
                 {
                     try
@@ -724,7 +724,7 @@ namespace MediaBrowser.Controller.Entities
             var tasks = GetRecursiveChildren(parent, user, new[] { CollectionType.TvShows, string.Empty })
                 .OfType<Series>()
                 .SelectMany(i => i.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .Select(i =>
                 {
                     try
@@ -776,7 +776,7 @@ namespace MediaBrowser.Controller.Entities
             var tasks = GetRecursiveChildren(parent, user, new[] { CollectionType.Games })
                 .OfType<Game>()
                 .SelectMany(i => i.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .Select(i =>
                 {
                     try

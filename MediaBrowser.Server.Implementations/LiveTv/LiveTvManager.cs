@@ -839,7 +839,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var programList = programs.ToList();
 
             var genres = programList.SelectMany(i => i.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .Select(i => _libraryManager.GetGenre(i))
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 

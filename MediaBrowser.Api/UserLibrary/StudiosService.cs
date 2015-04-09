@@ -109,7 +109,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             return itemsList
                 .SelectMany(i => i.Studios)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .Select(name => LibraryManager.GetStudio(name));
         }
     }

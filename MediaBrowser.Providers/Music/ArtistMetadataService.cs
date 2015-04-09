@@ -54,7 +54,7 @@ namespace MediaBrowser.Providers.Music
                         var currentList = item.Genres.ToList();
 
                         item.Genres = taggedItems.SelectMany(i => i.Genres)
-                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .DistinctNames()
                             .ToList();
 
                         if (currentList.Count != item.Genres.Count || !currentList.OrderBy(i => i).SequenceEqual(item.Genres.OrderBy(i => i), StringComparer.OrdinalIgnoreCase))

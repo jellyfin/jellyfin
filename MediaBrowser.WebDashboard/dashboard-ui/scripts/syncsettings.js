@@ -3,7 +3,7 @@
     function loadPage(page, config) {
 
         $('#txtSyncTempPath', page).val(config.TemporaryPath || '');
-        $('#txtUploadSpeedLimit', page).val(config.UploadSpeedLimitBytes / 1000000);
+        $('#txtUploadSpeedLimit', page).val((config.UploadSpeedLimitBytes / 1000000) || '');
         $('#txtCpuCoreLimit', page).val(config.TranscodingCpuCoreLimit);
         $('#chkEnableFullSpeedConversion', page).checked(config.EnableFullSpeedTranscoding).checkboxradio('refresh');
 

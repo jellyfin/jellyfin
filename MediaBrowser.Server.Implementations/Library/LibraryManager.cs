@@ -926,10 +926,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (isArtist)
             {
-                var validFilename = _fileSystem.GetValidFilename(name).Trim();
-
                 var existing = RootFolder
-                    .GetRecursiveChildren(i => i is T && string.Equals(_fileSystem.GetValidFilename(i.Name).Trim(), validFilename, StringComparison.OrdinalIgnoreCase))
+                    .GetRecursiveChildren(i => i is T && NameExtensions.AreEqual(i.Name, name))
                     .Cast<T>()
                     .FirstOrDefault();
 
