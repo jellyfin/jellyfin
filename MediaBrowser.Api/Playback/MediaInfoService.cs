@@ -141,19 +141,13 @@ namespace MediaBrowser.Api.Playback
                 }
             }
 
-            var maxBitrate = request.MaxStreamingBitrate;
-
-            if (_config.Configuration.RemoteClientBitrateLimit > 0 && !_networkManager.IsInLocalNetwork(Request.RemoteIp))
-            {
-                maxBitrate = Math.Min(maxBitrate ?? _config.Configuration.RemoteClientBitrateLimit, _config.Configuration.RemoteClientBitrateLimit);
-            }
-
             var info = await GetPlaybackInfo(request.Id, request.UserId, new[] { MediaType.Audio, MediaType.Video }, request.MediaSourceId, request.LiveStreamId).ConfigureAwait(false);
 
             if (profile != null)
             {
                 var mediaSourceId = request.MediaSourceId;
-                SetDeviceSpecificData(request.Id, info, profile, authInfo, maxBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex);
+
+                SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex);
             }
 
             return ToOptimizedResult(info);
@@ -246,8 +240,7 @@ namespace MediaBrowser.Api.Playback
                 Context = EncodingContext.Streaming,
                 DeviceId = auth.DeviceId,
                 ItemId = item.Id.ToString("N"),
-                Profile = profile,
-                MaxBitrate = maxBitrate
+                Profile = profile
             };
 
             if (string.Equals(mediaSourceId, mediaSource.Id, StringComparison.OrdinalIgnoreCase))
@@ -263,6 +256,7 @@ namespace MediaBrowser.Api.Playback
 
                 // Dummy this up to fool StreamBuilder
                 mediaSource.SupportsDirectStream = true;
+                options.MaxBitrate = maxBitrate;
 
                 // The MediaSource supports direct stream, now test to see if the client supports it
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
@@ -285,6 +279,8 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsDirectStream)
             {
+                options.MaxBitrate = GetMaxBitrate(maxBitrate);
+                
                 // The MediaSource supports direct stream, now test to see if the client supports it
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
                     streamBuilder.BuildAudioItem(options) :
@@ -303,6 +299,8 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsTranscoding)
             {
+                options.MaxBitrate = GetMaxBitrate(maxBitrate);
+                
                 // The MediaSource supports direct stream, now test to see if the client supports it
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
                     streamBuilder.BuildAudioItem(options) :
@@ -322,6 +320,18 @@ namespace MediaBrowser.Api.Playback
                     mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                 }
             }
+        }
+
+        private int? GetMaxBitrate(int? clientMaxBitrate)
+        {
+            var maxBitrate = clientMaxBitrate;
+
+            if (_config.Configuration.RemoteClientBitrateLimit > 0 && !_networkManager.IsInLocalNetwork(Request.RemoteIp))
+            {
+                maxBitrate = Math.Min(maxBitrate ?? _config.Configuration.RemoteClientBitrateLimit, _config.Configuration.RemoteClientBitrateLimit);
+            }
+
+            return maxBitrate;
         }
 
         private void SetDeviceSpecificSubtitleInfo(StreamInfo info, MediaSourceInfo mediaSource, string accessToken)
