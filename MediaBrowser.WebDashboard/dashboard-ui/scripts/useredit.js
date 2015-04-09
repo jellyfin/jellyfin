@@ -43,7 +43,8 @@
         $('#chkDisableUserPreferences', page).checked((!user.Policy.EnableUserPreferenceAccess)).checkboxradio("refresh");
 
         $('#chkEnableMediaPlayback', page).checked(user.Policy.EnableMediaPlayback).checkboxradio("refresh");
-        $('#chkEnableMediaPlaybackTranscoding', page).checked(user.Policy.EnableMediaPlaybackTranscoding).checkboxradio("refresh");
+        $('#chkEnableAudioPlaybackTranscoding', page).checked(user.Policy.EnableAudioPlaybackTranscoding).checkboxradio("refresh");
+        $('#chkEnableVideoPlaybackTranscoding', page).checked(user.Policy.EnableVideoPlaybackTranscoding).checkboxradio("refresh");
 
         $('#chkEnableSync', page).checked(user.Policy.EnableSync).checkboxradio("refresh");
         $('#chkEnableSyncTranscoding', page).checked(user.Policy.EnableSyncTranscoding).checkboxradio("refresh");
@@ -85,7 +86,8 @@
         user.Policy.EnableSharedDeviceControl = $('#chkRemoteControlSharedDevices', page).checked();
 
         user.Policy.EnableMediaPlayback = $('#chkEnableMediaPlayback', page).checked();
-        user.Policy.EnableMediaPlaybackTranscoding = $('#chkEnableMediaPlaybackTranscoding', page).checked();
+        user.Policy.EnableAudioPlaybackTranscoding = $('#chkEnableAudioPlaybackTranscoding', page).checked();
+        user.Policy.EnableVideoPlaybackTranscoding = $('#chkEnableVideoPlaybackTranscoding', page).checked();
 
         user.Policy.EnableContentDownloading = $('#chkEnableDownloading', page).checked();
 

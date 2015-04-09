@@ -1627,7 +1627,7 @@ namespace MediaBrowser.Api.Playback
             MediaSourceInfo mediaSource;
             if (string.IsNullOrWhiteSpace(request.LiveStreamId))
             {
-                var mediaSources = (await MediaSourceManager.GetPlayackMediaSources(request.Id, false, cancellationToken).ConfigureAwait(false)).ToList();
+                var mediaSources = (await MediaSourceManager.GetPlayackMediaSources(request.Id, null, false, new[] { MediaType.Audio, MediaType.Video }, cancellationToken).ConfigureAwait(false)).ToList();
 
                 mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
                    ? mediaSources.First()

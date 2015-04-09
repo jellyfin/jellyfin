@@ -1284,7 +1284,8 @@ var Dashboard = {
 
             SupportedCommands: Dashboard.getSupportedRemoteCommands().join(','),
             SupportsPersistentIdentifier: false,
-            SupportsMediaControl: true
+            SupportsMediaControl: true,
+            SupportedLiveMediaTypes: ['Audio', 'Video']
         };
     }
 };

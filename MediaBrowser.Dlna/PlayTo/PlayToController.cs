@@ -892,7 +892,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 request.MediaSource = hasMediaSources == null ?
                     null :
-                    mediaSourceManager.GetStaticMediaSource(hasMediaSources, request.MediaSourceId, false);
+                    mediaSourceManager.GetMediaSource(hasMediaSources, request.MediaSourceId, false).Result;
 
 
 

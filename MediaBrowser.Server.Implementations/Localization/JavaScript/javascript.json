@@ -122,7 +122,7 @@
     "LabelFree": "Free",
     "HeaderPlaybackError": "Playback Error",
     "MessagePlaybackErrorNotAllowed": "You're currently not authorized to play this content. Please contact your system administrator for details.",
-    "MessagePlaybackErrorNoCompatibleStream": "No compatible streams are currently available. Please try again later.",
+    "MessagePlaybackErrorNoCompatibleStream": "No compatible streams are currently available. Please try again later or contact your system administrator for details.",
     "MessagePlaybackErrorRateLimitExceeded": "Your playback rate limit has been exceeded. Please contact your system administrator for details.",
     "MessagePlaybackErrorPlaceHolder": "The content chosen is not playable from this device.",
     "HeaderSelectAudio": "Select Audio",

@@ -59,7 +59,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
 
-            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.ItemId, false, cancellationToken).ConfigureAwait(false);
+            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.ItemId, null, false, new[] { MediaType.Audio, MediaType.Video }, cancellationToken).ConfigureAwait(false);
 
             var mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
                ? mediaSources.First()

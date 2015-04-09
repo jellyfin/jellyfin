@@ -172,11 +172,11 @@ namespace MediaBrowser.Common.Implementations.Networking
                 Uri uri;
                 if (Uri.TryCreate(endpoint, UriKind.RelativeOrAbsolute, out uri))
                 {
-                    var host = uri.DnsSafeHost;
-                    Logger.Debug("Resolving host {0}", host);
-
                     try
                     {
+                        var host = uri.DnsSafeHost;
+                        Logger.Debug("Resolving host {0}", host);
+
                         address = GetIpAddresses(host).FirstOrDefault();
 
                         if (address != null)
@@ -186,9 +186,13 @@ namespace MediaBrowser.Common.Implementations.Networking
                             return IsInLocalNetworkInternal(address.ToString(), false);
                         }
                     }
+                    catch (InvalidOperationException)
+                    {
+                        // Can happen with reverse proxy or IIS url rewriting
+                    }
                     catch (Exception ex)
                     {
-                        Logger.ErrorException("Error resovling hostname {0}", ex, host);
+                        Logger.ErrorException("Error resovling hostname", ex);
                     }
                 }
             }

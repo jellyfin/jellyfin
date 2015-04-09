@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitlePlayback}</title>
+</head>
+<body>
+    <div id="streamingSettingsPage" data-role="page" class="page type-interior playbackConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Streaming">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="playbackconfiguration.html" data-role="button">${TabGeneral}</a>
+                    <a href="cinemamodeconfiguration.html" data-role="button">${TabCinemaMode}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabStreaming}</a>
+                    <a href="encodingsettings.html" data-role="button">${TabTranscoding}</a>
+                </div>
+
+                <form class="streamingSettingsForm">
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="txtRemoteClientBitrateLimit">${LabelRemoteClientBitrateLimit}</label>
+                            <input type="number" id="txtRemoteClientBitrateLimit" pattern="[0-9]*" required="required" min="0" step=".25" />
+                            <div class="fieldDescription">${LabelRemoteClientBitrateLimitHelp}</div>
+                        </li>
+                    </ul>
+
+                    <ul data-role="listview" class="ulForm">
+                        <li>
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                                ${ButtonSave}
+                            </button>
+                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete" data-mini="true">
+                                ${ButtonCancel}
+                            </button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $('.streamingSettingsForm').off('submit', StreamingSettingsPage.onSubmit).on('submit', StreamingSettingsPage.onSubmit);
+        </script>
+    </div>
+</body>
+</html>

@@ -305,12 +305,9 @@ namespace MediaBrowser.Server.Implementations.Session
             }
         }
 
-        private async Task<MediaSourceInfo> GetMediaSource(IHasMediaSources item, string mediaSourceId)
+        private Task<MediaSourceInfo> GetMediaSource(IHasMediaSources item, string mediaSourceId)
         {
-            var sources = await _mediaSourceManager.GetPlayackMediaSources(item.Id.ToString("N"), false, CancellationToken.None)
-                        .ConfigureAwait(false);
-
-            return sources.FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
+            return _mediaSourceManager.GetMediaSource(item, mediaSourceId, false);
         }
 
         /// <summary>
