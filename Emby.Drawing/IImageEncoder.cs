@@ -44,5 +44,10 @@ namespace Emby.Drawing
         /// </summary>
         /// <param name="options">The options.</param>
         void CreateImageCollage(ImageCollageOptions options);
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
+        string Name { get; }
     }
 }

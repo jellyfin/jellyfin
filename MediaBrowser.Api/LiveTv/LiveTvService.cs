@@ -433,7 +433,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var result = await _liveTvManager.GetPrograms(query, CancellationToken.None).ConfigureAwait(false);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         public async Task<object> Get(GetRecommendedPrograms request)
@@ -450,7 +450,7 @@ namespace MediaBrowser.Api.LiveTv
 
             var result = await _liveTvManager.GetRecommendedPrograms(query, CancellationToken.None).ConfigureAwait(false);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         public object Post(GetPrograms request)
@@ -473,7 +473,7 @@ namespace MediaBrowser.Api.LiveTv
 
             }, CancellationToken.None).ConfigureAwait(false);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         public async Task<object> Get(GetRecording request)

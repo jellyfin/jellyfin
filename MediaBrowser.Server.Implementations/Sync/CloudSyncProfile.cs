@@ -195,17 +195,39 @@ namespace MediaBrowser.Server.Implementations.Sync
                 }
             };
 
-            var maxAudioChannels = supportsAc3 || supportsDca ? "5" : "2";
             codecProfiles.Add(new CodecProfile
             {
                 Type = CodecType.VideoAudio,
+                Codec = "ac3",
                 Conditions = new[]
                     {
                         new ProfileCondition
                         {
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.AudioChannels,
-                            Value = maxAudioChannels,
+                            Value = "5",
+                            IsRequired = true
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.Equals,
+                            Property = ProfileConditionValue.IsSecondaryAudio,
+                            Value = "false",
+                            IsRequired = false
+                        }
+                    }
+            });
+            codecProfiles.Add(new CodecProfile
+            {
+                Type = CodecType.VideoAudio,
+                Codec = "ac3",
+                Conditions = new[]
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.AudioChannels,
+                            Value = "2",
                             IsRequired = true
                         },
                         new ProfileCondition

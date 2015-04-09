@@ -482,6 +482,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "selectserver.js",
                                 "serversecurity.js",
                                 "songs.js",
+                                "streamingsettings.js",
                                 "supporterkeypage.js",
                                 "supporterpage.js",
                                 "syncactivity.js",

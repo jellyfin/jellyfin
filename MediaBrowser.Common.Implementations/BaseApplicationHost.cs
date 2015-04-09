@@ -102,12 +102,6 @@ namespace MediaBrowser.Common.Implementations
         public List<string> FailedAssemblies { get; protected set; }
 
         /// <summary>
-        /// Gets all types within all running assemblies
-        /// </summary>
-        /// <value>All types.</value>
-        public Type[] AllTypes { get; protected set; }
-
-        /// <summary>
         /// Gets all concrete types.
         /// </summary>
         /// <value>All concrete types.</value>
@@ -438,9 +432,10 @@ namespace MediaBrowser.Common.Implementations
                 Logger.Info("Loading {0}", assembly.FullName);
             }
 
-            AllTypes = assemblies.SelectMany(GetTypes).ToArray();
-
-            AllConcreteTypes = AllTypes.Where(t => t.IsClass && !t.IsAbstract && !t.IsInterface && !t.IsGenericType).ToArray();
+            AllConcreteTypes = assemblies
+                .SelectMany(GetTypes)
+                .Where(t => t.IsClass && !t.IsAbstract && !t.IsInterface && !t.IsGenericType)
+                .ToArray();
         }
 
         /// <summary>

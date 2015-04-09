@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Logging;
@@ -8,6 +7,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using ImageFormat = MediaBrowser.Model.Drawing.ImageFormat;
 
 namespace Emby.Drawing.GDI
@@ -244,6 +244,11 @@ namespace Emby.Drawing.GDI
 
         public void Dispose()
         {
+        }
+
+        public string Name
+        {
+            get { return "GDI"; }
         }
     }
 }

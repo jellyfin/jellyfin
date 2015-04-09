@@ -206,6 +206,11 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
+        public string Name
+        {
+            get { return "ImageMagick"; }
+        }
+
         private bool _disposed;
         public void Dispose()
         {

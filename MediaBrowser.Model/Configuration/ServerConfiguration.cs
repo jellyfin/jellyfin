@@ -208,6 +208,7 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableAudioArchiveFiles { get; set; }
         public bool EnableVideoArchiveFiles { get; set; }
+        public int RemoteClientBitrateLimit { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.

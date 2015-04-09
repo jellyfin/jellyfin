@@ -132,7 +132,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             int subtitleStreamIndex,
             CancellationToken cancellationToken)
         {
-            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(itemId, false, cancellationToken).ConfigureAwait(false);
+            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(itemId, null, false, new[] { MediaType.Audio, MediaType.Video }, cancellationToken).ConfigureAwait(false);
 
             var mediaSource = mediaSources
                 .First(i => string.Equals(i.Id, mediaSourceId));

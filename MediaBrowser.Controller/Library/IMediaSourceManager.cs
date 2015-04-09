@@ -43,18 +43,10 @@ namespace MediaBrowser.Controller.Library
         /// <param name="id">The identifier.</param>
         /// <param name="userId">The user identifier.</param>
         /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
+        /// <param name="supportedLiveMediaTypes">The supported live media types.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>IEnumerable&lt;MediaSourceInfo&gt;.</returns>
-        Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, string userId, bool enablePathSubstitution, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Gets the playack media sources.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task&lt;IEnumerable&lt;MediaSourceInfo&gt;&gt;.</returns>
-        Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, bool enablePathSubstitution, CancellationToken cancellationToken);
+        Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, string userId, bool enablePathSubstitution, string[] supportedLiveMediaTypes, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the static media sources.
@@ -64,7 +56,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable&lt;MediaSourceInfo&gt;.</returns>
         IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution, User user = null);
-        
+
         /// <summary>
         /// Gets the static media source.
         /// </summary>
@@ -72,7 +64,7 @@ namespace MediaBrowser.Controller.Library
         /// <param name="mediaSourceId">The media source identifier.</param>
         /// <param name="enablePathSubstitution">if set to <c>true</c> [enable path substitution].</param>
         /// <returns>MediaSourceInfo.</returns>
-        MediaSourceInfo GetStaticMediaSource(IHasMediaSources item, string mediaSourceId, bool enablePathSubstitution);
+        Task<MediaSourceInfo> GetMediaSource(IHasMediaSources item, string mediaSourceId, bool enablePathSubstitution);
 
         /// <summary>
         /// Opens the media source.
