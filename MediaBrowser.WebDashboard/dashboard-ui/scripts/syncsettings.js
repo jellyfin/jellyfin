@@ -4,6 +4,8 @@
 
         $('#txtSyncTempPath', page).val(config.TemporaryPath || '');
         $('#txtUploadSpeedLimit', page).val(config.UploadSpeedLimitBytes / 1000000);
+        $('#txtCpuCoreLimit', page).val(config.TranscodingCpuCoreLimit);
+        $('#chkEnableFullSpeedConversion', page).checked(config.EnableFullSpeedTranscoding).checkboxradio('refresh');
 
         Dashboard.hideLoadingMsg();
     }
@@ -53,6 +55,8 @@
 
                 config.TemporaryPath = $('#txtSyncTempPath', form).val();
                 config.UploadSpeedLimitBytes = parseInt(parseFloat(($('#txtUploadSpeedLimit', form).val() || '0')) * 1000000);
+                config.TranscodingCpuCoreLimit = parseInt($('#txtCpuCoreLimit', form).val());
+                config.EnableFullSpeedTranscoding = $('#chkEnableFullSpeedConversion', form).checked();
 
                 ApiClient.updateNamedConfiguration("sync", config).done(Dashboard.processServerConfigurationUpdateResult);
             });

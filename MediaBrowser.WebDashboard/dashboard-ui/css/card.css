@@ -353,10 +353,6 @@
         width: 14.285714285714285714285714285714%;
     }
 
-    .backdropCard {
-        width: 20%;
-    }
-
     .portraitCard {
         width: 14.285714285714285714285714285714%;
     }
@@ -379,6 +375,10 @@
 
     .smallBackdropCard {
         width: 12.5%;
+    }
+
+    .backdropCard {
+        width: 20%;
     }
 }
 

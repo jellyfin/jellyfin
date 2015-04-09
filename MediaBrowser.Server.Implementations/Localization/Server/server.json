@@ -1415,5 +1415,9 @@
     "OptionAllowMediaPlaybackTranscodingHelp": "Users will receive friendly messages when content is unplayable based on policy.",
     "TabStreaming": "Streaming",
     "LabelRemoteClientBitrateLimit": "Remote client bitrate limit (mbps):",
-    "LabelRemoteClientBitrateLimitHelp": "An optional streaming bitrate limit for all remote clients. This is useful to prevent clients from requesting a higher bitrate than your connection can handle."
+    "LabelRemoteClientBitrateLimitHelp": "An optional streaming bitrate limit for all remote clients. This is useful to prevent clients from requesting a higher bitrate than your connection can handle.",
+    "LabelConversionCpuCoreLimit": "CPU core limit:",
+    "LabelConversionCpuCoreLimitHelp": "Limit the number of CPU cores that will be used during sync conversion.",
+    "OptionEnableFullSpeedConversion": "Enable full speed conversion",
+    "OptionEnableFullSpeedConversionHelp": "By default sync conversion is performed at a low speed to reduce resource consumption."
 }

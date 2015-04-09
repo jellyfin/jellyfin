@@ -334,6 +334,12 @@ namespace MediaBrowser.Api
                 1000 :
                 1800000;
 
+            // We can really reduce the timeout for apps that are using the newer api
+            if (!string.IsNullOrWhiteSpace(job.PlaySessionId) && job.Type == TranscodingJobType.Hls)
+            {
+                timerDuration = 40000;
+            }
+
             if (job.KillTimer == null)
             {
                 if (startTimerIfNeeded)

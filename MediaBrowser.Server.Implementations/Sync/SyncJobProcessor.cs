@@ -456,17 +456,18 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             jobItem.Progress = 0;
 
+            var syncOptions = _config.GetSyncOptions();
             var user = _userManager.GetUserById(job.UserId);
 
             var video = item as Video;
             if (video != null)
             {
-                await Sync(jobItem, job, video, user, enableConversion, progress, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, job, video, user, enableConversion, syncOptions, progress, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Audio)
             {
-                await Sync(jobItem, job, (Audio)item, user, enableConversion, progress, cancellationToken).ConfigureAwait(false);
+                await Sync(jobItem, job, (Audio)item, user, enableConversion, syncOptions, progress, cancellationToken).ConfigureAwait(false);
             }
 
             else if (item is Photo)
@@ -480,7 +481,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        private async Task Sync(SyncJobItem jobItem, SyncJob job, Video item, User user, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, SyncJob job, Video item, User user, bool enableConversion, SyncOptions syncOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var jobOptions = _syncManager.GetVideoOptions(jobItem, job);
             var conversionOptions = new VideoOptions
@@ -542,7 +543,9 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                     jobItem.OutputPath = await _mediaEncoder.EncodeVideo(new EncodingJobOptions(streamInfo, conversionOptions.Profile)
                     {
-                        OutputDirectory = jobItem.TemporaryPath
+                        OutputDirectory = jobItem.TemporaryPath,
+                        CpuCoreLimit = syncOptions.TranscodingCpuCoreLimit,
+                        ReadInputAtNativeFramerate = !syncOptions.EnableFullSpeedTranscoding
 
                     }, innerProgress, cancellationToken);
                 }
@@ -677,7 +680,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private const int DatabaseProgressUpdateIntervalSeconds = 2;
 
-        private async Task Sync(SyncJobItem jobItem, SyncJob job, Audio item, User user, bool enableConversion, IProgress<double> progress, CancellationToken cancellationToken)
+        private async Task Sync(SyncJobItem jobItem, SyncJob job, Audio item, User user, bool enableConversion, SyncOptions syncOptions, IProgress<double> progress, CancellationToken cancellationToken)
         {
             var jobOptions = _syncManager.GetAudioOptions(jobItem, job);
             var conversionOptions = new AudioOptions
@@ -725,7 +728,8 @@ namespace MediaBrowser.Server.Implementations.Sync
 
                     jobItem.OutputPath = await _mediaEncoder.EncodeAudio(new EncodingJobOptions(streamInfo, conversionOptions.Profile)
                     {
-                        OutputDirectory = jobItem.TemporaryPath
+                        OutputDirectory = jobItem.TemporaryPath,
+                        CpuCoreLimit = syncOptions.TranscodingCpuCoreLimit
 
                     }, innerProgress, cancellationToken);
                 }
