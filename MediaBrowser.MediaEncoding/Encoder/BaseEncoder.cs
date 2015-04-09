@@ -70,10 +70,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             encodingJob.OutputFilePath = GetOutputFilePath(encodingJob);
             Directory.CreateDirectory(Path.GetDirectoryName(encodingJob.OutputFilePath));
 
-            if (options.Context == EncodingContext.Static && encodingJob.IsInputVideo)
-            {
-                encodingJob.ReadInputAtNativeFramerate = true;
-            }
+            encodingJob.ReadInputAtNativeFramerate = options.ReadInputAtNativeFramerate;
 
             await AcquireResources(encodingJob, cancellationToken).ConfigureAwait(false);
 
@@ -305,19 +302,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <returns>System.Int32.</returns>
         protected int GetNumberOfThreads(EncodingJob job, bool isWebm)
         {
-            // Only need one thread for sync
-            if (job.Options.Context == EncodingContext.Static)
-            {
-                return 1;
-            }
-
-            if (isWebm)
-            {
-                // Recommended per docs
-                return Math.Max(Environment.ProcessorCount - 1, 2);
-            }
-
-            return 0;
+            return job.Options.CpuCoreLimit ?? 0;
         }
 
         protected EncodingQuality GetQualitySetting()

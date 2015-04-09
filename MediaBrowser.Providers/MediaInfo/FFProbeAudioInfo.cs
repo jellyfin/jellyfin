@@ -147,6 +147,7 @@ namespace MediaBrowser.Providers.MediaInfo
             audio.Artists = data.Artists;
             audio.AlbumArtists = data.AlbumArtists;
             audio.IndexNumber = data.IndexNumber;
+            audio.ParentIndexNumber = data.ParentIndexNumber;
             audio.ProductionYear = data.ProductionYear;
             audio.PremiereDate = data.PremiereDate;
 
