@@ -1419,5 +1419,5 @@
     "LabelConversionCpuCoreLimit": "CPU core limit:",
     "LabelConversionCpuCoreLimitHelp": "Limit the number of CPU cores that will be used during sync conversion.",
     "OptionEnableFullSpeedConversion": "Enable full speed conversion",
-    "OptionEnableFullSpeedConversionHelp": "By default, sync conversion is performed at a low speed to reduce resource consumption."
+    "OptionEnableFullSpeedConversionHelp": "By default, sync conversion is performed at a low speed to minimize resource consumption."
 }

@@ -132,7 +132,7 @@ namespace MediaBrowser.Api.UserLibrary
                     .Where(i => !i.IsFolder)
                     .OfType<IHasAlbumArtist>()
                     .SelectMany(i => i.AlbumArtists)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .DistinctNames()
                     .Select(name =>
                     {
                         try
@@ -152,7 +152,7 @@ namespace MediaBrowser.Api.UserLibrary
                 .Where(i => !i.IsFolder)
                 .OfType<IHasArtist>()
                 .SelectMany(i => i.AllArtists)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .Select(name =>
                 {
                     try

@@ -410,7 +410,7 @@ namespace MediaBrowser.Api.Movies
             return items
                 .SelectMany(i => i.People.Where(p => !string.Equals(PersonType.Director, p.Type, StringComparison.OrdinalIgnoreCase)).Take(2))
                 .Select(i => i.Name)
-                .Distinct(StringComparer.OrdinalIgnoreCase);
+                .DistinctNames();
         }
 
         private IEnumerable<string> GetDirectors(IEnumerable<BaseItem> items)
@@ -419,7 +419,7 @@ namespace MediaBrowser.Api.Movies
                 .Select(i => i.People.FirstOrDefault(p => string.Equals(PersonType.Director, p.Type, StringComparison.OrdinalIgnoreCase)))
                 .Where(i => i != null)
                 .Select(i => i.Name)
-                .Distinct(StringComparer.OrdinalIgnoreCase);
+                .DistinctNames();
         }
     }
 }

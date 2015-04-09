@@ -186,6 +186,7 @@
     <Compile Include="Library\IUserViewManager.cs" />
     <Compile Include="Library\LibraryManagerExtensions.cs" />
     <Compile Include="Library\MetadataConfigurationStore.cs" />
+    <Compile Include="Library\NameExtensions.cs" />
     <Compile Include="Library\PlaybackStopEventArgs.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />
     <Compile Include="LiveTv\ILiveTvItem.cs" />

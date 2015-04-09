@@ -127,7 +127,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             return allPeople
                 .Select(i => i.Name)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
 
                 .Select(name =>
                 {
