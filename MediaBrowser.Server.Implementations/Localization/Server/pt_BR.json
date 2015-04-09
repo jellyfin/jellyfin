@@ -1394,6 +1394,14 @@
     "LabelUploadSpeedLimit": "Limite de velocidade de upload (mbps):",
     "OptionAllowSyncTranscoding": "Permitir sincroniza\u00e7\u00e3o que necessite de transcodifica\u00e7\u00e3o",
     "HeaderPlayback": "Reprodu\u00e7\u00e3o de M\u00eddia",
-    "OptionAllowMediaPlaybackTranscoding": "Permitir reprodu\u00e7\u00e3o de m\u00eddia que necessite de transcodifica\u00e7\u00e3o",
-    "OptionAllowMediaPlaybackTranscodingHelp": "Os usu\u00e1rios receber\u00e3o mensagens de erro amig\u00e1veis quando o conte\u00fado n\u00e3o for reproduz\u00edvel, baseado em suas pol\u00edticas."
+    "OptionAllowAudioPlaybackTranscoding": "Permitir reprodu\u00e7\u00e3o de \u00e1udio que necessite de transcodifica\u00e7\u00e3o",
+    "OptionAllowVideoPlaybackTranscoding": "Permitir reprodu\u00e7\u00e3o de v\u00eddeo que necessite de transcodifica\u00e7\u00e3o",
+    "OptionAllowMediaPlaybackTranscodingHelp": "Os usu\u00e1rios receber\u00e3o mensagens de erro amig\u00e1veis quando o conte\u00fado n\u00e3o for reproduz\u00edvel, baseado nas pol\u00edticas.",
+    "TabStreaming": "Streaming",
+    "LabelRemoteClientBitrateLimit": "Limite de taxa de bits para o cliente remoto (mbps):",
+    "LabelRemoteClientBitrateLimitHelp": "Um limite opcional da taxa de bits para todos os clientes remotos. Esta op\u00e7\u00e3o \u00e9 \u00fatil para evitar que os clientes demandem uma taxa de bits maior que a permitida pela sua conex\u00e3o.",
+    "LabelConversionCpuCoreLimit": "CPU core limit:",
+    "LabelConversionCpuCoreLimitHelp": "Limit the number of CPU cores that will be used during sync conversion.",
+    "OptionEnableFullSpeedConversion": "Enable full speed conversion",
+    "OptionEnableFullSpeedConversionHelp": "By default sync conversion is performed at a low speed to reduce resource consumption."
 }
