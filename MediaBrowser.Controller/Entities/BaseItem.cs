@@ -1144,6 +1144,11 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsVisibleStandalone(User user)
         {
+            return IsVisibleStandaloneInternal(user, true);
+        }
+
+        protected bool IsVisibleStandaloneInternal(User user, bool checkFolders)
+        {
             if (!IsVisible(user))
             {
                 return false;
@@ -1154,17 +1159,25 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            var topParent = Parents.LastOrDefault() ?? this;
-
-            if (string.IsNullOrWhiteSpace(topParent.Path))
+            if (checkFolders)
             {
-                return true;
+                var topParent = Parents.LastOrDefault() ?? this;
+
+                if (string.IsNullOrWhiteSpace(topParent.Path))
+                {
+                    return true;
+                }
+
+                var userCollectionFolders = user.RootFolder.GetChildren(user, true).Select(i => i.Id).ToList();
+                var itemCollectionFolders = LibraryManager.GetCollectionFolders(this).Select(i => i.Id);
+
+                if (!itemCollectionFolders.Any(userCollectionFolders.Contains))
+                {
+                    return false;
+                }
             }
 
-            var folders = user.RootFolder.GetChildren(user, true).Select(i => i.Id).ToList();
-            var itemCollectionFolders = LibraryManager.GetCollectionFolders(this).Select(i => i.Id).ToList();
-
-            return itemCollectionFolders.Any(folders.Contains);
+            return true;
         }
 
         /// <summary>
@@ -1669,7 +1682,7 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     existing.DateModified = FileSystem.GetLastWriteTimeUtc(newImage);
-                    existing.Length = ((FileInfo) newImage).Length;
+                    existing.Length = ((FileInfo)newImage).Length;
                 }
             }
 

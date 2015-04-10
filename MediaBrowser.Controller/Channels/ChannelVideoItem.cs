@@ -133,7 +133,7 @@ namespace MediaBrowser.Controller.Channels
 
         public override bool IsVisibleStandalone(User user)
         {
-            return base.IsVisibleStandalone(user) && IsChannelVisible(this, user);
+            return IsVisibleStandaloneInternal(user, false) && IsChannelVisible(this, user);
         }
 
         internal static bool IsChannelVisible(IChannelItem item, User user)
