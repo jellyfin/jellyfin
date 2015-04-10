@@ -130,7 +130,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return ItemUpdateType.MetadataImport;
         }
 
-        private const string SchemaVersion = "3";
+        private const string SchemaVersion = "4";
 
         private async Task<Model.MediaInfo.MediaInfo> GetMediaInfo(Video item,
             IIsoMount isoMount,
@@ -145,7 +145,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             try
             {
-                //return _json.DeserializeFromFile<Model.MediaInfo.MediaInfo>(cachePath);
+                return _json.DeserializeFromFile<Model.MediaInfo.MediaInfo>(cachePath);
             }
             catch (FileNotFoundException)
             {

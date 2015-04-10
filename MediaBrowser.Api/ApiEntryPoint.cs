@@ -284,16 +284,19 @@ namespace MediaBrowser.Api
         {
             job.ActiveRequestCount++;
 
-            job.DisposeKillTimer();
+            if (string.IsNullOrWhiteSpace(job.PlaySessionId) || job.Type == TranscodingJobType.Progressive)
+            {
+                job.DisposeKillTimer();
+            }
         }
 
         public void OnTranscodeEndRequest(TranscodingJob job)
         {
             job.ActiveRequestCount--;
-
-            if (job.ActiveRequestCount == 0)
+            Logger.Debug("OnTranscodeEndRequest job.ActiveRequestCount={0}", job.ActiveRequestCount);
+            if (job.ActiveRequestCount <= 0)
             {
-                PingTimer(job, true);
+                PingTimer(job, false);
             }
         }
         internal void PingTranscodingJob(string deviceId, string playSessionId)
@@ -323,11 +326,11 @@ namespace MediaBrowser.Api
 
             foreach (var job in jobs)
             {
-                PingTimer(job, false);
+                PingTimer(job, true);
             }
         }
 
-        private void PingTimer(TranscodingJob job, bool startTimerIfNeeded)
+        private void PingTimer(TranscodingJob job, bool isProgressCheckIn)
         {
             // TODO: Lower this hls timeout
             var timerDuration = job.Type == TranscodingJobType.Progressive ?
@@ -335,20 +338,23 @@ namespace MediaBrowser.Api
                 1800000;
 
             // We can really reduce the timeout for apps that are using the newer api
-            if (!string.IsNullOrWhiteSpace(job.PlaySessionId) && job.Type == TranscodingJobType.Hls)
+            if (!string.IsNullOrWhiteSpace(job.PlaySessionId) && job.Type != TranscodingJobType.Progressive)
             {
-                timerDuration = 40000;
+                timerDuration = 35000;
             }
 
             if (job.KillTimer == null)
             {
-                if (startTimerIfNeeded)
+                // Don't start the timer for playback checkins with progressive streaming
+                if (job.Type != TranscodingJobType.Progressive || !isProgressCheckIn)
                 {
+                    Logger.Debug("Starting kill timer at {0}ms", timerDuration);
                     job.KillTimer = new Timer(OnTranscodeKillTimerStopped, job, timerDuration, Timeout.Infinite);
                 }
             }
             else
             {
+                Logger.Debug("Changing kill timer to {0}ms", timerDuration);
                 job.KillTimer.Change(timerDuration, Timeout.Infinite);
             }
         }
@@ -439,28 +445,19 @@ namespace MediaBrowser.Api
 
             lock (job.ProcessLock)
             {
+                if (job.TranscodingThrottler != null)
+                {
+                    job.TranscodingThrottler.Stop();
+                }
+
                 var process = job.Process;
 
-                var hasExited = true;
-
-                try
-                {
-                    hasExited = process.HasExited;
-                }
-                catch (Exception ex)
-                {
-                    Logger.ErrorException("Error determining if ffmpeg process has exited for {0}", ex, job.Path);
-                }
+                var hasExited = job.HasExited;
 
                 if (!hasExited)
                 {
                     try
                     {
-                        if (job.TranscodingThrottler != null)
-                        {
-                            job.TranscodingThrottler.Stop();
-                        }
-
                         Logger.Info("Killing ffmpeg process for {0}", job.Path);
 
                         //process.Kill();
