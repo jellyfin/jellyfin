@@ -1706,7 +1706,7 @@ namespace MediaBrowser.Api.Playback
                 state.OutputAudioCodec = "copy";
             }
 
-            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) && TranscodingJobType == TranscodingJobType.Hls)
             {
                 var segmentLength = GetSegmentLength(state);
                 if (segmentLength.HasValue)

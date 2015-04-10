@@ -244,8 +244,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                             {
                                 try
                                 {
-                                    stream.KeyFrames = await GetKeyFrames(inputPath, stream.Index, cancellationToken)
-                                                .ConfigureAwait(false);
+                                    //stream.KeyFrames = await GetKeyFrames(inputPath, stream.Index, cancellationToken)
+                                    //            .ConfigureAwait(false);
                                 }
                                 catch (OperationCanceledException)
                                 {

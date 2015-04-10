@@ -144,7 +144,6 @@ namespace MediaBrowser.Api.Playback.Hls
                             request.StartTimeTicks = GetSeekPositionTicks(state, requestedIndex);
 
                             job = await StartFfMpeg(state, playlistPath, cancellationTokenSource).ConfigureAwait(false);
-                            ApiEntryPoint.Instance.OnTranscodeBeginRequest(job);
                         }
                         catch
                         {
@@ -153,6 +152,14 @@ namespace MediaBrowser.Api.Playback.Hls
                         }
 
                         await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+                        if (job.TranscodingThrottler != null)
+                        {
+                            job.TranscodingThrottler.UnpauseTranscoding();
+                        }
                     }
                 }
             }
