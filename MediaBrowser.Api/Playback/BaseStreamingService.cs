@@ -1705,6 +1705,102 @@ namespace MediaBrowser.Api.Playback
             {
                 state.OutputAudioCodec = "copy";
             }
+
+            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                var segmentLength = GetSegmentLength(state);
+                if (segmentLength.HasValue)
+                {
+                    state.SegmentLength = segmentLength.Value;
+                }
+            }
+        }
+
+        private int? GetSegmentLength(StreamState state)
+        {
+            var stream = state.VideoStream;
+
+            if (stream == null)
+            {
+                return null;
+            }
+
+            var frames = stream.KeyFrames;
+
+            if (frames == null || frames.Count < 2)
+            {
+                return null;
+            }
+
+            Logger.Debug("Found keyframes at {0}", string.Join(",", frames.ToArray()));
+
+            var intervals = new List<int>();
+            for (var i = 1; i < frames.Count; i++)
+            {
+                var start = frames[i - 1];
+                var end = frames[i];
+                intervals.Add(end - start);
+            }
+
+            Logger.Debug("Found keyframes intervals {0}", string.Join(",", intervals.ToArray()));
+
+            var results = new List<Tuple<int, int>>();
+
+            for (var i = 1; i <= 10; i++)
+            {
+                var idealMs = i*1000;
+
+                if (intervals.Max() < idealMs - 1000)
+                {
+                    break;
+                }
+
+                var segments = PredictStreamCopySegments(intervals, idealMs);
+                var variance = segments.Select(s => Math.Abs(idealMs - s)).Sum();
+
+                results.Add(new Tuple<int, int>(i, variance));
+            }
+
+            if (results.Count == 0)
+            {
+                return null;
+            }
+
+            return results.OrderBy(i => i.Item2).ThenBy(i => i.Item1).Select(i => i.Item1).First();
+        }
+
+        private List<int> PredictStreamCopySegments(List<int> intervals, int idealMs)
+        {
+            var segments = new List<int>();
+            var currentLength = 0;
+
+            foreach (var interval in intervals)
+            {
+                if (currentLength == 0 || (currentLength + interval) <= idealMs)
+                {
+                    currentLength += interval;
+                }
+
+                else
+                {
+                    // The segment will either be above or below the ideal. 
+                    // Need to figure out which is preferable
+                    var offset1 = Math.Abs(idealMs - currentLength);
+                    var offset2 = Math.Abs(idealMs - (currentLength + interval));
+
+                    if (offset1 <= offset2)
+                    {
+                        segments.Add(currentLength);
+                        currentLength = interval;
+                    }
+                    else
+                    {
+                        currentLength += interval;
+                    }
+                }
+            }
+            Logger.Debug("Predicted actual segment lengths for length {0}: {1}", idealMs, string.Join(",", segments.ToArray()));
+            return segments;
         }
 
         private void AttachMediaSourceInfo(StreamState state,

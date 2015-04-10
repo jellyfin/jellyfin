@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -14,6 +13,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -75,7 +75,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected readonly Func<ISubtitleEncoder> SubtitleEncoder;
         protected readonly Func<IMediaSourceManager> MediaSourceManager;
 
-        private List<Process> _runningProcesses = new List<Process>(); 
+        private readonly List<Process> _runningProcesses = new List<Process>();
 
         public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager)
         {
@@ -116,7 +116,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var inputFiles = MediaEncoderHelpers.GetInputArgument(request.InputPath, request.Protocol, request.MountedIso, request.PlayableStreamFileNames);
 
-            return GetMediaInfoInternal(GetInputArgument(inputFiles, request.Protocol), request.InputPath, request.Protocol, extractChapters,
+            var extractKeyFrameInterval = request.ExtractKeyFrameInterval && request.Protocol == MediaProtocol.File && request.VideoType == VideoType.VideoFile;
+
+            return GetMediaInfoInternal(GetInputArgument(inputFiles, request.Protocol), request.InputPath, request.Protocol, extractChapters, extractKeyFrameInterval,
                 GetProbeSizeArgument(inputFiles, request.Protocol), request.MediaType == DlnaProfileType.Audio, cancellationToken);
         }
 
@@ -150,12 +152,17 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="primaryPath">The primary path.</param>
         /// <param name="protocol">The protocol.</param>
         /// <param name="extractChapters">if set to <c>true</c> [extract chapters].</param>
+        /// <param name="extractKeyFrameInterval">if set to <c>true</c> [extract key frame interval].</param>
         /// <param name="probeSizeArgument">The probe size argument.</param>
         /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MediaInfoResult}.</returns>
         /// <exception cref="System.ApplicationException"></exception>
-        private async Task<Model.MediaInfo.MediaInfo> GetMediaInfoInternal(string inputPath, string primaryPath, MediaProtocol protocol, bool extractChapters,
+        private async Task<Model.MediaInfo.MediaInfo> GetMediaInfoInternal(string inputPath,
+            string primaryPath,
+            MediaProtocol protocol,
+            bool extractChapters,
+            bool extractKeyFrameInterval,
             string probeSizeArgument,
             bool isAudio,
             CancellationToken cancellationToken)
@@ -174,6 +181,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
+                    RedirectStandardInput = true,
                     FileName = FFProbePath,
                     Arguments = string.Format(args,
                     probeSizeArgument, inputPath).Trim(),
@@ -187,11 +195,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            process.Exited += ProcessExited;
-
             await _ffProbeResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            InternalMediaInfoResult result;
 
             try
             {
@@ -210,19 +214,55 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 process.BeginErrorReadLine();
 
-                result = _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
+                var result = _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
+
+                if (result != null)
+                {
+                    if (result.streams != null)
+                    {
+                        // Normalize aspect ratio if invalid
+                        foreach (var stream in result.streams)
+                        {
+                            if (string.Equals(stream.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                            {
+                                stream.display_aspect_ratio = string.Empty;
+                            }
+                            if (string.Equals(stream.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                            {
+                                stream.sample_aspect_ratio = string.Empty;
+                            }
+                        }
+                    }
+
+                    var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, isAudio, primaryPath, protocol);
+
+                    if (extractKeyFrameInterval && mediaInfo.RunTimeTicks.HasValue)
+                    {
+                        foreach (var stream in mediaInfo.MediaStreams.Where(i => i.Type == MediaStreamType.Video)
+                            .ToList())
+                        {
+                            try
+                            {
+                                stream.KeyFrames = await GetKeyFrames(inputPath, stream.Index, cancellationToken)
+                                            .ConfigureAwait(false);
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.ErrorException("Error getting key frame interval", ex);
+                            }
+                        }
+                    }
+
+                    return mediaInfo;
+                }
             }
             catch
             {
-                // Hate having to do this
-                try
-                {
-                    process.Kill();
-                }
-                catch (Exception ex1)
-                {
-                    _logger.ErrorException("Error killing ffprobe", ex1);
-                }
+                StopProcess(process, 100, true);
 
                 throw;
             }
@@ -231,30 +271,108 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _ffProbeResourcePool.Release();
             }
 
-            if (result == null)
+            throw new ApplicationException(string.Format("FFProbe failed for {0}", inputPath));
+        }
+
+        private async Task<List<int>> GetKeyFrames(string inputPath, int videoStreamIndex, CancellationToken cancellationToken)
+        {
+            const string args = "-i {0} -select_streams v:{1} -show_frames -print_format compact";
+
+            var process = new Process
             {
-                throw new ApplicationException(string.Format("FFProbe failed for {0}", inputPath));
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+
+                    // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
+                    FileName = FFProbePath,
+                    Arguments = string.Format(args, inputPath, videoStreamIndex.ToString(CultureInfo.InvariantCulture)).Trim(),
+
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false
+                },
+
+                EnableRaisingEvents = true
+            };
+
+            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+
+            StartProcess(process);
+
+            var lines = new List<int>();
+            var outputCancellationSource = new CancellationTokenSource(4000);
+
+            try
+            {
+                process.BeginErrorReadLine();
+
+                var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(outputCancellationSource.Token, cancellationToken);
+
+                await StartReadingOutput(process.StandardOutput.BaseStream, lines, 120000, outputCancellationSource, linkedCancellationTokenSource.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+            }
+            finally
+            {
+                StopProcess(process, 100, true);
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
+            return lines;
+        }
 
-            if (result.streams != null)
+        private async Task StartReadingOutput(Stream source, List<int> lines, int timeoutMs, CancellationTokenSource cancellationTokenSource, CancellationToken cancellationToken)
+        {
+            try
             {
-                // Normalize aspect ratio if invalid
-                foreach (var stream in result.streams)
+                using (var reader = new StreamReader(source))
                 {
-                    if (string.Equals(stream.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                    while (!reader.EndOfStream)
                     {
-                        stream.display_aspect_ratio = string.Empty;
-                    }
-                    if (string.Equals(stream.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
-                    {
-                        stream.sample_aspect_ratio = string.Empty;
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        var line = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                        var values = (line ?? string.Empty).Split('|')
+                            .Where(i => !string.IsNullOrWhiteSpace(i))
+                            .Select(i => i.Split('='))
+                            .Where(i => i.Length == 2)
+                            .ToDictionary(i => i[0], i => i[1]);
+
+                        string pktDts;
+                        int frameMs;
+                        if (values.TryGetValue("pkt_dts", out pktDts) && int.TryParse(pktDts, NumberStyles.Any, CultureInfo.InvariantCulture, out frameMs))
+                        {
+                            string keyFrame;
+                            if (values.TryGetValue("key_frame", out keyFrame) && string.Equals(keyFrame, "1", StringComparison.OrdinalIgnoreCase))
+                            {
+                                lines.Add(frameMs);
+                            }
+
+                            if (frameMs > timeoutMs)
+                            {
+                                cancellationTokenSource.Cancel();
+                            }
+                        }
                     }
                 }
             }
-
-            return new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, isAudio, primaryPath, protocol);
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error reading ffprobe output", ex);
+            }
         }
 
         /// <summary>
@@ -269,7 +387,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         private void ProcessExited(object sender, EventArgs e)
         {
-            ((Process)sender).Dispose();
+            var process = (Process) sender;
+
+            lock (_runningProcesses)
+            {
+                _runningProcesses.Remove(process);
+            }
+
+            process.Dispose();
         }
 
         public Task<Stream> ExtractAudioImage(string path, CancellationToken cancellationToken)
@@ -574,6 +699,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private void StartProcess(Process process)
         {
+            process.Exited += ProcessExited;
+
             process.Start();
 
             lock (_runningProcesses)
@@ -587,26 +714,35 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 _logger.Info("Killing ffmpeg process");
 
-                process.StandardInput.WriteLine("q");
-
-                if (!process.WaitForExit(1000))
+                try
                 {
-                    if (enableForceKill)
+                    process.StandardInput.WriteLine("q");
+                }
+                catch (Exception)
+                {
+                    _logger.Error("Error sending q command to process");
+                }
+
+                try
+                {
+                    if (process.WaitForExit(waitTimeMs))
                     {
-                        process.Kill();
+                        return;
                     }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error("Error in WaitForExit", ex);
+                }
+
+                if (enableForceKill)
+                {
+                    process.Kill();
                 }
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error killing process", ex);
-            }
-            finally
-            {
-                lock (_runningProcesses)
-                {
-                    _runningProcesses.Remove(process);
-                }
             }
         }
 
