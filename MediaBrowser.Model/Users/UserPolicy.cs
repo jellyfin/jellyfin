@@ -62,6 +62,8 @@ namespace MediaBrowser.Model.Users
         public bool EnableAllFolders { get; set; }
 
         public int InvalidLoginAttemptCount { get; set; }
+
+        public bool EnablePublicSharing { get; set; }
         
         public UserPolicy()
         {
@@ -94,6 +96,7 @@ namespace MediaBrowser.Model.Users
             EnableAllDevices = true;
 
             EnableContentDownloading = true;
+            EnablePublicSharing = true;
         }
     }
 }

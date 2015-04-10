@@ -1161,12 +1161,10 @@ namespace MediaBrowser.Controller.Entities
                 return true;
             }
 
-            var locations = user.RootFolder
-                .GetChildren(user, true)
-                .OfType<CollectionFolder>()
-                .SelectMany(i => i.PhysicalLocations);
+            var folders = user.RootFolder.GetChildren(user, true).Select(i => i.Id).ToList();
+            var itemCollectionFolders = LibraryManager.GetCollectionFolders(this).Select(i => i.Id).ToList();
 
-            return locations.Any(l => FileSystem.ContainsSubPath(l, topParent.Path));
+            return itemCollectionFolders.Any(folders.Contains);
         }
 
         /// <summary>

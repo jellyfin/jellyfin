@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
@@ -73,6 +74,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected readonly ISessionManager SessionManager;
         protected readonly Func<ISubtitleEncoder> SubtitleEncoder;
         protected readonly Func<IMediaSourceManager> MediaSourceManager;
+
+        private List<Process> _runningProcesses = new List<Process>(); 
 
         public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager)
         {
@@ -192,7 +195,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             try
             {
-                process.Start();
+                StartProcess(process);
             }
             catch (Exception ex)
             {
@@ -375,7 +378,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            process.Start();
+            StartProcess(process);
 
             var memoryStream = new MemoryStream();
 
@@ -391,18 +394,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (!ranToCompletion)
             {
-                try
-                {
-                    _logger.Info("Killing ffmpeg process");
-
-                    process.StandardInput.WriteLine("q");
-
-                    process.WaitForExit(1000);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error killing process", ex);
-                }
+                StopProcess(process, 1000, false);
             }
 
             resourcePool.Release();
@@ -424,31 +416,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             memoryStream.Position = 0;
             return memoryStream;
-        }
-
-        public Task<Stream> EncodeImage(ImageEncodingOptions options, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                _videoImageResourcePool.Dispose();
-            }
         }
 
         public string GetTimeParameter(long ticks)
@@ -519,7 +486,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             try
             {
-                process.Start();
+                StartProcess(process);
 
                 // Need to give ffmpeg enough time to make all the thumbnails, which could be a while,
                 // but we still need to detect if the process hangs.
@@ -543,18 +510,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (!ranToCompletion)
                 {
-                    try
-                    {
-                        _logger.Info("Killing ffmpeg process");
-
-                        process.StandardInput.WriteLine("q");
-
-                        process.WaitForExit(1000);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error killing process", ex);
-                    }
+                    StopProcess(process, 1000, false);
                 }
             }
             finally
@@ -614,6 +570,79 @@ namespace MediaBrowser.MediaEncoding.Encoder
             await job.TaskCompletionSource.Task.ConfigureAwait(false);
 
             return job.OutputFilePath;
+        }
+
+        private void StartProcess(Process process)
+        {
+            process.Start();
+
+            lock (_runningProcesses)
+            {
+                _runningProcesses.Add(process);
+            }
+        }
+        private void StopProcess(Process process, int waitTimeMs, bool enableForceKill)
+        {
+            try
+            {
+                _logger.Info("Killing ffmpeg process");
+
+                process.StandardInput.WriteLine("q");
+
+                if (!process.WaitForExit(1000))
+                {
+                    if (enableForceKill)
+                    {
+                        process.Kill();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error killing process", ex);
+            }
+            finally
+            {
+                lock (_runningProcesses)
+                {
+                    _runningProcesses.Remove(process);
+                }
+            }
+        }
+
+        private void StopProcesses()
+        {
+            List<Process> proceses;
+            lock (_runningProcesses)
+            {
+                proceses = _runningProcesses.ToList();
+            }
+
+            foreach (var process in proceses)
+            {
+                StopProcess(process, 500, true);
+            }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                _videoImageResourcePool.Dispose();
+                StopProcesses();
+            }
         }
     }
 }
