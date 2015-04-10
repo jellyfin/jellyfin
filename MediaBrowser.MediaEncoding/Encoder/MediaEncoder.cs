@@ -238,21 +238,23 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                     if (extractKeyFrameInterval && mediaInfo.RunTimeTicks.HasValue)
                     {
-                        foreach (var stream in mediaInfo.MediaStreams.Where(i => i.Type == MediaStreamType.Video)
-                            .ToList())
+                        foreach (var stream in mediaInfo.MediaStreams)
                         {
-                            try
+                            if (stream.Type == MediaStreamType.Video && string.Equals(stream.Codec, "h264", StringComparison.OrdinalIgnoreCase))
                             {
-                                stream.KeyFrames = await GetKeyFrames(inputPath, stream.Index, cancellationToken)
-                                            .ConfigureAwait(false);
-                            }
-                            catch (OperationCanceledException)
-                            {
-                                
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.ErrorException("Error getting key frame interval", ex);
+                                try
+                                {
+                                    stream.KeyFrames = await GetKeyFrames(inputPath, stream.Index, cancellationToken)
+                                                .ConfigureAwait(false);
+                                }
+                                catch (OperationCanceledException)
+                                {
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.ErrorException("Error getting key frame interval", ex);
+                                }
                             }
                         }
                     }
