@@ -1324,6 +1324,10 @@
                 attributes.push(createAttribute(Globalize.translate('MediaInfoRefFrames'), stream.RefFrames));
             }
 
+            if (stream.KeyFrames) {
+                //attributes.push(createAttribute(Globalize.translate('MediaInfoKeyFrames'), stream.KeyFrames.join(', ')));
+            }
+
             if (stream.Type != "Video") {
                 attributes.push(createAttribute(Globalize.translate('MediaInfoDefault'), (stream.IsDefault ? 'Yes' : 'No')));
             }

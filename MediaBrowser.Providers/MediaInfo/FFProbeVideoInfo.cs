@@ -130,7 +130,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return ItemUpdateType.MetadataImport;
         }
 
-        private const string SchemaVersion = "2";
+        private const string SchemaVersion = "3";
 
         private async Task<Model.MediaInfo.MediaInfo> GetMediaInfo(Video item,
             IIsoMount isoMount,
@@ -145,7 +145,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             try
             {
-                return _json.DeserializeFromFile<Model.MediaInfo.MediaInfo>(cachePath);
+                //return _json.DeserializeFromFile<Model.MediaInfo.MediaInfo>(cachePath);
             }
             catch (FileNotFoundException)
             {
@@ -167,7 +167,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 VideoType = item.VideoType,
                 MediaType = DlnaProfileType.Video,
                 InputPath = item.Path,
-                Protocol = protocol
+                Protocol = protocol,
+                ExtractKeyFrameInterval = true
 
             }, cancellationToken).ConfigureAwait(false);
 
