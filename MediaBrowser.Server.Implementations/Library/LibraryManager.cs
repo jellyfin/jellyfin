@@ -1513,7 +1513,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             return GetUserRootFolder().Children
                 .OfType<Folder>()
-                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path));
+                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path, StringComparer.OrdinalIgnoreCase));
         }
 
         public string GetContentType(BaseItem item)

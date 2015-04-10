@@ -517,7 +517,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                 if (!connectUser.IsActive)
                 {
-                    throw new ArgumentException("The Emby account has been disabled.");
+                    throw new ArgumentException("The Emby account is not active. Please ensure the account has been activated by following the instructions within the email confirmation.");
                 }
 
                 connectUserId = connectUser.Id;

@@ -63,6 +63,7 @@ namespace MediaBrowser.Model.Dto
         public string PreferredMetadataCountryCode { get; set; }
 
         public string AwardSummary { get; set; }
+        public string ShareUrl { get; set; }
 
         public float? Metascore { get; set; }
 

@@ -101,7 +101,7 @@
             var html = '<br/>';
 
             if (index) {
-                html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyViews') + '</h1>';
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyMedia') + '</h1>';
             }
             html += '<div>';
             html += createMediaLinks({
@@ -212,7 +212,7 @@
                 var cssClass = index !== 0 ? 'listHeader' : 'listHeader firstListHeader';
 
                 html += '<div>';
-                html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderMyViews') + '</h1>';
+                html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderMyMedia') + '</h1>';
 
                 if (user.Policy.EnableUserPreferenceAccess) {
                     html += '<a href="mypreferencesdisplay.html" class="accentButton"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</a>';
