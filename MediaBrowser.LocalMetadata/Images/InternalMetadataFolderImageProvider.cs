@@ -26,6 +26,11 @@ namespace MediaBrowser.LocalMetadata.Images
 
         public bool Supports(IHasImages item)
         {
+            if (item is Photo)
+            {
+                return false;
+            }
+
             if (!item.IsSaveLocalMetadataEnabled())
             {
                 return true;

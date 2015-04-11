@@ -44,7 +44,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The supported image extensions
         /// </summary>
-        public static readonly string[] SupportedImageExtensions = { ".png", ".jpg", ".jpeg", ".tbn" };
+        public static readonly string[] SupportedImageExtensions = { ".png", ".jpg", ".jpeg" };
 
         public static readonly List<string> SupportedImageExtensionsList = SupportedImageExtensions.ToList();
 
@@ -1532,7 +1532,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Remove it from the item
-            ImageInfos.Remove(info);
+            RemoveImage(info);
 
             // Delete the source file
             var currentFile = new FileInfo(info.Path);
@@ -1549,6 +1549,11 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+        }
+
+        public void RemoveImage(ItemImageInfo image)
+        {
+            ImageInfos.Remove(image);
         }
 
         public virtual Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
@@ -1641,9 +1646,9 @@ namespace MediaBrowser.Controller.Entities
             return ImageInfos.Where(i => i.Type == imageType);
         }
 
-        public bool AddImages(ImageType imageType, IEnumerable<FileInfo> images)
+        public bool AddImages(ImageType imageType, List<FileInfo> images)
         {
-            return AddImages(imageType, images.Cast<FileSystemInfo>());
+            return AddImages(imageType, images.Cast<FileSystemInfo>().ToList());
         }
 
         /// <summary>
@@ -1653,7 +1658,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         /// <exception cref="System.ArgumentException">Cannot call AddImages with chapter images</exception>
-        public bool AddImages(ImageType imageType, IEnumerable<FileSystemInfo> images)
+        public bool AddImages(ImageType imageType, List<FileSystemInfo> images)
         {
             if (imageType == ImageType.Chapter)
             {
@@ -1664,6 +1669,7 @@ namespace MediaBrowser.Controller.Entities
                 .ToList();
 
             var newImageList = new List<FileSystemInfo>();
+            var imageAdded = false;
 
             foreach (var newImage in images)
             {
@@ -1678,12 +1684,24 @@ namespace MediaBrowser.Controller.Entities
                 if (existing == null)
                 {
                     newImageList.Add(newImage);
+                    imageAdded = true;
                 }
                 else
                 {
                     existing.DateModified = FileSystem.GetLastWriteTimeUtc(newImage);
                     existing.Length = ((FileInfo)newImage).Length;
                 }
+            }
+
+            if (imageAdded || images.Count != existingImages.Count)
+            {
+                var newImagePaths = images.Select(i => i.FullName).ToList();
+
+                var deleted = existingImages
+                    .Where(i => !newImagePaths.Contains(i.Path, StringComparer.OrdinalIgnoreCase) && !File.Exists(i.Path))
+                    .ToList();
+
+                ImageInfos = ImageInfos.Except(deleted).ToList();
             }
 
             ImageInfos.AddRange(newImageList.Select(i => GetImageInfo(i, imageType)));

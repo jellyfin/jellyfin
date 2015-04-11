@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace MediaBrowser.LocalMetadata.Images
 {
-    public class LocalImageProvider : ILocalImageFileProvider
+    public class LocalImageProvider : ILocalImageFileProvider, IHasOrder
     {
         private readonly IFileSystem _fileSystem;
 
