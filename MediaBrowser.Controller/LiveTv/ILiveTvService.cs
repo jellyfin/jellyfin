@@ -1,10 +1,9 @@
-﻿using System;
+﻿using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Model.Dto;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Model.Dto;
 
 namespace MediaBrowser.Controller.LiveTv
 {

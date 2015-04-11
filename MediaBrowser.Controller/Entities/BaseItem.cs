@@ -1646,14 +1646,9 @@ namespace MediaBrowser.Controller.Entities
             return ImageInfos.Where(i => i.Type == imageType);
         }
 
-        public bool AddImages(ImageType imageType, List<FileInfo> images)
+        public bool AddImages(ImageType imageType, IEnumerable<FileInfo> images)
         {
             return AddImages(imageType, images.Cast<FileSystemInfo>().ToList());
-        }
-
-        public bool AddImages(ImageType imageType, IEnumerable<FileSystemInfo> images)
-        {
-            return AddImages(imageType, images.ToList());
         }
 
         /// <summary>
