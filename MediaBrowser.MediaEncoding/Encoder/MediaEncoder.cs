@@ -75,7 +75,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected readonly Func<ISubtitleEncoder> SubtitleEncoder;
         protected readonly Func<IMediaSourceManager> MediaSourceManager;
 
-        private readonly List<Process> _runningProcesses = new List<Process>();
+        private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
 
         public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager)
         {
@@ -197,9 +197,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             await _ffProbeResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
+            var processWrapper = new ProcessWrapper(process, this);
+
             try
             {
-                StartProcess(process);
+                StartProcess(processWrapper);
             }
             catch (Exception ex)
             {
@@ -264,7 +266,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             catch
             {
-                StopProcess(process, 100, true);
+                StopProcess(processWrapper, 100, true);
 
                 throw;
             }
@@ -303,7 +305,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            StartProcess(process);
+            var processWrapper = new ProcessWrapper(process, this);
+
+            StartProcess(processWrapper);
 
             var lines = new List<int>();
             var outputCancellationSource = new CancellationTokenSource(4000);
@@ -325,7 +329,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
             finally
             {
-                StopProcess(process, 100, true);
+                StopProcess(processWrapper, 100, true);
             }
 
             return lines;
@@ -382,23 +386,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// </summary>
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        /// <summary>
-        /// Processes the exited.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void ProcessExited(object sender, EventArgs e)
-        {
-            var process = (Process) sender;
-
-            lock (_runningProcesses)
-            {
-                _runningProcesses.Remove(process);
-            }
-
-            process.Dispose();
-        }
-
         public Task<Stream> ExtractAudioImage(string path, CancellationToken cancellationToken)
         {
             return ExtractImage(new[] { path }, MediaProtocol.File, true, null, null, cancellationToken);
@@ -422,6 +409,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 try
                 {
                     return await ExtractImageInternal(inputArgument, protocol, threedFormat, offset, true, resourcePool, cancellationToken).ConfigureAwait(false);
+                }
+                catch (ArgumentException)
+                {
+                    throw;
                 }
                 catch
                 {
@@ -505,7 +496,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            StartProcess(process);
+            var processWrapper = new ProcessWrapper(process, this);
+
+            StartProcess(processWrapper);
 
             var memoryStream = new MemoryStream();
 
@@ -521,12 +514,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (!ranToCompletion)
             {
-                StopProcess(process, 1000, false);
+                StopProcess(processWrapper, 1000, false);
             }
 
             resourcePool.Release();
 
-            var exitCode = ranToCompletion ? process.ExitCode : -1;
+            var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
 
             process.Dispose();
 
@@ -611,9 +604,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             bool ranToCompletion;
 
+            var processWrapper = new ProcessWrapper(process, this);
+
             try
             {
-                StartProcess(process);
+                StartProcess(processWrapper);
 
                 // Need to give ffmpeg enough time to make all the thumbnails, which could be a while,
                 // but we still need to detect if the process hangs.
@@ -637,7 +632,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (!ranToCompletion)
                 {
-                    StopProcess(process, 1000, false);
+                    StopProcess(processWrapper, 1000, false);
                 }
             }
             finally
@@ -645,7 +640,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 resourcePool.Release();
             }
 
-            var exitCode = ranToCompletion ? process.ExitCode : -1;
+            var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
 
             process.Dispose();
 
@@ -699,18 +694,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return job.OutputFilePath;
         }
 
-        private void StartProcess(Process process)
+        private void StartProcess(ProcessWrapper process)
         {
-            process.Exited += ProcessExited;
-
-            process.Start();
+            process.Process.Start();
 
             lock (_runningProcesses)
             {
                 _runningProcesses.Add(process);
             }
         }
-        private void StopProcess(Process process, int waitTimeMs, bool enableForceKill)
+        private void StopProcess(ProcessWrapper process, int waitTimeMs, bool enableForceKill)
         {
             try
             {
@@ -718,7 +711,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 try
                 {
-                    process.StandardInput.WriteLine("q");
+                    process.Process.StandardInput.WriteLine("q");
                 }
                 catch (Exception)
                 {
@@ -727,7 +720,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 try
                 {
-                    if (process.WaitForExit(waitTimeMs))
+                    if (process.Process.WaitForExit(waitTimeMs))
                     {
                         return;
                     }
@@ -739,7 +732,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (enableForceKill)
                 {
-                    process.Kill();
+                    process.Process .Kill();
                 }
             }
             catch (Exception ex)
@@ -750,7 +743,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private void StopProcesses()
         {
-            List<Process> proceses;
+            List<ProcessWrapper> proceses;
             lock (_runningProcesses)
             {
                 proceses = _runningProcesses.ToList();
@@ -780,6 +773,37 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 _videoImageResourcePool.Dispose();
                 StopProcesses();
+            }
+        }
+
+        private class ProcessWrapper
+        {
+            public readonly Process Process;
+            public bool HasExited;
+            public int? ExitCode;
+            private readonly MediaEncoder _mediaEncoder;
+
+            public ProcessWrapper(Process process, MediaEncoder mediaEncoder)
+            {
+                Process = process;
+                this._mediaEncoder = mediaEncoder;
+                Process.Exited += Process_Exited;
+            }
+
+            void Process_Exited(object sender, EventArgs e)
+            {
+                var process = (Process)sender;
+
+                HasExited = true;
+
+                ExitCode = process.ExitCode;
+
+                lock (_mediaEncoder._runningProcesses)
+                {
+                    _mediaEncoder._runningProcesses.Remove(this);
+                } 
+                
+                process.Dispose();
             }
         }
     }

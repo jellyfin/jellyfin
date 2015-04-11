@@ -1651,6 +1651,11 @@ namespace MediaBrowser.Controller.Entities
             return AddImages(imageType, images.Cast<FileSystemInfo>().ToList());
         }
 
+        public bool AddImages(ImageType imageType, IEnumerable<FileSystemInfo> images)
+        {
+            return AddImages(imageType, images.ToList());
+        }
+
         /// <summary>
         /// Adds the images.
         /// </summary>
