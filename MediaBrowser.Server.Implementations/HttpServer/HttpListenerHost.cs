@@ -305,7 +305,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             var operationName = httpReq.OperationName;
             var localPath = url.LocalPath;
 
-            if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(localPath, "/mediabrowser/", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(localPath, "/emby/", StringComparison.OrdinalIgnoreCase))
             {
                 httpRes.RedirectToUrl(DefaultRedirectPath);
                 return Task.FromResult(true);
@@ -313,6 +314,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             if (string.Equals(localPath, "/mediabrowser", StringComparison.OrdinalIgnoreCase))
             {
                 httpRes.RedirectToUrl("mediabrowser/" + DefaultRedirectPath);
+                return Task.FromResult(true);
+            }
+            if (string.Equals(localPath, "/emby", StringComparison.OrdinalIgnoreCase))
+            {
+                httpRes.RedirectToUrl("emby/" + DefaultRedirectPath);
                 return Task.FromResult(true);
             }
             if (string.Equals(localPath, "/", StringComparison.OrdinalIgnoreCase))
@@ -384,6 +390,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             foreach (var route in clone)
             {
+                routes.Add(new RouteAttribute(NormalizeEmbyRoutePath(route.Path), route.Verbs)
+                {
+                    Notes = route.Notes,
+                    Priority = route.Priority,
+                    Summary = route.Summary
+                });
                 routes.Add(new RouteAttribute(NormalizeRoutePath(route.Path), route.Verbs)
                 {
                     Notes = route.Notes,
@@ -398,9 +410,35 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     Priority = route.Priority,
                     Summary = route.Summary
                 });
+                routes.Add(new RouteAttribute(DoubleNormalizeEmbyRoutePath(route.Path), route.Verbs)
+                {
+                    Notes = route.Notes,
+                    Priority = route.Priority,
+                    Summary = route.Summary
+                });
             }
 
             return routes.ToArray();
+        }
+
+        private string NormalizeEmbyRoutePath(string path)
+        {
+            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
+            {
+                return "/emby" + path;
+            }
+
+            return "emby/" + path;
+        }
+
+        private string DoubleNormalizeEmbyRoutePath(string path)
+        {
+            if (path.StartsWith("/", StringComparison.OrdinalIgnoreCase))
+            {
+                return "/emby/emby" + path;
+            }
+
+            return "emby/emby/" + path;
         }
 
         private string NormalizeRoutePath(string path)

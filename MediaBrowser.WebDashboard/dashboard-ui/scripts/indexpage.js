@@ -240,43 +240,6 @@
         });
     }
 
-    function loadLibraryFolders(elem, userId, shape, index) {
-
-        ApiClient.getItems(userId, {
-
-            SortBy: "SortName",
-            ImageTypeLimit: 1
-
-        }).done(function (result) {
-
-            var html = '';
-            var items = result.Items;
-
-            for (var i = 0, length = items.length; i < length; i++) {
-                items[i].url = 'itemlist.html?parentid=' + items[i].Id;
-            }
-
-            if (items.length) {
-
-                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLibraryFolders') + '</h1>';
-
-                html += '<div>';
-                html += LibraryBrowser.getPosterViewHtml({
-                    items: items,
-                    shape: shape,
-                    showTitle: true,
-                    centerText: true,
-                    lazy: true
-                });
-                html += '</div>';
-            }
-
-            $(elem).html(html).lazyChildren();
-
-            handleLibraryLinkNavigations(elem);
-        });
-    }
-
     function loadResume(elem, userId) {
 
         var screenWidth = $(window).width();
@@ -453,7 +416,6 @@
         loadRecentlyAdded: loadRecentlyAdded,
         loadLatestChannelMedia: loadLatestChannelMedia,
         loadLibraryTiles: loadLibraryTiles,
-        loadLibraryFolders: loadLibraryFolders,
         loadResume: loadResume,
         loadLatestChannelItems: loadLatestChannelItems,
         loadLatestLiveTvRecordings: loadLatestLiveTvRecordings,
@@ -488,6 +450,10 @@
 
         var section = displayPreferences.CustomPrefs['home' + index] || getDefaultSection(index);
 
+        if (section == 'folders') {
+            section = 'librarytiles-automobile';
+        }
+
         var showLibraryTileNames = displayPreferences.CustomPrefs.enableLibraryTileNames != '0';
 
         var elem = $('.section' + index, page);
@@ -517,11 +483,7 @@
         else if (section == 'latesttvrecordings') {
             Sections.loadLatestLiveTvRecordings(elem, userId);
         }
-
-        else if (section == 'folders') {
-            Sections.loadLibraryFolders(elem, userId, 'backdrop', index);
-
-        } else if (section == 'latestchannelmedia') {
+        else if (section == 'latestchannelmedia') {
             Sections.loadLatestChannelMedia(elem, userId);
 
         } else {

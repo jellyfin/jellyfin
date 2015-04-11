@@ -1212,8 +1212,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var days = Math.Round(((double)maxPrograms) / programsPerDay);
 
-            // No less than 2, no more than 7
-            return Math.Max(2, Math.Min(days, 7));
+            return Math.Max(3, Math.Min(days, 14));
         }
 
         private async Task<IEnumerable<Tuple<string, ChannelInfo>>> GetChannels(ILiveTvService service, CancellationToken cancellationToken)
