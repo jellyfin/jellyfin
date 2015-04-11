@@ -151,8 +151,9 @@ namespace MediaBrowser.Server.Implementations.MediaEncoder
                             chapter.ImagePath = path;
                             changesMade = true;
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            _logger.ErrorException("Error extraching chapter images for {0}", ex, string.Join(",", inputPath));
                             success = false;
                             break;
                         }

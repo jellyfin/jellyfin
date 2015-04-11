@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
@@ -69,7 +70,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
         void libraryManager_ItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if (e.Item.LocationType == LocationType.Virtual)
+            if (!FilterItem(e.Item))
             {
                 return;
             }
@@ -102,7 +103,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
         void libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
         {
-            if (e.Item.LocationType == LocationType.Virtual)
+            if (!FilterItem(e.Item))
             {
                 return;
             }
@@ -130,7 +131,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         /// <param name="e">The <see cref="ItemChangeEventArgs"/> instance containing the event data.</param>
         void libraryManager_ItemRemoved(object sender, ItemChangeEventArgs e)
         {
-            if (e.Item.LocationType == LocationType.Virtual)
+            if (!FilterItem(e.Item))
             {
                 return;
             }
@@ -255,6 +256,16 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
                 FoldersRemovedFrom = foldersRemovedFrom.SelectMany(i => TranslatePhysicalItemToUserLibrary(i, user)).Select(i => i.Id.ToString("N")).Distinct().ToList()
             };
+        }
+
+        private bool FilterItem(BaseItem item)
+        {
+            if (item.LocationType == LocationType.Virtual)
+            {
+                return false;
+            }
+            
+            return !(item is IChannelItem);
         }
 
         /// <summary>
