@@ -383,12 +383,12 @@ namespace MediaBrowser.Api.Session
 
                 if (!user.Policy.EnableRemoteControlOfOtherUsers)
                 {
-                    result = result.Where(i => i.ContainsUser(request.ControllableByUserId.Value));
+                    result = result.Where(i => !i.UserId.HasValue || i.ContainsUser(request.ControllableByUserId.Value));
                 }
 
                 if (!user.Policy.EnableSharedDeviceControl)
                 {
-                    result = result.Where(i => !i.UserId.HasValue);
+                    result = result.Where(i => i.UserId.HasValue);
                 }
 
                 result = result.Where(i =>
