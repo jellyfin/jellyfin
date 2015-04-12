@@ -7,7 +7,9 @@ It features a REST-based api with built-in documention to facilitate client deve
 
 We have several client apps released and in production:
 
-- [Android](https://play.google.com/store/apps/details?id=com.mb.android "Android")
+- [Android (Play Store)](https://play.google.com/store/apps/details?id=com.mb.android "Android (Play Store)")
+- [Android (Amazon)](http://www.amazon.com/Emby-for-Android/dp/B00GVH9O0I "Android (Amazon)")
+- [Android TV](https://play.google.com/store/apps/details?id=tv.emby.embyatv "Android TV")
 - Html5
 - [iPad](https://itunes.apple.com/us/app/media-browser-client/id879475585 "iPad")
 - [iPhone](https://itunes.apple.com/us/app/media-browser-for-ios/id705058087?mt=8 "iPhone")
