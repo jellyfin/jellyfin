@@ -13,13 +13,13 @@ We have several client apps released and in production:
 - Html5
 - [iPad](https://itunes.apple.com/us/app/media-browser-client/id879475585 "iPad")
 - [iPhone](https://itunes.apple.com/us/app/media-browser-for-ios/id705058087?mt=8 "iPhone")
+- [Kodi](http://emby.media/download/ "Kodi")
 - [Media Portal](http://www.team-mediaportal.com/ "Media Portal")
 - [Roku](https://www.roku.com/channels#!details/44191/emby "Roku")
 - Windows 7/8 Desktop
 - Windows Media Center
 - [Windows Phone](http://www.windowsphone.com/s?appid=f4971ed9-f651-4bf6-84bb-94fd98613b86 "Windows Phone")
 - [Windows 8](http://apps.microsoft.com/windows/en-us/app/media-browser/ad55a2f0-9897-47bd-8944-bed3aefd5d06 "Windows 8.1")
-- [Xbmc](http://emby.media/download/ "Xbmc")
 
 
 ## New Users ##
