@@ -1145,6 +1145,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _refreshedPrograms.Clear();
             progress.Report(90);
 
+            RefreshIfNeeded(programs.Take(500));
+
             // Load these now which will prefetch metadata
             await GetRecordings(new RecordingQuery(), cancellationToken).ConfigureAwait(false);
             progress.Report(100);

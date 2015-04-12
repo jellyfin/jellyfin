@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
 {
-    public class ProgramImageProvider : IDynamicImageProvider, IHasItemChangeMonitor
+    public class ProgramImageProvider : IDynamicImageProvider, IHasItemChangeMonitor, IHasOrder
     {
         private readonly ILiveTvManager _liveTvManager;
         private readonly IHttpClient _httpClient;
@@ -100,7 +100,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public int Order
         {
-            get { return 0; }
+            get
+            {
+                // Let the better providers run first
+                return 100;
+            }
         }
 
         public bool HasChanged(IHasMetadata item, MetadataStatus status, IDirectoryService directoryService)

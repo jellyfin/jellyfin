@@ -512,12 +512,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 var video = item as Video;
                 if (video != null)
                 {
-                    if (video.VideoType == VideoType.Iso)
-                    {
-                        return false;
-                    }
-
-                    if (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd || video.VideoType == VideoType.HdDvd)
+                    if (video.VideoType == VideoType.Iso || video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd || video.VideoType == VideoType.HdDvd)
                     {
                         return false;
                     }
@@ -552,7 +547,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     }
                 }
 
-                if (item is LiveTvChannel || item is IChannelItem || item is ILiveTvRecording)
+                if (item is LiveTvChannel || item is IChannelItem)
                 {
                     return false;
                 }
@@ -566,7 +561,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return true;
             }
 
-            return item.LocationType == LocationType.FileSystem || item is Season || item is ILiveTvRecording;
+            return item.LocationType == LocationType.FileSystem || item is Season;
         }
 
         private string GetDefaultName(BaseItem item)
