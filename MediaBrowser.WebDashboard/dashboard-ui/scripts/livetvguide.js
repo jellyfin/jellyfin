@@ -12,7 +12,8 @@
     var channelQuery = {
 
         StartIndex: 0,
-        Limit: 20
+        Limit: 20,
+        EnableFavoriteSorting: true
     };
     var channelsPromise;
 

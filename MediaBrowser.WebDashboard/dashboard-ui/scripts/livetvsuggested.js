@@ -8,7 +8,7 @@
 
             userId: Dashboard.getCurrentUserId(),
             IsAiring: true,
-            limit: 16
+            limit: 18
 
         }).done(function (result) {
 
@@ -32,7 +32,7 @@
             userId: Dashboard.getCurrentUserId(),
             IsAiring: false,
             HasAired: false,
-            limit: 10,
+            limit: 9,
             IsMovie: false,
             IsSports: false
 
@@ -58,7 +58,7 @@
             userId: Dashboard.getCurrentUserId(),
             IsAiring: false,
             HasAired: false,
-            limit: 10,
+            limit: 9,
             IsMovie: true
 
         }).done(function (result) {
@@ -66,7 +66,7 @@
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "auto",
-                showTitle: true,
+                showTitle: false,
                 coverImage: true,
                 overlayText: false,
                 lazy: true
@@ -80,7 +80,7 @@
             userId: Dashboard.getCurrentUserId(),
             IsAiring: false,
             HasAired: false,
-            limit: 10,
+            limit: 9,
             IsSports: true
 
         }).done(function (result) {
@@ -88,7 +88,7 @@
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "auto",
-                showTitle: true,
+                showTitle: false,
                 coverImage: true,
                 overlayText: false,
                 lazy: true

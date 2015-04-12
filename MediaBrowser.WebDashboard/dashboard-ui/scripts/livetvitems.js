@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard');
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
     var currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
@@ -14,7 +14,7 @@
     };
 
     function getSavedQueryKey() {
-        return 'livetvitems' + (query.ParentId || '');
+        return 'livetvitems2' + (query.ParentId || '');
     }
 
     function updateFilterControls(page) {
@@ -71,8 +71,6 @@
                     showProgramAirInfo: true
                 });
             }
-
-            $('.itemsContainer', page).html(html).lazyChildren();
 
             var elem = $('.itemsContainer', page).html(html).lazyChildren();
 

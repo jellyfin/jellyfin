@@ -58,9 +58,10 @@
             showTitle: true,
             showParentTitle: true,
             overlayText: screenWidth >= 600,
-            coverImage: true
+            coverImage: true,
+            lazy: true
 
-        }));
+        })).lazyChildren();
     }
 
     function reload(page) {

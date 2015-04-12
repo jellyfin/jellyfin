@@ -6,7 +6,7 @@
 .tvProgram {
     display: block;
     text-decoration: none;
-    font-weight: normal!important;
+    font-weight: normal !important;
     white-space: nowrap;
     position: relative;
 }
@@ -173,13 +173,13 @@
 }
 
 .channelTimeslotHeader {
-    border-right: 1px solid #4971A7;
+    border-right: 1px solid #38c;
 }
 
 .channelTimeslotHeader, .timeslotHeader {
-    background: #4971A7;
-    border-bottom: 1px solid #4971A7;
-    border-left: 1px solid #4971A7;
+    background: #38c;
+    border-bottom: 1px solid #38c;
+    border-left: 1px solid #38c;
 }
 
 .timeslotHeader, .channelTimeslotHeader {
@@ -190,8 +190,8 @@
     padding: .5em .5em;
     display: block;
     text-decoration: none;
-    font-weight: normal!important;
-    color: #fff!important;
+    font-weight: normal !important;
+    color: #fff !important;
     position: relative;
 }
 
@@ -228,8 +228,8 @@
     top: 0;
     display: block;
     text-decoration: none;
-    font-weight: normal!important;
-    color: #fff!important;
+    font-weight: normal !important;
+    color: #fff !important;
 }
 
 .timeslotCellInnerWithProgram {
@@ -278,60 +278,74 @@
 @media (min-height: 500px) {
 
     .channelList, .programGrid {
-        height: 290px;
+        height: 360px;
     }
 }
 
 @media (min-height: 600px) {
 
     .channelList, .programGrid {
-        height: 390px;
+        height: 400px;
     }
 }
 
 @media (min-height: 700px) {
 
     .channelList, .programGrid {
-        height: 490px;
+        height: 500px;
     }
 }
 
 @media (min-height: 800px) {
 
     .channelList, .programGrid {
-        height: 590px;
+        height: 600px;
     }
 }
 
 @media (min-height: 900px) {
 
     .channelList, .programGrid {
-        height: 690px;
+        height: 700px;
     }
 }
 
 @media (min-height: 1000px) {
 
     .channelList, .programGrid {
-        height: 790px;
+        height: 800px;
     }
 }
 
 @media (min-height: 1100px) {
 
     .channelList, .programGrid {
-        height: 890px;
+        height: 900px;
     }
 }
 
 @media (min-height: 1200px) {
 
     .channelList, .programGrid {
-        height: 950px;
+        height: 1000px;
     }
 }
 
-@media (max-width: 600px) {
+@media (min-height: 1300px) {
+
+    .channelList, .programGrid {
+        height: 1100px;
+    }
+}
+
+@media (min-height: 1400px) {
+
+    .channelList, .programGrid {
+        height: 1200px;
+    }
+}
+
+@media (max-width: 800px) {
 
     .guideChannelImage {
         display: none;
@@ -339,5 +353,13 @@
 
     .timerPageImageContainer {
         display: none !important;
+    }
+
+    .channelHeaderCell, .channelTimeslotHeader {
+        width: 89px;
+    }
+
+    .programGrid, .timeslotHeaders {
+        margin-left: 90px;
     }
 }
