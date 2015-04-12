@@ -36,6 +36,14 @@ namespace MediaBrowser.Controller.Dto
         BaseItemDto GetBaseItemDto(BaseItem item, List<ItemFields> fields, User user = null, BaseItem owner = null);
 
         /// <summary>
+        /// Fills the synchronize information.
+        /// </summary>
+        /// <param name="dtos">The dtos.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="user">The user.</param>
+        void FillSyncInfo(IEnumerable<IHasSyncInfo> dtos, DtoOptions options, User user);
+
+        /// <summary>
         /// Gets the base item dto.
         /// </summary>
         /// <param name="item">The item.</param>
