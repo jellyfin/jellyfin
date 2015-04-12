@@ -167,6 +167,7 @@
 
 .timeslotHeaderInner {
     padding: .5em .35em;
+    font-weight: 500;
 }
 
 .timeslotCell {

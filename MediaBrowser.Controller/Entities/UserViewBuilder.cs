@@ -50,6 +50,16 @@ namespace MediaBrowser.Controller.Entities
         {
             var user = query.User;
 
+            if (query.IncludeItemTypes != null && 
+                query.IncludeItemTypes.Length == 1 && 
+                string.Equals(query.IncludeItemTypes[0], "Playlist", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.Equals(viewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
+                {
+                    return await FindPlaylists(queryParent, user, query).ConfigureAwait(false);
+                }
+            }
+
             switch (viewType)
             {
                 case CollectionType.Channels:
@@ -238,6 +248,16 @@ namespace MediaBrowser.Controller.Entities
                 default:
                     return GetResult(GetMediaFolders(user).SelectMany(i => i.GetChildren(user, true)), queryParent, query);
             }
+        }
+
+        private async Task<QueryResult<BaseItem>> FindPlaylists(Folder parent, User user, InternalItemsQuery query)
+        {
+            var collectionFolders = user.RootFolder.GetChildren(user, true).Select(i => i.Id).ToList();
+
+            var list = _playlistManager.GetPlaylists(user.Id.ToString("N"))
+                .Where(i => i.GetChildren(user, true).Any(media => _libraryManager.GetCollectionFolders(media).Select(c => c.Id).Any(collectionFolders.Contains)));
+
+            return GetResult(list, parent, query);
         }
 
         private int GetSpecialItemsLimit()

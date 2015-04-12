@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
@@ -460,6 +461,9 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetRecordings request)
         {
+            var options = new DtoOptions();
+            options.DeviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+
             var result = await _liveTvManager.GetRecordings(new RecordingQuery
             {
                 ChannelId = request.ChannelId,
@@ -471,7 +475,7 @@ namespace MediaBrowser.Api.LiveTv
                 SeriesTimerId = request.SeriesTimerId,
                 IsInProgress = request.IsInProgress
 
-            }, CancellationToken.None).ConfigureAwait(false);
+            }, options, CancellationToken.None).ConfigureAwait(false);
 
             return ToOptimizedResult(result);
         }
@@ -480,7 +484,10 @@ namespace MediaBrowser.Api.LiveTv
         {
             var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(request.UserId);
 
-            var result = await _liveTvManager.GetRecording(request.Id, CancellationToken.None, user).ConfigureAwait(false);
+            var options = new DtoOptions();
+            options.DeviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+
+            var result = await _liveTvManager.GetRecording(request.Id, options, CancellationToken.None, user).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }

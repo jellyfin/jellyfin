@@ -118,10 +118,10 @@
             SortOrder: "Ascending",
             IncludeItemTypes: "Playlist",
             Recursive: true,
+            ParentId: parentId,
             Fields: "PrimaryImageAspectRatio,SortName,CumulativeRunTimeTicks,CanDelete,SyncInfo",
             StartIndex: 0,
-            Limit: 9,
-            MediaTypes: "Audio"
+            Limit: 9
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {

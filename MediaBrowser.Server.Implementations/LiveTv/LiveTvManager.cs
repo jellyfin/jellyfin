@@ -1148,7 +1148,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             RefreshIfNeeded(programs.Take(500));
 
             // Load these now which will prefetch metadata
-            await GetRecordings(new RecordingQuery(), cancellationToken).ConfigureAwait(false);
+            var dtoOptions = new DtoOptions();
+            dtoOptions.Fields.Remove(ItemFields.SyncInfo);
+            await GetRecordings(new RecordingQuery(), dtoOptions, cancellationToken).ConfigureAwait(false);
             progress.Report(100);
         }
 
@@ -1322,7 +1324,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
         }
 
-        public async Task<QueryResult<RecordingInfoDto>> GetRecordings(RecordingQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<RecordingInfoDto>> GetRecordings(RecordingQuery query, DtoOptions options, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
 
@@ -1337,6 +1339,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     return _tvDtoService.GetRecordingInfoDto(i, channel, service, user);
                 })
                 .ToArray();
+
+            if (user != null)
+            {
+                _dtoService.FillSyncInfo(returnArray, new DtoOptions(), user);
+            }
 
             return new QueryResult<RecordingInfoDto>
             {
@@ -1410,7 +1417,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task DeleteRecording(string recordingId)
         {
-            var recording = await GetRecording(recordingId, CancellationToken.None).ConfigureAwait(false);
+            var dtoOptions = new DtoOptions();
+            dtoOptions.Fields.Remove(ItemFields.SyncInfo);
+
+            var recording = await GetRecording(recordingId, dtoOptions, CancellationToken.None).ConfigureAwait(false);
 
             if (recording == null)
             {
@@ -1450,14 +1460,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             await service.CancelSeriesTimerAsync(timer.ExternalId, CancellationToken.None).ConfigureAwait(false);
         }
 
-        public async Task<RecordingInfoDto> GetRecording(string id, CancellationToken cancellationToken, User user = null)
+        public async Task<RecordingInfoDto> GetRecording(string id, DtoOptions options, CancellationToken cancellationToken, User user = null)
         {
             var results = await GetRecordings(new RecordingQuery
             {
                 UserId = user == null ? null : user.Id.ToString("N"),
                 Id = id
 
-            }, cancellationToken).ConfigureAwait(false);
+            }, options, cancellationToken).ConfigureAwait(false);
 
             return results.Items.FirstOrDefault();
         }
@@ -1737,11 +1747,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<QueryResult<RecordingGroupDto>> GetRecordingGroups(RecordingGroupQuery query, CancellationToken cancellationToken)
         {
+            var dtoOptions = new DtoOptions();
+            dtoOptions.Fields.Remove(ItemFields.SyncInfo);
+            
             var recordingResult = await GetRecordings(new RecordingQuery
             {
                 UserId = query.UserId
 
-            }, cancellationToken).ConfigureAwait(false);
+            }, dtoOptions, cancellationToken).ConfigureAwait(false);
 
             var recordings = recordingResult.Items;
 

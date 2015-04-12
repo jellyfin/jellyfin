@@ -2,6 +2,7 @@
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
+using MediaBrowser.Model.Sync;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +12,7 @@ using System.Runtime.Serialization;
 namespace MediaBrowser.Model.LiveTv
 {
     [DebuggerDisplay("Name = {Name}, ChannelName = {ChannelName}")]
-    public class RecordingInfoDto : IHasPropertyChangedEvent, IItemDto, IHasServerId
+    public class RecordingInfoDto : IHasPropertyChangedEvent, IItemDto, IHasServerId, IHasSyncInfo
     {
         /// <summary>
         /// Id of the recording.
@@ -35,6 +36,27 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The original primary image aspect ratio.</value>
         public double? OriginalPrimaryImageAspectRatio { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [supports synchronize].
+        /// </summary>
+        /// <value><c>null</c> if [supports synchronize] contains no value, <c>true</c> if [supports synchronize]; otherwise, <c>false</c>.</value>
+        public bool? SupportsSync { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has synchronize job.
+        /// </summary>
+        /// <value><c>null</c> if [has synchronize job] contains no value, <c>true</c> if [has synchronize job]; otherwise, <c>false</c>.</value>
+        public bool? HasSyncJob { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is synced.
+        /// </summary>
+        /// <value><c>null</c> if [is synced] contains no value, <c>true</c> if [is synced]; otherwise, <c>false</c>.</value>
+        public bool? IsSynced { get; set; }
+        /// <summary>
+        /// Gets or sets the synchronize status.
+        /// </summary>
+        /// <value>The synchronize status.</value>
+        public SyncJobItemStatus? SyncStatus { get; set; }
         
         /// <summary>
         /// Gets or sets the series timer identifier.
