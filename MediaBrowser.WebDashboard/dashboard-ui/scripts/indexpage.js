@@ -96,7 +96,7 @@
 
     function loadlibraryButtons(elem, userId, index) {
 
-        getUserViews(userId).done(function (items) {
+        return getUserViews(userId).done(function (items) {
 
             var html = '<br/>';
 
@@ -172,7 +172,7 @@
             UserId: userId
         };
 
-        ApiClient.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
+        return ApiClient.getJSON(ApiClient.getUrl("Channels/Items/Latest", options)).done(function (result) {
 
             var html = '';
 
@@ -203,7 +203,7 @@
             $(elem).removeClass('hiddenSectionOnMobile');
         }
 
-        getUserViews(user.Id).done(function (items) {
+        return getUserViews(user.Id).done(function (items) {
 
             var html = '';
 
@@ -259,7 +259,7 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        ApiClient.getItems(userId, options).done(function (result) {
+        return ApiClient.getItems(userId, options).done(function (result) {
 
             var html = '';
 
@@ -307,7 +307,7 @@
             SupportsLatestItems: true
         });
 
-        ApiClient.getJSON(ApiClient.getUrl("Channels", options)).done(function (result) {
+        return ApiClient.getJSON(ApiClient.getUrl("Channels", options)).done(function (result) {
 
             var channels = result.Items;
 
@@ -375,7 +375,7 @@
 
     function loadLatestLiveTvRecordings(elem, userId, index) {
 
-        ApiClient.getLiveTvRecordings({
+        return ApiClient.getLiveTvRecordings({
 
             userId: userId,
             limit: 5,
@@ -459,36 +459,40 @@
         var elem = $('.section' + index, page);
 
         if (section == 'latestmedia') {
-            Sections.loadRecentlyAdded(elem, user);
+            return Sections.loadRecentlyAdded(elem, user);
         }
         else if (section == 'librarytiles') {
-            Sections.loadLibraryTiles(elem, user, 'backdrop', index, false, showLibraryTileNames);
+            return Sections.loadLibraryTiles(elem, user, 'backdrop', index, false, showLibraryTileNames);
         }
         else if (section == 'smalllibrarytiles') {
-            Sections.loadLibraryTiles(elem, user, 'homePageSmallBackdrop', index, false, showLibraryTileNames);
+            return Sections.loadLibraryTiles(elem, user, 'homePageSmallBackdrop', index, false, showLibraryTileNames);
         }
         else if (section == 'smalllibrarytiles-automobile') {
-            Sections.loadLibraryTiles(elem, user, 'homePageSmallBackdrop', index, true, showLibraryTileNames);
+            return Sections.loadLibraryTiles(elem, user, 'homePageSmallBackdrop', index, true, showLibraryTileNames);
         }
         else if (section == 'librarytiles-automobile') {
-            Sections.loadLibraryTiles(elem, user, 'backdrop', index, true, showLibraryTileNames);
+            return Sections.loadLibraryTiles(elem, user, 'backdrop', index, true, showLibraryTileNames);
         }
         else if (section == 'librarybuttons') {
-            Sections.loadlibraryButtons(elem, userId, index);
+            return Sections.loadlibraryButtons(elem, userId, index);
         }
         else if (section == 'resume') {
-            Sections.loadResume(elem, userId);
+            return Sections.loadResume(elem, userId);
         }
 
         else if (section == 'latesttvrecordings') {
-            Sections.loadLatestLiveTvRecordings(elem, userId);
+            return Sections.loadLatestLiveTvRecordings(elem, userId);
         }
         else if (section == 'latestchannelmedia') {
-            Sections.loadLatestChannelMedia(elem, userId);
+            return Sections.loadLatestChannelMedia(elem, userId);
 
         } else {
 
             elem.empty();
+
+            var deferred = DeferredBuilder.Deferred();
+            deferred.resolve();
+            return deferred.promise();
         }
     }
 
@@ -509,13 +513,17 @@
             elem.html(html);
         }
 
+        var promises = [];
+
         for (i = 0, length = sectionCount; i < length; i++) {
 
-            loadSection(page, user, displayPreferences, i);
+            promises.push(loadSection(page, user, displayPreferences, i));
         }
+
+        return $.when(promises);
     }
 
-    var homePageDismissValue = '5';
+    var homePageDismissValue = '12';
     var homePageTourKey = 'homePageTour';
 
     function dismissWelcome(page, userId) {
@@ -570,9 +578,23 @@
             afterClose: function () {
                 dismissWelcome(page, userId);
                 $('.welcomeMessage', page).hide();
+
+                loadConfigureViewsWelcomeMessage(page, userId);
             },
             hideBarsDelay: 30000
         });
+    }
+
+    function loadConfigureViewsWelcomeMessage(page, userId) {
+
+        $('.btnMyPreferences', page).attr('href', 'mypreferencesdisplay.html?userId=' + userId);
+
+        // Need the timeout because previous methods in the chain have popups that will be in the act of closing
+        setTimeout(function () {
+
+            $('.popupConfigureViews', page).popup('open');
+
+        }, 500);
     }
 
     $(document).on('pageinit', "#indexPage", function () {
@@ -593,11 +615,12 @@
 
         ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
 
-            showWelcomeIfNeeded(page, result);
-
             Dashboard.getCurrentUser().done(function (user) {
 
-                loadSections(page, user, result);
+                loadSections(page, user, result).done(function () {
+                    showWelcomeIfNeeded(page, result);
+                });
+
             });
         });
 

@@ -750,6 +750,9 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             foreach (var jobItem in jobItemResult.Items)
             {
+                var requiresSaving = false;
+                var removeFromDevice = false;
+
                 if (request.LocalItemIds.Contains(jobItem.ItemId, StringComparer.OrdinalIgnoreCase))
                 {
                     var job = _repo.GetJob(jobItem.JobId);
@@ -759,13 +762,13 @@ namespace MediaBrowser.Server.Implementations.Sync
                     {
                         // Tell the device to remove it since it has been marked for removal
                         _logger.Debug("Adding ItemIdsToRemove {0} because IsMarkedForRemoval is set.", jobItem.ItemId);
-                        response.ItemIdsToRemove.Add(jobItem.ItemId);
+                        removeFromDevice = true;
                     }
                     else if (user == null)
                     {
                         // Tell the device to remove it since the user is gone now
                         _logger.Debug("Adding ItemIdsToRemove {0} because the user is no longer valid.", jobItem.ItemId);
-                        response.ItemIdsToRemove.Add(jobItem.ItemId);
+                        removeFromDevice = true;
                     }
                     else if (job.UnwatchedOnly)
                     {
@@ -777,23 +780,42 @@ namespace MediaBrowser.Server.Implementations.Sync
                             {
                                 // Tell the device to remove it since it has been played
                                 _logger.Debug("Adding ItemIdsToRemove {0} because it has been marked played.", jobItem.ItemId);
-                                response.ItemIdsToRemove.Add(jobItem.ItemId);
+                                removeFromDevice = true;
                             }
                         }
                         else
                         {
                             // Tell the device to remove it since it's no longer available
                             _logger.Debug("Adding ItemIdsToRemove {0} because it is no longer available.", jobItem.ItemId);
-                            response.ItemIdsToRemove.Add(jobItem.ItemId);
+                            removeFromDevice = true;
                         }
                     }
                 }
                 else
                 {
-                    _logger.Debug("Setting status to RemovedFromDevice for {0} because it is no longer on the device.", jobItem.ItemId);
+                    _logger.Debug("Setting status to Queued for {0} because it is no longer on the device.", jobItem.ItemId);
 
                     // Content is no longer on the device
-                    jobItem.Status = SyncJobItemStatus.RemovedFromDevice;
+                    if (jobItem.IsMarkedForRemoval)
+                    {
+                        jobItem.Status = SyncJobItemStatus.RemovedFromDevice;
+                    }
+                    else
+                    {
+                        jobItem.Status = SyncJobItemStatus.Queued;
+                    }
+                    requiresSaving = true;
+                }
+
+                if (removeFromDevice)
+                {
+                    response.ItemIdsToRemove.Add(jobItem.ItemId);
+                    jobItem.IsMarkedForRemoval = true;
+                    requiresSaving = true;
+                }
+
+                if (requiresSaving)
+                {
                     await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
                 }
             }
@@ -837,6 +859,9 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             foreach (var jobItem in jobItemResult.Items)
             {
+                var requiresSaving = false;
+                var removeFromDevice = false;
+
                 if (request.SyncJobItemIds.Contains(jobItem.Id, StringComparer.OrdinalIgnoreCase))
                 {
                     var job = _repo.GetJob(jobItem.JobId);
@@ -846,13 +871,13 @@ namespace MediaBrowser.Server.Implementations.Sync
                     {
                         // Tell the device to remove it since it has been marked for removal
                         _logger.Debug("Adding ItemIdsToRemove {0} because IsMarkedForRemoval is set.", jobItem.Id);
-                        response.ItemIdsToRemove.Add(jobItem.Id);
+                        removeFromDevice = true;
                     }
                     else if (user == null)
                     {
                         // Tell the device to remove it since the user is gone now
                         _logger.Debug("Adding ItemIdsToRemove {0} because the user is no longer valid.", jobItem.Id);
-                        response.ItemIdsToRemove.Add(jobItem.Id);
+                        removeFromDevice = true;
                     }
                     else if (job.UnwatchedOnly)
                     {
@@ -864,23 +889,42 @@ namespace MediaBrowser.Server.Implementations.Sync
                             {
                                 // Tell the device to remove it since it has been played
                                 _logger.Debug("Adding ItemIdsToRemove {0} because it has been marked played.", jobItem.Id);
-                                response.ItemIdsToRemove.Add(jobItem.Id);
+                                removeFromDevice = true;
                             }
                         }
                         else
                         {
                             // Tell the device to remove it since it's no longer available
                             _logger.Debug("Adding ItemIdsToRemove {0} because it is no longer available.", jobItem.Id);
-                            response.ItemIdsToRemove.Add(jobItem.Id);
+                            removeFromDevice = true;
                         }
                     }
                 }
                 else
                 {
-                    _logger.Debug("Setting status to RemovedFromDevice for {0} because it is no longer on the device.", jobItem.Id);
+                    _logger.Debug("Setting status to Queued for {0} because it is no longer on the device.", jobItem.Id);
 
                     // Content is no longer on the device
-                    jobItem.Status = SyncJobItemStatus.RemovedFromDevice;
+                    if (jobItem.IsMarkedForRemoval)
+                    {
+                        jobItem.Status = SyncJobItemStatus.RemovedFromDevice;
+                    }
+                    else
+                    {
+                        jobItem.Status = SyncJobItemStatus.Queued;
+                    }
+                    requiresSaving = true;
+                }
+
+                if (removeFromDevice)
+                {
+                    response.ItemIdsToRemove.Add(jobItem.Id);
+                    jobItem.IsMarkedForRemoval = true;
+                    requiresSaving = true;
+                }
+
+                if (requiresSaving)
+                {
                     await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
                 }
             }

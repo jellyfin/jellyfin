@@ -12,7 +12,7 @@
 }
 
 .detailSectionHeader + .tvProgram {
-    border-top: 1px solid #444;
+    border-top: 1px solid #404040;
     margin-top: 1px;
 }
 
@@ -25,7 +25,7 @@
     top: 0;
     left: 0;
     bottom: 0;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid #404040;
 }
 
 .tvProgramTimeSlotInner {
@@ -35,12 +35,12 @@
 .tvProgramInfo {
     vertical-align: middle;
     padding: .5em .5em;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid #404040;
 }
 
 .tvProgramTimeSlot + .tvProgramInfo {
     margin-left: 80px;
-    border-left: 1px solid #444;
+    border-left: 1px solid #404040;
 }
 
 .tvProgramCurrentTimeSlot {
@@ -137,9 +137,23 @@
 }
 
 .timeslotHeaders {
-    overflow-y: hidden;
-    overflow-x: hidden;
     white-space: nowrap;
+    overflow-x: scroll;
+}
+
+.mobileGuide .timeslotHeaders {
+    overflow-x: hidden;
+}
+
+.programContainer {
+    white-space: nowrap;
+    position: relative;
+    margin: 0 auto;
+    margin-top: 44px;
+}
+
+.mobileGuide .programContainer {
+    margin-top: 30px;
 }
 
 .channelPrograms {
@@ -157,8 +171,8 @@
 
 .timeslotCell {
     display: inline-block;
-    border-bottom: 1px solid #444;
-    border-left: 1px solid #444;
+    border-bottom: 1px solid #404040;
+    border-left: 1px solid #404040;
     border-collapse: collapse;
     position: relative;
 }
@@ -166,9 +180,8 @@
 .channelHeaderCell, .channelTimeslotHeader {
     overflow: hidden;
     text-overflow: ellipsis;
-    border-bottom: 1px solid #444;
-    border-left: 1px solid #444;
-    border-right: 1px solid #444;
+    border-bottom: 1px solid #404040;
+    border-right: 1px solid #404040;
     width: 189px;
 }
 
@@ -183,7 +196,7 @@
 }
 
 .timeslotHeader, .channelTimeslotHeader {
-    height: 28px;
+    height: 34px;
 }
 
 .channelHeaderCellInner {
@@ -200,16 +213,12 @@
 }
 
 .channelList {
-    overflow-y: hidden;
-    overflow-x: scroll;
     float: left;
-    border-bottom: 4px solid #3B3B3B;
 }
 
 .programGrid {
-    overflow-y: scroll;
-    overflow-x: scroll;
     padding-bottom: 4px;
+    overflow-x: scroll;
 }
 
 .programGrid, .timeslotHeaders {
@@ -271,81 +280,7 @@
     top: 7px;
 }
 
-.channelList, .programGrid {
-    height: 220px;
-}
-
-@media (min-height: 500px) {
-
-    .channelList, .programGrid {
-        height: 360px;
-    }
-}
-
-@media (min-height: 600px) {
-
-    .channelList, .programGrid {
-        height: 400px;
-    }
-}
-
-@media (min-height: 700px) {
-
-    .channelList, .programGrid {
-        height: 500px;
-    }
-}
-
-@media (min-height: 800px) {
-
-    .channelList, .programGrid {
-        height: 600px;
-    }
-}
-
-@media (min-height: 900px) {
-
-    .channelList, .programGrid {
-        height: 700px;
-    }
-}
-
-@media (min-height: 1000px) {
-
-    .channelList, .programGrid {
-        height: 800px;
-    }
-}
-
-@media (min-height: 1100px) {
-
-    .channelList, .programGrid {
-        height: 900px;
-    }
-}
-
-@media (min-height: 1200px) {
-
-    .channelList, .programGrid {
-        height: 1000px;
-    }
-}
-
-@media (min-height: 1300px) {
-
-    .channelList, .programGrid {
-        height: 1100px;
-    }
-}
-
-@media (min-height: 1400px) {
-
-    .channelList, .programGrid {
-        height: 1200px;
-    }
-}
-
-@media (max-width: 800px) {
+@media (max-width: 600px) {
 
     .guideChannelImage {
         display: none;
@@ -362,4 +297,16 @@
     .programGrid, .timeslotHeaders {
         margin-left: 90px;
     }
+
+    .currentDate {
+        font-size: 11px;
+    }
+
+    .currentDay {
+        display: none;
+    }
+}
+
+.channelList, .programGrid {
+    height: auto !important;
 }

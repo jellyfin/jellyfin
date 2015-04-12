@@ -12,7 +12,7 @@
     var channelQuery = {
 
         StartIndex: 0,
-        Limit: 20,
+        Limit: 50,
         EnableFavoriteSorting: true
     };
     var channelsPromise;
@@ -88,12 +88,6 @@
 
             $('.btnPreviousPage', page).on('click', function () {
                 channelQuery.StartIndex -= channelQuery.Limit;
-                reloadChannels(page);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                channelQuery.Limit = parseInt(this.value);
-                channelQuery.StartIndex = 0;
                 reloadChannels(page);
             });
         });
@@ -269,13 +263,13 @@
                 html += '<div class="guideProgramTime">';
 
                 if (program.IsLive) {
-                    html += '<span class="liveTvProgram">'+Globalize.translate('LabelLiveProgram')+'&nbsp;&nbsp;</span>';
+                    html += '<span class="liveTvProgram">' + Globalize.translate('LabelLiveProgram') + '&nbsp;&nbsp;</span>';
                 }
                 else if (program.IsPremiere) {
-                    html += '<span class="premiereTvProgram">'+Globalize.translate('LabelPremiereProgram')+'&nbsp;&nbsp;</span>';
+                    html += '<span class="premiereTvProgram">' + Globalize.translate('LabelPremiereProgram') + '&nbsp;&nbsp;</span>';
                 }
                 else if (program.IsSeries && !program.IsRepeat) {
-                    html += '<span class="newTvProgram">'+Globalize.translate('LabelNewProgram')+'&nbsp;&nbsp;</span>';
+                    html += '<span class="newTvProgram">' + Globalize.translate('LabelNewProgram') + '&nbsp;&nbsp;</span>';
                 }
 
                 html += LiveTvHelpers.getDisplayTime(program.StartDateLocal);
@@ -365,12 +359,27 @@
         renderPrograms(page, date, channels, programs);
     }
 
+    var gridScrolling = false;
+    var headersScrolling = false;
     function onProgramGridScroll(page, elem) {
 
-        var grid = $(elem);
+        if (!headersScrolling) {
+            gridScrolling = true;
+            var grid = $(elem);
 
-        grid.prev().scrollTop(grid.scrollTop());
-        $('.timeslotHeaders', page).scrollLeft(grid.scrollLeft());
+            $('.timeslotHeaders', page).scrollLeft(grid.scrollLeft());
+            gridScrolling = false;
+        }
+    }
+
+    function onTimeslotHeadersScroll(page, elem) {
+
+        if (!gridScrolling) {
+            headersScrolling = true;
+            elem = $(elem);
+            $('.programGrid', page).scrollLeft(elem.scrollLeft());
+            headersScrolling = false;
+        }
     }
 
     function changeDate(page, date) {
@@ -385,6 +394,10 @@
         gridLocalEndDateMs = clone.getTime() - 1;
 
         reloadGuide(page);
+
+        var text = LibraryBrowser.getFutureDateText(date);
+        text = '<span class="currentDay">' + text.replace(' ', ' </span>');
+        $('.currentDate', page).html(text);
     }
 
     function setDateRange(page, guideInfo) {
@@ -446,8 +459,20 @@
             date.setTime(parseInt(this.value));
 
             changeDate(page, date);
-
+            $('#popupConfig', page).popup('close');
         });
+
+        if ($.browser.mobile) {
+            $('.tvGuide', page).addClass('mobileGuide');
+        } else {
+
+            $('.tvGuide', page).removeClass('mobileGuide');
+
+            $('.timeslotHeaders', page).on('scroll', function () {
+
+                onTimeslotHeadersScroll(page, this);
+            });
+        }
 
     }).on('pagebeforeshow', "#liveTvGuidePage", function () {
 

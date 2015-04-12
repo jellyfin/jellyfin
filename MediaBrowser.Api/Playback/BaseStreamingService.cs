@@ -1515,6 +1515,10 @@ namespace MediaBrowser.Api.Playback
                 }
                 else if (i == 22)
                 {
+                    // api_key
+                }
+                else if (i == 23)
+                {
                     request.LiveStreamId = val;
                 }
             }
