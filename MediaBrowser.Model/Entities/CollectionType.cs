@@ -61,6 +61,7 @@
         public const string MusicGenres = "MusicGenres";
         public const string MusicGenre = "MusicGenre";
         public const string MusicLatest = "MusicLatest";
+        public const string MusicPlaylists = "MusicPlaylists";
         public const string MusicSongs = "MusicSongs";
         public const string MusicFavorites = "MusicFavorites";
         public const string MusicFavoriteArtists = "MusicFavoriteArtists";

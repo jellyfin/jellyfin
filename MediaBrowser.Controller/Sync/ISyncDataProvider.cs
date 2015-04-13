@@ -7,20 +7,12 @@ namespace MediaBrowser.Controller.Sync
     public interface ISyncDataProvider
     {
         /// <summary>
-        /// Gets the server item ids.
+        /// Gets the local items.
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="serverId">The server identifier.</param>
-        /// <returns>Task&lt;List&lt;System.String&gt;&gt;.</returns>
-        Task<List<string>> GetServerItemIds(SyncTarget target, string serverId);
-
-        /// <summary>
-        /// Gets the synchronize job item ids.
-        /// </summary>
-        /// <param name="target">The target.</param>
-        /// <param name="serverId">The server identifier.</param>
-        /// <returns>Task&lt;List&lt;System.String&gt;&gt;.</returns>
-        Task<List<string>> GetSyncJobItemIds(SyncTarget target, string serverId);
+        /// <returns>Task&lt;List&lt;LocalItem&gt;&gt;.</returns>
+        Task<List<LocalItem>> GetLocalItems(SyncTarget target, string serverId);
 
         /// <summary>
         /// Adds the or update.

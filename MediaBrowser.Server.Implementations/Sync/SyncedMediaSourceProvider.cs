@@ -109,8 +109,13 @@ namespace MediaBrowser.Server.Implementations.Sync
             var dataProvider = _syncManager.GetDataProvider(provider, target);
             var localItem = await dataProvider.Get(target, openKeys[2]).ConfigureAwait(false);
 
+            var fileId = localItem.FileId;
+            if (string.IsNullOrWhiteSpace(fileId))
+            {
+            }
+
             var requiresDynamicAccess = (IHasDynamicAccess)provider;
-            var dynamicInfo = await requiresDynamicAccess.GetSyncedFileInfo(localItem.LocalPath, target, cancellationToken).ConfigureAwait(false);
+            var dynamicInfo = await requiresDynamicAccess.GetSyncedFileInfo(fileId, target, cancellationToken).ConfigureAwait(false);
 
             var mediaSource = localItem.Item.MediaSources.First();
             mediaSource.LiveStreamId = Guid.NewGuid().ToString();
