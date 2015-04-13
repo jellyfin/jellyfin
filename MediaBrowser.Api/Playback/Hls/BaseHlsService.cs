@@ -85,6 +85,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 state.Request.StartTimeTicks = null;
             }
 
+            TranscodingJob job = null;
             var playlist = state.OutputFilePath;
 
             if (!File.Exists(playlist))
@@ -97,7 +98,7 @@ namespace MediaBrowser.Api.Playback.Hls
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
                         {
-                            await StartFfMpeg(state, playlist, cancellationTokenSource).ConfigureAwait(false);
+                            job = await StartFfMpeg(state, playlist, cancellationTokenSource).ConfigureAwait(false);
                         }
                         catch
                         {
@@ -116,6 +117,12 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (isLive)
             {
+                job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType);
+
+                if (job != null)
+                {
+                    ApiEntryPoint.Instance.OnTranscodeEndRequest(job);
+                }
                 return ResultFactory.GetResult(GetLivePlaylistText(playlist, state.SegmentLength), MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
             }
 
@@ -134,6 +141,13 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var playlistText = GetMasterPlaylistFileText(playlist, videoBitrate + audioBitrate, appendBaselineStream, baselineStreamBitrate);
 
+            job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlist, TranscodingJobType);
+
+            if (job != null)
+            {
+                ApiEntryPoint.Instance.OnTranscodeEndRequest(job);
+            }
+            
             return ResultFactory.GetResult(playlistText, MimeTypes.GetMimeType("playlist.m3u8"), new Dictionary<string, string>());
         }
 
