@@ -696,7 +696,7 @@
             });
         }
 
-        function getLiveStream(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex) {
+        function getLiveStream(itemId, playSessionId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex) {
 
             var postData = {
                 DeviceProfile: deviceProfile,
@@ -706,7 +706,8 @@
             var query = {
                 UserId: Dashboard.getCurrentUserId(),
                 StartTimeTicks: startPosition || 0,
-                ItemId: itemId
+                ItemId: itemId,
+                PlaySessionId: playSessionId
             };
 
             if (audioStreamIndex != null) {
@@ -830,19 +831,20 @@
 
             var deviceProfile = self.getDeviceProfile();
 
-            getPlaybackInfo(item.Id, deviceProfile, startPosition).done(function (result) {
+            getPlaybackInfo(item.Id, deviceProfile, startPosition).done(function (playbackInfoResult) {
 
-                if (validatePlaybackInfoResult(result)) {
+                if (validatePlaybackInfoResult(playbackInfoResult)) {
 
-                    var mediaSource = getOptimalMediaSource(item.MediaType, result.MediaSources);
+                    var mediaSource = getOptimalMediaSource(item.MediaType, playbackInfoResult.MediaSources);
 
                     if (mediaSource) {
 
                         if (mediaSource.RequiresOpening) {
 
-                            getLiveStream(item.Id, deviceProfile, startPosition, mediaSource, null, null).done(function (openLiveStreamResult) {
+                            getLiveStream(item.Id, playbackInfoResult.PlaySessionId, deviceProfile, startPosition, mediaSource, null, null).done(function (openLiveStreamResult) {
 
                                 openLiveStreamResult.MediaSource.enableDirectPlay = supportsDirectPlay(openLiveStreamResult.MediaSource);
+
                                 playInternalPostMediaSourceSelection(item, openLiveStreamResult.MediaSource, startPosition, callback);
                             });
 
