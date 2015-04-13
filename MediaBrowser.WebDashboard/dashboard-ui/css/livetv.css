@@ -158,7 +158,7 @@
 
 .channelPrograms {
     white-space: nowrap;
-    height: 53px;
+    height: 56px;
 }
 
 .timeslotHeader {
@@ -201,7 +201,7 @@
 }
 
 .channelHeaderCellInner {
-    padding: .5em .5em;
+    padding: .7em .5em .5em;
     display: block;
     text-decoration: none;
     font-weight: normal !important;
@@ -251,11 +251,11 @@
     }
 
 .channelHeaderCell, .timeslotCell {
-    height: 52px;
+    height: 55px;
 }
 
 .guideProgramName {
-    padding: .35em .5em;
+    padding: .55em .5em .35em;
 }
 
 .guideProgramTime {

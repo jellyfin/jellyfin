@@ -203,6 +203,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
                     SpecialFolder.MusicGenres,
                     SpecialFolder.MusicGenre,
                     SpecialFolder.MusicLatest,
+                    SpecialFolder.MusicPlaylists,
                     SpecialFolder.MusicSongs,
                     SpecialFolder.MusicFavorites,
                     SpecialFolder.MusicFavoriteArtists,

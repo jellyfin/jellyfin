@@ -732,7 +732,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (enableForceKill)
                 {
-                    process.Process .Kill();
+                    process.Process.Kill();
                 }
             }
             catch (Exception ex)
@@ -748,10 +748,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 proceses = _runningProcesses.ToList();
             }
+            _runningProcesses.Clear();
 
             foreach (var process in proceses)
             {
-                StopProcess(process, 500, true);
+                if (!process.HasExited)
+                {
+                    StopProcess(process, 500, true);
+                }
             }
         }
 
@@ -801,8 +805,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 lock (_mediaEncoder._runningProcesses)
                 {
                     _mediaEncoder._runningProcesses.Remove(this);
-                } 
-                
+                }
+
                 process.Dispose();
             }
         }

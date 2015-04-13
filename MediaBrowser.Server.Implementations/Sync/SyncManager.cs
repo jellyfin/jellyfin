@@ -793,8 +793,6 @@ namespace MediaBrowser.Server.Implementations.Sync
                 }
                 else
                 {
-                    _logger.Debug("Setting status to Queued for {0} because it is no longer on the device.", jobItem.ItemId);
-
                     // Content is no longer on the device
                     if (jobItem.IsMarkedForRemoval)
                     {
@@ -802,6 +800,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     }
                     else
                     {
+                        _logger.Debug("Setting status to Queued for {0} because it is no longer on the device.", jobItem.ItemId);
                         jobItem.Status = SyncJobItemStatus.Queued;
                     }
                     requiresSaving = true;
@@ -902,8 +901,6 @@ namespace MediaBrowser.Server.Implementations.Sync
                 }
                 else
                 {
-                    _logger.Debug("Setting status to Queued for {0} because it is no longer on the device.", jobItem.Id);
-
                     // Content is no longer on the device
                     if (jobItem.IsMarkedForRemoval)
                     {
@@ -911,6 +908,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     }
                     else
                     {
+                        _logger.Debug("Setting status to Queued for {0} because it is no longer on the device.", jobItem.Id);
                         jobItem.Status = SyncJobItemStatus.Queued;
                     }
                     requiresSaving = true;

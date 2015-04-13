@@ -78,6 +78,15 @@
         LiveTvHelpers.renderOriginalAirDate($('.airDate', page), item);
 
         Dashboard.hideLoadingMsg();
+
+        Dashboard.getCurrentUser().done(function(user) {
+
+            if (SyncManager.isAvailable(item, user)) {
+                $('.btnSync', page).removeClass('hide');
+            } else {
+                $('.btnSync', page).addClass('hide');
+            }
+        });
     }
 
     function reload(page) {
@@ -99,6 +108,13 @@
 
         $('#btnDelete', page).on('click', deleteRecording);
         $('#btnPlay', page).on('click', play);
+
+        $('.btnSync', page).on('click', function () {
+
+            SyncManager.showMenu({
+                items: [currentItem]
+            });
+        });
 
     }).on('pagebeforeshow', "#liveTvRecordingPage", function () {
 

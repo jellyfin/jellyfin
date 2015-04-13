@@ -26,6 +26,11 @@ namespace MediaBrowser.Model.Sync
         /// <value>The unique identifier.</value>
         public string Id { get; set; }
         /// <summary>
+        /// Gets or sets the file identifier.
+        /// </summary>
+        /// <value>The file identifier.</value>
+        public string FileId { get; set; }
+        /// <summary>
         /// Gets or sets the item identifier.
         /// </summary>
         /// <value>The item identifier.</value>

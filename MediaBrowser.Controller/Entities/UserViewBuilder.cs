@@ -50,8 +50,8 @@ namespace MediaBrowser.Controller.Entities
         {
             var user = query.User;
 
-            if (query.IncludeItemTypes != null && 
-                query.IncludeItemTypes.Length == 1 && 
+            if (query.IncludeItemTypes != null &&
+                query.IncludeItemTypes.Length == 1 &&
                 string.Equals(query.IncludeItemTypes[0], "Playlist", StringComparison.OrdinalIgnoreCase))
             {
                 if (!string.Equals(viewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
@@ -117,9 +117,7 @@ namespace MediaBrowser.Controller.Entities
 
                 case CollectionType.LiveTv:
                     {
-                        var result = await GetLiveTvFolders(user).ConfigureAwait(false);
-
-                        return GetResult(result, queryParent, query);
+                        return await GetLiveTvView(queryParent, user, query).ConfigureAwait(false);
                     }
 
                 case CollectionType.Books:
@@ -215,6 +213,9 @@ namespace MediaBrowser.Controller.Entities
                 case SpecialFolder.MusicLatest:
                     return GetMusicLatest(queryParent, user, query);
 
+                case SpecialFolder.MusicPlaylists:
+                    return await GetMusicPlaylists(queryParent, user, query).ConfigureAwait(false);
+
                 case SpecialFolder.MusicAlbums:
                     return GetMusicAlbums(queryParent, user, query);
 
@@ -277,12 +278,13 @@ namespace MediaBrowser.Controller.Entities
             var list = new List<BaseItem>();
 
             list.Add(await GetUserView(SpecialFolder.MusicLatest, user, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicAlbums, user, "1", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicAlbumArtists, user, "2", parent).ConfigureAwait(false));
-            //list.Add(await GetUserView(SpecialFolder.MusicArtists, user, "3", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicSongs, user, "4", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicGenres, user, "5", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicFavorites, user, "6", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicPlaylists, user, "1", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicAlbums, user, "2", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicAlbumArtists, user, "3", parent).ConfigureAwait(false));
+            //list.Add(await GetUserView(SpecialFolder.MusicArtists, user, "4", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicSongs, user, "5", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicGenres, user, "6", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicFavorites, user, "7", parent).ConfigureAwait(false));
 
             return GetResult(list, parent, query);
         }
@@ -421,6 +423,14 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i != null && _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite);
 
             return GetResult(artists, parent, query);
+        }
+
+        private Task<QueryResult<BaseItem>> GetMusicPlaylists(Folder parent, User user, InternalItemsQuery query)
+        {
+            query.IncludeItemTypes = new[] { "Playlist" };
+            query.Recursive = true;
+
+            return parent.GetItems(query);
         }
 
         private QueryResult<BaseItem> GetMusicAlbums(Folder parent, User user, InternalItemsQuery query)
@@ -1769,17 +1779,26 @@ namespace MediaBrowser.Controller.Entities
             return parent.GetRecursiveChildren(user, filter);
         }
 
-        private async Task<IEnumerable<BaseItem>> GetLiveTvFolders(User user)
+        private async Task<QueryResult<BaseItem>> GetLiveTvView(Folder queryParent, User user, InternalItemsQuery query)
         {
+            if (query.Recursive)
+            {
+                return await _liveTvManager.GetInternalRecordings(new RecordingQuery
+                {
+                    IsInProgress = false,
+                    Status = RecordingStatus.Completed,
+                    UserId = user.Id.ToString("N")
+
+                }, CancellationToken.None).ConfigureAwait(false);
+            }
+
             var list = new List<BaseItem>();
 
-            var parent = user.RootFolder;
-
             //list.Add(await GetUserSubView(SpecialFolder.LiveTvNowPlaying, user, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.LiveTvChannels, user, string.Empty, parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.LiveTvRecordingGroups, user, string.Empty, parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.LiveTvChannels, user, string.Empty, user.RootFolder).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.LiveTvRecordingGroups, user, string.Empty, user.RootFolder).ConfigureAwait(false));
 
-            return list;
+            return GetResult(list, queryParent, query);
         }
 
         private async Task<UserView> GetUserView(string name, string type, User user, string sortName, BaseItem parent)

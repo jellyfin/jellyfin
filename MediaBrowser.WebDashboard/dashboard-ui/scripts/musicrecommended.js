@@ -1,12 +1,19 @@
 ﻿(function ($, document) {
 
+    function itemsPerRow() {
+        
+        var screenWidth = $(window).width();
+
+        return screenWidth >= 2200 ? 10 : 9;
+    }
+
     function loadLatest(page, parentId) {
 
         var userId = Dashboard.getCurrentUserId();
 
         var options = {
             IncludeItemTypes: "Audio",
-            Limit: 9,
+            Limit: itemsPerRow(),
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
@@ -37,7 +44,7 @@
             SortBy: "DatePlayed",
             SortOrder: "Descending",
             IncludeItemTypes: "Audio",
-            Limit: 9,
+            Limit: itemsPerRow(),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo,SyncInfo",
             Filters: "IsPlayed",
@@ -77,7 +84,7 @@
             SortBy: "PlayCount",
             SortOrder: "Descending",
             IncludeItemTypes: "Audio",
-            Limit: 9,
+            Limit: itemsPerRow(),
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,AudioInfo,SyncInfo",
             Filters: "IsPlayed",
@@ -121,7 +128,7 @@
             ParentId: parentId,
             Fields: "PrimaryImageAspectRatio,SortName,CumulativeRunTimeTicks,CanDelete,SyncInfo",
             StartIndex: 0,
-            Limit: 9
+            Limit: itemsPerRow()
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -139,6 +146,7 @@
                 shape: "square",
                 showTitle: true,
                 lazy: true,
+                defaultAction: 'play',
                 coverImage: true,
                 showItemCounts: true,
                 cardLayout: true
