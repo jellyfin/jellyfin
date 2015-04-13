@@ -40,6 +40,7 @@
     "TitleLiveTV": "Live TV",
     "TitleSync": "Sync",
     "ButtonDonate": "Donate",
+    "HeaderMyMedia": "My Media",
     "TitleNotifications": "\u041f\u043e\u0432\u0456\u0434\u043e\u043c\u043b\u0435\u043d\u043d\u044f",
     "ErrorLaunchingChromecast": "There was an error launching chromecast. Please ensure your device is connected to your wireless network.",
     "MessageErrorLoadingSupporterInfo": "There was an error loading supporter information. Please try again later.",

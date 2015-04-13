@@ -40,6 +40,7 @@
     "TitleLiveTV": "Live-TV",
     "TitleSync": "Synchronisation",
     "ButtonDonate": "Spenden",
+    "HeaderMyMedia": "Meine Medien",
     "TitleNotifications": "Benachrichtigungen",
     "ErrorLaunchingChromecast": "W\u00e4hrend des startens von Chromecast ist ein Fehler aufgetreten. Bitte stelle sicher, dass dein Ger\u00e4te mit dem WLAN verbunden ist.",
     "MessageErrorLoadingSupporterInfo": "Es trat ein Fehler beim laden der Unterst\u00fctzer-Informationen auf. Bitte versuchen Sie es sp\u00e4ter erneut.",
