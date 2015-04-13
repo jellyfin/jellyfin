@@ -8,13 +8,13 @@ It features a REST-based api with built-in documention to facilitate client deve
 We have several client apps released and in production:
 
 - [Android](https://play.google.com/store/apps/details?id=com.mb.android "Android")
-- Html5
+- [HTML5](http://app.emby.media "HTML5")
 - [iPad](https://itunes.apple.com/us/app/media-browser-client/id879475585 "iPad")
 - [iPhone](https://itunes.apple.com/us/app/media-browser-for-ios/id705058087?mt=8 "iPhone")
 - [Media Portal](http://www.team-mediaportal.com/ "Media Portal")
 - [Roku](http://www.roku.com/channels/#!details/44191/media-browser-for-roku "Roku")
-- Windows 7/8 Desktop
-- Windows Media Center
+- [Windows Desktop](http://emby.media/download/ "Windows Desktop")
+- [Windows Media Center](http://emby.media/download/ "Windows Media Center")
 - [Windows Phone](http://www.windowsphone.com/s?appid=f4971ed9-f651-4bf6-84bb-94fd98613b86 "Windows Phone")
 - [Windows 8](http://apps.microsoft.com/windows/en-us/app/media-browser/ad55a2f0-9897-47bd-8944-bed3aefd5d06 "Windows 8.1")
 - [Xbmc](http://emby.media/download/ "Xbmc")
