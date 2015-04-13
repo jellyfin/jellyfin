@@ -63,6 +63,13 @@ namespace MediaBrowser.Api.Playback.Progressive
                 new ProgressiveFileCopier(_fileSystem, _job)
                     .StreamFile(Path, responseStream);
             }
+            catch (IOException)
+            {
+                // These error are always the same so don't dump the whole stack trace
+                Logger.Error("Error streaming media. The client has most likely disconnected or transcoding has failed.");
+
+                throw;
+            }
             catch (Exception ex)
             {
                 Logger.ErrorException("Error streaming media. The client has most likely disconnected or transcoding has failed.", ex);

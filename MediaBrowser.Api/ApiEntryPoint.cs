@@ -151,7 +151,7 @@ namespace MediaBrowser.Api
         {
             lock (_activeTranscodingJobs)
             {
-                var job = new TranscodingJob
+                var job = new TranscodingJob(Logger)
                 {
                     Type = type,
                     Path = path,
@@ -286,7 +286,7 @@ namespace MediaBrowser.Api
 
             if (string.IsNullOrWhiteSpace(job.PlaySessionId) || job.Type == TranscodingJobType.Progressive)
             {
-                job.DisposeKillTimer();
+                job.StopKillTimer();
             }
         }
 
@@ -299,12 +299,14 @@ namespace MediaBrowser.Api
                 PingTimer(job, false);
             }
         }
-        internal void PingTranscodingJob(string deviceId, string playSessionId)
+        internal void PingTranscodingJob(string playSessionId)
         {
-            if (string.IsNullOrEmpty(deviceId))
+            if (string.IsNullOrEmpty(playSessionId))
             {
-                throw new ArgumentNullException("deviceId");
+                throw new ArgumentNullException("playSessionId");
             }
+
+            Logger.Debug("PingTranscodingJob PlaySessionId={0}", playSessionId);
 
             var jobs = new List<TranscodingJob>();
 
@@ -312,16 +314,7 @@ namespace MediaBrowser.Api
             {
                 // This is really only needed for HLS. 
                 // Progressive streams can stop on their own reliably
-                jobs = jobs.Where(j =>
-                {
-                    if (string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    return false;
-
-                }).ToList();
+                jobs = jobs.Where(j => string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase)).ToList();
             }
 
             foreach (var job in jobs)
@@ -332,6 +325,12 @@ namespace MediaBrowser.Api
 
         private void PingTimer(TranscodingJob job, bool isProgressCheckIn)
         {
+            if (job.HasExited)
+            {
+                job.StopKillTimer();
+                return;
+            }
+
             // TODO: Lower this hls timeout
             var timerDuration = job.Type == TranscodingJobType.Progressive ?
                 1000 :
@@ -343,19 +342,14 @@ namespace MediaBrowser.Api
                 timerDuration = 20000;
             }
 
-            if (job.KillTimer == null)
+            // Don't start the timer for playback checkins with progressive streaming
+            if (job.Type != TranscodingJobType.Progressive || !isProgressCheckIn)
             {
-                // Don't start the timer for playback checkins with progressive streaming
-                if (job.Type != TranscodingJobType.Progressive || !isProgressCheckIn)
-                {
-                    Logger.Debug("Starting kill timer at {0}ms", timerDuration);
-                    job.KillTimer = new Timer(OnTranscodeKillTimerStopped, job, timerDuration, Timeout.Infinite);
-                }
+                job.StartKillTimer(timerDuration, OnTranscodeKillTimerStopped);
             }
             else
             {
-                Logger.Debug("Changing kill timer to {0}ms", timerDuration);
-                job.KillTimer.Change(timerDuration, Timeout.Infinite);
+                job.ChangeKillTimerIfStarted(timerDuration);
             }
         }
 
@@ -366,6 +360,8 @@ namespace MediaBrowser.Api
         private void OnTranscodeKillTimerStopped(object state)
         {
             var job = (TranscodingJob)state;
+
+            Logger.Debug("Transcoding kill timer stopped for JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
 
             KillTranscodingJob(job, path => true);
         }
@@ -379,19 +375,14 @@ namespace MediaBrowser.Api
         /// <returns>Task.</returns>
         internal void KillTranscodingJobs(string deviceId, string playSessionId, Func<string, bool> deleteFiles)
         {
-            if (string.IsNullOrEmpty(deviceId))
-            {
-                throw new ArgumentNullException("deviceId");
-            }
-
             KillTranscodingJobs(j =>
             {
-                if (string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrWhiteSpace(playSessionId))
                 {
-                    return string.IsNullOrWhiteSpace(playSessionId) || string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase);
+                    return string.Equals(playSessionId, j.PlaySessionId, StringComparison.OrdinalIgnoreCase);
                 }
 
-                return false;
+                return string.Equals(deviceId, j.DeviceId, StringComparison.OrdinalIgnoreCase);
 
             }, deleteFiles);
         }
@@ -431,6 +422,10 @@ namespace MediaBrowser.Api
         /// <param name="delete">The delete.</param>
         private void KillTranscodingJob(TranscodingJob job, Func<string, bool> delete)
         {
+            job.DisposeKillTimer();
+
+            Logger.Debug("KillTranscodingJob - JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
+            
             lock (_activeTranscodingJobs)
             {
                 _activeTranscodingJobs.Remove(job);
@@ -439,8 +434,6 @@ namespace MediaBrowser.Api
                 {
                     job.CancellationTokenSource.Cancel();
                 }
-
-                job.DisposeKillTimer();
             }
 
             lock (job.ProcessLock)
@@ -599,6 +592,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The process.</value>
         public Process Process { get; set; }
+        public ILogger Logger { get; private set; }
         /// <summary>
         /// Gets or sets the active request count.
         /// </summary>
@@ -608,7 +602,7 @@ namespace MediaBrowser.Api
         /// Gets or sets the kill timer.
         /// </summary>
         /// <value>The kill timer.</value>
-        public Timer KillTimer { get; set; }
+        private Timer KillTimer { get; set; }
 
         public string DeviceId { get; set; }
 
@@ -631,12 +625,74 @@ namespace MediaBrowser.Api
 
         public TranscodingThrottler TranscodingThrottler { get; set; }
 
+        private readonly object _timerLock = new object();
+
+        public TranscodingJob(ILogger logger)
+        {
+            Logger = logger;
+        }
+
+        public void StopKillTimer()
+        {
+            lock (_timerLock)
+            {
+                if (KillTimer != null)
+                {
+                    KillTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                }
+            }
+        }
+
         public void DisposeKillTimer()
         {
-            if (KillTimer != null)
+            lock (_timerLock)
             {
-                KillTimer.Dispose();
-                KillTimer = null;
+                if (KillTimer != null)
+                {
+                    KillTimer.Dispose();
+                    KillTimer = null;
+                }
+            }
+        }
+
+        public void StartKillTimer(int intervalMs, TimerCallback callback)
+        {
+            CheckHasExited();
+
+            lock (_timerLock)
+            {
+                if (KillTimer == null)
+                {
+                    Logger.Debug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                    KillTimer = new Timer(callback, this, intervalMs, Timeout.Infinite);
+                }
+                else
+                {
+                    Logger.Debug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                    KillTimer.Change(intervalMs, Timeout.Infinite);
+                }
+            }
+        }
+
+        public void ChangeKillTimerIfStarted(int intervalMs)
+        {
+            CheckHasExited();
+
+            lock (_timerLock)
+            {
+                if (KillTimer != null)
+                {
+                    Logger.Debug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
+                    KillTimer.Change(intervalMs, Timeout.Infinite);
+                }
+            }
+        }
+
+        private void CheckHasExited()
+        {
+            if (HasExited)
+            {
+                throw new ObjectDisposedException("Job");
             }
         }
     }
