@@ -127,9 +127,27 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
                 else
                 {
+                    var startTranscoding = false;
+
                     var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
-                    var segmentGapRequiringTranscodingChange = 24/state.SegmentLength;
-                    if (currentTranscodingIndex == null || requestedIndex < currentTranscodingIndex.Value || (requestedIndex - currentTranscodingIndex.Value) > segmentGapRequiringTranscodingChange)
+                    var segmentGapRequiringTranscodingChange = 24 / state.SegmentLength;
+
+                    if (currentTranscodingIndex == null)
+                    {
+                        Logger.Debug("Starting transcoding because currentTranscodingIndex=null");
+                        startTranscoding = true;
+                    }
+                    else if (requestedIndex < currentTranscodingIndex.Value)
+                    {
+                        Logger.Debug("Starting transcoding because requestedIndex={0} and currentTranscodingIndex={1}", requestedIndex, currentTranscodingIndex);
+                        startTranscoding = true;
+                    }
+                    else if ((requestedIndex - currentTranscodingIndex.Value) > segmentGapRequiringTranscodingChange)
+                    {
+                        Logger.Debug("Starting transcoding because segmentGap is {0} and max allowed gap is {1}. requestedIndex={2}", (requestedIndex - currentTranscodingIndex.Value), segmentGapRequiringTranscodingChange, requestedIndex);
+                        startTranscoding = true;
+                    }
+                    if (startTranscoding)
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
@@ -151,7 +169,7 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
+                        //await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                     else
                     {
