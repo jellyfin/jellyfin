@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Sync;
@@ -17,13 +18,15 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly IServerApplicationHost _appHost;
+        private readonly IConfigurationManager _config;
 
-        public ServerSyncScheduledTask(ISyncManager syncManager, ILogger logger, IFileSystem fileSystem, IServerApplicationHost appHost)
+        public ServerSyncScheduledTask(ISyncManager syncManager, ILogger logger, IFileSystem fileSystem, IServerApplicationHost appHost, IConfigurationManager config)
         {
             _syncManager = syncManager;
             _logger = logger;
             _fileSystem = fileSystem;
             _appHost = appHost;
+            _config = config;
         }
 
         public string Name
@@ -46,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            return new MultiProviderSync((SyncManager)_syncManager, _appHost, _logger, _fileSystem)
+            return new MultiProviderSync((SyncManager)_syncManager, _appHost, _logger, _fileSystem, _config)
                 .Sync(ServerSyncProviders, progress, cancellationToken);
         }
 

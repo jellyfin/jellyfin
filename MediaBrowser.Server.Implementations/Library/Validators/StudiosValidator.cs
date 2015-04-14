@@ -35,7 +35,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         {
             var items = _libraryManager.RootFolder.GetRecursiveChildren()
                 .SelectMany(i => i.Studios)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .ToList();
 
             var numComplete = 0;

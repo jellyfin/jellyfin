@@ -175,17 +175,17 @@ namespace MediaBrowser.Controller.Entities.Movies
 
         public override bool IsVisible(User user)
         {
+            var userId = user.Id.ToString("N");
+
+            // Need to check Count > 0 for boxsets created prior to the introduction of Shares
+            if (Shares.Count > 0 && Shares.Any(i => string.Equals(userId, i.UserId, StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+
             if (base.IsVisible(user))
             {
-                var userId = user.Id.ToString("N");
-
-                // Need to check Count > 0 for boxsets created prior to the introduction of Shares
-                if (Shares.Count > 0 && !Shares.Any(i => string.Equals(userId, i.UserId, StringComparison.OrdinalIgnoreCase)))
-                {
-                    //return false;
-                }
-
-                return true;
+                return GetChildren(user, true).Any();
             }
 
             return false;

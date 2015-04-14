@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
@@ -74,10 +75,11 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets the recording.
         /// </summary>
         /// <param name="id">The identifier.</param>
-        /// <param name="user">The user.</param>
+        /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="user">The user.</param>
         /// <returns>Task{RecordingInfoDto}.</returns>
-        Task<RecordingInfoDto> GetRecording(string id, CancellationToken cancellationToken, User user = null);
+        Task<RecordingInfoDto> GetRecording(string id, DtoOptions options, CancellationToken cancellationToken, User user = null);
 
         /// <summary>
         /// Gets the channel.
@@ -103,14 +105,15 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{TimerInfoDto}.</returns>
         Task<SeriesTimerInfoDto> GetSeriesTimer(string id, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Gets the recordings.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>QueryResult{RecordingInfoDto}.</returns>
-        Task<QueryResult<RecordingInfoDto>> GetRecordings(RecordingQuery query, CancellationToken cancellationToken);
+        Task<QueryResult<RecordingInfoDto>> GetRecordings(RecordingQuery query, DtoOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the timers.

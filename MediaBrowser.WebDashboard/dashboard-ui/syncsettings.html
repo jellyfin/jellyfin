@@ -28,11 +28,29 @@
                                 ${LabelSyncTempPathHelp}
                             </div>
                         </li>
+                        <li>
+                            <label for="txtUploadRateLimit">${LabelUploadSpeedLimit}</label>
+                            <input type="number" id="txtUploadSpeedLimit" min="0" step=".5" required="required" />
+                        </li>
+                        <li>
+                            <label for="txtCpuCoreLimit">${LabelConversionCpuCoreLimit}</label>
+                            <input type="number" id="txtCpuCoreLimit" min="0" max="8" step="1" required="required" />
+                            <div class="fieldDescription">
+                                ${LabelConversionCpuCoreLimitHelp}
+                            </div>
+                        </li>
+                        <li>
+                            <label for="chkEnableFullSpeedConversion">${OptionEnableFullSpeedConversion}</label>
+                            <input type="checkbox" id="chkEnableFullSpeedConversion" />
+                            <div class="fieldDescription">
+                                ${OptionEnableFullSpeedConversionHelp}
+                            </div>
+                        </li>
                     </ul>
 
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            <button type="submit" data-theme="b" data-icon="check">
                                 ${ButtonSave}
                             </button>
                         </li>

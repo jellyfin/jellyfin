@@ -76,6 +76,11 @@
         DisplayMediaType,
 
         /// <summary>
+        /// The etag
+        /// </summary>
+        Etag,
+
+        /// <summary>
         /// The external urls
         /// </summary>
         ExternalUrls,

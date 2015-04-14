@@ -18,7 +18,7 @@
                 <p class="lnkEditUserPreferencesContainer">
                     <a class="lnkEditUserPreferences" href="#" target="_blank">${ButtonEditOtherUserPreferences}</a>
                 </p>
-                <br/>
+                <br />
                 <form id="editUserProfileForm">
 
                     <div class="disabledUserBanner" style="display:none;">
@@ -57,18 +57,28 @@
                         <label for="chkEnableContentDeletion">${OptionAllowDeleteLibraryContent}</label>
                         <input type="checkbox" id="chkEnableDownloading" />
                         <label for="chkEnableDownloading">${OptionAllowContentDownloading}</label>
-                        <input type="checkbox" id="chkEnableMediaPlayback" name="chkEnableMediaPlayback" />
-                        <label for="chkEnableMediaPlayback">${OptionAllowMediaPlayback}</label>
                         <input type="checkbox" id="chkEnableLiveTvAccess" name="chkEnableLiveTvAccess" />
                         <label for="chkEnableLiveTvAccess">${OptionAllowBrowsingLiveTv}</label>
                         <input type="checkbox" id="chkManageLiveTv" name="chkManageLiveTv" />
                         <label for="chkManageLiveTv">${OptionAllowManageLiveTv}</label>
-                        <input type="checkbox" id="chkEnableSync" />
-                        <label for="chkEnableSync">${OptionAllowSyncContent}</label>
                     </fieldset>
                     <br />
                     <div>
-                        <fieldset id="remoteControlFields" data-role="controlgroup">
+                        <fieldset data-role="controlgroup">
+                            <legend>${HeaderPlayback}</legend>
+                            <input type="checkbox" id="chkEnableMediaPlayback" />
+                            <label for="chkEnableMediaPlayback">${OptionAllowMediaPlayback}</label>
+                            <input type="checkbox" id="chkEnableAudioPlaybackTranscoding" />
+                            <label for="chkEnableAudioPlaybackTranscoding">${OptionAllowAudioPlaybackTranscoding}</label>
+                            <input type="checkbox" id="chkEnableVideoPlaybackTranscoding" />
+                            <label for="chkEnableVideoPlaybackTranscoding">${OptionAllowVideoPlaybackTranscoding}</label>
+                        </fieldset>
+                        <div class="fieldDescription">${OptionAllowMediaPlaybackTranscodingHelp}</div>
+                        <br />
+                    </div>
+                    <br />
+                    <div>
+                        <fieldset data-role="controlgroup">
                             <legend>${HeaderRemoteControl}</legend>
                             <input type="checkbox" id="chkEnableRemoteControlOtherUsers" name="chkEnableRemoteControlOtherUsers" />
                             <label for="chkEnableRemoteControlOtherUsers">${OptionAllowRemoteControlOthers}</label>
@@ -76,6 +86,17 @@
                             <label for="chkRemoteControlSharedDevices">${OptionAllowRemoteSharedDevices}</label>
                         </fieldset>
                         <div class="fieldDescription">${OptionAllowRemoteSharedDevicesHelp}</div>
+                        <br />
+                    </div>
+                    <br />
+                    <div>
+                        <fieldset data-role="controlgroup">
+                            <legend>${HeaderSync}</legend>
+                            <input type="checkbox" id="chkEnableSync" />
+                            <label for="chkEnableSync">${OptionAllowSyncContent}</label>
+                            <input type="checkbox" id="chkEnableSyncTranscoding" />
+                            <label for="chkEnableSyncTranscoding">${OptionAllowSyncTranscoding}</label>
+                        </fieldset>
                         <br />
                     </div>
                     <div id="fldIsEnabled" style="margin: 1em 0 2em;">
@@ -101,7 +122,7 @@
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            <button type="submit" data-theme="b" data-icon="check">
                                 ${ButtonSave}
                             </button>
                         </li>

@@ -330,7 +330,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 {
                     files = files.Where(i => _libraryManager.IsAudioFile(i.FullName));
                 }
-                
+
                 var file = files
                     .FirstOrDefault(i => i.Name.StartsWith(filenamePrefix, StringComparison.OrdinalIgnoreCase));
 
@@ -1454,7 +1454,14 @@ namespace MediaBrowser.Server.Implementations.Channels
             var host = new Uri(source.Path).Host.ToLower();
             var channel = GetChannel(item.ChannelId);
             var channelProvider = GetChannelProvider(channel);
-            var limit = channelProvider.GetChannelFeatures().DailyDownloadLimit;
+            var features = channelProvider.GetChannelFeatures();
+
+            if (!features.SupportsContentDownloading)
+            {
+                throw new ArgumentException("The channel does not support downloading.");
+            }
+
+            var limit = features.DailyDownloadLimit;
 
             if (!ValidateDownloadLimit(host, limit))
             {

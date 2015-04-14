@@ -59,7 +59,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             state.IsInputVideo = string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase);
 
-            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.ItemId, false, cancellationToken).ConfigureAwait(false);
+            var mediaSources = await _mediaSourceManager.GetPlayackMediaSources(request.ItemId, null, false, new[] { MediaType.Audio, MediaType.Video }, cancellationToken).ConfigureAwait(false);
 
             var mediaSource = string.IsNullOrEmpty(request.MediaSourceId)
                ? mediaSources.First()
@@ -124,9 +124,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             state.InputContainer = mediaSource.Container;
             state.InputFileSize = mediaSource.Size;
             state.InputBitrate = mediaSource.Bitrate;
-            state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
             state.RunTimeTicks = mediaSource.RunTimeTicks;
             state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
+
+            if (mediaSource.ReadAtNativeFramerate)
+            {
+                state.ReadInputAtNativeFramerate = true;
+            }
 
             if (mediaSource.VideoType.HasValue)
             {
@@ -148,7 +152,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             state.RemoteHttpHeaders = mediaSource.RequiredHttpHeaders;
             state.InputBitrate = mediaSource.Bitrate;
             state.InputFileSize = mediaSource.Size;
-            state.ReadInputAtNativeFramerate = mediaSource.ReadAtNativeFramerate;
 
             if (state.ReadInputAtNativeFramerate ||
                 mediaSource.Protocol == MediaProtocol.File && string.Equals(mediaSource.Container, "wtv", StringComparison.OrdinalIgnoreCase))

@@ -281,6 +281,13 @@ namespace MediaBrowser.Model.Querying
         public int? ImageTypeLimit { get; set; }
         public ImageType[] EnableImageTypes { get; set; }
 
+        [Obsolete]
+        public string[] Artists { get; set; }
+        [Obsolete]
+        public string[] Studios { get; set; }
+        [Obsolete]
+        public string Person { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemQuery" /> class.
         /// </summary>
@@ -299,6 +306,9 @@ namespace MediaBrowser.Model.Querying
 
             VideoTypes = new VideoType[] { };
 
+            Artists = new string[] { };
+            Studios = new string[] { };
+            
             Genres = new string[] { };
             StudioIds = new string[] { };
             IncludeItemTypes = new string[] { };

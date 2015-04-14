@@ -1354,10 +1354,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     font-weight: 400;
 }
 
-.listItem p {
-    font-weight: 300 !important;
-}
-
 .ui-li-has-icon h3 {
     margin-bottom: 10px !important;
 }
@@ -1445,7 +1441,4 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .smallDetailImageContainer {
         padding-left: 1em;
     }
-}
-
-.homeTopViews .cardText{
 }

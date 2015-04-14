@@ -166,6 +166,13 @@ namespace MediaBrowser.ServerApplication
 
                 contextMenuStrip1.Invoke(action);
             }
+
+            notifyIcon1.DoubleClick += notifyIcon1_DoubleClick;
+        }
+
+        void notifyIcon1_DoubleClick(object sender, EventArgs e)
+        {
+            BrowserLauncher.OpenDashboard(_appHost, _logger);
         }
 
         private void LocalizeText()

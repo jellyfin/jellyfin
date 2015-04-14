@@ -166,11 +166,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var users = Users.ToList();
 
-            foreach (var user in users)
-            {
-                await DoPolicyMigration(user).ConfigureAwait(false);
-            }
-
             // If there are no local users with admin rights, make them all admins
             if (!users.Any(i => i.Policy.IsAdministrator))
             {
@@ -286,10 +281,10 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 if (newValue >= maxCount)
                 {
-                    //_logger.Debug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue.ToString(CultureInfo.InvariantCulture));
-                    //user.Policy.IsDisabled = true;
+                    _logger.Debug("Disabling user {0} due to {1} unsuccessful login attempts.", user.Name, newValue.ToString(CultureInfo.InvariantCulture));
+                    user.Policy.IsDisabled = true;
 
-                    //fireLockout = true;
+                    fireLockout = true;
                 }
 
                 await UpdateUserPolicy(user, user.Policy, false).ConfigureAwait(false);
@@ -364,19 +359,6 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             return users;
-        }
-
-        private async Task DoPolicyMigration(User user)
-        {
-            if (!user.Configuration.HasMigratedToPolicy)
-            {
-                user.Policy.IsAdministrator = user.Configuration.IsAdministrator;
-
-                await UpdateUserPolicy(user, user.Policy, false);
-
-                user.Configuration.HasMigratedToPolicy = true;
-                await UpdateConfiguration(user, user.Configuration, true).ConfigureAwait(false);
-            }
         }
 
         public UserDto GetUserDto(User user, string remoteEndPoint = null)
@@ -952,8 +934,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 _xmlSerializer.SerializeToFile(userPolicy, path);
                 user.Policy = userPolicy;
             }
-
-            user.Configuration.IsAdministrator = user.Policy.IsAdministrator;
 
             await UpdateConfiguration(user, user.Configuration, true).ConfigureAwait(false);
         }

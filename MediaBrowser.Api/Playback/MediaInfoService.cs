@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Controller.Devices;
+﻿using MediaBrowser.Common.Net;
+using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
@@ -59,23 +61,27 @@ namespace MediaBrowser.Api.Playback
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IDeviceManager _deviceManager;
         private readonly ILibraryManager _libraryManager;
+        private readonly IServerConfigurationManager _config;
+        private readonly INetworkManager _networkManager;
 
-        public MediaInfoService(IMediaSourceManager mediaSourceManager, IDeviceManager deviceManager, ILibraryManager libraryManager)
+        public MediaInfoService(IMediaSourceManager mediaSourceManager, IDeviceManager deviceManager, ILibraryManager libraryManager, IServerConfigurationManager config, INetworkManager networkManager)
         {
             _mediaSourceManager = mediaSourceManager;
             _deviceManager = deviceManager;
             _libraryManager = libraryManager;
+            _config = config;
+            _networkManager = networkManager;
         }
 
         public async Task<object> Get(GetPlaybackInfo request)
         {
-            var result = await GetPlaybackInfo(request.Id, request.UserId).ConfigureAwait(false);
+            var result = await GetPlaybackInfo(request.Id, request.UserId, new[] { MediaType.Audio, MediaType.Video }).ConfigureAwait(false);
             return ToOptimizedResult(result);
         }
 
         public async Task<object> Get(GetLiveMediaInfo request)
         {
-            var result = await GetPlaybackInfo(request.Id, request.UserId).ConfigureAwait(false);
+            var result = await GetPlaybackInfo(request.Id, request.UserId, new[] { MediaType.Audio, MediaType.Video }).ConfigureAwait(false);
             return ToOptimizedResult(result);
         }
 
@@ -122,29 +128,32 @@ namespace MediaBrowser.Api.Playback
 
         public async Task<object> Post(GetPostedPlaybackInfo request)
         {
-            var info = await GetPlaybackInfo(request.Id, request.UserId, request.MediaSourceId, request.LiveStreamId).ConfigureAwait(false);
             var authInfo = AuthorizationContext.GetAuthorizationInfo(Request);
 
             var profile = request.DeviceProfile;
-            if (profile == null)
+
+            var caps = _deviceManager.GetCapabilities(authInfo.DeviceId);
+            if (caps != null)
             {
-                var caps = _deviceManager.GetCapabilities(authInfo.DeviceId);
-                if (caps != null)
+                if (profile == null)
                 {
                     profile = caps.DeviceProfile;
                 }
             }
 
+            var info = await GetPlaybackInfo(request.Id, request.UserId, new[] { MediaType.Audio, MediaType.Video }, request.MediaSourceId, request.LiveStreamId).ConfigureAwait(false);
+
             if (profile != null)
             {
                 var mediaSourceId = request.MediaSourceId;
+
                 SetDeviceSpecificData(request.Id, info, profile, authInfo, request.MaxStreamingBitrate, request.StartTimeTicks ?? 0, mediaSourceId, request.AudioStreamIndex, request.SubtitleStreamIndex);
             }
 
             return ToOptimizedResult(info);
         }
 
-        private async Task<PlaybackInfoResponse> GetPlaybackInfo(string id, string userId, string mediaSourceId = null, string liveStreamId = null)
+        private async Task<PlaybackInfoResponse> GetPlaybackInfo(string id, string userId, string[] supportedLiveMediaTypes, string mediaSourceId = null, string liveStreamId = null)
         {
             var result = new PlaybackInfoResponse();
 
@@ -153,7 +162,7 @@ namespace MediaBrowser.Api.Playback
                 IEnumerable<MediaSourceInfo> mediaSources;
                 try
                 {
-                    mediaSources = await _mediaSourceManager.GetPlayackMediaSources(id, userId, true, CancellationToken.None).ConfigureAwait(false);
+                    mediaSources = await _mediaSourceManager.GetPlayackMediaSources(id, userId, true, supportedLiveMediaTypes, CancellationToken.None).ConfigureAwait(false);
                 }
                 catch (PlaybackException ex)
                 {
@@ -223,7 +232,7 @@ namespace MediaBrowser.Api.Playback
             int? subtitleStreamIndex,
             string playSessionId)
         {
-            var streamBuilder = new StreamBuilder();
+            var streamBuilder = new StreamBuilder(Logger);
 
             var options = new VideoOptions
             {
@@ -231,8 +240,7 @@ namespace MediaBrowser.Api.Playback
                 Context = EncodingContext.Streaming,
                 DeviceId = auth.DeviceId,
                 ItemId = item.Id.ToString("N"),
-                Profile = profile,
-                MaxBitrate = maxBitrate
+                Profile = profile
             };
 
             if (string.Equals(mediaSourceId, mediaSource.Id, StringComparison.OrdinalIgnoreCase))
@@ -248,6 +256,7 @@ namespace MediaBrowser.Api.Playback
 
                 // Dummy this up to fool StreamBuilder
                 mediaSource.SupportsDirectStream = true;
+                options.MaxBitrate = maxBitrate;
 
                 // The MediaSource supports direct stream, now test to see if the client supports it
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
@@ -270,6 +279,8 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsDirectStream)
             {
+                options.MaxBitrate = GetMaxBitrate(maxBitrate);
+                
                 // The MediaSource supports direct stream, now test to see if the client supports it
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
                     streamBuilder.BuildAudioItem(options) :
@@ -288,6 +299,8 @@ namespace MediaBrowser.Api.Playback
 
             if (mediaSource.SupportsTranscoding)
             {
+                options.MaxBitrate = GetMaxBitrate(maxBitrate);
+                
                 // The MediaSource supports direct stream, now test to see if the client supports it
                 var streamInfo = string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase) ?
                     streamBuilder.BuildAudioItem(options) :
@@ -307,6 +320,18 @@ namespace MediaBrowser.Api.Playback
                     mediaSource.TranscodingSubProtocol = streamInfo.SubProtocol;
                 }
             }
+        }
+
+        private int? GetMaxBitrate(int? clientMaxBitrate)
+        {
+            var maxBitrate = clientMaxBitrate;
+
+            if (_config.Configuration.RemoteClientBitrateLimit > 0 && !_networkManager.IsInLocalNetwork(Request.RemoteIp))
+            {
+                maxBitrate = Math.Min(maxBitrate ?? _config.Configuration.RemoteClientBitrateLimit, _config.Configuration.RemoteClientBitrateLimit);
+            }
+
+            return maxBitrate;
         }
 
         private void SetDeviceSpecificSubtitleInfo(StreamInfo info, MediaSourceInfo mediaSource, string accessToken)

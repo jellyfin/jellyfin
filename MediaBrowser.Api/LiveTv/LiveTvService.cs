@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Dto;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
@@ -186,6 +187,9 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "IsMovie", Description = "Optional filter for movies.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
         public bool? IsMovie { get; set; }
 
+        [ApiMember(Name = "IsSports", Description = "Optional filter for sports.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
+        public bool? IsSports { get; set; }
+
         [ApiMember(Name = "StartIndex", Description = "Optional. The record index to start at. All items with a lower index will be dropped from the results.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
         public int? StartIndex { get; set; }
 
@@ -217,6 +221,9 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "HasAired", Description = "Optional. Filter by programs that have completed airing, or not.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? HasAired { get; set; }
+
+        [ApiMember(Name = "IsSports", Description = "Optional filter for sports.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
+        public bool? IsSports { get; set; }
 
         [ApiMember(Name = "IsMovie", Description = "Optional filter for movies.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsMovie { get; set; }
@@ -422,11 +429,12 @@ namespace MediaBrowser.Api.LiveTv
             query.SortBy = (request.SortBy ?? String.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             query.SortOrder = request.SortOrder;
             query.IsMovie = request.IsMovie;
+            query.IsSports = request.IsSports;
             query.Genres = (request.Genres ?? String.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
             var result = await _liveTvManager.GetPrograms(query, CancellationToken.None).ConfigureAwait(false);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         public async Task<object> Get(GetRecommendedPrograms request)
@@ -437,12 +445,13 @@ namespace MediaBrowser.Api.LiveTv
                 IsAiring = request.IsAiring,
                 Limit = request.Limit,
                 HasAired = request.HasAired,
-                IsMovie = request.IsMovie
+                IsMovie = request.IsMovie,
+                IsSports = request.IsSports
             };
 
             var result = await _liveTvManager.GetRecommendedPrograms(query, CancellationToken.None).ConfigureAwait(false);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         public object Post(GetPrograms request)
@@ -452,6 +461,9 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetRecordings request)
         {
+            var options = new DtoOptions();
+            options.DeviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+
             var result = await _liveTvManager.GetRecordings(new RecordingQuery
             {
                 ChannelId = request.ChannelId,
@@ -463,16 +475,19 @@ namespace MediaBrowser.Api.LiveTv
                 SeriesTimerId = request.SeriesTimerId,
                 IsInProgress = request.IsInProgress
 
-            }, CancellationToken.None).ConfigureAwait(false);
+            }, options, CancellationToken.None).ConfigureAwait(false);
 
-            return ToOptimizedSerializedResultUsingCache(result);
+            return ToOptimizedResult(result);
         }
 
         public async Task<object> Get(GetRecording request)
         {
             var user = string.IsNullOrEmpty(request.UserId) ? null : _userManager.GetUserById(request.UserId);
 
-            var result = await _liveTvManager.GetRecording(request.Id, CancellationToken.None, user).ConfigureAwait(false);
+            var options = new DtoOptions();
+            options.DeviceId = AuthorizationContext.GetAuthorizationInfo(Request).DeviceId;
+
+            var result = await _liveTvManager.GetRecording(request.Id, options, CancellationToken.None, user).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(result);
         }

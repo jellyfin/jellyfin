@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Sync;
@@ -12,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Patterns.IO;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
@@ -29,8 +29,6 @@ namespace MediaBrowser.Server.Implementations.Sync
         private readonly IApplicationPaths _appPaths;
         private readonly IServerApplicationHost _appHost;
 
-        private readonly SemaphoreSlim _cacheFileLock = new SemaphoreSlim(1, 1);
-
         public TargetDataProvider(IServerSyncProvider provider, SyncTarget target, IServerApplicationHost appHost, ILogger logger, IJsonSerializer json, IFileSystem fileSystem, IApplicationPaths appPaths)
         {
             _logger = logger;
@@ -42,7 +40,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             _appHost = appHost;
         }
 
-        private string GetRemotePath()
+        private string[] GetRemotePath()
         {
             var parts = new List<string>
             {
@@ -52,7 +50,7 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             parts = parts.Select(i => GetValidFilename(_provider, i)).ToList();
 
-            return _provider.GetFullPath(parts, _target);
+            return parts.ToArray();
         }
 
         private string GetValidFilename(IServerSyncProvider provider, string filename)
@@ -65,22 +63,22 @@ namespace MediaBrowser.Server.Implementations.Sync
         {
             if (_items == null)
             {
-                try
+                _logger.Debug("Getting {0} from {1}", string.Join(MediaSync.PathSeparatorString, GetRemotePath().ToArray()), _provider.Name);
+
+                var fileResult = await _provider.GetFiles(new FileQuery
                 {
-                    var path = GetRemotePath();
+                    FullPath = GetRemotePath().ToArray()
 
-                    _logger.Debug("Getting {0} from {1}", path, _provider.Name);
+                }, _target, cancellationToken).ConfigureAwait(false);
 
-                    using (var stream = await _provider.GetFile(path, _target, new Progress<double>(), cancellationToken))
+                if (fileResult.Items.Length > 0)
+                {
+                    using (var stream = await _provider.GetFile(fileResult.Items[0].Id, _target, new Progress<double>(), cancellationToken))
                     {
                         _items = _json.DeserializeFromStream<List<LocalItem>>(stream);
                     }
                 }
-                catch (FileNotFoundException)
-                {
-                    _items = new List<LocalItem>();
-                }
-                catch (DirectoryNotFoundException)
+                else
                 {
                     _items = new List<LocalItem>();
                 }
@@ -133,14 +131,9 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        public Task<List<string>> GetServerItemIds(SyncTarget target, string serverId)
+        public Task<List<LocalItem>> GetLocalItems(SyncTarget target, string serverId)
         {
-            return GetData(items => items.Where(i => string.Equals(i.ServerId, serverId, StringComparison.OrdinalIgnoreCase)).Select(i => i.ItemId).ToList());
-        }
-
-        public Task<List<string>> GetSyncJobItemIds(SyncTarget target, string serverId)
-        {
-            return GetData(items => items.Where(i => string.Equals(i.ServerId, serverId, StringComparison.OrdinalIgnoreCase)).Select(i => i.SyncJobItemId).Where(i => !string.IsNullOrWhiteSpace(i)).ToList());
+            return GetData(items => items.Where(i => string.Equals(i.ServerId, serverId, StringComparison.OrdinalIgnoreCase)).ToList());
         }
 
         public Task AddOrUpdate(SyncTarget target, LocalItem item)

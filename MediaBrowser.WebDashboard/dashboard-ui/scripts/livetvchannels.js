@@ -2,7 +2,8 @@
 
     var query = {
 
-        StartIndex: 0
+        StartIndex: 0,
+        EnableFavoriteSorting: true
     };
 
     function getChannelsHtml(channels) {

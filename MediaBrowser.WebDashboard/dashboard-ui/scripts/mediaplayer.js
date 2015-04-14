@@ -76,6 +76,7 @@
                 options.push({ name: '720p - 2Mbps', maxWidth: 1280, bitrate: 2000000 });
 
                 // The extra 1 is because they're keyed off the bitrate value
+                options.push({ name: '720p - 1.5Mbps', maxWidth: 1280, bitrate: 1500001 });
                 options.push({ name: '720p - 1Mbps', maxWidth: 1280, bitrate: 1000001 });
             }
 
@@ -695,7 +696,7 @@
             });
         }
 
-        function getLiveStream(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex) {
+        function getLiveStream(itemId, playSessionId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex) {
 
             var postData = {
                 DeviceProfile: deviceProfile,
@@ -705,7 +706,8 @@
             var query = {
                 UserId: Dashboard.getCurrentUserId(),
                 StartTimeTicks: startPosition || 0,
-                ItemId: itemId
+                ItemId: itemId,
+                PlaySessionId: playSessionId
             };
 
             if (audioStreamIndex != null) {
@@ -734,7 +736,7 @@
             var startPositionInSeekParam = startPosition ? (startPosition / 10000000) : 0;
             var seekParam = startPositionInSeekParam ? '#t=' + startPositionInSeekParam : '';
 
-            if (type == 'video') {
+            if (type == 'Video') {
 
                 contentType = 'video/' + mediaSource.Container;
 
@@ -827,22 +829,22 @@
                 return;
             }
 
-            var mediaSource;
             var deviceProfile = self.getDeviceProfile();
 
-            getPlaybackInfo(item.Id, deviceProfile, startPosition).done(function (result) {
+            getPlaybackInfo(item.Id, deviceProfile, startPosition).done(function (playbackInfoResult) {
 
-                if (validatePlaybackInfoResult(result)) {
+                if (validatePlaybackInfoResult(playbackInfoResult)) {
 
-                    mediaSource = getOptimalMediaSource(item.MediaType, result.MediaSources);
+                    var mediaSource = getOptimalMediaSource(item.MediaType, playbackInfoResult.MediaSources);
 
                     if (mediaSource) {
 
                         if (mediaSource.RequiresOpening) {
 
-                            getLiveStream(item.Id, deviceProfile, startPosition, mediaSource, null, null).done(function (openLiveStreamResult) {
+                            getLiveStream(item.Id, playbackInfoResult.PlaySessionId, deviceProfile, startPosition, mediaSource, null, null).done(function (openLiveStreamResult) {
 
                                 openLiveStreamResult.MediaSource.enableDirectPlay = supportsDirectPlay(openLiveStreamResult.MediaSource);
+
                                 playInternalPostMediaSourceSelection(item, openLiveStreamResult.MediaSource, startPosition, callback);
                             });
 
@@ -1522,8 +1524,6 @@
 
             var playerElement = this;
 
-            var playSessionId = getParameterByName('PlaySessionId', playerElement.currentSrc);
-
             $(playerElement).off('.mediaplayerevent').off('ended.playbackstopped');
 
             self.cleanup(playerElement);
@@ -1535,7 +1535,6 @@
 
             if (item.MediaType == "Video") {
 
-                ApiClient.stopActiveEncodings(playSessionId);
                 if (self.isFullScreen()) {
                     self.exitFullScreen();
                 }
@@ -1619,7 +1618,7 @@
                 html += '<div class="mediaPlayerAudioContainer" style="display:none;"><div class="mediaPlayerAudioContainerInner">';;
             }
 
-            html += '<audio class="mediaPlayerAudio" controls>';
+            html += '<audio class="mediaPlayerAudio" crossorigin="anonymous" controls>';
             html += '</audio></div></div>';
 
             $(document.body).append(html);
@@ -1629,7 +1628,7 @@
 
         function playAudio(item, mediaSource, startPositionTicks) {
 
-            var streamInfo = self.createStreamInfo('audio', item, mediaSource, startPositionTicks);
+            var streamInfo = self.createStreamInfo('Audio', item, mediaSource, startPositionTicks);
             var audioUrl = streamInfo.url;
             self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
 

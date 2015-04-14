@@ -8,7 +8,7 @@
 
             userId: Dashboard.getCurrentUserId(),
             IsAiring: true,
-            limit: 16
+            limit: 18
 
         }).done(function (result) {
 
@@ -32,8 +32,9 @@
             userId: Dashboard.getCurrentUserId(),
             IsAiring: false,
             HasAired: false,
-            limit: 10,
-            IsMovie: false
+            limit: 9,
+            IsMovie: false,
+            IsSports: false
 
         }).done(function (result) {
 
@@ -57,7 +58,7 @@
             userId: Dashboard.getCurrentUserId(),
             IsAiring: false,
             HasAired: false,
-            limit: 10,
+            limit: 9,
             IsMovie: true
 
         }).done(function (result) {
@@ -65,13 +66,35 @@
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "auto",
-                showTitle: true,
+                showTitle: false,
                 coverImage: true,
                 overlayText: false,
                 lazy: true
             });
 
             $('.upcomingTvMovieItems', page).html(html).lazyChildren();
+        });
+
+        ApiClient.getLiveTvRecommendedPrograms({
+
+            userId: Dashboard.getCurrentUserId(),
+            IsAiring: false,
+            HasAired: false,
+            limit: 9,
+            IsSports: true
+
+        }).done(function (result) {
+
+            var html = LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                shape: "auto",
+                showTitle: false,
+                coverImage: true,
+                overlayText: false,
+                lazy: true
+            });
+
+            $('.upcomingSportsItems', page).html(html).lazyChildren();
         });
     }
 

@@ -122,7 +122,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 var artists = items.OfType<Audio>()
                     .SelectMany(i => i.AllArtists)
                     .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .DistinctNames()
                     .ToList();
 
                 foreach (var item in artists)

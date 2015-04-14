@@ -24,12 +24,6 @@
 
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
-            if (pluginSecurityInfo.IsMBSupporter) {
-                $('.supporterPromotion', page).hide();
-            } else {
-                $('.supporterPromotion', page).show();
-            }
-
             DashboardPage.renderSupporterIcon(page, pluginSecurityInfo);
         });
 
@@ -625,7 +619,7 @@
 
             return "<img src='css/images/clients/mbc.png' />";
         }
-        if (clientLowered == "media browser theater") {
+        if (clientLowered == "emby theater") {
 
             return "<img src='css/images/clients/mb.png' />";
         }
@@ -1288,7 +1282,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
                     $('.tourButtonText', elem).html(Globalize.translate('ButtonTakeTheTourToSeeWhatsNew'));
 
                 } else {
-                    
+
                     $('.tourHeader', elem).html(Globalize.translate('HeaderWelcomeToProjectServerDashboard'));
                     $('.tourButtonText', elem).html(Globalize.translate('ButtonTakeTheTour'));
                 }
@@ -1339,3 +1333,25 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
     });
 
 })(jQuery, document, window);
+
+(function () {
+
+    $(document).on('pagebeforeshow', ".type-interior", function () {
+
+        var page = this;
+
+        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+
+            if (!$('.staticSupporterPromotion', page).length) {
+                $('.supporterPromotion', page).remove();
+
+                if (!pluginSecurityInfo.IsMBSupporter) {
+                    $('.content-primary', page).append('<div class="supporterPromotion"><a class="btn btnActionAccent" href="supporter.html" style="font-size:14px;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;font-size:90%;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></a></div>');
+                }
+            }
+
+        });
+
+    });
+
+})();

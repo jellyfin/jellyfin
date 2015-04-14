@@ -97,7 +97,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (byName != null && !(item is LiveTvChannel))
                 {
-                    //if (options.Fields.Contains(ItemFields.ItemCounts))
+                    if (options.Fields.Contains(ItemFields.ItemCounts))
                     {
                         var itemFilter = byName.GetItemFilter();
 
@@ -125,7 +125,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (byName != null && !(item is LiveTvChannel))
             {
-                //if (options.Fields.Contains(ItemFields.ItemCounts))
+                if (options.Fields.Contains(ItemFields.ItemCounts))
                 {
                     var itemFilter = byName.GetItemFilter();
 
@@ -188,7 +188,22 @@ namespace MediaBrowser.Server.Implementations.Dto
             return new Tuple<IEnumerable<string>, IEnumerable<string>>(result1.Items, result2.Items);
         }
 
-        private void FillSyncInfo(BaseItemDto dto, BaseItem item, DtoOptions options, User user)
+        public void FillSyncInfo(IEnumerable<IHasSyncInfo> dtos, DtoOptions options, User user)
+        {
+            if (options.Fields.Contains(ItemFields.SyncInfo))
+            {
+                var tuple = GetItemIdsWithSyncJobs(options);
+
+                foreach (var dto in dtos)
+                {
+                    var item = _libraryManager.GetItemById(dto.Id);
+
+                    FillSyncInfo(dto, item, tuple.Item1, tuple.Item2, options, user);
+                }
+            }
+        }
+
+        private void FillSyncInfo(IHasSyncInfo dto, BaseItem item, DtoOptions options, User user)
         {
             if (options.Fields.Contains(ItemFields.SyncInfo))
             {
@@ -202,10 +217,20 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 dto.HasSyncJob = tuple.Item1.Contains(dto.Id, StringComparer.OrdinalIgnoreCase);
                 dto.IsSynced = tuple.Item2.Contains(dto.Id, StringComparer.OrdinalIgnoreCase);
+
+                if (dto.IsSynced.Value)
+                {
+                    dto.SyncStatus = SyncJobItemStatus.Synced;
+                }
+
+                else if (dto.HasSyncJob.Value)
+                {
+                    dto.SyncStatus = SyncJobItemStatus.Queued;
+                }
             }
         }
 
-        private void FillSyncInfo(BaseItemDto dto, BaseItem item, IEnumerable<string> itemIdsWithPendingSyncJobs, IEnumerable<string> syncedItemIds, DtoOptions options, User user)
+        private void FillSyncInfo(IHasSyncInfo dto, BaseItem item, IEnumerable<string> itemIdsWithPendingSyncJobs, IEnumerable<string> syncedItemIds, DtoOptions options, User user)
         {
             if (options.Fields.Contains(ItemFields.SyncInfo))
             {
@@ -217,6 +242,16 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.HasSyncJob = itemIdsWithPendingSyncJobs.Contains(dto.Id, StringComparer.OrdinalIgnoreCase);
                 dto.IsSynced = syncedItemIds.Contains(dto.Id, StringComparer.OrdinalIgnoreCase);
+
+                if (dto.IsSynced.Value)
+                {
+                    dto.SyncStatus = SyncJobItemStatus.Synced;
+                }
+
+                else if (dto.HasSyncJob.Value)
+                {
+                    dto.SyncStatus = SyncJobItemStatus.Queued;
+                }
             }
         }
 
@@ -322,6 +357,8 @@ namespace MediaBrowser.Server.Implementations.Dto
                     : item.CanDownload(user);
             }
 
+
+
             return dto;
         }
 
@@ -330,7 +367,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             var dto = GetBaseItemDtoInternal(item, options, user);
 
-            //if (options.Fields.Contains(ItemFields.ItemCounts))
+            if (options.Fields.Contains(ItemFields.ItemCounts))
             {
                 SetItemByNameInfo(item, dto, taggedItems, user);
             }

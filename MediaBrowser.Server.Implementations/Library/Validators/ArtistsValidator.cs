@@ -49,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 .ToList();
 
             var allArtists = allSongs.SelectMany(i => i.AllArtists)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .ToList();
 
             var numComplete = 0;

@@ -137,7 +137,29 @@
 
         message = JSON.parse(message);
 
-        if (message.type && message.type.indexOf('playback') == 0) {
+        if (message.type == 'playbackerror') {
+
+            var errorCode = message.data;
+
+            setTimeout(function () {
+                Dashboard.alert({
+                    message: Globalize.translate('MessagePlaybackError' + errorCode),
+                    title: Globalize.translate('HeaderPlaybackError')
+                });
+            }, 300);
+
+        }
+        else if (message.type == 'connectionerror') {
+
+            setTimeout(function () {
+                Dashboard.alert({
+                    message: Globalize.translate('MessageChromecastConnectionError'),
+                    title: Globalize.translate('HeaderError')
+                });
+            }, 300);
+
+        }
+        else if (message.type && message.type.indexOf('playback') == 0) {
             $(this).trigger(message.type, [message.data]);
 
         }

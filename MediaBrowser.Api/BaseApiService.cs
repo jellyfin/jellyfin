@@ -259,7 +259,7 @@ namespace MediaBrowser.Api
                 .GetRecursiveChildren(i => i is IHasArtist)
                 .Cast<IHasArtist>()
                 .SelectMany(i => i.AllArtists)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .FirstOrDefault(i =>
                 {
                     i = _dashReplaceChars.Aggregate(i, (current, c) => current.Replace(c, SlugChar));
@@ -281,7 +281,7 @@ namespace MediaBrowser.Api
 
             return libraryManager.RootFolder.GetRecursiveChildren()
                 .SelectMany(i => i.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .FirstOrDefault(i =>
                 {
                     i = _dashReplaceChars.Aggregate(i, (current, c) => current.Replace(c, SlugChar));
@@ -301,7 +301,7 @@ namespace MediaBrowser.Api
             return libraryManager.RootFolder
                 .GetRecursiveChildren(i => i is Game)
                 .SelectMany(i => i.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .FirstOrDefault(i =>
                 {
                     i = _dashReplaceChars.Aggregate(i, (current, c) => current.Replace(c, SlugChar));
@@ -324,7 +324,7 @@ namespace MediaBrowser.Api
             return libraryManager.RootFolder
                 .GetRecursiveChildren()
                 .SelectMany(i => i.Studios)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .FirstOrDefault(i =>
                 {
                     i = _dashReplaceChars.Aggregate(i, (current, c) => current.Replace(c, SlugChar));
@@ -348,7 +348,7 @@ namespace MediaBrowser.Api
                 .GetRecursiveChildren()
                 .SelectMany(i => i.People)
                 .Select(i => i.Name)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .FirstOrDefault(i =>
                 {
                     i = _dashReplaceChars.Aggregate(i, (current, c) => current.Replace(c, SlugChar));

@@ -121,12 +121,12 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             {
                 if (_lastExecutionResult == null)
                 {
+                    var path = GetHistoryFilePath();
+
                     lock (_lastExecutionResultSyncLock)
                     {
                         if (_lastExecutionResult == null)
                         {
-                            var path = GetHistoryFilePath();
-
                             try
                             {
                                 return JsonSerializer.DeserializeFromFile<TaskResult>(path);
@@ -152,6 +152,14 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
             private set
             {
                 _lastExecutionResult = value;
+
+                var path = GetHistoryFilePath();
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                lock (_lastExecutionResultSyncLock)
+                {
+                    JsonSerializer.SerializeToFile(value, path);
+                }
             }
         }
 
@@ -581,11 +589,6 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
                 result.ErrorMessage = ex.Message;
                 result.LongErrorMessage = ex.StackTrace;
             }
-
-            var path = GetHistoryFilePath();
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-            JsonSerializer.SerializeToFile(result, path);
 
             LastExecutionResult = result;
 

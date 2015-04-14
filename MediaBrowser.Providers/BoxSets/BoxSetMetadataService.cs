@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -16,11 +15,8 @@ namespace MediaBrowser.Providers.BoxSets
 {
     public class BoxSetMetadataService : MetadataService<BoxSet, BoxSetInfo>
     {
-        private readonly ILocalizationManager _iLocalizationManager;
-
-        public BoxSetMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILocalizationManager iLocalizationManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
+        public BoxSetMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
         {
-            _iLocalizationManager = iLocalizationManager;
         }
 
         /// <summary>

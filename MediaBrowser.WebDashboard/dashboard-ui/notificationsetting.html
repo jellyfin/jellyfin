@@ -9,6 +9,11 @@
         <div data-role="content">
             <div class="content-primary">
 
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="notificationsettings.html" data-role="button" class="ui-btn-active">${TabNotifications}</a>
+                    <a href="appservices.html?context=notifications" data-role="button">${TabServices}</a>
+                </div>
+
                 <h2 class="notificationType" style="margin-bottom: 0;"></h2>
 
                 <form class="notificationSettingForm">
@@ -31,7 +36,7 @@
                     <div>
                         <div>
                             <label for="selectUsers">${LabelSendNotificationToUsers}</label>
-                            <select id="selectUsers" data-mini="true">
+                            <select id="selectUsers">
                                 <option value="All">${OptionAllUsers}</option>
                                 <option value="Admins">${OptionAdminUsers}</option>
                                 <option value="Custom">${OptionCustomUsers}</option>
@@ -67,10 +72,10 @@
                         </li>
                         <li>
                             <br />
-                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                            <button type="submit" data-theme="b" data-icon="check">
                                 ${ButtonSave}
                             </button>
-                            <button type="button" onclick="Dashboard.navigate('notificationsettings.html');" data-icon="delete" data-mini="true">
+                            <button type="button" onclick="Dashboard.navigate('notificationsettings.html');" data-icon="delete">
                                 ${ButtonCancel}
                             </button>
                         </li>

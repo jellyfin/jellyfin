@@ -80,5 +80,10 @@ namespace MediaBrowser.Controller.Channels
         {
             return false;
         }
+
+        public override bool IsVisibleStandalone(User user)
+        {
+            return IsVisibleStandaloneInternal(user, false) && ChannelVideoItem.IsChannelVisible(this, user);
+        }
     }
 }

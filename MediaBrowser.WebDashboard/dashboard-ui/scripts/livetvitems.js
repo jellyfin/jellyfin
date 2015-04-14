@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard');
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
     var currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
@@ -8,29 +8,16 @@
     // The base query options
     var query = {
         UserId: Dashboard.getCurrentUserId(),
-        SortBy: "PremiereDate,SortName",
+        SortBy: "StartDate,SortName",
         SortOrder: "Ascending",
         StartIndex: 0
     };
 
     function getSavedQueryKey() {
-        return 'livetvitems' + (query.ParentId || '');
+        return 'livetvitems2' + (query.ParentId || '');
     }
 
     function updateFilterControls(page) {
-
-        // Reset form values using the last used query
-        $('.radioSortBy', page).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', page).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
 
         $('#selectView', page).val(view).selectmenu('refresh');
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
@@ -58,7 +45,6 @@
             $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
             updateFilterControls(page);
-            var trigger = false;
 
             if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -86,8 +72,6 @@
                 });
             }
 
-            $('.itemsContainer', page).html(html).lazyChildren();
-
             var elem = $('.itemsContainer', page).html(html).lazyChildren();
 
             $(pagingHtml).appendTo(elem).trigger('create');
@@ -111,18 +95,6 @@
     $(document).on('pageinit', "#liveTvItemsPage", function () {
 
         var page = this;
-
-        $('.radioSortBy', this).on('click', function () {
-            query.StartIndex = 0;
-            query.SortBy = this.getAttribute('data-sortby');
-            reloadItems(page);
-        });
-
-        $('.radioSortOrder', this).on('click', function () {
-            query.StartIndex = 0;
-            query.SortOrder = this.getAttribute('data-sortorder');
-            reloadItems(page);
-        });
 
         $('#selectView', this).on('change', function () {
 
@@ -179,6 +151,7 @@
         }
 
         query.IsMovie = getParameterByName('type') == 'movies' ? true : null;
+        query.IsSports = getParameterByName('type') == 'sports' ? true : null;
 
         var viewkey = getSavedQueryKey();
 

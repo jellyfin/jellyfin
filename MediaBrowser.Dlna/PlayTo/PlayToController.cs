@@ -470,7 +470,7 @@ namespace MediaBrowser.Dlna.PlayTo
             
             var hasMediaSources = item as IHasMediaSources;
             var mediaSources = hasMediaSources != null
-                ? (user == null ? _mediaSourceManager.GetStaticMediaSources(hasMediaSources, true) : _mediaSourceManager.GetStaticMediaSources(hasMediaSources, true, user)).ToList()
+                ? (_mediaSourceManager.GetStaticMediaSources(hasMediaSources, true, user)).ToList()
                 : new List<MediaSourceInfo>();
 
             var playlistItem = GetPlaylistItem(item, mediaSources, profile, _session.DeviceId, mediaSourceId, audioStreamIndex, subtitleStreamIndex);
@@ -542,7 +542,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder().BuildVideoItem(new VideoOptions
+                    StreamInfo = new StreamBuilder(_logger).BuildVideoItem(new VideoOptions
                     {
                         ItemId = item.Id.ToString("N"),
                         MediaSources = mediaSources,
@@ -562,7 +562,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 return new PlaylistItem
                 {
-                    StreamInfo = new StreamBuilder().BuildAudioItem(new AudioOptions
+                    StreamInfo = new StreamBuilder(_logger).BuildAudioItem(new AudioOptions
                     {
                         ItemId = item.Id.ToString("N"),
                         MediaSources = mediaSources,
@@ -892,7 +892,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 request.MediaSource = hasMediaSources == null ?
                     null :
-                    mediaSourceManager.GetStaticMediaSource(hasMediaSources, request.MediaSourceId, false);
+                    mediaSourceManager.GetMediaSource(hasMediaSources, request.MediaSourceId, false).Result;
 
 
 

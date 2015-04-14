@@ -24,6 +24,13 @@
                     </div>
                 </div>
 
+                <div class="sectionTabs notificationsSectionTabs" style="display:none;">
+                    <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                        <a href="notificationsettings.html" data-role="button">${TabNotifications}</a>
+                        <a href="#" data-role="button" class="ui-btn-active">${TabServices}</a>
+                    </div>
+                </div>
+
                 <div class="detailSectionHeader">${HeaderInstalledServices}</div>
                 <div class="installedPlugins"></div>
                 <br />
@@ -32,7 +39,7 @@
                 <div class="detailSectionHeader">${HeaderAvailableServices}</div>
                 <div class="catalog"></div>
 
-                <div class="supporterPromotion syncPromotion" style="display:none;">
+                <div class="staticSupporterPromotion supporterPromotion syncPromotion" style="display:none;">
                     <a class="btn btnActionAccent" href="supporter.html" style="font-size:14px;">
                         <div>
                             ${HeaderSyncRequiresSupporterMembership}

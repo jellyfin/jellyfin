@@ -102,7 +102,6 @@
     <Compile Include="Manager\MetadataService.cs" />
     <Compile Include="Manager\SeriesOrderManager.cs" />
     <Compile Include="MediaInfo\FFProbeAudioInfo.cs" />
-    <Compile Include="MediaInfo\FFProbeHelpers.cs" />
     <Compile Include="MediaInfo\FFProbeProvider.cs" />
     <Compile Include="MediaInfo\FFProbeVideoInfo.cs" />
     <Compile Include="MediaInfo\SubtitleDownloader.cs" />
@@ -198,10 +197,6 @@
       <Project>{17E1F4E6-8ABD-4FE5-9ECF-43D4B6087BA2}</Project>
       <Name>MediaBrowser.Controller</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MediaBrowser.MediaInfo\MediaBrowser.MediaInfo.csproj">
-      <Project>{6e4145e4-c6d4-4e4d-94f2-87188db6e239}</Project>
-      <Name>MediaBrowser.MediaInfo</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MediaBrowser.Model\MediaBrowser.Model.csproj">
       <Project>{7EEEB4BB-F3E8-48FC-B4C5-70F0FFF8329B}</Project>
       <Name>MediaBrowser.Model</Name>
@@ -213,9 +208,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="MediaInfo\whitelist.txt" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

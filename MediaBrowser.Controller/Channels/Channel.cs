@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Channels
 {
@@ -15,19 +14,9 @@ namespace MediaBrowser.Controller.Channels
 
         public override bool IsVisible(User user)
         {
-            if (user.Policy.BlockedChannels != null)
+            if (!user.Policy.EnableAllChannels && !user.Policy.EnabledChannels.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
             {
-                if (user.Policy.BlockedChannels.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                if (!user.Policy.EnableAllChannels && !user.Policy.EnabledChannels.Contains(Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
+                return false;
             }
             
             return base.IsVisible(user);

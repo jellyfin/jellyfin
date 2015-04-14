@@ -3,6 +3,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Sync;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,7 +17,7 @@ namespace MediaBrowser.Model.Dto
     /// This holds information about a BaseItem in a format that is convenient for the client.
     /// </summary>
     [DebuggerDisplay("Name = {Name}, ID = {Id}, Type = {Type}")]
-    public class BaseItemDto : IHasProviderIds, IHasPropertyChangedEvent, IItemDto, IHasServerId
+    public class BaseItemDto : IHasProviderIds, IHasPropertyChangedEvent, IItemDto, IHasServerId, IHasSyncInfo
     {
         /// <summary>
         /// Gets or sets the name.
@@ -36,6 +37,12 @@ namespace MediaBrowser.Model.Dto
         /// <value>The id.</value>
         public string Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the etag.
+        /// </summary>
+        /// <value>The etag.</value>
+        public string Etag { get; set; }
+        
         /// <summary>
         /// Gets or sets the playlist item identifier.
         /// </summary>
@@ -63,6 +70,7 @@ namespace MediaBrowser.Model.Dto
         public string PreferredMetadataCountryCode { get; set; }
 
         public string AwardSummary { get; set; }
+        public string ShareUrl { get; set; }
 
         public float? Metascore { get; set; }
 
@@ -86,6 +94,11 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value><c>null</c> if [is synced] contains no value, <c>true</c> if [is synced]; otherwise, <c>false</c>.</value>
         public bool? IsSynced { get; set; }
+        /// <summary>
+        /// Gets or sets the synchronize status.
+        /// </summary>
+        /// <value>The synchronize status.</value>
+        public SyncJobItemStatus? SyncStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the DVD season number.

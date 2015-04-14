@@ -6,7 +6,7 @@
 <body>
     <div id="musicRecommendedPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="musicartist">
         <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="#" class="ui-btn-active">${TabSuggested}</a>
+            <a href="#" class="ui-btn-active">${TabSuggestions}</a>
             <a href="songs.html">${TabSongs}</a>
             <a href="musicalbums.html">${TabAlbums}</a>
             <a href="musicalbumartists.html">${TabAlbumArtists}</a>
@@ -16,19 +16,29 @@
         </div>
         <div data-role="content">
             <div class="ehsContent squareEhsContent">
-                <h1 class="listHeader">${HeaderLatestMusic}</h1>
+                
+                <div class="homePageSection">
+                    <h1 class="listHeader">${HeaderLatestMusic}</h1>
 
-                <div id="recentlyAddedSongs" class="itemsContainer fullWidthItemsContainer" style="text-align:left;">
+                    <div id="recentlyAddedSongs" class="itemsContainer fullWidthItemsContainer" style="text-align:left;">
+                    </div>
                 </div>
 
-                <div id="recentlyPlayed" style="display: none;">
+                <div id="playlists" style="display: none;" class="homePageSection">
+                    <h1 class="listHeader">${HeaderPlaylists}</h1>
+
+                    <div class="itemsContainer fullWidthItemsContainer" style="text-align:left;">
+                    </div>
+                </div>
+
+                <div id="recentlyPlayed" style="display: none;" class="homePageSection">
                     <h1 class="listHeader">${HeaderRecentlyPlayed}</h1>
 
                     <div id="recentlyPlayedSongs" class="itemsContainer fullWidthItemsContainer" style="text-align:left;">
                     </div>
                 </div>
 
-                <div id="topPlayed" style="display: none;">
+                <div id="topPlayed" style="display: none;" class="homePageSection">
                     <h1 class="listHeader">${HeaderFrequentlyPlayed}</h1>
 
                     <div id="topPlayedSongs" class="itemsContainer fullWidthItemsContainer" style="text-align:left;">

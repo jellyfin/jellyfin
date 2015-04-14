@@ -856,16 +856,6 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 writer.WriteStartElement("collectionitem");
 
-                if (!string.IsNullOrWhiteSpace(link.ItemName))
-                {
-                    writer.WriteElementString("name", link.ItemName);
-                }
-
-                if (!string.IsNullOrWhiteSpace(link.ItemType))
-                {
-                    writer.WriteElementString("type", link.ItemType);
-                }
-
                 if (!string.IsNullOrWhiteSpace(link.Path))
                 {
                     writer.WriteElementString("path", link.Path);

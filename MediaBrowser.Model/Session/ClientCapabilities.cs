@@ -19,12 +19,17 @@ namespace MediaBrowser.Model.Session
         public bool SupportsOfflineAccess { get; set; }
 
         public DeviceProfile DeviceProfile { get; set; }
+        public List<string> SupportedLiveMediaTypes { get; set; }
+
+        public string AppUrl { get; set; }
+        public string AppImageUrl { get; set; }
 
         public ClientCapabilities()
         {
             PlayableMediaTypes = new List<string>();
             SupportedCommands = new List<string>();
             SupportsPersistentIdentifier = true;
+            SupportedLiveMediaTypes = new List<string>();
         }
     }
 }

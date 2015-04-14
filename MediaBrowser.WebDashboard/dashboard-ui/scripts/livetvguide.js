@@ -1,18 +1,17 @@
 ﻿(function ($, document) {
 
     // 30 mins
-    var cellCurationMinutes = 10;
+    var cellCurationMinutes = 30;
     var cellDurationMs = cellCurationMinutes * 60 * 1000;
-
-    var gridLocalStartDateMs;
-    var gridLocalEndDateMs;
+    var msPerDay = 86400000;
 
     var currentDate;
 
     var channelQuery = {
 
         StartIndex: 0,
-        Limit: 20
+        Limit: 50,
+        EnableFavoriteSorting: true
     };
     var channelsPromise;
 
@@ -56,9 +55,7 @@
 
         var date = currentDate;
 
-        var nextDay = new Date(date.getTime());
-        nextDay.setHours(0, 0, 0, 0);
-        nextDay.setDate(nextDay.getDate() + 1);
+        var nextDay = new Date(date.getTime() + msPerDay - 1);
         console.log(nextDay);
         channelsPromise.done(function (channelsResult) {
 
@@ -73,6 +70,7 @@
             }).done(function (programsResult) {
 
                 renderGuide(page, date, channelsResult.Items, programsResult.Items);
+
                 hideLoadingMessage(page);
 
             });
@@ -89,110 +87,68 @@
                 channelQuery.StartIndex -= channelQuery.Limit;
                 reloadChannels(page);
             });
-
-            $('.selectPageSize', page).on('change', function () {
-                channelQuery.Limit = parseInt(this.value);
-                channelQuery.StartIndex = 0;
-                reloadChannels(page);
-            });
         });
     }
 
-    function getTimeslotHeadersHtml(date) {
+    function getTimeslotHeadersHtml(startDate, endDateTime) {
 
         var html = '';
 
-        date = new Date(date.getTime());
-        var dateNumber = date.getDate();
+        // clone
+        startDate = new Date(startDate.getTime());
 
-        while (date.getDate() == dateNumber) {
+        html += '<div class="timeslotHeadersInner">'
+
+        while (startDate.getTime() < endDateTime) {
 
             html += '<div class="timeslotHeader">';
             html += '<div class="timeslotHeaderInner">';
 
-            var minutes = date.getMinutes();
-            if (minutes == 0 || minutes == 30) {
-                html += LiveTvHelpers.getDisplayTime(date);
-            } else {
-                html += '&nbsp;';
-            }
+            html += LiveTvHelpers.getDisplayTime(startDate);
             html += '</div>';
             html += '</div>';
 
             // Add 30 mins
-            date.setTime(date.getTime() + cellDurationMs);
+            startDate.setTime(startDate.getTime() + cellDurationMs);
         }
+        html += '</div>';
 
         return html;
     }
 
-    function findProgramStartingInCell(programs, startIndex, cellStart, cellEnd, cellIndex) {
+    function parseDates(program) {
 
-        for (var i = startIndex, length = programs.length; i < length; i++) {
+        if (!program.StartDateLocal) {
+            try {
 
-            var program = programs[i];
+                program.StartDateLocal = parseISO8601Date(program.StartDate, { toLocal: true });
 
-            if (!program.StartDateLocal) {
-                try {
-
-                    program.StartDateLocal = parseISO8601Date(program.StartDate, { toLocal: true });
-
-                } catch (err) {
-
-                }
+            } catch (err) {
 
             }
 
-            if (!program.EndDateLocal) {
-                try {
+        }
 
-                    program.EndDateLocal = parseISO8601Date(program.EndDate, { toLocal: true });
+        if (!program.EndDateLocal) {
+            try {
 
-                } catch (err) {
+                program.EndDateLocal = parseISO8601Date(program.EndDate, { toLocal: true });
 
-                }
-
-            }
-
-            var localTime = program.StartDateLocal.getTime();
-            if ((localTime >= cellStart || cellIndex == 0) && localTime < cellEnd && program.EndDateLocal > cellStart) {
-
-                return program;
+            } catch (err) {
 
             }
+
         }
 
         return null;
-    }
-
-    function getProgramWidth(program) {
-
-        var end = Math.min(gridLocalEndDateMs, program.EndDateLocal.getTime());
-        var start = Math.max(gridLocalStartDateMs, program.StartDateLocal.getTime());
-
-        var ms = end - start;
-
-        var width = 100 * ms / cellDurationMs;
-
-        // Round to the nearest cell
-        var overlap = width % 100;
-
-        if (overlap) {
-            width = width - overlap + 100;
-        }
-
-        if (width > 300) {
-            width += (width / 100) + 3;
-        }
-
-        return width;
     }
 
     function getChannelProgramsHtml(page, date, channel, programs) {
 
         var html = '';
 
-        var dateNumber = date.getDate();
+        var startMs = date.getTime();
+        var endMs = startMs + msPerDay - 1;
 
         programs = programs.filter(function (curr) {
             return curr.ChannelId == channel.Id;
@@ -200,109 +156,87 @@
 
         html += '<div class="channelPrograms">';
 
-        var cellIndex = 0;
+        for (var i = 0, length = programs.length; i < length; i++) {
 
-        while (date.getDate() == dateNumber) {
+            var program = programs[i];
 
-            // Add 30 mins
-            var cellEndDate = new Date(date.getTime() + cellDurationMs);
-
-            var program = findProgramStartingInCell(programs, 0, date, cellEndDate, cellIndex);
-
-            var minutes = date.getMinutes();
-            if (minutes == 0 || minutes == 30) {
-                html += '<div class="timeslotCell">';
-            } else {
-                html += '<div class="timeslotCell" style="border-left-color:transparent;">';
+            if (program.ChannelId != channel.Id) {
+                continue;
             }
 
-            var cellTagName;
-            var href;
-            var cssClass = "timeslotCellInner";
-            var style;
-            var dataProgramId;
+            parseDates(program);
 
-            if (program) {
-                if (program.IsKids) {
-                    cssClass += " childProgramInfo";
-                } else if (program.IsSports) {
-                    cssClass += " sportsProgramInfo";
-                } else if (program.IsNews) {
-                    cssClass += " newsProgramInfo";
-                } else if (program.IsMovie) {
-                    cssClass += " movieProgramInfo";
-                }
-                else {
-                    cssClass += " plainProgramInfo";
-                }
-
-                cssClass += " timeslotCellInnerWithProgram";
-
-                cellTagName = "a";
-                href = ' href="livetvprogram.html?id=' + program.Id + '"';
-
-                var width = getProgramWidth(program);
-
-                if (width && width != 100) {
-                    style = ' style="width:' + width + '%;"';
-                } else {
-                    style = '';
-                }
-                dataProgramId = ' data-programid="' + program.Id + '"';
-            } else {
-                cellTagName = "div";
-                href = '';
-                style = '';
-                dataProgramId = '';
+            if (program.EndDateLocal.getTime() < startMs) {
+                continue;
             }
 
-            html += '<' + cellTagName + dataProgramId + ' class="' + cssClass + '"' + href + style + '>';
-
-            if (program) {
-
-                html += '<div class="guideProgramName">';
-                html += program.Name;
-
-                html += '</div>';
-
-                html += '<div class="guideProgramTime">';
-
-                if (program.IsLive) {
-                    html += '<span class="liveTvProgram">'+Globalize.translate('LabelLiveProgram')+'&nbsp;&nbsp;</span>';
-                }
-                else if (program.IsPremiere) {
-                    html += '<span class="premiereTvProgram">'+Globalize.translate('LabelPremiereProgram')+'&nbsp;&nbsp;</span>';
-                }
-                else if (program.IsSeries && !program.IsRepeat) {
-                    html += '<span class="newTvProgram">'+Globalize.translate('LabelNewProgram')+'&nbsp;&nbsp;</span>';
-                }
-
-                html += LiveTvHelpers.getDisplayTime(program.StartDateLocal);
-                html += ' - ';
-                html += LiveTvHelpers.getDisplayTime(program.EndDateLocal);
-
-                if (program.SeriesTimerId) {
-                    html += '<div class="timerCircle seriesTimerCircle"></div>';
-                    html += '<div class="timerCircle seriesTimerCircle"></div>';
-                    html += '<div class="timerCircle seriesTimerCircle"></div>';
-                }
-                else if (program.TimerId) {
-
-                    html += '<div class="timerCircle"></div>';
-                }
-
-                html += '</div>';
-
-            } else {
-                html += '&nbsp;';
+            if (program.StartDateLocal.getTime() > endMs) {
+                break;
             }
 
-            html += '</' + cellTagName + '>';
+            var renderStartMs = Math.max(program.StartDateLocal.getTime(), startMs);
+            var startPercent = (program.StartDateLocal.getTime() - startMs) / msPerDay;
+            startPercent *= 100;
+            startPercent = Math.max(startPercent, 0);
+
+            var renderEndMs = Math.min(program.EndDateLocal.getTime(), endMs);
+            var endPercent = (renderEndMs - renderStartMs) / msPerDay;
+            endPercent *= 100;
+
+            html += '<div class="programCell" style="left:' + startPercent + '%;width:' + endPercent + '%;">';
+
+            var cssClass = "programCellInner";
+
+            if (program.IsKids) {
+                cssClass += " childProgramInfo";
+            } else if (program.IsSports) {
+                cssClass += " sportsProgramInfo";
+            } else if (program.IsNews) {
+                cssClass += " newsProgramInfo";
+            } else if (program.IsMovie) {
+                cssClass += " movieProgramInfo";
+            }
+            else {
+                cssClass += " plainProgramInfo";
+            }
+
+            html += '<a href="livetvprogram.html?id=' + program.Id + '" class="' + cssClass + '" data-programid="' + program.Id + '">';
+
+            html += '<div class="guideProgramName">';
+            html += program.Name;
             html += '</div>';
 
-            date = cellEndDate;
-            cellIndex++;
+            html += '<div class="guideProgramTime">';
+            if (program.IsLive) {
+                html += '<span class="liveTvProgram">' + Globalize.translate('LabelLiveProgram') + '&nbsp;&nbsp;</span>';
+            }
+            else if (program.IsPremiere) {
+                html += '<span class="premiereTvProgram">' + Globalize.translate('LabelPremiereProgram') + '&nbsp;&nbsp;</span>';
+            }
+            else if (program.IsSeries && !program.IsRepeat) {
+                html += '<span class="newTvProgram">' + Globalize.translate('LabelNewProgram') + '&nbsp;&nbsp;</span>';
+            }
+
+            html += LiveTvHelpers.getDisplayTime(program.StartDateLocal);
+            html += ' - ';
+            html += LiveTvHelpers.getDisplayTime(program.EndDateLocal);
+
+            if (program.SeriesTimerId) {
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+            }
+            else if (program.TimerId) {
+
+                html += '<div class="timerCircle"></div>';
+            }
+            html += '</div>';
+
+            html += '</a>';
+
+            html += '</div>';
         }
+
         html += '</div>';
 
         return html;
@@ -318,7 +252,7 @@
         }
 
         $('.programGrid', page).html(html.join('')).scrollTop(0).scrollLeft(0)
-            .createGuideHoverMenu('.timeslotCellInnerWithProgram');
+            .createGuideHoverMenu('.programCellInner');
     }
 
     function renderChannelHeaders(page, channels) {
@@ -360,30 +294,45 @@
     function renderGuide(page, date, channels, programs) {
 
         renderChannelHeaders(page, channels);
-        $('.timeslotHeaders', page).html(getTimeslotHeadersHtml(date));
+
+        var startDate = date;
+        var endDate = new Date(startDate.getTime() + msPerDay);
+        $('.timeslotHeaders', page).html(getTimeslotHeadersHtml(startDate, endDate));
         renderPrograms(page, date, channels, programs);
     }
 
+    var gridScrolling = false;
+    var headersScrolling = false;
     function onProgramGridScroll(page, elem) {
 
-        var grid = $(elem);
+        if (!headersScrolling) {
+            gridScrolling = true;
+            var grid = $(elem);
 
-        grid.prev().scrollTop(grid.scrollTop());
-        $('.timeslotHeaders', page).scrollLeft(grid.scrollLeft());
+            $('.timeslotHeaders', page).scrollLeft(grid.scrollLeft());
+            gridScrolling = false;
+        }
+    }
+
+    function onTimeslotHeadersScroll(page, elem) {
+
+        if (!gridScrolling) {
+            headersScrolling = true;
+            elem = $(elem);
+            $('.programGrid', page).scrollLeft(elem.scrollLeft());
+            headersScrolling = false;
+        }
     }
 
     function changeDate(page, date) {
 
         currentDate = normalizeDateToTimeslot(date);
 
-        gridLocalStartDateMs = currentDate.getTime();
-
-        var clone = new Date(gridLocalStartDateMs);
-        clone.setHours(0, 0, 0, 0);
-        clone.setDate(clone.getDate() + 1);
-        gridLocalEndDateMs = clone.getTime() - 1;
-
         reloadGuide(page);
+
+        var text = LibraryBrowser.getFutureDateText(date);
+        text = '<span class="currentDay">' + text.replace(' ', ' </span>');
+        $('.currentDate', page).html(text);
     }
 
     function setDateRange(page, guideInfo) {
@@ -444,9 +393,25 @@
             var date = new Date();
             date.setTime(parseInt(this.value));
 
-            changeDate(page, date);
+            $('#popupConfig', page).popup('close');
 
+            setTimeout(function () {
+
+                changeDate(page, date);
+            }, 300);
         });
+
+        if ($.browser.mobile) {
+            $('.tvGuide', page).addClass('mobileGuide');
+        } else {
+
+            $('.tvGuide', page).removeClass('mobileGuide');
+
+            $('.timeslotHeaders', page).on('scroll', function () {
+
+                onTimeslotHeadersScroll(page, this);
+            });
+        }
 
     }).on('pagebeforeshow', "#liveTvGuidePage", function () {
 

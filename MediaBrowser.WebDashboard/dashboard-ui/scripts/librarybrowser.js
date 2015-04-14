@@ -477,7 +477,7 @@
 
             if (context != 'folders') {
                 if (item.CollectionType == 'movies') {
-                    return 'movieslatest.html?topParentId=' + item.Id;
+                    return 'moviesrecommended.html?topParentId=' + item.Id;
                 }
 
                 if (item.CollectionType == 'boxsets') {

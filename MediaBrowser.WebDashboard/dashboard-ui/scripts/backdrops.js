@@ -59,7 +59,7 @@
         return deferred.promise();
     }
 
-    function showBackdrop(type) {
+    function showBackdrop(type, parentId) {
 
         var apiClient = ConnectionManager.currentApiClient();
 
@@ -67,31 +67,29 @@
             return;
         }
 
-        getBackdropItemIds(apiClient, Dashboard.getCurrentUserId(),
-            type,
-            LibraryMenu.getTopParentId()).done(function (images) {
+        getBackdropItemIds(apiClient, Dashboard.getCurrentUserId(), type, parentId).done(function (images) {
 
-                if (images.length) {
+            if (images.length) {
 
-                    var index = getRandom(0, images.length - 1);
-                    var item = images[index];
+                var index = getRandom(0, images.length - 1);
+                var item = images[index];
 
-                    var screenWidth = $(window).width();
+                var screenWidth = $(window).width();
 
-                    var imgUrl = apiClient.getScaledImageUrl(item.id, {
-                        type: "Backdrop",
-                        tag: item.tag,
-                        maxWidth: screenWidth,
-                        quality: 80
-                    });
+                var imgUrl = apiClient.getScaledImageUrl(item.id, {
+                    type: "Backdrop",
+                    tag: item.tag,
+                    maxWidth: screenWidth,
+                    quality: 80
+                });
 
-                    getElement().css('backgroundImage', 'url(\'' + imgUrl + '\')');
+                getElement().css('backgroundImage', 'url(\'' + imgUrl + '\')');
 
-                } else {
+            } else {
 
-                    clearBackdrop();
-                }
-            });
+                clearBackdrop();
+            }
+        });
     }
 
     function clearBackdrop() {
@@ -154,17 +152,21 @@
 
         var page = this;
 
-        if (!$(page).hasClass('staticBackdropPage')) {
+        var $page = $(page);
 
-            if ($(page).hasClass('backdropPage')) {
+        if (!$page.hasClass('staticBackdropPage')) {
+
+            if ($page.hasClass('backdropPage')) {
 
                 if (enabled()) {
                     var type = page.getAttribute('data-backdroptype');
 
-                    showBackdrop(type);
+                    var parentId = $page.hasClass('globalBackdropPage') ? '' : LibraryMenu.getTopParentId();
+
+                    showBackdrop(type, parentId);
 
                 } else {
-                    $(page).removeClass('backdropPage');
+                    $page.removeClass('backdropPage');
                     clearBackdrop();
                 }
             } else {

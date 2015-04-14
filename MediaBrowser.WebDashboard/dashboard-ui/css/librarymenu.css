@@ -3,7 +3,7 @@
 }
 
     .libraryPage:not(.metadataEditorPage):not(.noSecondaryNavPage) {
-        padding-top: 98px !important;
+        padding-top: 99px !important;
     }
 
 .libraryMenuDivider {
@@ -121,7 +121,7 @@
 }
 
 .libraryViewNav {
-    height: 48px;
+    height: 49px;
     overflow: hidden;
     position: fixed;
     right: 0;
@@ -129,7 +129,7 @@
     top: 50px;
     z-index: 999;
     text-align: center;
-    font-size: 14px;
+    font-size: 15px;
     white-space: nowrap;
     padding: 0 0 0;
     overflow-x: scroll;

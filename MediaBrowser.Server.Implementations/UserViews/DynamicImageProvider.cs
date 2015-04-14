@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
@@ -22,8 +23,8 @@ namespace MediaBrowser.Server.Implementations.UserViews
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
 
-        public DynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IUserManager userManager, ILibraryManager libraryManager)
-            : base(fileSystem, providerManager, applicationPaths)
+        public DynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, IUserManager userManager, ILibraryManager libraryManager)
+            : base(fileSystem, providerManager, applicationPaths, imageProcessor)
         {
             _userManager = userManager;
             _libraryManager = libraryManager;
@@ -107,7 +108,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 User = _userManager.GetUserById(view.UserId.Value),
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
-                ExcludeItemTypes = new[] { "UserView", "CollectionFolder" }
+                ExcludeItemTypes = new[] { "UserView", "CollectionFolder", "Playlist" }
 
             }).ConfigureAwait(false);
 
@@ -202,6 +203,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
                     SpecialFolder.MusicGenres,
                     SpecialFolder.MusicGenre,
                     SpecialFolder.MusicLatest,
+                    SpecialFolder.MusicPlaylists,
                     SpecialFolder.MusicSongs,
                     SpecialFolder.MusicFavorites,
                     SpecialFolder.MusicFavoriteArtists,
@@ -238,26 +240,28 @@ namespace MediaBrowser.Server.Implementations.UserViews
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
         }
 
-        protected override async Task<Stream> CreateImageAsync(IHasImages item, List<BaseItem> itemsWithImages, ImageType imageType, int imageIndex)
+        protected override bool CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPath, ImageType imageType, int imageIndex)
         {
             var view = (UserView)item;
             if (imageType == ImageType.Primary && IsUsingCollectionStrip(view))
             {
                 if (itemsWithImages.Count == 0 && !string.Equals(view.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
                 {
-                    return null;
+                    return false;
                 }
 
-                var stream = new StripCollageBuilder(ApplicationPaths).BuildThumbCollage(GetStripCollageImagePaths(itemsWithImages, view.ViewType), item.Name, 960, 540);
-                return stream;
+                CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540, false, item.Name);
+                return true;
             }
 
-            return await base.CreateImageAsync(item, itemsWithImages, imageType, imageIndex);
+            return base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex);
         }
 
-        private IEnumerable<String> GetStripCollageImagePaths(IEnumerable<BaseItem> items, string viewType)
+        protected override IEnumerable<String> GetStripCollageImagePaths(IHasImages primaryItem, IEnumerable<BaseItem> items)
         {
-            if (string.Equals(viewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
+            var userView = primaryItem as UserView;
+
+            if (userView != null && string.Equals(userView.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
             {
                 var list = new List<string>();
                 for (int i = 1; i <= 8; i++)
@@ -267,9 +271,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 return list;
             }
 
-            return items
-                .Select(i => i.GetImagePath(ImageType.Primary) ?? i.GetImagePath(ImageType.Thumb))
-                .Where(i => !string.IsNullOrWhiteSpace(i));
+            return base.GetStripCollageImagePaths(primaryItem, items);
         }
 
         private string ExtractLiveTvResource(string name, IApplicationPaths paths)

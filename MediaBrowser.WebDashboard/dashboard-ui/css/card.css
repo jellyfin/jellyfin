@@ -88,8 +88,8 @@
 }*/
 
 .ui-page-theme-b .visualCardBox {
-    background: rgb(51, 51, 51);
-    border: 1px solid rgb(31, 31, 31);
+    background: rgba(45,45,45,.85);
+    border: 1px solid #1f1f1f;
     border-radius: 3px;
 }
 
@@ -353,10 +353,6 @@
         width: 14.285714285714285714285714285714%;
     }
 
-    .backdropCard {
-        width: 20%;
-    }
-
     .portraitCard {
         width: 14.285714285714285714285714285714%;
     }
@@ -369,16 +365,16 @@
 
 @media all and (min-width: 1600px) {
 
-    .squareCard {
-        width: 12.5%;
-    }
-
     .portraitCard {
         width: 12.5%;
     }
 
     .smallBackdropCard {
         width: 12.5%;
+    }
+
+    .backdropCard {
+        width: 20%;
     }
 }
 
@@ -386,7 +382,7 @@
 @media all and (min-width: 1800px) {
 
     .squareCard {
-        width: 10%;
+        width: 12.5%;
     }
 
     .portraitCard {
@@ -398,7 +394,18 @@
     }
 }
 
+@media all and (min-width: 1920px) {
+
+    .squareCard {
+        width: 11.111111111111111111111111111111%;
+    }
+}
+
 @media all and (min-width: 2200px) {
+
+    .squareCard {
+        width: 10%;
+    }
 
     .backdropCard {
         width: 16.666666666666666666666666666667%;
