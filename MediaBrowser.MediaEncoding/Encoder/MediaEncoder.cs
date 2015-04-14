@@ -280,7 +280,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private async Task<List<int>> GetKeyFrames(string inputPath, int videoStreamIndex, CancellationToken cancellationToken)
         {
-            const string args = "-i {0} -select_streams v:{1} -show_frames -print_format compact";
+            const string args = "-i {0} -select_streams v:{1} -show_frames -show_entries frame=pkt_dts,key_frame -print_format compact";
 
             var process = new Process
             {
@@ -310,15 +310,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
             StartProcess(processWrapper);
 
             var lines = new List<int>();
-            var outputCancellationSource = new CancellationTokenSource(4000);
 
             try
             {
                 process.BeginErrorReadLine();
 
-                var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(outputCancellationSource.Token, cancellationToken);
-
-                await StartReadingOutput(process.StandardOutput.BaseStream, lines, 120000, outputCancellationSource, linkedCancellationTokenSource.Token).ConfigureAwait(false);
+                await StartReadingOutput(process.StandardOutput.BaseStream, lines, 120000, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -335,7 +332,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return lines;
         }
 
-        private async Task StartReadingOutput(Stream source, List<int> lines, int timeoutMs, CancellationTokenSource cancellationTokenSource, CancellationToken cancellationToken)
+        private async Task StartReadingOutput(Stream source, List<int> lines, int timeoutMs, CancellationToken cancellationToken)
         {
             try
             {
@@ -361,11 +358,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                             if (values.TryGetValue("key_frame", out keyFrame) && string.Equals(keyFrame, "1", StringComparison.OrdinalIgnoreCase))
                             {
                                 lines.Add(frameMs);
-                            }
-
-                            if (frameMs > timeoutMs)
-                            {
-                                cancellationTokenSource.Cancel();
                             }
                         }
                     }

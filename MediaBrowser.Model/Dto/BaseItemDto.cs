@@ -38,6 +38,12 @@ namespace MediaBrowser.Model.Dto
         public string Id { get; set; }
 
         /// <summary>
+        /// Gets or sets the etag.
+        /// </summary>
+        /// <value>The etag.</value>
+        public string Etag { get; set; }
+        
+        /// <summary>
         /// Gets or sets the playlist item identifier.
         /// </summary>
         /// <value>The playlist item identifier.</value>

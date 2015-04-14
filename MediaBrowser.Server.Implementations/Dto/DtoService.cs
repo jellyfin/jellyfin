@@ -357,6 +357,8 @@ namespace MediaBrowser.Server.Implementations.Dto
                     : item.CanDownload(user);
             }
 
+
+
             return dto;
         }
 
