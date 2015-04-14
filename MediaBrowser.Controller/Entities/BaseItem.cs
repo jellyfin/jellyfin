@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Globalization;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
@@ -1891,6 +1892,19 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return video.RefreshMetadata(newOptions, cancellationToken);
+        }
+
+        public string GetEtag()
+        {
+            return string.Join("|", GetEtagValues().ToArray()).GetMD5().ToString("N");
+        }
+
+        protected virtual List<string> GetEtagValues()
+        {
+            return new List<string>
+            {
+                DateLastSaved.Ticks.ToString(CultureInfo.InvariantCulture)
+            };
         }
     }
 }

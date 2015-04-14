@@ -736,7 +736,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     ).Trim();
             }
 
-            return string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -flags -global_header -sc_threshold 0 {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
+            return string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -flags -global_header -copyts -sc_threshold 0 {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
                             inputModifier,
                             GetInputArgument(state),
                             threads,
