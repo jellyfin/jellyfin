@@ -37,7 +37,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
         {
             var items = _libraryManager.RootFolder.GetRecursiveChildren(i => !(i is IHasMusicGenres) && !(i is Game))
                 .SelectMany(i => i.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .ToList();
 
             var numComplete = 0;

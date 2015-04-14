@@ -32,8 +32,6 @@ namespace MediaBrowser.Model.Users
         public bool EnableUserPreferenceAccess { get; set; }
         public AccessSchedule[] AccessSchedules { get; set; }
         public UnratedItem[] BlockUnratedItems { get; set; }
-        public string[] BlockedMediaFolders { get; set; }
-        public string[] BlockedChannels { get; set; }
         public bool EnableRemoteControlOfOtherUsers { get; set; }
         public bool EnableSharedDeviceControl { get; set; }
 
@@ -41,6 +39,9 @@ namespace MediaBrowser.Model.Users
         public bool EnableLiveTvAccess { get; set; }
 
         public bool EnableMediaPlayback { get; set; }
+        public bool EnableAudioPlaybackTranscoding { get; set; }
+        public bool EnableVideoPlaybackTranscoding { get; set; }
+   
         public bool EnableContentDeletion { get; set; }
         public bool EnableContentDownloading { get; set; }
 
@@ -49,6 +50,7 @@ namespace MediaBrowser.Model.Users
         /// </summary>
         /// <value><c>true</c> if [enable synchronize]; otherwise, <c>false</c>.</value>
         public bool EnableSync { get; set; }
+        public bool EnableSyncTranscoding { get; set; }
 
         public string[] EnabledDevices { get; set; }
         public bool EnableAllDevices { get; set; }
@@ -60,13 +62,21 @@ namespace MediaBrowser.Model.Users
         public bool EnableAllFolders { get; set; }
 
         public int InvalidLoginAttemptCount { get; set; }
+
+        public bool EnablePublicSharing { get; set; }
         
         public UserPolicy()
         {
             EnableSync = true;
-            EnableLiveTvManagement = true;
+            EnableSyncTranscoding = true;
+
             EnableMediaPlayback = true;
+            EnableAudioPlaybackTranscoding = true;
+            EnableVideoPlaybackTranscoding = true;
+     
+            EnableLiveTvManagement = true;
             EnableLiveTvAccess = true;
+
             EnableSharedDeviceControl = true;
 
             BlockedTags = new string[] { };
@@ -86,6 +96,7 @@ namespace MediaBrowser.Model.Users
             EnableAllDevices = true;
 
             EnableContentDownloading = true;
+            EnablePublicSharing = true;
         }
     }
 }

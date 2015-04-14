@@ -512,12 +512,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 var video = item as Video;
                 if (video != null)
                 {
-                    if (video.VideoType == VideoType.Iso)
-                    {
-                        return false;
-                    }
-
-                    if (video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd || video.VideoType == VideoType.HdDvd)
+                    if (video.VideoType == VideoType.Iso || video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd || video.VideoType == VideoType.HdDvd)
                     {
                         return false;
                     }
@@ -552,7 +547,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                     }
                 }
 
-                if (item is LiveTvChannel || item is IChannelItem || item is ILiveTvRecording)
+                if (item is LiveTvChannel || item is IChannelItem)
                 {
                     return false;
                 }
@@ -566,7 +561,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return true;
             }
 
-            return item.LocationType == LocationType.FileSystem || item is Season || item is ILiveTvRecording;
+            return item.LocationType == LocationType.FileSystem || item is Season;
         }
 
         private string GetDefaultName(BaseItem item)
@@ -755,6 +750,9 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             foreach (var jobItem in jobItemResult.Items)
             {
+                var requiresSaving = false;
+                var removeFromDevice = false;
+
                 if (request.LocalItemIds.Contains(jobItem.ItemId, StringComparer.OrdinalIgnoreCase))
                 {
                     var job = _repo.GetJob(jobItem.JobId);
@@ -764,13 +762,13 @@ namespace MediaBrowser.Server.Implementations.Sync
                     {
                         // Tell the device to remove it since it has been marked for removal
                         _logger.Debug("Adding ItemIdsToRemove {0} because IsMarkedForRemoval is set.", jobItem.ItemId);
-                        response.ItemIdsToRemove.Add(jobItem.ItemId);
+                        removeFromDevice = true;
                     }
                     else if (user == null)
                     {
                         // Tell the device to remove it since the user is gone now
                         _logger.Debug("Adding ItemIdsToRemove {0} because the user is no longer valid.", jobItem.ItemId);
-                        response.ItemIdsToRemove.Add(jobItem.ItemId);
+                        removeFromDevice = true;
                     }
                     else if (job.UnwatchedOnly)
                     {
@@ -782,23 +780,41 @@ namespace MediaBrowser.Server.Implementations.Sync
                             {
                                 // Tell the device to remove it since it has been played
                                 _logger.Debug("Adding ItemIdsToRemove {0} because it has been marked played.", jobItem.ItemId);
-                                response.ItemIdsToRemove.Add(jobItem.ItemId);
+                                removeFromDevice = true;
                             }
                         }
                         else
                         {
                             // Tell the device to remove it since it's no longer available
                             _logger.Debug("Adding ItemIdsToRemove {0} because it is no longer available.", jobItem.ItemId);
-                            response.ItemIdsToRemove.Add(jobItem.ItemId);
+                            removeFromDevice = true;
                         }
                     }
                 }
                 else
                 {
-                    _logger.Debug("Setting status to RemovedFromDevice for {0} because it is no longer on the device.", jobItem.ItemId);
-
                     // Content is no longer on the device
-                    jobItem.Status = SyncJobItemStatus.RemovedFromDevice;
+                    if (jobItem.IsMarkedForRemoval)
+                    {
+                        jobItem.Status = SyncJobItemStatus.RemovedFromDevice;
+                    }
+                    else
+                    {
+                        _logger.Debug("Setting status to Queued for {0} because it is no longer on the device.", jobItem.ItemId);
+                        jobItem.Status = SyncJobItemStatus.Queued;
+                    }
+                    requiresSaving = true;
+                }
+
+                if (removeFromDevice)
+                {
+                    response.ItemIdsToRemove.Add(jobItem.ItemId);
+                    jobItem.IsMarkedForRemoval = true;
+                    requiresSaving = true;
+                }
+
+                if (requiresSaving)
+                {
                     await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
                 }
             }
@@ -842,6 +858,9 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             foreach (var jobItem in jobItemResult.Items)
             {
+                var requiresSaving = false;
+                var removeFromDevice = false;
+
                 if (request.SyncJobItemIds.Contains(jobItem.Id, StringComparer.OrdinalIgnoreCase))
                 {
                     var job = _repo.GetJob(jobItem.JobId);
@@ -851,13 +870,13 @@ namespace MediaBrowser.Server.Implementations.Sync
                     {
                         // Tell the device to remove it since it has been marked for removal
                         _logger.Debug("Adding ItemIdsToRemove {0} because IsMarkedForRemoval is set.", jobItem.Id);
-                        response.ItemIdsToRemove.Add(jobItem.Id);
+                        removeFromDevice = true;
                     }
                     else if (user == null)
                     {
                         // Tell the device to remove it since the user is gone now
                         _logger.Debug("Adding ItemIdsToRemove {0} because the user is no longer valid.", jobItem.Id);
-                        response.ItemIdsToRemove.Add(jobItem.Id);
+                        removeFromDevice = true;
                     }
                     else if (job.UnwatchedOnly)
                     {
@@ -869,23 +888,41 @@ namespace MediaBrowser.Server.Implementations.Sync
                             {
                                 // Tell the device to remove it since it has been played
                                 _logger.Debug("Adding ItemIdsToRemove {0} because it has been marked played.", jobItem.Id);
-                                response.ItemIdsToRemove.Add(jobItem.Id);
+                                removeFromDevice = true;
                             }
                         }
                         else
                         {
                             // Tell the device to remove it since it's no longer available
                             _logger.Debug("Adding ItemIdsToRemove {0} because it is no longer available.", jobItem.Id);
-                            response.ItemIdsToRemove.Add(jobItem.Id);
+                            removeFromDevice = true;
                         }
                     }
                 }
                 else
                 {
-                    _logger.Debug("Setting status to RemovedFromDevice for {0} because it is no longer on the device.", jobItem.Id);
-
                     // Content is no longer on the device
-                    jobItem.Status = SyncJobItemStatus.RemovedFromDevice;
+                    if (jobItem.IsMarkedForRemoval)
+                    {
+                        jobItem.Status = SyncJobItemStatus.RemovedFromDevice;
+                    }
+                    else
+                    {
+                        _logger.Debug("Setting status to Queued for {0} because it is no longer on the device.", jobItem.Id);
+                        jobItem.Status = SyncJobItemStatus.Queued;
+                    }
+                    requiresSaving = true;
+                }
+
+                if (removeFromDevice)
+                {
+                    response.ItemIdsToRemove.Add(jobItem.Id);
+                    jobItem.IsMarkedForRemoval = true;
+                    requiresSaving = true;
+                }
+
+                if (requiresSaving)
+                {
                     await UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
                 }
             }
@@ -1168,13 +1205,18 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         public IEnumerable<SyncQualityOption> GetQualityOptions(string targetId)
         {
+            return GetQualityOptions(targetId, null);
+        }
+
+        public IEnumerable<SyncQualityOption> GetQualityOptions(string targetId, User user)
+        {
             foreach (var provider in _providers)
             {
                 foreach (var target in GetSyncTargets(provider))
                 {
                     if (string.Equals(target.Id, targetId, StringComparison.OrdinalIgnoreCase))
                     {
-                        return GetQualityOptions(provider, target);
+                        return GetQualityOptions(provider, target, user);
                     }
                 }
             }
@@ -1182,12 +1224,19 @@ namespace MediaBrowser.Server.Implementations.Sync
             return new List<SyncQualityOption>();
         }
 
-        private IEnumerable<SyncQualityOption> GetQualityOptions(ISyncProvider provider, SyncTarget target)
+        private IEnumerable<SyncQualityOption> GetQualityOptions(ISyncProvider provider, SyncTarget target, User user)
         {
             var hasQuality = provider as IHasSyncQuality;
             if (hasQuality != null)
             {
-                return hasQuality.GetQualityOptions(target);
+                var options = hasQuality.GetQualityOptions(target);
+
+                if (user != null && !user.Policy.EnableSyncTranscoding)
+                {
+                    options = options.Where(i => i.IsOriginalQuality);
+                }
+
+                return options;
             }
 
             // Default options for providers that don't override
@@ -1217,7 +1266,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             };
         }
 
-        public IEnumerable<SyncProfileOption> GetProfileOptions(string targetId)
+        public IEnumerable<SyncProfileOption> GetProfileOptions(string targetId, User user)
         {
             foreach (var provider in _providers)
             {
@@ -1225,7 +1274,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 {
                     if (string.Equals(target.Id, targetId, StringComparison.OrdinalIgnoreCase))
                     {
-                        return GetProfileOptions(provider, target);
+                        return GetProfileOptions(provider, target, user);
                     }
                 }
             }
@@ -1233,7 +1282,12 @@ namespace MediaBrowser.Server.Implementations.Sync
             return new List<SyncProfileOption>();
         }
 
-        private IEnumerable<SyncProfileOption> GetProfileOptions(ISyncProvider provider, SyncTarget target)
+        public IEnumerable<SyncProfileOption> GetProfileOptions(string targetId)
+        {
+            return GetProfileOptions(targetId, null);
+        }
+
+        private IEnumerable<SyncProfileOption> GetProfileOptions(ISyncProvider provider, SyncTarget target, User user)
         {
             var hasQuality = provider as IHasSyncQuality;
             if (hasQuality != null)
@@ -1251,20 +1305,23 @@ namespace MediaBrowser.Server.Implementations.Sync
                 EnableQualityOptions = false
             });
 
-            list.Add(new SyncProfileOption
+            if (user == null || user.Policy.EnableSyncTranscoding)
             {
-                Name = "Baseline",
-                Id = "baseline",
-                Description = "Designed for compatibility with all devices, including web browsers. Targets H264/AAC video and MP3 audio."
-            });
+                list.Add(new SyncProfileOption
+                {
+                    Name = "Baseline",
+                    Id = "baseline",
+                    Description = "Designed for compatibility with all devices, including web browsers. Targets H264/AAC video and MP3 audio."
+                });
 
-            list.Add(new SyncProfileOption
-            {
-                Name = "General",
-                Id = "general",
-                Description = "Designed for compatibility with Chromecast, Roku, Smart TV's, and other similar devices. Targets H264/AAC/AC3 video and MP3 audio.",
-                IsDefault = true
-            });
+                list.Add(new SyncProfileOption
+                {
+                    Name = "General",
+                    Id = "general",
+                    Description = "Designed for compatibility with Chromecast, Roku, Smart TV's, and other similar devices. Targets H264/AAC/AC3 video and MP3 audio.",
+                    IsDefault = true
+                });
+            }
 
             return list;
         }

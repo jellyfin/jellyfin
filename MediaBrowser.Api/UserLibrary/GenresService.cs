@@ -108,7 +108,7 @@ namespace MediaBrowser.Api.UserLibrary
         {
             return items
                 .SelectMany(i => i.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .Select(name =>
                 {
                     try

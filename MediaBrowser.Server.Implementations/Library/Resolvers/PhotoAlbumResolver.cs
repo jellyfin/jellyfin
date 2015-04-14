@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
@@ -10,6 +11,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
     public class PhotoAlbumResolver : FolderResolver<PhotoAlbum>
     {
+        private readonly IImageProcessor _imageProcessor;
+        public PhotoAlbumResolver(IImageProcessor imageProcessor)
+        {
+            _imageProcessor = imageProcessor;
+        }
+
         /// <summary>
         /// Resolves the specified args.
         /// </summary>
@@ -32,9 +39,9 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
             return null;
         }
 
-        private static bool HasPhotos(ItemResolveArgs args)
+        private bool HasPhotos(ItemResolveArgs args)
         {
-            return args.FileSystemChildren.Any(i => ((i.Attributes & FileAttributes.Directory) != FileAttributes.Directory) && PhotoResolver.IsImageFile(i.FullName));
+            return args.FileSystemChildren.Any(i => ((i.Attributes & FileAttributes.Directory) != FileAttributes.Directory) && PhotoResolver.IsImageFile(i.FullName, _imageProcessor));
         }
 
         public override ResolverPriority Priority

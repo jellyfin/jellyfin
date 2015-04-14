@@ -129,29 +129,19 @@ namespace MediaBrowser.Server.Implementations.Library
             return list;
         }
 
-        public Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, bool enablePathSubstitution, CancellationToken cancellationToken)
-        {
-            return GetPlayackMediaSources(id, null, enablePathSubstitution, cancellationToken);
-        }
-
-        public async Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, string userId, bool enablePathSubstitution, CancellationToken cancellationToken)
+        public async Task<IEnumerable<MediaSourceInfo>> GetPlayackMediaSources(string id, string userId, bool enablePathSubstitution, string[] supportedLiveMediaTypes, CancellationToken cancellationToken)
         {
             var item = _libraryManager.GetItemById(id);
-            IEnumerable<MediaSourceInfo> mediaSources;
 
             var hasMediaSources = (IHasMediaSources)item;
             User user = null;
 
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                mediaSources = hasMediaSources.GetMediaSources(enablePathSubstitution);
-            }
-            else
+            if (!string.IsNullOrWhiteSpace(userId))
             {
                 user = _userManager.GetUserById(userId);
-                mediaSources = GetStaticMediaSources(hasMediaSources, enablePathSubstitution, user);
             }
 
+            var mediaSources = GetStaticMediaSources(hasMediaSources, enablePathSubstitution, user);
             var dynamicMediaSources = await GetDynamicMediaSources(hasMediaSources, cancellationToken).ConfigureAwait(false);
 
             var list = new List<MediaSourceInfo>();
@@ -166,9 +156,11 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
                 if (source.Protocol == MediaProtocol.File)
                 {
-                    source.SupportsDirectStream = File.Exists(source.Path);
-
                     // TODO: Path substitution
+                    if (!File.Exists(source.Path))
+                    {
+                        source.SupportsDirectStream = false;
+                    }
                 }
                 else if (source.Protocol == MediaProtocol.Http)
                 {
@@ -181,6 +173,27 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
 
                 list.Add(source);
+            }
+
+            foreach (var source in list)
+            {
+                if (user != null)
+                {
+                    if (string.Equals(item.MediaType, MediaType.Audio, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!user.Policy.EnableAudioPlaybackTranscoding)
+                        {
+                            source.SupportsTranscoding = false;
+                        }
+                    }
+                    else if (string.Equals(item.MediaType, MediaType.Video, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!user.Policy.EnableVideoPlaybackTranscoding)
+                        {
+                            source.SupportsTranscoding = false;
+                        }
+                    }
+                }
             }
 
             return SortMediaSources(list).Where(i => i.Type != MediaSourceType.Placeholder);
@@ -230,12 +243,15 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
-        public MediaSourceInfo GetStaticMediaSource(IHasMediaSources item, string mediaSourceId, bool enablePathSubstitution)
+        public async Task<MediaSourceInfo> GetMediaSource(IHasMediaSources item, string mediaSourceId, bool enablePathSubstitution)
         {
-            return GetStaticMediaSources(item, enablePathSubstitution).FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
+            var sources = await GetPlayackMediaSources(item.Id.ToString("N"), null, enablePathSubstitution, new[] { MediaType.Audio, MediaType.Video },
+                        CancellationToken.None).ConfigureAwait(false);
+
+            return sources.FirstOrDefault(i => string.Equals(i.Id, mediaSourceId, StringComparison.OrdinalIgnoreCase));
         }
 
-        public IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution)
+        public IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution, User user = null)
         {
             if (item == null)
             {
@@ -245,33 +261,16 @@ namespace MediaBrowser.Server.Implementations.Library
             if (!(item is Video))
             {
                 return item.GetMediaSources(enablePathSubstitution);
-            }
-
-            return item.GetMediaSources(enablePathSubstitution);
-        }
-
-        public IEnumerable<MediaSourceInfo> GetStaticMediaSources(IHasMediaSources item, bool enablePathSubstitution, User user)
-        {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
-
-            if (!(item is Video))
-            {
-                return item.GetMediaSources(enablePathSubstitution);
-            }
-
-            if (user == null)
-            {
-                throw new ArgumentNullException("user");
             }
 
             var sources = item.GetMediaSources(enablePathSubstitution).ToList();
 
-            foreach (var source in sources)
+            if (user != null)
             {
-                SetUserProperties(source, user);
+                foreach (var source in sources)
+                {
+                    SetUserProperties(source, user);
+                }
             }
 
             return sources;
@@ -360,6 +359,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
 
                 var json = _jsonSerializer.SerializeToString(mediaSource);
+                _logger.Debug("Live stream opened: " + json);
                 var clone = _jsonSerializer.DeserializeFromString<MediaSourceInfo>(json);
 
                 if (!string.IsNullOrWhiteSpace(request.UserId))

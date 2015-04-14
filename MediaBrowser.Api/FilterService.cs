@@ -76,7 +76,7 @@ namespace MediaBrowser.Api
                 .ToArray();
 
             result.Genres = items.SelectMany(i => i.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .OrderBy(i => i)
                 .ToArray();
 

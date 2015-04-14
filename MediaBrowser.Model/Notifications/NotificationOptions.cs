@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Extensions;
+using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Model.Notifications
 {
@@ -106,7 +107,7 @@ namespace MediaBrowser.Model.Notifications
                    !ListHelper.ContainsIgnoreCase(opt.DisabledMonitorUsers, userId);
         }
 
-        public bool IsEnabledToSendToUser(string type, string userId, UserConfiguration userConfig)
+        public bool IsEnabledToSendToUser(string type, string userId, UserPolicy userPolicy)
         {
             NotificationOption opt = GetOptions(type);
 
@@ -117,7 +118,7 @@ namespace MediaBrowser.Model.Notifications
                     return true;
                 }
 
-                if (opt.SendToUserMode == SendToUserType.Admins && userConfig.IsAdministrator)
+                if (opt.SendToUserMode == SendToUserType.Admins && userPolicy.IsAdministrator)
                 {
                     return true;
                 }

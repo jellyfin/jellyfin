@@ -105,7 +105,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             return itemsList
                 .SelectMany(i => i.Genres)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .Select(name => LibraryManager.GetGameGenre(name));
         }
     }

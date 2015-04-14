@@ -732,7 +732,12 @@ namespace MediaBrowser.Server.Implementations.Library
                         }
                     }
 
-                    folder = GetItemById(folder.Id) as BasePluginFolder ?? folder;
+                    var dbItem = GetItemById(folder.Id) as BasePluginFolder;
+
+                    if (dbItem != null && string.Equals(dbItem.Path, folder.Path, StringComparison.OrdinalIgnoreCase))
+                    {
+                        folder = dbItem;
+                    }
 
                     rootFolder.AddVirtualChild(folder);
 
@@ -921,10 +926,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (isArtist)
             {
-                var validFilename = _fileSystem.GetValidFilename(name).Trim();
-
                 var existing = RootFolder
-                    .GetRecursiveChildren(i => i is T && string.Equals(_fileSystem.GetValidFilename(i.Name).Trim(), validFilename, StringComparison.OrdinalIgnoreCase))
+                    .GetRecursiveChildren(i => i is T && NameExtensions.AreEqual(i.Name, name))
                     .Cast<T>()
                     .FirstOrDefault();
 
@@ -1510,7 +1513,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             return GetUserRootFolder().Children
                 .OfType<Folder>()
-                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path));
+                .Where(i => string.Equals(i.Path, item.Path, StringComparison.OrdinalIgnoreCase) || i.PhysicalLocations.Contains(item.Path, StringComparer.OrdinalIgnoreCase));
         }
 
         public string GetContentType(BaseItem item)

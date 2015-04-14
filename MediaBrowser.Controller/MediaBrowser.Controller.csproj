@@ -52,6 +52,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\morelinq.1.1.0\lib\net35\MoreLinq.dll</HintPath>
     </Reference>
+    <Reference Include="Patterns.IO, Version=1.0.5580.36861, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Patterns.IO.1.0.0.3\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.IO.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -115,6 +119,7 @@
     <Compile Include="Dlna\IMediaReceiverRegistrar.cs" />
     <Compile Include="Dlna\IUpnpService.cs" />
     <Compile Include="Drawing\IImageProcessor.cs" />
+    <Compile Include="Drawing\ImageCollageOptions.cs" />
     <Compile Include="Drawing\ImageProcessingOptions.cs" />
     <Compile Include="Drawing\ImageProcessorExtensions.cs" />
     <Compile Include="Drawing\ImageStream.cs" />
@@ -171,6 +176,7 @@
     <Compile Include="Entities\UserView.cs" />
     <Compile Include="Entities\UserViewBuilder.cs" />
     <Compile Include="FileOrganization\IFileOrganizationService.cs" />
+    <Compile Include="IO\ThrottledStream.cs" />
     <Compile Include="Library\DeleteOptions.cs" />
     <Compile Include="Library\ILibraryPostScanTask.cs" />
     <Compile Include="Library\IMediaSourceManager.cs" />
@@ -184,6 +190,7 @@
     <Compile Include="Library\IUserViewManager.cs" />
     <Compile Include="Library\LibraryManagerExtensions.cs" />
     <Compile Include="Library\MetadataConfigurationStore.cs" />
+    <Compile Include="Library\NameExtensions.cs" />
     <Compile Include="Library\PlaybackStopEventArgs.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />
     <Compile Include="LiveTv\ILiveTvItem.cs" />
@@ -211,8 +218,8 @@
     <Compile Include="MediaEncoding\IEncodingManager.cs" />
     <Compile Include="MediaEncoding\ImageEncodingOptions.cs" />
     <Compile Include="MediaEncoding\IMediaEncoder.cs" />
-    <Compile Include="MediaEncoding\InternalMediaInfoResult.cs" />
     <Compile Include="MediaEncoding\ISubtitleEncoder.cs" />
+    <Compile Include="MediaEncoding\MediaInfoRequest.cs" />
     <Compile Include="MediaEncoding\MediaStreamSelector.cs" />
     <Compile Include="Net\AuthenticatedAttribute.cs" />
     <Compile Include="Net\AuthorizationInfo.cs" />
@@ -394,6 +401,7 @@
     <Compile Include="Subtitles\SubtitleResponse.cs" />
     <Compile Include="Subtitles\SubtitleSearchRequest.cs" />
     <Compile Include="Sync\IHasDynamicAccess.cs" />
+    <Compile Include="Sync\IRemoteSyncProvider.cs" />
     <Compile Include="Sync\IServerSyncProvider.cs" />
     <Compile Include="Sync\ISyncDataProvider.cs" />
     <Compile Include="Sync\ISyncManager.cs" />

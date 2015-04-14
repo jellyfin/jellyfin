@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MediaBrowser.Controller.MediaEncoding
+namespace MediaBrowser.MediaEncoding.Probing
 {
     /// <summary>
     /// Class MediaInfoResult
@@ -89,7 +89,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         /// <value>The channel_layout.</value>
         public string channel_layout { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the avg_frame_rate.
         /// </summary>
@@ -317,7 +317,7 @@ namespace MediaBrowser.Controller.MediaEncoding
         /// </summary>
         /// <value>The probe_score.</value>
         public int probe_score { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the tags.
         /// </summary>

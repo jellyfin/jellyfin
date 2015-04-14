@@ -136,11 +136,11 @@ namespace MediaBrowser.Api.Subtitles
             _providerManager = providerManager;
         }
 
-        public object Get(GetSubtitlePlaylist request)
+        public async Task<object> Get(GetSubtitlePlaylist request)
         {
             var item = (Video)_libraryManager.GetItemById(new Guid(request.Id));
 
-            var mediaSource = _mediaSourceManager.GetStaticMediaSource(item, request.MediaSourceId, false);
+            var mediaSource = await _mediaSourceManager.GetMediaSource(item, request.MediaSourceId, false).ConfigureAwait(false);
 
             var builder = new StringBuilder();
 

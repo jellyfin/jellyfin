@@ -36,16 +36,15 @@ namespace MediaBrowser.Providers.Manager
 
         public bool ValidateImages(IHasImages item, IEnumerable<IImageProvider> providers, IDirectoryService directoryService)
         {
-            var hasChanges = item.ValidateImages(directoryService);
+            var hasChanges = false;
 
-            foreach (var provider in providers.OfType<ILocalImageFileProvider>())
+            var images = providers.OfType<ILocalImageFileProvider>()
+                .SelectMany(i => i.GetImages(item, directoryService))
+                .ToList();
+
+            if (MergeImages(item, images))
             {
-                var images = provider.GetImages(item, directoryService);
-
-                if (MergeImages(item, images))
-                {
-                    hasChanges = true;
-                }
+                hasChanges = true;
             }
 
             return hasChanges;
@@ -377,8 +376,7 @@ namespace MediaBrowser.Providers.Manager
                         item.SetImagePath(type, image.FileInfo);
                         changed = true;
                     }
-                    else if (!string.Equals(currentImage.Path, image.FileInfo.FullName,
-                            StringComparison.OrdinalIgnoreCase))
+                    else if (!string.Equals(currentImage.Path, image.FileInfo.FullName, StringComparison.OrdinalIgnoreCase))
                     {
                         item.SetImagePath(type, image.FileInfo);
                         changed = true;
@@ -387,6 +385,15 @@ namespace MediaBrowser.Providers.Manager
                     {
                         currentImage.DateModified = _fileSystem.GetLastWriteTimeUtc(image.FileInfo);
                         currentImage.Length = ((FileInfo) image.FileInfo).Length;
+                    }
+                }
+                else
+                {
+                    var existing = item.GetImageInfo(type, 0);
+                    if (existing != null && !File.Exists(existing.Path))
+                    {
+                        item.RemoveImage(existing);
+                        changed = true;
                     }
                 }
             }
@@ -412,16 +419,16 @@ namespace MediaBrowser.Providers.Manager
         {
             var changed = false;
 
-            var backdrops = images.Where(i => i.Type == type).ToList();
-            if (backdrops.Count > 0)
+            var newImages = images.Where(i => i.Type == type).ToList();
+            if (newImages.Count > 0)
             {
-                var foundImages = images.Where(i => i.Type == type)
+                var newImageFileInfos = images.Where(i => i.Type == type)
                     .Select(i => i.FileInfo)
                     .ToList();
 
-                if (foundImages.Count > 0)
+                if (newImageFileInfos.Count > 0)
                 {
-                    if (item.AddImages(type, foundImages))
+                    if (item.AddImages(type, newImageFileInfos))
                     {
                         changed = true;
                     }

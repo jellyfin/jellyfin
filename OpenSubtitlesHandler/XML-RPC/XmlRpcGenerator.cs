@@ -51,8 +51,10 @@ namespace XmlRpcHandler
             XmlWriterSettings sett = new XmlWriterSettings();
             sett.Indent = true;
 
+            var requestXmlPath = Path.Combine(Path.GetTempPath(), "request.xml");
+
             sett.Encoding = Encoding.UTF8;
-            FileStream str = new FileStream(Path.GetTempPath() + "\\request.xml", FileMode.Create, FileAccess.Write);
+            FileStream str = new FileStream(requestXmlPath, FileMode.Create, FileAccess.Write);
 
             XmlWriter XMLwrt = XmlWriter.Create(str, sett);
             // Let's write the methods
@@ -88,7 +90,7 @@ namespace XmlRpcHandler
             XMLwrt.Flush();
             XMLwrt.Close();
             str.Close();
-            string requestContent = File.ReadAllText(Path.GetTempPath() + "\\request.xml");
+            string requestContent = File.ReadAllText(requestXmlPath);
             return Encoding.UTF8.GetBytes(requestContent);
         }
         /// <summary>

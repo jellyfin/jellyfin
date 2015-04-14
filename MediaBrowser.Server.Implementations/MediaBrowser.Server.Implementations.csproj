@@ -45,21 +45,21 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ImageMagickSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ImageMagickSharp.1.0.0.11\lib\net45\ImageMagickSharp.dll</HintPath>
-    </Reference>
     <Reference Include="MediaBrowser.Naming, Version=1.0.5509.27636, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MediaBrowser.Naming.1.0.0.32\lib\portable-net45+sl4+wp71+win8+wpa81\MediaBrowser.Naming.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Nat, Version=1.2.21.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Mono.Nat, Version=1.2.23.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Mono.Nat.1.2.21.0\lib\net40\Mono.Nat.dll</HintPath>
+      <HintPath>..\packages\Mono.Nat.1.2.23.0\lib\net40\Mono.Nat.dll</HintPath>
     </Reference>
     <Reference Include="MoreLinq, Version=1.1.17511.0, Culture=neutral, PublicKeyToken=384d532d7e88985d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\morelinq.1.1.0\lib\net35\MoreLinq.dll</HintPath>
+    </Reference>
+    <Reference Include="Patterns.IO, Version=1.0.5580.36861, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Patterns.IO.1.0.0.3\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.IO.dll</HintPath>
     </Reference>
     <Reference Include="Patterns.Logging">
       <HintPath>..\packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
@@ -68,9 +68,9 @@
     <Reference Include="ServiceStack.Api.Swagger">
       <HintPath>..\ThirdParty\ServiceStack\ServiceStack.Api.Swagger.dll</HintPath>
     </Reference>
-    <Reference Include="SocketHttpListener, Version=1.0.5554.26260, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="SocketHttpListener, Version=1.0.5581.23362, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\SocketHttpListener.1.0.0.3\lib\net45\SocketHttpListener.dll</HintPath>
+      <HintPath>..\packages\SocketHttpListener.1.0.0.4\lib\net45\SocketHttpListener.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -129,10 +129,6 @@
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\DeviceRepository.cs" />
     <Compile Include="Devices\CameraUploadsFolder.cs" />
-    <Compile Include="Drawing\ImageHeader.cs" />
-    <Compile Include="Drawing\PercentPlayedDrawer.cs" />
-    <Compile Include="Drawing\PlayedIndicatorDrawer.cs" />
-    <Compile Include="Drawing\UnplayedCountIndicator.cs" />
     <Compile Include="Dto\DtoService.cs" />
     <Compile Include="EntryPoints\ActivityLogEntryPoint.cs" />
     <Compile Include="EntryPoints\AutomaticRestartEntryPoint.cs" />
@@ -174,13 +170,11 @@
     <Compile Include="HttpServer\SocketSharp\SharpWebSocket.cs" />
     <Compile Include="HttpServer\StreamWriter.cs" />
     <Compile Include="HttpServer\SwaggerService.cs" />
-    <Compile Include="Drawing\ImageProcessor.cs" />
     <Compile Include="HttpServer\SocketSharp\Extensions.cs" />
     <Compile Include="HttpServer\SocketSharp\RequestMono.cs" />
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpListener.cs" />
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpRequest.cs" />
     <Compile Include="HttpServer\SocketSharp\WebSocketSharpResponse.cs" />
-    <Compile Include="HttpServer\ThrottledStream.cs" />
     <Compile Include="Intros\DefaultIntroProvider.cs" />
     <Compile Include="IO\LibraryMonitor.cs" />
     <Compile Include="Library\CoreResolutionIgnoreRule.cs" />
@@ -233,6 +227,7 @@
     <Compile Include="Localization\LocalizationManager.cs" />
     <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
+    <Compile Include="Sorting\StartDateComparer.cs" />
     <Compile Include="Sync\SyncHelper.cs" />
     <Compile Include="Sync\SyncJobOptions.cs" />
     <Compile Include="UserViews\DynamicImageProvider.cs" />
@@ -251,8 +246,6 @@
     <Compile Include="Persistence\SqliteShrinkMemoryTimer.cs" />
     <Compile Include="Persistence\TypeMapper.cs" />
     <Compile Include="Photos\BaseDynamicImageProvider.cs" />
-    <Compile Include="Photos\DynamicImageHelpers.cs" />
-    <Compile Include="UserViews\StripCollageBuilder.cs" />
     <Compile Include="Playlists\ManualPlaylistsFolder.cs" />
     <Compile Include="Photos\PhotoAlbumImageProvider.cs" />
     <Compile Include="Playlists\PlaylistImageProvider.cs" />
@@ -431,9 +424,6 @@
     <EmbeddedResource Include="Localization\JavaScript\uk.json" />
     <EmbeddedResource Include="Localization\Server\bg_BG.json" />
     <EmbeddedResource Include="Localization\Server\uk.json" />
-    <EmbeddedResource Include="Drawing\fonts\webdings.ttf" />
-    <EmbeddedResource Include="Drawing\fonts\robotoregular.ttf" />
-    <EmbeddedResource Include="Drawing\fonts\MontserratLight.otf" />
     <None Include="Localization\JavaScript\sl_SI.json" />
     <EmbeddedResource Include="Localization\Server\sl_SI.json" />
     <None Include="packages.config" />

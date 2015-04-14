@@ -70,7 +70,7 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        private void UnpauseTranscoding()
+        public void UnpauseTranscoding()
         {
             if (_isPaused)
             {

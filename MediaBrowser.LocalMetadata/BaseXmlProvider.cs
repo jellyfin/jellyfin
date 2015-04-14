@@ -92,7 +92,7 @@ namespace MediaBrowser.LocalMetadata
         {
             get
             {
-                return "Media Browser Xml";
+                return "Emby Xml";
             }
         }
         

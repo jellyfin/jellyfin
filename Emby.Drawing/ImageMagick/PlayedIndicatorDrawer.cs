@@ -4,7 +4,7 @@ using MediaBrowser.Model.Drawing;
 using System;
 using System.IO;
 
-namespace MediaBrowser.Server.Implementations.Drawing
+namespace Emby.Drawing.ImageMagick
 {
     public class PlayedIndicatorDrawer
     {

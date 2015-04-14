@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace MediaBrowser.Providers.MediaInfo
+namespace MediaBrowser.MediaEncoding.Probing
 {
     public static class FFProbeHelpers
     {

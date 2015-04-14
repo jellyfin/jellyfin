@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller;
+﻿using System.Linq;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
@@ -47,7 +48,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         void _config_ConfigurationUpdated(object sender, EventArgs e)
         {
             _config.ConfigurationUpdated -= _config_ConfigurationUpdated;
-            
+
             if (!string.Equals(_lastConfigIdentifier, GetConfigIdentifier(), StringComparison.OrdinalIgnoreCase))
             {
                 if (_isStarted)
@@ -88,7 +89,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             NatUtility.UnhandledException += NatUtility_UnhandledException;
             NatUtility.StartDiscovery();
 
-            _timer = new Timer(s => _createdRules = new List<string>(), null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
+            _timer = new Timer(s => _createdRules = new List<string>(), null, TimeSpan.FromMinutes(3), TimeSpan.FromMinutes(3));
 
             _lastConfigIdentifier = GetConfigIdentifier();
 
@@ -119,7 +120,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
                 CreateRules(device);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // I think it could be a good idea to log the exception because 
                 //   you are using permanent portmapping here (never expire) and that means that next time
@@ -128,7 +129,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 //   It also can fail with others like 727-ExternalPortOnlySupportsWildcard, 728-NoPortMapsAvailable
                 // and those errors (upnp errors) could be useful for diagnosting.  
 
-                //_logger.ErrorException("Error creating port forwarding rules", ex);
+                _logger.ErrorException("Error creating port forwarding rules", ex);
             }
         }
 
@@ -138,25 +139,55 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             // On some systems the device discovered event seems to fire repeatedly
             // This check will help ensure we're not trying to port map the same device over and over
 
+            List<Mapping> currentMappings = null;
+
+            try
+            {
+                currentMappings = device.GetAllMappings().ToList();
+            }
+            catch (NotSupportedException)
+            {
+            }
+
             var address = device.LocalAddress.ToString();
 
             if (!_createdRules.Contains(address))
             {
                 _createdRules.Add(address);
 
-                CreatePortMap(device, _appHost.HttpPort, _config.Configuration.PublicPort);
-                CreatePortMap(device, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort);
+                CreatePortMap(device, currentMappings, _appHost.HttpPort, _config.Configuration.PublicPort);
+                CreatePortMap(device, currentMappings, _appHost.HttpsPort, _config.Configuration.PublicHttpsPort);
             }
         }
 
-        private void CreatePortMap(INatDevice device, int privatePort, int publicPort)
+        private void CreatePortMap(INatDevice device, List<Mapping> currentMappings, int privatePort, int publicPort)
         {
-            _logger.Debug("Creating port map on port {0}", privatePort);
+            var hasMapping = false;
 
-            device.CreatePortMap(new Mapping(Protocol.Tcp, privatePort, publicPort)
+            if (currentMappings != null)
             {
-                Description = _appHost.Name
-            });
+                hasMapping = currentMappings.Any(i => i.PublicPort == publicPort && i.PrivatePort == privatePort);
+            }
+            else
+            {
+                try
+                {
+                    var mapping = device.GetSpecificMapping(Protocol.Tcp, publicPort);
+                    hasMapping = mapping != null;
+                }
+                catch (NotSupportedException)
+                {
+                }
+            }
+
+            if (!hasMapping)
+            {
+                _logger.Debug("Creating port map on port {0}", privatePort);
+                device.CreatePortMap(new Mapping(Protocol.Tcp, privatePort, publicPort)
+                {
+                    Description = _appHost.Name
+                });
+            }
         }
 
         // As I said before, this method will be never invoked. You can remove it.

@@ -1,4 +1,7 @@
-﻿using MediaBrowser.Api;
+﻿using Emby.Drawing;
+using Emby.Drawing.GDI;
+using Emby.Drawing.ImageMagick;
+using MediaBrowser.Api;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
@@ -63,7 +66,6 @@ using MediaBrowser.Server.Implementations.Collections;
 using MediaBrowser.Server.Implementations.Configuration;
 using MediaBrowser.Server.Implementations.Connect;
 using MediaBrowser.Server.Implementations.Devices;
-using MediaBrowser.Server.Implementations.Drawing;
 using MediaBrowser.Server.Implementations.Dto;
 using MediaBrowser.Server.Implementations.EntryPoints;
 using MediaBrowser.Server.Implementations.FileOrganization;
@@ -440,7 +442,7 @@ namespace MediaBrowser.Server.Startup.Common
             var innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p => progress.Report((.75 * p) + 15));
 
-            ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer);
+            ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, GetImageEncoder());
             RegisterSingleInstance(ImageProcessor);
 
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager);
@@ -542,6 +544,23 @@ namespace MediaBrowser.Server.Startup.Common
             SetStaticProperties();
 
             await ((UserManager)UserManager).Initialize().ConfigureAwait(false);
+        }
+
+        private IImageEncoder GetImageEncoder()
+        {
+            if (!_startupOptions.ContainsOption("-enablegdi"))
+            {
+                try
+                {
+                    return new ImageMagickEncoder(LogManager.GetLogger("ImageMagick"), ApplicationPaths);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error loading ImageMagick. Will revert to GDI.", ex);
+                }
+            }
+            
+            return new GDIImageEncoder(FileSystemManager, LogManager.GetLogger("GDI"));
         }
 
         protected override INetworkManager CreateNetworkManager(ILogger logger)

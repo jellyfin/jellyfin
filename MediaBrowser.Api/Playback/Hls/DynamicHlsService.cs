@@ -4,7 +4,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dlna;
@@ -128,9 +127,27 @@ namespace MediaBrowser.Api.Playback.Hls
                 }
                 else
                 {
+                    var startTranscoding = false;
+
                     var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
-                    var segmentGapRequiringTranscodingChange = 24/state.SegmentLength;
-                    if (currentTranscodingIndex == null || requestedIndex < currentTranscodingIndex.Value || (requestedIndex - currentTranscodingIndex.Value) > segmentGapRequiringTranscodingChange)
+                    var segmentGapRequiringTranscodingChange = 24 / state.SegmentLength;
+
+                    if (currentTranscodingIndex == null)
+                    {
+                        Logger.Debug("Starting transcoding because currentTranscodingIndex=null");
+                        startTranscoding = true;
+                    }
+                    else if (requestedIndex < currentTranscodingIndex.Value)
+                    {
+                        Logger.Debug("Starting transcoding because requestedIndex={0} and currentTranscodingIndex={1}", requestedIndex, currentTranscodingIndex);
+                        startTranscoding = true;
+                    }
+                    else if ((requestedIndex - currentTranscodingIndex.Value) > segmentGapRequiringTranscodingChange)
+                    {
+                        Logger.Debug("Starting transcoding because segmentGap is {0} and max allowed gap is {1}. requestedIndex={2}", (requestedIndex - currentTranscodingIndex.Value), segmentGapRequiringTranscodingChange, requestedIndex);
+                        startTranscoding = true;
+                    }
+                    if (startTranscoding)
                     {
                         // If the playlist doesn't already exist, startup ffmpeg
                         try
@@ -145,7 +162,6 @@ namespace MediaBrowser.Api.Playback.Hls
                             request.StartTimeTicks = GetSeekPositionTicks(state, requestedIndex);
 
                             job = await StartFfMpeg(state, playlistPath, cancellationTokenSource).ConfigureAwait(false);
-                            ApiEntryPoint.Instance.OnTranscodeBeginRequest(job);
                         }
                         catch
                         {
@@ -153,7 +169,15 @@ namespace MediaBrowser.Api.Playback.Hls
                             throw;
                         }
 
-                        await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
+                        //await WaitForMinimumSegmentCount(playlistPath, 1, cancellationTokenSource.Token).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
+                        if (job.TranscodingThrottler != null)
+                        {
+                            job.TranscodingThrottler.UnpauseTranscoding();
+                        }
                     }
                 }
             }
@@ -300,7 +324,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var segmentFilename = Path.GetFileName(segmentPath);
 
-            using (var fileStream = FileSystem.GetFileStream(playlistPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+            using (var fileStream = GetPlaylistFileStream(playlistPath))
             {
                 using (var reader = new StreamReader(fileStream))
                 {
@@ -712,7 +736,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     ).Trim();
             }
 
-            return string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -flags -global_header -sc_threshold 0 {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
+            return string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -flags -global_header -copyts -sc_threshold 0 {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
                             inputModifier,
                             GetInputArgument(state),
                             threads,

@@ -20,6 +20,11 @@ namespace MediaBrowser.Controller.Sync
         /// </summary>
         /// <value>The required HTTP headers.</value>
         public Dictionary<string, string> RequiredHttpHeaders { get; set; }
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>The identifier.</value>
+        public string Id { get; set; }
 
         public SyncedFileInfo()
         {

@@ -138,6 +138,7 @@
     <Compile Include="Dlna\SubtitleStreamInfo.cs" />
     <Compile Include="Drawing\ImageOrientation.cs" />
     <Compile Include="Dto\IHasServerId.cs" />
+    <Compile Include="Dto\IHasSyncInfo.cs" />
     <Compile Include="Dto\MetadataEditorInfo.cs" />
     <Compile Include="Dto\NameIdPair.cs" />
     <Compile Include="Dto\NameValuePair.cs" />
@@ -226,7 +227,7 @@
     <Compile Include="Dto\RecommendationType.cs" />
     <Compile Include="Dto\SubtitleDownloadOptions.cs" />
     <Compile Include="Entities\IsoType.cs" />
-    <Compile Include="Entities\MediaInfo.cs" />
+    <Compile Include="MediaInfo\MediaInfo.cs" />
     <Compile Include="Entities\MediaStreamType.cs" />
     <Compile Include="Entities\PackageReviewInfo.cs" />
     <Compile Include="Entities\ProviderIdsExtensions.cs" />

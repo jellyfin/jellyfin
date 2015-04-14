@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using System;
@@ -9,6 +10,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {
     public class PhotoResolver : ItemResolver<Photo>
     {
+        private readonly IImageProcessor _imageProcessor;
+        public PhotoResolver(IImageProcessor imageProcessor)
+        {
+            _imageProcessor = imageProcessor;
+        }
+
         /// <summary>
         /// Resolves the specified args.
         /// </summary>
@@ -19,7 +26,7 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
             // Must be an image file within a photo collection
             if (string.Equals(args.GetCollectionType(), CollectionType.Photos, StringComparison.OrdinalIgnoreCase) &&
                 !args.IsDirectory &&
-                IsImageFile(args.Path))
+                IsImageFile(args.Path, _imageProcessor))
             {
                 return new Photo
                 {
@@ -29,9 +36,6 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
 
             return null;
         }
-
-        // Some common file name extensions for RAW picture files include: .cr2, .crw, .dng, .nef, .orf, .rw2, .pef, .arw, .sr2, .srf, and .tif.
-        protected static string[] ImageExtensions = { ".tiff", ".jpeg", ".jpg", ".png", ".aiff", ".cr2", ".crw", ".dng", ".nef", ".orf", ".pef", ".arw", ".webp" };
 
         private static readonly string[] IgnoreFiles =
         {
@@ -43,12 +47,12 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers
             "poster"
         };
 
-        internal static bool IsImageFile(string path)
+        internal static bool IsImageFile(string path, IImageProcessor imageProcessor)
         {
             var filename = Path.GetFileNameWithoutExtension(path) ?? string.Empty;
 
             return !IgnoreFiles.Contains(filename, StringComparer.OrdinalIgnoreCase)
-                && ImageExtensions.Contains(Path.GetExtension(path) ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+                && imageProcessor.SupportedInputFormats.Contains((Path.GetExtension(path) ?? string.Empty).TrimStart('.'), StringComparer.OrdinalIgnoreCase);
         }
 
     }

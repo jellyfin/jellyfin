@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.IO;
@@ -518,25 +517,14 @@ namespace MediaBrowser.Api.Playback.Dash
 
         private async Task WaitForSegment(string playlist, string segment, CancellationToken cancellationToken)
         {
-            var tmpPath = playlist + ".tmp";
-
             var segmentFilename = Path.GetFileName(segment);
 
             Logger.Debug("Waiting for {0} in {1}", segmentFilename, playlist);
 
             while (true)
             {
-                FileStream fileStream;
-                try
-                {
-                    fileStream = FileSystem.GetFileStream(tmpPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
-                }
-                catch (IOException)
-                {
-                    fileStream = FileSystem.GetFileStream(playlist, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
-                }
                 // Need to use FileShare.ReadWrite because we're reading the file at the same time it's being written
-                using (fileStream)
+                using (var fileStream = GetPlaylistFileStream(playlist))
                 {
                     using (var reader = new StreamReader(fileStream))
                     {

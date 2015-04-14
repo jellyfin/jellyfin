@@ -5,12 +5,15 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.MediaEncoding.Probing;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -72,6 +75,8 @@ namespace MediaBrowser.MediaEncoding.Encoder
         protected readonly Func<ISubtitleEncoder> SubtitleEncoder;
         protected readonly Func<IMediaSourceManager> MediaSourceManager;
 
+        private readonly List<ProcessWrapper> _runningProcesses = new List<ProcessWrapper>();
+
         public MediaEncoder(ILogger logger, IJsonSerializer jsonSerializer, string ffMpegPath, string ffProbePath, string version, IServerConfigurationManager configurationManager, IFileSystem fileSystem, ILiveTvManager liveTvManager, IIsoManager isoManager, ILibraryManager libraryManager, IChannelManager channelManager, ISessionManager sessionManager, Func<ISubtitleEncoder> subtitleEncoder, Func<IMediaSourceManager> mediaSourceManager)
         {
             _logger = logger;
@@ -102,16 +107,19 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <summary>
         /// Gets the media info.
         /// </summary>
-        /// <param name="inputFiles">The input files.</param>
-        /// <param name="protocol">The protocol.</param>
-        /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
+        /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        public Task<InternalMediaInfoResult> GetMediaInfo(string[] inputFiles, MediaProtocol protocol, bool isAudio,
-            CancellationToken cancellationToken)
+        public Task<Model.MediaInfo.MediaInfo> GetMediaInfo(MediaInfoRequest request, CancellationToken cancellationToken)
         {
-            return GetMediaInfoInternal(GetInputArgument(inputFiles, protocol), !isAudio,
-                GetProbeSizeArgument(inputFiles, protocol), cancellationToken);
+            var extractChapters = request.MediaType == DlnaProfileType.Video && request.ExtractChapters;
+
+            var inputFiles = MediaEncoderHelpers.GetInputArgument(request.InputPath, request.Protocol, request.MountedIso, request.PlayableStreamFileNames);
+
+            var extractKeyFrameInterval = request.ExtractKeyFrameInterval && request.Protocol == MediaProtocol.File && request.VideoType == VideoType.VideoFile;
+
+            return GetMediaInfoInternal(GetInputArgument(inputFiles, request.Protocol), request.InputPath, request.Protocol, extractChapters, extractKeyFrameInterval,
+                GetProbeSizeArgument(inputFiles, request.Protocol), request.MediaType == DlnaProfileType.Audio, cancellationToken);
         }
 
         /// <summary>
@@ -141,13 +149,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// Gets the media info internal.
         /// </summary>
         /// <param name="inputPath">The input path.</param>
+        /// <param name="primaryPath">The primary path.</param>
+        /// <param name="protocol">The protocol.</param>
         /// <param name="extractChapters">if set to <c>true</c> [extract chapters].</param>
+        /// <param name="extractKeyFrameInterval">if set to <c>true</c> [extract key frame interval].</param>
         /// <param name="probeSizeArgument">The probe size argument.</param>
+        /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MediaInfoResult}.</returns>
         /// <exception cref="System.ApplicationException"></exception>
-        private async Task<InternalMediaInfoResult> GetMediaInfoInternal(string inputPath, bool extractChapters,
+        private async Task<Model.MediaInfo.MediaInfo> GetMediaInfoInternal(string inputPath,
+            string primaryPath,
+            MediaProtocol protocol,
+            bool extractChapters,
+            bool extractKeyFrameInterval,
             string probeSizeArgument,
+            bool isAudio,
             CancellationToken cancellationToken)
         {
             var args = extractChapters
@@ -164,6 +181,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
+                    RedirectStandardInput = true,
                     FileName = FFProbePath,
                     Arguments = string.Format(args,
                     probeSizeArgument, inputPath).Trim(),
@@ -177,15 +195,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            process.Exited += ProcessExited;
-
             await _ffProbeResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            InternalMediaInfoResult result;
+            var processWrapper = new ProcessWrapper(process, this);
 
             try
             {
-                process.Start();
+                StartProcess(processWrapper);
             }
             catch (Exception ex)
             {
@@ -200,19 +216,57 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 process.BeginErrorReadLine();
 
-                result = _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
+                var result = _jsonSerializer.DeserializeFromStream<InternalMediaInfoResult>(process.StandardOutput.BaseStream);
+
+                if (result != null)
+                {
+                    if (result.streams != null)
+                    {
+                        // Normalize aspect ratio if invalid
+                        foreach (var stream in result.streams)
+                        {
+                            if (string.Equals(stream.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                            {
+                                stream.display_aspect_ratio = string.Empty;
+                            }
+                            if (string.Equals(stream.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                            {
+                                stream.sample_aspect_ratio = string.Empty;
+                            }
+                        }
+                    }
+
+                    var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, isAudio, primaryPath, protocol);
+
+                    if (extractKeyFrameInterval && mediaInfo.RunTimeTicks.HasValue)
+                    {
+                        foreach (var stream in mediaInfo.MediaStreams)
+                        {
+                            if (stream.Type == MediaStreamType.Video && string.Equals(stream.Codec, "h264", StringComparison.OrdinalIgnoreCase))
+                            {
+                                try
+                                {
+                                    //stream.KeyFrames = await GetKeyFrames(inputPath, stream.Index, cancellationToken)
+                                    //            .ConfigureAwait(false);
+                                }
+                                catch (OperationCanceledException)
+                                {
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.ErrorException("Error getting key frame interval", ex);
+                                }
+                            }
+                        }
+                    }
+
+                    return mediaInfo;
+                }
             }
             catch
             {
-                // Hate having to do this
-                try
-                {
-                    process.Kill();
-                }
-                catch (Exception ex1)
-                {
-                    _logger.ErrorException("Error killing ffprobe", ex1);
-                }
+                StopProcess(processWrapper, 100, true);
 
                 throw;
             }
@@ -221,46 +275,108 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _ffProbeResourcePool.Release();
             }
 
-            if (result == null)
+            throw new ApplicationException(string.Format("FFProbe failed for {0}", inputPath));
+        }
+
+        private async Task<List<int>> GetKeyFrames(string inputPath, int videoStreamIndex, CancellationToken cancellationToken)
+        {
+            const string args = "-i {0} -select_streams v:{1} -show_frames -show_entries frame=pkt_dts,key_frame -print_format compact";
+
+            var process = new Process
             {
-                throw new ApplicationException(string.Format("FFProbe failed for {0}", inputPath));
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+
+                    // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
+                    FileName = FFProbePath,
+                    Arguments = string.Format(args, inputPath, videoStreamIndex.ToString(CultureInfo.InvariantCulture)).Trim(),
+
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    ErrorDialog = false
+                },
+
+                EnableRaisingEvents = true
+            };
+
+            _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
+
+            var processWrapper = new ProcessWrapper(process, this);
+
+            StartProcess(processWrapper);
+
+            var lines = new List<int>();
+
+            try
+            {
+                process.BeginErrorReadLine();
+
+                await StartReadingOutput(process.StandardOutput.BaseStream, lines, 120000, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+            }
+            finally
+            {
+                StopProcess(processWrapper, 100, true);
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
+            return lines;
+        }
 
-            if (result.streams != null)
+        private async Task StartReadingOutput(Stream source, List<int> lines, int timeoutMs, CancellationToken cancellationToken)
+        {
+            try
             {
-                // Normalize aspect ratio if invalid
-                foreach (var stream in result.streams)
+                using (var reader = new StreamReader(source))
                 {
-                    if (string.Equals(stream.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                    while (!reader.EndOfStream)
                     {
-                        stream.display_aspect_ratio = string.Empty;
-                    }
-                    if (string.Equals(stream.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
-                    {
-                        stream.sample_aspect_ratio = string.Empty;
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        var line = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                        var values = (line ?? string.Empty).Split('|')
+                            .Where(i => !string.IsNullOrWhiteSpace(i))
+                            .Select(i => i.Split('='))
+                            .Where(i => i.Length == 2)
+                            .ToDictionary(i => i[0], i => i[1]);
+
+                        string pktDts;
+                        int frameMs;
+                        if (values.TryGetValue("pkt_dts", out pktDts) && int.TryParse(pktDts, NumberStyles.Any, CultureInfo.InvariantCulture, out frameMs))
+                        {
+                            string keyFrame;
+                            if (values.TryGetValue("key_frame", out keyFrame) && string.Equals(keyFrame, "1", StringComparison.OrdinalIgnoreCase))
+                            {
+                                lines.Add(frameMs);
+                            }
+                        }
                     }
                 }
             }
-
-            return result;
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error reading ffprobe output", ex);
+            }
         }
 
         /// <summary>
         /// The us culture
         /// </summary>
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-
-        /// <summary>
-        /// Processes the exited.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void ProcessExited(object sender, EventArgs e)
-        {
-            ((Process)sender).Dispose();
-        }
 
         public Task<Stream> ExtractAudioImage(string path, CancellationToken cancellationToken)
         {
@@ -285,6 +401,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 try
                 {
                     return await ExtractImageInternal(inputArgument, protocol, threedFormat, offset, true, resourcePool, cancellationToken).ConfigureAwait(false);
+                }
+                catch (ArgumentException)
+                {
+                    throw;
                 }
                 catch
                 {
@@ -368,7 +488,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            process.Start();
+            var processWrapper = new ProcessWrapper(process, this);
+
+            StartProcess(processWrapper);
 
             var memoryStream = new MemoryStream();
 
@@ -384,23 +506,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             if (!ranToCompletion)
             {
-                try
-                {
-                    _logger.Info("Killing ffmpeg process");
-
-                    process.StandardInput.WriteLine("q");
-
-                    process.WaitForExit(1000);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error killing process", ex);
-                }
+                StopProcess(processWrapper, 1000, false);
             }
 
             resourcePool.Release();
 
-            var exitCode = ranToCompletion ? process.ExitCode : -1;
+            var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
 
             process.Dispose();
 
@@ -417,31 +528,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             memoryStream.Position = 0;
             return memoryStream;
-        }
-
-        public Task<Stream> EncodeImage(ImageEncodingOptions options, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
-            {
-                _videoImageResourcePool.Dispose();
-            }
         }
 
         public string GetTimeParameter(long ticks)
@@ -510,9 +596,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             bool ranToCompletion;
 
+            var processWrapper = new ProcessWrapper(process, this);
+
             try
             {
-                process.Start();
+                StartProcess(processWrapper);
 
                 // Need to give ffmpeg enough time to make all the thumbnails, which could be a while,
                 // but we still need to detect if the process hangs.
@@ -536,18 +624,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 if (!ranToCompletion)
                 {
-                    try
-                    {
-                        _logger.Info("Killing ffmpeg process");
-
-                        process.StandardInput.WriteLine("q");
-
-                        process.WaitForExit(1000);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error killing process", ex);
-                    }
+                    StopProcess(processWrapper, 1000, false);
                 }
             }
             finally
@@ -555,7 +632,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 resourcePool.Release();
             }
 
-            var exitCode = ranToCompletion ? process.ExitCode : -1;
+            var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
 
             process.Dispose();
 
@@ -607,6 +684,123 @@ namespace MediaBrowser.MediaEncoding.Encoder
             await job.TaskCompletionSource.Task.ConfigureAwait(false);
 
             return job.OutputFilePath;
+        }
+
+        private void StartProcess(ProcessWrapper process)
+        {
+            process.Process.Start();
+
+            lock (_runningProcesses)
+            {
+                _runningProcesses.Add(process);
+            }
+        }
+        private void StopProcess(ProcessWrapper process, int waitTimeMs, bool enableForceKill)
+        {
+            try
+            {
+                _logger.Info("Killing ffmpeg process");
+
+                try
+                {
+                    process.Process.StandardInput.WriteLine("q");
+                }
+                catch (Exception)
+                {
+                    _logger.Error("Error sending q command to process");
+                }
+
+                try
+                {
+                    if (process.Process.WaitForExit(waitTimeMs))
+                    {
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error("Error in WaitForExit", ex);
+                }
+
+                if (enableForceKill)
+                {
+                    process.Process.Kill();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error killing process", ex);
+            }
+        }
+
+        private void StopProcesses()
+        {
+            List<ProcessWrapper> proceses;
+            lock (_runningProcesses)
+            {
+                proceses = _runningProcesses.ToList();
+            }
+            _runningProcesses.Clear();
+
+            foreach (var process in proceses)
+            {
+                if (!process.HasExited)
+                {
+                    StopProcess(process, 500, true);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool dispose)
+        {
+            if (dispose)
+            {
+                _videoImageResourcePool.Dispose();
+                StopProcesses();
+            }
+        }
+
+        private class ProcessWrapper
+        {
+            public readonly Process Process;
+            public bool HasExited;
+            public int? ExitCode;
+            private readonly MediaEncoder _mediaEncoder;
+
+            public ProcessWrapper(Process process, MediaEncoder mediaEncoder)
+            {
+                Process = process;
+                this._mediaEncoder = mediaEncoder;
+                Process.Exited += Process_Exited;
+            }
+
+            void Process_Exited(object sender, EventArgs e)
+            {
+                var process = (Process)sender;
+
+                HasExited = true;
+
+                ExitCode = process.ExitCode;
+
+                lock (_mediaEncoder._runningProcesses)
+                {
+                    _mediaEncoder._runningProcesses.Remove(this);
+                }
+
+                process.Dispose();
+            }
         }
     }
 }

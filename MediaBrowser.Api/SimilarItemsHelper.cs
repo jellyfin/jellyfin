@@ -170,7 +170,7 @@ namespace MediaBrowser.Api
             points += item1.Studios.Where(i => item2.Studios.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 3);
 
             var item2PeopleNames = item2.People.Select(i => i.Name)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .DistinctNames()
                 .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
             points += item1.People.Where(i => item2PeopleNames.ContainsKey(i.Name)).Sum(i =>

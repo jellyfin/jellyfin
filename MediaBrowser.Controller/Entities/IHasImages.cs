@@ -141,7 +141,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="imageType">Type of the image.</param>
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
-        bool AddImages(ImageType imageType, IEnumerable<FileSystemInfo> images);
+        bool AddImages(ImageType imageType, List<FileSystemInfo> images);
 
         /// <summary>
         /// Determines whether [is save local metadata enabled].
@@ -190,6 +190,12 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <returns><c>true</c> if [is internet metadata enabled]; otherwise, <c>false</c>.</returns>
         bool IsInternetMetadataEnabled();
+
+        /// <summary>
+        /// Removes the image.
+        /// </summary>
+        /// <param name="image">The image.</param>
+        void RemoveImage(ItemImageInfo image);
     }
 
     public static class HasImagesExtensions

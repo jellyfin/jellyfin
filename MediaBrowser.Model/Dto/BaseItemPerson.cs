@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
+﻿using MediaBrowser.Model.Extensions;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
-using MediaBrowser.Model.Extensions;
 
 namespace MediaBrowser.Model.Dto
 {

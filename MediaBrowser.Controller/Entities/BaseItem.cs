@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Globalization;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
@@ -44,7 +45,7 @@ namespace MediaBrowser.Controller.Entities
         /// <summary>
         /// The supported image extensions
         /// </summary>
-        public static readonly string[] SupportedImageExtensions = { ".png", ".jpg", ".jpeg", ".tbn" };
+        public static readonly string[] SupportedImageExtensions = { ".png", ".jpg", ".jpeg" };
 
         public static readonly List<string> SupportedImageExtensionsList = SupportedImageExtensions.ToList();
 
@@ -1144,6 +1145,11 @@ namespace MediaBrowser.Controller.Entities
 
         public virtual bool IsVisibleStandalone(User user)
         {
+            return IsVisibleStandaloneInternal(user, true);
+        }
+
+        protected bool IsVisibleStandaloneInternal(User user, bool checkFolders)
+        {
             if (!IsVisible(user))
             {
                 return false;
@@ -1154,7 +1160,23 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            // TODO: Need some work here, e.g. is in user library, for channels, can user access channel, etc.
+            if (checkFolders)
+            {
+                var topParent = Parents.LastOrDefault() ?? this;
+
+                if (string.IsNullOrWhiteSpace(topParent.Path))
+                {
+                    return true;
+                }
+
+                var userCollectionFolders = user.RootFolder.GetChildren(user, true).Select(i => i.Id).ToList();
+                var itemCollectionFolders = LibraryManager.GetCollectionFolders(this).Select(i => i.Id);
+
+                if (!itemCollectionFolders.Any(userCollectionFolders.Contains))
+                {
+                    return false;
+                }
+            }
 
             return true;
         }
@@ -1219,18 +1241,6 @@ namespace MediaBrowser.Controller.Entities
 
         private BaseItem FindLinkedChild(LinkedChild info)
         {
-            if (!string.IsNullOrWhiteSpace(info.ItemName))
-            {
-                if (string.Equals(info.ItemType, "musicgenre", StringComparison.OrdinalIgnoreCase))
-                {
-                    return LibraryManager.GetMusicGenre(info.ItemName);
-                }
-                if (string.Equals(info.ItemType, "musicartist", StringComparison.OrdinalIgnoreCase))
-                {
-                    return LibraryManager.GetArtist(info.ItemName);
-                }
-            }
-
             if (!string.IsNullOrEmpty(info.Path))
             {
                 var itemByPath = LibraryManager.RootFolder.FindByPath(info.Path);
@@ -1241,23 +1251,6 @@ namespace MediaBrowser.Controller.Entities
                 }
 
                 return itemByPath;
-            }
-
-            if (!string.IsNullOrWhiteSpace(info.ItemName) && !string.IsNullOrWhiteSpace(info.ItemType))
-            {
-                return LibraryManager.RootFolder.GetRecursiveChildren(i =>
-                {
-                    if (string.Equals(i.Name, info.ItemName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (string.Equals(i.GetType().Name, info.ItemType, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
-                    }
-
-                    return false;
-
-                }).FirstOrDefault();
             }
 
             return null;
@@ -1540,7 +1533,7 @@ namespace MediaBrowser.Controller.Entities
             }
 
             // Remove it from the item
-            ImageInfos.Remove(info);
+            RemoveImage(info);
 
             // Delete the source file
             var currentFile = new FileInfo(info.Path);
@@ -1557,6 +1550,11 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
+        }
+
+        public void RemoveImage(ItemImageInfo image)
+        {
+            ImageInfos.Remove(image);
         }
 
         public virtual Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
@@ -1651,7 +1649,7 @@ namespace MediaBrowser.Controller.Entities
 
         public bool AddImages(ImageType imageType, IEnumerable<FileInfo> images)
         {
-            return AddImages(imageType, images.Cast<FileSystemInfo>());
+            return AddImages(imageType, images.Cast<FileSystemInfo>().ToList());
         }
 
         /// <summary>
@@ -1661,7 +1659,7 @@ namespace MediaBrowser.Controller.Entities
         /// <param name="images">The images.</param>
         /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
         /// <exception cref="System.ArgumentException">Cannot call AddImages with chapter images</exception>
-        public bool AddImages(ImageType imageType, IEnumerable<FileSystemInfo> images)
+        public bool AddImages(ImageType imageType, List<FileSystemInfo> images)
         {
             if (imageType == ImageType.Chapter)
             {
@@ -1672,6 +1670,7 @@ namespace MediaBrowser.Controller.Entities
                 .ToList();
 
             var newImageList = new List<FileSystemInfo>();
+            var imageAdded = false;
 
             foreach (var newImage in images)
             {
@@ -1686,12 +1685,24 @@ namespace MediaBrowser.Controller.Entities
                 if (existing == null)
                 {
                     newImageList.Add(newImage);
+                    imageAdded = true;
                 }
                 else
                 {
                     existing.DateModified = FileSystem.GetLastWriteTimeUtc(newImage);
-                    existing.Length = ((FileInfo) newImage).Length;
+                    existing.Length = ((FileInfo)newImage).Length;
                 }
+            }
+
+            if (imageAdded || images.Count != existingImages.Count)
+            {
+                var newImagePaths = images.Select(i => i.FullName).ToList();
+
+                var deleted = existingImages
+                    .Where(i => !newImagePaths.Contains(i.Path, StringComparer.OrdinalIgnoreCase) && !File.Exists(i.Path))
+                    .ToList();
+
+                ImageInfos = ImageInfos.Except(deleted).ToList();
             }
 
             ImageInfos.AddRange(newImageList.Select(i => GetImageInfo(i, imageType)));
@@ -1881,6 +1892,19 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return video.RefreshMetadata(newOptions, cancellationToken);
+        }
+
+        public string GetEtag()
+        {
+            return string.Join("|", GetEtagValues().ToArray()).GetMD5().ToString("N");
+        }
+
+        protected virtual List<string> GetEtagValues()
+        {
+            return new List<string>
+            {
+                DateLastSaved.Ticks.ToString(CultureInfo.InvariantCulture)
+            };
         }
     }
 }

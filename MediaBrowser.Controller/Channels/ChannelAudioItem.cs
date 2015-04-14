@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities.Audio;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
@@ -99,6 +100,11 @@ namespace MediaBrowser.Controller.Channels
         public override bool CanDelete()
         {
             return false;
+        }
+
+        public override bool IsVisibleStandalone(User user)
+        {
+            return IsVisibleStandaloneInternal(user, false) && ChannelVideoItem.IsChannelVisible(this, user);
         }
     }
 }
