@@ -87,6 +87,12 @@
                 channelQuery.StartIndex -= channelQuery.Limit;
                 reloadChannels(page);
             });
+
+            $('.selectPageSize', page).on('change', function () {
+                channelQuery.Limit = parseInt(this.value);
+                channelQuery.StartIndex = 0;
+                reloadChannels(page);
+            });
         });
     }
 
@@ -413,7 +419,7 @@
             });
         }
 
-    }).on('pagebeforeshow', "#liveTvGuidePage", function () {
+    }).on('pageshow', "#liveTvGuidePage", function () {
 
         var page = this;
 

@@ -197,10 +197,10 @@
 }
 
 .channelHeaderCellInner {
-    padding: .7em .5em .5em;
+    padding: .2em .5em .5em;
     display: block;
     text-decoration: none;
-    font-weight: normal !important;
+    font-weight: 300 !important;
     color: #fff !important;
     position: relative;
 }
@@ -211,6 +211,8 @@
 
 .channelList {
     float: left;
+    font-size: 18px;
+    font-weight: 300;
 }
 
 .programGrid {
@@ -317,6 +319,14 @@
 
     .channelPrograms, .timeslotHeadersInner {
         width: 6500px;
+    }
+
+    .channelList {
+        font-size: 14px;
+    }
+
+    .channelHeaderCellInner {
+        padding-top: .6em;
     }
 }
 
