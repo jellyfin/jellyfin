@@ -158,7 +158,13 @@
 
 .channelPrograms {
     white-space: nowrap;
-    height: 56px;
+    height: 55px;
+    border-bottom: 1px solid #404040;
+    position: relative;
+}
+
+.channelPrograms, .timeslotHeadersInner {
+    width: 8000px;
 }
 
 .timeslotHeader {
@@ -168,14 +174,6 @@
 .timeslotHeaderInner {
     padding: .5em .35em;
     font-weight: 500;
-}
-
-.timeslotCell {
-    display: inline-block;
-    border-bottom: 1px solid #404040;
-    border-left: 1px solid #404040;
-    border-collapse: collapse;
-    position: relative;
 }
 
 .channelHeaderCell, .channelTimeslotHeader {
@@ -192,8 +190,6 @@
 
 .channelTimeslotHeader, .timeslotHeader {
     background: #38c;
-    border-bottom: 1px solid #38c;
-    border-left: 1px solid #38c;
 }
 
 .timeslotHeader, .channelTimeslotHeader {
@@ -226,9 +222,29 @@
     margin-left: 190px;
 }
 
-.timeslotCell, .timeslotHeader {
-    width: 60px;
+.timeslotHeader {
+    width: 2.0833333333333333333333333333333%;
 }
+
+.programCell {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+}
+
+.programCellInner {
+    border-left: 1px solid #404040;
+    display: block;
+    height: 100%;
+    color: #fff !important;
+    text-decoration: none;
+    font-weight: 400 !important;
+    overflow: hidden;
+}
+
+    .programCellInner:hover {
+        background-color: #38c;
+    }
 
 .timeslotCellInner {
     position: absolute;
@@ -242,15 +258,7 @@
     color: #fff !important;
 }
 
-.timeslotCellInnerWithProgram {
-    z-index: 99;
-}
-
-    .timeslotCellInnerWithProgram:hover {
-        background-color: #38c;
-    }
-
-.channelHeaderCell, .timeslotCell {
+.channelHeaderCell {
     height: 55px;
 }
 
@@ -305,6 +313,10 @@
 
     .currentDay {
         display: none;
+    }
+
+    .channelPrograms, .timeslotHeadersInner {
+        width: 6000px;
     }
 }
 
