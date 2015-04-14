@@ -58,12 +58,6 @@ namespace MediaBrowser.Model.Entities
         /// </summary>
         /// <value>The length of the packet.</value>
         public int? PacketLength { get; set; }
-
-        /// <summary>
-        /// Gets or sets the key frames.
-        /// </summary>
-        /// <value>The key frames.</value>
-        public List<int> KeyFrames { get; set; }
         
         /// <summary>
         /// Gets or sets the channels.

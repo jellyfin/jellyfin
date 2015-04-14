@@ -21,8 +21,8 @@ namespace MediaBrowser.Model.Session
         public DeviceProfile DeviceProfile { get; set; }
         public List<string> SupportedLiveMediaTypes { get; set; }
 
-        public string AppUrl { get; set; }
-        public string AppImageUrl { get; set; }
+        public string Url { get; set; }
+        public string ImageUrl { get; set; }
 
         public ClientCapabilities()
         {
