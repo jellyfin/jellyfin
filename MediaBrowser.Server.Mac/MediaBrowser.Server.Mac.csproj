@@ -30,6 +30,7 @@
     <EnableCodeSigning>false</EnableCodeSigning>
     <CreatePackage>true</CreatePackage>
     <PackageSigningKey>Developer ID Installer</PackageSigningKey>
+    <UseRefCounting>false</UseRefCounting>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -44,6 +45,7 @@
     <EnableCodeSigning>false</EnableCodeSigning>
     <CreatePackage>true</CreatePackage>
     <PackageSigningKey>Developer ID Installer</PackageSigningKey>
+    <UseRefCounting>false</UseRefCounting>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'AppStore|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -59,6 +61,7 @@
     <CodeSigningKey>3rd Party Mac Developer Application</CodeSigningKey>
     <EnableCodeSigning>false</EnableCodeSigning>
     <EnablePackageSigning>false</EnablePackageSigning>
+    <UseRefCounting>false</UseRefCounting>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -193,42 +196,6 @@
     <NativeReference Include="..\ThirdParty\SQLite3\osx\libsqlite3.dylib">
       <IsCxx>False</IsCxx>
       <Kind>Dynamic</Kind>
-    </NativeReference>
-    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagick++-6.Q16.5.dylib">
-      <IsCxx>False</IsCxx>
-      <Kind>Dynamic</Kind>
-    </NativeReference>
-    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagick++-6.Q16.dylib">
-      <IsCxx>False</IsCxx>
-      <Kind>Dynamic</Kind>
-    </NativeReference>
-    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagick++-6.Q16.la">
-      <IsCxx>False</IsCxx>
-      <Kind>Static</Kind>
-    </NativeReference>
-    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickCore-6.Q16.2.dylib">
-      <IsCxx>False</IsCxx>
-      <Kind>Dynamic</Kind>
-    </NativeReference>
-    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickCore-6.Q16.dylib">
-      <IsCxx>False</IsCxx>
-      <Kind>Dynamic</Kind>
-    </NativeReference>
-    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickCore-6.Q16.la">
-      <IsCxx>False</IsCxx>
-      <Kind>Static</Kind>
-    </NativeReference>
-    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickWand-6.Q16.2.dylib">
-      <IsCxx>False</IsCxx>
-      <Kind>Dynamic</Kind>
-    </NativeReference>
-    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickWand-6.Q16.dylib">
-      <IsCxx>False</IsCxx>
-      <Kind>Dynamic</Kind>
-    </NativeReference>
-    <NativeReference Include="..\ThirdParty\ImageMagick\osx\libMagickWand-6.Q16.la">
-      <IsCxx>False</IsCxx>
-      <Kind>Static</Kind>
     </NativeReference>
   </ItemGroup>
   <ItemGroup>
@@ -513,9 +480,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\movies.html">
       <Link>Resources\dashboard-ui\movies.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\movieslatest.html">
-      <Link>Resources\dashboard-ui\movieslatest.html</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\moviesrecommended.html">
       <Link>Resources\dashboard-ui\moviesrecommended.html</Link>
     </BundleResource>
@@ -605,6 +569,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\songs.html">
       <Link>Resources\dashboard-ui\songs.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\streamingsettings.html">
+      <Link>Resources\dashboard-ui\streamingsettings.html</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\support.html">
       <Link>Resources\dashboard-ui\support.html</Link>
@@ -1419,9 +1386,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\movies.js">
       <Link>Resources\dashboard-ui\scripts\movies.js</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\movieslatest.js">
-      <Link>Resources\dashboard-ui\scripts\movieslatest.js</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\moviesrecommended.js">
       <Link>Resources\dashboard-ui\scripts\moviesrecommended.js</Link>
     </BundleResource>
@@ -1526,6 +1490,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\songs.js">
       <Link>Resources\dashboard-ui\scripts\songs.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\streamingsettings.js">
+      <Link>Resources\dashboard-ui\scripts\streamingsettings.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\supporterkeypage.js">
       <Link>Resources\dashboard-ui\scripts\supporterkeypage.js</Link>
