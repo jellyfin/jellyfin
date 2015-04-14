@@ -564,10 +564,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (!conditionProcessor.IsVideoConditionSatisfied(i, audioBitrate, audioChannels, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
                 {
-                    _logger.Debug("Profile: {0}, DirectPlay=false. Reason=VideoContainerProfile.{1} Path: {2}",
-                        profile.Name ?? "Unknown Profile",
-                        i.Property,
-                        mediaSource.Path ?? "Unknown path");
+                    LogConditionFailure(profile, "VideoContainerProfile", i, mediaSource);
 
                     return null;
                 }
@@ -600,10 +597,7 @@ namespace MediaBrowser.Model.Dlna
             {
                 if (!conditionProcessor.IsVideoConditionSatisfied(i, audioBitrate, audioChannels, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
                 {
-                    _logger.Debug("Profile: {0}, DirectPlay=false. Reason=VideoCodecProfile.{1} Path: {2}",
-                        profile.Name ?? "Unknown Profile",
-                        i.Property,
-                        mediaSource.Path ?? "Unknown path");
+                    LogConditionFailure(profile, "VideoCodecProfile", i, mediaSource);
 
                     return null;
                 }
@@ -639,10 +633,7 @@ namespace MediaBrowser.Model.Dlna
                     bool? isSecondaryAudio = audioStream == null ? null : mediaSource.IsSecondaryAudio(audioStream);
                     if (!conditionProcessor.IsVideoAudioConditionSatisfied(i, audioChannels, audioBitrate, audioProfile, isSecondaryAudio))
                     {
-                        _logger.Debug("Profile: {0}, DirectPlay=false. Reason=VideoAudioCodecProfile.{1} Path: {2}",
-                            profile.Name ?? "Unknown Profile",
-                            i.Property,
-                            mediaSource.Path ?? "Unknown path");
+                        LogConditionFailure(profile, "VideoAudioCodecProfile", i, mediaSource);
                         
                         return null;
                     }
@@ -677,6 +668,18 @@ namespace MediaBrowser.Model.Dlna
             }
 
             return null;
+        }
+
+        private void LogConditionFailure(DeviceProfile profile, string type, ProfileCondition condition, MediaSourceInfo mediaSource)
+        {
+            _logger.Debug("Profile: {0}, DirectPlay=false. Reason={1}.{2} Condition: {3}. ConditionValue: {4}. IsRequired: {5}. Path: {6}",
+                type,
+                profile.Name ?? "Unknown Profile",
+                condition.Property,
+                condition.Condition,
+                condition.Value ?? string.Empty,
+                condition.IsRequired,
+                mediaSource.Path ?? "Unknown path");
         }
 
         private bool IsEligibleForDirectPlay(MediaSourceInfo item,
