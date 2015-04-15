@@ -372,10 +372,6 @@
     .smallBackdropCard {
         width: 12.5%;
     }
-
-    .backdropCard {
-        width: 20%;
-    }
 }
 
 
@@ -383,10 +379,6 @@
 
     .squareCard {
         width: 12.5%;
-    }
-
-    .portraitCard {
-        width: 10%;
     }
 
     .smallBackdropCard {
@@ -399,6 +391,14 @@
     .squareCard {
         width: 11.111111111111111111111111111111%;
     }
+
+    .backdropCard {
+        width: 20%;
+    }
+
+    .portraitCard {
+        width: 11.111111111111111111111111111111%;
+    }
 }
 
 @media all and (min-width: 2200px) {
@@ -407,12 +407,19 @@
         width: 10%;
     }
 
-    .backdropCard {
-        width: 16.666666666666666666666666666667%;
-    }
-
     .bannerCard {
         width: 25%;
+    }
+
+    .portraitCard {
+        width: 10%;
+    }
+}
+
+@media all and (min-width: 2500px) {
+
+    .backdropCard {
+        width: 16.666666666666666666666666666667%;
     }
 }
 
@@ -511,24 +518,17 @@
     }
 }
 
-@media all and (min-width: 700px) {
-
-    .homePageSmallBackdropCard {
-        width: 20%;
-    }
-}
-
-@media all and (min-width: 1000px) {
+@media all and (min-width: 1600px) {
 
     .homePageSmallBackdropCard {
         width: 16.666666666666666666666666666667%;
     }
 }
 
-@media all and (min-width: 1600px) {
+@media all and (min-width: 1920px) {
 
     .homePageSmallBackdropCard {
-        width: 12.5%;
+        width: 14.285714285714285714285714285714%;
     }
 }
 

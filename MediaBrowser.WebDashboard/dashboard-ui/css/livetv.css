@@ -307,11 +307,11 @@
     }
 
     .channelHeaderCell, .channelTimeslotHeader {
-        width: 94px;
+        width: 98px;
     }
 
     .programGrid, .timeslotHeaders {
-        margin-left: 95px;
+        margin-left: 99px;
     }
 
     .currentDay {
@@ -340,7 +340,7 @@
     }
 
     .channelTimeslotHeader i {
-        margin-right: 2px !important;
+        margin-right: 4px !important;
     }
 
     .channelTimeslotHeader .timeslotHeaderInner {

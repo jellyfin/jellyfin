@@ -11,7 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Patterns.IO;
+using Interfaces.IO;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
