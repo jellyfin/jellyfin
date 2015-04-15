@@ -66,6 +66,7 @@ namespace MediaBrowser.Api
             _config.Configuration.EnableStandaloneMetadata = true;
             _config.Configuration.EnableLibraryMetadataSubFolder = true;
             _config.Configuration.EnableUserSpecificUserViews = true;
+            _config.Configuration.EnableUserSpecificUserViews2 = true;
             _config.SaveConfiguration();
         }
 
