@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.XbmcMetadata",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenSubtitlesHandler", "OpenSubtitlesHandler\OpenSubtitlesHandler.csproj", "{4A4402D4-E910-443B-B8FC-2C18286A2CA0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.Drawing", "Emby.Drawing\Emby.Drawing.csproj", "{08FFF49B-F175-4807-A2B5-73B0EBD9F716}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,20 @@ Global
 		Release Mono|x86 = Release Mono|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
+		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.AppStore|Any CPU.Build.0 = Release|Any CPU
+		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Debug|x86.Build.0 = Debug|Any CPU
+		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Release Mono|Any CPU.ActiveCfg = Debug|Any CPU
+		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Release Mono|Any CPU.Build.0 = Debug|Any CPU
+		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Release Mono|x86.ActiveCfg = Debug|Any CPU
+		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Release Mono|x86.Build.0 = Debug|Any CPU
+		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Release|x86.ActiveCfg = Release|Any CPU
+		{08FFF49B-F175-4807-A2B5-73B0EBD9F716}.Release|x86.Build.0 = Release|Any CPU
 		{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}.AppStore|Any CPU.ActiveCfg = Release|Any CPU
 		{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}.AppStore|Any CPU.Build.0 = Release|Any CPU
 		{0BD82FA6-EB8A-4452-8AF5-74F9C3849451}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -270,14 +286,12 @@ Global
 		{C97B98FA-00D4-4880-88B8-C76017A418AB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItems = $0
-		$0.Item = MediaBrowser.Server.Mac\MediaBrowser.Server.Mac.csproj
-		Policies = $1
-		$1.DotNetNamingPolicy = $2
-		$2.DirectoryNamespaceAssociation = None
-		$2.ResourceNamePolicy = FileFormatDefault
-		$1.VersionControlPolicy = $3
-		$3.inheritsSet = Mono
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$1.DirectoryNamespaceAssociation = None
+		$1.ResourceNamePolicy = FileFormatDefault
+		$0.VersionControlPolicy = $2
+		$2.inheritsSet = Mono
 		version = 
 	EndGlobalSection
 EndGlobal
