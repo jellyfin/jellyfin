@@ -149,11 +149,11 @@
     white-space: nowrap;
     position: relative;
     margin: 0 auto;
-    margin-top: 44px;
+    margin-top: 50px;
 }
 
 .mobileGuide .programContainer {
-    margin-top: 30px;
+    margin-top: 38px;
 }
 
 .channelPrograms {
@@ -173,7 +173,16 @@
 
 .timeslotHeaderInner {
     padding: .6em .35em .5em;
-    font-weight: 500;
+    font-weight: 400;
+    font-size: 16px;
+}
+
+.channelTimeslotHeader .accentButton {
+    font-size: 15px;
+}
+
+.channelTimeslotHeader .timeslotHeaderInner {
+    padding-top: .4em;
 }
 
 .channelHeaderCell, .channelTimeslotHeader {
@@ -193,14 +202,14 @@
 }
 
 .timeslotHeader, .channelTimeslotHeader {
-    height: 34px;
+    height: 42px;
 }
 
 .channelHeaderCellInner {
-    padding: .7em .5em .5em;
+    padding: .35em .5em .5em;
     display: block;
     text-decoration: none;
-    font-weight: normal !important;
+    font-weight: 300 !important;
     color: #fff !important;
     position: relative;
 }
@@ -211,6 +220,8 @@
 
 .channelList {
     float: left;
+    font-size: 16px;
+    font-weight: 300;
 }
 
 .programGrid {
@@ -270,10 +281,6 @@
     padding: 0 .5em .35em;
 }
 
-.plainProgramInfo {
-    background-color: #252525;
-}
-
 .guideChannelInfo {
     display: inline-block;
     max-width: 110px;
@@ -300,15 +307,11 @@
     }
 
     .channelHeaderCell, .channelTimeslotHeader {
-        width: 89px;
+        width: 98px;
     }
 
     .programGrid, .timeslotHeaders {
-        margin-left: 90px;
-    }
-
-    .currentDate {
-        font-size: 11px;
+        margin-left: 99px;
     }
 
     .currentDay {
@@ -317,6 +320,31 @@
 
     .channelPrograms, .timeslotHeadersInner {
         width: 6500px;
+    }
+
+    .channelList, .channelTimeslotHeader .accentButton  {
+        font-size: 14px;
+    }
+
+    .timeslotHeaderInner {
+        font-size: 14px;
+        padding-top: .8em;
+    }
+
+    .channelHeaderCellInner {
+        padding-top: .6em;
+    }
+
+    .channelTimeslotHeader a {
+        padding-left: 0 !important;
+    }
+
+    .channelTimeslotHeader i {
+        margin-right: 4px !important;
+    }
+
+    .channelTimeslotHeader .timeslotHeaderInner {
+        padding-top: .5em;
     }
 }
 

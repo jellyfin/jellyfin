@@ -41,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             // Add PixelFormat column
 
-            createTableCommand += "(ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, IsCabac BIT NULL, KeyFrames TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+            createTableCommand += "(ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, IsCabac BIT NULL, PRIMARY KEY (ItemId, StreamIndex))";
 
             string[] queries = {
 
@@ -62,7 +62,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             AddIsAnamorphicColumn();
             AddIsCabacColumn();
             AddRefFramesCommand();
-            AddKeyFramesCommand();
 
             PrepareStatements();
 
@@ -162,37 +161,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.RunQueries(new[] { builder.ToString() }, _logger);
         }
 
-        private void AddKeyFramesCommand()
-        {
-            using (var cmd = _connection.CreateCommand())
-            {
-                cmd.CommandText = "PRAGMA table_info(mediastreams)";
-
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
-                {
-                    while (reader.Read())
-                    {
-                        if (!reader.IsDBNull(1))
-                        {
-                            var name = reader.GetString(1);
-
-                            if (string.Equals(name, "KeyFrames", StringComparison.OrdinalIgnoreCase))
-                            {
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-
-            var builder = new StringBuilder();
-
-            builder.AppendLine("alter table mediastreams");
-            builder.AppendLine("add column KeyFrames TEXT NULL");
-
-            _connection.RunQueries(new[] { builder.ToString() }, _logger);
-        }
-
         private void AddIsCabacColumn()
         {
             using (var cmd = _connection.CreateCommand())
@@ -282,7 +250,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "BitDepth",
             "IsAnamorphic",
             "RefFrames",
-            "KeyFrames",
             "IsCabac"
         };
 
@@ -464,12 +431,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             if (!reader.IsDBNull(25))
             {
-                item.KeyFrames = reader.GetString(25).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => int.Parse(i, CultureInfo.InvariantCulture)).ToList();
-            }
-
-            if (!reader.IsDBNull(26))
-            {
-                item.IsCabac = reader.GetBoolean(26);
+                item.IsCabac = reader.GetBoolean(25);
             }
 
             return item;
@@ -508,44 +470,38 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    _saveStreamCommand.GetParameter(0).Value = id;
-                    _saveStreamCommand.GetParameter(1).Value = stream.Index;
-                    _saveStreamCommand.GetParameter(2).Value = stream.Type.ToString();
-                    _saveStreamCommand.GetParameter(3).Value = stream.Codec;
-                    _saveStreamCommand.GetParameter(4).Value = stream.Language;
-                    _saveStreamCommand.GetParameter(5).Value = stream.ChannelLayout;
-                    _saveStreamCommand.GetParameter(6).Value = stream.Profile;
-                    _saveStreamCommand.GetParameter(7).Value = stream.AspectRatio;
-                    _saveStreamCommand.GetParameter(8).Value = stream.Path;
+                    var index = 0;
 
-                    _saveStreamCommand.GetParameter(9).Value = stream.IsInterlaced;
+                    _saveStreamCommand.GetParameter(index++).Value = id;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Index;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Type.ToString();
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Codec;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Language;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.ChannelLayout;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Profile;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.AspectRatio;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Path;
 
-                    _saveStreamCommand.GetParameter(10).Value = stream.BitRate;
-                    _saveStreamCommand.GetParameter(11).Value = stream.Channels;
-                    _saveStreamCommand.GetParameter(12).Value = stream.SampleRate;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.IsInterlaced;
 
-                    _saveStreamCommand.GetParameter(13).Value = stream.IsDefault;
-                    _saveStreamCommand.GetParameter(14).Value = stream.IsForced;
-                    _saveStreamCommand.GetParameter(15).Value = stream.IsExternal;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.BitRate;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Channels;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.SampleRate;
 
-                    _saveStreamCommand.GetParameter(16).Value = stream.Width;
-                    _saveStreamCommand.GetParameter(17).Value = stream.Height;
-                    _saveStreamCommand.GetParameter(18).Value = stream.AverageFrameRate;
-                    _saveStreamCommand.GetParameter(19).Value = stream.RealFrameRate;
-                    _saveStreamCommand.GetParameter(20).Value = stream.Level;
-                    _saveStreamCommand.GetParameter(21).Value = stream.PixelFormat;
-                    _saveStreamCommand.GetParameter(22).Value = stream.BitDepth;
-                    _saveStreamCommand.GetParameter(23).Value = stream.IsAnamorphic;
-                    _saveStreamCommand.GetParameter(24).Value = stream.RefFrames;
-                    if (stream.KeyFrames != null)
-                    {
-                        _saveStreamCommand.GetParameter(25).Value = string.Join(",", stream.KeyFrames.Select(i => i.ToString(CultureInfo.InvariantCulture)).ToArray());
-                    }
-                    else
-                    {
-                        _saveStreamCommand.GetParameter(25).Value = null;
-                    }
-                    _saveStreamCommand.GetParameter(26).Value = stream.IsCabac;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.IsDefault;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.IsForced;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.IsExternal;
+
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Width;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Height;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.AverageFrameRate;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.RealFrameRate;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.Level;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.PixelFormat;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.BitDepth;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.IsAnamorphic;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.RefFrames;
+                    _saveStreamCommand.GetParameter(index++).Value = stream.IsCabac;
 
                     _saveStreamCommand.Transaction = transaction;
                     _saveStreamCommand.ExecuteNonQuery();

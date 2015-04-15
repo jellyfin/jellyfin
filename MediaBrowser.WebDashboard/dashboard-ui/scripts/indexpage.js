@@ -426,12 +426,14 @@
 
 (function ($, document) {
 
+    var defaultFirstSection = 'smalllibrarytiles-automobile';
+
     function getDefaultSection(index) {
 
         switch (index) {
 
             case 0:
-                return 'librarytiles-automobile';
+                return defaultFirstSection;
             case 1:
                 return 'resume';
             case 2:
@@ -451,7 +453,7 @@
         var section = displayPreferences.CustomPrefs['home' + index] || getDefaultSection(index);
 
         if (section == 'folders') {
-            section = 'librarytiles-automobile';
+            section = defaultFirstSection;
         }
 
         var showLibraryTileNames = displayPreferences.CustomPrefs.enableLibraryTileNames != '0';

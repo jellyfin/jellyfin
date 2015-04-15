@@ -831,6 +831,8 @@
 
             var deviceProfile = self.getDeviceProfile();
 
+            Dashboard.showLoadingMsg();
+
             getPlaybackInfo(item.Id, deviceProfile, startPosition).done(function (playbackInfoResult) {
 
                 if (validatePlaybackInfoResult(playbackInfoResult)) {
@@ -852,6 +854,7 @@
                             playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback);
                         }
                     } else {
+                        Dashboard.hideLoadingMsg();
                         showPlaybackInfoErrorMessage('NoCompatibleStream');
                     }
                 }
@@ -860,6 +863,8 @@
         };
 
         function playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback) {
+
+            Dashboard.hideLoadingMsg();
 
             self.currentMediaSource = mediaSource;
             self.currentItem = item;
