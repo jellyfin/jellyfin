@@ -247,7 +247,16 @@ namespace MediaBrowser.Controller.Entities
                     return GetFavoriteSongs(queryParent, user, query);
 
                 default:
-                    return GetResult(GetMediaFolders(user).SelectMany(i => i.GetChildren(user, true)), queryParent, query);
+                {
+                    if (queryParent is UserView)
+                    {
+                        return GetResult(GetMediaFolders(user).SelectMany(i => i.GetChildren(user, true)), queryParent, query);
+                    }
+                    else
+                    {
+                        return GetResult(queryParent.GetChildren(user, true), queryParent, query);
+                    }
+                }
             }
         }
 

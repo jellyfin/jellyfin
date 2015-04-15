@@ -46,6 +46,7 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableCinemaMode { get; set; }
 
         public string[] LatestItemsExcludes { get; set; }
+        public string[] PlainFolderViews { get; set; }
 
         public bool HidePlayedInLatest { get; set; }
 
@@ -62,6 +63,7 @@ namespace MediaBrowser.Model.Configuration
             DisplayChannelsWithinViews = new string[] { };
 
             ExcludeFoldersFromGrouping = new string[] { };
+            PlainFolderViews = new string[] { };
             DisplayCollectionsView = true;
 
             IncludeTrailersInSuggestions = true;

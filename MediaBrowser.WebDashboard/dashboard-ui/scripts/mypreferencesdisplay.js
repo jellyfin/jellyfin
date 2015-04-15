@@ -1,7 +1,7 @@
 ﻿(function ($, window, document) {
 
     function renderViews(page, user, result) {
-        
+
         var folderHtml = '';
 
         folderHtml += '<div data-role="controlgroup">';
@@ -25,6 +25,39 @@
         folderHtml += '</div>';
 
         $('.folderGroupList', page).html(folderHtml).trigger('create');
+    }
+
+    function renderViewStyles(page, user, result) {
+
+        var folderHtml = '';
+
+        folderHtml += '<div data-role="controlgroup">';
+        folderHtml += result.map(function (i) {
+
+            var currentHtml = '';
+
+            var id = 'chkPlainFolder' + i.Id;
+
+            currentHtml += '<label for="' + id + '">' + i.Name + '</label>';
+
+            var isChecked = user.Configuration.PlainFolderViews.indexOf(i.Id) == -1;
+            var checkedHtml = isChecked ? ' checked="checked"' : '';
+
+            currentHtml += '<input class="chkPlainFolder" data-folderid="' + i.Id + '" type="checkbox" id="' + id + '"' + checkedHtml + ' />';
+
+            return currentHtml;
+
+        }).join('');
+
+        folderHtml += '</div>';
+
+        $('.viewStylesList', page).html(folderHtml).trigger('create');
+
+        if (result.length) {
+            $('.viewStylesSection', page).show();
+        } else {
+            $('.viewStylesSection', page).hide();
+        }
     }
 
     function renderLatestItems(page, user, result) {
@@ -142,13 +175,15 @@
             UserId: user.Id
         }));
         var promise3 = ApiClient.getUserViews(user.Id);
+        var promise4 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/SpecialViewOptions"));
 
-        $.when(promise1, promise2, promise3).done(function (r1, r2, r3) {
+        $.when(promise1, promise2, promise3, promise4).done(function (r1, r2, r3, r4) {
 
             renderViews(page, user, r1[0]);
             renderLatestItems(page, user, r1[0]);
             renderChannels(page, user, r2[0]);
             renderViewOrder(page, user, r3[0]);
+            renderViewStyles(page, user, r4[0]);
 
             if (hideMsg !== false) {
                 Dashboard.hideLoadingMsg();
@@ -175,6 +210,11 @@
         });
 
         user.Configuration.ExcludeFoldersFromGrouping = $(".chkGroupFolder:not(:checked)", page).get().map(function (i) {
+
+            return i.getAttribute('data-folderid');
+        });
+
+        user.Configuration.PlainFolderViews = $(".chkPlainFolder:not(:checked)", page).get().map(function (i) {
 
             return i.getAttribute('data-folderid');
         });
