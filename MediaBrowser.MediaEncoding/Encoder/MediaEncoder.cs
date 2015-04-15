@@ -513,8 +513,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
 
-            process.Dispose();
-
             if (exitCode == -1 || memoryStream.Length == 0)
             {
                 memoryStream.Dispose();
@@ -594,7 +592,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            bool ranToCompletion;
+            bool ranToCompletion = false;
 
             var processWrapper = new ProcessWrapper(process, this);
 
@@ -609,18 +607,22 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 bool isResponsive = true;
                 int lastCount = 0;
 
-                while (isResponsive && !process.WaitForExit(30000))
+                while (isResponsive)
                 {
+                    if (process.WaitForExit(30000))
+                    {
+                        ranToCompletion = true;
+                        break;
+                    }
+                    
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    int jpegCount = Directory.GetFiles(targetDirectory)
+                    var jpegCount = Directory.GetFiles(targetDirectory)
                         .Count(i => string.Equals(Path.GetExtension(i), ".jpg", StringComparison.OrdinalIgnoreCase));
 
                     isResponsive = (jpegCount > lastCount);
                     lastCount = jpegCount;
                 }
-
-                ranToCompletion = process.HasExited;
 
                 if (!ranToCompletion)
                 {
@@ -633,8 +635,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
-
-            process.Dispose();
 
             if (exitCode == -1)
             {
