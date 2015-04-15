@@ -1007,12 +1007,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 innerProgress.RegisterAction(p => progress.Report(90 + (p * .1)));
                 await CleanDatabaseInternal(progress, cancellationToken).ConfigureAwait(false);
 
-                foreach (var program in _programs.Values
-                    .Where(i => (i.StartDate - DateTime.UtcNow).TotalDays <= 1)
-                    .ToList())
-                {
-                    RefreshIfNeeded(program);
-                }
+                RefreshIfNeeded(_programs.Values.Where(i => (i.StartDate - DateTime.UtcNow).TotalDays <= 1).ToList());
             }
             finally
             {
@@ -1144,8 +1139,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _programs = programs.ToDictionary(i => i.Id);
             _refreshedPrograms.Clear();
             progress.Report(90);
-
-            RefreshIfNeeded(programs.Take(500));
 
             // Load these now which will prefetch metadata
             var dtoOptions = new DtoOptions();

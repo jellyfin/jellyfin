@@ -206,7 +206,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.AudioChannels,
                             Value = "5",
-                            IsRequired = true
+                            IsRequired = false
                         },
                         new ProfileCondition
                         {
@@ -220,7 +220,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             codecProfiles.Add(new CodecProfile
             {
                 Type = CodecType.VideoAudio,
-                Codec = "ac3",
+                Codec = "aac,mp3",
                 Conditions = new[]
                     {
                         new ProfileCondition

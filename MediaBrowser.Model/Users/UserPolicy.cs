@@ -41,7 +41,7 @@ namespace MediaBrowser.Model.Users
         public bool EnableMediaPlayback { get; set; }
         public bool EnableAudioPlaybackTranscoding { get; set; }
         public bool EnableVideoPlaybackTranscoding { get; set; }
-   
+
         public bool EnableContentDeletion { get; set; }
         public bool EnableContentDownloading { get; set; }
 
@@ -64,7 +64,10 @@ namespace MediaBrowser.Model.Users
         public int InvalidLoginAttemptCount { get; set; }
 
         public bool EnablePublicSharing { get; set; }
-        
+
+        public string[] BlockedMediaFolders { get; set; }
+        public string[] BlockedChannels { get; set; }
+
         public UserPolicy()
         {
             EnableSync = true;
@@ -73,7 +76,7 @@ namespace MediaBrowser.Model.Users
             EnableMediaPlayback = true;
             EnableAudioPlaybackTranscoding = true;
             EnableVideoPlaybackTranscoding = true;
-     
+
             EnableLiveTvManagement = true;
             EnableLiveTvAccess = true;
 

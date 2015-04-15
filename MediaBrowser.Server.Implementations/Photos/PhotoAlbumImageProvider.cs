@@ -18,7 +18,7 @@ namespace MediaBrowser.Server.Implementations.Photos
         protected override Task<List<BaseItem>> GetItemsWithImages(IHasImages item)
         {
             var photoAlbum = (PhotoAlbum)item;
-            var items = GetFinalItems(photoAlbum.GetRecursiveChildren().ToList());
+            var items = GetFinalItems(photoAlbum.Children.ToList());
 
             return Task.FromResult(items);
         }

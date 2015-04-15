@@ -6,6 +6,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using MediaBrowser.Providers.Music;
+using MediaBrowser.Providers.TV;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,7 +15,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Providers.TV;
 
 namespace MediaBrowser.Providers.Movies
 {
