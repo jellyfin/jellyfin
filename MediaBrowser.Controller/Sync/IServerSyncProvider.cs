@@ -1,6 +1,6 @@
 ﻿using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Sync;
-using Patterns.IO;
+using Interfaces.IO;
 using System;
 using System.IO;
 using System.Threading;
