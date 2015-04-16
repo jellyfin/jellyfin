@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Server.Mac", "MediaBrowser.Server.Mac\MediaBrowser.Server.Mac.csproj", "{C97B98FA-00D4-4880-88B8-C76017A418AB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Emby.Server.Mac", "MediaBrowser.Server.Mac\Emby.Server.Mac.csproj", "{C97B98FA-00D4-4880-88B8-C76017A418AB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaBrowser.Api", "MediaBrowser.Api\MediaBrowser.Api.csproj", "{4FD51AC5-2C16-4308-A993-C3A84F3B4582}"
 EndProject
