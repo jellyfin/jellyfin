@@ -5,7 +5,7 @@
 	<key>CFBundleIconFile</key>
 	<string>appicon</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.MediaBrowser.MediaBrowser.Server.Mac</string>
+	<string>com.emby.server</string>
 	<key>CFBundleName</key>
 	<string>Media Browser</string>
 	<key>CFBundleShortVersionString</key>
