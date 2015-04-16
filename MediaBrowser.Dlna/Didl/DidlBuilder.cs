@@ -39,8 +39,9 @@ namespace MediaBrowser.Dlna.Didl
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly ILogger _logger;
 
-        public DidlBuilder(DeviceProfile profile, User user, IImageProcessor imageProcessor, string serverAddress, string accessToken, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager)
+        public DidlBuilder(DeviceProfile profile, User user, IImageProcessor imageProcessor, string serverAddress, string accessToken, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, ILogger logger)
         {
             _profile = profile;
             _imageProcessor = imageProcessor;
@@ -48,6 +49,7 @@ namespace MediaBrowser.Dlna.Didl
             _userDataManager = userDataManager;
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
+            _logger = logger;
             _accessToken = accessToken;
             _user = user;
         }
@@ -127,7 +129,7 @@ namespace MediaBrowser.Dlna.Didl
             {
                 var sources = _mediaSourceManager.GetStaticMediaSources(video, true, _user).ToList();
 
-                streamInfo = new StreamBuilder(new NullLogger()).BuildVideoItem(new VideoOptions
+                streamInfo = new StreamBuilder(_logger).BuildVideoItem(new VideoOptions
                 {
                     ItemId = GetClientId(video),
                     MediaSources = sources,
@@ -780,19 +782,33 @@ namespace MediaBrowser.Dlna.Didl
             var result = element.OwnerDocument;
 
             var playbackPercentage = 0;
+            var unplayedCount = 0;
 
             if (item is Video)
             {
                 var userData = _userDataManager.GetUserDataDto(item, _user);
 
                 playbackPercentage = Convert.ToInt32(userData.PlayedPercentage ?? 0);
-                if (playbackPercentage >= 100)
+                if (playbackPercentage >= 100 || userData.Played)
                 {
-                    playbackPercentage = 0;
+                    playbackPercentage = 100;
+                }
+            }
+            else if (item is Series || item is Season || item is BoxSet)
+            {
+                var userData = _userDataManager.GetUserDataDto(item, _user);
+
+                if (userData.Played)
+                {
+                    playbackPercentage = 100;
+                }
+                else
+                {
+                    unplayedCount = userData.UnplayedItemCount ?? 0;
                 }
             }
 
-            var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight, playbackPercentage, "jpg");
+            var albumartUrlInfo = GetImageUrl(imageInfo, _profile.MaxAlbumArtWidth, _profile.MaxAlbumArtHeight, playbackPercentage, unplayedCount, "jpg");
 
             var icon = result.CreateElement("upnp", "albumArtURI", NS_UPNP);
             var profile = result.CreateAttribute("dlna", "profileID", NS_DLNA);
@@ -802,7 +818,7 @@ namespace MediaBrowser.Dlna.Didl
             element.AppendChild(icon);
 
             // TOOD: Remove these default values
-            var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth ?? 48, _profile.MaxIconHeight ?? 48, playbackPercentage, "jpg");
+            var iconUrlInfo = GetImageUrl(imageInfo, _profile.MaxIconWidth ?? 48, _profile.MaxIconHeight ?? 48, playbackPercentage, unplayedCount, "jpg");
             icon = result.CreateElement("upnp", "icon", NS_UPNP);
             icon.InnerText = iconUrlInfo.Url;
             element.AppendChild(icon);
@@ -819,15 +835,15 @@ namespace MediaBrowser.Dlna.Didl
                 }
             }
 
-            AddImageResElement(item, element, 160, 160, playbackPercentage, "jpg", "JPEG_TN");
+            AddImageResElement(item, element, 160, 160, playbackPercentage, unplayedCount, "jpg", "JPEG_TN");
 
             if (!_profile.EnableSingleAlbumArtLimit)
             {
-                AddImageResElement(item, element, 4096, 4096, playbackPercentage, "jpg", "JPEG_LRG");
-                AddImageResElement(item, element, 1024, 768, playbackPercentage, "jpg", "JPEG_MED");
-                AddImageResElement(item, element, 640, 480, playbackPercentage, "jpg", "JPEG_SM");
-                AddImageResElement(item, element, 4096, 4096, playbackPercentage, "png", "PNG_LRG");
-                AddImageResElement(item, element, 160, 160, playbackPercentage, "png", "PNG_TN");
+                AddImageResElement(item, element, 4096, 4096, playbackPercentage, unplayedCount, "jpg", "JPEG_LRG");
+                AddImageResElement(item, element, 1024, 768, playbackPercentage, unplayedCount, "jpg", "JPEG_MED");
+                AddImageResElement(item, element, 640, 480, playbackPercentage, unplayedCount, "jpg", "JPEG_SM");
+                AddImageResElement(item, element, 4096, 4096, playbackPercentage, unplayedCount, "png", "PNG_LRG");
+                AddImageResElement(item, element, 160, 160, playbackPercentage, unplayedCount, "png", "PNG_TN");
             }
         }
 
@@ -852,6 +868,7 @@ namespace MediaBrowser.Dlna.Didl
             int maxWidth,
             int maxHeight,
             int playbackPercentage,
+            int unplayedCount,
             string format,
             string org_Pn)
         {
@@ -864,7 +881,7 @@ namespace MediaBrowser.Dlna.Didl
 
             var result = element.OwnerDocument;
 
-            var albumartUrlInfo = GetImageUrl(imageInfo, maxWidth, maxHeight, playbackPercentage, format);
+            var albumartUrlInfo = GetImageUrl(imageInfo, maxWidth, maxHeight, playbackPercentage, unplayedCount, format);
 
             var res = result.CreateElement(string.Empty, "res", NS_DIDL);
 
@@ -1005,9 +1022,9 @@ namespace MediaBrowser.Dlna.Didl
             return id;
         }
 
-        private ImageUrlInfo GetImageUrl(ImageDownloadInfo info, int maxWidth, int maxHeight, int playbackPercentage, string format)
+        private ImageUrlInfo GetImageUrl(ImageDownloadInfo info, int maxWidth, int maxHeight, int playbackPercentage, int unplayedCount, string format)
         {
-            var url = string.Format("{0}/Items/{1}/Images/{2}/0/{3}/{4}/{5}/{6}/{7}",
+            var url = string.Format("{0}/Items/{1}/Images/{2}/0/{3}/{4}/{5}/{6}/{7}/{8}",
                 _serverAddress,
                 info.ItemId,
                 info.Type,
@@ -1015,7 +1032,8 @@ namespace MediaBrowser.Dlna.Didl
                 format,
                 maxWidth.ToString(CultureInfo.InvariantCulture),
                 maxHeight.ToString(CultureInfo.InvariantCulture),
-                playbackPercentage.ToString(CultureInfo.InvariantCulture)
+                playbackPercentage.ToString(CultureInfo.InvariantCulture),
+                unplayedCount.ToString(CultureInfo.InvariantCulture)
                 );
 
             var width = info.Width;

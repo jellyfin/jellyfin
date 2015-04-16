@@ -226,6 +226,7 @@ namespace MediaBrowser.Dlna.Profiles
                 new CodecProfile
                 {
                     Type = CodecType.Video,
+                    Codec = "h264",
                     Conditions = new []
                     {
                         new ProfileCondition
@@ -239,16 +240,7 @@ namespace MediaBrowser.Dlna.Profiles
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.Height,
                             Value = "1080"
-                        }
-                    }
-                },
-
-                new CodecProfile
-                {
-                    Type = CodecType.Video,
-                    Codec = "h264",
-                    Conditions = new []
-                    {
+                        },
                         new ProfileCondition
                         {
                             Condition = ProfileConditionType.LessThanEqual,
@@ -279,6 +271,18 @@ namespace MediaBrowser.Dlna.Profiles
                         new ProfileCondition
                         {
                             Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.Width,
+                            Value = "1920"
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.Height,
+                            Value = "1080"
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.VideoFramerate,
                             Value = "30"
                         },
@@ -287,6 +291,26 @@ namespace MediaBrowser.Dlna.Profiles
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.VideoBitrate,
                             Value = "20000000"
+                        }
+                    }
+                },
+
+                new CodecProfile
+                {
+                    Type = CodecType.Video,
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.Width,
+                            Value = "1920"
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.Height,
+                            Value = "1080"
                         }
                     }
                 },

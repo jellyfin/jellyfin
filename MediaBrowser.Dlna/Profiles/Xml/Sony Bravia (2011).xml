@@ -61,14 +61,10 @@
     </ContainerProfile>
   </ContainerProfiles>
   <CodecProfiles>
-    <CodecProfile type="Video">
+    <CodecProfile type="Video" codec="h264">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
-      </Conditions>
-    </CodecProfile>
-    <CodecProfile type="Video" codec="h264">
-      <Conditions>
         <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="20000000" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="true" />
@@ -76,8 +72,16 @@
     </CodecProfile>
     <CodecProfile type="Video" codec="mpeg2video">
       <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="20000000" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="Video">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
       </Conditions>
     </CodecProfile>
     <CodecProfile type="VideoAudio" codec="ac3">

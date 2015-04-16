@@ -95,6 +95,7 @@ namespace MediaBrowser.Dlna.Profiles
                 new CodecProfile
                 {
                     Type = CodecType.Video,
+                    Codec = "h264",
                     Conditions = new []
                     {
                         new ProfileCondition
@@ -138,7 +139,6 @@ namespace MediaBrowser.Dlna.Profiles
                 new CodecProfile
                 {
                     Type = CodecType.Video,
-                    Codec = "mpeg2video",
                     Conditions = new []
                     {
                         new ProfileCondition
