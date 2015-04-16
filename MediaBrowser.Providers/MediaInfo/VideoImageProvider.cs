@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
@@ -20,13 +21,15 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IMediaEncoder _mediaEncoder;
         private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _libraryManager;
+        private readonly ILogger _logger;
 
-        public VideoImageProvider(IIsoManager isoManager, IMediaEncoder mediaEncoder, IServerConfigurationManager config, ILibraryManager libraryManager)
+        public VideoImageProvider(IIsoManager isoManager, IMediaEncoder mediaEncoder, IServerConfigurationManager config, ILibraryManager libraryManager, ILogger logger)
         {
             _isoManager = isoManager;
             _mediaEncoder = mediaEncoder;
             _config = config;
             _libraryManager = libraryManager;
+            _logger = logger;
         }
 
         /// <summary>
@@ -74,6 +77,7 @@ namespace MediaBrowser.Providers.MediaInfo
             // Can't extract if we didn't find a video stream in the file
             if (!video.DefaultVideoStreamIndex.HasValue)
             {
+                _logger.Debug("Skipping image extraction due to missing DefaultVideoStreamIndex for {0}.", video.Path ?? string.Empty);
                 return Task.FromResult(new DynamicImageResponse { HasImage = false });
             }
 

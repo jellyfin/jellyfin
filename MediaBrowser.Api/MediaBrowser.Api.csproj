@@ -156,6 +156,7 @@
     <Compile Include="UserLibrary\PlaystateService.cs" />
     <Compile Include="UserLibrary\StudiosService.cs" />
     <Compile Include="UserLibrary\UserLibraryService.cs" />
+    <Compile Include="UserLibrary\UserViewsService.cs" />
     <Compile Include="UserLibrary\YearsService.cs" />
     <Compile Include="UserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

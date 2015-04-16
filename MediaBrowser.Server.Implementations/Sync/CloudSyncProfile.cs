@@ -205,7 +205,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                         {
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.AudioChannels,
-                            Value = "5",
+                            Value = "6",
                             IsRequired = false
                         },
                         new ProfileCondition

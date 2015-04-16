@@ -49,7 +49,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [enable user specific user views]; otherwise, <c>false</c>.</value>
         public bool EnableUserSpecificUserViews { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the value pointing to the file system where the ssl certiifcate is located..
         /// </summary>

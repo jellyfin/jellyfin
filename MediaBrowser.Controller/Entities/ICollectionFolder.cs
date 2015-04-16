@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -9,6 +10,8 @@ namespace MediaBrowser.Controller.Entities
     {
         string CollectionType { get; }
         string Path { get; }
+        string Name { get; }
+        Guid Id { get; }
         IEnumerable<string> PhysicalLocations { get; }
     }
 }

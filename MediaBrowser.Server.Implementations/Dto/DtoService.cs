@@ -357,7 +357,10 @@ namespace MediaBrowser.Server.Implementations.Dto
                     : item.CanDownload(user);
             }
 
-
+            if (fields.Contains(ItemFields.Etag))
+            {
+                dto.Etag = item.GetEtag(user);
+            }
 
             return dto;
         }
