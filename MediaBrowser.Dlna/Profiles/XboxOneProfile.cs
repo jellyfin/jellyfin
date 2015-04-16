@@ -12,17 +12,26 @@ namespace MediaBrowser.Dlna.Profiles
             Name = "Xbox One";
 
             TimelineOffsetSeconds = 40;
-            
+
             Identification = new DeviceIdentification
             {
-                ModelName = "Xbox One",
-                FriendlyName = "Xbox-SystemOS",
+                FriendlyName = "XboxOne",
 
                 Headers = new[]
                 {
-                    new HttpHeaderInfo {Name = "User-Agent", Value = "NSPlayer", Match = HeaderMatchType.Substring}
+                    new HttpHeaderInfo
+                    {
+                        Name = "FriendlyName.DLNA.ORG", Value = "XboxOne", Match = HeaderMatchType.Substring
+                    },
+                    new HttpHeaderInfo
+                    {
+                        Name = "User-Agent", Value = "NSPlayer/12", Match = HeaderMatchType.Substring
+                    }
                 }
             };
+
+            var videoProfile = "high|main|baseline|constrained baseline";
+            var videoLevel = "41";
 
             TranscodingProfiles = new[]
             {
@@ -43,8 +52,7 @@ namespace MediaBrowser.Dlna.Profiles
                     Container = "ts",
                     VideoCodec = "h264",
                     AudioCodec = "aac",
-                    Type = DlnaProfileType.Video,
-                    EstimateContentLength = true
+                    Type = DlnaProfileType.Video
                 }
             };
 
@@ -129,6 +137,7 @@ namespace MediaBrowser.Dlna.Profiles
                 new CodecProfile
                 {
                     Type = CodecType.Video,
+                    Codec = "mpeg4",
                     Conditions = new []
                     {
                         new ProfileCondition
@@ -144,16 +153,7 @@ namespace MediaBrowser.Dlna.Profiles
                             Property = ProfileConditionValue.VideoBitDepth,
                             Value = "8",
                             IsRequired = false
-                        }
-                    }
-                },
-
-                new CodecProfile
-                {
-                    Type = CodecType.Video,
-                    Codec = "mpeg4",
-                    Conditions = new []
-                    {
+                        },
                         new ProfileCondition
                         {
                             Condition = ProfileConditionType.LessThanEqual,
@@ -191,6 +191,20 @@ namespace MediaBrowser.Dlna.Profiles
                     {
                         new ProfileCondition
                         {
+                            Condition = ProfileConditionType.NotEquals,
+                            Property = ProfileConditionValue.IsAnamorphic,
+                            Value = "true",
+                            IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoBitDepth,
+                            Value = "8",
+                            IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.Width,
                             Value = "1920"
@@ -200,6 +214,20 @@ namespace MediaBrowser.Dlna.Profiles
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.Height,
                             Value = "1080"
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoLevel,
+                            Value = videoLevel,
+                            IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.EqualsAny,
+                            Property = ProfileConditionValue.VideoProfile,
+                            Value = videoProfile,
+                            IsRequired = false
                         }
                     }
                 },
@@ -210,6 +238,20 @@ namespace MediaBrowser.Dlna.Profiles
                     Codec = "wmv2,wmv3,vc1",
                     Conditions = new []
                     {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.NotEquals,
+                            Property = ProfileConditionValue.IsAnamorphic,
+                            Value = "true",
+                            IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoBitDepth,
+                            Value = "8",
+                            IsRequired = false
+                        },
                         new ProfileCondition
                         {
                             Condition = ProfileConditionType.LessThanEqual,
@@ -234,6 +276,28 @@ namespace MediaBrowser.Dlna.Profiles
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.VideoBitrate,
                             Value = "15360000",
+                            IsRequired = false
+                        }
+                    }
+                },
+
+                new CodecProfile
+                {
+                    Type = CodecType.Video,
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.NotEquals,
+                            Property = ProfileConditionValue.IsAnamorphic,
+                            Value = "true",
+                            IsRequired = false
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoBitDepth,
+                            Value = "8",
                             IsRequired = false
                         }
                     }
@@ -278,7 +342,7 @@ namespace MediaBrowser.Dlna.Profiles
                     }
                 }
             };
-            
+
             ResponseProfiles = new[]
             {
                 new ResponseProfile

@@ -49,7 +49,7 @@
   </TranscodingProfiles>
   <ContainerProfiles />
   <CodecProfiles>
-    <CodecProfile type="Video">
+    <CodecProfile type="Video" codec="h264">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
@@ -58,7 +58,7 @@
         <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="true" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="Video" codec="mpeg2video">
+    <CodecProfile type="Video">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />

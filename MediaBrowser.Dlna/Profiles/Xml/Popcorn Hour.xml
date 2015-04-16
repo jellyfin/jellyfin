@@ -44,16 +44,19 @@
   </TranscodingProfiles>
   <ContainerProfiles />
   <CodecProfiles>
-    <CodecProfile type="Video">
+    <CodecProfile type="Video" codec="h264">
       <Conditions>
+        <ProfileCondition condition="EqualsAny" property="VideoProfile" value="baseline|constrained baseline" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
         <ProfileCondition condition="NotEquals" property="IsAnamorphic" value="true" isRequired="false" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="Video" codec="h264">
+    <CodecProfile type="Video">
       <Conditions>
-        <ProfileCondition condition="EqualsAny" property="VideoProfile" value="baseline|constrained baseline" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="NotEquals" property="IsAnamorphic" value="true" isRequired="false" />
       </Conditions>
     </CodecProfile>
     <CodecProfile type="VideoAudio" codec="aac">
