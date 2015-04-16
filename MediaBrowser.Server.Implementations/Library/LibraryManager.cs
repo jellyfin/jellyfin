@@ -1678,11 +1678,6 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("name");
             }
 
-            if (string.IsNullOrWhiteSpace(viewType))
-            {
-                throw new ArgumentNullException("viewType");
-            }
-
             var id = GetNewItemId("37_namedview_" + name + user.Id.ToString("N") + (parentId ?? string.Empty), typeof(UserView));
 
             var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views", id.ToString("N"));
@@ -1714,6 +1709,12 @@ namespace MediaBrowser.Server.Implementations.Library
                 await CreateItem(item, cancellationToken).ConfigureAwait(false);
 
                 isNew = true;
+            }
+
+            if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
+            {
+                item.ViewType = viewType;
+                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }
 
             var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 12;

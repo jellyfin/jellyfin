@@ -1894,12 +1894,12 @@ namespace MediaBrowser.Controller.Entities
             return video.RefreshMetadata(newOptions, cancellationToken);
         }
 
-        public string GetEtag()
+        public string GetEtag(User user)
         {
-            return string.Join("|", GetEtagValues().ToArray()).GetMD5().ToString("N");
+            return string.Join("|", GetEtagValues(user).ToArray()).GetMD5().ToString("N");
         }
 
-        protected virtual List<string> GetEtagValues()
+        protected virtual List<string> GetEtagValues(User user)
         {
             return new List<string>
             {

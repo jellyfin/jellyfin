@@ -38,20 +38,6 @@ namespace MediaBrowser.Api.UserLibrary
         public string Id { get; set; }
     }
 
-    [Route("/Users/{UserId}/Views", "GET")]
-    public class GetUserViews : IReturn<QueryResult<BaseItemDto>>
-    {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
-
-        [ApiMember(Name = "IncludeExternalContent", Description = "Whether or not to include external views such as channels or live tv", IsRequired = true, DataType = "boolean", ParameterType = "query", Verb = "POST")]
-        public bool? IncludeExternalContent { get; set; }
-    }
-
     /// <summary>
     /// Class GetItem
     /// </summary>
@@ -343,37 +329,6 @@ namespace MediaBrowser.Api.UserLibrary
             });
 
             return ToOptimizedResult(dtos.ToList());
-        }
-
-        public async Task<object> Get(GetUserViews request)
-        {
-            var user = _userManager.GetUserById(request.UserId);
-
-            var query = new UserViewQuery
-            {
-                UserId = request.UserId
-
-            };
-
-            if (request.IncludeExternalContent.HasValue)
-            {
-                query.IncludeExternalContent = request.IncludeExternalContent.Value;
-            }
-
-            var folders = await _userViewManager.GetUserViews(query, CancellationToken.None).ConfigureAwait(false);
-
-            var dtoOptions = GetDtoOptions(request);
-
-            var dtos = folders.Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user))
-                .ToArray();
-
-            var result = new QueryResult<BaseItemDto>
-            {
-                Items = dtos,
-                TotalRecordCount = dtos.Length
-            };
-
-            return ToOptimizedResult(result);
         }
 
         private List<BaseItemDto> GetAsync(GetSpecialFeatures request)

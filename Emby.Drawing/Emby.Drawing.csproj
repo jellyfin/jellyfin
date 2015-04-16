@@ -34,7 +34,7 @@
   <ItemGroup>
     <Reference Include="ImageMagickSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ImageMagickSharp.1.0.0.14\lib\net45\ImageMagickSharp.dll</HintPath>
+      <HintPath>..\packages\ImageMagickSharp.1.0.0.15\lib\net45\ImageMagickSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -66,9 +66,6 @@
     <Compile Include="ImageMagick\UnplayedCountIndicator.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="ImageMagick\fonts\MontserratLight.otf" />
     <EmbeddedResource Include="ImageMagick\fonts\robotoregular.ttf" />
     <EmbeddedResource Include="ImageMagick\fonts\webdings.ttf" />
@@ -86,6 +83,9 @@
       <Project>{7eeeb4bb-f3e8-48fc-b4c5-70f0fff8329b}</Project>
       <Name>MediaBrowser.Model</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

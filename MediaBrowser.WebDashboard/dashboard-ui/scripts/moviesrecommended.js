@@ -5,7 +5,7 @@
         var options = {
 
             IncludeItemTypes: "Movie",
-            Limit: 20,
+            Limit: 18,
             Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
@@ -118,7 +118,7 @@
 
             userId: userId,
             categoryLimit: screenWidth >= 1200 ? 4 : 3,
-            ItemLimit: screenWidth >= 1920 ? 10 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 7 : 6)),
+            ItemLimit: screenWidth >= 1920 ? 9 : (screenWidth >= 1600 ? 8 : (screenWidth >= 1200 ? 7 : 6)),
             Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
