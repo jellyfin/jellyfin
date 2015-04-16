@@ -489,27 +489,34 @@ namespace MediaBrowser.MediaEncoding.Encoder
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             var processWrapper = new ProcessWrapper(process, this);
-
-            StartProcess(processWrapper);
+            bool ranToCompletion;
 
             var memoryStream = new MemoryStream();
 
+            try
+            {
+                StartProcess(processWrapper);
+
 #pragma warning disable 4014
-            // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
-            process.StandardOutput.BaseStream.CopyToAsync(memoryStream);
+                // Important - don't await the log task or we won't be able to kill ffmpeg when the user stops playback
+                process.StandardOutput.BaseStream.CopyToAsync(memoryStream);
 #pragma warning restore 4014
 
-            // MUST read both stdout and stderr asynchronously or a deadlock may occurr
-            process.BeginErrorReadLine();
+                // MUST read both stdout and stderr asynchronously or a deadlock may occurr
+                process.BeginErrorReadLine();
 
-            var ranToCompletion = process.WaitForExit(10000);
+                ranToCompletion = process.WaitForExit(10000);
 
-            if (!ranToCompletion)
-            {
-                StopProcess(processWrapper, 1000, false);
+                if (!ranToCompletion)
+                {
+                    StopProcess(processWrapper, 1000, false);
+                }
+
             }
-
-            resourcePool.Release();
+            finally
+            {
+                resourcePool.Release();
+            }
 
             var exitCode = ranToCompletion ? processWrapper.ExitCode ?? 0 : -1;
 
@@ -614,7 +621,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         ranToCompletion = true;
                         break;
                     }
-                    
+
                     cancellationToken.ThrowIfCancellationRequested();
 
                     var jpegCount = Directory.GetFiles(targetDirectory)

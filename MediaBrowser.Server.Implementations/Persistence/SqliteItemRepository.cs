@@ -522,7 +522,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
-        public IEnumerable<Guid> GetItemsOfType(Type type)
+        public IEnumerable<BaseItem> GetItemsOfType(Type type)
         {
             if (type == null)
             {
@@ -530,7 +530,37 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             CheckDisposed();
-            
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "select type,data from TypedBaseItems where type = @type";
+
+                cmd.Parameters.Add(cmd, "@type", DbType.String).Value = type.FullName;
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        var item = GetItem(reader);
+
+                        if (item != null)
+                        {
+                            yield return item;
+                        }
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<Guid> GetItemIdsOfType(Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            CheckDisposed();
+
             using (var cmd = _connection.CreateCommand())
             {
                 cmd.CommandText = "select guid from TypedBaseItems where type = @type";

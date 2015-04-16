@@ -107,7 +107,7 @@ namespace MediaBrowser.Controller.Persistence
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>IEnumerable{Guid}.</returns>
-        IEnumerable<Guid> GetItemsOfType(Type type);
+        IEnumerable<Guid> GetItemIdsOfType(Type type);
 
         /// <summary>
         /// Saves the children.
@@ -133,6 +133,13 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
         Task SaveMediaStreams(Guid id, IEnumerable<MediaStream> streams, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the type of the items of.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>IEnumerable&lt;BaseItem&gt;.</returns>
+        IEnumerable<BaseItem> GetItemsOfType(Type type);
     }
 }
 

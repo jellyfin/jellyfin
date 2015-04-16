@@ -1433,5 +1433,5 @@
     "ToAccessPreferencesHelp": "To access your preferences later, click your user icon in the top right header and select My Preferences.",
     "HeaderViewStyles": "View Styles",
     "LabelSelectViewStyles": "Enable rich presentations for:",
-    "LabelSelectViewStylesHelp": "If enabled, views will be built with metadata to offer categories such as Suggestions, Latest, Genres, and more. If disabled, they'll be displayed with plain folders."
+    "LabelSelectViewStylesHelp": "If enabled, views will be built with metadata to offer categories such as Suggestions, Latest, Genres, and more. If disabled, they'll be displayed with simple folders."
 }
