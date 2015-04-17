@@ -234,6 +234,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public Task<UserView> GetUserView(Guid parentId, string name, string viewType, bool enableRichView, string sortName, User user, CancellationToken cancellationToken)
         {
+            viewType = enableRichView ? viewType : null;
             return _libraryManager.GetNamedView(user, name, parentId.ToString("N"), viewType, sortName, cancellationToken);
         }
 
