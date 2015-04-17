@@ -1002,8 +1002,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 List<TimerInfo> timerList;
                 if (!timers.TryGetValue(program.ServiceName, out timerList))
                 {
-                    var tempTimers = await GetService(program.ServiceName).GetTimersAsync(cancellationToken).ConfigureAwait(false);
-                    timers[program.ServiceName] = timerList = tempTimers.ToList();
+                    try
+                    {
+                        var tempTimers = await GetService(program.ServiceName).GetTimersAsync(cancellationToken).ConfigureAwait(false);
+                        timers[program.ServiceName] = timerList = tempTimers.ToList();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error getting timer infos", ex);
+                        timers[program.ServiceName] = timerList = new List<TimerInfo>();
+                    }
                 }
 
                 var timer = timerList.FirstOrDefault(i => string.Equals(i.ProgramId, program.ExternalId, StringComparison.OrdinalIgnoreCase));

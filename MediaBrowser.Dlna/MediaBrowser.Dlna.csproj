@@ -94,7 +94,6 @@
     <Compile Include="PlayTo\uParserObject.cs" />
     <Compile Include="Profiles\Foobar2000Profile.cs" />
     <Compile Include="Profiles\MediaMonkeyProfile.cs" />
-    <Compile Include="Profiles\WindowsMediaCenterProfile.cs" />
     <Compile Include="ContentDirectory\ContentDirectory.cs" />
     <Compile Include="ContentDirectory\ControlHandler.cs" />
     <Compile Include="ContentDirectory\ServiceActionListBuilder.cs" />
@@ -167,7 +166,9 @@
     <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282013%29.xml" />
     <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 3.xml" />
     <EmbeddedResource Include="Profiles\Xml\WDTV Live.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Xbox 360.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Xbox 360.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Profiles\Xml\Xbox One.xml" />
   </ItemGroup>
   <ItemGroup>

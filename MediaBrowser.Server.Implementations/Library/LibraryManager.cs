@@ -1637,6 +1637,12 @@ namespace MediaBrowser.Server.Implementations.Library
                 refresh = true;
             }
 
+            if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
+            {
+                item.ViewType = viewType;
+                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+            }
+
             if (!refresh && item != null)
             {
                 refresh = (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 24;

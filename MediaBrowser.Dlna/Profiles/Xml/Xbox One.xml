@@ -2,10 +2,10 @@
 <Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Xbox One</Name>
   <Identification>
-    <FriendlyName>Xbox-SystemOS</FriendlyName>
-    <ModelName>Xbox One</ModelName>
+    <FriendlyName>XboxOne</FriendlyName>
     <Headers>
-      <HttpHeaderInfo name="User-Agent" value="NSPlayer" match="Substring" />
+      <HttpHeaderInfo name="FriendlyName.DLNA.ORG" value="XboxOne" match="Substring" />
+      <HttpHeaderInfo name="User-Agent" value="NSPlayer/12" match="Substring" />
     </Headers>
   </Identification>
   <FriendlyName>Emby</FriendlyName>
@@ -48,7 +48,7 @@
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
     <TranscodingProfile container="jpeg" type="Photo" videoCodec="jpeg" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="true" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
   </TranscodingProfiles>
   <ContainerProfiles>
     <ContainerProfile type="Video" container="mp4,mov">
@@ -58,14 +58,10 @@
     </ContainerProfile>
   </ContainerProfiles>
   <CodecProfiles>
-    <CodecProfile type="Video">
+    <CodecProfile type="Video" codec="mpeg4">
       <Conditions>
         <ProfileCondition condition="NotEquals" property="IsAnamorphic" value="true" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="VideoBitDepth" value="8" isRequired="false" />
-      </Conditions>
-    </CodecProfile>
-    <CodecProfile type="Video" codec="mpeg4">
-      <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="false" />
@@ -74,16 +70,28 @@
     </CodecProfile>
     <CodecProfile type="Video" codec="h264">
       <Conditions>
+        <ProfileCondition condition="NotEquals" property="IsAnamorphic" value="true" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitDepth" value="8" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="false" />
+        <ProfileCondition condition="EqualsAny" property="VideoProfile" value="high|main|baseline|constrained baseline" isRequired="false" />
       </Conditions>
     </CodecProfile>
     <CodecProfile type="Video" codec="wmv2,wmv3,vc1">
       <Conditions>
+        <ProfileCondition condition="NotEquals" property="IsAnamorphic" value="true" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitDepth" value="8" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="false" />
         <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="15360000" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="Video">
+      <Conditions>
+        <ProfileCondition condition="NotEquals" property="IsAnamorphic" value="true" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitDepth" value="8" isRequired="false" />
       </Conditions>
     </CodecProfile>
     <CodecProfile type="VideoAudio" codec="ac3,wmav2,wmapro">

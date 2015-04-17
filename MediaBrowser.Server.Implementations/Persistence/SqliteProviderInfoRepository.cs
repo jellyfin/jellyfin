@@ -208,15 +208,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 result.LastErrorMessage = reader.GetString(7);
             }
 
-            if (!reader.IsDBNull(8))
-            {
-                result.MetadataProvidersRefreshed = reader.GetString(8).Split('|').Where(i => !string.IsNullOrEmpty(i)).Select(i => new Guid(i)).ToList();
-            }
-
-            if (!reader.IsDBNull(9))
-            {
-                result.ImageProvidersRefreshed = reader.GetString(9).Split('|').Where(i => !string.IsNullOrEmpty(i)).Select(i => new Guid(i)).ToList();
-            }
+            // Skip metadata and image providers
 
             if (!reader.IsDBNull(10))
             {
@@ -251,8 +243,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _saveStatusCommand.GetParameter(5).Value = status.DateLastImagesRefresh;
                 _saveStatusCommand.GetParameter(6).Value = status.LastStatus.ToString();
                 _saveStatusCommand.GetParameter(7).Value = status.LastErrorMessage;
-                _saveStatusCommand.GetParameter(8).Value = string.Join("|", status.MetadataProvidersRefreshed.ToArray());
-                _saveStatusCommand.GetParameter(9).Value = string.Join("|", status.ImageProvidersRefreshed.ToArray());
+                _saveStatusCommand.GetParameter(8).Value = string.Empty;
+                _saveStatusCommand.GetParameter(9).Value = string.Empty;
                 _saveStatusCommand.GetParameter(10).Value = status.ItemDateModified;
 
                 _saveStatusCommand.Transaction = transaction;

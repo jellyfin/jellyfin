@@ -94,7 +94,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected abstract Task<List<BaseItem>> GetItemsWithImages(IHasImages item);
 
-        private const string Version = "29";
+        private const string Version = "32";
         protected string GetConfigurationCacheKey(List<BaseItem> items, string itemName)
         {
             var parts = Version + "_" + (itemName ?? string.Empty) + "_" +
@@ -103,9 +103,9 @@ namespace MediaBrowser.Server.Implementations.Photos
             return parts.GetMD5().ToString("N");
         }
 
-        protected void CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
+        protected void CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, bool drawText)
         {
-            CreateCollage(primaryItem, items, outputPath, 960, 540, true, primaryItem.Name);
+            CreateCollage(primaryItem, items, outputPath, 960, 540, drawText, primaryItem.Name);
         }
 
         protected virtual IEnumerable<string> GetStripCollageImagePaths(IHasImages primaryItem, IEnumerable<BaseItem> items)
@@ -120,9 +120,9 @@ namespace MediaBrowser.Server.Implementations.Photos
             CreateCollage(primaryItem, items, outputPath, 600, 900, true, primaryItem.Name);
         }
 
-        protected void CreateSquareCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
+        protected void CreateSquareCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, bool drawText)
         {
-            CreateCollage(primaryItem, items, outputPath, 800, 800, true, primaryItem.Name);
+            CreateCollage(primaryItem, items, outputPath, 800, 800, drawText, primaryItem.Name);
         }
 
         protected void CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height, bool drawText, string text)
@@ -162,17 +162,23 @@ namespace MediaBrowser.Server.Implementations.Photos
                 return false;
             }
 
+            var drawText = !(item is UserView);
+
             if (imageType == ImageType.Thumb)
             {
-                CreateThumbCollage(item, itemsWithImages, outputPath);
+                CreateThumbCollage(item, itemsWithImages, outputPath, drawText);
                 return true;
             }
 
             if (imageType == ImageType.Primary)
             {
-                if (item is PhotoAlbum || item is Playlist)
+                if (item is UserView)
                 {
-                    CreateSquareCollage(item, itemsWithImages, outputPath);
+                    CreateSquareCollage(item, itemsWithImages, outputPath, drawText);
+                }
+                else if (item is PhotoAlbum || item is Playlist)
+                {
+                    CreateSquareCollage(item, itemsWithImages, outputPath, drawText);
                 }
                 else
                 {
@@ -222,7 +228,6 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected List<BaseItem> GetFinalItems(List<BaseItem> items)
         {
-            // Rotate the images no more than once per week
             return GetFinalItems(items, 4);
         }
 

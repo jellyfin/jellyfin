@@ -93,8 +93,10 @@ namespace MediaBrowser.Dlna.Profiles
                 new CodecProfile
                 {
                     Type = CodecType.Video,
+                    Codec="h264",
                     Conditions = new []
                     {
+                        new ProfileCondition(ProfileConditionType.EqualsAny, ProfileConditionValue.VideoProfile, "baseline|constrained baseline"),
                         new ProfileCondition
                         {
                             Condition = ProfileConditionType.LessThanEqual,
@@ -120,10 +122,27 @@ namespace MediaBrowser.Dlna.Profiles
                 new CodecProfile
                 {
                     Type = CodecType.Video,
-                    Codec="h264",
                     Conditions = new []
                     {
-                        new ProfileCondition(ProfileConditionType.EqualsAny, ProfileConditionValue.VideoProfile, "baseline|constrained baseline")
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.Width,
+                            Value = "1920"
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.Height,
+                            Value = "1080"
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.NotEquals,
+                            Property = ProfileConditionValue.IsAnamorphic,
+                            Value = "true",
+                            IsRequired = false
+                        }
                     }
                 },
 

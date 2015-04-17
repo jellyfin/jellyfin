@@ -40,8 +40,8 @@ namespace MediaBrowser.Api.Images
     [Route("/Items/{Id}/Images/{Type}/{Index}", "GET")]
     [Route("/Items/{Id}/Images/{Type}", "HEAD")]
     [Route("/Items/{Id}/Images/{Type}/{Index}", "HEAD")]
-    [Route("/Items/{Id}/Images/{Type}/{Index}/{Tag}/{Format}/{MaxWidth}/{MaxHeight}/{PercentPlayed}", "GET")]
-    [Route("/Items/{Id}/Images/{Type}/{Index}/{Tag}/{Format}/{MaxWidth}/{MaxHeight}/{PercentPlayed}", "HEAD")]
+    [Route("/Items/{Id}/Images/{Type}/{Index}/{Tag}/{Format}/{MaxWidth}/{MaxHeight}/{PercentPlayed}/{UnplayedCount}", "GET")]
+    [Route("/Items/{Id}/Images/{Type}/{Index}/{Tag}/{Format}/{MaxWidth}/{MaxHeight}/{PercentPlayed}/{UnplayedCount}", "HEAD")]
     public class GetItemImage : ImageRequest
     {
         /// <summary>
@@ -511,6 +511,30 @@ namespace MediaBrowser.Api.Images
         /// <exception cref="ResourceNotFoundException"></exception>
         public object GetImage(ImageRequest request, IHasImages item, bool isHeadRequest)
         {
+            if (request.PercentPlayed.HasValue)
+            {
+                if (request.PercentPlayed.Value <= 0)
+                {
+                    request.PercentPlayed = null;
+                }
+                else if (request.PercentPlayed.Value >= 100)
+                {
+                    request.PercentPlayed = null;
+                    request.AddPlayedIndicator = true;
+                }
+            }
+            if (request.PercentPlayed.HasValue)
+            {
+                request.UnplayedCount = null;
+            }
+            if (request.UnplayedCount.HasValue)
+            {
+                if (request.UnplayedCount.Value <= 0)
+                {
+                    request.UnplayedCount = null;
+                }
+            }
+
             var imageInfo = GetImageInfo(request, item);
 
             if (imageInfo == null)
