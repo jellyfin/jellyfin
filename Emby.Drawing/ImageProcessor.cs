@@ -60,6 +60,7 @@ namespace Emby.Drawing
             _imageEncoder = imageEncoder;
             _appPaths = appPaths;
 
+            ImageEnhancers = new List<IImageEnhancer>();
             _saveImageSizeTimer = new Timer(SaveImageSizeCallback, null, Timeout.Infinite, Timeout.Infinite);
 
             Dictionary<Guid, ImageSize> sizeDictionary;
