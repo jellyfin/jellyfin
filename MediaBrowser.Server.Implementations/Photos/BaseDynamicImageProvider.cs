@@ -94,7 +94,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected abstract Task<List<BaseItem>> GetItemsWithImages(IHasImages item);
 
-        private const string Version = "31";
+        private const string Version = "32";
         protected string GetConfigurationCacheKey(List<BaseItem> items, string itemName)
         {
             var parts = Version + "_" + (itemName ?? string.Empty) + "_" +
@@ -228,7 +228,6 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected List<BaseItem> GetFinalItems(List<BaseItem> items)
         {
-            // Rotate the images no more than once per week
             return GetFinalItems(items, 4);
         }
 

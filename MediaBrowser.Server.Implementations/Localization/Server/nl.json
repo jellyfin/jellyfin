@@ -955,6 +955,7 @@
     "ViewTypeMovieFavorites": "Favorieten",
     "ViewTypeMovieGenres": "Genres",
     "ViewTypeMusicLatest": "Nieuwste",
+    "ViewTypeMusicPlaylists": "Playlists",
     "ViewTypeMusicAlbums": "Albums",
     "ViewTypeMusicAlbumArtists": "Album artiesten",
     "HeaderOtherDisplaySettings": "Beeld instellingen",
@@ -1413,5 +1414,8 @@
     "ButtonMyPreferencesWelcomeNo": "No thanks, I'll do it later.",
     "MyPreferencesWelcomeMessage1": "We've presented your library in a way we think you'll enjoy. The appearance and grouping of content can be changed anytime by adjusting your preferences. Your preferences will apply to all Emby apps.",
     "MyPreferencesWelcomeMessage2": "Would you like to set your preferences now?",
-    "ToAccessPreferencesHelp": "To access your preferences later, click your user icon in the top right header and select My Preferences."
+    "ToAccessPreferencesHelp": "To access your preferences later, click your user icon in the top right header and select My Preferences.",
+    "HeaderViewStyles": "View Styles",
+    "LabelSelectViewStyles": "Enable rich presentations for:",
+    "LabelSelectViewStylesHelp": "If enabled, views will be built with metadata to offer categories such as Suggestions, Latest, Genres, and more. If disabled, they'll be displayed with simple folders."
 }

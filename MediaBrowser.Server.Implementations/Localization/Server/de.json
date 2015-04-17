@@ -955,6 +955,7 @@
     "ViewTypeMovieFavorites": "Favoriten",
     "ViewTypeMovieGenres": "Genres",
     "ViewTypeMusicLatest": "Neueste",
+    "ViewTypeMusicPlaylists": "Wiedergabelisten",
     "ViewTypeMusicAlbums": "Alben",
     "ViewTypeMusicAlbumArtists": "Album-K\u00fcnstler",
     "HeaderOtherDisplaySettings": "Anzeige Einstellungen",
@@ -1413,5 +1414,8 @@
     "ButtonMyPreferencesWelcomeNo": "Nein danke, das mache ich sp\u00e4ter.",
     "MyPreferencesWelcomeMessage1": "Wir pr\u00e4sentieren Ihnen Ihre Bibliothek in einer Art, wie wir denken, dass es Ihnen gefallen d\u00fcrfte. Die Darstellung und Gruppierung des Inhaltes kann jederzeit in Ihren Einstellungen angepasst werden. Ihre Einstellungen werden auf alle Empy Apps \u00fcbertragen.",
     "MyPreferencesWelcomeMessage2": "M\u00f6chten Sie Ihre Einstellungen nun festlegen?",
-    "ToAccessPreferencesHelp": "Um Ihre Einstellungen sp\u00e4ter zu \u00e4ndern, klicken Sie ihr Benutzer-Icon im oberen rechten Bereich oder w\u00e4hlen Sie \"Meine Einstellungen\"."
+    "ToAccessPreferencesHelp": "Um Ihre Einstellungen sp\u00e4ter zu \u00e4ndern, klicken Sie ihr Benutzer-Icon im oberen rechten Bereich oder w\u00e4hlen Sie \"Meine Einstellungen\".",
+    "HeaderViewStyles": "Zeige Stiele",
+    "LabelSelectViewStyles": "Aktiviere erweiterte Darstellungen f\u00fcr:",
+    "LabelSelectViewStylesHelp": "Wenn aktiviert werden Darstellungen von Kategorien mit Medieninformationen wie Empfehlungen, k\u00fcrzlich hinzugef\u00fcgt, Genres und weitere, angereichert. Wenn deaktiviert werden diese nur als simple Verzeichnisse dargestellt."
 }
