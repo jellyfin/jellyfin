@@ -62,42 +62,18 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 return new List<BaseItem>();
             }
 
-            if (string.Equals(view.ViewType, SpecialFolder.GameGenre, StringComparison.OrdinalIgnoreCase))
-            {
-                var list = new List<BaseItem>();
-
-                var genre = _libraryManager.GetGameGenre(view.Name);
-
-                if (genre.HasImage(ImageType.Primary) || genre.HasImage(ImageType.Thumb))
-                {
-                    list.Add(genre);
-                }
-                return list;
-            }
-            if (string.Equals(view.ViewType, SpecialFolder.MusicGenre, StringComparison.OrdinalIgnoreCase))
-            {
-                var list = new List<BaseItem>();
-
-                var genre = _libraryManager.GetMusicGenre(view.Name);
-
-                if (genre.HasImage(ImageType.Primary) || genre.HasImage(ImageType.Thumb))
-                {
-                    list.Add(genre);
-                }
-                return list;
-            }
-            if (string.Equals(view.ViewType, SpecialFolder.MovieGenre, StringComparison.OrdinalIgnoreCase) ||
+            if (string.Equals(view.ViewType, SpecialFolder.GameGenre, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(view.ViewType, SpecialFolder.MusicGenre, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(view.ViewType, SpecialFolder.MovieGenre, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(view.ViewType, SpecialFolder.TvGenre, StringComparison.OrdinalIgnoreCase))
             {
-                var list = new List<BaseItem>();
-
-                var genre = _libraryManager.GetGenre(view.Name);
-
-                if (genre.HasImage(ImageType.Primary) || genre.HasImage(ImageType.Thumb))
+                var userItemsResult = await view.GetItems(new InternalItemsQuery
                 {
-                    list.Add(genre);
-                }
-                return list;
+                    User = _userManager.GetUserById(view.UserId.Value),
+                    CollapseBoxSetItems = false
+                });
+
+                return userItemsResult.Items.ToList();
             }
 
             var isUsingCollectionStrip = IsUsingCollectionStrip(view);
