@@ -277,7 +277,7 @@ namespace MediaBrowser.Model.Dlna
                 
                 // The profile describes what the device supports
                 // If device requirements are satisfied then allow both direct stream and direct play
-                if (IsAudioEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options)))
+                if (item.SupportsDirectPlay && IsAudioEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options)))
                 {
                     playMethods.Add(PlayMethod.DirectPlay);
                 }
@@ -640,7 +640,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            if (isEligibleForDirectPlay)
+            if (isEligibleForDirectPlay && mediaSource.SupportsDirectPlay)
             {
                 if (mediaSource.Protocol == MediaProtocol.Http)
                 {
@@ -659,12 +659,9 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            if (isEligibleForDirectStream)
+            if (isEligibleForDirectStream && mediaSource.SupportsDirectStream)
             {
-                if (mediaSource.SupportsDirectStream)
-                {
-                    return PlayMethod.DirectStream;
-                }
+                return PlayMethod.DirectStream;
             }
 
             return null;
