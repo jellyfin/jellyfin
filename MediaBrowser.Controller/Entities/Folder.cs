@@ -164,18 +164,22 @@ namespace MediaBrowser.Controller.Entities
 
         protected void AddChildrenInternal(IEnumerable<BaseItem> children)
         {
+            var actualChildren = ActualChildren;
+
             lock (_childrenSyncLock)
             {
-                var newChildren = ActualChildren.ToList();
+                var newChildren = actualChildren.ToList();
                 newChildren.AddRange(children);
                 _children = newChildren;
             }
         }
         protected void AddChildInternal(BaseItem child)
         {
+            var actualChildren = ActualChildren;
+            
             lock (_childrenSyncLock)
             {
-                var newChildren = ActualChildren.ToList();
+                var newChildren = actualChildren.ToList();
                 newChildren.Add(child);
                 _children = newChildren;
             }
@@ -184,10 +188,11 @@ namespace MediaBrowser.Controller.Entities
         protected void RemoveChildrenInternal(IEnumerable<BaseItem> children)
         {
             var ids = children.Select(i => i.Id).ToList();
+            var actualChildren = ActualChildren;
 
             lock (_childrenSyncLock)
             {
-                _children = ActualChildren.Where(i => !ids.Contains(i.Id)).ToList();
+                _children = actualChildren.Where(i => !ids.Contains(i.Id)).ToList();
             }
         }
 
@@ -302,7 +307,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         if (_children == null)
                         {
-                            _children = LoadChildrenInternal();
+                            _children = LoadChildren().ToList();
                         }
                     }
                 }
@@ -354,11 +359,6 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return base.IsVisible(user);
-        }
-
-        private List<BaseItem> LoadChildrenInternal()
-        {
-            return LoadChildren().ToList();
         }
 
         /// <summary>

@@ -141,7 +141,6 @@ namespace MediaBrowser.Providers.Manager
                     updateType = updateType | result.UpdateType;
                     refreshResult.AddStatus(result.Status, result.ErrorMessage);
                     refreshResult.SetDateLastMetadataRefresh(DateTime.UtcNow);
-                    refreshResult.AddMetadataProvidersRefreshed(result.Providers);
 
                     MergeIdentities(itemOfType, id);
                 }
@@ -159,7 +158,6 @@ namespace MediaBrowser.Providers.Manager
                     updateType = updateType | result.UpdateType;
                     refreshResult.AddStatus(result.Status, result.ErrorMessage);
                     refreshResult.SetDateLastImagesRefresh(DateTime.UtcNow);
-                    refreshResult.AddImageProvidersRefreshed(result.Providers);
                 }
             }
 

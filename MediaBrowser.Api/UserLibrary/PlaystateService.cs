@@ -67,6 +67,13 @@ namespace MediaBrowser.Api.UserLibrary
     {
     }
 
+    [Route("/Sessions/Playing/Ping", "POST", Summary = "Pings a playback session")]
+    public class PingPlaybackSession : IReturnVoid
+    {
+        [ApiMember(Name = "PlaySessionId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public string PlaySessionId { get; set; }
+    }
+
     [Route("/Sessions/Playing/Stopped", "POST", Summary = "Reports playback has stopped within a session")]
     public class ReportPlaybackStopped : PlaybackStopInfo, IReturnVoid
     {
@@ -334,6 +341,11 @@ namespace MediaBrowser.Api.UserLibrary
             var task = _sessionManager.OnPlaybackProgress(request);
 
             Task.WaitAll(task);
+        }
+
+        public void Post(PingPlaybackSession request)
+        {
+            ApiEntryPoint.Instance.PingTranscodingJob(request.PlaySessionId);
         }
 
         /// <summary>
