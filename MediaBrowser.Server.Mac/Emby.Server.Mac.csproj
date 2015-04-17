@@ -13,6 +13,7 @@
     <ReleaseVersion>
     </ReleaseVersion>
     <StartupObject>MediaBrowser.Server.Mac.MainClass</StartupObject>
+    <Description>A personal media server</Description>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

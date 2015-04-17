@@ -62,6 +62,10 @@ namespace MediaBrowser.Server.Mac
 			{
 				// TODO: Use CommonApplicationData? Will we always have write access?
 				programDataPath = Path.Combine(Environment.GetFolderPath (Environment.SpecialFolder.ApplicationData), "mediabrowser-server");
+
+				if (!Directory.Exists (programDataPath)) {
+					programDataPath = Path.Combine(Environment.GetFolderPath (Environment.SpecialFolder.ApplicationData), "emby-server");
+				}
 			}
 
 			// Within the mac bundle, go uo two levels then down into Resources folder
