@@ -727,10 +727,14 @@ namespace MediaBrowser.Server.Implementations.Sync
                 }
             });
 
-            return jobItemResult.Items
+            var readyItems = jobItemResult.Items
                 .Select(GetJobItemInfo)
                 .Where(i => i != null)
                 .ToList();
+
+            _logger.Debug("Returning {0} ready sync items for targetId {1}", readyItems.Count, targetId);
+
+            return readyItems;
         }
 
         public async Task<SyncDataResponse> SyncData(SyncDataRequest request)
