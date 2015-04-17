@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace MediaBrowser.Controller.Providers
 {
@@ -54,13 +52,6 @@ namespace MediaBrowser.Controller.Providers
         /// <value>The last result error message.</value>
         public string LastErrorMessage { get; set; }
 
-        /// <summary>
-        /// Gets or sets the providers refreshed.
-        /// </summary>
-        /// <value>The providers refreshed.</value>
-        public List<Guid> MetadataProvidersRefreshed { get; set; }
-        public List<Guid> ImageProvidersRefreshed { get; set; }
-
         public DateTime? ItemDateModified { get; set; }
 
         public void AddStatus(ProviderRefreshStatus status, string errorMessage)
@@ -83,9 +74,6 @@ namespace MediaBrowser.Controller.Providers
         public MetadataStatus()
         {
             LastStatus = ProviderRefreshStatus.Success;
-
-            MetadataProvidersRefreshed = new List<Guid>();
-            ImageProvidersRefreshed = new List<Guid>();
         }
 
         public bool IsDirty { get; private set; }
@@ -108,34 +96,6 @@ namespace MediaBrowser.Controller.Providers
             }
 
             DateLastImagesRefresh = date;
-        }
-
-        public void AddImageProvidersRefreshed(List<Guid> providerIds)
-        {
-            var count = ImageProvidersRefreshed.Count;
-
-            providerIds.AddRange(ImageProvidersRefreshed);
-
-            ImageProvidersRefreshed = providerIds.Distinct().ToList();
-
-            if (ImageProvidersRefreshed.Count != count)
-            {
-                IsDirty = true;
-            }
-        }
-
-        public void AddMetadataProvidersRefreshed(List<Guid> providerIds)
-        {
-            var count = MetadataProvidersRefreshed.Count;
-
-            providerIds.AddRange(MetadataProvidersRefreshed);
-
-            MetadataProvidersRefreshed = providerIds.Distinct().ToList();
-
-            if (MetadataProvidersRefreshed.Count != count)
-            {
-                IsDirty = true;
-            }
         }
     }
 }

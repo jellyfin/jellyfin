@@ -114,7 +114,7 @@ namespace MediaBrowser.Dlna.PlayTo
                             _mediaSourceManager);
 
                         controller.Init(device);
-
+                        
                         var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
                                       _dlnaManager.GetDefaultProfile();
 

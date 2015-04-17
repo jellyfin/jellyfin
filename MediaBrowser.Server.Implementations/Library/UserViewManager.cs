@@ -209,7 +209,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 var enableRichView = !user.Configuration.PlainFolderViews.Contains(parentId.ToString("N"), StringComparer.OrdinalIgnoreCase);
 
-                if (_config.Configuration.EnableUserSpecificUserViews)
+                if (_config.Configuration.EnableUserSpecificUserViews || !enableRichView)
                 {
                     viewType = enableRichView ? viewType : null;
                     var view = await _libraryManager.GetNamedView(user, name, viewType, sortName, cancellationToken).ConfigureAwait(false);
@@ -222,7 +222,6 @@ namespace MediaBrowser.Server.Implementations.Library
                     return view;
                 }
 
-                viewType = enableRichView ? viewType : CollectionType.Folders;
                 return await _libraryManager.GetNamedView(user, name, viewType, sortName, cancellationToken).ConfigureAwait(false);
             }
             else

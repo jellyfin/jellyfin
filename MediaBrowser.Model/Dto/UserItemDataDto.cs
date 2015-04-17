@@ -69,6 +69,12 @@ namespace MediaBrowser.Model.Dto
         /// <value>The key.</value>
         public string Key { get; set; }
 
+        /// <summary>
+        /// Gets or sets the item identifier.
+        /// </summary>
+        /// <value>The item identifier.</value>
+        public string ItemId { get; set; }
+        
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }
