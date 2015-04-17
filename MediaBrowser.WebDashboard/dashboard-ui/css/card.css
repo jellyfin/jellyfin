@@ -45,7 +45,7 @@
 }
 
 .cardBox {
-    margin: 2px;
+    margin: 1px;
 }
 
 .grayscale {
@@ -54,15 +54,8 @@
     filter: grayscale(100%);
 }
 
-@media all and (max-width: 600px) {
-
-    .cardBox {
-        margin: 1px;
-    }
-}
-
 .bottomPaddedCard .cardBox {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .visualFooterCard .outerCardFooter {
@@ -402,10 +395,6 @@
 }
 
 @media all and (min-width: 2200px) {
-
-    .squareCard {
-        width: 10%;
-    }
 
     .bannerCard {
         width: 25%;

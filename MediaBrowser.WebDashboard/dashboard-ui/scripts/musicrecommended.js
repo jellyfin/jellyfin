@@ -4,7 +4,7 @@
         
         var screenWidth = $(window).width();
 
-        return screenWidth >= 2200 ? 10 : 9;
+        return screenWidth >= 1920 ? 9 : 8;
     }
 
     function loadLatest(page, parentId) {
