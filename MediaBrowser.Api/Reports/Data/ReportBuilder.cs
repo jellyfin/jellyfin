@@ -418,7 +418,7 @@ namespace MediaBrowser.Api.Reports
 					break;
 
 				case HeaderMetadata.SeasonNumber:
-					column = (i, r) => i.IndexNumber;
+					column = (i, r) => this.GetObject<Season, string>(i, (x) => x.IndexNumber == null ? "" : x.IndexNumber.ToString());
 					reportHeader.SortField = "IndexNumber";
 					reportHeader.HeaderFieldType = ReportFieldType.Int;
 					break;
