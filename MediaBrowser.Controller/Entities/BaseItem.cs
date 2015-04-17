@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Collections;
@@ -18,6 +17,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Users;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;

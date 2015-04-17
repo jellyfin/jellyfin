@@ -68,7 +68,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 }
 
                 keys.Add(e.Item);
-                
+
                 var baseItem = e.Item as BaseItem;
 
                 // Go up one level for indicators
@@ -117,7 +117,12 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
                     var dtoList = pair.Value
                         .DistinctBy(i => i.Id)
-                        .Select(i => _userDataManager.GetUserDataDto(i, user))
+                        .Select(i =>
+                        {
+                            var dto = _userDataManager.GetUserDataDto(i, user);
+                            dto.ItemId = i.Id.ToString("N");
+                            return dto;
+                        })
                         .ToList();
 
                     var info = new UserDataChangeInfo
