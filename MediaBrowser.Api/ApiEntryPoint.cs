@@ -339,7 +339,7 @@ namespace MediaBrowser.Api
             // We can really reduce the timeout for apps that are using the newer api
             if (!string.IsNullOrWhiteSpace(job.PlaySessionId) && job.Type != TranscodingJobType.Progressive)
             {
-                timerDuration = 20000;
+                timerDuration = 60000;
             }
 
             // Don't start the timer for playback checkins with progressive streaming
