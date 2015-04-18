@@ -543,7 +543,9 @@ namespace MediaBrowser.Api.Playback.Hls
                 return false;
             }
 
-            return state.VideoRequest.VideoBitRate.HasValue;
+            // Having problems in android
+            return false;
+            //return state.VideoRequest.VideoBitRate.HasValue;
         }
 
         private void AppendPlaylist(StringBuilder builder, string url, int bitrate, string subtitleGroup)
