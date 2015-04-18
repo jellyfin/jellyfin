@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Model.LiveTv;
+﻿using MediaBrowser.Model.LiveTv;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.LiveTv
 {
@@ -23,6 +23,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The identifier.</value>
         public string Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the URL.
+        /// </summary>
+        /// <value>The URL.</value>
+        public string Url { get; set; }
+        
         /// <summary>
         /// Gets or sets the status.
         /// </summary>

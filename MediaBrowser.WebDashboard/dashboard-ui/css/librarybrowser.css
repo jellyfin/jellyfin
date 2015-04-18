@@ -102,7 +102,7 @@
 @media all and (min-width: 500px) {
 
     .ehsContent {
-        width: 95%;
+        width: 98%;
     }
 }
 
@@ -116,7 +116,7 @@
 @media all and (min-width: 1200px) {
 
     .ehsContent {
-        width: 96%;
+        width: 97%;
     }
 }
 
@@ -370,7 +370,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 550px;
+    height: 620px;
     position: relative;
 }
 
