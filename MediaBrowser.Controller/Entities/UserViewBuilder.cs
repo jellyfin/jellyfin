@@ -121,7 +121,6 @@ namespace MediaBrowser.Controller.Entities
                     }
 
                 case CollectionType.Books:
-                case CollectionType.Photos:
                 case CollectionType.HomeVideos:
                 case CollectionType.MusicVideos:
                     return GetResult(queryParent.GetChildren(user, true), queryParent, query);
@@ -137,6 +136,9 @@ namespace MediaBrowser.Controller.Entities
 
                 case CollectionType.BoxSets:
                     return await GetBoxsetView(queryParent, user, query).ConfigureAwait(false);
+
+                case CollectionType.Photos:
+                    return await GetPhotosView(queryParent, user, query).ConfigureAwait(false);
 
                 case CollectionType.TvShows:
                     return await GetTvView(queryParent, user, query).ConfigureAwait(false);
@@ -247,16 +249,16 @@ namespace MediaBrowser.Controller.Entities
                     return GetFavoriteSongs(queryParent, user, query);
 
                 default:
-                {
-                    if (queryParent is UserView)
                     {
-                        return GetResult(GetMediaFolders(user).SelectMany(i => i.GetChildren(user, true)), queryParent, query);
+                        if (queryParent is UserView)
+                        {
+                            return GetResult(GetMediaFolders(user).SelectMany(i => i.GetChildren(user, true)), queryParent, query);
+                        }
+                        else
+                        {
+                            return GetResult(queryParent.GetChildren(user, true), queryParent, query);
+                        }
                     }
-                    else
-                    {
-                        return GetResult(queryParent.GetChildren(user, true), queryParent, query);
-                    }
-                }
             }
         }
 
@@ -643,6 +645,19 @@ namespace MediaBrowser.Controller.Entities
                 return i.GetRecursiveChildren(user, filter);
 
             }), parent, query);
+        }
+
+        private async Task<QueryResult<BaseItem>> GetPhotosView(Folder queryParent, User user, InternalItemsQuery query)
+        {
+            if (query.Recursive)
+            {
+                var mediaTypes = new[] { MediaType.Video, MediaType.Photo };
+                var items = GetRecursiveChildren(queryParent, user, new[] { CollectionType.Photos, string.Empty }, i => (i is PhotoAlbum || mediaTypes.Contains(i.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase)) && FilterItem(i, query));
+
+                return PostFilterAndSort(items, queryParent, null, query);
+            }
+
+            return GetResult(queryParent.GetChildren(user, true), queryParent, query);
         }
 
         private async Task<QueryResult<BaseItem>> GetTvView(Folder parent, User user, InternalItemsQuery query)
