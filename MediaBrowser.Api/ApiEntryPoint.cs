@@ -331,7 +331,6 @@ namespace MediaBrowser.Api
                 return;
             }
 
-            // TODO: Lower this hls timeout
             var timerDuration = job.Type == TranscodingJobType.Progressive ?
                 1000 :
                 1800000;

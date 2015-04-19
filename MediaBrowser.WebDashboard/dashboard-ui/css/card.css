@@ -48,6 +48,13 @@
     margin: 1px;
 }
 
+/*@media all and (max-width: 600px) {
+
+    .cardBox {
+        margin: 0;
+    }
+}*/
+
 .grayscale {
     -webkit-filter: grayscale(100%);
     -moz-filter: grayscale(100%);
@@ -168,6 +175,7 @@
     padding: 5px 4px 2px;
     text-shadow: none;
     font-weight: 400;
+    line-height: initial;
 }
 
 .cardOverlayInner {
