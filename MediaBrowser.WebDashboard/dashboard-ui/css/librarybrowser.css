@@ -859,6 +859,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     color: #fff;
     background: rgb(0, 143, 187);
     background: rgba(0, 143, 187, .8);
+    line-height: initial;
 }
 
 .offlinePosterRibbon {

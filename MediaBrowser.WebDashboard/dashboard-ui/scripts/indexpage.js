@@ -227,8 +227,7 @@
                     showTitle: showTitles,
                     centerText: true,
                     lazy: true,
-                    autoThumb: true,
-                    context: 'home'
+                    autoThumb: true
                 });
                 html += '</div>';
             }
