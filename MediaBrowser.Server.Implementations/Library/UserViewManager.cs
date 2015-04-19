@@ -202,9 +202,15 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public async Task<UserView> GetUserView(List<ICollectionFolder> parents, string viewType, string sortName, User user, CancellationToken cancellationToken)
         {
+            var name = _localizationManager.GetLocalizedString("ViewType" + viewType);
+
             if (parents.Count == 1 && parents.All(i => string.Equals(i.CollectionType, viewType, StringComparison.OrdinalIgnoreCase)))
             {
-                var name = parents[0].Name;
+                if (!string.IsNullOrWhiteSpace(parents[0].Name))
+                {
+                    name = parents[0].Name;
+                }
+
                 var parentId = parents[0].Id;
 
                 var enableRichView = !user.Configuration.PlainFolderViews.Contains(parentId.ToString("N"), StringComparer.OrdinalIgnoreCase);
@@ -226,8 +232,6 @@ namespace MediaBrowser.Server.Implementations.Library
             }
             else
             {
-                var name = _localizationManager.GetLocalizedString("ViewType" + viewType);
-
                 return await _libraryManager.GetNamedView(user, name, viewType, sortName, cancellationToken).ConfigureAwait(false);
             }
         }

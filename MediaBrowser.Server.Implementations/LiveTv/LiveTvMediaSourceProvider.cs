@@ -122,7 +122,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private async Task AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
         {
-            var inputPaths = new[] { mediaSource.Path };
+            var originalRuntime = mediaSource.RunTimeTicks;
 
             var info = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
             {
@@ -131,8 +131,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
                 ExtractChapters = false
 
-            }, cancellationToken)
-                        .ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
 
             mediaSource.Bitrate = info.Bitrate;
             mediaSource.Container = info.Container;
@@ -145,6 +144,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             mediaSource.VideoType = info.VideoType;
 
             mediaSource.DefaultSubtitleStreamIndex = null;
+
+            // Null this out so that it will be treated like a live stream
+            if (!originalRuntime.HasValue)
+            {
+                mediaSource.RunTimeTicks = null;
+            }
 
             var audioStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == Model.Entities.MediaStreamType.Audio);
 
