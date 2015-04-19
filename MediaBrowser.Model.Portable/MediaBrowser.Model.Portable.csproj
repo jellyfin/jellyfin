@@ -488,6 +488,9 @@
     <Compile Include="..\MediaBrowser.Model\Dto\ItemIndex.cs">
       <Link>Dto\ItemIndex.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Dto\ItemLayout.cs">
+      <Link>Dto\ItemLayout.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Dto\MediaSourceInfo.cs">
       <Link>Dto\MediaSourceInfo.cs</Link>
     </Compile>

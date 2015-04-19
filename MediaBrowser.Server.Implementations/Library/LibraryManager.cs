@@ -1723,7 +1723,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }
 
-            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 12;
+            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 24;
 
             if (refresh)
             {
