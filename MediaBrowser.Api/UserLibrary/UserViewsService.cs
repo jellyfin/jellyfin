@@ -88,7 +88,7 @@ namespace MediaBrowser.Api.UserLibrary
 
             var views = user.RootFolder
                 .GetChildren(user, true)
-                .OfType<CollectionFolder>()
+                .OfType<ICollectionFolder>()
                 .Where(i => IsEligibleForSpecialView(i))
                 .ToList();
 
@@ -105,9 +105,9 @@ namespace MediaBrowser.Api.UserLibrary
             return ToOptimizedResult(list);
         }
 
-        private bool IsEligibleForSpecialView(CollectionFolder view)
+        private bool IsEligibleForSpecialView(ICollectionFolder view)
         {
-            var types = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Games, CollectionType.Music };
+            var types = new[] { CollectionType.Movies, CollectionType.TvShows, CollectionType.Games, CollectionType.Music, CollectionType.Photos };
 
             return types.Contains(view.CollectionType ?? string.Empty, StringComparer.OrdinalIgnoreCase);
         }

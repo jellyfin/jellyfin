@@ -218,7 +218,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             await AddExternalSubtitles(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
-            FetchEmbeddedInfo(video, mediaInfo);
+            FetchEmbeddedInfo(video, mediaInfo, options);
 
             video.IsHD = mediaStreams.Any(i => i.Type == MediaStreamType.Video && i.Width.HasValue && i.Width.Value >= 1270);
 
@@ -358,11 +358,13 @@ namespace MediaBrowser.Providers.MediaInfo
             return _blurayExaminer.GetDiscInfo(path);
         }
 
-        private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data)
+        private void FetchEmbeddedInfo(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions options)
         {
+            var isFullRefresh = options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
+
             if (!video.LockedFields.Contains(MetadataFields.OfficialRating))
             {
-                if (!string.IsNullOrWhiteSpace(data.OfficialRating))
+                if (!string.IsNullOrWhiteSpace(data.OfficialRating) || isFullRefresh)
                 {
                     video.OfficialRating = data.OfficialRating;
                 }
@@ -370,54 +372,75 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.LockedFields.Contains(MetadataFields.Cast))
             {
-                video.People.Clear();
-
-                foreach (var person in data.People)
+                if (video.People.Count == 0 || isFullRefresh)
                 {
-                    video.AddPerson(new PersonInfo
+                    video.People.Clear();
+
+                    foreach (var person in data.People)
                     {
-                        Name = person.Name,
-                        Type = person.Type,
-                        Role = person.Role
-                    });
+                        video.AddPerson(new PersonInfo
+                        {
+                            Name = person.Name,
+                            Type = person.Type,
+                            Role = person.Role
+                        });
+                    }
                 }
             }
 
             if (!video.LockedFields.Contains(MetadataFields.Genres))
             {
-                video.Genres.Clear();
-
-                foreach (var genre in data.Genres)
+                if (video.Genres.Count == 0 || isFullRefresh)
                 {
-                    video.AddGenre(genre);
+                    video.Genres.Clear();
+
+                    foreach (var genre in data.Genres)
+                    {
+                        video.AddGenre(genre);
+                    }
                 }
             }
 
             if (!video.LockedFields.Contains(MetadataFields.Studios))
             {
-                video.Studios.Clear();
-
-                foreach (var studio in data.Studios)
+                if (video.Studios.Count == 0 || isFullRefresh)
                 {
-                    video.AddStudio(studio);
+                    video.Studios.Clear();
+
+                    foreach (var studio in data.Studios)
+                    {
+                        video.AddStudio(studio);
+                    }
                 }
             }
 
             if (data.ProductionYear.HasValue)
             {
-                video.ProductionYear = data.ProductionYear;
+                if (!video.ProductionYear.HasValue || isFullRefresh)
+                {
+                    video.ProductionYear = data.ProductionYear;
+                }
             }
             if (data.PremiereDate.HasValue)
             {
-                video.PremiereDate = data.PremiereDate;
+                if (!video.PremiereDate.HasValue || isFullRefresh)
+                {
+                    video.PremiereDate = data.PremiereDate;
+                }
             }
             if (data.IndexNumber.HasValue)
             {
-                video.IndexNumber = data.IndexNumber;
+                if (!video.IndexNumber.HasValue || isFullRefresh)
+                {
+                    video.IndexNumber = data.IndexNumber;
+                }
             }
             if (data.ParentIndexNumber.HasValue)
             {
-                video.ParentIndexNumber = data.ParentIndexNumber;
+                if (!video.ParentIndexNumber.HasValue || isFullRefresh)
+                {
+                    video.ParentIndexNumber = data.ParentIndexNumber;
+                }
             }
 
             // If we don't have a ProductionYear try and get it from PremiereDate
@@ -428,7 +451,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!video.LockedFields.Contains(MetadataFields.Overview))
             {
-                if (!string.IsNullOrWhiteSpace(data.Overview))
+                if (string.IsNullOrWhiteSpace(video.Overview) || isFullRefresh)
                 {
                     video.Overview = data.Overview;
                 }

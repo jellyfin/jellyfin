@@ -277,7 +277,7 @@ namespace MediaBrowser.Model.Dlna
                 
                 // The profile describes what the device supports
                 // If device requirements are satisfied then allow both direct stream and direct play
-                if (IsAudioEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options)))
+                if (item.SupportsDirectPlay && IsAudioEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options)))
                 {
                     playMethods.Add(PlayMethod.DirectPlay);
                 }
@@ -456,10 +456,8 @@ namespace MediaBrowser.Model.Dlna
                     playlistItem.MaxAudioChannels = Math.Min(options.MaxAudioChannels.Value, currentValue);
                 }
 
-                if (!playlistItem.AudioBitrate.HasValue)
-                {
-                    playlistItem.AudioBitrate = GetAudioBitrate(playlistItem.TargetAudioChannels, playlistItem.TargetAudioCodec);
-                }
+                int audioBitrate = GetAudioBitrate(playlistItem.TargetAudioChannels, playlistItem.TargetAudioCodec);
+                playlistItem.AudioBitrate = Math.Min(playlistItem.AudioBitrate ?? audioBitrate, audioBitrate);
 
                 int? maxBitrateSetting = options.GetMaxBitrate();
                 // Honor max rate
@@ -472,9 +470,9 @@ namespace MediaBrowser.Model.Dlna
                         videoBitrate -= playlistItem.AudioBitrate.Value;
                     }
 
+                    // Make sure the video bitrate is lower than bitrate settings but at least 64k
                     int currentValue = playlistItem.VideoBitrate ?? videoBitrate;
-
-                    playlistItem.VideoBitrate = Math.Min(videoBitrate, currentValue);
+                    playlistItem.VideoBitrate = Math.Max(Math.Min(videoBitrate, currentValue), 64000);
                 }
             }
 
@@ -640,7 +638,7 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            if (isEligibleForDirectPlay)
+            if (isEligibleForDirectPlay && mediaSource.SupportsDirectPlay)
             {
                 if (mediaSource.Protocol == MediaProtocol.Http)
                 {
@@ -659,12 +657,9 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            if (isEligibleForDirectStream)
+            if (isEligibleForDirectStream && mediaSource.SupportsDirectStream)
             {
-                if (mediaSource.SupportsDirectStream)
-                {
-                    return PlayMethod.DirectStream;
-                }
+                return PlayMethod.DirectStream;
             }
 
             return null;
