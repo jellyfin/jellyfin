@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Configuration;
@@ -40,6 +41,7 @@ namespace MediaBrowser.Api
 
         private readonly ISessionManager _sessionManager;
         private readonly IFileSystem _fileSystem;
+        private readonly IMediaSourceManager _mediaSourceManager;
 
         public readonly SemaphoreSlim TranscodingStartLock = new SemaphoreSlim(1, 1);
 
@@ -49,12 +51,15 @@ namespace MediaBrowser.Api
         /// <param name="logger">The logger.</param>
         /// <param name="sessionManager">The session manager.</param>
         /// <param name="config">The configuration.</param>
-        public ApiEntryPoint(ILogger logger, ISessionManager sessionManager, IServerConfigurationManager config, IFileSystem fileSystem)
+        /// <param name="fileSystem">The file system.</param>
+        /// <param name="mediaSourceManager">The media source manager.</param>
+        public ApiEntryPoint(ILogger logger, ISessionManager sessionManager, IServerConfigurationManager config, IFileSystem fileSystem, IMediaSourceManager mediaSourceManager)
         {
             Logger = logger;
             _sessionManager = sessionManager;
             _config = config;
             _fileSystem = fileSystem;
+            _mediaSourceManager = mediaSourceManager;
 
             Instance = this;
         }
@@ -133,6 +138,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="playSessionId">The play session identifier.</param>
+        /// <param name="liveStreamId">The live stream identifier.</param>
         /// <param name="transcodingJobId">The transcoding job identifier.</param>
         /// <param name="type">The type.</param>
         /// <param name="process">The process.</param>
@@ -142,6 +148,7 @@ namespace MediaBrowser.Api
         /// <returns>TranscodingJob.</returns>
         public TranscodingJob OnTranscodeBeginning(string path,
             string playSessionId,
+            string liveStreamId,
             string transcodingJobId,
             TranscodingJobType type,
             Process process,
@@ -160,7 +167,8 @@ namespace MediaBrowser.Api
                     DeviceId = deviceId,
                     CancellationTokenSource = cancellationTokenSource,
                     Id = transcodingJobId,
-                    PlaySessionId = playSessionId
+                    PlaySessionId = playSessionId,
+                    LiveStreamId = liveStreamId
                 };
 
                 _activeTranscodingJobs.Add(job);
@@ -323,7 +331,7 @@ namespace MediaBrowser.Api
             }
         }
 
-        private void PingTimer(TranscodingJob job, bool isProgressCheckIn)
+        private async void PingTimer(TranscodingJob job, bool isProgressCheckIn)
         {
             if (job.HasExited)
             {
@@ -353,6 +361,18 @@ namespace MediaBrowser.Api
             {
                 job.ChangeKillTimerIfStarted();
             }
+
+            if (!string.IsNullOrWhiteSpace(job.LiveStreamId))
+            {
+                try
+                {
+                    await _mediaSourceManager.PingLiveStream(job.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error closing live stream", ex);
+                }
+            }
         }
 
         /// <summary>
@@ -365,9 +385,11 @@ namespace MediaBrowser.Api
 
             if (!job.HasExited && job.Type != TranscodingJobType.Progressive)
             {
-                if ((DateTime.UtcNow - job.LastPingDate).TotalMilliseconds < job.PingTimeout)
+                var timeSinceLastPing = (DateTime.UtcNow - job.LastPingDate).TotalMilliseconds;
+
+                if (timeSinceLastPing < job.PingTimeout)
                 {
-                    job.StartKillTimer(OnTranscodeKillTimerStopped);
+                    job.StartKillTimer(OnTranscodeKillTimerStopped, job.PingTimeout);
                     return;
                 }
             }
@@ -589,6 +611,11 @@ namespace MediaBrowser.Api
         /// <value>The play session identifier.</value>
         public string PlaySessionId { get; set; }
         /// <summary>
+        /// Gets or sets the live stream identifier.
+        /// </summary>
+        /// <value>The live stream identifier.</value>
+        public string LiveStreamId { get; set; }
+        /// <summary>
         /// Gets or sets the path.
         /// </summary>
         /// <value>The path.</value>
@@ -671,12 +698,15 @@ namespace MediaBrowser.Api
 
         public void StartKillTimer(TimerCallback callback)
         {
+            StartKillTimer(callback, PingTimeout);
+        }
+
+        public void StartKillTimer(TimerCallback callback, int intervalMs)
+        {
             CheckHasExited();
 
             lock (_timerLock)
             {
-                var intervalMs = PingTimeout;
-
                 if (KillTimer == null)
                 {
                     Logger.Debug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
