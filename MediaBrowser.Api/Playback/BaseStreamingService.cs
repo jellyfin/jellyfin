@@ -1010,6 +1010,7 @@ namespace MediaBrowser.Api.Playback
 
             var transcodingJob = ApiEntryPoint.Instance.OnTranscodeBeginning(outputPath,
                 state.Request.PlaySessionId,
+                state.MediaSource.LiveStreamId,
                 transcodingId,
                 TranscodingJobType,
                 process,
