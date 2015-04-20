@@ -484,10 +484,6 @@
                     return 'collections.html?topParentId=' + item.Id;
                 }
 
-                if (item.CollectionType == 'trailers') {
-                    return "itemlist.html?parentId=" + item.Id;
-                }
-
                 if (item.CollectionType == 'tvshows') {
                     return 'tvrecommended.html?topParentId=' + item.Id;
                 }
@@ -502,11 +498,17 @@
                 if (item.CollectionType == 'playlists') {
                     return 'playlists.html?topParentId=' + item.Id;
                 }
+                if (item.CollectionType == 'photos') {
+                    return 'photos.html?topParentId=' + item.Id;
+                }
             }
             if (item.Type == 'CollectionFolder') {
                 return 'itemlist.html?topParentId=' + item.Id + '&parentid=' + item.Id;
             }
 
+            if (item.Type == "PhotoAlbum" && context == 'photos') {
+                return "photos.html?parentId=" + id;
+            }
             if (item.Type == "Playlist") {
                 return "playlistedit.html?id=" + id;
             }

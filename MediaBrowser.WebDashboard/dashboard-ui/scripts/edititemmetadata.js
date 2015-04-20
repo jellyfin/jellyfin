@@ -1338,10 +1338,9 @@
 
     function refreshWithOptions(page, options) {
 
-        ApiClient.refreshItem(currentItem.Id, options).done(function () {
+        $('#refreshLoading', page).show();
 
-            Dashboard.alert(Globalize.translate('MessageRefreshQueued'));
-        });
+        ApiClient.refreshItem(currentItem.Id, options);
     }
 
     function onWebSocketMessageReceived(e, data) {
@@ -1352,8 +1351,11 @@
 
             if (msg.Data.ItemsUpdated.indexOf(currentItem.Id) != -1) {
 
+                var page = $.mobile.activePage;
+
                 console.log('Item updated - reloading metadata');
-                reload($.mobile.activePage);
+                reload(page);
+                $('#refreshLoading', page).hide();
             }
         }
     }

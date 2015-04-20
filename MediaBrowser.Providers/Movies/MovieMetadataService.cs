@@ -36,10 +36,6 @@ namespace MediaBrowser.Providers.Movies
 
         protected override bool IsFullLocalMetadata(Movie item)
         {
-            if (string.IsNullOrWhiteSpace(item.Name))
-            {
-                return false;
-            }
             if (string.IsNullOrWhiteSpace(item.Overview))
             {
                 return false;

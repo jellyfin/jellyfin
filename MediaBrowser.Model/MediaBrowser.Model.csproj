@@ -139,6 +139,7 @@
     <Compile Include="Drawing\ImageOrientation.cs" />
     <Compile Include="Dto\IHasServerId.cs" />
     <Compile Include="Dto\IHasSyncInfo.cs" />
+    <Compile Include="Dto\ItemLayout.cs" />
     <Compile Include="Dto\MetadataEditorInfo.cs" />
     <Compile Include="Dto\NameIdPair.cs" />
     <Compile Include="Dto\NameValuePair.cs" />

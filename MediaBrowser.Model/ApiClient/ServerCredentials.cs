@@ -98,7 +98,7 @@ namespace MediaBrowser.Model.ApiClient
         {
             var index = 0;
 
-            foreach (var server in servers)
+            foreach (ServerInfo server in servers)
             {
                 if (StringHelper.EqualsIgnoreCase(id, server.Id))
                 {
@@ -109,6 +109,19 @@ namespace MediaBrowser.Model.ApiClient
             }
 
             return -1;
+        }
+
+        public ServerInfo GetServer(string id)
+        {
+            foreach (ServerInfo server in Servers)
+            {
+                if (StringHelper.EqualsIgnoreCase(id, server.Id))
+                {
+                    return server;
+                }
+            }
+
+            return null;
         }
     }
 }

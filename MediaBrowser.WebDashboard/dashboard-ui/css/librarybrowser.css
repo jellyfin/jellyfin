@@ -859,6 +859,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     color: #fff;
     background: rgb(0, 143, 187);
     background: rgba(0, 143, 187, .8);
+    line-height: initial;
 }
 
 .offlinePosterRibbon {
@@ -887,6 +888,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     color: #fff;
     background: rgb(82, 181, 75);
     background: rgba(82, 181, 75, .8);
+    line-height: 16px;
 }
 
     .playedIndicator div:after {
@@ -1022,10 +1024,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .timelineHeader {
     margin-bottom: .25em;
+    line-height: initial;
 }
 
 .itemsContainer {
     margin: 0 auto;
+    line-height: 0;
 }
 
 .alphabetPicker {

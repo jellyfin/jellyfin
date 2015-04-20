@@ -1,0 +1,24 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Emby</title>
+</head>
+<body>
+    <div id="photosPage" data-role="page" class="page libraryPage">
+
+        <div class="libraryViewNav scopedLibraryViewNav">
+            <a href="photos.html" class="ui-btn-active lnkPhotoAlbums">${TabAlbums}</a>
+            <a href="photos.html?context=photos-photos" class="lnkPhotos">${TabPhotos}</a>
+            <a href="photos.html?context=photos-videos" class="lnkVideos">${TabVideos}</a>
+        </div>
+
+        <div data-role="content">
+            <div class="viewSettings">
+                <div class="listTopPaging">
+                </div>
+            </div>
+            <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
+        </div>
+    </div>
+</body>
+</html>
