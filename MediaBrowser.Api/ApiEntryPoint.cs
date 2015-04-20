@@ -331,7 +331,6 @@ namespace MediaBrowser.Api
                 return;
             }
 
-            // TODO: Lower this hls timeout
             var timerDuration = job.Type == TranscodingJobType.Progressive ?
                 1000 :
                 1800000;
@@ -342,14 +341,17 @@ namespace MediaBrowser.Api
                 timerDuration = 60000;
             }
 
+            job.PingTimeout = timerDuration;
+            job.LastPingDate = DateTime.UtcNow;
+
             // Don't start the timer for playback checkins with progressive streaming
             if (job.Type != TranscodingJobType.Progressive || !isProgressCheckIn)
             {
-                job.StartKillTimer(timerDuration, OnTranscodeKillTimerStopped);
+                job.StartKillTimer(OnTranscodeKillTimerStopped);
             }
             else
             {
-                job.ChangeKillTimerIfStarted(timerDuration);
+                job.ChangeKillTimerIfStarted();
             }
         }
 
@@ -360,6 +362,15 @@ namespace MediaBrowser.Api
         private void OnTranscodeKillTimerStopped(object state)
         {
             var job = (TranscodingJob)state;
+
+            if (!job.HasExited && job.Type != TranscodingJobType.Progressive)
+            {
+                if ((DateTime.UtcNow - job.LastPingDate).TotalMilliseconds < job.PingTimeout)
+                {
+                    job.StartKillTimer(OnTranscodeKillTimerStopped);
+                    return;
+                }
+            }
 
             Logger.Debug("Transcoding kill timer stopped for JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
 
@@ -627,6 +638,9 @@ namespace MediaBrowser.Api
 
         private readonly object _timerLock = new object();
 
+        public DateTime LastPingDate { get; set; }
+        public int PingTimeout { get; set; }
+
         public TranscodingJob(ILogger logger)
         {
             Logger = logger;
@@ -655,12 +669,14 @@ namespace MediaBrowser.Api
             }
         }
 
-        public void StartKillTimer(int intervalMs, TimerCallback callback)
+        public void StartKillTimer(TimerCallback callback)
         {
             CheckHasExited();
 
             lock (_timerLock)
             {
+                var intervalMs = PingTimeout;
+
                 if (KillTimer == null)
                 {
                     Logger.Debug("Starting kill timer at {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
@@ -674,7 +690,7 @@ namespace MediaBrowser.Api
             }
         }
 
-        public void ChangeKillTimerIfStarted(int intervalMs)
+        public void ChangeKillTimerIfStarted()
         {
             CheckHasExited();
 
@@ -682,6 +698,8 @@ namespace MediaBrowser.Api
             {
                 if (KillTimer != null)
                 {
+                    var intervalMs = PingTimeout;
+
                     Logger.Debug("Changing kill timer to {0}ms. JobId {1} PlaySessionId {2}", intervalMs, Id, PlaySessionId);
                     KillTimer.Change(intervalMs, Timeout.Infinite);
                 }

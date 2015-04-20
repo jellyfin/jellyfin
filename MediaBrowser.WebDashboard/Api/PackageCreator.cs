@@ -470,6 +470,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "notificationlist.js",
                                 "notificationsetting.js",
                                 "notificationsettings.js",
+                                "photos.js",
                                 "playlists.js",
                                 "playlistedit.js",
 

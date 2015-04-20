@@ -158,22 +158,19 @@ namespace Emby.Drawing
             }
 
             var dateModified = options.Image.DateModified;
-            var length = options.Image.Length;
 
             if (options.CropWhiteSpace)
             {
-                var tuple = await GetWhitespaceCroppedImage(originalImagePath, dateModified, length).ConfigureAwait(false);
+                var tuple = await GetWhitespaceCroppedImage(originalImagePath, dateModified).ConfigureAwait(false);
 
                 originalImagePath = tuple.Item1;
                 dateModified = tuple.Item2;
-                length = tuple.Item3;
             }
 
             if (options.Enhancers.Count > 0)
             {
                 var tuple = await GetEnhancedImage(new ItemImageInfo
                 {
-                    Length = length,
                     DateModified = dateModified,
                     Type = options.Image.Type,
                     Path = originalImagePath
@@ -182,7 +179,6 @@ namespace Emby.Drawing
 
                 originalImagePath = tuple.Item1;
                 dateModified = tuple.Item2;
-                length = tuple.Item3;
             }
 
             var originalImageSize = GetImageSize(originalImagePath, dateModified);
@@ -199,7 +195,7 @@ namespace Emby.Drawing
             var quality = options.Quality ?? 90;
 
             var outputFormat = GetOutputFormat(options.OutputFormat);
-            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, length, outputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.BackgroundColor);
+            var cacheFilePath = GetCacheFilePath(originalImagePath, newSize, quality, dateModified, outputFormat, options.AddPlayedIndicator, options.PercentPlayed, options.UnplayedCount, options.BackgroundColor);
 
             var semaphore = GetLock(cacheFilePath);
 
@@ -240,11 +236,10 @@ namespace Emby.Drawing
         /// <summary>
         /// Crops whitespace from an image, caches the result, and returns the cached path
         /// </summary>
-        private async Task<Tuple<string, DateTime, long>> GetWhitespaceCroppedImage(string originalImagePath, DateTime dateModified, long length)
+        private async Task<Tuple<string, DateTime>> GetWhitespaceCroppedImage(string originalImagePath, DateTime dateModified)
         {
             var name = originalImagePath;
             name += "datemodified=" + dateModified.Ticks;
-            name += "length=" + length;
 
             var croppedImagePath = GetCachePath(CroppedWhitespaceImageCachePath, name, Path.GetExtension(originalImagePath));
 
@@ -270,7 +265,7 @@ namespace Emby.Drawing
                 // We have to have a catch-all here because some of the .net image methods throw a plain old Exception
                 _logger.ErrorException("Error cropping image {0}", ex, originalImagePath);
 
-                return new Tuple<string, DateTime, long>(originalImagePath, dateModified, length);
+                return new Tuple<string, DateTime>(originalImagePath, dateModified);
             }
             finally
             {
@@ -280,11 +275,9 @@ namespace Emby.Drawing
             return GetResult(croppedImagePath);
         }
 
-        private Tuple<string, DateTime, long> GetResult(string path)
+        private Tuple<string, DateTime> GetResult(string path)
         {
-            var file = new FileInfo(path);
-
-            return new Tuple<string, DateTime, long>(path, _fileSystem.GetLastWriteTimeUtc(file), file.Length);
+            return new Tuple<string, DateTime>(path, _fileSystem.GetLastWriteTimeUtc(path));
         }
 
         /// <summary>
@@ -295,7 +288,7 @@ namespace Emby.Drawing
         /// <summary>
         /// Gets the cache file path based on a set of parameters
         /// </summary>
-        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, long length, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, string backgroundColor)
+        private string GetCacheFilePath(string originalPath, ImageSize outputSize, int quality, DateTime dateModified, ImageFormat format, bool addPlayedIndicator, double percentPlayed, int? unwatchedCount, string backgroundColor)
         {
             var filename = originalPath;
 
@@ -306,7 +299,6 @@ namespace Emby.Drawing
             filename += "quality=" + quality;
 
             filename += "datemodified=" + dateModified.Ticks;
-            filename += "length=" + length;
 
             filename += "f=" + format;
 
@@ -492,17 +484,16 @@ namespace Emby.Drawing
             var originalImagePath = image.Path;
             var dateModified = image.DateModified;
             var imageType = image.Type;
-            var length = image.Length;
 
             // Optimization
             if (imageEnhancers.Count == 0)
             {
-                return (originalImagePath + dateModified.Ticks + string.Empty + length).GetMD5().ToString("N");
+                return (originalImagePath + dateModified.Ticks).GetMD5().ToString("N");
             }
 
             // Cache name is created with supported enhancers combined with the last config change so we pick up new config changes
             var cacheKeys = imageEnhancers.Select(i => i.GetConfigurationCacheKey(item, imageType)).ToList();
-            cacheKeys.Add(originalImagePath + dateModified.Ticks + string.Empty + length);
+            cacheKeys.Add(originalImagePath + dateModified.Ticks);
 
             return string.Join("|", cacheKeys.ToArray()).GetMD5().ToString("N");
         }
@@ -525,7 +516,7 @@ namespace Emby.Drawing
             return result.Item1;
         }
 
-        private async Task<Tuple<string, DateTime, long>> GetEnhancedImage(ItemImageInfo image,
+        private async Task<Tuple<string, DateTime>> GetEnhancedImage(ItemImageInfo image,
             IHasImages item,
             int imageIndex,
             List<IImageEnhancer> enhancers)
@@ -533,7 +524,6 @@ namespace Emby.Drawing
             var originalImagePath = image.Path;
             var dateModified = image.DateModified;
             var imageType = image.Type;
-            var length = image.Length;
 
             try
             {
@@ -553,7 +543,7 @@ namespace Emby.Drawing
                 _logger.Error("Error enhancing image", ex);
             }
 
-            return new Tuple<string, DateTime, long>(originalImagePath, dateModified, length);
+            return new Tuple<string, DateTime>(originalImagePath, dateModified);
         }
 
         /// <summary>

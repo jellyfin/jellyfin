@@ -1512,7 +1512,6 @@ namespace MediaBrowser.Controller.Entities
 
                 image.Path = file.FullName;
                 image.DateModified = imageInfo.DateModified;
-                image.Length = imageInfo.Length;
             }
         }
 
@@ -1622,14 +1621,11 @@ namespace MediaBrowser.Controller.Entities
                     return null;
                 }
 
-                var fileInfo = new FileInfo(path);
-
                 return new ItemImageInfo
                 {
                     Path = path,
-                    DateModified = FileSystem.GetLastWriteTimeUtc(fileInfo),
-                    Type = imageType,
-                    Length = fileInfo.Length
+                    DateModified = FileSystem.GetLastWriteTimeUtc(path),
+                    Type = imageType
                 };
             }
 
@@ -1690,7 +1686,6 @@ namespace MediaBrowser.Controller.Entities
                 else
                 {
                     existing.DateModified = FileSystem.GetLastWriteTimeUtc(newImage);
-                    existing.Length = ((FileInfo)newImage).Length;
                 }
             }
 
@@ -1716,8 +1711,7 @@ namespace MediaBrowser.Controller.Entities
             {
                 Path = file.FullName,
                 Type = type,
-                DateModified = FileSystem.GetLastWriteTimeUtc(file),
-                Length = ((FileInfo)file).Length
+                DateModified = FileSystem.GetLastWriteTimeUtc(file)
             };
         }
 
@@ -1756,15 +1750,9 @@ namespace MediaBrowser.Controller.Entities
 
             FileSystem.SwapFiles(path1, path2);
 
-            var file1 = new FileInfo(info1.Path);
-            var file2 = new FileInfo(info2.Path);
-
             // Refresh these values
-            info1.DateModified = FileSystem.GetLastWriteTimeUtc(file1);
-            info2.DateModified = FileSystem.GetLastWriteTimeUtc(file2);
-
-            info1.Length = file1.Length;
-            info2.Length = file2.Length;
+            info1.DateModified = FileSystem.GetLastWriteTimeUtc(info1.Path);
+            info2.DateModified = FileSystem.GetLastWriteTimeUtc(info2.Path);
 
             return UpdateToRepository(ItemUpdateType.ImageUpdate, CancellationToken.None);
         }

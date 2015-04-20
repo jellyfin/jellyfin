@@ -482,6 +482,11 @@ namespace MediaBrowser.Providers.Manager
 
         protected virtual bool IsFullLocalMetadata(TItemType item)
         {
+            if (string.IsNullOrWhiteSpace(item.Name))
+            {
+                return false;
+            }
+            
             return true;
         }
 
