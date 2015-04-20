@@ -1039,13 +1039,16 @@
             volumeSlider.val(initialVolume).slider('refresh');
             updateVolumeButtons(initialVolume);
 
-            video.one("loadedmetadata.mediaplayerevent", function (e) {
+            video.one("playing.mediaplayerevent", function (e) {
 
                 // TODO: This is not working in chrome. Is it too early?
 
                 // Appending #t=xxx to the query string doesn't seem to work with HLS
                 if (startPositionInSeekParam && this.currentSrc && this.currentSrc.toLowerCase().indexOf('.m3u8') != -1) {
-                    this.currentTime = startPositionInSeekParam;
+                    var element = this;
+                    setTimeout(function () {
+                        element.currentTime = startPositionInSeekParam;
+                    }, 3000);
                 }
 
             }).on("volumechange.mediaplayerevent", function (e) {
