@@ -77,10 +77,6 @@ namespace MediaBrowser.Providers.TV
 
         protected override bool IsFullLocalMetadata(Series item)
         {
-            if (string.IsNullOrWhiteSpace(item.Name))
-            {
-                return false;
-            }
             if (string.IsNullOrWhiteSpace(item.Overview))
             {
                 return false;

@@ -243,7 +243,15 @@ namespace MediaBrowser.Providers.TV
                 await SanitizeXmlFile(file).ConfigureAwait(false);
             }
 
-            await ExtractEpisodes(seriesDataPath, Path.Combine(seriesDataPath, saveAsMetadataLanguage + ".xml"), lastTvDbUpdateTime).ConfigureAwait(false);
+            var downloadLangaugeXmlFile = Path.Combine(seriesDataPath, preferredMetadataLanguage + ".xml");
+            var saveAsLanguageXmlFile = Path.Combine(seriesDataPath, saveAsMetadataLanguage + ".xml");
+
+            if (!string.Equals(downloadLangaugeXmlFile, saveAsLanguageXmlFile, StringComparison.OrdinalIgnoreCase))
+            {
+                File.Copy(downloadLangaugeXmlFile, saveAsLanguageXmlFile, true);
+            }
+
+            await ExtractEpisodes(seriesDataPath, downloadLangaugeXmlFile, lastTvDbUpdateTime).ConfigureAwait(false);
         }
 
         public TvdbOptions GetTvDbOptions()

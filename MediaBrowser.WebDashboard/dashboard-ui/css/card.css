@@ -22,6 +22,7 @@
     background-color: rgba(0, 0, 0, .85);
     z-index: 998;
     display: none;
+    line-height: initial;
 }
 
 .cardOverlayInner {
@@ -47,6 +48,13 @@
 .cardBox {
     margin: 1px;
 }
+
+/*@media all and (max-width: 600px) {
+
+    .cardBox {
+        margin: 0;
+    }
+}*/
 
 .grayscale {
     -webkit-filter: grayscale(100%);
@@ -168,6 +176,7 @@
     padding: 5px 4px 2px;
     text-shadow: none;
     font-weight: 400;
+    line-height: 1.4;
 }
 
 .cardOverlayInner {
