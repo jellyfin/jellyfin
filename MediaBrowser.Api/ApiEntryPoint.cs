@@ -119,7 +119,7 @@ namespace MediaBrowser.Api
         {
             var jobCount = _activeTranscodingJobs.Count;
 
-            Parallel.ForEach(_activeTranscodingJobs.ToList(), j => KillTranscodingJob(j, path => true));
+            Parallel.ForEach(_activeTranscodingJobs.ToList(), j => KillTranscodingJob(j, false, path => true));
 
             // Try to allow for some time to kill the ffmpeg processes and delete the partial stream files
             if (jobCount > 0)
@@ -396,7 +396,7 @@ namespace MediaBrowser.Api
 
             Logger.Debug("Transcoding kill timer stopped for JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
 
-            KillTranscodingJob(job, path => true);
+            KillTranscodingJob(job, true, path => true);
         }
 
         /// <summary>
@@ -444,7 +444,7 @@ namespace MediaBrowser.Api
 
             foreach (var job in jobs)
             {
-                KillTranscodingJob(job, deleteFiles);
+                KillTranscodingJob(job, false, deleteFiles);
             }
         }
 
@@ -452,8 +452,9 @@ namespace MediaBrowser.Api
         /// Kills the transcoding job.
         /// </summary>
         /// <param name="job">The job.</param>
+        /// <param name="closeLiveStream">if set to <c>true</c> [close live stream].</param>
         /// <param name="delete">The delete.</param>
-        private void KillTranscodingJob(TranscodingJob job, Func<string, bool> delete)
+        private async void KillTranscodingJob(TranscodingJob job, bool closeLiveStream, Func<string, bool> delete)
         {
             job.DisposeKillTimer();
 
@@ -502,6 +503,18 @@ namespace MediaBrowser.Api
             if (delete(job.Path))
             {
                 DeletePartialStreamFiles(job.Path, job.Type, 0, 1500);
+            }
+
+            if (closeLiveStream && !string.IsNullOrWhiteSpace(job.LiveStreamId))
+            {
+                try
+                {
+                    await _mediaSourceManager.CloseLiveStream(job.LiveStreamId, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error closing live stream for {0}", ex, job.Path);
+                }
             }
         }
 
