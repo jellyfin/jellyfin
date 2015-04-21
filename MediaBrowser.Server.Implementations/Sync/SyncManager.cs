@@ -723,7 +723,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 TargetId = targetId,
                 Statuses = new[]
                 {
-                    SyncJobItemStatus.ReadyToTransfer
+                    SyncJobItemStatus.ReadyToTransfer,
+                    SyncJobItemStatus.Transferring
                 }
             });
 

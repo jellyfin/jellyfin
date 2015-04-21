@@ -524,7 +524,7 @@
         return $.when(promises);
     }
 
-    var homePageDismissValue = '12';
+    var homePageDismissValue = '14';
     var homePageTourKey = 'homePageTour';
 
     function dismissWelcome(page, userId) {
@@ -588,14 +588,19 @@
 
     function loadConfigureViewsWelcomeMessage(page, userId) {
 
-        $('.btnMyPreferences', page).attr('href', 'mypreferencesdisplay.html?userId=' + userId);
+        Dashboard.getCurrentUser().done(function (user) {
 
-        // Need the timeout because previous methods in the chain have popups that will be in the act of closing
-        setTimeout(function () {
+            if (user.Policy.EnableUserPreferenceAccess) {
+                $('.btnMyPreferences', page).attr('href', 'mypreferencesdisplay.html?userId=' + userId);
 
-            $('.popupConfigureViews', page).popup('open');
+                // Need the timeout because previous methods in the chain have popups that will be in the act of closing
+                setTimeout(function () {
 
-        }, 500);
+                    $('.popupConfigureViews', page).popup('open');
+
+                }, 500);
+            }
+        });
     }
 
     $(document).on('pageinit', "#indexPage", function () {
