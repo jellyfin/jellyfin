@@ -1435,5 +1435,10 @@
     "LabelSelectViewStyles": "Enable rich presentations for:",
     "LabelSelectViewStylesHelp": "If enabled, views will be built with metadata to offer categories such as Suggestions, Latest, Genres, and more. If disabled, they'll be displayed with simple folders.",
     "TabPhotos": "Photos",
-    "TabVideos": "Videos"
+	"TabVideos": "Videos",
+	"OptionReportList": "List View",
+    "OptionReportStatistics": "Statistics",
+    "OptionReportGrouping": "Grouping",
+    "OptionReportExport": "Report Export",
+    "OptionReportColumns": "Report Columns"
 }
