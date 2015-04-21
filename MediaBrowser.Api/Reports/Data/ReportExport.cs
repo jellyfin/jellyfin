@@ -145,7 +145,9 @@ namespace MediaBrowser.Api.Reports
 									border-color: #666666;
 									background-color: #dedede;
 								}
-
+								table.gridtable tr {
+									background-color: #ffffff;
+								}
 								table.gridtable td {
 									border-width: 0.1pt;
 									padding: 8px;
@@ -160,7 +162,7 @@ namespace MediaBrowser.Api.Reports
 							<head>
 							<meta http-equiv='X-UA-Compatible' content='IE=8, IE=9, IE=10' />
 							<meta charset='utf-8'>
-							<title>Emby Export</title>";
+							<title>Emby Reports Export</title>";
 			Html += "\n" + style + "\n";
 			Html += "</head>\n";
 			Html += "<body>\n";
@@ -180,7 +182,7 @@ namespace MediaBrowser.Api.Reports
 					{
 						ExportToExcelRow(reportResult, returnValue, row);
 					}
-					returnValue.AppendLine("<tr style='background-color: white;'>");
+					returnValue.AppendLine("<tr>");
 					returnValue.AppendLine("<th scope='rowgroup' colspan='" + reportResult.Headers.Count + "'>" + "&nbsp;" + "</th>");
 					returnValue.AppendLine("</tr>");
 				}
