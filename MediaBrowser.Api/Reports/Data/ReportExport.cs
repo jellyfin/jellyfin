@@ -175,7 +175,7 @@ namespace MediaBrowser.Api.Reports
 			if (reportResult.IsGrouped)
 				foreach (ReportGroup group in reportResult.Groups)
 				{
-					returnValue.AppendLine("<tr style='background-color: rgb(51, 51, 51);'>");
+					returnValue.AppendLine("<tr>");
 					returnValue.AppendLine("<th scope='rowgroup' colspan='" + reportResult.Headers.Count + "'>" + (string.IsNullOrEmpty(group.Name) ? "&nbsp;" : group.Name) + "</th>");
 					returnValue.AppendLine("</tr>");
 					foreach (ReportRow row in group.Rows)
@@ -183,7 +183,7 @@ namespace MediaBrowser.Api.Reports
 						ExportToExcelRow(reportResult, returnValue, row);
 					}
 					returnValue.AppendLine("<tr>");
-					returnValue.AppendLine("<th scope='rowgroup' colspan='" + reportResult.Headers.Count + "'>" + "&nbsp;" + "</th>");
+					returnValue.AppendLine("<th style='background-color: #ffffff;' scope='rowgroup' colspan='" + reportResult.Headers.Count + "'>" + "&nbsp;" + "</th>");
 					returnValue.AppendLine("</tr>");
 				}
 

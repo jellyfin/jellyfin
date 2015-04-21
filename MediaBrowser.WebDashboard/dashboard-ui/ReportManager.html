@@ -11,8 +11,8 @@
 					<span style="margin-right: 10px; vertical-align: middle;">${LabelReport}</span>
 					<div style="display: inline-block;">
 						<select data-mini="true" data-inline="true" id="selectReportType">
-							<option value="ReportData">Data</option>
-							<option value="ReportStatistic">Statistic</option>
+							<option value="ReportData">${OptionReportList}</option>
+							<option value="ReportStatistic">${OptionReportStatistics}</option>
 						</select>
 					</div>
 					<div style="display: inline-block;">
@@ -51,16 +51,8 @@
 					</div>
 
 					<div class="tabView viewTab">
-						<!--<div>
-							<label for="selectView">${LabelView}</label>
-							<select id="selectReportType">
-								<option value="ReportData">Data</option>
-								<option value="ReportStatistic">Stat</option>
-							</select>
-						</div>
-						<br />-->
 						<div id="selectReportGroupingBox">
-							<label for="selectViewGrouping">Grouping</label>
+							<label for="selectViewGrouping">${OptionReportGrouping}</label>
 							<select id="selectReportGroup"></select>
 							<br />
 						</div>
@@ -81,7 +73,7 @@
 
 						<div id="exportReportBox">
 							<fieldset>
-								<label>Report Export</label>
+								<label>${OptionReportExport}</label>
 								<button type="button" name="btnReportExportCsv" id="btnReportExportCsv" data-mini="true">CSV</button>
 								<button type="button" name="btnReportExportExcel" id="btnReportExportExcel" data-mini="true">Excel</button>
 							</fieldset>
@@ -89,7 +81,7 @@
 						</div>
 
 						<div data-role="collapsible" data-collapsed="true" data-mini="true" class="reportsColumns" id="grpReportsColumns">
-							<h2>ReportColumns</h2>
+							<h2>${OptionReportColumns}</h2>
 							<button type="button" name="btnResetReportColumns" id="btnResetReportColumns" data-mini="true">Reset</button>
 							<br />
 							<div class="filterOptions">
