@@ -780,7 +780,6 @@
 		QueryFilters.onPageShow(page, query);
 
 		$('#selectView', page).val(query.IncludeItemTypes).selectmenu('refresh').trigger('change');
-		reloadItems(page);
 
 	})
 	.on('pageshow', "#libraryReportManagerPage", function () {
