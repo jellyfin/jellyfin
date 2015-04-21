@@ -222,6 +222,10 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
+                case "type":
+                    item.DisplayMediaType = reader.ReadElementContentAsString();
+                    break;
+
                 case "title":
                 case "localtitle":
                     item.Name = reader.ReadElementContentAsString();
