@@ -941,6 +941,31 @@
                 return s.Type == 'Subtitle';
             });
 
+            // Get Video Poster (Code from librarybrowser.js)
+            var screenWidth = Math.max(screen.height, screen.width),
+                posterCode = '';
+
+            if (item.BackdropImageTags && item.BackdropImageTags.length) {
+
+                posterCode = ' poster="' + ApiClient.getScaledImageUrl(item.Id, {
+                    type: "Backdrop",
+                    index: 0,
+                    maxWidth: screenWidth,
+                    tag: item.BackdropImageTags[0]
+                }) + '"';
+
+            }
+            else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
+
+                posterCode = ' poster="' + ApiClient.getScaledImageUrl(item.ParentBackdropItemId, {
+                    type: 'Backdrop',
+                    index: 0,
+                    maxWidth: screenWidth,
+                    tag: item.ParentBackdropImageTags[0]                    
+                }) + '"';
+
+            }
+
             //======================================================================================>
 
             // Create video player
@@ -950,11 +975,11 @@
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresNativeControls) {
-                html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay="autoplay" crossorigin="anonymous" controls="controls">';
+                html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay="autoplay" crossorigin="anonymous" controls="controls"' + posterCode + '>';
             } else {
 
                 // Chrome 35 won't play with preload none
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" crossorigin="anonymous" autoplay>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" crossorigin="anonymous" autoplay' + posterCode + '>';
             }
 
             html += '<source type="' + contentType + '" src="' + videoUrl + '" />';
