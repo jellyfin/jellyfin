@@ -1040,7 +1040,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             innerProgress.RegisterAction(p => progress.Report(90 + (p * .1)));
             await CleanDatabaseInternal(progress, cancellationToken).ConfigureAwait(false);
 
-            RefreshIfNeeded(GetPrograms().Where(i => (i.StartDate - DateTime.UtcNow).TotalDays <= 1).ToList());
+            RefreshIfNeeded(GetPrograms().ToList());
         }
 
         private async Task RefreshChannelsInternal(IProgress<double> progress, CancellationToken cancellationToken)

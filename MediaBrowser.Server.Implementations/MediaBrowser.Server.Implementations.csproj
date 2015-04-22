@@ -401,7 +401,6 @@
     <EmbeddedResource Include="Localization\JavaScript\kk.json" />
     <EmbeddedResource Include="Localization\Server\kk.json" />
     <EmbeddedResource Include="Localization\countries.json" />
-    <EmbeddedResource Include="Localization\cultures.json" />
     <EmbeddedResource Include="Localization\JavaScript\da.json" />
     <EmbeddedResource Include="Localization\JavaScript\vi.json" />
     <EmbeddedResource Include="Localization\Server\da.json" />
