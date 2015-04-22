@@ -234,7 +234,7 @@ namespace MediaBrowser.Server.Implementations.Photos
         protected virtual List<BaseItem> GetFinalItems(List<BaseItem> items, int limit)
         {
             // Rotate the images once every x days
-            var random = DateTime.Now.DayOfYear % 4;
+            var random = DateTime.Now.DayOfYear % 5;
 
             return items
                 .OrderBy(i => (random + "" + items.IndexOf(i)).GetMD5())

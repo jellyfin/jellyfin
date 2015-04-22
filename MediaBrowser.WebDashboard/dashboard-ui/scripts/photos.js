@@ -40,6 +40,8 @@
 
             updateFilterControls(page);
 
+            var defaultAction = query.MediaTypes == 'Photo' ? 'photoslideshow' : null;
+
             // Poster
             html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
@@ -47,7 +49,8 @@
                 context: getParameterByName('context') || 'photos',
                 showTitle: false,
                 centerText: true,
-                lazy: true
+                lazy: true,
+                defaultAction: defaultAction
             });
 
             var elem = $('#items', page).html(html).lazyChildren();
@@ -134,6 +137,50 @@
         query.ParentId = getParameterByName('parentId') || LibraryMenu.getTopParentId();
     }
 
+    function startSlideshow(page, index) {
+
+        index += (query.StartIndex || 0);
+
+        var userId = Dashboard.getCurrentUserId();
+
+        var localQuery = $.extend({}, query);
+        localQuery.StartIndex = 0;
+        localQuery.Limit = null;
+        localQuery.MediaTypes = "Photo";
+        localQuery.Recursive = true;
+        localQuery.Filters = "IsNotFolder";
+
+        ApiClient.getItems(userId, localQuery).done(function (result) {
+
+            showSlideshow(page, result.Items, index);
+        });
+    }
+
+    function showSlideshow(page, items, index) {
+
+        var slideshowItems = items.map(function (item) {
+
+            var imgUrl = ApiClient.getScaledImageUrl(item.Id, {
+
+                tag: item.ImageTags.Primary,
+                type: 'Primary'
+
+            });
+
+            return {
+                title: item.Name,
+                href: imgUrl
+            };
+        });
+
+        index = Math.max(index || 0, 0);
+
+        $.swipebox(slideshowItems, {
+            initialIndexOnArray: index,
+            hideBarsDelay: 30000
+        });
+    }
+
     $(document).on('pageinit', "#photosPage", function () {
 
         var page = this;
@@ -195,6 +242,10 @@
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
             reloadItems(page);
+        });
+
+        $('.itemsContainer', page).on('photoslideshow', function (e, index) {
+            startSlideshow(page, index);
         });
 
     }).on('pagebeforeshow', "#photosPage", function () {

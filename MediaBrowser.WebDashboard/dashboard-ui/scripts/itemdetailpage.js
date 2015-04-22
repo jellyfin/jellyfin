@@ -282,6 +282,9 @@
                 $('.lnkMovies', page).addClass('ui-btn-active');
             }
         }
+        else if (context == 'channels') {
+            elem = $('.channelTabs', page).show();
+        }
         else if (item.Type == "MusicAlbum") {
             $('#albumTabs', page).show();
         }
