@@ -345,7 +345,7 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 var name = MakeValidUsername(Environment.UserName);
 
-                var user = InstantiateNewUser(name, false);
+                var user = InstantiateNewUser(name);
 
                 user.DateLastSaved = DateTime.UtcNow;
 
@@ -552,7 +552,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
             try
             {
-                var user = InstantiateNewUser(name, true);
+                var user = InstantiateNewUser(name);
 
                 var list = Users.ToList();
                 list.Add(user);
@@ -697,21 +697,13 @@ namespace MediaBrowser.Server.Implementations.Library
         /// Instantiates the new user.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="checkId">if set to <c>true</c> [check identifier].</param>
         /// <returns>User.</returns>
-        private User InstantiateNewUser(string name, bool checkId)
+        private User InstantiateNewUser(string name)
         {
-            var id = ("MBUser" + name).GetMD5();
-
-            if (checkId && Users.Select(i => i.Id).Contains(id))
-            {
-                id = Guid.NewGuid();
-            }
-
             return new User
             {
                 Name = name,
-                Id = id,
+                Id = Guid.NewGuid(),
                 DateCreated = DateTime.UtcNow,
                 DateModified = DateTime.UtcNow,
                 UsesIdForConfigurationPath = true

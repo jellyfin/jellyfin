@@ -942,8 +942,8 @@
             });
 
             // Get Video Poster (Code from librarybrowser.js)
-            var screenWidth = Math.max(screen.height, screen.width),
-                posterCode = '';
+            var screenWidth = Math.max(screen.height, screen.width);
+            var posterCode = '';
 
             if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
@@ -961,7 +961,7 @@
                     type: 'Backdrop',
                     index: 0,
                     maxWidth: screenWidth,
-                    tag: item.ParentBackdropImageTags[0]                    
+                    tag: item.ParentBackdropImageTags[0]
                 }) + '"';
 
             }
