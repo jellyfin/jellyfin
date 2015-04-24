@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Model.Dlna;
+﻿using MediaBrowser.Model.Dlna;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
@@ -31,13 +31,13 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             DirectPlayProfiles = new[]
             {
-                new DirectPlayProfile
-                {
-                    Container = "mkv",
-                    VideoCodec = "h264,mpeg4",
-                    AudioCodec = mkvAudio,
-                    Type = DlnaProfileType.Video
-                },
+                //new DirectPlayProfile
+                //{
+                //    Container = "mkv",
+                //    VideoCodec = "h264,mpeg4",
+                //    AudioCodec = mkvAudio,
+                //    Type = DlnaProfileType.Video
+                //},
                 new DirectPlayProfile
                 {
                     Container = "mp4,mov,m4v",

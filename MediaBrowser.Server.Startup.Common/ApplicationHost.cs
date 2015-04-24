@@ -357,10 +357,7 @@ namespace MediaBrowser.Server.Startup.Common
 
         private void PerformPostInitMigrations()
         {
-            var migrations = new List<IVersionMigration>
-            {
-                new MigrateTranscodingPath(ServerConfigurationManager)
-            };
+            var migrations = new List<IVersionMigration>();
 
             foreach (var task in migrations)
             {
