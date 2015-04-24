@@ -1432,7 +1432,7 @@
     "MyPreferencesWelcomeMessage2": "Would you like to set your preferences now?",
     "ToAccessPreferencesHelp": "To access your preferences later, click your user icon in the top right header and select My Preferences.",
     "HeaderViewStyles": "View Styles",
-    "LabelSelectViewStyles": "Enable rich presentations for:",
+    "LabelSelectViewStyles": "Enable enhanced presentations for:",
     "LabelSelectViewStylesHelp": "If enabled, views will be built with metadata to offer categories such as Suggestions, Latest, Genres, and more. If disabled, they'll be displayed with simple folders.",
     "TabPhotos": "Photos",
     "TabVideos": "Videos"

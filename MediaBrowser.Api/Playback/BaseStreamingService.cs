@@ -1522,6 +1522,10 @@ namespace MediaBrowser.Api.Playback
                 {
                     request.LiveStreamId = val;
                 }
+                else if (i == 24)
+                {
+                    // Duplicating ItemId because of MediaMonkey
+                }
             }
         }
 
