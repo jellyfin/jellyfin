@@ -164,9 +164,22 @@ namespace MediaBrowser.Common.Implementations.Configuration
         /// </summary>
         private void UpdateCachePath()
         {
-            ((BaseApplicationPaths)CommonApplicationPaths).CachePath = string.IsNullOrEmpty(CommonConfiguration.CachePath) ?
-                null :
-                CommonConfiguration.CachePath;
+            string cachePath;
+
+            if (string.IsNullOrWhiteSpace(CommonConfiguration.CachePath))
+            {
+                cachePath = null;
+            }
+            else if (CommonConfiguration.EnableCustomPathSubFolders)
+            {
+                cachePath = Path.Combine(CommonConfiguration.CachePath, "cache");
+            }
+            else
+            {
+                cachePath = CommonConfiguration.CachePath;
+            }
+
+            ((BaseApplicationPaths)CommonApplicationPaths).CachePath = cachePath;
         }
 
         /// <summary>
