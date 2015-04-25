@@ -119,7 +119,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var extractKeyFrameInterval = request.ExtractKeyFrameInterval && request.Protocol == MediaProtocol.File && request.VideoType == VideoType.VideoFile;
 
             return GetMediaInfoInternal(GetInputArgument(inputFiles, request.Protocol), request.InputPath, request.Protocol, extractChapters, extractKeyFrameInterval,
-                GetProbeSizeArgument(inputFiles, request.Protocol), request.MediaType == DlnaProfileType.Audio, cancellationToken);
+                GetProbeSizeArgument(inputFiles, request.Protocol), request.MediaType == DlnaProfileType.Audio, request.VideoType, cancellationToken);
         }
 
         /// <summary>
@@ -155,6 +155,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         /// <param name="extractKeyFrameInterval">if set to <c>true</c> [extract key frame interval].</param>
         /// <param name="probeSizeArgument">The probe size argument.</param>
         /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
+        /// <param name="videoType">Type of the video.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{MediaInfoResult}.</returns>
         /// <exception cref="System.ApplicationException"></exception>
@@ -165,6 +166,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             bool extractKeyFrameInterval,
             string probeSizeArgument,
             bool isAudio,
+            VideoType videoType,
             CancellationToken cancellationToken)
         {
             var args = extractChapters
@@ -236,7 +238,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         }
                     }
 
-                    var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, isAudio, primaryPath, protocol);
+                    var mediaInfo = new ProbeResultNormalizer(_logger, FileSystem).GetMediaInfo(result, videoType, isAudio, primaryPath, protocol);
 
                     if (extractKeyFrameInterval && mediaInfo.RunTimeTicks.HasValue)
                     {
