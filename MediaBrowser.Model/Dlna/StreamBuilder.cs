@@ -456,7 +456,7 @@ namespace MediaBrowser.Model.Dlna
                     playlistItem.MaxAudioChannels = Math.Min(options.MaxAudioChannels.Value, currentValue);
                 }
 
-                int audioBitrate = GetAudioBitrate(playlistItem.TargetAudioChannels, playlistItem.TargetAudioCodec);
+                int audioBitrate = GetAudioBitrate(playlistItem.TargetAudioChannels, playlistItem.TargetAudioCodec, audioStream);
                 playlistItem.AudioBitrate = Math.Min(playlistItem.AudioBitrate ?? audioBitrate, audioBitrate);
 
                 int? maxBitrateSetting = options.GetMaxBitrate();
@@ -479,17 +479,35 @@ namespace MediaBrowser.Model.Dlna
             return playlistItem;
         }
 
-        private int GetAudioBitrate(int? channels, string codec)
+        private int GetAudioBitrate(int? channels, string outputCodec, MediaStream audioStream)
         {
+            var defaultBitrate = 128000;
+
             if (channels.HasValue)
             {
                 if (channels.Value >= 5)
                 {
-                    return 320000;
+                    defaultBitrate = 320000;
                 }
             }
 
-            return 128000;
+            int encoderAudioBitrateLimit = int.MaxValue;
+
+            if (audioStream != null)
+            {
+                // Seeing webm encoding failures when source has 1 audio channel and 22k bitrate. 
+                // Any attempts to transcode over 64k will fail
+                if (audioStream.Channels.HasValue &&
+                    audioStream.Channels.Value == 1)
+                {
+                    if ((audioStream.BitRate ?? 0) < 64000)
+                    {
+                        encoderAudioBitrateLimit = 64000;
+                    }
+                }
+            }
+
+            return Math.Min(defaultBitrate, encoderAudioBitrateLimit);
         }
 
         private PlayMethod? GetVideoDirectPlayProfile(DeviceProfile profile,

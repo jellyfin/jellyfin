@@ -208,12 +208,19 @@
             profile.ContainerProfiles = [];
 
             var audioConditions = [];
+            var videoAudioAacConditions = [];
+            var videoAudioMp3Conditions = [];
+
             if ($.browser.msie) {
-                audioConditions.push({
+                var channelCondition = {
                     Condition: 'LessThanEqual',
                     Property: 'AudioChannels',
                     Value: '2'
-                });
+                };
+
+                audioConditions.push(channelCondition);
+                videoAudioAacConditions.push(channelCondition);
+                videoAudioMp3Conditions.push(channelCondition);
             }
 
             profile.CodecProfiles = [];
@@ -222,21 +229,36 @@
                 Conditions: audioConditions
             });
 
+            if (videoAudioMp3Conditions.length) {
+                profile.CodecProfiles.push({
+                    Type: 'VideoAudio',
+                    Codec: 'mp3',
+                    Conditions: videoAudioMp3Conditions
+                });
+            }
+
+            videoAudioAacConditions.push({
+                Condition: 'NotEquals',
+                Property: 'AudioProfile',
+                Value: 'LC'
+            });
+
+            videoAudioAacConditions.push({
+                Condition: 'NotEquals',
+                Property: 'AudioProfile',
+                Value: 'HE-AAC'
+            });
+
             profile.CodecProfiles.push({
                 Type: 'VideoAudio',
-                Conditions: audioConditions
+                Codec: 'aac',
+                Conditions: videoAudioAacConditions
             });
 
             profile.CodecProfiles.push({
                 Type: 'Video',
                 Codec: 'h264',
                 Conditions: [
-                {
-                    Condition: 'Equals',
-                    Property: 'IsCabac',
-                    Value: 'true',
-                    IsRequired: false
-                },
                 {
                     Condition: 'NotEquals',
                     Property: 'IsAnamorphic',

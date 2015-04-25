@@ -25,7 +25,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             _fileSystem = fileSystem;
         }
 
-        public Model.MediaInfo.MediaInfo GetMediaInfo(InternalMediaInfoResult data, bool isAudio, string path, MediaProtocol protocol)
+        public Model.MediaInfo.MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType videoType, bool isAudio, string path, MediaProtocol protocol)
         {
             var info = new Model.MediaInfo.MediaInfo
             {
@@ -79,7 +79,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 var videoStream = info.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
-                if (videoStream != null)
+                if (videoStream != null && videoType == VideoType.VideoFile)
                 {
                     UpdateFromMediaInfo(info, videoStream);
                 }
@@ -863,12 +863,14 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void UpdateFromMediaInfo(MediaSourceInfo video, MediaStream videoStream)
         {
-            if (video.VideoType == VideoType.VideoFile && video.Protocol == MediaProtocol.File)
+            if (video.Protocol == MediaProtocol.File)
             {
                 if (videoStream != null)
                 {
                     try
                     {
+                        _logger.Debug("Running MediaInfo against {0}", video.Path);
+
                         var result = new MediaInfoLib().GetVideoInfo(video.Path);
 
                         videoStream.IsCabac = result.IsCabac ?? videoStream.IsCabac;
