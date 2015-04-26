@@ -1426,6 +1426,46 @@ namespace MediaBrowser.Controller.Providers
             return null;
         }
 
+        protected Share GetShare(XmlReader reader)
+        {
+            reader.MoveToContent();
+
+            var item = new Share();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "UserId":
+                            {
+                                item.UserId = reader.ReadElementContentAsString();
+                                break;
+                            }
+
+                        case "CanEdit":
+                            {
+                                item.CanEdit = string.Equals(reader.ReadElementContentAsString(), "true", StringComparison.OrdinalIgnoreCase);
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            // This is valid
+            if (!string.IsNullOrWhiteSpace(item.UserId))
+            {
+                return item;
+            }
+
+            return null;
+        }
+
 
         /// <summary>
         /// Used to split names of comma or pipe delimeted genres and people

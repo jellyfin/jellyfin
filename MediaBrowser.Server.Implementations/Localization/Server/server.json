@@ -803,6 +803,7 @@
     "LabelMaxBitrateHelp": "Specify a max bitrate in bandwidth constrained environments, or if the device imposes it's own limit.",
     "LabelMaxStreamingBitrate": "Max streaming bitrate:",
     "LabelMaxStreamingBitrateHelp": "Specify a max bitrate when streaming.",
+    "LabelMaxChromecastBitrate": "Max Chromecast bitrate:",
     "LabelMaxStaticBitrate": "Max sync bitrate:",
     "LabelMaxStaticBitrateHelp": "Specify a max bitrate when syncing content at high quality.",
     "LabelMusicStaticBitrate": "Music sync bitrate:",

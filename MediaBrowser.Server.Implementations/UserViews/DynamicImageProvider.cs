@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.UserViews
 {
-    public class DynamicImageProvider : BaseDynamicImageProvider<UserView>, IPreRefreshProvider
+    public class DynamicImageProvider : BaseDynamicImageProvider<UserView>
     {
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
