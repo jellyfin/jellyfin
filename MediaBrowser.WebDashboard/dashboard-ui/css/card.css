@@ -284,9 +284,7 @@
     }
 }
 
-
-@media all and (min-width: 640px) {
-
+@media all and (min-width: 700px) {
     .backdropCard {
         width: 33.3%;
     }
@@ -295,7 +293,6 @@
         width: 50%;
     }
 }
-
 
 @media all and (min-width: 800px) {
 
@@ -319,10 +316,6 @@
         width: 20%;
     }
 
-    .backdropCard {
-        width: 25%;
-    }
-
     .smallBackdropCard {
         width: 20%;
     }
@@ -330,6 +323,10 @@
 
 
 @media all and (min-width: 1200px) {
+
+    .backdropCard {
+        width: 25%;
+    }
 
     .squareCard {
         width: 16.666666666666666666666666666667%;
@@ -482,15 +479,6 @@
         width: 25%;
     }
 }
-
-
-@media all and (min-width: 600px) {
-
-    .detailPageSquareCard {
-        width: 20%;
-    }
-}
-
 
 /** homePageSmallBackdropCard */
 .homePageSmallBackdropCard .cardPadder {

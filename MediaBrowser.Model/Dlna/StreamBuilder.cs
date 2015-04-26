@@ -456,7 +456,7 @@ namespace MediaBrowser.Model.Dlna
                     playlistItem.MaxAudioChannels = Math.Min(options.MaxAudioChannels.Value, currentValue);
                 }
 
-                int audioBitrate = GetAudioBitrate(playlistItem.TargetAudioChannels, playlistItem.TargetAudioCodec, audioStream);
+                int audioBitrate = GetAudioBitrate(options.GetMaxBitrate(), playlistItem.TargetAudioChannels, playlistItem.TargetAudioCodec, audioStream);
                 playlistItem.AudioBitrate = Math.Min(playlistItem.AudioBitrate ?? audioBitrate, audioBitrate);
 
                 int? maxBitrateSetting = options.GetMaxBitrate();
@@ -479,13 +479,13 @@ namespace MediaBrowser.Model.Dlna
             return playlistItem;
         }
 
-        private int GetAudioBitrate(int? channels, string outputCodec, MediaStream audioStream)
+        private int GetAudioBitrate(int? maxTotalBitrate, int? targetAudioChannels, string targetAudioCodec, MediaStream audioStream)
         {
             var defaultBitrate = 128000;
 
-            if (channels.HasValue)
+            if (targetAudioChannels.HasValue)
             {
-                if (channels.Value >= 5)
+                if (targetAudioChannels.Value >= 5 && (maxTotalBitrate ?? 0) >= 1500000)
                 {
                     defaultBitrate = 320000;
                 }

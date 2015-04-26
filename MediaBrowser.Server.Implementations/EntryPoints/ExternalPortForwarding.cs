@@ -106,7 +106,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             else
             {
                 // Seeing some blank exceptions coming through here
-                _logger.ErrorException("Error reported by Mono.Nat: ", ex);
+                //_logger.ErrorException("Error reported by Mono.Nat: ", ex);
             }
         }
 

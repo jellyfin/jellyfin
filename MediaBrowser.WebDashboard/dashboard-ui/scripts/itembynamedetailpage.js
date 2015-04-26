@@ -155,49 +155,49 @@
         if (item.MovieCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioMovies" class="context-movies" value="on">';
-            html += '<label for="radioMovies">'+Globalize.translate('TabMovies')+'</label>';
+            html += '<label for="radioMovies">' + Globalize.translate('TabMovies') + '</label>';
         }
 
         if (item.SeriesCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioShows" class="context-tv" value="on">';
-            html += '<label for="radioShows">'+Globalize.translate('TabSeries')+'</label>';
+            html += '<label for="radioShows">' + Globalize.translate('TabSeries') + '</label>';
         }
 
         if (item.EpisodeCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioEpisodes" class="context-tv" value="on">';
-            html += '<label for="radioEpisodes">'+Globalize.translate('TabEpisodes')+'</label>';
+            html += '<label for="radioEpisodes">' + Globalize.translate('TabEpisodes') + '</label>';
         }
 
         if (item.TrailerCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioTrailers" class="context-movies" value="on">';
-            html += '<label for="radioTrailers">'+Globalize.translate('TabTrailers')+'</label>';
+            html += '<label for="radioTrailers">' + Globalize.translate('TabTrailers') + '</label>';
         }
 
         if (item.GameCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioGames" class="context-games" value="on">';
-            html += '<label for="radioGames">'+Globalize.translate('TabGames')+'</label>';
+            html += '<label for="radioGames">' + Globalize.translate('TabGames') + '</label>';
         }
 
         if (item.AlbumCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioAlbums" class="context-music" value="on">';
-            html += '<label for="radioAlbums">'+Globalize.translate('TabAlbums')+'</label>';
+            html += '<label for="radioAlbums">' + Globalize.translate('TabAlbums') + '</label>';
         }
 
         if (item.SongCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioSongs" class="context-music" value="on">';
-            html += '<label for="radioSongs">'+Globalize.translate('TabSongs')+'</label>';
+            html += '<label for="radioSongs">' + Globalize.translate('TabSongs') + '</label>';
         }
 
         if (item.MusicVideoCount) {
 
             html += '<input type="radio" name="ibnItems" id="radioMusicVideos" class="context-music" value="on">';
-            html += '<label for="radioMusicVideos">'+Globalize.translate('TabMusicVideos')+'</label>';
+            html += '<label for="radioMusicVideos">' + Globalize.translate('TabMusicVideos') + '</label>';
         }
 
         html += '</fieldset>';
@@ -385,7 +385,7 @@
         }
     }
 
-    function getItemsFunction(options) {
+    function getQuery(options) {
 
         var query = {
 
@@ -406,6 +406,13 @@
         }
 
         addCurrentItemToQuery(query);
+
+        return query;
+    }
+
+    function getItemsFunction(options) {
+
+        var query = getQuery(options);
 
         return function (index, limit, fields) {
 
@@ -424,27 +431,10 @@
         Dashboard.showLoadingMsg();
 
         _childrenItemsFunction = getItemsFunction(options);
-        var query = {
 
-            SortBy: "SortName",
-            SortOrder: "Ascending",
-            IncludeItemTypes: "",
-            Recursive: true,
-            Fields: "AudioInfo,SeriesInfo,ParentId,PrimaryImageAspectRatio,SyncInfo",
-            Limit: LibraryBrowser.getDefaultPageSize(),
-            StartIndex: 0,
-            CollapseBoxSetItems: false
-        };
+        var query = getQuery(options);
 
-        query = $.extend(query, options || {});
-
-        if (query.IncludeItemTypes == "Audio") {
-            query.SortBy = "AlbumArtist,Album,SortName";
-        }
-
-        addCurrentItemToQuery(query);
-
-        ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
+        getItemsFunction(options)(options.StartIndex, options.Limit, options.Fields).done(function (result) {
 
             var html = '';
 

@@ -1385,6 +1385,27 @@ var Dashboard = {
 
     if (window.ApiClient) {
         Dashboard.importCss(ApiClient.getUrl('Branding/Css'));
+
+        ApiClient.getDefaultImageQuality = function (imageType) {
+
+            var quality = 90;
+            var isBackdrop = imageType.toLowerCase() == 'backdrop';
+
+            if (isBackdrop) {
+                quality -= 10;
+            }
+
+            if ($.browser.safari && $.browser.mobile) {
+
+                quality -= 10;
+
+                if (isBackdrop) {
+                    quality -= 10;
+                }
+            }
+
+            return quality;
+        };
     }
 
 })();

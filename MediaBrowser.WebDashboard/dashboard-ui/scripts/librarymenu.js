@@ -4,6 +4,10 @@
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
+        if ($.browser.safari && $.browser.mobile && window.navigator.standalone) {
+            html += '<a data-rel="back" data-role="none" href="#" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-circle-o-left"></div></a>';
+        }
+
         html += '<button type="button" data-role="none" title="Menu" class="headerButton dashboardMenuButton barsMenuButton headerButtonLeft">';
         html += '<div class="barMenuInner fa fa-bars">';
         html += '</div>';
@@ -68,9 +72,24 @@
         $('.viewMenuBar').trigger('create');
 
         $(document).trigger('headercreated');
+        bindMenuEvents();
+    }
 
-        $('.libraryMenuButton').createHoverTouch().on('hovertouch', showLibraryMenu);
-        $('.dashboardMenuButton').createHoverTouch().on('hovertouch', showDashboardMenu);
+    function bindMenuEvents() {
+
+        if ($.browser.mobile) {
+
+            $('.libraryMenuButton').on('mousedown', function() {
+                showLibraryMenu(false);
+            });
+            $('.dashboardMenuButton').on('mousedown', function () {
+                showDashboardMenu(false);
+            });
+
+        } else {
+            $('.libraryMenuButton').createHoverTouch().on('hovertouch', showLibraryMenu);
+            $('.dashboardMenuButton').createHoverTouch().on('hovertouch', showDashboardMenu);
+        }
     }
 
     function getItemHref(item, context) {

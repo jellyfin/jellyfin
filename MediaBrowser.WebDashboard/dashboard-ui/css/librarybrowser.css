@@ -384,7 +384,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .noBackdrop {
     height: auto;
-    margin: 2.5em 0 0;
+    margin: 3em 0 0;
 }
 
     .noBackdrop .itemBackdropContent {
@@ -633,7 +633,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailSection {
     vertical-align: top;
-    margin-bottom: 2em;
+    margin-bottom: 2.5em;
 }
 
 .detailCollapsibleSection:not(.hide) + .detailCollapsibleSection {
@@ -664,7 +664,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
     .detailSectionHeader, .detailSectionHeader h3 {
-        font-size: 16px;
+        font-size: 17px;
         font-weight: 400;
     }
 
@@ -754,12 +754,36 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 @media all and (max-width: 800px) {
 
-    .editorMenuLink {
-        display: none;
+    .itemBackdrop:not(.noBackdrop) {
+        height: 500px;
     }
+}
+
+@media all and (max-height: 800px), (max-width: 700px) {
+
+    .itemBackdrop:not(.noBackdrop) {
+        height: 400px;
+    }
+}
+
+@media all and (max-height: 700px) {
+
+    .itemBackdrop:not(.noBackdrop) {
+        height: 340px;
+    }
+}
+
+@media all and (max-height: 600px), (max-width: 600px) {
 
     .itemBackdrop:not(.noBackdrop) {
         height: 280px;
+    }
+}
+
+@media all and (max-width: 800px) {
+
+    .editorMenuLink {
+        display: none;
     }
 
     .itemDetailImage {

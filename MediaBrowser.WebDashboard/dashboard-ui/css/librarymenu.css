@@ -12,6 +12,10 @@
     margin: .5em 0;
 }
 
+.headerBackButton {
+    padding-right: 0!important;
+}
+
 .viewMenuBar, .barsMenuButton, .libraryMenuButtonText, .btnCast {
     height: 50px;
 }
@@ -50,7 +54,6 @@
 }
 
 .headerButtonLeft {
-    float: left;
     padding: 0 15px;
 }
 

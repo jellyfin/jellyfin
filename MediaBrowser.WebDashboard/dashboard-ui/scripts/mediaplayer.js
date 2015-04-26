@@ -211,17 +211,19 @@
             var videoAudioAacConditions = [];
             var videoAudioMp3Conditions = [];
 
-            if ($.browser.msie) {
-                var channelCondition = {
-                    Condition: 'LessThanEqual',
-                    Property: 'AudioChannels',
-                    Value: '2'
-                };
+            var maxAudioChannels = $.browser.msie || $.browser.safari ?
+                '2' :
+                '6';
 
-                audioConditions.push(channelCondition);
-                videoAudioAacConditions.push(channelCondition);
-                videoAudioMp3Conditions.push(channelCondition);
-            }
+            var channelCondition = {
+                Condition: 'LessThanEqual',
+                Property: 'AudioChannels',
+                Value: maxAudioChannels
+            };
+
+            audioConditions.push(channelCondition);
+            videoAudioAacConditions.push(channelCondition);
+            videoAudioMp3Conditions.push(channelCondition);
 
             profile.CodecProfiles = [];
             profile.CodecProfiles.push({
