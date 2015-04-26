@@ -50,6 +50,14 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     }
                     break;
 
+                case "Shares":
+
+                    using (var subReader = reader.ReadSubtree())
+                    {
+                        FetchFromSharesNode(subReader, item);
+                    }
+                    break;
+
                 default:
                     base.FetchDataFromXmlNode(reader, item);
                     break;
@@ -91,6 +99,43 @@ namespace MediaBrowser.LocalMetadata.Parsers
             }
 
             item.LinkedChildren = list;
+        }
+
+        private void FetchFromSharesNode(XmlReader reader, Playlist item)
+        {
+            reader.MoveToContent();
+
+            var list = new List<Share>();
+
+            while (reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.Element)
+                {
+                    switch (reader.Name)
+                    {
+                        case "Share":
+                            {
+                                using (var subReader = reader.ReadSubtree())
+                                {
+                                    var child = GetShare(subReader);
+
+                                    if (child != null)
+                                    {
+                                        list.Add(child);
+                                    }
+                                }
+
+                                break;
+                            }
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+            }
+
+            item.Shares = list;
         }
     }
 }
