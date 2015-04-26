@@ -8,10 +8,8 @@ using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public class Game : BaseItem, IHasSoundtracks, IHasTrailers, IHasThemeMedia, IHasTags, IHasScreenshots, ISupportsPlaceHolders, IHasPreferredMetadataLanguage, IHasLookupInfo<GameInfo>
+    public class Game : BaseItem, IHasTrailers, IHasThemeMedia, IHasTags, IHasScreenshots, ISupportsPlaceHolders, IHasPreferredMetadataLanguage, IHasLookupInfo<GameInfo>
     {
-        public List<Guid> SoundtrackIds { get; set; }
-
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
 
@@ -26,7 +24,6 @@ namespace MediaBrowser.Controller.Entities
         public Game()
         {
             MultiPartGameFiles = new List<string>();
-            SoundtrackIds = new List<Guid>();
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
             RemoteTrailerIds = new List<Guid>();

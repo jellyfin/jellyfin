@@ -116,13 +116,14 @@ namespace MediaBrowser.Dlna.Ssdp
             // Seconds to delay response
             values["MX"] = "3";
 
-            SendDatagram("M-SEARCH * HTTP/1.1", values, localIp);
+            // UDP is unreliable, so send 3 requests at a time (per Upnp spec, sec 1.1.2)
+            SendDatagram("M-SEARCH * HTTP/1.1", values, localIp, 1);
         }
 
         public void SendDatagram(string header,
             Dictionary<string, string> values,
             EndPoint localAddress,
-            int sendCount = 1)
+            int sendCount)
         {
             SendDatagram(header, values, _ssdpEndp, localAddress, false, sendCount);
         }
@@ -132,7 +133,7 @@ namespace MediaBrowser.Dlna.Ssdp
             EndPoint endpoint,
             EndPoint localAddress,
             bool ignoreBindFailure,
-            int sendCount = 1)
+            int sendCount)
         {
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
             var queued = false;
