@@ -433,7 +433,7 @@
 
                 var apiClient = self.currentApiClient();
                 if (apiClient && apiClient.getCurrentUserId()) {
-                    apiClient.getUser(apiClient.getCurrentUserId()).done(function (u) {
+                    apiClient.getCurrentUser().done(function (u) {
                         localUser = u;
                     }).always(onLocalUserDone);
                 } else {

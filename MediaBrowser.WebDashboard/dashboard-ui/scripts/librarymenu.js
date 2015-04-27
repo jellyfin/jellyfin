@@ -50,7 +50,7 @@
             var url = user.imageUrl;
 
             if (user.supportsImageParams) {
-                url += "&height=" + userButtonHeight;
+                url += "&height=" + (userButtonHeight * Math.max(devicePixelRatio || 1, 2));
             }
 
             html += '<img src="' + url + '" style="border-radius: 1000px; height:' + userButtonHeight + 'px;" />';
@@ -253,7 +253,7 @@
 
             html += '<div class="sidebarLinks librarySidebarLinks">';
 
-            html += '<a style="margin-top:0;padding-left:1em;display:block;color:#fff;text-decoration:none;font-size:16px;font-weight:400!important;background: #000;" href="mypreferencesdisplay.html?userId=' + Dashboard.getCurrentUserId() + '">';
+            html += '<a style="margin-top:0;padding-left:.6em;display:block;color:#fff;text-decoration:none;font-size:16px;font-weight:400!important;background: #000;" href="mypreferencesdisplay.html?userId=' + Dashboard.getCurrentUserId() + '">';
 
             var imgWidth = 48;
 
@@ -261,10 +261,10 @@
                 var url = user.imageUrl;
 
                 if (user.supportsImageParams) {
-                    url += "&width=" + imgWidth;
+                    url += "&width=" + (imgWidth * Math.max(devicePixelRatio || 1, 2));
                 }
 
-                html += '<img style="max-width:' + imgWidth + 'px;vertical-align:middle;margin-right:.75em;border-radius: 50px;" src="' + url + '" />';
+                html += '<img style="max-width:' + imgWidth + 'px;vertical-align:middle;margin-right:.8em;border-radius: 50px;" src="' + url + '" />';
             }
             html += user.name;
             html += '</a>';

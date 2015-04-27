@@ -54,6 +54,25 @@
             return serverInfo;
         };
 
+        var currentUser;
+        /**
+         * Gets or sets the current user id.
+         */
+        self.getCurrentUser = function () {
+
+            if (currentUser != null) {
+
+                var deferred = DeferredBuilder.Deferred();
+                deferred.resolveWith(null, [currentUser]);
+                return deferred.promise();
+            }
+
+            return self.getUser(self.getCurrentUserId()).done(function (user) {
+
+                currentUser = user;
+            });
+        };
+
         /**
          * Gets or sets the current user id.
          */
@@ -69,6 +88,7 @@
         self.setCurrentUserId = function (userId, token) {
 
             currentUserId = userId;
+            currentUser = null;
             accessToken = token;
         };
 

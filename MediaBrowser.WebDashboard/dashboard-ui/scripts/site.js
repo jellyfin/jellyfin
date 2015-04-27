@@ -583,7 +583,7 @@ var Dashboard = {
                 var url = user.imageUrl;
 
                 if (user.supportsImageParams) {
-                    url += "&width=" + imgWidth;
+                    url += "&width=" + (imgWidth * Math.max(devicePixelRatio || 1, 2));
                 }
 
                 html += '<img style="max-width:' + imgWidth + 'px;vertical-align:middle;margin-right:.5em;border-radius: 50px;" src="' + url + '" />';
