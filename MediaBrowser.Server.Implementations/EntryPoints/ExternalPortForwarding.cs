@@ -75,7 +75,10 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private void Start()
         {
             _logger.Debug("Starting NAT discovery");
-
+            //NatUtility.EnabledProtocols = new List<NatProtocol>
+            //{
+            //    NatProtocol.Pmp
+            //};
             NatUtility.DeviceFound += NatUtility_DeviceFound;
 
             // Mono.Nat does never rise this event. The event is there however it is useless. 

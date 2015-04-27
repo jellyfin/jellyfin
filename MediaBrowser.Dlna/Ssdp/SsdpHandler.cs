@@ -377,11 +377,11 @@ namespace MediaBrowser.Dlna.Ssdp
             }
             foreach (var d in RegisteredDevices)
             {
-                NotifyDevice(d, "alive");
+                NotifyDevice(d, "alive", 1);
             }
         }
 
-        private void NotifyDevice(UpnpDevice dev, string type, int sendCount = 1)
+        private void NotifyDevice(UpnpDevice dev, string type, int sendCount)
         {
             const string header = "NOTIFY * HTTP/1.1";
 

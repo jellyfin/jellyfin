@@ -53,7 +53,11 @@ namespace Emby.Drawing
         private readonly IImageEncoder _imageEncoder;
         private readonly SemaphoreSlim _imageProcessingSemaphore;
 
-        public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IImageEncoder imageEncoder)
+        public ImageProcessor(ILogger logger, 
+            IServerApplicationPaths appPaths, 
+            IFileSystem fileSystem, 
+            IJsonSerializer jsonSerializer, 
+            IImageEncoder imageEncoder)
         {
             _logger = logger;
             _fileSystem = fileSystem;
