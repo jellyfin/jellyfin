@@ -79,7 +79,7 @@
 
         if ($.browser.mobile) {
 
-            $('.libraryMenuButton').on('mousedown', function() {
+            $('.libraryMenuButton').on('mousedown', function () {
                 showLibraryMenu(false);
             });
             $('.dashboardMenuButton').on('mousedown', function () {
@@ -121,13 +121,16 @@
         var page = $.mobile.activePage;
         var panel;
 
-        panel = getLibraryMenu();
-        updateLibraryNavLinks(page);
+        ConnectionManager.user().done(function (user) {
 
-        $(panel).panel('toggle').off('mouseleave.librarymenu').on('mouseleave.librarymenu', function () {
+            panel = getLibraryMenu(user);
+            updateLibraryNavLinks(page);
 
-            $(this).panel("close");
+            $(panel).panel('toggle').off('mouseleave.librarymenu').on('mouseleave.librarymenu', function () {
 
+                $(this).panel("close");
+
+            });
         });
     }
 
@@ -248,13 +251,29 @@
 
             html += '<div data-role="panel" id="libraryPanel" class="libraryPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="b">';
 
-            html += '<div class="sidebarLinks librarySidebarLinks" style="margin-top: 0;margin-left: -1em;margin-right: -1em;">';
+            html += '<div class="sidebarLinks librarySidebarLinks">';
+
+            html += '<a style="margin-top:0;padding-left:1em;display:block;color:#fff;text-decoration:none;font-size:16px;font-weight:400!important;background: #000;" href="mypreferencesdisplay.html?userId=' + Dashboard.getCurrentUserId() + '">';
+
+            var imgWidth = 48;
+
+            if (user.imageUrl) {
+                var url = user.imageUrl;
+
+                if (user.supportsImageParams) {
+                    url += "&width=" + imgWidth;
+                }
+
+                html += '<img style="max-width:' + imgWidth + 'px;vertical-align:middle;margin-right:.75em;border-radius: 50px;" src="' + url + '" />';
+            }
+            html += user.name;
+            html += '</a>';
+
+            html += '<div class="libraryMenuDivider" style="margin-top:0;"></div>';
 
             var homeHref = ConnectionManager.currentApiClient() ? 'index.html' : 'selectserver.html';
 
-            html += '<a class="lnkMediaFolder sidebarLink homeViewMenu" href="' + homeHref + '">' + Globalize.translate('ButtonHome') + '</a>';
-
-            html += '<div class="libraryMenuDivider"></div>';
+            html += '<a class="lnkMediaFolder sidebarLink homeViewMenu" href="' + homeHref + '"><span class="fa fa-home sidebarLinkIcon"></span>' + Globalize.translate('ButtonHome') + '</a>';
 
             html += getViewsHtml();
             html += '</div>';

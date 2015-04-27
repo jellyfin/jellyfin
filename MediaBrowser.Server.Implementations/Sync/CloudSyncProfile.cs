@@ -27,7 +27,7 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
 
             var videoProfile = "high|main|baseline|constrained baseline";
-            var videoLevel = "41";
+            var videoLevel = "40";
 
             DirectPlayProfiles = new[]
             {

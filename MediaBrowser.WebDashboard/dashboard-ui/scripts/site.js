@@ -577,14 +577,16 @@ var Dashboard = {
 
             html += '<h3>';
 
+            var imgWidth = 48;
+
             if (user.imageUrl) {
                 var url = user.imageUrl;
 
                 if (user.supportsImageParams) {
-                    url += "&width=" + 28;
+                    url += "&width=" + imgWidth;
                 }
 
-                html += '<img style="max-width:28px;vertical-align:middle;margin-right:5px;" src="' + url + '" />';
+                html += '<img style="max-width:' + imgWidth + 'px;vertical-align:middle;margin-right:.5em;border-radius: 50px;" src="' + url + '" />';
             }
             html += user.name;
             html += '</h3>';

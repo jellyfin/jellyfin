@@ -146,7 +146,44 @@ namespace MediaBrowser.MediaEncoding.Probing
                 //    string.Equals(stream.AspectRatio, "2.35:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.40:1", StringComparison.OrdinalIgnoreCase);
 
-                stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase);
+                if (string.Equals(streamInfo.sample_aspect_ratio, "1:1", StringComparison.OrdinalIgnoreCase))
+                {
+                    stream.IsAnamorphic = false;
+                }
+                else if (!((string.IsNullOrWhiteSpace(streamInfo.sample_aspect_ratio) || string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))))
+                {
+                    stream.IsAnamorphic = true;
+                }
+                else if (string.IsNullOrWhiteSpace(streamInfo.display_aspect_ratio) || string.Equals(streamInfo.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                {
+                    stream.IsAnamorphic = false;
+                }
+                else
+                {
+                    var ratioParts = streamInfo.display_aspect_ratio.Split(':');
+                    if (ratioParts.Length != 2)
+                    {
+                        stream.IsAnamorphic = false;
+                    }
+                    else
+                    {
+                        int ratio0;
+                        int ratio1;
+                        if (!Int32.TryParse(ratioParts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out ratio0))
+                        {
+                            stream.IsAnamorphic = false;
+                        }
+                        else if (!Int32.TryParse(ratioParts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out ratio1))
+                        {
+                            stream.IsAnamorphic = false;
+                        }
+                        else
+                        {
+                            stream.IsAnamorphic = ((streamInfo.width * ratio1) != (stream.Height * ratio0));
+                        }
+                    }
+                }
+            
             }
             else
             {

@@ -382,6 +382,7 @@ h1 .imageLink {
     font-size: 17px;
     width: 66px;
     text-align: center;
+    vertical-align: middle;
 }
 
 .ui-page-theme-a .sidebarLinkIcon {

@@ -2354,9 +2354,7 @@
                 throw new Error("null userId");
             }
 
-            options = options || {
-
-            };
+            options = options || {};
 
             var url = "Users/" + userId + "/Images/" + options.type;
 
