@@ -325,18 +325,6 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             AttachBasicFields(dto, item, owner, options);
 
-            if (fields.Contains(ItemFields.SoundtrackIds))
-            {
-                var hasSoundtracks = item as IHasSoundtracks;
-
-                if (hasSoundtracks != null)
-                {
-                    dto.SoundtrackIds = hasSoundtracks.SoundtrackIds
-                        .Select(i => i.ToString("N"))
-                        .ToArray();
-                }
-            }
-
             var playlist = item as Playlist;
             if (playlist != null)
             {

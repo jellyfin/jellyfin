@@ -85,6 +85,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 var uri = new Uri(location);
 
+                // TODO: Cache list of non-renderers by url to avoid repeating calls
                 var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger).ConfigureAwait(false);
 
                 if (device.RendererCommands != null)

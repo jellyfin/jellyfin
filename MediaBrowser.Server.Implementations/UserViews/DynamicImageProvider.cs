@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.UserViews
 {
-    public class DynamicImageProvider : BaseDynamicImageProvider<UserView>, IPreRefreshProvider
+    public class DynamicImageProvider : BaseDynamicImageProvider<UserView>
     {
         private readonly IUserManager _userManager;
         private readonly ILibraryManager _libraryManager;
@@ -216,7 +216,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
         }
 
-        protected override bool CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPath, ImageType imageType, int imageIndex)
+        protected override async Task<bool> CreateImage(IHasImages item, List<BaseItem> itemsWithImages, string outputPath, ImageType imageType, int imageIndex)
         {
             var view = (UserView)item;
             if (imageType == ImageType.Primary && IsUsingCollectionStrip(view))
@@ -226,11 +226,11 @@ namespace MediaBrowser.Server.Implementations.UserViews
                     return false;
                 }
 
-                CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540, false, item.Name);
+                await CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540, false, item.Name).ConfigureAwait(false);
                 return true;
             }
 
-            return base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex);
+            return await base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex).ConfigureAwait(false);
         }
 
         protected override IEnumerable<String> GetStripCollageImagePaths(IHasImages primaryItem, IEnumerable<BaseItem> items)

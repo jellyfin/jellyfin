@@ -360,7 +360,7 @@ namespace MediaBrowser.Providers.Manager
             // If replacing all metadata, run internet providers first
             if (options.ReplaceAllMetadata)
             {
-                var remoteResult = await ExecuteRemoteProviders(item, temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
+                var remoteResult = await ExecuteRemoteProviders(temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);
 
                 refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
@@ -372,9 +372,8 @@ namespace MediaBrowser.Providers.Manager
 
             var hasLocalMetadata = false;
             var userDataList = new List<UserItemData>();
-            var localProviders = providers.OfType<ILocalMetadataProvider<TItemType>>().ToList();
 
-            foreach (var provider in localProviders)
+            foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>().ToList())
             {
                 var providerName = provider.GetType().Name;
                 Logger.Debug("Running {0} for {1}", providerName, logName);
@@ -433,7 +432,7 @@ namespace MediaBrowser.Providers.Manager
             // Local metadata is king - if any is found don't run remote providers
             if (!options.ReplaceAllMetadata && (!hasLocalMetadata || options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh))
             {
-                var remoteResult = await ExecuteRemoteProviders(item, temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
+                var remoteResult = await ExecuteRemoteProviders(temp, logName, id, providers.OfType<IRemoteMetadataProvider<TItemType, TIdType>>(), cancellationToken)
                     .ConfigureAwait(false);
 
                 refreshResult.UpdateType = refreshResult.UpdateType | remoteResult.UpdateType;
@@ -447,17 +446,15 @@ namespace MediaBrowser.Providers.Manager
 
             if (providers.Any(i => !(i is ICustomMetadataProvider)))
             {
-                // If no local providers and doing a full refresh, take data from item itself
-                if (options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh &&
-                    localProviders.Count == 0 &&
-                    refreshResult.UpdateType > ItemUpdateType.None)
-                {
-                    // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
-                    MergeData(item, temp, new List<MetadataFields>(), false, true);
-                }
-
                 if (refreshResult.UpdateType > ItemUpdateType.None)
                 {
+                    // If no local metadata, take data from item itself
+                    if (!hasLocalMetadata)
+                    {
+                        // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
+                        MergeData(item, temp, new List<MetadataFields>(), false, true);
+                    }
+
                     MergeData(temp, item, item.LockedFields, true, true);
                 }
             }
@@ -529,7 +526,7 @@ namespace MediaBrowser.Providers.Manager
             return new TItemType();
         }
 
-        private async Task<RefreshResult> ExecuteRemoteProviders(TItemType item, TItemType temp, string logName, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
+        private async Task<RefreshResult> ExecuteRemoteProviders(TItemType temp, string logName, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
         {
             var refreshResult = new RefreshResult();
 

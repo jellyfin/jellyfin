@@ -185,8 +185,6 @@ namespace MediaBrowser.Model.Configuration
 
         public MetadataOptions[] MetadataOptions { get; set; }
 
-        public string TranscodingTempPath { get; set; }
-
         public bool EnableAutomaticRestart { get; set; }
 
         public bool EnableRealtimeMonitor { get; set; }

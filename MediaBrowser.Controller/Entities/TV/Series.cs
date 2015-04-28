@@ -15,10 +15,9 @@ namespace MediaBrowser.Controller.Entities.TV
     /// <summary>
     /// Class Series
     /// </summary>
-    public class Series : Folder, IHasSoundtracks, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IHasSpecialFeatures, IMetadataContainer, IHasOriginalTitle
+    public class Series : Folder, IHasTrailers, IHasDisplayOrder, IHasLookupInfo<SeriesInfo>, IHasSpecialFeatures, IMetadataContainer, IHasOriginalTitle
     {
         public List<Guid> SpecialFeatureIds { get; set; }
-        public List<Guid> SoundtrackIds { get; set; }
 
         public string OriginalTitle { get; set; }
         public int SeasonCount { get; set; }
@@ -30,7 +29,6 @@ namespace MediaBrowser.Controller.Entities.TV
             AirDays = new List<DayOfWeek>();
 
             SpecialFeatureIds = new List<Guid>();
-            SoundtrackIds = new List<Guid>();
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
             RemoteTrailerIds = new List<Guid>();

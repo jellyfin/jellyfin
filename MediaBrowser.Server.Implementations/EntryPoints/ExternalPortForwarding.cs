@@ -75,7 +75,10 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private void Start()
         {
             _logger.Debug("Starting NAT discovery");
-
+            //NatUtility.EnabledProtocols = new List<NatProtocol>
+            //{
+            //    NatProtocol.Pmp
+            //};
             NatUtility.DeviceFound += NatUtility_DeviceFound;
 
             // Mono.Nat does never rise this event. The event is there however it is useless. 
@@ -88,7 +91,7 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             NatUtility.UnhandledException += NatUtility_UnhandledException;
             NatUtility.StartDiscovery();
 
-            _timer = new Timer(s => _createdRules = new List<string>(), null, TimeSpan.FromMinutes(3), TimeSpan.FromMinutes(3));
+            _timer = new Timer(s => _createdRules = new List<string>(), null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
 
             _lastConfigIdentifier = GetConfigIdentifier();
 
@@ -97,17 +100,17 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
         void NatUtility_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            //var ex = e.ExceptionObject as Exception;
+            var ex = e.ExceptionObject as Exception;
 
-            //if (ex == null)
-            //{
-            //    _logger.Error("Unidentified error reported by Mono.Nat");
-            //}
-            //else
-            //{
-            //    // Seeing some blank exceptions coming through here
-            //    _logger.ErrorException("Error reported by Mono.Nat: ", ex);
-            //}
+            if (ex == null)
+            {
+                //_logger.Error("Unidentified error reported by Mono.Nat");
+            }
+            else
+            {
+                // Seeing some blank exceptions coming through here
+                //_logger.ErrorException("Error reported by Mono.Nat: ", ex);
+            }
         }
 
         void NatUtility_DeviceFound(object sender, DeviceEventArgs e)
