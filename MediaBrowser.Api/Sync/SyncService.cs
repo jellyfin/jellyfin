@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Sync;
@@ -229,6 +230,11 @@ namespace MediaBrowser.Api.Sync
         public object Get(GetSyncJobItemFile request)
         {
             var jobItem = _syncManager.GetJobItem(request.Id);
+
+            if (jobItem == null)
+            {
+                throw new ResourceNotFoundException();
+            }
 
             if (jobItem.Status < SyncJobItemStatus.ReadyToTransfer)
             {

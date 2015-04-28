@@ -379,36 +379,6 @@
             return false;
         };
 
-        self.getVideoTranscodingExtension = function (currentSrc) {
-
-            if (currentSrc) {
-                return self.getCurrentMediaExtension(currentSrc);
-            }
-
-            // safari
-            if (self.canPlayHls()) {
-                return '.m3u8';
-            }
-
-            // Chrome, Firefox or IE with plugin installed
-            // For some reason in chrome pausing mp4 is causing the video to fail. 
-            // So for now it will have to prioritize webm
-            if (self.canPlayWebm()) {
-
-                if ($.browser.msie) {
-                    return '.webm';
-                }
-                if ($.browser.chrome) {
-                    return '.webm';
-                }
-
-                // Firefox suddenly having trouble with our webm
-                return '.webm';
-            }
-
-            return '.mp4';
-        };
-
         self.changeStream = function (ticks, params) {
 
             var element = self.currentMediaElement;
@@ -895,10 +865,7 @@
 
             if (item.MediaType === "Video") {
 
-                self.currentMediaElement = self.playVideo(item, self.currentMediaSource, startPosition);
-                self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
-
-                self.updateNowPlayingInfo(item);
+                self.playVideo(item, self.currentMediaSource, startPosition);
 
             } else if (item.MediaType === "Audio") {
 
