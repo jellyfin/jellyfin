@@ -130,8 +130,8 @@
 }
 
 /* Hack for safari because it doesn't allow clickable content over the video surface. */
-.itemVideo { (;top: 9%!important;height: 91% !important;); }
-.itemVideo { [;top: 9%!important;height: 91% !important;]; }
+/*.itemVideo { (;top: 9%!important;height: 91% !important;); }
+.itemVideo { [;top: 9%!important;height: 91% !important;]; }*/
 
 #mediaPlayer .ui-slider-track, .nowPlayingBar .ui-slider-track, .nowPlayingPage .ui-slider-track {
     border-color: #2ad !important;

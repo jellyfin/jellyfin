@@ -69,9 +69,6 @@
 
             ApiClient.reportPlaybackStopped(stopInfo);
 
-        }).on('positionchange.mediacontroller', function (e, state) {
-
-
         });
     }
 

@@ -111,6 +111,10 @@ namespace MediaBrowser.Model.Dlna
             XmlRootAttributes = new XmlAttribute[] { };
             
             SupportedMediaTypes = "Audio,Photo,Video";
+            MaxStreamingBitrate = 8000000;
+            MaxStaticBitrate = 8000000;
+            MusicStreamingTranscodingBitrate = 128000;
+            MusicSyncBitrate = 128000;
         }
 
         public List<string> GetSupportedMediaTypes()

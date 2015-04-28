@@ -47,12 +47,13 @@ namespace MediaBrowser.Dlna.Ssdp
 
                 if (!network.SupportsMulticast || OperationalStatus.Up != network.OperationalStatus || !network.GetIPProperties().MulticastAddresses.Any())
                     continue;
-                
-                var ipV4 = network.GetIPProperties().GetIPv4Properties();
+
+                var properties = network.GetIPProperties();
+                var ipV4 = properties.GetIPv4Properties();
                 if (null == ipV4)
                     continue;
 
-                var localIps = network.GetIPProperties().UnicastAddresses
+                var localIps = properties.UnicastAddresses
                     .Where(i => i.Address.AddressFamily == AddressFamily.InterNetwork)
                     .Select(i => i.Address)
                     .ToList();

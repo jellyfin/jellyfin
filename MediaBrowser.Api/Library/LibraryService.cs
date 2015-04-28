@@ -591,7 +591,7 @@ namespace MediaBrowser.Api.Library
                 ThemeSongsResult = themeSongs,
                 ThemeVideosResult = themeVideos,
 
-                SoundtrackSongsResult = GetSoundtrackSongs(request, request.Id, request.UserId, request.InheritFromParent)
+                SoundtrackSongsResult = new ThemeMediaResult()
             });
         }
 
@@ -788,54 +788,6 @@ namespace MediaBrowser.Api.Library
                 .ToList();
 
             return ToOptimizedSerializedResultUsingCache(lookup);
-        }
-
-        public ThemeMediaResult GetSoundtrackSongs(GetThemeMedia request, string id, Guid? userId, bool inheritFromParent)
-        {
-            var user = userId.HasValue ? _userManager.GetUserById(userId.Value) : null;
-
-            var item = string.IsNullOrEmpty(id)
-                           ? (userId.HasValue
-                                  ? user.RootFolder
-                                  : _libraryManager.RootFolder)
-                           : _libraryManager.GetItemById(id);
-
-            var dtoOptions = GetDtoOptions(request);
-
-            var dtos = GetSoundtrackSongIds(item, inheritFromParent)
-                .Select(_libraryManager.GetItemById)
-                .OfType<MusicAlbum>()
-                .SelectMany(i => i.GetRecursiveChildren(a => a is Audio))
-                .OrderBy(i => i.SortName)
-                .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
-
-            var items = dtos.ToArray();
-
-            return new ThemeMediaResult
-            {
-                Items = items,
-                TotalRecordCount = items.Length,
-                OwnerId = _dtoService.GetDtoId(item)
-            };
-        }
-
-        private IEnumerable<Guid> GetSoundtrackSongIds(BaseItem item, bool inherit)
-        {
-            var hasSoundtracks = item as IHasSoundtracks;
-
-            if (hasSoundtracks != null)
-            {
-                return hasSoundtracks.SoundtrackIds;
-            }
-
-            if (!inherit)
-            {
-                return new List<Guid>();
-            }
-
-            hasSoundtracks = item.Parents.OfType<IHasSoundtracks>().FirstOrDefault();
-
-            return hasSoundtracks != null ? hasSoundtracks.SoundtrackIds : new List<Guid>();
         }
     }
 }

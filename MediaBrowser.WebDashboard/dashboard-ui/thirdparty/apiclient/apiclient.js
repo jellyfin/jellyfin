@@ -54,6 +54,25 @@
             return serverInfo;
         };
 
+        var currentUser;
+        /**
+         * Gets or sets the current user id.
+         */
+        self.getCurrentUser = function () {
+
+            if (currentUser != null) {
+
+                var deferred = DeferredBuilder.Deferred();
+                deferred.resolveWith(null, [currentUser]);
+                return deferred.promise();
+            }
+
+            return self.getUser(self.getCurrentUserId()).done(function (user) {
+
+                currentUser = user;
+            });
+        };
+
         /**
          * Gets or sets the current user id.
          */
@@ -69,6 +88,7 @@
         self.setCurrentUserId = function (userId, token) {
 
             currentUserId = userId;
+            currentUser = null;
             accessToken = token;
         };
 
@@ -2305,6 +2325,10 @@
             });
         };
 
+        self.getDefaultImageQuality = function (imageType) {
+            return imageType.toLowerCase() == 'backdrop' ? 80 : 90;
+        };
+
         function normalizeImageOptions(options) {
 
             var ratio = devicePixelRatio || 1;
@@ -2329,7 +2353,7 @@
                 }
             }
 
-            options.quality = options.quality || (options.type.toLowerCase() == 'backdrop' ? 80 : 90);
+            options.quality = options.quality || self.getDefaultImageQuality(options.type);
         }
 
         /**
@@ -2350,9 +2374,7 @@
                 throw new Error("null userId");
             }
 
-            options = options || {
-
-            };
+            options = options || {};
 
             var url = "Users/" + userId + "/Images/" + options.type;
 

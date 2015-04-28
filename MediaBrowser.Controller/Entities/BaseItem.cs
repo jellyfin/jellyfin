@@ -491,6 +491,17 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        /// <summary>
+        /// Finds a parent of a given type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>``0.</returns>
+        public T FindParent<T>()
+            where T : Folder
+        {
+            return Parents.OfType<T>().FirstOrDefault();
+        }
+
         [IgnoreDataMember]
         public virtual BaseItem DisplayParent
         {
@@ -1455,30 +1466,6 @@ namespace MediaBrowser.Controller.Entities
         {
             ProviderManager.QueueRefresh(Id, new MetadataRefreshOptions());
             return Task.FromResult(true);
-        }
-
-        /// <summary>
-        /// Finds a parent of a given type
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>``0.</returns>
-        public T FindParent<T>()
-            where T : Folder
-        {
-            var parent = Parent;
-
-            while (parent != null)
-            {
-                var result = parent as T;
-                if (result != null)
-                {
-                    return result;
-                }
-
-                parent = parent.Parent;
-            }
-
-            return null;
         }
 
         /// <summary>

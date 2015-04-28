@@ -159,10 +159,12 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     var text = reader.ReadToEnd();
 
-                    var newDuration = "#EXT-X-TARGETDURATION:" + segmentLength.ToString(UsCulture) + Environment.NewLine + "#EXT-X-ALLOW-CACHE:NO";
+                    var newDuration = "#EXT-X-TARGETDURATION:" + segmentLength.ToString(UsCulture);
 
                     // ffmpeg pads the reported length by a full second
-                    return text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(UsCulture), newDuration, StringComparison.OrdinalIgnoreCase);
+                    text = text.Replace("#EXT-X-TARGETDURATION:" + (segmentLength + 1).ToString(UsCulture), newDuration, StringComparison.OrdinalIgnoreCase);
+
+                    return text;
                 }
             }
         }

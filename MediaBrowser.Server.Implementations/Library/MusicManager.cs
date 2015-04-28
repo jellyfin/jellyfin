@@ -34,7 +34,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var genres = user.RootFolder
                 .GetRecursiveChildren(user, i => i is Audio)
                 .Cast<Audio>()
-                .Where(i => i.HasAnyArtist(name))
+                .Where(i => i.HasAnyArtist(artist.Name))
                 .SelectMany(i => i.Genres)
                 .Concat(artist.Genres)
                 .Distinct(StringComparer.OrdinalIgnoreCase);
@@ -49,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.Library
                .Cast<Audio>()
                .SelectMany(i => i.Genres)
                .Concat(item.Genres)
-               .Distinct(StringComparer.OrdinalIgnoreCase);
+               .DistinctNames();
 
             return GetInstantMixFromGenres(genres, user);
         }
@@ -61,7 +61,7 @@ namespace MediaBrowser.Server.Implementations.Library
                .Cast<Audio>()
                .SelectMany(i => i.Genres)
                .Concat(item.Genres)
-               .Distinct(StringComparer.OrdinalIgnoreCase);
+               .DistinctNames();
 
             return GetInstantMixFromGenres(genres, user);
         }

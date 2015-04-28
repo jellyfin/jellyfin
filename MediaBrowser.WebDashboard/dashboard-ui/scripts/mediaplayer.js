@@ -208,13 +208,22 @@
             profile.ContainerProfiles = [];
 
             var audioConditions = [];
-            if ($.browser.msie) {
-                audioConditions.push({
-                    Condition: 'LessThanEqual',
-                    Property: 'AudioChannels',
-                    Value: '2'
-                });
-            }
+            var videoAudioAacConditions = [];
+            var videoAudioMp3Conditions = [];
+
+            var maxAudioChannels = $.browser.msie || $.browser.safari ?
+                '2' :
+                '6';
+
+            var channelCondition = {
+                Condition: 'LessThanEqual',
+                Property: 'AudioChannels',
+                Value: maxAudioChannels
+            };
+
+            audioConditions.push(channelCondition);
+            videoAudioAacConditions.push(channelCondition);
+            videoAudioMp3Conditions.push(channelCondition);
 
             profile.CodecProfiles = [];
             profile.CodecProfiles.push({
@@ -222,21 +231,36 @@
                 Conditions: audioConditions
             });
 
+            if (videoAudioMp3Conditions.length) {
+                profile.CodecProfiles.push({
+                    Type: 'VideoAudio',
+                    Codec: 'mp3',
+                    Conditions: videoAudioMp3Conditions
+                });
+            }
+
+            videoAudioAacConditions.push({
+                Condition: 'NotEquals',
+                Property: 'AudioProfile',
+                Value: 'LC'
+            });
+
+            videoAudioAacConditions.push({
+                Condition: 'NotEquals',
+                Property: 'AudioProfile',
+                Value: 'HE-AAC'
+            });
+
             profile.CodecProfiles.push({
                 Type: 'VideoAudio',
-                Conditions: audioConditions
+                Codec: 'aac',
+                Conditions: videoAudioAacConditions
             });
 
             profile.CodecProfiles.push({
                 Type: 'Video',
                 Codec: 'h264',
                 Conditions: [
-                {
-                    Condition: 'Equals',
-                    Property: 'IsCabac',
-                    Value: 'true',
-                    IsRequired: false
-                },
                 {
                     Condition: 'NotEquals',
                     Property: 'IsAnamorphic',
@@ -353,36 +377,6 @@
             }
 
             return false;
-        };
-
-        self.getVideoTranscodingExtension = function (currentSrc) {
-
-            if (currentSrc) {
-                return self.getCurrentMediaExtension(currentSrc);
-            }
-
-            // safari
-            if (self.canPlayHls()) {
-                return '.m3u8';
-            }
-
-            // Chrome, Firefox or IE with plugin installed
-            // For some reason in chrome pausing mp4 is causing the video to fail. 
-            // So for now it will have to prioritize webm
-            if (self.canPlayWebm()) {
-
-                if ($.browser.msie) {
-                    return '.webm';
-                }
-                if ($.browser.chrome) {
-                    return '.webm';
-                }
-
-                // Firefox suddenly having trouble with our webm
-                return '.webm';
-            }
-
-            return '.mp4';
         };
 
         self.changeStream = function (ticks, params) {
@@ -871,10 +865,7 @@
 
             if (item.MediaType === "Video") {
 
-                self.currentMediaElement = self.playVideo(item, self.currentMediaSource, startPosition);
-                self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
-
-                self.updateNowPlayingInfo(item);
+                self.playVideo(item, self.currentMediaSource, startPosition);
 
             } else if (item.MediaType === "Audio") {
 

@@ -101,9 +101,22 @@ namespace MediaBrowser.Server.Implementations.Configuration
         /// </summary>
         private void UpdateMetadataPath()
         {
-            ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = string.IsNullOrEmpty(Configuration.MetadataPath) ?
-                GetInternalMetadataPath() :
-                Configuration.MetadataPath;
+            string metadataPath;
+
+            if (string.IsNullOrWhiteSpace(Configuration.MetadataPath))
+            {
+                metadataPath = GetInternalMetadataPath();
+            }
+            else if (Configuration.EnableCustomPathSubFolders)
+            {
+                metadataPath = Path.Combine(Configuration.MetadataPath, "metadata");
+            }
+            else
+            {
+                metadataPath = Configuration.MetadataPath;
+            }
+
+            ((ServerApplicationPaths)ApplicationPaths).InternalMetadataPath = metadataPath;
 
             if (Configuration.MergeMetadataAndImagesByName)
             {
@@ -130,7 +143,7 @@ namespace MediaBrowser.Server.Implementations.Configuration
 
             ((ServerApplicationPaths)ApplicationPaths).TranscodingTempPath = string.IsNullOrEmpty(encodingConfig.TranscodingTempPath) ?
                 null :
-                encodingConfig.TranscodingTempPath;
+                Path.Combine(encodingConfig.TranscodingTempPath, "transcoding-temp");
         }
 
         protected override void OnNamedConfigurationUpdated(string key, object configuration)

@@ -325,10 +325,11 @@ namespace MediaBrowser.Api.Playback
         private int? GetMaxBitrate(int? clientMaxBitrate)
         {
             var maxBitrate = clientMaxBitrate;
+            var remoteClientMaxBitrate = _config.Configuration.RemoteClientBitrateLimit;
 
-            if (_config.Configuration.RemoteClientBitrateLimit > 0 && !_networkManager.IsInLocalNetwork(Request.RemoteIp))
+            if (remoteClientMaxBitrate > 0 && !_networkManager.IsInLocalNetwork(Request.RemoteIp))
             {
-                maxBitrate = Math.Min(maxBitrate ?? _config.Configuration.RemoteClientBitrateLimit, _config.Configuration.RemoteClientBitrateLimit);
+                maxBitrate = Math.Min(maxBitrate ?? remoteClientMaxBitrate, remoteClientMaxBitrate);
             }
 
             return maxBitrate;

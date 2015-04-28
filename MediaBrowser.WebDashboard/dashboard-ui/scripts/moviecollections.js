@@ -400,7 +400,7 @@
         // The button is created dynamically
         $(page).on('click', '.btnNewCollection', function () {
 
-            showCollectionPanel(page, []);
+            showCollectionPanel([]);
         });
     });
 
