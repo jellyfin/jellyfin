@@ -1885,6 +1885,14 @@
             Validates the configuration.
             </summary>
         </member>
+        <member name="P:NLog.Config.LoggingConfiguration.Variables">
+            <summary>
+            Gets the variables defined in the configuration.
+            </summary>
+            <remarks>
+            Returns null if not configured using XML configuration.
+            </remarks>
+        </member>
         <member name="P:NLog.Config.LoggingConfiguration.ConfiguredNamedTargets">
             <summary>
             Gets a collection of named targets specified in the configuration.
@@ -3732,66 +3740,6 @@
             </summary>
         </member>
         <member name="T:NLog.Internal.MySmtpClient">
-            <summary>
-            Supports mocking of SMTP Client code.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MySmtpClient.Dispose">
-            <summary>
-            Sends a QUIT message to the SMTP server, gracefully ends the TCP connection, and releases all resources used by the current instance of the <see cref="T:System.Net.Mail.SmtpClient"/> class.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MySmtpClient.NLog#Internal#ISmtpClient#get_Host">
-            <summary>
-            Supports mocking of SMTP Client code.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MySmtpClient.NLog#Internal#ISmtpClient#set_Host(System.String)">
-            <summary>
-            Supports mocking of SMTP Client code.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MySmtpClient.NLog#Internal#ISmtpClient#get_Port">
-            <summary>
-            Supports mocking of SMTP Client code.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MySmtpClient.NLog#Internal#ISmtpClient#set_Port(System.Int32)">
-            <summary>
-            Supports mocking of SMTP Client code.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MySmtpClient.NLog#Internal#ISmtpClient#get_Timeout">
-            <summary>
-            Supports mocking of SMTP Client code.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MySmtpClient.NLog#Internal#ISmtpClient#set_Timeout(System.Int32)">
-            <summary>
-            Supports mocking of SMTP Client code.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MySmtpClient.NLog#Internal#ISmtpClient#get_Credentials">
-            <summary>
-            Supports mocking of SMTP Client code.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MySmtpClient.NLog#Internal#ISmtpClient#set_Credentials(System.Net.ICredentialsByHost)">
-            <summary>
-            Supports mocking of SMTP Client code.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MySmtpClient.NLog#Internal#ISmtpClient#get_EnableSsl">
-            <summary>
-            Supports mocking of SMTP Client code.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MySmtpClient.NLog#Internal#ISmtpClient#set_EnableSsl(System.Boolean)">
-            <summary>
-            Supports mocking of SMTP Client code.
-            </summary>
-        </member>
-        <member name="M:NLog.Internal.MySmtpClient.NLog#Internal#ISmtpClient#Send(System.Net.Mail.MailMessage)">
             <summary>
             Supports mocking of SMTP Client code.
             </summary>
@@ -10097,6 +10045,27 @@
             Implementation of logging engine.
             </summary>
         </member>
+        <member name="M:NLog.LoggerImpl.FindCallingMethodOnStackTrace(System.Diagnostics.StackTrace,System.Type)">
+            <summary>
+             Finds first user stack frame in a stack trace
+            </summary>
+            <param name="stackTrace">The stack trace of the logging method invocation</param>
+            <param name="loggerType">Type of the logger or logger wrapper</param>
+            <returns>Index of the first user stack frame or 0 if all stack frames are non-user</returns>
+            <seealso cref="M:NLog.LoggerImpl.IsNonUserStackFrame(System.Reflection.MethodBase,System.Type)"/>
+        </member>
+        <member name="M:NLog.LoggerImpl.IsNonUserStackFrame(System.Reflection.MethodBase,System.Type)">
+            <summary>
+             Defines whether a stack frame belongs to non-user code
+            </summary>
+            <param name="method">Method of the stack frame</param>
+            <param name="loggerType">Type of the logger or logger wrapper</param>
+            <returns><see langword="true"/>, if the method is from non-user code and should be skipped</returns>
+            <remarks>
+             The method is classified as non-user if its declaring assembly is from hidden assemblies list
+             or its declaring type is <paramref name="loggerType"/> or one of its subtypes.
+            </remarks>
+        </member>
         <member name="M:NLog.LoggerImpl.GetFilterResult(System.Collections.Generic.IEnumerable{NLog.Filters.Filter},NLog.LogEventInfo)">
             <summary>
             Gets the filter result.
@@ -13195,6 +13164,7 @@
             <summary>
             Gets or sets a value indicating the SMTP client timeout.
             </summary>
+            <remarks>Warning: zero is not infinit waiting</remarks>
         </member>
         <member name="T:NLog.Targets.MemoryTarget">
             <summary>

@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Model.Logging;
 using System;
@@ -16,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Dlna.Ssdp
 {
-    public class SsdpHandler : IDisposable
+    public class SsdpHandler : IDisposable, ISsdpHandler
     {
         private Socket _socket;
 
@@ -39,13 +41,39 @@ namespace MediaBrowser.Dlna.Ssdp
         private bool _isDisposed;
         private readonly ConcurrentDictionary<Guid, List<UpnpDevice>> _devices = new ConcurrentDictionary<Guid, List<UpnpDevice>>();
 
-        public SsdpHandler(ILogger logger, IServerConfigurationManager config, string serverSignature)
+        private readonly IApplicationHost _appHost;
+
+        public SsdpHandler(ILogger logger, IServerConfigurationManager config, IApplicationHost appHost)
         {
             _logger = logger;
             _config = config;
-            _serverSignature = serverSignature;
+            _appHost = appHost;
 
             _config.NamedConfigurationUpdated += _config_ConfigurationUpdated;
+            _serverSignature = GenerateServerSignature();
+        }
+
+        private string GenerateServerSignature()
+        {
+            var os = Environment.OSVersion;
+            var pstring = os.Platform.ToString();
+            switch (os.Platform)
+            {
+                case PlatformID.Win32NT:
+                case PlatformID.Win32S:
+                case PlatformID.Win32Windows:
+                    pstring = "WIN";
+                    break;
+            }
+
+            return String.Format(
+              "{0}{1}/{2}.{3} UPnP/1.0 DLNADOC/1.5 MediaBrowser/{4}",
+              pstring,
+              IntPtr.Size * 8,
+              os.Version.Major,
+              os.Version.Minor,
+              _appHost.ApplicationVersion
+              );
         }
 
         void _config_ConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
