@@ -100,7 +100,19 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <returns>System.String.</returns>
         protected override string CreateUserDataKey()
         {
-            return this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? base.CreateUserDataKey();
+            var key = this.GetProviderId(MetadataProviders.Tmdb);
+
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                key = this.GetProviderId(MetadataProviders.Imdb);
+            }
+
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                key = base.CreateUserDataKey();
+            }
+
+            return key;
         }
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)
