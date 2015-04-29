@@ -61,7 +61,7 @@ namespace MediaBrowser.Controller.Entities.TV
         /// airdate, dvd or absolute
         /// </summary>
         public string DisplayOrder { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the status.
         /// </summary>
@@ -113,7 +113,19 @@ namespace MediaBrowser.Controller.Entities.TV
         /// <returns>System.String.</returns>
         protected override string CreateUserDataKey()
         {
-            return this.GetProviderId(MetadataProviders.Tvdb) ?? this.GetProviderId(MetadataProviders.Tvcom) ?? base.CreateUserDataKey();
+            var key = this.GetProviderId(MetadataProviders.Tvdb);
+
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                key = this.GetProviderId(MetadataProviders.Imdb);
+            }
+
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                key = base.CreateUserDataKey();
+            }
+
+            return key;
         }
 
         /// <summary>
@@ -188,7 +200,7 @@ namespace MediaBrowser.Controller.Entities.TV
         public IEnumerable<Episode> GetEpisodes(User user)
         {
             var config = user.Configuration;
-            
+
             return GetEpisodes(user, config.DisplayMissingEpisodes, config.DisplayUnairedEpisodes);
         }
 
