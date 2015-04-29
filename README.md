@@ -7,9 +7,10 @@ It features a REST-based api with built-in documention to facilitate client deve
 
 ## Emby Apps
 
-- [Android (Play Store)](https://play.google.com/store/apps/details?id=com.mb.android "Android (Play Store)")
-- [Android (Amazon)](http://www.amazon.com/Emby-for-Android/dp/B00GVH9O0I "Android (Amazon)")
+- [Android Mobile (Play Store)](https://play.google.com/store/apps/details?id=com.mb.android "Android Mobile (Play Store)")
+- [Android Mobile (Amazon)](http://www.amazon.com/Emby-for-Android/dp/B00GVH9O0I "Android Mobile (Amazon)")
 - [Android TV](https://play.google.com/store/apps/details?id=tv.emby.embyatv "Android TV")
+- [Amazon Fire TV](http://www.amazon.com/Emby-for-Fire-TV/dp/B00VVJKTW8 "Amazon Fire TV")
 - [HTML5](http://app.emby.media "HTML5")
 - [iPad](https://itunes.apple.com/us/app/media-browser-client/id879475585 "iPad")
 - [iPhone](https://itunes.apple.com/us/app/media-browser-for-ios/id705058087?mt=8 "iPhone")
@@ -20,7 +21,6 @@ It features a REST-based api with built-in documention to facilitate client deve
 - [Windows Media Center](http://emby.media/download/ "Windows Media Center")
 - [Windows Phone](http://www.windowsphone.com/s?appid=f4971ed9-f651-4bf6-84bb-94fd98613b86 "Windows Phone")
 - [Windows 8](http://apps.microsoft.com/windows/en-us/app/media-browser/ad55a2f0-9897-47bd-8944-bed3aefd5d06 "Windows 8.1")
-
 
 ## New Users ##
 
