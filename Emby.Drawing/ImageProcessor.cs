@@ -53,11 +53,12 @@ namespace Emby.Drawing
         private readonly IImageEncoder _imageEncoder;
         private readonly SemaphoreSlim _imageProcessingSemaphore;
 
-        public ImageProcessor(ILogger logger, 
-            IServerApplicationPaths appPaths, 
-            IFileSystem fileSystem, 
-            IJsonSerializer jsonSerializer, 
-            IImageEncoder imageEncoder)
+        public ImageProcessor(ILogger logger,
+            IServerApplicationPaths appPaths,
+            IFileSystem fileSystem,
+            IJsonSerializer jsonSerializer,
+            IImageEncoder imageEncoder,
+            int maxConcurrentImageProcesses)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -93,8 +94,8 @@ namespace Emby.Drawing
             }
 
             _cachedImagedSizes = new ConcurrentDictionary<Guid, ImageSize>(sizeDictionary);
-            var count = Environment.ProcessorCount;
-            _imageProcessingSemaphore = new SemaphoreSlim(count, count);
+            _logger.Info("ImageProcessor started with {0} max concurrent image processes", maxConcurrentImageProcesses);
+            _imageProcessingSemaphore = new SemaphoreSlim(maxConcurrentImageProcesses, maxConcurrentImageProcesses);
         }
 
         public string[] SupportedInputFormats

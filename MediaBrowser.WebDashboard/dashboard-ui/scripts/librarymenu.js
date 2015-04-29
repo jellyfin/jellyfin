@@ -253,27 +253,40 @@
 
             html += '<div class="sidebarLinks librarySidebarLinks">';
 
-            html += '<a style="margin-top:0;padding-left:.6em;display:block;color:#fff;text-decoration:none;font-size:16px;font-weight:400!important;background: #000;" href="mypreferencesdisplay.html?userId=' + Dashboard.getCurrentUserId() + '">';
+            //var userHref = user.localUser && user.localUser.Policy.EnableUserPreferenceAccess ?
+            //    'mypreferencesdisplay.html?userId=' + user.localUser.Id :
+            //    (user.localUser ? 'index.html' : '#');
 
-            var imgWidth = 48;
+            //var paddingLeft = user.imageUrl ? 'padding-left:.7em;' : '';
+            //html += '<a style="margin-top:0;' + paddingLeft + 'display:block;color:#fff;text-decoration:none;font-size:16px;font-weight:400!important;background: #000;" href="' + userHref + '">';
 
-            if (user.imageUrl) {
-                var url = user.imageUrl;
+            //var imgWidth = 44;
 
-                if (user.supportsImageParams) {
-                    url += "&width=" + (imgWidth * Math.max(devicePixelRatio || 1, 2));
-                }
+            //if (user.imageUrl) {
+            //    var url = user.imageUrl;
 
-                html += '<img style="max-width:' + imgWidth + 'px;vertical-align:middle;margin-right:.8em;border-radius: 50px;" src="' + url + '" />';
-            }
-            html += user.name;
-            html += '</a>';
+            //    if (user.supportsImageParams) {
+            //        url += "&width=" + (imgWidth * Math.max(devicePixelRatio || 1, 2));
+            //    }
 
-            html += '<div class="libraryMenuDivider" style="margin-top:0;"></div>';
+            //    html += '<img style="max-width:' + imgWidth + 'px;vertical-align:middle;margin-right:.8em;border-radius: 50px;" src="' + url + '" />';
+            //} else {
+            //    html += '<span class="fa fa-user sidebarLinkIcon"></span>';
+            //}
+
+            //html += user.name;
+            //html += '</a>';
 
             var homeHref = ConnectionManager.currentApiClient() ? 'index.html' : 'selectserver.html';
 
-            html += '<a class="lnkMediaFolder sidebarLink homeViewMenu" href="' + homeHref + '"><span class="fa fa-home sidebarLinkIcon"></span>' + Globalize.translate('ButtonHome') + '</a>';
+            html += '<a class="lnkMediaFolder sidebarLink" style="margin-top:.5em;padding-left:1em;display:block;color:#fff;text-decoration:none;" href="' + homeHref + '">';
+
+            html += '<img style="max-width:36px;vertical-align:middle;margin-right:1em;" src="css/images/mblogoicon.png" />';
+
+            html += Globalize.translate('ButtonHome');
+            html += '</a>';
+
+            html += '<div class="libraryMenuDivider" style="margin-top:0;"></div>';
 
             html += getViewsHtml();
             html += '</div>';
