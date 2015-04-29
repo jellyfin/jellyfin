@@ -145,7 +145,7 @@ namespace MediaBrowser.Dlna.Ssdp
             values["MX"] = "3";
 
             // UDP is unreliable, so send 3 requests at a time (per Upnp spec, sec 1.1.2)
-            SendDatagram("M-SEARCH * HTTP/1.1", values, localIp, 1);
+            SendDatagram("M-SEARCH * HTTP/1.1", values, localIp, 2);
         }
 
         public void SendDatagram(string header,

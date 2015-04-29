@@ -18,16 +18,6 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback
 {
-    [Route("/Items/{Id}/MediaInfo", "GET", Summary = "Gets live playback media info for an item")]
-    public class GetLiveMediaInfo : IReturn<PlaybackInfoResponse>
-    {
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UserId { get; set; }
-    }
-
     [Route("/Items/{Id}/PlaybackInfo", "GET", Summary = "Gets live playback media info for an item")]
     public class GetPlaybackInfo : IReturn<PlaybackInfoResponse>
     {
@@ -74,12 +64,6 @@ namespace MediaBrowser.Api.Playback
         }
 
         public async Task<object> Get(GetPlaybackInfo request)
-        {
-            var result = await GetPlaybackInfo(request.Id, request.UserId, new[] { MediaType.Audio, MediaType.Video }).ConfigureAwait(false);
-            return ToOptimizedResult(result);
-        }
-
-        public async Task<object> Get(GetLiveMediaInfo request)
         {
             var result = await GetPlaybackInfo(request.Id, request.UserId, new[] { MediaType.Audio, MediaType.Video }).ConfigureAwait(false);
             return ToOptimizedResult(result);
