@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -183,7 +184,6 @@ namespace MediaBrowser.Dlna.Ssdp
                 }
 
             }, _tokenSource.Token, TaskCreationOptions.LongRunning);
-
         }
 
         private Socket GetMulticastSocket(IPAddress localIpAddress, EndPoint localEndpoint)

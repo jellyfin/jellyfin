@@ -135,7 +135,6 @@
     <Compile Include="Server\Headers.cs" />
     <Compile Include="Server\UpnpDevice.cs" />
     <Compile Include="Ssdp\SsdpMessageBuilder.cs" />
-    <Compile Include="Ssdp\SsdpMessageEventArgs.cs" />
     <Compile Include="Ssdp\SsdpHandler.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 
-namespace MediaBrowser.Dlna.Ssdp
+namespace MediaBrowser.Controller.Dlna
 {
     public class SsdpMessageEventArgs
     {
@@ -13,6 +13,7 @@ namespace MediaBrowser.Dlna.Ssdp
         public Dictionary<string, string> Headers { get; set; }
 
         public IPAddress LocalIp { get; set; }
+        public byte[] Message { get; set; }
 
         public SsdpMessageEventArgs()
         {
