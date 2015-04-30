@@ -509,8 +509,6 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.TargetHeight,
                     streamInfo.TargetVideoBitDepth,
                     streamInfo.TargetVideoBitrate,
-                    streamInfo.TargetAudioChannels,
-                    streamInfo.TargetAudioBitrate,
                     streamInfo.TargetTimestamp,
                     streamInfo.IsDirectStream,
                     streamInfo.RunTimeTicks,
