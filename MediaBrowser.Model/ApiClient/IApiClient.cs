@@ -1499,5 +1499,11 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="itemIds">The item ids.</param>
         /// <returns>Task.</returns>
         Task CancelSyncLibraryItems(string targetId, IEnumerable<string> itemIds);
+        /// <summary>
+        /// Gets the supported bitrate.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;System.Int32&gt;.</returns>
+        Task<int> GetSupportedBitrate(CancellationToken cancellationToken);
     }
 }

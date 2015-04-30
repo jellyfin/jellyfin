@@ -45,6 +45,19 @@ namespace MediaBrowser.Api.Playback
         public string LiveStreamId { get; set; }
     }
 
+    [Route("/Playback/BitrateTest", "GET")]
+    public class GetBitrateTestBytes : IReturn<PlaybackInfoResponse>
+    {
+        [ApiMember(Name = "Size", Description = "Size", IsRequired = true, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public long Size { get; set; }
+
+        public GetBitrateTestBytes()
+        {
+            // 100k
+            Size = 102400;
+        }
+    }
+    
     [Authenticated]
     public class MediaInfoService : BaseApiService
     {
@@ -61,6 +74,18 @@ namespace MediaBrowser.Api.Playback
             _libraryManager = libraryManager;
             _config = config;
             _networkManager = networkManager;
+        }
+
+        public object Get(GetBitrateTestBytes request)
+        {
+            var bytes = new byte[request.Size];
+
+            for (var i = 0; i < bytes.Length; i++)
+            {
+                bytes[i] = 0;
+            }
+
+            return ResultFactory.GetResult(bytes, "application/octet-stream");
         }
 
         public async Task<object> Get(GetPlaybackInfo request)
