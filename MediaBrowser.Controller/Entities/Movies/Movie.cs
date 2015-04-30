@@ -14,12 +14,11 @@ namespace MediaBrowser.Controller.Entities.Movies
     /// <summary>
     /// Class Movie
     /// </summary>
-    public class Movie : Video, IHasCriticRating, IHasSoundtracks, IHasSpecialFeatures, IHasProductionLocations, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping, IHasOriginalTitle
+    public class Movie : Video, IHasCriticRating, IHasSpecialFeatures, IHasProductionLocations, IHasBudget, IHasKeywords, IHasTrailers, IHasThemeMedia, IHasTaglines, IHasAwards, IHasMetascore, IHasLookupInfo<MovieInfo>, ISupportsBoxSetGrouping, IHasOriginalTitle
     {
         public List<Guid> SpecialFeatureIds { get; set; }
 
         public string OriginalTitle { get; set; }
-        public List<Guid> SoundtrackIds { get; set; }
 
         public List<Guid> ThemeSongIds { get; set; }
         public List<Guid> ThemeVideoIds { get; set; }
@@ -28,7 +27,6 @@ namespace MediaBrowser.Controller.Entities.Movies
         public Movie()
         {
             SpecialFeatureIds = new List<Guid>();
-            SoundtrackIds = new List<Guid>();
             RemoteTrailers = new List<MediaUrl>();
             LocalTrailerIds = new List<Guid>();
             RemoteTrailerIds = new List<Guid>();
@@ -102,7 +100,19 @@ namespace MediaBrowser.Controller.Entities.Movies
         /// <returns>System.String.</returns>
         protected override string CreateUserDataKey()
         {
-            return this.GetProviderId(MetadataProviders.Tmdb) ?? this.GetProviderId(MetadataProviders.Imdb) ?? base.CreateUserDataKey();
+            var key = this.GetProviderId(MetadataProviders.Tmdb);
+
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                key = this.GetProviderId(MetadataProviders.Imdb);
+            }
+
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                key = base.CreateUserDataKey();
+            }
+
+            return key;
         }
 
         protected override async Task<bool> RefreshedOwnedItems(MetadataRefreshOptions options, List<FileSystemInfo> fileSystemChildren, CancellationToken cancellationToken)

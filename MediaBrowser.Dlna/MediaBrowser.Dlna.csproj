@@ -77,6 +77,7 @@
     <Compile Include="Common\DeviceService.cs" />
     <Compile Include="Didl\DidlBuilder.cs" />
     <Compile Include="PlayTo\PlayToController.cs" />
+    <Compile Include="Profiles\DefaultProfile.cs" />
     <Compile Include="Profiles\DirectTvProfile.cs" />
     <Compile Include="Profiles\DishHopperJoeyProfile.cs" />
     <Compile Include="Profiles\PopcornHourProfile.cs" />
@@ -134,7 +135,6 @@
     <Compile Include="Server\Headers.cs" />
     <Compile Include="Server\UpnpDevice.cs" />
     <Compile Include="Ssdp\SsdpMessageBuilder.cs" />
-    <Compile Include="Ssdp\SsdpMessageEventArgs.cs" />
     <Compile Include="Ssdp\SsdpHandler.cs" />
   </ItemGroup>
   <ItemGroup>

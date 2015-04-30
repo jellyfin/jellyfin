@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using Interfaces.IO;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -6,7 +7,6 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
-using MediaBrowser.Naming.IO;
 using MediaBrowser.Naming.Video;
 using MediaBrowser.Server.Implementations.Logging;
 using System;
@@ -118,10 +118,10 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             var namingOptions = ((LibraryManager)LibraryManager).GetNamingOptions();
 
             var resolver = new VideoListResolver(namingOptions, new PatternsLogger());
-            var resolverResult = resolver.Resolve(files.Select(i => new PortableFileInfo
+            var resolverResult = resolver.Resolve(files.Select(i => new FileMetadata
             {
-                FullName = i.FullName,
-                Type = FileInfoType.File
+                Id = i.FullName,
+                IsFolder = false
 
             }).ToList(), suppportMultiEditions).ToList();
 

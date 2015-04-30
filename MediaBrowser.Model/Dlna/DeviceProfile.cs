@@ -111,6 +111,10 @@ namespace MediaBrowser.Model.Dlna
             XmlRootAttributes = new XmlAttribute[] { };
             
             SupportedMediaTypes = "Audio,Photo,Video";
+            MaxStreamingBitrate = 8000000;
+            MaxStaticBitrate = 8000000;
+            MusicStreamingTranscodingBitrate = 128000;
+            MusicSyncBitrate = 128000;
         }
 
         public List<string> GetSupportedMediaTypes()
@@ -268,8 +272,6 @@ namespace MediaBrowser.Model.Dlna
         public ResponseProfile GetVideoMediaProfile(string container, 
             string audioCodec,
             string videoCodec,
-            int? audioBitrate,
-            int? audioChannels,
             int? width,
             int? height,
             int? bitDepth,
@@ -317,7 +319,7 @@ namespace MediaBrowser.Model.Dlna
                 var anyOff = false;
                 foreach (ProfileCondition c in i.Conditions)
                 {
-                    if (!conditionProcessor.IsVideoConditionSatisfied(c, audioBitrate, audioChannels, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
+                    if (!conditionProcessor.IsVideoConditionSatisfied(c, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
                     {
                         anyOff = true;
                         break;

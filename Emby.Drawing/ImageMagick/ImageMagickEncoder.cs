@@ -63,6 +63,7 @@ namespace Emby.Drawing.ImageMagick
         {
             _logger.Info("ImageMagick version: " + Wand.VersionString);
             TestWebp();
+            Wand.SetMagickThreadCount(1);
         }
 
         private bool _webpAvailable = true;

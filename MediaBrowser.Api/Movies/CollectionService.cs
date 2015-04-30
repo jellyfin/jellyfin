@@ -62,12 +62,15 @@ namespace MediaBrowser.Api.Movies
 
         public async Task<object> Post(CreateCollection request)
         {
+            var userId = AuthorizationContext.GetAuthorizationInfo(Request).UserId;
+
             var item = await _collectionManager.CreateCollection(new CollectionCreationOptions
             {
                 IsLocked = request.IsLocked,
                 Name = request.Name,
                 ParentId = request.ParentId,
-                ItemIdList = (request.Ids ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => new Guid(i)).ToList()
+                ItemIdList = (request.Ids ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => new Guid(i)).ToList(),
+                UserIds = new List<Guid> { new Guid(userId) }
 
             }).ConfigureAwait(false);
 

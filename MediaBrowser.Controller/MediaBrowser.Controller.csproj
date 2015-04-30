@@ -116,7 +116,9 @@
     <Compile Include="Dlna\IDlnaManager.cs" />
     <Compile Include="Dlna\IEventManager.cs" />
     <Compile Include="Dlna\IMediaReceiverRegistrar.cs" />
+    <Compile Include="Dlna\ISsdpHandler.cs" />
     <Compile Include="Dlna\IUpnpService.cs" />
+    <Compile Include="Dlna\SsdpMessageEventArgs.cs" />
     <Compile Include="Drawing\IImageProcessor.cs" />
     <Compile Include="Drawing\ImageCollageOptions.cs" />
     <Compile Include="Drawing\ImageProcessingOptions.cs" />
@@ -150,7 +152,6 @@
     <Compile Include="Entities\IHasScreenshots.cs" />
     <Compile Include="Entities\IHasSeries.cs" />
     <Compile Include="Entities\IHasShortOverview.cs" />
-    <Compile Include="Entities\IHasSoundtracks.cs" />
     <Compile Include="Entities\IHasSpecialFeatures.cs" />
     <Compile Include="Entities\IHasTaglines.cs" />
     <Compile Include="Entities\IHasTags.cs" />

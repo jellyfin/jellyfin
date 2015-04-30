@@ -104,6 +104,6 @@ namespace MediaBrowser.Controller.Drawing
         /// Creates the image collage.
         /// </summary>
         /// <param name="options">The options.</param>
-        void CreateImageCollage(ImageCollageOptions options);
+        Task CreateImageCollage(ImageCollageOptions options);
     }
 }

@@ -14,199 +14,199 @@ using WebMarkupMin.Core.Settings;
 
 namespace MediaBrowser.WebDashboard.Api
 {
-	public class PackageCreator
-	{
-		private readonly IFileSystem _fileSystem;
-		private readonly ILocalizationManager _localization;
-		private readonly ILogger _logger;
-		private readonly IServerConfigurationManager _config;
-		private readonly IJsonSerializer _jsonSerializer;
+    public class PackageCreator
+    {
+        private readonly IFileSystem _fileSystem;
+        private readonly ILocalizationManager _localization;
+        private readonly ILogger _logger;
+        private readonly IServerConfigurationManager _config;
+        private readonly IJsonSerializer _jsonSerializer;
 
-		public PackageCreator(IFileSystem fileSystem, ILocalizationManager localization, ILogger logger, IServerConfigurationManager config, IJsonSerializer jsonSerializer)
-		{
-			_fileSystem = fileSystem;
-			_localization = localization;
-			_logger = logger;
-			_config = config;
-			_jsonSerializer = jsonSerializer;
-		}
+        public PackageCreator(IFileSystem fileSystem, ILocalizationManager localization, ILogger logger, IServerConfigurationManager config, IJsonSerializer jsonSerializer)
+        {
+            _fileSystem = fileSystem;
+            _localization = localization;
+            _logger = logger;
+            _config = config;
+            _jsonSerializer = jsonSerializer;
+        }
 
-		public async Task<Stream> GetResource(string path,
-			string localizationCulture,
-			string appVersion, bool enableMinification)
-		{
-			var isHtml = IsHtml(path);
+        public async Task<Stream> GetResource(string path,
+            string localizationCulture,
+            string appVersion, bool enableMinification)
+        {
+            var isHtml = IsHtml(path);
 
-			Stream resourceStream;
+            Stream resourceStream;
 
-			if (path.Equals("scripts/all.js", StringComparison.OrdinalIgnoreCase))
-			{
-				resourceStream = await GetAllJavascript(localizationCulture, appVersion, enableMinification).ConfigureAwait(false);
-			}
-			else if (path.Equals("css/all.css", StringComparison.OrdinalIgnoreCase))
-			{
-				resourceStream = await GetAllCss(enableMinification).ConfigureAwait(false);
-			}
-			else
-			{
-				resourceStream = GetRawResourceStream(path);
-			}
+            if (path.Equals("scripts/all.js", StringComparison.OrdinalIgnoreCase))
+            {
+                resourceStream = await GetAllJavascript(localizationCulture, appVersion, enableMinification).ConfigureAwait(false);
+            }
+            else if (path.Equals("css/all.css", StringComparison.OrdinalIgnoreCase))
+            {
+                resourceStream = await GetAllCss(enableMinification).ConfigureAwait(false);
+            }
+            else
+            {
+                resourceStream = GetRawResourceStream(path);
+            }
 
-			if (resourceStream != null)
-			{
-				// Don't apply any caching for html pages
-				// jQuery ajax doesn't seem to handle if-modified-since correctly
-				if (isHtml)
-				{
-					resourceStream = await ModifyHtml(resourceStream, localizationCulture, enableMinification).ConfigureAwait(false);
-				}
-			}
+            if (resourceStream != null)
+            {
+                // Don't apply any caching for html pages
+                // jQuery ajax doesn't seem to handle if-modified-since correctly
+                if (isHtml)
+                {
+                    resourceStream = await ModifyHtml(resourceStream, localizationCulture, enableMinification).ConfigureAwait(false);
+                }
+            }
 
-			return resourceStream;
-		}
+            return resourceStream;
+        }
 
-		/// <summary>
-		/// Determines whether the specified path is HTML.
-		/// </summary>
-		/// <param name="path">The path.</param>
-		/// <returns><c>true</c> if the specified path is HTML; otherwise, <c>false</c>.</returns>
-		private bool IsHtml(string path)
-		{
-			return Path.GetExtension(path).EndsWith("html", StringComparison.OrdinalIgnoreCase);
-		}
+        /// <summary>
+        /// Determines whether the specified path is HTML.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns><c>true</c> if the specified path is HTML; otherwise, <c>false</c>.</returns>
+        private bool IsHtml(string path)
+        {
+            return Path.GetExtension(path).EndsWith("html", StringComparison.OrdinalIgnoreCase);
+        }
 
-		/// <summary>
-		/// Gets the dashboard UI path.
-		/// </summary>
-		/// <value>The dashboard UI path.</value>
-		public string DashboardUIPath
-		{
-			get
-			{
-				if (!string.IsNullOrEmpty(_config.Configuration.DashboardSourcePath))
-				{
-					return _config.Configuration.DashboardSourcePath;
-				}
+        /// <summary>
+        /// Gets the dashboard UI path.
+        /// </summary>
+        /// <value>The dashboard UI path.</value>
+        public string DashboardUIPath
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(_config.Configuration.DashboardSourcePath))
+                {
+                    return _config.Configuration.DashboardSourcePath;
+                }
 
-				return Path.Combine(_config.ApplicationPaths.ApplicationResourcesPath, "dashboard-ui");
-			}
-		}
+                return Path.Combine(_config.ApplicationPaths.ApplicationResourcesPath, "dashboard-ui");
+            }
+        }
 
-		/// <summary>
-		/// Gets the dashboard resource path.
-		/// </summary>
-		/// <param name="virtualPath">The virtual path.</param>
-		/// <returns>System.String.</returns>
-		private string GetDashboardResourcePath(string virtualPath)
-		{
-			return Path.Combine(DashboardUIPath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
-		}
+        /// <summary>
+        /// Gets the dashboard resource path.
+        /// </summary>
+        /// <param name="virtualPath">The virtual path.</param>
+        /// <returns>System.String.</returns>
+        private string GetDashboardResourcePath(string virtualPath)
+        {
+            return Path.Combine(DashboardUIPath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
+        }
 
-		/// <summary>
-		/// Modifies the HTML by adding common meta tags, css and js.
-		/// </summary>
-		/// <param name="sourceStream">The source stream.</param>
-		/// <param name="localizationCulture">The localization culture.</param>
-		/// <param name="enableMinification">if set to <c>true</c> [enable minification].</param>
-		/// <returns>Task{Stream}.</returns>
-		public async Task<Stream> ModifyHtml(Stream sourceStream, string localizationCulture, bool enableMinification)
-		{
-			using (sourceStream)
-			{
-				string html;
+        /// <summary>
+        /// Modifies the HTML by adding common meta tags, css and js.
+        /// </summary>
+        /// <param name="sourceStream">The source stream.</param>
+        /// <param name="localizationCulture">The localization culture.</param>
+        /// <param name="enableMinification">if set to <c>true</c> [enable minification].</param>
+        /// <returns>Task{Stream}.</returns>
+        public async Task<Stream> ModifyHtml(Stream sourceStream, string localizationCulture, bool enableMinification)
+        {
+            using (sourceStream)
+            {
+                string html;
 
-				using (var memoryStream = new MemoryStream())
-				{
-					await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
+                using (var memoryStream = new MemoryStream())
+                {
+                    await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
-					html = Encoding.UTF8.GetString(memoryStream.ToArray());
+                    html = Encoding.UTF8.GetString(memoryStream.ToArray());
 
-					if (!string.IsNullOrWhiteSpace(localizationCulture))
-					{
-						var lang = localizationCulture.Split('-').FirstOrDefault();
+                    if (!string.IsNullOrWhiteSpace(localizationCulture))
+                    {
+                        var lang = localizationCulture.Split('-').FirstOrDefault();
 
-						html = _localization.LocalizeDocument(html, localizationCulture, GetLocalizationToken);
+                        html = _localization.LocalizeDocument(html, localizationCulture, GetLocalizationToken);
 
-						html = html.Replace("<html>", "<html lang=\"" + lang + "\">");
-					}
+                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">");
+                    }
 
-					if (enableMinification)
-					{
-						try
-						{
-							var minifier = new HtmlMinifier(new HtmlMinificationSettings());
-							var result = minifier.Minify(html, false);
+                    if (enableMinification)
+                    {
+                        try
+                        {
+                            var minifier = new HtmlMinifier(new HtmlMinificationSettings());
+                            var result = minifier.Minify(html, false);
 
-							if (result.Errors.Count > 0)
-							{
-								_logger.Error("Error minifying html: " + result.Errors[0].Message);
-							}
-							else
-							{
-								html = result.MinifiedContent;
-							}
-						}
-						catch (Exception ex)
-						{
-							_logger.ErrorException("Error minifying html", ex);
-						}
-					}
-				}
+                            if (result.Errors.Count > 0)
+                            {
+                                _logger.Error("Error minifying html: " + result.Errors[0].Message);
+                            }
+                            else
+                            {
+                                html = result.MinifiedContent;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error minifying html", ex);
+                        }
+                    }
+                }
 
-				var version = GetType().Assembly.GetName().Version;
+                var version = GetType().Assembly.GetName().Version;
 
-				html = html.Replace("<head>", "<head>" + GetMetaTags() + GetCommonCss(version) + GetCommonJavascript(version));
+                html = html.Replace("<head>", "<head>" + GetMetaTags() + GetCommonCss(version) + GetCommonJavascript(version));
 
-				var bytes = Encoding.UTF8.GetBytes(html);
+                var bytes = Encoding.UTF8.GetBytes(html);
 
-				return new MemoryStream(bytes);
-			}
-		}
+                return new MemoryStream(bytes);
+            }
+        }
 
-		private string GetLocalizationToken(string phrase)
-		{
-			return "${" + phrase + "}";
-		}
+        private string GetLocalizationToken(string phrase)
+        {
+            return "${" + phrase + "}";
+        }
 
-		/// <summary>
-		/// Gets the meta tags.
-		/// </summary>
-		/// <returns>System.String.</returns>
-		private static string GetMetaTags()
-		{
-			var sb = new StringBuilder();
+        /// <summary>
+        /// Gets the meta tags.
+        /// </summary>
+        /// <returns>System.String.</returns>
+        private static string GetMetaTags()
+        {
+            var sb = new StringBuilder();
 
-			sb.Append("<meta http-equiv=\"X-UA-Compatibility\" content=\"IE=Edge\">");
-			sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\">");
-			//sb.Append("<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">");
-			sb.Append("<meta name=\"mobile-web-app-capable\" content=\"yes\">");
-			sb.Append("<meta name=\"application-name\" content=\"Emby\">");
-			//sb.Append("<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">");
+            sb.Append("<meta http-equiv=\"X-UA-Compatibility\" content=\"IE=Edge\">");
+            sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\">");
+            sb.Append("<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">");
+            sb.Append("<meta name=\"mobile-web-app-capable\" content=\"yes\">");
+            sb.Append("<meta name=\"application-name\" content=\"Emby\">");
+            //sb.Append("<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">");
 
-			sb.Append("<meta name=\"robots\" content=\"noindex, nofollow, noarchive\" />");
+            sb.Append("<meta name=\"robots\" content=\"noindex, nofollow, noarchive\" />");
 
-			// http://developer.apple.com/library/ios/#DOCUMENTATION/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
-			sb.Append("<link rel=\"apple-touch-icon\" href=\"css/images/touchicon.png\" />");
-			sb.Append("<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\"css/images/touchicon72.png\" />");
-			sb.Append("<link rel=\"apple-touch-icon\" sizes=\"114x114\" href=\"css/images/touchicon114.png\" />");
-			sb.Append("<link rel=\"apple-touch-startup-image\" href=\"css/images/iossplash.png\" />");
-			sb.Append("<link rel=\"shortcut icon\" href=\"css/images/favicon.ico\" />");
-			sb.Append("<meta name=\"msapplication-TileImage\" content=\"css/images/touchicon144.png\">");
-			sb.Append("<meta name=\"msapplication-TileColor\" content=\"#23456B\">");
+            // http://developer.apple.com/library/ios/#DOCUMENTATION/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
+            sb.Append("<link rel=\"apple-touch-icon\" href=\"css/images/touchicon.png\" />");
+            sb.Append("<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\"css/images/touchicon72.png\" />");
+            sb.Append("<link rel=\"apple-touch-icon\" sizes=\"114x114\" href=\"css/images/touchicon114.png\" />");
+            sb.Append("<link rel=\"apple-touch-startup-image\" href=\"css/images/iossplash.png\" />");
+            sb.Append("<link rel=\"shortcut icon\" href=\"css/images/favicon.ico\" />");
+            sb.Append("<meta name=\"msapplication-TileImage\" content=\"css/images/touchicon144.png\">");
+            sb.Append("<meta name=\"msapplication-TileColor\" content=\"#23456B\">");
 
-			return sb.ToString();
-		}
+            return sb.ToString();
+        }
 
-		/// <summary>
-		/// Gets the common CSS.
-		/// </summary>
-		/// <param name="version">The version.</param>
-		/// <returns>System.String.</returns>
-		private string GetCommonCss(Version version)
-		{
-			var versionString = "?v=" + version;
+        /// <summary>
+        /// Gets the common CSS.
+        /// </summary>
+        /// <param name="version">The version.</param>
+        /// <returns>System.String.</returns>
+        private string GetCommonCss(Version version)
+        {
+            var versionString = "?v=" + version;
 
-			var files = new[]
+            var files = new[]
                             {
                                 "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.css",
                                 "thirdparty/swipebox-master/css/swipebox.min.css" + versionString,
@@ -215,68 +215,68 @@ namespace MediaBrowser.WebDashboard.Api
                                 "css/all.css" + versionString
                             };
 
-			var tags = files.Select(s => string.Format("<link rel=\"stylesheet\" href=\"{0}\" />", s)).ToArray();
+            var tags = files.Select(s => string.Format("<link rel=\"stylesheet\" href=\"{0}\" />", s)).ToArray();
 
-			return string.Join(string.Empty, tags);
-		}
+            return string.Join(string.Empty, tags);
+        }
 
-		/// <summary>
-		/// Gets the common javascript.
-		/// </summary>
-		/// <param name="version">The version.</param>
-		/// <returns>System.String.</returns>
-		private string GetCommonJavascript(Version version)
-		{
-			var builder = new StringBuilder();
+        /// <summary>
+        /// Gets the common javascript.
+        /// </summary>
+        /// <param name="version">The version.</param>
+        /// <returns>System.String.</returns>
+        private string GetCommonJavascript(Version version)
+        {
+            var builder = new StringBuilder();
 
-			var versionString = "?v=" + version;
+            var versionString = "?v=" + version;
 
-			var files = new[]
+            var files = new[]
                             {
                                 "scripts/all.js" + versionString,
                                 "thirdparty/swipebox-master/js/jquery.swipebox.min.js" + versionString
             };
 
-			var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
+            var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
 
-			builder.Append(string.Join(string.Empty, tags));
+            builder.Append(string.Join(string.Empty, tags));
 
-			return builder.ToString();
-		}
+            return builder.ToString();
+        }
 
-		/// <summary>
-		/// Gets a stream containing all concatenated javascript
-		/// </summary>
-		/// <returns>Task{Stream}.</returns>
-		private async Task<Stream> GetAllJavascript(string culture, string version, bool enableMinification)
-		{
-			var memoryStream = new MemoryStream();
-			var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
+        /// <summary>
+        /// Gets a stream containing all concatenated javascript
+        /// </summary>
+        /// <returns>Task{Stream}.</returns>
+        private async Task<Stream> GetAllJavascript(string culture, string version, bool enableMinification)
+        {
+            var memoryStream = new MemoryStream();
+            var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
 
-			// jQuery + jQuery mobile
-			await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
-			await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.js", newLineBytes).ConfigureAwait(false);
+            // jQuery + jQuery mobile
+            await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.js", newLineBytes).ConfigureAwait(false);
 
-			await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
 
-			await AppendResource(memoryStream, "thirdparty/cast_sender.js", newLineBytes).ConfigureAwait(false);
-			await AppendResource(memoryStream, "thirdparty/browser.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/cast_sender.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/browser.js", newLineBytes).ConfigureAwait(false);
 
-			await AppendResource(memoryStream, "thirdparty/jstree3.0.8/jstree.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jstree3.0.8/jstree.js", newLineBytes).ConfigureAwait(false);
 
-			await AppendLocalization(memoryStream, culture).ConfigureAwait(false);
-			await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
+            await AppendLocalization(memoryStream, culture).ConfigureAwait(false);
+            await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
-			// Write the version string for the dashboard comparison function
-			var versionString = string.Format("window.dashboardVersion='{0}';", version);
-			var versionBytes = Encoding.UTF8.GetBytes(versionString);
+            // Write the version string for the dashboard comparison function
+            var versionString = string.Format("window.dashboardVersion='{0}';", version);
+            var versionBytes = Encoding.UTF8.GetBytes(versionString);
 
-			await memoryStream.WriteAsync(versionBytes, 0, versionBytes.Length).ConfigureAwait(false);
-			await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
+            await memoryStream.WriteAsync(versionBytes, 0, versionBytes.Length).ConfigureAwait(false);
+            await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
-			var builder = new StringBuilder();
+            var builder = new StringBuilder();
 
-			foreach (var file in new[]
+            foreach (var file in new[]
             {
                 "thirdparty/apiclient/logger.js",
                 "thirdparty/apiclient/md5.js",
@@ -293,65 +293,65 @@ namespace MediaBrowser.WebDashboard.Api
                 "thirdparty/apiclient/serverdiscovery.js",
                 "thirdparty/apiclient/connectionmanager.js"
             })
-			{
-				using (var fs = _fileSystem.GetFileStream(GetDashboardResourcePath(file), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
-				{
-					using (var streamReader = new StreamReader(fs))
-					{
-						var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-						builder.Append(text);
-						builder.Append(Environment.NewLine);
-					}
-				}
-			}
+            {
+                using (var fs = _fileSystem.GetFileStream(GetDashboardResourcePath(file), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+                {
+                    using (var streamReader = new StreamReader(fs))
+                    {
+                        var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+                        builder.Append(text);
+                        builder.Append(Environment.NewLine);
+                    }
+                }
+            }
 
-			foreach (var file in GetScriptFiles())
-			{
-				var path = GetDashboardResourcePath("scripts/" + file);
+            foreach (var file in GetScriptFiles())
+            {
+                var path = GetDashboardResourcePath("scripts/" + file);
 
-				using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
-				{
-					using (var streamReader = new StreamReader(fs))
-					{
-						var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-						builder.Append(text);
-						builder.Append(Environment.NewLine);
-					}
-				}
-			}
+                using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+                {
+                    using (var streamReader = new StreamReader(fs))
+                    {
+                        var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+                        builder.Append(text);
+                        builder.Append(Environment.NewLine);
+                    }
+                }
+            }
 
-			var js = builder.ToString();
+            var js = builder.ToString();
 
-			if (enableMinification)
-			{
-				try
-				{
-					var result = new CrockfordJsMinifier().Minify(js, false, Encoding.UTF8);
+            if (enableMinification)
+            {
+                try
+                {
+                    var result = new CrockfordJsMinifier().Minify(js, false, Encoding.UTF8);
 
-					if (result.Errors.Count > 0)
-					{
-						_logger.Error("Error minifying javascript: " + result.Errors[0].Message);
-					}
-					else
-					{
-						js = result.MinifiedContent;
-					}
-				}
-				catch (Exception ex)
-				{
-					_logger.ErrorException("Error minifying javascript", ex);
-				}
-			}
+                    if (result.Errors.Count > 0)
+                    {
+                        _logger.Error("Error minifying javascript: " + result.Errors[0].Message);
+                    }
+                    else
+                    {
+                        js = result.MinifiedContent;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error minifying javascript", ex);
+                }
+            }
 
-			var bytes = Encoding.UTF8.GetBytes(js);
-			await memoryStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+            var bytes = Encoding.UTF8.GetBytes(js);
+            await memoryStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
 
-			memoryStream.Position = 0;
-			return memoryStream;
-		}
-		private IEnumerable<string> GetScriptFiles()
-		{
-			return new[]
+            memoryStream.Position = 0;
+            return memoryStream;
+        }
+        private IEnumerable<string> GetScriptFiles()
+        {
+            return new[]
                             {
                                 "extensions.js",
                                 "site.js",
@@ -422,7 +422,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "itemlistpage.js",
                                 "kids.js",
                                 "librarypathmapping.js",
-                                "reportmanager.js",
+                                "reports.js",
                                 "librarysettings.js",
                                 "livetvchannel.js",
                                 "livetvchannels.js",
@@ -511,48 +511,48 @@ namespace MediaBrowser.WebDashboard.Api
                                 "wizardsettings.js",
                                 "wizarduserpage.js"
                             };
-		}
+        }
 
-		private async Task AppendLocalization(Stream stream, string culture)
-		{
-			var js = "window.localizationGlossary=" + _jsonSerializer.SerializeToString(_localization.GetJavaScriptLocalizationDictionary(culture));
+        private async Task AppendLocalization(Stream stream, string culture)
+        {
+            var js = "window.localizationGlossary=" + _jsonSerializer.SerializeToString(_localization.GetJavaScriptLocalizationDictionary(culture));
 
-			var bytes = Encoding.UTF8.GetBytes(js);
-			await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-		}
+            var bytes = Encoding.UTF8.GetBytes(js);
+            await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+        }
 
-		/// <summary>
-		/// Appends the resource.
-		/// </summary>
-		/// <param name="outputStream">The output stream.</param>
-		/// <param name="path">The path.</param>
-		/// <param name="newLineBytes">The new line bytes.</param>
-		/// <returns>Task.</returns>
-		private async Task AppendResource(Stream outputStream, string path, byte[] newLineBytes)
-		{
-			path = GetDashboardResourcePath(path);
+        /// <summary>
+        /// Appends the resource.
+        /// </summary>
+        /// <param name="outputStream">The output stream.</param>
+        /// <param name="path">The path.</param>
+        /// <param name="newLineBytes">The new line bytes.</param>
+        /// <returns>Task.</returns>
+        private async Task AppendResource(Stream outputStream, string path, byte[] newLineBytes)
+        {
+            path = GetDashboardResourcePath(path);
 
-			using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
-			{
-				using (var streamReader = new StreamReader(fs))
-				{
-					var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-					var bytes = Encoding.UTF8.GetBytes(text);
-					await outputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
-				}
-			}
+            using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+            {
+                using (var streamReader = new StreamReader(fs))
+                {
+                    var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+                    var bytes = Encoding.UTF8.GetBytes(text);
+                    await outputStream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+                }
+            }
 
-			await outputStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
-		}
+            await outputStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
+        }
 
 
-		/// <summary>
-		/// Gets all CSS.
-		/// </summary>
-		/// <returns>Task{Stream}.</returns>
-		private async Task<Stream> GetAllCss(bool enableMinification)
-		{
-			var files = new[]
+        /// <summary>
+        /// Gets all CSS.
+        /// </summary>
+        /// <returns>Task{Stream}.</returns>
+        private async Task<Stream> GetAllCss(bool enableMinification)
+        {
+            var files = new[]
                                   {
                                       "site.css",
                                       "chromecast.css",
@@ -575,61 +575,61 @@ namespace MediaBrowser.WebDashboard.Api
                                       "materialize.css"
                                   };
 
-			var builder = new StringBuilder();
+            var builder = new StringBuilder();
 
-			foreach (var file in files)
-			{
-				var path = GetDashboardResourcePath("css/" + file);
+            foreach (var file in files)
+            {
+                var path = GetDashboardResourcePath("css/" + file);
 
-				using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
-				{
-					using (var streamReader = new StreamReader(fs))
-					{
-						var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
-						builder.Append(text);
-						builder.Append(Environment.NewLine);
-					}
-				}
-			}
+                using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
+                {
+                    using (var streamReader = new StreamReader(fs))
+                    {
+                        var text = await streamReader.ReadToEndAsync().ConfigureAwait(false);
+                        builder.Append(text);
+                        builder.Append(Environment.NewLine);
+                    }
+                }
+            }
 
-			var css = builder.ToString();
+            var css = builder.ToString();
 
-			if (enableMinification)
-			{
-				try
-				{
-					var result = new KristensenCssMinifier().Minify(builder.ToString(), false, Encoding.UTF8);
+            if (enableMinification)
+            {
+                try
+                {
+                    var result = new KristensenCssMinifier().Minify(builder.ToString(), false, Encoding.UTF8);
 
-					if (result.Errors.Count > 0)
-					{
-						_logger.Error("Error minifying css: " + result.Errors[0].Message);
-					}
-					else
-					{
-						css = result.MinifiedContent;
-					}
-				}
-				catch (Exception ex)
-				{
-					_logger.ErrorException("Error minifying css", ex);
-				}
-			}
+                    if (result.Errors.Count > 0)
+                    {
+                        _logger.Error("Error minifying css: " + result.Errors[0].Message);
+                    }
+                    else
+                    {
+                        css = result.MinifiedContent;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error minifying css", ex);
+                }
+            }
 
-			var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(css));
+            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(css));
 
-			memoryStream.Position = 0;
-			return memoryStream;
-		}
+            memoryStream.Position = 0;
+            return memoryStream;
+        }
 
-		/// <summary>
-		/// Gets the raw resource stream.
-		/// </summary>
-		/// <param name="path">The path.</param>
-		/// <returns>Task{Stream}.</returns>
-		private Stream GetRawResourceStream(string path)
-		{
-			return _fileSystem.GetFileStream(GetDashboardResourcePath(path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
-		}
+        /// <summary>
+        /// Gets the raw resource stream.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>Task{Stream}.</returns>
+        private Stream GetRawResourceStream(string path)
+        {
+            return _fileSystem.GetFileStream(GetDashboardResourcePath(path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
+        }
 
-	}
+    }
 }

@@ -716,8 +716,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 profile.GetVideoMediaProfile(outputContainer,
                 audioCodec,
                 videoCodec,
-                state.OutputAudioBitrate,
-                state.OutputAudioChannels,
                 state.OutputWidth,
                 state.OutputHeight,
                 state.TargetVideoBitDepth,

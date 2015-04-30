@@ -123,7 +123,7 @@
     "LabelFree": "Gratis",
     "HeaderPlaybackError": "Afspeel Fout",
     "MessagePlaybackErrorNotAllowed": "U bent niet bevoegd om deze content af te spelen. Neem contact op met uw systeembeheerder voor meer informatie.",
-    "MessagePlaybackErrorNoCompatibleStream": "Geen compatibele streams beschikbaar. Probeer het later opnieuw.",
+    "MessagePlaybackErrorNoCompatibleStream": "Geen compatibele streams beschikbaar. Probeer het later opnieuw of neem contact op met de serverbeheerder.",
     "MessagePlaybackErrorRateLimitExceeded": "Je afspeel rate limiet is overschreden. Neem contact op met de beheerder van de server voor details.",
     "MessagePlaybackErrorPlaceHolder": "De gekozen content is niet af te spelen vanaf dit apparaat.",
     "HeaderSelectAudio": "Selecteer Audio",

@@ -435,7 +435,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                             _shrinkMemoryTimer.Dispose();
                             _shrinkMemoryTimer = null;
                         }
-                        
+
+                        _writeLock.Wait();
+
                         if (_connection != null)
                         {
                             if (_connection.IsOpen())

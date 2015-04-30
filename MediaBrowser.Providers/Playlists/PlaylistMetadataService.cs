@@ -33,14 +33,10 @@ namespace MediaBrowser.Providers.Playlists
                 target.PlaylistMediaType = source.PlaylistMediaType;
             }
 
-            if (replaceData || target.Shares.Count == 0)
-            {
-                target.Shares = source.Shares;
-            }
-
             if (mergeMetadataSettings)
             {
                 target.LinkedChildren = source.LinkedChildren;
+                target.Shares = source.Shares;
             }
         }
     }

@@ -100,6 +100,7 @@ namespace MediaBrowser.Api.Subtitles
     }
 
     [Route("/Videos/{Id}/{MediaSourceId}/Subtitles/{Index}/subtitles.m3u8", "GET", Summary = "Gets an HLS subtitle playlist.")]
+    [Authenticated]
     public class GetSubtitlePlaylist
     {
         /// <summary>

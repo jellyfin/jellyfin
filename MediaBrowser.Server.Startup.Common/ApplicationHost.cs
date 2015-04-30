@@ -48,6 +48,7 @@ using MediaBrowser.Dlna.ConnectionManager;
 using MediaBrowser.Dlna.ContentDirectory;
 using MediaBrowser.Dlna.Main;
 using MediaBrowser.Dlna.MediaReceiverRegistrar;
+using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.LocalMetadata.Providers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
@@ -357,10 +358,7 @@ namespace MediaBrowser.Server.Startup.Common
 
         private void PerformPostInitMigrations()
         {
-            var migrations = new List<IVersionMigration>
-            {
-                new MigrateTranscodingPath(ServerConfigurationManager)
-            };
+            var migrations = new List<IVersionMigration>();
 
             foreach (var task in migrations)
             {
@@ -442,7 +440,7 @@ namespace MediaBrowser.Server.Startup.Common
             var innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p => progress.Report((.75 * p) + 15));
 
-            ImageProcessor = new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, GetImageEncoder());
+            ImageProcessor = GetImageProcessor();
             RegisterSingleInstance(ImageProcessor);
 
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager);
@@ -523,6 +521,8 @@ namespace MediaBrowser.Server.Startup.Common
                 MediaEncoder, ChapterManager);
             RegisterSingleInstance(EncodingManager);
 
+            RegisterSingleInstance<ISsdpHandler>(new SsdpHandler(LogManager.GetLogger("SsdpHandler"), ServerConfigurationManager, this));
+
             var activityLogRepo = await GetActivityLogRepository().ConfigureAwait(false);
             RegisterSingleInstance(activityLogRepo);
             RegisterSingleInstance<IActivityManager>(new ActivityManager(LogManager.GetLogger("ActivityManager"), activityLogRepo, UserManager));
@@ -544,6 +544,18 @@ namespace MediaBrowser.Server.Startup.Common
             SetStaticProperties();
 
             await ((UserManager)UserManager).Initialize().ConfigureAwait(false);
+        }
+
+        private IImageProcessor GetImageProcessor()
+        {
+            var maxConcurrentImageProcesses = Math.Max(Environment.ProcessorCount, 4);
+
+            if (_startupOptions.ContainsOption("-imagethreads"))
+            {
+                int.TryParse(_startupOptions.GetOption("-imagethreads"), NumberStyles.Any, CultureInfo.InvariantCulture, out maxConcurrentImageProcesses);
+            } 
+            
+            return new ImageProcessor(LogManager.GetLogger("ImageProcessor"), ServerConfigurationManager.ApplicationPaths, FileSystemManager, JsonSerializer, GetImageEncoder(), maxConcurrentImageProcesses);
         }
 
         private IImageEncoder GetImageEncoder()

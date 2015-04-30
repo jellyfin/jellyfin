@@ -130,7 +130,6 @@
     <Compile Include="Dlna\NullLocalPlayer.cs" />
     <Compile Include="Dlna\PlaybackErrorCode.cs" />
     <Compile Include="Dlna\PlaybackException.cs" />
-    <Compile Include="Dlna\Profiles\DefaultProfile.cs" />
     <Compile Include="Dlna\ResolutionConfiguration.cs" />
     <Compile Include="Dlna\ResolutionNormalizer.cs" />
     <Compile Include="Dlna\ResolutionOptions.cs" />

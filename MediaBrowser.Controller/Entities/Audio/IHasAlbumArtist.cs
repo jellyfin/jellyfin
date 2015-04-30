@@ -17,10 +17,6 @@ namespace MediaBrowser.Controller.Entities.Audio
 
     public static class HasArtistExtensions
     {
-        public static bool HasArtist(this IHasArtist hasArtist, string artist)
-        {
-            return NameExtensions.EqualsAny(hasArtist.Artists, artist);
-        }
         public static bool HasAnyArtist(this IHasArtist hasArtist, string artist)
         {
             return NameExtensions.EqualsAny(hasArtist.AllArtists, artist);

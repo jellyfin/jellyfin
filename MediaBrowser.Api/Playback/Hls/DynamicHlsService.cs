@@ -608,7 +608,6 @@ namespace MediaBrowser.Api.Playback.Hls
             builder.AppendLine("#EXT-X-VERSION:3");
             builder.AppendLine("#EXT-X-TARGETDURATION:" + state.SegmentLength.ToString(UsCulture));
             builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
-            builder.AppendLine("#EXT-X-ALLOW-CACHE:NO");
 
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);

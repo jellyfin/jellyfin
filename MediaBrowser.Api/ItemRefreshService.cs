@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Providers;
 using ServiceStack;
+using System.Threading;
 
 namespace MediaBrowser.Api
 {
@@ -52,7 +54,14 @@ namespace MediaBrowser.Api
 
             var options = GetRefreshOptions(request);
 
-            _providerManager.QueueRefresh(item.Id, options);
+            if (item is Folder)
+            {
+                _providerManager.QueueRefresh(item.Id, options);
+            }
+            else
+            {
+                _providerManager.RefreshFullItem(item, options, CancellationToken.None);
+            }
         }
 
         private MetadataRefreshOptions GetRefreshOptions(BaseRefreshRequest request)

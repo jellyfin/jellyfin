@@ -58,7 +58,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "StudioIds", Description = "Optional. If specified, results will be filtered based on studio. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string StudioIds { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the studios.
         /// </summary>
@@ -68,7 +68,7 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "ArtistIds", Description = "Optional. If specified, results will be filtered based on artist. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string ArtistIds { get; set; }
-        
+
         [ApiMember(Name = "Albums", Description = "Optional. If specified, results will be filtered based on album. This allows multiple, pipe delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Albums { get; set; }
 
@@ -622,7 +622,7 @@ namespace MediaBrowser.Api.UserLibrary
         private bool ApplyAdditionalFilters(GetItems request, BaseItem i, User user, bool isPreFiltered, ILibraryManager libraryManager)
         {
             var video = i as Video;
-            
+
             if (!isPreFiltered)
             {
                 var mediaTypes = request.GetMediaTypes();
@@ -979,8 +979,8 @@ namespace MediaBrowser.Api.UserLibrary
                 if (years.Length > 0 && !(i.ProductionYear.HasValue && years.Contains(i.ProductionYear.Value)))
                 {
                     return false;
-                }            
-                
+                }
+
                 // Apply person filter
                 var personIds = request.GetPersonIds();
                 if (personIds.Length > 0)
@@ -1057,7 +1057,7 @@ namespace MediaBrowser.Api.UserLibrary
             // Artists
             if (!string.IsNullOrEmpty(request.ArtistIds))
             {
-                var artistIds = request.ArtistIds.Split('|');
+                var artistIds = request.ArtistIds.Split(new[] { '|', ',' });
 
                 var audio = i as IHasArtist;
 
