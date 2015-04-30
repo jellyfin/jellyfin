@@ -199,11 +199,6 @@
         /// The series studio
         /// </summary>
         SeriesStudio,
-        
-        /// <summary>
-        /// The soundtrack ids
-        /// </summary>
-        SoundtrackIds,
 
         /// <summary>
         /// The sort name of the item

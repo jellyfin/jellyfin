@@ -122,7 +122,7 @@ namespace MediaBrowser.Providers.Music
                 if (singleResult != null)
                 {
                     musicBrainzId = singleResult.GetProviderId(MetadataProviders.MusicBrainzArtist);
-                    result.Item.Name = singleResult.Name;
+                    //result.Item.Name = singleResult.Name;
                 }
             }
 

@@ -35,11 +35,11 @@
 
 /* latin */
 @font-face {
-  font-family: 'Montserrat';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Montserrat-Regular'), url(fonts/Montserrat.woff) format('woff');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Montserrat-Regular'), url(fonts/Montserrat.woff) format('woff');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
 }
 
 /* For some reason jquery mobile 1.4.5 wants to horitontally pad mini form fields. */
@@ -155,6 +155,12 @@ h1 a:hover {
         width: 0 !important;
         display: none;
     }
+
+.ui-slider-track.ui-mini .ui-slider-handle {
+    height: 18px;
+    width: 18px;
+    margin: -10px 0 0 -10px;
+}
 
 .largePanel {
     width: 270px;
@@ -382,6 +388,7 @@ h1 .imageLink {
     font-size: 17px;
     width: 66px;
     text-align: center;
+    vertical-align: middle;
 }
 
 .ui-page-theme-a .sidebarLinkIcon {

@@ -538,6 +538,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\nowplaying.html">
       <Link>Resources\dashboard-ui\nowplaying.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\photos.html">
+      <Link>Resources\dashboard-ui\photos.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\playbackconfiguration.html">
       <Link>Resources\dashboard-ui\playbackconfiguration.html</Link>
     </BundleResource>
@@ -1443,6 +1446,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\nowplayingpage.js">
       <Link>Resources\dashboard-ui\scripts\nowplayingpage.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\photos.js">
+      <Link>Resources\dashboard-ui\scripts\photos.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\playbackconfiguration.js">
       <Link>Resources\dashboard-ui\scripts\playbackconfiguration.js</Link>

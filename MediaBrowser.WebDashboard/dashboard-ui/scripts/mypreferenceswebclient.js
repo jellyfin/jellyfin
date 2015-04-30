@@ -5,6 +5,7 @@
         var externalPlayers = JSON.parse(store.getItem('externalplayers') || '[]');
 
         $('#selectMaxBitrate', page).val(AppSettings.maxStreamingBitrate()).selectmenu("refresh");
+        $('#selectMaxChromecastBitrate', page).val(AppSettings.maxChromecastBitrate()).selectmenu("refresh");
 
         $('.chkExternalPlayer', page).each(function () {
 
@@ -66,6 +67,7 @@
         store.setItem('externalplayers', JSON.stringify(externalPlayers));
 
         AppSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
+        AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
@@ -122,6 +124,14 @@
             }
 
             return parseInt(store.getItem('preferredVideoBitrate') || '') || 1500000;
+        },
+        maxChromecastBitrate: function (val) {
+
+            if (val != null) {
+                store.setItem('chromecastBitrate', val);
+            }
+
+            return parseInt(store.getItem('chromecastBitrate') || '') || 3000000;
         }
 
     };

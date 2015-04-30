@@ -81,7 +81,8 @@ namespace MediaBrowser.Server.Implementations.Collections
                     ProviderIds = options.ProviderIds,
                     Shares = options.UserIds.Select(i => new Share
                     {
-                        UserId = i.ToString("N")
+                        UserId = i.ToString("N"),
+                        CanEdit = true
 
                     }).ToList()
                 };

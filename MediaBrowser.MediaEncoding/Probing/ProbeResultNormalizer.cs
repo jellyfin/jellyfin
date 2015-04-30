@@ -25,7 +25,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             _fileSystem = fileSystem;
         }
 
-        public Model.MediaInfo.MediaInfo GetMediaInfo(InternalMediaInfoResult data, bool isAudio, string path, MediaProtocol protocol)
+        public Model.MediaInfo.MediaInfo GetMediaInfo(InternalMediaInfoResult data, VideoType videoType, bool isAudio, string path, MediaProtocol protocol)
         {
             var info = new Model.MediaInfo.MediaInfo
             {
@@ -79,7 +79,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
                 var videoStream = info.MediaStreams.FirstOrDefault(i => i.Type == MediaStreamType.Video);
 
-                if (videoStream != null)
+                if (videoStream != null && videoType == VideoType.VideoFile)
                 {
                     UpdateFromMediaInfo(info, videoStream);
                 }
@@ -146,7 +146,44 @@ namespace MediaBrowser.MediaEncoding.Probing
                 //    string.Equals(stream.AspectRatio, "2.35:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.40:1", StringComparison.OrdinalIgnoreCase);
 
-                stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase);
+                if (string.Equals(streamInfo.sample_aspect_ratio, "1:1", StringComparison.OrdinalIgnoreCase))
+                {
+                    stream.IsAnamorphic = false;
+                }
+                else if (!((string.IsNullOrWhiteSpace(streamInfo.sample_aspect_ratio) || string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))))
+                {
+                    stream.IsAnamorphic = true;
+                }
+                else if (string.IsNullOrWhiteSpace(streamInfo.display_aspect_ratio) || string.Equals(streamInfo.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
+                {
+                    stream.IsAnamorphic = false;
+                }
+                else
+                {
+                    var ratioParts = streamInfo.display_aspect_ratio.Split(':');
+                    if (ratioParts.Length != 2)
+                    {
+                        stream.IsAnamorphic = false;
+                    }
+                    else
+                    {
+                        int ratio0;
+                        int ratio1;
+                        if (!Int32.TryParse(ratioParts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out ratio0))
+                        {
+                            stream.IsAnamorphic = false;
+                        }
+                        else if (!Int32.TryParse(ratioParts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out ratio1))
+                        {
+                            stream.IsAnamorphic = false;
+                        }
+                        else
+                        {
+                            stream.IsAnamorphic = ((streamInfo.width * ratio1) != (stream.Height * ratio0));
+                        }
+                    }
+                }
+            
             }
             else
             {
@@ -863,12 +900,14 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private void UpdateFromMediaInfo(MediaSourceInfo video, MediaStream videoStream)
         {
-            if (video.VideoType == VideoType.VideoFile && video.Protocol == MediaProtocol.File)
+            if (video.Protocol == MediaProtocol.File)
             {
                 if (videoStream != null)
                 {
                     try
                     {
+                        _logger.Debug("Running MediaInfo against {0}", video.Path);
+
                         var result = new MediaInfoLib().GetVideoInfo(video.Path);
 
                         videoStream.IsCabac = result.IsCabac ?? videoStream.IsCabac;

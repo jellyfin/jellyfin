@@ -282,6 +282,9 @@
                 $('.lnkMovies', page).addClass('ui-btn-active');
             }
         }
+        else if (context == 'channels') {
+            elem = $('.channelTabs', page).show();
+        }
         else if (item.Type == "MusicAlbum") {
             $('#albumTabs', page).show();
         }
@@ -627,6 +630,7 @@
             promise = ApiClient.getSimilarTrailers(item.Id, options);
         }
         else if (item.Type == "MusicAlbum") {
+            options.limit = 4;
             promise = ApiClient.getSimilarAlbums(item.Id, options);
         }
         else if (item.Type == "Series") {
@@ -1314,7 +1318,7 @@
             if (stream.ChannelLayout) {
                 attributes.push(createAttribute(Globalize.translate('MediaInfoLayout'), stream.ChannelLayout));
             }
-            else if (stream.Channels) {
+            if (stream.Channels) {
                 attributes.push(createAttribute(Globalize.translate('MediaInfoChannels'), stream.Channels + ' ch'));
             }
 

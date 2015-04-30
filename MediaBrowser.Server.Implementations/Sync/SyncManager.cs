@@ -512,7 +512,7 @@ namespace MediaBrowser.Server.Implementations.Sync
                 var video = item as Video;
                 if (video != null)
                 {
-                    if (video.VideoType == VideoType.Iso || video.VideoType == VideoType.BluRay || video.VideoType == VideoType.Dvd || video.VideoType == VideoType.HdDvd)
+                    if (video.VideoType == VideoType.Iso || video.VideoType == VideoType.HdDvd)
                     {
                         return false;
                     }
@@ -758,6 +758,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 var requiresSaving = false;
                 var removeFromDevice = false;
 
+                var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
+
                 if (request.LocalItemIds.Contains(jobItem.ItemId, StringComparer.OrdinalIgnoreCase))
                 {
                     var job = _repo.GetJob(jobItem.JobId);
@@ -775,23 +777,18 @@ namespace MediaBrowser.Server.Implementations.Sync
                         _logger.Debug("Adding ItemIdsToRemove {0} because the user is no longer valid.", jobItem.ItemId);
                         removeFromDevice = true;
                     }
+                    else if (!IsLibraryItemAvailable(libraryItem))
+                    {
+                        // Tell the device to remove it since it's no longer available
+                        _logger.Debug("Adding ItemIdsToRemove {0} because it is no longer available.", jobItem.ItemId);
+                        removeFromDevice = true;
+                    }
                     else if (job.UnwatchedOnly)
                     {
-                        var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
-
-                        if (IsLibraryItemAvailable(libraryItem))
+                        if (libraryItem.IsPlayed(user) && libraryItem is Video)
                         {
-                            if (libraryItem.IsPlayed(user) && libraryItem is Video)
-                            {
-                                // Tell the device to remove it since it has been played
-                                _logger.Debug("Adding ItemIdsToRemove {0} because it has been marked played.", jobItem.ItemId);
-                                removeFromDevice = true;
-                            }
-                        }
-                        else
-                        {
-                            // Tell the device to remove it since it's no longer available
-                            _logger.Debug("Adding ItemIdsToRemove {0} because it is no longer available.", jobItem.ItemId);
+                            // Tell the device to remove it since it has been played
+                            _logger.Debug("Adding ItemIdsToRemove {0} because it has been marked played.", jobItem.ItemId);
                             removeFromDevice = true;
                         }
                     }
@@ -866,6 +863,8 @@ namespace MediaBrowser.Server.Implementations.Sync
                 var requiresSaving = false;
                 var removeFromDevice = false;
 
+                var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
+
                 if (request.SyncJobItemIds.Contains(jobItem.Id, StringComparer.OrdinalIgnoreCase))
                 {
                     var job = _repo.GetJob(jobItem.JobId);
@@ -883,23 +882,18 @@ namespace MediaBrowser.Server.Implementations.Sync
                         _logger.Debug("Adding ItemIdsToRemove {0} because the user is no longer valid.", jobItem.Id);
                         removeFromDevice = true;
                     }
+                    else if (!IsLibraryItemAvailable(libraryItem))
+                    {
+                        // Tell the device to remove it since it's no longer available
+                        _logger.Debug("Adding ItemIdsToRemove {0} because it is no longer available.", jobItem.Id);
+                        removeFromDevice = true;
+                    }
                     else if (job.UnwatchedOnly)
                     {
-                        var libraryItem = _libraryManager.GetItemById(jobItem.ItemId);
-
-                        if (IsLibraryItemAvailable(libraryItem))
+                        if (libraryItem.IsPlayed(user) && libraryItem is Video)
                         {
-                            if (libraryItem.IsPlayed(user) && libraryItem is Video)
-                            {
-                                // Tell the device to remove it since it has been played
-                                _logger.Debug("Adding ItemIdsToRemove {0} because it has been marked played.", jobItem.Id);
-                                removeFromDevice = true;
-                            }
-                        }
-                        else
-                        {
-                            // Tell the device to remove it since it's no longer available
-                            _logger.Debug("Adding ItemIdsToRemove {0} because it is no longer available.", jobItem.Id);
+                            // Tell the device to remove it since it has been played
+                            _logger.Debug("Adding ItemIdsToRemove {0} because it has been marked played.", jobItem.Id);
                             removeFromDevice = true;
                         }
                     }

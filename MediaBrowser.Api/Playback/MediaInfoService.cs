@@ -18,16 +18,6 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Playback
 {
-    [Route("/Items/{Id}/MediaInfo", "GET", Summary = "Gets live playback media info for an item")]
-    public class GetLiveMediaInfo : IReturn<PlaybackInfoResponse>
-    {
-        [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string Id { get; set; }
-
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UserId { get; set; }
-    }
-
     [Route("/Items/{Id}/PlaybackInfo", "GET", Summary = "Gets live playback media info for an item")]
     public class GetPlaybackInfo : IReturn<PlaybackInfoResponse>
     {
@@ -55,6 +45,19 @@ namespace MediaBrowser.Api.Playback
         public string LiveStreamId { get; set; }
     }
 
+    [Route("/Playback/BitrateTest", "GET")]
+    public class GetBitrateTestBytes : IReturn<PlaybackInfoResponse>
+    {
+        [ApiMember(Name = "Size", Description = "Size", IsRequired = true, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public long Size { get; set; }
+
+        public GetBitrateTestBytes()
+        {
+            // 100k
+            Size = 102400;
+        }
+    }
+    
     [Authenticated]
     public class MediaInfoService : BaseApiService
     {
@@ -73,13 +76,19 @@ namespace MediaBrowser.Api.Playback
             _networkManager = networkManager;
         }
 
-        public async Task<object> Get(GetPlaybackInfo request)
+        public object Get(GetBitrateTestBytes request)
         {
-            var result = await GetPlaybackInfo(request.Id, request.UserId, new[] { MediaType.Audio, MediaType.Video }).ConfigureAwait(false);
-            return ToOptimizedResult(result);
+            var bytes = new byte[request.Size];
+
+            for (var i = 0; i < bytes.Length; i++)
+            {
+                bytes[i] = 0;
+            }
+
+            return ResultFactory.GetResult(bytes, "application/octet-stream");
         }
 
-        public async Task<object> Get(GetLiveMediaInfo request)
+        public async Task<object> Get(GetPlaybackInfo request)
         {
             var result = await GetPlaybackInfo(request.Id, request.UserId, new[] { MediaType.Audio, MediaType.Video }).ConfigureAwait(false);
             return ToOptimizedResult(result);
@@ -325,10 +334,11 @@ namespace MediaBrowser.Api.Playback
         private int? GetMaxBitrate(int? clientMaxBitrate)
         {
             var maxBitrate = clientMaxBitrate;
+            var remoteClientMaxBitrate = _config.Configuration.RemoteClientBitrateLimit;
 
-            if (_config.Configuration.RemoteClientBitrateLimit > 0 && !_networkManager.IsInLocalNetwork(Request.RemoteIp))
+            if (remoteClientMaxBitrate > 0 && !_networkManager.IsInLocalNetwork(Request.RemoteIp))
             {
-                maxBitrate = Math.Min(maxBitrate ?? _config.Configuration.RemoteClientBitrateLimit, _config.Configuration.RemoteClientBitrateLimit);
+                maxBitrate = Math.Min(maxBitrate ?? remoteClientMaxBitrate, remoteClientMaxBitrate);
             }
 
             return maxBitrate;

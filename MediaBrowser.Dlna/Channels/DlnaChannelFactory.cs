@@ -2,6 +2,7 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Dlna.ContentDirectory;
 using MediaBrowser.Dlna.PlayTo;

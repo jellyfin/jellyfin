@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 
 namespace MediaBrowser.Dlna.PlayTo
 {
@@ -34,6 +35,9 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly DeviceDiscovery _deviceDiscovery;
         private readonly IMediaSourceManager _mediaSourceManager;
 
+        private readonly List<string> _nonRendererUrls = new List<string>();
+        private Timer _clearNonRenderersTimer;
+
         public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, DeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager)
         {
             _logger = logger;
@@ -53,7 +57,17 @@ namespace MediaBrowser.Dlna.PlayTo
 
         public void Start()
         {
+            _clearNonRenderersTimer = new Timer(OnClearUrlTimerCallback, null, TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(10));
+
             _deviceDiscovery.DeviceDiscovered += _deviceDiscovery_DeviceDiscovered;
+        }
+
+        private void OnClearUrlTimerCallback(object state)
+        {
+            lock (_nonRendererUrls)
+            {
+                _nonRendererUrls.Clear();
+            }
         }
 
         async void _deviceDiscovery_DeviceDiscovered(object sender, SsdpMessageEventArgs e)
@@ -68,7 +82,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
             string location;
             if (!e.Headers.TryGetValue("Location", out location)) location = string.Empty;
-            
+
             // It has to report that it's a media renderer
             if (usn.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1 &&
                      nt.IndexOf("MediaRenderer:", StringComparison.OrdinalIgnoreCase) == -1)
@@ -85,60 +99,74 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 var uri = new Uri(location);
 
+                lock (_nonRendererUrls)
+                {
+                    if (_nonRendererUrls.Contains(location, StringComparer.OrdinalIgnoreCase))
+                    {
+                        return;
+                    }
+                }
+
                 var device = await Device.CreateuPnpDeviceAsync(uri, _httpClient, _config, _logger).ConfigureAwait(false);
 
-                if (device.RendererCommands != null)
+                if (device.RendererCommands == null)
                 {
-                    var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, _appHost.ApplicationVersion.ToString(), device.Properties.UUID, device.Properties.Name, uri.OriginalString, null)
-                        .ConfigureAwait(false);
-
-                    var controller = sessionInfo.SessionController as PlayToController;
-
-                    if (controller == null)
+                    lock (_nonRendererUrls)
                     {
-                        var serverAddress = GetServerAddress(localIp);
-                        string accessToken = null;
-
-                        sessionInfo.SessionController = controller = new PlayToController(sessionInfo,
-                            _sessionManager,
-                            _libraryManager,
-                            _logger,
-                            _dlnaManager,
-                            _userManager,
-                            _imageProcessor,
-                            serverAddress,
-                            accessToken,
-                            _deviceDiscovery,
-                            _userDataManager,
-                            _localization,
-                            _mediaSourceManager);
-
-                        controller.Init(device);
-                        
-                        var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
-                                      _dlnaManager.GetDefaultProfile();
-
-                        _sessionManager.ReportCapabilities(sessionInfo.Id, new ClientCapabilities
-                        {
-                            PlayableMediaTypes = profile.GetSupportedMediaTypes(),
-
-                            SupportedCommands = new List<string>
-                            {
-                                GeneralCommandType.VolumeDown.ToString(),
-                                GeneralCommandType.VolumeUp.ToString(),
-                                GeneralCommandType.Mute.ToString(),
-                                GeneralCommandType.Unmute.ToString(),
-                                GeneralCommandType.ToggleMute.ToString(),
-                                GeneralCommandType.SetVolume.ToString(),
-                                GeneralCommandType.SetAudioStreamIndex.ToString(),
-                                GeneralCommandType.SetSubtitleStreamIndex.ToString()
-                            },
-
-                            SupportsMediaControl = true
-                        });
-
-                        _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
+                        _nonRendererUrls.Add(location);
+                        return;
                     }
+                }
+
+                var sessionInfo = await _sessionManager.LogSessionActivity(device.Properties.ClientType, _appHost.ApplicationVersion.ToString(), device.Properties.UUID, device.Properties.Name, uri.OriginalString, null)
+                    .ConfigureAwait(false);
+
+                var controller = sessionInfo.SessionController as PlayToController;
+
+                if (controller == null)
+                {
+                    var serverAddress = GetServerAddress(localIp);
+                    string accessToken = null;
+
+                    sessionInfo.SessionController = controller = new PlayToController(sessionInfo,
+                        _sessionManager,
+                        _libraryManager,
+                        _logger,
+                        _dlnaManager,
+                        _userManager,
+                        _imageProcessor,
+                        serverAddress,
+                        accessToken,
+                        _deviceDiscovery,
+                        _userDataManager,
+                        _localization,
+                        _mediaSourceManager);
+
+                    controller.Init(device);
+
+                    var profile = _dlnaManager.GetProfile(device.Properties.ToDeviceIdentification()) ??
+                                  _dlnaManager.GetDefaultProfile();
+
+                    _sessionManager.ReportCapabilities(sessionInfo.Id, new ClientCapabilities
+                    {
+                        PlayableMediaTypes = profile.GetSupportedMediaTypes(),
+
+                        SupportedCommands = new List<string>
+                        {
+                            GeneralCommandType.VolumeDown.ToString(),
+                            GeneralCommandType.VolumeUp.ToString(),
+                            GeneralCommandType.Mute.ToString(),
+                            GeneralCommandType.Unmute.ToString(),
+                            GeneralCommandType.ToggleMute.ToString(),
+                            GeneralCommandType.SetVolume.ToString(),
+                            GeneralCommandType.SetAudioStreamIndex.ToString(),
+                            GeneralCommandType.SetSubtitleStreamIndex.ToString()
+                        },
+
+                        SupportsMediaControl = true
+                    });
+
+                    _logger.Info("DLNA Session created for {0} - {1}", device.Properties.Name, device.Properties.ModelName);
                 }
             }
             catch (Exception ex)
@@ -155,6 +183,12 @@ namespace MediaBrowser.Dlna.PlayTo
         public void Dispose()
         {
             _deviceDiscovery.DeviceDiscovered -= _deviceDiscovery_DeviceDiscovered;
+
+            if (_clearNonRenderersTimer != null)
+            {
+                _clearNonRenderersTimer.Dispose();
+                _clearNonRenderersTimer = null;
+            }
         }
     }
 }

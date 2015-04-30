@@ -577,14 +577,16 @@ var Dashboard = {
 
             html += '<h3>';
 
+            var imgWidth = 48;
+
             if (user.imageUrl) {
                 var url = user.imageUrl;
 
                 if (user.supportsImageParams) {
-                    url += "&width=" + 28;
+                    url += "&width=" + (imgWidth * Math.max(devicePixelRatio || 1, 2));
                 }
 
-                html += '<img style="max-width:28px;vertical-align:middle;margin-right:5px;" src="' + url + '" />';
+                html += '<img style="max-width:' + imgWidth + 'px;vertical-align:middle;margin-right:.5em;border-radius: 50px;" src="' + url + '" />';
             }
             html += user.name;
             html += '</h3>';
@@ -1385,6 +1387,27 @@ var Dashboard = {
 
     if (window.ApiClient) {
         Dashboard.importCss(ApiClient.getUrl('Branding/Css'));
+
+        ApiClient.getDefaultImageQuality = function (imageType) {
+
+            var quality = 90;
+            var isBackdrop = imageType.toLowerCase() == 'backdrop';
+
+            if (isBackdrop) {
+                quality -= 10;
+            }
+
+            if ($.browser.safari && $.browser.mobile) {
+
+                quality -= 10;
+
+                if (isBackdrop) {
+                    quality -= 10;
+                }
+            }
+
+            return quality;
+        };
     }
 
 })();

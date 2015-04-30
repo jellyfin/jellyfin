@@ -336,8 +336,7 @@
 
         var player = this;
 
-        var bitrateSetting = AppSettings.maxStreamingBitrate();
-        bitrateSetting = Math.min(bitrateSetting, 10000000);
+        var bitrateSetting = AppSettings.maxChromecastBitrate();
 
         var receiverName = null;
 

@@ -51,8 +51,14 @@ namespace Emby.Drawing
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IServerApplicationPaths _appPaths;
         private readonly IImageEncoder _imageEncoder;
+        private readonly SemaphoreSlim _imageProcessingSemaphore;
 
-        public ImageProcessor(ILogger logger, IServerApplicationPaths appPaths, IFileSystem fileSystem, IJsonSerializer jsonSerializer, IImageEncoder imageEncoder)
+        public ImageProcessor(ILogger logger,
+            IServerApplicationPaths appPaths,
+            IFileSystem fileSystem,
+            IJsonSerializer jsonSerializer,
+            IImageEncoder imageEncoder,
+            int maxConcurrentImageProcesses)
         {
             _logger = logger;
             _fileSystem = fileSystem;
@@ -88,6 +94,8 @@ namespace Emby.Drawing
             }
 
             _cachedImagedSizes = new ConcurrentDictionary<Guid, ImageSize>(sizeDictionary);
+            _logger.Info("ImageProcessor started with {0} max concurrent image processes", maxConcurrentImageProcesses);
+            _imageProcessingSemaphore = new SemaphoreSlim(maxConcurrentImageProcesses, maxConcurrentImageProcesses);
         }
 
         public string[] SupportedInputFormats
@@ -201,6 +209,8 @@ namespace Emby.Drawing
 
             await semaphore.WaitAsync().ConfigureAwait(false);
 
+            var imageProcessingLockTaken = false;
+
             try
             {
                 CheckDisposed();
@@ -212,11 +222,20 @@ namespace Emby.Drawing
 
                     Directory.CreateDirectory(Path.GetDirectoryName(cacheFilePath));
 
+                    await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
+
+                    imageProcessingLockTaken = true;
+
                     _imageEncoder.EncodeImage(originalImagePath, cacheFilePath, newWidth, newHeight, quality, options);
                 }
             }
             finally
             {
+                if (imageProcessingLockTaken)
+                {
+                    _imageProcessingSemaphore.Release();
+                }
+
                 semaphore.Release();
             }
 
@@ -254,9 +273,14 @@ namespace Emby.Drawing
                 return GetResult(croppedImagePath);
             }
 
+            var imageProcessingLockTaken = false;
+
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(croppedImagePath));
+
+                await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
+                imageProcessingLockTaken = true;
 
                 _imageEncoder.CropWhiteSpace(originalImagePath, croppedImagePath);
             }
@@ -269,6 +293,11 @@ namespace Emby.Drawing
             }
             finally
             {
+                if (imageProcessingLockTaken)
+                {
+                    _imageProcessingSemaphore.Release();
+                }
+
                 semaphore.Release();
             }
 
@@ -592,13 +621,25 @@ namespace Emby.Drawing
                 return enhancedImagePath;
             }
 
+            var imageProcessingLockTaken = false;
+
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(enhancedImagePath));
+
+                await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
+
+                imageProcessingLockTaken = true;
+
                 await ExecuteImageEnhancers(supportedEnhancers, originalImagePath, enhancedImagePath, item, imageType, imageIndex).ConfigureAwait(false);
             }
             finally
             {
+                if (imageProcessingLockTaken)
+                {
+                    _imageProcessingSemaphore.Release();
+                }
+
                 semaphore.Release();
             }
 
@@ -717,9 +758,18 @@ namespace Emby.Drawing
             return Path.Combine(path, filename);
         }
 
-        public void CreateImageCollage(ImageCollageOptions options)
+        public async Task CreateImageCollage(ImageCollageOptions options)
         {
-            _imageEncoder.CreateImageCollage(options);
+            await _imageProcessingSemaphore.WaitAsync().ConfigureAwait(false);
+
+            try
+            {
+                _imageEncoder.CreateImageCollage(options);
+            }
+            finally
+            {
+                _imageProcessingSemaphore.Release();
+            }
         }
 
         public IEnumerable<IImageEnhancer> GetSupportedEnhancers(IHasImages item, ImageType imageType)

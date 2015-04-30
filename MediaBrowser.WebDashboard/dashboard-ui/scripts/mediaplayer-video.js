@@ -931,6 +931,31 @@
 
             var streamInfo = self.createStreamInfo('Video', item, mediaSource, startPosition);
 
+            // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
+            // This will start the transcoding process before actually feeding the video url into the player
+            if ($.browser.safari && !mediaSource.RunTimeTicks) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.ajax({
+                    type: 'GET',
+                    url: streamInfo.url.replace('master.m3u8', 'live.m3u8')
+                }).always(function () {
+
+                    Dashboard.hideLoadingMsg();
+
+                }).done(function () {
+                    self.playVideoInternal(item, mediaSource, startPosition, streamInfo);
+                });
+
+            } else {
+                self.playVideoInternal(item, mediaSource, startPosition, streamInfo);
+            }
+
+        };
+
+        self.playVideoInternal = function (item, mediaSource, startPosition, streamInfo) {
+
             var videoUrl = streamInfo.url;
             var contentType = streamInfo.contentType;
             var startPositionInSeekParam = streamInfo.startPositionInSeekParam;
@@ -941,6 +966,31 @@
                 return s.Type == 'Subtitle';
             });
 
+            // Get Video Poster (Code from librarybrowser.js)
+            var screenWidth = Math.max(screen.height, screen.width);
+            var posterCode = '';
+
+            if (item.BackdropImageTags && item.BackdropImageTags.length) {
+
+                posterCode = ' poster="' + ApiClient.getScaledImageUrl(item.Id, {
+                    type: "Backdrop",
+                    index: 0,
+                    maxWidth: screenWidth,
+                    tag: item.BackdropImageTags[0]
+                }) + '"';
+
+            }
+            else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
+
+                posterCode = ' poster="' + ApiClient.getScaledImageUrl(item.ParentBackdropItemId, {
+                    type: 'Backdrop',
+                    index: 0,
+                    maxWidth: screenWidth,
+                    tag: item.ParentBackdropImageTags[0]
+                }) + '"';
+
+            }
+
             //======================================================================================>
 
             // Create video player
@@ -950,11 +1000,12 @@
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresNativeControls) {
-                html += '<video class="itemVideo" id="itemVideo" preload="none" autoplay="autoplay" crossorigin="anonymous" controls="controls">';
-            } else {
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" controls="controls"' + posterCode + '>';
+            }
+            else {
 
                 // Chrome 35 won't play with preload none
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" crossorigin="anonymous" autoplay>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" crossorigin="anonymous" autoplay' + posterCode + '>';
             }
 
             html += '<source type="' + contentType + '" src="' + videoUrl + '" />';
@@ -1142,7 +1193,10 @@
 
             $('body').addClass('bodyWithPopupOpen');
 
-            return video[0];
+            self.currentMediaElement = video[0];
+            self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+
+            self.updateNowPlayingInfo(item);
         };
 
         self.updatePlaylistUi = function () {

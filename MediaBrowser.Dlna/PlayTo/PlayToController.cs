@@ -310,12 +310,12 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 if (isFirst && command.StartPositionTicks.HasValue)
                 {
-                    playlist.Add(CreatePlaylistItem(item, user, command.StartPositionTicks.Value));
+                    playlist.Add(CreatePlaylistItem(item, user, command.StartPositionTicks.Value, null, null, null));
                     isFirst = false;
                 }
                 else
                 {
-                    playlist.Add(CreatePlaylistItem(item, user, 0));
+                    playlist.Add(CreatePlaylistItem(item, user, 0, null, null, null));
                 }
             }
 
@@ -456,11 +456,6 @@ namespace MediaBrowser.Dlna.PlayTo
             }
         }
 
-        private PlaylistItem CreatePlaylistItem(BaseItem item, User user, long startPostionTicks)
-        {
-            return CreatePlaylistItem(item, user, startPostionTicks, null, null, null);
-        }
-
         private PlaylistItem CreatePlaylistItem(BaseItem item, User user, long startPostionTicks, string mediaSourceId, int? audioStreamIndex, int? subtitleStreamIndex)
         {
             var deviceInfo = _device.Properties;
@@ -514,8 +509,6 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.TargetHeight,
                     streamInfo.TargetVideoBitDepth,
                     streamInfo.TargetVideoBitrate,
-                    streamInfo.TargetAudioChannels,
-                    streamInfo.TargetAudioBitrate,
                     streamInfo.TargetTimestamp,
                     streamInfo.IsDirectStream,
                     streamInfo.RunTimeTicks,

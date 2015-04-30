@@ -1522,6 +1522,10 @@ namespace MediaBrowser.Api.Playback
                 {
                     request.LiveStreamId = val;
                 }
+                else if (i == 24)
+                {
+                    // Duplicating ItemId because of MediaMonkey
+                }
             }
         }
 
@@ -2029,8 +2033,6 @@ namespace MediaBrowser.Api.Playback
                 profile.GetVideoMediaProfile(state.OutputContainer,
                 audioCodec,
                 videoCodec,
-                state.OutputAudioBitrate,
-                state.OutputAudioChannels,
                 state.OutputWidth,
                 state.OutputHeight,
                 state.TargetVideoBitDepth,
@@ -2117,8 +2119,6 @@ namespace MediaBrowser.Api.Playback
                     state.OutputHeight,
                     state.TargetVideoBitDepth,
                     state.OutputVideoBitrate,
-                    state.OutputAudioBitrate,
-                    state.OutputAudioChannels,
                     state.TargetTimestamp,
                     isStaticallyStreamed,
                     state.RunTimeTicks,

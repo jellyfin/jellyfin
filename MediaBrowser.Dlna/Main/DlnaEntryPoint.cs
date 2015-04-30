@@ -37,13 +37,26 @@ namespace MediaBrowser.Dlna.Main
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        private SsdpHandler _ssdpHandler;
+        private readonly SsdpHandler _ssdpHandler;
         private DeviceDiscovery _deviceDiscovery;
 
         private readonly List<string> _registeredServerIds = new List<string>();
         private bool _dlnaServerStarted;
 
-        public DlnaEntryPoint(IServerConfigurationManager config, ILogManager logManager, IServerApplicationHost appHost, INetworkManager network, ISessionManager sessionManager, IHttpClient httpClient, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IImageProcessor imageProcessor, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager)
+        public DlnaEntryPoint(IServerConfigurationManager config, 
+            ILogManager logManager, 
+            IServerApplicationHost appHost, 
+            INetworkManager network, 
+            ISessionManager sessionManager, 
+            IHttpClient httpClient, 
+            ILibraryManager libraryManager, 
+            IUserManager userManager, 
+            IDlnaManager dlnaManager, 
+            IImageProcessor imageProcessor, 
+            IUserDataManager userDataManager, 
+            ILocalizationManager localization, 
+            IMediaSourceManager mediaSourceManager, 
+            ISsdpHandler ssdpHandler)
         {
             _config = config;
             _appHost = appHost;
@@ -57,6 +70,7 @@ namespace MediaBrowser.Dlna.Main
             _userDataManager = userDataManager;
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
+            _ssdpHandler = (SsdpHandler)ssdpHandler;
             _logger = logManager.GetLogger("Dlna");
         }
 
@@ -109,8 +123,6 @@ namespace MediaBrowser.Dlna.Main
         {
             try
             {
-                _ssdpHandler = new SsdpHandler(_logger, _config, GenerateServerSignature());
-
                 _ssdpHandler.Start();
 
                 _deviceDiscovery = new DeviceDiscovery(_logger, _config, _ssdpHandler, _appHost);
@@ -123,7 +135,7 @@ namespace MediaBrowser.Dlna.Main
             }
         }
 
-        private void DisposeSsdpHandler()
+        private void DisposeDeviceDiscovery()
         {
             try
             {
@@ -132,15 +144,6 @@ namespace MediaBrowser.Dlna.Main
             catch (Exception ex)
             {
                 _logger.ErrorException("Error disposing device discovery", ex);
-            }
-
-            try
-            {
-                _ssdpHandler.Dispose();
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error disposing ssdp handler", ex);
             }
         }
 
@@ -182,29 +185,6 @@ namespace MediaBrowser.Dlna.Main
 
                 _registeredServerIds.Add(guid.ToString("N"));
             }
-        }
-
-        private string GenerateServerSignature()
-        {
-            var os = Environment.OSVersion;
-            var pstring = os.Platform.ToString();
-            switch (os.Platform)
-            {
-                case PlatformID.Win32NT:
-                case PlatformID.Win32S:
-                case PlatformID.Win32Windows:
-                    pstring = "WIN";
-                    break;
-            }
-
-            return String.Format(
-              "{0}{1}/{2}.{3} UPnP/1.0 DLNADOC/1.5 MediaBrowser/{4}",
-              pstring,
-              IntPtr.Size * 8,
-              os.Version.Major,
-              os.Version.Minor,
-              _appHost.ApplicationVersion
-              );
         }
 
         private readonly object _syncLock = new object();
@@ -260,7 +240,7 @@ namespace MediaBrowser.Dlna.Main
         {
             DisposeDlnaServer();
             DisposePlayToManager();
-            DisposeSsdpHandler();
+            DisposeDeviceDiscovery();
         }
 
         public void DisposeDlnaServer()

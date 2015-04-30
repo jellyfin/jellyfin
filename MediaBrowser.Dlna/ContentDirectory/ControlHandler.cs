@@ -638,6 +638,17 @@ namespace MediaBrowser.Dlna.ContentDirectory
             Guid itemId;
             StubType? stubType = null;
 
+            // After using PlayTo, MediaMonkey sends a request to the server trying to get item info
+            const string paramsSrch = "Params=";
+            var paramsIndex = id.IndexOf(paramsSrch, StringComparison.OrdinalIgnoreCase);
+            if (paramsIndex != -1)
+            {
+                id = id.Substring(paramsIndex + paramsSrch.Length);
+
+                var parts = id.Split(';');
+                id = parts[24];
+            }
+
             if (id.StartsWith("folder_", StringComparison.OrdinalIgnoreCase))
             {
                 stubType = StubType.Folder;

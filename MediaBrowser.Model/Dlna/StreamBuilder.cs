@@ -456,7 +456,7 @@ namespace MediaBrowser.Model.Dlna
                     playlistItem.MaxAudioChannels = Math.Min(options.MaxAudioChannels.Value, currentValue);
                 }
 
-                int audioBitrate = GetAudioBitrate(playlistItem.TargetAudioChannels, playlistItem.TargetAudioCodec);
+                int audioBitrate = GetAudioBitrate(options.GetMaxBitrate(), playlistItem.TargetAudioChannels, playlistItem.TargetAudioCodec, audioStream);
                 playlistItem.AudioBitrate = Math.Min(playlistItem.AudioBitrate ?? audioBitrate, audioBitrate);
 
                 int? maxBitrateSetting = options.GetMaxBitrate();
@@ -479,17 +479,35 @@ namespace MediaBrowser.Model.Dlna
             return playlistItem;
         }
 
-        private int GetAudioBitrate(int? channels, string codec)
+        private int GetAudioBitrate(int? maxTotalBitrate, int? targetAudioChannels, string targetAudioCodec, MediaStream audioStream)
         {
-            if (channels.HasValue)
+            var defaultBitrate = 128000;
+
+            if (targetAudioChannels.HasValue)
             {
-                if (channels.Value >= 5)
+                if (targetAudioChannels.Value >= 5 && (maxTotalBitrate ?? 0) >= 1500000)
                 {
-                    return 320000;
+                    defaultBitrate = 320000;
                 }
             }
 
-            return 128000;
+            int encoderAudioBitrateLimit = int.MaxValue;
+
+            if (audioStream != null)
+            {
+                // Seeing webm encoding failures when source has 1 audio channel and 22k bitrate. 
+                // Any attempts to transcode over 64k will fail
+                if (audioStream.Channels.HasValue &&
+                    audioStream.Channels.Value == 1)
+                {
+                    if ((audioStream.BitRate ?? 0) < 64000)
+                    {
+                        encoderAudioBitrateLimit = 64000;
+                    }
+                }
+            }
+
+            return Math.Min(defaultBitrate, encoderAudioBitrateLimit);
         }
 
         private PlayMethod? GetVideoDirectPlayProfile(DeviceProfile profile,
@@ -560,7 +578,7 @@ namespace MediaBrowser.Model.Dlna
             // Check container conditions
             foreach (ProfileCondition i in conditions)
             {
-                if (!conditionProcessor.IsVideoConditionSatisfied(i, audioBitrate, audioChannels, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
+                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
                 {
                     LogConditionFailure(profile, "VideoContainerProfile", i, mediaSource);
 
@@ -593,7 +611,7 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (ProfileCondition i in conditions)
             {
-                if (!conditionProcessor.IsVideoConditionSatisfied(i, audioBitrate, audioChannels, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
+                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
                 {
                     LogConditionFailure(profile, "VideoCodecProfile", i, mediaSource);
 

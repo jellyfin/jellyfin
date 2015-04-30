@@ -233,6 +233,11 @@ namespace MediaBrowser.Model.Dlna
             string liveStreamId = item.MediaSource == null ? null : item.MediaSource.LiveStreamId;
             list.Add(new NameValuePair("LiveStreamId", liveStreamId ?? string.Empty));
 
+            if (isDlna)
+            {
+                list.Add(new NameValuePair("ItemId", item.ItemId));
+            }
+            
             return list;
         }
 

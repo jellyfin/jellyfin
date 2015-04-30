@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Dlna.Server;
 using MediaBrowser.Model.Logging;
 using System;
@@ -16,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Dlna.Ssdp
 {
-    public class SsdpHandler : IDisposable
+    public class SsdpHandler : IDisposable, ISsdpHandler
     {
         private Socket _socket;
 
@@ -39,13 +41,39 @@ namespace MediaBrowser.Dlna.Ssdp
         private bool _isDisposed;
         private readonly ConcurrentDictionary<Guid, List<UpnpDevice>> _devices = new ConcurrentDictionary<Guid, List<UpnpDevice>>();
 
-        public SsdpHandler(ILogger logger, IServerConfigurationManager config, string serverSignature)
+        private readonly IApplicationHost _appHost;
+
+        public SsdpHandler(ILogger logger, IServerConfigurationManager config, IApplicationHost appHost)
         {
             _logger = logger;
             _config = config;
-            _serverSignature = serverSignature;
+            _appHost = appHost;
 
             _config.NamedConfigurationUpdated += _config_ConfigurationUpdated;
+            _serverSignature = GenerateServerSignature();
+        }
+
+        private string GenerateServerSignature()
+        {
+            var os = Environment.OSVersion;
+            var pstring = os.Platform.ToString();
+            switch (os.Platform)
+            {
+                case PlatformID.Win32NT:
+                case PlatformID.Win32S:
+                case PlatformID.Win32Windows:
+                    pstring = "WIN";
+                    break;
+            }
+
+            return String.Format(
+              "{0}{1}/{2}.{3} UPnP/1.0 DLNADOC/1.5 MediaBrowser/{4}",
+              pstring,
+              IntPtr.Size * 8,
+              os.Version.Major,
+              os.Version.Minor,
+              _appHost.ApplicationVersion
+              );
         }
 
         void _config_ConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
@@ -116,13 +144,14 @@ namespace MediaBrowser.Dlna.Ssdp
             // Seconds to delay response
             values["MX"] = "3";
 
-            SendDatagram("M-SEARCH * HTTP/1.1", values, localIp);
+            // UDP is unreliable, so send 3 requests at a time (per Upnp spec, sec 1.1.2)
+            SendDatagram("M-SEARCH * HTTP/1.1", values, localIp, 2);
         }
 
         public void SendDatagram(string header,
             Dictionary<string, string> values,
             EndPoint localAddress,
-            int sendCount = 1)
+            int sendCount)
         {
             SendDatagram(header, values, _ssdpEndp, localAddress, false, sendCount);
         }
@@ -132,7 +161,7 @@ namespace MediaBrowser.Dlna.Ssdp
             EndPoint endpoint,
             EndPoint localAddress,
             bool ignoreBindFailure,
-            int sendCount = 1)
+            int sendCount)
         {
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
             var queued = false;
@@ -376,11 +405,11 @@ namespace MediaBrowser.Dlna.Ssdp
             }
             foreach (var d in RegisteredDevices)
             {
-                NotifyDevice(d, "alive");
+                NotifyDevice(d, "alive", 1);
             }
         }
 
-        private void NotifyDevice(UpnpDevice dev, string type, int sendCount = 1)
+        private void NotifyDevice(UpnpDevice dev, string type, int sendCount)
         {
             const string header = "NOTIFY * HTTP/1.1";
 

@@ -38,10 +38,6 @@ namespace MediaBrowser.Providers.BoxSets
                 list.AddRange(target.LinkedChildren.Where(i => i.Type == LinkedChildType.Manual));
 
                 target.LinkedChildren = list;
-            }
-
-            if (replaceData || target.Shares.Count == 0)
-            {
                 target.Shares = source.Shares;
             }
         }
