@@ -296,7 +296,7 @@ namespace MediaBrowser.Dlna.PlayTo
             }
 
             var post = AvCommands.BuildPost(command, service.ServiceType, url, dictionary);
-            await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, post, header)
+            await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, post, header: header)
                 .ConfigureAwait(false);
 
             await Task.Delay(50).ConfigureAwait(false);
@@ -466,7 +466,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType), false)
                 .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
@@ -499,7 +499,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType), false)
                 .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
@@ -521,7 +521,7 @@ namespace MediaBrowser.Dlna.PlayTo
             if (service == null)
                 return null;
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType))
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, AvCommands.BuildPost(command, service.ServiceType), false)
                 .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
@@ -558,7 +558,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType), false)
                 .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
@@ -589,7 +589,7 @@ namespace MediaBrowser.Dlna.PlayTo
                 throw new InvalidOperationException("Unable to find service");
             }
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType))
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType), false)
                 .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
