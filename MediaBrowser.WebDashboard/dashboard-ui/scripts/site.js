@@ -42,6 +42,11 @@ var Dashboard = {
         $.mobile.panel.prototype.options.classes.panel = "largePanel ui-panel";
     },
 
+    isRunningInCordova: function () {
+        var isCordovaApp = !!window.cordova;
+        return isCordovaApp;
+    },
+
     onRequestFail: function (e, data) {
 
         if (data.status == 401) {
@@ -228,28 +233,6 @@ var Dashboard = {
         setTimeout(function () {
             $.mobile.loading('hide');
         }, 3000);
-    },
-
-    alert: function (options) {
-
-        if (typeof options == "string") {
-
-            var message = options;
-
-            $.mobile.loading('show', {
-                text: message,
-                textonly: true,
-                textVisible: true
-            });
-
-            setTimeout(function () {
-                $.mobile.loading('hide');
-            }, 3000);
-
-            return;
-        }
-
-        Dashboard.confirmInternal(options.message, options.title || Globalize.translate('HeaderAlert'), false, options.callback);
     },
 
     updateSystemInfo: function (info) {
@@ -470,6 +453,53 @@ var Dashboard = {
         Dashboard.alert(Globalize.translate('MessageSettingsSaved'));
     },
 
+    alert: function (options) {
+
+        if (typeof options == "string") {
+
+            var message = options;
+
+            $.mobile.loading('show', {
+                text: message,
+                textonly: true,
+                textVisible: true
+            });
+
+            setTimeout(function () {
+                $.mobile.loading('hide');
+            }, 3000);
+
+            return;
+        }
+
+        if (Dashboard.isRunningInCordova()) {
+
+            navigator.notification.alert(options.message, options.callback || function () { }, options.title || Globalize.translate('HeaderAlert'));
+
+        } else {
+            Dashboard.confirmInternal(options.message, options.title || Globalize.translate('HeaderAlert'), false, options.callback);
+        }
+    },
+
+    confirm: function (message, title, callback) {
+
+        if (Dashboard.isRunningInCordova()) {
+
+            navigator.notification.alert(options.message, options.callback || function () { }, options.title || Globalize.translate('HeaderAlert'));
+
+            var buttonLabels = [Globalize.translate('ButtonOk'), Globalize.translate('ButtonCancel')];
+
+            navigator.notification.confirm(options.message, function (index) {
+
+                options.callback(index == 1);
+
+            }, options.title || Globalize.translate('HeaderAlert'), buttonLabels.join(','));
+
+        } else {
+            Dashboard.confirmInternal(message, title, true, callback);
+        }
+    },
+
     confirmInternal: function (message, title, showCancel, callback) {
 
         $('.confirmFlyout').popup("close").remove();
@@ -506,10 +536,6 @@ var Dashboard = {
 
             $(this).off("popupafterclose").remove();
         });
-    },
-
-    confirm: function (message, title, callback) {
-        Dashboard.confirmInternal(message, title, true, callback);
     },
 
     refreshSystemInfoFromServer: function () {
@@ -1339,10 +1365,24 @@ var Dashboard = {
             .on('serveraddresschanged.dashboard', Dashboard.onApiClientServerAddressChanged);
     }
 
-    var appName = "Dashboard";
     var appVersion = window.dashboardVersion;
-    var deviceName = generateDeviceName();
-    var deviceId = MediaBrowser.generateDeviceId();
+    var appName;
+    var deviceName;
+    var deviceId;
+
+    if (Dashboard.isRunningInCordova()) {
+
+        appName = "Emby Mobile";
+        deviceName = device.model;
+        deviceId = device.uuid;
+
+    } else {
+
+        appName = "Emby Web Client";
+        deviceName = generateDeviceName();
+        deviceId = MediaBrowser.generateDeviceId();
+    }
+
     var credentialProvider = new MediaBrowser.CredentialProvider();
 
     var capabilities = Dashboard.capabilities();
@@ -1412,10 +1452,10 @@ var Dashboard = {
 
 })();
 
-(function() {
-    
+(function () {
+
     function onReady() {
-        
+
         var videoPlayerHtml = '<div id="mediaPlayer" data-theme="b" class="ui-bar-b" style="display: none;">';
 
         videoPlayerHtml += '<div class="videoBackdrop">';
@@ -1530,8 +1570,17 @@ var Dashboard = {
         }
     }
 
-    $(onReady);
+    if (Dashboard.isRunningInCordova()) {
 
+        document.addEventListener("deviceready", function () {
+
+            $(onReady);
+
+        }, false);
+
+    } else {
+        $(onReady);
+    }
 })();
 
 Dashboard.jQueryMobileInit();

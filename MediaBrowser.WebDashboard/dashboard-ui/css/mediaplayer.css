@@ -1,16 +1,21 @@
 ﻿/* Now playing bar */
 .nowPlayingBar {
-    padding: 6px 0 14px 0;
+    padding: 16px 0 16px 0;
     border-top: 2px solid green;
     text-align: center;
 }
 
-.nowPlayingBarImage {
-    vertical-align: bottom;
-}
-
 .mediaButton {
     vertical-align: top;
+}
+
+.nowPlayingBar .mediaButton {
+    vertical-align: middle;
+    font-size: 30px;
+    color: #e8e8e8!important;
+    margin: 0 10px;
+    min-width: 30px;
+    text-align: center;
 }
 
 #mediaElement {
@@ -23,12 +28,14 @@
     font-weight: normal;
     position: relative;
     top: -7px;
-    margin: 0 10px 0 3px;
+    margin: 0 30px 0 3px;
     max-width: 200px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    vertical-align: middle;
     text-align: left;
+    font-size: 15px;
 }
 
 .nowPlayingDoubleText {
@@ -37,10 +44,11 @@
 
 .nowPlayingImage {
     display: inline-block;
+    vertical-align: middle;
 }
 
     .nowPlayingImage img {
-        height: 40px;
+        height: 50px;
         margin-right: .5em;
         vertical-align: bottom;
     }
@@ -59,7 +67,8 @@
 }
 
 .nowPlayingBar .currentTime {
-    top: -15px;
+    top: inherit;
+    vertical-align: middle;
 }
 
 .mediaSlider {
@@ -78,7 +87,8 @@
 }
 
 .nowPlayingBar .sliderContainer {
-    margin-top: 14px;
+    margin-top: 10px;
+    vertical-align: middle;
 }
 
 .volumeSliderContainer {
@@ -131,7 +141,7 @@ input[type="range"]::-ms-fill-upper {
         margin-bottom: 0;
     }
 
-        .nowPlayingBar .mediaButton:not(#playButton):not(#pauseButton):not(.remoteControlButton) {
+        .nowPlayingBar .mediaButton:not(.playButton):not(.pauseButton):not(.remoteControlButton) {
             display: none;
         }
 
@@ -139,7 +149,7 @@ input[type="range"]::-ms-fill-upper {
         float: right;
     }
 
-    .nowPlayingBar #playButton, .nowPlayingBar #pauseButton {
+    .nowPlayingBar .playButton, .nowPlayingBar .pauseButton {
         float: right;
     }
 
