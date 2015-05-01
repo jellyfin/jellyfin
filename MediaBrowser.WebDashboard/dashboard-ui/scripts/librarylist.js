@@ -887,6 +887,14 @@
 
             itemsContainer.trigger('playallfromhere', [index]);
         }
+        else if (action == 'setplaylistindex') {
+
+            index = elemWithAttributes.getAttribute('data-index');
+
+            closeContextMenu();
+
+            MediaController.currentPlaylistIndex(index);
+        }
         else if (action == 'photoslideshow') {
 
             if (!$(elem).hasClass('card')) {

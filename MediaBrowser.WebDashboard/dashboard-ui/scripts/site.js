@@ -1412,121 +1412,127 @@ var Dashboard = {
 
 })();
 
-$(function () {
+(function() {
+    
+    function onReady() {
+        
+        var videoPlayerHtml = '<div id="mediaPlayer" data-theme="b" class="ui-bar-b" style="display: none;">';
 
-    var videoPlayerHtml = '<div id="mediaPlayer" data-theme="b" class="ui-bar-b" style="display: none;">';
+        videoPlayerHtml += '<div class="videoBackdrop">';
+        videoPlayerHtml += '<div id="videoPlayer">';
 
-    videoPlayerHtml += '<div class="videoBackdrop">';
-    videoPlayerHtml += '<div id="videoPlayer">';
+        videoPlayerHtml += '<div id="videoElement">';
+        videoPlayerHtml += '<div id="play" class="status"></div>';
+        videoPlayerHtml += '<div id="pause" class="status"></div>';
+        videoPlayerHtml += '</div>';
 
-    videoPlayerHtml += '<div id="videoElement">';
-    videoPlayerHtml += '<div id="play" class="status"></div>';
-    videoPlayerHtml += '<div id="pause" class="status"></div>';
-    videoPlayerHtml += '</div>';
+        videoPlayerHtml += '<div class="videoTopControls hiddenOnIdle">';
+        videoPlayerHtml += '<div class="videoTopControlsLogo"></div>';
+        videoPlayerHtml += '<div class="videoAdvancedControls">';
 
-    videoPlayerHtml += '<div class="videoTopControls hiddenOnIdle">';
-    videoPlayerHtml += '<div class="videoTopControlsLogo"></div>';
-    videoPlayerHtml += '<div class="videoAdvancedControls">';
+        videoPlayerHtml += '<button class="mediaButton videoTrackControl previousTrackButton" title="Previous video" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPreviousTrack') + '</button>';
+        videoPlayerHtml += '<button class="mediaButton videoTrackControl nextTrackButton" title="Next video" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonNextTrack') + '</button>';
 
-    videoPlayerHtml += '<button class="mediaButton videoTrackControl previousTrackButton" title="Previous video" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPreviousTrack') + '</button>';
-    videoPlayerHtml += '<button class="mediaButton videoTrackControl nextTrackButton" title="Next video" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonNextTrack') + '</button>';
+        videoPlayerHtml += '<button class="mediaButton videoAudioButton" title="Audio tracks" type="button" data-icon="audiocd" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonAudioTracks') + '</button>';
+        videoPlayerHtml += '<div data-role="popup" class="videoAudioPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-    videoPlayerHtml += '<button class="mediaButton videoAudioButton" title="Audio tracks" type="button" data-icon="audiocd" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonAudioTracks') + '</button>';
-    videoPlayerHtml += '<div data-role="popup" class="videoAudioPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
+        videoPlayerHtml += '<button class="mediaButton videoSubtitleButton" title="Subtitles" type="button" data-icon="subtitles" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonFullscreen') + '</button>';
+        videoPlayerHtml += '<div data-role="popup" class="videoSubtitlePopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-    videoPlayerHtml += '<button class="mediaButton videoSubtitleButton" title="Subtitles" type="button" data-icon="subtitles" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonFullscreen') + '</button>';
-    videoPlayerHtml += '<div data-role="popup" class="videoSubtitlePopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
+        videoPlayerHtml += '<button class="mediaButton videoChaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonScenes') + '</button>';
+        videoPlayerHtml += '<div data-role="popup" class="videoChaptersPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-    videoPlayerHtml += '<button class="mediaButton videoChaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonScenes') + '</button>';
-    videoPlayerHtml += '<div data-role="popup" class="videoChaptersPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
+        videoPlayerHtml += '<button class="mediaButton videoQualityButton" title="Quality" type="button" data-icon="gear" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonQuality') + '</button>';
+        videoPlayerHtml += '<div data-role="popup" class="videoQualityPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-    videoPlayerHtml += '<button class="mediaButton videoQualityButton" title="Quality" type="button" data-icon="gear" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonQuality') + '</button>';
-    videoPlayerHtml += '<div data-role="popup" class="videoQualityPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
+        videoPlayerHtml += '<button class="mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-icon="delete" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonStop') + '</button>';
 
-    videoPlayerHtml += '<button class="mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-icon="delete" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonStop') + '</button>';
+        videoPlayerHtml += '</div>'; // videoAdvancedControls
+        videoPlayerHtml += '</div>'; // videoTopControls
 
-    videoPlayerHtml += '</div>'; // videoAdvancedControls
-    videoPlayerHtml += '</div>'; // videoTopControls
+        // Create controls
+        videoPlayerHtml += '<div class="videoControls hiddenOnIdle">';
 
-    // Create controls
-    videoPlayerHtml += '<div class="videoControls hiddenOnIdle">';
+        videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton videoTrackControl" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPreviousTrack') + '</button>';
+        videoPlayerHtml += '<button id="video-playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPlay') + '</button>';
+        videoPlayerHtml += '<button id="video-pauseButton" class="mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-icon="pause" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPause') + '</button>';
+        videoPlayerHtml += '<button id="video-nextTrackButton" class="mediaButton nextTrackButton videoTrackControl" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonNextTrack') + '</button>';
 
-    videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton videoTrackControl" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPreviousTrack') + '</button>';
-    videoPlayerHtml += '<button id="video-playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPlay') + '</button>';
-    videoPlayerHtml += '<button id="video-pauseButton" class="mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-icon="pause" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPause') + '</button>';
-    videoPlayerHtml += '<button id="video-nextTrackButton" class="mediaButton nextTrackButton videoTrackControl" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonNextTrack') + '</button>';
+        videoPlayerHtml += '<div class="positionSliderContainer sliderContainer">';
+        videoPlayerHtml += '<input type="range" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
+        videoPlayerHtml += '</div>';
 
-    videoPlayerHtml += '<div class="positionSliderContainer sliderContainer">';
-    videoPlayerHtml += '<input type="range" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
-    videoPlayerHtml += '</div>';
+        videoPlayerHtml += '<div class="currentTime">--:--</div>';
 
-    videoPlayerHtml += '<div class="currentTime">--:--</div>';
+        videoPlayerHtml += '<div class="nowPlayingInfo hiddenOnIdle">';
+        videoPlayerHtml += '<div class="nowPlayingImage"></div>';
+        videoPlayerHtml += '<div class="nowPlayingText"></div>';
+        videoPlayerHtml += '</div>'; // nowPlayingInfo
 
-    videoPlayerHtml += '<div class="nowPlayingInfo hiddenOnIdle">';
-    videoPlayerHtml += '<div class="nowPlayingImage"></div>';
-    videoPlayerHtml += '<div class="nowPlayingText"></div>';
-    videoPlayerHtml += '</div>'; // nowPlayingInfo
+        videoPlayerHtml += '<button id="video-muteButton" class="mediaButton muteButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-icon="audio" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonMute') + '</button>';
+        videoPlayerHtml += '<button id="video-unmuteButton" class="mediaButton unmuteButton" title="Unmute" type="button" onclick="MediaPlayer.unMute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonUnmute') + '</button>';
 
-    videoPlayerHtml += '<button id="video-muteButton" class="mediaButton muteButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-icon="audio" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonMute') + '</button>';
-    videoPlayerHtml += '<button id="video-unmuteButton" class="mediaButton unmuteButton" title="Unmute" type="button" onclick="MediaPlayer.unMute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonUnmute') + '</button>';
+        videoPlayerHtml += '<div class="volumeSliderContainer sliderContainer">';
+        videoPlayerHtml += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="1" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
+        videoPlayerHtml += '</div>';
 
-    videoPlayerHtml += '<div class="volumeSliderContainer sliderContainer">';
-    videoPlayerHtml += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="1" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
-    videoPlayerHtml += '</div>';
+        videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="expand" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonFullscreen') + '</button>';
 
-    videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="expand" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonFullscreen') + '</button>';
+        videoPlayerHtml += '</div>'; // videoControls
 
-    videoPlayerHtml += '</div>'; // videoControls
+        videoPlayerHtml += '</div>'; // videoPlayer
+        videoPlayerHtml += '</div>'; // videoBackdrop
+        videoPlayerHtml += '</div>'; // mediaPlayer
 
-    videoPlayerHtml += '</div>'; // videoPlayer
-    videoPlayerHtml += '</div>'; // videoBackdrop
-    videoPlayerHtml += '</div>'; // mediaPlayer
+        $(document.body).append(videoPlayerHtml);
 
-    $(document.body).append(videoPlayerHtml);
+        var mediaPlayerElem = $('#mediaPlayer', document.body);
+        mediaPlayerElem.trigger('create');
 
-    var mediaPlayerElem = $('#mediaPlayer', document.body);
-    mediaPlayerElem.trigger('create');
+        var footerHtml = '<div id="footer" data-theme="b" class="ui-bar-b">';
 
-    var footerHtml = '<div id="footer" data-theme="b" class="ui-bar-b">';
+        footerHtml += '<div id="footerNotifications"></div>';
+        footerHtml += '</div>';
 
-    footerHtml += '<div id="footerNotifications"></div>';
-    footerHtml += '</div>';
+        $(document.body).append(footerHtml);
 
-    $(document.body).append(footerHtml);
+        var footerElem = $('#footer', document.body);
+        footerElem.trigger('create');
 
-    var footerElem = $('#footer', document.body);
-    footerElem.trigger('create');
+        $(window).on("beforeunload", function () {
 
-    $(window).on("beforeunload", function () {
+            var apiClient = ConnectionManager.currentApiClient();
 
-        var apiClient = ConnectionManager.currentApiClient();
+            // Close the connection gracefully when possible
+            if (apiClient && apiClient.isWebSocketOpen() && !MediaPlayer.isPlaying()) {
 
-        // Close the connection gracefully when possible
-        if (apiClient && apiClient.isWebSocketOpen() && !MediaPlayer.isPlaying()) {
+                console.log('Sending close web socket command');
+                apiClient.closeWebSocket();
+            }
+        });
 
-            console.log('Sending close web socket command');
-            apiClient.closeWebSocket();
+        $(document).on('contextmenu', '.ui-popup-screen', function (e) {
+
+            $('.ui-popup').popup('close');
+
+            e.preventDefault();
+            return false;
+        });
+
+        function isTouchDevice() {
+            return (('ontouchstart' in window)
+                 || (navigator.MaxTouchPoints > 0)
+                 || (navigator.msMaxTouchPoints > 0));
         }
-    });
 
-    $(document).on('contextmenu', '.ui-popup-screen', function (e) {
-
-        $('.ui-popup').popup('close');
-
-        e.preventDefault();
-        return false;
-    });
-
-    function isTouchDevice() {
-        return (('ontouchstart' in window)
-             || (navigator.MaxTouchPoints > 0)
-             || (navigator.msMaxTouchPoints > 0));
+        if (isTouchDevice()) {
+            $(document.body).addClass('touch');
+        }
     }
 
-    if (isTouchDevice()) {
-        $(document.body).addClass('touch');
-    }
-});
+    $(onReady);
+
+})();
 
 Dashboard.jQueryMobileInit();
 
