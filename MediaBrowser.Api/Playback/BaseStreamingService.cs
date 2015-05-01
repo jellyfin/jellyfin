@@ -598,7 +598,7 @@ namespace MediaBrowser.Api.Playback
                 var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
                 var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
 
-                filters.Add(string.Format("scale=trunc(min(iw\\,{0})/2)*2:trunc(min((iw/dar)\\,{1})/2)*2", maxWidthParam, maxHeightParam));
+                filters.Add(string.Format("scale=trunc(min(max(iw\\,ih*dar)\\,min({0}\\,{1}*dar))/2)*2:trunc(min(max(iw/dar\\,ih)\\,min({0}/dar\\,{1}))/2)*2", maxWidthParam, maxHeightParam));
             }
 
             // If a fixed width was requested
@@ -618,7 +618,7 @@ namespace MediaBrowser.Api.Playback
             }
 
             // If a max width was requested
-            else if (request.MaxWidth.HasValue && (!request.MaxHeight.HasValue || state.VideoStream == null))
+            else if (request.MaxWidth.HasValue)
             {
                 var maxWidthParam = request.MaxWidth.Value.ToString(UsCulture);
 
@@ -626,33 +626,11 @@ namespace MediaBrowser.Api.Playback
             }
 
             // If a max height was requested
-            else if (request.MaxHeight.HasValue && (!request.MaxWidth.HasValue || state.VideoStream == null))
+            else if (request.MaxHeight.HasValue)
             {
                 var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
 
                 filters.Add(string.Format("scale=trunc(oh*a*2)/2:min(ih\\,{0})", maxHeightParam));
-            }
-
-            else if (request.MaxWidth.HasValue ||
-                request.MaxHeight.HasValue ||
-                request.Width.HasValue ||
-                request.Height.HasValue)
-            {
-                if (state.VideoStream != null)
-                {
-                    // Need to perform calculations manually
-
-                    // Try to account for bad media info
-                    var currentHeight = state.VideoStream.Height ?? request.MaxHeight ?? request.Height ?? 0;
-                    var currentWidth = state.VideoStream.Width ?? request.MaxWidth ?? request.Width ?? 0;
-
-                    var outputSize = DrawingUtils.Resize(currentWidth, currentHeight, request.Width, request.Height, request.MaxWidth, request.MaxHeight);
-
-                    var manualWidthParam = outputSize.Width.ToString(UsCulture);
-                    var manualHeightParam = outputSize.Height.ToString(UsCulture);
-
-                    filters.Add(string.Format("scale=trunc({0}/2)*2:trunc({1}/2)*2", manualWidthParam, manualHeightParam));
-                }
             }
 
             if (string.Equals(outputVideoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
