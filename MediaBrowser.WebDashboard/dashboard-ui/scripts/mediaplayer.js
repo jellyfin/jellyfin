@@ -126,7 +126,7 @@
 
             profile.DirectPlayProfiles = [];
             profile.DirectPlayProfiles.push({
-                Container: 'mp4',
+                Container: 'mp4,m4v',
                 Type: 'Video',
                 VideoCodec: 'h264',
                 AudioCodec: 'aac,mp3'
@@ -134,7 +134,7 @@
 
             if ($.browser.chrome) {
                 profile.DirectPlayProfiles.push({
-                    Container: 'mkv,m4v',
+                    Container: 'mkv',
                     Type: 'Video',
                     VideoCodec: 'h264',
                     AudioCodec: 'aac,mp3'
@@ -310,6 +310,14 @@
                     Method: 'External'
                 });
             }
+
+            profile.ResponseProfiles = [];
+
+            profile.ResponseProfiles.push({
+                Type: 'Video',
+                Container: 'm4v',
+                MimeType: 'video/mp4'
+            });
 
             return profile;
         };
@@ -1588,6 +1596,10 @@
         };
 
         self.canAutoPlayAudio = function () {
+
+            if (Dashboard.isRunningInCordova()) {
+                return true;
+            }
 
             if ($.browser.android || ($.browser.webkit && !$.browser.chrome)) {
                 return false;

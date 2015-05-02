@@ -591,7 +591,7 @@
 
         var clientLowered = connection.Client.toLowerCase();
 
-        if (clientLowered == "dashboard" || clientLowered == "emby web client") {
+        if (clientLowered == "dashboard" || clientLowered == "emby web client" || clientLowered == "emby mobile") {
 
             var device = connection.DeviceName.toLowerCase();
 

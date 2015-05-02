@@ -62,7 +62,7 @@
 
     $.fn.lazyChildren = function () {
 
-        $(".lazy", this).unveil(200);
+        $(".lazy", this).unveil(300);
         return this;
     };
 

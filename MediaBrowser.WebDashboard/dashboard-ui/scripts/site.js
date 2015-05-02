@@ -43,8 +43,8 @@ var Dashboard = {
     },
 
     isRunningInCordova: function () {
-        var isCordovaApp = !!window.cordova;
-        return isCordovaApp;
+
+        return window.appMode == 'cordova';
     },
 
     onRequestFail: function (e, data) {
@@ -186,6 +186,10 @@ var Dashboard = {
     },
 
     isConnectMode: function () {
+
+        if (Dashboard.isRunningInCordova()) {
+            return true;
+        }
 
         var url = getWindowUrl().toLowerCase();
 
@@ -472,7 +476,8 @@ var Dashboard = {
             return;
         }
 
-        if (Dashboard.isRunningInCordova()) {
+        // Cordova
+        if (navigator.notification && navigator.notification.alert && options.message.indexOf('<') == -1) {
 
             navigator.notification.alert(options.message, options.callback || function () { }, options.title || Globalize.translate('HeaderAlert'));
 
@@ -483,17 +488,16 @@ var Dashboard = {
 
     confirm: function (message, title, callback) {
 
-        if (Dashboard.isRunningInCordova()) {
-
-            navigator.notification.alert(options.message, options.callback || function () { }, options.title || Globalize.translate('HeaderAlert'));
+        // Cordova
+        if (navigator.notification && navigator.notification.alert && message.indexOf('<') == -1) {
 
             var buttonLabels = [Globalize.translate('ButtonOk'), Globalize.translate('ButtonCancel')];
 
-            navigator.notification.confirm(options.message, function (index) {
+            navigator.notification.confirm(message, function (index) {
 
-                options.callback(index == 1);
+                callback(index == 1);
 
-            }, options.title || Globalize.translate('HeaderAlert'), buttonLabels.join(','));
+            }, title || Globalize.translate('HeaderAlert'), buttonLabels.join(','));
 
         } else {
             Dashboard.confirmInternal(message, title, true, callback);
@@ -1311,46 +1315,94 @@ var Dashboard = {
             PlayableMediaTypes: "Audio,Video",
 
             SupportedCommands: Dashboard.getSupportedRemoteCommands().join(','),
-            SupportsPersistentIdentifier: false,
+            SupportsPersistentIdentifier: Dashboard.isRunningInCordova(),
             SupportsMediaControl: true,
             SupportedLiveMediaTypes: ['Audio', 'Video']
+        };
+    },
+
+    getDefaultImageQuality: function (imageType) {
+
+        var quality = 90;
+        var isBackdrop = imageType.toLowerCase() == 'backdrop';
+
+        if (isBackdrop) {
+            quality -= 10;
+        }
+
+        if ($.browser.safari && $.browser.mobile) {
+
+            quality -= 10;
+
+            if (isBackdrop) {
+                quality -= 10;
+            }
+        }
+
+        return quality;
+    },
+
+    getAppInfo: function () {
+
+        function generateDeviceName() {
+
+            var name = "Web Browser";
+
+            if ($.browser.chrome) {
+                name = "Chrome";
+            } else if ($.browser.safari) {
+                name = "Safari";
+            } else if ($.browser.webkit) {
+                name = "WebKit";
+            } else if ($.browser.msie) {
+                name = "Internet Explorer";
+            } else if ($.browser.opera) {
+                name = "Opera";
+            } else if ($.browser.firefox || $.browser.mozilla) {
+                name = "Firefox";
+            }
+
+            if ($.browser.version) {
+                name += " " + $.browser.version;
+            }
+
+            if ($.browser.ipad) {
+                name += " Ipad";
+            } else if ($.browser.iphone) {
+                name += " Iphone";
+            } else if ($.browser.android) {
+                name += " Android";
+            }
+            return name;
+        }
+
+        var appVersion = window.dashboardVersion;
+        var appName = "Emby Mobile";
+        var deviceName;
+        var deviceId;
+
+        // Cordova
+        if (window.device) {
+
+            deviceName = device.model;
+            deviceId = device.uuid;
+
+        } else {
+
+            deviceName = generateDeviceName();
+            deviceId = MediaBrowser.generateDeviceId();
+        }
+
+        return {
+            appName: appName,
+            appVersion: appVersion,
+            deviceName: deviceName,
+            deviceId: deviceId
         };
     }
 };
 
 (function () {
-
-    function generateDeviceName() {
-
-        var name = "Web Browser";
-
-        if ($.browser.chrome) {
-            name = "Chrome";
-        } else if ($.browser.safari) {
-            name = "Safari";
-        } else if ($.browser.webkit) {
-            name = "WebKit";
-        } else if ($.browser.msie) {
-            name = "Internet Explorer";
-        } else if ($.browser.opera) {
-            name = "Opera";
-        } else if ($.browser.firefox || $.browser.mozilla) {
-            name = "Firefox";
-        }
-
-        if ($.browser.version) {
-            name += " " + $.browser.version;
-        }
-
-        if ($.browser.ipad) {
-            name += " Ipad";
-        } else if ($.browser.iphone) {
-            name += " Iphone";
-        } else if ($.browser.android) {
-            name += " Android";
-        }
-        return name;
-    }
 
     if (!window.WebSocket) {
 
@@ -1365,94 +1417,58 @@ var Dashboard = {
             .on('serveraddresschanged.dashboard', Dashboard.onApiClientServerAddressChanged);
     }
 
-    var appVersion = window.dashboardVersion;
-    var appName;
-    var deviceName;
-    var deviceId;
+    function createConnectionManager() {
 
-    if (Dashboard.isRunningInCordova()) {
+        var appInfo = Dashboard.getAppInfo();
 
-        appName = "Emby Mobile";
-        deviceName = device.model;
-        deviceId = device.uuid;
+        var credentialProvider = new MediaBrowser.CredentialProvider();
 
-    } else {
+        var capabilities = Dashboard.capabilities();
 
-        appName = "Emby Web Client";
-        deviceName = generateDeviceName();
-        deviceId = MediaBrowser.generateDeviceId();
-    }
+        window.ConnectionManager = new MediaBrowser.ConnectionManager(Logger, credentialProvider, appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, capabilities);
 
-    var credentialProvider = new MediaBrowser.CredentialProvider();
+        if (Dashboard.isConnectMode()) {
 
-    var capabilities = Dashboard.capabilities();
+            $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
 
-    window.ConnectionManager = new MediaBrowser.ConnectionManager(Logger, credentialProvider, appName, appVersion, deviceName, deviceId, capabilities);
+                initializeApiClient(apiClient);
+            });
 
-    if (Dashboard.isConnectMode()) {
+            if (!Dashboard.isServerlessPage()) {
 
-        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+                if (Dashboard.serverAddress() && Dashboard.getCurrentUserId() && Dashboard.getAccessToken()) {
 
-            initializeApiClient(apiClient);
-        });
+                    window.ApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId);
 
-        if (!Dashboard.isServerlessPage()) {
+                    ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
 
-            if (Dashboard.serverAddress() && Dashboard.getCurrentUserId() && Dashboard.getAccessToken()) {
+                    initializeApiClient(ApiClient);
 
-                window.ApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId);
+                    ConnectionManager.addApiClient(ApiClient, true).fail(Dashboard.logout);
+                } else {
 
-                ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
-
-                initializeApiClient(ApiClient);
-
-                ConnectionManager.addApiClient(ApiClient, true).fail(Dashboard.logout);
-            } else {
-
-                Dashboard.logout();
-                return;
-            }
-        }
-
-    } else {
-
-        window.ApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appName, appVersion, deviceName, deviceId);
-
-        ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
-
-        initializeApiClient(ApiClient);
-
-        ConnectionManager.addApiClient(ApiClient);
-    }
-
-    if (window.ApiClient) {
-        Dashboard.importCss(ApiClient.getUrl('Branding/Css'));
-
-        ApiClient.getDefaultImageQuality = function (imageType) {
-
-            var quality = 90;
-            var isBackdrop = imageType.toLowerCase() == 'backdrop';
-
-            if (isBackdrop) {
-                quality -= 10;
-            }
-
-            if ($.browser.safari && $.browser.mobile) {
-
-                quality -= 10;
-
-                if (isBackdrop) {
-                    quality -= 10;
+                    Dashboard.logout();
+                    return;
                 }
             }
 
-            return quality;
-        };
+        } else {
+
+            window.ApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId);
+
+            ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
+
+            initializeApiClient(ApiClient);
+
+            ConnectionManager.addApiClient(ApiClient);
+        }
+
+        if (window.ApiClient) {
+            Dashboard.importCss(ApiClient.getUrl('Branding/Css'));
+
+            ApiClient.getDefaultImageQuality = Dashboard.getDefaultImageQuality;
+        }
     }
-
-})();
-
-(function () {
 
     function onReady() {
 
@@ -1572,6 +1588,8 @@ var Dashboard = {
 
     if (Dashboard.isRunningInCordova()) {
 
+        createConnectionManager();
+
         document.addEventListener("deviceready", function () {
 
             $(onReady);
@@ -1579,6 +1597,9 @@ var Dashboard = {
         }, false);
 
     } else {
+
+        createConnectionManager();
+
         $(onReady);
     }
 })();

@@ -910,11 +910,20 @@
 
         self.canAutoPlayVideo = function () {
 
+            if (Dashboard.isRunningInCordova()) {
+                return true;
+            }
+
             if ($.browser.msie || $.browser.mobile) {
                 return false;
             }
 
             return true;
+        };
+
+        self.enableCustomVideoControls = function () {
+
+            return self.canAutoPlayVideo() && !$.browser.mobile;
         };
 
         // Replace audio version
@@ -996,7 +1005,7 @@
             // Create video player
             var html = '';
 
-            var requiresNativeControls = !self.canAutoPlayVideo();
+            var requiresNativeControls = !self.enableCustomVideoControls();
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresNativeControls) {
@@ -1202,7 +1211,7 @@
         self.updatePlaylistUi = function () {
             var index = self.currentPlaylistIndex(null),
                 length = self.playlist.length,
-                requiresNativeControls = !self.canAutoPlayVideo(),
+                requiresNativeControls = !self.enableCustomVideoControls(),
                 controls = $(requiresNativeControls ? '.videoAdvancedControls' : '.videoControls');
 
             if (length < 2) {

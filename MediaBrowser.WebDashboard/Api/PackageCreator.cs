@@ -32,8 +32,10 @@ namespace MediaBrowser.WebDashboard.Api
         }
 
         public async Task<Stream> GetResource(string path,
+            string mode, 
             string localizationCulture,
-            string appVersion, bool enableMinification)
+            string appVersion, 
+            bool enableMinification)
         {
             var isHtml = IsHtml(path);
 
@@ -41,7 +43,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (path.Equals("scripts/all.js", StringComparison.OrdinalIgnoreCase))
             {
-                resourceStream = await GetAllJavascript(localizationCulture, appVersion, enableMinification).ConfigureAwait(false);
+                resourceStream = await GetAllJavascript(mode, localizationCulture, appVersion, enableMinification).ConfigureAwait(false);
             }
             else if (path.Equals("css/all.css", StringComparison.OrdinalIgnoreCase))
             {
@@ -58,7 +60,7 @@ namespace MediaBrowser.WebDashboard.Api
                 // jQuery ajax doesn't seem to handle if-modified-since correctly
                 if (isHtml)
                 {
-                    resourceStream = await ModifyHtml(resourceStream, localizationCulture, enableMinification).ConfigureAwait(false);
+                    resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
                 }
             }
 
@@ -106,10 +108,11 @@ namespace MediaBrowser.WebDashboard.Api
         /// Modifies the HTML by adding common meta tags, css and js.
         /// </summary>
         /// <param name="sourceStream">The source stream.</param>
+        /// <param name="mode">The mode.</param>
         /// <param name="localizationCulture">The localization culture.</param>
         /// <param name="enableMinification">if set to <c>true</c> [enable minification].</param>
         /// <returns>Task{Stream}.</returns>
-        public async Task<Stream> ModifyHtml(Stream sourceStream, string localizationCulture, bool enableMinification)
+        public async Task<Stream> ModifyHtml(Stream sourceStream, string mode, string localizationCulture, bool enableMinification)
         {
             using (sourceStream)
             {
@@ -155,7 +158,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                 var version = GetType().Assembly.GetName().Version;
 
-                html = html.Replace("<head>", "<head>" + GetMetaTags() + GetCommonCss(version) + GetCommonJavascript(version));
+                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetCommonJavascript(mode, version));
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
@@ -172,12 +175,19 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets the meta tags.
         /// </summary>
         /// <returns>System.String.</returns>
-        private static string GetMetaTags()
+        private static string GetMetaTags(string mode)
         {
             var sb = new StringBuilder();
 
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'\">");
+            }
+
             sb.Append("<meta http-equiv=\"X-UA-Compatibility\" content=\"IE=Edge\">");
-            sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\">");
+            sb.Append("<meta name=\"format-detection\" content=\"telephone=no\">");
+            sb.Append("<meta name=\"msapplication-tap-highlight\" content=\"no\">");
+            sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\">");
             sb.Append("<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">");
             sb.Append("<meta name=\"mobile-web-app-capable\" content=\"yes\">");
             sb.Append("<meta name=\"application-name\" content=\"Emby\">");
@@ -200,11 +210,12 @@ namespace MediaBrowser.WebDashboard.Api
         /// <summary>
         /// Gets the common CSS.
         /// </summary>
+        /// <param name="mode">The mode.</param>
         /// <param name="version">The version.</param>
         /// <returns>System.String.</returns>
-        private string GetCommonCss(Version version)
+        private string GetCommonCss(string mode, Version version)
         {
-            var versionString = "?v=" + version;
+            var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + version : string.Empty;
 
             var files = new[]
                             {
@@ -223,19 +234,25 @@ namespace MediaBrowser.WebDashboard.Api
         /// <summary>
         /// Gets the common javascript.
         /// </summary>
+        /// <param name="mode">The mode.</param>
         /// <param name="version">The version.</param>
         /// <returns>System.String.</returns>
-        private string GetCommonJavascript(Version version)
+        private string GetCommonJavascript(string mode, Version version)
         {
             var builder = new StringBuilder();
 
-            var versionString = "?v=" + version;
+            var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + version : string.Empty;
 
-            var files = new[]
-                            {
-                                "scripts/all.js" + versionString,
-                                "thirdparty/swipebox-master/js/jquery.swipebox.min.js" + versionString
+            var files = new List<string>
+            {
+                "scripts/all.js" + versionString,
+                "thirdparty/swipebox-master/js/jquery.swipebox.min.js" + versionString
             };
+
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                files.Insert(0, "cordova.js");
+            }
 
             var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
 
@@ -248,7 +265,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// Gets a stream containing all concatenated javascript
         /// </summary>
         /// <returns>Task{Stream}.</returns>
-        private async Task<Stream> GetAllJavascript(string culture, string version, bool enableMinification)
+        private async Task<Stream> GetAllJavascript(string mode, string culture, string version, bool enableMinification)
         {
             var memoryStream = new MemoryStream();
             var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
@@ -266,6 +283,12 @@ namespace MediaBrowser.WebDashboard.Api
 
             await AppendLocalization(memoryStream, culture).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
+
+            if (!string.IsNullOrWhiteSpace(mode))
+            {
+                var appModeBytes = Encoding.UTF8.GetBytes(string.Format("window.appMode='{0}';", mode));
+                await memoryStream.WriteAsync(appModeBytes, 0, appModeBytes.Length).ConfigureAwait(false);
+            }
 
             // Write the version string for the dashboard comparison function
             var versionString = string.Format("window.dashboardVersion='{0}';", version);
