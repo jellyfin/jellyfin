@@ -1377,20 +1377,34 @@ var Dashboard = {
         }
 
         var appVersion = window.dashboardVersion;
-        var appName = "Emby Mobile";
+        var appName = Dashboard.isConnectMode() ?
+            "Emby Mobile" :
+            "Emby Web Client";
+
         var deviceName;
         var deviceId;
 
         // Cordova
-        if (window.device) {
+        //if (window.device) {
 
-            deviceName = device.model;
-            deviceId = device.uuid;
+        //    deviceName = device.model;
+        //    deviceId = device.uuid;
 
-        } else {
+        //}
+        //else
+        {
 
             deviceName = generateDeviceName();
-            deviceId = MediaBrowser.generateDeviceId();
+
+            var seed = [];
+            var keyName = 'randomId';
+
+            if (Dashboard.isRunningInCordova()) {
+                seed.push('cordova');
+                keyName = 'cordovaDeviceId';
+            }
+
+            deviceId = MediaBrowser.generateDeviceId(keyName, seed.join(','));
         }
 
         return {
@@ -1445,6 +1459,7 @@ var Dashboard = {
                     initializeApiClient(ApiClient);
 
                     ConnectionManager.addApiClient(ApiClient, true).fail(Dashboard.logout);
+
                 } else {
 
                     Dashboard.logout();
@@ -1464,9 +1479,9 @@ var Dashboard = {
         }
 
         if (window.ApiClient) {
-            Dashboard.importCss(ApiClient.getUrl('Branding/Css'));
-
             ApiClient.getDefaultImageQuality = Dashboard.getDefaultImageQuality;
+
+            Dashboard.importCss(ApiClient.getUrl('Branding/Css'));
         }
     }
 
