@@ -21,7 +21,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly ILogger _logger;
 
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
-        private SqliteShrinkMemoryTimer _shrinkMemoryTimer;
         private readonly IServerApplicationPaths _appPaths;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
@@ -61,8 +60,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.RunQueries(queries, _logger);
 
             PrepareStatements();
-
-            _shrinkMemoryTimer = new SqliteShrinkMemoryTimer(_connection, _writeLock, _logger);
         }
 
         private void PrepareStatements()
@@ -446,12 +443,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     lock (_disposeLock)
                     {
-                        if (_shrinkMemoryTimer != null)
-                        {
-                            _shrinkMemoryTimer.Dispose();
-                            _shrinkMemoryTimer = null;
-                        }
-
                         if (_connection != null)
                         {
                             if (_connection.IsOpen())
