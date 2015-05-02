@@ -164,7 +164,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (mediaProfile != null && !string.IsNullOrEmpty(mediaProfile.OrgPn))
             {
-                orgPnValues.Add(mediaProfile.OrgPn);
+                orgPnValues.AddRange(mediaProfile.OrgPn.Split(','));
             }
             else
             {
