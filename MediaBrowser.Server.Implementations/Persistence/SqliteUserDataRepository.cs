@@ -11,13 +11,15 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
-    public class SqliteUserDataRepository : IUserDataRepository
+    public class SqliteUserDataRepository : BaseSqliteRepository, IUserDataRepository
     {
-        private readonly ILogger _logger;
-
-        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
-
         private IDbConnection _connection;
+        private readonly IApplicationPaths _appPaths;
+
+        public SqliteUserDataRepository(ILogManager logManager, IApplicationPaths appPaths) : base(logManager)
+        {
+            _appPaths = appPaths;
+        }
 
         /// <summary>
         /// Gets the name of the repository
@@ -32,30 +34,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
         }
 
         /// <summary>
-        /// The _app paths
-        /// </summary>
-        private readonly IApplicationPaths _appPaths;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SqliteUserDataRepository" /> class.
-        /// </summary>
-        /// <param name="appPaths">The app paths.</param>
-        /// <param name="logManager">The log manager.</param>
-        /// <exception cref="System.ArgumentNullException">jsonSerializer
-        /// or
-        /// appPaths</exception>
-        public SqliteUserDataRepository(IApplicationPaths appPaths, ILogManager logManager)
-        {
-            if (appPaths == null)
-            {
-                throw new ArgumentNullException("appPaths");
-            }
-
-            _appPaths = appPaths;
-            _logger = logManager.GetLogger(GetType().Name);
-        }
-
-        /// <summary>
         /// Opens the connection to the database
         /// </summary>
         /// <returns>Task.</returns>
@@ -63,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "userdata_v2.db");
 
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
+            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
 
             string[] queries = {
 
@@ -77,7 +55,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "pragma shrink_memory"
                                };
 
-            _connection.RunQueries(queries, _logger);
+            _connection.RunQueries(queries, Logger);
         }
 
         /// <summary>
@@ -139,7 +117,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -178,7 +156,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save user data:", e);
+                Logger.ErrorException("Failed to save user data:", e);
 
                 if (transaction != null)
                 {
@@ -194,7 +172,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
@@ -209,7 +187,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -253,7 +231,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save user data:", e);
+                Logger.ErrorException("Failed to save user data:", e);
 
                 if (transaction != null)
                 {
@@ -269,7 +247,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
@@ -375,45 +353,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return userData;
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
+        protected override void CloseConnection()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private readonly object _disposeLock = new object();
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
+            if (_connection != null)
             {
-                try
+                if (_connection.IsOpen())
                 {
-                    lock (_disposeLock)
-                    {
-                        if (_connection != null)
-                        {
-                            if (_connection.IsOpen())
-                            {
-                                _connection.Close();
-                            }
+                    _connection.Close();
+                }
 
-                            _connection.Dispose();
-                            _connection = null;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error disposing database", ex);
-                }
+                _connection.Dispose();
+                _connection = null;
             }
         }
     }
