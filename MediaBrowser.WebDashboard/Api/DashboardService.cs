@@ -52,6 +52,7 @@ namespace MediaBrowser.WebDashboard.Api
     [Route("/dashboard/Package", "GET")]
     public class GetDashboardPackage
     {
+        public string Mode { get; set; }
     }
 
     /// <summary>
@@ -134,7 +135,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
-            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml(page.GetHtmlStream(), null, false));
+            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml(page.GetHtmlStream(), null, null, false));
         }
 
         /// <summary>
@@ -252,7 +253,7 @@ namespace MediaBrowser.WebDashboard.Api
             var minify = _serverConfigurationManager.Configuration.EnableDashboardResourceMinification;
 
             return GetPackageCreator()
-                .GetResource(path, localizationCulture, _appHost.ApplicationVersion.ToString(), minify);
+                .GetResource(path, null, localizationCulture, _appHost.ApplicationVersion.ToString(), minify);
         }
 
         private PackageCreator GetPackageCreator()
@@ -292,38 +293,40 @@ namespace MediaBrowser.WebDashboard.Api
 
             var appVersion = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
 
-            await DumpHtml(creator.DashboardUIPath, path, culture, appVersion);
-            await DumpJs(creator.DashboardUIPath, path, culture, appVersion);
+            var mode = request.Mode;
 
-            await DumpFile("scripts/all.js", Path.Combine(path, "scripts", "all.js"), culture, appVersion).ConfigureAwait(false);
-            await DumpFile("css/all.css", Path.Combine(path, "css", "all.css"), culture, appVersion).ConfigureAwait(false);
+            await DumpHtml(creator.DashboardUIPath, path, mode, culture, appVersion);
+            await DumpJs(creator.DashboardUIPath, path, mode, culture, appVersion);
+
+            await DumpFile("scripts/all.js", Path.Combine(path, "scripts", "all.js"), mode, culture, appVersion).ConfigureAwait(false);
+            await DumpFile("css/all.css", Path.Combine(path, "css", "all.css"), mode, culture, appVersion).ConfigureAwait(false);
  
             return "";
         }
 
-        private async Task DumpHtml(string source, string destination, string culture, string appVersion)
+        private async Task DumpHtml(string source, string destination, string mode, string culture, string appVersion)
         {
             foreach (var file in Directory.GetFiles(source, "*.html", SearchOption.TopDirectoryOnly))
             {
                 var filename = Path.GetFileName(file);
 
-                await DumpFile(filename, Path.Combine(destination, filename), culture, appVersion).ConfigureAwait(false);
+                await DumpFile(filename, Path.Combine(destination, filename), mode, culture, appVersion).ConfigureAwait(false);
             }
         }
 
-        private async Task DumpJs(string source, string destination, string culture, string appVersion)
+        private async Task DumpJs(string source, string mode, string destination, string culture, string appVersion)
         {
             foreach (var file in Directory.GetFiles(source, "*.js", SearchOption.TopDirectoryOnly))
             {
                 var filename = Path.GetFileName(file);
 
-                await DumpFile("scripts/" + filename, Path.Combine(destination, "scripts", filename), culture, appVersion).ConfigureAwait(false);
+                await DumpFile("scripts/" + filename, Path.Combine(destination, "scripts", filename), mode, culture, appVersion).ConfigureAwait(false);
             }
         }
 
-        private async Task DumpFile(string resourceVirtualPath, string destinationFilePath, string culture, string appVersion)
+        private async Task DumpFile(string resourceVirtualPath, string destinationFilePath, string mode, string culture, string appVersion)
         {
-            using (var stream = await GetPackageCreator().GetResource(resourceVirtualPath, culture, appVersion, true).ConfigureAwait(false))
+            using (var stream = await GetPackageCreator().GetResource(resourceVirtualPath, mode, culture, appVersion, true).ConfigureAwait(false))
             {
                 using (var fs = _fileSystem.GetFileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {
