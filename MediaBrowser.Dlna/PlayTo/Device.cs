@@ -463,10 +463,10 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (service == null)
             {
-                throw new InvalidOperationException("Unable to find service");
+                return;
             }
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType), false)
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType), true)
                 .ConfigureAwait(false);
 
             if (result == null || result.Document == null)
@@ -496,10 +496,10 @@ namespace MediaBrowser.Dlna.PlayTo
 
             if (service == null)
             {
-                throw new InvalidOperationException("Unable to find service");
+                return;
             }
 
-            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType), false)
+            var result = await new SsdpHttpClient(_httpClient, _config).SendCommandAsync(Properties.BaseUrl, service, command.Name, RendererCommands.BuildPost(command, service.ServiceType), true)
                 .ConfigureAwait(false);
 
             if (result == null || result.Document == null)

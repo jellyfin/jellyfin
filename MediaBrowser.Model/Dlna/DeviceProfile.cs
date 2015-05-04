@@ -34,7 +34,6 @@ namespace MediaBrowser.Model.Dlna
         public string ModelNumber { get; set; }
         public string ModelUrl { get; set; }
         public string SerialNumber { get; set; }
-        public bool IgnoreTranscodeByteRangeRequests { get; set; }
 
         public bool EnableAlbumArtInDidl { get; set; }
         public bool EnableSingleAlbumArtLimit { get; set; }
