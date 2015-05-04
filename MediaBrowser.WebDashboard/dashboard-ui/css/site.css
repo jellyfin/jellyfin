@@ -162,6 +162,30 @@ h1 a:hover {
     margin: -10px 0 0 -10px;
 }
 
+/**
+ * Note: I have omitted any vendor-prefixes for clarity.
+ * Adding them is left as an exercise for the reader.
+ */
+.headroom {
+    -webkit-transition: transform 200ms linear;
+    transition: transform 200ms linear;
+}
+
+.headroom--pinned {
+    -webkit-transform: translateY(0%);
+    transform: translateY(0%);
+}
+
+.headroom--unpinned {
+    -webkit-transform: translateY(-100%);
+    transform: translateY(-100%);
+}
+
+.libraryViewNav.headroom--unpinned {
+    -webkit-transform: translateY(-200%);
+    transform: translateY(-200%);
+}
+
 .largePanel {
     width: 270px;
 }
@@ -597,7 +621,7 @@ h1 .imageLink {
     z-index: 1097;
     color: #fff;
     border: 0 !important;
-    background-color: #1a1a1a;
+    background-color: rgba(26,26,26,.9);
 }
 
 .footerNotification {

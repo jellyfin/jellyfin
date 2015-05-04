@@ -122,7 +122,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 var audio = i as Audio;
                 if (audio != null)
                 {
-                    var album = audio.FindParent<MusicAlbum>();
+                    var album = audio.AlbumEntity;
                     if (album != null && album.HasImage(ImageType.Primary))
                     {
                         return album;

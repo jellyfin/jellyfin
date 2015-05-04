@@ -204,6 +204,16 @@
     color: #ddd;
 }
 
+/*.cardBox:not(.visualCardBox) .outerCardFooter .cardText {
+    font-size: 14px;
+    background: rgba(51, 51, 51,.6);
+    padding: 5px;
+}*/
+
+.cardBox:not(.visualCardBox) .outerCardFooter .cardText:last-child {
+    margin-bottom: 2em;
+}
+
 @media all and (max-width: 600px) {
 
     .packageReviewText {

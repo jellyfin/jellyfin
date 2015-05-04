@@ -1327,7 +1327,7 @@ var Dashboard = {
         var isBackdrop = imageType.toLowerCase() == 'backdrop';
 
         if (isBackdrop) {
-            quality -= 10;
+            quality -= 15;
         }
 
         if ($.browser.safari && $.browser.mobile) {

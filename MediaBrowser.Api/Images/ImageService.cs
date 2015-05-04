@@ -648,10 +648,8 @@ namespace MediaBrowser.Api.Images
 
             var serverFormats = _imageProcessor.GetSupportedImageOutputFormats();
 
-            var clientFormats = GetClientSupportedFormats();
-
             if (serverFormats.Contains(ImageFormat.Webp) &&
-                clientFormats.Contains(ImageFormat.Webp))
+                GetClientSupportedFormats().Contains(ImageFormat.Webp))
             {
                 return ImageFormat.Webp;
             }

@@ -1,4 +1,8 @@
-﻿
+﻿.tvGuideHeader.headroom--unpinned {
+    -webkit-transform: translateY(-98px);
+    transform: translateY(-98px);
+}
+
 .tvProgramSectionHeader {
     margin: 0;
 }
@@ -90,7 +94,7 @@
 }
 
 .tvProgram:hover, .tvProgram:hover .tvProgramInfo {
-    background-color: #4d90fe;
+    background-color: #444;
 }
 
 .timerCircle {
@@ -215,7 +219,7 @@
 }
 
 .channelHeaderCell:hover {
-    background-color: #38c;
+    background-color: #444;
 }
 
 .channelList {
@@ -254,7 +258,7 @@
 }
 
     .programCellInner:hover {
-        background-color: #38c;
+        background-color: #444;
     }
 
 .timeslotCellInner {
@@ -322,7 +326,7 @@
         width: 6500px;
     }
 
-    .channelList, .channelTimeslotHeader .accentButton  {
+    .channelList, .channelTimeslotHeader .accentButton {
         font-size: 14px;
     }
 

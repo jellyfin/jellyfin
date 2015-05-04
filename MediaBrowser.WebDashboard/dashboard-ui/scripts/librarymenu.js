@@ -90,6 +90,13 @@
             $('.libraryMenuButton').createHoverTouch().on('hovertouch', showLibraryMenu);
             $('.dashboardMenuButton').createHoverTouch().on('hovertouch', showDashboardMenu);
         }
+
+        // grab an element
+        var viewMenuBar = document.getElementsByClassName("viewMenuBar")[0];
+        // construct an instance of Headroom, passing the element
+        var headroom = new Headroom(viewMenuBar);
+        // initialise
+        headroom.init();
     }
 
     function getItemHref(item, context) {
@@ -534,6 +541,15 @@
             // Scroll back up so in case vertical scroll was messed with
             $(document).scrollTop(0);
         }
+
+        $('.libraryViewNav', page).each(function() {
+            
+            // construct an instance of Headroom, passing the element
+            var headroom = new Headroom(this);
+            // initialise
+            headroom.init();
+
+        });
     });
 
     function initializeApiClient(apiClient) {

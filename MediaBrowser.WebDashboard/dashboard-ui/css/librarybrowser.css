@@ -30,7 +30,7 @@
 
 .backdropContainer {
     position: fixed;
-    top: 50px;
+    top: 0;
     right: 0;
     left: 0;
     bottom: 0;
@@ -773,7 +773,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (max-height: 600px), (max-width: 600px) {
+@media all and (max-height: 540px), (max-width: 540px) {
 
     .itemBackdrop:not(.noBackdrop) {
         height: 280px;
