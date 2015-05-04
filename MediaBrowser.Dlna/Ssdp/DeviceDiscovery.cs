@@ -203,17 +203,24 @@ namespace MediaBrowser.Dlna.Ssdp
             string nts;
             args.Headers.TryGetValue("NTS", out nts);
 
+            if (String.Equals(nts, "ssdp:byebye", StringComparison.OrdinalIgnoreCase))
+            {
+                if (String.Equals(args.Method, "NOTIFY", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!_disposed)
+                    {
+                        EventHelper.FireEventIfNotNull(DeviceLeft, this, args, _logger);
+                    }
+                }
+
+                return;
+            }
+
             string usn;
             if (!args.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
 
             string nt;
             if (!args.Headers.TryGetValue("NT", out nt)) nt = string.Empty;
-
-            // Ignore when a device is indicating it's shutting down
-            if (string.Equals(nts, "ssdp:byebye", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
 
             // Need to be able to download device description
             string location;
