@@ -67,7 +67,7 @@ namespace MediaBrowser.Dlna.Ssdp
             }
 
             return String.Format(
-              "{0}{1}/{2}.{3} UPnP/1.0 DLNADOC/1.5 MediaBrowser/{4}",
+              "{0}{1}/{2}.{3} UPnP/1.0 DLNADOC/1.5 Emby/{4}",
               pstring,
               IntPtr.Size * 8,
               os.Version.Major,
