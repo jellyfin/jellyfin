@@ -88,24 +88,21 @@ namespace MediaBrowser.Dlna.Ssdp
 
         private async void OnMessageReceived(SsdpMessageEventArgs args)
         {
-            if (string.Equals(args.Method, "M-SEARCH", StringComparison.OrdinalIgnoreCase))
-            {
-                var headers = args.Headers;
+            var headers = args.Headers;
+            string st;
 
+            if (string.Equals(args.Method, "M-SEARCH", StringComparison.OrdinalIgnoreCase) && headers.TryGetValue("st", out st))
+            {
                 TimeSpan delay = GetSearchDelay(headers);
-                
+
                 if (_config.GetDlnaConfiguration().EnableDebugLogging)
                 {
                     _logger.Debug("Delaying search response by {0} seconds", delay.TotalSeconds);
                 }
-                
+
                 await Task.Delay(delay).ConfigureAwait(false);
 
-                string st;
-                if (headers.TryGetValue("st", out st))
-                {
-                    RespondToSearch(args.EndPoint, st);
-                }
+                RespondToSearch(args.EndPoint, st);
             }
 
             EventHelper.FireEventIfNotNull(MessageReceived, this, args, _logger);
