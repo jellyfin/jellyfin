@@ -281,6 +281,8 @@ namespace MediaBrowser.WebDashboard.Api
 
             await AppendResource(memoryStream, "thirdparty/jstree3.0.8/jstree.js", newLineBytes).ConfigureAwait(false);
 
+            await AppendResource(memoryStream, "thirdparty/headroom.js", newLineBytes).ConfigureAwait(false);
+            
             await AppendLocalization(memoryStream, culture).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
