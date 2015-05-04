@@ -544,7 +544,9 @@ namespace MediaBrowser.Dlna
                 new DirectTvProfile(),
                 new DishHopperJoeyProfile(),
                 new DefaultProfile(),
-                new PopcornHourProfile()
+                new PopcornHourProfile(),
+                new VlcProfile(),
+                new BubbleUpnpProfile()
             };
 
             foreach (var item in list)

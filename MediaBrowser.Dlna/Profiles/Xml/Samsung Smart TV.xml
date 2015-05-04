@@ -14,7 +14,6 @@
   <ModelDescription>Emby</ModelDescription>
   <ModelNumber>Emby</ModelNumber>
   <ModelUrl>http://emby.media/</ModelUrl>
-  <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <EnableAlbumArtInDidl>true</EnableAlbumArtInDidl>
   <EnableSingleAlbumArtLimit>false</EnableSingleAlbumArtLimit>
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
