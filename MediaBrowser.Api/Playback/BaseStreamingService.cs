@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Api.Playback
 {
@@ -68,12 +69,14 @@ namespace MediaBrowser.Api.Playback
         protected ISubtitleEncoder SubtitleEncoder { get; private set; }
         protected IMediaSourceManager MediaSourceManager { get; private set; }
         protected IZipClient ZipClient { get; private set; }
+        protected IJsonSerializer JsonSerializer { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseStreamingService" /> class.
         /// </summary>
-        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient)
+        protected BaseStreamingService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer)
         {
+            JsonSerializer = jsonSerializer;
             ZipClient = zipClient;
             MediaSourceManager = mediaSourceManager;
             DeviceManager = deviceManager;
@@ -1005,7 +1008,7 @@ namespace MediaBrowser.Api.Playback
             // FFMpeg writes debug/error info to stderr. This is useful when debugging so let's put it in the log directory.
             state.LogFileStream = FileSystem.GetFileStream(logFilePath, FileMode.Create, FileAccess.Write, FileShare.Read, true);
 
-            var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(Request.AbsoluteUri + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
+            var commandLineLogMessageBytes = Encoding.UTF8.GetBytes(Request.AbsoluteUri + Environment.NewLine + Environment.NewLine + JsonSerializer.SerializeToString(state.MediaSource) + Environment.NewLine + Environment.NewLine + commandLineLogMessage + Environment.NewLine + Environment.NewLine);
             await state.LogFileStream.WriteAsync(commandLineLogMessageBytes, 0, commandLineLogMessageBytes.Length, cancellationTokenSource.Token).ConfigureAwait(false);
 
             process.Exited += (sender, args) => OnFfMpegProcessExited(process, transcodingJob, state);

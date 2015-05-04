@@ -166,9 +166,11 @@ namespace MediaBrowser.Dlna.Ssdp
             var msg = new SsdpMessageBuilder().BuildMessage(header, values);
             var queued = false;
 
+            var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLogging;
+
             for (var i = 0; i < sendCount; i++)
             {
-                var dgram = new Datagram(endpoint, localAddress, _logger, msg, ignoreBindFailure);
+                var dgram = new Datagram(endpoint, localAddress, _logger, msg, ignoreBindFailure, enableDebugLogging);
 
                 if (_messageQueue.Count == 0)
                 {

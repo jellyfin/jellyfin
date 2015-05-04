@@ -158,7 +158,7 @@ namespace MediaBrowser.Model.Configuration
         /// different directories and files.
         /// </summary>
         /// <value>The file watcher delay.</value>
-        public int RealtimeMonitorDelay { get; set; }
+        public int RealtimeLibraryMonitorDelay { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [enable dashboard response caching].
@@ -233,7 +233,7 @@ namespace MediaBrowser.Model.Configuration
             // 5 minutes
             MinResumeDurationSeconds = 300;
 
-            RealtimeMonitorDelay = 30;
+            RealtimeLibraryMonitorDelay = 40;
 
             EnableInternetProviders = true;
             FindInternetTrailers = true;
@@ -261,8 +261,6 @@ namespace MediaBrowser.Model.Configuration
                 "Chromecast",
                 "iOS",
                 "Unknown app",
-                "MediaPortal",
-                "Media Portal",
                 "iPad",
                 "iPhone",
                 "Windows Phone"
