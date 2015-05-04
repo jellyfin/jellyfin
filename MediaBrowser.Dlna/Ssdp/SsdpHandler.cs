@@ -216,10 +216,7 @@ namespace MediaBrowser.Dlna.Ssdp
         {
             var enableDebugLogging = _config.GetDlnaConfiguration().EnableDebugLogging;
 
-            if (enableDebugLogging)
-            {
-                _logger.Debug("RespondToSearch");
-            }
+            var isLogged = false;
 
             const string header = "HTTP/1.1 200 OK";
 
@@ -228,6 +225,15 @@ namespace MediaBrowser.Dlna.Ssdp
                 if (string.Equals(deviceType, "ssdp:all", StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(deviceType, d.Type, StringComparison.OrdinalIgnoreCase))
                 {
+                    if (!isLogged)
+                    {
+                        if (enableDebugLogging)
+                        {
+                            _logger.Debug("Responding to search from {0} for {1}", endpoint, deviceType);
+                        }
+                        isLogged = true;
+                    }
+
                     var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                     values["CACHE-CONTROL"] = "max-age = 600";
