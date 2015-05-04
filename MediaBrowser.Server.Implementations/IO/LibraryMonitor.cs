@@ -437,11 +437,11 @@ namespace MediaBrowser.Server.Implementations.IO
             {
                 if (_updateTimer == null)
                 {
-                    _updateTimer = new Timer(TimerStopped, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.RealtimeMonitorDelay), TimeSpan.FromMilliseconds(-1));
+                    _updateTimer = new Timer(TimerStopped, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.RealtimeLibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
                 else
                 {
-                    _updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.RealtimeMonitorDelay), TimeSpan.FromMilliseconds(-1));
+                    _updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.RealtimeLibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
             }
         }
