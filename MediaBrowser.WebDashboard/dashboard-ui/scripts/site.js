@@ -1501,22 +1501,22 @@ var Dashboard = {
         videoPlayerHtml += '<div class="videoTopControlsLogo"></div>';
         videoPlayerHtml += '<div class="videoAdvancedControls">';
 
-        videoPlayerHtml += '<button class="mediaButton videoTrackControl previousTrackButton" title="Previous video" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPreviousTrack') + '</button>';
-        videoPlayerHtml += '<button class="mediaButton videoTrackControl nextTrackButton" title="Next video" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonNextTrack') + '</button>';
+        videoPlayerHtml += '<button class="mediaButton videoTrackControl previousTrackButton imageButton" title="Previous video" type="button" onclick="MediaPlayer.previousTrack();" data-role="none"><i class="fa fa-step-backward"></i></button>';
+        videoPlayerHtml += '<button class="mediaButton videoTrackControl nextTrackButton imageButton" title="Next video" type="button" onclick="MediaPlayer.nextTrack();" data-role="none"><i class="fa fa-step-forward"></i></button>';
 
-        videoPlayerHtml += '<button class="mediaButton videoAudioButton" title="Audio tracks" type="button" data-icon="audiocd" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonAudioTracks') + '</button>';
+        videoPlayerHtml += '<button class="mediaButton videoAudioButton imageButton" title="Audio tracks" type="button" data-role="none"><i class="fa fa-music"></i></button>';
         videoPlayerHtml += '<div data-role="popup" class="videoAudioPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-        videoPlayerHtml += '<button class="mediaButton videoSubtitleButton" title="Subtitles" type="button" data-icon="subtitles" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonFullscreen') + '</button>';
+        videoPlayerHtml += '<button class="mediaButton videoSubtitleButton imageButton" title="Subtitles" type="button" data-role="none"><i class="fa fa-text-width"></i></button>';
         videoPlayerHtml += '<div data-role="popup" class="videoSubtitlePopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-        videoPlayerHtml += '<button class="mediaButton videoChaptersButton" title="Scenes" type="button" data-icon="video" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonScenes') + '</button>';
+        videoPlayerHtml += '<button class="mediaButton videoChaptersButton imageButton" title="Scenes" type="button" data-role="none"><i class="fa fa-video-camera"></i></button>';
         videoPlayerHtml += '<div data-role="popup" class="videoChaptersPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-        videoPlayerHtml += '<button class="mediaButton videoQualityButton" title="Quality" type="button" data-icon="gear" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonQuality') + '</button>';
+        videoPlayerHtml += '<button class="mediaButton videoQualityButton imageButton" title="Quality" type="button" data-role="none"><i class="fa fa-gear"></i></button>';
         videoPlayerHtml += '<div data-role="popup" class="videoQualityPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-        videoPlayerHtml += '<button class="mediaButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-icon="delete" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonStop') + '</button>';
+        videoPlayerHtml += '<button class="mediaButton imageButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-role="none"><i class="fa fa-close"></i></button>';
 
         videoPlayerHtml += '</div>'; // videoAdvancedControls
         videoPlayerHtml += '</div>'; // videoTopControls
@@ -1524,10 +1524,15 @@ var Dashboard = {
         // Create controls
         videoPlayerHtml += '<div class="videoControls hiddenOnIdle">';
 
-        videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton videoTrackControl" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-icon="previous-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPreviousTrack') + '</button>';
-        videoPlayerHtml += '<button id="video-playButton" class="mediaButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-icon="play" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPlay') + '</button>';
-        videoPlayerHtml += '<button id="video-pauseButton" class="mediaButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-icon="pause" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPause') + '</button>';
-        videoPlayerHtml += '<button id="video-nextTrackButton" class="mediaButton nextTrackButton videoTrackControl" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-icon="next-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonNextTrack') + '</button>';
+        videoPlayerHtml += '<div class="nowPlayingInfo hiddenOnIdle">';
+        videoPlayerHtml += '<div class="nowPlayingImage"></div>';
+        videoPlayerHtml += '<div class="nowPlayingText"></div>';
+        videoPlayerHtml += '</div>'; // nowPlayingInfo
+
+        videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton videoTrackControl imageButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-role="none"><i class="fa fa-step-backward"></i></button>';
+        videoPlayerHtml += '<button id="video-playButton" class="mediaButton imageButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-role="none"><i class="fa fa-play"></i></button>';
+        videoPlayerHtml += '<button id="video-pauseButton" class="mediaButton imageButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-role="none"><i class="fa fa-pause"></i></button>';
+        videoPlayerHtml += '<button id="video-nextTrackButton" class="mediaButton nextTrackButton videoTrackControl imageButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-role="none"><i class="fa fa-step-forward"></i></button>';
 
         videoPlayerHtml += '<div class="positionSliderContainer sliderContainer">';
         videoPlayerHtml += '<input type="range" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
@@ -1535,19 +1540,14 @@ var Dashboard = {
 
         videoPlayerHtml += '<div class="currentTime">--:--</div>';
 
-        videoPlayerHtml += '<div class="nowPlayingInfo hiddenOnIdle">';
-        videoPlayerHtml += '<div class="nowPlayingImage"></div>';
-        videoPlayerHtml += '<div class="nowPlayingText"></div>';
-        videoPlayerHtml += '</div>'; // nowPlayingInfo
-
-        videoPlayerHtml += '<button id="video-muteButton" class="mediaButton muteButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-icon="audio" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonMute') + '</button>';
-        videoPlayerHtml += '<button id="video-unmuteButton" class="mediaButton unmuteButton" title="Unmute" type="button" onclick="MediaPlayer.unMute();" data-icon="volume-off" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonUnmute') + '</button>';
+        videoPlayerHtml += '<button id="video-muteButton" class="mediaButton muteButton imageButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-role="none"><i class="fa fa-volume-up"></i></button>';
+        videoPlayerHtml += '<button id="video-unmuteButton" class="mediaButton unmuteButton imageButton" title="Unmute" type="button" onclick="MediaPlayer.unMute();" data-role="none"><i class="fa fa-volume-off"></i></button>';
 
         videoPlayerHtml += '<div class="volumeSliderContainer sliderContainer">';
         videoPlayerHtml += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="1" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
         videoPlayerHtml += '</div>';
 
-        videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton" title="Fullscreen" type="button" data-icon="expand" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonFullscreen') + '</button>';
+        videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton imageButton" title="Fullscreen" type="button" data-role="none"><i class="fa fa-expand"></i></button>';
 
         videoPlayerHtml += '</div>'; // videoControls
 

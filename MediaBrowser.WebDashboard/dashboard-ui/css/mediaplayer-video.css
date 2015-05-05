@@ -47,7 +47,7 @@
 }
 
 .videoTopControls {
-    padding: .7em 1em;
+    padding: 1em;
     background-color: rgba(0, 0, 0, .5);
     position: absolute;
     left: 0;
@@ -59,10 +59,6 @@
 .videoAdvancedControls {
     text-align: right;
     vertical-align: top;
-}
-
-.videoControls .currentTime {
-    margin-top: 25px;
 }
 
 #slider-tooltip {
@@ -135,11 +131,11 @@
 
 #mediaPlayer .ui-slider-track, .nowPlayingBar .ui-slider-track, .nowPlayingPage .ui-slider-track {
     border-color: #2ad !important;
-    height: 2px!important;
+    height: 2px !important;
 }
 
 #videoPlayer .inactive {
-    display: none!important;
+    display: none !important;
 }
 
 .idlePlayer video {
@@ -149,6 +145,7 @@
 #mediaPlayer .sliderContainer {
     position: relative;
     top: 5px;
+    vertical-align: middle;
 }
 
 /****************************************/
@@ -190,10 +187,11 @@
 
 @media all and (max-width: 555px) {
     #mediaPlayer .videoControls .previousTrackButton, #mediaPlayer .videoControls .nextTrackButton {
-        display: none!important;
+        display: none !important;
     }
+
     .videoTopControlsLogo {
-        display: none!important;
+        display: none !important;
     }
 }
 

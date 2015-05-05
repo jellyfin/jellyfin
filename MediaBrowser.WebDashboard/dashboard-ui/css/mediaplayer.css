@@ -9,13 +9,17 @@
     vertical-align: top;
 }
 
-.nowPlayingBar .mediaButton {
+.mediaButton {
     vertical-align: middle;
     font-size: 30px;
-    color: #e8e8e8!important;
+    color: #e8e8e8 !important;
     margin: 0 10px;
     min-width: 30px;
     text-align: center;
+}
+
+.videoTopControls .mediaButton {
+    font-size: 26px;
 }
 
 #mediaElement {
@@ -28,14 +32,20 @@
     font-weight: normal;
     position: relative;
     top: -7px;
-    margin: 0 30px 0 3px;
-    max-width: 200px;
+    margin: 0 0 0 3px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     vertical-align: middle;
     text-align: left;
     font-size: 15px;
+    max-width: 200px;
+}
+
+@media (min-width: 800px) {
+    .nowPlayingText {
+        margin-right: 30px;
+    }
 }
 
 .nowPlayingDoubleText {
@@ -59,16 +69,10 @@
 
 .currentTime {
     display: inline-block;
-    position: relative;
-    top: -10px;
+    vertical-align: middle;
     max-width: 110px;
     margin-right: 2em;
     font-weight: normal;
-}
-
-.nowPlayingBar .currentTime {
-    top: inherit;
-    vertical-align: middle;
 }
 
 .mediaSlider {
@@ -108,7 +112,7 @@
 }
 
 .volumeButton {
-    margin-right: .5em!important;
+    margin-right: .5em !important;
 }
 
 ::-ms-thumb {
@@ -141,7 +145,7 @@ input[type="range"]::-ms-fill-upper {
         margin-bottom: 0;
     }
 
-        .nowPlayingBar .mediaButton:not(.unpauseButton):not(.pauseButton):not(.remoteControlButton) {
+        .nowPlayingBar .mediaButton:not(.unpauseButton):not(.pauseButton):not(.remoteControlButton):not(.stopButton) {
             display: none;
         }
 
@@ -149,7 +153,7 @@ input[type="range"]::-ms-fill-upper {
         float: right;
     }
 
-    .nowPlayingBar .unpauseButton, .nowPlayingBar .pauseButton {
+    .nowPlayingBar .unpauseButton, .nowPlayingBar .pauseButton, .nowPlayingBar .stopButton {
         float: right;
     }
 
@@ -158,7 +162,7 @@ input[type="range"]::-ms-fill-upper {
     }
 
     .nowPlayingBar {
-        padding: 10px 5px 10px 0;
+        padding: 10px 5px 10px 10px;
         text-align: left;
     }
 }

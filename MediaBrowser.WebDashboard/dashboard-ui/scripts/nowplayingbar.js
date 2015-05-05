@@ -21,7 +21,6 @@
         var html = '';
 
         html += '<div class="nowPlayingBar" style="display:none;">';
-        html += '<div style="display:inline-block;width:12px;"></div>';
 
         html += '<div class="nowPlayingImage"></div>';
         html += '<div class="nowPlayingText"></div>';
