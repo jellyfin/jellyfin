@@ -766,5 +766,6 @@
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
     "SyncJobItemStatusCancelled": "Cancelled",
     "LabelProfile": "Profile:",
-    "LabelBitrateMbps": "Bitrate (Mbps):"
+    "LabelBitrateMbps": "Bitrate (Mbps):",
+    "EmbyIntroDownloadMessage":  "To download and install Emby Server visit {0}."
 }

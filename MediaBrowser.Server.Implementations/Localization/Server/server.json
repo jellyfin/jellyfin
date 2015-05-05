@@ -1436,5 +1436,16 @@
     "LabelSelectViewStyles": "Enable enhanced presentations for:",
     "LabelSelectViewStylesHelp": "If enabled, views will be built with metadata to offer categories such as Suggestions, Latest, Genres, and more. If disabled, they'll be displayed with simple folders.",
     "TabPhotos": "Photos",
-    "TabVideos": "Videos"
+    "TabVideos": "Videos",
+    "HeaderWelcomeToEmby": "Welcome to Emby",
+    "EmbyIntroMessage": "With Emby you can easily stream videos, music and photos to smart phones, tablets and other devices from your Emby Server.",
+    "ButtonSkip": "Skip",
+    "TextConnectToServerManually": "Connect to server manually",
+    "ButtonNewServer": "New Server",
+    "ButtonSignInWithConnect": "Sign in with Emby Connect",
+    "HeaderNewServer": "New Server",
+    "ButtonConnect": "Connect",
+    "LabelServerHost": "Host:",
+    "LabelServerHostHelp": "192.168.1.100 or https://myserver.com",
+    "LabelServerPort": "Port:"
 }

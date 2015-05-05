@@ -202,9 +202,14 @@ button.btn:not(.btn-inline), button.btn-large:not(.btn-inline) {
     vertical-align: middle;
 }
 
-.btn:not(.btn-inline):not(.btnNoText) i {
+.btn:not(.btn-inline):not(.btnNoText):not(.btnIconRight) i {
     position: absolute;
     left: 10px;
+}
+
+.btnIconRight:not(.btn-inline):not(.btnNoText) i {
+    position: absolute;
+    right: 10px;
 }
 
 .btn-large i {

@@ -9,7 +9,7 @@
 
         <div data-role="content">
 
-            <form class="connectLoginForm" style="text-align: center; margin: 0 auto;">
+            <form class="connectLoginForm" style="text-align: center; margin: 0 auto;display:none;">
 
                 <h1 style="text-align: left;">${HeaderSignInWithConnect}</h1>
                 <br />
@@ -27,18 +27,64 @@
                 <button type="submit" data-icon="check">
                     ${ButtonSignIn}
                 </button>
-                <p>
+                <p class="forgotPassword" style="display:none;">
                     <a href="http://emby.media/community/index.php?app=core&module=global&section=lostpass" target="_blank">${ButtonForgotPassword}</a>
                 </p>
+                <div class="skip">
+                    <br />
+                    <a data-role="button" data-icon="delete" href="connectlogin.html?mode=manualserver">${ButtonSkip}</a>
+                    <div class="fieldDescription">${TextConnectToServerManually}</div>
+                </div>
 
-                <br />
-                <h2 style="text-align: left;">${HeaderNewUsers}</h2>
-                <a data-role="button" data-icon="action" href="http://emby.media/community/index.php?app=core&module=global&section=register" target="_blank">${ButtonSignUp}</a>
+                <div class="newUsers" style="display:none;">
+                    <br />
+                    <h2 style="text-align: left;">${HeaderNewUsers}</h2>
+                    <a data-role="button" data-icon="action" href="http://emby.media/community/index.php?app=core&module=global&section=register" target="_blank">${ButtonSignUp}</a>
+                </div>
             </form>
+
+            <form class="manualServerForm" style="text-align: center; margin: 0 auto;display:none;">
+
+                <h1 style="text-align: left;">${HeaderNewServer}</h1>
+                <br />
+                <div>
+                    <label for="txtServerHost" style="text-align: left;">${LabelServerHost}</label>
+                    <input type="text" id="txtServerHost" required="required" />
+                    <div class="fieldDescription" style="text-align:left;">${LabelServerHostHelp}</div>
+                </div>
+                <br />
+                <div>
+                    <label for="txtServerPort" style="text-align: left;">${LabelServerPort}</label>
+                    <input type="number" id="txtServerPort" step="1" min="0" />
+                </div>
+                <br /><br />
+
+                <button type="submit" data-icon="check">
+                    ${ButtonConnect}
+                </button>
+            </form>
+
+            <div class="welcomeContainer readOnlyContent" style="text-align: center; margin: 0 auto;display:none;">
+
+                <div style="text-align: left;">
+                    <h1>${HeaderWelcomeToEmby}</h1>
+                    <p style="margin:2em 0;">${EmbyIntroMessage}</p>
+                    <p style="margin:2em 0;" class="embyIntroDownloadMessage"></p>
+
+
+                    <a class="btn btnActionAccent btnIconRight" href="connectlogin.html">
+                        <span>
+                            ${ButtonNext}
+                        </span>
+                        <i class="fa fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
         </div>
 
         <script type="text/javascript">
             $('.connectLoginForm').off('submit', ConnectLoginPage.onSubmit).on('submit', ConnectLoginPage.onSubmit);
+            $('.manualServerForm').off('submit', ConnectLoginPage.onManualServerSubmit).on('submit', ConnectLoginPage.onManualServerSubmit);
         </script>
     </div>
 </body>

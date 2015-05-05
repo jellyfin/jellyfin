@@ -36,7 +36,7 @@
 }
 
 .videoControls {
-    padding: 0 .5em;
+    padding: .5em .5em;
     background-color: rgba(0, 0, 0, .8);
     position: fixed;
     left: 0;
@@ -80,7 +80,7 @@
     z-index: 99999;
 }
 
-#videoPlayer .nowPlayingInfo img {
+#videoPlayer .nowPlayingImage img {
     height: auto !important;
     max-width: 100px;
     max-height: 200px;
@@ -202,7 +202,7 @@
 }
 
 @media all and (min-width: 1300px) {
-    #videoPlayer .nowPlayingInfo img {
+    #videoPlayer .nowPlayingImage img {
         height: auto !important;
         max-width: 150px;
         max-height: 300px;

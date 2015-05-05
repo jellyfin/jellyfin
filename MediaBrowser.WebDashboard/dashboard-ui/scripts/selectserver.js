@@ -19,6 +19,15 @@
                         window.location = 'index.html';
                     }
                     break;
+                case MediaBrowser.ConnectionState.ServerSignIn:
+                    {
+                        if (Dashboard.isRunningInCordova()) {
+                            window.location = 'connectlogin.html?mode=serversignin&serverid=' + result.Servers[0].Id;
+                        } else {
+                            showServerConnectionFailure();
+                        }
+                    }
+                    break;
                 default:
                     showServerConnectionFailure();
                     break;
@@ -326,11 +335,19 @@
 
     function loadInvitations(page) {
 
-        ConnectionManager.getUserInvitations().done(function (list) {
+        if (ConnectionManager.isLoggedIntoConnect()) {
 
-            renderInvitations(page, list);
+            ConnectionManager.getUserInvitations().done(function (list) {
 
-        });
+                renderInvitations(page, list);
+
+            });
+
+        } else {
+
+            renderInvitations(page, []);
+        }
+
     }
 
     function loadPage(page) {
@@ -345,6 +362,14 @@
         });
 
         loadInvitations(page);
+
+        if (Dashboard.isRunningInCordova()) {
+            $('.newServer', page).show();
+            $('.connectLogin', page).show();
+        } else {
+            $('.newServer', page).hide();
+            $('.connectLogin', page).hide();
+        }
     }
 
     $(document).on('pageshow', "#selectServerPage", function () {

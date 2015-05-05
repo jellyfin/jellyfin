@@ -40,25 +40,28 @@
             html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="visibility:hidden;"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
 
         }
+        
+        if (user.name) {
+            
+            html += '<a class="headerButton headerButtonRight headerUserButton" href="#" onclick="Dashboard.showUserFlyout(this);">';
 
-        html += '<a class="headerButton headerButtonRight headerUserButton" href="#" onclick="Dashboard.showUserFlyout(this);">';
+            if (user.imageUrl) {
 
-        if (user.imageUrl) {
+                var userButtonHeight = 26;
 
-            var userButtonHeight = 26;
+                var url = user.imageUrl;
 
-            var url = user.imageUrl;
+                if (user.supportsImageParams) {
+                    url += "&height=" + (userButtonHeight * Math.max(devicePixelRatio || 1, 2));
+                }
 
-            if (user.supportsImageParams) {
-                url += "&height=" + (userButtonHeight * Math.max(devicePixelRatio || 1, 2));
+                html += '<img src="' + url + '" style="border-radius: 1000px; height:' + userButtonHeight + 'px;" />';
+            } else {
+                html += '<div class="fa fa-user"></div>';
             }
 
-            html += '<img src="' + url + '" style="border-radius: 1000px; height:' + userButtonHeight + 'px;" />';
-        } else {
-            html += '<div class="fa fa-user"></div>';
+            html += '</a>';
         }
-
-        html += '</a>';
 
         if (user.canManageServer) {
             html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton"><div class="fa fa-cog"></div></a>';

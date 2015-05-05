@@ -42,8 +42,22 @@ var Dashboard = {
         $.mobile.panel.prototype.options.classes.panel = "largePanel ui-panel";
     },
 
+    isConnectMode: function () {
+
+        return true;
+        if (Dashboard.isRunningInCordova()) {
+            return true;
+        }
+
+        var url = getWindowUrl().toLowerCase();
+
+        return url.indexOf('mediabrowser.tv') != -1 ||
+			url.indexOf('emby.media') != -1;
+    },
+
     isRunningInCordova: function () {
 
+        return true;
         return window.appMode == 'cordova';
     },
 
@@ -183,18 +197,6 @@ var Dashboard = {
             apiClient.setCurrentUserId(userId, token);
         }
         Dashboard.getUserPromise = null;
-    },
-
-    isConnectMode: function () {
-
-        if (Dashboard.isRunningInCordova()) {
-            return true;
-        }
-
-        var url = getWindowUrl().toLowerCase();
-
-        return url.indexOf('mediabrowser.tv') != -1 ||
-			url.indexOf('emby.media') != -1;
     },
 
     logout: function (logoutWithServer) {
@@ -1648,18 +1650,6 @@ $(document).on('pagecreate', ".page", function () {
 
     var page = $(this);
 
-    var isConnectMode = Dashboard.isConnectMode();
-
-    if (isConnectMode && !page.hasClass('connectLoginPage')) {
-
-        if (!ConnectionManager.isLoggedIntoConnect()) {
-
-            console.log('Not logged into connect. Redirecting to login.');
-            Dashboard.logout();
-            return;
-        }
-    }
-
     var apiClient = ConnectionManager.currentApiClient();
 
     if (Dashboard.getAccessToken() && Dashboard.getCurrentUserId()) {
@@ -1686,6 +1676,16 @@ $(document).on('pagecreate', ".page", function () {
 
     else {
 
+        var isConnectMode = Dashboard.isConnectMode();
+
+        if (isConnectMode) {
+            
+            if (!Dashboard.isServerlessPage()) {
+                Dashboard.logout();
+                return;
+            }
+        }
+        
         if (this.id !== "loginPage" && !page.hasClass('forgotPasswordPage') && !page.hasClass('wizardPage') && !isConnectMode) {
 
             console.log('Not logged into server. Redirecting to login.');
