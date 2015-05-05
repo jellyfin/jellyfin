@@ -496,7 +496,7 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>``0.</returns>
-        protected T FindParent<T>()
+        public T FindParent<T>()
             where T : Folder
         {
             return Parents.OfType<T>().FirstOrDefault();

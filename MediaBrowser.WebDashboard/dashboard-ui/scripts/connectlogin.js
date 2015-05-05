@@ -43,7 +43,7 @@
                 break;
             case MediaBrowser.ConnectionState.ServerSignIn:
                 {
-                    window.location = 'connectlogin.html?mode=serversignin&serverid=' + result.Servers[0].Id;
+                    window.location = 'login.html?serverid=' + result.Servers[0].Id;
                 }
                 break;
             case MediaBrowser.ConnectionState.ServerSelection:
