@@ -560,7 +560,7 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <returns>Task.</returns>
         private async Task ProcessPathChanges(List<string> paths)
         {
-            var itemsToRefresh = paths.Select(Path.GetDirectoryName)
+            var itemsToRefresh = paths
                 .Select(GetAffectedBaseItem)
                 .Where(item => item != null)
                 .Distinct()
