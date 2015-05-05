@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Common.Events;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Dlna;
@@ -143,7 +142,10 @@ namespace MediaBrowser.Dlna.Ssdp
                             args.EndPoint = endPoint;
                             args.LocalIp = localIp;
 
-                            TryCreateDevice(args);
+                            if (!_ssdpHandler.IsSelfNotification(args))
+                            {
+                                TryCreateDevice(args);
+                            }
                         }
                     }
 
