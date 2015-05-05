@@ -87,7 +87,7 @@
             </summary>
             <param name="container">The container.</param>
             <remarks>
-            This method has a performance caracteristic of O(n). Prevent from calling this in a performance
+            This method has a performance characteristic of O(n). Prevent from calling this in a performance
             critical path of the application.
             </remarks>
             <typeparam name="TService">The type for with an initializer must be built.</typeparam>
@@ -276,6 +276,12 @@
             created <see cref="P:SimpleInjector.Advanced.InstanceInitializationData.Instance"/> and the <see cref="P:SimpleInjector.Advanced.InstanceInitializationData.Context"/> information about the created instance.
             </summary>
         </member>
+        <member name="M:SimpleInjector.Advanced.InstanceInitializationData.#ctor(SimpleInjector.Advanced.InitializationContext,System.Object)">
+            <summary>Initializes a new instance of the <see cref="T:SimpleInjector.Advanced.InstanceInitializationData"/> struct.</summary>
+            <param name="context">The <see cref="T:SimpleInjector.Advanced.InitializationContext"/> that contains contextual information
+            about the created instance.</param>
+            <param name="instance">The created instance.</param>
+        </member>
         <member name="M:SimpleInjector.Advanced.InstanceInitializationData.GetHashCode">
             <summary>Returns the hash code for this instance.</summary>
             <returns>A 32-bit signed integer that is the hash code for this instance.</returns>
@@ -384,6 +390,26 @@
             <see cref="M:SimpleInjector.Container.AddRegistration(System.Type,SimpleInjector.Registration)"/> or anything related to registering from multiple threads concurrently.
             </para>
             </remarks>
+        </member>
+        <member name="M:SimpleInjector.Container.Verify">
+            <summary>
+            Verifies the <b>Container</b>. This method will call all registered delegates, 
+            iterate registered collections and throws an exception if there was an error.
+            </summary>
+            <exception cref="T:System.InvalidOperationException">Thrown when the registration of instances was
+            invalid.</exception>
+        </member>
+        <member name="M:SimpleInjector.Container.Verify(SimpleInjector.VerificationOption)">
+            <summary>
+            Verifies the <b>Container</b>. This method will call all registered delegates, 
+            iterate registered collections and throws an exception if there was an error.
+            </summary>
+            <param name="option">Specifies how the container should verify its configuration.</param>
+            <exception cref="T:System.InvalidOperationException">Thrown when the registration of instances was
+            invalid.</exception>
+            <exception cref="T:SimpleInjector.DiagnosticVerificationException">Thrown in case there are diagnostic errors and
+            the <see cref="F:SimpleInjector.VerificationOption.VerifyAndDiagnose"/> option is supplied.</exception>
+            <exception cref="T:System.ArgumentException">Thrown when <paramref name="option"/> has an invalid value.</exception>
         </member>
         <member name="M:SimpleInjector.Container.Register``1">
             <summary>
@@ -1024,14 +1050,6 @@
             <exception cref="T:System.ArgumentException">Thrown when <paramref name="serviceType"/> represents an
             open generic type.</exception>
         </member>
-        <member name="M:SimpleInjector.Container.Verify">
-            <summary>
-            Verifies the <b>Container</b>. This method will call all registered delegates, 
-            iterate registered collections and throws an exception if there was an error.
-            </summary>
-            <exception cref="T:System.InvalidOperationException">Thrown when the registration of instances was
-            invalid.</exception>
-        </member>
         <member name="M:SimpleInjector.Container.AddRegistration(System.Type,SimpleInjector.Registration)">
             <summary>
             Adds the <paramref name="registration"/> for the supplied <paramref name="serviceType"/>. This
@@ -1644,6 +1662,13 @@
             <summary>Gets the container options.</summary>
             <value>The <see cref="T:SimpleInjector.ContainerOptions"/> instance for this container.</value>
         </member>
+        <member name="P:SimpleInjector.Container.IsVerifying">
+            <summary>
+            Gets a value indicating whether the container is currently being verified on the current thread.
+            </summary>
+            <value>True in case the container is currently being verified on the current thread; otherwise
+            false.</value>
+        </member>
         <member name="P:SimpleInjector.Container.SelectionBasedLifestyle">
             <summary>
             Gets the intermediate lifestyle that forwards CreateRegistration calls to the lifestyle that is 
@@ -1700,6 +1725,16 @@
             </summary>
             <param name="disposing">False when only unmanaged resources should be released.</param>
         </member>
+        <member name="T:SimpleInjector.ResolveInterceptor">
+            <summary>
+            Delegate that allows intercepting calls to <see cref="M:SimpleInjector.Container.GetInstance(System.Type)"/> and 
+            <see cref="M:SimpleInjector.InstanceProducer.GetInstance"/>.
+            </summary>
+            <param name="context">Contextual information about the to be created object.</param>
+            <param name="instanceProducer">A delegate that produces the actual instance according to its
+            lifestyle settings.</param>
+            <returns>The instance that is returned from <paramref name="instanceProducer"/> or an intercepted instance.</returns>
+        </member>
         <member name="T:SimpleInjector.ContainerOptions">
             <summary>Configuration options for the <see cref="P:SimpleInjector.ContainerOptions.Container"/>.</summary>
             <example>
@@ -1719,6 +1754,57 @@
         </member>
         <member name="M:SimpleInjector.ContainerOptions.#ctor">
             <summary>Initializes a new instance of the <see cref="T:SimpleInjector.ContainerOptions"/> class.</summary>
+        </member>
+        <member name="M:SimpleInjector.ContainerOptions.RegisterResolveInterceptor(SimpleInjector.ResolveInterceptor,System.Predicate{SimpleInjector.Advanced.InitializationContext})">
+            <summary>
+            Registers an <see cref="T:SimpleInjector.ResolveInterceptor"/> delegate that allows intercepting calls to
+            <see cref="M:SimpleInjector.Container.GetInstance(System.Type)">GetInstance</see> and 
+            <see cref="M:SimpleInjector.InstanceProducer.GetInstance"/>.
+            </summary>
+            <remarks>
+            If multiple registered <see cref="T:SimpleInjector.ResolveInterceptor"/> instances must be applied, they will be
+            applied/wrapped in the order of registration, i.e. the first registered interceptor will call the 
+            original instance producer delegate, the second interceptor will call the first interceptor, etc. 
+            The last registered interceptor will become the outermost method in the chain and will be called 
+            first.
+            </remarks>
+            <param name="interceptor">The <see cref="T:SimpleInjector.ResolveInterceptor"/> delegate to register.</param>
+            <param name="predicate">The predicate that will be used to check whether the given delegate must
+            be applied to a registration or not. The given predicate will be called once for each registration
+            in the container.</param>
+            <exception cref="T:System.ArgumentNullException">
+            Thrown when either the <paramref name="interceptor"/> or <paramref name="predicate"/> are 
+            null references.
+            </exception>
+            <exception cref="T:System.InvalidOperationException">
+            Thrown when this container instance is locked and can not be altered.
+            </exception>
+            <example>
+            The following example shows the usage of the <see cref="M:SimpleInjector.ContainerOptions.RegisterResolveInterceptor(SimpleInjector.ResolveInterceptor,System.Predicate{SimpleInjector.Advanced.InitializationContext})"/> method:
+            <code lang="cs"><![CDATA[
+            var container = new Container();
+            
+            container.Options.RegisterResolveInterceptor((context, producer) =>
+                {
+                    object instance = producer.Invoke();
+                    Console.WriteLine(instance.GetType().Name + " resolved for " + context.Producer.ServiceType.Name);
+                    return instance;
+                },
+                context => context.Producer.ServiceType.Name.EndsWith("Controller"));
+                
+            container.Register<IHomeViewModel, HomeViewModel>();
+            container.Register<IUserRepository, SqlUserRepository>();
+            
+            // This line will write "HomeViewModel resolved for IHomeViewModel" to the console.
+            container.GetInstance<IHomeViewModel>();
+            ]]></code>
+            </example>
+        </member>
+        <member name="M:SimpleInjector.ContainerOptions.ToString">
+            <summary>
+            Returns a string that represents the current object.
+            </summary>
+            <returns>A string that represents the current object.</returns>
         </member>
         <member name="P:SimpleInjector.ContainerOptions.AllowOverridingRegistrations">
             <summary>
@@ -1811,6 +1897,329 @@
             <summary>
             Extension methods for the RecursiveDependencyValidator class.
             </summary>
+        </member>
+        <member name="T:SimpleInjector.Diagnostics.Analyzer">
+            <summary>
+            Entry point for doing diagnostic analysis on <see cref="T:SimpleInjector.Container"/> instances.
+            </summary>
+            <example>
+            The following example shows the usage of the <b>Analyzer</b> class:
+            <code lang="cs"><![CDATA[
+            DiagnosticResult[] results = Analyzer.Analyze(container);
+            
+            var typesWithAShortedLifetimeThanTheirDependencies =
+                from result in results
+                where result.DiagnosticType == DiagnosticType.PotentialLifestyleMismatch
+                let mismatch = (PotentialLifestyleMismatchDiagnosticResult)result
+                select mismatch.Relationship.ImplementationType;
+            ]]></code>
+            </example>
+        </member>
+        <member name="M:SimpleInjector.Diagnostics.Analyzer.Analyze(SimpleInjector.Container)">
+            <summary>
+            Analyzes the supplied <paramref name="container"/> instance.
+            </summary>
+            <param name="container">The container instance to analyze.</param>
+            <returns>A collection of <see cref="T:SimpleInjector.Diagnostics.DiagnosticResult"/> sub types that describe the diagnostic
+            warnings and messages.</returns>
+        </member>
+        <member name="T:SimpleInjector.Diagnostics.AmbiguousLifestylesDiagnosticResult">
+            <summary>
+            Diagnostic result that warns about when a multiple registrations map to the same implementation type 
+            and lifestyle, which might cause multiple instances to be created during the lifespan of that lifestyle.
+            For more information, see: https://simpleinjector.org/diaal.
+            </summary>
+        </member>
+        <member name="T:SimpleInjector.Diagnostics.DiagnosticResult">
+            <summary>
+            Base class for types that hold information about a single diagnostic message or warning for a
+            particular type or part of the configuration.
+            </summary>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.DiagnosticResult.DiagnosticType">
+            <summary>Gets the diagnostic type of this result.</summary>
+            <value>The <see cref="P:SimpleInjector.Diagnostics.DiagnosticResult.DiagnosticType"/>.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.DiagnosticResult.ServiceType">
+            <summary>Gets the service type to which this warning is related.</summary>
+            <value>A <see cref="T:System.Type"/>.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.DiagnosticResult.Description">
+            <summary>Gets the description of the diagnostic result.</summary>
+            <value>A <see cref="T:System.String"/> with the description.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.DiagnosticResult.Group">
+            <summary>Gets the hierarchical group to which this diagnostic result belongs.</summary>
+            <value>The <see cref="T:SimpleInjector.Diagnostics.DiagnosticGroup"/>.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.AmbiguousLifestylesDiagnosticResult.Lifestyles">
+            <summary>Gets the lifestyles that causes the registrations to be conflicting.</summary>
+            <value><see cref="T:SimpleInjector.Lifestyle"/> instances.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.AmbiguousLifestylesDiagnosticResult.ImplementationType">
+            <summary>Gets the implementation type that the affected registrations map to.</summary>
+            <value>A <see cref="T:System.Type"/>.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.AmbiguousLifestylesDiagnosticResult.DiagnosedRegistration">
+            <summary>Gets the registration that caused this warning.</summary>
+            /// <value>An <see cref="T:SimpleInjector.InstanceProducer"/>.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.AmbiguousLifestylesDiagnosticResult.ConflictingRegistrations">
+            <summary>
+            Gets the list of registrations that are in conflict with the <see cref="P:SimpleInjector.Diagnostics.AmbiguousLifestylesDiagnosticResult.DiagnosedRegistration"/>.
+            </summary>
+            <value>A list of <see cref="T:SimpleInjector.InstanceProducer"/> instances.</value>
+        </member>
+        <member name="T:SimpleInjector.Diagnostics.ContainerRegisteredServiceDiagnosticResult">
+            <summary>
+            Diagnostic result for a warning about a concrete type that was not registered explicitly and was not 
+            resolved using unregistered type resolution, but was created by the container using the transient 
+            lifestyle.
+            For more information, see: https://simpleinjector.org/diaut.
+            </summary>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.ContainerRegisteredServiceDiagnosticResult.Relationships">
+            <summary>Gets a collection of <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> instances that describe all 
+            container-registered dependencies for the given component.</summary>
+            <value>List of <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> objects.</value>
+        </member>
+        <member name="T:SimpleInjector.Diagnostics.DiagnosticGroup">
+            <summary>
+            A hierarchical group of <see cref="T:SimpleInjector.Diagnostics.DiagnosticResult"/>.
+            </summary>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.DiagnosticGroup.GroupType">
+            <summary>
+            Gets the base <see cref="P:SimpleInjector.Diagnostics.DiagnosticGroup.DiagnosticType"/> that describes the service types of its 
+            <see cref="P:SimpleInjector.Diagnostics.DiagnosticGroup.Results"/>. The value often be either <see cref="T:System.Object"/> (in case this is a
+            root group) or a partial generic type to allow hierarchical grouping of a large number of related
+            generic types.
+            </summary>
+            <value>The <see cref="T:System.Type"/>.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.DiagnosticGroup.Name">
+            <summary>Gets the friendly name of the group.</summary>
+            <value>The name.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.DiagnosticGroup.Description">
+            <summary>Gets the description of the group.</summary>
+            <value>The description.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.DiagnosticGroup.DiagnosticType">
+            <summary>Gets the diagnostic type of all grouped <see cref="T:SimpleInjector.Diagnostics.DiagnosticResult"/> instances.</summary>
+            <value>The <see cref="P:SimpleInjector.Diagnostics.DiagnosticGroup.DiagnosticType"/>.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.DiagnosticGroup.Parent">
+            <summary>Gets the parent <see cref="T:SimpleInjector.Diagnostics.DiagnosticGroup"/> or null (Nothing in VB) when this is the
+            root group.</summary>
+            <value>The <see cref="T:SimpleInjector.Diagnostics.DiagnosticGroup"/>.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.DiagnosticGroup.Children">
+            <summary>Gets the collection of child <see cref="T:SimpleInjector.Diagnostics.DiagnosticGroup"/>s.</summary>
+            <value>A collection of <see cref="T:SimpleInjector.Diagnostics.DiagnosticGroup"/> elements.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.DiagnosticGroup.Results">
+            <summary>Gets the collection of <see cref="T:SimpleInjector.Diagnostics.DiagnosticResult"/> instances.</summary>
+            /// <value>A collection of <see cref="T:SimpleInjector.Diagnostics.DiagnosticResult"/> elements.</value>
+        </member>
+        <member name="T:SimpleInjector.Diagnostics.DiagnosticType">
+            <summary>
+            Specifies the list of diagnostic types that are currently supported by the diagnostic 
+            <see cref="T:SimpleInjector.Diagnostics.Analyzer"/>. Note that new diagnostic types might be added in future versions.
+            For more information, please read the 
+            <a href="https://simpleinjector.org/diagnostics">Diagnosing your configuration using the Diagnostic 
+            Services</a> wiki documentation.
+            </summary>
+        </member>
+        <member name="F:SimpleInjector.Diagnostics.DiagnosticType.ContainerRegisteredComponent">
+            <summary>
+            Diagnostic type that warns about 
+            a concrete type that was not registered explicitly and was not resolved using unregistered type 
+            resolution, but was created by the container using the transient lifestyle.
+            For more information, see: https://simpleinjector.org/diaut.
+            </summary>
+        </member>
+        <member name="F:SimpleInjector.Diagnostics.DiagnosticType.PotentialLifestyleMismatch">
+            <summary>
+            Diagnostic type that warns when a 
+            component depends on a service with a lifestyle that is shorter than that of the component.
+            For more information, see: https://simpleinjector.org/dialm.
+            </summary>
+        </member>
+        <member name="F:SimpleInjector.Diagnostics.DiagnosticType.ShortCircuitedDependency">
+            <summary>
+            Diagnostic type that warns when a
+            component depends on an unregistered concrete type and this concrete type has a lifestyle that is 
+            different than the lifestyle of an explicitly registered type that uses this concrete type as its 
+            implementation.
+            For more information, see: https://simpleinjector.org/diasc.
+            </summary>
+        </member>
+        <member name="F:SimpleInjector.Diagnostics.DiagnosticType.SingleResponsibilityViolation">
+            <summary>
+            Diagnostic type that warns when a component depends on (too) many services.
+            For more information, see: https://simpleinjector.org/diasr.
+            </summary>
+        </member>
+        <member name="F:SimpleInjector.Diagnostics.DiagnosticType.TornLifestyle">
+            <summary>
+            Diagnostic type that warns when multiple registrations map to the same component and
+            lifestyle, which might cause multiple instances to be created during the lifespan of that lifestyle.
+            For more information, see: https://simpleinjector.org/diatl.
+            </summary>
+        </member>
+        <member name="F:SimpleInjector.Diagnostics.DiagnosticType.DisposableTransientComponent">
+            <summary>
+            Diagnostic type that warns when a component is registered as transient, while implementing
+            <see cref="T:System.IDisposable"/>.
+            For more information, see: https://simpleinjector.org/diadt.
+            </summary>
+        </member>
+        <member name="F:SimpleInjector.Diagnostics.DiagnosticType.AmbiguousLifestyles">
+            <summary>
+            Diagnostic type that warns when multiple registrations exist that map to the same component but
+            with different lifestyles, which will cause the component to be cached in different -possibly
+            incompatible- ways.
+            For more information, see: https://simpleinjector.org/diaal.
+            </summary>
+        </member>
+        <member name="T:SimpleInjector.Diagnostics.DisposableTransientComponentDiagnosticResult">
+            <summary>
+            Diagnostic result for a warning about a component that is registered as transient, but implements 
+            <see cref="T:System.IDisposable"/>.
+            For more information, see: https://simpleinjector.org/diadt.
+            </summary>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.DisposableTransientComponentDiagnosticResult.Registration">
+            <summary>Gets the object that describes the relationship between the component and its dependency.</summary>
+            <value>A <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> instance.</value>
+        </member>
+        <member name="T:SimpleInjector.Diagnostics.PotentialLifestyleMismatchDiagnosticResult">
+            <summary>
+            Diagnostic result for a warning about a
+            component that depends on a service with a lifestyle that is shorter than that of the component.
+            For more information, see: https://simpleinjector.org/dialm.
+            </summary>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.PotentialLifestyleMismatchDiagnosticResult.Relationship">
+            <summary>Gets the object that describes the relationship between the component and its dependency.</summary>
+            <value>A <see cref="T:SimpleInjector.Advanced.KnownRelationship"/> instance.</value>
+        </member>
+        <member name="T:SimpleInjector.Diagnostics.ShortCircuitedDependencyDiagnosticResult">
+            <summary>
+            Diagnostic result that warns about a
+            component that depends on an unregistered concrete type and this concrete type has a lifestyle that is 
+            different than the lifestyle of an explicitly registered type that uses this concrete type as its 
+            implementation.
+            For more information, see: https://simpleinjector.org/diasc.
+            </summary>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.ShortCircuitedDependencyDiagnosticResult.Relationship">
+            <summary>Gets the instance that describes the current relationship between the checked component
+            and the short-circuited dependency.</summary>
+            <value>The <see cref="T:SimpleInjector.Advanced.KnownRelationship"/>.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.ShortCircuitedDependencyDiagnosticResult.ExpectedDependencies">
+            <summary>
+            Gets the collection of registrations that have the component's current dependency as 
+            implementation type, but have a lifestyle that is different than the current dependency.
+            </summary>
+            <value>A collection of <see cref="T:SimpleInjector.InstanceProducer"/> instances.</value>
+        </member>
+        <member name="T:SimpleInjector.Diagnostics.SingleResponsibilityViolationDiagnosticResult">
+            <summary>
+            Diagnostic result that warns about a component that depends on (too) many services.
+            For more information, see: https://simpleinjector.org/diasr.
+            </summary>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.SingleResponsibilityViolationDiagnosticResult.ImplementationType">
+            <summary>Gets the created type.</summary>
+            <value>A <see cref="T:System.Type"/>.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.SingleResponsibilityViolationDiagnosticResult.Dependencies">
+            <summary>Gets the list of registrations that are dependencies of the <see cref="P:SimpleInjector.Diagnostics.SingleResponsibilityViolationDiagnosticResult.ImplementationType"/>.</summary>
+            <value>A collection of <see cref="T:SimpleInjector.InstanceProducer"/> instances.</value>
+        </member>
+        <member name="T:SimpleInjector.Diagnostics.TornLifestyleDiagnosticResult">
+            <summary>
+            Diagnostic result that warns about when a multiple registrations map to the same implementation type 
+            and lifestyle, which might cause multiple instances to be created during the lifespan of that lifestyle.
+            For more information, see: https://simpleinjector.org/diatl.
+            </summary>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.TornLifestyleDiagnosticResult.Lifestyle">
+            <summary>Gets the lifestyle on which instances are torn.</summary>
+            <value>A <see cref="P:SimpleInjector.Diagnostics.TornLifestyleDiagnosticResult.Lifestyle"/>.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.TornLifestyleDiagnosticResult.ImplementationType">
+            <summary>Gets the implementation type that the affected registrations map to.</summary>
+            <value>A <see cref="T:System.Type"/>.</value>
+        </member>
+        <member name="P:SimpleInjector.Diagnostics.TornLifestyleDiagnosticResult.AffectedRegistrations">
+            <summary>Gets the list of registrations that are affected by this warning.</summary>
+            <value>A list of <see cref="T:SimpleInjector.InstanceProducer"/> instances.</value>
+        </member>
+        <member name="T:SimpleInjector.DiagnosticVerificationException">
+            <summary>
+            Thrown by the container in case of a diagnostic error.
+            </summary>
+        </member>
+        <member name="M:SimpleInjector.DiagnosticVerificationException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:SimpleInjector.DiagnosticVerificationException"/> class.
+            </summary>
+        </member>
+        <member name="M:SimpleInjector.DiagnosticVerificationException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SimpleInjector.DiagnosticVerificationException"/> class with a specified error 
+            message.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+        </member>
+        <member name="M:SimpleInjector.DiagnosticVerificationException.#ctor(System.Collections.Generic.IList{SimpleInjector.Diagnostics.DiagnosticResult})">
+            <summary>
+            Initializes a new instance of the <see cref="T:SimpleInjector.DiagnosticVerificationException"/> class with a specified error 
+            message.
+            </summary>
+            <param name="errors">The list of errors.</param>
+        </member>
+        <member name="M:SimpleInjector.DiagnosticVerificationException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SimpleInjector.DiagnosticVerificationException"/> class with a specified error 
+            message and a reference to the inner exception that is the cause of this exception.
+            </summary>
+            <param name="message">
+            The error message that explains the reason for the exception. 
+            </param>
+            <param name="innerException">
+            The exception that is the cause of the current exception, or a null reference (Nothing in Visual 
+            Basic) if no inner exception is specified. 
+            </param>
+        </member>
+        <member name="M:SimpleInjector.DiagnosticVerificationException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SimpleInjector.DiagnosticVerificationException"/> class with serialized data.
+            </summary>
+            <param name="info">
+            The <see cref="T:System.Runtime.Serialization.SerializationInfo"/> that holds the serialized object data about the exception 
+            being thrown. 
+            </param>
+            <param name="context">
+            The <see cref="T:System.Runtime.Serialization.StreamingContext"/> that contains contextual information about the source or 
+            destination. 
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+            The <paramref name="info"/> parameter is null. 
+            </exception>
+            <exception cref="T:System.Runtime.Serialization.SerializationException">
+            The class name is null or hresult is zero (0). 
+            </exception>
+        </member>
+        <member name="P:SimpleInjector.DiagnosticVerificationException.Errors">
+            <summary>
+            Gets the list of <see cref="T:SimpleInjector.Diagnostics.DiagnosticResult"/> instances.
+            </summary>
+            <value>A list of <see cref="T:SimpleInjector.Diagnostics.DiagnosticResult"/> instances.</value>
         </member>
         <member name="T:SimpleInjector.ExpressionBuildingEventArgs">
             <summary>
@@ -2608,6 +3017,18 @@
             <exception cref="T:System.ArgumentException">Thrown when the supplied <paramref name="instance"/> is not
             of type <see cref="P:SimpleInjector.Registration.ImplementationType"/>.</exception>
         </member>
+        <member name="M:SimpleInjector.Registration.SuppressDiagnosticWarning(SimpleInjector.Diagnostics.DiagnosticType,System.String)">
+            <summary>
+            Suppressing the supplied <see cref="T:SimpleInjector.Diagnostics.DiagnosticType"/> for the given registration.
+            </summary>
+            <param name="type">The <see cref="T:SimpleInjector.Diagnostics.DiagnosticType"/>.</param>
+            <param name="justification">The justification of why the warning must be suppressed.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="justification"/> is a null 
+            reference.</exception>
+            <exception cref="T:System.ArgumentException">Thrown when either <paramref name="justification"/> is an
+            empty string or when <paramref name="type"/> is not a valid value of <see cref="T:SimpleInjector.Diagnostics.DiagnosticType"/>.
+            </exception>
+        </member>
         <member name="M:SimpleInjector.Registration.BuildTransientDelegate``1(System.Func{``0})">
             <summary>
             Builds a <see cref="T:System.Func`1"/> delegate for the creation of the <typeparamref name="TService"/>
@@ -2674,13 +3095,13 @@
             <summary>Gets the <see cref="P:SimpleInjector.Registration.Lifestyle"/> this that created this registration.</summary>
             <value>The <see cref="P:SimpleInjector.Registration.Lifestyle"/> this that created this registration.</value>
         </member>
-        <member name="P:SimpleInjector.Registration.WrapsInstanceCreationDelegate">
-            <summary>Gets or sets a value indicating whether this registration object contains a user 
-            supplied instanceCreator factory delegate.</summary>
-        </member>
         <member name="P:SimpleInjector.Registration.Container">
             <summary>Gets the <see cref="P:SimpleInjector.Registration.Container"/> instance for this registration.</summary>
             <value>The <see cref="P:SimpleInjector.Registration.Container"/> instance for this registration.</value>
+        </member>
+        <member name="P:SimpleInjector.Registration.WrapsInstanceCreationDelegate">
+            <summary>Gets or sets a value indicating whether this registration object contains a user 
+            supplied instanceCreator factory delegate.</summary>
         </member>
         <member name="T:SimpleInjector.Extensions.GenericArgumentFinder">
             <summary>
@@ -4611,6 +5032,29 @@
             this instance.
             </summary>
             <value>The indication whether the event has been handled.</value>
+        </member>
+        <member name="T:SimpleInjector.VerificationOption">
+            <summary>
+            This enumeration has defines in which way the container should run the verification process.
+            </summary>
+        </member>
+        <member name="F:SimpleInjector.VerificationOption.VerifyOnly">
+            <summary>
+            Specifies that the container performs verification only, which means that it will test whether
+            all registrations can be constructed by iterating the registrations and letting the container
+            create at least one instance of each registration. An <see cref="T:System.InvalidOperationException"/>
+            will be thrown in case the configuration is invalid.
+            </summary>
+        </member>
+        <member name="F:SimpleInjector.VerificationOption.VerifyAndDiagnose">
+            <summary>
+            Specifies that the container will run diagnostic analysis after the verification succeeded. The
+            container will diagnose the configuration with a subset of the available diagnostic warnings, that 
+            are most likely an indication of a configuration mistake. A complete set of diagnostic warnings
+            can be retrieved by calling 
+            <see cref="M:SimpleInjector.Diagnostics.Analyzer.Analyze(SimpleInjector.Container)">Analyzer.Analyze</see> or by viewing the 
+            container in the Visual Studio debugger, after the verification has succeeded.
+            </summary>
         </member>
     </members>
 </doc>
