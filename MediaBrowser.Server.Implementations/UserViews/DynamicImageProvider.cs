@@ -21,13 +21,11 @@ namespace MediaBrowser.Server.Implementations.UserViews
     public class DynamicImageProvider : BaseDynamicImageProvider<UserView>
     {
         private readonly IUserManager _userManager;
-        private readonly ILibraryManager _libraryManager;
 
-        public DynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, IUserManager userManager, ILibraryManager libraryManager)
+        public DynamicImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor, IUserManager userManager)
             : base(fileSystem, providerManager, applicationPaths, imageProcessor)
         {
             _userManager = userManager;
-            _libraryManager = libraryManager;
         }
 
         public override IEnumerable<ImageType> GetSupportedImages(IHasImages item)
