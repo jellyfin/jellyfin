@@ -301,7 +301,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var builder = new StringBuilder();
 
-            foreach (var file in new[]
+            var apiClientFiles = new[]
             {
                 "thirdparty/apiclient/logger.js",
                 "thirdparty/apiclient/md5.js",
@@ -314,10 +314,20 @@ namespace MediaBrowser.WebDashboard.Api
                 "thirdparty/apiclient/events.js",
                 "thirdparty/apiclient/deferred.js",
                 "thirdparty/apiclient/apiclient.js",
-                "thirdparty/apiclient/connectservice.js",
-                "thirdparty/apiclient/serverdiscovery.js",
-                "thirdparty/apiclient/connectionmanager.js"
-            })
+                "thirdparty/apiclient/connectservice.js"
+            }.ToList();
+
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                apiClientFiles.Add("thirdparty/apiclient/cordova/serverdiscovery.js");
+            }
+            else
+            {
+                apiClientFiles.Add("thirdparty/apiclient/serverdiscovery.js");
+            }
+            apiClientFiles.Add("thirdparty/apiclient/connectionmanager.js");
+
+            foreach (var file in apiClientFiles)
             {
                 using (var fs = _fileSystem.GetFileStream(GetDashboardResourcePath(file), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
                 {

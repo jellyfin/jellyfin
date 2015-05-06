@@ -38,12 +38,9 @@ namespace MediaBrowser.Providers.Manager
         {
             var hasChanges = false;
 
-            var localImageProviders = providers.OfType<ILocalImageFileProvider>()
-                .ToList();
-
-            if (localImageProviders.Count > 0 || !(item is Photo))
+            if (!(item is Photo))
             {
-                var images = localImageProviders
+                var images = providers.OfType<ILocalImageFileProvider>()
                     .SelectMany(i => i.GetImages(item, directoryService))
                     .ToList();
 
@@ -425,19 +422,14 @@ namespace MediaBrowser.Providers.Manager
             var changed = false;
 
             var newImages = images.Where(i => i.Type == type).ToList();
-            if (newImages.Count > 0)
-            {
-                var newImageFileInfos = images.Where(i => i.Type == type)
+
+            var newImageFileInfos = newImages
                     .Select(i => i.FileInfo)
                     .ToList();
 
-                if (newImageFileInfos.Count > 0)
-                {
-                    if (item.AddImages(type, newImageFileInfos))
-                    {
-                        changed = true;
-                    }
-                }
+            if (item.AddImages(type, newImageFileInfos))
+            {
+                changed = true;
             }
 
             return changed;

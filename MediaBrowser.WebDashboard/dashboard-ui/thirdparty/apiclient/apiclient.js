@@ -2477,7 +2477,9 @@
         self.authenticateUserByName = function (name, password) {
 
             if (!name) {
-                throw new Error("null name");
+                var deferred = DeferredBuilder.Deferred();
+                deferred.reject();
+                return deferred.promise();
             }
 
             var url = self.getUrl("Users/authenticatebyname");

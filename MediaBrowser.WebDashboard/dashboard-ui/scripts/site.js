@@ -44,6 +44,7 @@ var Dashboard = {
 
     isConnectMode: function () {
 
+        return true;
         if (Dashboard.isRunningInCordova()) {
             return true;
         }
@@ -56,6 +57,7 @@ var Dashboard = {
 
     isRunningInCordova: function () {
 
+        return true;
         return window.appMode == 'cordova';
     },
 

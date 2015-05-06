@@ -4,8 +4,7 @@
     <title>${TitleSignIn}</title>
 </head>
 <body class="serverlessPage">
-    <div class="backdropContainer" style="background-image:url(css/images/splash.jpg);top:0;"></div>
-    <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage lightBackdropPage backdropPage staticBackdropPage" data-theme="b" style="background-color: rgba(0, 0,0, .9)!important;">
+    <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b">
 
         <div data-role="content">
 
@@ -24,15 +23,23 @@
                     <input type="password" id="txtManualPassword" required="required" />
                 </div>
 
-                <button type="submit" data-icon="check">
-                    ${ButtonSignIn}
+                <button class="btn btnActionAccent" data-role="none" type="submit">
+                    <span>
+                        ${ButtonSignIn}
+                    </span>
+                    <i class="fa fa-check"></i>
                 </button>
                 <p class="forgotPassword" style="display:none;">
                     <a href="http://emby.media/community/index.php?app=core&module=global&section=lostpass" target="_blank">${ButtonForgotPassword}</a>
                 </p>
                 <div class="skip">
                     <br />
-                    <a data-role="button" data-icon="delete" href="connectlogin.html?mode=manualserver">${ButtonSkip}</a>
+                    <a class="btn btnDarkAccent" href="connectlogin.html?mode=manualserver">
+                        <span>
+                            ${ButtonSkip}
+                        </span>
+                        <i class="fa fa-close"></i>
+                    </a>
                     <div class="fieldDescription">${TextConnectToServerManually}</div>
                 </div>
 
@@ -45,7 +52,7 @@
 
             <form class="manualServerForm" style="text-align: center; margin: 0 auto;display:none;">
 
-                <h1 style="text-align: left;">${HeaderNewServer}</h1>
+                <h1 style="text-align: left;">${HeaderConnectToServer}</h1>
                 <br />
                 <div>
                     <label for="txtServerHost" style="text-align: left;">${LabelServerHost}</label>
@@ -59,9 +66,18 @@
                 </div>
                 <br /><br />
 
-                <button type="submit" data-icon="check">
-                    ${ButtonConnect}
+                <button class="btn btnActionAccent" data-role="none" type="submit">
+                    <span>
+                        ${ButtonConnect}
+                    </span>
+                    <i class="fa fa-check"></i>
                 </button>
+                <a class="btn btnDarkAccent" href="#" data-rel="back">
+                    <span>
+                        ${ButtonCancel}
+                    </span>
+                    <i class="fa fa-close"></i>
+                </a>
             </form>
 
             <div class="welcomeContainer readOnlyContent" style="text-align: center; margin: 0 auto;display:none;">
@@ -72,7 +88,7 @@
                     <p style="margin:2em 0;" class="embyIntroDownloadMessage"></p>
 
 
-                    <a class="btn btnActionAccent btnIconRight" href="connectlogin.html">
+                    <a class="btn btnActionAccent btnIconRight" href="connectlogin.html?mode=connect">
                         <span>
                             ${ButtonNext}
                         </span>

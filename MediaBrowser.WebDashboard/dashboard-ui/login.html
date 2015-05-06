@@ -29,6 +29,7 @@
                     </button>
                 </p>
                 <br />
+                <br />
             </form>
 
             <div class="visualLoginForm" style="display: none; text-align: center;">
@@ -36,6 +37,8 @@
                 <div id="divUsers" class="itemsContainer"></div>
 
                 <p class="localhostMessage" style="text-align: center; display: none;">${PasswordLocalhostMessage}</p>
+
+                <br />
 
                 <div class="readOnlyContent" style="margin: 2em auto 0;">
                     <a href="#" onclick="LoginPage.showManualForm($.mobile.activePage, true);" data-role="button" data-icon="lock">${ButtonManualLogin}</a>
@@ -53,9 +56,6 @@
                     <br />
                     <a href="selectserver.html" data-role="button" data-icon="action">
                         ${ButtonChangeServer}
-                    </a>
-                    <a href="connectlogin.html?mode=connect" data-role="button" data-icon="lock">
-                        ${ButtonSignInWithConnect}
                     </a>
                 </div>
             </div>

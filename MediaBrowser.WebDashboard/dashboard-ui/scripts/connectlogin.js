@@ -56,6 +56,14 @@
                     loadMode(page, 'welcome');
                 }
                 break;
+            case MediaBrowser.ConnectionState.Unavailable:
+                {
+                    Dashboard.alert({
+                        message: Globalize.translate("MessageUnableToConnectToServer"),
+                        title: Globalize.translate("HeaderConnectionFailure")
+                    });
+                }
+                break;
             default:
                 break;
         }
@@ -76,9 +84,9 @@
 
     function loadPage(page) {
 
-        var mode = getParameterByName('mode');
+        var mode = getParameterByName('mode') || 'auto';
 
-        if (!mode) {
+        if (mode == 'auto') {
 
             if (Dashboard.isRunningInCordova()) {
                 loadAppConnection(page);
@@ -90,6 +98,9 @@
         loadMode(page, mode);
     }
     function loadMode(page, mode) {
+
+        $(document.body).prepend('<div class="backdropContainer" style="background-image:url(css/images/splash.jpg);top:0;"></div>');
+        $(page).addClass('lightBackdropPage backdropPage staticBackdropPage');
 
         if (mode == 'welcome') {
             $('.connectLoginForm', page).hide();
@@ -144,6 +155,14 @@
             Dashboard.hideLoadingMsg();
 
             handleConnectionResult(page, result);
+
+        }).fail(function () {
+
+            Dashboard.hideLoadingMsg();
+
+            handleConnectionResult(page, {
+                State: MediaBrowser.ConnectionState.Unavailable
+            });
 
         });
     }
