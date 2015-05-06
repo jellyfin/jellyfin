@@ -1447,5 +1447,6 @@
     "LabelServerHostHelp": "192.168.1.100 or https://myserver.com",
     "LabelServerPort": "Port:",
     "HeaderNewServer": "New Server",
-    "ButtonChangeServer":  "Change Server"
+    "ButtonChangeServer": "Change Server",
+    "HeaderConnectToServer": "Connect to Server"
 }

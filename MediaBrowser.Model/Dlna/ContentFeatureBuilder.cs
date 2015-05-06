@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.MediaInfo;
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Dlna
@@ -164,7 +165,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (mediaProfile != null && !string.IsNullOrEmpty(mediaProfile.OrgPn))
             {
-                orgPnValues.AddRange(mediaProfile.OrgPn.Split(','));
+                orgPnValues.AddRange(mediaProfile.OrgPn.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries));
             }
             else
             {
