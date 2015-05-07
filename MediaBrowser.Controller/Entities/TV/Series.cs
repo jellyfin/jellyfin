@@ -95,19 +95,6 @@ namespace MediaBrowser.Controller.Entities.TV
         }
 
         /// <summary>
-        /// Series aren't included directly in indices - Their Episodes will roll up to them
-        /// </summary>
-        /// <value><c>true</c> if [include in index]; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public override bool IncludeInIndex
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Gets the user data key.
         /// </summary>
         /// <returns>System.String.</returns>

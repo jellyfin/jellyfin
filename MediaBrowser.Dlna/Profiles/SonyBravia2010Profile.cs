@@ -47,6 +47,7 @@ namespace MediaBrowser.Dlna.Profiles
                 "http-get:*:audio/mpeg:DLNA.ORG_PN=MP3;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=81500000000000000000000000000000,http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_SM;DLNA.ORG_OP=00;DLNA.ORG_FLAGS=00D00000000000000000000000000000,http-get:*:video/mpeg:DLNA.ORG_PN=MPEG_PS_PAL;DLNA.ORG_OP=11;DLNA.ORG_FLAGS=81500000000000000000000000000000";
 
             EnableSingleAlbumArtLimit = true;
+            EnableAlbumArtInDidl = true;
             
             TranscodingProfiles = new[]
             {
@@ -293,6 +294,12 @@ namespace MediaBrowser.Dlna.Profiles
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.Height,
                             Value = "1080"
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.VideoFramerate,
+                            Value = "30"
                         }
                     }
                 },

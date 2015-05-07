@@ -15,8 +15,7 @@
   <ModelDescription>Emby</ModelDescription>
   <ModelNumber>3.0</ModelNumber>
   <ModelUrl>http://www.microsoft.com/</ModelUrl>
-  <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
-  <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
+  <EnableAlbumArtInDidl>true</EnableAlbumArtInDidl>
   <EnableSingleAlbumArtLimit>true</EnableSingleAlbumArtLimit>
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
   <AlbumArtPn>JPEG_TN</AlbumArtPn>
@@ -67,6 +66,7 @@
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="true" />
       </Conditions>
     </CodecProfile>
     <CodecProfile type="VideoAudio" codec="ac3">

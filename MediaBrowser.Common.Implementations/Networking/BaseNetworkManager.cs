@@ -6,16 +6,29 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace MediaBrowser.Common.Implementations.Networking
 {
     public abstract class BaseNetworkManager
     {
         protected ILogger Logger { get; private set; }
+        private Timer _clearCacheTimer;
 
         protected BaseNetworkManager(ILogger logger)
         {
             Logger = logger;
+
+            // Can't use network change events due to a crash in Linux
+            _clearCacheTimer = new Timer(ClearCacheTimerCallback, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+        }
+
+        private void ClearCacheTimerCallback(object state)
+        {
+            lock (_localIpAddressSyncLock)
+            {
+                _localIpAddresses = null;
+            }
         }
 
         private volatile List<string> _localIpAddresses;
@@ -36,7 +49,6 @@ namespace MediaBrowser.Common.Implementations.Networking
                         var addresses = GetLocalIpAddressesInternal().ToList();
 
                         _localIpAddresses = addresses;
-                        BindEvents();
 
                         return addresses;
                     }
@@ -44,35 +56,6 @@ namespace MediaBrowser.Common.Implementations.Networking
             }
 
             return _localIpAddresses;
-        }
-
-        private void BindEvents()
-        {
-            NetworkChange.NetworkAddressChanged -= NetworkChange_NetworkAddressChanged;
-            NetworkChange.NetworkAvailabilityChanged -= NetworkChange_NetworkAvailabilityChanged;
-
-            NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
-            NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAvailabilityChanged;
-        }
-
-        void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
-        {
-            Logger.Debug("NetworkAvailabilityChanged fired. Resetting cached network info.");
-
-            lock (_localIpAddressSyncLock)
-            {
-                _localIpAddresses = null;
-            }
-        }
-
-        void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
-        {
-            Logger.Debug("NetworkAddressChanged fired. Resetting cached network info.");
-
-            lock (_localIpAddressSyncLock)
-            {
-                _localIpAddresses = null;
-            }
         }
 
         private IEnumerable<string> GetLocalIpAddressesInternal()

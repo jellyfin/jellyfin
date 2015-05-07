@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Controller.Persistence;
+﻿using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -20,8 +19,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private IDbCommand _deleteStreamsCommand;
         private IDbCommand _saveStreamCommand;
-
-        private SqliteShrinkMemoryTimer _shrinkMemoryTimer;
 
         public SqliteMediaStreamsRepository(IDbConnection connection, ILogManager logManager)
         {
@@ -64,8 +61,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             AddRefFramesCommand();
 
             PrepareStatements();
-
-            _shrinkMemoryTimer = new SqliteShrinkMemoryTimer(_connection, _writeLock, _logger);
         }
 
         private void AddPixelFormatColumnCommand()
@@ -563,12 +558,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     lock (_disposeLock)
                     {
-                        if (_shrinkMemoryTimer != null)
-                        {
-                            _shrinkMemoryTimer.Dispose();
-                            _shrinkMemoryTimer = null;
-                        }
-
                         if (_connection != null)
                         {
                             if (_connection.IsOpen())

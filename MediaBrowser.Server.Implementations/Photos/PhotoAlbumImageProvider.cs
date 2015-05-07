@@ -11,7 +11,8 @@ namespace MediaBrowser.Server.Implementations.Photos
 {
     //public class PhotoAlbumImageProvider : BaseDynamicImageProvider<PhotoAlbum>
     //{
-    //    public PhotoAlbumImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor) : base(fileSystem, providerManager, applicationPaths, imageProcessor)
+    //    public PhotoAlbumImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor)
+    //        : base(fileSystem, providerManager, applicationPaths, imageProcessor)
     //    {
     //    }
 

@@ -1,7 +1,7 @@
-﻿using System;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Dlna.Common;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -28,9 +28,10 @@ namespace MediaBrowser.Dlna.PlayTo
             DeviceService service, 
             string command, 
             string postData, 
+            bool logRequest = true,
             string header = null)
         {
-            var response = await PostSoapDataAsync(NormalizeServiceUrl(baseUrl, service.ControlUrl), "\"" + service.ServiceType + "#" + command + "\"", postData, header)
+            var response = await PostSoapDataAsync(NormalizeServiceUrl(baseUrl, service.ControlUrl), "\"" + service.ServiceType + "#" + command + "\"", postData, header, logRequest)
                 .ConfigureAwait(false);
 
             using (var stream = response.Content)
@@ -69,7 +70,6 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 Url = url,
                 UserAgent = USERAGENT,
-                LogRequest = _config.GetDlnaConfiguration().EnableDebugLogging,
                 LogErrorResponseBody = true
             };
 
@@ -87,7 +87,6 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 Url = url,
                 UserAgent = USERAGENT,
-                LogRequest = _config.GetDlnaConfiguration().EnableDebugLogging,
                 LogErrorResponseBody = true
             };
 
@@ -105,7 +104,8 @@ namespace MediaBrowser.Dlna.PlayTo
         private Task<HttpResponseInfo> PostSoapDataAsync(string url, 
             string soapAction, 
             string postData, 
-            string header = null)
+            string header,
+            bool logRequest)
         {
             if (!soapAction.StartsWith("\""))
                 soapAction = "\"" + soapAction + "\"";
@@ -114,7 +114,7 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 Url = url,
                 UserAgent = USERAGENT,
-                LogRequest = _config.GetDlnaConfiguration().EnableDebugLogging,
+                LogRequest = logRequest || _config.GetDlnaConfiguration().EnableDebugLogging,
                 LogErrorResponseBody = true
             };
 

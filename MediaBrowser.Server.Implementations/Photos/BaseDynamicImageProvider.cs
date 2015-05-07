@@ -191,11 +191,18 @@ namespace MediaBrowser.Server.Implementations.Photos
             throw new ArgumentException("Unexpected image type");
         }
 
+        private const int MaxImageAgeDays = 7;
+
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
             if (!Supports(item))
             {
                 return false;
+            }
+
+            if (item is UserView)
+            {
+                return HasChanged(item, ImageType.Primary) || HasChanged(item, ImageType.Thumb);
             }
 
             var items = GetItemsWithImages(item).Result;
@@ -216,8 +223,28 @@ namespace MediaBrowser.Server.Implementations.Photos
                 }
 
                 var currentPathCacheKey = (Path.GetFileNameWithoutExtension(image.Path) ?? string.Empty).Split('_').LastOrDefault();
-
                 if (string.Equals(cacheKey, currentPathCacheKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        protected bool HasChanged(IHasImages item, ImageType type)
+        {
+            var image = item.GetImageInfo(type, 0);
+
+            if (image != null)
+            {
+                if (!FileSystem.ContainsSubPath(item.GetInternalMetadataPath(), image.Path))
+                {
+                    return false;
+                }
+
+                var age = DateTime.UtcNow - image.DateModified;
+                if (age.TotalDays <= MaxImageAgeDays)
                 {
                     return false;
                 }
@@ -234,7 +261,7 @@ namespace MediaBrowser.Server.Implementations.Photos
         protected virtual List<BaseItem> GetFinalItems(List<BaseItem> items, int limit)
         {
             // Rotate the images once every x days
-            var random = DateTime.Now.DayOfYear % 7;
+            var random = DateTime.Now.DayOfYear % MaxImageAgeDays;
 
             return items
                 .OrderBy(i => (random + "" + items.IndexOf(i)).GetMD5())
