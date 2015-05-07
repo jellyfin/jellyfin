@@ -2,7 +2,7 @@
 <Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Xbox One</Name>
   <Identification>
-    <FriendlyName>XboxOne</FriendlyName>
+    <ModelName>Xbox One</ModelName>
     <Headers>
       <HttpHeaderInfo name="FriendlyName.DLNA.ORG" value="XboxOne" match="Substring" />
       <HttpHeaderInfo name="User-Agent" value="NSPlayer/12" match="Substring" />
