@@ -472,7 +472,12 @@
             }
 
             if (item.CollectionType == 'channels') {
-                return 'channelslatest.html';
+
+                if (AppInfo.enableLatestChannelItems) {
+                    return 'channelslatest.html';
+                } else {
+                    return 'channels.html';
+                }
             }
 
             if (context != 'folders') {
@@ -945,6 +950,117 @@
             return itemCommands;
         },
 
+        screenWidth: function () {
+
+            var screenWidth = $(window).width();
+
+            return screenWidth;
+        },
+
+        getPostersPerRow: function (screenWidth) {
+
+            function getValue(shape) {
+
+                var div = $('<div class="card ' + shape + 'Card"><div class="cardBox"><div class="cardImage"></div></div></div>').appendTo(document.body);
+                var width = screenWidth / $('.cardImage', div).innerWidth();
+                div.remove();
+                return width;
+            }
+
+            var info = {};
+
+            info.square = getValue('square');
+            info.smallSquare = getValue('smallSquare');
+            info.thumb = getValue('backdrop');
+            info.portrait = getValue('portrait');
+            info.smallPortrait = getValue('smallPortrait');
+            info.banner = getValue('banner');
+            info.smallThumb = getValue('smallBackdrop');
+
+            return info;
+        },
+
+        posterSizes: [],
+
+        getPosterViewInfo: function () {
+
+            var screenWidth = LibraryBrowser.screenWidth();
+
+            var cachedResults = LibraryBrowser.posterSizes;
+
+            for (var i = 0, length = cachedResults.length; i < length; i++) {
+
+                if (cachedResults[i].screenWidth == screenWidth) {
+                    return cachedResults[i];
+                }
+            }
+
+            var result = LibraryBrowser.getPosterViewInfoInternal(screenWidth);
+
+            cachedResults.push(result);
+
+            return result;
+        },
+
+        getPosterViewInfoInternal: function (screenWidth) {
+
+            var imagesPerRow = LibraryBrowser.getPostersPerRow(screenWidth);
+
+            if (AppInfo.hasLowImageBandwidth) {
+                screenWidth *= .95;
+            } else {
+                screenWidth *= 1.25;
+            }
+
+            var thumbWidth = screenWidth / imagesPerRow.thumb;
+            var smallThumbWidth = screenWidth / imagesPerRow.smallThumb;
+            var posterWidth = screenWidth / imagesPerRow.portrait;
+            var smallPosterWidth = screenWidth / imagesPerRow.smallPortrait;
+            var squareSize = screenWidth / imagesPerRow.square;
+            var smallSquareSize = screenWidth / imagesPerRow.smallSquare;
+            var bannerWidth = screenWidth / imagesPerRow.banner;
+
+            if (!AppInfo.isTouchPreferred) {
+
+                var roundTo = 100;
+
+                thumbWidth = Math.round(thumbWidth / roundTo) * roundTo;
+                smallThumbWidth = Math.round(smallThumbWidth / roundTo) * roundTo;
+                posterWidth = Math.round(posterWidth / roundTo) * roundTo;
+                smallPosterWidth = Math.round(smallPosterWidth / roundTo) * roundTo;
+                squareSize = Math.round(squareSize / roundTo) * roundTo;
+                bannerWidth = Math.round(bannerWidth / roundTo) * roundTo;
+            }
+
+            var defaultPortait = 'portrait';
+            var defaultThumb = 'backdrop';
+            var defaultSquare = 'square';
+
+            if (AppInfo.hasLowImageBandwidth) {
+                defaultThumb = 'smallBackdrop';
+                defaultSquare = 'smallSquare';
+                defaultPortait = 'smallPortrait';
+            }
+
+            return {
+
+                defaultThumb: defaultThumb,
+                smallThumbWidth: Math.round(smallThumbWidth),
+                thumbWidth: Math.round(thumbWidth),
+
+                defaultPortait: defaultPortait,
+                posterWidth: Math.round(posterWidth),
+                smallPosterWidth: Math.round(smallPosterWidth),
+
+                defaultSquare: defaultSquare,
+                squareSize: Math.round(squareSize),
+                smallSquareSize: Math.round(smallSquareSize),
+
+                bannerWidth: Math.round(bannerWidth),
+                screenWidth: screenWidth
+            };
+        },
+
         getPosterViewHtml: function (options) {
 
             var items = options.items;
@@ -976,6 +1092,28 @@
                 } else {
                     options.shape = options.defaultShape || (options.shape == 'auto' ? 'portrait' : 'portrait');
                 }
+            }
+
+            var posterInfo = LibraryBrowser.getPosterViewInfo();
+
+            var thumbWidth = posterInfo.thumbWidth;
+            var posterWidth = posterInfo.posterWidth;
+            var squareSize = posterInfo.squareSize;
+            var bannerWidth = posterInfo.bannerWidth;
+
+            if (options.shape == 'backdrop' && posterInfo.defaultThumb == 'smallBackdrop') {
+                options.shape = 'smallBackdrop';
+                thumbWidth = posterInfo.smallThumbWidth;
+            }
+
+            else if (options.shape == 'portrait' && posterInfo.defaultPortait == 'smallPortrait') {
+                options.shape = 'smallPortrait';
+                posterWidth = posterInfo.smallPosterWidth;
+            }
+
+            else if (options.shape == 'square' && posterInfo.defaultSquare == 'smallSquare') {
+                options.shape = 'smallSquare';
+                squareSize = posterInfo.smallSquareSize;
             }
 
             for (var i = 0, length = items.length; i < length; i++) {
@@ -1044,13 +1182,12 @@
 
                 var forceName = false;
 
-                var downloadHeight = 576;
                 var enableImageEnhancers = options.enableImageEnhancers !== false;
 
                 if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.5) {
 
-                    height = 400;
-                    width = primaryImageAspectRatio ? Math.round(height * primaryImageAspectRatio) : null;
+                    width = posterWidth;
+                    height = primaryImageAspectRatio ? Math.round(posterWidth / primaryImageAspectRatio) : null;
 
                     imgUrl = ApiClient.getImageUrl(item.Id, {
                         type: "Primary",
@@ -1064,7 +1201,7 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Thumb",
-                        maxWidth: downloadHeight,
+                        maxWidth: thumbWidth,
                         tag: item.ImageTags.Thumb,
                         enableImageEnhancers: enableImageEnhancers
                     });
@@ -1073,7 +1210,7 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Backdrop",
-                        maxWidth: downloadHeight,
+                        maxWidth: thumbWidth,
                         tag: item.BackdropImageTags[0],
                         enableImageEnhancers: enableImageEnhancers
                     });
@@ -1082,7 +1219,7 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Thumb",
-                        maxWidth: downloadHeight,
+                        maxWidth: thumbWidth,
                         tag: item.ImageTags.Thumb,
                         enableImageEnhancers: enableImageEnhancers
                     });
@@ -1091,7 +1228,7 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Banner",
-                        maxWidth: 700,
+                        maxWidth: bannerWidth,
                         tag: item.ImageTags.Banner,
                         enableImageEnhancers: enableImageEnhancers
                     });
@@ -1100,7 +1237,7 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
                         type: "Thumb",
-                        maxWidth: downloadHeight,
+                        maxWidth: thumbWidth,
                         tag: item.SeriesThumbImageTag,
                         enableImageEnhancers: enableImageEnhancers
                     });
@@ -1109,7 +1246,7 @@
 
                     imgUrl = ApiClient.getThumbImageUrl(item.ParentThumbItemId, {
                         type: "Thumb",
-                        maxWidth: downloadHeight,
+                        maxWidth: thumbWidth,
                         enableImageEnhancers: enableImageEnhancers
                     });
 
@@ -1117,7 +1254,7 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Backdrop",
-                        maxWidth: downloadHeight,
+                        maxWidth: thumbWidth,
                         tag: item.BackdropImageTags[0],
                         enableImageEnhancers: enableImageEnhancers
                     });
@@ -1126,8 +1263,8 @@
 
                 } else if (item.ImageTags && item.ImageTags.Primary) {
 
-                    height = 400;
-                    width = primaryImageAspectRatio ? Math.round(height * primaryImageAspectRatio) : null;
+                    width = posterWidth;
+                    height = primaryImageAspectRatio ? Math.round(posterWidth / primaryImageAspectRatio) : null;
 
                     imgUrl = ApiClient.getImageUrl(item.Id, {
                         type: "Primary",
@@ -1140,18 +1277,16 @@
                 }
                 else if (item.ParentPrimaryImageTag) {
 
-                    height = 400;
-
                     imgUrl = ApiClient.getImageUrl(item.ParentPrimaryImageItemId, {
                         type: "Primary",
-                        height: height,
+                        width: posterWidth,
                         tag: item.ParentPrimaryImageTag,
                         enableImageEnhancers: enableImageEnhancers
                     });
                 }
                 else if (item.AlbumId && item.AlbumPrimaryImageTag) {
 
-                    height = 220;
+                    height = squareSize;
                     width = primaryImageAspectRatio ? Math.round(height * primaryImageAspectRatio) : null;
 
                     imgUrl = ApiClient.getScaledImageUrl(item.AlbumId, {
@@ -1167,7 +1302,7 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Thumb",
-                        maxWidth: downloadHeight,
+                        maxWidth: thumbWidth,
                         tag: item.ImageTags.Thumb,
                         enableImageEnhancers: enableImageEnhancers
                     });
@@ -1177,7 +1312,7 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Backdrop",
-                        maxWidth: downloadHeight,
+                        maxWidth: thumbWidth,
                         tag: item.BackdropImageTags[0],
                         enableImageEnhancers: enableImageEnhancers
                     });
@@ -1186,7 +1321,7 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Thumb",
-                        maxWidth: downloadHeight,
+                        maxWidth: thumbWidth,
                         tag: item.ImageTags.Thumb,
                         enableImageEnhancers: enableImageEnhancers
                     });
@@ -1195,7 +1330,7 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.SeriesId, {
                         type: "Thumb",
-                        maxWidth: downloadHeight,
+                        maxWidth: thumbWidth,
                         tag: item.SeriesThumbImageTag,
                         enableImageEnhancers: enableImageEnhancers
                     });
@@ -1204,7 +1339,7 @@
 
                     imgUrl = ApiClient.getThumbImageUrl(item, {
                         type: "Thumb",
-                        maxWidth: downloadHeight,
+                        maxWidth: thumbWidth,
                         enableImageEnhancers: enableImageEnhancers
                     });
 

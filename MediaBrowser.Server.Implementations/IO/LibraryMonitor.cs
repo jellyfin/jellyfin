@@ -84,7 +84,7 @@ namespace MediaBrowser.Server.Implementations.IO
             // This is an arbitraty amount of time, but delay it because file system writes often trigger events after RemoveTempIgnore has been called. 
             // Seeing long delays in some situations, especially over the network.
             // Seeing delays up to 40 seconds, but not going to ignore changes for that long.
-            await Task.Delay(1500).ConfigureAwait(false);
+            await Task.Delay(5000).ConfigureAwait(false);
 
             string val;
             _tempIgnoredPaths.TryRemove(path, out val);
@@ -437,11 +437,11 @@ namespace MediaBrowser.Server.Implementations.IO
             {
                 if (_updateTimer == null)
                 {
-                    _updateTimer = new Timer(TimerStopped, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.RealtimeMonitorDelay), TimeSpan.FromMilliseconds(-1));
+                    _updateTimer = new Timer(TimerStopped, null, TimeSpan.FromSeconds(ConfigurationManager.Configuration.RealtimeLibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
                 else
                 {
-                    _updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.RealtimeMonitorDelay), TimeSpan.FromMilliseconds(-1));
+                    _updateTimer.Change(TimeSpan.FromSeconds(ConfigurationManager.Configuration.RealtimeLibraryMonitorDelay), TimeSpan.FromMilliseconds(-1));
                 }
             }
         }
@@ -560,7 +560,7 @@ namespace MediaBrowser.Server.Implementations.IO
         /// <returns>Task.</returns>
         private async Task ProcessPathChanges(List<string> paths)
         {
-            var itemsToRefresh = paths.Select(Path.GetDirectoryName)
+            var itemsToRefresh = paths
                 .Select(GetAffectedBaseItem)
                 .Where(item => item != null)
                 .Distinct()

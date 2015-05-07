@@ -12,13 +12,15 @@ namespace MediaBrowser.Dlna.Ssdp
         public EndPoint FromEndPoint { get; private set; }
         public string Message { get; private set; }
         public bool IgnoreBindFailure { get; private set; }
+        public bool EnableDebugLogging { get; private set; }
 
         private readonly ILogger _logger;
 
-        public Datagram(EndPoint toEndPoint, EndPoint fromEndPoint, ILogger logger, string message, bool ignoreBindFailure)
+        public Datagram(EndPoint toEndPoint, EndPoint fromEndPoint, ILogger logger, string message, bool ignoreBindFailure, bool enableDebugLogging)
         {
             Message = message;
             _logger = logger;
+            EnableDebugLogging = enableDebugLogging;
             IgnoreBindFailure = ignoreBindFailure;
             FromEndPoint = fromEndPoint;
             ToEndPoint = toEndPoint;
@@ -37,8 +39,13 @@ namespace MediaBrowser.Dlna.Ssdp
                     {
                         client.Bind(FromEndPoint);
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        if (EnableDebugLogging)
+                        {
+                            _logger.ErrorException("Error binding datagram socket", ex);
+                        }
+                        
                         if (!IgnoreBindFailure) throw;
                     }
                 }
@@ -51,7 +58,7 @@ namespace MediaBrowser.Dlna.Ssdp
                     }
                     catch (Exception ex)
                     {
-                        if (!IgnoreBindFailure)
+                        if (!IgnoreBindFailure || EnableDebugLogging)
                         {
                             _logger.ErrorException("Error sending Datagram to {0} from {1}: " + Message, ex, ToEndPoint, FromEndPoint == null ? "" : FromEndPoint.ToString());
                         }
@@ -62,8 +69,12 @@ namespace MediaBrowser.Dlna.Ssdp
                         {
                             client.Close();
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
+                            if (EnableDebugLogging)
+                            {
+                                _logger.ErrorException("Error closing datagram socket", ex);
+                            }
                         }
                     }
                 }, null);

@@ -99,12 +99,7 @@
 
         });
 
-        // See backrops.js for comments on this
-        if ($.browser.msie) {
-            $('.fldEnableBackdrops', page).hide();
-        } else {
-            $('.fldEnableBackdrops', page).show();
-        }
+        $('.fldEnableBackdrops', page).show();
     });
 
     window.WebClientPreferencesPage = {

@@ -42,6 +42,12 @@
     white-space: nowrap;
 }
 
+.smallBackdropPosterItem .cardOverlayInner > div {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
 .chapterPosterItem {
     width: 240px!important;
     cursor: pointer;

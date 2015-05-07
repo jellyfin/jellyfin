@@ -887,6 +887,14 @@
 
             itemsContainer.trigger('playallfromhere', [index]);
         }
+        else if (action == 'setplaylistindex') {
+
+            index = elemWithAttributes.getAttribute('data-index');
+
+            closeContextMenu();
+
+            MediaController.currentPlaylistIndex(index);
+        }
         else if (action == 'photoslideshow') {
 
             if (!$(elem).hasClass('card')) {
@@ -902,6 +910,17 @@
         }
 
         return false;
+    }
+
+    function resetCardImage() {
+
+        this.style.backgroundImage = "url('css/images/empty.png')";
+    }
+
+    function resetImages(page) {
+
+        $('cardImage', page).remove();
+        //$('.cardImage', page).each(resetCardImage);
     }
 
     $(document).on('pageinit', ".libraryPage", function () {
@@ -956,6 +975,11 @@
         hideSelections(page);
 
         $('.viewTabButton:first', page).trigger('click');
+
+    }).on('pagebeforehide', ".libraryPage", function () {
+
+        var page = this;
+        resetImages(page);
     });
 
     function renderUserDataChanges(card, userData) {

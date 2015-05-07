@@ -4,9 +4,13 @@
 
         var page = this;
 
+        var limit = AppInfo.hasLowImageBandwidth ?
+         20 :
+         40;
+
         var query = {
 
-            Limit: 40,
+            Limit: limit,
             Fields: "AirTime,UserData,SeriesStudio,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
             ImageTypeLimit: 1,

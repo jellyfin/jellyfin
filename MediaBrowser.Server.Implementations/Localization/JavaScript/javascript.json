@@ -440,7 +440,7 @@
     "HeaderVideo": "Video",
     "HeaderRuntime": "Runtime",
     "HeaderCommunityRating": "Community rating",
-    "HeaderPasswordReset":  "Password Reset",
+    "HeaderPasswordReset": "Password Reset",
     "HeaderParentalRating": "Parental rating",
     "HeaderReleaseDate": "Release date",
     "HeaderDateAdded": "Date added",
@@ -766,5 +766,10 @@
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
     "SyncJobItemStatusCancelled": "Cancelled",
     "LabelProfile": "Profile:",
-    "LabelBitrateMbps": "Bitrate (Mbps):"
+    "LabelBitrateMbps": "Bitrate (Mbps):",
+    "EmbyIntroDownloadMessage": "To download and install Emby Server visit {0}.",
+    "ButtonNewServer": "New Server",
+    "ButtonSignInWithConnect": "Sign in with Emby Connect",
+    "HeaderNewServer": "New Server",
+    "MyDevice":  "My Device"
 }

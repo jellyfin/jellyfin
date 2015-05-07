@@ -1550,7 +1550,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 if (info.PrimaryImageTag == null)
                 {
-                    var album = audio.Parents.OfType<MusicAlbum>().FirstOrDefault();
+                    var album = audio.AlbumEntity;
 
                     if (album != null && album.HasImage(ImageType.Primary))
                     {

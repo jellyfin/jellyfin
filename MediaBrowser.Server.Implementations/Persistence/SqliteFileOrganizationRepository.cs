@@ -14,14 +14,10 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
-    public class SqliteFileOrganizationRepository : IFileOrganizationRepository, IDisposable
+    public class SqliteFileOrganizationRepository : BaseSqliteRepository, IFileOrganizationRepository, IDisposable
     {
         private IDbConnection _connection;
 
-        private readonly ILogger _logger;
-
-        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
-        private SqliteShrinkMemoryTimer _shrinkMemoryTimer;
         private readonly IServerApplicationPaths _appPaths;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
@@ -30,11 +26,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deleteResultCommand;
         private IDbCommand _deleteAllCommand;
 
-        public SqliteFileOrganizationRepository(ILogManager logManager, IServerApplicationPaths appPaths)
+        public SqliteFileOrganizationRepository(ILogManager logManager, IServerApplicationPaths appPaths) : base(logManager)
         {
             _appPaths = appPaths;
-
-            _logger = logManager.GetLogger(GetType().Name);
         }
 
         /// <summary>
@@ -45,7 +39,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "fileorganization.db");
 
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
+            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
 
             string[] queries = {
 
@@ -58,11 +52,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "pragma shrink_memory"
                                };
 
-            _connection.RunQueries(queries, _logger);
+            _connection.RunQueries(queries, Logger);
 
             PrepareStatements();
-
-            _shrinkMemoryTimer = new SqliteShrinkMemoryTimer(_connection, _writeLock, _logger);
         }
 
         private void PrepareStatements()
@@ -103,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -145,7 +137,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save FileOrganizationResult:", e);
+                Logger.ErrorException("Failed to save FileOrganizationResult:", e);
 
                 if (transaction != null)
                 {
@@ -161,7 +153,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
@@ -172,7 +164,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 throw new ArgumentNullException("id");
             }
 
-            await _writeLock.WaitAsync().ConfigureAwait(false);
+            await WriteLock.WaitAsync().ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -199,7 +191,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to delete FileOrganizationResult:", e);
+                Logger.ErrorException("Failed to delete FileOrganizationResult:", e);
 
                 if (transaction != null)
                 {
@@ -215,13 +207,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
         public async Task DeleteAll()
         {
-            await _writeLock.WaitAsync().ConfigureAwait(false);
+            await WriteLock.WaitAsync().ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -246,7 +238,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to delete results", e);
+                Logger.ErrorException("Failed to delete results", e);
 
                 if (transaction != null)
                 {
@@ -262,7 +254,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
         
@@ -423,51 +415,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return result;
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
+        protected override void CloseConnection()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private readonly object _disposeLock = new object();
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
+            if (_connection != null)
             {
-                try
+                if (_connection.IsOpen())
                 {
-                    lock (_disposeLock)
-                    {
-                        if (_shrinkMemoryTimer != null)
-                        {
-                            _shrinkMemoryTimer.Dispose();
-                            _shrinkMemoryTimer = null;
-                        }
-
-                        if (_connection != null)
-                        {
-                            if (_connection.IsOpen())
-                            {
-                                _connection.Close();
-                            }
-
-                            _connection.Dispose();
-                            _connection = null;
-                        }
-                    }
+                    _connection.Close();
                 }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error disposing database", ex);
-                }
+
+                _connection.Dispose();
+                _connection = null;
             }
         }
     }

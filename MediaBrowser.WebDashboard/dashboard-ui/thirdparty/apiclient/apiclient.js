@@ -2419,7 +2419,7 @@
                 url += "/" + options.index;
             }
 
-            options.quality = options.quality || (options.type.toLowerCase() == 'backdrop' ? 80 : 90);
+            options.quality = options.quality || self.getDefaultImageQuality(options.type);
 
             // Don't put these on the query string
             delete options.type;
@@ -2477,7 +2477,9 @@
         self.authenticateUserByName = function (name, password) {
 
             if (!name) {
-                throw new Error("null name");
+                var deferred = DeferredBuilder.Deferred();
+                deferred.reject();
+                return deferred.promise();
             }
 
             var url = self.getUrl("Users/authenticatebyname");

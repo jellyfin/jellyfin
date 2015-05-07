@@ -4,12 +4,12 @@
     <title>${TitleSignIn}</title>
 </head>
 <body>
-    <div id="loginPage" data-role="page" class="page standalonePage">
+    <div id="loginPage" data-role="page" class="page standalonePage" data-theme="b">
 
         <div data-role="content">
 
             <form class="manualLoginForm" id="manualLoginForm" style="display: none; text-align: center; margin: 0 auto;">
-                
+
                 <h1 style="text-align: left;">${HeaderPleaseSignIn}</h1>
 
                 <label for="txtManualName" style="text-align: left;">${LabelUser}</label>
@@ -29,27 +29,37 @@
                     </button>
                 </p>
                 <br />
-                <p>
-                    <a href="forgotpassword.html">
-                        ${ButtonForgotPassword}
-                    </a>
-                </p>
+                <br />
             </form>
 
             <div class="visualLoginForm" style="display: none; text-align: center;">
-                <br/>
+                <br />
                 <div id="divUsers" class="itemsContainer"></div>
 
                 <p class="localhostMessage" style="text-align: center; display: none;">${PasswordLocalhostMessage}</p>
 
-                <p>
-                    <a href="#" class="lnkManualLogin" onclick="LoginPage.showManualForm($.mobile.activePage, true);">${ButtonManualLogin}</a>
-                    <a href="forgotpassword.html" style="margin-left: 2em;">${ButtonForgotPassword}</a> 
-                </p>
+                <br />
 
+                <div class="readOnlyContent" style="margin: 2em auto 0;">
+                    <a href="#" onclick="LoginPage.showManualForm($.mobile.activePage, true);" data-role="button" data-icon="lock">${ButtonManualLogin}</a>
+                </div>
             </div>
 
-            <p class="disclaimer" style="text-align: center; margin-top: 2em;"></p>
+            <div class="readOnlyContent" style="margin: 0 auto 1em;">
+                <a href="forgotpassword.html" data-role="button" data-icon="info">
+                    ${ButtonForgotPassword}
+                </a>
+
+                <p class="disclaimer" style="text-align: center; margin-top: 2em;"></p>
+
+                <div class="connectButtons" style="display:none;">
+                    <br />
+                    <a href="selectserver.html" data-role="button" data-icon="action">
+                        ${ButtonChangeServer}
+                    </a>
+                </div>
+            </div>
+
         </div>
 
         <script type="text/javascript">
