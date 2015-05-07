@@ -48,7 +48,7 @@
 }
 
 .largeCardMargin .cardBox {
-    margin: 8px;
+    margin: 7px;
 }
 
 /*@media all and (max-width: 600px) {
@@ -112,11 +112,19 @@
     padding-bottom: 100%;
 }
 
+.smallSquareCard .cardPadder {
+    padding-bottom: 100%;
+}
+
 .letterBoxCard .cardPadder {
     padding-bottom: 75%;
 }
 
 .portraitCard .cardPadder {
+    padding-bottom: 150%;
+}
+
+.smallPortraitCard .cardPadder {
     padding-bottom: 150%;
 }
 
@@ -252,6 +260,10 @@
     width: 50%;
 }
 
+.smallSquareCard {
+    width: 33.3334%;
+}
+
 .backdropCard {
     width: 50%;
 }
@@ -262,6 +274,10 @@
 
 .portraitCard {
     width: 33.3%;
+}
+
+.smallPortraitCard {
+    width: 25%;
 }
 
 .cardProgress {
@@ -287,13 +303,24 @@
     .squareCard {
         width: 33.3%;
     }
+
+    .smallSquareCard {
+        width: 25%;
+    }
+}
+
+@media all and (min-width: 400px) {
+
+    .smallBackdropCard {
+        width: 33.3%;
+    }
 }
 
 
 @media all and (min-width: 540px) {
 
     .smallBackdropCard {
-        width: 33.3%;
+        width: 25%;
     }
 }
 
@@ -302,6 +329,10 @@
 
     .portraitCard {
         width: 25%;
+    }
+
+    .smallPortraitCard {
+        width: 20%;
     }
 }
 
@@ -326,7 +357,11 @@
     }
 
     .smallBackdropCard {
-        width: 25%;
+        width: 20%;
+    }
+
+    .smallSquareCard {
+        width: 20%;
     }
 }
 
@@ -339,6 +374,10 @@
 
     .smallBackdropCard {
         width: 20%;
+    }
+
+    .smallPortraitCard {
+        width: 16.666666666666666666666666666667%;
     }
 }
 
@@ -364,6 +403,14 @@
     .smallBackdropCard {
         width: 16.666666666666666666666666666667%;
     }
+
+    .smallSquareCard {
+        width: 16.666666666666666666666666666667%;
+    }
+
+    .smallPortraitCard {
+        width: 14.285714285714285714285714285714%;
+    }
 }
 
 
@@ -379,6 +426,10 @@
 
     .smallBackdropCard {
         width: 14.285714285714285714285714285714%;
+    }
+
+    .smallPortraitCard {
+        width: 12.5%;
     }
 }
 
@@ -525,14 +576,14 @@
     }
 }
 
-@media all and (min-width: 1400px) {
+@media all and (min-width: 1100px) {
 
     .homePageSmallBackdropCard {
         width: 20%;
     }
 }
 
-@media all and (min-width: 1920px) {
+@media all and (min-width: 1440px) {
 
     .homePageSmallBackdropCard {
         width: 14.285714285714285714285714285714%;

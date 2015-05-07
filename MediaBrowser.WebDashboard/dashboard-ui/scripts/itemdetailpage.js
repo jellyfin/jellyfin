@@ -1177,7 +1177,7 @@
 
         var chapters = item.Chapters || [];
 
-        var maxWwidth = LibraryBrowser.getPosterViewSizes().thumbWidth;
+        var maxWwidth = LibraryBrowser.getPosterViewInfo().thumbWidth;
 
         for (var i = 0, length = chapters.length; i < length; i++) {
 
@@ -1399,7 +1399,7 @@
 
         var html = '';
 
-        var maxWwidth = LibraryBrowser.getPosterViewSizes().thumbWidth;
+        var maxWwidth = LibraryBrowser.getPosterViewInfo().thumbWidth;
 
         for (var i = 0, length = items.length; i < length; i++) {
 

@@ -95,6 +95,13 @@
     }
 }
 
+@media all and (min-width: 800px) {
+
+    .hiddenSectionOnNonMobile {
+        display: none;
+    }
+}
+
 .firstListHeader + .sectionHeaderButton {
     top: 3px;
 }

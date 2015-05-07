@@ -92,7 +92,7 @@
 
             // TODO: With iOS 8 this might not be required anymore
             if ($.browser.safari) {
-                $('.itemVideo').css('visibility', 'hidden');
+                //$('.itemVideo').css('visibility', 'hidden');
             }
         }
 

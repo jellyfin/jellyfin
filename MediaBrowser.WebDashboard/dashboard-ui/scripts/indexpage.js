@@ -14,11 +14,9 @@
         return deferred.promise();
     }
 
-    function createMediaLinks(options) {
+    function getLibraryButtonsHtml(items) {
 
         var html = "";
-
-        var items = options.items;
 
         // "My Library" backgrounds
         for (var i = 0, length = items.length; i < length; i++) {
@@ -86,12 +84,12 @@
                 cssClass += ' ' + item.CollectionType + 'buttonCard';
             }
 
-            var href = item.url || LibraryBrowser.getHref(item, options.context);
+            var href = item.url || LibraryBrowser.getHref(item);
 
             html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
             html += '<div class="cardBox" style="background-color:' + backgroundColor + ';margin:4px;border-radius:4px;">';
 
-            html += "<div class='cardText' style='padding:5px 10px;color:#fff;'>";
+            html += "<div class='cardText' style='padding:6px 10px;color:#fff;'>";
             html += '<i class="fa ' + icon + '"></i>';
             html += '<span style="margin-left:.7em;">' + item.Name + '</span>';
             html += "</div>";
@@ -114,12 +112,7 @@
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderMyMedia') + '</h1>';
             }
             html += '<div>';
-            html += createMediaLinks({
-                items: items,
-                showTitle: true,
-                centerText: true
-
-            });
+            html += getLibraryButtonsHtml(items);
             html += '</div>';
 
             $(elem).html(html);
@@ -206,15 +199,15 @@
 
     function loadLibraryTiles(elem, user, shape, index, autoHideOnMobile, showTitles) {
 
-        if (autoHideOnMobile) {
-            $(elem).addClass('hiddenSectionOnMobile');
-        } else {
-            $(elem).removeClass('hiddenSectionOnMobile');
-        }
-
         return getUserViews(user.Id).done(function (items) {
 
             var html = '';
+
+            if (autoHideOnMobile) {
+                html += '<div class="hiddenSectionOnMobile">';
+            } else {
+                html += '<div>';
+            }
 
             if (items.length) {
 
@@ -241,6 +234,13 @@
                 html += '</div>';
             }
 
+            html += '</div>';
+
+            if (autoHideOnMobile) {
+                html += '<div class="hiddenSectionOnNonMobile" style="margin-top:1em;">';
+                html += getLibraryButtonsHtml(items);
+                html += '</div>';
+            }
 
             $(elem).html(html).lazyChildren().createCardMenus();
 
