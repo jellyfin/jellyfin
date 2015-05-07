@@ -1354,12 +1354,12 @@ var Dashboard = {
         var isBackdrop = imageType.toLowerCase() == 'backdrop';
 
         if (isBackdrop) {
-            quality -= 15;
+            quality -= 10;
         }
 
         if (AppInfo.hasLowImageBandwidth) {
 
-            quality -= 10;
+            quality -= 15;
 
             if (isBackdrop) {
                 quality -= 10;
@@ -1487,6 +1487,16 @@ var AppInfo = {};
                 AppInfo.enableHeadRoom = true;
             }
         }
+
+        if (!AppInfo.hasLowImageBandwidth) {
+            AppInfo.enableLatestChannelItems = true;
+            AppInfo.enableStudioTabs = true;
+            AppInfo.enablePeopleTabs = true;
+            AppInfo.enableTvEpisodesTab = true;
+            AppInfo.enableMusicSongsTab = true;
+            AppInfo.enableMusicArtistsTab = true;
+            AppInfo.enableHomeLatestTab = true;
+        }
     }
 
     function initializeApiClient(apiClient) {
@@ -1557,6 +1567,38 @@ var AppInfo = {};
 
         if (AppInfo.hasLowImageBandwidth) {
             $(document.body).addClass('largeCardMargin');
+        }
+
+        if (!AppInfo.enableLatestChannelItems) {
+            $(document.body).addClass('latestChannelItemsDisabled');
+        }
+
+        if (!AppInfo.enableStudioTabs) {
+            $(document.body).addClass('studioTabDisabled');
+        }
+
+        if (!AppInfo.enablePeopleTabs) {
+            $(document.body).addClass('peopleTabDisabled');
+        }
+
+        if (!AppInfo.enableTvEpisodesTab) {
+            $(document.body).addClass('tvEpisodesTabDisabled');
+        }
+
+        if (!AppInfo.enableMusicSongsTab) {
+            $(document.body).addClass('musicSongsTabDisabled');
+        }
+
+        if (!AppInfo.enableMusicArtistsTab) {
+            $(document.body).addClass('musicArtistsTabDisabled');
+        }
+
+        if (!AppInfo.enableHomeLatestTab) {
+            $(document.body).addClass('homeLatestTabDisabled');
+        }
+
+        if (Dashboard.isRunningInCordova()) {
+            $(document).addClass('nativeApp');
         }
 
         var videoPlayerHtml = '<div id="mediaPlayer" data-theme="b" class="ui-bar-b" style="display: none;">';

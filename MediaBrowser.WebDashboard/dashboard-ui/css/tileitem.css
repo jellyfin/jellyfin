@@ -383,7 +383,6 @@
 
 .posterItem {
     margin: 5px 5px;
-    text-shadow: none;
     font-weight: normal !important;
     display: inline-block;
     position: relative;
@@ -403,6 +402,5 @@
     text-wrap: none;
     white-space: nowrap;
     padding: 5px 4px 4px;
-    text-shadow: none;
     font-weight: 400;
 }

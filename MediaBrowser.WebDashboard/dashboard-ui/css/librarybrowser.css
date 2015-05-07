@@ -1477,3 +1477,31 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         padding-left: 1em;
     }
 }
+
+.latestChannelItemsDisabled .latestChannelItemsTab {
+    display: none !important;
+}
+
+.studioTabDisabled .tvStudiosTab, .studioTabDisabled .movieStudiosTab {
+    display: none !important;
+}
+
+.peopleTabDisabled .tvPeopleTab, .peopleTabDisabled .moviePeopleTab {
+    display: none !important;
+}
+
+.tvEpisodesTabDisabled .tvEpisodesTab {
+    display: none !important;
+}
+
+.musicSongsTabDisabled .musicSongsTab {
+    display: none !important;
+}
+
+.musicArtistsTabDisabled .musicArtistsTab {
+    display: none !important;
+}
+
+.homeLatestTabDisabled .homeLatestTab {
+    display: none !important;
+}

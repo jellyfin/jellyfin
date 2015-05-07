@@ -882,7 +882,7 @@
     "MessageNoSubtitleSearchResultsFound": "No search results founds.",
     "TabDisplay": "Display",
     "TabLanguages": "Languages",
-    "TabWebClient": "Web Client",
+    "TabAppSettings": "App Settings",
     "LabelEnableThemeSongs": "Enable theme songs",
     "LabelEnableBackdrops": "Enable backdrops",
     "LabelEnableThemeSongsHelp": "If enabled, theme songs will be played in the background while browsing the library.",

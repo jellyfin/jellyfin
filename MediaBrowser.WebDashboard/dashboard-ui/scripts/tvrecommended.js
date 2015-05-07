@@ -2,20 +2,9 @@
 
     function reload(page) {
 
-        var query = {
-
-            Limit: 24,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
-            UserId: Dashboard.getCurrentUserId(),
-            ExcludeLocationTypes: "Virtual",
-            ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
-        };
-
-        query.ParentId = LibraryMenu.getTopParentId();
         var context = '';
 
-        if (query.ParentId) {
+        if (LibraryMenu.getTopParentId()) {
 
             $('.scopedLibraryViewNav', page).show();
             $('.globalNav', page).hide();
@@ -37,9 +26,13 @@
 
     function loadNextUp(page, context) {
 
+        var limit = AppInfo.hasLowImageBandwidth ?
+         18 :
+         24;
+
         var query = {
 
-            Limit: 24,
+            Limit: limit,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
             ExcludeLocationTypes: "Virtual",

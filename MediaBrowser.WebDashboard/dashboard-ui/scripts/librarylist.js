@@ -919,8 +919,8 @@
 
     function resetImages(page) {
 
-        //$('cardImage', page).remove();
-        $('.cardImage', page).each(resetCardImage);
+        $('cardImage', page).remove();
+        //$('.cardImage', page).each(resetCardImage);
     }
 
     $(document).on('pageinit', ".libraryPage", function () {

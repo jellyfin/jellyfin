@@ -385,7 +385,6 @@ h1 .imageLink {
     padding: .6em 20px .6em 0;
     text-decoration: none;
     color: inherit !important;
-    text-shadow: none !important;
     font-weight: 500 !important;
     font-size: 14px;
     vertical-align: middle;
@@ -625,7 +624,6 @@ h1 .imageLink {
 }
 
 .footerNotification {
-    text-shadow: none;
     padding: .75em 1em;
     margin: 0;
     font-weight: normal;
@@ -1130,4 +1128,28 @@ h1 + .accentButton {
     background: rgba(0, 0, 0, .3);
     /* One less than jqm loading spinner, so we can combine them */
     z-index: 9999998;
+}
+
+.nativeApp * {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -moz-touch-callout: none;
+    -ms-touch-callout: none;
+    touch-callout: none;
+    -webkit-user-drag: none;
+    -moz-user-drag: none;
+    -ms-user-drag: none;
+    user-drag: none;
+}
+
+.nativeApp input {
+    -webkit-user-select: auto !important;
+    -khtml-user-select: auto !important;
+    -moz-user-select: auto !important;
+    -ms-user-select: auto !important;
+    user-select: auto !important;
 }

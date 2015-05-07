@@ -19,16 +19,18 @@
             loaded;
 
         this.one("unveil", function () {
-            var elemType = this.tagName;
-            var source = this.getAttribute(attrib);
+            var elem = this;
+            var elemType = elem.tagName;
+            var source = elem.getAttribute(attrib);
             if (source) {
                 if (elemType === "DIV") {
-                    this.style.backgroundImage = "url('" + source + "')";
+
+                    elem.style.backgroundImage = "url('" + source + "')";
 
                 } else {
-                    this.setAttribute("src", source);
+                    elem.setAttribute("src", source);
                 }
-                this.setAttribute("data-src", '');
+                elem.setAttribute("data-src", '');
             }
         });
 
@@ -60,7 +62,7 @@
 
     $.fn.lazyChildren = function () {
 
-        $(".lazy", this).unveil(150);
+        $(".lazy", this).unveil(0);
         return this;
     };
 

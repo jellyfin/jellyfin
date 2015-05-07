@@ -48,7 +48,7 @@
 }
 
 .largeCardMargin .cardBox {
-    margin: 7px;
+    margin: 8px;
 }
 
 /*@media all and (max-width: 600px) {
@@ -184,7 +184,6 @@
     text-wrap: none;
     white-space: nowrap;
     padding: 5px 4px 2px;
-    text-shadow: none;
     font-weight: 400;
     line-height: 1.4;
 }

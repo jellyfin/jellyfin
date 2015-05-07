@@ -2,10 +2,14 @@
 
     function loadLatest(page, userId, parentId) {
 
+        var limit = AppInfo.hasLowImageBandwidth ?
+            15 :
+            18;
+
         var options = {
 
             IncludeItemTypes: "Movie",
-            Limit: 18,
+            Limit: limit,
             Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,
@@ -21,6 +25,46 @@
                 overlayText: false
 
             })).lazyChildren().trigger('create');
+        });
+    }
+
+    function loadResume(page, userId, parentId) {
+
+        var screenWidth = $(window).width();
+
+        var options = {
+
+            SortBy: "DatePlayed",
+            SortOrder: "Descending",
+            IncludeItemTypes: "Movie",
+            Filters: "IsResumable",
+            Limit: screenWidth >= 1920 ? 6 : (screenWidth >= 1600 ? 4 : 3),
+            Recursive: true,
+            Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
+            CollapseBoxSetItems: false,
+            ParentId: parentId,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
+        };
+
+        ApiClient.getItems(userId, options).done(function (result) {
+
+            if (result.Items.length) {
+                $('#resumableSection', page).show();
+            } else {
+                $('#resumableSection', page).hide();
+            }
+
+            $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                preferThumb: true,
+                shape: 'backdrop',
+                overlayText: true,
+                showTitle: true,
+                lazy: true
+
+            })).lazyChildren().trigger('create');
+
         });
     }
 
@@ -62,57 +106,9 @@
         return html;
     }
 
-    $(document).on('pageinit', "#moviesRecommendedPage", function () {
-
-        var page = this;
-
-        $('.recommendations', page).createCardMenus();
-
-    }).on('pagebeforeshow', "#moviesRecommendedPage", function () {
-
-        var parentId = LibraryMenu.getTopParentId();
+    function loadSuggestions(page, userId, parentId) {
 
         var screenWidth = $(window).width();
-
-        var page = this;
-        var userId = Dashboard.getCurrentUserId();
-
-        var options = {
-
-            SortBy: "DatePlayed",
-            SortOrder: "Descending",
-            IncludeItemTypes: "Movie",
-            Filters: "IsResumable",
-            Limit: screenWidth >= 1920 ? 6 : (screenWidth >= 1600 ? 4 : 3),
-            Recursive: true,
-            Fields: "PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
-            CollapseBoxSetItems: false,
-            ParentId: parentId,
-            ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
-        };
-
-        ApiClient.getItems(userId, options).done(function (result) {
-
-            if (result.Items.length) {
-                $('#resumableSection', page).show();
-            } else {
-                $('#resumableSection', page).hide();
-            }
-
-            $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                preferThumb: true,
-                shape: 'backdrop',
-                overlayText: true,
-                showTitle: true,
-                lazy: true
-
-            })).lazyChildren().trigger('create');
-
-        });
-
-        loadLatest(page, userId, parentId);
 
         var url = ApiClient.getUrl("Movies/Recommendations", {
 
@@ -138,6 +134,27 @@
             $('.noItemsMessage', page).hide();
             $('.recommendations', page).html(html).lazyChildren();
         });
+    }
+
+    $(document).on('pageinit', "#moviesRecommendedPage", function () {
+
+        var page = this;
+
+        $('.recommendations', page).createCardMenus();
+
+    }).on('pagebeforeshow', "#moviesRecommendedPage", function () {
+
+        var parentId = LibraryMenu.getTopParentId();
+
+        var page = this;
+        var userId = Dashboard.getCurrentUserId();
+
+        loadResume(page, userId, parentId);
+        loadLatest(page, userId, parentId);
+
+        if (!AppInfo.hasLowImageBandwidth) {
+            loadSuggestions(page, userId, parentId);
+        }
 
     });
 

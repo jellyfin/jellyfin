@@ -472,7 +472,12 @@
             }
 
             if (item.CollectionType == 'channels') {
-                return 'channelslatest.html';
+
+                if (AppInfo.enableLatestChannelItems) {
+                    return 'channelslatest.html';
+                } else {
+                    return 'channels.html';
+                }
             }
 
             if (context != 'folders') {
