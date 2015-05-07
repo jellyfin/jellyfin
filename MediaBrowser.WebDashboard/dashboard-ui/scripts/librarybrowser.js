@@ -949,41 +949,60 @@
             
             var screenWidth = $(window).width();
 
-            if (!AppInfo.isTouchPreferred) {
-                screenWidth = window.screen.availWidth;
-            }
-
             return screenWidth;
         },
 
-        getPostersPerRow: function () {
-
-            var screenWidth = LibraryBrowser.screenWidth();
+        getPostersPerRow: function (screenWidth) {
 
             var div = $('<div class="card squareCard"><div class="cardBox"><div class="cardImage"></div></div></div>').appendTo(document.body);
             var square = screenWidth / $('.cardImage', div).innerWidth();
             div.remove();
 
-            div = $('<div class="card backdropCard">><div class="cardBox"><div class="cardImage"></div></div></div>').appendTo(document.body);
+            div = $('<div class="card backdropCard"><div class="cardBox"><div class="cardImage"></div></div></div>').appendTo(document.body);
             var thumb = screenWidth / $('.cardImage', div).innerWidth();
             div.remove();
 
-            div = $('<div class="card portraitCard">><div class="cardBox"><div class="cardImage"></div></div></div>').appendTo(document.body);
+            div = $('<div class="card portraitCard"><div class="cardBox"><div class="cardImage"></div></div></div>').appendTo(document.body);
             var poster = screenWidth / $('.cardImage', div).innerWidth();
+            div.remove();
+
+            div = $('<div class="card bannerCard"><div class="cardBox"><div class="cardImage"></div></div></div>').appendTo(document.body);
+            var banner = screenWidth / $('.cardImage', div).innerWidth();
             div.remove();
 
             return {
                 thumb: thumb,
                 poster: poster,
-                square: square
+                square: square,
+                banner: banner
             };
         },
 
-        getPosterViewSizes: function () {
+        posterSizes: [],
 
-            var imagesPerRow = LibraryBrowser.getPostersPerRow();
+        getPosterViewInfo: function () {
 
             var screenWidth = LibraryBrowser.screenWidth();
+
+            var cachedResults = LibraryBrowser.posterSizes;
+
+            for (var i = 0, length = cachedResults.length; i < length; i++) {
+                
+                if (cachedResults[i].screenWidth == screenWidth) {
+                    return cachedResults[i];
+                }
+            }
+
+            var result = LibraryBrowser.getPosterViewInfoInternal(screenWidth);
+
+            cachedResults.push(result);
+
+            return result;
+        },
+
+        getPosterViewInfoInternal: function (screenWidth) {
+
+            var imagesPerRow = LibraryBrowser.getPostersPerRow(screenWidth);
 
             if (AppInfo.hasLowImageBandwidth) {
                 screenWidth *= .95;
@@ -994,11 +1013,28 @@
             var thumbWidth = screenWidth / imagesPerRow.thumb;
             var posterWidth = screenWidth / imagesPerRow.poster;
             var squareSize = screenWidth / imagesPerRow.square;
+            var bannerWidth = screenWidth / imagesPerRow.banner;
+
+            if (!AppInfo.isTouchPreferred) {
+
+                var roundTo = 100;
+
+                thumbWidth = Math.round(thumbWidth / roundTo) * roundTo;
+                posterWidth = Math.round(posterWidth / roundTo) * roundTo;
+                squareSize = Math.round(squareSize / roundTo) * roundTo;
+                bannerWidth = Math.round(bannerWidth / roundTo) * roundTo;
+            }
+
+            var defaultPortait = 'portrait';
+            var defaultThumb = 'backdrop';
+            var defaultSquare = 'square';
 
             return {
-                thumbWidth: parseInt(thumbWidth),
-                posterWidth: parseInt(posterWidth),
-                squareSize: parseInt(squareSize)
+                thumbWidth: Math.round(thumbWidth),
+                posterWidth: Math.round(posterWidth),
+                squareSize: Math.round(squareSize),
+                bannerWidth: Math.round(bannerWidth),
+                screenWidth: screenWidth
             };
         },
 
@@ -1035,11 +1071,12 @@
                 }
             }
 
-            var sizes = LibraryBrowser.getPosterViewSizes();
+            var sizes = LibraryBrowser.getPosterViewInfo();
 
             var thumbWidth = sizes.thumbWidth;
             var posterWidth = sizes.posterWidth;
             var squareSize = sizes.squareSize;
+            var bannerWidth = sizes.bannerWidth;
 
             for (var i = 0, length = items.length; i < length; i++) {
 
@@ -1153,7 +1190,7 @@
 
                     imgUrl = ApiClient.getScaledImageUrl(item.Id, {
                         type: "Banner",
-                        maxWidth: 700,
+                        maxWidth: bannerWidth,
                         tag: item.ImageTags.Banner,
                         enableImageEnhancers: enableImageEnhancers
                     });

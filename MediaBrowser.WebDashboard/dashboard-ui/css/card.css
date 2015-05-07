@@ -39,10 +39,8 @@
         text-overflow: ellipsis;
     }
 
-.smallBackdropPosterItem .cardOverlayInner > div {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
+.buttonCard:hover .cardBox {
+    opacity: .6;
 }
 
 .cardBox {
@@ -233,10 +231,10 @@
     height: 100%;
 }
 
-.cardImage canvas {
-    width: 100%;
-    height: 100%;
-}
+    .cardImage canvas {
+        width: 100%;
+        height: 100%;
+    }
 
 .coveredCardImage {
     background-size: cover;

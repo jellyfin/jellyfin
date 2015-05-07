@@ -26,38 +26,51 @@
             var item = items[i];
 
             var icon;
+            var backgroundColor = 'rgba(82, 181, 75, 0.7)';
 
             switch (item.CollectionType) {
                 case "movies":
                     icon = "fa-film";
+                    backgroundColor = 'rgba(176, 94, 81, 0.7)';
                     break;
                 case "music":
                     icon = "fa-music";
+                    backgroundColor = 'rgba(217, 145, 67, 0.7)';
                     break;
                 case "photos":
                     icon = "fa-photo";
+                    backgroundColor = 'rgba(127, 0, 0, 0.7)';
                     break;
                 case "livetv":
+                    icon = "fa-video-camera";
+                    backgroundColor = 'rgba(255, 233, 127, 0.7)';
+                    break;
                 case "tvshows":
                     icon = "fa-video-camera";
+                    backgroundColor = 'rgba(77, 88, 164, 0.7)';
                     break;
                 case "games":
                     icon = "fa-gamepad";
+                    backgroundColor = 'rgba(183, 202, 72, 0.7)';
                     break;
                 case "trailers":
                     icon = "fa-film";
+                    backgroundColor = 'rgba(176, 94, 81, 0.7)';
                     break;
                 case "homevideos":
                     icon = "fa-video-camera";
+                    backgroundColor = 'rgba(110, 52, 32, 0.7)';
                     break;
                 case "musicvideos":
                     icon = "fa-video-camera";
+                    backgroundColor = 'rgba(143, 54, 168, 0.7)';
                     break;
                 case "books":
                     icon = "fa-book";
                     break;
                 case "channels":
                     icon = "fa-globe";
+                    backgroundColor = 'rgba(51, 136, 204, 0.7)';
                     break;
                 case "playlists":
                     icon = "fa-list";
@@ -67,25 +80,22 @@
                     break;
             }
 
-            var cssClass = "posterItem";
-            cssClass += ' ' + options.shape + 'PosterItem';
+            var cssClass = 'card smallBackdropCard buttonCard';
 
             if (item.CollectionType) {
-                cssClass += ' ' + item.CollectionType + 'PosterItem';
+                cssClass += ' ' + item.CollectionType + 'buttonCard';
             }
 
             var href = item.url || LibraryBrowser.getHref(item, options.context);
 
             html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
+            html += '<div class="cardBox" style="background-color:' + backgroundColor + ';margin:4px;border-radius:4px;">';
 
-            var imageCssClass = '';
-
-            html += '<div class="posterItemImage ' + imageCssClass + '">';
-            html += '</div>';
-
-            html += "<div class='posterItemDefaultText posterItemText'>";
+            html += "<div class='cardText' style='padding:5px 10px;color:#fff;'>";
             html += '<i class="fa ' + icon + '"></i>';
-            html += '<span>' + item.Name + '</span>';
+            html += '<span style="margin-left:.7em;">' + item.Name + '</span>';
+            html += "</div>";
+
             html += "</div>";
 
             html += "</a>";
@@ -106,7 +116,6 @@
             html += '<div>';
             html += createMediaLinks({
                 items: items,
-                shape: 'myLibrary',
                 showTitle: true,
                 centerText: true
 

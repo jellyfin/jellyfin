@@ -1404,12 +1404,31 @@ var Dashboard = {
         }
 
         var appVersion = window.dashboardVersion;
-        var appName = Dashboard.isConnectMode() ?
-            "Emby Mobile" :
-            "Emby Web Client";
+        var appName = "Emby Web Client";
 
         var deviceName;
         var deviceId;
+
+        if (Dashboard.isRunningInCordova()) {
+
+            if ($.browser.safari) {
+
+                appName = "iOS";
+
+                if ($.browser.iphone) {
+                    deviceName = 'iPhone';
+                } else if ($.browser.ipad) {
+                    deviceName = 'iPad';
+                }
+
+            } else {
+
+                appName = "Android";
+
+            }
+        }
+
+        deviceName = deviceName || generateDeviceName();
 
         // Cordova
         //if (window.device) {
@@ -1420,9 +1439,6 @@ var Dashboard = {
         //}
         //else
         {
-
-            deviceName = generateDeviceName();
-
             var seed = [];
             var keyName = 'randomId';
 
