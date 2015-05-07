@@ -1120,3 +1120,14 @@ h1 + .accentButton {
 .disabledUserBanner {
     margin: 0 0 2em;
 }
+
+.modalLoading {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, .3);
+    /* One less than jqm loading spinner, so we can combine them */
+    z-index: 9999998;
+}

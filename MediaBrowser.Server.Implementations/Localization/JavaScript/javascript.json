@@ -770,5 +770,6 @@
     "EmbyIntroDownloadMessage": "To download and install Emby Server visit {0}.",
     "ButtonNewServer": "New Server",
     "ButtonSignInWithConnect": "Sign in with Emby Connect",
-    "HeaderNewServer": "New Server"
+    "HeaderNewServer": "New Server",
+    "MyDevice":  "My Device"
 }

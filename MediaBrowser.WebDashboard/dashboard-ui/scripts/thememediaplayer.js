@@ -47,7 +47,7 @@
         var val = store.getItem('enableThemeSongs-' + userId);
 
         // For bandwidth
-        return val == '1' || (val != '0' && !$.browser.mobile);
+        return val == '1' || (val != '0' && MediaPlayer.canAutoPlayAudio());
     }
 
     function getPlayer() {

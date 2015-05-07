@@ -387,7 +387,6 @@
     "ButtonSignOut": "Sign Out",
     "ButtonMyProfile": "My Profile",
     "ButtonMyPreferences": "My Preferences",
-    "MessageBrowserDoesNotSupportWebSockets": "This browser does not support web sockets. For a better experience, try a newer browser such as Chrome, Firefox, IE10+, Safari (iOS) or Opera.",
     "LabelInstallingPackage": "Installing {0}",
     "LabelPackageInstallCompleted": "{0} installation completed.",
     "LabelPackageInstallFailed": "{0} installation failed.",

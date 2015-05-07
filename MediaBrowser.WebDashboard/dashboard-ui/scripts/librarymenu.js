@@ -1,10 +1,10 @@
-﻿(function (window, document, $) {
+﻿(function (window, document, $, devicePixelRatio) {
 
     function renderHeader(user) {
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        if (($.browser.safari && $.browser.mobile && window.navigator.standalone) || Dashboard.isRunningInCordova()) {
+        if (($.browser.safari && window.navigator.standalone) || Dashboard.isRunningInCordova()) {
             html += '<a data-rel="back" data-role="none" href="#" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-circle-o-left"></div></a>';
         }
 
@@ -40,9 +40,9 @@
             html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="visibility:hidden;"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
 
         }
-        
+
         if (user.name) {
-            
+
             html += '<a class="headerButton headerButtonRight headerUserButton" href="#" onclick="Dashboard.showUserFlyout(this);">';
 
             if (user.imageUrl) {
@@ -80,12 +80,12 @@
 
     function bindMenuEvents() {
 
-        if ($.browser.mobile) {
+        if (AppInfo.isTouchPreferred) {
 
-            $('.libraryMenuButton').on('mousedown', function () {
+            $('.libraryMenuButton').on('click', function () {
                 showLibraryMenu(false);
             });
-            $('.dashboardMenuButton').on('mousedown', function () {
+            $('.dashboardMenuButton').on('click', function () {
                 showDashboardMenu(false);
             });
 
@@ -96,10 +96,7 @@
 
         // grab an element
         var viewMenuBar = document.getElementsByClassName("viewMenuBar")[0];
-        // construct an instance of Headroom, passing the element
-        var headroom = new Headroom(viewMenuBar);
-        // initialise
-        headroom.init();
+        initHeadRoom(viewMenuBar);
     }
 
     function getItemHref(item, context) {
@@ -263,7 +260,7 @@
 
             html += '<div class="sidebarLinks librarySidebarLinks">';
 
-            var showUserAtTop = $.browser.mobile;
+            var showUserAtTop = AppInfo.isTouchPreferred;
 
             if (showUserAtTop) {
 
@@ -545,15 +542,24 @@
             $(document).scrollTop(0);
         }
 
-        $('.libraryViewNav', page).each(function() {
-            
-            // construct an instance of Headroom, passing the element
-            var headroom = new Headroom(this);
-            // initialise
-            headroom.init();
+        $('.libraryViewNav', page).each(function () {
+
+            initHeadRoom(this);
 
         });
     });
+
+    function initHeadRoom(elem) {
+
+        if (!AppInfo.enableHeadRoom) {
+            return;
+        }
+
+        // construct an instance of Headroom, passing the element
+        var headroom = new Headroom(elem);
+        // initialise
+        headroom.init();
+    }
 
     function initializeApiClient(apiClient) {
 
@@ -573,7 +579,7 @@
 
     });
 
-})(window, document, jQuery);
+})(window, document, jQuery, window.devicePixelRatio);
 
 $.fn.createHoverTouch = function () {
 

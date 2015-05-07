@@ -49,6 +49,10 @@
     margin: 1px;
 }
 
+.largeCardMargin .cardBox {
+    margin: 8px;
+}
+
 /*@media all and (max-width: 600px) {
 
     .cardBox {
@@ -225,6 +229,11 @@
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center bottom;
+    width: 100%;
+    height: 100%;
+}
+
+.cardImage canvas {
     width: 100%;
     height: 100%;
 }

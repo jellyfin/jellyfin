@@ -26,7 +26,7 @@
         self.getTargets = function () {
 
             var targets = [{
-                name: 'My Browser',
+                name: Globalize.translate('MyDevice'),
                 id: ConnectionManager.deviceId(),
                 playerName: self.name,
                 playableMediaTypes: ['Audio', 'Video'],
@@ -139,6 +139,13 @@
                     VideoCodec: 'h264',
                     AudioCodec: 'aac,mp3'
                 });
+                // TODO: Test this
+                //profile.DirectPlayProfiles.push({
+                //    Container: 'mov',
+                //    Type: 'Video',
+                //    VideoCodec: 'h264',
+                //    AudioCodec: 'aac,mp3'
+                //});
             }
 
             profile.DirectPlayProfiles.push({
@@ -208,7 +215,6 @@
             profile.ContainerProfiles = [];
 
             var audioConditions = [];
-            var videoAudioAacConditions = [];
             var videoAudioMp3Conditions = [];
 
             var maxAudioChannels = $.browser.msie || $.browser.safari ?
@@ -222,7 +228,6 @@
             };
 
             audioConditions.push(channelCondition);
-            videoAudioAacConditions.push(channelCondition);
             videoAudioMp3Conditions.push(channelCondition);
 
             profile.CodecProfiles = [];
@@ -239,22 +244,32 @@
                 });
             }
 
-            videoAudioAacConditions.push({
-                Condition: 'NotEquals',
-                Property: 'AudioProfile',
-                Value: 'LC'
-            });
-
-            videoAudioAacConditions.push({
-                Condition: 'NotEquals',
-                Property: 'AudioProfile',
-                Value: 'HE-AAC'
+            profile.CodecProfiles.push({
+                Type: 'VideoAudio',
+                Codec: 'aac',
+                Container: 'mkv,mov',
+                Conditions: [
+                    channelCondition,
+                    {
+                        Condition: 'NotEquals',
+                        Property: 'AudioProfile',
+                        Value: 'HE-AAC'
+                    },
+                    {
+                        Condition: 'NotEquals',
+                        Property: 'AudioProfile',
+                        Value: 'LC'
+                    }
+                ]
             });
 
             profile.CodecProfiles.push({
                 Type: 'VideoAudio',
                 Codec: 'aac',
-                Conditions: videoAudioAacConditions
+                Container: 'mp4,m4v',
+                Conditions: [
+                    channelCondition
+                ]
             });
 
             profile.CodecProfiles.push({
@@ -317,6 +332,18 @@
                 Type: 'Video',
                 Container: 'm4v',
                 MimeType: 'video/mp4'
+            });
+
+            //profile.ResponseProfiles.push({
+            //    Type: 'Video',
+            //    Container: 'mkv',
+            //    MimeType: 'video/webm'
+            //});
+
+            profile.ResponseProfiles.push({
+                Type: 'Video',
+                Container: 'mov',
+                MimeType: 'video/webm'
             });
 
             return profile;
@@ -833,7 +860,10 @@
 
             var deviceProfile = self.getDeviceProfile();
 
-            Dashboard.showLoadingMsg();
+            if (item.MediaType === "Video") {
+
+                Dashboard.showModalLoadingMsg();
+            }
 
             getPlaybackInfo(item.Id, deviceProfile, startPosition).done(function (playbackInfoResult) {
 
@@ -856,7 +886,7 @@
                             playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback);
                         }
                     } else {
-                        Dashboard.hideLoadingMsg();
+                        Dashboard.hideModalLoadingMsg();
                         showPlaybackInfoErrorMessage('NoCompatibleStream');
                     }
                 }
@@ -866,7 +896,7 @@
 
         function playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback) {
 
-            Dashboard.hideLoadingMsg();
+            Dashboard.hideModalLoadingMsg();
 
             self.currentMediaSource = mediaSource;
             self.currentItem = item;

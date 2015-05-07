@@ -368,6 +368,10 @@ var Dashboard = {
 
     showFooterNotification: function (options) {
 
+        if (Dashboard.isRunningInCordova()) {
+            return;
+        }
+
         var removeOnHide = !options.id;
 
         options.id = options.id || "notification" + new Date().getTime() + parseInt(Math.random());
@@ -439,6 +443,29 @@ var Dashboard = {
 
     hideLoadingMsg: function () {
         $.mobile.loading("hide");
+    },
+
+    getModalLoadingMsg: function () {
+
+        var elem = $('.modalLoading');
+
+        if (!elem.length) {
+
+            elem = $('<div class="modalLoading"></div>').appendTo(document.body);
+
+        }
+
+        return elem;
+    },
+
+    showModalLoadingMsg: function () {
+        Dashboard.showLoadingMsg();
+        Dashboard.getModalLoadingMsg().show();
+    },
+
+    hideModalLoadingMsg: function () {
+        Dashboard.getModalLoadingMsg().hide();
+        Dashboard.hideLoadingMsg();
     },
 
     processPluginConfigurationUpdateResult: function () {
@@ -613,7 +640,7 @@ var Dashboard = {
                 var url = user.imageUrl;
 
                 if (user.supportsImageParams) {
-                    url += "&width=" + (imgWidth * Math.max(devicePixelRatio || 1, 2));
+                    url += "&width=" + (imgWidth * Math.max(window.devicePixelRatio || 1, 2));
                 }
 
                 html += '<img style="max-width:' + imgWidth + 'px;vertical-align:middle;margin-right:.5em;border-radius: 50px;" src="' + url + '" />';
@@ -1330,7 +1357,7 @@ var Dashboard = {
             quality -= 15;
         }
 
-        if ($.browser.safari && $.browser.mobile) {
+        if (AppInfo.hasLowImageBandwidth) {
 
             quality -= 10;
 
@@ -1416,11 +1443,34 @@ var Dashboard = {
     }
 };
 
+var AppInfo = {};
+
 (function () {
 
-    if (!window.WebSocket) {
+    function isTouchDevice() {
+        return (('ontouchstart' in window)
+             || (navigator.MaxTouchPoints > 0)
+             || (navigator.msMaxTouchPoints > 0));
+    }
 
-        alert(Globalize.translate('MessageBrowserDoesNotSupportWebSockets'));
+    function setAppInfo() {
+
+        if (isTouchDevice()) {
+            AppInfo.isTouchPreferred = true;
+        }
+
+        if ($.browser.safari) {
+
+            if ($.browser.mobile) {
+                AppInfo.hasLowImageBandwidth = true;
+            }
+        }
+        else {
+
+            if (!$.browser.tv) {
+                AppInfo.enableHeadRoom = true;
+            }
+        }
     }
 
     function initializeApiClient(apiClient) {
@@ -1486,6 +1536,12 @@ var Dashboard = {
     }
 
     function onReady() {
+
+        //FastClick.attach(document.body);
+
+        if (AppInfo.hasLowImageBandwidth) {
+            $(document.body).addClass('largeCardMargin');
+        }
 
         var videoPlayerHtml = '<div id="mediaPlayer" data-theme="b" class="ui-bar-b" style="display: none;">';
 
@@ -1589,21 +1645,12 @@ var Dashboard = {
             e.preventDefault();
             return false;
         });
-
-        function isTouchDevice() {
-            return (('ontouchstart' in window)
-                 || (navigator.MaxTouchPoints > 0)
-                 || (navigator.msMaxTouchPoints > 0));
-        }
-
-        if (isTouchDevice()) {
-            $(document.body).addClass('touch');
-        }
     }
 
-    if (Dashboard.isRunningInCordova()) {
+    setAppInfo();
+    createConnectionManager();
 
-        createConnectionManager();
+    if (Dashboard.isRunningInCordova()) {
 
         document.addEventListener("deviceready", function () {
 
@@ -1612,8 +1659,6 @@ var Dashboard = {
         }, false);
 
     } else {
-
-        createConnectionManager();
 
         $(onReady);
     }
@@ -1677,13 +1722,13 @@ $(document).on('pagecreate', ".page", function () {
         var isConnectMode = Dashboard.isConnectMode();
 
         if (isConnectMode) {
-            
+
             if (!Dashboard.isServerlessPage()) {
                 Dashboard.logout();
                 return;
             }
         }
-        
+
         if (this.id !== "loginPage" && !page.hasClass('forgotPasswordPage') && !page.hasClass('wizardPage') && !isConnectMode) {
 
             console.log('Not logged into server. Redirecting to login.');

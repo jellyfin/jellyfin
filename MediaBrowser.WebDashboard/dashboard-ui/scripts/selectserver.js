@@ -128,12 +128,12 @@
             var id = this.getAttribute('data-serverid');
 
             if (id == 'new') {
-                window.location = 'connectlogin.html?mode=manualserver';
+                Dashboard.navigate('connectlogin.html?mode=manualserver');
                 return;
             }
 
             if (id == 'connect') {
-                window.location = 'connectlogin.html?mode=connect';
+                Dashboard.navigate('connectlogin.html?mode=connect');
                 return;
             }
 

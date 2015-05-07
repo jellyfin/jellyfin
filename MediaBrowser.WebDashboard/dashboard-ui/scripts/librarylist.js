@@ -912,6 +912,17 @@
         return false;
     }
 
+    function resetCardImage() {
+
+        this.style.backgroundImage = "url('css/images/empty.png')";
+    }
+
+    function resetImages(page) {
+
+        //$('cardImage', page).remove();
+        $('.cardImage', page).each(resetCardImage);
+    }
+
     $(document).on('pageinit', ".libraryPage", function () {
 
         var page = this;
@@ -964,6 +975,11 @@
         hideSelections(page);
 
         $('.viewTabButton:first', page).trigger('click');
+
+    }).on('pagebeforehide', ".libraryPage", function () {
+
+        var page = this;
+        resetImages(page);
     });
 
     function renderUserDataChanges(card, userData) {

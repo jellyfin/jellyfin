@@ -931,7 +931,8 @@
         };
     };
 
-    matched = jQuery.uaMatch(window.navigator.userAgent);
+    var userAgent = window.navigator.userAgent;
+    matched = jQuery.uaMatch(userAgent);
     browser = {};
 
     if (matched.browser) {
@@ -950,9 +951,13 @@
         browser.safari = true;
     }
 
-    var md = new MobileDetect(window.navigator.userAgent);
+    var md = new MobileDetect(userAgent);
 
     browser.mobile = md.mobile();
+    
+    if (browser.msie && !browser.mobile && userAgent.toLowerCase().indexOf("xbox") != -1) {
+        browser.tv = true;
+    }
 
     jQuery.browser = browser;
 
