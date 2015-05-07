@@ -123,9 +123,13 @@
 
     function loadRecentlyAdded(elem, user, context) {
 
+        var limit = AppInfo.hasLowImageBandwidth ?
+         16 :
+         24;
+
         var options = {
 
-            Limit: 24,
+            Limit: limit,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"

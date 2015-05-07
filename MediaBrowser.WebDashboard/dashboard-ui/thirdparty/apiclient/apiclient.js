@@ -54,23 +54,24 @@
             return serverInfo;
         };
 
-        var currentUser;
+        var currentUserPromise;
         /**
          * Gets or sets the current user id.
          */
         self.getCurrentUser = function () {
 
-            if (currentUser != null) {
+            var promise = currentUserPromise;
 
-                var deferred = DeferredBuilder.Deferred();
-                deferred.resolveWith(null, [currentUser]);
-                return deferred.promise();
+            if (promise == null) {
+
+                promise = self.getUser(self.getCurrentUserId()).fail(function () {
+                    currentUserPromise = null;
+                });
+
+                currentUserPromise = promise;
             }
 
-            return self.getUser(self.getCurrentUserId()).done(function (user) {
-
-                currentUser = user;
-            });
+            return promise;
         };
 
         /**
@@ -88,7 +89,7 @@
         self.setCurrentUserId = function (userId, token) {
 
             currentUserId = userId;
-            currentUser = null;
+            currentUserPromise = null;
             accessToken = token;
         };
 
@@ -376,7 +377,7 @@
             webSocket.onmessage = function (msg) {
 
                 msg = JSON.parse(msg.data);
-                Events.trigger(self, 'websocketmessage', [msg]);
+                onWebSocketMessage(msg);
             };
 
             webSocket.onopen = function () {
@@ -403,6 +404,23 @@
                 webSocket.close();
             }
         };
+
+        function onWebSocketMessage(msg) {
+            
+            if (msg.MessageType === "UserDeleted") {
+                currentUserPromise = null;
+            }
+            else if (msg.MessageType === "UserUpdated" || msg.MessageType === "UserConfigurationUpdated") {
+
+                var user = msg.Data;
+                if (user.Id == self.getCurrentUserId()) {
+
+                    currentUserPromise = null;
+                }
+            }
+
+            Events.trigger(self, 'websocketmessage', [msg]);
+        }
 
         self.sendWebSocketMessage = function (name, data) {
 

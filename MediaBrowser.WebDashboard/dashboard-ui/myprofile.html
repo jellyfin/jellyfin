@@ -13,116 +13,117 @@
             <a href="#" class="lnkWebClientPreferences">${TabAppSettings}</a>
         </div>
 
-        <br />
-        <div class="readOnlyContent" style="margin: 0 auto; padding: 0 1em;">
-            <div id="fldImage" style="display:inline-block;"></div>
+        <div data-role="content">
+            <br />
+            <div class="readOnlyContent" style="margin: 0 auto; padding: 0 1em;">
+                <div id="fldImage" style="display:inline-block;"></div>
 
-            <div style="vertical-align:top;margin: .5em 0 0 1em;display:inline-block;">
-                <h2 class="username" style="margin: 0;"></h2>
-                <button id="btnDeleteImage" type="button" data-icon="delete" style="display: none;margin-top:1em;">
-                    ${ButtonDeleteImage}
-                </button>
+                <div style="vertical-align:top;margin: .5em 0 0 1em;display:inline-block;">
+                    <h2 class="username" style="margin: 0;"></h2>
+                    <button id="btnDeleteImage" type="button" data-icon="delete" style="display: none;margin-top:1em;">
+                        ${ButtonDeleteImage}
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <div class="connectMessage readOnlyContent" style="display:none;margin: 0 auto; padding: 0 1em; text-align:center;">
-            <p>${MessageProfileInfoSynced}</p>
-            <div style="margin-top: .75em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
-        </div>
+            <div class="connectMessage readOnlyContent" style="display:none;margin: 0 auto; padding: 0 1em; text-align:center;">
+                <p>${MessageProfileInfoSynced}</p>
+                <div style="margin-top: .75em;"><a href="http://emby.media/connect" target="_blank">${ButtonLearnMoreAboutEmbyConnect}</a></div>
+            </div>
 
-        <form class="newImageForm userProfileSettingsForm" style="display:none;margin: 1em auto 0;">
+            <form class="newImageForm userProfileSettingsForm" style="display:none;margin: 1em auto 0;">
 
-            <div data-role="collapsible">
-                <h2 id="headerUploadNewImage" style="display: none;">${HeaderUploadNewImage}</h2>
-                <div>
-                    <div id="fldNewImage">
-                        <p>${ImageUploadAspectRatioHelp}</p>
-                        <input type="file" accept="image/*" id="uploadUserImage" name="uploadUserImage" onchange="MyProfilePage.onFileUploadChange(this);" />
+                <div data-role="collapsible">
+                    <h2 id="headerUploadNewImage" style="display: none;">${HeaderUploadNewImage}</h2>
+                    <div>
+                        <div id="fldNewImage">
+                            <p>${ImageUploadAspectRatioHelp}</p>
+                            <input type="file" accept="image/*" id="uploadUserImage" name="uploadUserImage" onchange="MyProfilePage.onFileUploadChange(this);" />
 
-                        <div id="userImageDropZone" class="imageDropZone">
-                            <h3>${LabelDropImageHere}</h3>
-                            <output id="userImageOutput"></output>
+                            <div id="userImageDropZone" class="imageDropZone">
+                                <h3>${LabelDropImageHere}</h3>
+                                <output id="userImageOutput"></output>
+                            </div>
+                        </div>
+                        <div id="fldNewImagePreview"></div>
+                        <div id="fldUpload" style="display: none;">
+                            <button type="submit" data-icon="check" data-theme="a">${ButtonUpload}</button>
                         </div>
                     </div>
-                    <div id="fldNewImagePreview"></div>
-                    <div id="fldUpload" style="display: none;">
-                        <button type="submit" data-icon="check" data-theme="a">${ButtonUpload}</button>
+                </div>
+
+            </form>
+
+            <br />
+
+            <form class="updatePasswordForm passwordSection userProfileSettingsForm" style="display:none;margin: 0 auto 2em;">
+
+                <div class="detailSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderPassword}
+                    </div>
+                    <div class="detailSectionContent">
+                        <br />
+                        <div id="fldCurrentPassword" style="display: none;">
+                            <label for="txtCurrentPassword">${LabelCurrentPassword}</label>
+                            <input type="password" id="txtCurrentPassword" name="txtCurrentPassword" />
+                        </div>
+                        <br />
+                        <div>
+                            <label for="txtNewPassword">${LabelNewPassword}</label>
+                            <input type="password" id="txtNewPassword" name="txtNewPassword" />
+                        </div>
+                        <br />
+                        <div>
+                            <label for="txtNewPasswordConfirm">${LabelNewPasswordConfirm}</label>
+                            <input type="password" id="txtNewPasswordConfirm" name="txtNewPasswordConfirm" />
+                        </div>
+                        <br />
+                        <div>
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                                ${ButtonSave}
+                            </button>
+                            <div id="btnResetPassword" style="display: none;">
+                                <button type="button" data-icon="lock" onclick="UpdatePasswordPage.resetPassword();" data-mini="true">
+                                    ${ButtonResetPassword}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-        </form>
-
-        <br />
-
-        <form class="updatePasswordForm passwordSection userProfileSettingsForm" style="display:none;margin: 0 auto 2em;">
-
-            <div class="detailSection">
-                <div class="detailSectionHeader">
-                    ${HeaderPassword}
-                </div>
-                <div class="detailSectionContent">
-                    <br />
-                    <div id="fldCurrentPassword" style="display: none;">
-                        <label for="txtCurrentPassword">${LabelCurrentPassword}</label>
-                        <input type="password" id="txtCurrentPassword" name="txtCurrentPassword" />
+            </form>
+            <form class="localAccessForm localAccessSection userProfileSettingsForm" style="margin: 0 auto;">
+                <div class="detailSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderEasyPinCode}
                     </div>
-                    <br />
-                    <div>
-                        <label for="txtNewPassword">${LabelNewPassword}</label>
-                        <input type="password" id="txtNewPassword" name="txtNewPassword" />
-                    </div>
-                    <br />
-                    <div>
-                        <label for="txtNewPasswordConfirm">${LabelNewPasswordConfirm}</label>
-                        <input type="password" id="txtNewPasswordConfirm" name="txtNewPasswordConfirm" />
-                    </div>
-                    <br />
-                    <div>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonSave}
-                        </button>
-                        <div id="btnResetPassword" style="display: none;">
-                            <button type="button" data-icon="lock" onclick="UpdatePasswordPage.resetPassword();" data-mini="true">
-                                ${ButtonResetPassword}
+                    <div class="detailSectionContent">
+                        <br />
+                        <div>${EasyPasswordHelp}</div>
+                        <br />
+                        <div>
+                            <label for="txtEasyPassword">${LabelEasyPinCode}</label>
+                            <input type="password" id="txtEasyPassword" />
+                        </div>
+                        <br />
+                        <div>
+                            <label for="chkEnableLocalEasyPassword">${LabelInNetworkSignInWithEasyPassword}</label>
+                            <input type="checkbox" id="chkEnableLocalEasyPassword" />
+                            <div class="fieldDescription">${LabelInNetworkSignInWithEasyPasswordHelp}</div>
+                        </div>
+                        <br />
+                        <div>
+                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
+                                ${ButtonSave}
+                            </button>
+                            <button id="btnResetEasyPassword" style="display:none;" type="button" data-icon="lock" onclick="UpdatePasswordPage.resetEasyPassword();" data-mini="true">
+                                ${ButtonResetEasyPassword}
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
-        </form>
-        <form class="localAccessForm localAccessSection userProfileSettingsForm" style="margin: 0 auto;">
-            <div class="detailSection">
-                <div class="detailSectionHeader">
-                    ${HeaderEasyPinCode}
-                </div>
-                <div class="detailSectionContent">
-                    <br />
-                    <div>${EasyPasswordHelp}</div>
-                    <br />
-                    <div>
-                        <label for="txtEasyPassword">${LabelEasyPinCode}</label>
-                        <input type="password" id="txtEasyPassword" />
-                    </div>
-                    <br />
-                    <div>
-                        <label for="chkEnableLocalEasyPassword">${LabelInNetworkSignInWithEasyPassword}</label>
-                        <input type="checkbox" id="chkEnableLocalEasyPassword" />
-                        <div class="fieldDescription">${LabelInNetworkSignInWithEasyPasswordHelp}</div>
-                    </div>
-                    <br />
-                    <div>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonSave}
-                        </button>
-                        <button id="btnResetEasyPassword" style="display:none;" type="button" data-icon="lock" onclick="UpdatePasswordPage.resetEasyPassword();" data-mini="true">
-                            ${ButtonResetEasyPassword}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </form>
-
+            </form>
+        </div>
         <script type="text/javascript">
             $('.newImageForm').off('submit', MyProfilePage.onImageSubmit).on('submit', MyProfilePage.onImageSubmit);
             $('.updatePasswordForm').off('submit', UpdatePasswordPage.onSubmit).on('submit', UpdatePasswordPage.onSubmit);

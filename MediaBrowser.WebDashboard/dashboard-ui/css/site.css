@@ -176,7 +176,7 @@ h1 a:hover {
     transform: translateY(0%);
 }
 
-.headroom--unpinned {
+.headroom--unpinned:not(.headroomDisabled) {
     -webkit-transform: translateY(-100%);
     transform: translateY(-100%);
 }
@@ -613,14 +613,18 @@ h1 .imageLink {
 /* Footer */
 #footer {
     position: fixed;
-    bottom: -2px;
-    left: -2px;
-    right: -2px;
+    bottom: 0;
+    left: 0;
+    right: 0;
     /* Above everything, except for the video player and popup overlays */
     z-index: 1097;
     color: #fff;
     border: 0 !important;
     background-color: rgba(26,26,26,.9);
+}
+
+.footerOverBottomTabs {
+    bottom: 50px;
 }
 
 .footerNotification {

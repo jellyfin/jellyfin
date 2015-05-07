@@ -1443,14 +1443,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
     .userProfileSettingsForm .detailSectionContent {
-        padding: 0 1em;
+        padding: 0 .5em;
     }
 
 @media all and (max-width: 700px) {
 
     .userProfileSettingsForm .detailSection {
-        margin-left: 1em;
-        margin-right: 1em;
+        margin-left: .5em;
+        margin-right: .5em;
     }
 }
 
@@ -1503,5 +1503,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .homeLatestTabDisabled .homeLatestTab {
+    display: none !important;
+}
+.movieTrailersTabDisabled .movieTrailersTab {
     display: none !important;
 }

@@ -71,11 +71,25 @@
 
         html += '</div>';
 
+        html = normalizeLinksHtml(html);
+
         $(document.body).prepend(html);
         $('.viewMenuBar').trigger('create');
 
         $(document).trigger('headercreated');
         bindMenuEvents();
+    }
+
+    function replaceAll(str, find, replace) {
+        return str.replace(new RegExp(find, 'g'), replace);
+    }
+
+    function normalizeLinksHtml(html) {
+
+        if (AppInfo.resetOnLibraryChange) {
+            html = replaceAll(html, '<a ', '<a data-ajax="false"');
+        }
+        return html;
     }
 
     function bindMenuEvents() {
@@ -99,6 +113,15 @@
         initHeadRoom(viewMenuBar);
     }
 
+    function updateViewMenuBarHeadroom(page, viewMenuBar) {
+        
+        if ($(page).hasClass('libraryPage')) {
+            viewMenuBar.removeClass('headroomDisabled');
+        } else {
+            viewMenuBar.addClass('headroomDisabled');
+        }
+    }
+
     function getItemHref(item, context) {
 
         return LibraryBrowser.getHref(item, context);
@@ -114,7 +137,7 @@
         html += '<div class="libraryMenuDivider"></div>';
         html += '<div class="adminMenuOptions">';
 
-        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="dashboard" href="dashboard.html"><span class="fa fa-cog sidebarLinkIcon"></span>' + Globalize.translate('ButtonDashboard') + '</a>';
+        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="dashboard" data-rel="none" href="dashboard.html"><span class="fa fa-cog sidebarLinkIcon"></span>' + Globalize.translate('ButtonDashboard') + '</a>';
         html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html"><span class="fa fa-edit sidebarLinkIcon"></span>' + Globalize.translate('ButtonMetadataManager') + '</a>';
         html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" href="reports.html"><span class="fa fa-bar-chart sidebarLinkIcon"></span>' + Globalize.translate('ButtonReports') + '</a>';
         html += '</div>';
@@ -218,6 +241,8 @@
 
             }).join('');
 
+            html = normalizeLinksHtml(html);
+
             var elem = $('.libraryMenuOptions').html(html);
 
             $('.sidebarLink', elem).on('click', function () {
@@ -308,6 +333,7 @@
             }
 
             html += getViewsHtml();
+            html = normalizeLinksHtml(html);
             html += '</div>';
 
             html += '</div>';
@@ -492,11 +518,13 @@
     }).on('pagebeforeshow', ".page:not(.standalonePage)", function () {
 
         var page = this;
+        var viewMenuBar = $('.viewMenuBar');
         if (!$('.viewMenuBar').length) {
 
             ConnectionManager.user().done(function (user) {
 
                 renderHeader(user);
+                updateViewMenuBarHeadroom(page, $('.viewMenuBar'));
 
                 updateCastIcon();
 
@@ -506,6 +534,7 @@
         } else {
             updateContextText(page);
             updateLibraryNavLinks(page);
+            updateViewMenuBarHeadroom(page, viewMenuBar);
         }
 
         var jpage = $(page);
@@ -519,14 +548,20 @@
             $(document.body).removeClass('dashboardDocument').removeClass('libraryDocument');
         }
 
-    }).on('pagebeforeshow', ".page", function () {
+    }).on('pagebeforeshow', ".libraryPage", function () {
 
         var page = this;
 
-        if ($(page).hasClass('standalonePage')) {
-            $('.viewMenuBar').hide();
+        if (AppInfo.enableBottomTabs) {
+            $('.libraryViewNav', page).addClass('bottomLibraryViewNav');
+            $(page).addClass('noSecondaryNavPage');
         } else {
-            $('.viewMenuBar').show();
+            
+            $('.libraryViewNav', page).each(function () {
+
+                initHeadRoom(this);
+            });
+
         }
 
     }).on('pageshow', ".libraryPage", function () {
@@ -541,12 +576,6 @@
             // Scroll back up so in case vertical scroll was messed with
             $(document).scrollTop(0);
         }
-
-        $('.libraryViewNav', page).each(function () {
-
-            initHeadRoom(this);
-
-        });
     });
 
     function initHeadRoom(elem) {

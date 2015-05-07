@@ -238,11 +238,6 @@
     height: 100%;
 }
 
-    .cardImage canvas {
-        width: 100%;
-        height: 100%;
-    }
-
 .coveredCardImage {
     background-size: cover;
 }

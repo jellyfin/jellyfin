@@ -14,7 +14,7 @@ namespace MediaBrowser.Dlna.Profiles
 
             Identification = new DeviceIdentification
             {
-                FriendlyName = "XboxOne",
+                ModelName = "Xbox One",
 
                 Headers = new[]
                 {

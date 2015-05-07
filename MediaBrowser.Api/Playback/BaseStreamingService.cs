@@ -1086,6 +1086,10 @@ namespace MediaBrowser.Api.Playback
                     }
                 }
             }
+            catch (ObjectDisposedException)
+            {
+                // Don't spam the log. This doesn't seem to throw in windows, but sometimes under linux
+            }
             catch (Exception ex)
             {
                 Logger.ErrorException("Error reading ffmpeg log", ex);

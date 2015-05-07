@@ -100,6 +100,12 @@
         });
 
         $('.fldEnableBackdrops', page).show();
+
+        if (Dashboard.isRunningInCordova()) {
+            $('.homePageConfigurationSection', page).hide();
+        } else {
+            $('.homePageConfigurationSection', page).show();
+        }
     });
 
     window.WebClientPreferencesPage = {

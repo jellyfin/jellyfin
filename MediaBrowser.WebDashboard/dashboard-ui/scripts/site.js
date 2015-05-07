@@ -108,9 +108,7 @@ var Dashboard = {
 
         if (!Dashboard.getUserPromise) {
 
-            var userId = Dashboard.getCurrentUserId();
-
-            Dashboard.getUserPromise = ConnectionManager.currentApiClient().getUser(userId).fail(Dashboard.logout);
+            Dashboard.getUserPromise = ConnectionManager.currentApiClient().getCurrentUser().fail(Dashboard.logout);
         }
 
         return Dashboard.getUserPromise;
@@ -368,7 +366,7 @@ var Dashboard = {
 
     showFooterNotification: function (options) {
 
-        if (Dashboard.isRunningInCordova()) {
+        if (!AppInfo.enableFooterNotifications) {
             return;
         }
 
@@ -376,7 +374,7 @@ var Dashboard = {
 
         options.id = options.id || "notification" + new Date().getTime() + parseInt(Math.random());
 
-        var footer = $("#footer").css("top", "initial").show();
+        var footer = $(".footer").css("top", "initial").show();
 
         var parentElem = $('#footerNotifications', footer);
 
@@ -572,10 +570,14 @@ var Dashboard = {
     refreshSystemInfoFromServer: function () {
 
         if (Dashboard.getAccessToken()) {
-            ApiClient.getSystemInfo().done(function (info) {
+            if (AppInfo.enableFooterNotifications) {
+                ApiClient.getSystemInfo().done(function (info) {
 
-                Dashboard.updateSystemInfo(info);
-            });
+                    Dashboard.updateSystemInfo(info);
+                });
+            } else {
+                Dashboard.ensureWebSocket();
+            }
         }
     },
 
@@ -702,7 +704,6 @@ var Dashboard = {
 
     resetPluginSecurityInfo: function () {
         Dashboard.getPluginSecurityInfoPromise = null;
-        Dashboard.validateCurrentUser();
     },
 
     ensureHeader: function (page) {
@@ -922,7 +923,10 @@ var Dashboard = {
         }
 
         ApiClient.openWebSocket();
-        ApiClient.reportCapabilities(Dashboard.capabilities());
+
+        if (!Dashboard.isConnectMode()) {
+            ApiClient.reportCapabilities(Dashboard.capabilities());
+        }
     },
 
     processGeneralCommand: function (cmd) {
@@ -1480,6 +1484,11 @@ var AppInfo = {};
             if ($.browser.mobile) {
                 AppInfo.hasLowImageBandwidth = true;
             }
+
+            if (Dashboard.isRunningInCordova()) {
+                AppInfo.enableBottomTabs = true;
+                AppInfo.resetOnLibraryChange = true;
+            }
         }
         else {
 
@@ -1496,6 +1505,11 @@ var AppInfo = {};
             AppInfo.enableMusicSongsTab = true;
             AppInfo.enableMusicArtistsTab = true;
             AppInfo.enableHomeLatestTab = true;
+            AppInfo.enableMovieTrailersTab = true;
+        }
+
+        if (!Dashboard.isRunningInCordova()) {
+            AppInfo.enableFooterNotifications = true;
         }
     }
 
@@ -1557,7 +1571,9 @@ var AppInfo = {};
         if (window.ApiClient) {
             ApiClient.getDefaultImageQuality = Dashboard.getDefaultImageQuality;
 
-            Dashboard.importCss(ApiClient.getUrl('Branding/Css'));
+            if (!Dashboard.isRunningInCordova()) {
+                Dashboard.importCss(ApiClient.getUrl('Branding/Css'));
+            }
         }
     }
 
@@ -1595,6 +1611,10 @@ var AppInfo = {};
 
         if (!AppInfo.enableHomeLatestTab) {
             $(document.body).addClass('homeLatestTabDisabled');
+        }
+
+        if (!AppInfo.enableMovieTrailersTab) {
+            $(document.body).addClass('movieTrailersTabDisabled');
         }
 
         if (Dashboard.isRunningInCordova()) {
@@ -1674,14 +1694,14 @@ var AppInfo = {};
         var mediaPlayerElem = $('#mediaPlayer', document.body);
         mediaPlayerElem.trigger('create');
 
-        var footerHtml = '<div id="footer" data-theme="b" class="ui-bar-b">';
+        var footerHtml = '<div id="footer" class="footer" data-theme="b" class="ui-bar-b">';
 
         footerHtml += '<div id="footerNotifications"></div>';
         footerHtml += '</div>';
 
         $(document.body).append(footerHtml);
 
-        var footerElem = $('#footer', document.body);
+        var footerElem = $('.footer', document.body);
         footerElem.trigger('create');
 
         $(window).on("beforeunload", function () {

@@ -13,142 +13,144 @@
             <a href="#" class="lnkWebClientPreferences">${TabAppSettings}</a>
         </div>
 
-        <br />
-        <form class="displayPreferencesForm userProfileSettingsForm" style="margin: 0 auto;">
+        <div data-role="content">
+            <br />
+            <form class="displayPreferencesForm userProfileSettingsForm" style="margin: 0 auto;">
 
-            <div class="detailSection">
-                <div class="detailSectionHeader">
-                    ${HeaderMyViews}
-                </div>
-                <div class="detailSectionContent">
-                    <div>
-                        <p>${LabelSelectFolderGroups}</p>
-                        <div class="folderGroupList"></div>
-                        <div class="fieldDescription">${LabelSelectFolderGroupsHelp}</div>
+                <div class="detailSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderMyViews}
                     </div>
-                    <br />
-
-                    <div>
-                        <div data-role="controlgroup">
-                            <label for="chkDisplayCollectionView">${LabelDisplayCollectionsView}</label>
-                            <input id="chkDisplayCollectionView" type="checkbox" />
-                        </div>
-                        <div class="fieldDescription">${LabelDisplayCollectionsViewHelp}</div>
-                    </div>
-
-                    <br />
-                    <div data-role="controlgroup">
-                        <label for="chkDisplayFolderView">${LabelDisplayFoldersView}</label>
-                        <input id="chkDisplayFolderView" type="checkbox" />
-                    </div>
-
-                    <br />
-                    <div data-role="collapsible">
-                        <h2>${HeaderChannels}</h2>
+                    <div class="detailSectionContent">
                         <div>
-                            <p>${LabelGroupChannelsIntoViews}</p>
-                            <div class="channelGroupList"></div>
-                            <div class="fieldDescription">${LabelGroupChannelsIntoViewsHelp}</div>
+                            <p>${LabelSelectFolderGroups}</p>
+                            <div class="folderGroupList"></div>
+                            <div class="fieldDescription">${LabelSelectFolderGroupsHelp}</div>
                         </div>
-                    </div>
-                </div>
-            </div>
+                        <br />
 
-            <div class="detailSection viewStylesSection" style="display:none;">
-                <div class="detailSectionHeader">
-                    ${HeaderViewStyles}
-                </div>
-                <div class="detailSectionContent">
-                    <p>${LabelSelectViewStyles}</p>
-                    <div class="viewStylesList">
-
-                    </div>
-                    <div class="fieldDescription">${LabelSelectViewStylesHelp}</div>
-                </div>
-            </div>
-
-            <div class="detailSection">
-                <div class="detailSectionHeader">
-                    ${HeaderViewOrder}
-                </div>
-                <div class="detailSectionContent">
-                    <p>${LabelSelectUserViewOrder}</p>
-                    <div class="viewOrderList">
-
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="detailSection">
-                <div class="detailSectionHeader">
-                    ${HeaderLatestItems}
-                </div>
-                <div class="detailSectionContent">
-                    <p>${LabelSelectLastestItemsFolders}</p>
-                    <div class="latestItemsList">
-
-                    </div>
-
-                    <br />
-                    <div data-role="controlgroup">
-                        <label for="chkHidePlayedFromLatest">${OptionHideWatchedContentFromLatestMedia}</label>
-                        <input id="chkHidePlayedFromLatest" type="checkbox" />
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="detailSection">
-                <div class="detailSectionHeader">
-                    ${HeaderOtherDisplaySettings}
-                </div>
-                <div class="detailSectionContent">
-                    <br />
-                    <div data-role="controlgroup">
                         <div>
-                            <input type="checkbox" id="chkDisplayMissingEpisodes" />
-                            <label for="chkDisplayMissingEpisodes">${LabelDisplayMissingEpisodesWithinSeasons}</label>
+                            <div data-role="controlgroup">
+                                <label for="chkDisplayCollectionView">${LabelDisplayCollectionsView}</label>
+                                <input id="chkDisplayCollectionView" type="checkbox" />
+                            </div>
+                            <div class="fieldDescription">${LabelDisplayCollectionsViewHelp}</div>
                         </div>
-                        <div>
-                            <input type="checkbox" id="chkDisplayUnairedEpisodes" />
-                            <label for="chkDisplayUnairedEpisodes">${LabelUnairedMissingEpisodesWithinSeasons}</label>
-                        </div>
-                    </div>
-                    <br />
-                    <div>
+
+                        <br />
                         <div data-role="controlgroup">
-                            <input type="checkbox" id="chkDisplayTrailersWithinMovieSuggestions" />
-                            <label for="chkDisplayTrailersWithinMovieSuggestions">${LabelDisplayTrailersWithinMovieSuggestions}</label>
+                            <label for="chkDisplayFolderView">${LabelDisplayFoldersView}</label>
+                            <input id="chkDisplayFolderView" type="checkbox" />
                         </div>
-                        <div class="fieldDescription">${LabelDisplayTrailersWithinMovieSuggestionsHelp}</div>
-                    </div>
-                    <br />
-                    <div>
-                        <div data-role="controlgroup">
-                            <input type="checkbox" id="chkGroupMoviesIntoCollections" />
-                            <label for="chkGroupMoviesIntoCollections">${LabelGroupMoviesIntoCollections}</label>
+
+                        <br />
+                        <div data-role="collapsible">
+                            <h2>${HeaderChannels}</h2>
+                            <div>
+                                <p>${LabelGroupChannelsIntoViews}</p>
+                                <div class="channelGroupList"></div>
+                                <div class="fieldDescription">${LabelGroupChannelsIntoViewsHelp}</div>
+                            </div>
                         </div>
-                        <div class="fieldDescription">${LabelGroupMoviesIntoCollectionsHelp}</div>
                     </div>
                 </div>
 
-            </div>
+                <div class="detailSection viewStylesSection" style="display:none;">
+                    <div class="detailSectionHeader">
+                        ${HeaderViewStyles}
+                    </div>
+                    <div class="detailSectionContent">
+                        <p>${LabelSelectViewStyles}</p>
+                        <div class="viewStylesList">
 
-            <ul data-role="listview" class="ulForm">
-                <li>
-                    <button type="submit" data-theme="a" data-icon="check" data-mini="true">
-                        ${ButtonOk}
-                    </button>
-                    <button type="button" onclick="history.back();" data-icon="delete" data-mini="true">
-                        ${ButtonCancel}
-                    </button>
-                </li>
-            </ul>
-        </form>
-        <script type="text/javascript">
-            $('.displayPreferencesForm').off('submit', DisplayPreferencesPage.onSubmit).on('submit', DisplayPreferencesPage.onSubmit);
-        </script>
+                        </div>
+                        <div class="fieldDescription">${LabelSelectViewStylesHelp}</div>
+                    </div>
+                </div>
+
+                <div class="detailSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderViewOrder}
+                    </div>
+                    <div class="detailSectionContent">
+                        <p>${LabelSelectUserViewOrder}</p>
+                        <div class="viewOrderList">
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="detailSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderLatestItems}
+                    </div>
+                    <div class="detailSectionContent">
+                        <p>${LabelSelectLastestItemsFolders}</p>
+                        <div class="latestItemsList">
+
+                        </div>
+
+                        <br />
+                        <div data-role="controlgroup">
+                            <label for="chkHidePlayedFromLatest">${OptionHideWatchedContentFromLatestMedia}</label>
+                            <input id="chkHidePlayedFromLatest" type="checkbox" />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="detailSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderOtherDisplaySettings}
+                    </div>
+                    <div class="detailSectionContent">
+                        <br />
+                        <div data-role="controlgroup">
+                            <div>
+                                <input type="checkbox" id="chkDisplayMissingEpisodes" />
+                                <label for="chkDisplayMissingEpisodes">${LabelDisplayMissingEpisodesWithinSeasons}</label>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="chkDisplayUnairedEpisodes" />
+                                <label for="chkDisplayUnairedEpisodes">${LabelUnairedMissingEpisodesWithinSeasons}</label>
+                            </div>
+                        </div>
+                        <br />
+                        <div>
+                            <div data-role="controlgroup">
+                                <input type="checkbox" id="chkDisplayTrailersWithinMovieSuggestions" />
+                                <label for="chkDisplayTrailersWithinMovieSuggestions">${LabelDisplayTrailersWithinMovieSuggestions}</label>
+                            </div>
+                            <div class="fieldDescription">${LabelDisplayTrailersWithinMovieSuggestionsHelp}</div>
+                        </div>
+                        <br />
+                        <div>
+                            <div data-role="controlgroup">
+                                <input type="checkbox" id="chkGroupMoviesIntoCollections" />
+                                <label for="chkGroupMoviesIntoCollections">${LabelGroupMoviesIntoCollections}</label>
+                            </div>
+                            <div class="fieldDescription">${LabelGroupMoviesIntoCollectionsHelp}</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <ul data-role="listview" class="ulForm">
+                    <li>
+                        <button type="submit" data-theme="a" data-icon="check">
+                            ${ButtonOk}
+                        </button>
+                        <button type="button" onclick="history.back();" data-icon="delete">
+                            ${ButtonCancel}
+                        </button>
+                    </li>
+                </ul>
+            </form>
+            <script type="text/javascript">
+                $('.displayPreferencesForm').off('submit', DisplayPreferencesPage.onSubmit).on('submit', DisplayPreferencesPage.onSubmit);
+            </script>
+        </div>
     </div>
 </body>
 </html>

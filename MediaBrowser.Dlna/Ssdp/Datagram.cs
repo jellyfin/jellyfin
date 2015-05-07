@@ -29,32 +29,43 @@ namespace MediaBrowser.Dlna.Ssdp
         public void Send()
         {
             var msg = Encoding.ASCII.GetBytes(Message);
-            try
-            {
-                var client = CreateSocket();
 
-                if (FromEndPoint != null)
+            var socket = CreateSocket();
+
+            if (socket == null)
+            {
+                return;
+            }
+
+            if (FromEndPoint != null)
+            {
+                try
                 {
-                    try
+                    socket.Bind(FromEndPoint);
+                }
+                catch (Exception ex)
+                {
+                    if (EnableDebugLogging)
                     {
-                        client.Bind(FromEndPoint);
+                        _logger.ErrorException("Error binding datagram socket", ex);
                     }
-                    catch (Exception ex)
+
+                    if (!IgnoreBindFailure)
                     {
-                        if (EnableDebugLogging)
-                        {
-                            _logger.ErrorException("Error binding datagram socket", ex);
-                        }
-                        
-                        if (!IgnoreBindFailure) throw;
+                        CloseSocket(socket, false);
+
+                        return;
                     }
                 }
+            }
 
-                client.BeginSendTo(msg, 0, msg.Length, SocketFlags.None, ToEndPoint, result =>
+            try
+            {
+                socket.BeginSendTo(msg, 0, msg.Length, SocketFlags.None, ToEndPoint, result =>
                 {
                     try
                     {
-                        client.EndSend(result);
+                        socket.EndSend(result);
                     }
                     catch (Exception ex)
                     {
@@ -65,32 +76,46 @@ namespace MediaBrowser.Dlna.Ssdp
                     }
                     finally
                     {
-                        try
-                        {
-                            client.Close();
-                        }
-                        catch (Exception ex)
-                        {
-                            if (EnableDebugLogging)
-                            {
-                                _logger.ErrorException("Error closing datagram socket", ex);
-                            }
-                        }
+                        CloseSocket(socket, true);
                     }
                 }, null);
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error sending Datagram to {0} from {1}: " + Message, ex, ToEndPoint, FromEndPoint == null ? "" : FromEndPoint.ToString());
+                CloseSocket(socket, false);
+            }
+        }
+
+        private void CloseSocket(Socket socket, bool logError)
+        {
+            try
+            {
+                socket.Close();
+            }
+            catch (Exception ex)
+            {
+                if (logError && EnableDebugLogging)
+                {
+                    _logger.ErrorException("Error closing datagram socket", ex);
+                }
             }
         }
 
         private Socket CreateSocket()
         {
-            var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            try
+            {
+                var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            return socket;
+                socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                return socket;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error creating socket", ex);
+                return null;
+            }
         }
     }
 }

@@ -27,7 +27,7 @@
     function loadNextUp(page, context) {
 
         var limit = AppInfo.hasLowImageBandwidth ?
-         18 :
+         16 :
          24;
 
         var query = {
@@ -69,13 +69,17 @@
 
         var parentId = LibraryMenu.getTopParentId();
 
+        var limit = AppInfo.hasLowImageBandwidth ?
+         4 :
+         6;
+
         var options = {
 
             SortBy: "DatePlayed",
             SortOrder: "Descending",
             IncludeItemTypes: "Episode",
             Filters: "IsResumable",
-            Limit: 6,
+            Limit: limit,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData,SyncInfo",
             ExcludeLocationTypes: "Virtual",
