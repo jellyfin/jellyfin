@@ -1448,5 +1448,10 @@
     "LabelServerPort": "Port:",
     "HeaderNewServer": "New Server",
     "ButtonChangeServer": "Change Server",
-    "HeaderConnectToServer": "Connect to Server"
+    "HeaderConnectToServer": "Connect to Server",
+    "OptionReportList": "List View",
+    "OptionReportStatistics": "Statistics",
+    "OptionReportGrouping": "Grouping",
+    "OptionReportExport": "Report Export",
+    "OptionReportColumns": "Report Columns"
 }
