@@ -638,7 +638,7 @@ var Dashboard = {
 
             var imgWidth = 48;
 
-            if (user.imageUrl) {
+            if (user.imageUrl && AppInfo.enableUserImage) {
                 var url = user.imageUrl;
 
                 if (user.supportsImageParams) {
@@ -1479,13 +1479,15 @@ var AppInfo = {};
             AppInfo.isTouchPreferred = true;
         }
 
+        var isCordova = Dashboard.isRunningInCordova();
+
         if ($.browser.safari) {
 
             if ($.browser.mobile) {
                 AppInfo.hasLowImageBandwidth = true;
             }
 
-            if (Dashboard.isRunningInCordova()) {
+            if (isCordova) {
                 AppInfo.enableBottomTabs = true;
                 AppInfo.resetOnLibraryChange = true;
             }
@@ -1508,9 +1510,12 @@ var AppInfo = {};
             AppInfo.enableMovieTrailersTab = true;
         }
 
-        if (!Dashboard.isRunningInCordova()) {
+        if (!isCordova) {
             AppInfo.enableFooterNotifications = true;
         }
+
+        AppInfo.enableUserImage = !AppInfo.hasLowImageBandwidth || !isCordova;
+        AppInfo.enableHeaderImages = AppInfo.enableUserImage;
     }
 
     function initializeApiClient(apiClient) {
@@ -1579,7 +1584,9 @@ var AppInfo = {};
 
     function onReady() {
 
-        //FastClick.attach(document.body);
+        if ($.browser.safari) {
+            //FastClick.attach(document.body);
+        }
 
         if (AppInfo.hasLowImageBandwidth) {
             $(document.body).addClass('largeCardMargin');

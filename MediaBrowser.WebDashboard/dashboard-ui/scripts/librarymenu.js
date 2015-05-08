@@ -31,21 +31,25 @@
 
         html += '<div class="viewMenuSecondary">';
 
-        if (user.localUser) {
+        var btnCastVisible = user.localUser ? '' : 'visibility:hidden;';
 
-            html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
-
-            html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton"><div class="fa fa-search" style="font-size:21px;"></div></button>';
+        if (!AppInfo.enableHeaderImages) {
+            html += '<button id="btnCast" class="btnCast btnCastIcon btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="' + btnCastVisible + '">';
+            html += '<div class="headerSelectedPlayer"></div><i class="fa fa-wifi"></i>';
+            html += '</button>';
         } else {
-            html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="visibility:hidden;"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
+            html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="' + btnCastVisible + '"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
+        }
 
+        if (user.localUser) {
+            html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton"><div class="fa fa-search" style="font-size:21px;"></div></button>';
         }
 
         if (user.name) {
 
             html += '<a class="headerButton headerButtonRight headerUserButton" href="#" onclick="Dashboard.showUserFlyout(this);">';
 
-            if (user.imageUrl) {
+            if (user.imageUrl && AppInfo.enableUserImage) {
 
                 var userButtonHeight = 26;
 
@@ -100,7 +104,7 @@
     }
 
     function updateViewMenuBarHeadroom(page, viewMenuBar) {
-        
+
         if ($(page).hasClass('libraryPage')) {
             viewMenuBar.removeClass('headroomDisabled');
         } else {
@@ -277,12 +281,13 @@
                     'mypreferencesdisplay.html?userId=' + user.localUser.Id :
                     (user.localUser ? 'index.html' : '#');
 
-                var paddingLeft = user.imageUrl ? 'padding-left:.7em;' : '';
+                var hasUserImage = user.imageUrl && AppInfo.enableUserImage;
+                var paddingLeft = hasUserImage ? 'padding-left:.7em;' : '';
                 html += '<a style="margin-top:0;' + paddingLeft + 'display:block;color:#fff;text-decoration:none;font-size:16px;font-weight:400!important;background: #000;" href="' + userHref + '">';
 
                 var imgWidth = 44;
 
-                if (user.imageUrl) {
+                if (hasUserImage) {
                     var url = user.imageUrl;
 
                     if (user.supportsImageParams) {
@@ -539,7 +544,7 @@
             $('.libraryViewNav', page).addClass('bottomLibraryViewNav');
             $(page).addClass('noSecondaryNavPage');
         } else {
-            
+
             $('.libraryViewNav', page).each(function () {
 
                 initHeadRoom(this);
