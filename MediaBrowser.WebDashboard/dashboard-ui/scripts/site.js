@@ -1582,10 +1582,20 @@ var AppInfo = {};
         }
     }
 
+    function initFastClick() {
+
+        FastClick.attach(document.body);
+
+        // Have to work around this issue of fast click breaking the panel dismiss
+        $(document.body).on('touchstart', '.ui-panel-dismiss', function () {
+            $(this).trigger('click');
+        });
+    }
+
     function onReady() {
 
-        if ($.browser.safari) {
-            //FastClick.attach(document.body);
+        if ($.browser.safari && $.browser.mobile) {
+            initFastClick();
         }
 
         if (AppInfo.hasLowImageBandwidth) {
