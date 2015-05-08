@@ -21,18 +21,21 @@
         var html = '';
 
         html += '<div class="nowPlayingBar" style="display:none;">';
-        html += '<div style="display:inline-block;width:12px;"></div>';
 
-        html += '<a class="mediaButton remoteControlButton" title="' + Globalize.translate('ButtonRemoteControl') + '" href="nowplaying.html" data-transition="slideup" data-role="button" data-icon="remote" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonRemoteControl') + '</a>';
+        html += '<div class="nowPlayingImage"></div>';
+        html += '<div class="nowPlayingText"></div>';
 
-        html += '<a id="playlistButton" class="mediaButton playlistButton" href="nowplaying.html?tab=Playlist" data-transition="slideup" data-role="button" data-icon="bullets" data-iconpos="notext" data-inline="true" title="' + Globalize.translate('ButtonPlaylist') + '">' + Globalize.translate('ButtonPlaylist') + '</a>';
-        html += '<button id="previousTrackButton" class="mediaButton previousTrackButton" title="' + Globalize.translate('ButtonPreviousTrack') + '" type="button" data-icon="previous-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPreviousTrack') + '</button>';
+        html += '<a class="mediaButton remoteControlButton imageButton" href="nowplaying.html" data-transition="slideup" title="' + Globalize.translate('ButtonRemoteControl') + '"><i class="fa fa-tablet"></i></a>';
+        html += '<a class="mediaButton playlistButton imageButton" href="nowplaying.html?tab=Playlist" data-transition="slideup" title="' + Globalize.translate('ButtonPlaylist') + '"><i class="fa fa-list"></i></a>';
 
-        html += '<button id="playButton" class="mediaButton unpauseButton" title="' + Globalize.translate('ButtonPlay') + '" type="button" data-icon="play" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPlay') + '</button>';
-        html += '<button id="pauseButton" class="mediaButton pauseButton" title="' + Globalize.translate('ButtonPause') + '" type="button" data-icon="pause" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonPause') + '</button>';
+        html += '<button class="mediaButton previousTrackButton imageButton" title="' + Globalize.translate('ButtonPreviousTrack') + '" type="button" data-role="none"><i class="fa fa-step-backward"></i></button>';
 
-        html += '<button id="stopButton" class="mediaButton stopButton" title="' + Globalize.translate('ButtonStop') + '" type="button" data-icon="stop" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonStop') + '</button>';
-        html += '<button id="nextTrackButton" class="mediaButton nextTrackButton" title="' + Globalize.translate('ButtonNextTrack') + '" type="button" data-icon="next-track" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonNextTrack') + '</button>';
+        html += '<button class="mediaButton unpauseButton imageButton" title="' + Globalize.translate('ButtonPlay') + '" type="button" data-role="none"><i class="fa fa-play"></i></button>';
+        html += '<button class="mediaButton pauseButton imageButton" title="' + Globalize.translate('ButtonPause') + '" type="button" data-role="none"><i class="fa fa-pause"></i></button>';
+
+        html += '<button class="mediaButton stopButton imageButton" title="' + Globalize.translate('ButtonStop') + '" type="button" data-role="none"><i class="fa fa-stop"></i></button>';
+
+        html += '<button class="mediaButton nextTrackButton imageButton" title="' + Globalize.translate('ButtonNextTrack') + '" type="button" data-role="none"><i class="fa fa-step-forward"></i></button>';
 
         html += '<div id="mediaElement"></div>';
 
@@ -41,11 +44,8 @@
         html += '</div>';
 
         html += '<div class="currentTime"></div>';
-        html += '<div class="nowPlayingImage"></div>';
-        html += '<div class="nowPlayingText"></div>';
-
-        html += '<button id="muteButton" class="mediaButton muteButton" title="' + Globalize.translate('ButtonMute') + '" type="button" data-icon="audio" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonMute') + '</button>';
-        html += '<button id="unmuteButton" class="mediaButton unmuteButton" title="' + Globalize.translate('ButtonUnmute') + '" type="button" data-icon="volume-off" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonUnmute') + '</button>';
+        html += '<button class="mediaButton muteButton imageButton" title="' + Globalize.translate('ButtonMute') + '" type="button" data-role="none"><i class="fa fa-volume-up"></i></button>';
+        html += '<button class="mediaButton unmuteButton imageButton" title="' + Globalize.translate('ButtonUnmute') + '" type="button" data-role="none"><i class="fa fa-volume-off"></i></button>';
 
         html += '<div class="volumeSliderContainer sliderContainer">';
         html += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
@@ -298,6 +298,7 @@
         nowPlayingTextElement.html(nameHtml);
 
         var url;
+        var imgHeight = 50;
 
         var nowPlayingItem = state.NowPlayingItem;
 
@@ -305,7 +306,7 @@
 
             url = ApiClient.getScaledImageUrl(nowPlayingItem.PrimaryImageItemId, {
                 type: "Primary",
-                height: 40,
+                height: imgHeight,
                 tag: nowPlayingItem.PrimaryImageTag
             });
         }
@@ -313,7 +314,7 @@
 
             url = ApiClient.getScaledImageUrl(nowPlayingItem.BackdropItemId, {
                 type: "Backdrop",
-                height: 40,
+                height: imgHeight,
                 tag: nowPlayingItem.BackdropImageTag,
                 index: 0
             });
@@ -322,7 +323,7 @@
 
             url = ApiClient.getScaledImageUrl(nowPlayingItem.ThumbImageItemId, {
                 type: "Thumb",
-                height: 40,
+                height: imgHeight,
                 tag: nowPlayingItem.ThumbImageTag
             });
         }

@@ -48,6 +48,7 @@ using MediaBrowser.Dlna.ConnectionManager;
 using MediaBrowser.Dlna.ContentDirectory;
 using MediaBrowser.Dlna.Main;
 using MediaBrowser.Dlna.MediaReceiverRegistrar;
+using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.LocalMetadata.Providers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
@@ -391,13 +392,13 @@ namespace MediaBrowser.Server.Startup.Common
             UserRepository = await GetUserRepository().ConfigureAwait(false);
             RegisterSingleInstance(UserRepository);
 
-            DisplayPreferencesRepository = new SqliteDisplayPreferencesRepository(ApplicationPaths, JsonSerializer, LogManager);
+            DisplayPreferencesRepository = new SqliteDisplayPreferencesRepository(LogManager, JsonSerializer, ApplicationPaths);
             RegisterSingleInstance(DisplayPreferencesRepository);
 
             ItemRepository = new SqliteItemRepository(ApplicationPaths, JsonSerializer, LogManager);
             RegisterSingleInstance(ItemRepository);
 
-            ProviderRepository = new SqliteProviderInfoRepository(ApplicationPaths, LogManager);
+            ProviderRepository = new SqliteProviderInfoRepository(LogManager, ApplicationPaths);
             RegisterSingleInstance(ProviderRepository);
 
             FileOrganizationRepository = await GetFileOrganizationRepository().ConfigureAwait(false);
@@ -520,6 +521,8 @@ namespace MediaBrowser.Server.Startup.Common
                 MediaEncoder, ChapterManager);
             RegisterSingleInstance(EncodingManager);
 
+            RegisterSingleInstance<ISsdpHandler>(new SsdpHandler(LogManager.GetLogger("SsdpHandler"), ServerConfigurationManager, this));
+
             var activityLogRepo = await GetActivityLogRepository().ConfigureAwait(false);
             RegisterSingleInstance(activityLogRepo);
             RegisterSingleInstance<IActivityManager>(new ActivityManager(LogManager.GetLogger("ActivityManager"), activityLogRepo, UserManager));
@@ -611,7 +614,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task{IUserRepository}.</returns>
         private async Task<IUserRepository> GetUserRepository()
         {
-            var repo = new SqliteUserRepository(JsonSerializer, LogManager, ApplicationPaths);
+            var repo = new SqliteUserRepository(LogManager, ApplicationPaths, JsonSerializer);
 
             await repo.Initialize().ConfigureAwait(false);
 
@@ -701,7 +704,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// <returns>Task.</returns>
         private async Task ConfigureUserDataRepositories()
         {
-            var repo = new SqliteUserDataRepository(ApplicationPaths, LogManager);
+            var repo = new SqliteUserDataRepository(LogManager, ApplicationPaths);
 
             await repo.Initialize().ConfigureAwait(false);
 

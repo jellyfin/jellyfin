@@ -400,7 +400,9 @@
 
         var page = this;
 
-        showSyncButtonsPerUser(page);
+        if (!Dashboard.isServerlessPage()) {
+            showSyncButtonsPerUser(page);
+        }
 
     });
 

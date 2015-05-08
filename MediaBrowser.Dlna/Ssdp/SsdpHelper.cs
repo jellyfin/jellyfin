@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaBrowser.Controller.Dlna;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -34,7 +35,8 @@ namespace MediaBrowser.Dlna.Ssdp
                     return new SsdpMessageEventArgs
                     {
                         Method = method,
-                        Headers = headers
+                        Headers = headers,
+                        Message = data
                     };
                 }
             }

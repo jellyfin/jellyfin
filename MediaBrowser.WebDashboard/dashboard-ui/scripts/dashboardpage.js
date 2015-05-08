@@ -591,7 +591,7 @@
 
         var clientLowered = connection.Client.toLowerCase();
 
-        if (clientLowered == "dashboard") {
+        if (clientLowered == "dashboard" || clientLowered == "emby web client" || clientLowered == "emby mobile") {
 
             var device = connection.DeviceName.toLowerCase();
 
@@ -613,7 +613,7 @@
                 imgUrl = 'css/images/clients/html5.png';
             }
 
-            return "<img src='" + imgUrl + "' alt='Dashboard' />";
+            return "<img src='" + imgUrl + "' alt='Emby Web Client' />";
         }
         if (clientLowered == "mb-classic") {
 

@@ -99,11 +99,12 @@
 
         });
 
-        // See backrops.js for comments on this
-        if ($.browser.msie) {
-            $('.fldEnableBackdrops', page).hide();
+        $('.fldEnableBackdrops', page).show();
+
+        if (Dashboard.isRunningInCordova()) {
+            $('.homePageConfigurationSection', page).hide();
         } else {
-            $('.fldEnableBackdrops', page).show();
+            $('.homePageConfigurationSection', page).show();
         }
     });
 

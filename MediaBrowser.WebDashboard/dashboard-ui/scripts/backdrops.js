@@ -99,12 +99,6 @@
 
     function enabled() {
 
-        // Gets real messy and jumps around the page when scrolling
-        // Can be reviewed later.
-        if ($.browser.msie) {
-            return false;
-        }
-
         var userId = Dashboard.getCurrentUserId();
 
         var val = store.getItem('enableBackdrops-' + userId);

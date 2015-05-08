@@ -14,23 +14,23 @@
 
         var $w = $(window),
             th = threshold || 0,
-            retina = window.devicePixelRatio > 1,
-            attrib = retina ? "data-src-retina" : "data-src",
+            attrib = "data-src",
             images = this,
             loaded;
 
         this.one("unveil", function () {
-            var elemType = $(this).get(0).tagName;
-            var source = this.getAttribute(attrib);
-            source = source || this.getAttribute("data-src");
+            var elem = this;
+            var elemType = elem.tagName;
+            var source = elem.getAttribute(attrib);
             if (source) {
                 if (elemType === "DIV") {
-                    this.style.backgroundImage = "url('" + source + "')";
+
+                    elem.style.backgroundImage = "url('" + source + "')";
+
                 } else {
-                    this.setAttribute("src", source);
+                    elem.setAttribute("src", source);
                 }
-                this.setAttribute("data-src", '');
-                if (typeof callback === "function") callback.call(this);
+                elem.setAttribute("data-src", '');
             }
         });
 
@@ -62,7 +62,7 @@
 
     $.fn.lazyChildren = function () {
 
-        $(".lazy", this).unveil(200);
+        $(".lazy", this).unveil(0);
         return this;
     };
 

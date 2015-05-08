@@ -30,7 +30,7 @@
 
 .backdropContainer {
     position: fixed;
-    top: 50px;
+    top: 0;
     right: 0;
     left: 0;
     bottom: 0;
@@ -91,6 +91,13 @@
 @media all and (max-width: 800px) {
 
     .hiddenSectionOnMobile {
+        display: none;
+    }
+}
+
+@media all and (min-width: 800px) {
+
+    .hiddenSectionOnNonMobile {
         display: none;
     }
 }
@@ -773,7 +780,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (max-height: 600px), (max-width: 600px) {
+@media all and (max-height: 540px), (max-width: 540px) {
 
     .itemBackdrop:not(.noBackdrop) {
         height: 280px;
@@ -1436,14 +1443,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
     .userProfileSettingsForm .detailSectionContent {
-        padding: 0 1em;
+        padding: 0 .5em;
     }
 
 @media all and (max-width: 700px) {
 
     .userProfileSettingsForm .detailSection {
-        margin-left: 1em;
-        margin-right: 1em;
+        margin-left: .5em;
+        margin-right: .5em;
     }
 }
 
@@ -1469,4 +1476,35 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .smallDetailImageContainer {
         padding-left: 1em;
     }
+}
+
+.latestChannelItemsDisabled .latestChannelItemsTab {
+    display: none !important;
+}
+
+.studioTabDisabled .tvStudiosTab, .studioTabDisabled .movieStudiosTab {
+    display: none !important;
+}
+
+.peopleTabDisabled .tvPeopleTab, .peopleTabDisabled .moviePeopleTab {
+    display: none !important;
+}
+
+.tvEpisodesTabDisabled .tvEpisodesTab {
+    display: none !important;
+}
+
+.musicSongsTabDisabled .musicSongsTab {
+    display: none !important;
+}
+
+.musicArtistsTabDisabled .musicArtistsTab {
+    display: none !important;
+}
+
+.homeLatestTabDisabled .homeLatestTab {
+    display: none !important;
+}
+.movieTrailersTabDisabled .movieTrailersTab {
+    display: none !important;
 }

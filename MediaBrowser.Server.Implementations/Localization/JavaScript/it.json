@@ -46,7 +46,7 @@
     "MessageErrorLoadingSupporterInfo": "Si \u00e8 verificato un errore caricando le  informazioni sui supporter. Si prega di riprovare pi\u00f9 tardi.",
     "MessageLinkYourSupporterKey": "Collega il tuo codice Supporter con al massimo {0} membri di Emby per accedere liberamente alle seguenti app:",
     "HeaderConfirmRemoveUser": "Cancellazione utente",
-    "MessageSwipeDownOnRemoteControl": "Benvenuti nel controllo remoto. Scorri verso il basso ovunque su questa schermata per tornare da dove sei venuto.",
+    "MessageSwipeDownOnRemoteControl": "Welcome to remote control. Select the device to control by clicking the cast icon in the upper right corner. Swipe down anywhere on this screen to go back to where you came from.",
     "MessageConfirmRemoveConnectSupporter": "Sei sicuro di voler rimuovere da questo utente i benefici aggiuntivi da supporter?",
     "ValueTimeLimitSingleHour": "Tempo limite: 1 ora",
     "ValueTimeLimitMultiHour": "Tempo limite: {0} ore",
@@ -432,6 +432,7 @@
     "HeaderVideo": "Video",
     "HeaderRuntime": "Durata",
     "HeaderCommunityRating": "Voto Comunit\u00e0",
+    "HeaderPasswordReset": "Reset della Password",
     "HeaderParentalRating": "Voto genitore",
     "HeaderReleaseDate": "Data Rilascio",
     "HeaderDateAdded": "Aggiunto il",
@@ -755,5 +756,11 @@
     "SyncJobItemStatusRemovedFromDevice": "Rimosso dal dispositivo",
     "SyncJobItemStatusCancelled": "Cancellato",
     "LabelProfile": "Profilo:",
-    "LabelBitrateMbps": "Bitrate (Mbps):"
+    "LabelBitrateMbps": "Bitrate (Mbps):",
+    "EmbyIntroDownloadMessage": "To download and install Emby Server visit {0}.",
+    "ButtonNewServer": "New Server",
+    "ButtonSignInWithConnect": "Sign in with Emby Connect",
+    "HeaderNewServer": "New Server",
+    "MyDevice": "My Device",
+    "ButtonRemote": "Remote"
 }

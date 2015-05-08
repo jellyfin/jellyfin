@@ -77,10 +77,12 @@
     <Compile Include="Common\DeviceService.cs" />
     <Compile Include="Didl\DidlBuilder.cs" />
     <Compile Include="PlayTo\PlayToController.cs" />
+    <Compile Include="Profiles\BubbleUpnpProfile.cs" />
     <Compile Include="Profiles\DefaultProfile.cs" />
     <Compile Include="Profiles\DirectTvProfile.cs" />
     <Compile Include="Profiles\DishHopperJoeyProfile.cs" />
     <Compile Include="Profiles\PopcornHourProfile.cs" />
+    <Compile Include="Profiles\VlcProfile.cs" />
     <Compile Include="Ssdp\DeviceDiscoveryInfo.cs" />
     <Compile Include="Ssdp\Extensions.cs" />
     <Compile Include="PlayTo\PlaybackProgressEventArgs.cs" />
@@ -135,7 +137,6 @@
     <Compile Include="Server\Headers.cs" />
     <Compile Include="Server\UpnpDevice.cs" />
     <Compile Include="Ssdp\SsdpMessageBuilder.cs" />
-    <Compile Include="Ssdp\SsdpMessageEventArgs.cs" />
     <Compile Include="Ssdp\SsdpHandler.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -204,6 +205,10 @@
   <ItemGroup>
     <EmbeddedResource Include="Images\people480.jpg" />
     <EmbeddedResource Include="Images\people480.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\BubbleUPnp.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Vlc.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

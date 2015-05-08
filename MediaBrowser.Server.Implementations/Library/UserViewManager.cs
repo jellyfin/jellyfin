@@ -52,11 +52,10 @@ namespace MediaBrowser.Server.Implementations.Library
                 .OfType<Folder>()
                 .ToList();
 
-            var excludeFolderIds = user.Configuration.ExcludeFoldersFromGrouping.Select(i => new Guid(i)).ToList();
             var plainFolderIds = user.Configuration.PlainFolderViews.Select(i => new Guid(i)).ToList();
 
             var standaloneFolders = folders
-                .Where(i => UserView.IsExcludedFromGrouping(i) || excludeFolderIds.Contains(i.Id))
+                .Where(i => UserView.IsExcludedFromGrouping(i) || !user.IsFolderGrouped(i.Id))
                 .ToList();
 
             var foldersWithViewTypes = folders

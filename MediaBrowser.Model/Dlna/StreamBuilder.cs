@@ -131,7 +131,7 @@ namespace MediaBrowser.Model.Dlna
                     List<ProfileCondition> conditions = new List<ProfileCondition>();
                     foreach (CodecProfile i in options.Profile.CodecProfiles)
                     {
-                        if (i.Type == CodecType.Audio && i.ContainsCodec(audioCodec))
+                        if (i.Type == CodecType.Audio && i.ContainsCodec(audioCodec, item.Container))
                         {
                             foreach (ProfileCondition c in i.Conditions)
                             {
@@ -206,7 +206,7 @@ namespace MediaBrowser.Model.Dlna
                 List<CodecProfile> audioCodecProfiles = new List<CodecProfile>();
                 foreach (CodecProfile i in options.Profile.CodecProfiles)
                 {
-                    if (i.Type == CodecType.Audio && i.ContainsCodec(transcodingProfile.AudioCodec))
+                    if (i.Type == CodecType.Audio && i.ContainsCodec(transcodingProfile.AudioCodec, transcodingProfile.Container))
                     {
                         audioCodecProfiles.Add(i);
                     }
@@ -423,7 +423,7 @@ namespace MediaBrowser.Model.Dlna
                 List<ProfileCondition> videoTranscodingConditions = new List<ProfileCondition>();
                 foreach (CodecProfile i in options.Profile.CodecProfiles)
                 {
-                    if (i.Type == CodecType.Video && i.ContainsCodec(transcodingProfile.VideoCodec))
+                    if (i.Type == CodecType.Video && i.ContainsCodec(transcodingProfile.VideoCodec, transcodingProfile.Container))
                     {
                         foreach (ProfileCondition c in i.Conditions)
                         {
@@ -437,7 +437,7 @@ namespace MediaBrowser.Model.Dlna
                 List<ProfileCondition> audioTranscodingConditions = new List<ProfileCondition>();
                 foreach (CodecProfile i in options.Profile.CodecProfiles)
                 {
-                    if (i.Type == CodecType.VideoAudio && i.ContainsCodec(transcodingProfile.AudioCodec))
+                    if (i.Type == CodecType.VideoAudio && i.ContainsCodec(transcodingProfile.AudioCodec, transcodingProfile.Container))
                     {
                         foreach (ProfileCondition c in i.Conditions)
                         {
@@ -578,7 +578,7 @@ namespace MediaBrowser.Model.Dlna
             // Check container conditions
             foreach (ProfileCondition i in conditions)
             {
-                if (!conditionProcessor.IsVideoConditionSatisfied(i, audioBitrate, audioChannels, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
+                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
                 {
                     LogConditionFailure(profile, "VideoContainerProfile", i, mediaSource);
 
@@ -600,7 +600,7 @@ namespace MediaBrowser.Model.Dlna
             conditions = new List<ProfileCondition>();
             foreach (CodecProfile i in profile.CodecProfiles)
             {
-                if (i.Type == CodecType.Video && i.ContainsCodec(videoCodec))
+                if (i.Type == CodecType.Video && i.ContainsCodec(videoCodec, container))
                 {
                     foreach (ProfileCondition c in i.Conditions)
                     {
@@ -611,7 +611,7 @@ namespace MediaBrowser.Model.Dlna
 
             foreach (ProfileCondition i in conditions)
             {
-                if (!conditionProcessor.IsVideoConditionSatisfied(i, audioBitrate, audioChannels, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
+                if (!conditionProcessor.IsVideoConditionSatisfied(i, width, height, bitDepth, videoBitrate, videoProfile, videoLevel, videoFramerate, packetLength, timestamp, isAnamorphic, isCabac, refFrames, numVideoStreams, numAudioStreams))
                 {
                     LogConditionFailure(profile, "VideoCodecProfile", i, mediaSource);
 
@@ -635,7 +635,7 @@ namespace MediaBrowser.Model.Dlna
                 conditions = new List<ProfileCondition>();
                 foreach (CodecProfile i in profile.CodecProfiles)
                 {
-                    if (i.Type == CodecType.VideoAudio && i.ContainsCodec(audioCodec))
+                    if (i.Type == CodecType.VideoAudio && i.ContainsCodec(audioCodec, container))
                     {
                         foreach (ProfileCondition c in i.Conditions)
                         {

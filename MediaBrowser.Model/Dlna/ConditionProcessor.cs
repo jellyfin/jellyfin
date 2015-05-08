@@ -7,8 +7,6 @@ namespace MediaBrowser.Model.Dlna
     public class ConditionProcessor
     {
         public bool IsVideoConditionSatisfied(ProfileCondition condition,
-            int? audioBitrate,
-            int? audioChannels,
             int? width,
             int? height,
             int? bitDepth,
@@ -44,10 +42,6 @@ namespace MediaBrowser.Model.Dlna
                     return IsConditionSatisfied(condition, videoProfile);
                 case ProfileConditionValue.PacketLength:
                     return IsConditionSatisfied(condition, packetLength);
-                case ProfileConditionValue.AudioBitrate:
-                    return IsConditionSatisfied(condition, audioBitrate);
-                case ProfileConditionValue.AudioChannels:
-                    return IsConditionSatisfied(condition, audioChannels);
                 case ProfileConditionValue.VideoBitDepth:
                     return IsConditionSatisfied(condition, bitDepth);
                 case ProfileConditionValue.VideoBitrate:

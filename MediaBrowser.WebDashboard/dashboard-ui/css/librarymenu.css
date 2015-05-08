@@ -1,5 +1,5 @@
 ﻿.libraryPage {
-    padding-top: 49px !important;
+    padding-top: 50px !important;
 }
 
     .libraryPage:not(.metadataEditorPage):not(.noSecondaryNavPage) {
@@ -118,13 +118,11 @@
     left: 0;
     z-index: 999;
     top: 0;
-    border-top: 0;
-    border-left: 0;
-    border-right: 0;
+    border: 0;
 }
 
 .libraryViewNav {
-    height: 48px;
+    height: 49px;
     overflow: hidden;
     position: fixed;
     right: 0;
@@ -132,7 +130,8 @@
     top: 50px;
     z-index: 999;
     text-align: center;
-    font-size: 15px;
+    font-size: 14px;
+    text-transform: uppercase;
     white-space: nowrap;
     padding: 0 0 0;
     overflow-x: scroll;
@@ -141,8 +140,15 @@
     -webkit-overflow-scrolling: touch;
 }
 
+.bottomLibraryViewNav {
+    top: initial;
+    bottom: 0;
+    border-top: 1px solid #444;
+    height: 51px;
+}
+
 .viewMenuBar {
-    background-color: #000;
+    background-color: #111;
 }
 
 .libraryViewNav {
@@ -188,7 +194,7 @@
 
     .librarySidebarLinks a {
         font-weight: 300 !important;
-        padding: .7em 20px .7em 0;
+        padding: .8em 20px .8em 0;
     }
 
         .librarySidebarLinks a:hover {
@@ -224,17 +230,21 @@
 .libraryViewNav a {
     display: inline-block;
     padding: 12px 0 9px;
-    color: #ddd !important;
+    color: rgba(255,255,255,.8) !important;
     text-decoration: none;
     margin: 0 0;
     position: relative;
     font-weight: normal;
-    border-bottom: 4px solid transparent;
+    border-bottom: 5px solid transparent;
 }
 
-    .libraryViewNav a:not(.ui-btn-active):hover {
-        color: #2ad !important;
-    }
+.bottomLibraryViewNav a {
+    padding: 12px 0 12px;
+}
+
+.libraryViewNav a:not(.ui-btn-active):hover {
+    color: #2ad !important;
+}
 
 .libraryViewNavLinkContent {
     display: inline-block;

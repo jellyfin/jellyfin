@@ -2,20 +2,9 @@
 
     function reload(page) {
 
-        var query = {
-
-            Limit: 24,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
-            UserId: Dashboard.getCurrentUserId(),
-            ExcludeLocationTypes: "Virtual",
-            ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
-        };
-
-        query.ParentId = LibraryMenu.getTopParentId();
         var context = '';
 
-        if (query.ParentId) {
+        if (LibraryMenu.getTopParentId()) {
 
             $('.scopedLibraryViewNav', page).show();
             $('.globalNav', page).hide();
@@ -37,9 +26,13 @@
 
     function loadNextUp(page, context) {
 
+        var limit = AppInfo.hasLowImageBandwidth ?
+         16 :
+         24;
+
         var query = {
 
-            Limit: 24,
+            Limit: limit,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,DateCreated,SyncInfo",
             UserId: Dashboard.getCurrentUserId(),
             ExcludeLocationTypes: "Virtual",
@@ -76,13 +69,17 @@
 
         var parentId = LibraryMenu.getTopParentId();
 
+        var limit = AppInfo.hasLowImageBandwidth ?
+         4 :
+         6;
+
         var options = {
 
             SortBy: "DatePlayed",
             SortOrder: "Descending",
             IncludeItemTypes: "Episode",
             Filters: "IsResumable",
-            Limit: 6,
+            Limit: limit,
             Recursive: true,
             Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData,SyncInfo",
             ExcludeLocationTypes: "Virtual",

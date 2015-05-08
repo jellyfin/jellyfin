@@ -8,10 +8,14 @@
 
         var page = this;
 
+        var limit = AppInfo.hasLowImageBandwidth ?
+         20 :
+         30;
+
         var options = {
 
             IncludeItemTypes: "Episode",
-            Limit: 30,
+            Limit: limit,
             Fields: "PrimaryImageAspectRatio,SyncInfo",
             ParentId: parentId,
             ImageTypeLimit: 1,

@@ -1,10 +1,10 @@
-﻿(function (window, document, $) {
+﻿(function (window, document, $, devicePixelRatio) {
 
     function renderHeader(user) {
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        if ($.browser.safari && $.browser.mobile && window.navigator.standalone) {
+        if (($.browser.safari && window.navigator.standalone) || Dashboard.isRunningInCordova()) {
             html += '<a data-rel="back" data-role="none" href="#" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-circle-o-left"></div></a>';
         }
 
@@ -31,34 +31,41 @@
 
         html += '<div class="viewMenuSecondary">';
 
-        if (user.localUser) {
+        var btnCastVisible = user.localUser ? '' : 'visibility:hidden;';
 
-            html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
-
-            html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton"><div class="fa fa-search" style="font-size:21px;"></div></button>';
+        if (!AppInfo.enableHeaderImages) {
+            html += '<button id="btnCast" class="btnCast btnCastIcon btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="' + btnCastVisible + '">';
+            html += '<div class="headerSelectedPlayer"></div><i class="fa fa-wifi"></i>';
+            html += '</button>';
         } else {
-            html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="visibility:hidden;"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
-
+            html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="' + btnCastVisible + '"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
         }
 
-        html += '<a class="headerButton headerButtonRight headerUserButton" href="#" onclick="Dashboard.showUserFlyout(this);">';
+        if (user.localUser) {
+            html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton"><div class="fa fa-search" style="font-size:21px;"></div></button>';
+        }
 
-        if (user.imageUrl) {
+        if (user.name) {
 
-            var userButtonHeight = 26;
+            html += '<a class="headerButton headerButtonRight headerUserButton" href="#" onclick="Dashboard.showUserFlyout(this);">';
 
-            var url = user.imageUrl;
+            if (user.imageUrl && AppInfo.enableUserImage) {
 
-            if (user.supportsImageParams) {
-                url += "&height=" + (userButtonHeight * Math.max(devicePixelRatio || 1, 2));
+                var userButtonHeight = 26;
+
+                var url = user.imageUrl;
+
+                if (user.supportsImageParams) {
+                    url += "&height=" + (userButtonHeight * Math.max(devicePixelRatio || 1, 2));
+                }
+
+                html += '<img src="' + url + '" style="border-radius: 1000px; height:' + userButtonHeight + 'px;" />';
+            } else {
+                html += '<div class="fa fa-user"></div>';
             }
 
-            html += '<img src="' + url + '" style="border-radius: 1000px; height:' + userButtonHeight + 'px;" />';
-        } else {
-            html += '<div class="fa fa-user"></div>';
+            html += '</a>';
         }
-
-        html += '</a>';
 
         if (user.canManageServer) {
             html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton"><div class="fa fa-cog"></div></a>';
@@ -77,18 +84,31 @@
 
     function bindMenuEvents() {
 
-        if ($.browser.mobile) {
+        if (AppInfo.isTouchPreferred) {
 
-            $('.libraryMenuButton').on('mousedown', function () {
+            $('.libraryMenuButton').on('click', function () {
                 showLibraryMenu(false);
             });
-            $('.dashboardMenuButton').on('mousedown', function () {
+            $('.dashboardMenuButton').on('click', function () {
                 showDashboardMenu(false);
             });
 
         } else {
             $('.libraryMenuButton').createHoverTouch().on('hovertouch', showLibraryMenu);
             $('.dashboardMenuButton').createHoverTouch().on('hovertouch', showDashboardMenu);
+        }
+
+        // grab an element
+        var viewMenuBar = document.getElementsByClassName("viewMenuBar")[0];
+        initHeadRoom(viewMenuBar);
+    }
+
+    function updateViewMenuBarHeadroom(page, viewMenuBar) {
+
+        if ($(page).hasClass('libraryPage')) {
+            viewMenuBar.removeClass('headroomDisabled');
+        } else {
+            viewMenuBar.addClass('headroomDisabled');
         }
     }
 
@@ -107,7 +127,7 @@
         html += '<div class="libraryMenuDivider"></div>';
         html += '<div class="adminMenuOptions">';
 
-        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="dashboard" href="dashboard.html"><span class="fa fa-cog sidebarLinkIcon"></span>' + Globalize.translate('ButtonDashboard') + '</a>';
+        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="dashboard" data-rel="none" href="dashboard.html"><span class="fa fa-cog sidebarLinkIcon"></span>' + Globalize.translate('ButtonDashboard') + '</a>';
         html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html"><span class="fa fa-edit sidebarLinkIcon"></span>' + Globalize.translate('ButtonMetadataManager') + '</a>';
         html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" href="reports.html"><span class="fa fa-bar-chart sidebarLinkIcon"></span>' + Globalize.translate('ButtonReports') + '</a>';
         html += '</div>';
@@ -253,40 +273,55 @@
 
             html += '<div class="sidebarLinks librarySidebarLinks">';
 
-            //var userHref = user.localUser && user.localUser.Policy.EnableUserPreferenceAccess ?
-            //    'mypreferencesdisplay.html?userId=' + user.localUser.Id :
-            //    (user.localUser ? 'index.html' : '#');
+            var showUserAtTop = AppInfo.isTouchPreferred;
 
-            //var paddingLeft = user.imageUrl ? 'padding-left:.7em;' : '';
-            //html += '<a style="margin-top:0;' + paddingLeft + 'display:block;color:#fff;text-decoration:none;font-size:16px;font-weight:400!important;background: #000;" href="' + userHref + '">';
+            if (showUserAtTop) {
 
-            //var imgWidth = 44;
+                var userHref = user.localUser && user.localUser.Policy.EnableUserPreferenceAccess ?
+                    'mypreferencesdisplay.html?userId=' + user.localUser.Id :
+                    (user.localUser ? 'index.html' : '#');
 
-            //if (user.imageUrl) {
-            //    var url = user.imageUrl;
+                var hasUserImage = user.imageUrl && AppInfo.enableUserImage;
+                var paddingLeft = hasUserImage ? 'padding-left:.7em;' : '';
+                html += '<a style="margin-top:0;' + paddingLeft + 'display:block;color:#fff;text-decoration:none;font-size:16px;font-weight:400!important;background: #000;" href="' + userHref + '">';
 
-            //    if (user.supportsImageParams) {
-            //        url += "&width=" + (imgWidth * Math.max(devicePixelRatio || 1, 2));
-            //    }
+                var imgWidth = 44;
 
-            //    html += '<img style="max-width:' + imgWidth + 'px;vertical-align:middle;margin-right:.8em;border-radius: 50px;" src="' + url + '" />';
-            //} else {
-            //    html += '<span class="fa fa-user sidebarLinkIcon"></span>';
-            //}
+                if (hasUserImage) {
+                    var url = user.imageUrl;
 
-            //html += user.name;
-            //html += '</a>';
+                    if (user.supportsImageParams) {
+                        url += "&width=" + (imgWidth * Math.max(devicePixelRatio || 1, 2));
+                    }
+
+                    html += '<img style="max-width:' + imgWidth + 'px;vertical-align:middle;margin-right:.8em;border-radius: 50px;" src="' + url + '" />';
+                } else {
+                    html += '<span class="fa fa-user sidebarLinkIcon"></span>';
+                }
+
+                html += user.name;
+                html += '</a>';
+
+                html += '<div class="libraryMenuDivider" style="margin-top:0;"></div>';
+            }
 
             var homeHref = ConnectionManager.currentApiClient() ? 'index.html' : 'selectserver.html';
 
-            html += '<a class="lnkMediaFolder sidebarLink" style="margin-top:.5em;padding-left:1em;display:block;color:#fff;text-decoration:none;" href="' + homeHref + '">';
+            if (showUserAtTop) {
+                html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '"><span class="fa fa-home sidebarLinkIcon"></span><span>' + Globalize.translate('ButtonHome') + '</span></a>';
 
-            html += '<img style="max-width:36px;vertical-align:middle;margin-right:1em;" src="css/images/mblogoicon.png" />';
+            } else {
+                html += '<a class="lnkMediaFolder sidebarLink" style="margin-top:.5em;padding-left:1em;display:block;color:#fff;text-decoration:none;" href="' + homeHref + '">';
 
-            html += Globalize.translate('ButtonHome');
-            html += '</a>';
+                html += '<img style="max-width:36px;vertical-align:middle;margin-right:1em;" src="css/images/mblogoicon.png" />';
 
-            html += '<div class="libraryMenuDivider" style="margin-top:0;"></div>';
+                html += Globalize.translate('ButtonHome');
+                html += '</a>';
+            }
+
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="dashboard" data-rel="none" href="nowplaying.html"><span class="fa fa-tablet sidebarLinkIcon"></span>' + Globalize.translate('ButtonRemote') + '</a>';
+
+            html += '<div class="libraryMenuDivider"></div>';
 
             html += getViewsHtml();
             html += '</div>';
@@ -473,11 +508,13 @@
     }).on('pagebeforeshow', ".page:not(.standalonePage)", function () {
 
         var page = this;
+        var viewMenuBar = $('.viewMenuBar');
         if (!$('.viewMenuBar').length) {
 
             ConnectionManager.user().done(function (user) {
 
                 renderHeader(user);
+                updateViewMenuBarHeadroom(page, $('.viewMenuBar'));
 
                 updateCastIcon();
 
@@ -487,6 +524,7 @@
         } else {
             updateContextText(page);
             updateLibraryNavLinks(page);
+            updateViewMenuBarHeadroom(page, viewMenuBar);
         }
 
         var jpage = $(page);
@@ -500,14 +538,20 @@
             $(document.body).removeClass('dashboardDocument').removeClass('libraryDocument');
         }
 
-    }).on('pagebeforeshow', ".page", function () {
+    }).on('pagebeforeshow', ".libraryPage", function () {
 
         var page = this;
 
-        if ($(page).hasClass('standalonePage')) {
-            $('.viewMenuBar').hide();
+        if (AppInfo.enableBottomTabs) {
+            $('.libraryViewNav', page).addClass('bottomLibraryViewNav');
+            $(page).addClass('noSecondaryNavPage');
         } else {
-            $('.viewMenuBar').show();
+
+            $('.libraryViewNav', page).each(function () {
+
+                initHeadRoom(this);
+            });
+
         }
 
     }).on('pageshow', ".libraryPage", function () {
@@ -523,6 +567,18 @@
             $(document).scrollTop(0);
         }
     });
+
+    function initHeadRoom(elem) {
+
+        if (!AppInfo.enableHeadRoom) {
+            return;
+        }
+
+        // construct an instance of Headroom, passing the element
+        var headroom = new Headroom(elem);
+        // initialise
+        headroom.init();
+    }
 
     function initializeApiClient(apiClient) {
 
@@ -542,7 +598,7 @@
 
     });
 
-})(window, document, jQuery);
+})(window, document, jQuery, window.devicePixelRatio);
 
 $.fn.createHoverTouch = function () {
 

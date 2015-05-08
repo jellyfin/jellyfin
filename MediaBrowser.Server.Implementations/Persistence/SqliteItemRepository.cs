@@ -130,11 +130,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _mediaStreamsRepository.Initialize();
             _chapterRepository.Initialize();
-
-            _shrinkMemoryTimer = new SqliteShrinkMemoryTimer(_connection, _writeLock, _logger);
         }
-
-        private SqliteShrinkMemoryTimer _shrinkMemoryTimer;
 
         /// <summary>
         /// The _write lock
@@ -430,13 +426,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     lock (_disposeLock)
                     {
-                        if (_shrinkMemoryTimer != null)
-                        {
-                            _shrinkMemoryTimer.Dispose();
-                            _shrinkMemoryTimer = null;
-                        }
-
-                        //_writeLock.Wait();
+                        _writeLock.Wait();
 
                         if (_connection != null)
                         {

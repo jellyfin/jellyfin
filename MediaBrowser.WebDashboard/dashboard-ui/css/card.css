@@ -39,14 +39,16 @@
         text-overflow: ellipsis;
     }
 
-.smallBackdropPosterItem .cardOverlayInner > div {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
+.buttonCard:hover .cardBox {
+    opacity: .6;
 }
 
 .cardBox {
     margin: 1px;
+}
+
+.largeCardMargin .cardBox {
+    margin: 8px;
 }
 
 /*@media all and (max-width: 600px) {
@@ -110,11 +112,19 @@
     padding-bottom: 100%;
 }
 
+.smallSquareCard .cardPadder {
+    padding-bottom: 100%;
+}
+
 .letterBoxCard .cardPadder {
     padding-bottom: 75%;
 }
 
 .portraitCard .cardPadder {
+    padding-bottom: 150%;
+}
+
+.smallPortraitCard .cardPadder {
     padding-bottom: 150%;
 }
 
@@ -174,7 +184,6 @@
     text-wrap: none;
     white-space: nowrap;
     padding: 5px 4px 2px;
-    text-shadow: none;
     font-weight: 400;
     line-height: 1.4;
 }
@@ -204,6 +213,16 @@
     color: #ddd;
 }
 
+/*.cardBox:not(.visualCardBox) .outerCardFooter .cardText {
+    font-size: 14px;
+    background: rgba(51, 51, 51,.6);
+    padding: 5px;
+}*/
+
+.cardBox:not(.visualCardBox) .outerCardFooter .cardText:last-child {
+    margin-bottom: 2em;
+}
+
 @media all and (max-width: 600px) {
 
     .packageReviewText {
@@ -227,12 +246,31 @@
     background-position: center center;
 }
 
+.iconCardImage {
+    text-align: center;
+    position: relative;
+}
+
+.cardImage .fa {
+    color: rgb(255, 255, 255);
+    position: absolute;
+    left: 0;
+    right: 0;
+    font-size: 50px;
+    margin: auto;
+    top: 25%;
+}
+
 .bannerCard {
     width: 100%;
 }
 
 .squareCard {
     width: 50%;
+}
+
+.smallSquareCard {
+    width: 33.3334%;
 }
 
 .backdropCard {
@@ -245,6 +283,10 @@
 
 .portraitCard {
     width: 33.3%;
+}
+
+.smallPortraitCard {
+    width: 25%;
 }
 
 .cardProgress {
@@ -270,13 +312,24 @@
     .squareCard {
         width: 33.3%;
     }
+
+    .smallSquareCard {
+        width: 25%;
+    }
+}
+
+@media all and (min-width: 400px) {
+
+    .smallBackdropCard {
+        width: 33.3%;
+    }
 }
 
 
 @media all and (min-width: 540px) {
 
     .smallBackdropCard {
-        width: 33.3%;
+        width: 25%;
     }
 }
 
@@ -285,6 +338,10 @@
 
     .portraitCard {
         width: 25%;
+    }
+
+    .smallPortraitCard {
+        width: 20%;
     }
 }
 
@@ -309,7 +366,11 @@
     }
 
     .smallBackdropCard {
-        width: 25%;
+        width: 20%;
+    }
+
+    .smallSquareCard {
+        width: 20%;
     }
 }
 
@@ -322,6 +383,10 @@
 
     .smallBackdropCard {
         width: 20%;
+    }
+
+    .smallPortraitCard {
+        width: 16.666666666666666666666666666667%;
     }
 }
 
@@ -347,6 +412,14 @@
     .smallBackdropCard {
         width: 16.666666666666666666666666666667%;
     }
+
+    .smallSquareCard {
+        width: 16.666666666666666666666666666667%;
+    }
+
+    .smallPortraitCard {
+        width: 14.285714285714285714285714285714%;
+    }
 }
 
 
@@ -362,6 +435,10 @@
 
     .smallBackdropCard {
         width: 14.285714285714285714285714285714%;
+    }
+
+    .smallPortraitCard {
+        width: 12.5%;
     }
 }
 
@@ -508,14 +585,14 @@
     }
 }
 
-@media all and (min-width: 1400px) {
+@media all and (min-width: 1100px) {
 
     .homePageSmallBackdropCard {
         width: 20%;
     }
 }
 
-@media all and (min-width: 1920px) {
+@media all and (min-width: 1440px) {
 
     .homePageSmallBackdropCard {
         width: 14.285714285714285714285714285714%;

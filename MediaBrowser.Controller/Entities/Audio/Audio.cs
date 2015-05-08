@@ -52,34 +52,6 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <value><c>true</c> if this instance has embedded image; otherwise, <c>false</c>.</value>
         public bool HasEmbeddedImage { get; set; }
 
-        /// <summary>
-        /// Override this to true if class should be grouped under a container in indicies
-        /// The container class should be defined via IndexContainer
-        /// </summary>
-        /// <value><c>true</c> if [group in index]; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public override bool GroupInIndex
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Override this to return the folder that should be used to construct a container
-        /// for this item in an index.  GroupInIndex should be true as well.
-        /// </summary>
-        /// <value>The index container.</value>
-        [IgnoreDataMember]
-        public override Folder IndexContainer
-        {
-            get
-            {
-                return LatestItemsIndexContainer ?? new MusicAlbum { Name = "Unknown Album" };
-            }
-        }
-
         [IgnoreDataMember]
         protected override bool SupportsOwnedItems
         {
@@ -94,7 +66,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         {
             get
             {
-                return Parents.OfType<MusicAlbum>().FirstOrDefault();
+                return AlbumEntity;
             }
         }
 
@@ -148,6 +120,12 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <value>The album.</value>
         public string Album { get; set; }
 
+        [IgnoreDataMember]
+        public MusicAlbum AlbumEntity
+        {
+            get { return FindParent<MusicAlbum>(); }
+        }
+
         /// <summary>
         /// Gets the type of the media.
         /// </summary>
@@ -177,7 +155,7 @@ namespace MediaBrowser.Controller.Entities.Audio
         /// <returns>System.String.</returns>
         protected override string CreateUserDataKey()
         {
-            var parent = FindParent<MusicAlbum>();
+            var parent = AlbumEntity;
 
             if (parent != null)
             {

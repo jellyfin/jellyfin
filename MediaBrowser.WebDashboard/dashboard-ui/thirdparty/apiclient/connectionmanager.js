@@ -944,9 +944,14 @@
 
         self.connectToAddress = function (address) {
 
-            address = normalizeAddress(address);
-
             var deferred = DeferredBuilder.Deferred();
+
+            if (!address) {
+                deferred.reject();
+                return deferred.promise();
+            }
+
+            address = normalizeAddress(address);
 
             tryConnect(address, 15000).done(function (publicInfo) {
 
@@ -976,10 +981,14 @@
         self.loginToConnect = function (username, password) {
 
             if (!username) {
-                throw new Error("null username");
+                var deferred = DeferredBuilder.Deferred();
+                deferred.reject();
+                return deferred.promise();
             }
             if (!password) {
-                throw new Error("null password");
+                var deferred = DeferredBuilder.Deferred();
+                deferred.reject();
+                return deferred.promise();
             }
 
             var md5 = self.getConnectPasswordHash(password);

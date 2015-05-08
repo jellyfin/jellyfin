@@ -617,36 +617,14 @@ namespace MediaBrowser.Api.Library
                                   : (Folder)_libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
-            var originalItem = item;
-
             while (GetThemeSongIds(item).Count == 0 && request.InheritFromParent && item.Parent != null)
             {
                 item = item.Parent;
             }
 
-            var themeSongIds = GetThemeSongIds(item);
-
-            if (themeSongIds.Count == 0 && request.InheritFromParent)
-            {
-                var album = originalItem as MusicAlbum;
-
-                if (album != null)
-                {
-                    var linkedItemWithThemes = album.SoundtrackIds
-                        .Select(i => _libraryManager.GetItemById(i))
-                        .FirstOrDefault(i => GetThemeSongIds(i).Count > 0);
-
-                    if (linkedItemWithThemes != null)
-                    {
-                        themeSongIds = GetThemeSongIds(linkedItemWithThemes);
-                        item = linkedItemWithThemes;
-                    }
-                }
-            }
-
             var dtoOptions = GetDtoOptions(request);
 
-            var dtos = themeSongIds.Select(_libraryManager.GetItemById)
+            var dtos = GetThemeSongIds(item).Select(_libraryManager.GetItemById)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 
@@ -682,41 +660,14 @@ namespace MediaBrowser.Api.Library
                                   : (Folder)_libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
 
-            var originalItem = item;
-
             while (GetThemeVideoIds(item).Count == 0 && request.InheritFromParent && item.Parent != null)
             {
                 item = item.Parent;
             }
 
-            var themeVideoIds = GetThemeVideoIds(item);
-
-            if (themeVideoIds.Count == 0 && request.InheritFromParent)
-            {
-                var album = originalItem as MusicAlbum;
-
-                if (album == null)
-                {
-                    album = originalItem.Parents.OfType<MusicAlbum>().FirstOrDefault();
-                }
-
-                if (album != null)
-                {
-                    var linkedItemWithThemes = album.SoundtrackIds
-                        .Select(i => _libraryManager.GetItemById(i))
-                        .FirstOrDefault(i => GetThemeVideoIds(i).Count > 0);
-
-                    if (linkedItemWithThemes != null)
-                    {
-                        themeVideoIds = GetThemeVideoIds(linkedItemWithThemes);
-                        item = linkedItemWithThemes;
-                    }
-                }
-            }
-
             var dtoOptions = GetDtoOptions(request);
 
-            var dtos = themeVideoIds.Select(_libraryManager.GetItemById)
+            var dtos = GetThemeVideoIds(item).Select(_libraryManager.GetItemById)
                             .OrderBy(i => i.SortName)
                             .Select(i => _dtoService.GetBaseItemDto(i, dtoOptions, user, item));
 

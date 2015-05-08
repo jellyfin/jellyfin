@@ -13,8 +13,8 @@
         <copyright>Copyright © Emby 2013</copyright>
         <dependencies>
             <dependency id="MediaBrowser.Common" version="3.0.622" />
-            <dependency id="NLog" version="3.2.0.0" />
-            <dependency id="SimpleInjector" version="2.7.0" />
+            <dependency id="NLog" version="3.2.1" />
+            <dependency id="SimpleInjector" version="2.8.0" />
         </dependencies>
     </metadata>
     <files>

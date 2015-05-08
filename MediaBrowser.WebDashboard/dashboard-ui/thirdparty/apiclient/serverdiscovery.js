@@ -5,6 +5,7 @@
         findServers: function (timeoutMs) {
 
             var deferred = DeferredBuilder.Deferred();
+
             var servers = [];
 
             // Expected server properties

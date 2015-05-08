@@ -9,7 +9,7 @@
         <div class="itemTabs homeTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
                 <a href="index.html" class="lnkHomeHome">${TabHome}</a>
-                <a href="homelatest.html" class="lnkHomeLatest">${TabLatest}</a>
+                <a href="homelatest.html" class="lnkHomeLatest homeLatestTab">${TabLatest}</a>
                 <a href="tvrecommended.html" class="lnkHomeNextUp">${TabNextUp}</a>
                 <a href="favorites.html" class="lnkHomeFavorites">${TabFavorites}</a>
                 <a href="tvupcoming.html" class="lnkHomeUpcoming">${TabUpcoming}</a>
@@ -18,7 +18,7 @@
 
         <div id="channelTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="channelslatest.html">${TabLatest}</a>
+                <a href="channelslatest.html" class="latestChannelItemsTab">${TabLatest}</a>
                 <a href="channels.html" class="ui-btn-active">${TabChannels}</a>
             </div>
         </div>
@@ -33,11 +33,11 @@
             <div class="libraryViewNav scopedLibraryViewNav">
                 <a href="moviesrecommended.html">${TabSuggestions}</a>
                 <a href="movies.html" class="lnkMovies">${TabMovies}</a>
-                <a href="movietrailers.html" class="lnkMovieTrailers">${TabTrailers}</a>
+                <a href="movietrailers.html" class="lnkMovieTrailers movieTrailersTab">${TabTrailers}</a>
                 <a href="collections.html?context=movies" class="lnkCollections">${TabCollections}</a>
                 <a href="moviegenres.html">${TabGenres}</a>
-                <a href="moviepeople.html">${TabPeople}</a>
-                <a href="moviestudios.html">${TabStudios}</a>
+                <a href="moviepeople.html" class="moviePeopleTab">${TabPeople}</a>
+                <a href="moviestudios.html" class="movieStudiosTab">${TabStudios}</a>
             </div>
         </div>
         <div class="itemTabs photoTabs" style="display: none;">
@@ -53,19 +53,19 @@
                 <a href="tvlatest.html">${TabLatest}</a>
                 <a href="tvupcoming.html">${TabUpcoming}</a>
                 <a href="tvshows.html" class="ui-btn-active">${TabShows}</a>
-                <a href="episodes.html">${TabEpisodes}</a>
+                <a href="episodes.html" class="tvEpisodesTab">${TabEpisodes}</a>
                 <a href="tvgenres.html">${TabGenres}</a>
-                <a href="tvpeople.html">${TabPeople}</a>
-                <a href="tvstudios.html">${TabNetworks}</a>
+                <a href="tvpeople.html" class="tvPeopleTab">${TabPeople}</a>
+                <a href="tvstudios.html" class="tvStudiosTab">${TabNetworks}</a>
             </div>
         </div>
         <div id="songTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
                 <a href="musicrecommended.html">${TabSuggestions}</a>
-                <a href="songs.html" class="ui-btn-active">${TabSongs}</a>
+                <a href="songs.html" class="ui-btn-active musicSongsTab">${TabSongs}</a>
                 <a href="musicalbums.html">${TabAlbums}</a>
                 <a href="musicalbumartists.html">${TabAlbumArtists}</a>
-                <a href="musicartists.html">${TabArtists}</a>
+                <a href="musicartists.html" class="musicArtistsTab">${TabArtists}</a>
                 <a href="musicgenres.html">${TabGenres}</a>
                 <a href="musicvideos.html">${TabMusicVideos}</a>
             </div>
@@ -73,10 +73,10 @@
         <div id="albumTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
                 <a href="musicrecommended.html">${TabSuggestions}</a>
-                <a href="songs.html">${TabSongs}</a>
+                <a href="songs.html" class="musicSongsTab">${TabSongs}</a>
                 <a href="musicalbums.html" class="ui-btn-active">${TabAlbums}</a>
                 <a href="musicalbumartists.html">${TabAlbumArtists}</a>
-                <a href="musicartists.html">${TabArtists}</a>
+                <a href="musicartists.html" class="musicArtistsTab">${TabArtists}</a>
                 <a href="musicgenres.html">${TabGenres}</a>
                 <a href="musicvideos.html">${TabMusicVideos}</a>
             </div>
@@ -84,10 +84,10 @@
         <div id="musicVideoTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
                 <a href="musicrecommended.html">${TabSuggestions}</a>
-                <a href="songs.html">${TabSongs}</a>
+                <a href="songs.html" class="musicSongsTab">${TabSongs}</a>
                 <a href="musicalbums.html">${TabAlbums}</a>
                 <a href="musicalbumartists.html">${TabAlbumArtists}</a>
-                <a href="musicartists.html">${TabArtists}</a>
+                <a href="musicartists.html" class="musicArtistsTab">${TabArtists}</a>
                 <a href="musicgenres.html">${TabGenres}</a>
                 <a href="musicvideos.html" class="ui-btn-active">${TabMusicVideos}</a>
             </div>
@@ -112,7 +112,7 @@
         </div>
         <div class="itemTabs channelTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="channelslatest.html">${TabLatest}</a>
+                <a href="channelslatest.html" class="latestChannelItemsTab">${TabLatest}</a>
                 <a href="channels.html" class="ui-btn-active">${TabChannels}</a>
             </div>
         </div>

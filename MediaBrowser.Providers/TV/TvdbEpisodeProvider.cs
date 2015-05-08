@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
 using System;
 using System.Collections.Generic;
@@ -29,12 +30,14 @@ namespace MediaBrowser.Providers.TV
         private readonly IFileSystem _fileSystem;
         private readonly IServerConfigurationManager _config;
         private readonly IHttpClient _httpClient;
+        private readonly ILogger _logger;
 
-        public TvdbEpisodeProvider(IFileSystem fileSystem, IServerConfigurationManager config, IHttpClient httpClient)
+        public TvdbEpisodeProvider(IFileSystem fileSystem, IServerConfigurationManager config, IHttpClient httpClient, ILogger logger)
         {
             _fileSystem = fileSystem;
             _config = config;
             _httpClient = httpClient;
+            _logger = logger;
             Current = this;
         }
 
@@ -100,7 +103,8 @@ namespace MediaBrowser.Providers.TV
 
                 try
                 {
-                    result.Item = FetchEpisodeData(searchInfo, identity, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
+                    result.Item = FetchEpisodeData(searchInfo, identity, seriesDataPath, searchInfo.SeriesProviderIds,
+                        cancellationToken);
                     result.HasMetadata = result.Item != null;
                 }
                 catch (FileNotFoundException)
@@ -111,6 +115,10 @@ namespace MediaBrowser.Providers.TV
                 {
                     // Don't fail the provider because this will just keep on going and going.
                 }
+            }
+            else
+            {
+                _logger.Debug("No series identity found for {0}", searchInfo.Name);
             }
 
             return result;
@@ -265,7 +273,6 @@ namespace MediaBrowser.Providers.TV
 
                 FetchMainEpisodeInfo(episode, file, cancellationToken);
                 usingAbsoluteData = true;
-                success = true;
             }
 
             var end = identity.IndexNumberEnd ?? episodeNumber;
@@ -298,7 +305,7 @@ namespace MediaBrowser.Providers.TV
                 episodeNumber++;
             }
 
-            return success ? episode : null;
+            return episode;
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
