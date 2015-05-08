@@ -71,25 +71,11 @@
 
         html += '</div>';
 
-        html = normalizeLinksHtml(html);
-
         $(document.body).prepend(html);
         $('.viewMenuBar').trigger('create');
 
         $(document).trigger('headercreated');
         bindMenuEvents();
-    }
-
-    function replaceAll(str, find, replace) {
-        return str.replace(new RegExp(find, 'g'), replace);
-    }
-
-    function normalizeLinksHtml(html) {
-
-        if (AppInfo.resetOnLibraryChange) {
-            html = replaceAll(html, '<a ', '<a data-ajax="false"');
-        }
-        return html;
     }
 
     function bindMenuEvents() {
@@ -241,8 +227,6 @@
 
             }).join('');
 
-            html = normalizeLinksHtml(html);
-
             var elem = $('.libraryMenuOptions').html(html);
 
             $('.sidebarLink', elem).on('click', function () {
@@ -333,7 +317,6 @@
             }
 
             html += getViewsHtml();
-            html = normalizeLinksHtml(html);
             html += '</div>';
 
             html += '</div>';

@@ -482,7 +482,7 @@ namespace MediaBrowser.Dlna
             var profile = GetProfile(headers) ??
                           GetDefaultProfile();
 
-            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName).GetXml();
+            return new DescriptionXmlBuilder(profile, serverUuId, serverAddress, _appHost.FriendlyName, serverUuId.GetMD5().ToString("N")).GetXml();
         }
 
         public ImageStream GetIcon(string filename)

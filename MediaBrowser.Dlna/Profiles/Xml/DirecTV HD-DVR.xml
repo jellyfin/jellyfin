@@ -32,7 +32,10 @@
   <RequiresPlainVideoItems>true</RequiresPlainVideoItems>
   <RequiresPlainFolders>true</RequiresPlainFolders>
   <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
-  <XmlRootAttributes />
+  <XmlRootAttributes>
+    <XmlAttribute name="xmlns" value="urn:schemas-upnp-org:device-1-0" />
+    <XmlAttribute name="xmlns:dlna" value="urn:schemas-dlna-org:device-1-0" />
+  </XmlRootAttributes>
   <DirectPlayProfiles>
     <DirectPlayProfile container="mpeg" audioCodec="mp2" videoCodec="mpeg2video" type="Video" />
     <DirectPlayProfile container="jpeg,jpg" type="Photo" />

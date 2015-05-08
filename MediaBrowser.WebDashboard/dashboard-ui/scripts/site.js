@@ -1363,7 +1363,7 @@ var Dashboard = {
 
         if (AppInfo.hasLowImageBandwidth) {
 
-            quality -= 15;
+            quality -= 20;
 
             if (isBackdrop) {
                 quality -= 10;

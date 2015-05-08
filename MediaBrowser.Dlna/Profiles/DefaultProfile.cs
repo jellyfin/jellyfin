@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Dlna;
+using System.Linq;
 using System.Xml.Serialization;
 
 namespace MediaBrowser.Dlna.Profiles
@@ -75,6 +76,23 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = DlnaProfileType.Video
                 }
             };
+
+            AddXmlRootAttribute("xmlns", "urn:schemas-upnp-org:device-1-0");
+            AddXmlRootAttribute("xmlns:dlna", "urn:schemas-dlna-org:device-1-0");
+        }
+
+        public void AddXmlRootAttribute(string name, string value)
+        {
+            var atts = XmlRootAttributes ?? new XmlAttribute[] { };
+            var list = atts.ToList();
+
+            list.Add(new XmlAttribute
+            {
+                Name = name,
+                Value = value
+            });
+
+            XmlRootAttributes = list.ToArray();
         }
     }
 }
