@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.MediaInfo;
+using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Model.Dlna
@@ -105,8 +106,6 @@ namespace MediaBrowser.Model.Dlna
             int? height,
             int? bitDepth,
             int? videoBitrate,
-            int? audioChannels,
-            int? audioBitrate,
             TransportStreamTimestamp timestamp,
             bool isDirectStream,
             long? runtimeTicks,
@@ -147,8 +146,6 @@ namespace MediaBrowser.Model.Dlna
             ResponseProfile mediaProfile = _profile.GetVideoMediaProfile(container,
                 audioCodec,
                 videoCodec,
-                audioBitrate,
-                audioChannels,
                 width,
                 height,
                 bitDepth,
@@ -168,7 +165,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (mediaProfile != null && !string.IsNullOrEmpty(mediaProfile.OrgPn))
             {
-                orgPnValues.Add(mediaProfile.OrgPn);
+                orgPnValues.AddRange(mediaProfile.OrgPn.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries));
             }
             else
             {

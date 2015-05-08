@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Localization;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Users;
@@ -15,20 +14,6 @@ namespace MediaBrowser.Controller.Entities.TV
     /// </summary>
     public class Season : Folder, IHasSeries, IHasLookupInfo<SeasonInfo>
     {
-
-        /// <summary>
-        /// Seasons are just containers
-        /// </summary>
-        /// <value><c>true</c> if [include in index]; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public override bool IncludeInIndex
-        {
-            get
-            {
-                return false;
-            }
-        }
-
         [IgnoreDataMember]
         public override bool SupportsAddingToPlaylist
         {
@@ -48,33 +33,6 @@ namespace MediaBrowser.Controller.Entities.TV
         public override BaseItem DisplayParent
         {
             get { return Series ?? Parent; }
-        }
-
-        /// <summary>
-        /// We want to group into our Series
-        /// </summary>
-        /// <value><c>true</c> if [group in index]; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public override bool GroupInIndex
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        /// <summary>
-        /// Override this to return the folder that should be used to construct a container
-        /// for this item in an index.  GroupInIndex should be true as well.
-        /// </summary>
-        /// <value>The index container.</value>
-        [IgnoreDataMember]
-        public override Folder IndexContainer
-        {
-            get
-            {
-                return Series;
-            }
         }
 
         // Genre, Rating and Stuido will all be the same

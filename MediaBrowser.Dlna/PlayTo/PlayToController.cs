@@ -509,8 +509,6 @@ namespace MediaBrowser.Dlna.PlayTo
                     streamInfo.TargetHeight,
                     streamInfo.TargetVideoBitDepth,
                     streamInfo.TargetVideoBitrate,
-                    streamInfo.TargetAudioChannels,
-                    streamInfo.TargetAudioBitrate,
                     streamInfo.TargetTimestamp,
                     streamInfo.IsDirectStream,
                     streamInfo.RunTimeTicks,
@@ -770,8 +768,11 @@ namespace MediaBrowser.Dlna.PlayTo
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
 
-                    if (newItem.StreamInfo.IsDirectStream)
+                    if (newItem.StreamInfo.IsDirectStream && newPosition > 0)
                     {
+                        // This is rather arbitrary, but give the player time to start playing
+                        await Task.Delay(2000).ConfigureAwait(false);
+
                         await _device.Seek(TimeSpan.FromTicks(newPosition)).ConfigureAwait(false);
                     }
                 }

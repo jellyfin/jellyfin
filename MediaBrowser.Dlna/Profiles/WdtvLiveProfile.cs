@@ -11,7 +11,6 @@ namespace MediaBrowser.Dlna.Profiles
             Name = "WDTV Live";
 
             TimelineOffsetSeconds = 5;
-            IgnoreTranscodeByteRangeRequests = true;
 
             Identification = new DeviceIdentification
             {

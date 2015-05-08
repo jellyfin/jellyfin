@@ -1754,12 +1754,10 @@ namespace MediaBrowser.Controller.Entities
 
         private IEnumerable<Folder> GetMediaFolders(User user)
         {
-            var excludeFolderIds = user.Configuration.ExcludeFoldersFromGrouping.Select(i => new Guid(i)).ToList();
-
             return user.RootFolder
                 .GetChildren(user, true, true)
                 .OfType<Folder>()
-                .Where(i => !excludeFolderIds.Contains(i.Id) && !UserView.IsExcludedFromGrouping(i));
+                .Where(i => user.IsFolderGrouped(i.Id) && !UserView.IsExcludedFromGrouping(i));
         }
 
         private IEnumerable<Folder> GetMediaFolders(User user, IEnumerable<string> viewTypes)

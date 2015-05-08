@@ -46,7 +46,7 @@
     "MessageErrorLoadingSupporterInfo": "Es trat ein Fehler beim laden der Unterst\u00fctzer-Informationen auf. Bitte versuchen Sie es sp\u00e4ter erneut.",
     "MessageLinkYourSupporterKey": "Verbinden Sie Ihren Unterst\u00fctzer-Schl\u00fcssel mit bis zu {0} Emby Connect Benutzern um kostenfreien Zugriff auf die folgenden Apps zu erhalten:",
     "HeaderConfirmRemoveUser": "Entferne Benutzer",
-    "MessageSwipeDownOnRemoteControl": "Willkommen zur Fernsteuerung. Streichen Sie irgendwo auf dem Bildschirm nach unten um dorthin zur\u00fcck zu gehen, von wo aus Sie kamen.",
+    "MessageSwipeDownOnRemoteControl": "Welcome to remote control. Select the device to control by clicking the cast icon in the upper right corner. Swipe down anywhere on this screen to go back to where you came from.",
     "MessageConfirmRemoveConnectSupporter": "M\u00f6chten Sie wirklich zus\u00e4tzliche Unterst\u00fctzer-Features von diesem Anwender entfernen?",
     "ValueTimeLimitSingleHour": "Zeitlimit: 1 Stunde",
     "ValueTimeLimitMultiHour": "Zeitlimit: {0} Stunden",
@@ -123,7 +123,7 @@
     "LabelFree": "Frei",
     "HeaderPlaybackError": "Wiedergabefehler",
     "MessagePlaybackErrorNotAllowed": "Sie sind nicht befugt diese Inhalte wiederzugeben. Bitte kontaktieren Sie Ihren Systemadministrator f\u00fcr weitere Details.",
-    "MessagePlaybackErrorNoCompatibleStream": "Es sind aktuell keine kompatiblen Streams verf\u00fcgbar. Bitte versuchen Sie es sp\u00e4ter erneut.",
+    "MessagePlaybackErrorNoCompatibleStream": "No compatible streams are currently available. Please try again later or contact your system administrator for details.",
     "MessagePlaybackErrorRateLimitExceeded": "Ihr Wiedergabelimit wurde \u00fcberschritten. Bitte kontaktieren Sie Ihren Systemadministrator f\u00fcr weitere Details.",
     "MessagePlaybackErrorPlaceHolder": "Der gew\u00e4hlte Inhalt kann auf diesem Ger\u00e4t nicht abgespielt werden.",
     "HeaderSelectAudio": "W\u00e4hle Audio",
@@ -432,6 +432,7 @@
     "HeaderVideo": "Video",
     "HeaderRuntime": "Laufzeit",
     "HeaderCommunityRating": "Community Bewertung",
+    "HeaderPasswordReset": "Passwort zur\u00fccksetzen",
     "HeaderParentalRating": "Alterseinstufung",
     "HeaderReleaseDate": "Ver\u00f6ffentlichungsdatum",
     "HeaderDateAdded": "Hinzugef\u00fcgt am",
@@ -755,5 +756,11 @@
     "SyncJobItemStatusRemovedFromDevice": "Entfernt von Ger\u00e4t",
     "SyncJobItemStatusCancelled": "Abgebrochen",
     "LabelProfile": "Profil:",
-    "LabelBitrateMbps": "Datenrate (Mbps):"
+    "LabelBitrateMbps": "Datenrate (Mbps):",
+    "EmbyIntroDownloadMessage": "To download and install Emby Server visit {0}.",
+    "ButtonNewServer": "New Server",
+    "ButtonSignInWithConnect": "Sign in with Emby Connect",
+    "HeaderNewServer": "New Server",
+    "MyDevice": "My Device",
+    "ButtonRemote": "Remote"
 }

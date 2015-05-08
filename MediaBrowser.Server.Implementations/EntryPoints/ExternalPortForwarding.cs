@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
+using MediaBrowser.Controller.Dlna;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
 using Mono.Nat;
@@ -7,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading;
 
@@ -17,15 +19,17 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private readonly IServerApplicationHost _appHost;
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
+        private readonly ISsdpHandler _ssdp;
 
         private Timer _timer;
         private bool _isStarted;
 
-        public ExternalPortForwarding(ILogManager logmanager, IServerApplicationHost appHost, IServerConfigurationManager config)
+        public ExternalPortForwarding(ILogManager logmanager, IServerApplicationHost appHost, IServerConfigurationManager config, ISsdpHandler ssdp)
         {
             _logger = logmanager.GetLogger("PortMapper");
             _appHost = appHost;
             _config = config;
+            _ssdp = ssdp;
         }
 
         private string _lastConfigIdentifier;
@@ -75,10 +79,10 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         private void Start()
         {
             _logger.Debug("Starting NAT discovery");
-            //NatUtility.EnabledProtocols = new List<NatProtocol>
-            //{
-            //    NatProtocol.Pmp
-            //};
+            NatUtility.EnabledProtocols = new List<NatProtocol>
+            {
+                NatProtocol.Pmp
+            };
             NatUtility.DeviceFound += NatUtility_DeviceFound;
 
             // Mono.Nat does never rise this event. The event is there however it is useless. 
@@ -93,9 +97,21 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
 
             _timer = new Timer(s => _createdRules = new List<string>(), null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(5));
 
+            _ssdp.MessageReceived += _ssdp_MessageReceived;
+
             _lastConfigIdentifier = GetConfigIdentifier();
 
             _isStarted = true;
+        }
+
+        void _ssdp_MessageReceived(object sender, SsdpMessageEventArgs e)
+        {
+            var endpoint = e.EndPoint as IPEndPoint;
+
+            if (endpoint != null && e.LocalIp != null)
+            {
+                NatUtility.Handle(e.LocalIp, e.Message, endpoint, NatProtocol.Upnp);
+            }
         }
 
         void NatUtility_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -182,6 +198,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
                 _timer.Dispose();
                 _timer = null;
             }
+
+            _ssdp.MessageReceived -= _ssdp_MessageReceived;
 
             try
             {

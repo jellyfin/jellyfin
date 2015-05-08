@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using Interfaces.IO;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
@@ -17,7 +18,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Naming.Audio;
 using MediaBrowser.Naming.Common;
-using MediaBrowser.Naming.IO;
 using MediaBrowser.Naming.TV;
 using MediaBrowser.Naming.Video;
 using MediaBrowser.Server.Implementations.Library.Validators;
@@ -1594,6 +1594,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
 
+        private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
+
         public async Task<UserView> GetNamedView(User user,
             string name,
             string viewType,
@@ -1645,13 +1647,18 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (!refresh && item != null)
             {
-                refresh = (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 24;
+                refresh = (DateTime.UtcNow - item.DateLastSaved) >= _viewRefreshInterval;
             }
 
             if (refresh)
             {
                 await item.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None).ConfigureAwait(false);
-                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions());
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions
+                {
+                    // Not sure why this is necessary but need to figure it out
+                    // View images are not getting utilized without this
+                    ForceSave = true
+                });
             }
 
             return item;
@@ -1731,7 +1738,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }
 
-            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 24;
+            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved) >= _viewRefreshInterval;
 
             if (refresh)
             {
@@ -1767,14 +1774,13 @@ namespace MediaBrowser.Server.Implementations.Library
             var resolver = new EpisodeResolver(GetNamingOptions(),
                 new PatternsLogger());
 
-            var fileType = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd || episode.VideoType == VideoType.HdDvd ?
-                FileInfoType.Directory :
-                FileInfoType.File;
+            var isFolder = episode.VideoType == VideoType.BluRay || episode.VideoType == VideoType.Dvd ||
+                           episode.VideoType == VideoType.HdDvd;
 
             var locationType = episode.LocationType;
 
             var episodeInfo = locationType == LocationType.FileSystem || locationType == LocationType.Offline ?
-                resolver.Resolve(episode.Path, fileType) :
+                resolver.Resolve(episode.Path, isFolder) :
                 new Naming.TV.EpisodeInfo();
 
             if (episodeInfo == null)
@@ -1928,10 +1934,10 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var videoListResolver = new VideoListResolver(GetNamingOptions(), new PatternsLogger());
 
-            var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new PortableFileInfo
+            var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new FileMetadata
             {
-                FullName = i.FullName,
-                Type = GetFileType(i)
+                Id = i.FullName,
+                IsFolder = ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
 
             }).ToList());
 
@@ -1962,16 +1968,6 @@ namespace MediaBrowser.Server.Implementations.Library
             }).OrderBy(i => i.Path).ToList();
         }
 
-        private FileInfoType GetFileType(FileSystemInfo info)
-        {
-            if ((info.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
-            {
-                return FileInfoType.Directory;
-            }
-
-            return FileInfoType.File;
-        }
-
         public IEnumerable<Video> FindExtras(BaseItem owner, List<FileSystemInfo> fileSystemChildren, IDirectoryService directoryService)
         {
             var files = fileSystemChildren.OfType<DirectoryInfo>()
@@ -1981,10 +1977,10 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var videoListResolver = new VideoListResolver(GetNamingOptions(), new PatternsLogger());
 
-            var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new PortableFileInfo
+            var videos = videoListResolver.Resolve(fileSystemChildren.Select(i => new FileMetadata
             {
-                FullName = i.FullName,
-                Type = GetFileType(i)
+                Id = i.FullName,
+                IsFolder = ((i.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
 
             }).ToList());
 

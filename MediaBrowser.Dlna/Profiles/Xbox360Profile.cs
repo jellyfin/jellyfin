@@ -18,12 +18,13 @@ namespace MediaBrowser.Dlna.Profiles
 
             ModelNumber = "12.0";
 
-            FriendlyName = "${HostName} : 1";
+            FriendlyName = "${HostName}: Emby:";
 
-            ModelUrl = "http://www.microsoft.com/";
+            ModelUrl = "http://go.microsoft.com/fwlink/?LinkId=105926";
             Manufacturer = "Microsoft Corporation";
-            ManufacturerUrl = "http://www.microsoft.com/";
+            ManufacturerUrl = "http://www.microsoft.com";
             XDlnaDoc = "DMS-1.50";
+            ModelDescription = null;
 
             TimelineOffsetSeconds = 40;
             RequiresPlainFolders = true;
@@ -311,6 +312,9 @@ namespace MediaBrowser.Dlna.Profiles
                     }
                 }
             };
+
+            XmlRootAttributes = new XmlAttribute[] { };
+            AddXmlRootAttribute("xmlns", "urn:schemas-upnp-org:device-1-0");
         }
     }
 }

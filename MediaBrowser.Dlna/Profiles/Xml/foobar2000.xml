@@ -14,7 +14,6 @@
   <ModelDescription>Emby</ModelDescription>
   <ModelNumber>Emby</ModelNumber>
   <ModelUrl>http://emby.media/</ModelUrl>
-  <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
   <EnableSingleAlbumArtLimit>false</EnableSingleAlbumArtLimit>
   <SupportedMediaTypes>Audio</SupportedMediaTypes>
@@ -33,7 +32,10 @@
   <RequiresPlainVideoItems>false</RequiresPlainVideoItems>
   <RequiresPlainFolders>false</RequiresPlainFolders>
   <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
-  <XmlRootAttributes />
+  <XmlRootAttributes>
+    <XmlAttribute name="xmlns" value="urn:schemas-upnp-org:device-1-0" />
+    <XmlAttribute name="xmlns:dlna" value="urn:schemas-dlna-org:device-1-0" />
+  </XmlRootAttributes>
   <DirectPlayProfiles>
     <DirectPlayProfile container="mp3" audioCodec="mp2,mp3" type="Audio" />
     <DirectPlayProfile container="mp4" audioCodec="mp4" type="Audio" />

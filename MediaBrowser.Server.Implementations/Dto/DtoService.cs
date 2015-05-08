@@ -1193,7 +1193,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.Album = audio.Album;
 
-                var albumParent = audio.FindParent<MusicAlbum>();
+                var albumParent = audio.AlbumEntity;
 
                 if (albumParent != null)
                 {
@@ -1206,15 +1206,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 //{
                 // Songs always have one
                 //}
-            }
-
-            var album = item as MusicAlbum;
-
-            if (album != null)
-            {
-                dto.SoundtrackIds = album.SoundtrackIds
-                    .Select(i => i.ToString("N"))
-                    .ToArray();
             }
 
             var hasArtist = item as IHasArtist;

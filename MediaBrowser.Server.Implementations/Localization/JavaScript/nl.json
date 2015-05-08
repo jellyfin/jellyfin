@@ -46,7 +46,7 @@
     "MessageErrorLoadingSupporterInfo": "Er is een fout opgetreden bij het laden van uw supporter informatie. Probeer het later opnieuw.",
     "MessageLinkYourSupporterKey": "Koppel uw supporters sleutel met maximaal {0} Emby Connect leden om te genieten van gratis toegang tot de volgende apps:",
     "HeaderConfirmRemoveUser": "Gebruiker verwijderen",
-    "MessageSwipeDownOnRemoteControl": "Welkom bij de bediening op afstand. Veeg naar beneden ergens in dit scherm om terug te gaan naar waar je vandaan komt.",
+    "MessageSwipeDownOnRemoteControl": "Welcome to remote control. Select the device to control by clicking the cast icon in the upper right corner. Swipe down anywhere on this screen to go back to where you came from.",
     "MessageConfirmRemoveConnectSupporter": "Bent u zeker dat u de extra supporter voordelen van deze gebruiker wilt verwijderen?",
     "ValueTimeLimitSingleHour": "Tijdslimiet: 1 uur",
     "ValueTimeLimitMultiHour": "Tijdslimiet: {0} uren",
@@ -432,6 +432,7 @@
     "HeaderVideo": "Video",
     "HeaderRuntime": "Speelduur",
     "HeaderCommunityRating": "Gemeenschap cijfer",
+    "HeaderPasswordReset": "Wachtwoord resetten",
     "HeaderParentalRating": "Kijkwijzer classificatie",
     "HeaderReleaseDate": "Uitgave datum",
     "HeaderDateAdded": "Datum toegevoegd",
@@ -755,5 +756,11 @@
     "SyncJobItemStatusRemovedFromDevice": "Van apparaat verwijderd",
     "SyncJobItemStatusCancelled": "Geannuleerd",
     "LabelProfile": "profiel:",
-    "LabelBitrateMbps": "Bitrate (Mbps):"
+    "LabelBitrateMbps": "Bitrate (Mbps):",
+    "EmbyIntroDownloadMessage": "To download and install Emby Server visit {0}.",
+    "ButtonNewServer": "New Server",
+    "ButtonSignInWithConnect": "Sign in with Emby Connect",
+    "HeaderNewServer": "New Server",
+    "MyDevice": "My Device",
+    "ButtonRemote": "Remote"
 }

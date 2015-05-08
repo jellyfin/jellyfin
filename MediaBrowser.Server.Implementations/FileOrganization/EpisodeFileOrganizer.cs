@@ -8,7 +8,6 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Naming.IO;
 using MediaBrowser.Server.Implementations.Library;
 using MediaBrowser.Server.Implementations.Logging;
 using System;
@@ -60,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             var namingOptions = ((LibraryManager) _libraryManager).GetNamingOptions();
             var resolver = new Naming.TV.EpisodeResolver(namingOptions, new PatternsLogger());
 
-            var episodeInfo = resolver.Resolve(path, FileInfoType.File) ??
+            var episodeInfo = resolver.Resolve(path, false) ??
                 new Naming.TV.EpisodeInfo();
 
             var seriesName = episodeInfo.SeriesName;

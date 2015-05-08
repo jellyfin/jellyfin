@@ -26,14 +26,7 @@ namespace MediaBrowser.Dlna.Profiles
                }
             };
 
-            XmlRootAttributes = new[]
-            {
-                new XmlAttribute
-                {
-                    Name = "xmlns:pv",
-                    Value = "http://www.pv.com/pvns/"
-                }
-            };
+            AddXmlRootAttribute("xmlns:pv", "http://www.pv.com/pvns/");
 
             TimelineOffsetSeconds = 10;
 

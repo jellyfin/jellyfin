@@ -906,38 +906,6 @@ namespace MediaBrowser.Controller.Entities
         /// <value>The provider ids.</value>
         public Dictionary<string, string> ProviderIds { get; set; }
 
-        /// <summary>
-        /// Override this to false if class should be ignored for indexing purposes
-        /// </summary>
-        /// <value><c>true</c> if [include in index]; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public virtual bool IncludeInIndex
-        {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// Override this to true if class should be grouped under a container in indicies
-        /// The container class should be defined via IndexContainer
-        /// </summary>
-        /// <value><c>true</c> if [group in index]; otherwise, <c>false</c>.</value>
-        [IgnoreDataMember]
-        public virtual bool GroupInIndex
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// Override this to return the folder that should be used to construct a container
-        /// for this item in an index.  GroupInIndex should be true as well.
-        /// </summary>
-        /// <value>The index container.</value>
-        [IgnoreDataMember]
-        public virtual Folder IndexContainer
-        {
-            get { return null; }
-        }
-
         [IgnoreDataMember]
         public virtual Folder LatestItemsIndexContainer
         {

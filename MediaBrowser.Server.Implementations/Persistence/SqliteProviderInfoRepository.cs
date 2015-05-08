@@ -1,32 +1,27 @@
-﻿using System.Text;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
-    public class SqliteProviderInfoRepository : IProviderRepository
+    public class SqliteProviderInfoRepository : BaseSqliteRepository, IProviderRepository
     {
         private IDbConnection _connection;
-
-        private readonly ILogger _logger;
 
         private IDbCommand _saveStatusCommand;
         private readonly IApplicationPaths _appPaths;
 
-        public SqliteProviderInfoRepository(IApplicationPaths appPaths, ILogManager logManager)
+        public SqliteProviderInfoRepository(ILogManager logManager, IApplicationPaths appPaths) : base(logManager)
         {
             _appPaths = appPaths;
-            _logger = logManager.GetLogger(GetType().Name);
         }
-
-        private SqliteShrinkMemoryTimer _shrinkMemoryTimer;
 
         /// <summary>
         /// Gets the name of the repository
@@ -48,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var dbFile = Path.Combine(_appPaths.DataPath, "refreshinfo.db");
 
-            _connection = await SqliteExtensions.ConnectToDb(dbFile, _logger).ConfigureAwait(false);
+            _connection = await SqliteExtensions.ConnectToDb(dbFile, Logger).ConfigureAwait(false);
 
             string[] queries = {
 
@@ -61,13 +56,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "pragma shrink_memory"
                                };
 
-            _connection.RunQueries(queries, _logger);
+            _connection.RunQueries(queries, Logger);
 
             AddItemDateModifiedCommand();
 
             PrepareStatements();
-
-            _shrinkMemoryTimer = new SqliteShrinkMemoryTimer(_connection, _writeLock, _logger);
         }
 
         private static readonly string[] StatusColumns =
@@ -113,14 +106,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             builder.AppendLine("alter table MetadataStatus");
             builder.AppendLine("add column ItemDateModified DateTime NULL");
 
-            _connection.RunQueries(new[] { builder.ToString() }, _logger);
+            _connection.RunQueries(new[] { builder.ToString() }, Logger);
         }
         
-        /// <summary>
-        /// The _write lock
-        /// </summary>
-        private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
-
         /// <summary>
         /// Prepares the statements.
         /// </summary>
@@ -227,7 +215,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await WriteLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             IDbTransaction transaction = null;
 
@@ -264,7 +252,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
             catch (Exception e)
             {
-                _logger.ErrorException("Failed to save provider info:", e);
+                Logger.ErrorException("Failed to save provider info:", e);
 
                 if (transaction != null)
                 {
@@ -280,55 +268,21 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     transaction.Dispose();
                 }
 
-                _writeLock.Release();
+                WriteLock.Release();
             }
         }
 
-        /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        public void Dispose()
+        protected override void CloseConnection()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private readonly object _disposeLock = new object();
-
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources.
-        /// </summary>
-        /// <param name="dispose"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool dispose)
-        {
-            if (dispose)
+            if (_connection != null)
             {
-                try
+                if (_connection.IsOpen())
                 {
-                    lock (_disposeLock)
-                    {
-                        if (_shrinkMemoryTimer != null)
-                        {
-                            _shrinkMemoryTimer.Dispose();
-                            _shrinkMemoryTimer = null;
-                        }
-
-                        if (_connection != null)
-                        {
-                            if (_connection.IsOpen())
-                            {
-                                _connection.Close();
-                            }
-
-                            _connection.Dispose();
-                            _connection = null;
-                        }
-                    }
+                    _connection.Close();
                 }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error disposing database", ex);
-                }
+
+                _connection.Dispose();
+                _connection = null;
             }
         }
     }

@@ -46,7 +46,7 @@
     "MessageErrorLoadingSupporterInfo": "Se present\u00f3 un error al cargar la informaci\u00f3n del aficionado. Por favor int\u00e9ntelo m\u00e1s tarde.",
     "MessageLinkYourSupporterKey": "Enlaza tu clave de aficionado con hasta {0} miembros de Emby Connect para disfrutar de acceso gratuito a la siguientes aplicaciones:",
     "HeaderConfirmRemoveUser": "Eliminar Usuario",
-    "MessageSwipeDownOnRemoteControl": "Bienvenido a control remoto. Deslice hacia abajo en cualquier parte de esta pantalla para regresar al sitio anterior.",
+    "MessageSwipeDownOnRemoteControl": "Welcome to remote control. Select the device to control by clicking the cast icon in the upper right corner. Swipe down anywhere on this screen to go back to where you came from.",
     "MessageConfirmRemoveConnectSupporter": "\u00bfEst\u00e1 seguro de querer eliminar los beneficios adicionales de aficionado de este usuario?",
     "ValueTimeLimitSingleHour": "L\u00edmite de tiempo: 1 hora",
     "ValueTimeLimitMultiHour": "L\u00edmite de tiempo: {0} horas",
@@ -432,6 +432,7 @@
     "HeaderVideo": "Video",
     "HeaderRuntime": "Duraci\u00f3n",
     "HeaderCommunityRating": "Calificaci\u00f3n de la comunidad",
+    "HeaderPasswordReset": "Restablecer Contrase\u00f1a",
     "HeaderParentalRating": "Clasificaci\u00f3n parental",
     "HeaderReleaseDate": "Fecha de estreno",
     "HeaderDateAdded": "Fecha de adici\u00f3n",
@@ -755,5 +756,11 @@
     "SyncJobItemStatusRemovedFromDevice": "Eliminado del dispositivo",
     "SyncJobItemStatusCancelled": "Cancelado",
     "LabelProfile": "Perf\u00edl:",
-    "LabelBitrateMbps": "Tasa de bits (Mbps):"
+    "LabelBitrateMbps": "Tasa de bits (Mbps):",
+    "EmbyIntroDownloadMessage": "To download and install Emby Server visit {0}.",
+    "ButtonNewServer": "New Server",
+    "ButtonSignInWithConnect": "Sign in with Emby Connect",
+    "HeaderNewServer": "New Server",
+    "MyDevice": "My Device",
+    "ButtonRemote": "Remote"
 }
