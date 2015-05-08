@@ -1498,7 +1498,7 @@ var AppInfo = {};
             }
         }
 
-        if (!AppInfo.hasLowImageBandwidth || !isCordova) {
+        if (!AppInfo.hasLowImageBandwidth) {
             AppInfo.enableLatestChannelItems = true;
             AppInfo.enableStudioTabs = true;
             AppInfo.enablePeopleTabs = true;
