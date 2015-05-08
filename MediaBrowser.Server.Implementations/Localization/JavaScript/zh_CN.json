@@ -46,7 +46,7 @@
     "MessageErrorLoadingSupporterInfo": "There was an error loading supporter information. Please try again later.",
     "MessageLinkYourSupporterKey": "Link your supporter key with up to {0} Emby Connect members to enjoy free access to the following apps:",
     "HeaderConfirmRemoveUser": "Remove User",
-    "MessageSwipeDownOnRemoteControl": "Welcome to remote control. Swipe down anywhere on this screen to go back to where you came from.",
+    "MessageSwipeDownOnRemoteControl": "Welcome to remote control. Select the device to control by clicking the cast icon in the upper right corner. Swipe down anywhere on this screen to go back to where you came from.",
     "MessageConfirmRemoveConnectSupporter": "Are you sure you wish to remove additional supporter benefits from this user?",
     "ValueTimeLimitSingleHour": "Time limit: 1 hour",
     "ValueTimeLimitMultiHour": "Time limit: {0} hours",
@@ -432,6 +432,7 @@
     "HeaderVideo": "\u89c6\u9891",
     "HeaderRuntime": "\u64ad\u653e\u65f6\u95f4",
     "HeaderCommunityRating": "\u516c\u4f17\u8bc4\u5206",
+    "HeaderPasswordReset": "\u5bc6\u7801\u91cd\u7f6e",
     "HeaderParentalRating": "\u5bb6\u957f\u5206\u7ea7",
     "HeaderReleaseDate": "\u53d1\u884c\u65e5\u671f",
     "HeaderDateAdded": "\u52a0\u5165\u65e5\u671f",
@@ -755,5 +756,11 @@
     "SyncJobItemStatusRemovedFromDevice": "Removed from device",
     "SyncJobItemStatusCancelled": "Cancelled",
     "LabelProfile": "Profile:",
-    "LabelBitrateMbps": "Bitrate (Mbps):"
+    "LabelBitrateMbps": "Bitrate (Mbps):",
+    "EmbyIntroDownloadMessage": "To download and install Emby Server visit {0}.",
+    "ButtonNewServer": "New Server",
+    "ButtonSignInWithConnect": "Sign in with Emby Connect",
+    "HeaderNewServer": "New Server",
+    "MyDevice": "My Device",
+    "ButtonRemote": "Remote"
 }

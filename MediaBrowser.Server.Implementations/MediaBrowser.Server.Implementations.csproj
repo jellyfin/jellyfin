@@ -421,7 +421,9 @@
     <EmbeddedResource Include="Localization\JavaScript\uk.json" />
     <EmbeddedResource Include="Localization\Server\bg_BG.json" />
     <EmbeddedResource Include="Localization\Server\uk.json" />
-    <None Include="Localization\JavaScript\sl_SI.json" />
+    <EmbeddedResource Include="Localization\JavaScript\be_BY.json" />
+    <EmbeddedResource Include="Localization\JavaScript\hu.json" />
+    <EmbeddedResource Include="Localization\JavaScript\sl_SI.json" />
     <EmbeddedResource Include="Localization\Server\sl_SI.json" />
     <None Include="packages.config" />
   </ItemGroup>

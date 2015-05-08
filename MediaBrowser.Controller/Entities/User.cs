@@ -283,5 +283,17 @@ namespace MediaBrowser.Controller.Entities
 
             return hour >= schedule.StartHour && hour <= schedule.EndHour;
         }
+
+        public bool IsFolderGrouped(Guid id)
+        {
+            var config = Configuration;
+
+            if (config.ExcludeFoldersFromGrouping != null)
+            {
+                return !config.ExcludeFoldersFromGrouping.Select(i => new Guid(i)).Contains(id);
+            }
+
+            return config.GroupedFolders.Select(i => new Guid(i)).Contains(id);
+        }
     }
 }
