@@ -13,7 +13,7 @@ namespace MediaBrowser.Dlna.PlayTo
     public class SsdpHttpClient
     {
         private const string USERAGENT = "Microsoft-Windows/6.2 UPnP/1.0 Microsoft-DLNA DLNADOC/1.50";
-        private const string FriendlyName = "MediaBrowser";
+        private const string FriendlyName = "Emby";
 
         private readonly IHttpClient _httpClient;
         private readonly IServerConfigurationManager _config;

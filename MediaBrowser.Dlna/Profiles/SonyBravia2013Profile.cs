@@ -26,14 +26,7 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
-            XmlRootAttributes = new[]
-            {
-                new XmlAttribute
-                {
-                    Name = "xmlns:av",
-                    Value = "urn:schemas-sony-com:av"
-                }
-            };
+            AddXmlRootAttribute("xmlns:av", "urn:schemas-sony-com:av");
 
             AlbumArtPn = "JPEG_TN";
 

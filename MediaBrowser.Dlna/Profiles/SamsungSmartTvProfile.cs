@@ -27,14 +27,7 @@ namespace MediaBrowser.Dlna.Profiles
                 }
             };
 
-            XmlRootAttributes = new[]
-            {
-                new XmlAttribute
-                {
-                    Name = "xmlns:sec",
-                    Value = "http://www.sec.co.kr/"
-                }
-            };
+            AddXmlRootAttribute("xmlns:sec", "http://www.sec.co.kr/");
 
             TranscodingProfiles = new[]
            {

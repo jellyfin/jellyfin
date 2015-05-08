@@ -14,6 +14,15 @@ namespace MediaBrowser.Providers.Manager
             bool replaceData, 
             bool mergeMetadataSettings)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException("source");
+            }
+            if (target == null)
+            {
+                throw new ArgumentNullException("target");
+            }
+
             if (!lockedFields.Contains(MetadataFields.Name))
             {
                 if (replaceData || string.IsNullOrEmpty(target.Name))
