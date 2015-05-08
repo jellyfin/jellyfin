@@ -1489,7 +1489,6 @@ var AppInfo = {};
 
             if (isCordova) {
                 AppInfo.enableBottomTabs = true;
-                AppInfo.resetOnLibraryChange = true;
             }
         }
         else {
@@ -1499,7 +1498,7 @@ var AppInfo = {};
             }
         }
 
-        if (!AppInfo.hasLowImageBandwidth) {
+        if (!AppInfo.hasLowImageBandwidth || !isCordova) {
             AppInfo.enableLatestChannelItems = true;
             AppInfo.enableStudioTabs = true;
             AppInfo.enablePeopleTabs = true;

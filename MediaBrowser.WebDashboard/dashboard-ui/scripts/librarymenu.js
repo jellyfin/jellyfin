@@ -317,9 +317,11 @@
 
                 html += Globalize.translate('ButtonHome');
                 html += '</a>';
-
-                html += '<div class="libraryMenuDivider"></div>';
             }
+
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="dashboard" data-rel="none" href="nowplaying.html"><span class="fa fa-tablet sidebarLinkIcon"></span>' + Globalize.translate('ButtonRemote') + '</a>';
+
+            html += '<div class="libraryMenuDivider"></div>';
 
             html += getViewsHtml();
             html += '</div>';

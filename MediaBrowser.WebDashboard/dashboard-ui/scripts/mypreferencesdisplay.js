@@ -13,7 +13,9 @@
 
             currentHtml += '<label for="' + id + '">' + i.Name + '</label>';
 
-            var isChecked = user.Configuration.ExcludeFoldersFromGrouping.indexOf(i.Id) == -1;
+            var isChecked = (user.Configuration.ExcludeFoldersFromGrouping != null && user.Configuration.ExcludeFoldersFromGrouping.indexOf(i.Id) == -1) ||
+                user.Configuration.GroupedFolders.indexOf(i.Id) != -1;
+
             var checkedHtml = isChecked ? ' checked="checked"' : '';
 
             currentHtml += '<input class="chkGroupFolder" data-folderid="' + i.Id + '" type="checkbox" id="' + id + '"' + checkedHtml + ' />';
@@ -209,7 +211,9 @@
             return i.getAttribute('data-folderid');
         });
 
-        user.Configuration.ExcludeFoldersFromGrouping = $(".chkGroupFolder:not(:checked)", page).get().map(function (i) {
+        user.Configuration.ExcludeFoldersFromGrouping = null;
+
+        user.Configuration.GroupedFolders = $(".chkGroupFolder:checked", page).get().map(function (i) {
 
             return i.getAttribute('data-folderid');
         });

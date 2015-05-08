@@ -1594,6 +1594,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
 
+        private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
+
         public async Task<UserView> GetNamedView(User user,
             string name,
             string viewType,
@@ -1645,13 +1647,18 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (!refresh && item != null)
             {
-                refresh = (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 24;
+                refresh = (DateTime.UtcNow - item.DateLastSaved) >= _viewRefreshInterval;
             }
 
             if (refresh)
             {
                 await item.UpdateToRepository(ItemUpdateType.MetadataImport, CancellationToken.None).ConfigureAwait(false);
-                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions());
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions
+                {
+                    // Not sure why this is necessary but need to figure it out
+                    // View images are not getting utilized without this
+                    ForceSave = true
+                });
             }
 
             return item;
@@ -1731,7 +1738,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }
 
-            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved).TotalHours >= 24;
+            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved) >= _viewRefreshInterval;
 
             if (refresh)
             {

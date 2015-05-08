@@ -246,6 +246,21 @@
     background-position: center center;
 }
 
+.iconCardImage {
+    text-align: center;
+    position: relative;
+}
+
+.cardImage .fa {
+    color: rgb(255, 255, 255);
+    position: absolute;
+    left: 0;
+    right: 0;
+    font-size: 50px;
+    margin: auto;
+    top: 25%;
+}
+
 .bannerCard {
     width: 100%;
 }

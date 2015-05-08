@@ -615,12 +615,14 @@
 
     function showIntro() {
 
-        if (store.getItem('remotecontrolswipedown') != '1') {
+        var expected = '2';
+
+        if (store.getItem('remotecontrolswipedown') != expected) {
             Dashboard.alert({
                 message: Globalize.translate('MessageSwipeDownOnRemoteControl'),
                 title: Globalize.translate('HeaderAlert')
             });
-            store.setItem('remotecontrolswipedown', '1');
+            store.setItem('remotecontrolswipedown', expected);
         }
 
     }

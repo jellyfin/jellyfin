@@ -32,6 +32,7 @@ namespace MediaBrowser.Model.Configuration
         public string[] DisplayChannelsWithinViews { get; set; }
 
         public string[] ExcludeFoldersFromGrouping { get; set; }
+        public string[] GroupedFolders { get; set; }
 
         public SubtitlePlaybackMode SubtitleMode { get; set; }
         public bool DisplayCollectionsView { get; set; }
@@ -62,12 +63,13 @@ namespace MediaBrowser.Model.Configuration
             OrderedViews = new string[] { };
             DisplayChannelsWithinViews = new string[] { };
 
-            ExcludeFoldersFromGrouping = new string[] { };
             PlainFolderViews = new string[] { };
             DisplayCollectionsView = true;
 
             IncludeTrailersInSuggestions = true;
             EnableCinemaMode = true;
+
+            GroupedFolders = new string[] { };
         }
     }
 }
