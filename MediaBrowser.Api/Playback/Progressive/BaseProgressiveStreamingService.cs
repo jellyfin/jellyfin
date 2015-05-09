@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Globalization;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
@@ -287,7 +288,9 @@ namespace MediaBrowser.Api.Playback.Progressive
 
             var contentType = state.GetMimeType(outputPath);
 
-            var contentLength = state.EstimateContentLength ? GetEstimatedContentLength(state) : null;
+            // TODO: The isHeadRequest is only here because ServiceStack will add Content-Length=0 to the response
+            // What we really want to do is hunt that down and remove that
+            var contentLength = state.EstimateContentLength || isHeadRequest ? GetEstimatedContentLength(state) : null;
 
             if (contentLength.HasValue)
             {
@@ -299,10 +302,14 @@ namespace MediaBrowser.Api.Playback.Progressive
             {
                 var streamResult = ResultFactory.GetResult(new byte[] { }, contentType, responseHeaders);
 
-                if (!contentLength.HasValue)
+                var hasOptions = streamResult as IHasOptions;
+                if (hasOptions != null)
                 {
-                    var hasOptions = streamResult as IHasOptions;
-                    if (hasOptions != null)
+                    if (contentLength.HasValue)
+                    {
+                        hasOptions.Options["Content-Length"] = contentLength.Value.ToString(CultureInfo.InvariantCulture);
+                    }
+                    else
                     {
                         if (hasOptions.Options.ContainsKey("Content-Length"))
                         {

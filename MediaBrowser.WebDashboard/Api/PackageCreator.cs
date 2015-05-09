@@ -220,9 +220,7 @@ namespace MediaBrowser.WebDashboard.Api
             var files = new[]
                             {
                                 "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.css",
-                                "thirdparty/swipebox-master/css/swipebox.min.css" + versionString,
                                 "thirdparty/fontawesome/css/font-awesome.min.css" + versionString,
-                                "thirdparty/jstree3.0.8/themes/default/style.min.css",
                                 "css/all.css" + versionString
                             };
 
@@ -245,8 +243,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new List<string>
             {
-                "scripts/all.js" + versionString,
-                "thirdparty/swipebox-master/js/jquery.swipebox.min.js" + versionString
+                "scripts/all.js" + versionString
             };
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
@@ -274,16 +271,12 @@ namespace MediaBrowser.WebDashboard.Api
             await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
             await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.js", newLineBytes).ConfigureAwait(false);
 
-            await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
-
-            await AppendResource(memoryStream, "thirdparty/cast_sender.js", newLineBytes).ConfigureAwait(false);
             await AppendResource(memoryStream, "thirdparty/browser.js", newLineBytes).ConfigureAwait(false);
 
-            await AppendResource(memoryStream, "thirdparty/jstree3.0.8/jstree.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/require.js", newLineBytes).ConfigureAwait(false);
 
-            await AppendResource(memoryStream, "thirdparty/fastclick.js", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/headroom.js", newLineBytes).ConfigureAwait(false);
-            
+            await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
+
             await AppendLocalization(memoryStream, culture).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
