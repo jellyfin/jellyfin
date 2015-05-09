@@ -941,35 +941,32 @@
 
         }
 
-        self.getNowPlayingNameHtml = function (playerState) {
+        self.getPosterUrl = function (item) {
 
-            var nowPlayingItem = playerState.NowPlayingItem;
-            var topText = nowPlayingItem.Name;
+            var screenWidth = Math.max(screen.height, screen.width);
 
-            if (nowPlayingItem.MediaType == 'Video') {
-                if (nowPlayingItem.IndexNumber != null) {
-                    topText = nowPlayingItem.IndexNumber + " - " + topText;
-                }
-                if (nowPlayingItem.ParentIndexNumber != null) {
-                    topText = nowPlayingItem.ParentIndexNumber + "." + topText;
-                }
+            if (item.BackdropImageTags && item.BackdropImageTags.length) {
+
+                return ApiClient.getScaledImageUrl(item.Id, {
+                    type: "Backdrop",
+                    index: 0,
+                    maxWidth: screenWidth,
+                    tag: item.BackdropImageTags[0]
+                });
+
+            }
+            else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
+
+                return ApiClient.getScaledImageUrl(item.ParentBackdropItemId, {
+                    type: 'Backdrop',
+                    index: 0,
+                    maxWidth: screenWidth,
+                    tag: item.ParentBackdropImageTags[0]
+                });
+
             }
 
-            var bottomText = '';
-
-            if (nowPlayingItem.Artists && nowPlayingItem.Artists.length) {
-                bottomText = topText;
-                topText = nowPlayingItem.Artists[0];
-            }
-            else if (nowPlayingItem.SeriesName || nowPlayingItem.Album) {
-                bottomText = topText;
-                topText = nowPlayingItem.SeriesName || nowPlayingItem.Album;
-            }
-            else if (nowPlayingItem.ProductionYear) {
-                bottomText = nowPlayingItem.ProductionYear;
-            }
-
-            return bottomText ? topText + '<br/>' + bottomText : topText;
+            return null;
         };
 
         self.displayContent = function (options) {
@@ -1676,6 +1673,7 @@
 
                 this.src = audioUrl;
                 this.volume = initialVolume;
+                this.poster = self.getPosterUrl(item);
                 this.play();
 
             }).on("volumechange.mediaplayerevent", function () {

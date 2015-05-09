@@ -175,9 +175,12 @@
 
         index = Math.max(index || 0, 0);
 
-        $.swipebox(slideshowItems, {
-            initialIndexOnArray: index,
-            hideBarsDelay: 30000
+        Dashboard.loadSwipebox().done(function() {
+            
+            $.swipebox(slideshowItems, {
+                initialIndexOnArray: index,
+                hideBarsDelay: 30000
+            });
         });
     }
 

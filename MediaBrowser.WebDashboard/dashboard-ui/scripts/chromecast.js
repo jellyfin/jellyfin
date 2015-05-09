@@ -30,10 +30,6 @@
 
     var messageNamespace = 'urn:x-cast:com.google.cast.mediabrowser.v3';
 
-    var cPlayer = {
-        deviceState: DEVICE_STATE.IDLE
-    };
-
     var CastPlayer = function () {
 
         /* device variables */
@@ -531,7 +527,7 @@
     };
 
     // Create Cast Player
-    var castPlayer = new CastPlayer();
+    var castPlayer;
 
     function chromecastPlayer() {
 
@@ -843,15 +839,27 @@
         };
     }
 
-    MediaController.registerPlayer(new chromecastPlayer());
+    function initializeChromecast() {
 
-    $(MediaController).on('playerchange', function () {
+        castPlayer = new CastPlayer();
 
-        if (MediaController.getPlayerInfo().name == PlayerName) {
-            if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
-                castPlayer.launchApp();
+        MediaController.registerPlayer(new chromecastPlayer());
+
+        $(MediaController).on('playerchange', function () {
+
+            if (MediaController.getPlayerInfo().name == PlayerName) {
+                if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
+                    castPlayer.launchApp();
+                }
             }
-        }
-    });
+        });
+    }
+
+    if ($.browser.chrome) {
+        requirejs(["thirdparty/cast_sender"], function () {
+
+            initializeChromecast();
+        });
+    }
 
 })(window, window.chrome, console);

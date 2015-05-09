@@ -1460,6 +1460,20 @@ var Dashboard = {
             deviceName: deviceName,
             deviceId: deviceId
         };
+    },
+
+    loadSwipebox: function() {
+        
+        var deferred = DeferredBuilder.Deferred();
+
+        require([
+            'thirdparty/swipebox-master/js/jquery.swipebox.min',
+            'css!thirdparty/swipebox-master/css/swipebox.min'
+        ], function () {
+
+            deferred.resolve();
+        });
+        return deferred.promise();
     }
 };
 
@@ -1583,12 +1597,16 @@ var AppInfo = {};
 
     function initFastClick() {
 
-        FastClick.attach(document.body);
+        requirejs(["thirdparty/fastclick"], function (FastClick) {
 
-        // Have to work around this issue of fast click breaking the panel dismiss
-        $(document.body).on('touchstart', '.ui-panel-dismiss', function () {
-            $(this).trigger('click');
+            FastClick.attach(document.body);
+
+            // Have to work around this issue of fast click breaking the panel dismiss
+            $(document.body).on('touchstart', '.ui-panel-dismiss', function () {
+                $(this).trigger('click');
+            });
         });
+
     }
 
     function onReady() {
@@ -1725,10 +1743,17 @@ var AppInfo = {};
             var apiClient = ConnectionManager.currentApiClient();
 
             // Close the connection gracefully when possible
-            if (apiClient && apiClient.isWebSocketOpen() && !MediaPlayer.isPlaying()) {
+            if (apiClient && apiClient.isWebSocketOpen()) {
 
-                console.log('Sending close web socket command');
-                apiClient.closeWebSocket();
+                var localActivePlayers = MediaController.getPlayers().filter(function (p) {
+
+                    return p.isLocalPlayer && p.isPlaying();
+                });
+
+                if (!localActivePlayers.length) {
+                    console.log('Sending close web socket command');
+                    apiClient.closeWebSocket();
+                }
             }
         });
 
@@ -1740,6 +1765,19 @@ var AppInfo = {};
             return false;
         });
     }
+
+    requirejs.config({
+        map: {
+            '*': {
+                'css': 'thirdparty/requirecss' // or whatever the path to require-css is
+            }
+        }
+    });
+
+    // Required since jQuery is loaded before requireJs
+    define('jquery', [], function () {
+        return jQuery;
+    });
 
     setAppInfo();
     createConnectionManager();

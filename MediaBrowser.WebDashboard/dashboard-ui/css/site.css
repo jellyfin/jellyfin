@@ -624,7 +624,7 @@ h1 .imageLink {
 }
 
 .footerOverBottomTabs {
-    bottom: 50px;
+    bottom: 51px !important;
 }
 
 .footerNotification {

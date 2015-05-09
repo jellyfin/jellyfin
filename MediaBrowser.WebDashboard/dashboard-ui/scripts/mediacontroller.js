@@ -137,6 +137,10 @@
 
         };
 
+        self.getPlayers = function() {
+            return players;
+        };
+
         self.getTargets = function () {
 
             var deferred = $.Deferred();
@@ -382,6 +386,37 @@
                         break;
                     }
             }
+        };
+
+        // TOOD: This doesn't really belong here
+        self.getNowPlayingNameHtml = function (nowPlayingItem) {
+
+            var topText = nowPlayingItem.Name;
+
+            if (nowPlayingItem.MediaType == 'Video') {
+                if (nowPlayingItem.IndexNumber != null) {
+                    topText = nowPlayingItem.IndexNumber + " - " + topText;
+                }
+                if (nowPlayingItem.ParentIndexNumber != null) {
+                    topText = nowPlayingItem.ParentIndexNumber + "." + topText;
+                }
+            }
+
+            var bottomText = '';
+
+            if (nowPlayingItem.Artists && nowPlayingItem.Artists.length) {
+                bottomText = topText;
+                topText = nowPlayingItem.Artists[0];
+            }
+            else if (nowPlayingItem.SeriesName || nowPlayingItem.Album) {
+                bottomText = topText;
+                topText = nowPlayingItem.SeriesName || nowPlayingItem.Album;
+            }
+            else if (nowPlayingItem.ProductionYear) {
+                bottomText = nowPlayingItem.ProductionYear;
+            }
+
+            return bottomText ? topText + '<br/>' + bottomText : topText;
         };
     }
 

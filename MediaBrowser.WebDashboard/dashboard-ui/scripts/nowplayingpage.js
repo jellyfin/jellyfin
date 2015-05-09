@@ -521,7 +521,7 @@
 
         var item = state.NowPlayingItem;
 
-        $('.itemName', page).html(item ? MediaPlayer.getNowPlayingNameHtml(state) : '');
+        $('.itemName', page).html(item ? MediaController.getNowPlayingNameHtml(item) : '');
 
         var url;
 

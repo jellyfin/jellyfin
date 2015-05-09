@@ -545,13 +545,18 @@
         if (AppInfo.enableBottomTabs) {
             $('.libraryViewNav', page).addClass('bottomLibraryViewNav');
             $(page).addClass('noSecondaryNavPage');
+
+            $(function() {
+
+                $('.footer').addClass('footerOverBottomTabs');
+            });
+
         } else {
 
             $('.libraryViewNav', page).each(function () {
 
                 initHeadRoom(this);
             });
-
         }
 
     }).on('pageshow', ".libraryPage", function () {
@@ -574,10 +579,13 @@
             return;
         }
 
-        // construct an instance of Headroom, passing the element
-        var headroom = new Headroom(elem);
-        // initialise
-        headroom.init();
+        requirejs(["thirdparty/headroom"], function () {
+
+            // construct an instance of Headroom, passing the element
+            var headroom = new Headroom(elem);
+            // initialise
+            headroom.init();
+        });
     }
 
     function initializeApiClient(apiClient) {

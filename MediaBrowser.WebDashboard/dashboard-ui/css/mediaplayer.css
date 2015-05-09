@@ -1,7 +1,7 @@
 ﻿/* Now playing bar */
 .nowPlayingBar {
     padding: 16px 0 16px 0;
-    border-top: 2px solid green;
+    border-top: 1px solid #444;
     text-align: center;
 }
 

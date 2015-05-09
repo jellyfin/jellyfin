@@ -420,13 +420,16 @@
         }
 
         if (AppInfo.enableHeadRoom) {
-            $('.tvGuideHeader', page).each(function () {
+            requirejs(["thirdparty/headroom"], function () {
 
-                // construct an instance of Headroom, passing the element
-                var headroom = new Headroom(this);
-                // initialise
-                headroom.init();
+                $('.tvGuideHeader', page).each(function () {
 
+                    // construct an instance of Headroom, passing the element
+                    var headroom = new Headroom(this);
+                    // initialise
+                    headroom.init();
+
+                });
             });
         }
 

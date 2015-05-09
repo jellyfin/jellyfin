@@ -327,7 +327,7 @@
             }
 
             var nowPlayingTextElement = $('.nowPlayingText', mediaControls);
-            var nameHtml = self.getNowPlayingNameHtml(state);
+            var nameHtml = MediaController.getNowPlayingNameHtml(state.NowPlayingItem);
 
             if (nameHtml.indexOf('<br/>') != -1) {
                 nowPlayingTextElement.addClass('nowPlayingDoubleText');
@@ -976,31 +976,8 @@
                 return s.Type == 'Subtitle';
             });
 
-            // Get Video Poster (Code from librarybrowser.js)
-            var screenWidth = Math.max(screen.height, screen.width);
-            var posterCode = '';
-
-            if (item.BackdropImageTags && item.BackdropImageTags.length) {
-
-                posterCode = ' poster="' + ApiClient.getScaledImageUrl(item.Id, {
-                    type: "Backdrop",
-                    index: 0,
-                    maxWidth: screenWidth,
-                    tag: item.BackdropImageTags[0]
-                }) + '"';
-
-            }
-            else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
-
-                posterCode = ' poster="' + ApiClient.getScaledImageUrl(item.ParentBackdropItemId, {
-                    type: 'Backdrop',
-                    index: 0,
-                    maxWidth: screenWidth,
-                    tag: item.ParentBackdropImageTags[0]
-                }) + '"';
-
-            }
-
+            var posterCode = self.getPosterUrl(item);
+            posterCode = posterCode ? (' poster="' + posterCode + '"') : '';
             //======================================================================================>
 
             // Create video player
