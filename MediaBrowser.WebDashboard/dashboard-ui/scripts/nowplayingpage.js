@@ -386,6 +386,8 @@
             MediaController.removeFromPlaylist(index);
             loadPlaylist(page);
         });
+
+        $(page).on('click', '.mediaItem', onListItemClick);
     }
 
     function onPlaybackStart(e, state) {
@@ -524,6 +526,7 @@
         $('.itemName', page).html(item ? MediaController.getNowPlayingNameHtml(item) : '');
 
         var url;
+        var backdropUrl = null;
 
         if (!item) {
         }
@@ -557,7 +560,20 @@
             return;
         }
 
+        if (item && item.BackdropImageTag) {
+
+            backdropUrl = ApiClient.getScaledImageUrl(item.BackdropItemId, {
+                type: "Backdrop",
+                maxWidth: $(window).width(),
+                tag: item.BackdropImageTag,
+                index: 0
+            });
+
+        }
+
         setImageUrl(page, url);
+
+        Backdrops.setBackdropUrl(page, backdropUrl);
     }
 
     function setImageUrl(page, url) {
@@ -631,37 +647,72 @@
 
         var html = '';
 
-        //ApiClient.getItems(Dashboard.getCurrentUserId(), {
+        ApiClient.getItems(Dashboard.getCurrentUserId(), {
 
-        //    SortBy: "SortName",
-        //    SortOrder: "Ascending",
-        //    IncludeItemTypes: "Audio",
-        //    Recursive: true,
-        //    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,IsUnidentified,SyncInfo",
-        //    StartIndex: 0,
-        //    ImageTypeLimit: 1,
-        //    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
-        //    Limit: 100
+            SortBy: "SortName",
+            SortOrder: "Ascending",
+            IncludeItemTypes: "Audio",
+            Recursive: true,
+            Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,IsUnidentified,SyncInfo",
+            StartIndex: 0,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+            Limit: 100
 
-        //}).done(function (result) {
+        }).done(function (result) {
 
-        //    html += LibraryBrowser.getListViewHtml({
-        //        items: result.Items,
-        //        smallIcon: true,
-        //        defaultAction: 'setplaylistindex'
-        //    });
+            html += LibraryBrowser.getListViewHtml({
+                items: result.Items,
+                smallIcon: true
+            });
 
-        //    $(".playlist", page).html(html).trigger('create').lazyChildren();
-        //});
-
-        html += LibraryBrowser.getListViewHtml({
-            items: MediaController.playlist(),
-            smallIcon: true,
-            defaultAction: 'play'
+            $(".playlist", page).html(html).trigger('create').lazyChildren();
         });
+
+        //html += LibraryBrowser.getListViewHtml({
+        //    items: MediaController.playlist(),
+        //    smallIcon: true
+        //});
 
         $(".playlist", page).html(html).trigger('create').lazyChildren();
     }
+
+    function onListItemClick(e) {
+
+        var info = LibraryBrowser.getListItemInfo(this);
+
+        MediaController.currentPlaylistIndex(info.index);
+
+        return false;
+    }
+
+    function getBackdropUrl(item) {
+
+        var screenWidth = Math.max(screen.height, screen.width);
+
+        if (item.BackdropImageTags && item.BackdropImageTags.length) {
+
+            return ApiClient.getScaledImageUrl(item.Id, {
+                type: "Backdrop",
+                index: 0,
+                maxWidth: screenWidth,
+                tag: item.BackdropImageTags[0]
+            });
+
+        }
+        else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
+
+            return ApiClient.getScaledImageUrl(item.ParentBackdropItemId, {
+                type: 'Backdrop',
+                index: 0,
+                maxWidth: screenWidth,
+                tag: item.ParentBackdropImageTags[0]
+            });
+
+        }
+
+        return null;
+    };
 
     $(document).on('pageinit', "#nowPlayingPage", function () {
 
@@ -672,6 +723,8 @@
     }).on('pageshow', "#nowPlayingPage", function () {
 
         var page = this;
+
+        currentImgUrl = null;
 
         var tab = getParameterByName('tab');
         if (tab) {

@@ -52,7 +52,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return ItemUpdateType.MetadataImport;
         }
 
-        private const string SchemaVersion = "2";
+        private const string SchemaVersion = "3";
 
         private async Task<Model.MediaInfo.MediaInfo> GetMediaInfo(BaseItem item, CancellationToken cancellationToken)
         {

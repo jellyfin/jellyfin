@@ -1493,6 +1493,10 @@
                     nowPlayingItem.BackdropItemId = item.Id;
                     nowPlayingItem.BackdropImageTag = item.BackdropImageTags[0];
                 }
+                else if (item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
+                    nowPlayingItem.BackdropItemId = item.ParentBackdropItemId;
+                    nowPlayingItem.BackdropImageTag = item.ParentBackdropImageTags[0];
+                }
 
                 if (imageTags.Thumb) {
 
@@ -1628,7 +1632,7 @@
                 return true;
             }
 
-            if ($.browser.android || ($.browser.webkit && !$.browser.chrome)) {
+            if ($.browser.mobile) {
                 return false;
             }
 

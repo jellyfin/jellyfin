@@ -59,7 +59,7 @@
                     url += "&height=" + (userButtonHeight * Math.max(devicePixelRatio || 1, 2));
                 }
 
-                html += '<img src="' + url + '" style="border-radius: 1000px; height:' + userButtonHeight + 'px;" />';
+                html += '<div class="lazy" data-src="' + url + '" style="width:' + userButtonHeight + 'px;height:' + userButtonHeight + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;"></div>';
             } else {
                 html += '<div class="fa fa-user"></div>';
             }
@@ -76,7 +76,7 @@
         html += '</div>';
 
         $(document.body).prepend(html);
-        $('.viewMenuBar').trigger('create');
+        $('.viewMenuBar').trigger('create').lazyChildren();
 
         $(document).trigger('headercreated');
         bindMenuEvents();
@@ -294,7 +294,7 @@
                         url += "&width=" + (imgWidth * Math.max(devicePixelRatio || 1, 2));
                     }
 
-                    html += '<img style="max-width:' + imgWidth + 'px;vertical-align:middle;margin-right:.8em;border-radius: 50px;" src="' + url + '" />';
+                    html += '<div class="lazy" data-src="' + url + '" style="width:' + imgWidth + 'px;height:' + imgWidth + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin-right:.8em;display:inline-block;"></div>';
                 } else {
                     html += '<span class="fa fa-user sidebarLinkIcon"></span>';
                 }
@@ -330,7 +330,7 @@
 
             $(document.body).append(html);
 
-            panel = $('#libraryPanel').panel({}).trigger('create');
+            panel = $('#libraryPanel').panel({}).lazyChildren().trigger('create');
 
             updateLibraryMenu();
         }
@@ -546,7 +546,7 @@
             $('.libraryViewNav', page).addClass('bottomLibraryViewNav');
             $(page).addClass('noSecondaryNavPage');
 
-            $(function() {
+            $(function () {
 
                 $('.footer').addClass('footerOverBottomTabs');
             });

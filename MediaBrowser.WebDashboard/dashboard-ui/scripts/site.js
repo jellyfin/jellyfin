@@ -645,7 +645,7 @@ var Dashboard = {
                     url += "&width=" + (imgWidth * Math.max(window.devicePixelRatio || 1, 2));
                 }
 
-                html += '<img style="max-width:' + imgWidth + 'px;vertical-align:middle;margin-right:.5em;border-radius: 50px;" src="' + url + '" />';
+                html += '<div class="lazy" data-src="' + url + '" style="width:' + imgWidth + 'px;height:' + imgWidth + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin-right:.8em;display:inline-block;"></div>';
             }
             html += user.name;
             html += '</h3>';
@@ -669,7 +669,7 @@ var Dashboard = {
 
             $(document.body).append(html);
 
-            var elem = $('#userFlyout').panel({}).trigger('create').panel("open").on("panelclose", function () {
+            var elem = $('#userFlyout').panel({}).lazyChildren().trigger('create').panel("open").on("panelclose", function () {
 
                 $(this).off("panelclose").remove();
             });
@@ -1363,7 +1363,7 @@ var Dashboard = {
 
         if (AppInfo.hasLowImageBandwidth) {
 
-            quality -= 20;
+            quality -= 10;
 
             if (isBackdrop) {
                 quality -= 10;
@@ -1383,8 +1383,6 @@ var Dashboard = {
                 name = "Chrome";
             } else if ($.browser.safari) {
                 name = "Safari";
-            } else if ($.browser.webkit) {
-                name = "WebKit";
             } else if ($.browser.msie) {
                 name = "Internet Explorer";
             } else if ($.browser.opera) {
@@ -1527,8 +1525,9 @@ var AppInfo = {};
             AppInfo.enableFooterNotifications = true;
         }
 
-        AppInfo.enableUserImage = !AppInfo.hasLowImageBandwidth || !isCordova;
-        AppInfo.enableHeaderImages = AppInfo.enableUserImage;
+        //AppInfo.enableUserImage = !AppInfo.hasLowImageBandwidth || !isCordova;
+        AppInfo.enableUserImage = true;
+        AppInfo.enableHeaderImages = !AppInfo.hasLowImageBandwidth || !isCordova;
     }
 
     function initializeApiClient(apiClient) {

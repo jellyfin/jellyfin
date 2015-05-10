@@ -76,6 +76,7 @@ namespace MediaBrowser.Model.Dlna
         public bool RequiresPlainFolders { get; set; }
 
         public bool EnableMSMediaReceiverRegistrar { get; set; }
+        public bool IgnoreTranscodeByteRangeRequests { get; set; }
 
         public XmlAttribute[] XmlRootAttributes { get; set; }
 

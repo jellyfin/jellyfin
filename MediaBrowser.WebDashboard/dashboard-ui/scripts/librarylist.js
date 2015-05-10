@@ -887,40 +887,13 @@
 
             itemsContainer.trigger('playallfromhere', [index]);
         }
-        else if (action == 'setplaylistindex') {
-
-            index = elemWithAttributes.getAttribute('data-index');
-
-            closeContextMenu();
-
-            MediaController.currentPlaylistIndex(index);
-        }
-        else if (action == 'photoslideshow') {
-
-            if (!$(elem).hasClass('card')) {
-                elem = $(elem).parents('.card')[0];
-            }
-
-            itemsContainer = $(elem).parents('.itemsContainer');
-            index = $('.card', itemsContainer).get().indexOf(elem);
-
-            closeContextMenu();
-
-            itemsContainer.trigger('photoslideshow', [index]);
-        }
 
         return false;
-    }
-
-    function resetCardImage() {
-
-        this.style.backgroundImage = "url('css/images/empty.png')";
     }
 
     function resetImages(page) {
 
         $('cardImage', page).remove();
-        //$('.cardImage', page).each(resetCardImage);
     }
 
     $(document).on('pageinit', ".libraryPage", function () {

@@ -118,10 +118,7 @@ namespace MediaBrowser.Dlna.Ssdp
 
         public void Start()
         {
-            _socket = CreateMulticastSocket();
-
-            _logger.Info("SSDP service started");
-            Receive();
+            RestartSocketListener();
 
             ReloadAliveNotifier();
         }
@@ -289,6 +286,56 @@ namespace MediaBrowser.Dlna.Ssdp
             }
         }
 
+        private void RestartSocketListener()
+        {
+            if (_isDisposed)
+            {
+                StopSocketRetryTimer();
+                return;
+            }
+
+            try
+            {
+                _socket = CreateMulticastSocket();
+
+                _logger.Info("MultiCast socket created");
+
+                StopSocketRetryTimer();
+
+                Receive();
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error creating MultiCast socket", ex);
+                //StartSocketRetryTimer();
+            }
+        }
+
+        private Timer _socketRetryTimer;
+        private readonly object _socketRetryLock = new object();
+        private void StartSocketRetryTimer()
+        {
+            lock (_socketRetryLock)
+            {
+                if (_socketRetryTimer == null)
+                {
+                    _socketRetryTimer = new Timer(s => RestartSocketListener(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+                }
+            }
+        }
+
+        private void StopSocketRetryTimer()
+        {
+            lock (_socketRetryLock)
+            {
+                if (_socketRetryTimer != null)
+                {
+                    _socketRetryTimer.Dispose();
+                    _socketRetryTimer = null;
+                }
+            }
+        }
+
         private void Receive()
         {
             try
@@ -297,10 +344,15 @@ namespace MediaBrowser.Dlna.Ssdp
 
                 EndPoint endpoint = new IPEndPoint(IPAddress.Any, SSDPPort);
 
-                _socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref endpoint, ReceiveCallback, buffer);
+                _socket.BeginReceiveFrom(buffer, 0, buffer.Length, SocketFlags.None, ref endpoint, ReceiveCallback,
+                    buffer);
             }
             catch (ObjectDisposedException)
             {
+                if (!_isDisposed)
+                {
+                    //StartSocketRetryTimer();
+                }
             }
             catch (Exception ex)
             {
@@ -347,6 +399,13 @@ namespace MediaBrowser.Dlna.Ssdp
                 }
 
                 OnMessageReceived(args);
+            }
+            catch (ObjectDisposedException)
+            {
+                if (!_isDisposed)
+                {
+                    //StartSocketRetryTimer();
+                }
             }
             catch (Exception ex)
             {

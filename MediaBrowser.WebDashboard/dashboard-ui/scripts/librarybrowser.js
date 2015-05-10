@@ -722,7 +722,7 @@
                         defaultAction = null;
                     }
                 }
-                var defaultActionAttribute = defaultAction ? (' data-action="' + defaultAction + '" class="itemWithAction"') : '';
+                var defaultActionAttribute = defaultAction ? (' data-action="' + defaultAction + '" class="itemWithAction mediaItem"') : ' class="mediaItem"';
                 html += '<a' + defaultActionAttribute + ' href="' + href + '">';
 
                 var imgUrl;
@@ -1462,6 +1462,8 @@
 
             var anchorCssClass = "cardContent";
 
+            anchorCssClass += ' mediaItem';
+
             if (options.defaultAction) {
                 anchorCssClass += ' itemWithAction';
             }
@@ -1649,6 +1651,25 @@
             html += "</div>";
 
             return html;
+        },
+
+        getListItemInfo: function (elem) {
+            
+            var elemWithAttributes = elem;
+
+            while (!elemWithAttributes.getAttribute('data-itemid')) {
+                elemWithAttributes = elemWithAttributes.parentNode;
+            }
+
+            var itemId = elemWithAttributes.getAttribute('data-itemid');
+            var index = elemWithAttributes.getAttribute('data-index');
+            var mediaType = elemWithAttributes.getAttribute('data-mediatype');
+
+            return {
+                id: itemId,
+                index: index,
+                mediaType: mediaType
+            };
         },
 
         getCardTextLines: function (lines, cssClass, forceLines) {
@@ -2546,7 +2567,14 @@
                 }
             }
 
-            html += "<img class='itemDetailImage' src='" + url + "' />";
+            var screenWidth = $(window).width();
+
+            // Take a guess about whether we should lazy load or not
+            if (screenWidth > 600) {
+                html += "<img class='itemDetailImage' src='" + url + "' />";
+            } else {
+                html += "<img class='itemDetailImage lazy' data-src='" + url + "' src='css/images/empty.png' />";
+            }
 
             if (href) {
                 html += "</a>";
@@ -2594,6 +2622,8 @@
                 elem.addClass('portraitDetailImageContainer');
                 elem.removeClass('squareDetailImageContainer');
             }
+
+            elem.lazyChildren();
         },
 
         getMiscInfoHtml: function (item) {
@@ -2849,8 +2879,7 @@
                     tag: item.BackdropImageTags[0]
                 });
 
-                $('#itemBackdrop', page).removeClass('noBackdrop').css('background-image', 'url("' + imgUrl + '")');
-
+                $('#itemBackdrop', page).removeClass('noBackdrop').lazyImage(imgUrl);
             }
             else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
 
@@ -2861,7 +2890,7 @@
                     maxWidth: screenWidth
                 });
 
-                $('#itemBackdrop', page).removeClass('noBackdrop').css('background-image', 'url("' + imgUrl + '")');
+                $('#itemBackdrop', page).removeClass('noBackdrop').lazyImage(imgUrl);
 
             }
             else {

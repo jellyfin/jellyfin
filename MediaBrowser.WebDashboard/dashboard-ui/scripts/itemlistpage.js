@@ -27,7 +27,7 @@
 
         var itemsPromise = ApiClient.getItems(userId, query);
 
-        $.when(parentItemPromise, itemsPromise).done(function(r1, r2) {
+        $.when(parentItemPromise, itemsPromise).done(function (r1, r2) {
 
             var item = r1[0];
             currentItem = item;
@@ -55,8 +55,6 @@
                 context = 'folders';
             }
 
-            var defaultAction = currentItem.Type == 'PhotoAlbum' ? 'photoslideshow' : null;
-
             if (view == "Backdrop") {
 
                 html = LibraryBrowser.getPosterViewHtml({
@@ -65,8 +63,7 @@
                     showTitle: true,
                     centerText: true,
                     preferBackdrop: true,
-                    context: context,
-                    defaultAction: defaultAction
+                    context: context
                 });
             }
             else if (view == "Poster") {
@@ -75,8 +72,7 @@
                     shape: "auto",
                     showTitle: true,
                     centerText: true,
-                    context: context,
-                    defaultAction: defaultAction
+                    context: context
                 });
             }
 
@@ -158,51 +154,15 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    function startSlideshow(page, index) {
+    function onListItemClick(e) {
 
-        index += (query.StartIndex || 0);
+        var page = $(this).parents('.page');
+        var info = LibraryBrowser.getListItemInfo(this);
 
-        var userId = Dashboard.getCurrentUserId();
-
-        var localQuery = $.extend({}, query);
-        localQuery.StartIndex = 0;
-        localQuery.Limit = null;
-        localQuery.MediaTypes = "Photo";
-        localQuery.Recursive = true;
-        localQuery.Filters = "IsNotFolder";
-
-        ApiClient.getItems(userId, localQuery).done(function(result) {
-
-            showSlideshow(page, result.Items, index);
-        });
-    }
-
-    function showSlideshow(page, items, index) {
-
-        var slideshowItems = items.map(function (item) {
-
-            var imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                
-                tag: item.ImageTags.Primary,
-                type: 'Primary'
-
-            });
-
-            return {
-                title: item.Name,
-                href: imgUrl
-            };
-        });
-
-        index = Math.max(index || 0, 0);
-
-        Dashboard.loadSwipebox().done(function () {
-
-            $.swipebox(slideshowItems, {
-                initialIndexOnArray: index,
-                hideBarsDelay: 30000
-            });
-        });
+        if (info.mediaType == 'Photo') {
+            Photos.startSlideshow(page, query, info.id);
+            return false;
+        }
     }
 
     $(document).on('pageinit', "#itemListPage", function () {
@@ -272,9 +232,7 @@
             reloadItems(page);
         });
 
-        $('.itemsContainer', page).on('photoslideshow', function (e, index) {
-            startSlideshow(page, index);
-        });
+        $(page).on('click', '.mediaItem', onListItemClick);
 
     }).on('pageshow', "#itemListPage", function () {
 
