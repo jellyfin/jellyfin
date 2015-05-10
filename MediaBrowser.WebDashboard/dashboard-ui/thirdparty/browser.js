@@ -945,7 +945,7 @@
     }
 
     // Chrome is Webkit, but Webkit is also Safari.
-    if (browser.chrome || $.browser.safari) {
+    if (browser.chrome || browser.safari) {
         browser.webkit = true;
     }
 
@@ -956,7 +956,6 @@
     if (browser.msie && !browser.mobile && userAgent.toLowerCase().indexOf("xbox") != -1) {
         browser.tv = true;
     }
-
     jQuery.browser = browser;
 
 })(jQuery, window);

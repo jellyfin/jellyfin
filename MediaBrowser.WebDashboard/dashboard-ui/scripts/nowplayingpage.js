@@ -647,32 +647,32 @@
 
         var html = '';
 
-        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+        //ApiClient.getItems(Dashboard.getCurrentUserId(), {
 
-            SortBy: "SortName",
-            SortOrder: "Ascending",
-            IncludeItemTypes: "Audio",
-            Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,IsUnidentified,SyncInfo",
-            StartIndex: 0,
-            ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
-            Limit: 100
+        //    SortBy: "SortName",
+        //    SortOrder: "Ascending",
+        //    IncludeItemTypes: "Audio",
+        //    Recursive: true,
+        //    Fields: "PrimaryImageAspectRatio,SortName,MediaSourceCount,IsUnidentified,SyncInfo",
+        //    StartIndex: 0,
+        //    ImageTypeLimit: 1,
+        //    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+        //    Limit: 100
 
-        }).done(function (result) {
+        //}).done(function (result) {
 
-            html += LibraryBrowser.getListViewHtml({
-                items: result.Items,
-                smallIcon: true
-            });
+        //    html += LibraryBrowser.getListViewHtml({
+        //        items: result.Items,
+        //        smallIcon: true
+        //    });
 
-            $(".playlist", page).html(html).trigger('create').lazyChildren();
-        });
-
-        //html += LibraryBrowser.getListViewHtml({
-        //    items: MediaController.playlist(),
-        //    smallIcon: true
+        //    $(".playlist", page).html(html).trigger('create').lazyChildren();
         //});
+
+        html += LibraryBrowser.getListViewHtml({
+            items: MediaController.playlist(),
+            smallIcon: true
+        });
 
         $(".playlist", page).html(html).trigger('create').lazyChildren();
     }

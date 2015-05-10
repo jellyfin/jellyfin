@@ -1115,6 +1115,13 @@
                 options.shape = 'smallSquare';
                 squareSize = posterInfo.smallSquareSize;
             }
+            else if (options.shape == 'detailPagePortrait') {
+                posterWidth = 200;
+            }
+            else if (options.shape == 'detailPage169') {
+                posterWidth = 260;
+                thumbWidth = 260;
+            }
 
             var dateText;
 

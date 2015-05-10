@@ -640,7 +640,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailSection {
     vertical-align: top;
-    margin-bottom: 2.5em;
+    margin-bottom: 3em;
 }
 
 .detailCollapsibleSection:not(.hide) + .detailCollapsibleSection {
@@ -1282,53 +1282,77 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         text-decoration: none;
     }
 
+.groupingMenu {
+    width: 240px;
+}
+
 .groupingMenuScroller {
-    max-height: 200px;
-    min-width: 240px;
-    overflow-x: hidden;
-    overflow-y: auto;
-    padding-right: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    padding: 1em;
 }
 
 @media all and (min-width: 400px) {
 
-    .groupingMenuScroller {
-        min-width: 300px;
+    .groupingMenu {
+        width: 360px;
     }
 }
 
 @media all and (min-width: 500px) {
 
-    .groupingMenuScroller {
-        min-width: 400px;
+    .groupingMenu {
+        width: 460px;
     }
 }
 
 @media all and (min-width: 600px) {
 
-    .groupingMenuScroller {
-        min-width: 500px;
+    .groupingMenu {
+        width: 560px;
     }
 }
 
-@media all and (min-height: 400px) {
+@media all and (min-width: 700px) {
 
-    .groupingMenuScroller {
-        max-height: 300px;
+    .groupingMenu {
+        width: 660px;
     }
 }
 
-@media all and (min-height: 500px) {
+@media all and (min-width: 800px) {
 
-    .groupingMenuScroller {
-        max-height: 400px;
+    .groupingMenu {
+        width: 760px;
     }
 }
 
-@media all and (min-height: 600px) {
+@media all and (min-width: 900px) {
 
-    .groupingMenuScroller {
-        max-height: 500px;
+    .groupingMenu {
+        width: 860px;
+    }
+}
+
+@media all and (min-width: 1000px) {
+
+    .groupingMenu {
+        width: 960px;
+    }
+}
+
+@media all and (min-width: 1100px) {
+
+    .groupingMenu {
+        width: 1060px;
+    }
+}
+
+@media all and (min-width: 1200px) {
+
+    .groupingMenu {
+        width: 1160px;
     }
 }
 

@@ -1510,12 +1510,13 @@ var AppInfo = {};
             }
         }
 
+        AppInfo.enableMusicSongsTab = true;
+
         if (!AppInfo.hasLowImageBandwidth) {
             AppInfo.enableLatestChannelItems = true;
             AppInfo.enableStudioTabs = true;
             AppInfo.enablePeopleTabs = true;
             AppInfo.enableTvEpisodesTab = true;
-            AppInfo.enableMusicSongsTab = true;
             AppInfo.enableMusicArtistsTab = true;
             AppInfo.enableHomeLatestTab = true;
             AppInfo.enableMovieTrailersTab = true;

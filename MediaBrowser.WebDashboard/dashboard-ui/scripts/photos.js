@@ -45,8 +45,8 @@
                 items: result.Items,
                 shape: "auto",
                 context: getParameterByName('context') || 'photos',
-                showTitle: false,
-                centerText: true,
+                showTitle: query.MediaTypes != 'Photo',
+                overlayText: true,
                 lazy: true
             });
 

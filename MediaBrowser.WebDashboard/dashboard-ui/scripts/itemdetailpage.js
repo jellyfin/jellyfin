@@ -1512,7 +1512,8 @@
                 imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
                     width: 100,
                     tag: cast.PrimaryImageTag,
-                    type: "primary"
+                    type: "primary",
+                    minScale: 2
                 });
 
             } else {
