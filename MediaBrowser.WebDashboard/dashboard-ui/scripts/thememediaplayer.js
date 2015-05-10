@@ -46,8 +46,13 @@
 
         var val = store.getItem('enableThemeSongs-' + userId);
 
+        var localAutoPlayers = MediaController.getPlayers().filter(function (p) {
+
+            return p.isLocalPlayer && p.canAutoPlayAudio();
+        });
+
         // For bandwidth
-        return val == '1' || (val != '0' && MediaPlayer.canAutoPlayAudio());
+        return val == '1' || (val != '0' && localAutoPlayers.length);
     }
 
     function getPlayer() {

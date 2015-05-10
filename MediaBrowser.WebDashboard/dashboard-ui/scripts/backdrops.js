@@ -59,6 +59,11 @@
         return deferred.promise();
     }
 
+    function setBackdropImage(elem, url) {
+
+        elem.lazyImage(url);
+    }
+
     function showBackdrop(type, parentId) {
 
         var apiClient = ConnectionManager.currentApiClient();
@@ -83,7 +88,7 @@
                     quality: 80
                 });
 
-                getElement().css('backgroundImage', 'url(\'' + imgUrl + '\')');
+                setBackdropImage(getElement(), imgUrl);
 
             } else {
 
@@ -97,6 +102,22 @@
         $('.backdropContainer').css('backgroundImage', '');
     }
 
+    function isEnabledByDefault() {
+
+        if (AppInfo.hasLowImageBandwidth) {
+
+            return false;
+        }
+
+        if (!$.browser.mobile) {
+            return true;
+        }
+
+        var screenWidth = $(window).width();
+
+        return screenWidth >= 600;
+    }
+
     function enabled() {
 
         var userId = Dashboard.getCurrentUserId();
@@ -104,7 +125,7 @@
         var val = store.getItem('enableBackdrops-' + userId);
 
         // For bandwidth
-        return val == '1' || (val != '0' && !$.browser.mobile);
+        return val == '1' || (val != '0' && isEnabledByDefault());
     }
 
     function setBackdrops(page, items) {
@@ -135,10 +156,23 @@
                 quality: 80
             });
 
-            getElement().css('backgroundImage', 'url(\'' + imgUrl + '\')');
+            setBackdropImage(getElement(), imgUrl);
 
         } else {
             $(page).removeClass('backdropPage');
+        }
+    }
+    
+    function setBackdropUrl(page, url) {
+
+        if (url) {
+            $(page).addClass('backdropPage');
+
+            setBackdropImage(getElement(), url);
+
+        } else {
+            $(page).removeClass('backdropPage');
+            clearBackdrop();
         }
     }
 
@@ -172,7 +206,8 @@
 
     window.Backdrops = {
 
-        setBackdrops: setBackdrops
+        setBackdrops: setBackdrops,
+        setBackdropUrl: setBackdropUrl
     };
 
 })(jQuery, document);

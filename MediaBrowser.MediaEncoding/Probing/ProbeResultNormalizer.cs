@@ -38,7 +38,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             var internalStreams = data.streams ?? new MediaStreamInfo[] { };
 
-            info.MediaStreams = internalStreams.Select(s => GetMediaStream(s, data.format))
+            info.MediaStreams = internalStreams.Select(s => GetMediaStream(isAudio, s, data.format))
                 .Where(i => i != null)
                 .ToList();
 
@@ -94,7 +94,7 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <param name="streamInfo">The stream info.</param>
         /// <param name="formatInfo">The format info.</param>
         /// <returns>MediaStream.</returns>
-        private MediaStream GetMediaStream(MediaStreamInfo streamInfo, MediaFormatInfo formatInfo)
+        private MediaStream GetMediaStream(bool isAudio, MediaStreamInfo streamInfo, MediaFormatInfo formatInfo)
         {
             var stream = new MediaStream
             {
@@ -129,7 +129,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
             else if (string.Equals(streamInfo.codec_type, "video", StringComparison.OrdinalIgnoreCase))
             {
-                stream.Type = (streamInfo.codec_name ?? string.Empty).IndexOf("mjpeg", StringComparison.OrdinalIgnoreCase) != -1
+                stream.Type = isAudio
                     ? MediaStreamType.EmbeddedImage
                     : MediaStreamType.Video;
 

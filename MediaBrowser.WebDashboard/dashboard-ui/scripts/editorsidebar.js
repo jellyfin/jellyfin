@@ -264,6 +264,13 @@
 
     function initializeTree(page, currentUser, openItems, selectedId) {
 
+        MetadataEditor.loadJsTree().done(function () {
+            initializeTreeInternal(page, currentUser, openItems, selectedId);
+        });
+    }
+
+    function initializeTreeInternal(page, currentUser, openItems, selectedId) {
+
         nodesToLoad = [];
         selectedNodeId = null;
 
@@ -355,8 +362,8 @@
 
         if (selectedNodeId && node.children && node.children.indexOf(selectedNodeId) != -1) {
 
-            setTimeout(function() {
-                
+            setTimeout(function () {
+
                 scrollToNode($.mobile.activePage, selectedNodeId);
             }, 500);
         }
@@ -473,8 +480,22 @@
             return query;
         };
 
+
+        self.loadJsTree = function () {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            require([
+                'thirdparty/jstree3.0.8/jstree.min',
+                'css!thirdparty/jstree3.0.8/themes/default/style.min'
+            ], function () {
+
+                deferred.resolve();
+            });
+            return deferred.promise();
+        };
+
         ensureInitialValues();
     }
-
 
 })(jQuery, document, window);

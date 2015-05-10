@@ -528,66 +528,82 @@
                 }
             }
 
-            var html = '<div data-role="popup" class="groupingMenu" data-theme="a">';
-
-            html += '<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>';
-            html += '<div>';
-            html += '<ul data-role="listview">';
+            var html = '<div data-role="popup" class="groupingMenu" data-transition="slide" style="background:rgba(0,0,0,.85);border:0;padding:0;">';
 
             var href = card.href || LibraryBrowser.getHref(item, context);
-            var header = Globalize.translate('HeaderLatestFromChannel').replace('{0}', '<a href="' + href + '">' + item.Name + '</a>');
-            html += '<li data-role="list-divider">' + header + '</li>';
-
-            html += '</ul>';
+            var header = Globalize.translate('HeaderLatestFromChannel').replace('{0}', '<a href="' + href + '" style="outline:0;">' + item.Name + '</a>');
+            html += '<h2 style="padding:.5em 1em;background:#222;margin:0;">' + header + '</h2>';
 
             html += '<div class="groupingMenuScroller">';
-            html += '<ul data-role="listview">';
 
-            html += latestItems.map(function (latestItem) {
-
-                var itemHtml = '';
-
-                href = LibraryBrowser.getHref(latestItem, context);
-                itemHtml += '<li class="ui-li-has-thumb"><a href="' + href + '">';
-
-                var imgUrl;
-
-                if (latestItem.ImageTags.Primary) {
-
-                    // Scaling 400w episode images to 80 doesn't turn out very well
-                    var width = latestItem.Type == 'Episode' ? 160 : 80;
-                    imgUrl = ApiClient.getScaledImageUrl(latestItem.Id, {
-                        width: width,
-                        tag: latestItem.ImageTags.Primary,
-                        type: "Primary",
-                        index: 0
-                    });
-
-                }
-                if (imgUrl) {
-                    itemHtml += '<div class="listviewImage ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');"></div>';
-                }
-
-                itemHtml += '<h3>';
-                itemHtml += LibraryBrowser.getPosterViewDisplayName(latestItem);
-                itemHtml += '</h3>';
-
-                var date = parseISO8601Date(latestItem.DateCreated, { toLocal: true });
-
-                itemHtml += '<p>';
-                itemHtml += Globalize.translate('LabelAddedOnDate').replace('{0}', date.toLocaleDateString());
-                itemHtml += '</p>';
-
-                itemHtml += '</a></li>';
-
-                return itemHtml;
-
-            }).join('');
-
-            html += '</ul>';
-            html += '</div>';
+            html += LibraryBrowser.getPosterViewHtml({
+                items: latestItems,
+                shape: "detailPage169",
+                showTitle: true,
+                overlayText: true,
+                lazy: true,
+                context: context
+            });
 
             html += '</div>';
+            //html += '<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>';
+            //html += '<div>';
+            //html += '<ul data-role="listview">';
+
+            //var href = card.href || LibraryBrowser.getHref(item, context);
+            //var header = Globalize.translate('HeaderLatestFromChannel').replace('{0}', '<a href="' + href + '">' + item.Name + '</a>');
+            //html += '<li data-role="list-divider">' + header + '</li>';
+
+            //html += '</ul>';
+
+            //html += '<div class="groupingMenuScroller">';
+            //html += '<ul data-role="listview">';
+
+            //html += latestItems.map(function (latestItem) {
+
+            //    var itemHtml = '';
+
+            //    href = LibraryBrowser.getHref(latestItem, context);
+            //    itemHtml += '<li class="ui-li-has-thumb"><a href="' + href + '">';
+
+            //    var imgUrl;
+
+            //    if (latestItem.ImageTags.Primary) {
+
+            //        // Scaling 400w episode images to 80 doesn't turn out very well
+            //        var width = latestItem.Type == 'Episode' ? 160 : 80;
+            //        imgUrl = ApiClient.getScaledImageUrl(latestItem.Id, {
+            //            width: width,
+            //            tag: latestItem.ImageTags.Primary,
+            //            type: "Primary",
+            //            index: 0
+            //        });
+
+            //    }
+            //    if (imgUrl) {
+            //        itemHtml += '<div class="listviewImage ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');"></div>';
+            //    }
+
+            //    itemHtml += '<h3>';
+            //    itemHtml += LibraryBrowser.getPosterViewDisplayName(latestItem);
+            //    itemHtml += '</h3>';
+
+            //    var date = parseISO8601Date(latestItem.DateCreated, { toLocal: true });
+
+            //    itemHtml += '<p>';
+            //    itemHtml += Globalize.translate('LabelAddedOnDate').replace('{0}', date.toLocaleDateString());
+            //    itemHtml += '</p>';
+
+            //    itemHtml += '</a></li>';
+
+            //    return itemHtml;
+
+            //}).join('');
+
+            //html += '</ul>';
+            //html += '</div>';
+
+            //html += '</div>';
             html += '</div>';
 
             $($.mobile.activePage).append(html);
@@ -597,7 +613,7 @@
                 $(this).off("popupafterclose").remove();
                 $(card).removeClass('hasContextMenu');
 
-            });
+            }).lazyChildren();
         });
 
         e.preventDefault();
@@ -887,40 +903,13 @@
 
             itemsContainer.trigger('playallfromhere', [index]);
         }
-        else if (action == 'setplaylistindex') {
-
-            index = elemWithAttributes.getAttribute('data-index');
-
-            closeContextMenu();
-
-            MediaController.currentPlaylistIndex(index);
-        }
-        else if (action == 'photoslideshow') {
-
-            if (!$(elem).hasClass('card')) {
-                elem = $(elem).parents('.card')[0];
-            }
-
-            itemsContainer = $(elem).parents('.itemsContainer');
-            index = $('.card', itemsContainer).get().indexOf(elem);
-
-            closeContextMenu();
-
-            itemsContainer.trigger('photoslideshow', [index]);
-        }
 
         return false;
-    }
-
-    function resetCardImage() {
-
-        this.style.backgroundImage = "url('css/images/empty.png')";
     }
 
     function resetImages(page) {
 
         $('cardImage', page).remove();
-        //$('.cardImage', page).each(resetCardImage);
     }
 
     $(document).on('pageinit', ".libraryPage", function () {

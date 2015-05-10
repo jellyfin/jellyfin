@@ -287,7 +287,7 @@
     var currentImgUrl;
     function updateNowPlayingInfo(state) {
 
-        var nameHtml = MediaPlayer.getNowPlayingNameHtml(state) || '';
+        var nameHtml = MediaController.getNowPlayingNameHtml(state.NowPlayingItem) || '';
 
         if (nameHtml.indexOf('<br/>') != -1) {
             nowPlayingTextElement.addClass('nowPlayingDoubleText');
