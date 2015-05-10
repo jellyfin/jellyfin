@@ -1,27 +1,44 @@
-﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.IO;
-using MediaBrowser.Controller.Drawing;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Photos
 {
-    //public class PhotoAlbumImageProvider : BaseDynamicImageProvider<PhotoAlbum>
+    //public class PhotoAlbumImageProvider : IDynamicImageProvider
     //{
-    //    public PhotoAlbumImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor)
-    //        : base(fileSystem, providerManager, applicationPaths, imageProcessor)
+    //    public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
     //    {
+    //        return new List<ImageType> { ImageType.Primary };
     //    }
 
-    //    protected override Task<List<BaseItem>> GetItemsWithImages(IHasImages item)
+    //    public Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken)
     //    {
-    //        var photoAlbum = (PhotoAlbum)item;
-    //        var items = GetFinalItems(photoAlbum.Children.ToList());
+    //        var album = (PhotoAlbum)item;
 
-    //        return Task.FromResult(items);
+    //        var image = album.Children
+    //            .OfType<Photo>()
+    //            .Select(i => i.GetImagePath(type))
+    //            .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+
+    //        return Task.FromResult(new DynamicImageResponse
+    //        {
+    //            Path = image,
+    //            HasImage = !string.IsNullOrEmpty(image)
+    //        });
+    //    }
+
+    //    public string Name
+    //    {
+    //        get { return "Image Extractor"; }
+    //    }
+
+    //    public bool Supports(IHasImages item)
+    //    {
+    //        return item is PhotoAlbum;
     //    }
     //}
 }
