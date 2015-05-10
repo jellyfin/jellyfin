@@ -3,7 +3,7 @@
     background-size: 100%;
     background-repeat: no-repeat;
     background-position: center center;
-    width: 26px;
+    width: 28px;
     height: 100%;
     display: inline-block;
     vertical-align: middle;
@@ -31,6 +31,8 @@
 
 .btnCast {
     white-space: nowrap;
+    position: relative;
+    top: 1px !important;
 }
 
 .headerSelectedPlayer {

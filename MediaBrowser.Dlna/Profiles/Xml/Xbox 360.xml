@@ -32,6 +32,7 @@
   <RequiresPlainVideoItems>true</RequiresPlainVideoItems>
   <RequiresPlainFolders>true</RequiresPlainFolders>
   <EnableMSMediaReceiverRegistrar>true</EnableMSMediaReceiverRegistrar>
+  <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <XmlRootAttributes>
     <XmlAttribute name="xmlns" value="urn:schemas-upnp-org:device-1-0" />
   </XmlRootAttributes>
