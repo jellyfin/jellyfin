@@ -2,7 +2,6 @@
 using MediaBrowser.Common.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Emby.Drawing.ImageMagick
 {
@@ -15,7 +14,7 @@ namespace Emby.Drawing.ImageMagick
             _appPaths = appPaths;
         }
 
-        public void BuildPosterCollage(IEnumerable<string> paths, string outputPath, int width, int height, string text)
+        public void BuildPosterCollage(List<string> paths, string outputPath, int width, int height, string text)
         {
             if (!string.IsNullOrWhiteSpace(text))
             {
@@ -33,7 +32,7 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        public void BuildSquareCollage(IEnumerable<string> paths, string outputPath, int width, int height, string text)
+        public void BuildSquareCollage(List<string> paths, string outputPath, int width, int height, string text)
         {
             if (!string.IsNullOrWhiteSpace(text))
             {
@@ -51,7 +50,7 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        public void BuildThumbCollage(IEnumerable<string> paths, string outputPath, int width, int height, string text)
+        public void BuildThumbCollage(List<string> paths, string outputPath, int width, int height, string text)
         {
             if (!string.IsNullOrWhiteSpace(text))
             {
@@ -69,31 +68,10 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        internal static string[] ProjectPaths(IEnumerable<string> paths, int count)
+        private MagickWand BuildThumbCollageWandWithText(List<string> paths, string text, int width, int height)
         {
-            var clone = paths.ToList();
-            var list = new List<string>();
-
-            while (list.Count < count)
-            {
-                foreach (var path in clone)
-                {
-                    list.Add(path);
-
-                    if (list.Count >= count)
-                    {
-                        break;
-                    }
-                }
-            }
-
-            return list.Take(count).ToArray();
-        }
-
-        private MagickWand BuildThumbCollageWandWithText(IEnumerable<string> paths, string text, int width, int height)
-        {
-            var inputPaths = ProjectPaths(paths, 8);
-            using (var wandImages = new MagickWand(inputPaths))
+            var inputPaths = ImageHelpers.ProjectPaths(paths, 8);
+            using (var wandImages = new MagickWand(inputPaths.ToArray()))
             {
                 var wand = new MagickWand(width, height);
                 wand.OpenImage("gradient:#111111-#111111");
@@ -165,10 +143,10 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        private MagickWand BuildPosterCollageWand(IEnumerable<string> paths, int width, int height)
+        private MagickWand BuildPosterCollageWand(List<string> paths, int width, int height)
         {
-            var inputPaths = ProjectPaths(paths, 4);
-            using (var wandImages = new MagickWand(inputPaths))
+            var inputPaths = ImageHelpers.ProjectPaths(paths, 4);
+            using (var wandImages = new MagickWand(inputPaths.ToArray()))
             {
                 var wand = new MagickWand(width, height);
                 wand.OpenImage("gradient:#111111-#111111");
@@ -230,10 +208,10 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        private MagickWand BuildPosterCollageWandWithText(IEnumerable<string> paths, string label, int width, int height)
+        private MagickWand BuildPosterCollageWandWithText(List<string> paths, string label, int width, int height)
         {
-            var inputPaths = ProjectPaths(paths, 4);
-            using (var wandImages = new MagickWand(inputPaths))
+            var inputPaths = ImageHelpers.ProjectPaths(paths, 4);
+            using (var wandImages = new MagickWand(inputPaths.ToArray()))
             {
                 var wand = new MagickWand(width, height);
                 wand.OpenImage("gradient:#111111-#111111");
@@ -305,10 +283,10 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        private MagickWand BuildThumbCollageWand(IEnumerable<string> paths, int width, int height)
+        private MagickWand BuildThumbCollageWand(List<string> paths, int width, int height)
         {
-            var inputPaths = ProjectPaths(paths, 8);
-            using (var wandImages = new MagickWand(inputPaths))
+            var inputPaths = ImageHelpers.ProjectPaths(paths, 8);
+            using (var wandImages = new MagickWand(inputPaths.ToArray()))
             {
                 var wand = new MagickWand(width, height);
                 wand.OpenImage("gradient:#111111-#111111");
@@ -370,10 +348,10 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        private MagickWand BuildSquareCollageWand(IEnumerable<string> paths, int width, int height)
+        private MagickWand BuildSquareCollageWand(List<string> paths, int width, int height)
         {
-            var inputPaths = ProjectPaths(paths, 4);
-            using (var wandImages = new MagickWand(inputPaths))
+            var inputPaths = ImageHelpers.ProjectPaths(paths, 4);
+            using (var wandImages = new MagickWand(inputPaths.ToArray()))
             {
                 var wand = new MagickWand(width, height);
                 wand.OpenImage("gradient:#111111-#111111");
@@ -435,10 +413,10 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
-        private MagickWand BuildSquareCollageWandWithText(IEnumerable<string> paths, string label, int width, int height)
+        private MagickWand BuildSquareCollageWandWithText(List<string> paths, string label, int width, int height)
         {
-            var inputPaths = ProjectPaths(paths, 4);
-            using (var wandImages = new MagickWand(inputPaths))
+            var inputPaths = ImageHelpers.ProjectPaths(paths, 4);
+            using (var wandImages = new MagickWand(inputPaths.ToArray()))
             {
                 var wand = new MagickWand(width, height);
                 wand.OpenImage("gradient:#111111-#111111");

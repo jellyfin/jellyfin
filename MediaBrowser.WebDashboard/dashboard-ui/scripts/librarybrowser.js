@@ -1506,7 +1506,10 @@
             var footerOverlayed = false;
 
             if (options.overlayText || (forceName && !options.showTitle)) {
-                html += LibraryBrowser.getCardFooterText(item, options, imgUrl, forceName, 'cardFooter', progressHtml);
+
+                var footerCssClass = progressHtml ? 'cardFooter fullCardFooter' : 'cardFooter';
+
+                html += LibraryBrowser.getCardFooterText(item, options, imgUrl, forceName, footerCssClass, progressHtml);
                 footerOverlayed = true;
             }
             else if (progressHtml) {

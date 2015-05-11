@@ -1,11 +1,9 @@
-﻿using Emby.Drawing.ImageMagick;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 
 namespace Emby.Drawing.GDI
 {
@@ -18,10 +16,10 @@ namespace Emby.Drawing.GDI
             int height)
         {
             const int numStrips = 4;
-            files = StripCollageBuilder.ProjectPaths(files, numStrips).ToList();
-            
+            files = ImageHelpers.ProjectPaths(files, numStrips);
+
             const int rows = 1;
-             int cols = numStrips;
+            int cols = numStrips;
 
             int cellWidth = 2 * (width / 3);
             int cellHeight = height;
@@ -76,8 +74,8 @@ namespace Emby.Drawing.GDI
             int width,
             int height)
         {
-            files = StripCollageBuilder.ProjectPaths(files, 4).ToList();
-            
+            files = ImageHelpers.ProjectPaths(files, 4);
+
             const int rows = 2;
             const int cols = 2;
 

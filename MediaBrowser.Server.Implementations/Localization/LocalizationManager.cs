@@ -252,6 +252,9 @@ namespace MediaBrowser.Server.Implementations.Localization
                 throw new ArgumentNullException("rating");
             }
 
+            // Fairly common for some users to have "Rated R" in their rating field
+            rating = rating.Replace("Rated ", string.Empty, StringComparison.OrdinalIgnoreCase);
+
             var ratingsDictionary = GetParentalRatingsDictionary();
 
             ParentalRating value;

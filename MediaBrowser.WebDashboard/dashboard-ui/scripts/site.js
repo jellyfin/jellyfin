@@ -1373,6 +1373,14 @@ var Dashboard = {
         return quality;
     },
 
+    normalizeImageOptions: function(options) {
+
+        if (AppInfo.hasLowImageBandwidth) {
+
+            options.enableImageEnhancers = false;
+        }
+    },
+
     getAppInfo: function () {
 
         function generateDeviceName() {
@@ -1588,6 +1596,7 @@ var AppInfo = {};
 
         if (window.ApiClient) {
             ApiClient.getDefaultImageQuality = Dashboard.getDefaultImageQuality;
+            ApiClient.normalizeImageOptions = Dashboard.normalizeImageOptions;
 
             if (!Dashboard.isRunningInCordova()) {
                 Dashboard.importCss(ApiClient.getUrl('Branding/Css'));

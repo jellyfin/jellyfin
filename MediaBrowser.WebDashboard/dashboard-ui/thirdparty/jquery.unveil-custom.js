@@ -12,7 +12,10 @@
 
     var unveilId = 0;
 
-    $.fn.unveil = function (threshold, callback) {
+    // Test search before setting to 0
+    var threshold = 100;
+
+    $.fn.unveil = function () {
 
         var $w = $(window),
             th = threshold || 0,
@@ -68,7 +71,7 @@
         var lazyItems = $(".lazy", this);
 
         if (lazyItems.length) {
-            lazyItems.unveil(0);
+            lazyItems.unveil();
         }
 
         return this;
@@ -76,7 +79,7 @@
 
     $.fn.lazyImage = function (url) {
 
-        return this.attr('data-src', url).unveil(0);
+        return this.attr('data-src', url).unveil();
     };
 
 })(window.jQuery || window.Zepto);
@@ -94,6 +97,17 @@
         // Create an objectStore
         console.log("Creating objectStore");
         dataBase.createObjectStore(imagesStoreName);
+    }
+
+    function setImageIntoElement(elem, url) {
+
+        if (elem.tagName === "DIV") {
+
+            elem.style.backgroundImage = "url('" + url + "')";
+
+        } else {
+            elem.setAttribute("src", url);
+        }
     }
 
     function openDb() {
@@ -281,34 +295,19 @@
 
         self.setImageInto = function (elem, url) {
 
-            //if (!self.db()) {
-            //    if (elem.tagName === "DIV") {
-
-            //        elem.style.backgroundImage = "url('" + url + "')";
-
-            //    } else {
-            //        elem.setAttribute("src", url);
-            //    }
-            //    return;
-            //}
+            function onFail() {
+                setImageIntoElement(elem, url);
+            }
 
             openPromise.done(function () {
 
                 self.getImageUrl(url).done(function (localUrl) {
 
-                    if (elem.tagName === "DIV") {
+                    setImageIntoElement(elem, localUrl);
 
-                        elem.style.backgroundImage = "url('" + localUrl + "')";
+                }).fail(onFail);
 
-                    } else {
-                        elem.setAttribute("src", localUrl);
-                    }
-
-                }).fail(function() {
-                    new simpleImageStore().setImageInto(elem, url);
-                });
-
-            });
+            }).fail(onFail);
 
         };
     }
@@ -317,16 +316,7 @@
 
         var self = this;
 
-        self.setImageInto = function (elem, url) {
-
-            if (elem.tagName === "DIV") {
-
-                elem.style.backgroundImage = "url('" + url + "')";
-
-            } else {
-                elem.setAttribute("src", url);
-            }
-        };
+        self.setImageInto = setImageIntoElement;
     }
 
     if ($.browser.safari && indexedDB) {
