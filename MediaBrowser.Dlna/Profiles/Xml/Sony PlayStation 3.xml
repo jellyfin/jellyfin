@@ -35,6 +35,8 @@
   <RequiresPlainFolders>false</RequiresPlainFolders>
   <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
+  <EnableDlnaProtocol>true</EnableDlnaProtocol>
+  <EnableUrlBase>false</EnableUrlBase>
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="avi" audioCodec="mp2,mp3" videoCodec="mpeg4" type="Video" />
