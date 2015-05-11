@@ -224,8 +224,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
                     return false;
                 }
 
-                await CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540, false, item.Name).ConfigureAwait(false);
-                return true;
+                return await CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540, false, item.Name).ConfigureAwait(false);
             }
 
             return await base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex).ConfigureAwait(false);
