@@ -72,7 +72,7 @@
             html += '<div class="cardImage" style="text-align:center;">';
 
             var icon = server.Id == 'new' ? 'plus-circle' : 'globe';
-            html += '<i class="fa fa-' + icon + '" style="color:#fff;vertical-align:middle;font-size:100px;margin-top:25%;"></i>';
+            html += '<i class="fa fa-' + icon + '" style="color:#fff;vertical-align:middle;font-size:100px;"></i>';
         }
 
         html += "</div>";
@@ -302,7 +302,7 @@
         html += '<a class="cardContent" href="' + href + '">';
 
         html += '<div class="cardImage" style="text-align:center;">';
-        html += '<i class="fa fa-globe" style="color:#fff;vertical-align:middle;font-size:100px;margin-top:25%;"></i>';
+        html += '<i class="fa fa-globe" style="color:#fff;vertical-align:middle;font-size:100px;"></i>';
         html += "</div>";
 
         // cardContent

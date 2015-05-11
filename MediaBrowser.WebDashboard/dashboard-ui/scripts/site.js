@@ -1395,7 +1395,7 @@ var Dashboard = {
                 name = "Internet Explorer";
             } else if ($.browser.opera) {
                 name = "Opera";
-            } else if ($.browser.firefox || $.browser.mozilla) {
+            } else if ($.browser.mozilla) {
                 name = "Firefox";
             }
 

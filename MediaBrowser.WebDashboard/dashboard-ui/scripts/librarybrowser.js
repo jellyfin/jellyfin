@@ -1407,7 +1407,7 @@
                 cssClass += ' ' + LibraryBrowser.getUserDataCssClass(item.UserData.Key);
             }
 
-            if (options.showChildCountIndicator && item.ChildCount) {
+            if (options.showChildCountIndicator && item.ChildCount && options.showLatestItemsPopup !== false) {
                 cssClass += ' groupedCard';
             }
 
@@ -1513,7 +1513,7 @@
                 footerOverlayed = true;
             }
             else if (progressHtml) {
-                html += '<div class="cardFooter">';
+                html += '<div class="cardFooter fullCardFooter lightCardFooter">';
                 html += "<div class='cardProgress cardText'>";
                 html += progressHtml;
                 html += "</div>";
