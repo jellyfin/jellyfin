@@ -313,7 +313,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
-                apiClientFiles.Add("thirdparty/apiclient/cordova/serverdiscovery.js");
+                apiClientFiles.Add("thirdparty/cordova/serverdiscovery.js");
             }
             else
             {
@@ -321,6 +321,11 @@ namespace MediaBrowser.WebDashboard.Api
             }
             apiClientFiles.Add("thirdparty/apiclient/connectionmanager.js");
 
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                apiClientFiles.Add("thirdparty/cordova/remotecontrols.js");
+            }
+            
             foreach (var file in apiClientFiles)
             {
                 using (var fs = _fileSystem.GetFileStream(GetDashboardResourcePath(file), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
