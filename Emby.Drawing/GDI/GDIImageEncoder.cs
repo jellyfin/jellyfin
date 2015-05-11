@@ -21,6 +21,8 @@ namespace Emby.Drawing.GDI
         {
             _fileSystem = fileSystem;
             _logger = logger;
+
+            _logger.Info("GDI image processor initialized");
         }
 
         public string[] SupportedInputFormats
