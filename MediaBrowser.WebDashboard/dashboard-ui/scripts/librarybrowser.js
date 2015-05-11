@@ -1119,8 +1119,8 @@
                 posterWidth = 200;
             }
             else if (options.shape == 'detailPage169') {
-                posterWidth = 260;
-                thumbWidth = 260;
+                posterWidth = 320;
+                thumbWidth = 320;
             }
 
             var dateText;
