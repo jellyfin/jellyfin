@@ -108,9 +108,9 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
         {
             var endpoint = e.EndPoint as IPEndPoint;
 
-            if (endpoint != null && e.LocalIp != null)
+            if (endpoint != null && e.LocalEndPoint != null)
             {
-                NatUtility.Handle(e.LocalIp, e.Message, endpoint, NatProtocol.Upnp);
+                NatUtility.Handle(e.LocalEndPoint.Address, e.Message, endpoint, NatProtocol.Upnp);
             }
         }
 
