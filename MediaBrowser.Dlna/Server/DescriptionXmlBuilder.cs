@@ -51,10 +51,28 @@ namespace MediaBrowser.Dlna.Server
             builder.Append("<?xml version=\"1.0\"?>");
 
             builder.Append("<root");
-            foreach (var att in _profile.XmlRootAttributes)
+
+            var attributes = _profile.XmlRootAttributes.ToList();
+
+            if (_profile.EnableDlnaProtocol)
+            {
+                attributes.Insert(0, new XmlAttribute
+                {
+                    Name = "xmlns:dlna",
+                    Value = "urn:schemas-dlna-org:device-1-0"
+                });
+            }
+            attributes.Insert(0, new XmlAttribute
+            {
+                Name = "xmlns",
+                Value = "urn:schemas-upnp-org:device-1-0"
+            });
+
+            foreach (var att in attributes)
             {
                 builder.AppendFormat(" {0}=\"{1}\"", att.Name, att.Value);
             }
+
             builder.Append(">");
 
             builder.Append("<specVersion>");
@@ -74,34 +92,33 @@ namespace MediaBrowser.Dlna.Server
             builder.Append("<device>");
             AppendDeviceProperties(builder);
 
-            //AppendIconList(builder);
+            if (_profile.EnableDlnaProtocol)
+            {
+                AppendIconList(builder);
+            }
             AppendServiceList(builder);
             builder.Append("</device>");
         }
 
         private void AppendDeviceProperties(StringBuilder builder)
         {
-            builder.Append("<UDN>uuid:" + SecurityElement.Escape(_serverUdn) + "</UDN>");
+            builder.Append("<deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>");
 
-            if (!string.IsNullOrWhiteSpace(_profile.XDlnaCap))
+            if (_profile.EnableDlnaProtocol)
             {
                 builder.Append("<dlna:X_DLNACAP>" + SecurityElement.Escape(_profile.XDlnaCap ?? string.Empty) + "</dlna:X_DLNACAP>");
+
+                builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">M-DMS-1.50</dlna:X_DLNADOC>");
+                builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + SecurityElement.Escape(_profile.XDlnaDoc ?? string.Empty) + "</dlna:X_DLNADOC>");
             }
 
-            builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">M-DMS-1.50</dlna:X_DLNADOC>");
-            builder.Append("<dlna:X_DLNADOC xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + SecurityElement.Escape(_profile.XDlnaDoc ?? string.Empty) + "</dlna:X_DLNADOC>");
-            
             builder.Append("<friendlyName>" + SecurityElement.Escape(GetFriendlyName()) + "</friendlyName>");
-            builder.Append("<deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>");
             builder.Append("<manufacturer>" + SecurityElement.Escape(_profile.Manufacturer ?? string.Empty) + "</manufacturer>");
             builder.Append("<manufacturerURL>" + SecurityElement.Escape(_profile.ManufacturerUrl ?? string.Empty) + "</manufacturerURL>");
+
+            builder.Append("<modelDescription>" + SecurityElement.Escape(_profile.ModelDescription ?? string.Empty) + "</modelDescription>");
             builder.Append("<modelName>" + SecurityElement.Escape(_profile.ModelName ?? string.Empty) + "</modelName>");
 
-            if (!string.IsNullOrWhiteSpace(_profile.ModelDescription))
-            {
-                builder.Append("<modelDescription>" + SecurityElement.Escape(_profile.ModelDescription ?? string.Empty) + "</modelDescription>");
-            }
-            
             builder.Append("<modelNumber>" + SecurityElement.Escape(_profile.ModelNumber ?? string.Empty) + "</modelNumber>");
             builder.Append("<modelURL>" + SecurityElement.Escape(_profile.ModelUrl ?? string.Empty) + "</modelURL>");
 
@@ -114,6 +131,7 @@ namespace MediaBrowser.Dlna.Server
                 builder.Append("<serialNumber>" + SecurityElement.Escape(_profile.SerialNumber) + "</serialNumber>");
             }
 
+            builder.Append("<UDN>uuid:" + SecurityElement.Escape(_serverUdn) + "</UDN>");
             builder.Append("<presentationURL>" + SecurityElement.Escape(_serverAddress) + "</presentationURL>");
 
             if (!EnableAbsoluteUrls)

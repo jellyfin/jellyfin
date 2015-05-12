@@ -57,6 +57,7 @@
     <Compile Include="GDI\UnplayedCountIndicator.cs" />
     <Compile Include="IImageEncoder.cs" />
     <Compile Include="Common\ImageHeader.cs" />
+    <Compile Include="ImageHelpers.cs" />
     <Compile Include="ImageMagick\ImageMagickEncoder.cs" />
     <Compile Include="ImageMagick\StripCollageBuilder.cs" />
     <Compile Include="ImageProcessor.cs" />

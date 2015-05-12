@@ -37,6 +37,7 @@ namespace MediaBrowser.Dlna.Profiles
             MusicSyncBitrate = 128000;
 
             EnableAlbumArtInDidl = false;
+            EnableDlnaProtocol = true;
 
             TranscodingProfiles = new[]
             {
@@ -76,9 +77,6 @@ namespace MediaBrowser.Dlna.Profiles
                     Type = DlnaProfileType.Video
                 }
             };
-
-            AddXmlRootAttribute("xmlns", "urn:schemas-upnp-org:device-1-0");
-            AddXmlRootAttribute("xmlns:dlna", "urn:schemas-dlna-org:device-1-0");
         }
 
         public void AddXmlRootAttribute(string name, string value)

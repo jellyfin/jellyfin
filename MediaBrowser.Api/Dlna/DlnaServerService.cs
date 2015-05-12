@@ -108,6 +108,9 @@ namespace MediaBrowser.Api.Dlna
         private readonly IConnectionManager _connectionManager;
         private readonly IMediaReceiverRegistrar _mediaReceiverRegistrar;
 
+        // TODO: Add utf-8
+        private const string XMLContentType = "text/xml";
+
         public DlnaServerService(IDlnaManager dlnaManager, IContentDirectory contentDirectory, IConnectionManager connectionManager, IMediaReceiverRegistrar mediaReceiverRegistrar)
         {
             _dlnaManager = dlnaManager;
@@ -122,49 +125,49 @@ namespace MediaBrowser.Api.Dlna
             var serverAddress = url.Substring(0, url.IndexOf("/dlna/", StringComparison.OrdinalIgnoreCase));
             var xml = _dlnaManager.GetServerDescriptionXml(GetRequestHeaders(), request.UuId, serverAddress);
 
-            return ResultFactory.GetResult(xml, "text/xml");
+            return ResultFactory.GetResult(xml, XMLContentType);
         }
 
         public object Get(GetContentDirectory request)
         {
             var xml = _contentDirectory.GetServiceXml(GetRequestHeaders());
 
-            return ResultFactory.GetResult(xml, "text/xml");
+            return ResultFactory.GetResult(xml, XMLContentType);
         }
 
         public object Get(GetMediaReceiverRegistrar request)
         {
             var xml = _mediaReceiverRegistrar.GetServiceXml(GetRequestHeaders());
 
-            return ResultFactory.GetResult(xml, "text/xml");
+            return ResultFactory.GetResult(xml, XMLContentType);
         }
 
         public object Get(GetConnnectionManager request)
         {
             var xml = _connectionManager.GetServiceXml(GetRequestHeaders());
 
-            return ResultFactory.GetResult(xml, "text/xml");
+            return ResultFactory.GetResult(xml, XMLContentType);
         }
 
         public async Task<object> Post(ProcessMediaReceiverRegistrarControlRequest request)
         {
             var response = await PostAsync(request.RequestStream, _mediaReceiverRegistrar).ConfigureAwait(false);
 
-            return ResultFactory.GetResult(response.Xml, "text/xml");
+            return ResultFactory.GetResult(response.Xml, XMLContentType);
         }
 
         public async Task<object> Post(ProcessContentDirectoryControlRequest request)
         {
             var response = await PostAsync(request.RequestStream, _contentDirectory).ConfigureAwait(false);
 
-            return ResultFactory.GetResult(response.Xml, "text/xml");
+            return ResultFactory.GetResult(response.Xml, XMLContentType);
         }
 
         public async Task<object> Post(ProcessConnectionManagerControlRequest request)
         {
             var response = await PostAsync(request.RequestStream, _connectionManager).ConfigureAwait(false);
 
-            return ResultFactory.GetResult(response.Xml, "text/xml");
+            return ResultFactory.GetResult(response.Xml, XMLContentType);
         }
 
         private async Task<ControlResponse> PostAsync(Stream requestStream, IUpnpService service)
