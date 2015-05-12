@@ -109,6 +109,12 @@
             return false;
         }
 
+        // It flickers too much in IE
+        if ($.browser.msie) {
+
+            return false;
+        }
+
         if (!$.browser.mobile) {
             return true;
         }
