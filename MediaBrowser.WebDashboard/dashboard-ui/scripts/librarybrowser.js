@@ -1070,18 +1070,16 @@
 
             var html = "";
 
-            var primaryImageAspectRatio;
+            var primaryImageAspectRatio = LibraryBrowser.getAveragePrimaryImageAspectRatio(items);
+            var isThumbAspectRatio = primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3;
+            var isSquareAspectRatio = primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .33 ||
+                primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.3333334) < .01;
 
             if (options.shape == 'auto' || options.shape == 'autohome') {
 
-                primaryImageAspectRatio = LibraryBrowser.getAveragePrimaryImageAspectRatio(items);
-
-                if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.777777778) < .3) {
+                if (isThumbAspectRatio) {
                     options.shape = options.shape == 'auto' ? 'backdrop' : 'backdrop';
-                } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1) < .33) {
-                    options.coverImage = true;
-                    options.shape = 'square';
-                } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 1.3333334) < .01) {
+                } else if (isSquareAspectRatio) {
                     options.coverImage = true;
                     options.shape = 'square';
                 } else if (primaryImageAspectRatio && primaryImageAspectRatio > 1.9) {
@@ -1101,18 +1099,34 @@
             var squareSize = posterInfo.squareSize;
             var bannerWidth = posterInfo.bannerWidth;
 
+            if (isThumbAspectRatio) {
+                posterInfo.smallPosterWidth = posterInfo.smallThumbWidth;
+                posterWidth = thumbWidth;
+            }
+            else if (isSquareAspectRatio) {
+                posterInfo.smallPosterWidth = posterInfo.smallSquareSize;
+                posterWidth = squareSize;
+            }
+
             if (options.shape == 'backdrop' && posterInfo.defaultThumb == 'smallBackdrop') {
                 options.shape = 'smallBackdrop';
-                thumbWidth = posterInfo.smallThumbWidth;
             }
 
             else if (options.shape == 'portrait' && posterInfo.defaultPortait == 'smallPortrait') {
                 options.shape = 'smallPortrait';
-                posterWidth = posterInfo.smallPosterWidth;
             }
 
             else if (options.shape == 'square' && posterInfo.defaultSquare == 'smallSquare') {
                 options.shape = 'smallSquare';
+            }
+
+            if (options.shape == 'smallBackdrop') {
+                thumbWidth = posterInfo.smallThumbWidth;
+            }
+            else if (options.shape == 'smallPortrait') {
+                posterWidth = posterInfo.smallPosterWidth;
+            }
+            else if (options.shape == 'smallSquare') {
                 squareSize = posterInfo.smallSquareSize;
             }
             else if (options.shape == 'detailPagePortrait') {

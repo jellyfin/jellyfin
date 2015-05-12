@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WebMarkupMin.Core;
 using WebMarkupMin.Core.Minifiers;
 using WebMarkupMin.Core.Settings;
 
@@ -32,9 +33,9 @@ namespace MediaBrowser.WebDashboard.Api
         }
 
         public async Task<Stream> GetResource(string path,
-            string mode, 
+            string mode,
             string localizationCulture,
-            string appVersion, 
+            string appVersion,
             bool enableMinification)
         {
             var isHtml = IsHtml(path);
@@ -58,7 +59,7 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 // Don't apply any caching for html pages
                 // jQuery ajax doesn't seem to handle if-modified-since correctly
-                if (isHtml)
+                if (isHtml && path.IndexOf("cordovaindex.html", StringComparison.OrdinalIgnoreCase) == -1)
                 {
                     resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
                 }
@@ -137,7 +138,12 @@ namespace MediaBrowser.WebDashboard.Api
                     {
                         try
                         {
-                            var minifier = new HtmlMinifier(new HtmlMinificationSettings());
+                            var minifier = new HtmlMinifier(new HtmlMinificationSettings
+                            {
+                                AttributeQuotesRemovalMode = HtmlAttributeQuotesRemovalMode.KeepQuotes,
+                                RemoveOptionalEndTags = false,
+                                RemoveTagsWithoutContent = false
+                            });
                             var result = minifier.Minify(html, false);
 
                             if (result.Errors.Count > 0)
@@ -325,7 +331,7 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 apiClientFiles.Add("thirdparty/cordova/remotecontrols.js");
             }
-            
+
             foreach (var file in apiClientFiles)
             {
                 using (var fs = _fileSystem.GetFileStream(GetDashboardResourcePath(file), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))

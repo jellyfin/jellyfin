@@ -213,6 +213,9 @@
     <Content Include="dashboard-ui\thirdparty\apiclient\connectservice.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\thirdparty\cordova\cordovaindex.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\thirdparty\cordova\remotecontrols.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -590,10 +590,10 @@
     getClientImage: function (connection) {
 
         var clientLowered = connection.Client.toLowerCase();
+        var device = connection.DeviceName.toLowerCase();
 
-        if (clientLowered == "dashboard" || clientLowered == "emby web client" || clientLowered == "emby mobile") {
 
-            var device = connection.DeviceName.toLowerCase();
+        if (clientLowered == "dashboard" || clientLowered == "emby web client") {
 
             var imgUrl;
 
@@ -608,6 +608,19 @@
             }
             else if (device.indexOf('safari') != -1) {
                 imgUrl = 'css/images/clients/safari.png';
+            }
+            else {
+                imgUrl = 'css/images/clients/html5.png';
+            }
+
+            return "<img src='" + imgUrl + "' alt='Emby Web Client' />";
+        }
+        if (clientLowered == "emby mobile") {
+
+            var imgUrl;
+
+            if (device.indexOf('iphone') != -1 || device.indexOf('ipad') != -1) {
+                imgUrl = 'css/images/clients/ios.png';
             }
             else {
                 imgUrl = 'css/images/clients/html5.png';

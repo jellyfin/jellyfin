@@ -282,7 +282,7 @@
                     items: result.Items,
                     preferThumb: true,
                     shape: 'backdrop',
-                    overlayText: screenWidth >= 600 && !AppInfo.hasLowImageBandwidth,
+                    overlayText: screenWidth >= 800 && !AppInfo.hasLowImageBandwidth,
                     showTitle: true,
                     showParentTitle: true,
                     context: 'home',

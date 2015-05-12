@@ -1373,7 +1373,7 @@ var Dashboard = {
         return quality;
     },
 
-    normalizeImageOptions: function(options) {
+    normalizeImageOptions: function (options) {
 
         if (AppInfo.hasLowImageBandwidth) {
 
@@ -1421,44 +1421,21 @@ var Dashboard = {
 
         if (Dashboard.isRunningInCordova()) {
 
-            if ($.browser.safari) {
-
-                appName = "iOS";
-
-                if ($.browser.iphone) {
-                    deviceName = 'iPhone';
-                } else if ($.browser.ipad) {
-                    deviceName = 'iPad';
-                }
-
-            } else {
-
-                appName = "Android";
-
-            }
+            deviceName = store.getItem('cordovaDeviceName');
+            deviceId = store.getItem('cordovaDeviceId');
         }
 
         deviceName = deviceName || generateDeviceName();
 
-        // Cordova
-        //if (window.device) {
+        var seed = [];
+        var keyName = 'randomId';
 
-        //    deviceName = device.model;
-        //    deviceId = device.uuid;
-
-        //}
-        //else
-        {
-            var seed = [];
-            var keyName = 'randomId';
-
-            if (Dashboard.isRunningInCordova()) {
-                seed.push('cordova');
-                keyName = 'cordovaDeviceId';
-            }
-
-            deviceId = MediaBrowser.generateDeviceId(keyName, seed.join(','));
+        if (Dashboard.isRunningInCordova()) {
+            seed.push('cordova');
+            keyName = 'cordovaDeviceId';
         }
+
+        deviceId = deviceId || MediaBrowser.generateDeviceId(keyName, seed.join(','));
 
         return {
             appName: appName,
@@ -1468,8 +1445,8 @@ var Dashboard = {
         };
     },
 
-    loadSwipebox: function() {
-        
+    loadSwipebox: function () {
+
         var deferred = DeferredBuilder.Deferred();
 
         require([
