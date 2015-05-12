@@ -433,27 +433,9 @@ namespace MediaBrowser.Dlna.Ssdp
 
             if (string.Equals(server, _serverSignature, StringComparison.OrdinalIgnoreCase))
             {
-                return true;
+                //return true;
             }
             return false;
-            //string usn;
-            //args.Headers.TryGetValue("USN", out usn);
-
-            //if (string.IsNullOrWhiteSpace(usn))
-            //{
-            //    return false;
-            //}
-
-            //_logger.Debug("IsSelfNotification test: " + usn);
-
-            //return RegisteredDevices.Any(i =>
-            //{
-            //    var isSameDevice = string.Equals(usn, i.USN, StringComparison.OrdinalIgnoreCase) ||
-            //           i.USN.IndexOf(usn, StringComparison.OrdinalIgnoreCase) != 1 ||
-            //           usn.IndexOf(i.USN, StringComparison.OrdinalIgnoreCase) != 1;
-
-            //    return isSameDevice;
-            //});
         }
 
         public void Dispose()
