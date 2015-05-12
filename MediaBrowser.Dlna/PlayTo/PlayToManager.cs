@@ -72,8 +72,6 @@ namespace MediaBrowser.Dlna.PlayTo
 
         async void _deviceDiscovery_DeviceDiscovered(object sender, SsdpMessageEventArgs e)
         {
-            var localIp = e.LocalIp;
-
             string usn;
             if (!e.Headers.TryGetValue("USN", out usn)) usn = string.Empty;
 
@@ -125,7 +123,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
                 if (controller == null)
                 {
-                    var serverAddress = GetServerAddress(localIp);
+                    var serverAddress = GetServerAddress(e.LocalEndPoint.Address);
                     string accessToken = null;
 
                     sessionInfo.SessionController = controller = new PlayToController(sessionInfo,

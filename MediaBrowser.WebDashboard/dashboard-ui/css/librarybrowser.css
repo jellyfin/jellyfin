@@ -940,6 +940,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     color: #fff;
     background: rgb(51, 136, 204);
     background: rgba(51, 136, 204, .9);
+    line-height: 1.2;
 }
 
 .unidentifiedIndicator {

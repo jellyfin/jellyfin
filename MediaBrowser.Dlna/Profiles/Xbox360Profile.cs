@@ -14,22 +14,24 @@ namespace MediaBrowser.Dlna.Profiles
             Name = "Xbox 360";
 
             // Required according to above
-            ModelName = "Windows Media Player Sharing";
+            ModelName = "Windows Media Connect";
 
             ModelNumber = "12.0";
 
-            FriendlyName = "${HostName}: Emby:";
+            FriendlyName = "${HostName}: 1";
 
             ModelUrl = "http://go.microsoft.com/fwlink/?LinkId=105926";
             Manufacturer = "Microsoft Corporation";
             ManufacturerUrl = "http://www.microsoft.com";
             XDlnaDoc = "DMS-1.50";
-            ModelDescription = null;
+            ModelDescription = "Emby : UPnP Media Server";
+            ModelNumber = "001";
 
             TimelineOffsetSeconds = 40;
             RequiresPlainFolders = true;
             RequiresPlainVideoItems = true;
             EnableMSMediaReceiverRegistrar = true;
+            EnableDlnaProtocol = false;
 
             Identification = new DeviceIdentification
             {
@@ -312,9 +314,6 @@ namespace MediaBrowser.Dlna.Profiles
                     }
                 }
             };
-
-            XmlRootAttributes = new XmlAttribute[] { };
-            AddXmlRootAttribute("xmlns", "urn:schemas-upnp-org:device-1-0");
         }
     }
 }

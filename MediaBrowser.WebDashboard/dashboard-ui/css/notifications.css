@@ -6,7 +6,7 @@
     text-decoration: none !important;
     vertical-align: middle;
     border-radius: 1000px;
-    padding: 5px 10px;
+    padding: 6px 10px 5px;
     text-align: center;
     text-decoration: none !important;
     -moz-user-select: none;
@@ -15,6 +15,7 @@
     color: #fff;
     font-size: 13px;
     font-weight: normal;
+    display: inline;
 }
 
 .levelNormal {

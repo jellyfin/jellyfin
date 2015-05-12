@@ -1,4 +1,5 @@
-﻿using ImageMagickSharp;
+﻿using System.Linq;
+using ImageMagickSharp;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
@@ -195,15 +196,15 @@ namespace Emby.Drawing.ImageMagick
 
             if (ratio >= 1.4)
             {
-                new StripCollageBuilder(_appPaths).BuildThumbCollage(options.InputPaths, options.OutputPath, options.Width, options.Height, options.Text);
+                new StripCollageBuilder(_appPaths).BuildThumbCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height, options.Text);
             }
             else if (ratio >= .9)
             {
-                new StripCollageBuilder(_appPaths).BuildSquareCollage(options.InputPaths, options.OutputPath, options.Width, options.Height, options.Text);
+                new StripCollageBuilder(_appPaths).BuildSquareCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height, options.Text);
             }
             else
             {
-                new StripCollageBuilder(_appPaths).BuildPosterCollage(options.InputPaths, options.OutputPath, options.Width, options.Height, options.Text);
+                new StripCollageBuilder(_appPaths).BuildPosterCollage(options.InputPaths.ToList(), options.OutputPath, options.Width, options.Height, options.Text);
             }
         }
 

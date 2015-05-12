@@ -87,11 +87,14 @@ namespace MediaBrowser.Dlna.Ssdp
 
             try
             {
-                var ip = _appHost.LocalIpAddress;
-
-                if (!string.IsNullOrWhiteSpace(ip))
+                if (e.LocalEndPoint == null)
                 {
-                    e.LocalIp = IPAddress.Parse(ip);
+                    var ip = _appHost.LocalIpAddress;
+                    e.LocalEndPoint = new IPEndPoint(IPAddress.Parse(ip), 0);
+                }
+
+                if (e.LocalEndPoint != null)
+                {
                     TryCreateDevice(e);
                 }
             }
@@ -140,7 +143,7 @@ namespace MediaBrowser.Dlna.Ssdp
                         {
                             var args = SsdpHelper.ParseSsdpResponse(receiveBuffer);
                             args.EndPoint = endPoint;
-                            args.LocalIp = localIp;
+                            args.LocalEndPoint = new IPEndPoint(localIp, 0);
 
                             if (!_ssdpHandler.IsSelfNotification(args))
                             {

@@ -532,7 +532,7 @@
 
             var href = card.href || LibraryBrowser.getHref(item, context);
             var header = Globalize.translate('HeaderLatestFromChannel').replace('{0}', '<a href="' + href + '" style="outline:0;">' + item.Name + '</a>');
-            html += '<h2 style="padding:.5em 1em;background:#222;margin:0;">' + header + '</h2>';
+            html += '<h3 style="padding:.5em 1em;background:#222;margin:0;">' + header + '</h3>';
 
             html += '<div class="groupingMenuScroller">';
 
@@ -546,64 +546,7 @@
             });
 
             html += '</div>';
-            //html += '<a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>';
-            //html += '<div>';
-            //html += '<ul data-role="listview">';
 
-            //var href = card.href || LibraryBrowser.getHref(item, context);
-            //var header = Globalize.translate('HeaderLatestFromChannel').replace('{0}', '<a href="' + href + '">' + item.Name + '</a>');
-            //html += '<li data-role="list-divider">' + header + '</li>';
-
-            //html += '</ul>';
-
-            //html += '<div class="groupingMenuScroller">';
-            //html += '<ul data-role="listview">';
-
-            //html += latestItems.map(function (latestItem) {
-
-            //    var itemHtml = '';
-
-            //    href = LibraryBrowser.getHref(latestItem, context);
-            //    itemHtml += '<li class="ui-li-has-thumb"><a href="' + href + '">';
-
-            //    var imgUrl;
-
-            //    if (latestItem.ImageTags.Primary) {
-
-            //        // Scaling 400w episode images to 80 doesn't turn out very well
-            //        var width = latestItem.Type == 'Episode' ? 160 : 80;
-            //        imgUrl = ApiClient.getScaledImageUrl(latestItem.Id, {
-            //            width: width,
-            //            tag: latestItem.ImageTags.Primary,
-            //            type: "Primary",
-            //            index: 0
-            //        });
-
-            //    }
-            //    if (imgUrl) {
-            //        itemHtml += '<div class="listviewImage ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');"></div>';
-            //    }
-
-            //    itemHtml += '<h3>';
-            //    itemHtml += LibraryBrowser.getPosterViewDisplayName(latestItem);
-            //    itemHtml += '</h3>';
-
-            //    var date = parseISO8601Date(latestItem.DateCreated, { toLocal: true });
-
-            //    itemHtml += '<p>';
-            //    itemHtml += Globalize.translate('LabelAddedOnDate').replace('{0}', date.toLocaleDateString());
-            //    itemHtml += '</p>';
-
-            //    itemHtml += '</a></li>';
-
-            //    return itemHtml;
-
-            //}).join('');
-
-            //html += '</ul>';
-            //html += '</div>';
-
-            //html += '</div>';
             html += '</div>';
 
             $($.mobile.activePage).append(html);

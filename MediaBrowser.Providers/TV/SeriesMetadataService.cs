@@ -52,7 +52,7 @@ namespace MediaBrowser.Providers.TV
                 target.Status = source.Status;
             }
 
-            if (replaceData || target.AirDays.Count == 0)
+            if (replaceData || target.AirDays == null || target.AirDays.Count == 0)
             {
                 target.AirDays = source.AirDays;
             }

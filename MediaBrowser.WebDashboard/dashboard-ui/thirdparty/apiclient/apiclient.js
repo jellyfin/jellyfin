@@ -2372,6 +2372,10 @@
             }
 
             options.quality = options.quality || self.getDefaultImageQuality(options.type);
+
+            if (self.normalizeImageOptions) {
+                self.normalizeImageOptions(options);
+            }
         }
 
         /**
@@ -2438,6 +2442,10 @@
             }
 
             options.quality = options.quality || self.getDefaultImageQuality(options.type);
+
+            if (self.normalizeImageOptions) {
+                self.normalizeImageOptions(options);
+            }
 
             // Don't put these on the query string
             delete options.type;

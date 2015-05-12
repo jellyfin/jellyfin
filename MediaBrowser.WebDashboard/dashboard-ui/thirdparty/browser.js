@@ -920,7 +920,12 @@
 
         var browser = match[1] || "";
 
-        if (ua.indexOf("like gecko") != -1 && ua.indexOf('webkit') == -1 && ua.indexOf('opera') == -1 && ua.indexOf('chrome') == -1 && ua.indexOf('safari') == -1) {
+        if (ua.indexOf("windows phone") != -1 || ua.indexOf("iemobile") != -1) {
+
+            // http://www.neowin.net/news/ie11-fakes-user-agent-to-fool-gmail-in-windows-phone-81-gdr1-update
+            browser = "msie";
+        }
+        else if (ua.indexOf("like gecko") != -1 && ua.indexOf('webkit') == -1 && ua.indexOf('opera') == -1 && ua.indexOf('chrome') == -1 && ua.indexOf('safari') == -1) {
             browser = "msie";
         }
 
@@ -944,18 +949,22 @@
         browser[matched.platform] = true;
     }
 
-    // Chrome is Webkit, but Webkit is also Safari.
-    if (browser.chrome || browser.safari) {
-        browser.webkit = true;
+    if (userAgent.toLowerCase().indexOf("webkit") != -1 && !browser.chrome && !browser.msie) {
+        browser.safari = true;
     }
 
     var md = new MobileDetect(userAgent);
 
-    browser.mobile = md.mobile();
+    if (md.mobile()) {
+        browser.mobile = true;
+    } else {
+        browser.mobile = null;
+    }
 
     if (browser.msie && !browser.mobile && userAgent.toLowerCase().indexOf("xbox") != -1) {
         browser.tv = true;
     }
+
     jQuery.browser = browser;
 
 })(jQuery, window);

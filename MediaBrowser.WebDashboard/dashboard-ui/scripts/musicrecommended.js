@@ -26,6 +26,7 @@
                 items: items,
                 showUnplayedIndicator: false,
                 showChildCountIndicator: true,
+                showLatestItemsPopup: false,
                 shape: "square",
                 showTitle: true,
                 showParentTitle: true,

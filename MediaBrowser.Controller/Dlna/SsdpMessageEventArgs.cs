@@ -12,7 +12,7 @@ namespace MediaBrowser.Controller.Dlna
 
         public Dictionary<string, string> Headers { get; set; }
 
-        public IPAddress LocalIp { get; set; }
+        public IPEndPoint LocalEndPoint { get; set; }
         public byte[] Message { get; set; }
 
         public SsdpMessageEventArgs()

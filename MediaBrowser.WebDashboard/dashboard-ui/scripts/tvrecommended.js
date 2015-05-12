@@ -69,6 +69,8 @@
 
         var parentId = LibraryMenu.getTopParentId();
 
+        var screenWidth = $(window).width();
+
         var limit = AppInfo.hasLowImageBandwidth ?
          4 :
          6;
@@ -102,7 +104,7 @@
                 shape: "backdrop",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: true,
+                overlayText: screenWidth >= 800 && !AppInfo.hasLowImageBandwidth,
                 lazy: true,
                 context: 'tv'
 

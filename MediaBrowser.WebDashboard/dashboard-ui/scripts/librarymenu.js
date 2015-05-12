@@ -5,7 +5,7 @@
         var html = '<div class="viewMenuBar ui-bar-b">';
 
         if (($.browser.safari && window.navigator.standalone) || Dashboard.isRunningInCordova()) {
-            html += '<a data-rel="back" data-role="none" href="#" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-circle-o-left"></div></a>';
+            html += '<button type="button" data-role="none" onclick="history.back();" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-left"></div></button>';
         }
 
         html += '<button type="button" data-role="none" title="Menu" class="headerButton dashboardMenuButton barsMenuButton headerButtonLeft">';
@@ -47,7 +47,7 @@
 
         if (user.name) {
 
-            html += '<a class="headerButton headerButtonRight headerUserButton" href="#" onclick="Dashboard.showUserFlyout(this);">';
+            html += '<button class="headerButton headerButtonRight headerUserButton" type="button" data-role="none" onclick="Dashboard.showUserFlyout(this);">';
 
             if (user.imageUrl && AppInfo.enableUserImage) {
 
@@ -59,12 +59,12 @@
                     url += "&height=" + (userButtonHeight * Math.max(devicePixelRatio || 1, 2));
                 }
 
-                html += '<div class="lazy" data-src="' + url + '" style="width:' + userButtonHeight + 'px;height:' + userButtonHeight + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;"></div>';
+                html += '<div class="lazy headerUserImage" data-src="' + url + '" style="width:' + userButtonHeight + 'px;height:' + userButtonHeight + 'px;"></div>';
             } else {
                 html += '<div class="fa fa-user"></div>';
             }
 
-            html += '</a>';
+            html += '</button>';
         }
 
         if (user.canManageServer) {

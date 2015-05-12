@@ -1373,6 +1373,14 @@ var Dashboard = {
         return quality;
     },
 
+    normalizeImageOptions: function (options) {
+
+        if (AppInfo.hasLowImageBandwidth) {
+
+            options.enableImageEnhancers = false;
+        }
+    },
+
     getAppInfo: function () {
 
         function generateDeviceName() {
@@ -1387,7 +1395,7 @@ var Dashboard = {
                 name = "Internet Explorer";
             } else if ($.browser.opera) {
                 name = "Opera";
-            } else if ($.browser.firefox || $.browser.mozilla) {
+            } else if ($.browser.mozilla) {
                 name = "Firefox";
             }
 
@@ -1413,44 +1421,21 @@ var Dashboard = {
 
         if (Dashboard.isRunningInCordova()) {
 
-            if ($.browser.safari) {
-
-                appName = "iOS";
-
-                if ($.browser.iphone) {
-                    deviceName = 'iPhone';
-                } else if ($.browser.ipad) {
-                    deviceName = 'iPad';
-                }
-
-            } else {
-
-                appName = "Android";
-
-            }
+            deviceName = store.getItem('cordovaDeviceName');
+            deviceId = store.getItem('cordovaDeviceId');
         }
 
         deviceName = deviceName || generateDeviceName();
 
-        // Cordova
-        //if (window.device) {
+        var seed = [];
+        var keyName = 'randomId';
 
-        //    deviceName = device.model;
-        //    deviceId = device.uuid;
-
-        //}
-        //else
-        {
-            var seed = [];
-            var keyName = 'randomId';
-
-            if (Dashboard.isRunningInCordova()) {
-                seed.push('cordova');
-                keyName = 'cordovaDeviceId';
-            }
-
-            deviceId = MediaBrowser.generateDeviceId(keyName, seed.join(','));
+        if (Dashboard.isRunningInCordova()) {
+            seed.push('cordova');
+            keyName = 'cordovaDeviceId';
         }
+
+        deviceId = deviceId || MediaBrowser.generateDeviceId(keyName, seed.join(','));
 
         return {
             appName: appName,
@@ -1460,8 +1445,8 @@ var Dashboard = {
         };
     },
 
-    loadSwipebox: function() {
-        
+    loadSwipebox: function () {
+
         var deferred = DeferredBuilder.Deferred();
 
         require([
@@ -1588,6 +1573,7 @@ var AppInfo = {};
 
         if (window.ApiClient) {
             ApiClient.getDefaultImageQuality = Dashboard.getDefaultImageQuality;
+            ApiClient.normalizeImageOptions = Dashboard.normalizeImageOptions;
 
             if (!Dashboard.isRunningInCordova()) {
                 Dashboard.importCss(ApiClient.getUrl('Branding/Css'));

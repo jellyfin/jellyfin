@@ -12,7 +12,10 @@
 
     var unveilId = 0;
 
-    $.fn.unveil = function (threshold, callback) {
+    // Test search before setting to 0
+    var threshold = 100;
+
+    $.fn.unveil = function () {
 
         var $w = $(window),
             th = threshold || 0,
@@ -68,7 +71,7 @@
         var lazyItems = $(".lazy", this);
 
         if (lazyItems.length) {
-            lazyItems.unveil(0);
+            lazyItems.unveil();
         }
 
         return this;
@@ -76,7 +79,7 @@
 
     $.fn.lazyImage = function (url) {
 
-        return this.attr('data-src', url).unveil(0);
+        return this.attr('data-src', url).unveil();
     };
 
 })(window.jQuery || window.Zepto);
@@ -94,6 +97,17 @@
         // Create an objectStore
         console.log("Creating objectStore");
         dataBase.createObjectStore(imagesStoreName);
+    }
+
+    function setImageIntoElement(elem, url) {
+
+        if (elem.tagName === "DIV") {
+
+            elem.style.backgroundImage = "url('" + url + "')";
+
+        } else {
+            elem.setAttribute("src", url);
+        }
     }
 
     function openDb() {
@@ -271,6 +285,8 @@
                     } catch (err) {
                         deferred.reject();
                     }
+                } else {
+                    deferred.reject();
                 }
             }, false);
 
@@ -281,34 +297,173 @@
 
         self.setImageInto = function (elem, url) {
 
-            //if (!self.db()) {
-            //    if (elem.tagName === "DIV") {
-
-            //        elem.style.backgroundImage = "url('" + url + "')";
-
-            //    } else {
-            //        elem.setAttribute("src", url);
-            //    }
-            //    return;
-            //}
+            function onFail() {
+                setImageIntoElement(elem, url);
+            }
 
             openPromise.done(function () {
 
                 self.getImageUrl(url).done(function (localUrl) {
 
-                    if (elem.tagName === "DIV") {
+                    setImageIntoElement(elem, localUrl);
 
-                        elem.style.backgroundImage = "url('" + localUrl + "')";
+                }).fail(onFail);
 
-                    } else {
-                        elem.setAttribute("src", localUrl);
-                    }
+            }).fail(onFail);
 
-                }).fail(function() {
-                    new simpleImageStore().setImageInto(elem, url);
+        };
+    }
+
+    function indexedDbBlobImageStore() {
+
+        var self = this;
+
+        var openPromise = openDb().done(function (db) {
+
+            self._db = db;
+        });
+
+        self.addImageToDatabase = function (blob, key) {
+
+            console.log("addImageToDatabase");
+
+            // Open a transaction to the database
+            var transaction = self.db().transaction([imagesStoreName], "readwrite");
+
+            // Put the blob into the dabase
+            var put = transaction.objectStore(imagesStoreName).put(blob, key);
+        };
+
+        self.revokeUrl = function (url) {
+
+            // Get window.URL object
+            var URL = window.URL || window.webkitURL;
+            URL.revokeObjectURL(url);
+        };
+
+        self.db = function () {
+
+            return self._db;
+        };
+
+        self.get = function (key) {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            var transaction = self.db().transaction([imagesStoreName], "readonly");
+
+            // Open a transaction to the database
+            var getRequest = transaction.objectStore(imagesStoreName).get(key);
+
+            getRequest.onsuccess = function (event) {
+
+                var imgFile = event.target.result;
+
+                if (imgFile) {
+
+                    // Get window.URL object
+                    var URL = window.URL || window.webkitURL;
+
+                    // Create and revoke ObjectURL
+                    var imgUrl = URL.createObjectURL(imgFile);
+
+                    deferred.resolveWith(null, [imgUrl]);
+                } else {
+                    deferred.reject();
+                }
+            };
+
+            getRequest.onerror = function () {
+                deferred.reject();
+            };
+
+            return deferred.promise();
+        };
+
+        self.getImageUrl = function (originalUrl) {
+
+            console.log('getImageUrl:' + originalUrl);
+
+            var key = CryptoJS.SHA1(originalUrl + "1").toString();
+
+            var deferred = DeferredBuilder.Deferred();
+
+            self.get(key).done(function (url) {
+
+                deferred.resolveWith(null, [url]);
+
+            }).fail(function () {
+
+                self.downloadImage(originalUrl, key).done(function () {
+                    self.get(key).done(function (url) {
+
+                        deferred.resolveWith(null, [url]);
+
+                    }).fail(function () {
+
+                        deferred.reject();
+                    });
+                }).fail(function () {
+
+                    deferred.reject();
                 });
-
             });
+
+            return deferred.promise();
+        };
+
+        self.downloadImage = function (url, key) {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            console.log('downloadImage:' + url);
+
+            // Create XHR
+            var xhr = new XMLHttpRequest();
+
+            xhr.open("GET", url, true);
+            // Set the responseType to blob
+            xhr.responseType = "arraybuffer";
+
+            xhr.addEventListener("load", function () {
+
+                if (xhr.status === 200) {
+                    console.log("Image retrieved");
+
+                    try {
+                        var blob = new Blob([this.response], { type: this.getResponseHeader('content-type') });
+
+                        // Put the received blob into IndexedDB
+                        self.addImageToDatabase(blob, key);
+                        deferred.resolve();
+                    } catch (err) {
+                        deferred.reject();
+                    }
+                } else {
+                    deferred.reject();
+                }
+            }, false);
+
+            // Send XHR
+            xhr.send();
+            return deferred.promise();
+        };
+
+        self.setImageInto = function (elem, url) {
+
+            function onFail() {
+                setImageIntoElement(elem, url);
+            }
+
+            openPromise.done(function () {
+
+                self.getImageUrl(url).done(function (localUrl) {
+
+                    setImageIntoElement(elem, localUrl);
+
+                }).fail(onFail);
+
+            }).fail(onFail);
 
         };
     }
@@ -317,21 +472,19 @@
 
         var self = this;
 
-        self.setImageInto = function (elem, url) {
-
-            if (elem.tagName === "DIV") {
-
-                elem.style.backgroundImage = "url('" + url + "')";
-
-            } else {
-                elem.setAttribute("src", url);
-            }
-        };
+        self.setImageInto = setImageIntoElement;
     }
 
-    if ($.browser.safari && indexedDB) {
+    if ($.browser.safari && indexedDB && window.Blob) {
+        console.log('creating indexedDbBlobImageStore');
+        window.ImageStore = new indexedDbBlobImageStore();
+    }
+    else if ($.browser.safari && indexedDB) {
+        console.log('creating indexedDbImageStore');
         window.ImageStore = new indexedDbImageStore();
-    } else {
+    }
+    else {
+        console.log('creating simpleImageStore');
         window.ImageStore = new simpleImageStore();
     }
 

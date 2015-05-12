@@ -130,6 +130,10 @@ h1 a:hover {
     font-weight: 400;
 }
 
+.ui-listview > .ui-li-divider {
+    line-height: 1.5;
+    line-height: initial;
+}
 /* 
     Make all panels vertically scrollable 
     If this causes any problems then perhaps require a css class to activate

@@ -13,15 +13,22 @@
 }
 
 .headerBackButton {
-    padding-right: 0 !important;
+    padding-right: 5px !important;
 }
 
-.viewMenuBar, .barsMenuButton, .libraryMenuButtonText, .btnCast {
+.headerButton {
     height: 50px;
+    line-height: 50px;
+    display: inline-block;
 }
 
-.barsMenuButton, .libraryMenuButtonText, .btnCast {
-    line-height: 50px;
+.headerUserImage {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    border-radius: 1000px;
+    vertical-align: middle;
+    display: inline-block;
 }
 
 .viewMenuBar .fa {
@@ -32,7 +39,6 @@
 
 .headerButton {
     margin: 0;
-    padding: 0;
     background-color: transparent;
     top: 0;
     bottom: 0;
@@ -56,10 +62,6 @@
 .headerButtonLeft {
     padding: 0 15px;
 }
-
-    .headerButtonLeft:first-child {
-        padding-left: 10px;
-    }
 
 .menuArrow {
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAbklEQ…yGDxkLaBtENI9kPMk0gaoW0Dyj0aWowFLYNYzWB6MWMAAAq1H3+Mhu2hQAAAAASUVORK5CYII=);
