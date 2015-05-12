@@ -139,15 +139,7 @@ namespace MediaBrowser.Dlna.Ssdp
             values["MX"] = "3";
 
             // UDP is unreliable, so send 3 requests at a time (per Upnp spec, sec 1.1.2)
-            SendDatagram("M-SEARCH * HTTP/1.1", values, localIp, 2);
-        }
-
-        public void SendDatagram(string header,
-            Dictionary<string, string> values,
-            EndPoint localAddress,
-            int sendCount)
-        {
-            SendDatagram(header, values, _ssdpEndp, localAddress, false, sendCount);
+            SendDatagram("M-SEARCH * HTTP/1.1", values, _ssdpEndp, localIp, false, 2);
         }
 
         public void SendDatagram(string header,
@@ -524,7 +516,7 @@ namespace MediaBrowser.Dlna.Ssdp
                 _logger.Debug("{0} said {1}", dev.USN, type);
             }
 
-            SendDatagram(header, values, new IPEndPoint(dev.Address, 0), sendCount);
+            SendDatagram(header, values, _ssdpEndp, new IPEndPoint(dev.Address, 0), false, sendCount);
         }
 
         public void RegisterNotification(Guid uuid, Uri descriptionUri, IPAddress address, IEnumerable<string> services)
