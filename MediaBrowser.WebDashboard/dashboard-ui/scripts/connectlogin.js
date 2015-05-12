@@ -100,7 +100,7 @@
     function loadMode(page, mode) {
 
         $(document.body).prepend('<div class="backdropContainer" style="background-image:url(css/images/splash.jpg);top:0;"></div>');
-        $(page).addClass('lightBackdropPage backdropPage staticBackdropPage');
+        $(page).addClass('backdropPage staticBackdropPage');
 
         if (mode == 'welcome') {
             $('.connectLoginForm', page).hide();

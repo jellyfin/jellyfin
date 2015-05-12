@@ -71,7 +71,7 @@
         } else {
             html += '<div class="cardImage" style="text-align:center;">';
 
-            var icon = server.Id == 'new' ? 'plus-circle' : 'globe';
+            var icon = server.Id == 'new' ? 'plus-circle' : 'server';
             html += '<i class="fa fa-' + icon + '" style="color:#fff;vertical-align:middle;font-size:100px;"></i>';
         }
 
