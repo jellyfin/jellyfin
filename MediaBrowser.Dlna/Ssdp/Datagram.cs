@@ -30,7 +30,7 @@ namespace MediaBrowser.Dlna.Ssdp
         {
             var msg = Encoding.ASCII.GetBytes(Message);
 
-            var socket = CreateSocket();
+            var socket = CreateSocket(!IgnoreBindFailure);
 
             if (socket == null)
             {
@@ -102,13 +102,20 @@ namespace MediaBrowser.Dlna.Ssdp
             }
         }
 
-        private Socket CreateSocket()
+        private Socket CreateSocket(bool isBroadcast)
         {
             try
             {
                 var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+
+                if (isBroadcast)
+                {
+                    socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
+                    socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
+                }
+
                 return socket;
             }
             catch (Exception ex)
