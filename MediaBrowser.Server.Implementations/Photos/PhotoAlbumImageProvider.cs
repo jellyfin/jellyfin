@@ -1,44 +1,27 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.IO;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Photos
 {
-    public class PhotoAlbumImageProvider : IDynamicImageProvider
+    public class PhotoAlbumImageProvider : BaseDynamicImageProvider<PhotoAlbum>
     {
-        public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
+        public PhotoAlbumImageProvider(IFileSystem fileSystem, IProviderManager providerManager, IApplicationPaths applicationPaths, IImageProcessor imageProcessor)
+            : base(fileSystem, providerManager, applicationPaths, imageProcessor)
         {
-            return new List<ImageType> { ImageType.Primary };
         }
 
-        public Task<DynamicImageResponse> GetImage(IHasImages item, ImageType type, CancellationToken cancellationToken)
+        protected override Task<List<BaseItem>> GetItemsWithImages(IHasImages item)
         {
-            var album = (PhotoAlbum)item;
+            var photoAlbum = (PhotoAlbum)item;
+            var items = GetFinalItems(photoAlbum.Children.ToList());
 
-            var image = album.Children
-                .OfType<Photo>()
-                .Select(i => i.GetImagePath(type))
-                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
-
-            return Task.FromResult(new DynamicImageResponse
-            {
-                Path = image,
-                HasImage = !string.IsNullOrEmpty(image)
-            });
-        }
-
-        public string Name
-        {
-            get { return "Image Extractor"; }
-        }
-
-        public bool Supports(IHasImages item)
-        {
-            return item is PhotoAlbum;
+            return Task.FromResult(items);
         }
     }
 }
