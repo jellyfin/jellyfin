@@ -1452,6 +1452,6 @@
     "OptionReportList": "List View",
     "OptionReportStatistics": "Statistics",
     "OptionReportGrouping": "Grouping",
-    "OptionReportExport": "Report Export",
-    "OptionReportColumns": "Report Columns"
+    "HeaderExport": "Export",
+    "HeaderColumns": "Columns"
 }
