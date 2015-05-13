@@ -1453,5 +1453,6 @@
     "OptionReportStatistics": "Statistics",
     "OptionReportGrouping": "Grouping",
     "HeaderExport": "Export",
-    "HeaderColumns": "Columns"
+    "HeaderColumns": "Columns",
+    "ButtonReset": "Reset"
 }

@@ -408,7 +408,7 @@ namespace MediaBrowser.Api.Reports
 		/// <param name="isPreFiltered"> true if this object is pre filtered. </param>
 		/// <param name="libraryManager"> Manager for library. </param>
 		/// <returns> true if it succeeds, false if it fails. </returns>
-		private bool ApplyAdditionalFilters(GetItems request, BaseItem i, User user, bool isPreFiltered, ILibraryManager libraryManager)
+        private bool ApplyAdditionalFilters(BaseReportRequest request, BaseItem i, User user, bool isPreFiltered, ILibraryManager libraryManager)
 		{
 			var video = i as Video;
 
