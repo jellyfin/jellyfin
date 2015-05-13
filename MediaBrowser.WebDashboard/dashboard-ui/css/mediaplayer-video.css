@@ -37,7 +37,7 @@
 
 .videoControls {
     padding: .5em .5em;
-    background-color: rgba(0, 0, 0, .8);
+    background-color: rgba(0, 0, 0, .7);
     position: fixed;
     left: 0;
     bottom: 0;
@@ -74,8 +74,9 @@
 }
 
 .nowPlayingInfo {
-    text-align: center;
-    padding: 1em 1em 1.5em;
+  text-align: center;
+  padding: 1em 1em 0 1em;
+
 }
 
 #videoPlayer .nowPlayingImage img {
@@ -95,11 +96,11 @@
     vertical-align: top;
     position: static;
     color: #eee;
-    max-width: 800px;
+    max-width: 80%;
 }
 
 .videoNowPlayingName {
-    font-size: 26px;
+    font-size: 22px;
 }
 
 .videoNowPlayingOverview, .videoNowPlayingRating {
@@ -198,8 +199,8 @@
 @media all and (min-width: 1300px) {
     #videoPlayer .nowPlayingImage img {
         height: auto !important;
-        max-width: 250px;
-        max-height: 300px;
+        max-width: 400px;
+        max-height: 250px;
     }
 }
 

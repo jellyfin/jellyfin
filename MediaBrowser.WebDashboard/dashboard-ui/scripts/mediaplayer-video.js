@@ -290,8 +290,8 @@
             var state = self.getPlayerStateInternal(self.currentMediaElement, item, self.currentMediaSource);
 
             var url = "";
-            var imageWidth = 250;
-            var imageHeight = 400;
+            var imageWidth = 400;
+            var imageHeight = 250;
 
             if (state.NowPlayingItem.PrimaryImageTag) {
 
