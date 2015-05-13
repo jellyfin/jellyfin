@@ -15,8 +15,6 @@
 
     function getThreshold() {
 
-        var threshold = 100;
-
         if (window.AppInfo && AppInfo.hasLowImageBandwidth) {
             return 0;
         }
