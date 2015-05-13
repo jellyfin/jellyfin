@@ -291,7 +291,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var culture = "en-US";
 
-            var appVersion = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+            var appVersion = _appHost.ApplicationVersion.ToString();
 
             var mode = request.Mode;
 
