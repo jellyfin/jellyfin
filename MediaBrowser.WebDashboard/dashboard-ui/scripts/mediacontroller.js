@@ -389,7 +389,7 @@
         };
 
         // TOOD: This doesn't really belong here
-        self.getNowPlayingNameHtml = function (nowPlayingItem) {
+        self.getNowPlayingNameHtml = function (nowPlayingItem, includeNonNameInfo) {
 
             var topText = nowPlayingItem.Name;
 
@@ -412,7 +412,7 @@
                 bottomText = topText;
                 topText = nowPlayingItem.SeriesName || nowPlayingItem.Album;
             }
-            else if (nowPlayingItem.ProductionYear) {
+            else if (nowPlayingItem.ProductionYear && includeNonNameInfo !== false) {
                 bottomText = nowPlayingItem.ProductionYear;
             }
 

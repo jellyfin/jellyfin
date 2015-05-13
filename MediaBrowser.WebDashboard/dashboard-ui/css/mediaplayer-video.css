@@ -74,10 +74,8 @@
 }
 
 .nowPlayingInfo {
-    position: fixed;
-    bottom: 8px;
-    left: 10px;
-    z-index: 99999;
+    text-align: center;
+    padding: 1em 1em 1.5em;
 }
 
 #videoPlayer .nowPlayingImage img {
@@ -88,14 +86,24 @@
 
 #videoPlayer .nowPlayingText {
     font-weight: normal;
-    margin: 0 0 0 5px;
-    max-width: 150px;
+    margin: 0 0 0 1em;
+    max-width: initial;
     overflow: hidden;
-    white-space: nowrap;
+    white-space: normal;
     text-overflow: ellipsis;
     text-align: left;
-    vertical-align: bottom;
+    vertical-align: top;
     position: static;
+    color: #eee;
+    max-width: 800px;
+}
+
+.videoNowPlayingName {
+    font-size: 26px;
+}
+
+.videoNowPlayingOverview, .videoNowPlayingRating {
+    margin: 1em 0;
 }
 
 .videoTopControlsLogo {
@@ -155,20 +163,6 @@
         margin-right: 0;
         min-width: 120px;
     }
-
-    .videoControls .nowPlayingText {
-        max-width: 160px;
-    }
-
-    #mediaPlayer .nowPlayingImage {
-        display: none;
-    }
-}
-
-@media all and (max-width: 960px), all and (max-height: 550px) {
-    .videoControls .nowPlayingText {
-        max-width: 90px;
-    }
 }
 
 @media all and (max-width: 800px), all and (max-height: 460px) {
@@ -178,7 +172,7 @@
     }
 }
 
-@media all and (max-width: 1000px), all and (max-height: 460px) {
+@media all and (max-width: 1000px), all and (max-height: 600px) {
 
     #mediaPlayer .nowPlayingImage, #mediaPlayer .nowPlayingText {
         display: none;
@@ -204,7 +198,7 @@
 @media all and (min-width: 1300px) {
     #videoPlayer .nowPlayingImage img {
         height: auto !important;
-        max-width: 150px;
+        max-width: 250px;
         max-height: 300px;
     }
 }

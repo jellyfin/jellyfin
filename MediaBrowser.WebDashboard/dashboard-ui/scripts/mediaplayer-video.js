@@ -290,12 +290,14 @@
             var state = self.getPlayerStateInternal(self.currentMediaElement, item, self.currentMediaSource);
 
             var url = "";
+            var imageWidth = 250;
+            var imageHeight = 400;
 
             if (state.NowPlayingItem.PrimaryImageTag) {
 
                 url = ApiClient.getScaledImageUrl(state.NowPlayingItem.PrimaryImageItemId, {
                     type: "Primary",
-                    width: 150,
+                    width: imageWidth,
                     tag: state.NowPlayingItem.PrimaryImageTag
                 });
             }
@@ -303,7 +305,7 @@
 
                 url = ApiClient.getScaledImageUrl(state.NowPlayingItem.PrimaryImageItemId, {
                     type: "Primary",
-                    width: 150,
+                    width: imageWidth,
                     tag: state.NowPlayingItem.PrimaryImageTag
                 });
             }
@@ -311,7 +313,7 @@
 
                 url = ApiClient.getScaledImageUrl(state.NowPlayingItem.BackdropItemId, {
                     type: "Backdrop",
-                    height: 300,
+                    height: imageHeight,
                     tag: state.NowPlayingItem.BackdropImageTag,
                     index: 0
                 });
@@ -321,19 +323,13 @@
 
                 url = ApiClient.getScaledImageUrl(state.NowPlayingItem.ThumbImageItemId, {
                     type: "Thumb",
-                    height: 300,
+                    height: imageHeight,
                     tag: state.NowPlayingItem.ThumbImageTag
                 });
             }
 
             var nowPlayingTextElement = $('.nowPlayingText', mediaControls);
-            var nameHtml = MediaController.getNowPlayingNameHtml(state.NowPlayingItem);
-
-            if (nameHtml.indexOf('<br/>') != -1) {
-                nowPlayingTextElement.addClass('nowPlayingDoubleText');
-            } else {
-                nowPlayingTextElement.removeClass('nowPlayingDoubleText');
-            }
+            var nameHtml = MediaController.getNowPlayingNameHtml(state.NowPlayingItem, false);
 
             if (url) {
                 $('.nowPlayingImage', mediaControls).html('<img src="' + url + '" />');
@@ -352,6 +348,25 @@
                 $('.videoTopControlsLogo', mediaControls).html('<img src="' + url + '" />');
             } else {
                 $('.videoTopControlsLogo', mediaControls).html('');
+            }
+
+            nameHtml = '<div class="videoNowPlayingName">' + nameHtml + '</div>';
+
+            var miscInfo = LibraryBrowser.getMiscInfoHtml(item);
+            if (miscInfo) {
+
+                nameHtml += '<div class="videoNowPlayingRating">' + miscInfo + '</div>';
+            }
+
+            var ratingHtml = LibraryBrowser.getRatingHtml(item);
+            if (ratingHtml) {
+
+                nameHtml += '<div class="videoNowPlayingRating">' + ratingHtml + '</div>';
+            }
+
+            if (item.Overview) {
+
+                nameHtml += '<div class="videoNowPlayingOverview">' + item.Overview + '</div>';
             }
 
             nowPlayingTextElement.html(nameHtml);
