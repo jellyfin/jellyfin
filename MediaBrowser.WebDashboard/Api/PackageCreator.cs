@@ -102,7 +102,17 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.String.</returns>
         private string GetDashboardResourcePath(string virtualPath)
         {
-            return Path.Combine(DashboardUIPath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
+            var rootPath = DashboardUIPath;
+
+            var fullPath = Path.Combine(rootPath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
+
+            // Don't allow file system access outside of the source folder
+            if (!_fileSystem.ContainsSubPath(rootPath, fullPath))
+            {
+                throw new UnauthorizedAccessException();
+            }
+
+            return fullPath;
         }
 
         /// <summary>
