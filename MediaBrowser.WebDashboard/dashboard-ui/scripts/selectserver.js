@@ -154,7 +154,7 @@
         // Need the timeout because jquery mobile will not show a popup if there's currently already one in the process of closing
         setTimeout(function () {
 
-            Dashboard.hideLoadingMsg();
+            Dashboard.hideModalLoadingMsg();
             Dashboard.alert({
                 message: Globalize.translate('DefaultErrorMessage')
             });
@@ -164,12 +164,12 @@
 
     function acceptInvitation(page, id) {
 
-        Dashboard.showLoadingMsg();
+        Dashboard.showModalLoadingMsg();
 
         // Add/Update connect info
         ConnectionManager.acceptServer(id).done(function () {
 
-            Dashboard.hideLoadingMsg();
+            Dashboard.hideModalLoadingMsg();
             loadPage(page);
 
         }).fail(function () {
@@ -180,12 +180,12 @@
 
     function deleteServer(page, id) {
 
-        Dashboard.showLoadingMsg();
+        Dashboard.showModalLoadingMsg();
 
         // Add/Update connect info
         ConnectionManager.deleteServer(id).done(function () {
 
-            Dashboard.hideLoadingMsg();
+            Dashboard.hideModalLoadingMsg();
             loadPage(page);
 
         }).fail(function () {
@@ -197,12 +197,12 @@
 
     function rejectInvitation(page, id) {
 
-        Dashboard.showLoadingMsg();
+        Dashboard.showModalLoadingMsg();
 
         // Add/Update connect info
         ConnectionManager.rejectServer(id).done(function () {
 
-            Dashboard.hideLoadingMsg();
+            Dashboard.hideModalLoadingMsg();
             loadPage(page);
 
         }).fail(function () {
@@ -372,6 +372,8 @@
 
         Dashboard.showLoadingMsg();
 
+        Backdrops.setDefault(page);
+
         ConnectionManager.getAvailableServers().done(function (servers) {
 
             servers = servers.slice(0);
@@ -400,7 +402,17 @@
         loadInvitations(page);
     }
 
-    $(document).on('pageshow', "#selectServerPage", function () {
+    $(document).on('pagebeforecreate', "#selectServerPage", function () {
+
+        var page = this;
+
+        if (ConnectionManager.isLoggedIntoConnect()) {
+            $(page).addClass('libraryPage').addClass(' noSecondaryNavPage').removeClass('standalonePage');
+        } else {
+            $(page).removeClass('libraryPage').removeClass(' noSecondaryNavPage').addClass('standalonePage');
+        }
+
+    }).on('pagebeforeshow', "#selectServerPage", function () {
 
         var page = this;
 

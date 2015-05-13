@@ -97,6 +97,19 @@
         });
     }
 
+    function setDefault(page) {
+        
+        var backdropContainer = $('.backdropContainer');
+
+        if (backdropContainer.length) {
+            backdropContainer.css('backgroundImage', 'url(css/images/splash.jpg)');
+        } else {
+            $(document.body).prepend('<div class="backdropContainer" style="background-image:url(css/images/splash.jpg);top:0;"></div>');
+        }
+
+        $(page).addClass('backdropPage staticBackdropPage');
+    }
+
     function clearBackdrop() {
 
         $('.backdropContainer').css('backgroundImage', '');
@@ -213,7 +226,8 @@
     window.Backdrops = {
 
         setBackdrops: setBackdrops,
-        setBackdropUrl: setBackdropUrl
+        setBackdropUrl: setBackdropUrl,
+        setDefault: setDefault
     };
 
 })(jQuery, document);

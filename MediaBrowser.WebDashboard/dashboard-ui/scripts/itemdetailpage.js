@@ -342,7 +342,7 @@
 
         var chapters = item.Chapters || [];
 
-        if (!chapters.length) {
+        if (!chapters.length || AppInfo.hasLowImageBandwidth) {
             $('#scenesCollapsible', page).hide();
         } else {
             $('#scenesCollapsible', page).show();
@@ -616,9 +616,11 @@
 
         var promise;
 
+        var screenWidth = $(window).width();
+
         var options = {
             userId: Dashboard.getCurrentUserId(),
-            limit: 5,
+            limit: screenWidth > 800 ? 5 : 4,
             fields: "PrimaryImageAspectRatio,UserData,SyncInfo"
         };
 

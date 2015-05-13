@@ -626,7 +626,7 @@
                 imgUrl = 'css/images/clients/html5.png';
             }
 
-            return "<img src='" + imgUrl + "' alt='Emby Web Client' />";
+            return "<img src='" + imgUrl + "' alt='Emby Mobile' />";
         }
         if (clientLowered == "mb-classic") {
 

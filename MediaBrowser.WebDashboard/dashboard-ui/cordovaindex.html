@@ -27,12 +27,23 @@
     <script type="text/javascript">
         document.addEventListener("deviceready", function () {
 
-            var deviceId = device.uuid;
+            function setDeviceId(deviceId) {
 
-            localStorage.setItem('cordovaDeviceName', device.model);
-            localStorage.setItem('cordovaDeviceId', device.uuid);
+                localStorage.setItem('cordovaDeviceName', device.model);
+                localStorage.setItem('cordovaDeviceId', deviceId);
 
-            window.location.replace('index.html');
+                window.location.replace('index.html');
+            }
+
+            window.plugins.uniqueDeviceID.get(function (uuid) {
+
+                setDeviceId(uuid);
+
+            }, function () {
+
+                // Failure. Use cordova uuid
+                setDeviceId(device.uuid);
+            });
 
         }, false);
     </script>

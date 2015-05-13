@@ -139,6 +139,8 @@
 
             var html = '';
 
+            var cardLayout = AppInfo.hasLowImageBandwidth;
+
             if (items.length) {
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
@@ -157,6 +159,9 @@
                     showUnplayedIndicator: false,
                     showChildCountIndicator: true,
                     lazy: true,
+                    cardLayout: cardLayout,
+                    showTitle: cardLayout,
+                    showYear: cardLayout
                 });
                 html += '</div>';
             }
@@ -275,6 +280,8 @@
 
             var html = '';
 
+            var cardLayout = AppInfo.hasLowImageBandwidth;
+
             if (result.Items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderResume') + '</h1>';
                 html += '<div>';
@@ -282,11 +289,12 @@
                     items: result.Items,
                     preferThumb: true,
                     shape: 'backdrop',
-                    overlayText: screenWidth >= 800 && !AppInfo.hasLowImageBandwidth,
+                    overlayText: screenWidth >= 800 && !cardLayout,
                     showTitle: true,
                     showParentTitle: true,
                     context: 'home',
-                    lazy: true
+                    lazy: true,
+                    cardLayout: cardLayout
                 });
                 html += '</div>';
             }
@@ -542,10 +550,10 @@
 
     function dismissWelcome(page, userId) {
 
-        ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
+        getDisplayPreferences('home', userId).done(function (result) {
 
             result.CustomPrefs[homePageTourKey] = homePageDismissValue;
-            ApiClient.updateDisplayPreferences('home', result, userId, 'webclient');
+            ApiClient.updateDisplayPreferences('home', result, userId, getDisplayPreferencesAppName());
         });
     }
 
@@ -635,7 +643,7 @@
 
         var userId = Dashboard.getCurrentUserId();
 
-        ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
+        getDisplayPreferences('home', userId).done(function (result) {
 
             Dashboard.getCurrentUser().done(function (user) {
 
@@ -647,5 +655,21 @@
         });
 
     });
+
+    function getDisplayPreferencesAppName() {
+        
+        if (Dashboard.isRunningInCordova()) {
+            return 'Emby Mobile';
+        }
+
+        return 'webclient';
+    }
+
+    function getDisplayPreferences(key, userId) {
+
+        return ApiClient.getDisplayPreferences(key, userId, getDisplayPreferencesAppName()).done(function (result) {
+            
+        });
+    }
 
 })(jQuery, document);

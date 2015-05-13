@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'PosterCard');
 
     // The base query options
     var query = {
@@ -40,15 +40,36 @@
 
             updateFilterControls(page);
 
-            // Poster
-            html = LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "auto",
-                context: getParameterByName('context') || 'photos',
-                showTitle: query.MediaTypes != 'Photo',
-                overlayText: true,
-                lazy: true
-            });
+            if (AppInfo.hasLowImageBandwidth) {
+                if (view == 'Poster') {
+                    view = 'PosterCard';
+                }
+            }
+
+            if (view == "Poster") {
+                // Poster
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "auto",
+                    context: getParameterByName('context') || 'photos',
+                    showTitle: query.MediaTypes != 'Photo',
+                    overlayText: true,
+                    lazy: true
+                });
+            }
+            else if (view == "PosterCard") {
+
+                // Poster
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "auto",
+                    context: getParameterByName('context') || 'photos',
+                    showTitle: true,
+                    lazy: true,
+                    cardLayout: true,
+                    showPremiereDate: true
+                });
+            }
 
             var elem = $('#items', page).html(html).lazyChildren();
 

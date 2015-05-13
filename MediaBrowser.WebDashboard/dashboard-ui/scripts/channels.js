@@ -21,14 +21,32 @@
 
             updateFilterControls(page);
 
-            html = LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "backdrop",
-                context: 'channels',
-                showTitle: true,
-                centerText: true,
-                preferThumb: true
-            });
+            var view = 'Thumb';
+
+            if (view == "Thumb") {
+
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    context: 'channels',
+                    showTitle: true,
+                    centerText: true,
+                    preferThumb: true
+                });
+
+            }
+            else if (view == "ThumbCard") {
+
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    preferThumb: true,
+                    context: 'channels',
+                    lazy: true,
+                    cardLayout: true,
+                    showTitle: true
+                });
+            }
 
             $('#items', page).html(html).lazyChildren();
 

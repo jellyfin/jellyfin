@@ -146,8 +146,10 @@
                 defaultShape: 'square',
                 context: 'channels',
                 showTitle: true,
-                centerText: true,
-                coverImage: true
+                coverImage: true,
+                cardLayout: true,
+                showYear: true,
+                lazy: true
             });
 
             var elem = $('#items', page).html(html).lazyChildren();

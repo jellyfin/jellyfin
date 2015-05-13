@@ -12,13 +12,23 @@
 
     var unveilId = 0;
 
-    // Test search before setting to 0
-    var threshold = 100;
+
+    function getThreshold() {
+
+        var threshold = 100;
+
+        if (window.AppInfo && AppInfo.hasLowImageBandwidth) {
+            return 0;
+        }
+
+        // Test search before setting to 0
+        return 100;
+    }
 
     $.fn.unveil = function () {
 
         var $w = $(window),
-            th = threshold || 0,
+            th = getThreshold(),
             attrib = "data-src",
             images = this,
             loaded;
@@ -90,7 +100,7 @@
     var indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.OIndexedDB || window.msIndexedDB,
         dbVersion = 1.0;
 
-    var dbName = "emby3";
+    var dbName = "emby4";
     var imagesStoreName = "images";
 
     function createObjectStore(dataBase) {
@@ -160,9 +170,10 @@
 
         var self = this;
 
-        var openPromise = openDb().done(function (db) {
+        openDb().done(function (db) {
 
             self._db = db;
+            window.ImageStore = self;
         });
 
         self.addImageToDatabase = function (blob, key) {
@@ -174,13 +185,6 @@
 
             // Put the blob into the dabase
             var put = transaction.objectStore(imagesStoreName).put(blob, key);
-        };
-
-        self.revokeUrl = function (url) {
-
-            // Get window.URL object
-            var URL = window.URL || window.webkitURL;
-            URL.revokeObjectURL(url);
         };
 
         self.db = function () {
@@ -283,6 +287,7 @@
                         self.addImageToDatabase(dataURL, key);
                         deferred.resolve();
                     } catch (err) {
+                        console.log("Error adding image to database");
                         deferred.reject();
                     }
                 } else {
@@ -301,13 +306,9 @@
                 setImageIntoElement(elem, url);
             }
 
-            openPromise.done(function () {
+            self.getImageUrl(url).done(function (localUrl) {
 
-                self.getImageUrl(url).done(function (localUrl) {
-
-                    setImageIntoElement(elem, localUrl);
-
-                }).fail(onFail);
+                setImageIntoElement(elem, localUrl);
 
             }).fail(onFail);
 
@@ -318,9 +319,10 @@
 
         var self = this;
 
-        var openPromise = openDb().done(function (db) {
+        openDb().done(function (db) {
 
             self._db = db;
+            window.ImageStore = self;
         });
 
         self.addImageToDatabase = function (blob, key) {
@@ -332,13 +334,6 @@
 
             // Put the blob into the dabase
             var put = transaction.objectStore(imagesStoreName).put(blob, key);
-        };
-
-        self.revokeUrl = function (url) {
-
-            // Get window.URL object
-            var URL = window.URL || window.webkitURL;
-            URL.revokeObjectURL(url);
         };
 
         self.db = function () {
@@ -437,6 +432,8 @@
                         self.addImageToDatabase(blob, key);
                         deferred.resolve();
                     } catch (err) {
+                        console.log("Error adding blob to database");
+                        alert("Error adding blob to database");
                         deferred.reject();
                     }
                 } else {
@@ -455,16 +452,250 @@
                 setImageIntoElement(elem, url);
             }
 
-            openPromise.done(function () {
+            self.getImageUrl(url).done(function (localUrl) {
 
-                self.getImageUrl(url).done(function (localUrl) {
-
-                    setImageIntoElement(elem, localUrl);
-
-                }).fail(onFail);
+                setImageIntoElement(elem, localUrl);
 
             }).fail(onFail);
+        };
+    }
 
+    function indexedDbWebpImageStore() {
+
+        var self = this;
+
+        openDb().done(function (db) {
+
+            self._db = db;
+            window.ImageStore = self;
+        });
+
+        self.addImageToDatabase = function (blob, key) {
+
+            console.log("addImageToDatabase");
+
+            // Open a transaction to the database
+            var transaction = self.db().transaction([imagesStoreName], "readwrite");
+
+            // Put the blob into the dabase
+            var put = transaction.objectStore(imagesStoreName).put(blob, key);
+        };
+
+        self.db = function () {
+
+            return self._db;
+        };
+
+        self.get = function (key) {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            var transaction = self.db().transaction([imagesStoreName], "readonly");
+
+            // Open a transaction to the database
+            var getRequest = transaction.objectStore(imagesStoreName).get(key);
+
+            getRequest.onsuccess = function (event) {
+
+                var imgFile = event.target.result;
+
+                if (imgFile) {
+                    deferred.resolveWith(null, [imgFile]);
+                } else {
+                    deferred.reject();
+                }
+            };
+
+            getRequest.onerror = function () {
+                deferred.reject();
+            };
+
+            return deferred.promise();
+        };
+
+        self.getImageUrl = function (originalUrl) {
+
+            console.log('getImageUrl:' + originalUrl);
+
+            var key = CryptoJS.SHA1(originalUrl).toString();
+
+            var deferred = DeferredBuilder.Deferred();
+
+            self.get(key).done(function (url) {
+
+                deferred.resolveWith(null, [url]);
+
+            }).fail(function () {
+
+                self.downloadImage(originalUrl, key).done(function () {
+                    self.get(key).done(function (url) {
+
+                        deferred.resolveWith(null, [url]);
+
+                    }).fail(function () {
+
+                        deferred.reject();
+                    });
+                }).fail(function () {
+
+                    deferred.reject();
+                });
+            });
+
+            return deferred.promise();
+        };
+
+        self.downloadImage = function (url, key) {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            console.log('downloadImage:' + url);
+
+            // Create XHR
+            var xhr = new XMLHttpRequest();
+
+            xhr.open("GET", url, true);
+            // Set the responseType to blob
+            xhr.responseType = "arraybuffer";
+
+            xhr.addEventListener("load", function () {
+
+                if (xhr.status === 200) {
+                    console.log("Image retrieved");
+
+                    try {
+
+
+                        self.addImageToDatabase(this.response, key);
+                        deferred.resolve();
+                    } catch (err) {
+                        console.log("Error adding image to database");
+                        deferred.reject();
+                    }
+                } else {
+                    deferred.reject();
+                }
+            }, false);
+
+            // Send XHR
+            xhr.send();
+            return deferred.promise();
+        };
+
+        function decode(data, elem) {
+
+            console.log('decoding webp');
+
+            var WebPImage = { width: { value: 0 }, height: { value: 0 } }
+            var decoder = new WebPDecoder();
+
+            //Config, you can set all arguments or what you need, nothing no objeect 
+            var config = decoder.WebPDecoderConfig;
+            var output_buffer = config.j;
+            var bitstream = config.input;
+
+            if (!decoder.WebPInitDecoderConfig(config)) {
+                throw new Error("Library version mismatch!\n");
+            }
+
+            var StatusCode = decoder.VP8StatusCode;
+
+            var status = decoder.WebPGetFeatures(data, data.length, bitstream);
+            if (status != 0) {
+                console.log('error');
+            }
+
+            var mode = decoder.WEBP_CSP_MODE;
+            output_buffer.J = 4;
+
+            status = decoder.WebPDecode(data, data.length, config);
+
+            var ok = (status == 0);
+            if (!ok) {
+                throw new Error("Decoding of %s failed.\n");
+            }
+
+            drawIntoElement(output_buffer, elem);
+        }
+
+        function drawIntoElement(output_buffer, elem) {
+
+            console.log('drawing canvas');
+
+            var bitmap = output_buffer.c.RGBA.ma;
+
+            var canvas = document.createElement("canvas");
+
+            var biHeight = output_buffer.height; var biWidth = output_buffer.width;
+
+            canvas.height = biHeight;
+            canvas.width = biWidth;
+
+            var context = canvas.getContext('2d');
+            var output = context.createImageData(canvas.width, canvas.height);
+            var outputData = output.data;
+
+            for (var h = 0; h < biHeight; h++) {
+                for (var w = 0; w < biWidth; w++) {
+                    outputData[0 + w * 4 + (biWidth * 4) * h] = bitmap[1 + w * 4 + (biWidth * 4) * h];
+                    outputData[1 + w * 4 + (biWidth * 4) * h] = bitmap[2 + w * 4 + (biWidth * 4) * h];
+                    outputData[2 + w * 4 + (biWidth * 4) * h] = bitmap[3 + w * 4 + (biWidth * 4) * h];
+                    outputData[3 + w * 4 + (biWidth * 4) * h] = bitmap[0 + w * 4 + (biWidth * 4) * h];
+
+                };
+            }
+
+            context.putImageData(output, 0, 0);
+
+            elem.appendChild(canvas);
+        }
+
+        self.setImageInto = function (elem, url) {
+
+            if (url.indexOf('format=webp') == -1 || elem.tagName != 'DIV') {
+
+                setImageIntoElement(elem, url);
+                return;
+            }
+
+            // Create XHR
+            var xhr = new XMLHttpRequest();
+
+            xhr.open("GET", url, true);
+            // Set the responseType to blob
+            xhr.responseType = "arraybuffer";
+
+            xhr.addEventListener("load", function () {
+
+                if (xhr.status === 200) {
+                    console.log("Image retrieved");
+
+                    try {
+
+                        var arr = new Uint8Array(this.response);
+
+                        //// Convert the int array to a binary string
+                        //// We have to use apply() as we are converting an *array*
+                        //// and String.fromCharCode() takes one or more single values, not
+                        //// an array.
+                        //var raw = String.fromCharCode.apply(null, arr);
+
+                        //// This works!!!
+                        //var b64 = btoa(raw);
+                        //var dataURL = "data:image/jpeg;base64," + b64;
+
+                        console.log(url);
+                        decode(arr, elem);
+
+                    } catch (err) {
+                        console.log("Error adding image to database");
+                    }
+                } else {
+                }
+            }, false);
+
+            // Send XHR
+            xhr.send();
         };
     }
 
@@ -475,17 +706,16 @@
         self.setImageInto = setImageIntoElement;
     }
 
-    if ($.browser.safari && indexedDB && window.Blob) {
-        console.log('creating indexedDbBlobImageStore');
-        window.ImageStore = new indexedDbBlobImageStore();
-    }
-    else if ($.browser.safari && indexedDB) {
-        console.log('creating indexedDbImageStore');
-        window.ImageStore = new indexedDbImageStore();
-    }
-    else {
-        console.log('creating simpleImageStore');
-        window.ImageStore = new simpleImageStore();
-    }
+    console.log('creating simpleImageStore');
+    window.ImageStore = new simpleImageStore();
+
+    //if ($.browser.safari && indexedDB && window.Blob) {
+    //    console.log('creating indexedDbBlobImageStore');
+    //    new indexedDbBlobImageStore();
+    //}
+    //else if ($.browser.safari && indexedDB) {
+    //    console.log('creating indexedDbImageStore');
+    //    new indexedDbImageStore();
+    //}
 
 })();

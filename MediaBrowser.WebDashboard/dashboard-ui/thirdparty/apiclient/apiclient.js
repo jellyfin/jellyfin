@@ -126,6 +126,7 @@
             Events.trigger(self, 'requestfail', [
             {
                 url: this.url,
+                type: this.type,
                 status: e.status,
                 errorCode: e.getResponseHeader("X-Application-Error-Code")
             }]);

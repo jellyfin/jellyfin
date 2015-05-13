@@ -1535,3 +1535,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .movieTrailersTabDisabled .movieTrailersTab {
     display: none !important;
 }
+
+.homeFavoritesTabDisabled .homeFavoritesTab {
+    display: none !important;
+}

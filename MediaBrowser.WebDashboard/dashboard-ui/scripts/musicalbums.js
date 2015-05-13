@@ -44,6 +44,12 @@
             updateFilterControls(page);
             var trigger = false;
 
+            if (AppInfo.hasLowImageBandwidth) {
+                if (view == 'Poster') {
+                    view = 'PosterCard';
+                }
+            }
+
             if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,

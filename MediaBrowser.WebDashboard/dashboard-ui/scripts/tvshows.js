@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'PosterCard');
 
     // The base query options
     var query = {
@@ -43,6 +43,15 @@
 
             updateFilterControls(page);
 
+            if (AppInfo.hasLowImageBandwidth) {
+                if (view == 'Thumb') {
+                    view = 'ThumbCard';
+                }
+                else if (view == 'Poster') {
+                    view = 'PosterCard';
+                }
+            }
+
             if (view == "Thumb") {
 
                 html = LibraryBrowser.getPosterViewHtml({
@@ -50,7 +59,8 @@
                     shape: "backdrop",
                     preferThumb: true,
                     context: 'tv',
-                    lazy: true
+                    lazy: true,
+                    overlayText: true
                 });
 
             }
@@ -104,9 +114,9 @@
                     items: result.Items,
                     shape: "portrait",
                     context: 'tv',
-                    showTitle: false,
                     centerText: true,
-                    lazy: true
+                    lazy: true,
+                    overlayText: true
                 });
             }
 

@@ -87,7 +87,7 @@ var Dashboard = {
         }
         Dashboard.hideLoadingMsg();
 
-        if (!Dashboard.suppressAjaxErrors) {
+        if (!Dashboard.suppressAjaxErrors && data.type != 'GET') {
 
             setTimeout(function () {
 
@@ -427,6 +427,10 @@ var Dashboard = {
     },
 
     navigate: function (url, preserveQueryString) {
+
+        if (!url) {
+            throw new Error('url cannot be null or empty');
+        }
 
         var queryString = getWindowLocationSearch();
         if (preserveQueryString && queryString) {
@@ -1363,10 +1367,10 @@ var Dashboard = {
 
         if (AppInfo.hasLowImageBandwidth) {
 
-            quality -= 10;
+            quality -= 20;
 
             if (isBackdrop) {
-                quality -= 10;
+                quality -= 20;
             }
         }
 
@@ -1420,6 +1424,8 @@ var Dashboard = {
         var deviceId;
 
         if (Dashboard.isRunningInCordova()) {
+
+            appName = "Emby Mobile";
 
             deviceName = store.getItem('cordovaDeviceName');
             deviceId = store.getItem('cordovaDeviceId');
@@ -1501,6 +1507,7 @@ var AppInfo = {};
             AppInfo.enableLatestChannelItems = true;
             AppInfo.enableStudioTabs = true;
             AppInfo.enablePeopleTabs = true;
+            AppInfo.enableHomeFavoritesTab = true;
             AppInfo.enableTvEpisodesTab = true;
             AppInfo.enableMusicArtistsTab = true;
             AppInfo.enableHomeLatestTab = true;
@@ -1615,6 +1622,10 @@ var AppInfo = {};
 
         if (!AppInfo.enablePeopleTabs) {
             $(document.body).addClass('peopleTabDisabled');
+        }
+
+        if (!AppInfo.enableHomeFavoritesTab) {
+            $(document.body).addClass('homeFavoritesTabDisabled');
         }
 
         if (!AppInfo.enableTvEpisodesTab) {
@@ -1780,6 +1791,7 @@ var AppInfo = {};
 
         $(onReady);
     }
+
 })();
 
 Dashboard.jQueryMobileInit();

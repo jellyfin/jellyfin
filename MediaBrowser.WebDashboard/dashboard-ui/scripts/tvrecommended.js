@@ -1,5 +1,23 @@
 ﻿(function ($, document) {
 
+    function getView() {
+
+        if (AppInfo.hasLowImageBandwidth) {
+            return 'ThumbCard';
+        }
+
+        return 'Thumb';
+    }
+
+    function getResumeView() {
+
+        if (AppInfo.hasLowImageBandwidth) {
+            return 'PosterCard';
+        }
+
+        return 'Poster';
+    }
+
     function reload(page) {
 
         var context = '';
@@ -50,17 +68,37 @@
                 $('.noNextUpItems', page).show();
             }
 
-            $('#nextUpItems', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "backdrop",
-                showTitle: true,
-                showParentTitle: true,
-                overlayText: false,
-                context: context,
-                lazy: true,
-                preferThumb: true
+            var view = getView();
+            var html = '';
 
-            })).lazyChildren();
+            if (view == 'ThumbCard') {
+
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    showTitle: true,
+                    preferThumb: true,
+                    showParentTitle: true,
+                    lazy: true,
+                    cardLayout: true,
+                    context: 'tv'
+                });
+
+            } else if (view == 'Thumb') {
+
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    showTitle: true,
+                    showParentTitle: true,
+                    overlayText: false,
+                    context: context,
+                    lazy: true,
+                    preferThumb: true
+                });
+            }
+
+            $('#nextUpItems', page).html(html).lazyChildren();
 
         });
     }
@@ -99,16 +137,35 @@
                 $('.nextUpHeader', page).addClass('firstListHeader');
             }
 
-            $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "backdrop",
-                showTitle: true,
-                showParentTitle: true,
-                overlayText: screenWidth >= 800 && !AppInfo.hasLowImageBandwidth,
-                lazy: true,
-                context: 'tv'
+            var view = getResumeView();
+            var html = '';
 
-            })).lazyChildren();
+            if (view == 'PosterCard') {
+
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    showTitle: true,
+                    showParentTitle: true,
+                    lazy: true,
+                    cardLayout: true,
+                    context: 'tv'
+                });
+
+            } else if (view == 'Poster') {
+
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    showTitle: true,
+                    showParentTitle: true,
+                    overlayText: screenWidth >= 800 && !AppInfo.hasLowImageBandwidth,
+                    lazy: true,
+                    context: 'tv'
+                });
+            }
+
+            $('#resumableItems', page).html(html).lazyChildren();
 
         });
     }

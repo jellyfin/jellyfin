@@ -103,7 +103,7 @@
         // cardScalable
         html += "</div>";
 
-        html += '<div class="cardFooter">';
+        html += '<div class="cardFooter outerCardFooter">';
 
         var textLines = [];
 

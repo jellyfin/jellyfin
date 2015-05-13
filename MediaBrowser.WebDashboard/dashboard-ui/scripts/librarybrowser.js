@@ -1006,9 +1006,7 @@
 
             var imagesPerRow = LibraryBrowser.getPostersPerRow(screenWidth);
 
-            if (AppInfo.hasLowImageBandwidth) {
-                screenWidth *= .95;
-            } else {
+            if (!AppInfo.hasLowImageBandwidth) {
                 screenWidth *= 1.25;
             }
 
@@ -1565,7 +1563,8 @@
             if (options.cardLayout) {
                 html += '<div class="cardText" style="text-align:right; float:right;">';
                 // Render out the jqm classes so that we don't have to call trigger create
-                html += '<button class="listviewMenuButton ui-btn ui-icon-ellipsis-v ui-btn-icon-notext ui-btn-inline ui-shadow ui-corner-all" type="button" data-inline="true" data-iconpos="notext" data-icon="ellipsis-v" style="margin: 4px 0 0;"></button>';
+                //html += '<button class="listviewMenuButton ui-btn ui-icon-ellipsis-v ui-btn-icon-notext ui-btn-inline ui-shadow ui-corner-all" type="button" data-inline="true" data-iconpos="notext" data-icon="ellipsis-v" style="margin: 4px 0 0;"></button>';
+                html += '<button class="listviewMenuButton imageButton btnCardOptions" type="button" data-role="none" style="margin: 4px 0 0;"><i class="fa fa-ellipsis-v"></i></button>';
                 html += "</div>";
             }
 
@@ -1618,15 +1617,19 @@
                 lines.push(songLine);
             }
 
-            if (options.showPremiereDate && item.PremiereDate) {
+            if (options.showPremiereDate) {
 
-                try {
+                if (item.PremiereDate) {
+                    try {
 
-                    lines.push(LibraryBrowser.getPremiereDateText(item));
+                        lines.push(LibraryBrowser.getPremiereDateText(item));
 
-                } catch (err) {
+                    } catch (err) {
+                        lines.push('');
+
+                    }
+                } else {
                     lines.push('');
-
                 }
             }
 

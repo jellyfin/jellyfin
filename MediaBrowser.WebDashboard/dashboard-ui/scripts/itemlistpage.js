@@ -55,6 +55,12 @@
                 context = 'folders';
             }
 
+            if (AppInfo.hasLowImageBandwidth) {
+                if (view == 'Poster') {
+                    view = 'PosterCard';
+                }
+            }
+
             if (view == "Backdrop") {
 
                 html = LibraryBrowser.getPosterViewHtml({
@@ -73,6 +79,16 @@
                     showTitle: true,
                     centerText: true,
                     context: context
+                });
+            }
+            else if (view == "PosterCard") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "auto",
+                    showTitle: true,
+                    context: context,
+                    cardLayout: true,
+                    showYear: true
                 });
             }
 

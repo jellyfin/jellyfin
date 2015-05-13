@@ -1,10 +1,29 @@
 ﻿(function ($, document) {
 
+    function getView() {
+        
+        if (AppInfo.hasLowImageBandwidth) {
+            return 'PosterCard';
+        }
+
+        return 'PosterCard';
+    }
+
+    function getResumeView() {
+
+        if (AppInfo.hasLowImageBandwidth) {
+            return 'ThumbCard';
+        }
+
+        return 'ThumbCard';
+    }
+
     function loadLatest(page, userId, parentId) {
 
-        var limit = AppInfo.hasLowImageBandwidth ?
-            15 :
-            18;
+        var limit = 18;
+        if (AppInfo.hasLowImageBandwidth) {
+            limit = 10;
+        }
 
         var options = {
 
@@ -18,13 +37,34 @@
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
-            $('#recentlyAddedItems', page).html(LibraryBrowser.getPosterViewHtml({
-                items: items,
-                lazy: true,
-                shape: 'portrait',
-                overlayText: false
+            var view = getView();
+            var html = '';
 
-            })).lazyChildren().trigger('create');
+            if (view == 'PosterCard') {
+
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: items,
+                    lazy: true,
+                    shape: 'portrait',
+                    overlayText: false,
+                    showTitle: true,
+                    showYear: true,
+                    cardLayout: true
+
+                });
+
+            } else if (view == 'Poster') {
+                
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: items,
+                    shape: "portrait",
+                    centerText: true,
+                    lazy: true,
+                    overlayText: true
+                });
+            }
+
+            $('#recentlyAddedItems', page).html(html).lazyChildren().trigger('create');
         });
     }
 
@@ -55,15 +95,35 @@
                 $('#resumableSection', page).hide();
             }
 
-            $('#resumableItems', page).html(LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                preferThumb: true,
-                shape: 'backdrop',
-                overlayText: true,
-                showTitle: true,
-                lazy: true
+            var view = getResumeView();
+            var html = '';
 
-            })).lazyChildren().trigger('create');
+            if (view == 'ThumbCard') {
+
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    preferThumb: true,
+                    shape: 'backdrop',
+                    showTitle: true,
+                    showYear: true,
+                    lazy: true,
+                    cardLayout: true
+
+                });
+
+            } else if (view == 'Thumb') {
+
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    preferThumb: true,
+                    shape: 'backdrop',
+                    overlayText: true,
+                    showTitle: true,
+                    lazy: true
+                });
+            }
+
+            $('#resumableItems', page).html(html).lazyChildren().trigger('create');
 
         });
     }
@@ -95,12 +155,32 @@
         html += '<h1 class="listHeader">' + title + '</h1>';
 
         html += '<div>';
-        html += LibraryBrowser.getPosterViewHtml({
-            items: recommendation.Items,
-            lazy: true,
-            shape: 'portrait',
-            overlayText: true
-        });
+
+        var view = getView();
+
+        if (view == 'PosterCard') {
+
+            html += LibraryBrowser.getPosterViewHtml({
+                items: recommendation.Items,
+                lazy: true,
+                shape: 'portrait',
+                overlayText: false,
+                showTitle: true,
+                showYear: true,
+                cardLayout: true
+
+            });
+
+        } else if (view == 'Poster') {
+
+            html += LibraryBrowser.getPosterViewHtml({
+                items: recommendation.Items,
+                shape: "portrait",
+                centerText: true,
+                lazy: true,
+                overlayText: true
+            });
+        }
         html += '</div>';
 
         return html;

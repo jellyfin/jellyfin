@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'PosterCard');
 
     // The base query options
     var query = {
@@ -53,6 +53,15 @@
             updateFilterControls(page);
             var trigger = false;
 
+            if (AppInfo.hasLowImageBandwidth) {
+                if (view == 'Thumb') {
+                    view = 'ThumbCard';
+                }
+                else if (view == 'Poster') {
+                    view = 'PosterCard';
+                }
+            }
+
             if (result.TotalRecordCount) {
 
                 if (view == "List") {
@@ -74,6 +83,17 @@
                         lazy: true
                     });
                 }
+                else if (view == "PosterCard") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "auto",
+                        context: 'movies',
+                        showTitle: true,
+                        cardLayout: true,
+                        lazy: true,
+                        showItemCounts: true
+                    });
+                }
                 else if (view == "Thumb") {
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
@@ -83,6 +103,18 @@
                         centerText: true,
                         lazy: true,
                         preferThumb: true
+                    });
+                }
+                else if (view == "ThumbCard") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "backdrop",
+                        context: 'movies',
+                        showTitle: true,
+                        lazy: true,
+                        preferThumb: true,
+                        cardLayout: true,
+                        showItemCounts: true
                     });
                 }
 

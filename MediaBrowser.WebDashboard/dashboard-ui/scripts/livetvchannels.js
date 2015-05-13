@@ -11,7 +11,8 @@
         return LibraryBrowser.getPosterViewHtml({
             items: channels,
             shape: "smallBackdrop",
-            centerText: true
+            centerText: true,
+            lazy: true
         });
     }
 
