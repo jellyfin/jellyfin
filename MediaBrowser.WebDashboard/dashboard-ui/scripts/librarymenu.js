@@ -20,15 +20,6 @@
 
         html += '<div class="libraryMenuButtonText headerButton"><span>EMBY</span></div>';
 
-        if (user.localUser) {
-
-            html += '<div class="viewMenuSearch"><form class="viewMenuSearchForm">';
-            html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
-            html += '<div class="searchInputIcon fa fa-search"></div>';
-            html += '<button data-role="none" type="button" data-iconpos="notext" class="imageButton btnCloseSearch" style="display:none;"><i class="fa fa-close"></i></button>';
-            html += '</form></div>';
-        }
-
         html += '<div class="viewMenuSecondary">';
 
         var btnCastVisible = user.localUser ? '' : 'visibility:hidden;';
@@ -43,6 +34,12 @@
 
         if (user.localUser) {
             html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton"><div class="fa fa-search" style="font-size:21px;"></div></button>';
+
+            html += '<div class="viewMenuSearch hide"><form class="viewMenuSearchForm">';
+            html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
+            html += '<div class="searchInputIcon fa fa-search"></div>';
+            html += '<button data-role="none" type="button" data-iconpos="notext" class="imageButton btnCloseSearch"><i class="fa fa-close"></i></button>';
+            html += '</form></div>';
         }
 
         if (user.name) {

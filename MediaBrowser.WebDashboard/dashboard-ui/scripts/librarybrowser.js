@@ -964,7 +964,7 @@
                 var div = $('<div class="card ' + shape + 'Card"><div class="cardBox"><div class="cardImage"></div></div></div>').appendTo(document.body);
                 var width = screenWidth / $('.cardImage', div).innerWidth();
                 div.remove();
-                return width;
+                return Math.floor(width);
             }
 
             var info = {};

@@ -90,9 +90,8 @@
         function onPopupOpen(elem) {
             elem.popup("open").parents(".ui-popup-container").css("margin-top", 30);
 
-            // TODO: With iOS 8 this might not be required anymore
             if ($.browser.safari) {
-                //$('.itemVideo').css('visibility', 'hidden');
+                $('.itemVideo').css('visibility', 'hidden');
             }
         }
 
@@ -291,7 +290,7 @@
 
             var url = "";
             var imageWidth = 400;
-            var imageHeight = 280;
+            var imageHeight = 300;
 
             if (state.NowPlayingItem.PrimaryImageTag) {
 
@@ -355,7 +354,7 @@
                     $('.selectedNowPlayingTabButton').removeClass('selectedNowPlayingTabButton');
                     $(this).addClass('selectedNowPlayingTabButton');
                     $('.nowPlayingTab').hide();
-                    $('.' + this.getAttribute('data-tab')).show('slide').trigger('scroll');
+                    $('.' + this.getAttribute('data-tab')).show().trigger('scroll');
                 }
             });
 

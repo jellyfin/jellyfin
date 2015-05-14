@@ -81,7 +81,14 @@
 }
 
 .largeCardMargin .visualCardBox {
-    margin: 18px;
+    margin: 12px;
+}
+
+@media all and (min-width: 600px) {
+
+    .largeCardMargin .visualCardBox {
+        margin: 18px;
+    }
 }
 
 .ui-page-theme-b .visualCardBox {

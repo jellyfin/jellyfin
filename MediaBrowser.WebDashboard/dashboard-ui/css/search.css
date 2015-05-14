@@ -146,36 +146,37 @@
     color: #ddd;
     border-radius: 3px;
     padding: 4px 7px 3px 50px;
-    font-size: 14px;
+    font-size: 16px;
     font-family: Roboto;
     outline: none;
     vertical-align: middle;
-    width: 180px;
+    width: 85%;
 }
 
 .searchInputIcon {
     position: absolute;
     left: 20px;
-    top: 6px;
-    font-size: 14px !important;
+    top: 15px;
+    font-size: 16px !important;
     color: #ddd !important;
 }
 
 .viewMenuSearch {
-    position: relative;
-    display: none;
-    margin-left: 2em;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #000000;
+    z-index: 1000;
 }
 
-@media all and (min-width: 1200px) {
+.viewMenuSearch:not(.hide) {
+    display: inline-block;
+}
 
-    .viewMenuSearch {
-        display: inline-block;
-    }
-
-    .headerSearchButton {
-        display: none;
-    }
+.viewMenuSearchForm {
+    max-width: initial;
+    padding: 10px;
 }
 
 .searchResultsOverlay {
