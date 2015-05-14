@@ -1691,7 +1691,7 @@ var AppInfo = {};
 
         videoPlayerHtml += '<div class="nowPlayingInfo hiddenOnIdle">';
         videoPlayerHtml += '<div class="nowPlayingImage"></div>';
-        videoPlayerHtml += '<div class="nowPlayingText"></div>';
+        videoPlayerHtml += '<div class="nowPlayingTabs"></div>';
         videoPlayerHtml += '</div>'; // nowPlayingInfo
 
         videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton videoTrackControl imageButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-role="none"><i class="fa fa-step-backward"></i></button>';
@@ -1801,22 +1801,27 @@ $(document).on('pagecreate', ".page", function () {
     var page = $(this);
 
     var current = page.data('theme');
-    if (current) {
-        return;
+    if (!current) {
+
+        var newTheme;
+
+        if (page.hasClass('libraryPage')) {
+            newTheme = 'b';
+        } else {
+            newTheme = 'a';
+        }
+
+        current = page.page("option", "theme");
+
+        if (current && current != newTheme) {
+            page.page("option", "theme", newTheme);
+        }
     }
 
-    var newTheme;
-
-    if (page.hasClass('libraryPage')) {
-        newTheme = 'b';
+    if (current == 'b') {
+        $(document.body).addClass('darkScrollbars');
     } else {
-        newTheme = 'a';
-    }
-
-    current = page.page("option", "theme");
-
-    if (current && current != newTheme) {
-        page.page("option", "theme", newTheme);
+        $(document.body).addClass('removeScrollbars');
     }
 
 }).on('pagebeforeshow', ".page", function () {

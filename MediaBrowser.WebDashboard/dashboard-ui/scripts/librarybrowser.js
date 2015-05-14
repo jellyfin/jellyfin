@@ -1405,10 +1405,6 @@
 
             var cssClass = "card";
 
-            if (options.transparent !== false) {
-                cssClass += " transparentCard";
-            }
-
             cssClass += ' ' + options.shape + 'Card';
 
             var mediaSourceCount = item.MediaSourceCount || 1;

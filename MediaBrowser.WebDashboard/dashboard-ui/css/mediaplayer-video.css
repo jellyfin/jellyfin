@@ -74,15 +74,64 @@
 }
 
 .nowPlayingInfo {
-  text-align: center;
-  padding: 1em 1em 0 1em;
-
+    text-align: center;
+    padding: 1em 1em 2em 1em;
 }
 
 #videoPlayer .nowPlayingImage img {
     height: auto !important;
     max-width: 100px;
     max-height: 200px;
+}
+
+#videoPlayer .nowPlayingTabs {
+    margin: 0 0 0 1em;
+    overflow: hidden;
+    white-space: normal;
+    text-overflow: ellipsis;
+    text-align: left;
+    vertical-align: top;
+    color: #eee;
+    display: inline-block;
+    width: 80%;
+    font-weight: normal;
+    font-size: 15px;
+}
+
+@media all and (max-width: 1200px) {
+    #videoPlayer .nowPlayingTabs {
+        font-size: 13px;
+    }
+}
+
+.nowPlayingTabButtons {
+    margin-bottom: 1.25em;
+}
+
+.nowPlayingTabButton {
+    display: inline-block;
+    font-size: 18px;
+    text-transform: uppercase;
+    color: #ddd !important;
+    font-weight: 500 !important;
+    text-decoration: none;
+}
+
+    .nowPlayingTabButton + .nowPlayingTabButton {
+        padding-left: 1.5em;
+    }
+
+    .nowPlayingTabButton:not(.selectedNowPlayingTabButton):hover {
+        color: white !important;
+    }
+
+.selectedNowPlayingTabButton {
+    color: #2ad !important;
+}
+
+.nowPlayingTab {
+    overflow-y: hidden;
+    overflow-x: auto;
 }
 
 #videoPlayer .nowPlayingText {
@@ -96,7 +145,6 @@
     vertical-align: top;
     position: static;
     color: #eee;
-    max-width: 80%;
 }
 
 .videoNowPlayingName {
@@ -173,10 +221,10 @@
     }
 }
 
-@media all and (max-width: 1000px), all and (max-height: 600px) {
+@media all and (max-width: 800px), all and (max-height: 600px) {
 
-    #mediaPlayer .nowPlayingImage, #mediaPlayer .nowPlayingText {
-        display: none;
+    #mediaPlayer .nowPlayingInfo {
+        display: none !important;
     }
 }
 
@@ -197,10 +245,14 @@
 }
 
 @media all and (min-width: 1300px) {
+    .nowPlayingInfo {
+        padding-bottom: 0;
+    }
+
     #videoPlayer .nowPlayingImage img {
         height: auto !important;
         max-width: 400px;
-        max-height: 250px;
+        max-height: 280px;
     }
 }
 

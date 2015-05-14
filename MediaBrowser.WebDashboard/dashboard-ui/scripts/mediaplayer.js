@@ -467,7 +467,14 @@
 
             clearProgressInterval();
 
-            $(element).off('ended.playbackstopped').off('ended.playnext').one("play", function () {
+            $(element).off('ended.playbackstopped').off('ended.playnext').one("loadedmetadata.mediaplayerevent", function (e) {
+
+                // The IE video player won't autoplay without this
+                if ($.browser.msie && self.currentItem.MediaType == "Video") {
+                    this.play();
+                }
+
+            }).one("play", function () {
 
                 self.updateCanClientSeek(this);
 

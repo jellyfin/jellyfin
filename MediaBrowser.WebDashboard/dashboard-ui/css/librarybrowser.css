@@ -619,21 +619,21 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     display: none;
 }
 
-.libraryPage ::-webkit-scrollbar {
+.darkScrollbars ::-webkit-scrollbar {
     width: 12px;
     height: 12px;
 }
 
-.libraryPage ::-webkit-scrollbar-button:start:decrement,
-.libraryPage ::-webkit-scrollbar-button:end:increment {
+.darkScrollbars ::-webkit-scrollbar-button:start:decrement,
+.darkScrollbars ::-webkit-scrollbar-button:end:increment {
     display: none;
 }
 
-.libraryPage ::-webkit-scrollbar-track-piece {
+.darkScrollbars ::-webkit-scrollbar-track-piece {
     background-color: #3b3b3b;
 }
 
-.libraryPage ::-webkit-scrollbar-thumb:vertical, .libraryPage ::-webkit-scrollbar-thumb:horizontal {
+.darkScrollbars ::-webkit-scrollbar-thumb:vertical, .darkScrollbars ::-webkit-scrollbar-thumb:horizontal {
     -webkit-border-radius: 2px;
     background: #888 no-repeat center;
 }
