@@ -1824,6 +1824,36 @@ $(document).on('pagecreate', ".page", function () {
         $(document.body).addClass('removeScrollbars');
     }
 
+}).on('pageinit', ".page", function () {
+
+    var page = this;
+
+    var require = this.getAttribute('data-require');
+
+    if (require) {
+        requirejs([require], function() {
+
+            $(page).trigger('pageinitdepends');
+        });
+    } else {
+        $(page).trigger('pageinitdepends');
+    }
+
+}).on('pageshow', ".page", function () {
+
+    var page = this;
+
+    var require = this.getAttribute('data-require');
+
+    if (require) {
+        requirejs([require], function () {
+
+            $(page).trigger('pageshown');
+        });
+    } else {
+        $(page).trigger('pageshown');
+    }
+
 }).on('pagebeforeshow', ".page", function () {
 
     var page = $(this);

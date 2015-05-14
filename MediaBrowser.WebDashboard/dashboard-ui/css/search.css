@@ -145,12 +145,13 @@
     border: 0;
     color: #ddd;
     border-radius: 3px;
-    padding: 4px 7px 3px 50px;
+    padding: 4px 0 3px 0;
+    text-indent: 50px;
     font-size: 16px;
     font-family: Roboto;
     outline: none;
     vertical-align: middle;
-    width: 85%;
+    width: 90%;
 }
 
 .searchInputIcon {
@@ -175,7 +176,7 @@
 }
 
 .viewMenuSearchForm {
-    max-width: initial;
+    max-width: none;
     padding: 10px;
 }
 

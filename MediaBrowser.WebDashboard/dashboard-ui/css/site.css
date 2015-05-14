@@ -305,6 +305,7 @@ h1 .imageLink {
     padding: 0;
     cursor: pointer;
     outline: none;
+    color: inherit;
 }
 
     .imageButton:hover {

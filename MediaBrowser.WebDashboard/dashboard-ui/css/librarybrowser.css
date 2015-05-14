@@ -1405,6 +1405,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-position: center center;
 }
 
+.listViewMoreButton {
+    position: absolute;
+    right: 0;
+    top: 10%;
+    padding: 15px 20px;
+    font-size: 20px;
+}
+
 .ui-li-has-icon > .ui-btn {
     padding-left: 5.25em !important;
     padding-top: 5px !important;

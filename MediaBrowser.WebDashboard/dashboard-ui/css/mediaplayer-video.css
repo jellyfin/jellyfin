@@ -93,9 +93,9 @@
     vertical-align: top;
     color: #eee;
     display: inline-block;
-    width: 80%;
+    width: 70%;
     font-weight: normal;
-    font-size: 15px;
+    font-size: 14px;
 }
 
 @media all and (max-width: 1200px) {
@@ -113,7 +113,7 @@
     font-size: 18px;
     text-transform: uppercase;
     color: #ddd !important;
-    font-weight: 500 !important;
+    font-weight: 400 !important;
     text-decoration: none;
 }
 

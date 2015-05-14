@@ -17,7 +17,30 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageshow', "#dashboardHostingPage", function () {
+    function onSubmit() {
+        Dashboard.showLoadingMsg();
+
+        var form = this;
+
+        ApiClient.getServerConfiguration().done(function (config) {
+
+            config.HttpServerPortNumber = $('#txtPortNumber', form).val();
+            config.PublicPort = $('#txtPublicPort', form).val();
+            config.PublicHttpsPort = $('#txtPublicHttpsPort', form).val();
+            config.EnableHttps = $('#chkEnableHttps', form).checked();
+            config.HttpsPortNumber = $('#txtHttpsPort', form).val();
+            config.EnableUPnP = $('#chkEnableUpnp', form).checked();
+            config.WanDdns = $('#txtDdns', form).val();
+            config.CertificatePath = $('#txtCertificatePath', form).val();
+
+            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+        });
+
+        // Disable default form submission
+        return false;
+    }
+
+    $(document).on('pageshown', "#dashboardHostingPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -29,7 +52,7 @@
 
         });
 
-    }).on('pageinit', "#dashboardHostingPage", function () {
+    }).on('pageinitdepends', "#dashboardHostingPage", function () {
 
         var page = this;
 
@@ -53,33 +76,8 @@
                 header: Globalize.translate('HeaderSelectCertificatePath')
             });
         });
+
+        $('.dashboardHostingForm').off('submit', onSubmit).on('submit', onSubmit);
     });
-
-    window.DashboardHostingPage = {
-
-        onSubmit: function () {
-            Dashboard.showLoadingMsg();
-
-            var form = this;
-
-            ApiClient.getServerConfiguration().done(function (config) {
-
-                config.HttpServerPortNumber = $('#txtPortNumber', form).val();
-                config.PublicPort = $('#txtPublicPort', form).val();
-                config.PublicHttpsPort = $('#txtPublicHttpsPort', form).val();
-                config.EnableHttps = $('#chkEnableHttps', form).checked();
-                config.HttpsPortNumber = $('#txtHttpsPort', form).val();
-                config.EnableUPnP = $('#chkEnableUpnp', form).checked();
-                config.WanDdns = $('#txtDdns', form).val();
-                config.CertificatePath = $('#txtCertificatePath', form).val();
-
-                ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
-            });
-
-            // Disable default form submission
-            return false;
-        }
-
-    };
 
 })(jQuery, document, window);

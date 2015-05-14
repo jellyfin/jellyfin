@@ -35,7 +35,31 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageshow', "#advancedConfigurationPage", function () {
+    function onSubmit() {
+        Dashboard.showLoadingMsg();
+
+        var form = this;
+
+        ApiClient.getServerConfiguration().done(function (config) {
+
+            config.EnableDebugLevelLogging = $('#chkDebugLog', form).checked();
+
+            config.RunAtStartup = $('#chkRunAtStartup', form).checked();
+            config.SystemUpdateLevel = $('#selectAutomaticUpdateLevel', form).val();
+            config.EnableAutomaticRestart = $('#chkEnableAutomaticRestart', form).checked();
+
+            config.EnableDashboardResourceMinification = $('#chkEnableMinification', form).checked();
+            config.EnableDashboardResponseCaching = $('#chkEnableDashboardResponseCache', form).checked();
+            config.DashboardSourcePath = $('#txtDashboardSourcePath', form).val();
+
+            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+        });
+
+        // Disable default form submission
+        return false;
+    }
+
+    $(document).on('pageshown', "#advancedConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -51,7 +75,7 @@
 
         });
 
-    }).on('pageinit', "#advancedConfigurationPage", function () {
+    }).on('pageinitdepends', "#advancedConfigurationPage", function () {
 
         var page = this;
 
@@ -81,37 +105,7 @@
             });
         });
 
+        $('.advancedConfigurationForm').off('submit', onSubmit).on('submit', onSubmit);
     });
-
-    function advancedConfigurationPage() {
-
-        var self = this;
-
-        self.onSubmit = function () {
-            Dashboard.showLoadingMsg();
-
-            var form = this;
-
-            ApiClient.getServerConfiguration().done(function (config) {
-
-                config.EnableDebugLevelLogging = $('#chkDebugLog', form).checked();
-
-                config.RunAtStartup = $('#chkRunAtStartup', form).checked();
-                config.SystemUpdateLevel = $('#selectAutomaticUpdateLevel', form).val();
-                config.EnableAutomaticRestart = $('#chkEnableAutomaticRestart', form).checked();
-
-                config.EnableDashboardResourceMinification = $('#chkEnableMinification', form).checked();
-                config.EnableDashboardResponseCaching = $('#chkEnableDashboardResponseCache', form).checked();
-                config.DashboardSourcePath = $('#txtDashboardSourcePath', form).val();
-
-                ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
-            });
-
-            // Disable default form submission
-            return false;
-        };
-    }
-
-    window.AdvancedConfigurationPage = new advancedConfigurationPage();
 
 })(jQuery, document, window);
