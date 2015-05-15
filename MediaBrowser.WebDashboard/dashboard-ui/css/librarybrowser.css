@@ -1574,6 +1574,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
 .detailsMenu h3 {
+    padding: .7em 30px;
+}
+
+.detailsMenuHeaderWithLogo h3 {
     padding: 0 30px;
 }
 

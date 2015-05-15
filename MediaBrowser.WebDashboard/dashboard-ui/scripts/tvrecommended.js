@@ -174,7 +174,7 @@
         });
     }
 
-    $(document).on('pagebeforeshow', "#tvRecommendedPage", function () {
+    $(document).on('pageshown', "#tvRecommendedPage", function () {
 
         var page = this;
 

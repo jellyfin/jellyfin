@@ -221,13 +221,13 @@
         });
     }
 
-    $(document).on('pageinit', "#moviesRecommendedPage", function () {
+    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
 
         var page = this;
 
         $('.recommendations', page).createCardMenus();
 
-    }).on('pagebeforeshow', "#moviesRecommendedPage", function () {
+    }).on('pageshown', "#moviesRecommendedPage", function () {
 
         var parentId = LibraryMenu.getTopParentId();
 

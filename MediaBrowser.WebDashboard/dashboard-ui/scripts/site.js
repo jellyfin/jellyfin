@@ -1375,10 +1375,10 @@ var Dashboard = {
             // The native app can handle a little bit more than safari
             if (Dashboard.isRunningInCordova()) {
 
-                quality -= 30;
+                quality -= 20;
 
                 if (isBackdrop) {
-                    quality -= 10;
+                    quality -= 20;
                 }
 
             } else {
