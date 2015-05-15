@@ -351,7 +351,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var item = GetInternalChannel(id);
             var service = GetService(item);
 
-            return await service.GetChannelStreamMediaSources(id, cancellationToken).ConfigureAwait(false);
+            return await service.GetChannelStreamMediaSources(item.ExternalId, cancellationToken).ConfigureAwait(false);
         }
 
         private ILiveTvService GetService(ILiveTvItem item)
