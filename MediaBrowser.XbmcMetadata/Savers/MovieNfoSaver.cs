@@ -4,10 +4,12 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Savers
@@ -20,21 +22,32 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
         protected override string GetLocalSavePath(IHasMetadata item)
         {
-            return GetMovieSavePath(item, FileSystem);
+            return GetMovieSavePaths(new ItemInfo(item), FileSystem).FirstOrDefault();
         }
 
-        public static string GetMovieSavePath(IHasMetadata item, IFileSystem fileSystem)
+        public static List<string> GetMovieSavePaths(ItemInfo item, IFileSystem fileSystem)
         {
-            var video = (Video)item;
+            var list = new List<string>();
 
-            if (video.VideoType == VideoType.Dvd || video.VideoType == VideoType.BluRay || video.VideoType == VideoType.HdDvd)
+            if (item.VideoType == VideoType.Dvd)
             {
                 var path = item.ContainingFolderPath;
 
-                return Path.Combine(path, Path.GetFileName(path) + ".nfo");
+                list.Add(Path.Combine(path, "VIDEO_TS.nfo"));
             }
 
-            return Path.ChangeExtension(item.Path, ".nfo");
+            if (item.VideoType == VideoType.Dvd || item.VideoType == VideoType.BluRay || item.VideoType == VideoType.HdDvd)
+            {
+                var path = item.ContainingFolderPath;
+
+                list.Add(Path.Combine(path, Path.GetFileName(path) + ".nfo"));
+            }
+            else
+            {
+                list.Add(Path.ChangeExtension(item.Path, ".nfo"));
+            }
+
+            return list;
         }
 
         protected override string GetRootElementName(IHasMetadata item)

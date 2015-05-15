@@ -378,7 +378,7 @@ namespace MediaBrowser.Providers.Manager
                 var providerName = provider.GetType().Name;
                 Logger.Debug("Running {0} for {1}", providerName, logName);
 
-                var itemInfo = new ItemInfo { Path = item.Path, IsInMixedFolder = item.IsInMixedFolder };
+                var itemInfo = new ItemInfo(item);
 
                 try
                 {
