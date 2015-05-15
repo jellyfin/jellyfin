@@ -81,7 +81,8 @@
                     showParentTitle: true,
                     lazy: true,
                     cardLayout: true,
-                    context: 'tv'
+                    context: 'tv',
+                    showDetailsMenu: true
                 });
 
             } else if (view == 'Thumb') {
@@ -94,7 +95,8 @@
                     overlayText: false,
                     context: context,
                     lazy: true,
-                    preferThumb: true
+                    preferThumb: true,
+                    showDetailsMenu: true
                 });
             }
 
@@ -149,7 +151,8 @@
                     showParentTitle: true,
                     lazy: true,
                     cardLayout: true,
-                    context: 'tv'
+                    context: 'tv',
+                    showDetailsMenu: true
                 });
 
             } else if (view == 'Poster') {
@@ -161,7 +164,8 @@
                     showParentTitle: true,
                     overlayText: screenWidth >= 800 && !AppInfo.hasLowImageBandwidth,
                     lazy: true,
-                    context: 'tv'
+                    context: 'tv',
+                    showDetailsMenu: true
                 });
             }
 

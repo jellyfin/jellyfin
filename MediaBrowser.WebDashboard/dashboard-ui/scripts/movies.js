@@ -64,7 +64,8 @@
                     preferThumb: true,
                     context: 'movies',
                     lazy: true,
-                    overlayText: true
+                    overlayText: true,
+                    showDetailsMenu: true
                 });
             }
             else if (view == "ThumbCard") {
@@ -77,7 +78,8 @@
                     lazy: true,
                     showTitle: true,
                     cardLayout: true,
-                    showYear: true
+                    showYear: true,
+                    showDetailsMenu: true
                 });
             }
             else if (view == "Banner") {
@@ -87,7 +89,8 @@
                     shape: "banner",
                     preferBanner: true,
                     context: 'movies',
-                    lazy: true
+                    lazy: true,
+                    showDetailsMenu: true
                 });
             }
             else if (view == "List") {
@@ -106,7 +109,8 @@
                     context: 'movies',
                     centerText: true,
                     lazy: true,
-                    overlayText: true
+                    overlayText: true,
+                    showDetailsMenu: true
                 });
             }
             else if (view == "PosterCard") {
@@ -117,7 +121,8 @@
                     showTitle: true,
                     showYear: true,
                     lazy: true,
-                    cardLayout: true
+                    cardLayout: true,
+                    showDetailsMenu: true
                 });
             }
             else if (view == "Timeline") {
@@ -128,7 +133,8 @@
                     showTitle: true,
                     timeline: true,
                     centerText: true,
-                    lazy: true
+                    lazy: true,
+                    showDetailsMenu: true
                 });
             }
 

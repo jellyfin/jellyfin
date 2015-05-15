@@ -84,13 +84,6 @@
     margin: 12px;
 }
 
-@media all and (min-width: 600px) {
-
-    .largeCardMargin .visualCardBox {
-        margin: 18px;
-    }
-}
-
 .ui-page-theme-b .visualCardBox {
     background: rgba(45,45,45,.85);
     border-radius: 3px;

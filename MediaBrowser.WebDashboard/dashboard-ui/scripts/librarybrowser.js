@@ -884,6 +884,10 @@
             atts.push('data-locationtype="' + (item.LocationType || '') + '"');
             atts.push('data-index="' + index + '"');
 
+            if (options.showDetailsMenu) {
+                atts.push('data-detailsmenu="true"');
+            }
+
             var html = atts.join(' ');
 
             if (html) {
@@ -1689,7 +1693,8 @@
             return {
                 id: itemId,
                 index: index,
-                mediaType: mediaType
+                mediaType: mediaType,
+                context: elemWithAttributes.getAttribute('data-context')
             };
         },
 

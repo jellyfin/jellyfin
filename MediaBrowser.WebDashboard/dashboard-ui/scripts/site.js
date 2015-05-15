@@ -1367,10 +1367,10 @@ var Dashboard = {
 
         if (AppInfo.hasLowImageBandwidth) {
 
-            quality -= 20;
+            quality -= 50;
 
             if (isBackdrop) {
-                quality -= 20;
+                //quality -= 20;
             }
         }
 
@@ -1816,12 +1816,14 @@ $(document).on('pagecreate', ".page", function () {
         if (current && current != newTheme) {
             page.page("option", "theme", newTheme);
         }
+
+        current = newTheme;
     }
 
     if (current == 'b') {
         $(document.body).addClass('darkScrollbars');
     } else {
-        $(document.body).addClass('removeScrollbars');
+        $(document.body).removeClass('darkScrollbars');
     }
 
 }).on('pageinit', ".page", function () {
@@ -1831,7 +1833,7 @@ $(document).on('pagecreate', ".page", function () {
     var require = this.getAttribute('data-require');
 
     if (require) {
-        requirejs([require], function() {
+        requirejs([require], function () {
 
             $(page).trigger('pageinitdepends');
         });

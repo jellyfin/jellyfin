@@ -69,7 +69,8 @@
                     showParentTitle: true,
                     overlayText: true,
                     lazy: true,
-                    context: 'tv'
+                    context: 'tv',
+                    showDetailsMenu: true
                 });
             }
             else if (view == "PosterCard") {
@@ -80,7 +81,8 @@
                     showParentTitle: true,
                     lazy: true,
                     context: 'tv',
-                    cardLayout: true
+                    cardLayout: true,
+                    showDetailsMenu: true
                 });
             }
 

@@ -49,7 +49,8 @@
                     overlayText: false,
                     showTitle: true,
                     showYear: true,
-                    cardLayout: true
+                    cardLayout: true,
+                    showDetailsMenu: true
 
                 });
 
@@ -107,7 +108,8 @@
                     showTitle: true,
                     showYear: true,
                     lazy: true,
-                    cardLayout: true
+                    cardLayout: true,
+                    showDetailsMenu: true
 
                 });
 
@@ -119,7 +121,8 @@
                     shape: 'backdrop',
                     overlayText: true,
                     showTitle: true,
-                    lazy: true
+                    lazy: true,
+                    showDetailsMenu: true
                 });
             }
 
@@ -167,7 +170,8 @@
                 overlayText: false,
                 showTitle: true,
                 showYear: true,
-                cardLayout: true
+                cardLayout: true,
+                showDetailsMenu: true
 
             });
 
@@ -178,7 +182,8 @@
                 shape: "portrait",
                 centerText: true,
                 lazy: true,
-                overlayText: true
+                overlayText: true,
+                showDetailsMenu: true
             });
         }
         html += '</div>';

@@ -666,7 +666,8 @@
                 borderless: item.Type == "Game",
                 context: context,
                 overlayText: item.Type != "MusicAlbum",
-                lazy: true
+                lazy: true,
+                showDetailsMenu: true
             });
 
             $('#similarContent', page).html(html).lazyChildren();
@@ -866,7 +867,8 @@
                     context: context,
                     playFromHere: true,
                     overlayText: true,
-                    lazy: true
+                    lazy: true,
+                    showDetailsMenu: true
                 });
             }
             else if (item.Type == "GameSystem") {
@@ -876,7 +878,8 @@
                     showTitle: true,
                     centerText: true,
                     context: context,
-                    lazy: true
+                    lazy: true,
+                    showDetailsMenu: true
                 });
             }
 
@@ -982,13 +985,14 @@
             showTitle: true,
             centerText: true,
             context: context,
-            lazy: true
+            lazy: true,
+            showDetailsMenu: true
         });
         html += '</div>';
 
         html += '</div>';
 
-        $('.collectionItems', page).append(html);
+        $('.collectionItems', page).append(html).lazyChildren();
     }
 
     function renderUserDataIcons(page, item) {

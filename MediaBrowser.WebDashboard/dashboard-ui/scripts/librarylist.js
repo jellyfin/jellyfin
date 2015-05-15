@@ -492,8 +492,6 @@
 
     function onGroupedCardClick(e) {
 
-        var target = $(e.target);
-
         var card = this;
         var itemId = card.getAttribute('data-itemid');
         var context = card.getAttribute('data-context');
@@ -501,8 +499,6 @@
         $(card).addClass('hasContextMenu');
 
         var userId = Dashboard.getCurrentUserId();
-
-        var promise1 = ApiClient.getItem(userId, itemId);
 
         var options = {
 
@@ -512,59 +508,285 @@
             GroupItems: false
         };
 
-        var promise2 = ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options));
+        ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            var item = response1[0];
-            var latestItems = response2[0];
-
-            if (latestItems.length == 1) {
-
-                if (!target.is('a,button')) {
-                    var first = latestItems[0];
-                    Dashboard.navigate(LibraryBrowser.getHref(first, context));
-                    return;
-                }
-            }
-
-            var html = '<div data-role="popup" class="groupingMenu" data-transition="slide" style="background:rgba(0,0,0,.85);border:0;padding:0;">';
-
-            var href = card.href || LibraryBrowser.getHref(item, context);
-            var header = Globalize.translate('HeaderLatestFromChannel').replace('{0}', '<a href="' + href + '" style="outline:0;">' + item.Name + '</a>');
-            html += '<h3 style="padding:.5em 1em;background:#222;margin:0;">' + header + '</h3>';
-
-            html += '<div class="groupingMenuScroller">';
-
-            html += LibraryBrowser.getPosterViewHtml({
-                items: latestItems,
-                shape: "detailPage169",
-                showTitle: true,
-                overlayText: true,
-                lazy: true,
-                context: context
+            var ids = items.map(function (i) {
+                return i.Id;
             });
 
-            html += '</div>';
-
-            html += '</div>';
-
-            $($.mobile.activePage).append(html);
-
-            $('.groupingMenu').popup().trigger('create').popup("open").on("popupafterclose", function () {
-
-                $(this).off("popupafterclose").remove();
-                $(card).removeClass('hasContextMenu');
-
-            }).lazyChildren();
+            showItemsOverlay({
+                ids: ids,
+                context: context
+            });
         });
 
         e.preventDefault();
         return false;
     }
 
+    function getItemsOverlay(ids, context) {
 
-    $.fn.createCardMenus = function () {
+        var html = '<div data-role="popup" class="detailsMenu" data-transition="slidedown" style="border:0;padding:0;" data-ids="' + ids.join(',') + '" data-context="' + (context || '') + '">';
+
+        html += '<div style="padding:1em 1em;background:rgba(20,20,20,1);margin:0;text-align:center;" class="detailsMenuHeader">';
+        html += '<button type="button" class="imageButton detailsMenuLeftButton" data-role="none"><i class="fa fa-arrow-left"></i></button>';
+        html += '<h3 style="font-weight:400;margin:.5em 0;"></h3>';
+        html += '<button type="button" class="imageButton detailsMenuRightButton" data-role="none"><i class="fa fa-arrow-right"></i></button>';
+        html += '</div>';
+
+        html += '<div class="detailsMenuContent" style="background-position:center center;background-repeat:no-repeat;background-size:cover;">';
+        html += '<div style="padding:.5em 1em 1em;background:rgba(0,0,0,.80);" class="detailsMenuContentInner">';
+        html += '</div>';
+        html += '</div>';
+
+        html += '</div>';
+
+        $($.mobile.activePage).append(html);
+
+        var elem = $('.detailsMenu').popup().trigger('create').popup("open").on("popupafterclose", function () {
+
+            $(this).off("popupafterclose").remove();
+        });
+
+        $('.detailsMenuLeftButton', elem).on('click', function () {
+
+            var overlay = $(this).parents('.detailsMenu');
+            setItemIntoOverlay(overlay, parseInt(overlay.attr('data-index')) - 1, context);
+        });
+
+        $('.detailsMenuRightButton', elem).on('click', function () {
+
+            var overlay = $(this).parents('.detailsMenu');
+            setItemIntoOverlay(overlay, parseInt(overlay.attr('data-index')) + 1, context);
+        });
+
+        return elem;
+    }
+
+    function setItemIntoOverlay(elem, index) {
+
+        var ids = elem.attr('data-ids').split(',');
+        var itemId = ids[index];
+        var userId = Dashboard.getCurrentUserId();
+        var context = elem.attr('data-context');
+
+        elem.attr('data-index', index);
+
+        if (index > 0) {
+            $('.detailsMenuLeftButton', elem).show();
+        } else {
+            $('.detailsMenuLeftButton', elem).hide();
+        }
+
+        if (index < ids.length - 1) {
+            $('.detailsMenuRightButton', elem).show();
+        } else {
+            $('.detailsMenuRightButton', elem).hide();
+        }
+
+        var promise1 = ApiClient.getItem(userId, itemId);
+        var promise2 = Dashboard.getCurrentUser();
+
+        $.when(promise1, promise2).done(function (response1, response2) {
+
+            var item = response1[0];
+            var user = response2[0];
+
+            var background = 'none';
+
+            if (!AppInfo.hasLowImageBandwidth) {
+                var backdropUrl;
+                var screenWidth = $(window).width();
+                var backdropWidth = Math.min(screenWidth, 800);
+
+                if (item.BackdropImageTags && item.BackdropImageTags.length) {
+
+                    backdropUrl = ApiClient.getScaledImageUrl(item.Id, {
+                        type: "Backdrop",
+                        index: 0,
+                        maxWidth: backdropWidth,
+                        tag: item.BackdropImageTags[0]
+                    });
+                }
+                else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
+
+                    backdropUrl = ApiClient.getScaledImageUrl(item.ParentBackdropItemId, {
+                        type: 'Backdrop',
+                        index: 0,
+                        tag: item.ParentBackdropImageTags[0],
+                        maxWidth: backdropWidth
+                    });
+                }
+
+                if (backdropUrl) {
+                    background = 'url(' + backdropUrl + ')';
+                }
+            }
+
+            $('.detailsMenuContent', elem).css('backgroundImage', background);
+
+            var headerHtml = LibraryBrowser.getPosterViewDisplayName(item);
+            $('.detailsMenuHeader', elem).removeClass('detailsMenuHeaderWithLogo');
+            if (!AppInfo.hasLowImageBandwidth) {
+
+                var logoUrl;
+
+                var logoHeight = 30;
+                if (item.ImageTags && item.ImageTags.Logo) {
+
+                    logoUrl = ApiClient.getScaledImageUrl(item.Id, {
+                        type: "Logo",
+                        index: 0,
+                        height: logoHeight,
+                        tag: item.ImageTags.Logo
+                    });
+                }
+
+                if (logoUrl) {
+                    headerHtml = '<img src="' + logoUrl + '" style="height:' + logoHeight + 'px;" />';
+                    $('.detailsMenuHeader', elem).addClass('detailsMenuHeaderWithLogo');
+                }
+            }
+
+            $('h3', elem).html(headerHtml);
+
+            var contentHtml = '';
+
+            var miscInfo = LibraryBrowser.getMiscInfoHtml(item);
+            if (miscInfo) {
+
+                contentHtml += '<p>' + miscInfo + '</p>';
+            }
+
+            var userData = LibraryBrowser.getUserDataIconsHtml(item);
+            if (userData) {
+
+                contentHtml += '<p>' + userData + '</p>';
+            }
+
+            var ratingHtml = LibraryBrowser.getRatingHtml(item);
+            if (ratingHtml) {
+
+                contentHtml += '<p>' + ratingHtml + '</p>';
+            }
+
+            if (item.Overview) {
+                contentHtml += '<p class="detailsMenuOverview">' + item.Overview + '</p>';
+            }
+
+            contentHtml += '<div class="detailsMenuButtons">';
+
+            if (MediaController.canPlay(item)) {
+                if (item.MediaType == 'Video' && !item.IsFolder && item.UserData && item.UserData.PlaybackPositionTicks) {
+                    contentHtml += '<div class="detailsMenuButtonContainer">';
+                    contentHtml += '<a href="#" class="btn btnAltAction btnResume">';
+                    contentHtml += '<i class="fa fa-play"></i>';
+                    contentHtml += '<span>' + Globalize.translate('ButtonResume') + '</span>';
+                    contentHtml += '</a>';
+                    contentHtml += '</div>';
+                }
+
+                contentHtml += '<div class="detailsMenuButtonContainer">';
+                contentHtml += '<a href="#" class="btn btnActionAccent btnPlay">';
+                contentHtml += '<i class="fa fa-play"></i>';
+                contentHtml += '<span>' + Globalize.translate('ButtonPlay') + '</span>';
+                contentHtml += '</a>';
+                contentHtml += '</div>';
+
+            }
+
+            contentHtml += '<div class="detailsMenuButtonContainer">';
+            contentHtml += '<a href="' + LibraryBrowser.getHref(item, context) + '" class="btn" style="background-color: #673AB7;">';
+            contentHtml += '<i class="fa fa-folder-open"></i>';
+            contentHtml += '<span>' + Globalize.translate('ButtonOpen') + '</span>';
+            contentHtml += '</a>';
+            contentHtml += '</div>';
+
+            if (SyncManager.isAvailable(item, user)) {
+                contentHtml += '<div class="detailsMenuButtonContainer">';
+                contentHtml += '<a href="#" class="btn btnSync">';
+                contentHtml += '<i class="fa fa-cloud"></i>';
+                contentHtml += '<span>' + Globalize.translate('ButtonSync') + '</span>';
+                contentHtml += '</a>';
+                contentHtml += '</div>';
+            }
+
+            contentHtml += '</div>';
+
+            $('.detailsMenuContentInner', elem).html(contentHtml).trigger('create');
+
+            $('.btnSync', elem).on('click', function () {
+
+                elem.popup('close');
+
+                SyncManager.showMenu({
+                    items: [item]
+                });
+            });
+
+            $('.btnPlay', elem).on('click', function () {
+
+                elem.popup('close');
+
+                MediaController.play({
+                    items: [item]
+                });
+            });
+
+            $('.btnResume', elem).on('click', function () {
+
+                elem.popup('close');
+
+                MediaController.play({
+                    items: [item],
+                    startPositionTicks: item.UserData.PlaybackPositionTicks
+                });
+            });
+        });
+    }
+
+    function showItemsOverlay(options) {
+
+        var context = options.context;
+
+        var elem = getItemsOverlay(options.ids, context);
+
+        setItemIntoOverlay(elem, 0);
+    }
+
+    function onCardClick() {
+
+        var info = LibraryBrowser.getListItemInfo(this);
+        var itemId = info.id;
+        var context = info.context;
+
+        var card = $(this);
+
+        if (card.hasClass('itemWithAction')) {
+            return;
+        }
+
+        if (!card.hasClass('card')) {
+            card = $(card).parents('.card');
+        }
+
+        if (card.hasClass('groupedCard')) {
+            return;
+        }
+
+        if (card.attr('data-detailsmenu') != 'true') {
+            return;
+        }
+
+        showItemsOverlay({
+            ids: [itemId],
+            context: context
+        });
+
+        return false;
+    }
+
+    $.fn.createCardMenus = function (options) {
 
         var preventHover = false;
 
@@ -643,8 +865,7 @@
             preventHover = true;
         }
 
-        return this
-            .off('.cardMenu')
+        this.off('.cardMenu')
             .on('contextmenu.cardMenu', '.card', onCardTapHold)
             .off('.latestgroupings')
             .on('click.latestgroupings', '.groupedCard', onGroupedCardClick)
@@ -654,6 +875,10 @@
             .on('mouseenter.cardHoverMenu', '.card:not(.bannerCard)', onHoverIn)
             .on('mouseleave.cardHoverMenu', '.card:not(.bannerCard)', onHoverOut)
             .on("touchstart.cardHoverMenu", '.card:not(.bannerCard)', preventTouchHover);
+
+        this.off('.mediaDetails').on('click.mediaDetails', '.mediaItem', onCardClick);
+
+        return this;
     };
 
     function toggleSelections(page) {

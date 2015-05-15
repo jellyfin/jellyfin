@@ -20,6 +20,10 @@
         background-color: rgba(240, 240,240, .94) !important;
     }
 
+.ui-page-theme-b {
+    background-color: #1f1f1f;
+}
+
 .backdropPage.ui-page-theme-b {
     background-color: rgba(20, 20,20, .86) !important;
 }
@@ -1283,80 +1287,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         text-decoration: none;
     }
 
-.groupingMenu {
-    width: 240px;
-}
-
-.groupingMenuScroller {
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    padding: 1em;
-}
-
-@media all and (min-width: 400px) {
-
-    .groupingMenu {
-        width: 360px;
-    }
-}
-
-@media all and (min-width: 500px) {
-
-    .groupingMenu {
-        width: 460px;
-    }
-}
-
-@media all and (min-width: 600px) {
-
-    .groupingMenu {
-        width: 560px;
-    }
-}
-
-@media all and (min-width: 700px) {
-
-    .groupingMenu {
-        width: 660px;
-    }
-}
-
-@media all and (min-width: 800px) {
-
-    .groupingMenu {
-        width: 760px;
-    }
-}
-
-@media all and (min-width: 900px) {
-
-    .groupingMenu {
-        width: 860px;
-    }
-}
-
-@media all and (min-width: 1000px) {
-
-    .groupingMenu {
-        width: 960px;
-    }
-}
-
-@media all and (min-width: 1100px) {
-
-    .groupingMenu {
-        width: 1060px;
-    }
-}
-
-@media all and (min-width: 1200px) {
-
-    .groupingMenu {
-        width: 1160px;
-    }
-}
-
 
 .itemsContainer:not(.fullWidthItemsContainer) .itemsListview {
     max-width: 800px;
@@ -1546,4 +1476,127 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .homeFavoritesTabDisabled .homeFavoritesTab {
     display: none !important;
+}
+
+.detailsMenu {
+    width: 280px;
+}
+
+@media all and (min-width: 360px) {
+
+    .detailsMenu {
+        width: 320px;
+    }
+}
+
+@media all and (min-width: 400px) {
+
+    .detailsMenu {
+        width: 340px;
+    }
+}
+
+@media all and (min-width: 500px) {
+
+    .detailsMenu {
+        width: 440px;
+    }
+}
+
+@media all and (min-width: 600px) {
+
+    .detailsMenu {
+        width: 540px;
+    }
+}
+
+@media all and (min-width: 700px) {
+
+    .detailsMenu {
+        width: 640px;
+    }
+}
+
+@media all and (min-width:800px) {
+
+    .detailsMenu {
+        width: 740px;
+    }
+}
+
+.detailsMenuLeftButton {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 23px 15px;
+}
+
+.detailsMenuRightButton {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 23px 15px;
+}
+
+.detailsMenuHeaderWithLogo .detailsMenuLeftButton, .detailsMenuHeaderWithLogo .detailsMenuRightButton {
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+
+.detailsMenuContentInner {
+    height: 200px;
+}
+
+.detailsMenuOverview {
+    max-height: 30px;
+    text-overflow: ellipsis;
+    overflow-y: hidden;
+}
+
+.detailsMenuButtons {
+    padding: 1em 0 .5em;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+    .detailsMenuButtons .btn {
+        font-size: 14px;
+    }
+
+.detailsMenuButtonContainer {
+    display: inline-block;
+}
+
+    .detailsMenuButtonContainer span {
+        padding-left: 1em;
+    }
+
+    .detailsMenuButtonContainer + .detailsMenuButtonContainer {
+        margin-left: 1em;
+    }
+
+.detailsMenu h3 {
+    padding: 0 30px;
+}
+
+@media all and (min-height:500px) {
+
+    .detailsMenuContentInner {
+        height: 300px;
+    }
+
+    .detailsMenuOverview {
+        max-height: 120px;
+    }
+}
+
+@media all and (min-height:600px) {
+
+    .detailsMenuContentInner {
+        height: 400px;
+    }
+
+    .detailsMenuOverview {
+        max-height: 220px;
+    }
 }

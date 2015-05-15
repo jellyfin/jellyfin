@@ -57,7 +57,8 @@
                 showTitle: true,
                 showYear: true,
                 lazy: true,
-                cardLayout: true
+                cardLayout: true,
+                showDetailsMenu: true
             });
 
             var elem = $('.itemsContainer', page).html(html).lazyChildren();

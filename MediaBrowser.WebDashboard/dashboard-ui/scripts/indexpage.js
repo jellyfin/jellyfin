@@ -161,7 +161,8 @@
                     lazy: true,
                     cardLayout: cardLayout,
                     showTitle: cardLayout,
-                    showYear: cardLayout
+                    showYear: cardLayout,
+                    showDetailsMenu: true
                 });
                 html += '</div>';
             }
@@ -196,7 +197,8 @@
                     shape: 'auto',
                     showTitle: true,
                     centerText: true,
-                    lazy: true
+                    lazy: true,
+                    showDetailsMenu: true
                 });
                 html += '</div>';
             }
@@ -251,7 +253,7 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren().createCardMenus();
+            $(elem).html(html).lazyChildren().createCardMenus({ showDetailsMenu: false });
 
             handleLibraryLinkNavigations(elem);
         });
@@ -294,7 +296,8 @@
                     showParentTitle: true,
                     context: 'home',
                     lazy: true,
-                    cardLayout: cardLayout
+                    cardLayout: cardLayout,
+                    showDetailsMenu: true
                 });
                 html += '</div>';
             }
@@ -384,7 +387,8 @@
                 showTitle: true,
                 centerText: true,
                 context: 'channels',
-                lazy: true
+                lazy: true,
+                showDetailsMenu: true
             });
             html += '</div>';
 
@@ -424,7 +428,8 @@
                 showParentTitle: true,
                 overlayText: screenWidth >= 600,
                 coverImage: true,
-                lazy: true
+                lazy: true,
+                showDetailsMenu: true
             });
 
             elem.html(html).lazyChildren().trigger('create');
@@ -657,7 +662,7 @@
     });
 
     function getDisplayPreferencesAppName() {
-        
+
         if (Dashboard.isRunningInCordova()) {
             return 'Emby Mobile';
         }
@@ -668,7 +673,7 @@
     function getDisplayPreferences(key, userId) {
 
         return ApiClient.getDisplayPreferences(key, userId, getDisplayPreferencesAppName()).done(function (result) {
-            
+
         });
     }
 

@@ -52,7 +52,8 @@
                     context: 'music',
                     showTitle: true,
                     lazy: true,
-                    centerText: true
+                    centerText: true,
+                    showDetailsMenu: true
                 });
             }
             else if (view == "PosterCard") {
@@ -65,7 +66,8 @@
                     centerText: true,
                     cardLayout: true,
                     lazy: true,
-                    showParentTitle: true
+                    showParentTitle: true,
+                    showDetailsMenu: true
                 });
             }
 

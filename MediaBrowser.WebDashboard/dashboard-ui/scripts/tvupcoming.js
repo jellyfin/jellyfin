@@ -52,6 +52,7 @@
                 preferThumb: true,
                 context: context || 'home-upcoming',
                 lazy: true,
+                showDetailsMenu: true
 
             })).lazyChildren();
         });
