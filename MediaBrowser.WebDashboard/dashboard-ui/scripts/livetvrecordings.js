@@ -102,7 +102,7 @@
         });
     }
 
-    $(document).on('pagebeforeshow', "#liveTvRecordingsPage", function () {
+    $(document).on('pageshown', "#liveTvRecordingsPage", function () {
 
         var page = this;
 

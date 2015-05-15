@@ -74,7 +74,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#liveTvChannelsPage", function () {
+    $(document).on('pageinitdepends', "#liveTvChannelsPage", function () {
 
         var page = this;
 
@@ -109,7 +109,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshow', "#liveTvChannelsPage", function () {
+    }).on('pageshown', "#liveTvChannelsPage", function () {
 
         // Can't use pagebeforeshow here or the loading popup won't center correctly
         var page = this;

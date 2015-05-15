@@ -1,7 +1,7 @@
 ﻿(function ($, document) {
 
-    function reload(page) {
-
+    function loadRecommendedPrograms(page) {
+        
         Dashboard.showLoadingMsg();
 
         ApiClient.getLiveTvRecommendedPrograms({
@@ -25,7 +25,13 @@
             });
 
             $('.activeProgramItems', page).html(html).lazyChildren();
+            Dashboard.hideLoadingMsg();
         });
+    }
+
+    function reload(page) {
+
+        loadRecommendedPrograms(page);
 
         ApiClient.getLiveTvRecommendedPrograms({
 
@@ -98,7 +104,7 @@
         });
     }
 
-    $(document).on('pagebeforeshow', "#liveTvSuggestedPage", function () {
+    $(document).on('pageshown', "#liveTvSuggestedPage", function () {
 
         var page = this;
 
