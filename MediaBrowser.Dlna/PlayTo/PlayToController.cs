@@ -771,7 +771,7 @@ namespace MediaBrowser.Dlna.PlayTo
                     if (newItem.StreamInfo.IsDirectStream && newPosition > 0)
                     {
                         // This is rather arbitrary, but give the player time to start playing
-                        await Task.Delay(2000).ConfigureAwait(false);
+                        await Task.Delay(5000).ConfigureAwait(false);
 
                         await _device.Seek(TimeSpan.FromTicks(newPosition)).ConfigureAwait(false);
                     }

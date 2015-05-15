@@ -119,12 +119,13 @@ namespace Emby.Drawing.ImageMagick
         {
             var ext = Path.GetExtension(path);
 
-            return string.Equals(ext, ".png", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(ext, ".png", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(ext, ".webp", StringComparison.OrdinalIgnoreCase);
         }
 
         public void EncodeImage(string inputPath, string outputPath, int width, int height, int quality, ImageProcessingOptions options)
         {
-            if (string.IsNullOrWhiteSpace(options.BackgroundColor) && !HasTransparency(inputPath))
+            if (string.IsNullOrWhiteSpace(options.BackgroundColor) || !HasTransparency(inputPath))
             {
                 using (var originalImage = new MagickWand(inputPath))
                 {

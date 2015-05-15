@@ -659,8 +659,10 @@ namespace MediaBrowser.Api.Images
                 return ImageFormat.Png;
             }
 
-            if (string.Equals(Path.GetExtension(image.Path), ".jpg", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(Path.GetExtension(image.Path), ".jpeg", StringComparison.OrdinalIgnoreCase))
+            var extension = Path.GetExtension(image.Path);
+
+            if (string.Equals(extension, ".jpg", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(extension, ".jpeg", StringComparison.OrdinalIgnoreCase))
             {
                 return ImageFormat.Jpg;
             }
