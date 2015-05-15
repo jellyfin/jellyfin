@@ -152,7 +152,7 @@
         }
     }
 
-    $(document).on('pageinit', "#gamesPage", function () {
+    $(document).on('pageinitdepends', "#gamesPage", function () {
 
         var page = this;
 
@@ -239,7 +239,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#gamesPage", function () {
+    }).on('pageshown', "#gamesPage", function () {
 
         var page = this;
         query.ParentId = LibraryMenu.getTopParentId();
@@ -265,8 +265,6 @@
                 reloadItems(page);
             }
         });
-
-    }).on('pageshow', "#gamesPage", function () {
 
         updateFilterControls(this);
     });

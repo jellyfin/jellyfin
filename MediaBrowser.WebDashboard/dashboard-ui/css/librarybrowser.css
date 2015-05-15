@@ -1565,14 +1565,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailsMenuButtonContainer {
     display: inline-block;
+    margin-left: .5em;
+    margin-right: .5em;
 }
 
     .detailsMenuButtonContainer span {
         padding-left: 1em;
-    }
-
-    .detailsMenuButtonContainer + .detailsMenuButtonContainer {
-        margin-left: 1em;
     }
 
 .detailsMenu h3 {
@@ -1586,7 +1584,18 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .detailsMenuOverview {
-        max-height: 120px;
+        max-height: 60px;
+    }
+}
+
+@media all and (min-height:540px) {
+
+    .detailsMenuContentInner {
+        height: 340px;
+    }
+
+    .detailsMenuOverview {
+        max-height: 100px;
     }
 }
 
@@ -1597,6 +1606,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .detailsMenuOverview {
-        max-height: 220px;
+        max-height: 160px;
     }
 }

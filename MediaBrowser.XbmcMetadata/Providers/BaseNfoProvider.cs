@@ -59,7 +59,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
 
         public bool HasChanged(IHasMetadata item, IDirectoryService directoryService, DateTime date)
         {
-            var file = GetXmlFile(new ItemInfo { IsInMixedFolder = item.IsInMixedFolder, Path = item.Path }, directoryService);
+            var file = GetXmlFile(new ItemInfo(item), directoryService);
 
             if (file == null)
             {

@@ -952,6 +952,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                     var userData = GetOrAdd(userDataList, userDataUserId);
 
                                     userData.PlayCount = parsedValue;
+
+                                    if (parsedValue > 0)
+                                    {
+                                        userData.Played = true;
+                                    }
                                 }
                             }
                         }

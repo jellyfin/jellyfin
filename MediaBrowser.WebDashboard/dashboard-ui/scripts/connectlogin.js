@@ -16,7 +16,7 @@
 
         }).fail(function () {
 
-            Dashboard.hideLoadingMsg();
+            Dashboard.hideModalLoadingMsg();
 
             Dashboard.alert({
                 message: Globalize.translate('MessageInvalidUser'),
@@ -31,7 +31,7 @@
 
     function handleConnectionResult(page, result) {
 
-        Dashboard.hideLoadingMsg();
+        Dashboard.hideModalLoadingMsg();
 
         switch (result.State) {
 
@@ -46,7 +46,7 @@
                 break;
             case MediaBrowser.ConnectionState.ServerSignIn:
                 {
-                    window.location = 'login.html?serverid=' + result.Servers[0].Id;
+                    Dashboard.navigate('login.html?serverid=' + result.Servers[0].Id);
                 }
                 break;
             case MediaBrowser.ConnectionState.ServerSelection:

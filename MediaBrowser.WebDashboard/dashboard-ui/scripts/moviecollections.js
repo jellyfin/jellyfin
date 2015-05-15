@@ -406,7 +406,8 @@
         var options = {
 
             Recursive: true,
-            IncludeItemTypes: "BoxSet"
+            IncludeItemTypes: "BoxSet",
+            SortBy: "SortName"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {

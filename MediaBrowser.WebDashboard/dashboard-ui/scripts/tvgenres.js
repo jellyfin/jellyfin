@@ -133,7 +133,7 @@
         $('#selectView', page).val(view).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#tvGenresPage", function () {
+    $(document).on('pageinitdepends', "#tvGenresPage", function () {
 
         var page = this;
 
@@ -178,7 +178,7 @@
             LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
         });
 
-    }).on('pagebeforeshow', "#tvGenresPage", function () {
+    }).on('pageshown', "#tvGenresPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
         var page = this;
@@ -202,8 +202,6 @@
                 reloadItems(page);
             }
         });
-
-    }).on('pageshow', "#tvGenresPage", function () {
 
         updateFilterControls(this);
     });

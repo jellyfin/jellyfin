@@ -131,7 +131,7 @@
         }
     }
 
-    $(document).on('pageinit', "#musicVideosPage", function () {
+    $(document).on('pageinitdepends', "#musicVideosPage", function () {
 
         var page = this;
 
@@ -189,7 +189,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#musicVideosPage", function () {
+    }).on('pageshown', "#musicVideosPage", function () {
 
         var page = this;
 
@@ -207,8 +207,6 @@
         QueryFilters.onPageShow(page, query);
 
         reloadItems(page);
-
-    }).on('pageshow', "#musicVideosPage", function () {
 
         updateFilterControls(this);
     });

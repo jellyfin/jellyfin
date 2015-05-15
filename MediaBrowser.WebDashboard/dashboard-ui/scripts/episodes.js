@@ -162,7 +162,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#episodesPage", function () {
+    $(document).on('pageinitdepends', "#episodesPage", function () {
 
         var page = this;
 
@@ -327,7 +327,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#episodesPage", function () {
+    }).on('pageshown', "#episodesPage", function () {
 
         var page = this;
         query.ParentId = LibraryMenu.getTopParentId();
@@ -368,9 +368,8 @@
             }
         });
 
-    }).on('pageshow', "#episodesPage", function () {
-
         updateFilterControls(this);
+
     });
 
 })(jQuery, document);

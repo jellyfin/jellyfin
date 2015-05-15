@@ -80,10 +80,6 @@
     margin: 8px;
 }
 
-.largeCardMargin .visualCardBox {
-    margin: 12px;
-}
-
 .ui-page-theme-b .visualCardBox {
     background: rgba(45,45,45,.85);
     border-radius: 3px;

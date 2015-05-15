@@ -181,7 +181,7 @@
         }
     }
 
-    $(document).on('pageinit', "#itemListPage", function () {
+    $(document).on('pageinitdepends', "#itemListPage", function () {
 
         var page = this;
 
@@ -250,7 +250,7 @@
 
         $(page).on('click', '.mediaItem', onListItemClick);
 
-    }).on('pageshow', "#itemListPage", function () {
+    }).on('pageshown', "#itemListPage", function () {
 
         var page = this;
 

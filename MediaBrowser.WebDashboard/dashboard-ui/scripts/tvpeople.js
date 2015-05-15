@@ -95,7 +95,7 @@
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
 
-    $(document).on('pageinit', "#tvPeoplePage", function () {
+    $(document).on('pageinitdepends', "#tvPeoplePage", function () {
 
         var page = this;
 
@@ -147,7 +147,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#tvPeoplePage", function () {
+    }).on('pageshown', "#tvPeoplePage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -162,8 +162,6 @@
         LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
-
-    }).on('pageshow', "#tvPeoplePage", function () {
 
         updateFilterControls(this);
     });

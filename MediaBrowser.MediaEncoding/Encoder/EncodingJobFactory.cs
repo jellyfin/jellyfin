@@ -1,8 +1,7 @@
-﻿using System.IO;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -22,14 +21,16 @@ namespace MediaBrowser.MediaEncoding.Encoder
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IConfigurationManager _config;
 
         protected static readonly CultureInfo UsCulture = new CultureInfo("en-US");
         
-        public EncodingJobFactory(ILogger logger, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager)
+        public EncodingJobFactory(ILogger logger, ILibraryManager libraryManager, IMediaSourceManager mediaSourceManager, IConfigurationManager config)
         {
             _logger = logger;
             _libraryManager = libraryManager;
             _mediaSourceManager = mediaSourceManager;
+            _config = config;
         }
 
         public async Task<EncodingJob> CreateJob(EncodingJobOptions options, bool isVideoRequest, IProgress<double> progress, CancellationToken cancellationToken)
@@ -94,6 +95,10 @@ namespace MediaBrowser.MediaEncoding.Encoder
             ApplyDeviceProfileSettings(state);
 
             TryStreamCopy(state, request);
+
+            state.Quality = options.Context == EncodingContext.Static ? 
+                EncodingQuality.MaxQuality :
+                GetQualitySetting();
 
             return state;
         }
@@ -192,6 +197,30 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             state.MediaSource = mediaSource;
+        }
+
+        protected EncodingQuality GetQualitySetting()
+        {
+            var quality = GetEncodingOptions().EncodingQuality;
+
+            if (quality == EncodingQuality.Auto)
+            {
+                var cpuCount = Environment.ProcessorCount;
+
+                if (cpuCount >= 4)
+                {
+                    //return EncodingQuality.HighQuality;
+                }
+
+                return EncodingQuality.HighSpeed;
+            }
+
+            return quality;
+        }
+
+        protected EncodingOptions GetEncodingOptions()
+        {
+            return _config.GetConfiguration<EncodingOptions>("encoding");
         }
 
         /// <summary>

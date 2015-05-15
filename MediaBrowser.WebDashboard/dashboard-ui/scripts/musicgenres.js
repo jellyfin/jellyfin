@@ -93,7 +93,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#musicGenresPage", function () {
+    $(document).on('pageinitdepends', "#musicGenresPage", function () {
 
         var page = this;
 
@@ -120,7 +120,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#musicGenresPage", function () {
+    }).on('pageshown', "#musicGenresPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -135,8 +135,6 @@
         LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
-
-    }).on('pageshow', "#musicGenresPage", function () {
 
         updateFilterControls(this);
     });

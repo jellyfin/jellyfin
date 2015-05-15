@@ -11,7 +11,7 @@
                 ApiClient.ajax({
                     type: "DELETE",
                     url: ApiClient.getUrl('Auth/Keys/' + key)
-                    
+
                 }).done(function () {
 
                     loadData(page);
@@ -95,7 +95,31 @@
         });
     }
 
-    $(document).on('pageinit', "#serverSecurityPage", function () {
+    function onSubmit() {
+        var form = this;
+        var page = $(form).parents('.page');
+
+        Dashboard.showLoadingMsg();
+
+        ApiClient.ajax({
+            type: "POST",
+            url: ApiClient.getUrl('Auth/Keys/', {
+
+                App: $('#txtAppName', form).val()
+
+            })
+
+        }).done(function () {
+
+            $('.newKeyPanel', page).panel('close');
+
+            loadData(page);
+        });
+
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#serverSecurityPage", function () {
 
         var page = this;
 
@@ -107,39 +131,13 @@
 
         });
 
-    }).on('pageshow', "#serverSecurityPage", function () {
+        $('.newKeyForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshown', "#serverSecurityPage", function () {
 
         var page = this;
 
         loadData(page);
     });
-
-    window.ServerSecurityPage = {        
-      
-        onSubmit: function(e) {
-
-            var form = this;
-            var page = $(form).parents('.page');
-            
-            Dashboard.showLoadingMsg();
-
-            ApiClient.ajax({
-                type: "POST",
-                url: ApiClient.getUrl('Auth/Keys/', {
-                    
-                    App: $('#txtAppName', form).val()
-
-                })
-
-            }).done(function () {
-
-                $('.newKeyPanel', page).panel('close');
-
-                loadData(page);
-            });
-
-            return false;
-        }
-    };
 
 })(jQuery, document);

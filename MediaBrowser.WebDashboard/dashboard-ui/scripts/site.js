@@ -34,7 +34,12 @@ var Dashboard = {
 
         //$.mobile.popup.prototype.options.theme = "c";
         $.mobile.popup.prototype.options.transition = "fade";
-        $.mobile.defaultPageTransition = "none";
+
+        if ($.browser.mobile) {
+            $.mobile.defaultPageTransition = "slide";
+        } else {
+            $.mobile.defaultPageTransition = "none";
+        }
         //$.mobile.collapsible.prototype.options.contentTheme = "a";
 
         // Make panels a little larger than the defaults
@@ -776,7 +781,7 @@ var Dashboard = {
                     if (item.selected) {
                         menuHtml += '<a class="sidebarLink selectedSidebarLink" href="' + item.href + '">';
                     } else {
-                        menuHtml += '<a class="sidebarLink" href="' + item.href + '">';
+                        menuHtml += '<a data-transition="none" class="sidebarLink" href="' + item.href + '">';
                     }
 
                     menuHtml += '<span class="fa ' + item.icon + ' sidebarLinkIcon"' + style + '></span>';
@@ -802,7 +807,7 @@ var Dashboard = {
 
             html += '<div data-role="panel" id="dashboardPanel" class="dashboardPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="a">';
 
-            html += '<p class="libraryPanelHeader" style="margin: 15px 0 15px 15px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span style="color:#333;">EMBY</span></a></p>';
+            html += '<p class="libraryPanelHeader" style="margin: 15px 0 15px 15px;"><a href="index.html" data-transition="none" class="imageLink"><img src="css/images/mblogoicon.png" /><span style="color:#333;">EMBY</span></a></p>';
 
             html += '<div class="sidebarLinks">';
             html += menuHtml;
@@ -1367,10 +1372,18 @@ var Dashboard = {
 
         if (AppInfo.hasLowImageBandwidth) {
 
-            quality -= 50;
+            // The native app can handle a little bit more than safari
+            if (Dashboard.isRunningInCordova()) {
 
-            if (isBackdrop) {
-                //quality -= 20;
+                quality -= 30;
+
+                if (isBackdrop) {
+                    quality -= 10;
+                }
+
+            } else {
+
+                quality -= 50;
             }
         }
 
@@ -1382,6 +1395,11 @@ var Dashboard = {
         if (AppInfo.hasLowImageBandwidth) {
 
             options.enableImageEnhancers = false;
+        }
+
+        if (AppInfo.forcedImageFormat && options.type != 'Logo') {
+            options.format = AppInfo.forcedImageFormat;
+            options.backgroundColor = '#1f1f1f';
         }
     },
 
@@ -1488,13 +1506,18 @@ var AppInfo = {};
 
             if ($.browser.mobile) {
                 AppInfo.hasLowImageBandwidth = true;
+                AppInfo.enableDetailsMenuImages = false;
+                AppInfo.forcedImageFormat = 'jpg';
             }
 
             if (isCordova) {
                 AppInfo.enableBottomTabs = true;
+                AppInfo.enableDetailsMenuImages = true;
             }
         }
         else {
+
+            AppInfo.enableDetailsMenuImages = true;
 
             if (!$.browser.tv) {
                 AppInfo.enableHeadRoom = true;
@@ -1768,7 +1791,8 @@ var AppInfo = {};
             '*': {
                 'css': 'thirdparty/requirecss' // or whatever the path to require-css is
             }
-        }
+        },
+        urlArgs: "v=" + window.dashboardVersion
     });
 
     // Required since jQuery is loaded before requireJs
@@ -1782,6 +1806,10 @@ var AppInfo = {};
     if (Dashboard.isRunningInCordova()) {
 
         document.addEventListener("deviceready", function () {
+
+            if ($.browser.safari) {
+                requirejs(['thirdparty/cordova/imagestore.js']);
+            }
 
             $(onReady);
 
@@ -1840,6 +1868,8 @@ $(document).on('pagecreate', ".page", function () {
     } else {
         $(page).trigger('pageinitdepends');
     }
+
+    $('.localnav a, .libraryViewNav a').attr('data-transition', 'none');
 
 }).on('pageshow', ".page", function () {
 

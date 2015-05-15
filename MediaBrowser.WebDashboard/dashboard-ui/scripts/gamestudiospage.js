@@ -71,7 +71,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#gameStudiosPage", function () {
+    $(document).on('pageinitdepends', "#gameStudiosPage", function () {
 
         var page = this;
 
@@ -98,7 +98,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#gameStudiosPage", function () {
+    }).on('pageshown', "#gameStudiosPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -113,8 +113,6 @@
         LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
-
-    }).on('pageshow', "#gameStudiosPage", function () {
 
         updateFilterControls(this);
     });

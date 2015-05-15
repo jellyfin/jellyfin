@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
@@ -24,7 +25,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
         public Stream LogFileStream { get; set; }
         public IProgress<double> Progress { get; set; }
         public TaskCompletionSource<bool> TaskCompletionSource;
-
+        public EncodingQuality Quality { get; set; }
         public EncodingJobOptions Options { get; set; }
         public string InputContainer { get; set; }
         public MediaSourceInfo MediaSource { get; set; }

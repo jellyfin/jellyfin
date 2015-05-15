@@ -52,7 +52,7 @@
         // Reset form values using the last used query
     }
 
-    $(document).on('pagebeforeshow', "#gamesystemsPage", function () {
+    $(document).on('pageshown', "#gamesystemsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -67,8 +67,6 @@
         LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
-
-    }).on('pageshow', "#gamesystemsPage", function () {
 
         updateFilterControls(this);
     });
