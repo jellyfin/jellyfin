@@ -112,7 +112,7 @@
             for (var i = 1; i <= 5; i++) {
                 var title = noLinks ? rating + " stars" : "Rate " + i + (i > 1 ? " stars" : " star");
 
-                html += noLinks ? "" : "<span data-id=" + id + " data-name='" + name + "' data-rating=" + i + " onclick='RatingHelpers.ratePackage(this);return false;' >";
+                html += noLinks ? "" : "<a href='#' data-id=" + id + " data-name='" + name + "' data-rating=" + i + " onclick='RatingHelpers.ratePackage(this);return false;' >";
                 if (rating <= i - 1) {
                     html += "<div class='storeStarRating emptyStarRating' title='" + title + "'></div>";
                 } else if (rating < i) {
@@ -120,7 +120,7 @@
                 } else {
                     html += "<div class='storeStarRating' title='" + title + "'></div>";
                 }
-                html += noLinks ? "" : "</span>";
+                html += noLinks ? "" : "</a>";
             }
 
             html += "</div>";

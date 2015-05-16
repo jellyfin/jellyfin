@@ -89,19 +89,11 @@
     position: relative;
 }
 
-.backdropCard .cardPadder {
+.backdropCard .cardPadder, .smallBackdropCard .cardPadder, .overflowBackdropCard .cardPadder {
     padding-bottom: 56.25%;
 }
 
-.smallBackdropCard .cardPadder {
-    padding-bottom: 56.25%;
-}
-
-.squareCard .cardPadder {
-    padding-bottom: 100%;
-}
-
-.smallSquareCard .cardPadder {
+.squareCard .cardPadder, .overflowSquareCard .cardPadder {
     padding-bottom: 100%;
 }
 
@@ -109,11 +101,7 @@
     padding-bottom: 75%;
 }
 
-.portraitCard .cardPadder {
-    padding-bottom: 150%;
-}
-
-.smallPortraitCard .cardPadder {
+.portraitCard .cardPadder, .overflowPortraitCard .cardPadder {
     padding-bottom: 150%;
 }
 
@@ -277,10 +265,6 @@
     width: 50%;
 }
 
-.smallSquareCard {
-    width: 33.3334%;
-}
-
 .backdropCard {
     width: 50%;
 }
@@ -293,8 +277,12 @@
     width: 33.3%;
 }
 
-.smallPortraitCard {
-    width: 33.334%;
+.overflowPortraitCard {
+    width: 40%;
+}
+
+.overflowBackdropCard {
+    width: 70%;
 }
 
 .cardProgress {
@@ -306,6 +294,10 @@
         width: 100%;
         opacity: .8;
     }
+
+.overflowSquareCard {
+    width: 42%;
+}
 
 @media all and (max-width: 1200px) {
 
@@ -331,16 +323,20 @@
 
 @media all and (min-width: 640px) {
 
-    .smallSquareCard {
-        width: 25%;
-    }
-
     .portraitCard {
         width: 25%;
     }
 
-    .smallPortraitCard {
-        width: 25%;
+    .overflowPortraitCard {
+        width: 36%;
+    }
+
+    .overflowBackdropCard {
+        width: 60%;
+    }
+
+    .overflowSquareCard {
+        width: 30%;
     }
 }
 
@@ -364,16 +360,8 @@
         width: 20%;
     }
 
-    .smallSquareCard {
-        width: 20%;
-    }
-
     .smallBackdropCard {
         width: 25%;
-    }
-
-    .smallPortraitCard {
-        width: 20%;
     }
 }
 
@@ -388,8 +376,16 @@
         width: 20%;
     }
 
-    .smallPortraitCard {
-        width: 16.666666666666666666666666666667%;
+    .overflowPortraitCard {
+        width: 23%;
+    }
+
+    .overflowBackdropCard {
+        width: 40%;
+    }
+
+    .overflowSquareCard {
+        width: 22%;
     }
 }
 
@@ -415,14 +411,6 @@
     .smallBackdropCard {
         width: 16.666666666666666666666666666667%;
     }
-
-    .smallSquareCard {
-        width: 16.666666666666666666666666666667%;
-    }
-
-    .smallPortraitCard {
-        width: 14.285714285714285714285714285714%;
-    }
 }
 
 
@@ -438,10 +426,6 @@
 
     .smallBackdropCard {
         width: 14.285714285714285714285714285714%;
-    }
-
-    .smallPortraitCard {
-        width: 12.5%;
     }
 }
 

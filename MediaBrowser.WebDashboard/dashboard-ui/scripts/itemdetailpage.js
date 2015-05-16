@@ -1189,7 +1189,7 @@
 
         var chapters = item.Chapters || [];
 
-        var maxWwidth = LibraryBrowser.getPosterViewInfo().thumbWidth;
+        var maxWidth = LibraryBrowser.getPosterViewInfo().backdropWidth;
 
         for (var i = 0, length = chapters.length; i < length; i++) {
 
@@ -1212,7 +1212,7 @@
             if (chapter.ImageTag) {
 
                 imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                    maxWidth: maxWwidth,
+                    maxWidth: maxWidth,
                     tag: chapter.ImageTag,
                     type: "Chapter",
                     index: i
@@ -1411,7 +1411,7 @@
 
         var html = '';
 
-        var maxWwidth = LibraryBrowser.getPosterViewInfo().thumbWidth;
+        var maxWidth = LibraryBrowser.getPosterViewInfo().backdropWidth;
 
         for (var i = 0, length = items.length; i < length; i++) {
 
@@ -1439,7 +1439,7 @@
             if (imageTags.Primary) {
 
                 imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                    maxWidth: maxWwidth,
+                    maxWidth: maxWidth,
                     tag: imageTags.Primary,
                     type: "primary"
                 });

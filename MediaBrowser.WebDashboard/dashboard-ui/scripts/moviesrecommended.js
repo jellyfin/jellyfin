@@ -1,7 +1,7 @@
 ﻿(function ($, document) {
 
     function getView() {
-        
+
         if (AppInfo.hasLowImageBandwidth) {
             return 'PosterCard';
         }
@@ -16,6 +16,18 @@
         }
 
         return 'ThumbCard';
+    }
+
+    function enableScrollX() {
+        return AppInfo.isTouchPreferred;
+    }
+
+    function getPortraitShape() {
+        return enableScrollX() ? 'overflowPortrait' : 'portrait';
+    }
+
+    function getThumbShape() {
+        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
     }
 
     function loadLatest(page, userId, parentId) {
@@ -45,7 +57,7 @@
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,
                     lazy: true,
-                    shape: 'portrait',
+                    shape: getPortraitShape(),
                     overlayText: false,
                     showTitle: true,
                     showYear: true,
@@ -55,10 +67,10 @@
                 });
 
             } else if (view == 'Poster') {
-                
+
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,
-                    shape: "portrait",
+                    shape: getPortraitShape(),
                     centerText: true,
                     lazy: true,
                     overlayText: true
@@ -104,7 +116,7 @@
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     preferThumb: true,
-                    shape: 'backdrop',
+                    shape: getThumbShape(),
                     showTitle: true,
                     showYear: true,
                     lazy: true,
@@ -118,7 +130,7 @@
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     preferThumb: true,
-                    shape: 'backdrop',
+                    shape: getThumbShape(),
                     overlayText: true,
                     showTitle: true,
                     lazy: true,
@@ -155,9 +167,14 @@
                 break;
         }
 
+        html += '<div class="homePageSection">';
         html += '<h1 class="listHeader">' + title + '</h1>';
 
-        html += '<div>';
+        if (enableScrollX()) {
+            html += '<div class="hiddenScrollX">';
+        } else {
+            html += '<div>';
+        }
 
         var view = getView();
 
@@ -166,7 +183,7 @@
             html += LibraryBrowser.getPosterViewHtml({
                 items: recommendation.Items,
                 lazy: true,
-                shape: 'portrait',
+                shape: getPortraitShape(),
                 overlayText: false,
                 showTitle: true,
                 showYear: true,
@@ -179,13 +196,14 @@
 
             html += LibraryBrowser.getPosterViewHtml({
                 items: recommendation.Items,
-                shape: "portrait",
+                shape: getPortraitShape(),
                 centerText: true,
                 lazy: true,
                 overlayText: true,
                 showDetailsMenu: true
             });
         }
+        html += '</div>';
         html += '</div>';
 
         return html;
@@ -234,14 +252,19 @@
         var page = this;
         var userId = Dashboard.getCurrentUserId();
 
+        if (enableScrollX()) {
+            $('.itemsContainer', page).addClass('hiddenScrollX');
+        } else {
+            $('.itemsContainer', page).removeClass('hiddenScrollX');
+        }
+
         loadResume(page, userId, parentId);
         loadLatest(page, userId, parentId);
 
-        if (!AppInfo.hasLowImageBandwidth) {
+        if (AppInfo.enableMovieHomeSuggestions) {
             loadSuggestions(page, userId, parentId);
         }
 
     });
-
 
 })(jQuery, document);

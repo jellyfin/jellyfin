@@ -28,6 +28,8 @@
         var webSocket;
         var serverInfo;
 
+        self.enableAppStorePolicy = false;
+
         /**
          * Gets the server address.
          */
@@ -1688,6 +1690,10 @@
             options = options || {};
             options.PackageType = "UserInstalled";
 
+            if (self.enableAppStorePolicy) {
+                options.IsAppStoreEnabled = true;
+            }
+
             var url = self.getUrl("Packages", options);
 
             return self.ajax({
@@ -2138,7 +2144,13 @@
          */
         self.getInstalledPlugins = function () {
 
-            var url = self.getUrl("Plugins");
+            var options = {};
+
+            if (self.enableAppStorePolicy) {
+                options.IsAppStoreEnabled = true;
+            }
+
+            var url = self.getUrl("Plugins", options);
 
             return self.ajax({
                 type: "GET",

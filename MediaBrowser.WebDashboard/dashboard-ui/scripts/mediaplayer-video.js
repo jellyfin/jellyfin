@@ -407,7 +407,7 @@
             html += '</div>';
 
             if (item.Chapters && item.Chapters.length) {
-                html += '<div class="tabScenes nowPlayingTab" style="display:none;white-space:nowrap;margin-bottom:2em;">';
+                html += '<div class="tabScenes nowPlayingTab hiddenScrollX" style="display:none;white-space:nowrap;margin-bottom:2em;">';
                 var chapterIndex = 0;
                 html += item.Chapters.map(function (c) {
 
@@ -454,7 +454,7 @@
             }
 
             if (item.People && item.People.length) {
-                html += '<div class="tabCast nowPlayingTab" style="display:none;white-space:nowrap;">';
+                html += '<div class="tabCast nowPlayingTab hiddenScrollX" style="display:none;white-space:nowrap;">';
                 html += item.People.map(function (cast) {
 
                     var personHtml = '<div class="tileItem smallPosterTileItem" style="width:300px;">';

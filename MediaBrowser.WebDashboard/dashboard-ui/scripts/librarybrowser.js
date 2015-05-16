@@ -961,6 +961,8 @@
             return screenWidth;
         },
 
+        shapes: ['square', 'portrait', 'banner', 'smallBackdrop', 'homePageSmallBackdrop', 'backdrop', 'overflowBackdrop', 'overflowPortrait', 'overflowSquare'],
+
         getPostersPerRow: function (screenWidth) {
 
             function getValue(shape) {
@@ -973,14 +975,10 @@
 
             var info = {};
 
-            info.square = getValue('square');
-            info.smallSquare = getValue('smallSquare');
-            info.thumb = getValue('backdrop');
-            info.portrait = getValue('portrait');
-            info.smallPortrait = getValue('smallPortrait');
-            info.banner = getValue('banner');
-            info.smallThumb = getValue('smallBackdrop');
-
+            for (var i = 0, length = LibraryBrowser.shapes.length; i < length; i++) {
+                var currentShape = LibraryBrowser.shapes[i];
+                info[currentShape] = getValue(currentShape);
+            }
             return info;
         },
 
@@ -1010,57 +1008,29 @@
 
             var imagesPerRow = LibraryBrowser.getPostersPerRow(screenWidth);
 
+            var result = {};
+            result.screenWidth = screenWidth;
+
             if (!AppInfo.hasLowImageBandwidth) {
                 screenWidth *= 1.25;
             }
 
-            var thumbWidth = screenWidth / imagesPerRow.thumb;
-            var smallThumbWidth = screenWidth / imagesPerRow.smallThumb;
-            var posterWidth = screenWidth / imagesPerRow.portrait;
-            var smallPosterWidth = screenWidth / imagesPerRow.smallPortrait;
-            var squareSize = screenWidth / imagesPerRow.square;
-            var smallSquareSize = screenWidth / imagesPerRow.smallSquare;
-            var bannerWidth = screenWidth / imagesPerRow.banner;
+            var roundTo = 100;
 
-            if (!AppInfo.isTouchPreferred) {
+            for (var i = 0, length = LibraryBrowser.shapes.length; i < length; i++) {
+                var currentShape = LibraryBrowser.shapes[i];
 
-                var roundTo = 100;
+                var shapeWidth = screenWidth / imagesPerRow[currentShape];
 
-                thumbWidth = Math.round(thumbWidth / roundTo) * roundTo;
-                smallThumbWidth = Math.round(smallThumbWidth / roundTo) * roundTo;
-                posterWidth = Math.round(posterWidth / roundTo) * roundTo;
-                smallPosterWidth = Math.round(smallPosterWidth / roundTo) * roundTo;
-                squareSize = Math.round(squareSize / roundTo) * roundTo;
-                bannerWidth = Math.round(bannerWidth / roundTo) * roundTo;
+                if (!AppInfo.isTouchPreferred) {
+
+                    shapeWidth = Math.round(shapeWidth / roundTo) * roundTo;
+                }
+
+                result[currentShape + 'Width'] = Math.round(shapeWidth);
             }
 
-            var defaultPortait = 'portrait';
-            var defaultThumb = 'backdrop';
-            var defaultSquare = 'square';
-
-            if (AppInfo.hasLowImageBandwidth) {
-                defaultThumb = 'smallBackdrop';
-                defaultSquare = 'smallSquare';
-                defaultPortait = 'smallPortrait';
-            }
-
-            return {
-
-                defaultThumb: defaultThumb,
-                smallThumbWidth: Math.round(smallThumbWidth),
-                thumbWidth: Math.round(thumbWidth),
-
-                defaultPortait: defaultPortait,
-                posterWidth: Math.round(posterWidth),
-                smallPosterWidth: Math.round(smallPosterWidth),
-
-                defaultSquare: defaultSquare,
-                squareSize: Math.round(squareSize),
-                smallSquareSize: Math.round(smallSquareSize),
-
-                bannerWidth: Math.round(bannerWidth),
-                screenWidth: screenWidth
-            };
+            return result;
         },
 
         getPosterViewHtml: function (options) {
@@ -1096,49 +1066,46 @@
 
             var posterInfo = LibraryBrowser.getPosterViewInfo();
 
-            var thumbWidth = posterInfo.thumbWidth;
-            var posterWidth = posterInfo.posterWidth;
-            var squareSize = posterInfo.squareSize;
+            var thumbWidth = posterInfo.backdropWidth;
+            var posterWidth = posterInfo.portraitWidth;
+            var squareSize = posterInfo.squareWidth;
             var bannerWidth = posterInfo.bannerWidth;
 
             if (isThumbAspectRatio) {
-                posterInfo.smallPosterWidth = posterInfo.smallThumbWidth;
                 posterWidth = thumbWidth;
             }
             else if (isSquareAspectRatio) {
-                posterInfo.smallPosterWidth = posterInfo.smallSquareSize;
                 posterWidth = squareSize;
             }
 
-            if (options.shape == 'backdrop' && posterInfo.defaultThumb == 'smallBackdrop') {
-                options.shape = 'smallBackdrop';
+            if (options.shape == 'overflowBackdrop') {
+                thumbWidth = posterInfo.overflowBackdropWidth;
             }
-
-            else if (options.shape == 'portrait' && posterInfo.defaultPortait == 'smallPortrait') {
-                options.shape = 'smallPortrait';
+            else if (options.shape == 'overflowPortrait') {
+                posterWidth = posterInfo.overflowPortraitWidth;
             }
-
-            else if (options.shape == 'square' && posterInfo.defaultSquare == 'smallSquare') {
-                options.shape = 'smallSquare';
+            else if (options.shape == 'overflowSquare') {
+                squareSize = posterInfo.overflowSquareWidth;
             }
-
-            if (options.shape == 'smallBackdrop') {
-                thumbWidth = posterInfo.smallThumbWidth;
+            else if (options.shape == 'smallBackdrop') {
+                thumbWidth = posterInfo.smallBackdropWidth;
             }
-            else if (options.shape == 'smallPortrait') {
-                posterWidth = posterInfo.smallPosterWidth;
-            }
-            else if (options.shape == 'smallSquare') {
-                squareSize = posterInfo.smallSquareSize;
+            else if (options.shape == 'homePageSmallBackdrop') {
+                thumbWidth = posterInfo.homePageSmallBackdropWidth;
+                posterWidth = posterInfo.homePageSmallBackdropWidth;
             }
             else if (options.shape == 'detailPagePortrait') {
                 posterWidth = 200;
+            }
+            else if (options.shape == 'detailPageSquare') {
+                posterWidth = 200;
+                squareSize = 200;
             }
             else if (options.shape == 'detailPage169') {
                 posterWidth = 320;
                 thumbWidth = 320;
             }
-
+            
             var dateText;
 
             for (var i = 0, length = items.length; i < length; i++) {
@@ -1679,7 +1646,7 @@
         },
 
         getListItemInfo: function (elem) {
-            
+
             var elemWithAttributes = elem;
 
             while (!elemWithAttributes.getAttribute('data-itemid')) {

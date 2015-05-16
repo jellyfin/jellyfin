@@ -153,7 +153,7 @@
         }
     }
 
-    $(document).on('pageinit', "#musicAlbumsPage", function () {
+    $(document).on('pageinitdepends', "#musicAlbumsPage", function () {
 
         var page = this;
 
@@ -248,7 +248,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#musicAlbumsPage", function () {
+    }).on('pageshown', "#musicAlbumsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -274,27 +274,7 @@
             }
         });
 
-    }).on('pageshow', "#musicAlbumsPage", function () {
-
         updateFilterControls(this);
-
-        var updateScheduled = false;
-        function onscreen() {
-            var viewportBottom = $(window).scrollTop() + $(window).height();
-            return ($(document).height() - viewportBottom) < 100;
-        }
-        $(window).on('scroll', function () {
-            console.log('load');
-            if (!updateScheduled) {
-                setTimeout(function () {
-                    if (onscreen()) {
-                        console.log('load');
-                    }
-                    updateScheduled = false;
-                }, 500);
-                updateScheduled = true;
-            }
-        });
     });
 
 })(jQuery, document);

@@ -295,6 +295,14 @@ namespace MediaBrowser.WebDashboard.Api
 
             var mode = request.Mode;
 
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                // Overwrite certain files with cordova specific versions
+                var cordovaVersion = Path.Combine(path, "thirdparty", "cordova", "registrationservices.js");
+                File.Copy(cordovaVersion, Path.Combine(path, "scripts", "registrationservices.js"), true);
+                File.Delete(cordovaVersion);
+            }
+
             await DumpHtml(creator.DashboardUIPath, path, mode, culture, appVersion);
             await DumpJs(creator.DashboardUIPath, path, mode, culture, appVersion);
 

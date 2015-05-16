@@ -142,7 +142,7 @@
         }
     }
 
-    $(document).on('pageinit', "#musicArtistsPage", function () {
+    $(document).on('pageinitdepends', "#musicArtistsPage", function () {
 
         var page = this;
 
@@ -197,7 +197,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#musicArtistsPage", function () {
+    }).on('pageshown', "#musicArtistsPage", function () {
 
         var page = this;
 
@@ -224,8 +224,6 @@
                 reloadItems(page);
             }
         });
-
-    }).on('pageshow', "#musicArtistsPage", function () {
 
         updateFilterControls(this);
     });

@@ -60,13 +60,11 @@
 
     }
 
-    $(document).on('pagebeforeshow', "#channelsPage", function () {
+    $(document).on('pageshown', "#channelsPage", function () {
 
         LibraryBrowser.loadSavedQueryValues('channels', query);
 
         reloadItems(this);
-
-    }).on('pageshow', "#channelsPage", function () {
 
         updateFilterControls(this);
     });

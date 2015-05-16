@@ -166,6 +166,37 @@ h1 a:hover {
     margin: -10px 0 0 -10px;
 }
 
+.hiddenScrollX {
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+    overflow-y: hidden;
+    white-space: nowrap;
+}
+
+.touch .hiddenScrollX {
+    -ms-overflow-style: none;
+    overflow: -moz-scrollbars-none;
+}
+
+    .touch .hiddenScrollX::-webkit-scrollbar {
+        height: 0 !important;
+        display: none;
+    }
+
+
+.hiddenScrollY {
+    overflow-y: scroll;
+    -ms-overflow-style: none;
+    overflow: -moz-scrollbars-none;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+}
+
+.hiddenScrollY::-webkit-scrollbar {
+    width: 0 !important;
+    display: none;
+}
+
 /**
  * Note: I have omitted any vendor-prefixes for clarity.
  * Adding them is left as an exercise for the reader.

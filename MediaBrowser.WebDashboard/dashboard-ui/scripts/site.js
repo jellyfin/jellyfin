@@ -1375,7 +1375,7 @@ var Dashboard = {
             // The native app can handle a little bit more than safari
             if (Dashboard.isRunningInCordova()) {
 
-                quality -= 15;
+                quality -= 10;
 
                 if (isBackdrop) {
                     quality -= 20;
@@ -1505,6 +1505,10 @@ var AppInfo = {};
         AppInfo.enableDetailPageChapters = true;
         AppInfo.enableDetailsMenuImages = true;
         AppInfo.enableHeaderImages = true;
+        AppInfo.enableMovieHomeSuggestions = true;
+
+
+        AppInfo.enableAppStorePolicy = isCordova;
 
         if ($.browser.safari) {
 
@@ -1519,6 +1523,7 @@ var AppInfo = {};
                 AppInfo.enableDetailPageChapters = false;
                 AppInfo.enableDetailsMenuImages = false;
                 AppInfo.enableHeaderImages = false;
+                AppInfo.enableMovieHomeSuggestions = false;
             }
         }
         else {
@@ -1534,7 +1539,6 @@ var AppInfo = {};
             AppInfo.enableLatestChannelItems = true;
             AppInfo.enableStudioTabs = true;
             AppInfo.enablePeopleTabs = true;
-            AppInfo.enableHomeFavoritesTab = true;
             AppInfo.enableTvEpisodesTab = true;
             AppInfo.enableMusicArtistsTab = true;
             AppInfo.enableHomeLatestTab = true;
@@ -1549,6 +1553,8 @@ var AppInfo = {};
     }
 
     function initializeApiClient(apiClient) {
+
+        apiClient.enableAppStorePolicy = AppInfo.enableAppStorePolicy;
 
         $(apiClient).off('.dashboard')
             .on("websocketmessage.dashboard", Dashboard.onWebSocketMessageReceived)
@@ -1629,6 +1635,10 @@ var AppInfo = {};
 
     function onReady() {
 
+        if (AppInfo.isTouchPreferred) {
+            $(document.body).addClass('touch');
+        }
+
         if ($.browser.safari && $.browser.mobile) {
             initFastClick();
         }
@@ -1647,10 +1657,6 @@ var AppInfo = {};
 
         if (!AppInfo.enablePeopleTabs) {
             $(document.body).addClass('peopleTabDisabled');
-        }
-
-        if (!AppInfo.enableHomeFavoritesTab) {
-            $(document.body).addClass('homeFavoritesTabDisabled');
         }
 
         if (!AppInfo.enableTvEpisodesTab) {
@@ -1863,7 +1869,7 @@ $(document).on('pagecreate', ".page", function () {
     var require = this.getAttribute('data-require');
 
     if (require) {
-        requirejs([require], function () {
+        requirejs(require.split(','), function () {
 
             $(page).trigger('pageinitdepends');
         });
@@ -1880,7 +1886,7 @@ $(document).on('pagecreate', ".page", function () {
     var require = this.getAttribute('data-require');
 
     if (require) {
-        requirejs([require], function () {
+        requirejs(require.split(','), function () {
 
             $(page).trigger('pageshown');
         });

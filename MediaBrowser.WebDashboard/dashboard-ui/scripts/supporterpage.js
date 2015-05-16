@@ -1,29 +1,7 @@
 ﻿(function () {
 
     function addRecurringFields(period, page) {
-
-        // Add recurring fields to form
-        $("<input type='hidden' name='a3' class='pprecurring' />")
-            .attr('value', $('#donateAmt', page).val())
-            .appendTo("#payPalSupporterForm", page);
-
-        $("<input type='hidden' name='p3' value='1' class='pprecurring' />")
-            .appendTo("#payPalSupporterForm", page);
-
-        $("<input type='hidden' name='t3' value='" + period + "' class='pprecurring' />")
-            .appendTo("#payPalSupporterForm", page);
-
-        $("<input type='hidden' name='src' value='1' class='pprecurring' />")
-            .appendTo("#payPalSupporterForm", page);
-
-        $("<input type='hidden' name='sra' value='1' class='pprecurring' />")
-            .appendTo("#payPalSupporterForm", page);
-
-        //change command for subscriptions
-        $('#ppCmd', page).val('_xclick-subscriptions');
-
-        $('#payPalSupporterForm', page).trigger('create');
-        console.log($('#payPalSupporterForm', page).html());
+        RegistrationServices.addRecurringFields(page, period);
     }
 
     function removeRecurringFields(page) {
@@ -187,7 +165,7 @@
         $('.dailyAmount', page).html('$' + dailyAmount);
         $('.yearlyAmount', page).html('$' + yearlyAmount);
 
-        $('#paypalReturnUrl', page).val(ApiClient.getUrl("supporterkey.html"));
+        $('#returnUrl', page).val(ApiClient.getUrl("supporterkey.html"));
 
         $('.radioDonationType', page).trigger('change');
 
