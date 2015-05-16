@@ -342,7 +342,7 @@
 
         var chapters = item.Chapters || [];
 
-        if (!chapters.length || AppInfo.hasLowImageBandwidth) {
+        if (!chapters.length || !AppInfo.enableDetailPageChapters) {
             $('#scenesCollapsible', page).hide();
         } else {
             $('#scenesCollapsible', page).show();

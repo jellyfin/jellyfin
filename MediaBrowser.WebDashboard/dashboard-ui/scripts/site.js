@@ -1375,7 +1375,7 @@ var Dashboard = {
             // The native app can handle a little bit more than safari
             if (Dashboard.isRunningInCordova()) {
 
-                quality -= 20;
+                quality -= 15;
 
                 if (isBackdrop) {
                     quality -= 20;
@@ -1502,22 +1502,26 @@ var AppInfo = {};
 
         var isCordova = Dashboard.isRunningInCordova();
 
+        AppInfo.enableDetailPageChapters = true;
+        AppInfo.enableDetailsMenuImages = true;
+        AppInfo.enableHeaderImages = true;
+
         if ($.browser.safari) {
 
             if ($.browser.mobile) {
                 AppInfo.hasLowImageBandwidth = true;
-                AppInfo.enableDetailsMenuImages = false;
                 AppInfo.forcedImageFormat = 'jpg';
             }
 
             if (isCordova) {
                 AppInfo.enableBottomTabs = true;
-                AppInfo.enableDetailsMenuImages = true;
+            } else {
+                AppInfo.enableDetailPageChapters = false;
+                AppInfo.enableDetailsMenuImages = false;
+                AppInfo.enableHeaderImages = false;
             }
         }
         else {
-
-            AppInfo.enableDetailsMenuImages = true;
 
             if (!$.browser.tv) {
                 AppInfo.enableHeadRoom = true;
@@ -1541,9 +1545,7 @@ var AppInfo = {};
             AppInfo.enableFooterNotifications = true;
         }
 
-        //AppInfo.enableUserImage = !AppInfo.hasLowImageBandwidth || !isCordova;
         AppInfo.enableUserImage = true;
-        AppInfo.enableHeaderImages = !AppInfo.hasLowImageBandwidth || !isCordova;
     }
 
     function initializeApiClient(apiClient) {
