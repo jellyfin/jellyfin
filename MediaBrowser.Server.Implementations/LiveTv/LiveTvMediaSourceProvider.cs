@@ -84,6 +84,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 var openKeys = new List<string>();
                 openKeys.Add(item.GetType().Name);
                 openKeys.Add(item.Id.ToString("N"));
+                openKeys.Add(source.Id ?? string.Empty);
                 source.OpenToken = string.Join("|", openKeys.ToArray());
             }
 
@@ -95,13 +96,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public async Task<MediaSourceInfo> OpenMediaSource(string openToken, CancellationToken cancellationToken)
         {
             MediaSourceInfo stream;
-            var isAudio = false;
+            const bool isAudio = false;
 
-            var keys = openToken.Split(new[] { '|' }, 2);
+            var keys = openToken.Split(new[] { '|' }, 3);
+            var mediaSourceId = keys.Length >= 3 ? keys[2] : null;
 
             if (string.Equals(keys[0], typeof(LiveTvChannel).Name, StringComparison.OrdinalIgnoreCase))
             {
-                stream = await _liveTvManager.GetChannelStream(keys[1], cancellationToken).ConfigureAwait(false);
+                stream = await _liveTvManager.GetChannelStream(keys[1], mediaSourceId, cancellationToken).ConfigureAwait(false);
             }
             else
             {
