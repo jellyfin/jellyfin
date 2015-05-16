@@ -25,6 +25,7 @@ namespace MediaBrowser.Api
     [Authenticated]
     public class GetPlugins : IReturn<List<PluginInfo>>
     {
+        public bool? IsAppStoreEnabled { get; set; }
     }
 
     /// <summary>
@@ -181,6 +182,7 @@ namespace MediaBrowser.Api
         public async Task<object> Get(GetPlugins request)
         {
             var result = _appHost.Plugins.OrderBy(p => p.Name).Select(p => p.GetPluginInfo()).ToList();
+            var requireAppStoreEnabled = request.IsAppStoreEnabled.HasValue && request.IsAppStoreEnabled.Value;
 
             // Don't fail just on account of image url's
             try
@@ -197,10 +199,26 @@ namespace MediaBrowser.Api
                         plugin.ImageUrl = pkg.thumbImage;
                     }
                 }
+
+                if (requireAppStoreEnabled)
+                {
+                    result = result
+                        .Where(plugin =>
+                        {
+                            var pkg = packages.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.guid) && new Guid(plugin.Id).Equals(new Guid(i.guid)));
+                            return pkg != null && pkg.enableInAppStore;
+                  
+                        })
+                        .ToList();
+                }
             }
             catch
             {
-
+                // Play it safe here
+                if (requireAppStoreEnabled)
+                {
+                    result = new List<PluginInfo>();
+                }
             }
 
             return ToOptimizedSerializedResultUsingCache(result);

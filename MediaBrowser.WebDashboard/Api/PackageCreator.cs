@@ -38,17 +38,17 @@ namespace MediaBrowser.WebDashboard.Api
             string appVersion,
             bool enableMinification)
         {
-            var isHtml = IsHtml(path);
-
             Stream resourceStream;
 
             if (path.Equals("scripts/all.js", StringComparison.OrdinalIgnoreCase))
             {
                 resourceStream = await GetAllJavascript(mode, localizationCulture, appVersion, enableMinification).ConfigureAwait(false);
+                enableMinification = false;
             }
             else if (path.Equals("css/all.css", StringComparison.OrdinalIgnoreCase))
             {
                 resourceStream = await GetAllCss(enableMinification).ConfigureAwait(false);
+                enableMinification = false;
             }
             else
             {
@@ -59,7 +59,7 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 // Don't apply any caching for html pages
                 // jQuery ajax doesn't seem to handle if-modified-since correctly
-                if (isHtml && path.IndexOf("cordovaindex.html", StringComparison.OrdinalIgnoreCase) == -1)
+                if (IsHtml(path) && path.IndexOf("cordovaindex.html", StringComparison.OrdinalIgnoreCase) == -1)
                 {
                     resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
                 }
@@ -115,6 +115,86 @@ namespace MediaBrowser.WebDashboard.Api
             return fullPath;
         }
 
+        public async Task<Stream> ModifyCss(Stream sourceStream, bool enableMinification)
+        {
+            using (sourceStream)
+            {
+                string content;
+
+                using (var memoryStream = new MemoryStream())
+                {
+                    await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
+
+                    content = Encoding.UTF8.GetString(memoryStream.ToArray());
+
+                    if (enableMinification)
+                    {
+                        try
+                        {
+                            var result = new KristensenCssMinifier().Minify(content, false, Encoding.UTF8);
+
+                            if (result.Errors.Count > 0)
+                            {
+                                _logger.Error("Error minifying css: " + result.Errors[0].Message);
+                            }
+                            else
+                            {
+                                content = result.MinifiedContent;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error minifying css", ex);
+                        }
+                    }
+                }
+
+                var bytes = Encoding.UTF8.GetBytes(content);
+
+                return new MemoryStream(bytes);
+            }
+        }
+
+        public async Task<Stream> ModifyJs(Stream sourceStream, bool enableMinification)
+        {
+            using (sourceStream)
+            {
+                string content;
+
+                using (var memoryStream = new MemoryStream())
+                {
+                    await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
+
+                    content = Encoding.UTF8.GetString(memoryStream.ToArray());
+
+                    if (enableMinification)
+                    {
+                        try
+                        {
+                            var result = new CrockfordJsMinifier().Minify(content, false, Encoding.UTF8);
+
+                            if (result.Errors.Count > 0)
+                            {
+                                _logger.Error("Error minifying javascript: " + result.Errors[0].Message);
+                            }
+                            else
+                            {
+                                content = result.MinifiedContent;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error minifying javascript", ex);
+                        }
+                    }
+                }
+
+                var bytes = Encoding.UTF8.GetBytes(content);
+
+                return new MemoryStream(bytes);
+            }
+        }
+
         /// <summary>
         /// Modifies the HTML by adding common meta tags, css and js.
         /// </summary>
@@ -134,6 +214,11 @@ namespace MediaBrowser.WebDashboard.Api
                     await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
                     html = Encoding.UTF8.GetString(memoryStream.ToArray());
+
+                    if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+                    {
+                        html = ModifyForCordova(html);
+                    }
 
                     if (!string.IsNullOrWhiteSpace(localizationCulture))
                     {
@@ -180,6 +265,22 @@ namespace MediaBrowser.WebDashboard.Api
 
                 return new MemoryStream(bytes);
             }
+        }
+
+        private string ModifyForCordova(string html)
+        {
+            // Strip everything between CORDOVA_EXCLUDE_START and CORDOVA_EXCLUDE_END
+            html = ReplaceBetween(html, "CORDOVA_EXCLUDE_START", "CORDOVA_EXCLUDE_END", string.Empty);
+
+            // Replace CORDOVA_REPLACE_SUPPORTER_SUBMIT_START
+            html = ReplaceBetween(html, "CORDOVA_REPLACE_SUPPORTER_SUBMIT_START", "CORDOVA_REPLACE_SUPPORTER_SUBMIT_END", "<i class=\"fa fa-check\"></i><span>${ButtonDonate}</span>");
+
+            return html;
+        }
+
+        private string ReplaceBetween(string html, string startToken, string endToken, string newHtml)
+        {
+            return html;
         }
 
         private string GetLocalizationToken(string phrase)
@@ -293,7 +394,14 @@ namespace MediaBrowser.WebDashboard.Api
 
             await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
 
-            await AppendLocalization(memoryStream, culture).ConfigureAwait(false);
+            var excludePhrases = new List<string>();
+
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                excludePhrases.Add("paypal");
+            }
+
+            await AppendLocalization(memoryStream, culture, excludePhrases).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(mode))
@@ -424,13 +532,11 @@ namespace MediaBrowser.WebDashboard.Api
                                 "taskbutton.js",
 
                                 "ratingdialog.js",
-                                "aboutpage.js",
                                 "alphapicker.js",
                                 "addpluginpage.js",
                                 "metadataadvanced.js",
                                 "autoorganizetv.js",
                                 "autoorganizelog.js",
-                                "channels.js",
                                 "channelslatest.js",
                                 "channelitems.js",
                                 "channelsettings.js",
@@ -489,10 +595,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "moviepeople.js",
                                 "moviestudios.js",
                                 "movietrailers.js",
-                                "musicalbums.js",
-                                "musicalbumartists.js",
-                                "musicartists.js",
-                                "musicrecommended.js",
 
                                 "mypreferencesdisplay.js",
                                 "mypreferenceslanguages.js",
@@ -538,9 +640,29 @@ namespace MediaBrowser.WebDashboard.Api
                             };
         }
 
-        private async Task AppendLocalization(Stream stream, string culture)
+        private async Task AppendLocalization(Stream stream, string culture, List<string> excludePhrases)
         {
-            var js = "window.localizationGlossary=" + _jsonSerializer.SerializeToString(_localization.GetJavaScriptLocalizationDictionary(culture));
+            var dictionary = _localization.GetJavaScriptLocalizationDictionary(culture);
+
+            if (excludePhrases.Count > 0)
+            {
+                var removes = new List<string>();
+
+                foreach (var pair in dictionary)
+                {
+                    if (excludePhrases.Any(i => pair.Key.IndexOf(i, StringComparison.OrdinalIgnoreCase) != -1 || pair.Value.IndexOf(i, StringComparison.OrdinalIgnoreCase) != -1))
+                    {
+                        removes.Add(pair.Key);
+                    }
+                }
+
+                foreach (var remove in removes)
+                {
+                    dictionary.Remove(remove);
+                }
+            }
+
+            var js = "window.localizationGlossary=" + _jsonSerializer.SerializeToString(dictionary);
 
             var bytes = Encoding.UTF8.GetBytes(js);
             await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
