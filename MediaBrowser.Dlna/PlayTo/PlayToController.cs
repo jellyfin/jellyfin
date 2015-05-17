@@ -265,7 +265,7 @@ namespace MediaBrowser.Dlna.PlayTo
         {
             var ticks = _device.Position.Ticks;
 
-            if (!info.IsDirectStream)
+            if (!EnableClientSideSeek(info))
             {
                 ticks += info.StartPositionTicks;
             }
@@ -376,31 +376,26 @@ namespace MediaBrowser.Dlna.PlayTo
             {
                 var info = StreamParams.ParseFromUrl(media.Url, _libraryManager, _mediaSourceManager);
 
-                if (info.Item != null && !info.IsDirectStream)
+                if (info.Item != null && !EnableClientSideSeek(info))
                 {
                     var user = _session.UserId.HasValue ? _userManager.GetUserById(_session.UserId.Value) : null;
                     var newItem = CreatePlaylistItem(info.Item, user, newPosition, info.MediaSourceId, info.AudioStreamIndex, info.SubtitleStreamIndex);
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
-
-                    if (newItem.StreamInfo.IsDirectStream)
-                    {
-                        await Task.Delay(1000).ConfigureAwait(false);
-                        
-                        var maxWait = 15000000;
-                        var currentWait = 0;
-                        while (_device.TransportState != TRANSPORTSTATE.PLAYING && currentWait < maxWait)
-                        {
-                            await Task.Delay(1000).ConfigureAwait(false);
-                            currentWait += 1000;
-                        }
-                        
-                        await _device.Seek(TimeSpan.FromTicks(newPosition)).ConfigureAwait(false);
-                    }
                     return;
                 }
-                await _device.Seek(TimeSpan.FromTicks(newPosition)).ConfigureAwait(false);
+                await SeekAfterTransportChange(newPosition).ConfigureAwait(false);
             }
+        }
+
+        private bool EnableClientSideSeek(StreamParams info)
+        {
+            return info.IsDirectStream;
+        }
+
+        private bool EnableClientSideSeek(StreamInfo info)
+        {
+            return info.IsDirectStream;
         }
 
         public Task SendUserDataChangeInfo(UserDataChangeInfo info, CancellationToken cancellationToken)
@@ -617,8 +612,10 @@ namespace MediaBrowser.Dlna.PlayTo
             await _device.SetAvTransport(currentitem.StreamUrl, GetDlnaHeaders(currentitem), currentitem.Didl);
 
             var streamInfo = currentitem.StreamInfo;
-            if (streamInfo.StartPositionTicks > 0 && streamInfo.IsDirectStream)
-                await _device.Seek(TimeSpan.FromTicks(streamInfo.StartPositionTicks));
+            if (streamInfo.StartPositionTicks > 0 && EnableClientSideSeek(streamInfo))
+            {
+                await SeekAfterTransportChange(streamInfo.StartPositionTicks).ConfigureAwait(false);
+            }
         }
 
         #endregion
@@ -752,9 +749,9 @@ namespace MediaBrowser.Dlna.PlayTo
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
 
-                    if (newItem.StreamInfo.IsDirectStream)
+                    if (EnableClientSideSeek(newItem.StreamInfo))
                     {
-                        await _device.Seek(TimeSpan.FromTicks(newPosition)).ConfigureAwait(false);
+                        await SeekAfterTransportChange(newPosition).ConfigureAwait(false);
                     }
                 }
             }
@@ -778,15 +775,26 @@ namespace MediaBrowser.Dlna.PlayTo
 
                     await _device.SetAvTransport(newItem.StreamUrl, GetDlnaHeaders(newItem), newItem.Didl).ConfigureAwait(false);
 
-                    if (newItem.StreamInfo.IsDirectStream && newPosition > 0)
+                    if (EnableClientSideSeek(newItem.StreamInfo) && newPosition > 0)
                     {
-                        // This is rather arbitrary, but give the player time to start playing
-                        await Task.Delay(5000).ConfigureAwait(false);
-
-                        await _device.Seek(TimeSpan.FromTicks(newPosition)).ConfigureAwait(false);
+                        await SeekAfterTransportChange(newPosition).ConfigureAwait(false);
                     }
                 }
             }
+        }
+
+        private async Task SeekAfterTransportChange(long positionTicks)
+        {
+            const int maxWait = 15000000;
+            const int interval = 500;
+            var currentWait = 0;
+            while (_device.TransportState != TRANSPORTSTATE.PLAYING && currentWait < maxWait)
+            {
+                await Task.Delay(interval).ConfigureAwait(false);
+                currentWait += interval;
+            }
+
+            await _device.Seek(TimeSpan.FromTicks(positionTicks)).ConfigureAwait(false);
         }
 
         private class StreamParams
