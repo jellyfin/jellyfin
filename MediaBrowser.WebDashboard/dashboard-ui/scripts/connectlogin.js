@@ -41,7 +41,7 @@
 
                     Dashboard.serverAddress(apiClient.serverAddress());
                     Dashboard.setCurrentUser(apiClient.getCurrentUserId(), apiClient.accessToken());
-                    window.location = 'index.html';
+                    window.location.href = 'index.html';
                 }
                 break;
             case MediaBrowser.ConnectionState.ServerSignIn:

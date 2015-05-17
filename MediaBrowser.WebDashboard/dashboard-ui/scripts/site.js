@@ -211,10 +211,10 @@ var Dashboard = {
             'connectlogin.html';
 
         if (logoutWithServer === false) {
-            window.location = loginPage;
+            window.location.href = loginPage;
         } else {
             ConnectionManager.logout().done(function () {
-                window.location = loginPage;
+                window.location.href = loginPage;
             });
 
         }
@@ -668,7 +668,7 @@ var Dashboard = {
             }
 
             if (isConnectMode) {
-                html += '<p><a data-mini="true" data-role="button" href="selectserver.html" data-icon="cloud" data-ajax="false">' + Globalize.translate('ButtonSelectServer') + '</button></a>';
+                html += '<p><a data-mini="true" data-role="button" href="selectserver.html" data-icon="cloud">' + Globalize.translate('ButtonSelectServer') + '</button></a>';
             }
 
             html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
@@ -1507,7 +1507,6 @@ var AppInfo = {};
         AppInfo.enableHeaderImages = true;
         AppInfo.enableMovieHomeSuggestions = true;
 
-
         AppInfo.enableAppStorePolicy = isCordova;
 
         if ($.browser.safari) {
@@ -1524,6 +1523,7 @@ var AppInfo = {};
                 AppInfo.enableDetailsMenuImages = false;
                 AppInfo.enableHeaderImages = false;
                 AppInfo.enableMovieHomeSuggestions = false;
+                AppInfo.enableLargeCardMargin = true;
             }
         }
         else {
@@ -1643,7 +1643,7 @@ var AppInfo = {};
             initFastClick();
         }
 
-        if (AppInfo.hasLowImageBandwidth) {
+        if (AppInfo.enableLargeCardMargin) {
             $(document.body).addClass('largeCardMargin');
         }
 
@@ -1677,6 +1677,10 @@ var AppInfo = {};
 
         if (!AppInfo.enableMovieTrailersTab) {
             $(document.body).addClass('movieTrailersTabDisabled');
+        }
+
+        if (AppInfo.enableBottomTabs) {
+            $(document.body).addClass('bottomSecondaryNav');
         }
 
         if (Dashboard.isRunningInCordova()) {

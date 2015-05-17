@@ -17,7 +17,7 @@
 
                 callback: function () {
 
-                    window.location = 'login.html';
+                    window.location.href = 'login.html';
                 }
             });
             return;

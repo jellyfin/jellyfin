@@ -16,13 +16,13 @@
 
                         Dashboard.serverAddress(apiClient.serverAddress());
                         Dashboard.setCurrentUser(apiClient.getCurrentUserId(), apiClient.accessToken());
-                        window.location = 'index.html';
+                        window.location.href = 'index.html';
                     }
                     break;
                 case MediaBrowser.ConnectionState.ServerSignIn:
                     {
                         if (Dashboard.isRunningInCordova()) {
-                            window.location = 'login.html?serverid=' + result.Servers[0].Id;
+                            window.location.href = 'login.html?serverid=' + result.Servers[0].Id;
                         } else {
                             showServerConnectionFailure();
                         }

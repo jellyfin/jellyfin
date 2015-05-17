@@ -141,6 +141,10 @@
 
             }).get();
 
+        // Legacy
+        user.Policy.BlockedChannels = null;
+        user.Policy.BlockedMediaFolders = null;
+
         ApiClient.updateUserPolicy(user.Id, user.Policy).done(function () {
             onSaveComplete(page);
         });

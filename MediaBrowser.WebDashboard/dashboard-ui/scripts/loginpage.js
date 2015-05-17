@@ -110,9 +110,9 @@
             Dashboard.setCurrentUser(user.Id, result.AccessToken);
 
             if (user.Policy.IsAdministrator && !serverId) {
-                window.location = "dashboard.html?u=" + user.Id + '&t=' + result.AccessToken;
+                window.location.href = "dashboard.html?u=" + user.Id + '&t=' + result.AccessToken;
             } else {
-                window.location = "index.html?u=" + user.Id + '&t=' + result.AccessToken;
+                window.location.href = "index.html?u=" + user.Id + '&t=' + result.AccessToken;
             }
 
         }).fail(function () {

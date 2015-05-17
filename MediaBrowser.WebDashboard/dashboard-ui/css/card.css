@@ -307,14 +307,11 @@
     }
 }
 
-@media all and (min-width: 400px) {
+@media all and (min-width: 500px) {
 
     .smallBackdropCard {
         width: 33.3%;
     }
-}
-
-@media all and (min-width: 500px) {
 
     .squareCard {
         width: 33.3%;

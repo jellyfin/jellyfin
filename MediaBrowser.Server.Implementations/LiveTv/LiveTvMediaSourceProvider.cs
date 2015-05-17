@@ -164,28 +164,38 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 mediaSource.DefaultAudioStreamIndex = audioStream.Index;
             }
 
-            // Try to estimate this
-            if (!mediaSource.Bitrate.HasValue)
+            var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == Model.Entities.MediaStreamType.Video);
+            if (videoStream != null)
             {
-                var videoStream = mediaSource.MediaStreams.FirstOrDefault(i => i.Type == Model.Entities.MediaStreamType.Video);
-                if (videoStream != null)
+                if (!videoStream.BitRate.HasValue)
                 {
                     var width = videoStream.Width ?? 1920;
 
                     if (width >= 1900)
                     {
-                        mediaSource.Bitrate = 10000000;
+                        videoStream.BitRate = 8000000;
                     }
 
                     else if (width >= 1260)
                     {
-                        mediaSource.Bitrate = 6000000;
+                        videoStream.BitRate = 3000000;
                     }
 
                     else if (width >= 700)
                     {
-                        mediaSource.Bitrate = 4000000;
+                        videoStream.BitRate = 1000000;
                     }
+                }
+            }
+            
+            // Try to estimate this
+            if (!mediaSource.Bitrate.HasValue)
+            {
+                var total = mediaSource.MediaStreams.Select(i => i.BitRate ?? 0).Sum();
+
+                if (total > 0)
+                {
+                    mediaSource.Bitrate = total;
                 }
             }
         }

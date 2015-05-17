@@ -59,9 +59,26 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 // Don't apply any caching for html pages
                 // jQuery ajax doesn't seem to handle if-modified-since correctly
-                if (IsHtml(path) && path.IndexOf("cordovaindex.html", StringComparison.OrdinalIgnoreCase) == -1)
+                if (IsFormat(path, "html"))
                 {
-                    resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
+                    if (path.IndexOf("cordovaindex.html", StringComparison.OrdinalIgnoreCase) == -1)
+                    {
+                        resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
+                    }
+                }
+                else if (IsFormat(path, "js"))
+                {
+                    if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1)
+                    {
+                        resourceStream = await ModifyJs(resourceStream, enableMinification).ConfigureAwait(false);
+                    }
+                }
+                else if (IsFormat(path, "css"))
+                {
+                    if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1)
+                    {
+                        resourceStream = await ModifyCss(resourceStream, enableMinification).ConfigureAwait(false);
+                    }
                 }
             }
 
@@ -72,10 +89,11 @@ namespace MediaBrowser.WebDashboard.Api
         /// Determines whether the specified path is HTML.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="format">The format.</param>
         /// <returns><c>true</c> if the specified path is HTML; otherwise, <c>false</c>.</returns>
-        private bool IsHtml(string path)
+        private bool IsFormat(string path, string format)
         {
-            return Path.GetExtension(path).EndsWith("html", StringComparison.OrdinalIgnoreCase);
+            return Path.GetExtension(path).EndsWith(format, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

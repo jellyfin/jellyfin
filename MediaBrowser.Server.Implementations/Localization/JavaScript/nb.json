@@ -97,7 +97,7 @@
     "HeaderSupporterBenefit": "St\u00f8ttemedlemskap gir ytterligere fordeler som for eksempel tilgang til synkronisering, premium plugins, internett-kanaler og mer. {0}L\u00e6r mer{1}.",
     "LabelSyncNoTargetsHelp": "Det ser ikke ut til at du har noen applikasjoner som st\u00f8tter synkronisering.",
     "HeaderWelcomeToProjectServerDashboard": "Welcome to the Emby Server Dashboard",
-    "HeaderWelcomeToProjectWebClient": "Welcome to the Emby Web Client",
+    "HeaderWelcomeToProjectWebClient": "Welcome to Emby",
     "ButtonTakeTheTour": "Bli med p\u00e5 omvisning",
     "HeaderWelcomeBack": "Velkommen tilbake!",
     "TitlePlugins": "Plugins",
@@ -762,5 +762,8 @@
     "ButtonSignInWithConnect": "Sign in with Emby Connect",
     "HeaderNewServer": "New Server",
     "MyDevice": "My Device",
-    "ButtonRemote": "Remote"
+    "ButtonRemote": "Remote",
+    "TabInfo": "Info",
+    "TabCast": "Cast",
+    "TabScenes": "Scenes"
 }

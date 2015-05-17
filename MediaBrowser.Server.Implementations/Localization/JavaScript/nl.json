@@ -97,7 +97,7 @@
     "HeaderSupporterBenefit": "Een supporter lidmaatschap biedt voordelen zoals toegang tot synchronisatie, premium plug-ins, internet kanalen en meer. {0}Meer weten{1}.",
     "LabelSyncNoTargetsHelp": "Het lijkt erop dat je momenteel geen apps hebt die synchroniseren ondersteunen.",
     "HeaderWelcomeToProjectServerDashboard": "Welkom bij het Emby Server Dashboard",
-    "HeaderWelcomeToProjectWebClient": "Welkom bij de Emby Web Client",
+    "HeaderWelcomeToProjectWebClient": "Welcome to Emby",
     "ButtonTakeTheTour": "Volg de tour",
     "HeaderWelcomeBack": "Welkom terug!",
     "TitlePlugins": "Plugins",
@@ -760,7 +760,10 @@
     "EmbyIntroDownloadMessage": "To download and install Emby Server visit {0}.",
     "ButtonNewServer": "New Server",
     "ButtonSignInWithConnect": "Sign in with Emby Connect",
-    "HeaderNewServer": "New Server",
+    "HeaderNewServer": "Nieuwe Server",
     "MyDevice": "My Device",
-    "ButtonRemote": "Remote"
+    "ButtonRemote": "Remote",
+    "TabInfo": "Info",
+    "TabCast": "Cast",
+    "TabScenes": "Scenes"
 }

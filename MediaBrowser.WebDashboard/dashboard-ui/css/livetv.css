@@ -1,6 +1,24 @@
-﻿.tvGuideHeader.headroom--unpinned {
+﻿.tvGuideHeader {
+    white-space: nowrap;
+    position: fixed;
+    top: 98px;
+    left: 0;
+    z-index: 100;
+    max-width: 100%;
+}
+
+.bottomSecondaryNav .tvGuideHeader {
+    top: 48px;
+}
+
+.tvGuideHeader.headroom--unpinned {
     -webkit-transform: translateY(-98px);
     transform: translateY(-98px);
+}
+
+.bottomSecondaryNav .tvGuideHeader.headroom--unpinned {
+    -webkit-transform: translateY(-48px);
+    transform: translateY(-48px);
 }
 
 .tvProgramSectionHeader {
