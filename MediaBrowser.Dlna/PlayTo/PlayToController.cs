@@ -385,6 +385,16 @@ namespace MediaBrowser.Dlna.PlayTo
 
                     if (newItem.StreamInfo.IsDirectStream)
                     {
+                        await Task.Delay(1000).ConfigureAwait(false);
+                        
+                        var maxWait = 15000000;
+                        var currentWait = 0;
+                        while (_device.TransportState != TRANSPORTSTATE.PLAYING && currentWait < maxWait)
+                        {
+                            await Task.Delay(1000).ConfigureAwait(false);
+                            currentWait += 1000;
+                        }
+                        
                         await _device.Seek(TimeSpan.FromTicks(newPosition)).ConfigureAwait(false);
                     }
                     return;
