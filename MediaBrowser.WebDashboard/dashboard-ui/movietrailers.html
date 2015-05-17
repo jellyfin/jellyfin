@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="movieTrailersPage" data-role="page" class="page libraryPage">
+    <div id="movieTrailersPage" data-role="page" class="page libraryPage" data-require="scripts/movietrailers">
 
         <div class="libraryViewNav scopedLibraryViewNav">
             <a href="moviesrecommended.html">${TabSuggestions}</a>
@@ -141,9 +141,6 @@
             </div>
 
         </div>
-        <script type="text/javascript">
-            $('.popupTrailerReelForm').off('submit', MovieTrailerPage.onSubmit).on('submit', MovieTrailerPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

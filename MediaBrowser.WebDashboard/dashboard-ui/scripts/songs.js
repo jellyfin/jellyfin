@@ -130,7 +130,7 @@
         }
     }
 
-    $(document).on('pageinit', "#songsPage", function () {
+    $(document).on('pageinitdepends', "#songsPage", function () {
 
         var page = this;
 
@@ -174,7 +174,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#songsPage", function () {
+    }).on('pageshown', "#songsPage", function () {
 
         var page = this;
 
@@ -184,8 +184,6 @@
         QueryFilters.onPageShow(page, query);
 
         reloadItems(page);
-
-    }).on('pageshow', "#songsPage", function () {
 
         updateFilterControls(this);
 

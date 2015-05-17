@@ -92,7 +92,7 @@
         });
     }
 
-    $(document).on('pageinit', "#liveTvItemsPage", function () {
+    $(document).on('pageinitdepends', "#liveTvItemsPage", function () {
 
         var page = this;
 
@@ -137,7 +137,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#liveTvItemsPage", function () {
+    }).on('pageshown', "#liveTvItemsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -167,10 +167,6 @@
                 reloadItems(page);
             }
         });
-
-    }).on('pageshow', "#liveTvItemsPage", function () {
-
-        var page = this;
 
         updateFilterControls(page);
     });

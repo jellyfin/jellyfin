@@ -40,12 +40,6 @@
 
             updateFilterControls(page);
 
-            if (AppInfo.hasLowImageBandwidth) {
-                if (view == 'Poster') {
-                    view = 'PosterCard';
-                }
-            }
-
             if (view == "Poster") {
                 // Poster
                 html = LibraryBrowser.getPosterViewHtml({
@@ -218,7 +212,7 @@
         }
     }
 
-    $(document).on('pageinit', "#photosPage", function () {
+    $(document).on('pageinitdepends', "#photosPage", function () {
 
         var page = this;
 
@@ -283,7 +277,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#photosPage", function () {
+    }).on('pageshown', "#photosPage", function () {
 
         var page = this;
 
@@ -310,8 +304,6 @@
                 reloadItems(page);
             }
         });
-
-    }).on('pageshow', "#photosPage", function () {
 
         updateFilterControls(this);
     });

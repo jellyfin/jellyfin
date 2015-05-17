@@ -53,15 +53,6 @@
             updateFilterControls(page);
             var trigger = false;
 
-            if (AppInfo.hasLowImageBandwidth) {
-                if (view == 'Thumb') {
-                    view = 'ThumbCard';
-                }
-                else if (view == 'Poster') {
-                    view = 'PosterCard';
-                }
-            }
-
             if (result.TotalRecordCount) {
 
                 if (view == "List") {

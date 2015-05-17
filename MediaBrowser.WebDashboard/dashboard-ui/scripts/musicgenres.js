@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var view = LibraryBrowser.getDefaultItemsView('Thumb', 'ThumbCard');
+
     // The base query options
     var query = {
 
@@ -26,13 +28,6 @@
             $(document).scrollTop(0);
 
             var html = '';
-            var view = 'Thumb';
-
-            if (AppInfo.hasLowImageBandwidth) {
-                if (view == 'Thumb') {
-                    view = 'ThumbCard';
-                }
-            }
 
             $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,

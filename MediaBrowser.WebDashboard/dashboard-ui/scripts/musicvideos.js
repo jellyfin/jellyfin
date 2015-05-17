@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'PosterCard');
+
     // The base query options
     var query = {
 
@@ -36,14 +38,6 @@
             })).trigger('create');
 
             updateFilterControls(page);
-
-            var view = 'Poster';
-
-            if (AppInfo.hasLowImageBandwidth) {
-                if (view == 'Poster') {
-                    view = 'PosterCard';
-                }
-            }
 
             if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({

@@ -216,7 +216,7 @@
         }
     }
 
-    $(document).on('pageinit', "#moviesPage", function () {
+    $(document).on('pageinitdepends', "#moviesPage", function () {
 
         var page = this;
 
@@ -399,7 +399,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#moviesPage", function () {
+    }).on('pageshown', "#moviesPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -426,10 +426,6 @@
                 reloadItems(page);
             }
         });
-
-    }).on('pageshow', "#moviesPage", function () {
-
-        var page = this;
 
         updateFilterControls(page);
 

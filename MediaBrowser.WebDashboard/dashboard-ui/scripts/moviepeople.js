@@ -88,7 +88,7 @@
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
 
-    $(document).on('pageinit', "#moviePeoplePage", function () {
+    $(document).on('pageinitdepends', "#moviePeoplePage", function () {
 
         var page = this;
 
@@ -140,7 +140,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#moviePeoplePage", function () {
+    }).on('pageshown', "#moviePeoplePage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -155,8 +155,6 @@
         LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
-
-    }).on('pageshow', "#moviePeoplePage", function () {
 
         updateFilterControls(this);
     });

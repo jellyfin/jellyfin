@@ -105,6 +105,14 @@
         });
     }
 
+    function enableScrollX() {
+        return AppInfo.isTouchPreferred;
+    }
+
+    function getThumbShape() {
+        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+    }
+
     function loadResume(page) {
 
         var parentId = LibraryMenu.getTopParentId();
@@ -146,7 +154,7 @@
 
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    shape: "backdrop",
+                    shape: getThumbShape(),
                     showTitle: true,
                     showParentTitle: true,
                     lazy: true,
@@ -159,7 +167,7 @@
 
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    shape: "backdrop",
+                    shape: getThumbShape(),
                     showTitle: true,
                     showParentTitle: true,
                     overlayText: screenWidth >= 800 && !AppInfo.hasLowImageBandwidth,
@@ -177,6 +185,12 @@
     $(document).on('pageshown', "#tvRecommendedPage", function () {
 
         var page = this;
+
+        if (enableScrollX()) {
+            $('#resumableItems', page).addClass('hiddenScrollX');
+        } else {
+            $('#resumableItems', page).removeClass('hiddenScrollX');
+        }
 
         reload(page);
     });

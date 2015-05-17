@@ -141,7 +141,14 @@
         });
     }
 
-    $(document).on('pageinit', "#movieTrailersPage", function () {
+    function onSubmit() {
+        var page = $(this).parents('.page');
+
+        playReel(page);
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#movieTrailersPage", function () {
 
         var page = this;
 
@@ -206,7 +213,9 @@
 
         });
 
-    }).on('pagebeforeshow', "#movieTrailersPage", function () {
+        $('.popupTrailerReelForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshown', "#movieTrailersPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -232,20 +241,7 @@
             }
         });
 
-    }).on('pageshow', "#movieTrailersPage", function () {
-
         updateFilterControls(this);
     });
-
-    window.MovieTrailerPage = {
-
-        onSubmit: function () {
-
-            var page = $(this).parents('.page');
-
-            playReel(page);
-            return false;
-        }
-    };
 
 })(jQuery, document);

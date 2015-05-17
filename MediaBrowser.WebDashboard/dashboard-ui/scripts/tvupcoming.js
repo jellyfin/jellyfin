@@ -5,7 +5,7 @@
         var page = this;
 
         var limit = AppInfo.hasLowImageBandwidth ?
-         18 :
+         24 :
          40;
 
         var query = {

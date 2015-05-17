@@ -72,7 +72,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#movieStudiosPage", function () {
+    $(document).on('pageinitdepends', "#movieStudiosPage", function () {
 
         var page = this;
 
@@ -99,7 +99,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#movieStudiosPage", function () {
+    }).on('pageshown', "#movieStudiosPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -114,8 +114,6 @@
         LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
-
-    }).on('pageshow', "#movieStudiosPage", function () {
 
         updateFilterControls(this);
     });

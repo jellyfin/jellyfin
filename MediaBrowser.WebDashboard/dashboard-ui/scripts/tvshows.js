@@ -202,7 +202,7 @@
         }
     }
 
-    $(document).on('pageinit', "#tvShowsPage", function () {
+    $(document).on('pageinitdepends', "#tvShowsPage", function () {
 
         var page = this;
 
@@ -360,7 +360,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#tvShowsPage", function () {
+    }).on('pageshown', "#tvShowsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -386,8 +386,6 @@
                 reloadItems(page);
             }
         });
-
-    }).on('pageshow', "#tvShowsPage", function () {
 
         updateFilterControls(this);
     });
