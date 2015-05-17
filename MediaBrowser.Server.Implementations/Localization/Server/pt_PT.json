@@ -1,5 +1,7 @@
 {
-    "TabWebClient": "Web Client",
+    "LabelExit": "Sair",
+    "LabelVisitCommunity": "Visitar a Comunidade",
+    "LabelGithub": "Github",
     "LabelSwagger": "Swagger",
     "LabelStandard": "Padr\u00e3o",
     "LabelApiDocumentation": "Documenta\u00e7\u00e3o da API",
@@ -1431,7 +1433,10 @@
     "HeaderNewServer": "New Server",
     "ButtonChangeServer": "Change Server",
     "HeaderConnectToServer": "Connect to Server",
-    "LabelExit": "Sair",
-    "LabelVisitCommunity": "Visitar a Comunidade",
-    "LabelGithub": "Github"
+    "OptionReportList": "List View",
+    "OptionReportStatistics": "Statistics",
+    "OptionReportGrouping": "Grouping",
+    "HeaderExport": "Export",
+    "HeaderColumns": "Columns",
+    "ButtonReset": "Reset"
 }

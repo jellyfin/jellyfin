@@ -97,7 +97,7 @@
     "HeaderSupporterBenefit": "A supporter membership provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "LabelSyncNoTargetsHelp": "It looks like you don't currently have any apps that support sync.",
     "HeaderWelcomeToProjectServerDashboard": "Welcome to the Emby Server Dashboard",
-    "HeaderWelcomeToProjectWebClient": "Welcome to the Emby Web Client",
+    "HeaderWelcomeToProjectWebClient": "Welcome to Emby",
     "ButtonTakeTheTour": "\u0420\u0430\u0437\u0433\u043b\u0435\u0434\u0430\u0439 \u043d\u0430\u043e\u043a\u043e\u043b\u043e",
     "HeaderWelcomeBack": "Welcome back!",
     "TitlePlugins": "Plugins",
@@ -762,5 +762,8 @@
     "ButtonSignInWithConnect": "Sign in with Emby Connect",
     "HeaderNewServer": "New Server",
     "MyDevice": "My Device",
-    "ButtonRemote": "Remote"
+    "ButtonRemote": "Remote",
+    "TabInfo": "Info",
+    "TabCast": "Cast",
+    "TabScenes": "Scenes"
 }

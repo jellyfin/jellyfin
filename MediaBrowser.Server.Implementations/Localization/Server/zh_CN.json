@@ -1,5 +1,4 @@
 {
-    "TabWebClient": "Web\u5ba2\u6237\u7aef",
     "LabelExit": "\u9000\u51fa",
     "LabelVisitCommunity": "\u8bbf\u95ee\u793e\u533a",
     "LabelGithub": "Github",
@@ -1433,5 +1432,11 @@
     "LabelServerPort": "Port:",
     "HeaderNewServer": "New Server",
     "ButtonChangeServer": "Change Server",
-    "HeaderConnectToServer": "Connect to Server"
+    "HeaderConnectToServer": "Connect to Server",
+    "OptionReportList": "List View",
+    "OptionReportStatistics": "Statistics",
+    "OptionReportGrouping": "Grouping",
+    "HeaderExport": "Export",
+    "HeaderColumns": "Columns",
+    "ButtonReset": "Reset"
 }

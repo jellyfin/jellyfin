@@ -30,7 +30,7 @@ namespace MediaBrowser.Server.Implementations.Udp
 
         private bool _isDisposed;
 
-        private readonly List<Tuple<byte[], Action<string>>> _responders = new List<Tuple<byte[], Action<string>>>();
+        private readonly List<Tuple<string, byte[], Action<string, Encoding>>> _responders = new List<Tuple<string, byte[], Action<string, Encoding>>>();
 
         private readonly IServerApplicationHost _appHost;
         private readonly IJsonSerializer _json;
@@ -49,16 +49,16 @@ namespace MediaBrowser.Server.Implementations.Udp
             _appHost = appHost;
             _json = json;
 
-            AddMessageResponder("who is MediaBrowserServer?", RespondToV1Message);
-            AddMessageResponder("who is MediaBrowserServer_v2?", RespondToV2Message);
             AddMessageResponder("who is EmbyServer?", RespondToV2Message);
+            AddMessageResponder("who is MediaBrowserServer_v2?", RespondToV2Message);
+            AddMessageResponder("who is MediaBrowserServer?", RespondToV1Message);
         }
 
-        private void AddMessageResponder(string message, Action<string> responder)
+        private void AddMessageResponder(string message, Action<string, Encoding> responder)
         {
             var expectedMessageBytes = Encoding.UTF8.GetBytes(message);
 
-            _responders.Add(new Tuple<byte[], Action<string>>(expectedMessageBytes, responder));
+            _responders.Add(new Tuple<string, byte[], Action<string, Encoding>>(message, expectedMessageBytes, responder));
         }
 
         /// <summary>
@@ -67,13 +67,25 @@ namespace MediaBrowser.Server.Implementations.Udp
         /// <param name="e">The <see cref="UdpMessageReceivedEventArgs"/> instance containing the event data.</param>
         private void OnMessageReceived(UdpMessageReceivedEventArgs e)
         {
-            var responder = _responders.FirstOrDefault(i => i.Item1.SequenceEqual(e.Bytes));
+            var responder = _responders.FirstOrDefault(i => i.Item2.SequenceEqual(e.Bytes));
+            var encoding = Encoding.UTF8;
+
+            if (responder == null)
+            {
+                var text = Encoding.Unicode.GetString(e.Bytes);
+                responder = _responders.FirstOrDefault(i => string.Equals(i.Item1, text, StringComparison.OrdinalIgnoreCase));
+
+                if (responder != null)
+                {
+                    encoding = Encoding.Unicode;
+                }
+            }
 
             if (responder != null)
             {
                 try
                 {
-                    responder.Item2(e.RemoteEndPoint);
+                    responder.Item3(e.RemoteEndPoint, encoding);
                 }
                 catch (Exception ex)
                 {
@@ -82,7 +94,7 @@ namespace MediaBrowser.Server.Implementations.Udp
             }
         }
 
-        private async void RespondToV1Message(string endpoint)
+        private async void RespondToV1Message(string endpoint, Encoding encoding)
         {
             var localAddress = _appHost.LocalApiUrl;
 
@@ -107,7 +119,7 @@ namespace MediaBrowser.Server.Implementations.Udp
             }
         }
 
-        private async void RespondToV2Message(string endpoint)
+        private async void RespondToV2Message(string endpoint, Encoding encoding)
         {
             var localUrl = _appHost.LocalApiUrl;
 
@@ -120,7 +132,7 @@ namespace MediaBrowser.Server.Implementations.Udp
                     Name = _appHost.FriendlyName
                 };
 
-                await SendAsync(Encoding.UTF8.GetBytes(_json.SerializeToString(response)), endpoint);
+                await SendAsync(encoding.GetBytes(_json.SerializeToString(response)), endpoint);
             }
             else
             {
@@ -196,11 +208,18 @@ namespace MediaBrowser.Server.Implementations.Udp
             }
             var bytes = message.Buffer;
 
-            OnMessageReceived(new UdpMessageReceivedEventArgs
+            try
             {
-                Bytes = bytes,
-                RemoteEndPoint = message.RemoteEndPoint.ToString()
-            });
+                OnMessageReceived(new UdpMessageReceivedEventArgs
+                {
+                    Bytes = bytes,
+                    RemoteEndPoint = message.RemoteEndPoint.ToString()
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error handling UDP message", ex);
+            }
         }
 
         /// <summary>
