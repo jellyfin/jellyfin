@@ -1488,8 +1488,8 @@ var Dashboard = {
         return deferred.promise();
     },
 
-    onLoggedIn: function(serverAddress, userId, accessToken, apiClient) {
-        
+    onLoggedIn: function (serverAddress, userId, accessToken, apiClient) {
+
         if (Dashboard.isConnectMode()) {
             Dashboard.serverAddress(serverAddress);
         }
@@ -1811,6 +1811,14 @@ var AppInfo = {};
             e.preventDefault();
             return false;
         });
+
+        if (Dashboard.isRunningInCordova()) {
+            requirejs(['thirdparty/cordova/chromecast']);
+        } else {
+            if ($.browser.chrome) {
+                requirejs(['scripts/chromecast']);
+            }
+        }
     }
 
     requirejs.config({

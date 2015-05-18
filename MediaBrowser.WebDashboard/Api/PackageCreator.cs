@@ -548,7 +548,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "editorsidebar.js",
                                 "librarymenu.js",
                                 "mediacontroller.js",
-                                "chromecast.js",
                                 "backdrops.js",
                                 "sync.js",
                                 "syncjob.js",
