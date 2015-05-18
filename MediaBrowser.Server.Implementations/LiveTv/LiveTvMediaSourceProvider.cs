@@ -1,10 +1,12 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
@@ -21,13 +23,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly ILogger _logger;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly IMediaEncoder _mediaEncoder;
+        private readonly IServerApplicationHost _appHost;
 
-        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, IJsonSerializer jsonSerializer, ILogManager logManager, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder)
+        public LiveTvMediaSourceProvider(ILiveTvManager liveTvManager, IJsonSerializer jsonSerializer, ILogManager logManager, IMediaSourceManager mediaSourceManager, IMediaEncoder mediaEncoder, IServerApplicationHost appHost)
         {
             _liveTvManager = liveTvManager;
             _jsonSerializer = jsonSerializer;
             _mediaSourceManager = mediaSourceManager;
             _mediaEncoder = mediaEncoder;
+            _appHost = appHost;
             _logger = logManager.GetLogger(GetType().Name);
         }
 
@@ -74,6 +78,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             var list = sources.ToList();
+            var serverUrl = _appHost.LocalApiUrl;
 
             foreach (var source in list)
             {
@@ -86,6 +91,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 openKeys.Add(item.Id.ToString("N"));
                 openKeys.Add(source.Id ?? string.Empty);
                 source.OpenToken = string.Join("|", openKeys.ToArray());
+
+                // Dummy this up so that direct play checks can still run
+                if (string.IsNullOrEmpty(source.Path) && source.Protocol == MediaProtocol.Http)
+                {
+                    source.Path = serverUrl;
+                }
             }
 
             _logger.Debug("MediaSources: {0}", _jsonSerializer.SerializeToString(list));
@@ -187,7 +198,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     }
                 }
             }
-            
+
             // Try to estimate this
             if (!mediaSource.Bitrate.HasValue)
             {

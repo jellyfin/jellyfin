@@ -164,7 +164,7 @@
 
             var deferred = $.Deferred();
 
-            var apiClient = ConnectionManager.currentApiClient();
+            var apiClient = window.ApiClient;
 
             if (apiClient) {
                 apiClient.getSessions().done(function (sessions) {
@@ -242,7 +242,7 @@
                 ControllableByUserId: Dashboard.getCurrentUserId()
             };
 
-            var apiClient = ConnectionManager.currentApiClient();
+            var apiClient = window.ApiClient;
 
             if (apiClient) {
                 apiClient.getSessions(sessionQuery).done(function (sessions) {

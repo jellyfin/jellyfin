@@ -113,7 +113,7 @@ var Dashboard = {
 
         if (!Dashboard.getUserPromise) {
 
-            Dashboard.getUserPromise = ConnectionManager.currentApiClient().getCurrentUser().fail(Dashboard.logout);
+            Dashboard.getUserPromise = window.ApiClient.getCurrentUser().fail(Dashboard.logout);
         }
 
         return Dashboard.getUserPromise;
@@ -192,7 +192,7 @@ var Dashboard = {
         store.setItem("userId", userId);
         store.setItem("token", token);
 
-        var apiClient = ConnectionManager.currentApiClient();
+        var apiClient = window.ApiClient;
 
         if (apiClient) {
             apiClient.setCurrentUserId(userId, token);
@@ -644,7 +644,7 @@ var Dashboard = {
 
     showUserFlyout: function (context) {
 
-        ConnectionManager.user().done(function (user) {
+        ConnectionManager.user(window.ApiClient).done(function (user) {
 
             var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
 
@@ -1488,14 +1488,14 @@ var Dashboard = {
         return deferred.promise();
     },
 
-    onLoggedIn: function (serverAddress, userId, accessToken, apiClient) {
+    onServerChanged: function (serverAddress, userId, accessToken, apiClient) {
 
+        window.ApiClient = apiClient;
         if (Dashboard.isConnectMode()) {
             Dashboard.serverAddress(serverAddress);
         }
 
         Dashboard.setCurrentUser(userId, accessToken);
-        window.ApiClient = apiClient;
     }
 };
 
@@ -1787,7 +1787,7 @@ var AppInfo = {};
 
         $(window).on("beforeunload", function () {
 
-            var apiClient = ConnectionManager.currentApiClient();
+            var apiClient = window.ApiClient;
 
             // Close the connection gracefully when possible
             if (apiClient && apiClient.isWebSocketOpen()) {
@@ -1925,7 +1925,7 @@ $(document).on('pagecreate', ".page", function () {
 
     var page = $(this);
 
-    var apiClient = ConnectionManager.currentApiClient();
+    var apiClient = window.ApiClient;
 
     if (Dashboard.getAccessToken() && Dashboard.getCurrentUserId()) {
 

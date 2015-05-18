@@ -91,11 +91,6 @@
             return deviceId;
         };
 
-        self.currentApiClient = function () {
-
-            return apiClients[0];
-        };
-
         self.connectUserId = function () {
             return credentialProvider.credentials().ConnectUserId;
         };
@@ -409,7 +404,7 @@
             };
         }
 
-        self.user = function () {
+        self.user = function (apiClient) {
 
             var deferred = DeferredBuilder.Deferred();
 
@@ -431,7 +426,6 @@
 
             function onEnsureConnectUserDone() {
 
-                var apiClient = self.currentApiClient();
                 if (apiClient && apiClient.getCurrentUserId()) {
                     apiClient.getCurrentUser().done(function (u) {
                         localUser = u;
@@ -443,7 +437,7 @@
 
             var credentials = credentialProvider.credentials();
 
-            if (credentials.ConnectUserId && credentials.ConnectAccessToken && !(self.currentApiClient() && self.currentApiClient().getCurrentUserId())) {
+            if (credentials.ConnectUserId && credentials.ConnectAccessToken && !(apiClient && apiClient.getCurrentUserId())) {
                 ensureConnectUser(credentials).always(onEnsureConnectUserDone);
             } else {
                 onEnsureConnectUserDone();

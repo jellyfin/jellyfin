@@ -105,6 +105,11 @@
             };
         };
 
+        function triggerPlayerChange(newPlayer, newTarget) {
+            
+            $(self).trigger('playerchange', [newPlayer, newTarget]);
+        }
+
         self.setActivePlayer = function (player, targetInfo) {
 
             if (typeof (player) === 'string') {
@@ -122,7 +127,7 @@
 
             console.log('Active player: ' + JSON.stringify(currentTargetInfo));
 
-            $(self).trigger('playerchange');
+            triggerPlayerChange(player, targetInfo);
         };
 
         self.trySetActivePlayer = function (player, targetInfo) {
@@ -144,7 +149,7 @@
 
                 console.log('Active player: ' + JSON.stringify(currentTargetInfo));
 
-                $(self).trigger('playerchange');
+                triggerPlayerChange(player, targetInfo);
             });
         };
 
@@ -599,7 +604,7 @@
 
             });
 
-            $('.radioSelectPlayerTarget', elem).on('change', function () {
+            $('.radioSelectPlayerTarget', elem).off('change').on('change', function () {
 
                 var supportsMirror = this.getAttribute('data-mirror') == 'true';
 
@@ -608,14 +613,6 @@
                 } else {
                     $('.fldMirrorMode', elem).hide();
                 }
-
-            }).each(function () {
-
-                if (this.checked) {
-                    $(this).trigger('change');
-                }
-
-            }).on('change', function () {
 
                 var playerName = this.getAttribute('data-playername');
                 var targetId = this.getAttribute('data-targetid');
@@ -639,6 +636,12 @@
                 }
 
             });
+
+            if ($('.radioSelectPlayerTarget:checked', elem).attr('data-mirror') == 'true') {
+                $('.fldMirrorMode', elem).show();
+            } else {
+                $('.fldMirrorMode', elem).hide();
+            }
         });
     }
 

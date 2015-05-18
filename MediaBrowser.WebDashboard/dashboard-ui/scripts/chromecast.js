@@ -28,7 +28,7 @@
 
     var PlayerName = 'Chromecast';
 
-    var messageNamespace = 'urn:x-cast:com.google.cast.mediabrowser.v3';
+    var messageNamespace = 'urn:x-cast:com.connectsdk';
 
     var CastPlayer = function () {
 
@@ -852,9 +852,8 @@
 
         MediaController.registerPlayer(new chromecastPlayer());
 
-        $(MediaController).on('playerchange', function () {
-
-            if (MediaController.getPlayerInfo().name == PlayerName) {
+        $(MediaController).on('playerchange', function (e, newPlayer, newTarget) {
+            if (newPlayer.name == PlayerName) {
                 if (castPlayer.deviceState != DEVICE_STATE.ACTIVE && castPlayer.isInitialized) {
                     castPlayer.launchApp();
                 }
