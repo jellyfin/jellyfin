@@ -1813,7 +1813,7 @@ var AppInfo = {};
         });
 
         if (Dashboard.isRunningInCordova()) {
-            requirejs(['thirdparty/cordova/chromecast']);
+            requirejs(['thirdparty/cordova/connectsdk']);
         } else {
             if ($.browser.chrome) {
                 requirejs(['scripts/chromecast']);

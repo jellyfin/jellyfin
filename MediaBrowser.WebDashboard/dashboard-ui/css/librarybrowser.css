@@ -1574,6 +1574,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .detailsMenuHeaderWithLogo h3 {
     padding: 0 30px;
+    line-height: .5;
 }
 
 @media all and (min-height:500px) {

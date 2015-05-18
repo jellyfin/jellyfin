@@ -1731,15 +1731,18 @@
 
         var getItemFields = "MediaSources,Chapters";
 
-        self.getCurrentTargetInfo = function () {
-            return self.getTargets()[0];
+        self.tryPair = function (target) {
+
+            var deferred = $.Deferred();
+            deferred.resolve();
+            return deferred.promise();
         };
     }
 
     window.MediaPlayer = new mediaPlayer();
 
     window.MediaController.registerPlayer(window.MediaPlayer);
-    window.MediaController.setActivePlayer(window.MediaPlayer);
+    window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargets()[0]);
 
 
 })(document, setTimeout, clearTimeout, screen, window.store, $, setInterval, window);

@@ -118,15 +118,42 @@
             }
 
             currentPlayer = player;
-            currentTargetInfo = targetInfo || player.getCurrentTargetInfo();
+            currentTargetInfo = targetInfo;
 
             console.log('Active player: ' + JSON.stringify(currentTargetInfo));
 
             $(self).trigger('playerchange');
         };
 
+        self.trySetActivePlayer = function (player, targetInfo) {
+
+            if (typeof (player) === 'string') {
+                player = players.filter(function (p) {
+                    return p.name == player;
+                })[0];
+            }
+
+            if (!player) {
+                throw new Error('null player');
+            }
+
+            player.tryPair(targetInfo).done(function() {
+                
+                currentPlayer = player;
+                currentTargetInfo = targetInfo;
+
+                console.log('Active player: ' + JSON.stringify(currentTargetInfo));
+
+                $(self).trigger('playerchange');
+            });
+        };
+
         self.setDefaultPlayerActive = function () {
-            self.setActivePlayer(self.getDefaultPlayer());
+
+            var player = self.getDefaultPlayer();
+            var target = player.getTargets()[0];
+
+            self.setActivePlayer(player, target);
         };
 
         self.removeActivePlayer = function (name) {
@@ -597,7 +624,7 @@
                 var playableMediaTypes = this.getAttribute('data-mediatypes').split(',');
                 var supportedCommands = this.getAttribute('data-commands').split(',');
 
-                MediaController.setActivePlayer(playerName, {
+                MediaController.trySetActivePlayer(playerName, {
                     id: targetId,
                     name: targetName,
                     playableMediaTypes: playableMediaTypes,

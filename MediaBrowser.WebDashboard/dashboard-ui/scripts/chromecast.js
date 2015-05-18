@@ -229,8 +229,6 @@
 
         $(this).trigger('connect');
 
-        MediaController.setActivePlayer(PlayerName);
-
         this.sendMessage({
             options: {},
             command: 'Identify'
@@ -548,6 +546,8 @@
 
         $(castPlayer).on("connect", function (e) {
 
+            MediaController.setActivePlayer(PlayerName, self.getCurrentTargetInfo());
+
             console.log('cc: connect');
             // Reset this so the next query doesn't make it appear like content is playing.
             self.lastPlayerData = {};
@@ -836,6 +836,13 @@
 
             console.log(JSON.stringify(data));
             return data;
+        };
+
+        self.tryPair = function (target) {
+
+            var deferred = $.Deferred();
+            deferred.resolve();
+            return deferred.promise();
         };
     }
 

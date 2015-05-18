@@ -276,6 +276,13 @@
 
             return deferred.promise();
         };
+
+        self.tryPair = function(target) {
+
+            var deferred = $.Deferred();
+            deferred.resolve();
+            return deferred.promise();
+        };
     }
 
     var player = new remoteControlPlayer();
