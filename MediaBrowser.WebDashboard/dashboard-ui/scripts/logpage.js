@@ -1,6 +1,6 @@
 ﻿(function () {
 
-    $(document).on('pagebeforeshow', "#logPage", function () {
+    $(document).on('pageshown', "#logPage", function () {
 
         var page = this;
 
@@ -46,8 +46,6 @@
             $('.serverLogs', page).html(html).trigger('create');
 
         });
-
-
     });
 
 })();

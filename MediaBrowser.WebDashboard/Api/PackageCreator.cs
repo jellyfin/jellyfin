@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.Text.RegularExpressions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Logging;
@@ -288,17 +289,28 @@ namespace MediaBrowser.WebDashboard.Api
         private string ModifyForCordova(string html)
         {
             // Strip everything between CORDOVA_EXCLUDE_START and CORDOVA_EXCLUDE_END
-            html = ReplaceBetween(html, "CORDOVA_EXCLUDE_START", "CORDOVA_EXCLUDE_END", string.Empty);
+            html = ReplaceBetween(html, "<!--CORDOVA_EXCLUDE_START-->", "<!--CORDOVA_EXCLUDE_END-->", string.Empty);
 
             // Replace CORDOVA_REPLACE_SUPPORTER_SUBMIT_START
-            html = ReplaceBetween(html, "CORDOVA_REPLACE_SUPPORTER_SUBMIT_START", "CORDOVA_REPLACE_SUPPORTER_SUBMIT_END", "<i class=\"fa fa-check\"></i><span>${ButtonDonate}</span>");
+            html = ReplaceBetween(html, "<!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_START-->", "<!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_END-->", "<i class=\"fa fa-check\"></i><span>${ButtonDonate}</span>");
 
             return html;
         }
 
         private string ReplaceBetween(string html, string startToken, string endToken, string newHtml)
         {
-            return html;
+            var start = html.IndexOf(startToken, StringComparison.OrdinalIgnoreCase);
+            var end = html.IndexOf(endToken, StringComparison.OrdinalIgnoreCase);
+
+            if (start == -1 || end == -1)
+            {
+                return html;
+            }
+
+            string result = html.Substring(start + 1, end - start - 1);
+            html = html.Replace(result, newHtml);
+
+            return ReplaceBetween(html, startToken, endToken, newHtml);
         }
 
         private string GetLocalizationToken(string phrase)
@@ -600,7 +612,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "livetvstatus.js",
 
                                 "loginpage.js",
-                                "logpage.js",
                                 "medialibrarypage.js",
                                 "metadataconfigurationpage.js",
                                 "metadataimagespage.js",
@@ -626,15 +637,11 @@ namespace MediaBrowser.WebDashboard.Api
                                 "scheduledtaskspage.js",
                                 "search.js",
                                 "selectserver.js",
-                                "streamingsettings.js",
                                 "supporterkeypage.js",
-                                "supporterpage.js",
                                 "syncactivity.js",
                                 "syncsettings.js",
                                 "thememediaplayer.js",
-                                "tvlatest.js",
                                 "useredit.js",
-                                "usernew.js",
                                 "myprofile.js",
                                 "userpassword.js",
                                 "userprofilespage.js",

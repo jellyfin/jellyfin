@@ -105,7 +105,23 @@
         });
     }
 
-    $(document).on('pageinit', "#supporterPage", function () {
+    function onSubmit() {
+        var form = this;
+        var page = $(form).parents('.page');
+
+        if ($('.hfIsActive', page).val() == 'true') {
+
+            var currentPlanType = $('.hfPlanType', page).val();
+
+            if (currentPlanType != 'Lifetime') {
+
+                // Use a regular alert to block the submission process until they hit ok
+                alert(Globalize.translate('MessageChangeRecurringPlanConfirm'));
+            }
+        }
+    }
+
+    $(document).on('pageinitdepends', "#supporterPage", function () {
 
         var page = this;
 
@@ -156,7 +172,11 @@
             updateSavedDonationAmount(page);
         });
 
-    }).on('pageshow', "#supporterPage", function () {
+        RegistrationServices.initSupporterForm(page);
+
+        $('.supporterForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshown', "#supporterPage", function () {
 
         var page = this;
 
@@ -173,27 +193,5 @@
 
         loadUserInfo(page);
     });
-
-    window.SupporterPage = {
-
-        onSubmit: function () {
-
-            var form = this;
-            var page = $(form).parents('.page');
-
-            if ($('.hfIsActive', page).val() == 'true') {
-
-                var currentPlanType = $('.hfPlanType', page).val();
-
-                if (currentPlanType != 'Lifetime') {
-
-                    // Use a regular alert to block the submission process until they hit ok
-                    alert(Globalize.translate('MessageChangeRecurringPlanConfirm'));
-                }
-            }
-
-        }
-
-    };
 
 })();

@@ -4,9 +4,7 @@
 
         var timeout;
         var initialVolume;
-        var fullscreenExited = false;
         var idleState = true;
-        var remoteFullscreen = false;
 
         var muteButton = null;
         var unmuteButton = null;
@@ -27,32 +25,10 @@
             })[0];
         };
 
-        self.remoteFullscreen = function () {
-
-            if (remoteFullscreen) {
-                exitFullScreenToWindow();
-            } else {
-                enterFullScreen();
-            }
-
-            remoteFullscreen = !remoteFullscreen;
-        };
-
         self.toggleFullscreen = function () {
             if (self.isFullScreen()) {
-                if (document.cancelFullScreen) {
-                    document.cancelFullScreen();
-                }
-                else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                }
-                else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                }
-                else if (document.webkitCancelFullScreen) {
-                    document.webkitCancelFullScreen();
-                }
-                $('#videoPlayer').removeClass('fullscreenVideo');
+
+                self.exitFullScreen();
             } else {
                 requestFullScreen(document.body);
             }
@@ -66,17 +42,18 @@
         };
 
         self.exitFullScreen = function () {
+
             if (document.exitFullscreen) {
                 document.exitFullscreen();
             } else if (document.mozExitFullScreen) {
                 document.mozExitFullScreen();
             } else if (document.webkitExitFullscreen) {
                 document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
             }
 
             $('#videoPlayer').removeClass('fullscreenVideo');
-
-            fullscreenExited = true;
         };
 
         self.isFullScreen = function () {
@@ -676,7 +653,7 @@
         function requestFullScreen(element) {
 
             // Supports most browsers and their versions.
-            var requestMethod = element.requestFullscreen || element.webkitRequestFullscreen || element.webkitRequestFullScreen || element.mozRequestFullScreen;
+            var requestMethod = element.requestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen || element.msRequestFullscreen;
 
             if (requestMethod) { // Native full screen.
                 requestMethod.call(element);
@@ -691,9 +668,6 @@
             var player = $("#videoPlayer");
 
             player.addClass("fullscreenVideo");
-
-            remoteFullscreen = true;
-
         }
 
         function exitFullScreenToWindow() {
@@ -701,9 +675,6 @@
             var player = $("#videoPlayer");
 
             player.removeClass("fullscreenVideo");
-
-            remoteFullscreen = false;
-
         }
 
         function getChaptersFlyoutHtml() {
@@ -1008,7 +979,7 @@
                 $('.itemVideo').on('mousemove.videoplayer keydown.videoplayer scroll.videoplayer', idleHandler).trigger('mousemove');
             }
 
-            $(document).on('webkitfullscreenchange.videoplayer mozfullscreenchange.videoplayer fullscreenchange.videoplayer', function (e) {
+            $(document).on('webkitfullscreenchange.videoplayer mozfullscreenchange.videoplayer msfullscreenchange.videoplayer fullscreenchange.videoplayer', function (e) {
 
                 if (self.isFullScreen()) {
                     enterFullScreen();
@@ -1016,24 +987,6 @@
 
                 } else {
                     exitFullScreenToWindow();
-                }
-
-                fullscreenExited = self.isFullScreen() == false;
-
-            }).on("msfullscreenchange.videoplayer", function (e) {
-
-                fullscreenExited = self.isFullScreen() == false;
-
-            }).on("keyup.videoplayer", function (e) {
-
-                if (fullscreenExited) {
-                    $("#videoPlayer", $("#mediaPlayer")).removeClass("fullscreenVideo");
-                    fullscreenExited = false;
-                    return;
-                }
-
-                if (e.keyCode == 27) {
-                    self.stop();
                 }
             });
 
@@ -1053,7 +1006,7 @@
 
         function unbindEventsForPlayback() {
 
-            $(document).off('webkitfullscreenchange.videoplayer mozfullscreenchange.videoplayer fullscreenchange.videoplayer').off("msfullscreenchange.videoplayer").off("keyup.videoplayer");
+            $(document).off('webkitfullscreenchange.videoplayer mozfullscreenchange.videoplayer msfullscreenchange.videoplayer fullscreenchange.videoplayer');
 
             // Stop playback on browser back button nav
             $(window).off("popstate.videoplayer");
@@ -1334,8 +1287,6 @@
             bindEventsForPlayback();
 
             mediaPlayerContainer.trigger("create");
-
-            fullscreenExited = false;
 
             self.currentSubtitleStreamIndex = mediaSource.DefaultSubtitleStreamIndex;
 

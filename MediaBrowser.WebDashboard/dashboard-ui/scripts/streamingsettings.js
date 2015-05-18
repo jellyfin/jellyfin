@@ -7,7 +7,23 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageinit', "#streamingSettingsPage", function () {
+    function onSubmit() {
+        Dashboard.showLoadingMsg();
+
+        var form = this;
+
+        ApiClient.getServerConfiguration().done(function (config) {
+
+            config.RemoteClientBitrateLimit = parseInt(parseFloat(($('#txtRemoteClientBitrateLimit', form).val() || '0')) * 1000000);
+
+            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+        });
+
+        // Disable default form submission
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#streamingSettingsPage", function () {
 
         var page = this;
 
@@ -31,7 +47,9 @@
             });
         });
 
-    }).on('pageshow', "#streamingSettingsPage", function () {
+        $('.streamingSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshown', "#streamingSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -43,25 +61,5 @@
 
         });
     });
-
-    window.StreamingSettingsPage = {
-
-        onSubmit: function () {
-
-            Dashboard.showLoadingMsg();
-
-            var form = this;
-
-            ApiClient.getServerConfiguration().done(function (config) {
-
-                config.RemoteClientBitrateLimit = parseInt(parseFloat(($('#txtRemoteClientBitrateLimit', form).val() || '0')) * 1000000);
-
-                ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
-            });
-
-            // Disable default form submission
-            return false;
-        }
-    };
 
 })(jQuery, document, window);

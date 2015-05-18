@@ -102,18 +102,16 @@
 
             var serverId = getParameterByName('serverid');
 
-            // In a multi-server supported app, set the server address
-            if (serverId) {
-                Dashboard.serverAddress(apiClient.serverAddress());
-            }
-
-            Dashboard.setCurrentUser(user.Id, result.AccessToken);
+            var newUrl;
 
             if (user.Policy.IsAdministrator && !serverId) {
-                window.location.href = "dashboard.html?u=" + user.Id + '&t=' + result.AccessToken;
+                newUrl = "dashboard.html?u=" + user.Id + '&t=' + result.AccessToken;
             } else {
-                window.location.href = "index.html?u=" + user.Id + '&t=' + result.AccessToken;
+                newUrl = "index.html?u=" + user.Id + '&t=' + result.AccessToken;
             }
+
+            Dashboard.onLoggedIn(apiClient.serverAddress(), user.Id, result.AccessToken, apiClient);
+            Dashboard.navigate(newUrl);
 
         }).fail(function () {
 

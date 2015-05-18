@@ -14,9 +14,8 @@
                     {
                         var apiClient = result.ApiClient;
 
-                        Dashboard.serverAddress(apiClient.serverAddress());
-                        Dashboard.setCurrentUser(apiClient.getCurrentUserId(), apiClient.accessToken());
-                        window.location.href = 'index.html';
+                        Dashboard.onLoggedIn(apiClient.serverAddress(), apiClient.getCurrentUserId(), apiClient.accessToken(), apiClient);
+                        Dashboard.navigate('index.html');
                     }
                     break;
                 case MediaBrowser.ConnectionState.ServerSignIn:

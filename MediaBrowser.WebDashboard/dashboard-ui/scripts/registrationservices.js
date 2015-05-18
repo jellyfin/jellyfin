@@ -1,7 +1,7 @@
 ﻿window.RegistrationServices = {
 
     renderPluginInfo: function (page, pkg, pluginSecurityInfo) {
-        
+
         if (pkg.isPremium) {
             $('.premiumPackage', page).show();
 
@@ -82,8 +82,8 @@
         }
     },
 
-    addRecurringFields: function(page, period) {
-        
+    addRecurringFields: function (page, period) {
+
         var formSelector = '.supporterForm';
 
         // Add recurring fields to form
@@ -107,6 +107,12 @@
         $('#ppCmd', page).val('_xclick-subscriptions');
 
         $(formSelector, page).trigger('create');
-    }
 
+    },
+
+    initSupporterForm: function (page) {
+
+        $('.supporterForm', page).attr('action', 'https://www.paypal.com/cgi-bin/webscr');
+        $('.recurringSubscriptionCancellationHelp', page).html(Globalize.translate('LabelRecurringDonationCanBeCancelledHelp'));
+    }
 };
