@@ -787,8 +787,8 @@
 	    var page = this;
 	    query.SortOrder = "Ascending";
 
-	    QueryFilters.onPageShow(page, query);
-
+	    QueryReportFilters.onPageShow(page, query);
+	    QueryReportColumns.onPageShow(page, query);
 	    $('#selectView', page).val(query.IncludeItemTypes).selectmenu('refresh').trigger('change');
 
 	})
