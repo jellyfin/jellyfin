@@ -233,6 +233,12 @@ namespace MediaBrowser.Server.Implementations.Devices
             }
 
             var user = _userManager.GetUserById(userId);
+
+            if (user == null)
+            {
+                throw new ArgumentException("user not found");
+            }
+
             if (!CanAccessDevice(user.Policy, deviceId))
             {
                 var capabilities = GetCapabilities(deviceId);
