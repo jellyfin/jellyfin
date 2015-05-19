@@ -105,7 +105,7 @@
         }
     }
 
-    $(document).on('pagebeforeshow', "#favoritesPage", function () {
+    $(document).on('pageshowready', "#favoritesPage", function () {
 
         var page = this;
 

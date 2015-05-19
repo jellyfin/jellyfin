@@ -99,7 +99,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshown', "#movieStudiosPage", function () {
+    }).on('pageshowready', "#movieStudiosPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

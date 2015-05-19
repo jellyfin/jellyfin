@@ -485,7 +485,7 @@ namespace MediaBrowser.Model.Dlna
 
             if (targetAudioChannels.HasValue)
             {
-                if (targetAudioChannels.Value >= 5 && (maxTotalBitrate ?? 0) >= 1500000)
+                if (targetAudioChannels.Value >= 5 && (maxTotalBitrate ?? 0) >= 2000000)
                 {
                     defaultBitrate = 320000;
                 }

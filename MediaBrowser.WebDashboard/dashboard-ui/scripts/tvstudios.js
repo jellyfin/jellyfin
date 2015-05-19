@@ -108,7 +108,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshown', "#tvStudiosPage", function () {
+    }).on('pageshowready', "#tvStudiosPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

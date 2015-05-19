@@ -226,23 +226,28 @@
         }
     });
 
-    function initializeApiClient(apiClient) {
-        $(apiClient).on("websocketmessage", function (e, msg) {
+    function onWebSocketMessage(e, msg) {
+        if (msg.MessageType === "NotificationUpdated" || msg.MessageType === "NotificationAdded" || msg.MessageType === "NotificationsMarkedRead") {
 
+            Notifications.getNotificationsSummaryPromise = null;
 
-            if (msg.MessageType === "NotificationUpdated" || msg.MessageType === "NotificationAdded" || msg.MessageType === "NotificationsMarkedRead") {
-
-                Notifications.getNotificationsSummaryPromise = null;
-
-                Notifications.updateNotificationCount();
-            }
-
-        });
+            Notifications.updateNotificationCount();
+        }
     }
 
-    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+    function initializeApiClient(apiClient) {
+        $(apiClient).off("websocketmessage", onWebSocketMessage).on("websocketmessage", onWebSocketMessage);
+    }
 
-        initializeApiClient(apiClient);
+    Dashboard.ready(function () {
+
+        if (window.ApiClient) {
+            initializeApiClient(window.ApiClient);
+        }
+
+        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+            initializeApiClient(apiClient);
+        });
     });
 
 })(jQuery, document, Dashboard, LibraryBrowser);

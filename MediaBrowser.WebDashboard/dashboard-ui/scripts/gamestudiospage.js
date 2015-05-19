@@ -98,7 +98,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshown', "#gameStudiosPage", function () {
+    }).on('pageshowready', "#gameStudiosPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

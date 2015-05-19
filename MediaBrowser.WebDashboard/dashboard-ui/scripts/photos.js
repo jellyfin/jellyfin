@@ -277,7 +277,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshown', "#photosPage", function () {
+    }).on('pageshowready', "#photosPage", function () {
 
         var page = this;
 

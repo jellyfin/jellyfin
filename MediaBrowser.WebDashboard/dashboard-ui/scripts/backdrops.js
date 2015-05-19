@@ -195,7 +195,7 @@
         }
     }
 
-    $(document).on('pagebeforeshow', ".page", function () {
+    $(document).on('pagebeforeshowready', ".page", function () {
 
         var page = this;
 

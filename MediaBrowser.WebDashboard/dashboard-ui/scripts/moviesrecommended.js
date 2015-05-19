@@ -234,7 +234,7 @@
 
         $('.recommendations', page).createCardMenus();
 
-    }).on('pageshown', "#moviesRecommendedPage", function () {
+    }).on('pageshowready', "#moviesRecommendedPage", function () {
 
         var parentId = LibraryMenu.getTopParentId();
 

@@ -62,7 +62,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
     public class DynamicHlsService : BaseHlsService
     {
-        public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, INetworkManager networkManager) : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, jsonSerializer)
+        public DynamicHlsService(IServerConfigurationManager serverConfig, IUserManager userManager, ILibraryManager libraryManager, IIsoManager isoManager, IMediaEncoder mediaEncoder, IFileSystem fileSystem, IDlnaManager dlnaManager, ISubtitleEncoder subtitleEncoder, IDeviceManager deviceManager, IMediaSourceManager mediaSourceManager, IZipClient zipClient, IJsonSerializer jsonSerializer, INetworkManager networkManager)
+            : base(serverConfig, userManager, libraryManager, isoManager, mediaEncoder, fileSystem, dlnaManager, subtitleEncoder, deviceManager, mediaSourceManager, zipClient, jsonSerializer)
         {
             NetworkManager = networkManager;
         }
@@ -130,7 +131,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     var startTranscoding = false;
 
-                    var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
+                    var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, request.PlaySessionId, segmentExtension);
                     var segmentGapRequiringTranscodingChange = 24 / state.SegmentLength;
 
                     if (currentTranscodingIndex == null)
@@ -206,9 +207,11 @@ namespace MediaBrowser.Api.Playback.Hls
             return position;
         }
 
-        public int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
+        public int? GetCurrentTranscodingIndex(string playlist, string playSessionId, string segmentExtension)
         {
-            var job = ApiEntryPoint.Instance.GetTranscodingJob(playlist, TranscodingJobType);
+            var job = string.IsNullOrWhiteSpace(playSessionId) ?
+                ApiEntryPoint.Instance.GetTranscodingJob(playlist, TranscodingJobType) :
+                ApiEntryPoint.Instance.GetTranscodingJobByPlaySessionId(playSessionId);
 
             if (job == null || job.HasExited)
             {
@@ -720,11 +723,31 @@ namespace MediaBrowser.Api.Playback.Hls
             // If isEncoding is true we're actually starting ffmpeg
             var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
 
+            var toTimeParam = string.Empty;
+            if (state.RunTimeTicks.HasValue)
+            {
+                var startTime = state.Request.StartTimeTicks ?? 0;
+                var durationSeconds = ApiEntryPoint.Instance.GetEncodingOptions().ThrottleThresholdInSeconds;
+                var endTime = startTime + TimeSpan.FromSeconds(durationSeconds).Ticks;
+                endTime = Math.Min(endTime, state.RunTimeTicks.Value);
+
+                if (endTime < state.RunTimeTicks.Value)
+                {
+                    toTimeParam = " -to " + MediaEncoder.GetTimeParameter(endTime);
+                }
+            }
+
+            var slowSeekParam = GetSlowSeekCommandLineParameter(state.Request);
+            if (!string.IsNullOrWhiteSpace(slowSeekParam))
+            {
+                slowSeekParam = " " + slowSeekParam;
+            }
+
             if (state.EnableGenericHlsSegmenter)
             {
                 var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d.ts";
 
-                return string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -flags -global_header -sc_threshold 0 {5} -f segment -segment_time {6} -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
+                return string.Format("{0} {1}{10}{11} -map_metadata -1 -threads {2} {3} {4} -flags -global_header -sc_threshold 0 {5} -f segment -segment_time {6} -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
                     inputModifier,
                     GetInputArgument(state),
                     threads,
@@ -734,11 +757,13 @@ namespace MediaBrowser.Api.Playback.Hls
                     state.SegmentLength.ToString(UsCulture),
                     startNumberParam,
                     outputPath,
-                    outputTsArg
+                    outputTsArg,
+                            slowSeekParam,
+                            toTimeParam
                     ).Trim();
             }
 
-            return string.Format("{0} {1} -map_metadata -1 -threads {2} {3} {4} -flags -global_header -copyts -sc_threshold 0 {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
+            return string.Format("{0} {1}{10}{11} -map_metadata -1 -threads {2} {3} {4} -flags -global_header -copyts -sc_threshold 0 {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
                             inputModifier,
                             GetInputArgument(state),
                             threads,
@@ -748,8 +773,34 @@ namespace MediaBrowser.Api.Playback.Hls
                             state.SegmentLength.ToString(UsCulture),
                             startNumberParam,
                             state.HlsListSize.ToString(UsCulture),
-                            outputPath
+                            outputPath,
+                            slowSeekParam,
+                            toTimeParam
                             ).Trim();
+        }
+
+        protected override bool EnableThrottling
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        protected override bool EnableStreamCopy
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        protected override bool EnableSlowSeek
+        {
+            get
+            {
+                return true;
+            }
         }
 
         /// <summary>

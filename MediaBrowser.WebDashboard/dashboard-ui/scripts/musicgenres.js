@@ -115,7 +115,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshown', "#musicGenresPage", function () {
+    }).on('pageshowready', "#musicGenresPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

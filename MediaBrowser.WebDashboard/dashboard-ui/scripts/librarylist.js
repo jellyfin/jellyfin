@@ -1082,7 +1082,7 @@
         $('cardImage', page).remove();
     }
 
-    $(document).on('pageinit', ".libraryPage", function () {
+    $(document).on('pageinitdepends', ".libraryPage", function () {
 
         var page = this;
 
@@ -1127,7 +1127,7 @@
 
         $('.itemsContainer', page).createCardMenus();
 
-    }).on('pagebeforeshow', ".libraryPage", function () {
+    }).on('pagebeforeshowready', ".libraryPage", function () {
 
         var page = this;
 
@@ -1212,9 +1212,15 @@
         $(apiClient).off('websocketmessage.librarylist', onWebSocketMessage).on('websocketmessage.librarylist', onWebSocketMessage);
     }
 
-    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+    Dashboard.ready(function () {
 
-        initializeApiClient(apiClient);
+        if (window.ApiClient) {
+            initializeApiClient(window.ApiClient);
+        }
+
+        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+            initializeApiClient(apiClient);
+        });
     });
 
 })(jQuery, document, window);

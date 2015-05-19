@@ -250,19 +250,19 @@ namespace MediaBrowser.Api
             return GetTranscodingJob(path, type) != null;
         }
 
+        public TranscodingJob GetTranscodingJobByPlaySessionId(string playSessionId)
+        {
+            lock (_activeTranscodingJobs)
+            {
+                return _activeTranscodingJobs.FirstOrDefault(j => j.PlaySessionId.Equals(playSessionId, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
         public TranscodingJob GetTranscodingJob(string path, TranscodingJobType type)
         {
             lock (_activeTranscodingJobs)
             {
                 return _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
-            }
-        }
-
-        public TranscodingJob GetTranscodingJob(string id)
-        {
-            lock (_activeTranscodingJobs)
-            {
-                return _activeTranscodingJobs.FirstOrDefault(j => j.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
             }
         }
 

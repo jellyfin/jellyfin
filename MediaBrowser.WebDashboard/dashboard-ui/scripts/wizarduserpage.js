@@ -60,7 +60,7 @@
 
         $('.wizardUserForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshown', "#wizardUserPage", function () {
+    }).on('pageshowready', "#wizardUserPage", function () {
 
         Dashboard.showLoadingMsg();
 

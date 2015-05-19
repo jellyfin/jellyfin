@@ -147,7 +147,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshown', "#tvPeoplePage", function () {
+    }).on('pageshowready', "#tvPeoplePage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

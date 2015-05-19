@@ -60,7 +60,7 @@
 
     }
 
-    $(document).on('pageshown', "#channelsPage", function () {
+    $(document).on('pageshowready', "#channelsPage", function () {
 
         LibraryBrowser.loadSavedQueryValues('channels', query);
 

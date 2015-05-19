@@ -109,7 +109,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshown', "#liveTvChannelsPage", function () {
+    }).on('pageshowready', "#liveTvChannelsPage", function () {
 
         // Can't use pagebeforeshow here or the loading popup won't center correctly
         var page = this;

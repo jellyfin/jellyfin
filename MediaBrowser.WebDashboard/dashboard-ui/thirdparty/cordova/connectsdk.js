@@ -15,8 +15,8 @@
 
         var manager = ConnectSDK.discoveryManager;
 
-        manager.setPairingLevel(ConnectSDK.PairingLevel.OFF);
-        manager.setAirPlayServiceMode(ConnectSDK.AirPlayServiceMode.Media);
+        //manager.setPairingLevel(ConnectSDK.PairingLevel.OFF);
+        //manager.setAirPlayServiceMode(ConnectSDK.AirPlayServiceMode.Media);
 
         // Show devices that support playing videos and pausing
         //manager.setCapabilityFilters([
@@ -28,14 +28,10 @@
 
         manager.startDiscovery();
 
-        requirejs(['thirdparty/cordova/chromecast']);
+        requirejs(['thirdparty/cordova/chromecast', 'thirdparty/cordova/generaldevice']);
     }
 
-    document.addEventListener("deviceready", function () {
-
-        initSdk();
-
-    }, false);
+    Dashboard.ready(initSdk);
 
 
 })();

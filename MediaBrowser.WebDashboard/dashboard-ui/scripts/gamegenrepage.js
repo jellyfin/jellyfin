@@ -96,7 +96,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshown', "#gameGenresPage", function () {
+    }).on('pageshowready', "#gameGenresPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

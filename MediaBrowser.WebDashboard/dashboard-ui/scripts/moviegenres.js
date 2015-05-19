@@ -154,7 +154,7 @@
             LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
         });
 
-    }).on('pageshown', "#movieGenresPage", function () {
+    }).on('pageshowready', "#movieGenresPage", function () {
 
         var page = this;
         query.ParentId = LibraryMenu.getTopParentId();

@@ -1,6 +1,6 @@
 (function ($, document) {
 
-    $(document).on('pageshown', "#gamesRecommendedPage", function () {
+    $(document).on('pageshowready', "#gamesRecommendedPage", function () {
 
         var parentId = LibraryMenu.getTopParentId();
         var userId = Dashboard.getCurrentUserId();

@@ -59,7 +59,7 @@
         return false;
     }
 
-    $(document).on('pageshown', "#advancedConfigurationPage", function () {
+    $(document).on('pageshowready', "#advancedConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 

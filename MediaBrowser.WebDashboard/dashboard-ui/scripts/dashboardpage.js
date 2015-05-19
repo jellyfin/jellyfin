@@ -6,6 +6,12 @@
 
         var page = this;
 
+        var apiClient = ApiClient;
+
+        if (!apiClient) {
+            return;
+        }
+
         if (Dashboard.lastSystemInfo) {
             Dashboard.setPageTitle(Dashboard.lastSystemInfo.ServerName);
         }
@@ -14,9 +20,9 @@
 
         Dashboard.showLoadingMsg();
         DashboardPage.pollForInfo(page);
-        DashboardPage.startInterval();
+        DashboardPage.startInterval(apiClient);
 
-        $(ApiClient).on("websocketmessage", DashboardPage.onWebSocketMessage)
+        $(apiClient).on("websocketmessage", DashboardPage.onWebSocketMessage)
             .on("websocketopen", DashboardPage.onWebSocketOpen);
 
         DashboardPage.lastAppUpdateCheck = null;
@@ -33,7 +39,7 @@
 
         $('.activityItems', page).activityLogList();
 
-        $('.swaggerLink', page).attr('href', ApiClient.getUrl('swagger-ui/index.html'));
+        $('.swaggerLink', page).attr('href', apiClient.getUrl('swagger-ui/index.html'));
     },
 
     onPageHide: function () {
@@ -42,8 +48,10 @@
 
         $('.activityItems', page).activityLogList('destroy');
 
-        $(ApiClient).off("websocketmessage", DashboardPage.onWebSocketMessage).off("websocketopen", DashboardPage.onWebSocketConnectionChange).off("websocketerror", DashboardPage.onWebSocketConnectionChange).off("websocketclose", DashboardPage.onWebSocketConnectionChange);
-        DashboardPage.stopInterval();
+        var apiClient = ApiClient;
+
+        $(apiClient).off("websocketmessage", DashboardPage.onWebSocketMessage).off("websocketopen", DashboardPage.onWebSocketConnectionChange).off("websocketerror", DashboardPage.onWebSocketConnectionChange).off("websocketclose", DashboardPage.onWebSocketConnectionChange);
+        DashboardPage.stopInterval(apiClient);
 
         if (DashboardPage.sessionUpdateTimer) {
             clearInterval(DashboardPage.sessionUpdateTimer);
@@ -152,19 +160,19 @@
 
     },
 
-    startInterval: function () {
+    startInterval: function (apiClient) {
 
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("SessionsStart", "0,1500");
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "0,1000");
+        if (apiClient.isWebSocketOpen()) {
+            apiClient.sendWebSocketMessage("SessionsStart", "0,1500");
+            apiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "0,1000");
         }
     },
 
-    stopInterval: function () {
+    stopInterval: function (apiClient) {
 
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("SessionsStop");
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
+        if (apiClient.isWebSocketOpen()) {
+            apiClient.sendWebSocketMessage("SessionsStop");
+            apiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
         }
     },
 
@@ -199,16 +207,24 @@
 
     onWebSocketOpen: function () {
 
-        DashboardPage.startInterval();
+        var apiClient = this;
+
+        DashboardPage.startInterval(apiClient);
     },
 
     pollForInfo: function (page, forceUpdate) {
 
-        ApiClient.getSessions().done(function (sessions) {
+        var apiClient = window.ApiClient;
+
+        if (!apiClient) {
+            return;
+        }
+
+        apiClient.getSessions().done(function (sessions) {
 
             DashboardPage.renderInfo(page, sessions, forceUpdate);
         });
-        ApiClient.getScheduledTasks().done(function (tasks) {
+        apiClient.getScheduledTasks().done(function (tasks) {
 
             DashboardPage.renderRunningTasks(page, tasks);
         });
@@ -991,7 +1007,7 @@
     }
 };
 
-$(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
+$(document).on('pagebeforeshowready', "#dashboardPage", DashboardPage.onPageShow)
     .on('pagehide', "#dashboardPage", DashboardPage.onPageHide);
 
 (function ($, document, window) {
@@ -1204,7 +1220,13 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
             reloadData(this);
         });
 
-        $(ApiClient).on('websocketmessage.activityloglistener', function (e, data) {
+        var apiClient = ApiClient;
+
+        if (!apiClient) {
+            return;
+        }
+
+        $(apiClient).on('websocketmessage.activityloglistener', function (e, data) {
 
             var msg = data;
 
@@ -1217,31 +1239,35 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
 
         }).on('websocketopen.activityloglistener', function (e, data) {
 
-            startListening();
+            startListening(apiClient);
         });
     }
 
-    function startListening() {
+    function startListening(apiClient) {
 
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ActivityLogEntryStart", "0,1500");
+        if (apiClient.isWebSocketOpen()) {
+            apiClient.sendWebSocketMessage("ActivityLogEntryStart", "0,1500");
         }
 
     }
 
-    function stopListening() {
+    function stopListening(apiClient) {
 
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ActivityLogEntryStop", "0,1500");
+        if (apiClient.isWebSocketOpen()) {
+            apiClient.sendWebSocketMessage("ActivityLogEntryStop", "0,1500");
         }
 
     }
 
     function destroyList(elem) {
 
-        $(ApiClient).off('websocketopen.activityloglistener').off('websocketmessage.activityloglistener');
+        var apiClient = ApiClient;
 
-        stopListening();
+        if (apiClient) {
+            $(apiClient).off('websocketopen.activityloglistener').off('websocketmessage.activityloglistener');
+
+            stopListening(apiClient);
+        }
 
         return this;
     }
@@ -1254,7 +1280,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
             createList(this);
         }
 
-        startListening();
+        startListening(ApiClient);
 
         return this;
     };
@@ -1277,11 +1303,11 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
         });
     }
 
-    function showWelcomeIfNeeded(page) {
+    function showWelcomeIfNeeded(page, apiClient) {
 
         var userId = Dashboard.getCurrentUserId();
 
-        ApiClient.getDisplayPreferences('dashboard', userId, 'dashboard').done(function (result) {
+        apiClient.getDisplayPreferences('dashboard', userId, 'dashboard').done(function (result) {
 
             if (result.CustomPrefs[welcomeTourKey] == welcomeDismissValue) {
                 $('.welcomeMessage', page).hide();
@@ -1330,21 +1356,23 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
         });
     }
 
-    $(document).on('pageinit', "#dashboardPage", function () {
+    $(document).on('pageinitdepends', "#dashboardPage", function () {
 
         var page = this;
-
-        var userId = Dashboard.getCurrentUserId();
 
         $('.btnTakeTour', page).on('click', function () {
-            takeTour(page, userId);
+            takeTour(page, Dashboard.getCurrentUserId());
         });
 
-    }).on('pagebeforeshow.checktour', "#dashboardPage", function () {
+    }).on('pagebeforeshowready.checktour', "#dashboardPage", function () {
 
         var page = this;
 
-        showWelcomeIfNeeded(page);
+        var apiClient = ApiClient;
+
+        if (apiClient) {
+            showWelcomeIfNeeded(page, apiClient);
+        }
 
     });
 
@@ -1352,7 +1380,7 @@ $(document).on('pagebeforeshow', "#dashboardPage", DashboardPage.onPageShow)
 
 (function () {
 
-    $(document).on('pagebeforeshow', ".type-interior", function () {
+    $(document).on('pagebeforeshowready', ".type-interior", function () {
 
         var page = this;
 

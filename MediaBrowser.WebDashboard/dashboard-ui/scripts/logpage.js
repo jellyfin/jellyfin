@@ -1,6 +1,6 @@
 ﻿(function () {
 
-    $(document).on('pageshown', "#logPage", function () {
+    $(document).on('pageshowready', "#logPage", function () {
 
         var page = this;
 

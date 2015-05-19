@@ -176,7 +176,7 @@
 
         $('.supporterForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshown', "#supporterPage", function () {
+    }).on('pageshowready', "#supporterPage", function () {
 
         var page = this;
 

@@ -1465,10 +1465,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     display: none !important;
 }
 
-.homeLatestTabDisabled .homeLatestTab {
-    display: none !important;
-}
-
 .movieTrailersTabDisabled .movieTrailersTab {
     display: none !important;
 }

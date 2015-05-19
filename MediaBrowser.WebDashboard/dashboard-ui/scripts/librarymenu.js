@@ -502,7 +502,7 @@
 
         });
 
-    }).on('pagebeforeshow', ".page:not(.standalonePage)", function () {
+    }).on('pagebeforeshowready', ".page:not(.standalonePage)", function () {
 
         var page = this;
         var viewMenuBar = $('.viewMenuBar');
@@ -535,7 +535,7 @@
             $(document.body).removeClass('dashboardDocument').removeClass('libraryDocument');
         }
 
-    }).on('pagebeforeshow', ".libraryPage", function () {
+    }).on('pagebeforeshowready', ".libraryPage", function () {
 
         var page = this;
 
@@ -587,22 +587,23 @@
 
     function initializeApiClient(apiClient) {
 
+        requiresLibraryMenuRefresh = true;
         $(apiClient).off('websocketmessage.librarymenu', onWebSocketMessage).on('websocketmessage.librarymenu', onWebSocketMessage);
     }
 
-    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+    Dashboard.ready(function () {
 
-        requiresLibraryMenuRefresh = true;
-        initializeApiClient(apiClient);
+        if (window.ApiClient) {
+            initializeApiClient(window.ApiClient);
+        }
 
-    }).on('localusersignedin', function () {
+        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+            initializeApiClient(apiClient);
 
-        requiresLibraryMenuRefresh = true;
-
-    }).on('localusersignedout', function () {
-
-        $('.viewMenuBar').remove();
-        requiresLibraryMenuRefresh = true;
+        }).on('localusersignedin localusersignedout', function () {
+            $('.viewMenuBar').remove();
+            requiresLibraryMenuRefresh = true;
+        });
     });
 
     $(function () {

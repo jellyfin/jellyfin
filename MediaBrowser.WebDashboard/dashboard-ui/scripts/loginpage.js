@@ -63,7 +63,7 @@
 
     showManualForm: function (page, showCancel, focusPassword) {
         $('.visualLoginForm', page).hide();
-        $('#manualLoginForm', page).show();
+        $('.manualLoginForm', page).show();
 
         if (focusPassword) {
             $('#txtManualPassword', page).focus();
@@ -80,7 +80,7 @@
 
     showVisualForm: function (page) {
         $('.visualLoginForm', page).show();
-        $('#manualLoginForm', page).hide();
+        $('.manualLoginForm', page).hide();
     },
 
     getLastSeenText: function (lastActivityDate) {
@@ -215,4 +215,10 @@
     }
 };
 
-$(document).on('pageshow', "#loginPage", LoginPage.onPageShow);
+$(document).on('pageinitdepends', "#loginPage", function () {
+
+    var page = this;
+
+    $('.manualLoginForm', page).off('submit', LoginPage.onManualSubmit).on('submit', LoginPage.onManualSubmit);
+
+}).on('pageshowready', "#loginPage", LoginPage.onPageShow);

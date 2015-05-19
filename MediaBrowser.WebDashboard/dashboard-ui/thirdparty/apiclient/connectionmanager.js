@@ -479,6 +479,7 @@
                 for (var j = 0, numServers = servers.length; j < numServers; j++) {
 
                     var server = servers[j];
+
                     server.UserId = null;
                     server.AccessToken = null;
                     server.ExchangeToken = null;
@@ -902,7 +903,7 @@
                 MediaBrowser.ConnectionState.ServerSignIn;
 
             result.Servers.push(server);
-            result.ApiClient.enableAutomaticNetworking(server, connectionMode);
+            result.ApiClient.enableAutomaticNetworking(server, connectionMode, self.getServerAddress(server, connectionMode));
 
             if (result.State == MediaBrowser.ConnectionState.SignedIn) {
                 afterConnected(result.ApiClient, options);
@@ -947,6 +948,11 @@
 
             address = normalizeAddress(address);
 
+            function onFail() {
+                logger.log('connectToAddress ' + address + ' failed');
+                resolveWithFailure(deferred);
+            }
+
             tryConnect(address, 15000).done(function (publicInfo) {
 
                 logger.log('connectToAddress ' + address + ' succeeded');
@@ -961,13 +967,9 @@
 
                     deferred.resolveWith(null, [result]);
 
-                });
+                }).fail(onFail);
 
-            }).fail(function () {
-
-                logger.log('connectToAddress ' + address + ' failed');
-                resolveWithFailure(deferred);
-            });
+            }).fail(onFail);
 
             return deferred.promise();
         };

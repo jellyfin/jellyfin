@@ -150,7 +150,23 @@
         });
     }
 
-    $(document).on('pageinit', "#advancedMetadataConfigurationPage", function () {
+    function onSubmit() {
+        var form = this;
+
+        Dashboard.showLoadingMsg();
+
+        saveAdvancedConfig(form);
+        saveChapters(form);
+        saveMetadata(form);
+        saveTmdb(form);
+        saveTvdb(form);
+        saveFanart(form);
+
+        // Disable default form submission
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#advancedMetadataConfigurationPage", function () {
 
         var page = this;
 
@@ -174,7 +190,10 @@
             });
         });
 
-    }).on('pageshow', "#advancedMetadataConfigurationPage", function () {
+        $('.advancedMetadataConfigurationForm').on('submit', onSubmit).on('submit', onSubmit);
+
+
+    }).on('pageshowready', "#advancedMetadataConfigurationPage", function () {
 
         var page = this;
 
@@ -270,7 +289,7 @@
     }
 
     function saveMetadata(form) {
-        
+
         ApiClient.getNamedConfiguration("metadata").done(function (config) {
 
             config.UseFileCreationTimeForDateAdded = $('#selectDateAdded', form).val() == '1';
@@ -306,25 +325,6 @@
             ApiClient.updateNamedConfiguration("chapters", config);
         });
     }
-
-    window.AdvancedMetadataConfigurationPage = {
-
-        onSubmit: function () {
-            var form = this;
-
-            Dashboard.showLoadingMsg();
-
-            saveAdvancedConfig(form);
-            saveChapters(form);
-            saveMetadata(form);
-            saveTmdb(form);
-            saveTvdb(form);
-            saveFanart(form);
-
-            // Disable default form submission
-            return false;
-        }
-    };
 
 })(window, jQuery);
 

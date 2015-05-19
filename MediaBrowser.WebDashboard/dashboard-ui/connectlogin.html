@@ -4,7 +4,7 @@
     <title>${TitleSignIn}</title>
 </head>
 <body class="serverlessPage">
-    <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b">
+    <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b" data-require="scripts/connectlogin">
 
         <div data-role="content">
 
@@ -97,11 +97,6 @@
                 </div>
             </div>
         </div>
-
-        <script type="text/javascript">
-            $('.connectLoginForm').off('submit', ConnectLoginPage.onSubmit).on('submit', ConnectLoginPage.onSubmit);
-            $('.manualServerForm').off('submit', ConnectLoginPage.onManualServerSubmit).on('submit', ConnectLoginPage.onManualServerSubmit);
-        </script>
     </div>
 </body>
 </html>
