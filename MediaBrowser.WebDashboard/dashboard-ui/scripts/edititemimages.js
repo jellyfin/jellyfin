@@ -440,38 +440,37 @@
         reload(page);
     }
 
+    function onSubmit() {
+        var file = currentFile;
+
+        if (!file) {
+            return false;
+        }
+
+        if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
+            return false;
+        }
+
+        Dashboard.showLoadingMsg();
+
+        var page = $.mobile.activePage;
+
+        var imageType = $('#selectImageType', page).val();
+
+        ApiClient.uploadItemImage(currentItem.Id, imageType, file).done(function () {
+
+            $('#uploadImage', page).val('').trigger('change');
+            $('#popupUpload', page).popup("close");
+            processImageChangeResult(page);
+
+        });
+
+        return false;
+    }
+
     function editItemImages() {
 
         var self = this;
-
-        self.onSubmit = function () {
-
-            var file = currentFile;
-
-            if (!file) {
-                return false;
-            }
-
-            if (file.type != "image/png" && file.type != "image/jpeg" && file.type != "image/jpeg") {
-                return false;
-            }
-
-            Dashboard.showLoadingMsg();
-
-            var page = $.mobile.activePage;
-
-            var imageType = $('#selectImageType', page).val();
-
-            ApiClient.uploadItemImage(currentItem.Id, imageType, file).done(function () {
-
-                $('#uploadImage', page).val('').trigger('change');
-                $('#popupUpload', page).popup("close");
-                processImageChangeResult(page);
-
-            });
-
-            return false;
-        };
 
         self.deleteImage = function (type, index) {
 
@@ -515,7 +514,7 @@
 
     window.EditItemImagesPage = new editItemImages();
 
-    $(document).on('pageinit', "#editItemImagesPage", function () {
+    $(document).on('pageinitdepends', "#editItemImagesPage", function () {
 
         var page = this;
 
@@ -567,7 +566,10 @@
             reloadBrowsableImages(page);
         });
 
-    }).on('pagebeforeshow', "#editItemImagesPage", function () {
+        $('.uploadItemImageForm').off('submit', onSubmit).on('submit', onSubmit);
+
+
+    }).on('pageshown', "#editItemImagesPage", function () {
 
         var page = this;
 

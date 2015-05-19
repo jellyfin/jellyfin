@@ -66,7 +66,7 @@
 
     function showBackdrop(type, parentId) {
 
-        var apiClient = ConnectionManager.currentApiClient();
+        var apiClient = window.ApiClient;
 
         if (!apiClient) {
             return;

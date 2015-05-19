@@ -110,7 +110,7 @@
                 newUrl = "index.html?u=" + user.Id + '&t=' + result.AccessToken;
             }
 
-            Dashboard.onLoggedIn(apiClient.serverAddress(), user.Id, result.AccessToken, apiClient);
+            Dashboard.onServerChanged(apiClient.serverAddress(), user.Id, result.AccessToken, apiClient);
             Dashboard.navigate(newUrl);
 
         }).fail(function () {

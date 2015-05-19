@@ -39,7 +39,7 @@
                 {
                     var apiClient = result.ApiClient;
 
-                    Dashboard.onLoggedIn(apiClient.serverAddress(), apiClient.getCurrentUserId(), apiClient.accessToken(), apiClient);
+                    Dashboard.onServerChanged(apiClient.serverAddress(), apiClient.getCurrentUserId(), apiClient.accessToken(), apiClient);
                     Dashboard.navigate('index.html');
                 }
                 break;

@@ -8,20 +8,22 @@
 
             Dashboard.hideLoadingMsg();
 
+            var apiClient = result.ApiClient;
+
             switch (result.State) {
 
                 case MediaBrowser.ConnectionState.SignedIn:
                     {
-                        var apiClient = result.ApiClient;
-
-                        Dashboard.onLoggedIn(apiClient.serverAddress(), apiClient.getCurrentUserId(), apiClient.accessToken(), apiClient);
+                        Dashboard.onServerChanged(apiClient.serverAddress(), apiClient.getCurrentUserId(), apiClient.accessToken(), apiClient);
                         Dashboard.navigate('index.html');
                     }
                     break;
                 case MediaBrowser.ConnectionState.ServerSignIn:
                     {
                         if (Dashboard.isRunningInCordova()) {
-                            window.location.href = 'login.html?serverid=' + result.Servers[0].Id;
+
+                            Dashboard.onServerChanged(apiClient.serverAddress(), null, null, apiClient);
+                            Dashboard.navigate('login.html?serverid=' + result.Servers[0].Id);
                         } else {
                             showServerConnectionFailure();
                         }
@@ -401,15 +403,19 @@
         loadInvitations(page);
     }
 
-    $(document).on('pagebeforecreate', "#selectServerPage", function () {
+    function updatePageStyle(page) {
+        
+        if (ConnectionManager.isLoggedIntoConnect()) {
+            $(page).addClass('libraryPage').addClass('noSecondaryNavPage').removeClass('standalonePage');
+        } else {
+            $(page).removeClass('libraryPage').removeClass('noSecondaryNavPage').addClass('standalonePage');
+        }
+    }
+
+    $(document).on('pagebeforecreate pageinit pagebeforeshow', "#selectServerPage", function () {
 
         var page = this;
-
-        if (ConnectionManager.isLoggedIntoConnect()) {
-            $(page).addClass('libraryPage').addClass(' noSecondaryNavPage').removeClass('standalonePage');
-        } else {
-            $(page).removeClass('libraryPage').removeClass(' noSecondaryNavPage').addClass('standalonePage');
-        }
+        updatePageStyle(page);
 
     }).on('pagebeforeshow', "#selectServerPage", function () {
 

@@ -10,7 +10,7 @@
 
         self.getNotificationsSummary = function () {
 
-            var apiClient = ConnectionManager.currentApiClient();
+            var apiClient = window.ApiClient;
 
             if (!apiClient) {
                 return;
@@ -107,7 +107,7 @@
 
     function refreshNotifications(startIndex, limit, elem, btn, showPaging) {
 
-        var apiClient = ConnectionManager.currentApiClient();
+        var apiClient = window.ApiClient;
 
         if (apiClient) {
             return apiClient.getNotifications(Dashboard.getCurrentUserId(), { StartIndex: startIndex, Limit: limit }).done(function (result) {
@@ -219,7 +219,7 @@
 
     $(document).on('headercreated', function (e) {
 
-        if (ConnectionManager.currentApiClient()) {
+        if (window.ApiClient) {
             $('<button class="headerButton headerButtonRight btnNotifications" data-role="none" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></button>').insertAfter($('.headerSearchButton')).on('click', Notifications.showNotificationsFlyout);
 
             Notifications.updateNotificationCount();

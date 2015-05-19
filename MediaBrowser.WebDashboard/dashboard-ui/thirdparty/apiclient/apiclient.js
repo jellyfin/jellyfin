@@ -558,6 +558,8 @@
 
         self.logout = function () {
 
+            self.closeWebSocket();
+
             var done = function () {
                 self.setCurrentUserId(null, null);
             };

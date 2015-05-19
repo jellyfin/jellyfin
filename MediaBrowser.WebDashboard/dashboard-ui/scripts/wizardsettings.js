@@ -72,24 +72,23 @@
         });
     }
 
-    $(document).on('pageshow', "#wizardSettingsPage", function () {
+    function onSubmit() {
+        var form = this;
+
+        save(form);
+
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#wizardSettingsPage", function () {
+
+        $('.wizardSettingsForm', page).off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshown', "#wizardSettingsPage", function () {
 
         var page = this;
 
         reload(page);
     });
-
-    window.WizardSettingsPage = {
-
-        onSubmit: function () {
-
-            var form = this;
-
-            save(form);
-
-            return false;
-        }
-
-    };
 
 })(jQuery, document, window);

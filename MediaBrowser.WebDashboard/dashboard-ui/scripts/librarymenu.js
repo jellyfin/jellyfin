@@ -138,7 +138,7 @@
         var page = $.mobile.activePage;
         var panel;
 
-        ConnectionManager.user().done(function (user) {
+        ConnectionManager.user(window.ApiClient).done(function (user) {
 
             panel = getLibraryMenu(user);
             updateLibraryNavLinks(page);
@@ -165,7 +165,7 @@
 
     function updateLibraryMenu(panel) {
 
-        var apiClient = ConnectionManager.currentApiClient();
+        var apiClient = window.ApiClient;
 
         if (!apiClient) {
 
@@ -302,7 +302,7 @@
                 html += '<div class="libraryMenuDivider" style="margin-top:0;"></div>';
             }
 
-            var homeHref = ConnectionManager.currentApiClient() ? 'index.html' : 'selectserver.html';
+            var homeHref = window.ApiClient ? 'index.html' : 'selectserver.html';
 
             if (showUserAtTop) {
                 html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '"><span class="fa fa-home sidebarLinkIcon"></span><span>' + Globalize.translate('ButtonHome') + '</span></a>';
@@ -508,7 +508,7 @@
         var viewMenuBar = $('.viewMenuBar');
         if (!$('.viewMenuBar').length) {
 
-            ConnectionManager.user().done(function (user) {
+            ConnectionManager.user(window.ApiClient).done(function (user) {
 
                 renderHeader(user);
                 updateViewMenuBarHeadroom(page, $('.viewMenuBar'));
@@ -592,7 +592,17 @@
 
     $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
 
+        requiresLibraryMenuRefresh = true;
         initializeApiClient(apiClient);
+
+    }).on('localusersignedin', function () {
+
+        requiresLibraryMenuRefresh = true;
+
+    }).on('localusersignedout', function () {
+
+        $('.viewMenuBar').remove();
+        requiresLibraryMenuRefresh = true;
     });
 
     $(function () {
