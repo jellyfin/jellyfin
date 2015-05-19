@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Model.Logging;
@@ -560,7 +559,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "nowplayingpage.js",
                                 "taskbutton.js",
 
-                                "ratingdialog.js",
                                 "alphapicker.js",
                                 "addpluginpage.js",
                                 "metadataadvanced.js",
@@ -580,7 +578,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "dlnaserversettings.js",
                                 "editcollectionitems.js",
                                 "edititemmetadata.js",
-                                "edititemimages.js",
                                 "edititemsubtitles.js",
 
                                 "playbackconfiguration.js",
@@ -649,9 +646,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "wizardagreement.js",
                                 "wizardfinishpage.js",
                                 "wizardservice.js",
-                                "wizardstartpage.js",
-                                "wizardsettings.js",
-                                "wizarduserpage.js"
+                                "wizardstartpage.js"
                             };
         }
 

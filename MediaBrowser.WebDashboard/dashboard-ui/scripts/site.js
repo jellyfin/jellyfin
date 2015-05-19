@@ -208,11 +208,16 @@ var Dashboard = {
 
         function onLogoutDone() {
 
-            var loginPage = !Dashboard.isConnectMode() ?
-                'login.html' :
-                'connectlogin.html';
+            var loginPage = 'login.html';
 
-            window.location.href = loginPage;
+            if (Dashboard.isConnectMode()) {
+                loginPage = 'connectlogin.html';
+                window.ApiClient = null;
+            } else {
+                
+            }
+
+            Dashboard.navigate(loginPage);
         }
 
         if (logoutWithServer === false) {
@@ -1511,7 +1516,7 @@ var AppInfo = {};
 
     function setAppInfo() {
 
-        if (isTouchDevice()) {
+        if (isTouchDevice() && $.browser.mobile) {
             AppInfo.isTouchPreferred = true;
         }
 

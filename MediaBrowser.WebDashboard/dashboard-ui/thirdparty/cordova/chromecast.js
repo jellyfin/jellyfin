@@ -166,13 +166,13 @@
 
         self.unpause = function () {
             sendMessageToDevice({
-                command: 'unpause'
+                command: 'Unpause'
             });
         };
 
         self.pause = function () {
             sendMessageToDevice({
-                command: 'pause'
+                command: 'Pause'
             });
         };
 
@@ -222,7 +222,7 @@
 
         self.stop = function () {
             sendMessageToDevice({
-                command: 'stop'
+                command: 'Stop'
             });
         };
 
@@ -236,7 +236,7 @@
 
         self.mute = function () {
             sendMessageToDevice({
-                command: 'mute'
+                command: 'Mute'
             });
         };
 
@@ -383,7 +383,7 @@
 
             sendMessageToDevice({
                 options: {
-                    volume: (vol / 100)
+                    volume: vol
                 },
                 command: 'SetVolume'
             });

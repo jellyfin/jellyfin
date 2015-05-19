@@ -1083,6 +1083,11 @@
                 return s.Type == 'Subtitle';
             });
 
+            // Reports of stuttering with h264 stream copy in IE
+            if (streamInfo.playMethod == 'Transcode' && videoUrl.indexOf('.m3u8') == -1) {
+                videoUrl += 'EnableAutoStreamCopy=false';
+            }
+
             var posterCode = self.getPosterUrl(item);
             posterCode = posterCode ? (' poster="' + posterCode + '"') : '';
             //======================================================================================>

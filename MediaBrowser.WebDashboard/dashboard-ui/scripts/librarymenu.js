@@ -595,8 +595,13 @@
         requiresLibraryMenuRefresh = true;
         initializeApiClient(apiClient);
 
-    }).on('localusersignedin localusersignedout', function () {
+    }).on('localusersignedin', function () {
 
+        requiresLibraryMenuRefresh = true;
+
+    }).on('localusersignedout', function () {
+
+        $('.viewMenuBar').remove();
         requiresLibraryMenuRefresh = true;
     });
 

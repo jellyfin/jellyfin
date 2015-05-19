@@ -771,6 +771,7 @@
 
             var startPositionInSeekParam = startPosition ? (startPosition / 10000000) : 0;
             var seekParam = startPositionInSeekParam ? '#t=' + startPositionInSeekParam : '';
+            var playMethod = 'Transcode';
 
             if (type == 'Video') {
 
@@ -778,6 +779,7 @@
 
                 if (mediaSource.enableDirectPlay) {
                     mediaUrl = mediaSource.Path;
+                    playMethod = 'DirectPlay';
                 } else {
 
                     if (mediaSource.SupportsDirectStream) {
@@ -789,6 +791,7 @@
                         });
                         mediaUrl += seekParam;
 
+                        playMethod = 'DirectStream';
                     } else {
 
                         startTimeTicksOffset = startPosition || 0;
@@ -813,6 +816,7 @@
 
                     mediaUrl = mediaSource.Path;
 
+                    playMethod = 'DirectPlay';
                 } else {
 
                     var isDirectStream = mediaSource.SupportsDirectStream;
@@ -827,6 +831,8 @@
                             api_key: ApiClient.accessToken()
                         });
                         mediaUrl += "&static=true" + seekParam;
+
+                        playMethod = 'DirectStream';
                     } else {
 
                         contentType = 'audio/' + mediaSource.TranscodingContainer;
@@ -842,7 +848,8 @@
                 url: mediaUrl,
                 contentType: contentType,
                 startTimeTicksOffset: startTimeTicksOffset,
-                startPositionInSeekParam: startPositionInSeekParam
+                startPositionInSeekParam: startPositionInSeekParam,
+                playMethod: playMethod
             };
         };
 
