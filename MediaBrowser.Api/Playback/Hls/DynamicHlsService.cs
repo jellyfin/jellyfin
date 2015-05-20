@@ -13,6 +13,7 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -156,12 +157,14 @@ namespace MediaBrowser.Api.Playback.Hls
                         {
                             ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.PlaySessionId, p => false);
 
+                            await ReadSegmentLengths(playlistPath).ConfigureAwait(false);
+
                             if (currentTranscodingIndex.HasValue)
                             {
                                 DeleteLastFile(playlistPath, segmentExtension, 0);
                             }
 
-                            request.StartTimeTicks = GetSeekPositionTicks(state, requestedIndex);
+                            request.StartTimeTicks = GetSeekPositionTicks(state, playlistPath, requestedIndex);
 
                             job = await StartFfMpeg(state, playlistPath, cancellationTokenSource).ConfigureAwait(false);
                         }
@@ -199,11 +202,73 @@ namespace MediaBrowser.Api.Playback.Hls
             return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
         }
 
-        private long GetSeekPositionTicks(StreamState state, int requestedIndex)
+        private static readonly ConcurrentDictionary<string, double> SegmentLengths = new ConcurrentDictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+        private async Task ReadSegmentLengths(string playlist)
         {
-            var startSeconds = requestedIndex * state.SegmentLength;
-            var position = TimeSpan.FromSeconds(startSeconds).Ticks;
+            try
+            {
+                using (var fileStream = GetPlaylistFileStream(playlist))
+                {
+                    using (var reader = new StreamReader(fileStream))
+                    {
+                        double duration = -1;
 
+                        while (!reader.EndOfStream)
+                        {
+                            var text = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                            if (text.StartsWith("#EXTINF", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var parts = text.Split(new[] { ':' }, 2);
+                                if (parts.Length == 2)
+                                {
+                                    var time = parts[1].Trim(new[] { ',' }).Trim();
+                                    double timeValue;
+                                    if (double.TryParse(time, NumberStyles.Any, CultureInfo.InvariantCulture, out timeValue))
+                                    {
+                                        duration = timeValue;
+                                        continue;
+                                    }
+                                }
+                            }
+                            else if (duration != -1)
+                            {
+                                SegmentLengths.AddOrUpdate(text, duration, (k, v) => duration);
+                                Logger.Debug("Added segment length of {0} for {1}", duration, text);
+                            }
+
+                            duration = -1;
+                        }
+                    }
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                
+            }
+        }
+
+        private long GetSeekPositionTicks(StreamState state, string playlist, int requestedIndex)
+        {
+            double startSeconds = 0;
+
+            for (var i = 0; i < requestedIndex; i++)
+            {
+                var segmentPath = GetSegmentPath(playlist, i);
+
+                double length;
+                if (SegmentLengths.TryGetValue(Path.GetFileName(segmentPath), out length))
+                {
+                    Logger.Debug("Found segment length of {0} for index {1}", length, i);
+                    startSeconds += length;
+                }
+                else
+                {
+                    startSeconds += state.SegmentLength;
+                }
+            }
+
+            var position = TimeSpan.FromSeconds(startSeconds).Ticks;
             return position;
         }
 
@@ -693,7 +758,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
-                state.SegmentLength.ToString(UsCulture));
+                1.ToString(UsCulture));
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 
@@ -728,6 +793,7 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 var startTime = state.Request.StartTimeTicks ?? 0;
                 var durationSeconds = ApiEntryPoint.Instance.GetEncodingOptions().ThrottleThresholdInSeconds;
+
                 var endTime = startTime + TimeSpan.FromSeconds(durationSeconds).Ticks;
                 endTime = Math.Min(endTime, state.RunTimeTicks.Value);
 

@@ -148,7 +148,7 @@ namespace MediaBrowser.Api.Playback
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        private readonly long _slowSeekTicks = TimeSpan.FromSeconds(2).Ticks;
+        private readonly long _slowSeekTicks = TimeSpan.FromSeconds(0).Ticks;
 
         /// <summary>
         /// Gets the fast seek command line parameter.
@@ -177,7 +177,7 @@ namespace MediaBrowser.Api.Playback
         {
             var time = request.StartTimeTicks ?? 0;
 
-            if (time > _slowSeekTicks)
+            if (time > _slowSeekTicks && _slowSeekTicks > 0)
             {
                 return string.Format("-ss {0}", MediaEncoder.GetTimeParameter(_slowSeekTicks));
             }

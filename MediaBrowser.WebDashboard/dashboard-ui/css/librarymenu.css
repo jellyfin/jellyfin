@@ -138,7 +138,7 @@
     -webkit-overflow-scrolling: touch;
 }
 
-.bottomLibraryViewNav {
+.bottomSecondaryNav .libraryViewNav {
     top: initial;
     bottom: 0;
     border-top: 1px solid #444;
@@ -236,7 +236,7 @@
     border-bottom: 5px solid transparent;
 }
 
-.bottomLibraryViewNav a {
+.bottomSecondaryNav .libraryViewNav a {
     padding: 12px 0 12px;
 }
 

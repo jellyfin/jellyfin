@@ -1,16 +1,5 @@
 ﻿(function () {
 
-
-    function onDeviceFound(e) {
-
-        console.log('device found');
-    }
-
-    function onDeviceLost(e) {
-
-        console.log('device lost');
-    }
-
     function initSdk() {
 
         var manager = ConnectSDK.discoveryManager;
@@ -23,15 +12,11 @@
         //  new ConnectSDK.CapabilityFilter(["MediaPlayer.Display.Video", "MediaControl.Pause"])
         //]);
 
-        manager.addListener('devicefound', onDeviceFound);
-        manager.addListener('devicelost', onDeviceLost);
-
         manager.startDiscovery();
 
         requirejs(['thirdparty/cordova/chromecast', 'thirdparty/cordova/generaldevice']);
     }
 
     Dashboard.ready(initSdk);
-
 
 })();

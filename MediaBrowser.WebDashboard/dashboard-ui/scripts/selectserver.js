@@ -14,7 +14,7 @@
 
                 case MediaBrowser.ConnectionState.SignedIn:
                     {
-                        Dashboard.onServerChanged(apiClient.serverAddress(), apiClient.getCurrentUserId(), apiClient.accessToken(), apiClient);
+                        Dashboard.onServerChanged(apiClient.getCurrentUserId(), apiClient.accessToken(), apiClient);
                         Dashboard.navigate('index.html');
                     }
                     break;
@@ -22,7 +22,7 @@
                     {
                         if (Dashboard.isRunningInCordova()) {
 
-                            Dashboard.onServerChanged(apiClient.serverAddress(), null, null, apiClient);
+                            Dashboard.onServerChanged(null, null, apiClient);
                             Dashboard.navigate('login.html?serverid=' + result.Servers[0].Id);
                         } else {
                             showServerConnectionFailure();

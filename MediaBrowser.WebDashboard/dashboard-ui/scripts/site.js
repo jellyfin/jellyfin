@@ -104,13 +104,6 @@ var Dashboard = {
         }
     },
 
-    onApiClientServerAddressChanged: function () {
-
-        var apiClient = this;
-
-        Dashboard.serverAddress(apiClient.serverAddress());
-    },
-
     getCurrentUser: function () {
 
         if (!Dashboard.getUserPromise) {
@@ -130,45 +123,37 @@ var Dashboard = {
         }
     },
 
-    getAccessToken: function () {
+    serverAddress: function () {
 
-        return store.getItem('token');
-    },
+        if (Dashboard.isConnectMode()) {
+            var apiClient = window.ApiClient;
 
-    serverAddress: function (val) {
+            if (apiClient) {
+                return apiClient.serverAddress();
+            }
 
-        if (val != null) {
-
-            console.log('Setting server address to: ' + val);
-
-            store.setItem('serverAddress', val);
+            return null;
         }
 
-        var address = store.getItem('serverAddress');
+        // Try to get the server address from the browser url
+        // This will preserve protocol, hostname, port and subdirectory
+        var urlLower = getWindowUrl().toLowerCase();
+        var index = urlLower.indexOf('/web');
+        if (index == -1) {
+            index = urlLower.indexOf('/dashboard');
+        }
 
-        if (!address && !Dashboard.isConnectMode()) {
+        if (index != -1) {
+            return urlLower.substring(0, index);
+        }
 
-            // Try to get the server address from the browser url
-            // This will preserve protocol, hostname, port and subdirectory
-            var urlLower = getWindowUrl().toLowerCase();
-            var index = urlLower.indexOf('/web');
-            if (index == -1) {
-                index = urlLower.indexOf('/dashboard');
-            }
+        // If the above failed, just piece it together manually
+        var loc = window.location;
 
-            if (index != -1) {
-                address = urlLower.substring(0, index);
-                return address;
-            }
+        var address = loc.protocol + '//' + loc.hostname;
 
-            // If the above failed, just piece it together manually
-            var loc = window.location;
-
-            address = loc.protocol + '//' + loc.hostname;
-
-            if (loc.port) {
-                address += ':' + loc.port;
-            }
+        if (loc.port) {
+            address += ':' + loc.port;
         }
 
         return address;
@@ -176,37 +161,25 @@ var Dashboard = {
 
     getCurrentUserId: function () {
 
-        var autoLoginUserId = getParameterByName('u');
-
-        var storedUserId = store.getItem("userId");
-
-        if (autoLoginUserId && autoLoginUserId != storedUserId) {
-
-            var token = getParameterByName('t');
-            Dashboard.setCurrentUser(autoLoginUserId, token);
-        }
-
-        return autoLoginUserId || storedUserId;
-    },
-
-    setCurrentUser: function (userId, token) {
-
-        store.setItem("userId", userId);
-        store.setItem("token", token);
-
         var apiClient = window.ApiClient;
 
         if (apiClient) {
-            apiClient.setCurrentUserId(userId, token);
+            return apiClient.getCurrentUserId();
         }
+
+        return null;
+    },
+
+    onServerChanged: function (userId, accessToken, apiClient) {
+
+        apiClient = apiClient || window.ApiClient;
+
+        window.ApiClient = apiClient;
+
         Dashboard.getUserPromise = null;
     },
 
     logout: function (logoutWithServer, forceReload) {
-
-        store.removeItem("userId");
-        store.removeItem("token");
-        store.removeItem("serverAddress");
 
         function onLogoutDone() {
 
@@ -594,9 +567,11 @@ var Dashboard = {
 
     refreshSystemInfoFromServer: function () {
 
-        if (Dashboard.getAccessToken()) {
-            if (AppInfo.enableFooterNotifications) {
-                ApiClient.getSystemInfo().done(function (info) {
+        var apiClient = ApiClient;
+
+        if (apiClient.accessToken()) {
+            if (apiClient.enableFooterNotifications) {
+                apiClient.getSystemInfo().done(function (info) {
 
                     Dashboard.updateSystemInfo(info);
                 });
@@ -1040,14 +1015,14 @@ var Dashboard = {
             Dashboard.updateSystemInfo(msg.Data);
         }
         else if (msg.MessageType === "UserUpdated" || msg.MessageType === "UserConfigurationUpdated") {
-            Dashboard.validateCurrentUser();
-
             var user = msg.Data;
 
             if (user.Id == Dashboard.getCurrentUserId()) {
 
+                Dashboard.validateCurrentUser();
                 $('.currentUsername').html(user.Name);
             }
+
         }
         else if (msg.MessageType === "PackageInstallationCompleted") {
             Dashboard.getCurrentUser().done(function (currentUser) {
@@ -1076,7 +1051,7 @@ var Dashboard = {
                 }
             });
         }
-        else if (msg.MessageType === "PackageInstalling") {
+        else if (msg.MessaapiclientcgeType === "PackageInstalling") {
             Dashboard.getCurrentUser().done(function (currentUser) {
 
                 if (currentUser.Policy.IsAdministrator) {
@@ -1492,18 +1467,8 @@ var Dashboard = {
         return deferred.promise();
     },
 
-    onServerChanged: function (serverAddress, userId, accessToken, apiClient) {
+    ready: function (fn) {
 
-        window.ApiClient = apiClient;
-        if (Dashboard.isConnectMode()) {
-            Dashboard.serverAddress(serverAddress);
-        }
-
-        Dashboard.setCurrentUser(userId, accessToken);
-    },
-
-    ready: function(fn) {
-        
         if (Dashboard.initPromiseDone) {
             fn();
             return;
@@ -1593,8 +1558,7 @@ var AppInfo = {};
 
         $(apiClient).off('.dashboard')
             .on("websocketmessage.dashboard", Dashboard.onWebSocketMessageReceived)
-            .on('requestfail.dashboard', Dashboard.onRequestFail)
-            .on('serveraddresschanged.dashboard', Dashboard.onApiClientServerAddressChanged);
+            .on('requestfail.dashboard', Dashboard.onRequestFail);
     }
 
     function createConnectionManager(appInfo) {
@@ -1605,41 +1569,36 @@ var AppInfo = {};
 
         window.ConnectionManager = new MediaBrowser.ConnectionManager(Logger, credentialProvider, appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, capabilities);
 
+        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+
+            initializeApiClient(apiClient);
+        });
+
+        var lastApiClient = ConnectionManager.getLastUsedApiClient();
+
         if (Dashboard.isConnectMode()) {
-
-            $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
-
-                initializeApiClient(apiClient);
-            });
 
             if (!Dashboard.isServerlessPage()) {
 
-                if (Dashboard.serverAddress() && Dashboard.getCurrentUserId() && Dashboard.getAccessToken()) {
+                if (lastApiClient && lastApiClient.serverAddress() && lastApiClient.getCurrentUserId() && lastApiClient.accessToken()) {
 
-                    window.ApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId);
+                    window.ApiClient = lastApiClient;
 
-                    ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
+                    initializeApiClient(lastApiClient);
 
-                    initializeApiClient(ApiClient);
+                    //ConnectionManager.addApiClient(lastApiClient, true).fail(Dashboard.logout);
 
-                    ConnectionManager.addApiClient(ApiClient, true).fail(Dashboard.logout);
-
-                } else {
-
-                    Dashboard.logout();
-                    return;
                 }
             }
 
         } else {
 
-            window.ApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId);
+            if (!lastApiClient) {
+                lastApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId);
+                ConnectionManager.addApiClient(lastApiClient);
+            }
 
-            ApiClient.setCurrentUserId(Dashboard.getCurrentUserId(), Dashboard.getAccessToken());
-
-            initializeApiClient(ApiClient);
-
-            ConnectionManager.addApiClient(ApiClient);
+            window.ApiClient = lastApiClient;
         }
 
         if (window.ApiClient) {
@@ -1835,7 +1794,7 @@ var AppInfo = {};
         }
     }
 
-    function init(deferred, appName, deviceId, deviceName) {
+    function init(deferred, appName, deviceId, deviceName, resolveOnReady) {
 
         requirejs.config({
             map: {
@@ -1857,9 +1816,17 @@ var AppInfo = {};
 
         createConnectionManager(appInfo);
 
-        Dashboard.initPromiseDone = true;
-        deferred.resolve();
-        $(onDocumentReady);
+        if (!resolveOnReady) {
+            Dashboard.initPromiseDone = true;
+            deferred.resolve();
+        }
+        $(function () {
+            onDocumentReady();
+            if (resolveOnReady) {
+                Dashboard.initPromiseDone = true;
+                deferred.resolve();
+            }
+        });
     }
 
     function initCordovaWithDeviceId(deferred, deviceId) {
@@ -1867,7 +1834,7 @@ var AppInfo = {};
             requirejs(['thirdparty/cordova/imagestore.js']);
         }
 
-        init(deferred, "Emby Mobile", deviceId, device.model);
+        init(deferred, "Emby Mobile", deviceId, device.model, true);
     }
 
     function initCordova(deferred) {
@@ -1974,29 +1941,27 @@ $(document).on('pagecreate', ".page", function () {
         Dashboard.firePageEvent(page, 'pagebeforeshowready');
     }
 
-}).on('pagebeforeshow', ".page", function () {
+}).on('pagebeforeshowready', ".page", function () {
 
     var page = $(this);
 
     var apiClient = window.ApiClient;
 
-    if (Dashboard.getAccessToken() && Dashboard.getCurrentUserId()) {
+    if (apiClient && apiClient.accessToken() && Dashboard.getCurrentUserId()) {
 
-        if (apiClient) {
-            Dashboard.getCurrentUser().done(function (user) {
+        Dashboard.getCurrentUser().done(function (user) {
 
-                var isSettingsPage = page.hasClass('type-interior');
+            var isSettingsPage = page.hasClass('type-interior');
 
-                if (!user.Policy.IsAdministrator && isSettingsPage) {
-                    window.location.replace("index.html");
-                    return;
-                }
+            if (!user.Policy.IsAdministrator && isSettingsPage) {
+                window.location.replace("index.html");
+                return;
+            }
 
-                if (isSettingsPage) {
-                    Dashboard.ensureToolsMenu(page, user);
-                }
-            });
-        }
+            if (isSettingsPage) {
+                Dashboard.ensureToolsMenu(page, user);
+            }
+        });
 
         Dashboard.ensureHeader(page);
         Dashboard.ensurePageTitle(page);

@@ -257,6 +257,7 @@
     }
 
     var requiresLibraryMenuRefresh = false;
+    var requiresViewMenuRefresh = false;
 
     function getLibraryMenu(user) {
 
@@ -460,7 +461,7 @@
 
     function updateContextText(page) {
 
-        var name = page.getAttribute('data-contextname');
+        var name = $(page)[0].getAttribute('data-contextname');
 
         if (name) {
 
@@ -490,21 +491,17 @@
         }
     }
 
-    $(document).on('pageinit', ".page", function () {
+    function buildViewMenuBar(page) {
 
-        var page = this;
+        if ($(page).hasClass('standalonePage')) {
+            $('.viewMenuBar').remove();
+            return;
+        }
 
-        $('.libraryViewNav', page).wrapInner('<div class="libraryViewNavInner"></div>');
+        if (requiresViewMenuRefresh) {
+            $('.viewMenuBar').remove();
+        }
 
-        $('.libraryViewNav a', page).each(function () {
-
-            this.innerHTML = '<span class="libraryViewNavLinkContent">' + this.innerHTML + '</span>';
-
-        });
-
-    }).on('pagebeforeshowready', ".page:not(.standalonePage)", function () {
-
-        var page = this;
         var viewMenuBar = $('.viewMenuBar');
         if (!$('.viewMenuBar').length) {
 
@@ -517,43 +514,61 @@
 
                 updateLibraryNavLinks(page);
                 updateContextText(page);
+                requiresViewMenuRefresh = false;
             });
         } else {
             updateContextText(page);
             updateLibraryNavLinks(page);
             updateViewMenuBarHeadroom(page, viewMenuBar);
+            requiresViewMenuRefresh = false;
         }
+
+    }
+
+    $(document).on('pageinit', ".page", function () {
+
+        var page = this;
+
+        $('.libraryViewNav', page).wrapInner('<div class="libraryViewNavInner"></div>');
+
+        $('.libraryViewNav a', page).each(function () {
+
+            this.innerHTML = '<span class="libraryViewNavLinkContent">' + this.innerHTML + '</span>';
+
+        });
+
+    }).on('pagebeforeshowready', ".page", function () {
+
+        var page = this;
+        buildViewMenuBar(page);
 
         var jpage = $(page);
 
-        if (jpage.hasClass('libraryPage')) {
+        var isLibraryPage = jpage.hasClass('libraryPage');
+
+        if (isLibraryPage) {
             $(document.body).addClass('libraryDocument').removeClass('dashboardDocument');
+
+            if (AppInfo.enableBottomTabs) {
+                $(page).addClass('noSecondaryNavPage');
+
+                $(function () {
+
+                    $('.footer').addClass('footerOverBottomTabs');
+                });
+
+            } else {
+
+                $('.libraryViewNav', page).each(function () {
+
+                    initHeadRoom(this);
+                });
+            }
         }
         else if (jpage.hasClass('type-interior')) {
             $(document.body).addClass('dashboardDocument').removeClass('libraryDocument');
         } else {
             $(document.body).removeClass('dashboardDocument').removeClass('libraryDocument');
-        }
-
-    }).on('pagebeforeshowready', ".libraryPage", function () {
-
-        var page = this;
-
-        if (AppInfo.enableBottomTabs) {
-            $('.libraryViewNav', page).addClass('bottomLibraryViewNav');
-            $(page).addClass('noSecondaryNavPage');
-
-            $(function () {
-
-                $('.footer').addClass('footerOverBottomTabs');
-            });
-
-        } else {
-
-            $('.libraryViewNav', page).each(function () {
-
-                initHeadRoom(this);
-            });
         }
 
     }).on('pageshow', ".libraryPage", function () {
@@ -601,8 +616,8 @@
             initializeApiClient(apiClient);
 
         }).on('localusersignedin localusersignedout', function () {
-            $('.viewMenuBar').remove();
             requiresLibraryMenuRefresh = true;
+            requiresViewMenuRefresh = true;
         });
     });
 
