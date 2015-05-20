@@ -387,7 +387,7 @@
         });
     }
 
-    $(document).on('pageinit', ".libraryPage", function () {
+    $(document).on('pageinitdepends', ".libraryPage", function () {
 
         var page = this;
 
@@ -396,7 +396,7 @@
             onCategorySyncButtonClick(page, this);
         });
 
-    }).on('pagebeforeshow', ".libraryPage", function () {
+    }).on('pagebeforeshowready', ".libraryPage", function () {
 
         var page = this;
 

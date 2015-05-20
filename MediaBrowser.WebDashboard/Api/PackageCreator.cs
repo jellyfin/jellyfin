@@ -619,7 +619,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "scheduledtaskpage.js",
                                 "scheduledtaskspage.js",
                                 "search.js",
-                                "supporterkeypage.js",
                                 "syncactivity.js",
                                 "syncsettings.js",
                                 "thememediaplayer.js",

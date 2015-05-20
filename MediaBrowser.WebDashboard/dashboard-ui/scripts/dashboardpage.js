@@ -50,8 +50,10 @@
 
         var apiClient = ApiClient;
 
-        $(apiClient).off("websocketmessage", DashboardPage.onWebSocketMessage).off("websocketopen", DashboardPage.onWebSocketConnectionChange).off("websocketerror", DashboardPage.onWebSocketConnectionChange).off("websocketclose", DashboardPage.onWebSocketConnectionChange);
-        DashboardPage.stopInterval(apiClient);
+        if (apiClient) {
+            $(apiClient).off("websocketmessage", DashboardPage.onWebSocketMessage).off("websocketopen", DashboardPage.onWebSocketConnectionChange).off("websocketerror", DashboardPage.onWebSocketConnectionChange).off("websocketclose", DashboardPage.onWebSocketConnectionChange);
+            DashboardPage.stopInterval(apiClient);
+        }
 
         if (DashboardPage.sessionUpdateTimer) {
             clearInterval(DashboardPage.sessionUpdateTimer);
@@ -1280,7 +1282,11 @@ $(document).on('pagebeforeshowready', "#dashboardPage", DashboardPage.onPageShow
             createList(this);
         }
 
-        startListening(ApiClient);
+        var apiClient = ApiClient;
+
+        if (apiClient) {
+            startListening(apiClient);
+        }
 
         return this;
     };

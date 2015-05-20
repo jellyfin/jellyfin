@@ -120,7 +120,7 @@
 
 };
 
-$(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
+$(document).on('pageshowready', "#supporterKeyPage", SupporterKeyPage.onPageShow);
 
 (function () {
 
@@ -255,14 +255,19 @@ $(document).on('pageshow', "#supporterKeyPage", SupporterKeyPage.onPageShow);
 
     }
 
-    $(document).on('pageinit', "#supporterKeyPage", function () {
+    $(document).on('pageinitdepends', "#supporterKeyPage", function () {
 
         var page = this;
         $('#btnAddConnectUser', page).on('click', function () {
             showAddUserForm(page);
         });
 
-    }).on('pageshow', "#supporterKeyPage", function () {
+        $('#supporterKeyForm').on('submit', SupporterKeyPage.updateSupporterKey);
+        $('#lostKeyForm').on('submit', SupporterKeyPage.retrieveSupporterKey);
+        $('#linkKeysForm').on('submit', SupporterKeyPage.linkSupporterKeys);
+        $('.popupAddUserForm').on('submit', SupporterKeyPage.onAddConnectUserSubmit).on('submit', SupporterKeyPage.onAddConnectUserSubmit);
+
+    }).on('pageshowready', "#supporterKeyPage", function () {
 
         var page = this;
         loadConnectSupporters(page);

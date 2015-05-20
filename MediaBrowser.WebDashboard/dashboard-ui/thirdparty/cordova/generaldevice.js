@@ -481,6 +481,7 @@
         function onDisconnected(device) {
 
             if (currentDevice && device.getId() == currentDevice.getId()) {
+                currentDevice = null;
                 MediaController.removeActiveTarget(device.getId());
             }
         }
@@ -552,6 +553,7 @@
 
             if (currentDevice && newTarget.id != currentDevice.getId()) {
                 MediaController.removeActiveTarget(currentDevice.getId());
+                currentDevice = null;
             }
         });
     }

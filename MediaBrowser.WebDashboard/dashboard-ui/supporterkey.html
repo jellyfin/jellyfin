@@ -4,7 +4,7 @@
     <title>${TitleSupport}</title>
 </head>
 <body>
-    <div id="supporterKeyPage" data-role="page" class="page type-interior">
+    <div id="supporterKeyPage" data-role="page" class="page type-interior" data-require="scripts/supporterkeypage">
 
         <div data-role="content">
             <div class="content-primary">
@@ -132,13 +132,6 @@
             </div>
 
         </div>
-
-        <script type="text/javascript">
-            $('#supporterKeyForm').on('submit', SupporterKeyPage.updateSupporterKey);
-            $('#lostKeyForm').on('submit', SupporterKeyPage.retrieveSupporterKey);
-            $('#linkKeysForm').on('submit', SupporterKeyPage.linkSupporterKeys);
-            $('.popupAddUserForm').on('submit', SupporterKeyPage.onAddConnectUserSubmit).on('submit', SupporterKeyPage.onAddConnectUserSubmit);
-        </script>
     </div>
 </body>
 </html>

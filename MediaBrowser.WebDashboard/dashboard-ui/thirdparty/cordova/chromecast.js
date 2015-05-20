@@ -580,10 +580,13 @@
 
         $(MediaController).on('playerchange', function (e, newPlayer, newTarget) {
 
-            if (newPlayer.name != PlayerName || newTarget.id != currentPairedDeviceId) {
-                if (currentWebAppSession) {
-                    currentWebAppSession.disconnect();
-                    onDisconnected();
+            if (currentPairedDeviceId) {
+                if (newTarget.id != currentPairedDeviceId) {
+                    if (currentWebAppSession) {
+                        console.log('Disconnecting from chromecast');
+                        currentWebAppSession.disconnect();
+                        onDisconnected();
+                    }
                 }
             }
         });

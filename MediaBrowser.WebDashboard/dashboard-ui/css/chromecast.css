@@ -52,7 +52,7 @@
     top: 0;
 }
 
-@media all and (max-width: 1000px) {
+@media all and (max-width: 740px) {
     .headerSelectedPlayer {
         display: none;
     }

@@ -105,12 +105,12 @@
             var newUrl;
 
             if (user.Policy.IsAdministrator && !serverId) {
-                newUrl = "dashboard.html?u=" + user.Id + '&t=' + result.AccessToken;
+                newUrl = "dashboard.html";
             } else {
-                newUrl = "index.html?u=" + user.Id + '&t=' + result.AccessToken;
+                newUrl = "index.html";
             }
 
-            Dashboard.onServerChanged(apiClient.serverAddress(), user.Id, result.AccessToken, apiClient);
+            Dashboard.onServerChanged(user.Id, result.AccessToken, apiClient);
             Dashboard.navigate(newUrl);
 
         }).fail(function () {

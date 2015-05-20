@@ -807,7 +807,7 @@
             var innerElem = $('.cardOverlayTarget', elem);
 
             var dataElement = elem;
-            while (!dataElement.getAttribute('data-itemid')) {
+            while (dataElement && !dataElement.getAttribute('data-itemid')) {
                 dataElement = dataElement.parentNode;
             }
 
