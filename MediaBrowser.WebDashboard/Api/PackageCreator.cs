@@ -474,11 +474,6 @@ namespace MediaBrowser.WebDashboard.Api
             }
             apiClientFiles.Add("thirdparty/apiclient/connectionmanager.js");
 
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
-            {
-                apiClientFiles.Add("thirdparty/cordova/remotecontrols.js");
-            }
-
             foreach (var file in apiClientFiles)
             {
                 using (var fs = _fileSystem.GetFileStream(GetDashboardResourcePath(file), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
@@ -561,13 +556,9 @@ namespace MediaBrowser.WebDashboard.Api
 
                                 "alphapicker.js",
                                 "addpluginpage.js",
-                                "metadataadvanced.js",
                                 "autoorganizetv.js",
                                 "autoorganizelog.js",
-                                "channelslatest.js",
-                                "channelitems.js",
                                 "channelsettings.js",
-                                "connectlogin.js",
                                 "dashboardgeneral.js",
                                 "dashboardpage.js",
                                 "devicesupload.js",
@@ -585,16 +576,13 @@ namespace MediaBrowser.WebDashboard.Api
                                 "encodingsettings.js",
 
                                 "externalplayer.js",
-                                "favorites.js",
                                 "forgotpassword.js",
                                 "forgotpasswordpin.js",
-                                "homelatest.js",
                                 "indexpage.js",
                                 "itembynamedetailpage.js",
                                 "itemdetailpage.js",
                                 "kids.js",
                                 "librarypathmapping.js",
-                                "reports.js",
                                 "librarysettings.js",
                                 "livetvchannel.js",
                                 "livetvguide.js",
@@ -607,7 +595,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "livetvsettings.js",
                                 "livetvstatus.js",
 
-                                "loginpage.js",
                                 "medialibrarypage.js",
                                 "metadataconfigurationpage.js",
                                 "metadataimagespage.js",
@@ -632,7 +619,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "scheduledtaskpage.js",
                                 "scheduledtaskspage.js",
                                 "search.js",
-                                "selectserver.js",
                                 "supporterkeypage.js",
                                 "syncactivity.js",
                                 "syncsettings.js",

@@ -148,6 +148,7 @@ namespace MediaBrowser.Api.Playback
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
+        private readonly long _slowSeekTicks = TimeSpan.FromSeconds(2).Ticks;
 
         /// <summary>
         /// Gets the fast seek command line parameter.
@@ -157,14 +158,39 @@ namespace MediaBrowser.Api.Playback
         /// <value>The fast seek command line parameter.</value>
         protected string GetFastSeekCommandLineParameter(StreamRequest request)
         {
-            var time = request.StartTimeTicks;
+            var time = request.StartTimeTicks ?? 0;
 
-            if (time.HasValue && time.Value > 0)
+            if (time > 0)
             {
-                return string.Format("-ss {0}", MediaEncoder.GetTimeParameter(time.Value));
+                if (time > _slowSeekTicks && EnableSlowSeek)
+                {
+                    time -= _slowSeekTicks;
+                }
+
+                return string.Format("-ss {0}", MediaEncoder.GetTimeParameter(time));
             }
 
             return string.Empty;
+        }
+
+        protected string GetSlowSeekCommandLineParameter(StreamRequest request)
+        {
+            var time = request.StartTimeTicks ?? 0;
+
+            if (time > _slowSeekTicks)
+            {
+                return string.Format("-ss {0}", MediaEncoder.GetTimeParameter(_slowSeekTicks));
+            }
+
+            return string.Empty;
+        }
+
+        protected virtual bool EnableSlowSeek
+        {
+            get
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -1060,7 +1086,7 @@ namespace MediaBrowser.Api.Playback
 
         private void StartThrottler(StreamState state, TranscodingJob transcodingJob)
         {
-            if (state.InputProtocol == MediaProtocol.File &&
+            if (EnableThrottling && state.InputProtocol == MediaProtocol.File &&
                            state.RunTimeTicks.HasValue &&
                            state.VideoType == VideoType.VideoFile &&
                            !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
@@ -1070,6 +1096,14 @@ namespace MediaBrowser.Api.Playback
                     transcodingJob.TranscodingThrottler = state.TranscodingThrottler = new TranscodingThrottler(transcodingJob, Logger, ServerConfigurationManager);
                     state.TranscodingThrottler.Start();
                 }
+            }
+        }
+
+        protected virtual bool EnableThrottling
+        {
+            get
+            {
+                return true;
             }
         }
 
@@ -1695,6 +1729,11 @@ namespace MediaBrowser.Api.Playback
 
         private void TryStreamCopy(StreamState state, VideoStreamRequest videoRequest)
         {
+            if (!EnableStreamCopy)
+            {
+                return;
+            }
+
             if (state.VideoStream != null && CanStreamCopyVideo(videoRequest, state.VideoStream))
             {
                 state.OutputVideoCodec = "copy";
@@ -1703,6 +1742,14 @@ namespace MediaBrowser.Api.Playback
             if (state.AudioStream != null && CanStreamCopyAudio(videoRequest, state.AudioStream, state.SupportedAudioCodecs))
             {
                 state.OutputAudioCodec = "copy";
+            }
+        }
+
+        protected virtual bool EnableStreamCopy
+        {
+            get
+            {
+                return true;
             }
         }
 
