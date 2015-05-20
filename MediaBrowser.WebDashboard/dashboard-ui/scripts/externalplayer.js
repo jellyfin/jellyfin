@@ -478,4 +478,4 @@
         showMenu: showPlayMenu
     };
 
-})(window, window.store);
+})(window, window.appStorage);

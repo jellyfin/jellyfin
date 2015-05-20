@@ -746,4 +746,4 @@
         mirrorIfEnabled(info);
     });
 
-})(jQuery, window, window.store);
+})(jQuery, window, window.appStorage);

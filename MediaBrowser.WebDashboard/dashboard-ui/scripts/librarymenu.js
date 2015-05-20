@@ -371,7 +371,7 @@
 
     function getTopParentId() {
 
-        return getParameterByName('topParentId') /*|| sessionStore.getItem('topParentId')*/ || null;
+        return getParameterByName('topParentId') || null;
     }
 
     window.LibraryMenu = {

@@ -1740,4 +1740,4 @@
     });
 
 
-})(document, setTimeout, clearTimeout, screen, window.store, $, setInterval, window);
+})(document, setTimeout, clearTimeout, screen, window.appStorage, $, setInterval, window);

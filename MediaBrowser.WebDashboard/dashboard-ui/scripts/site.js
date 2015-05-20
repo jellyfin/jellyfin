@@ -420,7 +420,7 @@ var Dashboard = {
         return "ConfigurationPage?name=" + encodeURIComponent(name);
     },
 
-    navigate: function (url, preserveQueryString) {
+    navigate: function (url, preserveQueryString, transition) {
 
         if (!url) {
             throw new Error('url cannot be null or empty');
@@ -430,7 +430,14 @@ var Dashboard = {
         if (preserveQueryString && queryString) {
             url += queryString;
         }
-        $.mobile.changePage(url);
+
+        var options = {};
+
+        if (transition) {
+            options.transition = transition;
+        }
+
+        $.mobile.changePage(url, options);
     },
 
     showLoadingMsg: function () {
@@ -1979,7 +1986,7 @@ $(document).on('pagecreate', ".page", function () {
             }
         }
 
-        if (this.id !== "loginPage" && !page.hasClass('forgotPasswordPage') && !page.hasClass('wizardPage') && !isConnectMode) {
+        if (!isConnectMode && this.id !== "loginPage" && !page.hasClass('forgotPasswordPage') && !page.hasClass('wizardPage')) {
 
             console.log('Not logged into server. Redirecting to login.');
             Dashboard.logout(true, true);

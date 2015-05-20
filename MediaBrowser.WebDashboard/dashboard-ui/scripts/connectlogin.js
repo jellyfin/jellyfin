@@ -40,12 +40,12 @@
                 break;
             case MediaBrowser.ConnectionState.ServerSignIn:
                 {
-                    Dashboard.navigate('login.html?serverid=' + result.Servers[0].Id);
+                    Dashboard.navigate('login.html?serverid=' + result.Servers[0].Id, false, 'none');
                 }
                 break;
             case MediaBrowser.ConnectionState.ServerSelection:
                 {
-                    Dashboard.navigate('selectserver.html');
+                    Dashboard.navigate('selectserver.html', false, 'none');
                 }
                 break;
             case MediaBrowser.ConnectionState.ConnectSignIn:

@@ -2893,4 +2893,4 @@
         }
     };
 
-})(window, document, jQuery, screen, window.store);
+})(window, document, jQuery, screen, window.appStorage);

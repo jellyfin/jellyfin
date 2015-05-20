@@ -141,7 +141,7 @@
 
         var userId = Dashboard.getCurrentUserId();
 
-        var val = store.getItem('enableBackdrops-' + userId);
+        var val = appStorage.getItem('enableBackdrops-' + userId);
 
         // For bandwidth
         return val == '1' || (val != '0' && isEnabledByDefault());

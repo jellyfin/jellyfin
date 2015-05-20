@@ -2,7 +2,7 @@
 
     function loadForm(page, userId, displayPreferences) {
 
-        var externalPlayers = JSON.parse(store.getItem('externalplayers') || '[]');
+        var externalPlayers = JSON.parse(appStorage.getItem('externalplayers') || '[]');
 
         $('#selectMaxBitrate', page).val(AppSettings.maxStreamingBitrate()).selectmenu("refresh");
         $('#selectMaxChromecastBitrate', page).val(AppSettings.maxChromecastBitrate()).selectmenu("refresh");
@@ -18,8 +18,8 @@
 
         }).checkboxradio('refresh');
 
-        $('#selectThemeSong', page).val(store.getItem('enableThemeSongs-' + userId) || '').selectmenu("refresh");
-        $('#selectBackdrop', page).val(store.getItem('enableBackdrops-' + userId) || '').selectmenu("refresh");
+        $('#selectThemeSong', page).val(appStorage.getItem('enableThemeSongs-' + userId) || '').selectmenu("refresh");
+        $('#selectBackdrop', page).val(appStorage.getItem('enableBackdrops-' + userId) || '').selectmenu("refresh");
 
         $('#selectHomeSection1', page).val(displayPreferences.CustomPrefs.home0 || '').selectmenu("refresh");
         $('#selectHomeSection2', page).val(displayPreferences.CustomPrefs.home1 || '').selectmenu("refresh");
@@ -33,8 +33,8 @@
 
     function saveUser(page, userId, displayPreferences) {
 
-        store.setItem('enableThemeSongs-' + userId, $('#selectThemeSong', page).val());
-        store.setItem('enableBackdrops-' + userId, $('#selectBackdrop', page).val());
+        appStorage.setItem('enableThemeSongs-' + userId, $('#selectThemeSong', page).val());
+        appStorage.setItem('enableBackdrops-' + userId, $('#selectBackdrop', page).val());
 
         displayPreferences.CustomPrefs.home0 = $('#selectHomeSection1', page).val();
         displayPreferences.CustomPrefs.home1 = $('#selectHomeSection2', page).val();
@@ -64,7 +64,7 @@
 
         });
 
-        store.setItem('externalplayers', JSON.stringify(externalPlayers));
+        appStorage.setItem('externalplayers', JSON.stringify(externalPlayers));
 
         AppSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
         AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
@@ -138,4 +138,4 @@
     };
 
 
-})(window, window.store);
+})(window, window.appStorage);

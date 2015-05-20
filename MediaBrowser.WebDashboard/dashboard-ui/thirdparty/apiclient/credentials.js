@@ -12,7 +12,7 @@
 
         function ensure() {
 
-            credentials = credentials || JSON.parse(store.getItem(key) || '{}');
+            credentials = credentials || JSON.parse(appStorage.getItem(key) || '{}');
             credentials.servers = credentials.servers || [];
         }
 
@@ -26,7 +26,7 @@
 
             if (data) {
                 credentials = data;
-                store.setItem(key, JSON.stringify(data));
+                appStorage.setItem(key, JSON.stringify(data));
             } else {
                 self.clear();
             }
@@ -34,7 +34,7 @@
 
         self.clear = function () {
             credentials = null;
-            store.removeItem(key);
+            appStorage.removeItem(key);
         };
 
         self.credentials = function (data) {
