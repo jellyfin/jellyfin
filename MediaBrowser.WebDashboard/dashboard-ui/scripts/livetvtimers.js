@@ -107,7 +107,7 @@
         });
     }
 
-    $(document).on('pageshown', "#liveTvTimersPage", function () {
+    $(document).on('pageshowready', "#liveTvTimersPage", function () {
 
         var page = this;
 

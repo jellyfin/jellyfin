@@ -607,57 +607,38 @@
                 afterClose: function () {
                     dismissWelcome(page, userId);
                     $('.welcomeMessage', page).hide();
-
-                    loadConfigureViewsWelcomeMessage(page, userId);
                 },
                 hideBarsDelay: 30000
             });
         });
     }
 
-    function loadConfigureViewsWelcomeMessage(page, userId) {
-
-        Dashboard.getCurrentUser().done(function (user) {
-
-            if (user.Policy.EnableUserPreferenceAccess) {
-                $('.btnMyPreferences', page).attr('href', 'mypreferencesdisplay.html?userId=' + userId);
-
-                // Need the timeout because previous methods in the chain have popups that will be in the act of closing
-                setTimeout(function () {
-
-                    $('.popupConfigureViews', page).popup('open');
-
-                }, 500);
-            }
-        });
-    }
-
-    $(document).on('pageinit', "#indexPage", function () {
+    $(document).on('pageinitdepends', "#indexPage", function () {
 
         var page = this;
-
-        var userId = Dashboard.getCurrentUserId();
 
         $('.btnTakeTour', page).on('click', function () {
-            takeTour(page, userId);
+            takeTour(page, Dashboard.getCurrentUserId());
         });
 
-    }).on('pagebeforeshow', "#indexPage", function () {
+    }).on('pagebeforeshowready', "#indexPage", function () {
 
         var page = this;
 
-        var userId = Dashboard.getCurrentUserId();
+        if (window.ApiClient) {
+            var userId = Dashboard.getCurrentUserId();
 
-        getDisplayPreferences('home', userId).done(function (result) {
+            getDisplayPreferences('home', userId).done(function (result) {
 
-            Dashboard.getCurrentUser().done(function (user) {
+                Dashboard.getCurrentUser().done(function (user) {
 
-                loadSections(page, user, result).done(function () {
-                    showWelcomeIfNeeded(page, result);
+                    loadSections(page, user, result).done(function () {
+                        showWelcomeIfNeeded(page, result);
+                    });
+
                 });
-
             });
-        });
+        }
 
     });
 

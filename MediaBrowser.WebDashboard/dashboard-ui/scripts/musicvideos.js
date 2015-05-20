@@ -183,7 +183,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshown', "#musicVideosPage", function () {
+    }).on('pageshowready', "#musicVideosPage", function () {
 
         var page = this;
 

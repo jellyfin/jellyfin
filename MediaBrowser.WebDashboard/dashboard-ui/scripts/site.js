@@ -106,7 +106,9 @@ var Dashboard = {
 
     onApiClientServerAddressChanged: function () {
 
-        Dashboard.serverAddress(ApiClient.serverAddress());
+        var apiClient = this;
+
+        Dashboard.serverAddress(apiClient.serverAddress());
     },
 
     getCurrentUser: function () {
@@ -200,7 +202,7 @@ var Dashboard = {
         Dashboard.getUserPromise = null;
     },
 
-    logout: function (logoutWithServer) {
+    logout: function (logoutWithServer, forceReload) {
 
         store.removeItem("userId");
         store.removeItem("token");
@@ -208,16 +210,20 @@ var Dashboard = {
 
         function onLogoutDone() {
 
-            var loginPage = 'login.html';
+            var loginPage;
 
             if (Dashboard.isConnectMode()) {
                 loginPage = 'connectlogin.html';
                 window.ApiClient = null;
             } else {
-                
+                loginPage = 'login.html';
             }
 
-            Dashboard.navigate(loginPage);
+            if (forceReload) {
+                window.location.href = loginPage;
+            } else {
+                Dashboard.navigate(loginPage);
+            }
         }
 
         if (logoutWithServer === false) {
@@ -697,14 +703,23 @@ var Dashboard = {
 
     getPluginSecurityInfo: function () {
 
+        var apiClient = ApiClient;
+
+        if (!apiClient) {
+
+            var deferred = $.Deferred();
+            deferred.reject();
+            return deferred.promise();
+        }
+
         if (!Dashboard.getPluginSecurityInfoPromise) {
 
             var deferred = $.Deferred();
 
             // Don't let this blow up the dashboard when it fails
-            ApiClient.ajax({
+            apiClient.ajax({
                 type: "GET",
-                url: ApiClient.getUrl("Plugins/SecurityInfo"),
+                url: apiClient.getUrl("Plugins/SecurityInfo"),
                 dataType: 'json',
 
                 error: function () {
@@ -1393,7 +1408,7 @@ var Dashboard = {
 
             } else {
 
-                quality -= 50;
+                quality -= 40;
             }
         }
 
@@ -1413,7 +1428,7 @@ var Dashboard = {
         }
     },
 
-    getAppInfo: function () {
+    getAppInfo: function (appName, deviceId, deviceName) {
 
         function generateDeviceName() {
 
@@ -1446,28 +1461,12 @@ var Dashboard = {
         }
 
         var appVersion = window.dashboardVersion;
-        var appName = "Emby Web Client";
-
-        var deviceName;
-        var deviceId;
-
-        if (Dashboard.isRunningInCordova()) {
-
-            appName = "Emby Mobile";
-
-            deviceName = store.getItem('cordovaDeviceName');
-            deviceId = store.getItem('cordovaDeviceId');
-        }
+        appName = appName || "Emby Web Client";
 
         deviceName = deviceName || generateDeviceName();
 
         var seed = [];
         var keyName = 'randomId';
-
-        if (Dashboard.isRunningInCordova()) {
-            seed.push('cordova');
-            keyName = 'cordovaDeviceId';
-        }
 
         deviceId = deviceId || MediaBrowser.generateDeviceId(keyName, seed.join(','));
 
@@ -1501,6 +1500,23 @@ var Dashboard = {
         }
 
         Dashboard.setCurrentUser(userId, accessToken);
+    },
+
+    ready: function(fn) {
+        
+        if (Dashboard.initPromiseDone) {
+            fn();
+            return;
+        }
+
+        Dashboard.initPromise.done(fn);
+    },
+
+    firePageEvent: function (page, name) {
+
+        Dashboard.ready(function () {
+            $(page).trigger(name);
+        });
     }
 };
 
@@ -1516,7 +1532,7 @@ var AppInfo = {};
 
     function setAppInfo() {
 
-        if (isTouchDevice() && $.browser.mobile) {
+        if (isTouchDevice()) {
             AppInfo.isTouchPreferred = true;
         }
 
@@ -1561,7 +1577,6 @@ var AppInfo = {};
             AppInfo.enablePeopleTabs = true;
             AppInfo.enableTvEpisodesTab = true;
             AppInfo.enableMusicArtistsTab = true;
-            AppInfo.enableHomeLatestTab = true;
             AppInfo.enableMovieTrailersTab = true;
         }
 
@@ -1582,9 +1597,7 @@ var AppInfo = {};
             .on('serveraddresschanged.dashboard', Dashboard.onApiClientServerAddressChanged);
     }
 
-    function createConnectionManager() {
-
-        var appInfo = Dashboard.getAppInfo();
+    function createConnectionManager(appInfo) {
 
         var credentialProvider = new MediaBrowser.CredentialProvider();
 
@@ -1653,7 +1666,7 @@ var AppInfo = {};
 
     }
 
-    function onReady() {
+    function onDocumentReady() {
 
         if (AppInfo.isTouchPreferred) {
             $(document.body).addClass('touch');
@@ -1689,10 +1702,6 @@ var AppInfo = {};
 
         if (!AppInfo.enableMusicArtistsTab) {
             $(document.body).addClass('musicArtistsTabDisabled');
-        }
-
-        if (!AppInfo.enableHomeLatestTab) {
-            $(document.body).addClass('homeLatestTabDisabled');
         }
 
         if (!AppInfo.enableMovieTrailersTab) {
@@ -1818,7 +1827,7 @@ var AppInfo = {};
         });
 
         if (Dashboard.isRunningInCordova()) {
-            requirejs(['thirdparty/cordova/connectsdk']);
+            requirejs(['thirdparty/cordova/connectsdk', 'thirdparty/cordova/remotecontrols']);
         } else {
             if ($.browser.chrome) {
                 requirejs(['scripts/chromecast']);
@@ -1826,38 +1835,64 @@ var AppInfo = {};
         }
     }
 
-    requirejs.config({
-        map: {
-            '*': {
-                'css': 'thirdparty/requirecss' // or whatever the path to require-css is
-            }
-        },
-        urlArgs: "v=" + window.dashboardVersion
-    });
+    function init(deferred, appName, deviceId, deviceName) {
 
-    // Required since jQuery is loaded before requireJs
-    define('jquery', [], function () {
-        return jQuery;
-    });
+        requirejs.config({
+            map: {
+                '*': {
+                    'css': 'thirdparty/requirecss' // or whatever the path to require-css is
+                }
+            },
+            urlArgs: "v=" + window.dashboardVersion
+        });
 
-    setAppInfo();
-    createConnectionManager();
+        // Required since jQuery is loaded before requireJs
+        define('jquery', [], function () {
+            return jQuery;
+        });
 
-    if (Dashboard.isRunningInCordova()) {
+        setAppInfo();
+
+        var appInfo = Dashboard.getAppInfo(appName, deviceId, deviceName);
+
+        createConnectionManager(appInfo);
+
+        Dashboard.initPromiseDone = true;
+        deferred.resolve();
+        $(onDocumentReady);
+    }
+
+    function initCordovaWithDeviceId(deferred, deviceId) {
+        if ($.browser.safari) {
+            requirejs(['thirdparty/cordova/imagestore.js']);
+        }
+
+        init(deferred, "Emby Mobile", deviceId, device.model);
+    }
+
+    function initCordova(deferred) {
 
         document.addEventListener("deviceready", function () {
 
-            if ($.browser.safari) {
-                requirejs(['thirdparty/cordova/imagestore.js']);
-            }
+            window.plugins.uniqueDeviceID.get(function (uuid) {
 
-            $(onReady);
+                initCordovaWithDeviceId(deferred, uuid);
 
+            }, function () {
+
+                // Failure. Use cordova uuid
+                initCordovaWithDeviceId(deferred, device.uuid);
+            });
         }, false);
+    }
 
+    var initDeferred = $.Deferred();
+    Dashboard.initPromise = initDeferred.promise();
+
+    if (Dashboard.isRunningInCordova()) {
+        initCordova(initDeferred);
     } else {
-
-        $(onReady);
+        init(initDeferred);
     }
 
 })();
@@ -1903,10 +1938,10 @@ $(document).on('pagecreate', ".page", function () {
     if (require) {
         requirejs(require.split(','), function () {
 
-            $(page).trigger('pageinitdepends');
+            Dashboard.firePageEvent(page, 'pageinitdepends');
         });
     } else {
-        $(page).trigger('pageinitdepends');
+        Dashboard.firePageEvent(page, 'pageinitdepends');
     }
 
     $('.localnav a, .libraryViewNav a').attr('data-transition', 'none');
@@ -1914,16 +1949,29 @@ $(document).on('pagecreate', ".page", function () {
 }).on('pageshow', ".page", function () {
 
     var page = this;
-
     var require = this.getAttribute('data-require');
 
     if (require) {
         requirejs(require.split(','), function () {
 
-            $(page).trigger('pageshown');
+            Dashboard.firePageEvent(page, 'pageshowready');
         });
     } else {
-        $(page).trigger('pageshown');
+        Dashboard.firePageEvent(page, 'pageshowready');
+    }
+
+}).on('pagebeforeshow', ".page", function () {
+
+    var page = this;
+    var require = this.getAttribute('data-require');
+
+    if (require) {
+        requirejs(require.split(','), function () {
+
+            Dashboard.firePageEvent(page, 'pagebeforeshowready');
+        });
+    } else {
+        Dashboard.firePageEvent(page, 'pagebeforeshowready');
     }
 
 }).on('pagebeforeshow', ".page", function () {
@@ -1961,7 +2009,7 @@ $(document).on('pagecreate', ".page", function () {
         if (isConnectMode) {
 
             if (!Dashboard.isServerlessPage()) {
-                Dashboard.logout();
+                Dashboard.logout(true, true);
                 return;
             }
         }
@@ -1969,7 +2017,7 @@ $(document).on('pagecreate', ".page", function () {
         if (this.id !== "loginPage" && !page.hasClass('forgotPasswordPage') && !page.hasClass('wizardPage') && !isConnectMode) {
 
             console.log('Not logged into server. Redirecting to login.');
-            Dashboard.logout();
+            Dashboard.logout(true, true);
             return;
         }
 

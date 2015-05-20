@@ -182,7 +182,7 @@
         });
     }
 
-    $(document).on('pageshown', "#tvRecommendedPage", function () {
+    $(document).on('pageshowready', "#tvRecommendedPage", function () {
 
         var page = this;
 

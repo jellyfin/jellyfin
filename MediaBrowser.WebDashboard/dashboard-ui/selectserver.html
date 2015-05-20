@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="selectServerPage" data-role="page" class="page libraryPage noSecondaryNavPage" data-theme="b">
+    <div id="selectServerPage" data-role="page" class="page libraryPage noSecondaryNavPage" data-theme="b" data-require="scripts/selectserver">
 
         <div data-role="content">
 
@@ -22,6 +22,15 @@
                 <br />
                 <div class="noServersMessage" style="display:none;padding-left:5px;">
                     ${MessageNoServersAvailableToConnect}
+                </div>
+
+                <div class="connectLogin" style="margin:1.5em 0;display:none;">
+                    <a class="btn btnActionAccent" href="connectlogin.html?mode=connect">
+                        <span>
+                            ${ButtonSignInWithConnect}
+                        </span>
+                        <i class="fa fa-check"></i>
+                    </a>
                 </div>
 
                 <div class="invitationSection" style="display:none;">

@@ -89,7 +89,7 @@
         });
     }
 
-    $(document).on('pageshown', "#devicesPage", function () {
+    $(document).on('pageshowready', "#devicesPage", function () {
 
         var page = this;
 

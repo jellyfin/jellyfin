@@ -157,22 +157,17 @@
             .on('positionchange.cordovaremote', onStateChanged);
     }
 
-    console.log('binding remotecontrols to MediaController');
-
-    document.addEventListener("deviceready", function () {
+    Dashboard.ready(function () {
 
         console.log('binding remotecontrols to MediaController');
 
-        $(function () {
-
-            $(MediaController).on('playerchange', function () {
-
-                bindToPlayer(MediaController.getCurrentPlayer());
-            });
+        $(MediaController).on('playerchange', function () {
 
             bindToPlayer(MediaController.getCurrentPlayer());
         });
 
-    }, false);
+        bindToPlayer(MediaController.getCurrentPlayer());
+
+    });
 
 })();

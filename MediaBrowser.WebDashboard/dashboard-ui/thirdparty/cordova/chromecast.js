@@ -290,11 +290,12 @@
 
         function isChromecast(name) {
 
+            name = (name || '').toLowerCase();
             var validTokens = ['nexusplayer', 'chromecast', 'eurekadongle'];
 
             return validTokens.filter(function (t) {
 
-                return name.toLowerCase().replace(' ', '').indexOf(t) != -1;
+                return name.replace(' ', '').indexOf(t) != -1;
 
             }).length > 0;
         }

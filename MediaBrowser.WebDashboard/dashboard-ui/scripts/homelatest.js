@@ -31,7 +31,7 @@
         Sections.loadLatestChannelItems($(".section2", page), userId);
     }
 
-    $(document).on('pagebeforeshow', "#homeLatestPage", function () {
+    $(document).on('pageshowready', "#homeLatestPage", function () {
 
         var page = this;
 

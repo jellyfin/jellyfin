@@ -40,7 +40,7 @@
         return false;
     }
 
-    $(document).on('pageshown', "#dashboardHostingPage", function () {
+    $(document).on('pageshowready', "#dashboardHostingPage", function () {
 
         Dashboard.showLoadingMsg();
 

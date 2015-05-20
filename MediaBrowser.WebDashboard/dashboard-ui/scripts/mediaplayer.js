@@ -215,20 +215,16 @@
             profile.ContainerProfiles = [];
 
             var audioConditions = [];
-            var videoAudioMp3Conditions = [];
 
             var maxAudioChannels = $.browser.msie || $.browser.safari ?
                 '2' :
                 '6';
 
-            var channelCondition = {
+            audioConditions.push({
                 Condition: 'LessThanEqual',
                 Property: 'AudioChannels',
                 Value: maxAudioChannels
-            };
-
-            audioConditions.push(channelCondition);
-            videoAudioMp3Conditions.push(channelCondition);
+            });
 
             profile.CodecProfiles = [];
             profile.CodecProfiles.push({
@@ -236,20 +232,21 @@
                 Conditions: audioConditions
             });
 
-            if (videoAudioMp3Conditions.length) {
-                profile.CodecProfiles.push({
-                    Type: 'VideoAudio',
-                    Codec: 'mp3',
-                    Conditions: videoAudioMp3Conditions
-                });
-            }
+            profile.CodecProfiles.push({
+                Type: 'VideoAudio',
+                Codec: 'mp3',
+                Conditions: [{
+                    Condition: 'LessThanEqual',
+                    Property: 'AudioChannels',
+                    Value: maxAudioChannels
+                }]
+            });
 
             profile.CodecProfiles.push({
                 Type: 'VideoAudio',
                 Codec: 'aac',
                 Container: 'mkv,mov',
                 Conditions: [
-                    channelCondition,
                     {
                         Condition: 'NotEquals',
                         Property: 'AudioProfile',
@@ -266,9 +263,12 @@
             profile.CodecProfiles.push({
                 Type: 'VideoAudio',
                 Codec: 'aac',
-                Container: 'mp4,m4v',
                 Conditions: [
-                    channelCondition
+                    {
+                        Condition: 'LessThanEqual',
+                        Property: 'AudioChannels',
+                        Value: maxAudioChannels
+                    }
                 ]
             });
 
@@ -868,7 +868,7 @@
             }
 
             if (item.IsPlaceHolder) {
-                showPlaybackInfoErrorMessage('PlaceHolder');
+                MediaController.showPlaybackInfoErrorMessage('PlaceHolder');
                 return;
             }
 
@@ -901,7 +901,7 @@
                         }
                     } else {
                         Dashboard.hideModalLoadingMsg();
-                        showPlaybackInfoErrorMessage('NoCompatibleStream');
+                        MediaController.showPlaybackInfoErrorMessage('NoCompatibleStream');
                     }
                 }
 
@@ -934,25 +934,11 @@
 
             if (result.ErrorCode) {
 
-                showPlaybackInfoErrorMessage(result.ErrorCode);
+                MediaController.showPlaybackInfoErrorMessage(result.ErrorCode);
                 return false;
             }
 
             return true;
-        }
-
-        function showPlaybackInfoErrorMessage(errorCode) {
-
-            // This timeout is messy, but if jqm is in the act of hiding a popup, it will not show a new one
-            // If we're coming from the popup play menu, this will be a problem
-
-            setTimeout(function () {
-                Dashboard.alert({
-                    message: Globalize.translate('MessagePlaybackError' + errorCode),
-                    title: Globalize.translate('HeaderPlaybackError')
-                });
-            }, 300);
-
         }
 
         self.getPosterUrl = function (item) {
@@ -1748,8 +1734,10 @@
 
     window.MediaPlayer = new mediaPlayer();
 
-    window.MediaController.registerPlayer(window.MediaPlayer);
-    window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargets()[0]);
+    Dashboard.ready(function() {
+        window.MediaController.registerPlayer(window.MediaPlayer);
+        window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargets()[0]);
+    });
 
 
 })(document, setTimeout, clearTimeout, screen, window.store, $, setInterval, window);

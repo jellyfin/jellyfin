@@ -35,7 +35,7 @@
         return html;
     }
 
-    $(document).on('pageinit', ".libraryPage", function () {
+    $(document).on('pageinitdepends', ".libraryPage", function () {
 
         var page = this;
 

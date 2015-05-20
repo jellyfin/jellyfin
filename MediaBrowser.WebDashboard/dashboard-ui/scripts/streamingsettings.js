@@ -49,7 +49,7 @@
 
         $('.streamingSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshown', "#streamingSettingsPage", function () {
+    }).on('pageshowready', "#streamingSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 

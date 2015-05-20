@@ -442,7 +442,7 @@
             .on('positionchange.nowplayingbar', onStateChanged);
     }
 
-    $(function () {
+    Dashboard.ready(function () {
 
         $(MediaController).on('playerchange', function () {
 

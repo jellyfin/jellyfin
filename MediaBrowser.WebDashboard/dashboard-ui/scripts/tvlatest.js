@@ -9,7 +9,7 @@
         return 'Thumb';
     }
 
-    $(document).on('pageshown', "#tvNextUpPage", function () {
+    $(document).on('pageshowready', "#tvNextUpPage", function () {
 
         var userId = Dashboard.getCurrentUserId();
 

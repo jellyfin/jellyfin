@@ -569,7 +569,7 @@
         $('.uploadItemImageForm').off('submit', onSubmit).on('submit', onSubmit);
 
 
-    }).on('pageshown', "#editItemImagesPage", function () {
+    }).on('pageshowready', "#editItemImagesPage", function () {
 
         var page = this;
 

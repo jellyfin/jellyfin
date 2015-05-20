@@ -355,9 +355,15 @@
         $(apiClient).on("websocketmessage", onWebSocketMessageReceived).on("websocketopen", onWebSocketConnectionChange);
     }
 
-    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+    Dashboard.ready(function () {
 
-        initializeApiClient(apiClient);
+        if (window.ApiClient) {
+            initializeApiClient(window.ApiClient);
+        }
+
+        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+            initializeApiClient(apiClient);
+        });
     });
 
 })(window, document, jQuery);

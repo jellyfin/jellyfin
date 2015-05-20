@@ -399,7 +399,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshown', "#moviesPage", function () {
+    }).on('pageshowready', "#moviesPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

@@ -173,7 +173,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#boxsetsPage", function () {
+    $(document).on('pageinitdepends', "#boxsetsPage", function () {
 
         var page = this;
 
@@ -257,7 +257,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#boxsetsPage", function () {
+    }).on('pagebeforeshowready', "#boxsetsPage", function () {
 
         var page = this;
 
@@ -296,7 +296,7 @@
             }
         });
 
-    }).on('pageshow', "#boxsetsPage", function () {
+    }).on('pageshowready', "#boxsetsPage", function () {
 
         updateFilterControls(this);
 
@@ -417,7 +417,7 @@
         });
     }
 
-    $(document).on('pageinit', ".collectionEditorPage", function () {
+    $(document).on('pageinitdepends', ".collectionEditorPage", function () {
 
         var page = this;
 

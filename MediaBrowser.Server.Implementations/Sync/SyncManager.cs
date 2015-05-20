@@ -286,6 +286,13 @@ namespace MediaBrowser.Server.Implementations.Sync
 
         private async Task FillMetadata(SyncJob job)
         {
+            var user = _userManager.GetUserById(job.UserId);
+
+            if (user == null)
+            {
+                return;
+            }
+
             var target = GetSyncTargets(job.UserId)
                 .FirstOrDefault(i => string.Equals(i.Id, job.TargetId, StringComparison.OrdinalIgnoreCase));
 
@@ -301,8 +308,6 @@ namespace MediaBrowser.Server.Implementations.Sync
             if (item == null)
             {
                 var processor = GetSyncJobProcessor();
-
-                var user = _userManager.GetUserById(job.UserId);
 
                 item = (await processor
                     .GetItemsForSync(job.Category, job.ParentId, job.RequestedItemIds, user, job.UnwatchedOnly).ConfigureAwait(false))

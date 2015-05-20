@@ -123,7 +123,23 @@
         Dashboard.navigate('selectserver.html');
     }
 
-    $(document).on('pageinit', "#connectLoginPage", function () {
+    function onSubmit() {
+        var page = $(this).parents('.page');
+
+        submit(page);
+
+        return false;
+    }
+
+    function onManualServerSubmit() {
+        var page = $(this).parents('.page');
+
+        submitManualServer(page);
+
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#connectLoginPage", function () {
 
         var page = this;
 
@@ -131,7 +147,10 @@
             skip();
         });
 
-    }).on('pageshow', "#connectLoginPage", function () {
+        $('.connectLoginForm').off('submit', onSubmit).on('submit', onSubmit);
+        $('.manualServerForm').off('submit', onManualServerSubmit).on('submit', onManualServerSubmit);
+
+    }).on('pageshowready', "#connectLoginPage", function () {
 
         var page = this;
 
@@ -178,26 +197,5 @@
 
         login(page, user, password);
     }
-
-    window.ConnectLoginPage = {
-
-        onSubmit: function () {
-
-            var page = $(this).parents('.page');
-
-            submit(page);
-
-            return false;
-        },
-
-        onManualServerSubmit: function () {
-            var page = $(this).parents('.page');
-
-            submitManualServer(page);
-
-            return false;
-
-        }
-    };
 
 })();

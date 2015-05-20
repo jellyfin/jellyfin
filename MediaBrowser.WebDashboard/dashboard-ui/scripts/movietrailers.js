@@ -215,7 +215,7 @@
 
         $('.popupTrailerReelForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshown', "#movieTrailersPage", function () {
+    }).on('pageshowready', "#movieTrailersPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

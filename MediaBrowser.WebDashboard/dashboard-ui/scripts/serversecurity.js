@@ -133,7 +133,7 @@
 
         $('.newKeyForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshown', "#serverSecurityPage", function () {
+    }).on('pageshowready', "#serverSecurityPage", function () {
 
         var page = this;
 

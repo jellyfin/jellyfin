@@ -104,7 +104,7 @@
         });
     }
 
-    $(document).on('pageshown', "#liveTvSuggestedPage", function () {
+    $(document).on('pageshowready', "#liveTvSuggestedPage", function () {
 
         var page = this;
 

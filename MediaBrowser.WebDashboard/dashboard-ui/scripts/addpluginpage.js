@@ -169,7 +169,7 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageshown', "#addPluginPage", function () {
+    $(document).on('pageshowready', "#addPluginPage", function () {
 
         var page = this;
 

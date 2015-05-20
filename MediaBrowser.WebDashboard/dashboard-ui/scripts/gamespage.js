@@ -239,7 +239,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshown', "#gamesPage", function () {
+    }).on('pageshowready', "#gamesPage", function () {
 
         var page = this;
         query.ParentId = LibraryMenu.getTopParentId();

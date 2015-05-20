@@ -4,11 +4,11 @@
     <title>${TitleSignIn}</title>
 </head>
 <body>
-    <div id="loginPage" data-role="page" class="page standalonePage" data-theme="b">
+    <div id="loginPage" data-role="page" class="page standalonePage" data-theme="b" data-require="scripts/loginpage">
 
         <div data-role="content">
 
-            <form class="manualLoginForm" id="manualLoginForm" style="display: none; text-align: center; margin: 0 auto;">
+            <form class="manualLoginForm" style="display: none; text-align: center; margin: 0 auto;">
 
                 <h1 style="text-align: left;">${HeaderPleaseSignIn}</h1>
 
@@ -61,10 +61,6 @@
             </div>
 
         </div>
-
-        <script type="text/javascript">
-            $('#manualLoginForm').on('submit', LoginPage.onManualSubmit);
-        </script>
     </div>
 </body>
 </html>

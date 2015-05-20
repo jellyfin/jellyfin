@@ -82,7 +82,7 @@
 
         $('.deviceForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshown', "#devicePage", function () {
+    }).on('pageshowready', "#devicePage", function () {
 
         var page = this;
 

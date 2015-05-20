@@ -84,7 +84,7 @@
 
         $('.wizardSettingsForm', page).off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshown', "#wizardSettingsPage", function () {
+    }).on('pageshowready', "#wizardSettingsPage", function () {
 
         var page = this;
 
