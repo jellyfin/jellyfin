@@ -244,7 +244,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             catch (FileNotFoundException)
             {
-                
+
             }
         }
 
@@ -675,7 +675,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             builder.AppendLine("#EXTM3U");
             builder.AppendLine("#EXT-X-VERSION:3");
-            builder.AppendLine("#EXT-X-TARGETDURATION:" + state.SegmentLength.ToString(UsCulture));
+            builder.AppendLine("#EXT-X-TARGETDURATION:" + (state.SegmentLength).ToString(UsCulture));
             builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
 
             var queryStringIndex = Request.RawUrl.IndexOf('?');
@@ -758,11 +758,13 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
-                1.ToString(UsCulture));
+                state.SegmentLength.ToString(UsCulture));
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
 
             args += " " + GetVideoQualityParam(state, H264Encoder, true) + keyFrameArg;
+
+            //args += " -mixed-refs 0 -refs 3 -x264opts b_pyramid=0:weightb=0:weightp=0";
 
             // Add resolution params, if specified
             if (!hasGraphicalSubs)
@@ -783,7 +785,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var threads = GetNumberOfThreads(state, false);
 
-            var inputModifier = GetInputModifier(state);
+            var inputModifier = GetInputModifier(state, false);
 
             // If isEncoding is true we're actually starting ffmpeg
             var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
@@ -799,7 +801,8 @@ namespace MediaBrowser.Api.Playback.Hls
 
                 if (endTime < state.RunTimeTicks.Value)
                 {
-                    toTimeParam = " -to " + MediaEncoder.GetTimeParameter(endTime);
+                    //toTimeParam = " -to " + MediaEncoder.GetTimeParameter(endTime);
+                    toTimeParam = " -t " + MediaEncoder.GetTimeParameter(TimeSpan.FromSeconds(durationSeconds).Ticks);
                 }
             }
 
@@ -809,11 +812,13 @@ namespace MediaBrowser.Api.Playback.Hls
                 slowSeekParam = " " + slowSeekParam;
             }
 
+            //state.EnableGenericHlsSegmenter = true;
+
             if (state.EnableGenericHlsSegmenter)
             {
                 var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d.ts";
 
-                return string.Format("{0} {1}{10}{11} -map_metadata -1 -threads {2} {3} {4} -flags -global_header -sc_threshold 0 {5} -f segment -segment_time {6} -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
+                return string.Format("{0} {11} {1}{10} -map_metadata -1 -threads {2} {3} {4} -flags -global_header -sc_threshold 0 {5} -f segment -segment_time {6} -segment_format mpegts -segment_list_type m3u8 -segment_start_number {7} -segment_list \"{8}\" -y \"{9}\"",
                     inputModifier,
                     GetInputArgument(state),
                     threads,
@@ -829,7 +834,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     ).Trim();
             }
 
-            return string.Format("{0} {1}{10}{11} -map_metadata -1 -threads {2} {3} {4} -flags -global_header -copyts -sc_threshold 0 {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
+            return string.Format("{0}{11} {1}{10} -map_metadata -1 -threads {2} {3} {4} -output_ts_offset " + MediaEncoder.GetTimeParameter(state.Request.StartTimeTicks ?? 0) + " -flags -global_header -sc_threshold 0 {5} -hls_time {6} -start_number {7} -hls_list_size {8} -y \"{9}\"",
                             inputModifier,
                             GetInputArgument(state),
                             threads,

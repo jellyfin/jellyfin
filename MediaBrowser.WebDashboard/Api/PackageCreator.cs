@@ -291,7 +291,7 @@ namespace MediaBrowser.WebDashboard.Api
             html = ReplaceBetween(html, "<!--CORDOVA_EXCLUDE_START-->", "<!--CORDOVA_EXCLUDE_END-->", string.Empty);
 
             // Replace CORDOVA_REPLACE_SUPPORTER_SUBMIT_START
-            html = ReplaceBetween(html, "<!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_START-->", "<!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_END-->", "<i class=\"fa fa-check\"></i><span>${ButtonDonate}</span>");
+            html = ReplaceBetween(html, "<!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_START-->", "<!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_END-->", "<i class=\"fa fa-check\"></i><span>${ButtonPurchase}</span>");
 
             return html;
         }
@@ -299,14 +299,20 @@ namespace MediaBrowser.WebDashboard.Api
         private string ReplaceBetween(string html, string startToken, string endToken, string newHtml)
         {
             var start = html.IndexOf(startToken, StringComparison.OrdinalIgnoreCase);
-            var end = html.IndexOf(endToken, StringComparison.OrdinalIgnoreCase);
 
-            if (start == -1 || end == -1)
+            if (start == -1)
             {
                 return html;
             }
 
-            string result = html.Substring(start + 1, end - start - 1);
+            var end = html.IndexOf(endToken, start, StringComparison.OrdinalIgnoreCase);
+
+            if (end == -1)
+            {
+                return html;
+            }
+
+            string result = html.Substring(start, end - start);
             html = html.Replace(result, newHtml);
 
             return ReplaceBetween(html, startToken, endToken, newHtml);

@@ -32,6 +32,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 ".wd_tv",
 
                 // Synology
+                "@eaDir",
                 "eaDir"
 
         };
