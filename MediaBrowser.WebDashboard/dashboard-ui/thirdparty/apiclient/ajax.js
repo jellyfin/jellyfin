@@ -8,7 +8,13 @@
 
         ajax: function(request) {
 
-            return jQuery.ajax(request);
+            try {
+                return jQuery.ajax(request);
+            } catch (err) {
+                var deferred = DeferredBuilder.Deferred();
+                deferred.reject();
+                return deferred.promise();
+            }
         }
 
     };

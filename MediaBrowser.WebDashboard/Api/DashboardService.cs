@@ -320,6 +320,19 @@ namespace MediaBrowser.WebDashboard.Api
 
                 await DumpFile(filename, Path.Combine(destination, filename), mode, culture, appVersion).ConfigureAwait(false);
             }
+
+            var excludeFiles = new List<string>();
+
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                excludeFiles.Add("supporter.html");
+                excludeFiles.Add("supporterkey.html");
+            }
+
+            foreach (var file in excludeFiles)
+            {
+                File.Delete(Path.Combine(destination, file));
+            }
         }
 
         private async Task DumpJs(string source, string mode, string destination, string culture, string appVersion)

@@ -179,7 +179,7 @@ var Dashboard = {
         Dashboard.getUserPromise = null;
     },
 
-    logout: function (logoutWithServer, forceReload) {
+    logout: function (logoutWithServer) {
 
         function onLogoutDone() {
 
@@ -192,11 +192,7 @@ var Dashboard = {
                 loginPage = 'login.html';
             }
 
-            if (forceReload) {
-                window.location.href = loginPage;
-            } else {
-                Dashboard.navigate(loginPage);
-            }
+            Dashboard.navigate(loginPage);
         }
 
         if (logoutWithServer === false) {
@@ -576,7 +572,7 @@ var Dashboard = {
 
         var apiClient = ApiClient;
 
-        if (apiClient.accessToken()) {
+        if (apiClient && apiClient.accessToken()) {
             if (apiClient.enableFooterNotifications) {
                 apiClient.getSystemInfo().done(function (info) {
 
@@ -968,17 +964,11 @@ var Dashboard = {
                 {
                     var args = cmd.Arguments;
 
-                    if (args.TimeoutMs && WebNotifications.supported()) {
-                        var notification = {
-                            title: args.Header,
-                            body: args.Text,
-                            timeout: args.TimeoutMs
-                        };
-
-                        WebNotifications.show(notification);
+                    if (args.TimeoutMs) {
+                        Dashboard.showFooterNotification({ html: "<div><b>" + args.Header + "</b></div>" + args.Text, timeout: args.TimeoutMs });
                     }
                     else {
-                        Dashboard.showFooterNotification({ html: "<div><b>" + args.Header + "</b></div>" + args.Text, timeout: args.TimeoutMs });
+                        Dashboard.alert({ title: args.Header, message: args.Text });
                     }
 
                     break;
@@ -1554,9 +1544,11 @@ var AppInfo = {};
 
         if (!isCordova) {
             AppInfo.enableFooterNotifications = true;
+            AppInfo.enableSupporterMembership = true;
         }
 
         AppInfo.enableUserImage = true;
+        AppInfo.hasPhysicalVolumeButtons = isCordova || $.browser.mobile;
     }
 
     function initializeApiClient(apiClient) {
@@ -1678,6 +1670,10 @@ var AppInfo = {};
             $(document.body).addClass('bottomSecondaryNav');
         }
 
+        if (!AppInfo.enableSupporterMembership) {
+            $(document.body).addClass('supporterMembershipDisabled');
+        }
+
         if (Dashboard.isRunningInCordova()) {
             $(document).addClass('nativeApp');
         }
@@ -1699,16 +1695,17 @@ var AppInfo = {};
         videoPlayerHtml += '<button class="mediaButton videoTrackControl previousTrackButton imageButton" title="Previous video" type="button" onclick="MediaPlayer.previousTrack();" data-role="none"><i class="fa fa-step-backward"></i></button>';
         videoPlayerHtml += '<button class="mediaButton videoTrackControl nextTrackButton imageButton" title="Next video" type="button" onclick="MediaPlayer.nextTrack();" data-role="none"><i class="fa fa-step-forward"></i></button>';
 
-        videoPlayerHtml += '<button class="mediaButton videoAudioButton imageButton" title="Audio tracks" type="button" data-role="none"><i class="fa fa-music"></i></button>';
+        // Embedding onclicks due to issues not firing in cordova safari
+        videoPlayerHtml += '<button class="mediaButton videoAudioButton imageButton" title="Audio tracks" type="button" data-role="none" onclick="MediaPlayer.showAudioTracksFlyout();"><i class="fa fa-music"></i></button>';
         videoPlayerHtml += '<div data-role="popup" class="videoAudioPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-        videoPlayerHtml += '<button class="mediaButton videoSubtitleButton imageButton" title="Subtitles" type="button" data-role="none"><i class="fa fa-text-width"></i></button>';
+        videoPlayerHtml += '<button class="mediaButton videoSubtitleButton imageButton" title="Subtitles" type="button" data-role="none" onclick="MediaPlayer.showSubtitleMenu();"><i class="fa fa-text-width"></i></button>';
         videoPlayerHtml += '<div data-role="popup" class="videoSubtitlePopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-        videoPlayerHtml += '<button class="mediaButton videoChaptersButton imageButton" title="Scenes" type="button" data-role="none"><i class="fa fa-video-camera"></i></button>';
+        videoPlayerHtml += '<button class="mediaButton videoChaptersButton imageButton" title="Scenes" type="button" data-role="none" onclick="MediaPlayer.showChaptersFlyout();"><i class="fa fa-video-camera"></i></button>';
         videoPlayerHtml += '<div data-role="popup" class="videoChaptersPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
-        videoPlayerHtml += '<button class="mediaButton videoQualityButton imageButton" title="Quality" type="button" data-role="none"><i class="fa fa-gear"></i></button>';
+        videoPlayerHtml += '<button class="mediaButton videoQualityButton imageButton" title="Quality" type="button" data-role="none" onclick="MediaPlayer.showQualityFlyout();"><i class="fa fa-gear"></i></button>';
         videoPlayerHtml += '<div data-role="popup" class="videoQualityPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
         videoPlayerHtml += '<button class="mediaButton imageButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-role="none"><i class="fa fa-close"></i></button>';
@@ -1961,7 +1958,7 @@ $(document).on('pagecreate', ".page", function () {
             var isSettingsPage = page.hasClass('type-interior');
 
             if (!user.Policy.IsAdministrator && isSettingsPage) {
-                window.location.replace("index.html");
+                Dashboard.logout();
                 return;
             }
 
@@ -1981,7 +1978,7 @@ $(document).on('pagecreate', ".page", function () {
         if (isConnectMode) {
 
             if (!Dashboard.isServerlessPage()) {
-                Dashboard.logout(true, true);
+                Dashboard.logout(true);
                 return;
             }
         }
@@ -1989,7 +1986,7 @@ $(document).on('pagecreate', ".page", function () {
         if (!isConnectMode && this.id !== "loginPage" && !page.hasClass('forgotPasswordPage') && !page.hasClass('wizardPage')) {
 
             console.log('Not logged into server. Redirecting to login.');
-            Dashboard.logout(true, true);
+            Dashboard.logout(true);
             return;
         }
 

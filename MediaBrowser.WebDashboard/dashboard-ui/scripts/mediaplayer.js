@@ -943,6 +943,11 @@
 
         self.getPosterUrl = function (item) {
 
+            // Safari often shows the poster under the video, which doesn't look good
+            if ($.browser.safari) {
+                return null;
+            }
+
             var screenWidth = Math.max(screen.height, screen.width);
 
             if (item.BackdropImageTags && item.BackdropImageTags.length) {
@@ -1717,7 +1722,17 @@
 
             }).on("timeupdate.mediaplayerevent", function () {
 
-                self.setCurrentTime(self.getCurrentTicks(this));
+                var currentTicks = self.getCurrentTicks(this);
+                // Seeing transcoded audio looping in safari, going past the runtime but restarting the audio
+                if ($.browser.safari && self.currentDurationTicks && (currentTicks > self.currentDurationTicks)) {
+                    if (currentPlaylistIndex < self.playlist.length - 1) {
+                        self.nextTrack();
+                    } else {
+                        self.stop();
+                    }
+                } else {
+                    self.setCurrentTime(currentTicks);
+                }
 
             })[0];
         };
@@ -1734,7 +1749,7 @@
 
     window.MediaPlayer = new mediaPlayer();
 
-    Dashboard.ready(function() {
+    Dashboard.ready(function () {
         window.MediaController.registerPlayer(window.MediaPlayer);
         window.MediaController.setActivePlayer(window.MediaPlayer, window.MediaPlayer.getTargets()[0]);
     });

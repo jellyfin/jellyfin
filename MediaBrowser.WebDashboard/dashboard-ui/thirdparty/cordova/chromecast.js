@@ -483,7 +483,7 @@
             });
 
         }
-        
+
         function onDisconnected() {
             currentWebAppSession = null;
             currentPairedDeviceId = null;
@@ -491,23 +491,26 @@
         }
 
         function launchWebApp(device) {
-            device.getWebAppLauncher().launchWebApp(ApplicationID).success(function (session) {
 
-                console.log('launchWebApp success. calling onSessionConnected');
+            // First try to join existing session. If it fails, launch a new one
+
+            device.getWebAppLauncher().joinWebApp(ApplicationID).success(function (session) {
+
+                console.log('joinWebApp success. calling onSessionConnected');
                 onSessionConnected(device, session);
 
             }).error(function (err) {
 
-                console.log('launchWebApp error: ' + JSON.stringify(err) + '. calling joinWebApp');
+                console.log('joinWebApp error: ' + JSON.stringify(err) + '. calling joinWebApp');
 
-                device.getWebAppLauncher().joinWebApp(ApplicationID).success(function (session) {
+                device.getWebAppLauncher().launchWebApp(ApplicationID).success(function (session) {
 
-                    console.log('joinWebApp success. calling onSessionConnected');
+                    console.log('launchWebApp success. calling onSessionConnected');
                     onSessionConnected(device, session);
 
                 }).error(function (err1) {
 
-                    console.log('joinWebApp error:' + JSON.stringify(err1));
+                    console.log('launchWebApp error:' + JSON.stringify(err1));
 
                 });
 

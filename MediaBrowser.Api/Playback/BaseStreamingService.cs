@@ -179,7 +179,7 @@ namespace MediaBrowser.Api.Playback
 
             if (time > _slowSeekTicks && _slowSeekTicks > 0)
             {
-                return string.Format("-ss {0}", MediaEncoder.GetTimeParameter(_slowSeekTicks));
+                return string.Format("-ss {0}", MediaEncoder.GetTimeParameter(time));
             }
 
             return string.Empty;

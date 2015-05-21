@@ -20,13 +20,8 @@
                     break;
                 case MediaBrowser.ConnectionState.ServerSignIn:
                     {
-                        if (Dashboard.isRunningInCordova()) {
-
-                            Dashboard.onServerChanged(null, null, apiClient);
-                            Dashboard.navigate('login.html?serverid=' + result.Servers[0].Id);
-                        } else {
-                            showServerConnectionFailure();
-                        }
+                        Dashboard.onServerChanged(null, null, apiClient);
+                        Dashboard.navigate('login.html?serverid=' + result.Servers[0].Id);
                     }
                     break;
                 default:

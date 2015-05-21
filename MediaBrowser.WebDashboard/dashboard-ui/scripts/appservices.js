@@ -105,7 +105,7 @@
 
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
-            if (pluginSecurityInfo.IsMBSupporter || context != 'sync') {
+            if (pluginSecurityInfo.IsMBSupporter || context != 'sync' || !AppInfo.enableSupporterMembership) {
                 $('.syncPromotion', page).hide();
             } else {
                 $('.syncPromotion', page).show();
