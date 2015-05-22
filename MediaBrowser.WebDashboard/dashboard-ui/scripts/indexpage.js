@@ -14,6 +14,14 @@
         return deferred.promise();
     }
 
+    function enableScrollX() {
+        return AppInfo.isTouchPreferred;
+    }
+
+    function getThumbShape() {
+        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+    }
+
     function getLibraryButtonsHtml(items) {
 
         var html = "";
@@ -150,7 +158,9 @@
                 }
 
                 html += '</div>';
+
                 html += '<div class="itemsContainer">';
+
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,
                     preferThumb: true,
@@ -286,11 +296,15 @@
 
             if (result.Items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderResume') + '</h1>';
-                html += '<div>';
+                if (enableScrollX()) {
+                    html += '<div class="hiddenScrollX itemsContainer">';
+                } else {
+                    html += '<div class="itemsContainer">';
+                }
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     preferThumb: true,
-                    shape: 'backdrop',
+                    shape: getThumbShape(),
                     overlayText: screenWidth >= 800 && !cardLayout,
                     showTitle: true,
                     showParentTitle: true,

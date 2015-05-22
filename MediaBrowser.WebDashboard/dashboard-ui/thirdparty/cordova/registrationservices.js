@@ -4,6 +4,7 @@
 
         var platform = (device.platform || '').toLowerCase();
 
+        // Don't require validation on android
         if (platform.indexOf('android') != -1) {
             deferred.resolve();
             return;
@@ -13,6 +14,14 @@
     }
 
     function validateLiveTV(deferred) {
+
+        var platform = (device.platform || '').toLowerCase();
+
+        // Don't require validation if not android
+        if (platform.indexOf('android') == -1) {
+            deferred.resolve();
+            return;
+        }
 
         deferred.resolve();
     }

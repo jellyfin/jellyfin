@@ -89,11 +89,6 @@
 
             var html = getSubtitleTracksHtml();
 
-            if (!supportsContentOverVideoPlayer()) {
-                showPopupUsingSelect(html, 'subtitles');
-                return;
-            }
-
             var elem = $('.videoSubtitlePopup').html(html)
                 .trigger('create')
                 .popup("option", "positionTo", $('.videoSubtitleButton'))
@@ -106,11 +101,6 @@
         self.showQualityFlyout = function () {
 
             var html = getQualityFlyoutHtml();
-
-            if (!supportsContentOverVideoPlayer()) {
-                showPopupUsingSelect(html, 'quality');
-                return;
-            }
 
             var elem = $('.videoQualityPopup').html(html)
                 .trigger('create')
@@ -125,11 +115,6 @@
 
             var html = getAudioTracksHtml();
 
-            if (!supportsContentOverVideoPlayer()) {
-                showPopupUsingSelect(html, 'audio');
-                return;
-            }
-
             var elem = $('.videoAudioPopup').html(html)
                 .trigger('create')
                 .popup("option", "positionTo", $('.videoAudioButton'))
@@ -138,55 +123,6 @@
 
             onPopupOpen(elem);
         };
-
-        function openSelect(selector) {
-            var element = $(selector)[0], worked = false;
-            if (document.createEvent) { // all browsers
-                var e = document.createEvent("MouseEvents");
-                e.initMouseEvent("mousedown", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-                worked = element.dispatchEvent(e);
-            } else if (element.fireEvent) { // ie
-                worked = element.fireEvent("onmousedown");
-            }
-            if (!worked) { // unknown browser / error
-            }
-        }
-
-        function showPopupUsingSelect(html, type) {
-
-            var re = new RegExp('<br/>', 'g');
-
-            html = html.replace(re, '&nbsp;&#149;&nbsp;');
-
-            var options = $('.mediaPopupOption', $(html)).get().map(function (e) {
-
-                var selected = $(e).hasClass('selectedMediaPopupOption') ? ' selected="selected"' : '';
-                return '<option' + selected + ' value="' + e.getAttribute('data-value') + '">' + $(e).text() + '</option>';
-            });
-
-            html = '<select style="position:absolute;z-index:9999999;top:10px;right:5px;">' + options.join('') + '</select>';
-
-            var select = $(html).appendTo(document.body).on('change', function () {
-
-                var value = this.value;
-                $(this).remove();
-
-                if (type == 'audio') {
-                    onAudioOptionSelected(value);
-                }
-                else if (type == 'subtitles') {
-                    onSubtitleOptionSelected(value);
-                }
-                else if (type == 'quality') {
-                    onQualityOptionSelected(value);
-                }
-
-            }).on('blur', function () {
-                $(this).remove();
-            });
-
-            openSelect(select);
-        }
 
         self.setAudioStreamIndex = function (index) {
             self.changeStream(self.getCurrentTicks(), { AudioStreamIndex: index });
@@ -571,28 +507,52 @@
             self.changeStream(Math.floor(newPositionTicks));
         }
 
-        function onAudioOptionSelected(value) {
-            var index = parseInt(value);
+        self.onChapterOptionSelected = function (elem) {
 
-            self.setAudioStreamIndex(index);
-        }
+            if (!$(elem).hasClass('selectedMediaPopupOption')) {
+                var ticks = parseInt(elem.getAttribute('data-value') || '0');
 
-        function onSubtitleOptionSelected(value) {
-            var index = parseInt(value);
+                self.changeStream(ticks);
+            }
+            $('.videoChaptersPopup').popup('close');
+        };
 
-            self.setSubtitleStreamIndex(index);
-        }
+        self.onAudioOptionSelected = function (elem) {
 
-        function onQualityOptionSelected(value) {
-            var bitrate = parseInt(value);
+            if (!$(elem).hasClass('selectedMediaPopupOption')) {
+                var index = parseInt(elem.getAttribute('data-value'));
 
-            AppSettings.maxStreamingBitrate(bitrate);
+                self.setAudioStreamIndex(index);
+            }
+            $('.videoAudioPopup').popup('close');
+        };
 
-            self.changeStream(self.getCurrentTicks(), {
+        self.onSubtitleOptionSelected = function (elem) {
 
-                Bitrate: bitrate
-            });
-        }
+            if (!$(elem).hasClass('selectedMediaPopupOption')) {
+                var index = parseInt(elem.getAttribute('data-value'));
+
+                self.setSubtitleStreamIndex(index);
+            }
+            $('.videoSubtitlePopup').popup('close');
+        };
+
+        self.onQualityOptionSelected = function (elem) {
+
+            if (!$(elem).hasClass('selectedMediaPopupOption')) {
+                var bitrate = parseInt(elem.getAttribute('data-value'));
+
+                AppSettings.maxStreamingBitrate(bitrate);
+
+                $('.videoQualityPopup').popup('close');
+
+                self.changeStream(self.getCurrentTicks(), {
+                    Bitrate: bitrate
+                });
+            }
+
+            $('.videoSubtitlePopup').popup('close');
+        };
 
         $(function () {
 
@@ -613,44 +573,6 @@
 
                 updateVolumeButtons(vol);
                 self.setVolume(vol * 100);
-            });
-
-            $('.videoChaptersPopup').on('click', '.mediaPopupOption', function () {
-
-                var ticks = parseInt(this.getAttribute('data-positionticks') || '0');
-
-                self.changeStream(ticks);
-
-                $('.videoChaptersPopup').popup('close');
-            });
-
-            $('.videoAudioPopup').on('click', '.mediaPopupOption', function () {
-
-                if (!$(this).hasClass('selectedMediaPopupOption')) {
-                    onAudioOptionSelected(this.getAttribute('data-value'));
-                }
-
-                $('.videoAudioPopup').popup('close');
-            });
-
-            $('.videoSubtitlePopup').on('click', '.mediaPopupOption', function () {
-
-                $('.videoSubtitlePopup').popup('close');
-
-                if (!$(this).hasClass('selectedMediaPopupOption')) {
-
-                    onSubtitleOptionSelected(this.getAttribute('data-value'));
-                }
-            });
-
-            $('.videoQualityPopup').on('click', '.mediaPopupOption', function () {
-
-                if (!$(this).hasClass('selectedMediaPopupOption')) {
-
-                    onQualityOptionSelected(this.getAttribute('data-value'));
-                }
-
-                $('.videoQualityPopup').popup('close');
             });
 
             var trackChange = false;
@@ -762,13 +684,19 @@
                 var cssClass = "mediaPopupOption";
 
                 var selected = false;
+                // Need to embed onclick handler due to delegation not working in iOS cordova
+                var onclick = '';
 
                 if (currentTicks >= chapter.StartPositionTicks) {
                     var nextChapter = chapters[index + 1];
                     selected = !nextChapter || currentTicks < nextChapter.StartPositionTicks;
                 }
 
-                var optionHtml = '<li><a data-positionticks="' + chapter.StartPositionTicks + '" class="' + cssClass + '" href="#" style="padding-top:0;padding-bottom:0;">';
+                if (!selected) {
+                    onclick = ' onclick="MediaPlayer.onChapterOptionSelected(this);"';
+                }
+
+                var optionHtml = '<li><a' + onclick + ' data-value="' + chapter.StartPositionTicks + '" class="' + cssClass + '" href="#" style="padding-top:0;padding-bottom:0;">';
 
                 var imgUrl = "css/images/media/chapterflyout.png";
 
@@ -837,11 +765,16 @@
 
                 var selected = stream.Index == currentIndex;
 
+                // Need to embed onclick handler due to delegation not working in iOS cordova
+                var onclick = '';
+
                 if (selected) {
                     cssClass += ' selectedMediaPopupOption';
+                } else {
+                    onclick = ' onclick="MediaPlayer.onAudioOptionSelected(this);"';
                 }
 
-                var optionHtml = '<li><a data-value="' + stream.Index + '" class="' + cssClass + '" href="#">';
+                var optionHtml = '<li><a' + onclick + ' data-value="' + stream.Index + '" class="' + cssClass + '" href="#">';
 
                 optionHtml += '<p style="margin:0;">';
 
@@ -922,11 +855,16 @@
 
                 var selected = stream.Index == currentIndex;
 
+                // Need to embed onclick handler due to delegation not working in iOS cordova
+                var onclick = '';
+
                 if (selected) {
                     cssClass += ' selectedMediaPopupOption';
+                } else {
+                    onclick = ' onclick="MediaPlayer.onSubtitleOptionSelected(this);"';
                 }
 
-                var optionHtml = '<li><a data-value="' + stream.Index + '" class="' + cssClass + '" href="#">';
+                var optionHtml = '<li><a' + onclick + ' data-value="' + stream.Index + '" class="' + cssClass + '" href="#">';
 
                 optionHtml += '<p style="margin:0;">';
 
@@ -1003,12 +941,16 @@
             html += options.map(function (option) {
 
                 var cssClass = "mediaPopupOption";
+                // Need to embed onclick handler due to delegation not working in iOS cordova
+                var onclick = '';
 
                 if (option.selected) {
                     cssClass += ' selectedMediaPopupOption';
+                } else {
+                    onclick = ' onclick="MediaPlayer.onQualityOptionSelected(this);"';
                 }
 
-                var optionHtml = '<li><a data-valued="' + option.bitrate + '" class="' + cssClass + '" href="#">';
+                var optionHtml = '<li><a' + onclick + ' data-value="' + option.bitrate + '" class="' + cssClass + '" href="#">';
 
                 optionHtml += '<p style="margin:0;">';
 
