@@ -633,50 +633,62 @@ var Dashboard = {
 
     showUserFlyout: function (context) {
 
-        ConnectionManager.user(window.ApiClient).done(function (user) {
+        var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
 
-            var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
+        html += '<h3 class="userHeader">';
 
-            html += '<h3>';
+        html += '</h3>';
 
-            var imgWidth = 48;
+        html += '<form>';
 
-            if (user.imageUrl && AppInfo.enableUserImage) {
-                var url = user.imageUrl;
+        html += '<p class="preferencesContainer"></p>';
 
-                if (user.supportsImageParams) {
-                    url += "&width=" + (imgWidth * Math.max(window.devicePixelRatio || 1, 2));
-                }
+        if (Dashboard.isConnectMode()) {
+            html += '<p><a data-mini="true" data-role="button" href="selectserver.html" data-icon="cloud">' + Globalize.translate('ButtonSelectServer') + '</button></a>';
+        }
 
-                html += '<div class="lazy" data-src="' + url + '" style="width:' + imgWidth + 'px;height:' + imgWidth + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin-right:.8em;display:inline-block;"></div>';
-            }
-            html += user.name;
-            html += '</h3>';
+        html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
 
-            html += '<form>';
+        html += '</form>';
+        html += '</div>';
 
-            var isConnectMode = Dashboard.isConnectMode();
+        $(document.body).append(html);
 
-            if (user.localUser && user.localUser.Policy.EnableUserPreferenceAccess) {
-                html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.localUser.Id + '" data-icon="gear">' + Globalize.translate('ButtonMyPreferences') + '</button></a>';
-            }
+        var elem = $('#userFlyout').panel({}).lazyChildren().trigger('create').panel("open").on("panelclose", function () {
 
-            if (isConnectMode) {
-                html += '<p><a data-mini="true" data-role="button" href="selectserver.html" data-icon="cloud">' + Globalize.translate('ButtonSelectServer') + '</button></a>';
-            }
-
-            html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
-
-            html += '</form>';
-            html += '</div>';
-
-            $(document.body).append(html);
-
-            var elem = $('#userFlyout').panel({}).lazyChildren().trigger('create').panel("open").on("panelclose", function () {
-
-                $(this).off("panelclose").remove();
-            });
+            $(this).off("panelclose").remove();
         });
+
+        ConnectionManager.user(window.ApiClient).done(function (user) {
+            Dashboard.updateUserFlyout(elem, user);
+        });
+    },
+
+    updateUserFlyout: function (elem, user) {
+
+        var html = '';
+        var imgWidth = 48;
+
+        if (user.imageUrl && AppInfo.enableUserImage) {
+            var url = user.imageUrl;
+
+            if (user.supportsImageParams) {
+                url += "&width=" + (imgWidth * Math.max(window.devicePixelRatio || 1, 2));
+            }
+
+            html += '<div class="lazy" data-src="' + url + '" style="width:' + imgWidth + 'px;height:' + imgWidth + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin-right:.8em;display:inline-block;"></div>';
+        }
+        html += user.name;
+
+        $('.userHeader', elem).html(html).lazyChildren();
+
+        html = '';
+
+        if (user.localUser && user.localUser.Policy.EnableUserPreferenceAccess) {
+            html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.localUser.Id + '" data-icon="gear">' + Globalize.translate('ButtonMyPreferences') + '</button></a>';
+        }
+
+        $('.preferencesContainer', elem).html(html).trigger('create');
     },
 
     getPluginSecurityInfo: function () {
@@ -1568,37 +1580,32 @@ var AppInfo = {};
 
         window.ConnectionManager = new MediaBrowser.ConnectionManager(Logger, credentialProvider, appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, capabilities);
 
-        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+        $(ConnectionManager).on('apiclientcreated', function (e, newApiClient) {
 
-            initializeApiClient(apiClient);
+            initializeApiClient(newApiClient);
         });
 
-        var lastApiClient = ConnectionManager.getLastUsedApiClient();
+        var apiClient;
 
         if (Dashboard.isConnectMode()) {
 
+            apiClient = ConnectionManager.getLastUsedApiClient();
+
             if (!Dashboard.isServerlessPage()) {
 
-                if (lastApiClient && lastApiClient.serverAddress() && lastApiClient.getCurrentUserId() && lastApiClient.accessToken()) {
+                if (apiClient && apiClient.serverAddress() && apiClient.getCurrentUserId() && apiClient.accessToken()) {
 
-                    window.ApiClient = lastApiClient;
-
-                    initializeApiClient(lastApiClient);
-
-                    //ConnectionManager.addApiClient(lastApiClient, true).fail(Dashboard.logout);
-
+                    initializeApiClient(apiClient);
                 }
             }
 
         } else {
 
-            if (!lastApiClient) {
-                lastApiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId);
-                ConnectionManager.addApiClient(lastApiClient);
-            }
-
-            window.ApiClient = lastApiClient;
+            apiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId);
+            ConnectionManager.addApiClient(apiClient);
         }
+
+        window.ApiClient = apiClient;
 
         if (window.ApiClient) {
             ApiClient.getDefaultImageQuality = Dashboard.getDefaultImageQuality;

@@ -23,8 +23,8 @@
   <MaxAlbumArtHeight>480</MaxAlbumArtHeight>
   <MaxIconWidth>48</MaxIconWidth>
   <MaxIconHeight>48</MaxIconHeight>
-  <MaxStreamingBitrate>8000000</MaxStreamingBitrate>
-  <MaxStaticBitrate>8000000</MaxStaticBitrate>
+  <MaxStreamingBitrate>12000000</MaxStreamingBitrate>
+  <MaxStaticBitrate>12000000</MaxStaticBitrate>
   <MusicStreamingTranscodingBitrate>128000</MusicStreamingTranscodingBitrate>
   <MusicSyncBitrate>128000</MusicSyncBitrate>
   <XDlnaDoc>DMS-1.50</XDlnaDoc>
@@ -35,7 +35,6 @@
   <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <EnableDlnaProtocol>true</EnableDlnaProtocol>
-  <EnableUrlBase>false</EnableUrlBase>
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="mp4,mkv,mpeg,ts" audioCodec="mp3,ac3,aac,he-aac,pcm" videoCodec="h264,mpeg2video" type="Video" />

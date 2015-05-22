@@ -122,6 +122,19 @@
 
             apiClients.push(apiClient);
 
+            var existingServer = credentialProvider.credentials().servers.filter(function (s) {
+
+                return stringEqualsIgnoreCase(s.ManualAddress, apiClient.serverAddress());
+
+            })[0];
+
+            if (existingServer) {
+                
+                existingServer.DateLastAccessed = new Date().getTime();
+                existingServer.LastConnectionMode = MediaBrowser.ConnectionMode.Manual;
+                apiClient.serverInfo(existingServer);
+            }
+
             Events.on(apiClient, 'authenticated', function (e, result) {
                 onAuthenticated(this, result, {}, true);
             });
@@ -130,7 +143,9 @@
 
             return apiClient.getPublicSystemInfo().done(function (systemInfo) {
 
-                var server = credentialProvider.credentials().servers.filter(function (s) {
+                var credentials = credentialProvider.credentials();
+
+                var server = credentials.servers.filter(function (s) {
 
                     return s.Id == systemInfo.Id;
 
@@ -138,7 +153,14 @@
 
                 updateServerInfo(server, systemInfo);
 
+                server.DateLastAccessed = new Date().getTime();
+                server.LastConnectionMode = MediaBrowser.ConnectionMode.Manual;
+                server.ManualAddress = apiClient.serverAddress();
+
                 apiClient.serverInfo(server);
+
+                credentialProvider.addOrUpdateServer(credentials.servers, server);
+                credentialProvider.credentials(credentials);
             });
         };
 

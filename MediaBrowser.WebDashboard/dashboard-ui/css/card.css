@@ -338,12 +338,14 @@
 }
 
 @media all and (min-width: 700px) {
-    .backdropCard {
-        width: 33.3%;
-    }
-
     .bannerCard {
         width: 50%;
+    }
+}
+
+@media all and (min-width: 770px) {
+    .backdropCard {
+        width: 33.3%;
     }
 }
 

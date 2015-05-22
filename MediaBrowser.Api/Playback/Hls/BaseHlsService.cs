@@ -7,13 +7,13 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -100,6 +100,7 @@ namespace MediaBrowser.Api.Playback.Hls
                         try
                         {
                             job = await StartFfMpeg(state, playlist, cancellationTokenSource).ConfigureAwait(false);
+                            job.IsLiveOutput = isLive;
                         }
                         catch
                         {

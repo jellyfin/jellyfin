@@ -365,7 +365,7 @@
 
         var apiClient = window.ApiClient;
 
-        if (!apiClient) {
+        if (!apiClient || !apiClient.getCurrentUserId()) {
             return;
         }
 
@@ -400,7 +400,7 @@
             onCategorySyncButtonClick(page, this);
         });
 
-    }).on('pagebeforeshowready', ".libraryPage", function () {
+    }).on('pageshowready', ".libraryPage", function () {
 
         var page = this;
 

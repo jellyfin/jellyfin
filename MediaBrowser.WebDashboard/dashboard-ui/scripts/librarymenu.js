@@ -1,6 +1,6 @@
 ﻿(function (window, document, $, devicePixelRatio) {
 
-    function renderHeader(user) {
+    function renderHeader() {
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
@@ -22,29 +22,61 @@
 
         html += '<div class="viewMenuSecondary">';
 
-        var btnCastVisible = user.localUser ? '' : 'visibility:hidden;';
-
         if (!AppInfo.enableHeaderImages) {
-            html += '<button id="btnCast" class="btnCast btnCastIcon btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="' + btnCastVisible + '">';
+            html += '<button id="btnCast" class="btnCast btnCastIcon btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="display:none;">';
             html += '<div class="headerSelectedPlayer"></div><i class="fa fa-wifi"></i>';
             html += '</button>';
         } else {
-            html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="' + btnCastVisible + '"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
+            html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="display:none;"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
         }
+
+        html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton" style="display:none;"><div class="fa fa-search" style="font-size:21px;"></div></button>';
+
+        html += '<div class="viewMenuSearch hide"><form class="viewMenuSearchForm">';
+        html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
+        html += '<div class="searchInputIcon fa fa-search"></div>';
+        html += '<button data-role="none" type="button" data-iconpos="notext" class="imageButton btnCloseSearch"><i class="fa fa-close"></i></button>';
+        html += '</form></div>';
+
+        html += '<button class="headerButton headerButtonRight headerUserButton" type="button" data-role="none" onclick="Dashboard.showUserFlyout(this);">';
+
+        html += '<div class="fa fa-user"></div>';
+
+        html += '</button>';
+
+        html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton" style="display:none;"><div class="fa fa-cog"></div></a>';
+
+        html += '</div>';
+
+        html += '</div>';
+
+        $(document.body).prepend(html);
+        $('.viewMenuBar').trigger('create').lazyChildren();
+
+        $(document).trigger('headercreated');
+        bindMenuEvents();
+    }
+
+    function addUserToHeader(user) {
+
+        var header = $('.viewMenuBar');
 
         if (user.localUser) {
-            html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton"><div class="fa fa-search" style="font-size:21px;"></div></button>';
-
-            html += '<div class="viewMenuSearch hide"><form class="viewMenuSearchForm">';
-            html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
-            html += '<div class="searchInputIcon fa fa-search"></div>';
-            html += '<button data-role="none" type="button" data-iconpos="notext" class="imageButton btnCloseSearch"><i class="fa fa-close"></i></button>';
-            html += '</form></div>';
+            $('.btnCast', header).show();
+            $('.headerSearchButton', header).show();
+        } else {
+            $('.btnCast', header).hide();
+            $('.headerSearchButton', header).hide();
         }
 
-        if (user.name) {
+        if (user.canManageServer) {
+            $('.dashboardEntryHeaderButton', header).show();
+        } else {
+            $('.dashboardEntryHeaderButton', header).hide();
+        }
 
-            html += '<button class="headerButton headerButtonRight headerUserButton" type="button" data-role="none" onclick="Dashboard.showUserFlyout(this);">';
+        var userButtonHtml = '';
+        if (user.name) {
 
             if (user.imageUrl && AppInfo.enableUserImage) {
 
@@ -56,27 +88,12 @@
                     url += "&height=" + (userButtonHeight * Math.max(devicePixelRatio || 1, 2));
                 }
 
-                html += '<div class="lazy headerUserImage" data-src="' + url + '" style="width:' + userButtonHeight + 'px;height:' + userButtonHeight + 'px;"></div>';
+                userButtonHtml += '<div class="lazy headerUserImage" data-src="' + url + '" style="width:' + userButtonHeight + 'px;height:' + userButtonHeight + 'px;"></div>';
             } else {
-                html += '<div class="fa fa-user"></div>';
+                userButtonHtml += '<div class="fa fa-user"></div>';
             }
-
-            html += '</button>';
+            $('.headerUserButton', header).html(userButtonHtml).lazyChildren();
         }
-
-        if (user.canManageServer) {
-            html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton"><div class="fa fa-cog"></div></a>';
-        }
-
-        html += '</div>';
-
-        html += '</div>';
-
-        $(document.body).prepend(html);
-        $('.viewMenuBar').trigger('create').lazyChildren();
-
-        $(document).trigger('headercreated');
-        bindMenuEvents();
     }
 
     function bindMenuEvents() {
@@ -505,17 +522,17 @@
         var viewMenuBar = $('.viewMenuBar');
         if (!$('.viewMenuBar').length) {
 
-            ConnectionManager.user(window.ApiClient).done(function (user) {
+            renderHeader();
+            updateViewMenuBarHeadroom(page, $('.viewMenuBar'));
 
-                renderHeader(user);
-                updateViewMenuBarHeadroom(page, $('.viewMenuBar'));
+            updateCastIcon();
 
-                updateCastIcon();
+            updateLibraryNavLinks(page);
+            updateContextText(page);
+            requiresViewMenuRefresh = false;
 
-                updateLibraryNavLinks(page);
-                updateContextText(page);
-                requiresViewMenuRefresh = false;
-            });
+            ConnectionManager.user(window.ApiClient).done(addUserToHeader);
+
         } else {
             updateContextText(page);
             updateLibraryNavLinks(page);
