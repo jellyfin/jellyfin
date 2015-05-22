@@ -45,19 +45,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 }
             }
 
-            if (dto is CompressedResult)
-            {
-                // Per Google PageSpeed
-                // This instructs the proxies to cache two versions of the resource: one compressed, and one uncompressed. 
-                // The correct version of the resource is delivered based on the client request header. 
-                // This is a good choice for applications that are singly homed and depend on public proxies for user locality.                        
-                res.AddHeader("Vary", "Accept-Encoding");
-            }
+            var vary = "Accept-Encoding";
 
             var hasOptions = dto as IHasOptions;
+            var sharpResponse = res as WebSocketSharpResponse;
 
             if (hasOptions != null)
             {
+                //hasOptions.Options["Server"] = "Mono-HTTPAPI/1.1";
+
                 // Content length has to be explicitly set on on HttpListenerResponse or it won't be happy
                 string contentLength;
 
@@ -79,14 +75,29 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                             return;
                         }
 
-                        var sharpResponse = res as WebSocketSharpResponse;
                         if (sharpResponse != null)
                         {
                             sharpResponse.SendChunked = false;
                         }
                     }
                 }
+
+                string hasOptionsVary;
+                if (hasOptions.Options.TryGetValue("Vary", out hasOptionsVary))
+                {
+                    vary = hasOptionsVary;
+                }
+
+                hasOptions.Options["Vary"] = vary;
             }
+
+            //res.KeepAlive = false;
+
+            // Per Google PageSpeed
+            // This instructs the proxies to cache two versions of the resource: one compressed, and one uncompressed. 
+            // The correct version of the resource is delivered based on the client request header. 
+            // This is a good choice for applications that are singly homed and depend on public proxies for user locality.                        
+            res.AddHeader("Vary", vary);
         }
 
         /// <summary>
