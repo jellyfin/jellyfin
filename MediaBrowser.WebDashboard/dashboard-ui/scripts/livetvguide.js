@@ -391,6 +391,25 @@
         changeDate(page, date);
     }
 
+    function reloadPageAfterValidation(page, limit) {
+
+        channelLimit = limit;
+
+        ApiClient.getLiveTvGuideInfo().done(function (guideInfo) {
+
+            setDateRange(page, guideInfo);
+        });
+    }
+
+    function reloadPage(page) {
+
+        RegistrationServices.validateFeature('livetv').done(function () {
+            reloadPageAfterValidation(page, 1000);
+        }).fail(function () {
+            reloadPageAfterValidation(page, 3);
+        });
+    }
+
     $(document).on('pageinitdepends', "#liveTvGuidePage", function () {
 
         var page = this;
@@ -442,11 +461,7 @@
     }).on('pageshowready', "#liveTvGuidePage", function () {
 
         var page = this;
-
-        ApiClient.getLiveTvGuideInfo().done(function (guideInfo) {
-
-            setDateRange(page, guideInfo);
-        });
+        reloadPage(page);
     });
 
 })(jQuery, document);
