@@ -60,7 +60,7 @@
 
         self.showSearchPanel = function (page) {
 
-            $('.viewMenuSearch').removeClass('hide').animate({ "left": "0px" }, "fast");
+            $('.viewMenuSearch').removeClass('hide');
             $('.headerSearchInput').focus();
         };
     }
