@@ -40,6 +40,7 @@
     "TitleLiveTV": "TV ao Vivo",
     "TitleSync": "Sinc",
     "ButtonDonate": "Doar",
+    "LabelRecurringDonationCanBeCancelledHelp": "Doa\u00e7\u00f5es recorrentes podem ser canceladas a qualquer momento dentro da conta do PayPal.",
     "HeaderMyMedia": "Minha M\u00eddia",
     "TitleNotifications": "Notifica\u00e7\u00f5es",
     "ErrorLaunchingChromecast": "Ocorreu um erro ao iniciar o chromecast. Por favor verifique se seu dispositivo est\u00e1 conectado \u00e0 sua rede sem fio.",

@@ -40,6 +40,7 @@
     "TitleLiveTV": "Live-TV",
     "TitleSync": "Synchronisation",
     "ButtonDonate": "Spenden",
+    "LabelRecurringDonationCanBeCancelledHelp": "Fortlaufende Spenden k\u00f6nnen jederzeit \u00fcber deinen PayPal Account gek\u00fcndigt werden.",
     "HeaderMyMedia": "Meine Medien",
     "TitleNotifications": "Benachrichtigungen",
     "ErrorLaunchingChromecast": "W\u00e4hrend des startens von Chromecast ist ein Fehler aufgetreten. Bitte stelle sicher, dass dein Ger\u00e4te mit dem WLAN verbunden ist.",
@@ -97,7 +98,7 @@
     "HeaderSupporterBenefit": "Eine Unterst\u00fctzer-Mitgliedschaft bietet weitere Funktionen wie z.B. Zugriff auf die Synchronisation, Premium-Plugins, Internet Kan\u00e4le und mehr. {0}Erfahren Sie mehr{1}.",
     "LabelSyncNoTargetsHelp": "Es sieht so aus als w\u00fcrden Sie aktuell keine Apps verwenden, die Synchronisation unterst\u00fctzen.",
     "HeaderWelcomeToProjectServerDashboard": "Willkommen zur Emby Server \u00dcbersicht",
-    "HeaderWelcomeToProjectWebClient": "Welcome to Emby",
+    "HeaderWelcomeToProjectWebClient": "Willkommen zu Emby",
     "ButtonTakeTheTour": "Mache die Tour",
     "HeaderWelcomeBack": "Willkommen zur\u00fcck!",
     "TitlePlugins": "Plugins",
@@ -764,6 +765,6 @@
     "MyDevice": "Mein Ger\u00e4t",
     "ButtonRemote": "Fernbedienung",
     "TabInfo": "Info",
-    "TabCast": "Cast",
-    "TabScenes": "Scenes"
+    "TabCast": "Darsteller",
+    "TabScenes": "Szenen"
 }

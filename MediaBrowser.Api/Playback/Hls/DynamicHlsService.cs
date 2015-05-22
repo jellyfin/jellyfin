@@ -393,21 +393,26 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var segmentFilename = Path.GetFileName(segmentPath);
 
-            using (var fileStream = GetPlaylistFileStream(playlistPath))
+            while (!cancellationToken.IsCancellationRequested)
             {
-                using (var reader = new StreamReader(fileStream))
+                using (var fileStream = GetPlaylistFileStream(playlistPath))
                 {
-                    while (!reader.EndOfStream)
+                    using (var reader = new StreamReader(fileStream))
                     {
-                        var text = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                        // If it appears in the playlist, it's done
-                        if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                        while (!reader.EndOfStream)
                         {
-                            return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
+                            var text = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                            // If it appears in the playlist, it's done
+                            if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                            {
+                                return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
+                            }
                         }
                     }
                 }
+
+                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
 
             // if a different file is encoding, it's done
@@ -417,34 +422,35 @@ namespace MediaBrowser.Api.Playback.Hls
             //return GetSegmentResult(segmentPath, segmentIndex);
             //}
 
-            // Wait for the file to stop being written to, then stream it
-            var length = new FileInfo(segmentPath).Length;
-            var eofCount = 0;
+            //// Wait for the file to stop being written to, then stream it
+            //var length = new FileInfo(segmentPath).Length;
+            //var eofCount = 0;
 
-            while (eofCount < 10)
-            {
-                var info = new FileInfo(segmentPath);
+            //while (eofCount < 10)
+            //{
+            //    var info = new FileInfo(segmentPath);
 
-                if (!info.Exists)
-                {
-                    break;
-                }
+            //    if (!info.Exists)
+            //    {
+            //        break;
+            //    }
 
-                var newLength = info.Length;
+            //    var newLength = info.Length;
 
-                if (newLength == length)
-                {
-                    eofCount++;
-                }
-                else
-                {
-                    eofCount = 0;
-                }
+            //    if (newLength == length)
+            //    {
+            //        eofCount++;
+            //    }
+            //    else
+            //    {
+            //        eofCount = 0;
+            //    }
 
-                length = newLength;
-                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-            }
+            //    length = newLength;
+            //    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+            //}
 
+            cancellationToken.ThrowIfCancellationRequested();
             return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
         }
 

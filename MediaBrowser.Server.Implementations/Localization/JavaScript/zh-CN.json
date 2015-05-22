@@ -40,6 +40,7 @@
     "TitleLiveTV": "\u7535\u89c6\u76f4\u64ad",
     "TitleSync": "\u540c\u6b65",
     "ButtonDonate": "\u6350\u8d60",
+    "LabelRecurringDonationCanBeCancelledHelp": "\u5728\u60a8\u7684PayPal\u8d26\u6237\u5185\u4efb\u4f55\u65f6\u5019\u90fd\u53ef\u4ee5\u53d6\u6d88\u7ecf\u5e38\u6027\u6350\u8d60\u3002",
     "HeaderMyMedia": "My Media",
     "TitleNotifications": "\u901a\u77e5",
     "ErrorLaunchingChromecast": "\u542f\u52a8chromecast\u9047\u5230\u9519\u8bef\uff0c\u8bf7\u786e\u8ba4\u8bbe\u5907\u5df2\u7ecf\u8fde\u63a5\u5230\u4f60\u7684\u65e0\u7ebf\u7f51\u7edc\u3002",
