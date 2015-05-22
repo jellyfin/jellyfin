@@ -172,13 +172,24 @@
             }
 
             profile.TranscodingProfiles = [];
-            profile.TranscodingProfiles.push({
-                Container: 'mp3',
-                Type: 'Audio',
-                AudioCodec: 'mp3',
-                Context: 'Streaming',
-                Protocol: 'http'
-            });
+
+            if ($.browser.safari) {
+                profile.TranscodingProfiles.push({
+                    Container: 'aac',
+                    Type: 'Audio',
+                    AudioCodec: 'aac',
+                    Context: 'Streaming',
+                    Protocol: 'http'
+                });
+            } else {
+                profile.TranscodingProfiles.push({
+                    Container: 'mp3',
+                    Type: 'Audio',
+                    AudioCodec: 'mp3',
+                    Context: 'Streaming',
+                    Protocol: 'http'
+                });
+            }
 
             if (self.canPlayHls()) {
                 profile.TranscodingProfiles.push({
@@ -1670,6 +1681,27 @@
             return $('.mediaPlayerAudio');
         }
 
+        function onTimeUpdate() {
+
+            var currentTicks = self.getCurrentTicks(this);
+            self.setCurrentTime(currentTicks);
+
+            if ($.browser.safari) {
+
+                if (self.currentDurationTicks) {
+
+                    // Seeing transcoded audio looping in safari, going past the runtime but restarting the audio
+                    if (currentTicks > self.currentDurationTicks) {
+                        if (currentPlaylistIndex < self.playlist.length - 1) {
+                            self.nextTrack();
+                        } else {
+                            self.stop();
+                        }
+                    }
+                }
+            }
+        }
+
         function playAudio(item, mediaSource, startPositionTicks) {
 
             var streamInfo = self.createStreamInfo('Audio', item, mediaSource, startPositionTicks);
@@ -1720,21 +1752,7 @@
                 // In the event timeupdate isn't firing, at least we can update when this happens
                 self.setCurrentTime(self.getCurrentTicks());
 
-            }).on("timeupdate.mediaplayerevent", function () {
-
-                var currentTicks = self.getCurrentTicks(this);
-                // Seeing transcoded audio looping in safari, going past the runtime but restarting the audio
-                if ($.browser.safari && self.currentDurationTicks && (currentTicks > self.currentDurationTicks)) {
-                    if (currentPlaylistIndex < self.playlist.length - 1) {
-                        self.nextTrack();
-                    } else {
-                        self.stop();
-                    }
-                } else {
-                    self.setCurrentTime(currentTicks);
-                }
-
-            })[0];
+            }).on("timeupdate.mediaplayerevent", onTimeUpdate)[0];
         };
 
         var getItemFields = "MediaSources,Chapters";

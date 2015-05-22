@@ -57,7 +57,7 @@
 
                 html += ' - ' + Globalize.translate('LabelAnytime');
             } else {
-                html += ' - ' + LiveTvHelpers.getDisplayTime(timer.StartDate);
+                html += ' - ' + LibraryBrowser.getDisplayTime(timer.StartDate);
             }
             html += '</p>';
 

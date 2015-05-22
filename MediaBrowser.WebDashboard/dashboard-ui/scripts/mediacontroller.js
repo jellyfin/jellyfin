@@ -106,7 +106,7 @@
         };
 
         function triggerPlayerChange(newPlayer, newTarget) {
-            
+
             $(self).trigger('playerchange', [newPlayer, newTarget]);
         }
 
@@ -142,8 +142,8 @@
                 throw new Error('null player');
             }
 
-            player.tryPair(targetInfo).done(function() {
-                
+            player.tryPair(targetInfo).done(function () {
+
                 currentPlayer = player;
                 currentTargetInfo = targetInfo;
 
@@ -176,7 +176,7 @@
             }
         };
 
-        self.getPlayers = function() {
+        self.getPlayers = function () {
             return players;
         };
 
@@ -220,22 +220,35 @@
             return deferred.promise();
         };
 
+        function doWithPlaybackValidation(fn) {
+
+            requirejs(["scripts/registrationservices"], function () {
+                RegistrationServices.validateFeature('playback').done(fn);
+            });
+        }
+
         self.play = function (options) {
 
-            if (typeof (options) === 'string') {
-                options = { ids: [options] };
-            }
+            doWithPlaybackValidation(function() {
+                if (typeof (options) === 'string') {
+                    options = { ids: [options] };
+                }
 
-            currentPlayer.play(options);
+                currentPlayer.play(options);
+            });
         };
 
         self.shuffle = function (id) {
 
-            currentPlayer.shuffle(id);
+            doWithPlaybackValidation(function () {
+                currentPlayer.shuffle(id);
+            });
         };
 
         self.instantMix = function (id) {
-            currentPlayer.instantMix(id);
+            doWithPlaybackValidation(function () {
+                currentPlayer.instantMix(id);
+            });
         };
 
         self.queue = function (options) {
@@ -370,10 +383,6 @@
             currentPlayer.volumeUp();
         };
 
-        self.shuffle = function (id) {
-            currentPlayer.shuffle(id);
-        };
-
         self.playlist = function () {
             return currentPlayer.playlist || [];
         };
@@ -458,12 +467,12 @@
             return bottomText ? topText + '<br/>' + bottomText : topText;
         };
 
-        self.showPlaybackInfoErrorMessage = function(errorCode) {
+        self.showPlaybackInfoErrorMessage = function (errorCode) {
 
             // This timeout is messy, but if jqm is in the act of hiding a popup, it will not show a new one
             // If we're coming from the popup play menu, this will be a problem
 
-            setTimeout(function() {
+            setTimeout(function () {
                 Dashboard.alert({
                     message: Globalize.translate('MessagePlaybackError' + errorCode),
                     title: Globalize.translate('HeaderPlaybackError')

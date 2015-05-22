@@ -103,7 +103,7 @@
         });
     }
 
-    $(document).on('pageinit', "#liveTvTimerPage", function () {
+    $(document).on('pageinitdepends', "#liveTvTimerPage", function () {
 
         var page = this;
 
@@ -113,7 +113,7 @@
 
         });
 
-    }).on('pagebeforeshow', "#liveTvTimerPage", function () {
+    }).on('pagebeforeshowready', "#liveTvTimerPage", function () {
 
         var page = this;
 

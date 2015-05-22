@@ -62,7 +62,7 @@
 
             var date = parseISO8601Date(item.DateCreated, { toLocal: true });
 
-            html += date.toLocaleDateString() + ' ' + LiveTvHelpers.getDisplayTime(date);
+            html += date.toLocaleDateString() + ' ' + LibraryBrowser.getDisplayTime(date);
 
             html += '</td>';
 
