@@ -516,11 +516,11 @@ namespace MediaBrowser.ServerApplication
                 _logger.Info("Hiding server notify icon");
                 _serverNotifyIcon.Visible = false;
 
-                _logger.Info("Executing windows forms restart");
+                _logger.Info("Starting new instance");
                 //Application.Restart();
                 Process.Start(_appHost.ServerConfigurationManager.ApplicationPaths.ApplicationPath);
 
-                _logger.Info("Calling Application.Exit");
+                _logger.Info("Calling Environment.Exit");
                 Environment.Exit(0);
             }
         }
