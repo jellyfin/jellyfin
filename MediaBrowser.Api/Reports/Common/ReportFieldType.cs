@@ -13,6 +13,7 @@ namespace MediaBrowser.Api.Reports
 		DateTime,
 		Int,
 		Image,
-		Object
+		Object,
+        Minutes
 	}
 }

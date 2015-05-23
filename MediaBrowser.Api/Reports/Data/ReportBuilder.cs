@@ -403,7 +403,7 @@ namespace MediaBrowser.Api.Reports
 
 				case HeaderMetadata.Runtime:
 					column = (i, r) => this.GetRuntimeDateTime(i.RunTimeTicks);
-					reportHeader.HeaderFieldType = ReportFieldType.Time;
+					reportHeader.HeaderFieldType = ReportFieldType.Minutes;
 					reportHeader.SortField = "Runtime,SortName";
 					break;
 
