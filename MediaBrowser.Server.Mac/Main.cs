@@ -166,6 +166,16 @@ namespace MediaBrowser.Server.Mac
             MenuBarIcon.Instance.Terminate();
         }
 
+        private static string NormalizeCommandLineArgument(string arg)
+        {
+            if (arg.IndexOf(" ", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                return arg;
+            }
+
+            return "\"" + arg + "\"";
+        }
+
 		/// <summary>
 		/// Handles the UnhandledException event of the CurrentDomain control.
 		/// </summary>
