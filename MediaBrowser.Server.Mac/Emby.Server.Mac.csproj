@@ -301,6 +301,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\connectlogin.html">
       <Link>Resources\dashboard-ui\connectlogin.html</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\cordovaindex.html">
+      <Link>Resources\dashboard-ui\cordovaindex.html</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\dashboard.html">
       <Link>Resources\dashboard-ui\dashboard.html</Link>
     </BundleResource>
@@ -739,6 +742,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\checkmarkgreen.png">
       <Link>Resources\dashboard-ui\css\images\checkmarkgreen.png</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\empty.png">
+      <Link>Resources\dashboard-ui\css\images\empty.png</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\favicon.ico">
       <Link>Resources\dashboard-ui\css\images\favicon.ico</Link>
     </BundleResource>
@@ -751,6 +757,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\logindefault.png">
       <Link>Resources\dashboard-ui\css\images\logindefault.png</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\logo536.png">
+      <Link>Resources\dashboard-ui\css\images\logo536.png</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\mblogoicon.png">
       <Link>Resources\dashboard-ui\css\images\mblogoicon.png</Link>
     </BundleResource>
@@ -759,9 +768,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\rotten.png">
       <Link>Resources\dashboard-ui\css\images\rotten.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\server.png">
-      <Link>Resources\dashboard-ui\css\images\server.png</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\splash.jpg">
       <Link>Resources\dashboard-ui\css\images\splash.jpg</Link>
@@ -948,9 +954,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\icons\volumeup.png">
       <Link>Resources\dashboard-ui\css\images\icons\volumeup.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\icons\wireless.png">
-      <Link>Resources\dashboard-ui\css\images\icons\wireless.png</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\items\detail\audio.png">
       <Link>Resources\dashboard-ui\css\images\items\detail\audio.png</Link>
@@ -1588,11 +1591,26 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cast_sender.js">
       <Link>Resources\dashboard-ui\thirdparty\cast_sender.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fastclick.js">
+      <Link>Resources\dashboard-ui\thirdparty\fastclick.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\headroom.js">
+      <Link>Resources\dashboard-ui\thirdparty\headroom.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquery-2.1.1.min.js">
       <Link>Resources\dashboard-ui\thirdparty\jquery-2.1.1.min.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquery.unveil-custom.js">
       <Link>Resources\dashboard-ui\thirdparty\jquery.unveil-custom.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\masonry.pkgd.min.js">
+      <Link>Resources\dashboard-ui\thirdparty\masonry.pkgd.min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\require.js">
+      <Link>Resources\dashboard-ui\thirdparty\require.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\requirecss.js">
+      <Link>Resources\dashboard-ui\thirdparty\requirecss.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\ajax.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\ajax.js</Link>
@@ -1648,8 +1666,17 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\alt\events.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\alt\events.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\remotecontrols.js">
+      <Link>Resources\dashboard-ui\thirdparty\cordova\remotecontrols.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\serverdiscovery.js">
+      <Link>Resources\dashboard-ui\thirdparty\cordova\serverdiscovery.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\css\font-awesome.css">
       <Link>Resources\dashboard-ui\thirdparty\fontawesome\css\font-awesome.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\css\font-awesome.css.map">
+      <Link>Resources\dashboard-ui\thirdparty\fontawesome\css\font-awesome.css.map</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\css\font-awesome.min.css">
       <Link>Resources\dashboard-ui\thirdparty\fontawesome\css\font-awesome.min.css</Link>
@@ -1668,6 +1695,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\fonts\fontawesome-webfont.woff">
       <Link>Resources\dashboard-ui\thirdparty\fontawesome\fonts\fontawesome-webfont.woff</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\fonts\fontawesome-webfont.woff2">
+      <Link>Resources\dashboard-ui\thirdparty\fontawesome\fonts\fontawesome-webfont.woff2</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile-1.4.5.min.css">
       <Link>Resources\dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile-1.4.5.min.css</Link>
