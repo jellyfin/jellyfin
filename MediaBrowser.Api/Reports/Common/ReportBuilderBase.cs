@@ -133,10 +133,10 @@ namespace MediaBrowser.Api.Reports
 		/// <summary> Gets runtime date time. </summary>
 		/// <param name="runtime"> The runtime. </param>
 		/// <returns> The runtime date time. </returns>
-		protected DateTime? GetRuntimeDateTime(long? runtime)
+		protected double? GetRuntimeDateTime(long? runtime)
 		{
 			if (runtime.HasValue)
-				return new DateTime(runtime.Value);
+                return Math.Ceiling(new TimeSpan(runtime.Value).TotalMinutes);
 			return null;
 		}
 
