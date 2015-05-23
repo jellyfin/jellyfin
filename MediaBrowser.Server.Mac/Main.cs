@@ -153,14 +153,17 @@ namespace MediaBrowser.Server.Mac
 
             _logger.Info("Starting new instance");
 
-            var currentProcess = Process.GetCurrentProcess();
-
             var args = Environment.GetCommandLineArgs()
+				.Skip(1)
                 .Select(NormalizeCommandLineArgument);
 
             var commandLineArgsString = string.Join(" ", args.ToArray());
+			var module = Environment.GetCommandLineArgs().First();
 
-            Process.Start(currentProcess.MainModule.FileName, commandLineArgsString);
+			_logger.Info ("Executable: {0}", module);
+			_logger.Info ("Arguments: {0}", commandLineArgsString);
+
+            Process.Start(module, commandLineArgsString);
 
             _logger.Info("AppController.Terminate");
             MenuBarIcon.Instance.Terminate();
