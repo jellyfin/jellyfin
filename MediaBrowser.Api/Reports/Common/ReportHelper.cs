@@ -87,6 +87,8 @@ namespace MediaBrowser.Api.Reports
 					return string.Format("{0:t}", value);
 				case ReportFieldType.DateTime:
 					return string.Format("{0:d}", value);
+                case ReportFieldType.Minutes:
+                    return string.Format("{0}mn", value);
 				case ReportFieldType.Int:
 					return string.Format("", value);
 				default:
