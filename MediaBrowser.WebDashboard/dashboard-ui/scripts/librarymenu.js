@@ -4,7 +4,7 @@
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        if (($.browser.safari && window.navigator.standalone) || Dashboard.isRunningInCordova()) {
+        if (AppInfo.enableBackButton) {
             html += '<button type="button" data-role="none" onclick="history.back();" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-left"></div></button>';
         }
 

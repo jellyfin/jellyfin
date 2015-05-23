@@ -1,7 +1,7 @@
 ﻿(function () {
 
     var PlayerName = "Chromecast";
-    var ApplicationID = "F4EB2E8E";
+    var ApplicationID = "2D4B1DA3";
     var currentPairingDeviceId;
     var currentPairedDeviceId;
     var currentDeviceFriendlyName;

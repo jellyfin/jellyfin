@@ -641,7 +641,7 @@
                 imgUrl = 'css/images/clients/ios.png';
             }
             else {
-                imgUrl = 'css/images/clients/html5.png';
+                imgUrl = 'css/images/clients/android.png';
             }
 
             return "<img src='" + imgUrl + "' alt='Emby Mobile' />";

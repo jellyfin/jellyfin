@@ -135,14 +135,18 @@
 
             deviceReadyPromise.done(function () {
 
-                findServersInternal(timeoutMs).done(function (result) {
+                try {
+                    findServersInternal(timeoutMs).done(function (result) {
 
-                    deferred.resolveWith(null, [result]);
+                        deferred.resolveWith(null, [result]);
 
-                }).fail(function () {
+                    }).fail(function () {
 
+                        deferred.reject();
+                    });
+                } catch (err) {
                     deferred.reject();
-                });
+                }
             });
 
             return deferred.promise();

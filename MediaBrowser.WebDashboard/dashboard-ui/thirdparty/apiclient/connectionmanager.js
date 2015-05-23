@@ -847,7 +847,7 @@
                     skipTest = true;
                 }
                 enableRetry = true;
-                timeout = 7000;
+                timeout = 5000;
             }
 
             else if (mode == MediaBrowser.ConnectionMode.Manual) {

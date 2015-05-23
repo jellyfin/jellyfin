@@ -46,9 +46,9 @@
             var deferred = DeferredBuilder.Deferred();
 
             if (name == 'playback') {
-                validatePlayback();
+                validatePlayback(deferred);
             } else if (name == 'livetv') {
-                validateLiveTV();
+                validateLiveTV(deferred);
             } else {
                 deferred.resolve();
             }
