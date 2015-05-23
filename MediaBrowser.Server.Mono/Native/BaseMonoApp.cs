@@ -21,16 +21,16 @@ namespace MediaBrowser.Server.Mono.Native
         /// <summary>
         /// Restarts this instance.
         /// </summary>
-        public void Restart()
+        public virtual void Restart()
         {
-            
+            throw new NotImplementedException();
         }
 
         /// <summary>
         /// Determines whether this instance [can self restart].
         /// </summary>
         /// <returns><c>true</c> if this instance [can self restart]; otherwise, <c>false</c>.</returns>
-        public bool CanSelfRestart
+        public virtual bool CanSelfRestart
         {
             get
             {

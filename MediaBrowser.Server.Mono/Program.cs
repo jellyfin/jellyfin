@@ -1,4 +1,3 @@
-using System.IO;
 using MediaBrowser.Common.Implementations.IO;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Model.Logging;
@@ -8,6 +7,8 @@ using MediaBrowser.Server.Startup.Common;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Reflection;
@@ -136,6 +137,36 @@ namespace MediaBrowser.Server.Mono
 		{
 			ApplicationTaskCompletionSource.SetResult (true);
 		}
+
+        public static void Restart()
+        {
+            _logger.Info("Disposing app host");
+            _appHost.Dispose();
+
+            _logger.Info("Starting new instance");
+
+            var currentProcess = Process.GetCurrentProcess();
+
+            var args = Environment.GetCommandLineArgs()
+                .Select(NormalizeCommandLineArgument);
+
+            var commandLineArgsString = string.Join(" ", args.ToArray());
+
+            Process.Start(currentProcess.MainModule.FileName, commandLineArgsString);
+
+            _logger.Info("Calling Environment.Exit");
+            Environment.Exit(0);
+        }
+
+	    private static string NormalizeCommandLineArgument(string arg)
+	    {
+	        if (arg.IndexOf(" ", StringComparison.OrdinalIgnoreCase) == -1)
+	        {
+                return arg;
+	        }
+
+            return "\"" + arg + "\"";
+	    }
 	}
 
 	class NoCheckCertificatePolicy : ICertificatePolicy
