@@ -148,7 +148,6 @@ namespace MediaBrowser.Api.Playback
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        private readonly long _slowSeekTicks = TimeSpan.FromSeconds(0).Ticks;
 
         /// <summary>
         /// Gets the fast seek command line parameter.
@@ -162,35 +161,10 @@ namespace MediaBrowser.Api.Playback
 
             if (time > 0)
             {
-                if (time > _slowSeekTicks && EnableSlowSeek)
-                {
-                    time -= _slowSeekTicks;
-                }
-
                 return string.Format("-ss {0}", MediaEncoder.GetTimeParameter(time));
             }
 
             return string.Empty;
-        }
-
-        protected string GetSlowSeekCommandLineParameter(StreamRequest request)
-        {
-            var time = request.StartTimeTicks ?? 0;
-
-            if (time > _slowSeekTicks && _slowSeekTicks > 0)
-            {
-                return string.Format("-ss {0}", MediaEncoder.GetTimeParameter(time));
-            }
-
-            return string.Empty;
-        }
-
-        protected virtual bool EnableSlowSeek
-        {
-            get
-            {
-                return false;
-            }
         }
 
         /// <summary>

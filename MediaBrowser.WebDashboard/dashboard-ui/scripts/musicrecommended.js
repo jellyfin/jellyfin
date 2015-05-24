@@ -8,7 +8,7 @@
     }
 
     function enableScrollX() {
-        return AppInfo.isTouchPreferred;
+        return AppInfo.isTouchPreferred && AppInfo.enableAppLayouts;
     }
 
     function getSquareShape() {

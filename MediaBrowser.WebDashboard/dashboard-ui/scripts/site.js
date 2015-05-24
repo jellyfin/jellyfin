@@ -1554,7 +1554,10 @@ var AppInfo = {};
             AppInfo.enableMovieTrailersTab = true;
         }
 
-        if (!isCordova) {
+        if (isCordova) {
+            AppInfo.enableAppLayouts = true;
+        }
+        else {
             AppInfo.enableFooterNotifications = true;
             AppInfo.enableSupporterMembership = true;
         }
@@ -1573,7 +1576,7 @@ var AppInfo = {};
             .on("websocketmessage.dashboard", Dashboard.onWebSocketMessageReceived)
             .on('requestfail.dashboard', Dashboard.onRequestFail);
     }
-
+    //localStorage.clear();
     function createConnectionManager(appInfo) {
 
         var credentialProvider = new MediaBrowser.CredentialProvider();

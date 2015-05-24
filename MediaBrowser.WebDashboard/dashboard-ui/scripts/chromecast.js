@@ -28,8 +28,11 @@
 
     var PlayerName = 'Chromecast';
 
-    var applicationID = "2D4B1DA3";
-    var messageNamespace = 'urn:x-cast:com.connectsdk';
+    //var applicationID = "2D4B1DA3";
+    //var messageNamespace = 'urn:x-cast:com.connectsdk';
+
+    var applicationID = "F4EB2E8E";
+    var messageNamespace = 'urn:x-cast:com.google.cast.mediabrowser.v3';
 
     var CastPlayer = function () {
 
@@ -184,6 +187,8 @@
             this.session = null;
             this.deviceState = DEVICE_STATE.IDLE;
             this.castPlayerState = PLAYER_STATE.IDLE;
+
+            console.log('sessionUpdateListener: setting currentMediaSession to null');
             this.currentMediaSession = null;
 
             MediaController.removeActivePlayer(PlayerName);
@@ -271,6 +276,8 @@
         console.log(message);
         this.deviceState = DEVICE_STATE.IDLE;
         this.castPlayerState = PLAYER_STATE.IDLE;
+
+        console.log('onStopAppSuccess: setting currentMediaSession to null');
         this.currentMediaSession = null;
     };
 
@@ -405,6 +412,7 @@
     CastPlayer.prototype.setReceiverVolume = function (mute, vol) {
 
         if (!this.currentMediaSession) {
+            console.log('this.currentMediaSession is null');
             return;
         }
 
@@ -425,7 +433,6 @@
      * Mute CC
      */
     CastPlayer.prototype.mute = function () {
-        this.audio = false;
         this.setReceiverVolume(true);
     };
 
@@ -613,6 +620,7 @@
                 options: {},
                 command: 'Mute'
             });
+            //castPlayer.mute();
         };
 
         self.unMute = function () {

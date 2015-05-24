@@ -128,13 +128,11 @@
             return false;
         }
 
-        if (!$.browser.mobile) {
-            return true;
+        if ($.browser.mobile) {
+            return false;
         }
 
-        var screenWidth = $(window).width();
-
-        return screenWidth >= 600;
+        return true;
     }
 
     function enabled() {

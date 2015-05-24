@@ -39,7 +39,19 @@
     vertical-align: middle;
     text-align: left;
     font-size: 15px;
-    max-width: 150px;
+    max-width: 130px;
+}
+
+@media (min-width: 500px) {
+    .nowPlayingText {
+        max-width: 180px;
+    }
+}
+
+@media (min-width: 600px) {
+    .nowPlayingText {
+        max-width: 200px;
+    }
 }
 
 @media (min-width: 800px) {

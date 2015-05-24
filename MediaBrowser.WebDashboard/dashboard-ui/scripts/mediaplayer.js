@@ -37,7 +37,7 @@
             return targets;
         };
 
-        var supportsAac = document.createElement('audio').canPlayType('audio/aac').replace(/no/, '');
+        var canPlayAac = document.createElement('audio').canPlayType('audio/aac').replace(/no/, '');
 
         self.getVideoQualityOptions = function (videoWidth) {
 
@@ -153,7 +153,7 @@
                 Type: 'Audio'
             });
 
-            if (supportsAac) {
+            if (canPlayAac) {
                 profile.DirectPlayProfiles.push({
                     Container: 'aac',
                     Type: 'Audio'
@@ -173,24 +173,6 @@
 
             profile.TranscodingProfiles = [];
 
-            if ($.browser.safari) {
-                profile.TranscodingProfiles.push({
-                    Container: 'aac',
-                    Type: 'Audio',
-                    AudioCodec: 'aac',
-                    Context: 'Streaming',
-                    Protocol: 'http'
-                });
-            } else {
-                profile.TranscodingProfiles.push({
-                    Container: 'mp3',
-                    Type: 'Audio',
-                    AudioCodec: 'mp3',
-                    Context: 'Streaming',
-                    Protocol: 'http'
-                });
-            }
-
             if (self.canPlayHls()) {
                 profile.TranscodingProfiles.push({
                     Container: 'ts',
@@ -200,6 +182,16 @@
                     Context: 'Streaming',
                     Protocol: 'hls'
                 });
+
+                if (canPlayAac) {
+                    profile.TranscodingProfiles.push({
+                        Container: 'aac',
+                        Type: 'Audio',
+                        AudioCodec: 'aac',
+                        Context: 'Streaming',
+                        Protocol: 'hls'
+                    });
+                }
             }
 
             if (canPlayWebm) {
@@ -222,6 +214,24 @@
                 Context: 'Streaming',
                 Protocol: 'http'
             });
+
+            if (canPlayAac && $.browser.safari) {
+                profile.TranscodingProfiles.push({
+                    Container: 'aac',
+                    Type: 'Audio',
+                    AudioCodec: 'aac',
+                    Context: 'Streaming',
+                    Protocol: 'http'
+                });
+            } else {
+                profile.TranscodingProfiles.push({
+                    Container: 'mp3',
+                    Type: 'Audio',
+                    AudioCodec: 'mp3',
+                    Context: 'Streaming',
+                    Protocol: 'http'
+                });
+            }
 
             profile.ContainerProfiles = [];
 
@@ -1685,21 +1695,6 @@
 
             var currentTicks = self.getCurrentTicks(this);
             self.setCurrentTime(currentTicks);
-
-            if ($.browser.safari) {
-
-                if (self.currentDurationTicks) {
-
-                    // Seeing transcoded audio looping in safari, going past the runtime but restarting the audio
-                    if (currentTicks > self.currentDurationTicks) {
-                        if (currentPlaylistIndex < self.playlist.length - 1) {
-                            self.nextTrack();
-                        } else {
-                            self.stop();
-                        }
-                    }
-                }
-            }
         }
 
         function playAudio(item, mediaSource, startPositionTicks) {

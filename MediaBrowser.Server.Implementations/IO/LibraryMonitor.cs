@@ -82,9 +82,9 @@ namespace MediaBrowser.Server.Implementations.IO
             }
 
             // This is an arbitraty amount of time, but delay it because file system writes often trigger events after RemoveTempIgnore has been called. 
-            // Seeing long delays in some situations, especially over the network.
-            // Seeing delays up to 40 seconds, but not going to ignore changes for that long.
-            await Task.Delay(5000).ConfigureAwait(false);
+            // Seeing long delays in some situations, especially over the network, sometimes up to 45 seconds
+            // But if we make this delay too high, we risk missing legitimate changes
+            await Task.Delay(10000).ConfigureAwait(false);
 
             string val;
             _tempIgnoredPaths.TryRemove(path, out val);

@@ -134,7 +134,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var appendBaselineStream = false;
             var baselineStreamBitrate = 64000;
 
-            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStream;
+            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStreamLegacy;
             if (hlsVideoRequest != null)
             {
                 appendBaselineStream = hlsVideoRequest.AppendBaselineStream;
@@ -245,7 +245,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
         {
-            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStream;
+            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStreamLegacy;
 
             var itsOffsetMs = hlsVideoRequest == null
                                        ? 0

@@ -663,7 +663,7 @@
             var userData = LibraryBrowser.getUserDataIconsHtml(item);
             if (userData) {
 
-                contentHtml += '<p>' + userData + '</p>';
+                contentHtml += '<p class="detailsMenuUserData">' + userData + '</p>';
             }
 
             var ratingHtml = LibraryBrowser.getRatingHtml(item);
@@ -756,7 +756,11 @@
         setItemIntoOverlay(elem, 0);
     }
 
-    function onCardClick() {
+    function onCardClick(e) {
+
+        if ($(e.target).is('.itemSelectionPanel') || $('.itemSelectionPanel', this).length) {
+            return false;
+        }
 
         var info = LibraryBrowser.getListItemInfo(this);
         var itemId = info.id;
