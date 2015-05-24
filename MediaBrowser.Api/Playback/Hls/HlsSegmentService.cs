@@ -14,8 +14,10 @@ namespace MediaBrowser.Api.Playback.Hls
     [Route("/Audio/{Id}/hls/{SegmentId}/stream.mp3", "GET")]
     [Route("/Audio/{Id}/hls/{SegmentId}/stream.aac", "GET")]
     [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
-    public class GetHlsAudioSegment
+    public class GetHlsAudioSegmentLegacy
     {
+        // TODO: Deprecate with new iOS app
+
         /// <summary>
         /// Gets or sets the id.
         /// </summary>
@@ -30,11 +32,30 @@ namespace MediaBrowser.Api.Playback.Hls
     }
 
     /// <summary>
+    /// Class GetHlsVideoStream
+    /// </summary>
+    [Route("/Videos/{Id}/stream.m3u8", "GET")]
+    [Api(Description = "Gets a video stream using HTTP live streaming.")]
+    public class GetHlsVideoStreamLegacy : VideoStreamRequest
+    {
+        // TODO: Deprecate with new iOS app
+
+        [ApiMember(Name = "BaselineStreamAudioBitRate", Description = "Optional. Specify the audio bitrate for the baseline stream.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int? BaselineStreamAudioBitRate { get; set; }
+
+        [ApiMember(Name = "AppendBaselineStream", Description = "Optional. Whether or not to include a baseline audio-only stream in the master playlist.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool AppendBaselineStream { get; set; }
+
+        [ApiMember(Name = "TimeStampOffsetMs", Description = "Optional. Alter the timestamps in the playlist by a given amount, in ms. Default is 1000.", IsRequired = false, DataType = "int", ParameterType = "query", Verb = "GET")]
+        public int TimeStampOffsetMs { get; set; }
+    }
+
+    /// <summary>
     /// Class GetHlsVideoSegment
     /// </summary>
     [Route("/Videos/{Id}/hls/{PlaylistId}/stream.m3u8", "GET")]
     [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
-    public class GetHlsPlaylist
+    public class GetHlsPlaylistLegacy
     {
         // TODO: Deprecate with new iOS app
 
@@ -63,8 +84,10 @@ namespace MediaBrowser.Api.Playback.Hls
     /// </summary>
     [Route("/Videos/{Id}/hls/{PlaylistId}/{SegmentId}.ts", "GET")]
     [Api(Description = "Gets an Http live streaming segment file. Internal use only.")]
-    public class GetHlsVideoSegment : VideoStreamRequest
+    public class GetHlsVideoSegmentLegacy : VideoStreamRequest
     {
+        // TODO: Deprecate with new iOS app
+
         public string PlaylistId { get; set; }
 
         /// <summary>
@@ -85,7 +108,7 @@ namespace MediaBrowser.Api.Playback.Hls
             _config = config;
         }
 
-        public object Get(GetHlsPlaylist request)
+        public object Get(GetHlsPlaylistLegacy request)
         {
             var file = request.PlaylistId + Path.GetExtension(Request.PathInfo);
             file = Path.Combine(_appPaths.TranscodingTempPath, file);
@@ -103,7 +126,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetHlsVideoSegment request)
+        public object Get(GetHlsVideoSegmentLegacy request)
         {
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
             file = Path.Combine(_config.ApplicationPaths.TranscodingTempPath, file);
@@ -121,7 +144,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.Object.</returns>
-        public object Get(GetHlsAudioSegment request)
+        public object Get(GetHlsAudioSegmentLegacy request)
         {
             // TODO: Deprecate with new iOS app
             var file = request.SegmentId + Path.GetExtension(Request.PathInfo);
