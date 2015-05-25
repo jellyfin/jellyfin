@@ -2,21 +2,10 @@
 
     function loadForm(page, userId, displayPreferences) {
 
-        var externalPlayers = JSON.parse(appStorage.getItem('externalplayers') || '[]');
-
         $('#selectMaxBitrate', page).val(AppSettings.maxStreamingBitrate()).selectmenu("refresh");
         $('#selectMaxChromecastBitrate', page).val(AppSettings.maxChromecastBitrate()).selectmenu("refresh");
 
-        $('.chkExternalPlayer', page).each(function () {
-
-            var chk = this;
-            chk.checked = externalPlayers.filter(function (p) {
-
-                return p.name == chk.getAttribute('data-name');
-
-            }).length > 0;
-
-        }).checkboxradio('refresh');
+        $('#chkExternalVideoPlayer', page).checked(AppSettings.enableExternalPlayers()).checkboxradio("refresh");
 
         $('#selectThemeSong', page).val(appStorage.getItem('enableThemeSongs-' + userId) || '').selectmenu("refresh");
         $('#selectBackdrop', page).val(appStorage.getItem('enableBackdrops-' + userId) || '').selectmenu("refresh");
@@ -55,16 +44,7 @@
 
         Dashboard.showLoadingMsg();
 
-        var externalPlayers = $('.chkExternalPlayer:checked', page).get().map(function (i) {
-
-            return {
-                name: i.getAttribute('data-name'),
-                scheme: i.getAttribute('data-scheme')
-            };
-
-        });
-
-        appStorage.setItem('externalplayers', JSON.stringify(externalPlayers));
+        AppSettings.enableExternalPlayers($('#chkExternalVideoPlayer', page).checked());
 
         AppSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
         AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
@@ -133,6 +113,14 @@
             }
 
             return parseInt(store.getItem('chromecastBitrate') || '') || 3000000;
+        },
+        enableExternalPlayers: function (val) {
+
+            if (val != null) {
+                store.setItem('externalplayers', val.toString());
+            }
+
+            return store.getItem('externalplayers') == 'true';
         }
 
     };

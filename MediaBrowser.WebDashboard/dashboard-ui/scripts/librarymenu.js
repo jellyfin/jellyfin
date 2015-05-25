@@ -30,13 +30,14 @@
             html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="display:none;"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
         }
 
-        html += '<button onclick="Search.showSearchPanel($.mobile.activePage);" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton" style="display:none;"><div class="fa fa-search" style="font-size:21px;"></div></button>';
-
-        html += '<div class="viewMenuSearch hide"><form class="viewMenuSearchForm">';
+        html += '<button onclick="Search.showSearchPanel();" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton" style="display:none;"><div class="fa fa-search" style="font-size:21px;"></div></button>';
+        html += '<div class="viewMenuSearch hide">';
+        html += '<form class="viewMenuSearchForm">';
         html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
         html += '<div class="searchInputIcon fa fa-search"></div>';
         html += '<button data-role="none" type="button" data-iconpos="notext" class="imageButton btnCloseSearch"><i class="fa fa-close"></i></button>';
-        html += '</form></div>';
+        html += '</form>';
+        html += '</div>';
 
         html += '<button class="headerButton headerButtonRight headerUserButton" type="button" data-role="none" onclick="Dashboard.showUserFlyout(this);">';
 
@@ -50,8 +51,8 @@
 
         html += '</div>';
 
-        $(document.body).prepend(html);
-        $('.viewMenuBar').trigger('create').lazyChildren();
+        $(document.body).append(html);
+        $('.viewMenuBar').lazyChildren();
 
         $(document).trigger('headercreated');
         bindMenuEvents();
@@ -100,17 +101,20 @@
 
         if (AppInfo.isTouchPreferred) {
 
-            $('.libraryMenuButton').on('click', function () {
-                showLibraryMenu(false);
-            });
-            $('.dashboardMenuButton').on('click', function () {
-                showDashboardMenu(false);
-            });
+            $('.libraryMenuButton').on('click', showLibraryMenu);
+            $('.dashboardMenuButton').on('click', showDashboardMenu);
 
         } else {
             $('.libraryMenuButton').createHoverTouch().on('hovertouch', showLibraryMenu);
             $('.dashboardMenuButton').createHoverTouch().on('hovertouch', showDashboardMenu);
         }
+
+        // Have to wait for document ready here because otherwise 
+        // we may see the jQM redirect back and forth problem
+        $(initViewMenuBarHeadroom);
+    }
+
+    function initViewMenuBarHeadroom() {
 
         // grab an element
         var viewMenuBar = document.getElementsByClassName("viewMenuBar")[0];
@@ -478,19 +482,16 @@
 
     function updateContextText(page) {
 
-        var name = $(page)[0].getAttribute('data-contextname');
+        var jPage = $(page);
+
+        var name = jPage.attr('data-contextname');
 
         if (name) {
 
             $('.libraryMenuButtonText').html('<span>' + name + '</span>');
 
         }
-            //else if ($(page).hasClass('type-interior')) {
-
-            //    $('.libraryMenuButtonText').html('<span>' + 'Dashboard' + '</span>');
-
-            //}
-        else if ($(page).hasClass('allLibraryPage') || $(page).hasClass('type-interior')) {
+        else if (jPage.hasClass('allLibraryPage') || jPage.hasClass('type-interior')) {
             $('.libraryMenuButtonText').html('<span class="logoLibraryMenuButtonText">EMBY</span>');
         }
     }
@@ -511,7 +512,7 @@
     function buildViewMenuBar(page) {
 
         if ($(page).hasClass('standalonePage')) {
-            $('.viewMenuBar').remove();
+            $('.viewMenuBar').hide();
             return;
         }
 
@@ -519,7 +520,7 @@
             $('.viewMenuBar').remove();
         }
 
-        var viewMenuBar = $('.viewMenuBar');
+        var viewMenuBar = $('.viewMenuBar').show();
         if (!$('.viewMenuBar').length) {
 
             renderHeader();
@@ -539,24 +540,55 @@
             updateViewMenuBarHeadroom(page, viewMenuBar);
             requiresViewMenuRefresh = false;
         }
-
     }
+
+    // The first time we create the view menu bar, wait until doc ready + login validated
+    // Otherwise we run into the jQM redirect back and forth problem
+    var updateViewMenuBarBeforePageShow = false;
 
     $(document).on('pageinit', ".page", function () {
 
         var page = this;
 
-        $('.libraryViewNav', page).wrapInner('<div class="libraryViewNavInner"></div>');
-
-        $('.libraryViewNav a', page).each(function () {
-
-            this.innerHTML = '<span class="libraryViewNavLinkContent">' + this.innerHTML + '</span>';
-
+        $(function () {
+            onPageInitDocumentReady(page);
         });
 
     }).on('pagebeforeshowready', ".page", function () {
 
         var page = this;
+
+        if (updateViewMenuBarBeforePageShow) {
+            onPageBeforeShowDocumentReady(page);
+        }
+
+    }).one('pageshowready', ".page", function () {
+
+        var page = this;
+
+        $(function () {
+            onPageBeforeShowDocumentReady(page);
+            updateViewMenuBarBeforePageShow = true;
+        });
+
+    }).on('pageshowready', ".page", function () {
+
+        var page = this;
+
+        onPageShowDocumentReady(page);
+    });
+
+    function onPageInitDocumentReady(page) {
+        $('.libraryViewNav', page).wrapInner('<div class="libraryViewNavInner"></div>');
+
+        $('.libraryViewNav a', page).each(function () {
+
+            this.innerHTML = '<span class="libraryViewNavLinkContent">' + this.innerHTML + '</span>';
+        });
+    }
+
+    function onPageBeforeShowDocumentReady(page) {
+
         buildViewMenuBar(page);
 
         var jpage = $(page);
@@ -587,11 +619,9 @@
         } else {
             $(document.body).removeClass('dashboardDocument').removeClass('libraryDocument');
         }
+    }
 
-    }).on('pageshow', ".libraryPage", function () {
-
-        var page = this;
-
+    function onPageShowDocumentReady(page) {
         var elem = $('.libraryViewNavInner .ui-btn-active:visible', page);
 
         if (elem.length) {
@@ -600,7 +630,7 @@
             // Scroll back up so in case vertical scroll was messed with
             $(document).scrollTop(0);
         }
-    });
+    }
 
     function initHeadRoom(elem) {
 

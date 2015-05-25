@@ -232,13 +232,20 @@
             return html;
         },
 
+        playInExternalPlayer: function(id) {
+            
+             Dashboard.loadExternalPlayer().done(function () {
+                ExternalPlayer.showMenu(id);
+            });
+        },
+
         showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks, showAddToPlaylist) {
 
-            var externalPlayers = ExternalPlayer.getExternalPlayers();
+            var externalPlayers = AppSettings.enableExternalPlayers();
 
             if (!resumePositionTicks && mediaType != "Audio" && !isFolder) {
 
-                if (!externalPlayers.length || mediaType != "Video") {
+                if (!externalPlayers || mediaType != "Video") {
                     MediaController.play(itemId);
                     return;
                 }
@@ -253,8 +260,8 @@
 
             html += '<li><a href="#" onclick="MediaController.play(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonPlay') + '</a></li>';
 
-            if (!isFolder && externalPlayers.length) {
-                html += '<li><a href="#" onclick="LibraryBrowser.closePlayMenu();ExternalPlayer.showMenu(\'' + itemId + '\');">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
+            if (!isFolder && externalPlayers) {
+                html += '<li><a href="#" onclick="LibraryBrowser.closePlayMenu();LibraryBrowser.playInExternalPlayer(\'' + itemId + '\');">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
             }
 
             if (resumePositionTicks) {
@@ -1105,7 +1112,7 @@
                 posterWidth = 320;
                 thumbWidth = 320;
             }
-            
+
             var dateText;
 
             for (var i = 0, length = items.length; i < length; i++) {

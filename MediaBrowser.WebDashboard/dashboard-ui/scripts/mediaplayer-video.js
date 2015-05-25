@@ -605,10 +605,11 @@
             });
         });
 
+        var idleHandlerTimeout;
         function idleHandler() {
 
-            if (timeout) {
-                window.clearTimeout(timeout);
+            if (idleHandlerTimeout) {
+                window.clearTimeout(idleHandlerTimeout);
             }
 
             if (idleState == true) {
@@ -618,7 +619,7 @@
 
             idleState = false;
 
-            timeout = window.setTimeout(function () {
+            idleHandlerTimeout = window.setTimeout(function () {
                 idleState = true;
                 $('.hiddenOnIdle').addClass("inactive");
                 $('#videoPlayer').addClass('idlePlayer');
@@ -978,11 +979,10 @@
 
         function bindEventsForPlayback() {
 
-            var hideElementsOnIdle = !$.browser.mobile;
+            var hideElementsOnIdle = true;
 
             if (hideElementsOnIdle) {
-                $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer', idleHandler);
-                $('.itemVideo').on('mousemove.videoplayer keydown.videoplayer scroll.videoplayer', idleHandler).trigger('mousemove');
+                $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer mousedown.videoplayer', idleHandler).on('mousemove.videoplayer keydown.videoplayer scroll.videoplayer mousedown.videoplayer', idleHandler).trigger('mousemove');
             }
 
             $(document).on('webkitfullscreenchange.videoplayer mozfullscreenchange.videoplayer msfullscreenchange.videoplayer fullscreenchange.videoplayer', function (e) {
@@ -1012,14 +1012,14 @@
 
         function unbindEventsForPlayback() {
 
-            $(document).off('webkitfullscreenchange.videoplayer mozfullscreenchange.videoplayer msfullscreenchange.videoplayer fullscreenchange.videoplayer');
+            $(document).off('.videoplayer');
 
             // Stop playback on browser back button nav
             $(window).off("popstate.videoplayer");
 
             $(document.body).off("mousemove.videoplayer");
 
-            $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer');
+            $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer mousedown.videoplayer');
         }
 
         self.canAutoPlayVideo = function () {
@@ -1084,7 +1084,7 @@
         self.playVideoInternal = function (item, mediaSource, startPosition, streamInfo) {
 
             var videoUrl = streamInfo.url;
-            var contentType = streamInfo.contentType;
+            var contentType = streamInfo.mimeType;
             var startPositionInSeekParam = streamInfo.startPositionInSeekParam;
             self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
 
@@ -1296,7 +1296,6 @@
             }).on("dblclick.mediaplayerevent", function () {
 
                 self.toggleFullscreen();
-
             });
 
             bindEventsForPlayback();

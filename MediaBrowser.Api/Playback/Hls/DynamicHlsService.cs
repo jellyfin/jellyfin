@@ -889,7 +889,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
 
             var toTimeParam = string.Empty;
-            if (state.RunTimeTicks.HasValue && state.IsOutputVideo && ApiEntryPoint.Instance.GetEncodingOptions().EnableThrottling)
+            if (EnableSplitTranscoding(state))
             {
                 var startTime = state.Request.StartTimeTicks ?? 0;
                 var durationSeconds = ApiEntryPoint.Instance.GetEncodingOptions().ThrottleThresholdInSeconds;
@@ -945,12 +945,19 @@ namespace MediaBrowser.Api.Playback.Hls
                             ).Trim();
         }
 
-        protected override bool EnableThrottling
+        protected override bool EnableThrottling(StreamState state)
         {
-            get
+            return !EnableSplitTranscoding(state);
+        }
+
+        private bool EnableSplitTranscoding(StreamState state)
+        {
+            if (string.Equals(Request.QueryString["EnableSplitTranscoding"], "false", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
+
+            return state.RunTimeTicks.HasValue && state.IsOutputVideo;
         }
 
         protected override bool EnableStreamCopy

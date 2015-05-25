@@ -809,11 +809,9 @@
         });
     }
 
-    if ($.browser.chrome) {
-        requirejs(["thirdparty/cast_sender"], function () {
+    requirejs(["thirdparty/cast_sender"], function () {
 
-            initializeChromecast();
-        });
-    }
+        initializeChromecast();
+    });
 
 })(window, window.chrome, console);

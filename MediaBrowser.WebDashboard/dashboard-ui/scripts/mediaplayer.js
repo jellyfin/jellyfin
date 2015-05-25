@@ -183,7 +183,7 @@
                     Protocol: 'hls'
                 });
 
-                if (canPlayAac) {
+                if (canPlayAac && $.browser.safari) {
                     profile.TranscodingProfiles.push({
                         Container: 'aac',
                         Type: 'Audio',
@@ -471,7 +471,7 @@
                 subtitleStreamIndex = parseInt(subtitleStreamIndex);
             }
 
-            getPlaybackInfo(self.currentItem.Id, deviceProfile, ticks, self.currentMediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).done(function (result) {
+            MediaController.getPlaybackInfo(self.currentItem.Id, deviceProfile, ticks, self.currentMediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).done(function (result) {
 
                 if (validatePlaybackInfoResult(result)) {
 
@@ -685,22 +685,11 @@
             });
         };
 
-        function supportsDirectPlay(mediaSource) {
-
-            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == 'Http' && !mediaSource.RequiredHttpHeaders.length) {
-
-                // TODO: Need to verify the host is going to be reachable
-                return true;
-            }
-
-            return false;
-        }
-
         function getOptimalMediaSource(mediaType, versions) {
 
             var optimalVersion = versions.filter(function (v) {
 
-                v.enableDirectPlay = supportsDirectPlay(v);
+                v.enableDirectPlay = MediaController.supportsDirectPlay(v);
 
                 return v.enableDirectPlay;
 
@@ -717,71 +706,6 @@
             return optimalVersion || versions.filter(function (s) {
                 return s.SupportsTranscoding;
             })[0];
-        }
-
-        function getPlaybackInfo(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId) {
-
-            var postData = {
-                DeviceProfile: deviceProfile
-            };
-
-            var query = {
-                UserId: Dashboard.getCurrentUserId(),
-                StartTimeTicks: startPosition || 0
-            };
-
-            if (audioStreamIndex != null) {
-                query.AudioStreamIndex = audioStreamIndex;
-            }
-            if (subtitleStreamIndex != null) {
-                query.SubtitleStreamIndex = subtitleStreamIndex;
-            }
-            if (mediaSource) {
-                query.MediaSourceId = mediaSource.Id;
-            }
-            if (liveStreamId) {
-                query.LiveStreamId = liveStreamId;
-            }
-
-            return ApiClient.ajax({
-                url: ApiClient.getUrl('Items/' + itemId + '/PlaybackInfo', query),
-                type: 'POST',
-                data: JSON.stringify(postData),
-                contentType: "application/json",
-                dataType: "json"
-
-            });
-        }
-
-        function getLiveStream(itemId, playSessionId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex) {
-
-            var postData = {
-                DeviceProfile: deviceProfile,
-                OpenToken: mediaSource.OpenToken
-            };
-
-            var query = {
-                UserId: Dashboard.getCurrentUserId(),
-                StartTimeTicks: startPosition || 0,
-                ItemId: itemId,
-                PlaySessionId: playSessionId
-            };
-
-            if (audioStreamIndex != null) {
-                query.AudioStreamIndex = audioStreamIndex;
-            }
-            if (subtitleStreamIndex != null) {
-                query.SubtitleStreamIndex = subtitleStreamIndex;
-            }
-
-            return ApiClient.ajax({
-                url: ApiClient.getUrl('LiveStreams/Open', query),
-                type: 'POST',
-                data: JSON.stringify(postData),
-                contentType: "application/json",
-                dataType: "json"
-
-            });
         }
 
         self.createStreamInfo = function (type, item, mediaSource, startPosition) {
@@ -867,7 +791,7 @@
 
             return {
                 url: mediaUrl,
-                contentType: contentType,
+                mimeType: contentType,
                 startTimeTicksOffset: startTimeTicksOffset,
                 startPositionInSeekParam: startPositionInSeekParam,
                 playMethod: playMethod
@@ -900,7 +824,7 @@
                 Dashboard.showModalLoadingMsg();
             }
 
-            getPlaybackInfo(item.Id, deviceProfile, startPosition).done(function (playbackInfoResult) {
+            MediaController.getPlaybackInfo(item.Id, deviceProfile, startPosition).done(function (playbackInfoResult) {
 
                 if (validatePlaybackInfoResult(playbackInfoResult)) {
 
@@ -910,9 +834,9 @@
 
                         if (mediaSource.RequiresOpening) {
 
-                            getLiveStream(item.Id, playbackInfoResult.PlaySessionId, deviceProfile, startPosition, mediaSource, null, null).done(function (openLiveStreamResult) {
+                            MediaController.getLiveStream(item.Id, playbackInfoResult.PlaySessionId, deviceProfile, startPosition, mediaSource, null, null).done(function (openLiveStreamResult) {
 
-                                openLiveStreamResult.MediaSource.enableDirectPlay = supportsDirectPlay(openLiveStreamResult.MediaSource);
+                                openLiveStreamResult.MediaSource.enableDirectPlay = MediaController.supportsDirectPlay(openLiveStreamResult.MediaSource);
 
                                 playInternalPostMediaSourceSelection(item, openLiveStreamResult.MediaSource, startPosition, callback);
                             });
@@ -1474,75 +1398,83 @@
 
             if (item) {
 
-                state.NowPlayingItem = state.NowPlayingItem || {};
-                var nowPlayingItem = state.NowPlayingItem;
-
-                nowPlayingItem.Id = item.Id;
-                nowPlayingItem.MediaType = item.MediaType;
-                nowPlayingItem.Type = item.Type;
-                nowPlayingItem.Name = item.Name;
-
-                nowPlayingItem.IndexNumber = item.IndexNumber;
-                nowPlayingItem.IndexNumberEnd = item.IndexNumberEnd;
-                nowPlayingItem.ParentIndexNumber = item.ParentIndexNumber;
-                nowPlayingItem.ProductionYear = item.ProductionYear;
-                nowPlayingItem.PremiereDate = item.PremiereDate;
-                nowPlayingItem.SeriesName = item.SeriesName;
-                nowPlayingItem.Album = item.Album;
-                nowPlayingItem.Artists = item.Artists;
-
-                var imageTags = item.ImageTags || {};
-
-                if (item.SeriesPrimaryImageTag) {
-
-                    nowPlayingItem.PrimaryImageItemId = item.SeriesId;
-                    nowPlayingItem.PrimaryImageTag = item.SeriesPrimaryImageTag;
-                }
-                else if (imageTags.Primary) {
-
-                    nowPlayingItem.PrimaryImageItemId = item.Id;
-                    nowPlayingItem.PrimaryImageTag = imageTags.Primary;
-                }
-                else if (item.AlbumPrimaryImageTag) {
-
-                    nowPlayingItem.PrimaryImageItemId = item.AlbumId;
-                    nowPlayingItem.PrimaryImageTag = item.AlbumPrimaryImageTag;
-                }
-                else if (item.SeriesPrimaryImageTag) {
-
-                    nowPlayingItem.PrimaryImageItemId = item.SeriesId;
-                    nowPlayingItem.PrimaryImageTag = item.SeriesPrimaryImageTag;
-                }
-
-                if (item.BackdropImageTags && item.BackdropImageTags.length) {
-
-                    nowPlayingItem.BackdropItemId = item.Id;
-                    nowPlayingItem.BackdropImageTag = item.BackdropImageTags[0];
-                }
-                else if (item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
-                    nowPlayingItem.BackdropItemId = item.ParentBackdropItemId;
-                    nowPlayingItem.BackdropImageTag = item.ParentBackdropImageTags[0];
-                }
-
-                if (imageTags.Thumb) {
-
-                    nowPlayingItem.ThumbItemId = item.Id;
-                    nowPlayingItem.ThumbImageTag = imageTags.Thumb;
-                }
-
-                if (imageTags.Logo) {
-
-                    nowPlayingItem.LogoItemId = item.Id;
-                    nowPlayingItem.LogoImageTag = imageTags.Logo;
-                }
-                else if (item.ParentLogoImageTag) {
-
-                    nowPlayingItem.LogoItemId = item.ParentLogoItemId;
-                    nowPlayingItem.LogoImageTag = item.ParentLogoImageTag;
-                }
+                state.NowPlayingItem = self.getNowPlayingItemForReporting(item, mediaSource);
             }
 
             return state;
+        };
+
+        self.getNowPlayingItemForReporting = function (item, mediaSource) {
+
+            var nowPlayingItem = {};
+
+            nowPlayingItem.RunTimeTicks = mediaSource.RunTimeTicks;
+
+            nowPlayingItem.Id = item.Id;
+            nowPlayingItem.MediaType = item.MediaType;
+            nowPlayingItem.Type = item.Type;
+            nowPlayingItem.Name = item.Name;
+
+            nowPlayingItem.IndexNumber = item.IndexNumber;
+            nowPlayingItem.IndexNumberEnd = item.IndexNumberEnd;
+            nowPlayingItem.ParentIndexNumber = item.ParentIndexNumber;
+            nowPlayingItem.ProductionYear = item.ProductionYear;
+            nowPlayingItem.PremiereDate = item.PremiereDate;
+            nowPlayingItem.SeriesName = item.SeriesName;
+            nowPlayingItem.Album = item.Album;
+            nowPlayingItem.Artists = item.Artists;
+
+            var imageTags = item.ImageTags || {};
+
+            if (item.SeriesPrimaryImageTag) {
+
+                nowPlayingItem.PrimaryImageItemId = item.SeriesId;
+                nowPlayingItem.PrimaryImageTag = item.SeriesPrimaryImageTag;
+            }
+            else if (imageTags.Primary) {
+
+                nowPlayingItem.PrimaryImageItemId = item.Id;
+                nowPlayingItem.PrimaryImageTag = imageTags.Primary;
+            }
+            else if (item.AlbumPrimaryImageTag) {
+
+                nowPlayingItem.PrimaryImageItemId = item.AlbumId;
+                nowPlayingItem.PrimaryImageTag = item.AlbumPrimaryImageTag;
+            }
+            else if (item.SeriesPrimaryImageTag) {
+
+                nowPlayingItem.PrimaryImageItemId = item.SeriesId;
+                nowPlayingItem.PrimaryImageTag = item.SeriesPrimaryImageTag;
+            }
+
+            if (item.BackdropImageTags && item.BackdropImageTags.length) {
+
+                nowPlayingItem.BackdropItemId = item.Id;
+                nowPlayingItem.BackdropImageTag = item.BackdropImageTags[0];
+            }
+            else if (item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
+                nowPlayingItem.BackdropItemId = item.ParentBackdropItemId;
+                nowPlayingItem.BackdropImageTag = item.ParentBackdropImageTags[0];
+            }
+
+            if (imageTags.Thumb) {
+
+                nowPlayingItem.ThumbItemId = item.Id;
+                nowPlayingItem.ThumbImageTag = imageTags.Thumb;
+            }
+
+            if (imageTags.Logo) {
+
+                nowPlayingItem.LogoItemId = item.Id;
+                nowPlayingItem.LogoImageTag = imageTags.Logo;
+            }
+            else if (item.ParentLogoImageTag) {
+
+                nowPlayingItem.LogoItemId = item.ParentLogoItemId;
+                nowPlayingItem.LogoImageTag = item.ParentLogoImageTag;
+            }
+
+            return nowPlayingItem;
         };
 
         self.beginPlayerUpdates = function () {

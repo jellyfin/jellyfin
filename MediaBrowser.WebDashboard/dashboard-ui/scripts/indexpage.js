@@ -177,8 +177,7 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren();
-            $(elem).createCardMenus();
+            $(elem).html(html).lazyChildren().createCardMenus();
         });
     }
 
@@ -213,8 +212,7 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren();
-            $(elem).createCardMenus();
+            $(elem).html(html).lazyChildren().createCardMenus();
         });
     }
 
@@ -316,8 +314,7 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren();
-            $(elem).createCardMenus();
+            $(elem).html(html).lazyChildren().createCardMenus();
         });
     }
 
@@ -406,8 +403,7 @@
             });
             html += '</div>';
 
-            var elem = $('#channel' + channel.Id + '', page).html(html).lazyChildren().trigger('create');
-            $(elem).createCardMenus();
+            $('#channel' + channel.Id + '', page).html(html).lazyChildren().trigger('create').createCardMenus();
         });
     }
 

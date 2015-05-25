@@ -1243,7 +1243,7 @@
     "OptionNoThemeVideo": "No Theme Video",
     "LabelOneTimeDonationAmount": "Donation amount:",
     "ButtonDonate": "Donate",
-    "ButtonPurchase":  "Purchase",
+    "ButtonPurchase": "Purchase",
     "OptionActor": "Actor",
     "OptionComposer": "Composer",
     "OptionDirector": "Director",
@@ -1447,5 +1447,6 @@
     "OptionReportGrouping": "Grouping",
     "HeaderExport": "Export",
     "HeaderColumns": "Columns",
-    "ButtonReset": "Reset"
+    "ButtonReset": "Reset",
+    "OptionEnableExternalVideoPlayers": "Enable external video players"
 }

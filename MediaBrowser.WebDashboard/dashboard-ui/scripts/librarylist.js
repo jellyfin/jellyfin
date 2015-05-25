@@ -284,7 +284,7 @@
 
         var id = this.getAttribute('data-itemid');
 
-        ExternalPlayer.showMenu(id);
+        LibraryBrowser.playInExternalPlayer(id);
 
         return false;
     }
@@ -420,7 +420,7 @@
                     }
                 }
 
-                if (mediaType == 'Video' && ExternalPlayer.getExternalPlayers().length) {
+                if (mediaType == 'Video' && AppSettings.enableExternalPlayers()) {
                     html += '<li data-icon="play"><a href="#" class="btnExternalPlayer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
                 }
 

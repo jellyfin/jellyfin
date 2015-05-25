@@ -229,7 +229,7 @@
 
         self.play = function (options) {
 
-            doWithPlaybackValidation(function() {
+            doWithPlaybackValidation(function () {
                 if (typeof (options) === 'string') {
                     options = { ids: [options] };
                 }
@@ -479,6 +479,82 @@
                 });
             }, 300);
 
+        };
+
+        self.getPlaybackInfo = function (itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId) {
+
+            var postData = {
+                DeviceProfile: deviceProfile
+            };
+
+            var query = {
+                UserId: Dashboard.getCurrentUserId(),
+                StartTimeTicks: startPosition || 0
+            };
+
+            if (audioStreamIndex != null) {
+                query.AudioStreamIndex = audioStreamIndex;
+            }
+            if (subtitleStreamIndex != null) {
+                query.SubtitleStreamIndex = subtitleStreamIndex;
+            }
+            if (mediaSource) {
+                query.MediaSourceId = mediaSource.Id;
+            }
+            if (liveStreamId) {
+                query.LiveStreamId = liveStreamId;
+            }
+
+            return ApiClient.ajax({
+                url: ApiClient.getUrl('Items/' + itemId + '/PlaybackInfo', query),
+                type: 'POST',
+                data: JSON.stringify(postData),
+                contentType: "application/json",
+                dataType: "json"
+
+            });
+        }
+
+        self.getLiveStream = function (itemId, playSessionId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex) {
+
+            var postData = {
+                DeviceProfile: deviceProfile,
+                OpenToken: mediaSource.OpenToken
+            };
+
+            var query = {
+                UserId: Dashboard.getCurrentUserId(),
+                StartTimeTicks: startPosition || 0,
+                ItemId: itemId,
+                PlaySessionId: playSessionId
+            };
+
+            if (audioStreamIndex != null) {
+                query.AudioStreamIndex = audioStreamIndex;
+            }
+            if (subtitleStreamIndex != null) {
+                query.SubtitleStreamIndex = subtitleStreamIndex;
+            }
+
+            return ApiClient.ajax({
+                url: ApiClient.getUrl('LiveStreams/Open', query),
+                type: 'POST',
+                data: JSON.stringify(postData),
+                contentType: "application/json",
+                dataType: "json"
+
+            });
+        };
+
+        self.supportsDirectPlay = function (mediaSource) {
+
+            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == 'Http' && !mediaSource.RequiredHttpHeaders.length) {
+
+                // TODO: Need to verify the host is going to be reachable
+                return true;
+            }
+
+            return false;
         };
     }
 

@@ -191,7 +191,6 @@ var Dashboard = {
             } else {
                 loginPage = 'login.html';
             }
-
             Dashboard.navigate(loginPage);
         }
 
@@ -1491,6 +1490,25 @@ var Dashboard = {
         Dashboard.ready(function () {
             $(page).trigger(name);
         });
+    },
+
+    loadExternalPlayer: function () {
+
+        var deferred = DeferredBuilder.Deferred();
+
+        require(['scripts/externalplayer.js'], function () {
+
+            if (Dashboard.isRunningInCordova()) {
+                require(['thirdparty/cordova/externalplayer.js'], function () {
+
+                    deferred.resolve();
+                });
+            } else {
+                deferred.resolve();
+            }
+        });
+
+        return deferred.promise();
     }
 };
 
@@ -1560,6 +1578,10 @@ var AppInfo = {};
         else {
             AppInfo.enableFooterNotifications = true;
             AppInfo.enableSupporterMembership = true;
+
+            if (!$.browser.android && !$.browser.ipad && !$.browser.iphone) {
+                AppInfo.enableAppLayouts = true;
+            }
         }
 
         AppInfo.enableUserImage = true;
@@ -1576,6 +1598,7 @@ var AppInfo = {};
             .on("websocketmessage.dashboard", Dashboard.onWebSocketMessageReceived)
             .on('requestfail.dashboard', Dashboard.onRequestFail);
     }
+
     //localStorage.clear();
     function createConnectionManager(appInfo) {
 
@@ -1771,9 +1794,6 @@ var AppInfo = {};
 
         $(document.body).append(footerHtml);
 
-        var footerElem = $('.footer', document.body);
-        footerElem.trigger('create');
-
         $(window).on("beforeunload", function () {
 
             var apiClient = window.ApiClient;
@@ -1928,20 +1948,6 @@ $(document).on('pagecreate', ".page", function () {
 
     $('.localnav a, .libraryViewNav a').attr('data-transition', 'none');
 
-}).on('pageshow', ".page", function () {
-
-    var page = this;
-    var require = this.getAttribute('data-require');
-
-    if (require) {
-        requirejs(require.split(','), function () {
-
-            Dashboard.firePageEvent(page, 'pageshowready');
-        });
-    } else {
-        Dashboard.firePageEvent(page, 'pageshowready');
-    }
-
 }).on('pagebeforeshow', ".page", function () {
 
     var page = this;
@@ -1956,7 +1962,21 @@ $(document).on('pagecreate', ".page", function () {
         Dashboard.firePageEvent(page, 'pagebeforeshowready');
     }
 
-}).on('pagebeforeshowready', ".page", function () {
+}).on('pageshow', ".page", function () {
+
+    var page = this;
+    var require = this.getAttribute('data-require');
+
+    if (require) {
+        requirejs(require.split(','), function () {
+
+            Dashboard.firePageEvent(page, 'pageshowbeginready');
+        });
+    } else {
+        Dashboard.firePageEvent(page, 'pageshowbeginready');
+    }
+
+}).on('pageshowbeginready', ".page", function () {
 
     var page = $(this);
 
@@ -1977,9 +1997,6 @@ $(document).on('pagecreate', ".page", function () {
                 Dashboard.ensureToolsMenu(page, user);
             }
         });
-
-        Dashboard.ensureHeader(page);
-        Dashboard.ensurePageTitle(page);
     }
 
     else {
@@ -1989,7 +2006,7 @@ $(document).on('pagecreate', ".page", function () {
         if (isConnectMode) {
 
             if (!Dashboard.isServerlessPage()) {
-                Dashboard.logout(true);
+                Dashboard.logout();
                 return;
             }
         }
@@ -1997,13 +2014,15 @@ $(document).on('pagecreate', ".page", function () {
         if (!isConnectMode && this.id !== "loginPage" && !page.hasClass('forgotPasswordPage') && !page.hasClass('wizardPage')) {
 
             console.log('Not logged into server. Redirecting to login.');
-            Dashboard.logout(true);
+            Dashboard.logout();
             return;
         }
-
-        Dashboard.ensureHeader(page);
-        Dashboard.ensurePageTitle(page);
     }
+
+    Dashboard.firePageEvent(page, 'pageshowready');
+
+    Dashboard.ensureHeader(page);
+    Dashboard.ensurePageTitle(page);
 
     if (apiClient && !apiClient.isWebSocketOpen()) {
         Dashboard.refreshSystemInfoFromServer();

@@ -58,9 +58,11 @@
 
         var self = this;
 
-        self.showSearchPanel = function (page) {
+        self.showSearchPanel = function () {
 
-            $('.viewMenuSearch').removeClass('hide');
+            var viewMenuSearch = $('.viewMenuSearch');
+
+            viewMenuSearch.removeClass('hide');
             $('.headerSearchInput').focus();
         };
     }

@@ -1012,8 +1012,7 @@
     }
 };
 
-$(document).on('pagebeforeshowready', "#dashboardPage", DashboardPage.onPageShow)
-    .on('pagehide', "#dashboardPage", DashboardPage.onPageHide);
+$(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('pagehide', "#dashboardPage", DashboardPage.onPageHide);
 
 (function ($, document, window) {
 
@@ -1308,7 +1307,7 @@ $(document).on('pagebeforeshowready', "#dashboardPage", DashboardPage.onPageShow
             result.CustomPrefs[welcomeTourKey] = welcomeDismissValue;
             ApiClient.updateDisplayPreferences('dashboard', result, userId, 'dashboard');
 
-            $(page).off('pagebeforeshow.checktour');
+            $(page).off('.checktour');
         });
     }
 
@@ -1373,7 +1372,7 @@ $(document).on('pagebeforeshowready', "#dashboardPage", DashboardPage.onPageShow
             takeTour(page, Dashboard.getCurrentUserId());
         });
 
-    }).on('pagebeforeshowready.checktour', "#dashboardPage", function () {
+    }).on('pageshowready.checktour', "#dashboardPage", function () {
 
         var page = this;
 
@@ -1389,7 +1388,7 @@ $(document).on('pagebeforeshowready', "#dashboardPage", DashboardPage.onPageShow
 
 (function () {
 
-    $(document).on('pagebeforeshowready', ".type-interior", function () {
+    $(document).on('pageshowready', ".type-interior", function () {
 
         var page = this;
 

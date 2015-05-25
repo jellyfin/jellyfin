@@ -2,11 +2,13 @@
 
     globalScope.AjaxApi = {
 
-        param: function(params) {
+        param: function (params) {
             return jQuery.param(params);
         },
 
-        ajax: function(request) {
+        ajax: function (request) {
+
+            request.timeout = request.timeout || 30000;
 
             try {
                 return jQuery.ajax(request);
