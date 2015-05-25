@@ -889,7 +889,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
 
             var toTimeParam = string.Empty;
-            if (state.RunTimeTicks.HasValue && state.IsOutputVideo)
+            if (state.RunTimeTicks.HasValue && state.IsOutputVideo && ApiEntryPoint.Instance.GetEncodingOptions().EnableThrottling)
             {
                 var startTime = state.Request.StartTimeTicks ?? 0;
                 var durationSeconds = ApiEntryPoint.Instance.GetEncodingOptions().ThrottleThresholdInSeconds;
