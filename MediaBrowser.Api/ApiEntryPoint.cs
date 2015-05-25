@@ -349,12 +349,6 @@ namespace MediaBrowser.Api
                 if (!string.IsNullOrWhiteSpace(job.PlaySessionId))
                 {
                     timerDuration = 60000;
-
-                    // With newer just in time encoding, we no longer need to be aggressive about killing the stream
-                    if (!job.IsLiveOutput)
-                    {
-                        timerDuration = 180000;
-                    }
                 }
             }
 

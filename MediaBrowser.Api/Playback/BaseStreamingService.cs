@@ -1060,7 +1060,7 @@ namespace MediaBrowser.Api.Playback
 
         private void StartThrottler(StreamState state, TranscodingJob transcodingJob)
         {
-            if (EnableThrottling && state.InputProtocol == MediaProtocol.File &&
+            if (EnableThrottling(state) && state.InputProtocol == MediaProtocol.File &&
                            state.RunTimeTicks.HasValue &&
                            state.VideoType == VideoType.VideoFile &&
                            !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
@@ -1073,12 +1073,9 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        protected virtual bool EnableThrottling
+        protected virtual bool EnableThrottling(StreamState state)
         {
-            get
-            {
-                return false;
-            }
+            return true;
         }
 
         private async void StartStreamingLog(TranscodingJob transcodingJob, StreamState state, Stream source, Stream target)

@@ -581,7 +581,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "cinemamodeconfiguration.js",
                                 "encodingsettings.js",
 
-                                "externalplayer.js",
                                 "forgotpassword.js",
                                 "forgotpasswordpin.js",
                                 "indexpage.js",
