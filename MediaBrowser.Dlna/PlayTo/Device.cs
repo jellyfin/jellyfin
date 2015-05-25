@@ -635,15 +635,25 @@ namespace MediaBrowser.Dlna.PlayTo
             }
 
             XElement uPnpResponse;
-
+            
+            // Handle different variations sent back by devices
             try
             {
                 uPnpResponse = XElement.Parse(trackString);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.ErrorException("Unable to parse xml {0}", ex, trackString);
-                return new Tuple<bool, uBaseObject>(true, null);
+                // first try to add a root node with a dlna namesapce
+                try
+                {
+                    uPnpResponse = XElement.Parse("<data xmlns:dlna=\"urn:schemas-dlna-org:device-1-0\">" + trackString + "</data>");
+                    uPnpResponse = uPnpResponse.Descendants().First();
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Unable to parse xml {0}", ex, trackString);
+                    return new Tuple<bool, uBaseObject>(true, null);
+                }
             }
 
             var e = uPnpResponse.Element(uPnpNamespaces.items);
