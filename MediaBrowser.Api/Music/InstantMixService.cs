@@ -50,7 +50,7 @@ namespace MediaBrowser.Api.Music
     [Route("/MusicGenres/InstantMix", "GET", Summary = "Creates an instant playlist based on a music genre")]
     public class GetInstantMixFromMusicGenreId : BaseGetSimilarItems
     {
-        [ApiMember(Name = "Id", Description = "The genre Id", IsRequired = true, DataType = "string", ParameterType = "querypath", Verb = "GET")]
+        [ApiMember(Name = "Id", Description = "The genre Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Id { get; set; }
     }
 
