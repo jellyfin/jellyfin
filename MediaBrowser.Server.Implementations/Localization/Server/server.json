@@ -1448,5 +1448,6 @@
     "HeaderExport": "Export",
     "HeaderColumns": "Columns",
     "ButtonReset": "Reset",
-    "OptionEnableExternalVideoPlayers": "Enable external video players"
+    "OptionEnableExternalVideoPlayers": "Enable external video players",
+    "ButtonUnlockGuide": "Unlock Guide"
 }
