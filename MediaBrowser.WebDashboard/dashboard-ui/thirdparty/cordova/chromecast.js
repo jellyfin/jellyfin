@@ -92,7 +92,7 @@
             getEndpointInfo().done(function (endpoint) {
 
                 if (endpoint.IsLocal || endpoint.IsInNetwork) {
-                    ApiClient.getSystemInfo().done(function (info) {
+                    ApiClient.getPublicSystemInfo().done(function (info) {
 
                         message.serverAddress = info.LocalAddress;
                         sendMessageInternal(message);

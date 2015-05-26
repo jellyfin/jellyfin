@@ -1287,15 +1287,19 @@
 
             }).on("click.mediaplayerevent", function (e) {
 
-                if (this.paused) {
-                    self.unpause();
-                } else {
-                    self.pause();
+                if (!$.browser.mobile) {
+                    if (this.paused) {
+                        self.unpause();
+                    } else {
+                        self.pause();
+                    }
                 }
 
             }).on("dblclick.mediaplayerevent", function () {
 
-                self.toggleFullscreen();
+                if (!$.browser.mobile) {
+                    self.toggleFullscreen();
+                }
             });
 
             bindEventsForPlayback();

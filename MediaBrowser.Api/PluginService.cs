@@ -1,7 +1,9 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
 using MediaBrowser.Common.Updates;
+using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
@@ -134,8 +136,10 @@ namespace MediaBrowser.Api
         private readonly ISecurityManager _securityManager;
 
         private readonly IInstallationManager _installationManager;
+        private readonly INetworkManager _network;
+        private readonly IDeviceManager _deviceManager;
 
-        public PluginService(IJsonSerializer jsonSerializer, IApplicationHost appHost, ISecurityManager securityManager, IInstallationManager installationManager)
+        public PluginService(IJsonSerializer jsonSerializer, IApplicationHost appHost, ISecurityManager securityManager, IInstallationManager installationManager, INetworkManager network, IDeviceManager deviceManager)
             : base()
         {
             if (jsonSerializer == null)
@@ -146,6 +150,8 @@ namespace MediaBrowser.Api
             _appHost = appHost;
             _securityManager = securityManager;
             _installationManager = installationManager;
+            _network = network;
+            _deviceManager = deviceManager;
             _jsonSerializer = jsonSerializer;
         }
 
@@ -165,13 +171,15 @@ namespace MediaBrowser.Api
         {
             var result = await _securityManager.GetRegistrationStatus(request.Name).ConfigureAwait(false);
 
-            return ToOptimizedResult(new RegistrationInfo
+            var info = new RegistrationInfo
             {
                 ExpirationDate = result.ExpirationDate,
                 IsRegistered = result.IsRegistered,
                 IsTrial = result.TrialVersion,
                 Name = request.Name
-            });
+            };
+
+            return ToOptimizedResult(info);
         }
 
         /// <summary>

@@ -1221,6 +1221,12 @@
             });
         };
 
+        self.getRegistrationInfo = function (feature, apiClient) {
+
+            return apiClient.getRegistrationInfo(feature);
+        };
+
+
         return self;
     };
 

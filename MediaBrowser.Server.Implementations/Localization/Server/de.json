@@ -78,7 +78,7 @@
     "HeaderSyncRequiresSupporterMembership": "Synchronisation ben\u00f6tigt eine Supporter-Mitgliedschaft",
     "HeaderEnjoyDayTrial": "Genie\u00dfen Sie eine 14 Tage Testversion",
     "LabelSyncTempPath": "Verzeichnis f\u00fcr tempor\u00e4re Dateien",
-    "LabelSyncTempPathHelp": "Legen Sie einen eigenen Synchronisations-Arbeits Verzeichnis fest. Konvertierte Medien werden w\u00e4hrend der Synchronisation hier gespeichert.",
+    "LabelSyncTempPathHelp": "Legen Sie ein eigenes Synchronisations-Arbeits Verzeichnis fest. Konvertierte Medien werden w\u00e4hrend der Synchronisation hier gespeichert.",
     "LabelCustomCertificatePath": "Eigener Zertifikats Ordner:",
     "LabelCustomCertificatePathHelp": "F\u00fcgen Sie ihr eigenes SSL Zertifikat als .pfx Datei hinzu. Wenn ausgelassen, wird der Server ein selbst signiertes Zertifikat f\u00fcr Sie erstellen.",
     "TitleNotifications": "Benachrichtigungen",
@@ -1228,7 +1228,7 @@
     "OptionNoThemeVideo": "Kein Theme Video",
     "LabelOneTimeDonationAmount": "Spendenbetrag:",
     "ButtonDonate": "Spenden",
-    "ButtonPurchase": "Purchase",
+    "ButtonPurchase": "Kaufen",
     "OptionActor": "Schauspieler",
     "OptionComposer": "Komponist",
     "OptionDirector": "Regisseur",
@@ -1431,5 +1431,6 @@
     "OptionReportGrouping": "Gruppierung",
     "HeaderExport": "Export",
     "HeaderColumns": "Spalten",
-    "ButtonReset": "Reset"
+    "ButtonReset": "Reset",
+    "OptionEnableExternalVideoPlayers": "Aktiviere externe Videoplayer"
 }

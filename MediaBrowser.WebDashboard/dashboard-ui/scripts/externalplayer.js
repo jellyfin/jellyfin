@@ -249,10 +249,12 @@
 
         }, 10000);
 
+        // Need a timeout because we can't show a popup at the same time as the previous one is closing
+        // Bumping it up to 1000 because the post play menu is hiding for some reason on android
         setTimeout(function () {
 
             showPostPlayMenu(currentItem);
-        }, 500);
+        }, 1000);
     }
 
     function onPlaybackProgress(positionTicks) {
@@ -478,7 +480,6 @@
 
         showMenu: showPlayMenu,
         onPlaybackStart: onPlaybackStart,
-        onPlaybackStopped: onPlaybackStopped,
         getExternalPlayers: getExternalPlayers,
         showPlayerSelectionMenu: showPlayerSelectionMenu
     };

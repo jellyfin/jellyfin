@@ -108,11 +108,13 @@
             return options;
         };
 
-        self.getDeviceProfile = function () {
+        self.getDeviceProfile = function (maxWidth) {
 
-            var qualityOption = self.getVideoQualityOptions().filter(function (q) {
-                return q.selected;
-            })[0];
+            if (!maxWidth) {
+                maxWidth = self.getVideoQualityOptions().filter(function (q) {
+                    return q.selected;
+                })[0].maxWidth;
+            }
 
             var bitrateSetting = AppSettings.maxStreamingBitrate();
 
@@ -316,7 +318,7 @@
                 {
                     Condition: 'LessThanEqual',
                     Property: 'Width',
-                    Value: qualityOption.maxWidth
+                    Value: maxWidth
                 }]
             });
 
@@ -333,7 +335,7 @@
                 {
                     Condition: 'LessThanEqual',
                     Property: 'Width',
-                    Value: qualityOption.maxWidth
+                    Value: maxWidth
                 }]
             });
 

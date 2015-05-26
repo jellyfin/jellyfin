@@ -1431,5 +1431,6 @@
     "OptionReportGrouping": "Gruppering",
     "HeaderExport": "Eksporter",
     "HeaderColumns": "S\u00f8jler",
-    "ButtonReset": "Reset"
+    "ButtonReset": "Reset",
+    "OptionEnableExternalVideoPlayers": "Enable external video players"
 }

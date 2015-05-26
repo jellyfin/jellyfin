@@ -4,9 +4,7 @@
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        if (AppInfo.enableBackButton) {
-            html += '<button type="button" data-role="none" onclick="history.back();" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-left"></div></button>';
-        }
+        html += '<button type="button" data-role="none" onclick="history.back();" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-left"></div></button>';
 
         html += '<button type="button" data-role="none" title="Menu" class="headerButton dashboardMenuButton barsMenuButton headerButtonLeft">';
         html += '<div class="barMenuInner fa fa-bars">';

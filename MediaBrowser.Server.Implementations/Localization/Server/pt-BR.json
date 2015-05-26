@@ -1431,5 +1431,6 @@
     "OptionReportGrouping": "Agrupamento",
     "HeaderExport": "Exportar",
     "HeaderColumns": "Colunas",
-    "ButtonReset": "Redefinir"
+    "ButtonReset": "Redefinir",
+    "OptionEnableExternalVideoPlayers": "Enable external video players"
 }
