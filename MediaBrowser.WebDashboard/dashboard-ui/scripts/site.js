@@ -1827,7 +1827,7 @@ var AppInfo = {};
         });
 
         if (Dashboard.isRunningInCordova()) {
-            requirejs(['thirdparty/cordova/connectsdk', 'thirdparty/cordova/remotecontrols']);
+            requirejs(['thirdparty/cordova/connectsdk', 'thirdparty/cordova/remotecontrols', 'scripts/registrationservices']);
 
             if ($.browser.android) {
                 requirejs(['thirdparty/cordova/android/immersive']);

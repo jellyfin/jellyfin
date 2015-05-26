@@ -403,10 +403,17 @@
 
     function reloadPage(page) {
 
+        $('.guideRequiresUnlock', page).hide();
+
         RegistrationServices.validateFeature('livetv').done(function () {
             reloadPageAfterValidation(page, 1000);
         }).fail(function () {
-            reloadPageAfterValidation(page, 3);
+
+            var limit = 5;
+            $('.guideRequiresUnlock', page).show();
+            $('.unlockText', page).html(Globalize.translate('MessageLiveTvGuideRequiresUnlock', limit));
+
+            reloadPageAfterValidation(page, limit);
         });
     }
 
@@ -457,6 +464,11 @@
                 });
             });
         }
+
+        $('.btnUnlockGuide', page).on('click', function () {
+
+            reloadPage(page);
+        });
 
     }).on('pageshowready', "#liveTvGuidePage", function () {
 

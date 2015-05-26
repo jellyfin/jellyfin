@@ -671,7 +671,8 @@
                         Id: foundServer.Id,
                         LocalAddress: foundServer.Address,
                         Name: foundServer.Name,
-                        ManualAddress: convertEndpointAddressToManualAddress(foundServer)
+                        ManualAddress: convertEndpointAddressToManualAddress(foundServer),
+                        DateLastLocalConnection: new Date().getTime()
                     };
 
                     info.LastConnectionMode = info.ManualAddress ? MediaBrowser.ConnectionMode.Manual : MediaBrowser.ConnectionMode.Local;
@@ -1223,7 +1224,41 @@
 
         self.getRegistrationInfo = function (feature, apiClient) {
 
-            return apiClient.getRegistrationInfo(feature);
+            var deferred = DeferredBuilder.Deferred();
+
+            self.getAvailableServers().done(function (servers) {
+
+                var matchedServers = servers.filter(function (s) {
+                    return stringEqualsIgnoreCase(s.Id, apiClient.serverInfo().Id);
+                });
+
+                if (!matchedServers.length) {
+                    deferred.resolveWith(null, [{}]);
+                    return;
+                }
+
+                var match = matchedServers[0];
+
+                // 31 days
+                if ((new Date().getTime() - (match.DateLastLocalConnection || 0)) > 2678400000) {
+                    deferred.resolveWith(null, [{}]);
+                    return;
+                }
+
+                apiClient.getRegistrationInfo(feature).done(function (result) {
+
+                    deferred.resolveWith(null, [result]);
+                }).fail(function () {
+
+                    deferred.reject();
+                });
+
+            }).fail(function () {
+
+                deferred.reject();
+            });
+
+            return deferred.promise();
         };
 
 
