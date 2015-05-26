@@ -101,7 +101,7 @@
             return credentialProvider.credentials().ConnectAccessToken;
         };
 
-        self.getLastUsedApiClient = function() {
+        self.getLastUsedApiClient = function () {
 
             var servers = credentialProvider.credentials().servers;
 
@@ -122,6 +122,19 @@
 
             apiClients.push(apiClient);
 
+            var existingServer = credentialProvider.credentials().servers.filter(function (s) {
+
+                return stringEqualsIgnoreCase(s.ManualAddress, apiClient.serverAddress());
+
+            })[0];
+
+            if (existingServer) {
+
+                existingServer.DateLastAccessed = new Date().getTime();
+                existingServer.LastConnectionMode = MediaBrowser.ConnectionMode.Manual;
+                apiClient.serverInfo(existingServer);
+            }
+
             Events.on(apiClient, 'authenticated', function (e, result) {
                 onAuthenticated(this, result, {}, true);
             });
@@ -130,7 +143,9 @@
 
             return apiClient.getPublicSystemInfo().done(function (systemInfo) {
 
-                var server = credentialProvider.credentials().servers.filter(function (s) {
+                var credentials = credentialProvider.credentials();
+
+                var server = credentials.servers.filter(function (s) {
 
                     return s.Id == systemInfo.Id;
 
@@ -138,7 +153,14 @@
 
                 updateServerInfo(server, systemInfo);
 
+                server.DateLastAccessed = new Date().getTime();
+                server.LastConnectionMode = MediaBrowser.ConnectionMode.Manual;
+                server.ManualAddress = apiClient.serverAddress();
+
                 apiClient.serverInfo(server);
+
+                credentialProvider.addOrUpdateServer(credentials.servers, server);
+                credentialProvider.credentials(credentials);
             });
         };
 
@@ -206,6 +228,7 @@
             var credentials = credentialProvider.credentials();
 
             server.DateLastAccessed = new Date().getTime();
+            server.Id = result.ServerId;
 
             if (saveCredentials) {
                 server.UserId = result.User.Id;
@@ -644,12 +667,16 @@
 
                 var servers = foundServers.map(function (foundServer) {
 
-                    return {
+                    var info = {
                         Id: foundServer.Id,
                         LocalAddress: foundServer.Address,
                         Name: foundServer.Name,
                         ManualAddress: convertEndpointAddressToManualAddress(foundServer)
                     };
+
+                    info.LastConnectionMode = info.ManualAddress ? MediaBrowser.ConnectionMode.Manual : MediaBrowser.ConnectionMode.Local;
+
+                    return info;
                 });
                 deferred.resolveWith(null, [servers]);
             });
@@ -825,7 +852,7 @@
                     skipTest = true;
                 }
                 enableRetry = true;
-                timeout = 7000;
+                timeout = 5000;
             }
 
             else if (mode == MediaBrowser.ConnectionMode.Manual) {
@@ -1095,7 +1122,7 @@
             });
 
             function onDone() {
-                
+
                 credentials = credentialProvider.credentials();
 
                 credentials.servers = credentials.servers.filter(function (s) {
@@ -1193,6 +1220,12 @@
 
             });
         };
+
+        self.getRegistrationInfo = function (feature, apiClient) {
+
+            return apiClient.getRegistrationInfo(feature);
+        };
+
 
         return self;
     };

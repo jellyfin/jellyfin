@@ -30,7 +30,7 @@
 
                 var text = date.toLocaleDateString();
 
-                text += ' ' + LiveTvHelpers.getDisplayTime(date);
+                text += ' ' + LibraryBrowser.getDisplayTime(date);
 
                 logHtml += '<p>' + text + '</p>';
 

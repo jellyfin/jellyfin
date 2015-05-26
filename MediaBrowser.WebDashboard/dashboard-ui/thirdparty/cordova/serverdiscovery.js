@@ -90,6 +90,17 @@
         console.log('chrome.sockets.udp.create');
         chrome.sockets.udp.create(function (createInfo) {
 
+            if (!createInfo) {
+                console.log('create fail');
+                deferred.resolveWith(null, [servers]);
+                return;
+            }
+            if (!createInfo.socketId) {
+                console.log('create fail');
+                deferred.resolveWith(null, [servers]);
+                return;
+            }
+
             socketId = createInfo.socketId;
 
             console.log('chrome.sockets.udp.bind');
@@ -135,14 +146,18 @@
 
             deviceReadyPromise.done(function () {
 
-                findServersInternal(timeoutMs).done(function (result) {
+                try {
+                    findServersInternal(timeoutMs).done(function (result) {
 
-                    deferred.resolveWith(null, [result]);
+                        deferred.resolveWith(null, [result]);
 
-                }).fail(function () {
+                    }).fail(function () {
 
+                        deferred.reject();
+                    });
+                } catch (err) {
                     deferred.reject();
-                });
+                }
             });
 
             return deferred.promise();

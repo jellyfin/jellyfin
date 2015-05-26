@@ -12,7 +12,7 @@
 
         function ensure() {
 
-            credentials = credentials || JSON.parse(store.getItem(key) || '{}');
+            credentials = credentials || JSON.parse(appStorage.getItem(key) || '{}');
             credentials.servers = credentials.servers || [];
         }
 
@@ -26,7 +26,7 @@
 
             if (data) {
                 credentials = data;
-                store.setItem(key, JSON.stringify(data));
+                appStorage.setItem(key, JSON.stringify(data));
             } else {
                 self.clear();
             }
@@ -34,7 +34,7 @@
 
         self.clear = function () {
             credentials = null;
-            store.removeItem(key);
+            appStorage.removeItem(key);
         };
 
         self.credentials = function (data) {
@@ -47,6 +47,10 @@
         };
 
         self.addOrUpdateServer = function (list, server) {
+
+            if (!server.Id) {
+                throw new Error('Server.Id cannot be null or empty');
+            }
 
             var existing = list.filter(function (s) {
                 return s.Id == server.Id;
@@ -76,9 +80,15 @@
                 if (server.WakeOnLanInfos && server.WakeOnLanInfos.length) {
                     existing.WakeOnLanInfos = server.WakeOnLanInfos;
                 }
+                if (server.LastConnectionMode != null) {
+                    existing.LastConnectionMode = server.LastConnectionMode;
+                }
+
+                return existing;
             }
             else {
                 list.push(server);
+                return server;
             }
         };
     };

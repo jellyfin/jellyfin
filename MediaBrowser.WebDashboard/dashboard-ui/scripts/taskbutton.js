@@ -77,7 +77,7 @@ $.fn.taskButton = function (options) {
         var key = 'scheduledTaskButton' + options.taskKey;
         var expectedValue = '4';
 
-        if (store.getItem(key) == expectedValue) {
+        if (appStorage.getItem(key) == expectedValue) {
             onScheduledTaskMessageConfirmed(instance, id);
         } else {
 
@@ -90,7 +90,7 @@ $.fn.taskButton = function (options) {
 
                 if (result) {
 
-                    store.setItem(key, expectedValue);
+                    appStorage.setItem(key, expectedValue);
                     onScheduledTaskMessageConfirmed(instance, id);
                 }
             });

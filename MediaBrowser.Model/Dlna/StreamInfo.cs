@@ -158,6 +158,11 @@ namespace MediaBrowser.Model.Dlna
 
             if (MediaType == DlnaProfileType.Audio)
             {
+                if (StringHelper.EqualsIgnoreCase(SubProtocol, "hls"))
+                {
+                    return string.Format("{0}/audio/{1}/master.m3u8?{2}", baseUrl, ItemId, queryString);
+                }
+
                 return string.Format("{0}/audio/{1}/stream{2}?{3}", baseUrl, ItemId, extension, queryString);
             }
 

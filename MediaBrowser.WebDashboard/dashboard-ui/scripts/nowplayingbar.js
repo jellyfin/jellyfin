@@ -8,6 +8,7 @@
     var unmuteButton;
     var muteButton;
     var volumeSlider;
+    var volumeSliderContainer;
     var isVolumeSliderActive;
     var unpauseButton;
     var pauseButton;
@@ -128,6 +129,8 @@
             }
         });
 
+        volumeSliderContainer = $('.volumeSliderContainer', elem);
+
         positionSlider = $('.positionSlider', elem).on('slidestart', function () {
 
             isPositionSliderActive = true;
@@ -186,26 +189,6 @@
 
         var playerInfo = MediaController.getPlayerInfo();
 
-        var supportedCommands = playerInfo.supportedCommands;
-
-        if (supportedCommands.indexOf('SetVolume') == -1) {
-            volumeSlider.prop('disabled', 'disabled');
-        } else {
-            volumeSlider.prop('disabled', '');
-        }
-
-        if (supportedCommands.indexOf('Mute') == -1) {
-            muteButton.prop('disabled', 'disabled');
-        } else {
-            muteButton.prop('disabled', '');
-        }
-
-        if (supportedCommands.indexOf('Unmute') == -1) {
-            unmuteButton.prop('disabled', 'disabled');
-        } else {
-            unmuteButton.prop('disabled', '');
-        }
-
         var playState = state.PlayState || {};
 
         if (playState.IsPaused) {
@@ -219,7 +202,7 @@
             hideButton(unpauseButton);
         }
 
-        updatePlayerVolumeState(state);
+        updatePlayerVolumeState(state, playerInfo);
 
         var nowPlayingItem = state.NowPlayingItem || {};
         if (!isPositionSliderActive) {
@@ -258,23 +241,69 @@
         updateNowPlayingInfo(state);
     }
 
-    function updatePlayerVolumeState(state) {
+    function updatePlayerVolumeState(state, playerInfo) {
+
+        playerInfo = playerInfo || MediaController.getPlayerInfo();
 
         if (!muteButton) {
             getNowPlayingBar();
         }
 
         var playState = state.PlayState || {};
+        var supportedCommands = playerInfo.supportedCommands;
+
+        var showMuteButton = true;
+        var showUnmuteButton = true;
+        var showVolumeSlider = true;
+
+        //if (supportedCommands.indexOf('SetVolume') == -1) {
+        //    volumeSlider.prop('disabled', 'disabled');
+        //} else {
+        //    volumeSlider.prop('disabled', '');
+        //}
+
+        if (supportedCommands.indexOf('Mute') == -1) {
+            showMuteButton = false;
+        }
+
+        if (supportedCommands.indexOf('Unmute') == -1) {
+            showUnmuteButton = false;
+        }
 
         if (playState.IsMuted) {
 
-            hideButton(muteButton);
-            showButton(unmuteButton);
-
+            showMuteButton = false;
         } else {
 
+            showUnmuteButton = false;
+        }
+
+        if (supportedCommands.indexOf('SetVolume') == -1) {
+            showVolumeSlider = false;
+        }
+
+        if (playerInfo.isLocalPlayer && AppInfo.hasPhysicalVolumeButtons) {
+            showMuteButton = false;
+            showUnmuteButton = false;
+            showVolumeSlider = false;
+        }
+
+        if (showMuteButton) {
             showButton(muteButton);
+        } else {
+            hideButton(muteButton);
+        }
+
+        if (showUnmuteButton) {
+            showButton(unmuteButton);
+        } else {
             hideButton(unmuteButton);
+        }
+
+        if (showVolumeSlider) {
+            volumeSliderContainer.show();
+        } else {
+            volumeSliderContainer.hide();
         }
 
         if (!isVolumeSliderActive) {

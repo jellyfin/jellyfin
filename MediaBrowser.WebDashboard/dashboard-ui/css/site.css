@@ -142,6 +142,11 @@ h1 a:hover {
     position: fixed;
 }
 
+/* Show over now playing bar */
+.ui-panel-display-overlay {
+    z-index: 1098;
+}
+
 .ui-panel-inner {
     position: absolute;
     top: 1px;
@@ -192,8 +197,12 @@ h1 a:hover {
     overflow-x: hidden;
 }
 
-.hiddenScrollY::-webkit-scrollbar {
-    width: 0 !important;
+    .hiddenScrollY::-webkit-scrollbar {
+        width: 0 !important;
+        display: none;
+    }
+
+body:not(.enableBackButton) .headerBackButton {
     display: none;
 }
 
@@ -1192,4 +1201,8 @@ h1 + .accentButton {
     -moz-user-select: auto !important;
     -ms-user-select: auto !important;
     user-select: auto !important;
+}
+
+.supporterMembershipDisabled .tabSupporterMembership {
+    display: none;
 }

@@ -44,7 +44,7 @@
         };
     }
 
-    globalScope.store = new myStore(localStorage);
+    globalScope.appStorage = new myStore(localStorage);
     globalScope.sessionStore = new myStore(sessionStorage);
 
 })(window, window.localStorage, window.sessionStorage);

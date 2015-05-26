@@ -293,7 +293,7 @@
 
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
-            if (pluginSecurityInfo.IsMBSupporter) {
+            if (pluginSecurityInfo.IsMBSupporter || !AppInfo.enableSupporterMembership) {
                 $('.syncPromotion', page).hide();
             } else {
                 $('.syncPromotion', page).show();

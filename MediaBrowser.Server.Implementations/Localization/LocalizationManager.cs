@@ -347,7 +347,7 @@ namespace MediaBrowser.Server.Implementations.Localization
 
             if (parts.Length == 2)
             {
-                culture = parts[0].ToLower() + "_" + parts[1].ToUpper();
+                culture = parts[0].ToLower() + "-" + parts[1].ToUpper();
             }
             else
             {

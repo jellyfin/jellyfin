@@ -1228,6 +1228,7 @@
     "OptionNoThemeVideo": "No Theme Video",
     "LabelOneTimeDonationAmount": "Donation amount:",
     "ButtonDonate": "Donate",
+    "ButtonPurchase": "Purchase",
     "OptionActor": "Actor",
     "OptionComposer": "Composer",
     "OptionDirector": "Director",
@@ -1247,7 +1248,6 @@
     "HeaderDeveloperInfo": "Developer Info",
     "HeaderRevisionHistory": "Revision History",
     "ButtonViewWebsite": "View website",
-    "LabelRecurringDonationCanBeCancelledHelp": "Recurring donations can be cancelled at any time from within your PayPal account.",
     "HeaderXmlSettings": "Xml Settings",
     "HeaderXmlDocumentAttributes": "Xml Document Attributes",
     "HeaderXmlDocumentAttribute": "Xml Document Attribute",
@@ -1409,13 +1409,6 @@
     "OptionEnableFullSpeedConversionHelp": "By default, sync conversion is performed at a low speed to minimize resource consumption.",
     "HeaderPlaylists": "Playlists",
     "HeaderSelectDate": "Select Date",
-    "HeaderWelcomeExclamation": "Welcome!",
-    "HeaderMyPreferences": "My Preferences",
-    "ButtonMyPreferencesWelcomeYes": "Yes, I'd like to set my preferences now.",
-    "ButtonMyPreferencesWelcomeNo": "No thanks, I'll do it later.",
-    "MyPreferencesWelcomeMessage1": "We've presented your library in a way we think you'll enjoy. The appearance and grouping of content can be changed anytime by adjusting your preferences. Your preferences will apply to all Emby apps.",
-    "MyPreferencesWelcomeMessage2": "Would you like to set your preferences now?",
-    "ToAccessPreferencesHelp": "To access your preferences later, click your user icon in the top right header and select My Preferences.",
     "HeaderViewStyles": "View Styles",
     "LabelSelectViewStyles": "Enable enhanced presentations for:",
     "LabelSelectViewStylesHelp": "If enabled, views will be built with metadata to offer categories such as Suggestions, Latest, Genres, and more. If disabled, they'll be displayed with simple folders.",
@@ -1438,5 +1431,6 @@
     "OptionReportGrouping": "Grouping",
     "HeaderExport": "Export",
     "HeaderColumns": "Columns",
-    "ButtonReset": "Reset"
+    "ButtonReset": "Reset",
+    "OptionEnableExternalVideoPlayers": "Enable external video players"
 }

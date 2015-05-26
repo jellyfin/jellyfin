@@ -346,6 +346,10 @@
 
     function isAvailable(item, user) {
 
+        if (Dashboard.isRunningInCordova()) {
+            return false;
+        }
+
         return item.SupportsSync;
     }
 
@@ -361,7 +365,7 @@
 
         var apiClient = window.ApiClient;
 
-        if (!apiClient) {
+        if (!apiClient || !apiClient.getCurrentUserId()) {
             return;
         }
 
@@ -396,7 +400,7 @@
             onCategorySyncButtonClick(page, this);
         });
 
-    }).on('pagebeforeshowready', ".libraryPage", function () {
+    }).on('pageshowready', ".libraryPage", function () {
 
         var page = this;
 

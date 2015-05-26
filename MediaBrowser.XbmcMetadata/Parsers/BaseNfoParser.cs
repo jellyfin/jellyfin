@@ -122,13 +122,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 {
                     var endingXml = xml.Substring(index);
 
-                    var imdbId = endingXml.Split('/')
-                        .FirstOrDefault(i => i.StartsWith("tt", StringComparison.OrdinalIgnoreCase));
-
-                    if (!string.IsNullOrWhiteSpace(imdbId))
-                    {
-                        item.SetProviderId(MetadataProviders.Imdb, imdbId);
-                    }
+                    ParseProviderLinks(item, endingXml);
 
                     // If the file is just an imdb url, don't go any further
                     if (index == 0)
@@ -142,13 +136,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                 {
                     // If the file is just an Imdb url, handle that
 
-                    var imdbId = xml.Split('/')
-                        .FirstOrDefault(i => i.StartsWith("tt", StringComparison.OrdinalIgnoreCase));
-
-                    if (!string.IsNullOrWhiteSpace(imdbId))
-                    {
-                        item.SetProviderId(MetadataProviders.Imdb, imdbId);
-                    }
+                    ParseProviderLinks(item, xml);
 
                     return;
                 }
@@ -179,6 +167,20 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 }
             }
+        }
+
+        private void ParseProviderLinks(T item, string xml)
+        {
+            var imdbId = xml.Split('/')
+                .FirstOrDefault(i => i.StartsWith("tt", StringComparison.OrdinalIgnoreCase));
+
+            if (!string.IsNullOrWhiteSpace(imdbId))
+            {
+                item.SetProviderId(MetadataProviders.Imdb, imdbId);
+            }
+
+            // TODO: Support Tmdb
+            // http://www.themoviedb.org/movie/36557
         }
 
         protected virtual void FetchDataFromXmlNode(XmlReader reader, T item, List<UserItemData> userDataList)

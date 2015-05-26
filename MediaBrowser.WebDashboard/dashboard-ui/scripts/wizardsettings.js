@@ -82,6 +82,8 @@
 
     $(document).on('pageinitdepends', "#wizardSettingsPage", function () {
 
+        var page = this;
+
         $('.wizardSettingsForm', page).off('submit', onSubmit).on('submit', onSubmit);
 
     }).on('pageshowready', "#wizardSettingsPage", function () {

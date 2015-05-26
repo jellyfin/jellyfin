@@ -7,13 +7,13 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Net;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Serialization;
 
 namespace MediaBrowser.Api.Playback.Hls
 {
@@ -100,6 +100,7 @@ namespace MediaBrowser.Api.Playback.Hls
                         try
                         {
                             job = await StartFfMpeg(state, playlist, cancellationTokenSource).ConfigureAwait(false);
+                            job.IsLiveOutput = isLive;
                         }
                         catch
                         {
@@ -133,7 +134,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var appendBaselineStream = false;
             var baselineStreamBitrate = 64000;
 
-            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStream;
+            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStreamLegacy;
             if (hlsVideoRequest != null)
             {
                 appendBaselineStream = hlsVideoRequest.AppendBaselineStream;
@@ -244,7 +245,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
         {
-            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStream;
+            var hlsVideoRequest = state.VideoRequest as GetHlsVideoStreamLegacy;
 
             var itsOffsetMs = hlsVideoRequest == null
                                        ? 0

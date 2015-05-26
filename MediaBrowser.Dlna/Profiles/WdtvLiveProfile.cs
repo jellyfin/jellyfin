@@ -15,7 +15,7 @@ namespace MediaBrowser.Dlna.Profiles
 
             Identification = new DeviceIdentification
             {
-                ModelName = "WD TV HD Live",
+                ModelName = "WD TV",
 
                 Headers = new []
                 {

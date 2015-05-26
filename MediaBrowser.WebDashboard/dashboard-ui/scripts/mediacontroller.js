@@ -106,7 +106,7 @@
         };
 
         function triggerPlayerChange(newPlayer, newTarget) {
-            
+
             $(self).trigger('playerchange', [newPlayer, newTarget]);
         }
 
@@ -142,8 +142,8 @@
                 throw new Error('null player');
             }
 
-            player.tryPair(targetInfo).done(function() {
-                
+            player.tryPair(targetInfo).done(function () {
+
                 currentPlayer = player;
                 currentTargetInfo = targetInfo;
 
@@ -176,7 +176,7 @@
             }
         };
 
-        self.getPlayers = function() {
+        self.getPlayers = function () {
             return players;
         };
 
@@ -220,22 +220,35 @@
             return deferred.promise();
         };
 
+        function doWithPlaybackValidation(fn) {
+
+            requirejs(["scripts/registrationservices"], function () {
+                RegistrationServices.validateFeature('playback').done(fn);
+            });
+        }
+
         self.play = function (options) {
 
-            if (typeof (options) === 'string') {
-                options = { ids: [options] };
-            }
+            doWithPlaybackValidation(function () {
+                if (typeof (options) === 'string') {
+                    options = { ids: [options] };
+                }
 
-            currentPlayer.play(options);
+                currentPlayer.play(options);
+            });
         };
 
         self.shuffle = function (id) {
 
-            currentPlayer.shuffle(id);
+            doWithPlaybackValidation(function () {
+                currentPlayer.shuffle(id);
+            });
         };
 
         self.instantMix = function (id) {
-            currentPlayer.instantMix(id);
+            doWithPlaybackValidation(function () {
+                currentPlayer.instantMix(id);
+            });
         };
 
         self.queue = function (options) {
@@ -370,10 +383,6 @@
             currentPlayer.volumeUp();
         };
 
-        self.shuffle = function (id) {
-            currentPlayer.shuffle(id);
-        };
-
         self.playlist = function () {
             return currentPlayer.playlist || [];
         };
@@ -458,18 +467,94 @@
             return bottomText ? topText + '<br/>' + bottomText : topText;
         };
 
-        self.showPlaybackInfoErrorMessage = function(errorCode) {
+        self.showPlaybackInfoErrorMessage = function (errorCode) {
 
             // This timeout is messy, but if jqm is in the act of hiding a popup, it will not show a new one
             // If we're coming from the popup play menu, this will be a problem
 
-            setTimeout(function() {
+            setTimeout(function () {
                 Dashboard.alert({
                     message: Globalize.translate('MessagePlaybackError' + errorCode),
                     title: Globalize.translate('HeaderPlaybackError')
                 });
             }, 300);
 
+        };
+
+        self.getPlaybackInfo = function (itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId) {
+
+            var postData = {
+                DeviceProfile: deviceProfile
+            };
+
+            var query = {
+                UserId: Dashboard.getCurrentUserId(),
+                StartTimeTicks: startPosition || 0
+            };
+
+            if (audioStreamIndex != null) {
+                query.AudioStreamIndex = audioStreamIndex;
+            }
+            if (subtitleStreamIndex != null) {
+                query.SubtitleStreamIndex = subtitleStreamIndex;
+            }
+            if (mediaSource) {
+                query.MediaSourceId = mediaSource.Id;
+            }
+            if (liveStreamId) {
+                query.LiveStreamId = liveStreamId;
+            }
+
+            return ApiClient.ajax({
+                url: ApiClient.getUrl('Items/' + itemId + '/PlaybackInfo', query),
+                type: 'POST',
+                data: JSON.stringify(postData),
+                contentType: "application/json",
+                dataType: "json"
+
+            });
+        }
+
+        self.getLiveStream = function (itemId, playSessionId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex) {
+
+            var postData = {
+                DeviceProfile: deviceProfile,
+                OpenToken: mediaSource.OpenToken
+            };
+
+            var query = {
+                UserId: Dashboard.getCurrentUserId(),
+                StartTimeTicks: startPosition || 0,
+                ItemId: itemId,
+                PlaySessionId: playSessionId
+            };
+
+            if (audioStreamIndex != null) {
+                query.AudioStreamIndex = audioStreamIndex;
+            }
+            if (subtitleStreamIndex != null) {
+                query.SubtitleStreamIndex = subtitleStreamIndex;
+            }
+
+            return ApiClient.ajax({
+                url: ApiClient.getUrl('LiveStreams/Open', query),
+                type: 'POST',
+                data: JSON.stringify(postData),
+                contentType: "application/json",
+                dataType: "json"
+
+            });
+        };
+
+        self.supportsDirectPlay = function (mediaSource) {
+
+            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == 'Http' && !mediaSource.RequiredHttpHeaders.length) {
+
+                // TODO: Need to verify the host is going to be reachable
+                return true;
+            }
+
+            return false;
         };
     }
 
@@ -746,4 +831,4 @@
         mirrorIfEnabled(info);
     });
 
-})(jQuery, window, window.store);
+})(jQuery, window, window.appStorage);

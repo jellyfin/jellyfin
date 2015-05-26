@@ -72,9 +72,24 @@
             }
         }
 
+        self.showChaptersFlyout = function () {
+
+            var html = getChaptersFlyoutHtml();
+
+            var elem = $('.videoChaptersPopup').html(html)
+                .trigger('create')
+                .popup("option", "positionTo", $('.videoChaptersButton'))
+                .off('popupafterclose', onFlyoutClose)
+                .on('popupafterclose', onFlyoutClose);
+
+            onPopupOpen(elem);
+        };
+
         self.showSubtitleMenu = function () {
 
-            var elem = $('.videoSubtitlePopup').html(getSubtitleTracksHtml())
+            var html = getSubtitleTracksHtml();
+
+            var elem = $('.videoSubtitlePopup').html(html)
                 .trigger('create')
                 .popup("option", "positionTo", $('.videoSubtitleButton'))
                 .off('popupafterclose', onFlyoutClose)
@@ -85,7 +100,9 @@
 
         self.showQualityFlyout = function () {
 
-            var elem = $('.videoQualityPopup').html(getQualityFlyoutHtml())
+            var html = getQualityFlyoutHtml();
+
+            var elem = $('.videoQualityPopup').html(html)
                 .trigger('create')
                 .popup("option", "positionTo", $('.videoQualityButton'))
                 .off('popupafterclose', onFlyoutClose)
@@ -94,20 +111,11 @@
             onPopupOpen(elem);
         };
 
-        self.showChaptersFlyout = function () {
-
-            var elem = $('.videoChaptersPopup').html(getChaptersFlyoutHtml())
-                .trigger('create')
-                .popup("option", "positionTo", $('.videoChaptersButton'))
-                .off('popupafterclose', onFlyoutClose)
-                .on('popupafterclose', onFlyoutClose);
-
-            onPopupOpen(elem);
-        };
-
         self.showAudioTracksFlyout = function () {
 
-            var elem = $('.videoAudioPopup').html(getAudioTracksHtml())
+            var html = getAudioTracksHtml();
+
+            var elem = $('.videoAudioPopup').html(html)
                 .trigger('create')
                 .popup("option", "positionTo", $('.videoAudioButton'))
                 .off('popupafterclose', onFlyoutClose)
@@ -499,6 +507,53 @@
             self.changeStream(Math.floor(newPositionTicks));
         }
 
+        self.onChapterOptionSelected = function (elem) {
+
+            if (!$(elem).hasClass('selectedMediaPopupOption')) {
+                var ticks = parseInt(elem.getAttribute('data-value') || '0');
+
+                self.changeStream(ticks);
+            }
+            $('.videoChaptersPopup').popup('close');
+        };
+
+        self.onAudioOptionSelected = function (elem) {
+
+            if (!$(elem).hasClass('selectedMediaPopupOption')) {
+                var index = parseInt(elem.getAttribute('data-value'));
+
+                self.setAudioStreamIndex(index);
+            }
+            $('.videoAudioPopup').popup('close');
+        };
+
+        self.onSubtitleOptionSelected = function (elem) {
+
+            if (!$(elem).hasClass('selectedMediaPopupOption')) {
+                var index = parseInt(elem.getAttribute('data-value'));
+
+                self.setSubtitleStreamIndex(index);
+            }
+            $('.videoSubtitlePopup').popup('close');
+        };
+
+        self.onQualityOptionSelected = function (elem) {
+
+            if (!$(elem).hasClass('selectedMediaPopupOption')) {
+                var bitrate = parseInt(elem.getAttribute('data-value'));
+
+                AppSettings.maxStreamingBitrate(bitrate);
+
+                $('.videoQualityPopup').popup('close');
+
+                self.changeStream(self.getCurrentTicks(), {
+                    Bitrate: bitrate
+                });
+            }
+
+            $('.videoSubtitlePopup').popup('close');
+        };
+
         $(function () {
 
             var parent = $("#mediaPlayer");
@@ -518,55 +573,6 @@
 
                 updateVolumeButtons(vol);
                 self.setVolume(vol * 100);
-            });
-
-            $('.videoChaptersPopup').on('click', '.mediaPopupOption', function () {
-
-                var ticks = parseInt(this.getAttribute('data-positionticks') || '0');
-
-                self.changeStream(ticks);
-
-                $('.videoChaptersPopup').popup('close');
-            });
-
-            $('.videoAudioPopup').on('click', '.mediaPopupOption', function () {
-
-                if (!$(this).hasClass('selectedMediaPopupOption')) {
-                    var index = parseInt(this.getAttribute('data-index'));
-
-                    self.setAudioStreamIndex(index);
-                }
-
-                $('.videoAudioPopup').popup('close');
-            });
-
-            $('.videoSubtitlePopup').on('click', '.mediaPopupOption', function () {
-
-                $('.videoSubtitlePopup').popup('close');
-
-                if (!$(this).hasClass('selectedMediaPopupOption')) {
-
-                    var index = parseInt(this.getAttribute('data-index'));
-
-                    self.setSubtitleStreamIndex(index);
-                }
-            });
-
-            $('.videoQualityPopup').on('click', '.mediaPopupOption', function () {
-
-                if (!$(this).hasClass('selectedMediaPopupOption')) {
-
-                    var bitrate = parseInt(this.getAttribute('data-bitrate'));
-
-                    AppSettings.maxStreamingBitrate(bitrate);
-
-                    self.changeStream(self.getCurrentTicks(), {
-
-                        Bitrate: bitrate
-                    });
-                }
-
-                $('.videoQualityPopup').popup('close');
             });
 
             var trackChange = false;
@@ -597,32 +603,13 @@
 
                 tooltip.remove();
             });
-
-            $('.videoSubtitleButton').on('click', function () {
-
-                self.showSubtitleMenu();
-            });
-
-            $('.videoQualityButton').on('click', function () {
-
-                self.showQualityFlyout();
-            });
-
-            $('.videoAudioButton').on('click', function () {
-
-                self.showAudioTracksFlyout();
-            });
-
-            $('.videoChaptersButton').on('click', function () {
-
-                self.showChaptersFlyout();
-            });
         });
 
+        var idleHandlerTimeout;
         function idleHandler() {
 
-            if (timeout) {
-                window.clearTimeout(timeout);
+            if (idleHandlerTimeout) {
+                window.clearTimeout(idleHandlerTimeout);
             }
 
             if (idleState == true) {
@@ -632,7 +619,7 @@
 
             idleState = false;
 
-            timeout = window.setTimeout(function () {
+            idleHandlerTimeout = window.setTimeout(function () {
                 idleState = true;
                 $('.hiddenOnIdle').addClass("inactive");
                 $('#videoPlayer').addClass('idlePlayer');
@@ -698,13 +685,19 @@
                 var cssClass = "mediaPopupOption";
 
                 var selected = false;
+                // Need to embed onclick handler due to delegation not working in iOS cordova
+                var onclick = '';
 
                 if (currentTicks >= chapter.StartPositionTicks) {
                     var nextChapter = chapters[index + 1];
                     selected = !nextChapter || currentTicks < nextChapter.StartPositionTicks;
                 }
 
-                var optionHtml = '<li><a data-positionticks="' + chapter.StartPositionTicks + '" class="' + cssClass + '" href="#" style="padding-top:0;padding-bottom:0;">';
+                if (!selected) {
+                    onclick = ' onclick="MediaPlayer.onChapterOptionSelected(this);"';
+                }
+
+                var optionHtml = '<li><a' + onclick + ' data-value="' + chapter.StartPositionTicks + '" class="' + cssClass + '" href="#" style="padding-top:0;padding-bottom:0;">';
 
                 var imgUrl = "css/images/media/chapterflyout.png";
 
@@ -773,11 +766,16 @@
 
                 var selected = stream.Index == currentIndex;
 
+                // Need to embed onclick handler due to delegation not working in iOS cordova
+                var onclick = '';
+
                 if (selected) {
                     cssClass += ' selectedMediaPopupOption';
+                } else {
+                    onclick = ' onclick="MediaPlayer.onAudioOptionSelected(this);"';
                 }
 
-                var optionHtml = '<li><a data-index="' + stream.Index + '" class="' + cssClass + '" href="#">';
+                var optionHtml = '<li><a' + onclick + ' data-value="' + stream.Index + '" class="' + cssClass + '" href="#">';
 
                 optionHtml += '<p style="margin:0;">';
 
@@ -858,11 +856,16 @@
 
                 var selected = stream.Index == currentIndex;
 
+                // Need to embed onclick handler due to delegation not working in iOS cordova
+                var onclick = '';
+
                 if (selected) {
                     cssClass += ' selectedMediaPopupOption';
+                } else {
+                    onclick = ' onclick="MediaPlayer.onSubtitleOptionSelected(this);"';
                 }
 
-                var optionHtml = '<li><a data-index="' + stream.Index + '" class="' + cssClass + '" href="#">';
+                var optionHtml = '<li><a' + onclick + ' data-value="' + stream.Index + '" class="' + cssClass + '" href="#">';
 
                 optionHtml += '<p style="margin:0;">';
 
@@ -939,12 +942,16 @@
             html += options.map(function (option) {
 
                 var cssClass = "mediaPopupOption";
+                // Need to embed onclick handler due to delegation not working in iOS cordova
+                var onclick = '';
 
                 if (option.selected) {
                     cssClass += ' selectedMediaPopupOption';
+                } else {
+                    onclick = ' onclick="MediaPlayer.onQualityOptionSelected(this);"';
                 }
 
-                var optionHtml = '<li><a data-bitrate="' + option.bitrate + '" class="' + cssClass + '" href="#">';
+                var optionHtml = '<li><a' + onclick + ' data-value="' + option.bitrate + '" class="' + cssClass + '" href="#">';
 
                 optionHtml += '<p style="margin:0;">';
 
@@ -972,11 +979,10 @@
 
         function bindEventsForPlayback() {
 
-            var hideElementsOnIdle = !$.browser.mobile;
+            var hideElementsOnIdle = true;
 
             if (hideElementsOnIdle) {
-                $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer', idleHandler);
-                $('.itemVideo').on('mousemove.videoplayer keydown.videoplayer scroll.videoplayer', idleHandler).trigger('mousemove');
+                $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer mousedown.videoplayer', idleHandler).on('mousemove.videoplayer keydown.videoplayer scroll.videoplayer mousedown.videoplayer', idleHandler).trigger('mousemove');
             }
 
             $(document).on('webkitfullscreenchange.videoplayer mozfullscreenchange.videoplayer msfullscreenchange.videoplayer fullscreenchange.videoplayer', function (e) {
@@ -1006,14 +1012,14 @@
 
         function unbindEventsForPlayback() {
 
-            $(document).off('webkitfullscreenchange.videoplayer mozfullscreenchange.videoplayer msfullscreenchange.videoplayer fullscreenchange.videoplayer');
+            $(document).off('.videoplayer');
 
             // Stop playback on browser back button nav
             $(window).off("popstate.videoplayer");
 
             $(document.body).off("mousemove.videoplayer");
 
-            $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer');
+            $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer mousedown.videoplayer');
         }
 
         self.canAutoPlayVideo = function () {
@@ -1071,10 +1077,14 @@
 
         };
 
+        function supportsContentOverVideoPlayer() {
+            return true;
+        }
+
         self.playVideoInternal = function (item, mediaSource, startPosition, streamInfo) {
 
             var videoUrl = streamInfo.url;
-            var contentType = streamInfo.contentType;
+            var contentType = streamInfo.mimeType;
             var startPositionInSeekParam = streamInfo.startPositionInSeekParam;
             self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
 
@@ -1085,7 +1095,7 @@
 
             // Reports of stuttering with h264 stream copy in IE
             if (streamInfo.playMethod == 'Transcode' && videoUrl.indexOf('.m3u8') == -1) {
-                videoUrl += 'EnableAutoStreamCopy=false';
+                videoUrl += '&EnableAutoStreamCopy=false';
             }
 
             var posterCode = self.getPosterUrl(item);
@@ -1150,7 +1160,7 @@
                 $('.videoSubtitleButton').hide();
             }
 
-            if (item.Chapters && item.Chapters.length) {
+            if (item.Chapters && item.Chapters.length && supportsContentOverVideoPlayer()) {
                 $('.videoChaptersButton').show();
             } else {
                 $('.videoChaptersButton').hide();
@@ -1162,7 +1172,7 @@
                 $('#video-fullscreenButton', videoControls).show();
             }
 
-            if ($.browser.mobile) {
+            if (AppInfo.hasPhysicalVolumeButtons) {
                 $('.volumeSliderContainer', videoControls).addClass('hide');
                 $('.muteButton', videoControls).addClass('hide');
                 $('.unmuteButton', videoControls).addClass('hide');
@@ -1277,16 +1287,19 @@
 
             }).on("click.mediaplayerevent", function (e) {
 
-                if (this.paused) {
-                    self.unpause();
-                } else {
-                    self.pause();
+                if (!$.browser.mobile) {
+                    if (this.paused) {
+                        self.unpause();
+                    } else {
+                        self.pause();
+                    }
                 }
 
             }).on("dblclick.mediaplayerevent", function () {
 
-                self.toggleFullscreen();
-
+                if (!$.browser.mobile) {
+                    self.toggleFullscreen();
+                }
             });
 
             bindEventsForPlayback();

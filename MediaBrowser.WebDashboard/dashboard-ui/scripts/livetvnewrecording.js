@@ -145,13 +145,7 @@
         return false;
     }
 
-    window.LiveTvNewRecordingPage = {
-
-        onSubmit: onSubmit
-
-    };
-
-    $(document).on('pageinit', "#liveTvNewRecordingPage", function () {
+    $(document).on('pageinitdepends', "#liveTvNewRecordingPage", function () {
 
         var page = this;
 
@@ -173,7 +167,9 @@
 
         });
 
-    }).on('pagebeforeshow', "#liveTvNewRecordingPage", function () {
+        $('.liveTvNewRecordingForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pagebeforeshowready', "#liveTvNewRecordingPage", function () {
 
         var page = this;
 

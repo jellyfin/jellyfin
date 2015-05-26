@@ -1082,6 +1082,17 @@
             });
         };
 
+        self.getRegistrationInfo = function (feature) {
+
+            var url = self.getUrl("Registrations/" + feature);
+
+            return self.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json"
+            });
+        };
+
         /**
          * Gets the current server status
          */

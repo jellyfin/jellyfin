@@ -114,5 +114,11 @@
 
         $('.supporterForm', page).attr('action', 'https://www.paypal.com/cgi-bin/webscr');
         $('.recurringSubscriptionCancellationHelp', page).html(Globalize.translate('LabelRecurringDonationCanBeCancelledHelp'));
+    },
+
+    validateFeature: function () {
+        var deferred = DeferredBuilder.Deferred();
+        deferred.resolve();
+        return deferred.promise();
     }
 };

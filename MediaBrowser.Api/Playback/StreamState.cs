@@ -41,7 +41,7 @@ namespace MediaBrowser.Api.Playback
         public string InputContainer { get; set; }
 
         public MediaSourceInfo MediaSource { get; set; }
-        
+
         public MediaStream AudioStream { get; set; }
         public MediaStream VideoStream { get; set; }
         public MediaStream SubtitleStream { get; set; }
@@ -57,6 +57,10 @@ namespace MediaBrowser.Api.Playback
 
         public MediaProtocol InputProtocol { get; set; }
 
+        public bool IsOutputVideo
+        {
+            get { return Request is VideoStreamRequest; }
+        }
         public bool IsInputVideo { get; set; }
         public bool IsInputArchive { get; set; }
 
@@ -66,7 +70,6 @@ namespace MediaBrowser.Api.Playback
         public List<string> PlayableStreamFileNames { get; set; }
 
         public int SegmentLength = 3;
-        public bool EnableGenericHlsSegmenter = false;
         public int HlsListSize
         {
             get

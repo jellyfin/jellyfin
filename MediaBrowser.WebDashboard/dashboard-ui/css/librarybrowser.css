@@ -1535,7 +1535,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .detailsMenuContentInner {
-    height: 200px;
+    height: 220px;
 }
 
 .detailsMenuOverview {
@@ -1571,6 +1571,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .detailsMenuHeaderWithLogo h3 {
     padding: 0 30px;
     line-height: .5;
+}
+
+@media all and (max-height:500px) {
+
+    .detailsMenuUserData {
+        display: none;
+    }
 }
 
 @media all and (min-height:500px) {

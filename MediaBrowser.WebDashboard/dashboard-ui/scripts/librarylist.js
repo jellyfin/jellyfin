@@ -284,7 +284,7 @@
 
         var id = this.getAttribute('data-itemid');
 
-        ExternalPlayer.showMenu(id);
+        LibraryBrowser.playInExternalPlayer(id);
 
         return false;
     }
@@ -420,7 +420,7 @@
                     }
                 }
 
-                if (mediaType == 'Video' && ExternalPlayer.getExternalPlayers().length) {
+                if (mediaType == 'Video' && AppSettings.enableExternalPlayers()) {
                     html += '<li data-icon="play"><a href="#" class="btnExternalPlayer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
                 }
 
@@ -663,7 +663,7 @@
             var userData = LibraryBrowser.getUserDataIconsHtml(item);
             if (userData) {
 
-                contentHtml += '<p>' + userData + '</p>';
+                contentHtml += '<p class="detailsMenuUserData">' + userData + '</p>';
             }
 
             var ratingHtml = LibraryBrowser.getRatingHtml(item);
@@ -756,7 +756,11 @@
         setItemIntoOverlay(elem, 0);
     }
 
-    function onCardClick() {
+    function onCardClick(e) {
+
+        if ($(e.target).is('.itemSelectionPanel') || $('.itemSelectionPanel', this).length) {
+            return false;
+        }
 
         var info = LibraryBrowser.getListItemInfo(this);
         var itemId = info.id;

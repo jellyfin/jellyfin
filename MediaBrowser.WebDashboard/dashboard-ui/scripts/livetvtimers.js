@@ -62,8 +62,8 @@
             html += '</h3>';
 
             html += '<p>';
-            html += LiveTvHelpers.getDisplayTime(timer.StartDate);
-            html += ' - ' + LiveTvHelpers.getDisplayTime(timer.EndDate);
+            html += LibraryBrowser.getDisplayTime(timer.StartDate);
+            html += ' - ' + LibraryBrowser.getDisplayTime(timer.EndDate);
             html += '</p>';
 
 

@@ -52,7 +52,7 @@
             $('.time', page).html(Globalize.translate('LabelAnytime')).trigger('create');
         }
         else if (item.ChannelId) {
-            $('.time', page).html(LiveTvHelpers.getDisplayTime(item.StartDate)).trigger('create');
+            $('.time', page).html(LibraryBrowser.getDisplayTime(item.StartDate)).trigger('create');
         }
 
         Dashboard.hideLoadingMsg();
@@ -198,8 +198,8 @@
                 html += '<span class="newTvProgram">' + Globalize.translate('LabelNewProgram') + '&nbsp;&nbsp;</span>';
             }
 
-            html += LiveTvHelpers.getDisplayTime(timer.StartDate);
-            html += ' - ' + LiveTvHelpers.getDisplayTime(timer.EndDate);
+            html += LibraryBrowser.getDisplayTime(timer.StartDate);
+            html += ' - ' + LibraryBrowser.getDisplayTime(timer.EndDate);
             html += '</p>';
 
 
@@ -263,7 +263,7 @@
         });
     }
 
-    $(document).on('pageinit', "#liveTvSeriesTimerPage", function () {
+    $(document).on('pageinitdepends', "#liveTvSeriesTimerPage", function () {
 
         var page = this;
 
@@ -274,7 +274,7 @@
 
         });
 
-    }).on('pagebeforeshow', "#liveTvSeriesTimerPage", function () {
+    }).on('pagebeforeshowready', "#liveTvSeriesTimerPage", function () {
 
         var page = this;
 

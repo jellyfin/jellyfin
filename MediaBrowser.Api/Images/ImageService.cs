@@ -625,6 +625,8 @@ namespace MediaBrowser.Api.Images
 
             var file = await _imageProcessor.ProcessImage(options).ConfigureAwait(false);
 
+            headers["Vary"] = "Accept";
+
             return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {
                 CacheDuration = cacheDuration,

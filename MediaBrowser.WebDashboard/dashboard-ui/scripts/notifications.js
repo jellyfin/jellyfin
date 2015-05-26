@@ -45,40 +45,46 @@
 
         self.showNotificationsFlyout = function () {
 
-            var html = '<div data-role="panel" data-position="right" data-display="overlay" class="notificationsFlyout" data-position-fixed="true" data-theme="a">';
+            Dashboard.getCurrentUser().done(function (user) {
+                var html = '<div data-role="panel" data-position="right" data-display="overlay" class="notificationsFlyout" data-position-fixed="true" data-theme="a">';
 
-            html += '<h1 style="margin: .25em 0;">';
-            html += '<span style="vertical-align:middle;">' + Globalize.translate('HeaderNotifications') + '</span>';
-            html += '<a data-role="button" data-inline="true" data-icon="arrow-r" href="notificationlist.html" data-iconpos="notext" style="vertical-align:middle;margin-left:.5em;">' + Globalize.translate('ButtonViewNotifications') + '</a>';
-            html += '</h1>';
+                html += '<h1 style="margin: .25em 0;">';
+                html += '<span style="vertical-align:middle;">' + Globalize.translate('HeaderNotifications') + '</span>';
 
-            html += '<div>';
+                if (user.Policy.IsAdministrator) {
+                    html += '<a data-role="button" data-inline="true" data-icon="arrow-r" href="notificationlist.html" data-iconpos="notext" style="vertical-align:middle;margin-left:.5em;">' + Globalize.translate('ButtonViewNotifications') + '</a>';
+                }
 
-            html += '<div class="notificationsFlyoutlist">Loading...';
+                html += '</h1>';
 
-            html += '</div>';
+                html += '<div>';
 
-            html += '</div>';
+                html += '<div class="notificationsFlyoutlist">Loading...';
 
-            html += '</div>';
+                html += '</div>';
 
-            $(document.body).append(html);
+                html += '</div>';
 
-            $('.notificationsFlyout').panel({}).trigger('create').panel("open").on("panelclose", function () {
+                html += '</div>';
 
-                $(this).off("panelclose").remove();
+                $(document.body).append(html);
 
-            });
+                $('.notificationsFlyout').panel({}).trigger('create').panel("open").on("panelclose", function () {
 
-            self.isFlyout = true;
+                    $(this).off("panelclose").remove();
 
-            var startIndex = 0;
-            var limit = 5;
-            var elem = $('.notificationsFlyoutlist');
+                });
 
-            refreshNotifications(startIndex, limit, elem, null, false).done(function() {
-                
-                self.markNotificationsRead([]);
+                self.isFlyout = true;
+
+                var startIndex = 0;
+                var limit = 5;
+                var elem = $('.notificationsFlyoutlist');
+
+                refreshNotifications(startIndex, limit, elem, null, false).done(function () {
+
+                    self.markNotificationsRead([]);
+                });
             });
         };
 

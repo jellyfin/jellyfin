@@ -165,10 +165,22 @@
 .viewMenuSearch {
     position: fixed;
     top: 0;
-    left: 0;
+    left: 0%;
     right: 0;
     background: #000000;
     z-index: 1000;
+}
+
+@media all and (min-width: 800px) {
+    .headerSearchInput {
+        width: 93%;
+    }
+}
+
+@media all and (min-width: 1200px) {
+    .headerSearchInput {
+        width: 96%;
+    }
 }
 
 .viewMenuSearch:not(.hide) {

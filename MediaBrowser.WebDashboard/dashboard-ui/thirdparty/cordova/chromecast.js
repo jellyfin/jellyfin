@@ -1,7 +1,7 @@
 ﻿(function () {
 
     var PlayerName = "Chromecast";
-    var ApplicationID = "F4EB2E8E";
+    var ApplicationID = "2D4B1DA3";
     var currentPairingDeviceId;
     var currentPairedDeviceId;
     var currentDeviceFriendlyName;
@@ -92,7 +92,7 @@
             getEndpointInfo().done(function (endpoint) {
 
                 if (endpoint.IsLocal || endpoint.IsInNetwork) {
-                    ApiClient.getSystemInfo().done(function (info) {
+                    ApiClient.getPublicSystemInfo().done(function (info) {
 
                         message.serverAddress = info.LocalAddress;
                         sendMessageInternal(message);
@@ -483,7 +483,7 @@
             });
 
         }
-        
+
         function onDisconnected() {
             currentWebAppSession = null;
             currentPairedDeviceId = null;
@@ -491,23 +491,26 @@
         }
 
         function launchWebApp(device) {
-            device.getWebAppLauncher().launchWebApp(ApplicationID).success(function (session) {
 
-                console.log('launchWebApp success. calling onSessionConnected');
+            // First try to join existing session. If it fails, launch a new one
+
+            device.getWebAppLauncher().joinWebApp(ApplicationID).success(function (session) {
+
+                console.log('joinWebApp success. calling onSessionConnected');
                 onSessionConnected(device, session);
 
             }).error(function (err) {
 
-                console.log('launchWebApp error: ' + JSON.stringify(err) + '. calling joinWebApp');
+                console.log('joinWebApp error: ' + JSON.stringify(err) + '. calling joinWebApp');
 
-                device.getWebAppLauncher().joinWebApp(ApplicationID).success(function (session) {
+                device.getWebAppLauncher().launchWebApp(ApplicationID).success(function (session) {
 
-                    console.log('joinWebApp success. calling onSessionConnected');
+                    console.log('launchWebApp success. calling onSessionConnected');
                     onSessionConnected(device, session);
 
                 }).error(function (err1) {
 
-                    console.log('joinWebApp error:' + JSON.stringify(err1));
+                    console.log('launchWebApp error:' + JSON.stringify(err1));
 
                 });
 

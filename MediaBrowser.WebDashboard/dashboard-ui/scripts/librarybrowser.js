@@ -232,13 +232,20 @@
             return html;
         },
 
+        playInExternalPlayer: function(id) {
+            
+             Dashboard.loadExternalPlayer().done(function () {
+                ExternalPlayer.showMenu(id);
+            });
+        },
+
         showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks, showAddToPlaylist) {
 
-            var externalPlayers = ExternalPlayer.getExternalPlayers();
+            var externalPlayers = AppSettings.enableExternalPlayers();
 
             if (!resumePositionTicks && mediaType != "Audio" && !isFolder) {
 
-                if (!externalPlayers.length || mediaType != "Video") {
+                if (!externalPlayers || mediaType != "Video") {
                     MediaController.play(itemId);
                     return;
                 }
@@ -253,8 +260,8 @@
 
             html += '<li><a href="#" onclick="MediaController.play(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonPlay') + '</a></li>';
 
-            if (!isFolder && externalPlayers.length) {
-                html += '<li><a href="#" onclick="LibraryBrowser.closePlayMenu();ExternalPlayer.showMenu(\'' + itemId + '\');">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
+            if (!isFolder && externalPlayers) {
+                html += '<li><a href="#" onclick="LibraryBrowser.closePlayMenu();LibraryBrowser.playInExternalPlayer(\'' + itemId + '\');">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
             }
 
             if (resumePositionTicks) {
@@ -1105,7 +1112,7 @@
                 posterWidth = 320;
                 thumbWidth = 320;
             }
-            
+
             var dateText;
 
             for (var i = 0, length = items.length; i < length; i++) {
@@ -2619,6 +2626,56 @@
             elem.lazyChildren();
         },
 
+        getDisplayTime: function (date) {
+
+            if ((typeof date).toString().toLowerCase() === 'string') {
+                try {
+
+                    date = parseISO8601Date(date, { toLocal: true });
+
+                } catch (err) {
+                    return date;
+                }
+            }
+
+            var lower = date.toLocaleTimeString().toLowerCase();
+
+            var hours = date.getHours();
+            var minutes = date.getMinutes();
+
+            var text;
+
+            if (lower.indexOf('am') != -1 || lower.indexOf('pm') != -1) {
+
+                var suffix = hours > 11 ? 'pm' : 'am';
+
+                hours = (hours % 12) || 12;
+
+                text = hours;
+
+                if (minutes) {
+
+                    text += ':';
+                    if (minutes < 10) {
+                        text += '0';
+                    }
+                    text += minutes;
+                }
+
+                text += suffix;
+
+            } else {
+                text = hours + ':';
+
+                if (minutes < 10) {
+                    text += '0';
+                }
+                text += minutes;
+            }
+
+            return text;
+        },
+
         getMiscInfoHtml: function (item) {
 
             var miscInfo = [];
@@ -2649,7 +2706,7 @@
                     miscInfo.push(text);
 
                     if (item.Type != "Recording") {
-                        text = LiveTvHelpers.getDisplayTime(date);
+                        text = LibraryBrowser.getDisplayTime(date);
                         miscInfo.push(text);
                     }
                 }
@@ -2893,4 +2950,4 @@
         }
     };
 
-})(window, document, jQuery, screen, window.store);
+})(window, document, jQuery, screen, window.appStorage);

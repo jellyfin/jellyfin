@@ -641,7 +641,7 @@
                 imgUrl = 'css/images/clients/ios.png';
             }
             else {
-                imgUrl = 'css/images/clients/html5.png';
+                imgUrl = 'css/images/clients/android.png';
             }
 
             return "<img src='" + imgUrl + "' alt='Emby Mobile' />";
@@ -818,7 +818,10 @@
 
         var imgUrl, text;
 
-        if (pluginSecurityInfo.IsMBSupporter) {
+        if (!AppInfo.enableSupporterMembership) {
+            $('.supporterIconContainer', page).remove();
+        }
+        else if (pluginSecurityInfo.IsMBSupporter) {
 
             imgUrl = "css/images/supporter/supporterbadge.png";
             text = Globalize.translate('MessageThankYouForSupporting');
@@ -1009,8 +1012,7 @@
     }
 };
 
-$(document).on('pagebeforeshowready', "#dashboardPage", DashboardPage.onPageShow)
-    .on('pagehide', "#dashboardPage", DashboardPage.onPageHide);
+$(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('pagehide', "#dashboardPage", DashboardPage.onPageHide);
 
 (function ($, document, window) {
 
@@ -1305,7 +1307,7 @@ $(document).on('pagebeforeshowready', "#dashboardPage", DashboardPage.onPageShow
             result.CustomPrefs[welcomeTourKey] = welcomeDismissValue;
             ApiClient.updateDisplayPreferences('dashboard', result, userId, 'dashboard');
 
-            $(page).off('pagebeforeshow.checktour');
+            $(page).off('.checktour');
         });
     }
 
@@ -1370,7 +1372,7 @@ $(document).on('pagebeforeshowready', "#dashboardPage", DashboardPage.onPageShow
             takeTour(page, Dashboard.getCurrentUserId());
         });
 
-    }).on('pagebeforeshowready.checktour', "#dashboardPage", function () {
+    }).on('pageshowready.checktour', "#dashboardPage", function () {
 
         var page = this;
 
@@ -1386,7 +1388,7 @@ $(document).on('pagebeforeshowready', "#dashboardPage", DashboardPage.onPageShow
 
 (function () {
 
-    $(document).on('pagebeforeshowready', ".type-interior", function () {
+    $(document).on('pageshowready', ".type-interior", function () {
 
         var page = this;
 
@@ -1395,7 +1397,7 @@ $(document).on('pagebeforeshowready', "#dashboardPage", DashboardPage.onPageShow
             if (!$('.staticSupporterPromotion', page).length) {
                 $('.supporterPromotion', page).remove();
 
-                if (!pluginSecurityInfo.IsMBSupporter) {
+                if (!pluginSecurityInfo.IsMBSupporter && AppInfo.enableSupporterMembership) {
                     $('.content-primary', page).append('<div class="supporterPromotion"><a class="btn btnActionAccent" href="supporter.html" style="font-size:14px;"><div>' + Globalize.translate('HeaderSupportTheTeam') + '</div><div style="font-weight:normal;font-size:90%;margin-top:5px;">' + Globalize.translate('TextEnjoyBonusFeatures') + '</div></a></div>');
                 }
             }
