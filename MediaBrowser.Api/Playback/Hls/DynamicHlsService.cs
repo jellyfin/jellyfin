@@ -957,6 +957,11 @@ namespace MediaBrowser.Api.Playback.Hls
                 return false;
             }
 
+            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
             return state.RunTimeTicks.HasValue && state.IsOutputVideo;
         }
 
