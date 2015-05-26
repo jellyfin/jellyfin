@@ -999,8 +999,6 @@
             var delimiter = '|';
             result.map(function (item) {
 
-                filters = (delimiter + filters).replace(delimiter + item.FieldName, '').substring(1);
-
                 if (item.Visible)
                     filters = filters ? (filters + delimiter + item.FieldName) : item.FieldName;
             });
