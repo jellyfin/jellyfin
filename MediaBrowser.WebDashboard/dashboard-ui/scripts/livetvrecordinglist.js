@@ -67,12 +67,12 @@
 
     }
 
-    $(document).on('pageinit', "#liveTvRecordingListPage", function () {
+    $(document).on('pageinitdepends', "#liveTvRecordingListPage", function () {
 
         var page = this;
 
 
-    }).on('pagebeforeshow', "#liveTvRecordingListPage", function () {
+    }).on('pageshowready', "#liveTvRecordingListPage", function () {
 
         var page = this;
         
@@ -100,8 +100,6 @@
         } else {
             $('.listName', page).html(Globalize.translate('HeaderAllRecordings'));
         }
-
-    }).on('pageshow', "#liveTvRecordingListPage", function () {
 
         updateFilterControls(this);
     });

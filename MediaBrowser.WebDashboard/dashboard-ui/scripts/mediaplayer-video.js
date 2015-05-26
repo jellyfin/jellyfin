@@ -4,9 +4,7 @@
 
         var timeout;
         var initialVolume;
-        var fullscreenExited = false;
         var idleState = true;
-        var remoteFullscreen = false;
 
         var muteButton = null;
         var unmuteButton = null;
@@ -27,32 +25,10 @@
             })[0];
         };
 
-        self.remoteFullscreen = function () {
-
-            if (remoteFullscreen) {
-                exitFullScreenToWindow();
-            } else {
-                enterFullScreen();
-            }
-
-            remoteFullscreen = !remoteFullscreen;
-        };
-
         self.toggleFullscreen = function () {
             if (self.isFullScreen()) {
-                if (document.cancelFullScreen) {
-                    document.cancelFullScreen();
-                }
-                else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                }
-                else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                }
-                else if (document.webkitCancelFullScreen) {
-                    document.webkitCancelFullScreen();
-                }
-                $('#videoPlayer').removeClass('fullscreenVideo');
+
+                self.exitFullScreen();
             } else {
                 requestFullScreen(document.body);
             }
@@ -66,17 +42,18 @@
         };
 
         self.exitFullScreen = function () {
+
             if (document.exitFullscreen) {
                 document.exitFullscreen();
             } else if (document.mozExitFullScreen) {
                 document.mozExitFullScreen();
             } else if (document.webkitExitFullscreen) {
                 document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
             }
 
             $('#videoPlayer').removeClass('fullscreenVideo');
-
-            fullscreenExited = true;
         };
 
         self.isFullScreen = function () {
@@ -90,15 +67,29 @@
         function onPopupOpen(elem) {
             elem.popup("open").parents(".ui-popup-container").css("margin-top", 30);
 
-            // TODO: With iOS 8 this might not be required anymore
             if ($.browser.safari) {
-                //$('.itemVideo').css('visibility', 'hidden');
+                $('.itemVideo').css('visibility', 'hidden');
             }
         }
 
+        self.showChaptersFlyout = function () {
+
+            var html = getChaptersFlyoutHtml();
+
+            var elem = $('.videoChaptersPopup').html(html)
+                .trigger('create')
+                .popup("option", "positionTo", $('.videoChaptersButton'))
+                .off('popupafterclose', onFlyoutClose)
+                .on('popupafterclose', onFlyoutClose);
+
+            onPopupOpen(elem);
+        };
+
         self.showSubtitleMenu = function () {
 
-            var elem = $('.videoSubtitlePopup').html(getSubtitleTracksHtml())
+            var html = getSubtitleTracksHtml();
+
+            var elem = $('.videoSubtitlePopup').html(html)
                 .trigger('create')
                 .popup("option", "positionTo", $('.videoSubtitleButton'))
                 .off('popupafterclose', onFlyoutClose)
@@ -109,7 +100,9 @@
 
         self.showQualityFlyout = function () {
 
-            var elem = $('.videoQualityPopup').html(getQualityFlyoutHtml())
+            var html = getQualityFlyoutHtml();
+
+            var elem = $('.videoQualityPopup').html(html)
                 .trigger('create')
                 .popup("option", "positionTo", $('.videoQualityButton'))
                 .off('popupafterclose', onFlyoutClose)
@@ -118,20 +111,11 @@
             onPopupOpen(elem);
         };
 
-        self.showChaptersFlyout = function () {
-
-            var elem = $('.videoChaptersPopup').html(getChaptersFlyoutHtml())
-                .trigger('create')
-                .popup("option", "positionTo", $('.videoChaptersButton'))
-                .off('popupafterclose', onFlyoutClose)
-                .on('popupafterclose', onFlyoutClose);
-
-            onPopupOpen(elem);
-        };
-
         self.showAudioTracksFlyout = function () {
 
-            var elem = $('.videoAudioPopup').html(getAudioTracksHtml())
+            var html = getAudioTracksHtml();
+
+            var elem = $('.videoAudioPopup').html(html)
                 .trigger('create')
                 .popup("option", "positionTo", $('.videoAudioButton'))
                 .off('popupafterclose', onFlyoutClose)
@@ -290,12 +274,14 @@
             var state = self.getPlayerStateInternal(self.currentMediaElement, item, self.currentMediaSource);
 
             var url = "";
+            var imageWidth = 400;
+            var imageHeight = 300;
 
             if (state.NowPlayingItem.PrimaryImageTag) {
 
                 url = ApiClient.getScaledImageUrl(state.NowPlayingItem.PrimaryImageItemId, {
                     type: "Primary",
-                    width: 150,
+                    width: imageWidth,
                     tag: state.NowPlayingItem.PrimaryImageTag
                 });
             }
@@ -303,7 +289,7 @@
 
                 url = ApiClient.getScaledImageUrl(state.NowPlayingItem.PrimaryImageItemId, {
                     type: "Primary",
-                    width: 150,
+                    width: imageWidth,
                     tag: state.NowPlayingItem.PrimaryImageTag
                 });
             }
@@ -311,7 +297,7 @@
 
                 url = ApiClient.getScaledImageUrl(state.NowPlayingItem.BackdropItemId, {
                     type: "Backdrop",
-                    height: 300,
+                    height: imageHeight,
                     tag: state.NowPlayingItem.BackdropImageTag,
                     index: 0
                 });
@@ -321,18 +307,9 @@
 
                 url = ApiClient.getScaledImageUrl(state.NowPlayingItem.ThumbImageItemId, {
                     type: "Thumb",
-                    height: 300,
+                    height: imageHeight,
                     tag: state.NowPlayingItem.ThumbImageTag
                 });
-            }
-
-            var nowPlayingTextElement = $('.nowPlayingText', mediaControls);
-            var nameHtml = MediaController.getNowPlayingNameHtml(state.NowPlayingItem);
-
-            if (nameHtml.indexOf('<br/>') != -1) {
-                nowPlayingTextElement.addClass('nowPlayingDoubleText');
-            } else {
-                nowPlayingTextElement.removeClass('nowPlayingDoubleText');
             }
 
             if (url) {
@@ -354,8 +331,170 @@
                 $('.videoTopControlsLogo', mediaControls).html('');
             }
 
-            nowPlayingTextElement.html(nameHtml);
+            var elem = $('.nowPlayingTabs', mediaControls).html(getNowPlayingTabsHtml(item)).lazyChildren();
+
+            $('.nowPlayingTabButton', elem).on('click', function () {
+
+                if (!$(this).hasClass('selectedNowPlayingTabButton')) {
+                    $('.selectedNowPlayingTabButton').removeClass('selectedNowPlayingTabButton');
+                    $(this).addClass('selectedNowPlayingTabButton');
+                    $('.nowPlayingTab').hide();
+                    $('.' + this.getAttribute('data-tab')).show().trigger('scroll');
+                }
+            });
+
+            $('.chapterCard', elem).on('click', function () {
+
+                self.seek(parseInt(this.getAttribute('data-position')));
+            });
         };
+
+        function getNowPlayingTabsHtml(item) {
+
+            var html = '';
+
+            html += '<div class="nowPlayingTabButtons">';
+
+            html += '<a href="#" class="nowPlayingTabButton selectedNowPlayingTabButton" data-tab="tabInfo">' + Globalize.translate('TabInfo') + '</a>';
+
+            if (item.Chapters && item.Chapters.length) {
+                html += '<a href="#" class="nowPlayingTabButton" data-tab="tabScenes">' + Globalize.translate('TabScenes') + '</a>';
+            }
+
+            if (item.People && item.People.length) {
+                html += '<a href="#" class="nowPlayingTabButton" data-tab="tabCast">' + Globalize.translate('TabCast') + '</a>';
+            }
+
+            html += '</div>';
+
+            html += '<div class="tabInfo nowPlayingTab">';
+            var nameHtml = MediaController.getNowPlayingNameHtml(item, false);
+            nameHtml = '<div class="videoNowPlayingName">' + nameHtml + '</div>';
+
+            var miscInfo = LibraryBrowser.getMiscInfoHtml(item);
+            if (miscInfo) {
+
+                nameHtml += '<div class="videoNowPlayingRating">' + miscInfo + '</div>';
+            }
+
+            var ratingHtml = LibraryBrowser.getRatingHtml(item);
+            if (ratingHtml) {
+
+                nameHtml += '<div class="videoNowPlayingRating">' + ratingHtml + '</div>';
+            }
+
+            if (item.Overview) {
+
+                nameHtml += '<div class="videoNowPlayingOverview">' + item.Overview + '</div>';
+            }
+
+            html += nameHtml;
+            html += '</div>';
+
+            if (item.Chapters && item.Chapters.length) {
+                html += '<div class="tabScenes nowPlayingTab hiddenScrollX" style="display:none;white-space:nowrap;margin-bottom:2em;">';
+                var chapterIndex = 0;
+                html += item.Chapters.map(function (c) {
+
+                    var width = 360;
+                    var chapterHtml = '<a class="card backdropCard chapterCard" href="#" style="margin-right:1em;width:' + width + 'px;" data-position="' + c.StartPositionTicks + '">';
+                    chapterHtml += '<div class="cardBox">';
+                    chapterHtml += '<div class="cardScalable">';
+                    chapterHtml += '<div class="cardPadder"></div>';
+
+                    chapterHtml += '<div class="cardContent">';
+
+                    if (c.ImageTag) {
+
+                        var chapterImageUrl = ApiClient.getScaledImageUrl(item.Id, {
+                            width: width,
+                            tag: c.ImageTag,
+                            type: "Chapter",
+                            index: chapterIndex
+                        });
+                        chapterHtml += '<div class="cardImage lazy" data-src="' + chapterImageUrl + '"></div>';
+
+                    } else {
+                        chapterHtml += '<div class="cardImage" style="background:#444;"></div>';
+                    }
+
+                    chapterHtml += '<div class="cardFooter">';
+                    if (c.Name) {
+                        chapterHtml += '<div class="cardText">' + c.Name + '</div>';
+                    }
+                    chapterHtml += '<div class="cardText">' + Dashboard.getDisplayTime(c.StartPositionTicks) + '</div>';
+                    chapterHtml += '</div>';
+                    chapterHtml += '</div>';
+
+                    chapterHtml += '</div>';
+                    chapterHtml += '</div>';
+                    chapterHtml += '</a>';
+
+                    chapterIndex++;
+
+                    return chapterHtml;
+
+                }).join('');
+                html += '</div>';
+            }
+
+            if (item.People && item.People.length) {
+                html += '<div class="tabCast nowPlayingTab hiddenScrollX" style="display:none;white-space:nowrap;">';
+                html += item.People.map(function (cast) {
+
+                    var personHtml = '<div class="tileItem smallPosterTileItem" style="width:300px;">';
+
+                    var imgUrl;
+
+                    if (cast.PrimaryImageTag) {
+
+                        imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
+                            height: 160,
+                            tag: cast.PrimaryImageTag,
+                            type: "primary",
+                            minScale: 2
+                        });
+
+                    } else {
+
+                        imgUrl = "css/images/items/list/person.png";
+                    }
+
+                    personHtml += '<div class="tileImage lazy" data-src="' + imgUrl + '" style="height:160px;"></div>';
+
+
+
+                    personHtml += '<div class="tileContent">';
+
+                    personHtml += '<p>' + cast.Name + '</p>';
+
+                    var role = cast.Role ? Globalize.translate('ValueAsRole', cast.Role) : cast.Type;
+
+                    if (role == "GuestStar") {
+                        role = Globalize.translate('ValueGuestStar');
+                    }
+
+                    role = role || "";
+
+                    var maxlength = 40;
+
+                    if (role.length > maxlength) {
+                        role = role.substring(0, maxlength - 3) + '...';
+                    }
+
+                    personHtml += '<p>' + role + '</p>';
+
+                    personHtml += '</div>';
+
+                    personHtml += '</div>';
+                    return personHtml;
+
+                }).join('');
+                html += '</div>';
+            }
+
+            return html;
+        }
 
         function onPositionSliderChange() {
 
@@ -367,6 +506,53 @@
 
             self.changeStream(Math.floor(newPositionTicks));
         }
+
+        self.onChapterOptionSelected = function (elem) {
+
+            if (!$(elem).hasClass('selectedMediaPopupOption')) {
+                var ticks = parseInt(elem.getAttribute('data-value') || '0');
+
+                self.changeStream(ticks);
+            }
+            $('.videoChaptersPopup').popup('close');
+        };
+
+        self.onAudioOptionSelected = function (elem) {
+
+            if (!$(elem).hasClass('selectedMediaPopupOption')) {
+                var index = parseInt(elem.getAttribute('data-value'));
+
+                self.setAudioStreamIndex(index);
+            }
+            $('.videoAudioPopup').popup('close');
+        };
+
+        self.onSubtitleOptionSelected = function (elem) {
+
+            if (!$(elem).hasClass('selectedMediaPopupOption')) {
+                var index = parseInt(elem.getAttribute('data-value'));
+
+                self.setSubtitleStreamIndex(index);
+            }
+            $('.videoSubtitlePopup').popup('close');
+        };
+
+        self.onQualityOptionSelected = function (elem) {
+
+            if (!$(elem).hasClass('selectedMediaPopupOption')) {
+                var bitrate = parseInt(elem.getAttribute('data-value'));
+
+                AppSettings.maxStreamingBitrate(bitrate);
+
+                $('.videoQualityPopup').popup('close');
+
+                self.changeStream(self.getCurrentTicks(), {
+                    Bitrate: bitrate
+                });
+            }
+
+            $('.videoSubtitlePopup').popup('close');
+        };
 
         $(function () {
 
@@ -387,55 +573,6 @@
 
                 updateVolumeButtons(vol);
                 self.setVolume(vol * 100);
-            });
-
-            $('.videoChaptersPopup').on('click', '.mediaPopupOption', function () {
-
-                var ticks = parseInt(this.getAttribute('data-positionticks') || '0');
-
-                self.changeStream(ticks);
-
-                $('.videoChaptersPopup').popup('close');
-            });
-
-            $('.videoAudioPopup').on('click', '.mediaPopupOption', function () {
-
-                if (!$(this).hasClass('selectedMediaPopupOption')) {
-                    var index = parseInt(this.getAttribute('data-index'));
-
-                    self.setAudioStreamIndex(index);
-                }
-
-                $('.videoAudioPopup').popup('close');
-            });
-
-            $('.videoSubtitlePopup').on('click', '.mediaPopupOption', function () {
-
-                $('.videoSubtitlePopup').popup('close');
-
-                if (!$(this).hasClass('selectedMediaPopupOption')) {
-
-                    var index = parseInt(this.getAttribute('data-index'));
-
-                    self.setSubtitleStreamIndex(index);
-                }
-            });
-
-            $('.videoQualityPopup').on('click', '.mediaPopupOption', function () {
-
-                if (!$(this).hasClass('selectedMediaPopupOption')) {
-
-                    var bitrate = parseInt(this.getAttribute('data-bitrate'));
-
-                    AppSettings.maxStreamingBitrate(bitrate);
-
-                    self.changeStream(self.getCurrentTicks(), {
-
-                        Bitrate: bitrate
-                    });
-                }
-
-                $('.videoQualityPopup').popup('close');
             });
 
             var trackChange = false;
@@ -466,32 +603,13 @@
 
                 tooltip.remove();
             });
-
-            $('.videoSubtitleButton').on('click', function () {
-
-                self.showSubtitleMenu();
-            });
-
-            $('.videoQualityButton').on('click', function () {
-
-                self.showQualityFlyout();
-            });
-
-            $('.videoAudioButton').on('click', function () {
-
-                self.showAudioTracksFlyout();
-            });
-
-            $('.videoChaptersButton').on('click', function () {
-
-                self.showChaptersFlyout();
-            });
         });
 
+        var idleHandlerTimeout;
         function idleHandler() {
 
-            if (timeout) {
-                window.clearTimeout(timeout);
+            if (idleHandlerTimeout) {
+                window.clearTimeout(idleHandlerTimeout);
             }
 
             if (idleState == true) {
@@ -501,11 +619,11 @@
 
             idleState = false;
 
-            timeout = window.setTimeout(function () {
+            idleHandlerTimeout = window.setTimeout(function () {
                 idleState = true;
                 $('.hiddenOnIdle').addClass("inactive");
                 $('#videoPlayer').addClass('idlePlayer');
-            }, 4000);
+            }, 5000);
         }
 
         function updateVolumeButtons(vol) {
@@ -522,7 +640,7 @@
         function requestFullScreen(element) {
 
             // Supports most browsers and their versions.
-            var requestMethod = element.requestFullscreen || element.webkitRequestFullscreen || element.webkitRequestFullScreen || element.mozRequestFullScreen;
+            var requestMethod = element.requestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen || element.msRequestFullscreen;
 
             if (requestMethod) { // Native full screen.
                 requestMethod.call(element);
@@ -537,9 +655,6 @@
             var player = $("#videoPlayer");
 
             player.addClass("fullscreenVideo");
-
-            remoteFullscreen = true;
-
         }
 
         function exitFullScreenToWindow() {
@@ -547,9 +662,6 @@
             var player = $("#videoPlayer");
 
             player.removeClass("fullscreenVideo");
-
-            remoteFullscreen = false;
-
         }
 
         function getChaptersFlyoutHtml() {
@@ -573,13 +685,19 @@
                 var cssClass = "mediaPopupOption";
 
                 var selected = false;
+                // Need to embed onclick handler due to delegation not working in iOS cordova
+                var onclick = '';
 
                 if (currentTicks >= chapter.StartPositionTicks) {
                     var nextChapter = chapters[index + 1];
                     selected = !nextChapter || currentTicks < nextChapter.StartPositionTicks;
                 }
 
-                var optionHtml = '<li><a data-positionticks="' + chapter.StartPositionTicks + '" class="' + cssClass + '" href="#" style="padding-top:0;padding-bottom:0;">';
+                if (!selected) {
+                    onclick = ' onclick="MediaPlayer.onChapterOptionSelected(this);"';
+                }
+
+                var optionHtml = '<li><a' + onclick + ' data-value="' + chapter.StartPositionTicks + '" class="' + cssClass + '" href="#" style="padding-top:0;padding-bottom:0;">';
 
                 var imgUrl = "css/images/media/chapterflyout.png";
 
@@ -648,11 +766,16 @@
 
                 var selected = stream.Index == currentIndex;
 
+                // Need to embed onclick handler due to delegation not working in iOS cordova
+                var onclick = '';
+
                 if (selected) {
                     cssClass += ' selectedMediaPopupOption';
+                } else {
+                    onclick = ' onclick="MediaPlayer.onAudioOptionSelected(this);"';
                 }
 
-                var optionHtml = '<li><a data-index="' + stream.Index + '" class="' + cssClass + '" href="#">';
+                var optionHtml = '<li><a' + onclick + ' data-value="' + stream.Index + '" class="' + cssClass + '" href="#">';
 
                 optionHtml += '<p style="margin:0;">';
 
@@ -733,11 +856,16 @@
 
                 var selected = stream.Index == currentIndex;
 
+                // Need to embed onclick handler due to delegation not working in iOS cordova
+                var onclick = '';
+
                 if (selected) {
                     cssClass += ' selectedMediaPopupOption';
+                } else {
+                    onclick = ' onclick="MediaPlayer.onSubtitleOptionSelected(this);"';
                 }
 
-                var optionHtml = '<li><a data-index="' + stream.Index + '" class="' + cssClass + '" href="#">';
+                var optionHtml = '<li><a' + onclick + ' data-value="' + stream.Index + '" class="' + cssClass + '" href="#">';
 
                 optionHtml += '<p style="margin:0;">';
 
@@ -814,12 +942,16 @@
             html += options.map(function (option) {
 
                 var cssClass = "mediaPopupOption";
+                // Need to embed onclick handler due to delegation not working in iOS cordova
+                var onclick = '';
 
                 if (option.selected) {
                     cssClass += ' selectedMediaPopupOption';
+                } else {
+                    onclick = ' onclick="MediaPlayer.onQualityOptionSelected(this);"';
                 }
 
-                var optionHtml = '<li><a data-bitrate="' + option.bitrate + '" class="' + cssClass + '" href="#">';
+                var optionHtml = '<li><a' + onclick + ' data-value="' + option.bitrate + '" class="' + cssClass + '" href="#">';
 
                 optionHtml += '<p style="margin:0;">';
 
@@ -847,14 +979,13 @@
 
         function bindEventsForPlayback() {
 
-            var hideElementsOnIdle = !$.browser.mobile;
+            var hideElementsOnIdle = true;
 
             if (hideElementsOnIdle) {
-                $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer', idleHandler);
-                $('.itemVideo').on('mousemove.videoplayer keydown.videoplayer scroll.videoplayer', idleHandler).trigger('mousemove');
+                $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer mousedown.videoplayer', idleHandler).on('mousemove.videoplayer keydown.videoplayer scroll.videoplayer mousedown.videoplayer', idleHandler).trigger('mousemove');
             }
 
-            $(document).on('webkitfullscreenchange.videoplayer mozfullscreenchange.videoplayer fullscreenchange.videoplayer', function (e) {
+            $(document).on('webkitfullscreenchange.videoplayer mozfullscreenchange.videoplayer msfullscreenchange.videoplayer fullscreenchange.videoplayer', function (e) {
 
                 if (self.isFullScreen()) {
                     enterFullScreen();
@@ -862,24 +993,6 @@
 
                 } else {
                     exitFullScreenToWindow();
-                }
-
-                fullscreenExited = self.isFullScreen() == false;
-
-            }).on("msfullscreenchange.videoplayer", function (e) {
-
-                fullscreenExited = self.isFullScreen() == false;
-
-            }).on("keyup.videoplayer", function (e) {
-
-                if (fullscreenExited) {
-                    $("#videoPlayer", $("#mediaPlayer")).removeClass("fullscreenVideo");
-                    fullscreenExited = false;
-                    return;
-                }
-
-                if (e.keyCode == 27) {
-                    self.stop();
                 }
             });
 
@@ -890,7 +1003,7 @@
             });
 
             if (hideElementsOnIdle) {
-                $(document.body).on("mousemove.videplayer", "#itemVideo", function () {
+                $(document.body).on("mousemove.videoplayer", function () {
 
                     idleHandler(this);
                 });
@@ -899,14 +1012,14 @@
 
         function unbindEventsForPlayback() {
 
-            $(document).off('webkitfullscreenchange.videoplayer mozfullscreenchange.videoplayer fullscreenchange.videoplayer').off("msfullscreenchange.videoplayer").off("keyup.videoplayer");
+            $(document).off('.videoplayer');
 
             // Stop playback on browser back button nav
             $(window).off("popstate.videoplayer");
 
-            $(document.body).off("mousemove.videplayer");
+            $(document.body).off("mousemove.videoplayer");
 
-            $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer');
+            $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer mousedown.videoplayer');
         }
 
         self.canAutoPlayVideo = function () {
@@ -915,7 +1028,7 @@
                 return true;
             }
 
-            if ($.browser.msie || $.browser.mobile) {
+            if ($.browser.mobile) {
                 return false;
             }
 
@@ -964,10 +1077,14 @@
 
         };
 
+        function supportsContentOverVideoPlayer() {
+            return true;
+        }
+
         self.playVideoInternal = function (item, mediaSource, startPosition, streamInfo) {
 
             var videoUrl = streamInfo.url;
-            var contentType = streamInfo.contentType;
+            var contentType = streamInfo.mimeType;
             var startPositionInSeekParam = streamInfo.startPositionInSeekParam;
             self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
 
@@ -975,6 +1092,11 @@
             var subtitleStreams = mediaStreams.filter(function (s) {
                 return s.Type == 'Subtitle';
             });
+
+            // Reports of stuttering with h264 stream copy in IE
+            if (streamInfo.playMethod == 'Transcode' && videoUrl.indexOf('.m3u8') == -1) {
+                videoUrl += '&EnableAutoStreamCopy=false';
+            }
 
             var posterCode = self.getPosterUrl(item);
             posterCode = posterCode ? (' poster="' + posterCode + '"') : '';
@@ -987,7 +1109,7 @@
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresNativeControls) {
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" controls="controls"' + posterCode + '>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" controls="controls"' + posterCode + ' webkit-playsinline>';
             }
             else {
 
@@ -1038,7 +1160,7 @@
                 $('.videoSubtitleButton').hide();
             }
 
-            if (item.Chapters && item.Chapters.length) {
+            if (item.Chapters && item.Chapters.length && supportsContentOverVideoPlayer()) {
                 $('.videoChaptersButton').show();
             } else {
                 $('.videoChaptersButton').hide();
@@ -1050,7 +1172,7 @@
                 $('#video-fullscreenButton', videoControls).show();
             }
 
-            if ($.browser.mobile) {
+            if (AppInfo.hasPhysicalVolumeButtons) {
                 $('.volumeSliderContainer', videoControls).addClass('hide');
                 $('.muteButton', videoControls).addClass('hide');
                 $('.unmuteButton', videoControls).addClass('hide');
@@ -1077,7 +1199,14 @@
             volumeSlider.val(initialVolume).slider('refresh');
             updateVolumeButtons(initialVolume);
 
-            video.one("playing.mediaplayerevent", function (e) {
+            video.one("loadedmetadata.mediaplayerevent", function (e) {
+
+                // The IE video player won't autoplay without this
+                if ($.browser.msie) {
+                    this.play();
+                }
+
+            }).one("playing.mediaplayerevent", function (e) {
 
                 // TODO: This is not working in chrome. Is it too early?
 
@@ -1158,23 +1287,24 @@
 
             }).on("click.mediaplayerevent", function (e) {
 
-                if (this.paused) {
-                    self.unpause();
-                } else {
-                    self.pause();
+                if (!$.browser.mobile) {
+                    if (this.paused) {
+                        self.unpause();
+                    } else {
+                        self.pause();
+                    }
                 }
 
             }).on("dblclick.mediaplayerevent", function () {
 
-                self.toggleFullscreen();
-
+                if (!$.browser.mobile) {
+                    self.toggleFullscreen();
+                }
             });
 
             bindEventsForPlayback();
 
             mediaPlayerContainer.trigger("create");
-
-            fullscreenExited = false;
 
             self.currentSubtitleStreamIndex = mediaSource.DefaultSubtitleStreamIndex;
 

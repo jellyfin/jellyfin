@@ -48,21 +48,19 @@
         }).done(onUpdateUserComplete);
     }
 
-    function wizardUserPage() {
+    function onSubmit() {
+        var form = this;
 
-        var self = this;
+        submit(form);
 
-        self.onSubmit = function () {
-            var form = this;
-
-
-            submit(form);
-
-            return false;
-        };
+        return false;
     }
 
-    $(document).on('pageshow', "#wizardUserPage", function () {
+    $(document).on('pageinitdepends', "#wizardUserPage", function () {
+
+        $('.wizardUserForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#wizardUserPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -79,7 +77,5 @@
         });
 
     });
-
-    window.WizardUserPage = new wizardUserPage();
 
 })(jQuery, document, window);

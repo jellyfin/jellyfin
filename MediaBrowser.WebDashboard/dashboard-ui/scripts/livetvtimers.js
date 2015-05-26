@@ -62,8 +62,8 @@
             html += '</h3>';
 
             html += '<p>';
-            html += LiveTvHelpers.getDisplayTime(timer.StartDate);
-            html += ' - ' + LiveTvHelpers.getDisplayTime(timer.EndDate);
+            html += LibraryBrowser.getDisplayTime(timer.StartDate);
+            html += ' - ' + LibraryBrowser.getDisplayTime(timer.EndDate);
             html += '</p>';
 
 
@@ -107,7 +107,7 @@
         });
     }
 
-    $(document).on('pagebeforeshow', "#liveTvTimersPage", function () {
+    $(document).on('pageshowready', "#liveTvTimersPage", function () {
 
         var page = this;
 

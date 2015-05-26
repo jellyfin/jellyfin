@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Providers.TV;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,7 +17,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using MediaBrowser.Providers.TV;
 
 namespace MediaBrowser.Providers.Music
 {

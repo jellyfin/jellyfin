@@ -48,7 +48,11 @@
 }
 
 .largeCardMargin .cardBox {
-    margin: 6px;
+    margin: 8px;
+}
+
+.mediumCardMargin .cardBox {
+    margin: 4px;
 }
 
 /*@media all and (max-width: 600px) {
@@ -68,13 +72,7 @@
     margin-bottom: 5px;
 }
 
-.visualFooterCard .outerCardFooter {
-    background: #111;
-    padding-bottom: 4px;
-}
-
 .visualCardBox {
-    padding: 5px;
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;
     border-radius: 2px;
@@ -83,16 +81,11 @@
     -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     background: #fff;
-    margin: 1px;
+    margin: 7px;
 }
-
-/*.visualCardBox .cardFooter {
-    padding: 0 2px;
-}*/
 
 .ui-page-theme-b .visualCardBox {
     background: rgba(45,45,45,.85);
-    border: 1px solid #1f1f1f;
     border-radius: 3px;
 }
 
@@ -100,19 +93,11 @@
     position: relative;
 }
 
-.backdropCard .cardPadder {
+.backdropCard .cardPadder, .smallBackdropCard .cardPadder, .overflowBackdropCard .cardPadder {
     padding-bottom: 56.25%;
 }
 
-.smallBackdropCard .cardPadder {
-    padding-bottom: 56.25%;
-}
-
-.squareCard .cardPadder {
-    padding-bottom: 100%;
-}
-
-.smallSquareCard .cardPadder {
+.squareCard .cardPadder, .overflowSquareCard .cardPadder {
     padding-bottom: 100%;
 }
 
@@ -120,11 +105,7 @@
     padding-bottom: 75%;
 }
 
-.portraitCard .cardPadder {
-    padding-bottom: 150%;
-}
-
-.smallPortraitCard .cardPadder {
+.portraitCard .cardPadder, .overflowPortraitCard .cardPadder {
     padding-bottom: 150%;
 }
 
@@ -167,11 +148,16 @@
     .cardContent .cardFooter {
         position: absolute;
         bottom: 0;
-        background: rgba(0, 0, 0, .75);
         left: 0;
         color: #eee;
         padding: 6px 0 2px 0;
         max-width: 100%;
+        background: -moz-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%) !important; /* FF3.6+ */
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.7))) !important; /* Chrome,Safari4+ */
+        background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%) !important; /* Chrome10+,Safari5.1+ */
+        background: -o-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%) !important; /* Opera 11.10+ */
+        background: -ms-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0.7) 100%) !important; /* IE10+ */
+        background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,0.75) 100%) !important; /* W3C */
     }
 
 .lightCardFooter {
@@ -187,6 +173,18 @@
     right: 0;
 }
 
+.visualCardBox .outerCardFooter {
+    padding: 5px;
+    position: relative;
+}
+
+.btnCardOptions {
+    padding: 10px !important;
+    margin: 0 !important;
+    color: inherit;
+    font-size: 20px;
+}
+
 .cardText {
     text-overflow: ellipsis;
     overflow: hidden;
@@ -198,7 +196,7 @@
 }
 
 .cardContent .cardFooter .cardText {
-    font-size: 15px;
+    font-size: 14px;
 }
 
 .cardOverlayInner {
@@ -221,16 +219,6 @@
     padding: 0 6px 4px 5px;
 }
 
-.outerCardFooter .cardText + .cardText {
-    color: #ddd;
-}
-
-/*.cardBox:not(.visualCardBox) .outerCardFooter .cardText {
-    font-size: 14px;
-    background: rgba(51, 51, 51,.6);
-    padding: 5px;
-}*/
-
 .cardBox:not(.visualCardBox) .outerCardFooter .cardText:last-child {
     margin-bottom: 2em;
 }
@@ -249,6 +237,11 @@
     width: 100%;
     height: 100%;
 }
+
+    .cardImage canvas {
+        width: 100%;
+        height: 100%;
+    }
 
 .coveredCardImage {
     background-size: cover;
@@ -281,10 +274,6 @@
     width: 50%;
 }
 
-.smallSquareCard {
-    width: 33.3334%;
-}
-
 .backdropCard {
     width: 50%;
 }
@@ -297,8 +286,12 @@
     width: 33.3%;
 }
 
-.smallPortraitCard {
-    width: 25%;
+.overflowPortraitCard {
+    width: 40%;
+}
+
+.overflowBackdropCard {
+    width: 70%;
 }
 
 .cardProgress {
@@ -311,6 +304,10 @@
         opacity: .8;
     }
 
+.overflowSquareCard {
+    width: 42%;
+}
+
 @media all and (max-width: 1200px) {
 
     .portraitCard .cardOverlayInner {
@@ -321,30 +318,14 @@
 
 @media all and (min-width: 500px) {
 
+    .smallBackdropCard {
+        width: 33.3%;
+    }
+
     .squareCard {
         width: 33.3%;
     }
-
-    .smallSquareCard {
-        width: 25%;
-    }
 }
-
-@media all and (min-width: 400px) {
-
-    .smallBackdropCard {
-        width: 33.3%;
-    }
-}
-
-
-@media all and (min-width: 540px) {
-
-    .smallBackdropCard {
-        width: 25%;
-    }
-}
-
 
 @media all and (min-width: 640px) {
 
@@ -352,18 +333,28 @@
         width: 25%;
     }
 
-    .smallPortraitCard {
-        width: 20%;
+    .overflowPortraitCard {
+        width: 36%;
+    }
+
+    .overflowBackdropCard {
+        width: 60%;
+    }
+
+    .overflowSquareCard {
+        width: 30%;
     }
 }
 
 @media all and (min-width: 700px) {
-    .backdropCard {
-        width: 33.3%;
-    }
-
     .bannerCard {
         width: 50%;
+    }
+}
+
+@media all and (min-width: 770px) {
+    .backdropCard {
+        width: 33.3%;
     }
 }
 
@@ -378,11 +369,7 @@
     }
 
     .smallBackdropCard {
-        width: 20%;
-    }
-
-    .smallSquareCard {
-        width: 20%;
+        width: 25%;
     }
 }
 
@@ -397,8 +384,16 @@
         width: 20%;
     }
 
-    .smallPortraitCard {
-        width: 16.666666666666666666666666666667%;
+    .overflowPortraitCard {
+        width: 23%;
+    }
+
+    .overflowBackdropCard {
+        width: 40%;
+    }
+
+    .overflowSquareCard {
+        width: 22%;
     }
 }
 
@@ -424,14 +419,6 @@
     .smallBackdropCard {
         width: 16.666666666666666666666666666667%;
     }
-
-    .smallSquareCard {
-        width: 16.666666666666666666666666666667%;
-    }
-
-    .smallPortraitCard {
-        width: 14.285714285714285714285714285714%;
-    }
 }
 
 
@@ -447,10 +434,6 @@
 
     .smallBackdropCard {
         width: 14.285714285714285714285714285714%;
-    }
-
-    .smallPortraitCard {
-        width: 12.5%;
     }
 }
 

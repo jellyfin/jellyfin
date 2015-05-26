@@ -146,8 +146,10 @@
                 defaultShape: 'square',
                 context: 'channels',
                 showTitle: true,
-                centerText: true,
-                coverImage: true
+                coverImage: true,
+                cardLayout: true,
+                showYear: true,
+                lazy: true
             });
 
             var elem = $('#items', page).html(html).lazyChildren();
@@ -201,7 +203,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#channelItemsPage", function () {
+    $(document).on('pageinitdepends', "#channelItemsPage", function () {
 
         var page = this;
 
@@ -254,10 +256,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#channelItemsPage", function () {
-
-
-    }).on('pageshow', "#channelItemsPage", function () {
+    }).on('pageshowready', "#channelItemsPage", function () {
 
         var page = this;
         var limit = LibraryBrowser.getDefaultPageSize();

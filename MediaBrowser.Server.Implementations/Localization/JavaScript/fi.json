@@ -40,6 +40,7 @@
     "TitleLiveTV": "Live TV",
     "TitleSync": "Sync",
     "ButtonDonate": "Donate",
+    "LabelRecurringDonationCanBeCancelledHelp": "Recurring donations can be cancelled at any time from within your PayPal account.",
     "HeaderMyMedia": "My Media",
     "TitleNotifications": "Notifications",
     "ErrorLaunchingChromecast": "There was an error launching chromecast. Please ensure your device is connected to your wireless network.",
@@ -97,7 +98,7 @@
     "HeaderSupporterBenefit": "A supporter membership provides additional benefits such as access to sync, premium plugins, internet channel content, and more. {0}Learn more{1}.",
     "LabelSyncNoTargetsHelp": "It looks like you don't currently have any apps that support sync.",
     "HeaderWelcomeToProjectServerDashboard": "Welcome to the Emby Server Dashboard",
-    "HeaderWelcomeToProjectWebClient": "Welcome to the Emby Web Client",
+    "HeaderWelcomeToProjectWebClient": "Welcome to Emby",
     "ButtonTakeTheTour": "Take the tour",
     "HeaderWelcomeBack": "Welcome back!",
     "TitlePlugins": "Plugins",
@@ -762,5 +763,8 @@
     "ButtonSignInWithConnect": "Sign in with Emby Connect",
     "HeaderNewServer": "New Server",
     "MyDevice": "My Device",
-    "ButtonRemote": "Remote"
+    "ButtonRemote": "Remote",
+    "TabInfo": "Info",
+    "TabCast": "Cast",
+    "TabScenes": "Scenes"
 }

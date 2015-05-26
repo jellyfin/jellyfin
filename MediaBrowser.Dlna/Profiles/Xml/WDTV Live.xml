@@ -2,7 +2,7 @@
 <Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>WDTV Live</Name>
   <Identification>
-    <ModelName>WD TV HD Live</ModelName>
+    <ModelName>WD TV</ModelName>
     <Headers>
       <HttpHeaderInfo name="User-Agent" value="alphanetworks" match="Substring" />
       <HttpHeaderInfo name="User-Agent" value="ALPHA Networks" match="Substring" />
@@ -23,8 +23,8 @@
   <MaxAlbumArtHeight>480</MaxAlbumArtHeight>
   <MaxIconWidth>48</MaxIconWidth>
   <MaxIconHeight>48</MaxIconHeight>
-  <MaxStreamingBitrate>8000000</MaxStreamingBitrate>
-  <MaxStaticBitrate>8000000</MaxStaticBitrate>
+  <MaxStreamingBitrate>10000000</MaxStreamingBitrate>
+  <MaxStaticBitrate>10000000</MaxStaticBitrate>
   <MusicStreamingTranscodingBitrate>128000</MusicStreamingTranscodingBitrate>
   <MusicSyncBitrate>128000</MusicSyncBitrate>
   <XDlnaDoc>DMS-1.50</XDlnaDoc>
@@ -35,7 +35,6 @@
   <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
   <IgnoreTranscodeByteRangeRequests>true</IgnoreTranscodeByteRangeRequests>
   <EnableDlnaProtocol>true</EnableDlnaProtocol>
-  <EnableUrlBase>false</EnableUrlBase>
   <XmlRootAttributes />
   <DirectPlayProfiles>
     <DirectPlayProfile container="avi" audioCodec="ac3,dca,mp2,mp3,pcm" videoCodec="mpeg1video,mpeg2video,mpeg4,h264,vc1" type="Video" />

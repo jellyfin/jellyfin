@@ -346,6 +346,10 @@
 
     function isAvailable(item, user) {
 
+        if (Dashboard.isRunningInCordova()) {
+            return false;
+        }
+
         return item.SupportsSync;
     }
 
@@ -359,9 +363,9 @@
 
     function showSyncButtonsPerUser(page) {
 
-        var apiClient = ConnectionManager.currentApiClient();
+        var apiClient = window.ApiClient;
 
-        if (!apiClient) {
+        if (!apiClient || !apiClient.getCurrentUserId()) {
             return;
         }
 
@@ -387,7 +391,7 @@
         });
     }
 
-    $(document).on('pageinit', ".libraryPage", function () {
+    $(document).on('pageinitdepends', ".libraryPage", function () {
 
         var page = this;
 
@@ -396,7 +400,7 @@
             onCategorySyncButtonClick(page, this);
         });
 
-    }).on('pagebeforeshow', ".libraryPage", function () {
+    }).on('pageshowready', ".libraryPage", function () {
 
         var page = this;
 

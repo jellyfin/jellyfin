@@ -105,6 +105,11 @@
             };
         };
 
+        function triggerPlayerChange(newPlayer, newTarget) {
+
+            $(self).trigger('playerchange', [newPlayer, newTarget]);
+        }
+
         self.setActivePlayer = function (player, targetInfo) {
 
             if (typeof (player) === 'string') {
@@ -118,15 +123,42 @@
             }
 
             currentPlayer = player;
-            currentTargetInfo = targetInfo || player.getCurrentTargetInfo();
+            currentTargetInfo = targetInfo;
 
             console.log('Active player: ' + JSON.stringify(currentTargetInfo));
 
-            $(self).trigger('playerchange');
+            triggerPlayerChange(player, targetInfo);
+        };
+
+        self.trySetActivePlayer = function (player, targetInfo) {
+
+            if (typeof (player) === 'string') {
+                player = players.filter(function (p) {
+                    return p.name == player;
+                })[0];
+            }
+
+            if (!player) {
+                throw new Error('null player');
+            }
+
+            player.tryPair(targetInfo).done(function () {
+
+                currentPlayer = player;
+                currentTargetInfo = targetInfo;
+
+                console.log('Active player: ' + JSON.stringify(currentTargetInfo));
+
+                triggerPlayerChange(player, targetInfo);
+            });
         };
 
         self.setDefaultPlayerActive = function () {
-            self.setActivePlayer(self.getDefaultPlayer());
+
+            var player = self.getDefaultPlayer();
+            var target = player.getTargets()[0];
+
+            self.setActivePlayer(player, target);
         };
 
         self.removeActivePlayer = function (name) {
@@ -137,7 +169,14 @@
 
         };
 
-        self.getPlayers = function() {
+        self.removeActiveTarget = function (id) {
+
+            if (self.getPlayerInfo().id == id) {
+                self.setDefaultPlayerActive();
+            }
+        };
+
+        self.getPlayers = function () {
             return players;
         };
 
@@ -181,22 +220,35 @@
             return deferred.promise();
         };
 
+        function doWithPlaybackValidation(fn) {
+
+            requirejs(["scripts/registrationservices"], function () {
+                RegistrationServices.validateFeature('playback').done(fn);
+            });
+        }
+
         self.play = function (options) {
 
-            if (typeof (options) === 'string') {
-                options = { ids: [options] };
-            }
+            doWithPlaybackValidation(function () {
+                if (typeof (options) === 'string') {
+                    options = { ids: [options] };
+                }
 
-            currentPlayer.play(options);
+                currentPlayer.play(options);
+            });
         };
 
         self.shuffle = function (id) {
 
-            currentPlayer.shuffle(id);
+            doWithPlaybackValidation(function () {
+                currentPlayer.shuffle(id);
+            });
         };
 
         self.instantMix = function (id) {
-            currentPlayer.instantMix(id);
+            doWithPlaybackValidation(function () {
+                currentPlayer.instantMix(id);
+            });
         };
 
         self.queue = function (options) {
@@ -331,10 +383,6 @@
             currentPlayer.volumeUp();
         };
 
-        self.shuffle = function (id) {
-            currentPlayer.shuffle(id);
-        };
-
         self.playlist = function () {
             return currentPlayer.playlist || [];
         };
@@ -389,7 +437,7 @@
         };
 
         // TOOD: This doesn't really belong here
-        self.getNowPlayingNameHtml = function (nowPlayingItem) {
+        self.getNowPlayingNameHtml = function (nowPlayingItem, includeNonNameInfo) {
 
             var topText = nowPlayingItem.Name;
 
@@ -412,11 +460,101 @@
                 bottomText = topText;
                 topText = nowPlayingItem.SeriesName || nowPlayingItem.Album;
             }
-            else if (nowPlayingItem.ProductionYear) {
+            else if (nowPlayingItem.ProductionYear && includeNonNameInfo !== false) {
                 bottomText = nowPlayingItem.ProductionYear;
             }
 
             return bottomText ? topText + '<br/>' + bottomText : topText;
+        };
+
+        self.showPlaybackInfoErrorMessage = function (errorCode) {
+
+            // This timeout is messy, but if jqm is in the act of hiding a popup, it will not show a new one
+            // If we're coming from the popup play menu, this will be a problem
+
+            setTimeout(function () {
+                Dashboard.alert({
+                    message: Globalize.translate('MessagePlaybackError' + errorCode),
+                    title: Globalize.translate('HeaderPlaybackError')
+                });
+            }, 300);
+
+        };
+
+        self.getPlaybackInfo = function (itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId) {
+
+            var postData = {
+                DeviceProfile: deviceProfile
+            };
+
+            var query = {
+                UserId: Dashboard.getCurrentUserId(),
+                StartTimeTicks: startPosition || 0
+            };
+
+            if (audioStreamIndex != null) {
+                query.AudioStreamIndex = audioStreamIndex;
+            }
+            if (subtitleStreamIndex != null) {
+                query.SubtitleStreamIndex = subtitleStreamIndex;
+            }
+            if (mediaSource) {
+                query.MediaSourceId = mediaSource.Id;
+            }
+            if (liveStreamId) {
+                query.LiveStreamId = liveStreamId;
+            }
+
+            return ApiClient.ajax({
+                url: ApiClient.getUrl('Items/' + itemId + '/PlaybackInfo', query),
+                type: 'POST',
+                data: JSON.stringify(postData),
+                contentType: "application/json",
+                dataType: "json"
+
+            });
+        }
+
+        self.getLiveStream = function (itemId, playSessionId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex) {
+
+            var postData = {
+                DeviceProfile: deviceProfile,
+                OpenToken: mediaSource.OpenToken
+            };
+
+            var query = {
+                UserId: Dashboard.getCurrentUserId(),
+                StartTimeTicks: startPosition || 0,
+                ItemId: itemId,
+                PlaySessionId: playSessionId
+            };
+
+            if (audioStreamIndex != null) {
+                query.AudioStreamIndex = audioStreamIndex;
+            }
+            if (subtitleStreamIndex != null) {
+                query.SubtitleStreamIndex = subtitleStreamIndex;
+            }
+
+            return ApiClient.ajax({
+                url: ApiClient.getUrl('LiveStreams/Open', query),
+                type: 'POST',
+                data: JSON.stringify(postData),
+                contentType: "application/json",
+                dataType: "json"
+
+            });
+        };
+
+        self.supportsDirectPlay = function (mediaSource) {
+
+            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == 'Http' && !mediaSource.RequiredHttpHeaders.length) {
+
+                // TODO: Need to verify the host is going to be reachable
+                return true;
+            }
+
+            return false;
         };
     }
 
@@ -480,15 +618,19 @@
         }
     }
 
-
-
     function initializeApiClient(apiClient) {
-        $(apiClient).on("websocketmessage", onWebSocketMessageReceived);
+        $(apiClient).off("websocketmessage", onWebSocketMessageReceived).on("websocketmessage", onWebSocketMessageReceived);
     }
 
-    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+    Dashboard.ready(function () {
 
-        initializeApiClient(apiClient);
+        if (window.ApiClient) {
+            initializeApiClient(window.ApiClient);
+        }
+
+        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+            initializeApiClient(apiClient);
+        });
     });
 
     function getTargetsHtml(targets) {
@@ -572,7 +714,7 @@
 
             });
 
-            $('.radioSelectPlayerTarget', elem).on('change', function () {
+            $('.radioSelectPlayerTarget', elem).off('change').on('change', function () {
 
                 var supportsMirror = this.getAttribute('data-mirror') == 'true';
 
@@ -582,14 +724,6 @@
                     $('.fldMirrorMode', elem).hide();
                 }
 
-            }).each(function () {
-
-                if (this.checked) {
-                    $(this).trigger('change');
-                }
-
-            }).on('change', function () {
-
                 var playerName = this.getAttribute('data-playername');
                 var targetId = this.getAttribute('data-targetid');
                 var targetName = this.getAttribute('data-targetname');
@@ -597,7 +731,7 @@
                 var playableMediaTypes = this.getAttribute('data-mediatypes').split(',');
                 var supportedCommands = this.getAttribute('data-commands').split(',');
 
-                MediaController.setActivePlayer(playerName, {
+                MediaController.trySetActivePlayer(playerName, {
                     id: targetId,
                     name: targetName,
                     playableMediaTypes: playableMediaTypes,
@@ -612,6 +746,12 @@
                 }
 
             });
+
+            if ($('.radioSelectPlayerTarget:checked', elem).attr('data-mirror') == 'true') {
+                $('.fldMirrorMode', elem).show();
+            } else {
+                $('.fldMirrorMode', elem).hide();
+            }
         });
     }
 
@@ -675,9 +815,8 @@
 
             showPlayerSelection($.mobile.activePage);
         });
-    });
 
-    $(document).on('pagebeforeshow', ".page", function () {
+    }).on('pagebeforeshow', ".page", function () {
 
         var page = this;
 
@@ -692,4 +831,4 @@
         mirrorIfEnabled(info);
     });
 
-})(jQuery, window, window.store);
+})(jQuery, window, window.appStorage);

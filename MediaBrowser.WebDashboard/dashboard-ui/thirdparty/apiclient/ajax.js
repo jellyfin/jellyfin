@@ -2,13 +2,21 @@
 
     globalScope.AjaxApi = {
 
-        param: function(params) {
+        param: function (params) {
             return jQuery.param(params);
         },
 
-        ajax: function(request) {
+        ajax: function (request) {
 
-            return jQuery.ajax(request);
+            request.timeout = request.timeout || 30000;
+
+            try {
+                return jQuery.ajax(request);
+            } catch (err) {
+                var deferred = DeferredBuilder.Deferred();
+                deferred.reject();
+                return deferred.promise();
+            }
         }
 
     };

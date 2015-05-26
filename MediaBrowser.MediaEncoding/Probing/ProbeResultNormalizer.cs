@@ -129,7 +129,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
             else if (string.Equals(streamInfo.codec_type, "video", StringComparison.OrdinalIgnoreCase))
             {
-                stream.Type = isAudio
+                stream.Type = isAudio || string.Equals(stream.Codec, "mjpeg", StringComparison.OrdinalIgnoreCase)
                     ? MediaStreamType.EmbeddedImage
                     : MediaStreamType.Video;
 
@@ -146,44 +146,8 @@ namespace MediaBrowser.MediaEncoding.Probing
                 //    string.Equals(stream.AspectRatio, "2.35:1", StringComparison.OrdinalIgnoreCase) ||
                 //    string.Equals(stream.AspectRatio, "2.40:1", StringComparison.OrdinalIgnoreCase);
 
-                if (string.Equals(streamInfo.sample_aspect_ratio, "1:1", StringComparison.OrdinalIgnoreCase))
-                {
-                    stream.IsAnamorphic = false;
-                }
-                else if (!((string.IsNullOrWhiteSpace(streamInfo.sample_aspect_ratio) || string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))))
-                {
-                    stream.IsAnamorphic = true;
-                }
-                else if (string.IsNullOrWhiteSpace(streamInfo.display_aspect_ratio) || string.Equals(streamInfo.display_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase))
-                {
-                    stream.IsAnamorphic = false;
-                }
-                else
-                {
-                    var ratioParts = streamInfo.display_aspect_ratio.Split(':');
-                    if (ratioParts.Length != 2)
-                    {
-                        stream.IsAnamorphic = false;
-                    }
-                    else
-                    {
-                        int ratio0;
-                        int ratio1;
-                        if (!Int32.TryParse(ratioParts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out ratio0))
-                        {
-                            stream.IsAnamorphic = false;
-                        }
-                        else if (!Int32.TryParse(ratioParts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out ratio1))
-                        {
-                            stream.IsAnamorphic = false;
-                        }
-                        else
-                        {
-                            stream.IsAnamorphic = ((streamInfo.width * ratio1) != (stream.Height * ratio0));
-                        }
-                    }
-                }
-            
+                // http://stackoverflow.com/questions/17353387/how-to-detect-anamorphic-video-with-ffprobe
+                stream.IsAnamorphic = string.Equals(streamInfo.sample_aspect_ratio, "0:1", StringComparison.OrdinalIgnoreCase);
             }
             else
             {
@@ -519,6 +483,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             FetchStudios(audio, tags, "organization");
             FetchStudios(audio, tags, "ensemble");
             FetchStudios(audio, tags, "publisher");
+            FetchStudios(audio, tags, "label");
 
             // These support mulitple values, but for now we only store the first.
             audio.SetProviderId(MetadataProviders.MusicBrainzAlbumArtist, GetMultipleMusicBrainzId(FFProbeHelpers.GetDictionaryValue(tags, "MusicBrainz Album Artist Id")));

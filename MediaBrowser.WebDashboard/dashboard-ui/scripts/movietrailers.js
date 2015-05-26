@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
+    var view = LibraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard');
 
     // The base query options
     var query = {
@@ -54,10 +54,11 @@
                 items: result.Items,
                 shape: "portrait",
                 context: 'movies-trailers',
-                showTitle: false,
-                centerText: true,
+                showTitle: true,
+                showYear: true,
                 lazy: true,
-                overlayText: false
+                cardLayout: true,
+                showDetailsMenu: true
             });
 
             var elem = $('.itemsContainer', page).html(html).lazyChildren();
@@ -140,7 +141,14 @@
         });
     }
 
-    $(document).on('pageinit', "#movieTrailersPage", function () {
+    function onSubmit() {
+        var page = $(this).parents('.page');
+
+        playReel(page);
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#movieTrailersPage", function () {
 
         var page = this;
 
@@ -205,7 +213,9 @@
 
         });
 
-    }).on('pagebeforeshow', "#movieTrailersPage", function () {
+        $('.popupTrailerReelForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#movieTrailersPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -231,20 +241,7 @@
             }
         });
 
-    }).on('pageshow', "#movieTrailersPage", function () {
-
         updateFilterControls(this);
     });
-
-    window.MovieTrailerPage = {
-
-        onSubmit: function () {
-
-            var page = $(this).parents('.page');
-
-            playReel(page);
-            return false;
-        }
-    };
 
 })(jQuery, document);

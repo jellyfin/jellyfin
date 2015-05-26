@@ -44,7 +44,7 @@
 
         var userId = Dashboard.getCurrentUserId();
 
-        var val = store.getItem('enableThemeSongs-' + userId);
+        var val = appStorage.getItem('enableThemeSongs-' + userId);
 
         var localAutoPlayers = MediaController.getPlayers().filter(function (p) {
 

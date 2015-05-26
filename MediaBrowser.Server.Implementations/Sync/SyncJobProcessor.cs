@@ -458,6 +458,13 @@ namespace MediaBrowser.Server.Implementations.Sync
 
             var syncOptions = _config.GetSyncOptions();
             var user = _userManager.GetUserById(job.UserId);
+            if (user == null)
+            {
+                jobItem.Status = SyncJobItemStatus.Failed;
+                _logger.Error("User not found. Cannot complete the sync job.");
+                await _syncManager.UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
+                return;
+            }
 
             var video = item as Video;
             if (video != null)

@@ -1,29 +1,7 @@
 ﻿(function () {
 
     function addRecurringFields(period, page) {
-
-        // Add recurring fields to form
-        $("<input type='hidden' name='a3' class='pprecurring' />")
-            .attr('value', $('#donateAmt', page).val())
-            .appendTo("#payPalSupporterForm", page);
-
-        $("<input type='hidden' name='p3' value='1' class='pprecurring' />")
-            .appendTo("#payPalSupporterForm", page);
-
-        $("<input type='hidden' name='t3' value='" + period + "' class='pprecurring' />")
-            .appendTo("#payPalSupporterForm", page);
-
-        $("<input type='hidden' name='src' value='1' class='pprecurring' />")
-            .appendTo("#payPalSupporterForm", page);
-
-        $("<input type='hidden' name='sra' value='1' class='pprecurring' />")
-            .appendTo("#payPalSupporterForm", page);
-
-        //change command for subscriptions
-        $('#ppCmd', page).val('_xclick-subscriptions');
-
-        $('#payPalSupporterForm', page).trigger('create');
-        console.log($('#payPalSupporterForm', page).html());
+        RegistrationServices.addRecurringFields(page, period);
     }
 
     function removeRecurringFields(page) {
@@ -127,7 +105,23 @@
         });
     }
 
-    $(document).on('pageinit', "#supporterPage", function () {
+    function onSubmit() {
+        var form = this;
+        var page = $(form).parents('.page');
+
+        if ($('.hfIsActive', page).val() == 'true') {
+
+            var currentPlanType = $('.hfPlanType', page).val();
+
+            if (currentPlanType != 'Lifetime') {
+
+                // Use a regular alert to block the submission process until they hit ok
+                alert(Globalize.translate('MessageChangeRecurringPlanConfirm'));
+            }
+        }
+    }
+
+    $(document).on('pageinitdepends', "#supporterPage", function () {
 
         var page = this;
 
@@ -178,7 +172,11 @@
             updateSavedDonationAmount(page);
         });
 
-    }).on('pageshow', "#supporterPage", function () {
+        RegistrationServices.initSupporterForm(page);
+
+        $('.supporterForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#supporterPage", function () {
 
         var page = this;
 
@@ -187,7 +185,7 @@
         $('.dailyAmount', page).html('$' + dailyAmount);
         $('.yearlyAmount', page).html('$' + yearlyAmount);
 
-        $('#paypalReturnUrl', page).val(ApiClient.getUrl("supporterkey.html"));
+        $('#returnUrl', page).val(ApiClient.getUrl("supporterkey.html"));
 
         $('.radioDonationType', page).trigger('change');
 
@@ -195,27 +193,5 @@
 
         loadUserInfo(page);
     });
-
-    window.SupporterPage = {
-
-        onSubmit: function () {
-
-            var form = this;
-            var page = $(form).parents('.page');
-
-            if ($('.hfIsActive', page).val() == 'true') {
-
-                var currentPlanType = $('.hfPlanType', page).val();
-
-                if (currentPlanType != 'Lifetime') {
-
-                    // Use a regular alert to block the submission process until they hit ok
-                    alert(Globalize.translate('MessageChangeRecurringPlanConfirm'));
-                }
-            }
-
-        }
-
-    };
 
 })();

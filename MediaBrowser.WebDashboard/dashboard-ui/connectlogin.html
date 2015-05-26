@@ -4,7 +4,7 @@
     <title>${TitleSignIn}</title>
 </head>
 <body class="serverlessPage">
-    <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b">
+    <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b" data-require="scripts/connectlogin">
 
         <div data-role="content">
 
@@ -29,7 +29,7 @@
                     </span>
                     <i class="fa fa-check"></i>
                 </button>
-                <p class="forgotPassword" style="display:none;">
+                <p class="forgotPassword">
                     <a href="http://emby.media/community/index.php?app=core&module=global&section=lostpass" target="_blank">${ButtonForgotPassword}</a>
                 </p>
                 <div class="skip">
@@ -43,7 +43,7 @@
                     <div class="fieldDescription">${TextConnectToServerManually}</div>
                 </div>
 
-                <div class="newUsers" style="display:none;">
+                <div class="newUsers">
                     <br />
                     <h2 style="text-align: left;">${HeaderNewUsers}</h2>
                     <a data-role="button" data-icon="action" href="http://emby.media/community/index.php?app=core&module=global&section=register" target="_blank">${ButtonSignUp}</a>
@@ -97,11 +97,6 @@
                 </div>
             </div>
         </div>
-
-        <script type="text/javascript">
-            $('.connectLoginForm').off('submit', ConnectLoginPage.onSubmit).on('submit', ConnectLoginPage.onSubmit);
-            $('.manualServerForm').off('submit', ConnectLoginPage.onManualServerSubmit).on('submit', ConnectLoginPage.onManualServerSubmit);
-        </script>
     </div>
 </body>
 </html>

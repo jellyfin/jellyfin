@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvGuidePage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}">
+    <div id="liveTvGuidePage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/registrationservices,scripts/livetvcomponents,scripts/livetvguide">
         <div class="libraryViewNav">
             <a href="livetvsuggested.html">${TabSuggestions}</a>
             <a href="livetvguide.html" class="ui-btn-active">${TabGuide}</a>
@@ -16,7 +16,7 @@
         <div data-role="content" style="padding-top: 5px;padding-left:0!important;padding-right:0!important;">
 
             <div class="tvGuide">
-                <div style="white-space: nowrap;position:fixed;top:98px;left:0;z-index:100; max-width: 100%;" class="tvGuideHeader">
+                <div class="tvGuideHeader">
                     <div class="channelTimeslotHeader">
                         <div class="timeslotHeaderInner">
                             <a href="#popupConfig" data-rel="popup" class="accentButton" style="display:block;padding-left:5px;"><i class="fa fa-calendar"></i><span class="currentDate"></span></a>
@@ -31,6 +31,15 @@
                     <div class="programGrid"></div>
                 </div>
                 <div class="channelPaging"></div>
+            </div>
+            <div class="guideRequiresUnlock readOnlyContent" style="margin:1em auto;text-align:center;display:none;padding:1em;">
+                <p class="unlockText"></p>
+                <button class="btn btnActionAccent btnUnlockGuide" data-role="none" type="button">
+                    <span>
+                        ${ButtonUnlockGuide}
+                    </span>
+                    <i class="fa fa-check"></i>
+                </button>
             </div>
             <div data-role="popup" id="popupConfig" data-theme="b">
                 <div class="ui-bar-a" style="text-align: center; padding: 0 20px; position: relative;">

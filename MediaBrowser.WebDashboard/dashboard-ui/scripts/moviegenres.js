@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Thumb', 'Thumb');
+    var view = LibraryBrowser.getDefaultItemsView('Thumb', 'ThumbCard');
 
     // The base query options
     var query = {
@@ -63,6 +63,17 @@
                     lazy: true
                 });
             }
+            else if (view == "PosterCard") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "portrait",
+                    context: 'movies',
+                    showItemCounts: true,
+                    lazy: true,
+                    cardLayout: true,
+                    showTitle: true
+                });
+            }
             else if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
@@ -98,7 +109,7 @@
         $('#selectView', page).val(view).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#movieGenresPage", function () {
+    $(document).on('pageinitdepends', "#movieGenresPage", function () {
 
         var page = this;
 
@@ -143,7 +154,7 @@
             LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
         });
 
-    }).on('pagebeforeshow', "#movieGenresPage", function () {
+    }).on('pageshowready', "#movieGenresPage", function () {
 
         var page = this;
         query.ParentId = LibraryMenu.getTopParentId();
@@ -168,8 +179,6 @@
                 reloadItems(page);
             }
         });
-
-    }).on('pageshow', "#movieGenresPage", function () {
 
         updateFilterControls(this);
     });

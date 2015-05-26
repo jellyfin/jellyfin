@@ -74,6 +74,17 @@
                         lazy: true
                     });
                 }
+                else if (view == "PosterCard") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "auto",
+                        context: 'movies',
+                        showTitle: true,
+                        cardLayout: true,
+                        lazy: true,
+                        showItemCounts: true
+                    });
+                }
                 else if (view == "Thumb") {
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
@@ -83,6 +94,18 @@
                         centerText: true,
                         lazy: true,
                         preferThumb: true
+                    });
+                }
+                else if (view == "ThumbCard") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "backdrop",
+                        context: 'movies',
+                        showTitle: true,
+                        lazy: true,
+                        preferThumb: true,
+                        cardLayout: true,
+                        showItemCounts: true
                     });
                 }
 
@@ -150,7 +173,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#boxsetsPage", function () {
+    $(document).on('pageinitdepends', "#boxsetsPage", function () {
 
         var page = this;
 
@@ -234,7 +257,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#boxsetsPage", function () {
+    }).on('pagebeforeshowready', "#boxsetsPage", function () {
 
         var page = this;
 
@@ -273,7 +296,7 @@
             }
         });
 
-    }).on('pageshow', "#boxsetsPage", function () {
+    }).on('pageshowready', "#boxsetsPage", function () {
 
         updateFilterControls(this);
 
@@ -374,7 +397,8 @@
         var options = {
 
             Recursive: true,
-            IncludeItemTypes: "BoxSet"
+            IncludeItemTypes: "BoxSet",
+            SortBy: "SortName"
         };
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
@@ -393,7 +417,7 @@
         });
     }
 
-    $(document).on('pageinit', ".collectionEditorPage", function () {
+    $(document).on('pageinitdepends', ".collectionEditorPage", function () {
 
         var page = this;
 

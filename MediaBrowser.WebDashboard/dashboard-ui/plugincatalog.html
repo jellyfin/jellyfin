@@ -4,7 +4,7 @@
     <title>${TitlePlugins}</title>
 </head>
 <body>
-    <div id="pluginCatalogPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins">
+    <div id="pluginCatalogPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="scripts/ratingdialog">
         <div data-role="content">
             <div class="content-primary">
                 <div data-role="controlgroup" data-type="horizontal" data-mini="true">
@@ -26,7 +26,7 @@
                             <label for="radopTheater">${PluginTabAppTheater}</label>
                         </fieldset>
                     </div>
-                    <div style="display:inline-block;vertical-align:bottom;">
+                    <div style="display:inline-block;vertical-align:bottom;" class="optionAdultContainer">
                         <div style="margin-left:1em;">
                             <label for="chkAdult">${OptionDisplayAdultContent}</label>
                             <input id="chkAdult" type="checkbox" data-mini="true" data-inline="true" />

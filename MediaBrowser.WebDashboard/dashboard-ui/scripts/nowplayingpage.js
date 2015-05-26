@@ -633,12 +633,12 @@
 
         var expected = '2';
 
-        if (store.getItem('remotecontrolswipedown') != expected) {
+        if (appStorage.getItem('remotecontrolswipedown') != expected) {
             Dashboard.alert({
                 message: Globalize.translate('MessageSwipeDownOnRemoteControl'),
                 title: Globalize.translate('HeaderAlert')
             });
-            store.setItem('remotecontrolswipedown', expected);
+            appStorage.setItem('remotecontrolswipedown', expected);
         }
 
     }

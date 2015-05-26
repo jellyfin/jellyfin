@@ -14,6 +14,14 @@
         return deferred.promise();
     }
 
+    function enableScrollX() {
+        return AppInfo.isTouchPreferred && AppInfo.enableAppLayouts;
+    }
+
+    function getThumbShape() {
+        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+    }
+
     function getLibraryButtonsHtml(items) {
 
         var html = "";
@@ -89,7 +97,7 @@
             html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
             html += '<div class="cardBox" style="background-color:' + backgroundColor + ';margin:4px;border-radius:4px;">';
 
-            html += "<div class='cardText' style='padding:7px 10px;color:#fff;'>";
+            html += "<div class='cardText' style='padding:8px 10px;color:#fff;font-size:14px;'>";
             html += '<i class="fa ' + icon + '"></i>';
             html += '<span style="margin-left:.7em;">' + item.Name + '</span>';
             html += "</div>";
@@ -139,6 +147,8 @@
 
             var html = '';
 
+            var cardLayout = AppInfo.hasLowImageBandwidth;
+
             if (items.length) {
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
@@ -148,7 +158,9 @@
                 }
 
                 html += '</div>';
+
                 html += '<div class="itemsContainer">';
+
                 html += LibraryBrowser.getPosterViewHtml({
                     items: items,
                     preferThumb: true,
@@ -157,12 +169,15 @@
                     showUnplayedIndicator: false,
                     showChildCountIndicator: true,
                     lazy: true,
+                    cardLayout: cardLayout,
+                    showTitle: cardLayout,
+                    showYear: cardLayout,
+                    showDetailsMenu: true
                 });
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren();
-            $(elem).createCardMenus();
+            $(elem).html(html).lazyChildren().createCardMenus();
         });
     }
 
@@ -191,13 +206,13 @@
                     shape: 'auto',
                     showTitle: true,
                     centerText: true,
-                    lazy: true
+                    lazy: true,
+                    showDetailsMenu: true
                 });
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren();
-            $(elem).createCardMenus();
+            $(elem).html(html).lazyChildren().createCardMenus();
         });
     }
 
@@ -246,7 +261,7 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren().createCardMenus();
+            $(elem).html(html).lazyChildren().createCardMenus({ showDetailsMenu: false });
 
             handleLibraryLinkNavigations(elem);
         });
@@ -275,24 +290,31 @@
 
             var html = '';
 
+            var cardLayout = AppInfo.hasLowImageBandwidth;
+
             if (result.Items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderResume') + '</h1>';
-                html += '<div>';
+                if (enableScrollX()) {
+                    html += '<div class="hiddenScrollX itemsContainer">';
+                } else {
+                    html += '<div class="itemsContainer">';
+                }
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     preferThumb: true,
-                    shape: 'backdrop',
-                    overlayText: screenWidth >= 800 && !AppInfo.hasLowImageBandwidth,
+                    shape: getThumbShape(),
+                    overlayText: screenWidth >= 800 && !cardLayout,
                     showTitle: true,
                     showParentTitle: true,
                     context: 'home',
-                    lazy: true
+                    lazy: true,
+                    cardLayout: cardLayout,
+                    showDetailsMenu: true
                 });
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren();
-            $(elem).createCardMenus();
+            $(elem).html(html).lazyChildren().createCardMenus();
         });
     }
 
@@ -376,12 +398,12 @@
                 showTitle: true,
                 centerText: true,
                 context: 'channels',
-                lazy: true
+                lazy: true,
+                showDetailsMenu: true
             });
             html += '</div>';
 
-            var elem = $('#channel' + channel.Id + '', page).html(html).lazyChildren().trigger('create');
-            $(elem).createCardMenus();
+            $('#channel' + channel.Id + '', page).html(html).lazyChildren().trigger('create').createCardMenus();
         });
     }
 
@@ -416,7 +438,8 @@
                 showParentTitle: true,
                 overlayText: screenWidth >= 600,
                 coverImage: true,
-                lazy: true
+                lazy: true,
+                showDetailsMenu: true
             });
 
             elem.html(html).lazyChildren().trigger('create');
@@ -542,10 +565,10 @@
 
     function dismissWelcome(page, userId) {
 
-        ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
+        getDisplayPreferences('home', userId).done(function (result) {
 
             result.CustomPrefs[homePageTourKey] = homePageDismissValue;
-            ApiClient.updateDisplayPreferences('home', result, userId, 'webclient');
+            ApiClient.updateDisplayPreferences('home', result, userId, getDisplayPreferencesAppName());
         });
     }
 
@@ -594,58 +617,55 @@
                 afterClose: function () {
                     dismissWelcome(page, userId);
                     $('.welcomeMessage', page).hide();
-
-                    loadConfigureViewsWelcomeMessage(page, userId);
                 },
                 hideBarsDelay: 30000
             });
         });
     }
 
-    function loadConfigureViewsWelcomeMessage(page, userId) {
-
-        Dashboard.getCurrentUser().done(function (user) {
-
-            if (user.Policy.EnableUserPreferenceAccess) {
-                $('.btnMyPreferences', page).attr('href', 'mypreferencesdisplay.html?userId=' + userId);
-
-                // Need the timeout because previous methods in the chain have popups that will be in the act of closing
-                setTimeout(function () {
-
-                    $('.popupConfigureViews', page).popup('open');
-
-                }, 500);
-            }
-        });
-    }
-
-    $(document).on('pageinit', "#indexPage", function () {
+    $(document).on('pageinitdepends', "#indexPage", function () {
 
         var page = this;
-
-        var userId = Dashboard.getCurrentUserId();
 
         $('.btnTakeTour', page).on('click', function () {
-            takeTour(page, userId);
+            takeTour(page, Dashboard.getCurrentUserId());
         });
 
-    }).on('pagebeforeshow', "#indexPage", function () {
+    }).on('pagebeforeshowready', "#indexPage", function () {
 
         var page = this;
 
-        var userId = Dashboard.getCurrentUserId();
+        if (window.ApiClient) {
+            var userId = Dashboard.getCurrentUserId();
 
-        ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
+            getDisplayPreferences('home', userId).done(function (result) {
 
-            Dashboard.getCurrentUser().done(function (user) {
+                Dashboard.getCurrentUser().done(function (user) {
 
-                loadSections(page, user, result).done(function () {
-                    showWelcomeIfNeeded(page, result);
+                    loadSections(page, user, result).done(function () {
+                        showWelcomeIfNeeded(page, result);
+                    });
+
                 });
-
             });
-        });
+        }
 
     });
+
+    function getDisplayPreferencesAppName() {
+
+        if (Dashboard.isRunningInCordova()) {
+            return 'Emby Mobile';
+        }
+
+        return 'webclient';
+    }
+
+    function getDisplayPreferences(key, userId) {
+
+        return ApiClient.getDisplayPreferences(key, userId, getDisplayPreferencesAppName()).done(function (result) {
+
+        });
+    }
 
 })(jQuery, document);

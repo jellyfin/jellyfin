@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="editItemImagesPage" data-role="page" class="page libraryPage metadataEditorPage" data-contextname="${HeaderMetadataManager}">
+    <div id="editItemImagesPage" data-role="page" class="page libraryPage metadataEditorPage" data-contextname="${HeaderMetadataManager}" data-require="scripts/edititemimages">
         <div data-role="content editPageContent">
             <div class="editPageSidebar">
                 <div class="libraryTree">
@@ -60,7 +60,7 @@
         </div>
 
         <div data-role="popup" id="popupUpload" data-theme="a">
-            <form id="uploadItemImageForm" style="max-width: 100%; margin: 0 1.5em 1.5em;">
+            <form class="uploadItemImageForm" style="max-width: 100%; margin: 0 1.5em 1.5em;">
                 <h2>${HeaderAddUpdateImage}</h2>
                 <div>
                     <p>${LabelJpgPngOnly}</p>
@@ -145,10 +145,6 @@
                 </div>
             </div>
         </div>
-
-        <script type="text/javascript">
-            $('#uploadItemImageForm').on('submit', EditItemImagesPage.onSubmit);
-        </script>
 
     </div>
 </body>

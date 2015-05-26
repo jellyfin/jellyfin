@@ -115,9 +115,17 @@ namespace Emby.Drawing.ImageMagick
             }
         }
 
+        private bool HasTransparency(string path)
+        {
+            var ext = Path.GetExtension(path);
+
+            return string.Equals(ext, ".png", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(ext, ".webp", StringComparison.OrdinalIgnoreCase);
+        }
+
         public void EncodeImage(string inputPath, string outputPath, int width, int height, int quality, ImageProcessingOptions options)
         {
-            if (string.IsNullOrWhiteSpace(options.BackgroundColor))
+            if (string.IsNullOrWhiteSpace(options.BackgroundColor) || !HasTransparency(inputPath))
             {
                 using (var originalImage = new MagickWand(inputPath))
                 {

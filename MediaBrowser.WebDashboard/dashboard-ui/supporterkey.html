@@ -4,7 +4,7 @@
     <title>${TitleSupport}</title>
 </head>
 <body>
-    <div id="supporterKeyPage" data-role="page" class="page type-interior">
+    <div id="supporterKeyPage" data-role="page" class="page type-interior" data-require="scripts/supporterkeypage">
 
         <div data-role="content">
             <div class="content-primary">
@@ -12,8 +12,8 @@
                     <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                         <a href="support.html" data-role="button">${TabGeneral}</a>
                         <a href="log.html" data-role="button">${TabLogs}</a>
-                        <a href="supporter.html" data-role="button">${TabDonate}</a>
-                        <a href="supporterkey.html" data-role="button" class="ui-btn-active">${TabSupporterKey}</a>
+                        <a href="supporter.html" data-role="button" class="tabSupporterMembership">${TabDonate}</a>
+                        <a href="supporterkey.html" data-role="button" class="ui-btn-active tabSupporterMembership">${TabSupporterKey}</a>
                         <a href="about.html" data-role="button">${TabAbout}</a>
                     </div>
 
@@ -132,13 +132,6 @@
             </div>
 
         </div>
-
-        <script type="text/javascript">
-            $('#supporterKeyForm').on('submit', SupporterKeyPage.updateSupporterKey);
-            $('#lostKeyForm').on('submit', SupporterKeyPage.retrieveSupporterKey);
-            $('#linkKeysForm').on('submit', SupporterKeyPage.linkSupporterKeys);
-            $('.popupAddUserForm').on('submit', SupporterKeyPage.onAddConnectUserSubmit).on('submit', SupporterKeyPage.onAddConnectUserSubmit);
-        </script>
     </div>
 </body>
 </html>

@@ -55,10 +55,6 @@
         vertical-align: middle;
     }
 
-.headerSearchButton img {
-    height: 18px;
-}
-
 .headerButtonLeft {
     padding: 0 15px;
 }
@@ -142,7 +138,7 @@
     -webkit-overflow-scrolling: touch;
 }
 
-.bottomLibraryViewNav {
+.bottomSecondaryNav .libraryViewNav {
     top: initial;
     bottom: 0;
     border-top: 1px solid #444;
@@ -240,7 +236,7 @@
     border-bottom: 5px solid transparent;
 }
 
-.bottomLibraryViewNav a {
+.bottomSecondaryNav .libraryViewNav a {
     padding: 12px 0 12px;
 }
 
@@ -263,14 +259,14 @@
 @media all and (min-width: 800px) {
 
     .dashboardDocument .dashboardMenuButton {
-        display: none;
+        display: none !important;
     }
 }
 
 @media all and (max-width: 800px) {
 
     .dashboardDocument .libraryMenuButton {
-        display: none;
+        display: none !important;
     }
 }
 
@@ -286,10 +282,10 @@
 
     /* They can use the left menu */
     .dashboardEntryHeaderButton {
-        display: none;
+        display: none !important;
     }
 }
 
 .libraryDocument .dashboardMenuButton {
-    display: none;
+    display: none !important;
 }

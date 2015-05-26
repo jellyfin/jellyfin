@@ -35,7 +35,7 @@
             }
 
             html += '<div class="' + cssClass + '">';
-            html += '<div class="tvProgramTimeSlotInner">' + LiveTvHelpers.getDisplayTime(startDate) + '</div>';
+            html += '<div class="tvProgramTimeSlotInner">' + LibraryBrowser.getDisplayTime(startDate) + '</div>';
             html += '</div>';
 
             cssClass = "tvProgramInfo";
@@ -162,154 +162,7 @@
         });
     }
 
-    window.LiveTvHelpers = {
-
-        getDaysOfWeek: function () {
-
-            var days = [
-                'Sunday',
-                'Monday',
-                'Tuesday',
-                'Wednesday',
-                'Thursday',
-                'Friday',
-                'Saturday'
-            ];
-
-            return days.map(function (d) {
-
-                return {
-                    name: d,
-                    value: d
-                };
-
-            });
-        },
-
-        getDisplayTime: function (date) {
-
-            if ((typeof date).toString().toLowerCase() === 'string') {
-                try {
-
-                    date = parseISO8601Date(date, { toLocal: true });
-
-                } catch (err) {
-                    return date;
-                }
-            }
-
-            var lower = date.toLocaleTimeString().toLowerCase();
-
-            var hours = date.getHours();
-            var minutes = date.getMinutes();
-
-            var text;
-
-            if (lower.indexOf('am') != -1 || lower.indexOf('pm') != -1) {
-
-                var suffix = hours > 11 ? 'pm' : 'am';
-
-                hours = (hours % 12) || 12;
-
-                text = hours;
-
-                if (minutes) {
-
-                    text += ':';
-                    if (minutes < 10) {
-                        text += '0';
-                    }
-                    text += minutes;
-                }
-
-                text += suffix;
-
-            } else {
-                text = hours + ':';
-
-                if (minutes < 10) {
-                    text += '0';
-                }
-                text += minutes;
-            }
-
-            return text;
-        },
-
-        renderMiscProgramInfo: function (elem, obj) {
-
-            var html = [];
-
-            if (obj.IsSeries && !obj.IsRepeat) {
-
-                html.push('<span class="newTvProgram">'+Globalize.translate('LabelNewProgram')+'</span>');
-
-            }
-
-            if (obj.IsLive) {
-
-                html.push('<span class="liveTvProgram">'+Globalize.translate('LabelLiveProgram')+'</span>');
-
-            }
-
-            if (obj.ChannelId) {
-                html.push('<a class="textlink" href="livetvchannel.html?id=' + obj.ChannelId + '">' + obj.ChannelName + '</a>');
-            }
-
-            if (obj.IsHD) {
-
-                html.push(Globalize.translate('LabelHDProgram'));
-
-            }
-
-            if (obj.Audio) {
-
-                html.push(obj.Audio);
-
-            }
-
-            html = html.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
-
-            if (obj.SeriesTimerId) {
-                html += '<a href="livetvseriestimer.html?id=' + obj.SeriesTimerId + '" title="'+Globalize.translate('ButtonViewSeriesRecording')+'">';
-                html += '<div class="timerCircle seriesTimerCircle"></div>';
-                html += '<div class="timerCircle seriesTimerCircle"></div>';
-                html += '<div class="timerCircle seriesTimerCircle"></div>';
-                html += '</a>';
-            }
-            else if (obj.TimerId) {
-
-                html += '<a href="livetvtimer.html?id=' + obj.TimerId + '">';
-                html += '<div class="timerCircle"></div>';
-                html += '</a>';
-            }
-
-            elem.html(html).trigger('create');
-        },
-
-        renderOriginalAirDate: function (elem, item) {
-
-            var airDate = item.OriginalAirDate;
-
-            if (airDate && item.IsRepeat) {
-
-                try {
-                    airDate = parseISO8601Date(airDate, { toLocal: true }).toLocaleDateString();
-                }
-                catch (e) {
-                    console.log("Error parsing date: " + airDate);
-                }
-
-
-                elem.html(Globalize.translate('ValueOriginalAirDate').replace('{0}', airDate)).show();
-            } else {
-                elem.hide();
-            }
-        }
-
-    };
-
-    $(document).on('pageinit', "#liveTvChannelPage", function () {
+    $(document).on('pageinitdepends', "#liveTvChannelPage", function () {
 
         var page = this;
 
@@ -323,7 +176,7 @@
             Dashboard.navigate("edititemmetadata.html?channelid=" + currentItem.Id);
         });
 
-    }).on('pageshow', "#liveTvChannelPage", function () {
+    }).on('pageshowready', "#liveTvChannelPage", function () {
 
         var page = this;
 

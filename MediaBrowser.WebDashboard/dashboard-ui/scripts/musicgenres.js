@@ -1,5 +1,7 @@
 ﻿(function ($, document) {
 
+    var view = LibraryBrowser.getDefaultItemsView('Thumb', 'ThumbCard');
+
     // The base query options
     var query = {
 
@@ -38,15 +40,30 @@
 
             updateFilterControls(page);
             
-            html = LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "backdrop",
-                preferThumb: true,
-                context: 'music',
-                showItemCounts: true,
-                centerText: true,
-                lazy: true
-            });
+            if (view == "Thumb") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    preferThumb: true,
+                    context: 'music',
+                    showItemCounts: true,
+                    centerText: true,
+                    lazy: true
+                });
+            }
+            else if (view == "ThumbCard") {
+
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "backdrop",
+                    preferThumb: true,
+                    context: 'music',
+                    showItemCounts: true,
+                    cardLayout: true,
+                    lazy: true,
+                    showTitle: true
+                });
+            }
 
             $('#items', page).html(html).lazyChildren();
 
@@ -71,7 +88,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#musicGenresPage", function () {
+    $(document).on('pageinitdepends', "#musicGenresPage", function () {
 
         var page = this;
 
@@ -98,7 +115,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#musicGenresPage", function () {
+    }).on('pageshowready', "#musicGenresPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -113,8 +130,6 @@
         LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
-
-    }).on('pageshow', "#musicGenresPage", function () {
 
         updateFilterControls(this);
     });

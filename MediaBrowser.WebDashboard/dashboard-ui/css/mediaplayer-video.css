@@ -37,7 +37,7 @@
 
 .videoControls {
     padding: .5em .5em;
-    background-color: rgba(0, 0, 0, .8);
+    background-color: rgba(0, 0, 0, .7);
     position: fixed;
     left: 0;
     bottom: 0;
@@ -74,10 +74,8 @@
 }
 
 .nowPlayingInfo {
-    position: fixed;
-    bottom: 8px;
-    left: 10px;
-    z-index: 99999;
+    text-align: center;
+    padding: 1em 1em 2em 1em;
 }
 
 #videoPlayer .nowPlayingImage img {
@@ -86,16 +84,75 @@
     max-height: 200px;
 }
 
-#videoPlayer .nowPlayingText {
-    font-weight: normal;
-    margin: 0 0 0 5px;
-    max-width: 150px;
+#videoPlayer .nowPlayingTabs {
+    margin: 0 0 0 1em;
     overflow: hidden;
-    white-space: nowrap;
+    white-space: normal;
     text-overflow: ellipsis;
     text-align: left;
-    vertical-align: bottom;
+    vertical-align: top;
+    color: #eee;
+    display: inline-block;
+    width: 70%;
+    font-weight: normal;
+    font-size: 14px;
+}
+
+@media all and (max-width: 1200px) {
+    #videoPlayer .nowPlayingTabs {
+        font-size: 13px;
+    }
+}
+
+.nowPlayingTabButtons {
+    margin-bottom: 1.25em;
+}
+
+.nowPlayingTabButton {
+    display: inline-block;
+    font-size: 18px;
+    text-transform: uppercase;
+    color: #ddd !important;
+    font-weight: 400 !important;
+    text-decoration: none;
+}
+
+    .nowPlayingTabButton + .nowPlayingTabButton {
+        padding-left: 1.5em;
+    }
+
+    .nowPlayingTabButton:not(.selectedNowPlayingTabButton):hover {
+        color: white !important;
+    }
+
+.selectedNowPlayingTabButton {
+    color: #2ad !important;
+}
+
+.nowPlayingTab {
+    overflow-y: hidden;
+    overflow-x: auto;
+}
+
+#videoPlayer .nowPlayingText {
+    font-weight: normal;
+    margin: 0 0 0 1em;
+    max-width: initial;
+    overflow: hidden;
+    white-space: normal;
+    text-overflow: ellipsis;
+    text-align: left;
+    vertical-align: top;
     position: static;
+    color: #eee;
+}
+
+.videoNowPlayingName {
+    font-size: 22px;
+}
+
+.videoNowPlayingOverview, .videoNowPlayingRating {
+    margin: 1em 0;
 }
 
 .videoTopControlsLogo {
@@ -155,20 +212,6 @@
         margin-right: 0;
         min-width: 120px;
     }
-
-    .videoControls .nowPlayingText {
-        max-width: 160px;
-    }
-
-    #mediaPlayer .nowPlayingImage {
-        display: none;
-    }
-}
-
-@media all and (max-width: 960px), all and (max-height: 550px) {
-    .videoControls .nowPlayingText {
-        max-width: 90px;
-    }
 }
 
 @media all and (max-width: 800px), all and (max-height: 460px) {
@@ -178,10 +221,10 @@
     }
 }
 
-@media all and (max-width: 1000px), all and (max-height: 460px) {
+@media all and (max-width: 800px), all and (max-height: 600px) {
 
-    #mediaPlayer .nowPlayingImage, #mediaPlayer .nowPlayingText {
-        display: none;
+    #mediaPlayer .nowPlayingInfo {
+        display: none !important;
     }
 }
 
@@ -202,9 +245,13 @@
 }
 
 @media all and (min-width: 1300px) {
+    .nowPlayingInfo {
+        padding-bottom: 0;
+    }
+
     #videoPlayer .nowPlayingImage img {
         height: auto !important;
-        max-width: 150px;
+        max-width: 400px;
         max-height: 300px;
     }
 }

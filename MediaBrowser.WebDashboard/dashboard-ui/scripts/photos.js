@@ -40,15 +40,30 @@
 
             updateFilterControls(page);
 
-            // Poster
-            html = LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: "auto",
-                context: getParameterByName('context') || 'photos',
-                showTitle: query.MediaTypes != 'Photo',
-                overlayText: true,
-                lazy: true
-            });
+            if (view == "Poster") {
+                // Poster
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "auto",
+                    context: getParameterByName('context') || 'photos',
+                    showTitle: query.MediaTypes != 'Photo',
+                    overlayText: true,
+                    lazy: true
+                });
+            }
+            else if (view == "PosterCard") {
+
+                // Poster
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "auto",
+                    context: getParameterByName('context') || 'photos',
+                    showTitle: true,
+                    lazy: true,
+                    cardLayout: true,
+                    showPremiereDate: true
+                });
+            }
 
             var elem = $('#items', page).html(html).lazyChildren();
 
@@ -197,7 +212,7 @@
         }
     }
 
-    $(document).on('pageinit', "#photosPage", function () {
+    $(document).on('pageinitdepends', "#photosPage", function () {
 
         var page = this;
 
@@ -262,7 +277,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#photosPage", function () {
+    }).on('pageshowready', "#photosPage", function () {
 
         var page = this;
 
@@ -289,8 +304,6 @@
                 reloadItems(page);
             }
         });
-
-    }).on('pageshow', "#photosPage", function () {
 
         updateFilterControls(this);
     });

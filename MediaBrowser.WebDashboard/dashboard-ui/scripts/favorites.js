@@ -48,7 +48,8 @@
                     context: 'home-favorites',
                     showTitle: section.showTitle,
                     showParentTitle: section.showParentTitle,
-                    lazy: true
+                    lazy: true,
+                    showDetailsMenu: true
                 });
 
                 if (result.TotalRecordCount > result.Items.length) {
@@ -104,7 +105,7 @@
         }
     }
 
-    $(document).on('pagebeforeshow', "#favoritesPage", function () {
+    $(document).on('pageshowready', "#favoritesPage", function () {
 
         var page = this;
 

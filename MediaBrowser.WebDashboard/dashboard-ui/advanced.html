@@ -4,7 +4,7 @@
     <title>${TitleAdvanced}</title>
 </head>
 <body>
-    <div id="advancedConfigurationPage" data-role="page" class="page type-interior advancedConfigurationPage">
+    <div id="advancedConfigurationPage" data-role="page" class="page type-interior advancedConfigurationPage" data-require="scripts/advancedconfigurationpage">
 
         <div data-role="content">
             <div class="content-primary">
@@ -14,7 +14,7 @@
                     <a href="dashboardhosting.html" data-role="button">${TabHosting}</a>
                     <a href="serversecurity.html" data-role="button">${TabSecurity}</a>
                 </div>
-                <form id="advancedConfigurationForm">
+                <form class="advancedConfigurationForm">
 
                     <ul data-role="listview" class="ulForm">
                         <li id="fldRunAtStartup" style="display: none;">
@@ -97,10 +97,6 @@
                 </form>
             </div>
         </div>
-
-        <script type="text/javascript">
-            $('#advancedConfigurationForm').on('submit', AdvancedConfigurationPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

@@ -1,10 +1,18 @@
 ﻿(function ($, document) {
 
     function itemsPerRow() {
-        
+
         var screenWidth = $(window).width();
 
         return screenWidth >= 1920 ? 9 : (screenWidth >= 1200 ? 12 : (screenWidth >= 1000 ? 10 : 8));
+    }
+
+    function enableScrollX() {
+        return AppInfo.isTouchPreferred && AppInfo.enableAppLayouts;
+    }
+
+    function getSquareShape() {
+        return enableScrollX() ? 'overflowSquare' : 'square';
     }
 
     function loadLatest(page, parentId) {
@@ -27,7 +35,7 @@
                 showUnplayedIndicator: false,
                 showChildCountIndicator: true,
                 showLatestItemsPopup: false,
-                shape: "square",
+                shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
                 lazy: true,
@@ -65,7 +73,7 @@
             $('#recentlyPlayedSongs', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
-                shape: "square",
+                shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
                 defaultAction: 'play',
@@ -105,7 +113,7 @@
             $('#topPlayedSongs', page).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
-                shape: "square",
+                shape: getSquareShape(),
                 showTitle: true,
                 showParentTitle: true,
                 defaultAction: 'play',
@@ -144,7 +152,7 @@
 
             $('.itemsContainer', elem).html(LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: "square",
+                shape: getSquareShape(),
                 showTitle: true,
                 lazy: true,
                 defaultAction: 'play',
@@ -155,10 +163,9 @@
             })).lazyChildren();
 
         });
-
     }
 
-    $(document).on('pagebeforeshow', "#musicRecommendedPage", function () {
+    $(document).on('pageshowready', "#musicRecommendedPage", function () {
 
         var parentId = LibraryMenu.getTopParentId();
 
@@ -168,6 +175,12 @@
         loadPlaylists(page, parentId);
         loadRecentlyPlayed(page, parentId);
         loadFrequentlyPlayed(page, parentId);
+
+        if (enableScrollX()) {
+            $('.itemsContainer', page).addClass('hiddenScrollX');
+        } else {
+            $('.itemsContainer', page).removeClass('hiddenScrollX');
+        }
     });
 
 

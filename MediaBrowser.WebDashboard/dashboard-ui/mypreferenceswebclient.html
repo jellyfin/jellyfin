@@ -173,14 +173,23 @@
 
                         <br />
                         <div>
+                            <label for="selectEnableItemPreviews">${LabelEnableItemPreviews}</label>
+                            <select id="selectEnableItemPreviews" data-mini="true">
+                                <option value="true">${OptionYes}</option>
+                                <option value="false">${OptionNo}</option>
+                            </select>
+                            <div>${LabelEnableItemPreviewsHelp}</div>
+                        </div>
+
+                        <br />
+                        <div>
                             <fieldset data-role="controlgroup">
                                 <legend>${LabelExternalPlayers}</legend>
-                                <!--<input type="checkbox" id="chkGoodplayer" class="chkExternalPlayer" data-name="GoodPlayer" data-scheme="goodplayer://{0}" />
-                                    <label for="chkGoodplayer">GoodPlayer</label>-->
-                                <input type="checkbox" id="chkVlc" class="chkExternalPlayer" data-name="Vlc" data-scheme="vlc://{0}" />
-                                <label for="chkVlc">Vlc</label>
+                                <input type="checkbox" id="chkExternalVideoPlayer" />
+                                <label for="chkExternalVideoPlayer">${OptionEnableExternalVideoPlayers}</label>
                             </fieldset>
-                            <div style="padding: 0 2px;">${LabelExternalPlayersHelp}</div>
+                            <div style="padding: 0 2px;display:none;" class="labelGenericExternalPlayers">${LabelExternalPlayersHelp}</div>
+                            <div style="padding: 0 2px;display:none;" class="labelNativeExternalPlayers">${LabelNativeExternalPlayersHelp}</div>
                         </div>
                     </div>
                 </div>

@@ -49,7 +49,16 @@
         }).done(Dashboard.processServerConfigurationUpdateResult);
     }
 
-    $(document).on('pageinit', "#devicePage", function () {
+    function onSubmit() {
+        var form = this;
+        var page = $(form).parents('.page');
+
+        save(page);
+
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#devicePage", function () {
 
         var page = this;
 
@@ -71,25 +80,13 @@
             });
         });
 
+        $('.deviceForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshow', "#devicePage", function () {
+    }).on('pageshowready', "#devicePage", function () {
 
         var page = this;
 
         loadData(page);
     });
-
-    window.DevicePage = {
-
-        onSubmit: function () {
-
-            var form = this;
-            var page = $(form).parents('.page');
-
-            save(page);
-
-            return false;
-        }
-    };
 
 })();

@@ -164,7 +164,7 @@
 
             var deferred = $.Deferred();
 
-            var apiClient = ConnectionManager.currentApiClient();
+            var apiClient = window.ApiClient;
 
             if (apiClient) {
                 apiClient.getSessions().done(function (sessions) {
@@ -242,7 +242,7 @@
                 ControllableByUserId: Dashboard.getCurrentUserId()
             };
 
-            var apiClient = ConnectionManager.currentApiClient();
+            var apiClient = window.ApiClient;
 
             if (apiClient) {
                 apiClient.getSessions(sessionQuery).done(function (sessions) {
@@ -274,6 +274,13 @@
                 deferred.resolveWith(null, []);
             }
 
+            return deferred.promise();
+        };
+
+        self.tryPair = function(target) {
+
+            var deferred = $.Deferred();
+            deferred.resolve();
             return deferred.promise();
         };
     }
@@ -348,9 +355,15 @@
         $(apiClient).on("websocketmessage", onWebSocketMessageReceived).on("websocketopen", onWebSocketConnectionChange);
     }
 
-    $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+    Dashboard.ready(function () {
 
-        initializeApiClient(apiClient);
+        if (window.ApiClient) {
+            initializeApiClient(window.ApiClient);
+        }
+
+        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+            initializeApiClient(apiClient);
+        });
     });
 
 })(window, document, jQuery);

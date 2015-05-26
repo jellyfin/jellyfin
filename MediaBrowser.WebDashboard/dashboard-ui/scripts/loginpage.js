@@ -63,7 +63,7 @@
 
     showManualForm: function (page, showCancel, focusPassword) {
         $('.visualLoginForm', page).hide();
-        $('#manualLoginForm', page).show();
+        $('.manualLoginForm', page).show();
 
         if (focusPassword) {
             $('#txtManualPassword', page).focus();
@@ -80,7 +80,7 @@
 
     showVisualForm: function (page) {
         $('.visualLoginForm', page).show();
-        $('#manualLoginForm', page).hide();
+        $('.manualLoginForm', page).hide();
     },
 
     getLastSeenText: function (lastActivityDate) {
@@ -102,18 +102,16 @@
 
             var serverId = getParameterByName('serverid');
 
-            // In a multi-server supported app, set the server address
-            if (serverId) {
-                Dashboard.serverAddress(apiClient.serverAddress());
-            }
-
-            Dashboard.setCurrentUser(user.Id, result.AccessToken);
+            var newUrl;
 
             if (user.Policy.IsAdministrator && !serverId) {
-                window.location = "dashboard.html?u=" + user.Id + '&t=' + result.AccessToken;
+                newUrl = "dashboard.html";
             } else {
-                window.location = "index.html?u=" + user.Id + '&t=' + result.AccessToken;
+                newUrl = "index.html";
             }
+
+            Dashboard.onServerChanged(user.Id, result.AccessToken, apiClient);
+            Dashboard.navigate(newUrl);
 
         }).fail(function () {
 
@@ -217,4 +215,10 @@
     }
 };
 
-$(document).on('pageshow', "#loginPage", LoginPage.onPageShow);
+$(document).on('pageinitdepends', "#loginPage", function () {
+
+    var page = this;
+
+    $('.manualLoginForm', page).off('submit', LoginPage.onManualSubmit).on('submit', LoginPage.onManualSubmit);
+
+}).on('pageshowready', "#loginPage", LoginPage.onPageShow);

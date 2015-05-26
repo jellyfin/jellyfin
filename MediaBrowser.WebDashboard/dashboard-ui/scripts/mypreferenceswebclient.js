@@ -2,29 +2,20 @@
 
     function loadForm(page, userId, displayPreferences) {
 
-        var externalPlayers = JSON.parse(store.getItem('externalplayers') || '[]');
-
         $('#selectMaxBitrate', page).val(AppSettings.maxStreamingBitrate()).selectmenu("refresh");
         $('#selectMaxChromecastBitrate', page).val(AppSettings.maxChromecastBitrate()).selectmenu("refresh");
 
-        $('.chkExternalPlayer', page).each(function () {
+        $('#chkExternalVideoPlayer', page).checked(AppSettings.enableExternalPlayers()).checkboxradio("refresh");
 
-            var chk = this;
-            chk.checked = externalPlayers.filter(function (p) {
-
-                return p.name == chk.getAttribute('data-name');
-
-            }).length > 0;
-
-        }).checkboxradio('refresh');
-
-        $('#selectThemeSong', page).val(store.getItem('enableThemeSongs-' + userId) || '').selectmenu("refresh");
-        $('#selectBackdrop', page).val(store.getItem('enableBackdrops-' + userId) || '').selectmenu("refresh");
+        $('#selectThemeSong', page).val(appStorage.getItem('enableThemeSongs-' + userId) || '').selectmenu("refresh");
+        $('#selectBackdrop', page).val(appStorage.getItem('enableBackdrops-' + userId) || '').selectmenu("refresh");
 
         $('#selectHomeSection1', page).val(displayPreferences.CustomPrefs.home0 || '').selectmenu("refresh");
         $('#selectHomeSection2', page).val(displayPreferences.CustomPrefs.home1 || '').selectmenu("refresh");
         $('#selectHomeSection3', page).val(displayPreferences.CustomPrefs.home2 || '').selectmenu("refresh");
         $('#selectHomeSection4', page).val(displayPreferences.CustomPrefs.home3 || '').selectmenu("refresh");
+
+        $('#selectEnableItemPreviews', page).val(AppSettings.enableItemPreviews().toString().toLowerCase()).selectmenu("refresh");
 
         $('#chkEnableLibraryTileNames', page).checked(displayPreferences.CustomPrefs.enableLibraryTileNames != '0').checkboxradio("refresh");
 
@@ -33,8 +24,8 @@
 
     function saveUser(page, userId, displayPreferences) {
 
-        store.setItem('enableThemeSongs-' + userId, $('#selectThemeSong', page).val());
-        store.setItem('enableBackdrops-' + userId, $('#selectBackdrop', page).val());
+        appStorage.setItem('enableThemeSongs-' + userId, $('#selectThemeSong', page).val());
+        appStorage.setItem('enableBackdrops-' + userId, $('#selectBackdrop', page).val());
 
         displayPreferences.CustomPrefs.home0 = $('#selectHomeSection1', page).val();
         displayPreferences.CustomPrefs.home1 = $('#selectHomeSection2', page).val();
@@ -55,19 +46,12 @@
 
         Dashboard.showLoadingMsg();
 
-        var externalPlayers = $('.chkExternalPlayer:checked', page).get().map(function (i) {
-
-            return {
-                name: i.getAttribute('data-name'),
-                scheme: i.getAttribute('data-scheme')
-            };
-
-        });
-
-        store.setItem('externalplayers', JSON.stringify(externalPlayers));
+        AppSettings.enableExternalPlayers($('#chkExternalVideoPlayer', page).checked());
 
         AppSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
         AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
+
+        AppSettings.enableItemPreviews($('#selectEnableItemPreviews', page).val() == 'true');
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
@@ -81,11 +65,7 @@
         return false;
     }
 
-    $(document).on('pageinit', "#webClientPreferencesPage", function () {
-
-        var page = this;
-
-    }).on('pagebeforeshow', "#webClientPreferencesPage", function () {
+    $(document).on('pageshowready', "#webClientPreferencesPage", function () {
 
         var page = this;
 
@@ -105,6 +85,14 @@
             $('.homePageConfigurationSection', page).hide();
         } else {
             $('.homePageConfigurationSection', page).show();
+        }
+
+        if (AppInfo.hasKnownExternalPlayerSupport) {
+            $('.labelNativeExternalPlayers', page).show();
+            $('.labelGenericExternalPlayers', page).hide();
+        } else {
+            $('.labelGenericExternalPlayers', page).show();
+            $('.labelNativeExternalPlayers', page).hide();
         }
     });
 
@@ -133,9 +121,25 @@
             }
 
             return parseInt(store.getItem('chromecastBitrate') || '') || 3000000;
+        },
+        enableExternalPlayers: function (val) {
+
+            if (val != null) {
+                store.setItem('externalplayers', val.toString());
+            }
+
+            return store.getItem('externalplayers') == 'true';
+        },
+        enableItemPreviews: function (val) {
+
+            if (val != null) {
+                store.setItem('enableItemPreviews', val.toString());
+            }
+
+            return store.getItem('enableItemPreviews') != 'false';
         }
 
     };
 
 
-})(window, window.store);
+})(window, window.appStorage);

@@ -1,6 +1,15 @@
 ﻿(function ($, document) {
 
-    $(document).on('pagebeforeshow', "#tvNextUpPage", function () {
+    function getView() {
+
+        if (AppInfo.hasLowImageBandwidth) {
+            return 'ThumbCard';
+        }
+
+        return 'Thumb';
+    }
+
+    $(document).on('pageshowready', "#tvNextUpPage", function () {
 
         var userId = Dashboard.getCurrentUserId();
 
@@ -8,9 +17,11 @@
 
         var page = this;
 
-        var limit = AppInfo.hasLowImageBandwidth ?
-         20 :
-         30;
+        var limit = 30;
+
+        if (AppInfo.hasLowImageBandwidth) {
+            limit = 16;
+        }
 
         var options = {
 
@@ -24,18 +35,43 @@
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
-            $('#latestEpisodes', page).html(LibraryBrowser.getPosterViewHtml({
-                items: items,
-                shape: "backdrop",
-                preferThumb: true,
-                inheritThumb: false,
-                showParentTitle: false,
-                showUnplayedIndicator: false,
-                showChildCountIndicator: true,
-                overlayText: true,
-                lazy: true
+            var view = getView();
+            var html = '';
 
-            })).lazyChildren();
+            if (view == 'ThumbCard') {
+
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: items,
+                    shape: "backdrop",
+                    preferThumb: true,
+                    inheritThumb: false,
+                    showUnplayedIndicator: false,
+                    showChildCountIndicator: true,
+                    overlayText: false,
+                    showParentTitle: true,
+                    lazy: true,
+                    showTitle: true,
+                    cardLayout: true
+                });
+
+            } else if (view == 'Thumb') {
+
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: items,
+                    shape: "backdrop",
+                    preferThumb: true,
+                    inheritThumb: false,
+                    showParentTitle: false,
+                    showUnplayedIndicator: false,
+                    showChildCountIndicator: true,
+                    overlayText: false,
+                    centerText: true,
+                    lazy: true,
+                    showTitle: false
+                });
+            }
+
+            $('#latestEpisodes', page).html(html).lazyChildren();
 
         });
     });

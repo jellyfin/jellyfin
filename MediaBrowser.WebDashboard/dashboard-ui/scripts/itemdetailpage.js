@@ -342,7 +342,7 @@
 
         var chapters = item.Chapters || [];
 
-        if (!chapters.length) {
+        if (!chapters.length || !AppInfo.enableDetailPageChapters) {
             $('#scenesCollapsible', page).hide();
         } else {
             $('#scenesCollapsible', page).show();
@@ -616,9 +616,11 @@
 
         var promise;
 
+        var screenWidth = $(window).width();
+
         var options = {
             userId: Dashboard.getCurrentUserId(),
-            limit: 5,
+            limit: screenWidth > 800 ? 5 : 4,
             fields: "PrimaryImageAspectRatio,UserData,SyncInfo"
         };
 
@@ -664,7 +666,8 @@
                 borderless: item.Type == "Game",
                 context: context,
                 overlayText: item.Type != "MusicAlbum",
-                lazy: true
+                lazy: true,
+                showDetailsMenu: true
             });
 
             $('#similarContent', page).html(html).lazyChildren();
@@ -864,7 +867,8 @@
                     context: context,
                     playFromHere: true,
                     overlayText: true,
-                    lazy: true
+                    lazy: true,
+                    showDetailsMenu: true
                 });
             }
             else if (item.Type == "GameSystem") {
@@ -874,7 +878,8 @@
                     showTitle: true,
                     centerText: true,
                     context: context,
-                    lazy: true
+                    lazy: true,
+                    showDetailsMenu: true
                 });
             }
 
@@ -980,13 +985,14 @@
             showTitle: true,
             centerText: true,
             context: context,
-            lazy: true
+            lazy: true,
+            showDetailsMenu: true
         });
         html += '</div>';
 
         html += '</div>';
 
-        $('.collectionItems', page).append(html);
+        $('.collectionItems', page).append(html).lazyChildren();
     }
 
     function renderUserDataIcons(page, item) {
@@ -1183,7 +1189,7 @@
 
         var chapters = item.Chapters || [];
 
-        var maxWwidth = LibraryBrowser.getPosterViewInfo().thumbWidth;
+        var maxWidth = LibraryBrowser.getPosterViewInfo().backdropWidth;
 
         for (var i = 0, length = chapters.length; i < length; i++) {
 
@@ -1206,7 +1212,7 @@
             if (chapter.ImageTag) {
 
                 imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                    maxWidth: maxWwidth,
+                    maxWidth: maxWidth,
                     tag: chapter.ImageTag,
                     type: "Chapter",
                     index: i
@@ -1405,7 +1411,7 @@
 
         var html = '';
 
-        var maxWwidth = LibraryBrowser.getPosterViewInfo().thumbWidth;
+        var maxWidth = LibraryBrowser.getPosterViewInfo().backdropWidth;
 
         for (var i = 0, length = items.length; i < length; i++) {
 
@@ -1433,7 +1439,7 @@
             if (imageTags.Primary) {
 
                 imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                    maxWidth: maxWwidth,
+                    maxWidth: maxWidth,
                     tag: imageTags.Primary,
                     type: "primary"
                 });

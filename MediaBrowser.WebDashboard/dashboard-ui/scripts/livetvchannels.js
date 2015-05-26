@@ -11,7 +11,8 @@
         return LibraryBrowser.getPosterViewHtml({
             items: channels,
             shape: "smallBackdrop",
-            centerText: true
+            centerText: true,
+            lazy: true
         });
     }
 
@@ -73,7 +74,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#liveTvChannelsPage", function () {
+    $(document).on('pageinitdepends', "#liveTvChannelsPage", function () {
 
         var page = this;
 
@@ -108,7 +109,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshow', "#liveTvChannelsPage", function () {
+    }).on('pageshowready', "#liveTvChannelsPage", function () {
 
         // Can't use pagebeforeshow here or the loading popup won't center correctly
         var page = this;

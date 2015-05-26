@@ -154,6 +154,12 @@ namespace MediaBrowser.Model.Updates
         public List<PackageVersionInfo> versions { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [enable in application store].
+        /// </summary>
+        /// <value><c>true</c> if [enable in application store]; otherwise, <c>false</c>.</value>
+        public bool enableInAppStore { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PackageInfo"/> class.
         /// </summary>
         public PackageInfo()

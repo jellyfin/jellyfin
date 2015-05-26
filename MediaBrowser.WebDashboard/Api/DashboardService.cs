@@ -291,9 +291,17 @@ namespace MediaBrowser.WebDashboard.Api
 
             var culture = "en-US";
 
-            var appVersion = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
+            var appVersion = _appHost.ApplicationVersion.ToString();
 
             var mode = request.Mode;
+
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                // Overwrite certain files with cordova specific versions
+                var cordovaVersion = Path.Combine(path, "thirdparty", "cordova", "registrationservices.js");
+                File.Copy(cordovaVersion, Path.Combine(path, "scripts", "registrationservices.js"), true);
+                File.Delete(cordovaVersion);
+            }
 
             await DumpHtml(creator.DashboardUIPath, path, mode, culture, appVersion);
             await DumpJs(creator.DashboardUIPath, path, mode, culture, appVersion);
@@ -311,6 +319,19 @@ namespace MediaBrowser.WebDashboard.Api
                 var filename = Path.GetFileName(file);
 
                 await DumpFile(filename, Path.Combine(destination, filename), mode, culture, appVersion).ConfigureAwait(false);
+            }
+
+            var excludeFiles = new List<string>();
+
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                excludeFiles.Add("supporter.html");
+                excludeFiles.Add("supporterkey.html");
+            }
+
+            foreach (var file in excludeFiles)
+            {
+                File.Delete(Path.Combine(destination, file));
             }
         }
 

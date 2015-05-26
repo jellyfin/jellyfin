@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = "Poster";
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'PosterCard');
 
     // The base query options
     var query = {
@@ -73,6 +73,16 @@
                     showTitle: true,
                     centerText: true,
                     context: context
+                });
+            }
+            else if (view == "PosterCard") {
+                html = LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: "auto",
+                    showTitle: true,
+                    context: context,
+                    cardLayout: true,
+                    showYear: true
                 });
             }
 
@@ -165,7 +175,7 @@
         }
     }
 
-    $(document).on('pageinit', "#itemListPage", function () {
+    $(document).on('pageinitdepends', "#itemListPage", function () {
 
         var page = this;
 
@@ -234,7 +244,7 @@
 
         $(page).on('click', '.mediaItem', onListItemClick);
 
-    }).on('pageshow', "#itemListPage", function () {
+    }).on('pageshowready', "#itemListPage", function () {
 
         var page = this;
 

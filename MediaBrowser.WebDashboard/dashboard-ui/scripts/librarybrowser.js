@@ -232,13 +232,20 @@
             return html;
         },
 
+        playInExternalPlayer: function(id) {
+            
+             Dashboard.loadExternalPlayer().done(function () {
+                ExternalPlayer.showMenu(id);
+            });
+        },
+
         showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks, showAddToPlaylist) {
 
-            var externalPlayers = ExternalPlayer.getExternalPlayers();
+            var externalPlayers = AppSettings.enableExternalPlayers();
 
             if (!resumePositionTicks && mediaType != "Audio" && !isFolder) {
 
-                if (!externalPlayers.length || mediaType != "Video") {
+                if (!externalPlayers || mediaType != "Video") {
                     MediaController.play(itemId);
                     return;
                 }
@@ -253,8 +260,8 @@
 
             html += '<li><a href="#" onclick="MediaController.play(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonPlay') + '</a></li>';
 
-            if (!isFolder && externalPlayers.length) {
-                html += '<li><a href="#" onclick="LibraryBrowser.closePlayMenu();ExternalPlayer.showMenu(\'' + itemId + '\');">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
+            if (!isFolder && externalPlayers) {
+                html += '<li><a href="#" onclick="LibraryBrowser.closePlayMenu();LibraryBrowser.playInExternalPlayer(\'' + itemId + '\');">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
             }
 
             if (resumePositionTicks) {
@@ -714,7 +721,7 @@
 
 
                 var href = LibraryBrowser.getHref(item, options.context);
-                html += '<li class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '">';
+                html += '<li class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '" data-icon="false">';
 
                 var defaultAction = options.defaultAction;
                 if (defaultAction == 'play' || defaultAction == 'playallfromhere') {
@@ -848,9 +855,9 @@
                 }
                 html += '</a>';
 
-                // Render out the jqm classes so that we don't have to call trigger create
-                html += '<a href="#" data-icon="ellipsis-v" class="listviewMenuButton ui-btn ui-icon-ellipsis-v ui-btn-icon-notext ui-btn-inline">';
-                html += '</a>';
+                html += '<button type="button" data-role="none" class="listviewMenuButton imageButton listViewMoreButton" data-icon="none">';
+                html += '<i class="fa fa-ellipsis-v"></i>';
+                html += '</button>';
 
                 html += '</li>';
 
@@ -883,6 +890,10 @@
             atts.push('data-playaccess="' + (item.PlayAccess || '') + '"');
             atts.push('data-locationtype="' + (item.LocationType || '') + '"');
             atts.push('data-index="' + index + '"');
+
+            if (options.showDetailsMenu) {
+                atts.push('data-detailsmenu="true"');
+            }
 
             var html = atts.join(' ');
 
@@ -957,6 +968,8 @@
             return screenWidth;
         },
 
+        shapes: ['square', 'portrait', 'banner', 'smallBackdrop', 'homePageSmallBackdrop', 'backdrop', 'overflowBackdrop', 'overflowPortrait', 'overflowSquare'],
+
         getPostersPerRow: function (screenWidth) {
 
             function getValue(shape) {
@@ -964,19 +977,15 @@
                 var div = $('<div class="card ' + shape + 'Card"><div class="cardBox"><div class="cardImage"></div></div></div>').appendTo(document.body);
                 var width = screenWidth / $('.cardImage', div).innerWidth();
                 div.remove();
-                return width;
+                return Math.floor(width);
             }
 
             var info = {};
 
-            info.square = getValue('square');
-            info.smallSquare = getValue('smallSquare');
-            info.thumb = getValue('backdrop');
-            info.portrait = getValue('portrait');
-            info.smallPortrait = getValue('smallPortrait');
-            info.banner = getValue('banner');
-            info.smallThumb = getValue('smallBackdrop');
-
+            for (var i = 0, length = LibraryBrowser.shapes.length; i < length; i++) {
+                var currentShape = LibraryBrowser.shapes[i];
+                info[currentShape] = getValue(currentShape);
+            }
             return info;
         },
 
@@ -1006,59 +1015,29 @@
 
             var imagesPerRow = LibraryBrowser.getPostersPerRow(screenWidth);
 
-            if (AppInfo.hasLowImageBandwidth) {
-                screenWidth *= .95;
-            } else {
+            var result = {};
+            result.screenWidth = screenWidth;
+
+            if (!AppInfo.hasLowImageBandwidth) {
                 screenWidth *= 1.25;
             }
 
-            var thumbWidth = screenWidth / imagesPerRow.thumb;
-            var smallThumbWidth = screenWidth / imagesPerRow.smallThumb;
-            var posterWidth = screenWidth / imagesPerRow.portrait;
-            var smallPosterWidth = screenWidth / imagesPerRow.smallPortrait;
-            var squareSize = screenWidth / imagesPerRow.square;
-            var smallSquareSize = screenWidth / imagesPerRow.smallSquare;
-            var bannerWidth = screenWidth / imagesPerRow.banner;
+            var roundTo = 100;
 
-            if (!AppInfo.isTouchPreferred) {
+            for (var i = 0, length = LibraryBrowser.shapes.length; i < length; i++) {
+                var currentShape = LibraryBrowser.shapes[i];
 
-                var roundTo = 100;
+                var shapeWidth = screenWidth / imagesPerRow[currentShape];
 
-                thumbWidth = Math.round(thumbWidth / roundTo) * roundTo;
-                smallThumbWidth = Math.round(smallThumbWidth / roundTo) * roundTo;
-                posterWidth = Math.round(posterWidth / roundTo) * roundTo;
-                smallPosterWidth = Math.round(smallPosterWidth / roundTo) * roundTo;
-                squareSize = Math.round(squareSize / roundTo) * roundTo;
-                bannerWidth = Math.round(bannerWidth / roundTo) * roundTo;
+                if (!AppInfo.isTouchPreferred) {
+
+                    shapeWidth = Math.round(shapeWidth / roundTo) * roundTo;
+                }
+
+                result[currentShape + 'Width'] = Math.round(shapeWidth);
             }
 
-            var defaultPortait = 'portrait';
-            var defaultThumb = 'backdrop';
-            var defaultSquare = 'square';
-
-            if (AppInfo.hasLowImageBandwidth) {
-                defaultThumb = 'smallBackdrop';
-                defaultSquare = 'smallSquare';
-                defaultPortait = 'smallPortrait';
-            }
-
-            return {
-
-                defaultThumb: defaultThumb,
-                smallThumbWidth: Math.round(smallThumbWidth),
-                thumbWidth: Math.round(thumbWidth),
-
-                defaultPortait: defaultPortait,
-                posterWidth: Math.round(posterWidth),
-                smallPosterWidth: Math.round(smallPosterWidth),
-
-                defaultSquare: defaultSquare,
-                squareSize: Math.round(squareSize),
-                smallSquareSize: Math.round(smallSquareSize),
-
-                bannerWidth: Math.round(bannerWidth),
-                screenWidth: screenWidth
-            };
+            return result;
         },
 
         getPosterViewHtml: function (options) {
@@ -1094,43 +1073,40 @@
 
             var posterInfo = LibraryBrowser.getPosterViewInfo();
 
-            var thumbWidth = posterInfo.thumbWidth;
-            var posterWidth = posterInfo.posterWidth;
-            var squareSize = posterInfo.squareSize;
+            var thumbWidth = posterInfo.backdropWidth;
+            var posterWidth = posterInfo.portraitWidth;
+            var squareSize = posterInfo.squareWidth;
             var bannerWidth = posterInfo.bannerWidth;
 
             if (isThumbAspectRatio) {
-                posterInfo.smallPosterWidth = posterInfo.smallThumbWidth;
                 posterWidth = thumbWidth;
             }
             else if (isSquareAspectRatio) {
-                posterInfo.smallPosterWidth = posterInfo.smallSquareSize;
                 posterWidth = squareSize;
             }
 
-            if (options.shape == 'backdrop' && posterInfo.defaultThumb == 'smallBackdrop') {
-                options.shape = 'smallBackdrop';
+            if (options.shape == 'overflowBackdrop') {
+                thumbWidth = posterInfo.overflowBackdropWidth;
             }
-
-            else if (options.shape == 'portrait' && posterInfo.defaultPortait == 'smallPortrait') {
-                options.shape = 'smallPortrait';
+            else if (options.shape == 'overflowPortrait') {
+                posterWidth = posterInfo.overflowPortraitWidth;
             }
-
-            else if (options.shape == 'square' && posterInfo.defaultSquare == 'smallSquare') {
-                options.shape = 'smallSquare';
+            else if (options.shape == 'overflowSquare') {
+                squareSize = posterInfo.overflowSquareWidth;
             }
-
-            if (options.shape == 'smallBackdrop') {
-                thumbWidth = posterInfo.smallThumbWidth;
+            else if (options.shape == 'smallBackdrop') {
+                thumbWidth = posterInfo.smallBackdropWidth;
             }
-            else if (options.shape == 'smallPortrait') {
-                posterWidth = posterInfo.smallPosterWidth;
-            }
-            else if (options.shape == 'smallSquare') {
-                squareSize = posterInfo.smallSquareSize;
+            else if (options.shape == 'homePageSmallBackdrop') {
+                thumbWidth = posterInfo.homePageSmallBackdropWidth;
+                posterWidth = posterInfo.homePageSmallBackdropWidth;
             }
             else if (options.shape == 'detailPagePortrait') {
                 posterWidth = 200;
+            }
+            else if (options.shape == 'detailPageSquare') {
+                posterWidth = 200;
+                squareSize = 200;
             }
             else if (options.shape == 'detailPage169') {
                 posterWidth = 320;
@@ -1407,10 +1383,6 @@
 
             var cssClass = "card";
 
-            if (options.transparent !== false) {
-                cssClass += " transparentCard";
-            }
-
             cssClass += ' ' + options.shape + 'Card';
 
             var mediaSourceCount = item.MediaSourceCount || 1;
@@ -1564,8 +1536,7 @@
 
             if (options.cardLayout) {
                 html += '<div class="cardText" style="text-align:right; float:right;">';
-                // Render out the jqm classes so that we don't have to call trigger create
-                html += '<button class="listviewMenuButton ui-btn ui-icon-ellipsis-v ui-btn-icon-notext ui-btn-inline ui-shadow ui-corner-all" type="button" data-inline="true" data-iconpos="notext" data-icon="ellipsis-v" style="margin: 4px 0 0;"></button>';
+                html += '<button class="listviewMenuButton imageButton btnCardOptions" type="button" data-role="none" style="margin: 4px 0 0;"><i class="fa fa-ellipsis-v"></i></button>';
                 html += "</div>";
             }
 
@@ -1618,15 +1589,19 @@
                 lines.push(songLine);
             }
 
-            if (options.showPremiereDate && item.PremiereDate) {
+            if (options.showPremiereDate) {
 
-                try {
+                if (item.PremiereDate) {
+                    try {
 
-                    lines.push(LibraryBrowser.getPremiereDateText(item));
+                        lines.push(LibraryBrowser.getPremiereDateText(item));
 
-                } catch (err) {
+                    } catch (err) {
+                        lines.push('');
+
+                    }
+                } else {
                     lines.push('');
-
                 }
             }
 
@@ -1678,7 +1653,7 @@
         },
 
         getListItemInfo: function (elem) {
-            
+
             var elemWithAttributes = elem;
 
             while (!elemWithAttributes.getAttribute('data-itemid')) {
@@ -1692,7 +1667,8 @@
             return {
                 id: itemId,
                 index: index,
-                mediaType: mediaType
+                mediaType: mediaType,
+                context: elemWithAttributes.getAttribute('data-context')
             };
         },
 
@@ -2650,6 +2626,56 @@
             elem.lazyChildren();
         },
 
+        getDisplayTime: function (date) {
+
+            if ((typeof date).toString().toLowerCase() === 'string') {
+                try {
+
+                    date = parseISO8601Date(date, { toLocal: true });
+
+                } catch (err) {
+                    return date;
+                }
+            }
+
+            var lower = date.toLocaleTimeString().toLowerCase();
+
+            var hours = date.getHours();
+            var minutes = date.getMinutes();
+
+            var text;
+
+            if (lower.indexOf('am') != -1 || lower.indexOf('pm') != -1) {
+
+                var suffix = hours > 11 ? 'pm' : 'am';
+
+                hours = (hours % 12) || 12;
+
+                text = hours;
+
+                if (minutes) {
+
+                    text += ':';
+                    if (minutes < 10) {
+                        text += '0';
+                    }
+                    text += minutes;
+                }
+
+                text += suffix;
+
+            } else {
+                text = hours + ':';
+
+                if (minutes < 10) {
+                    text += '0';
+                }
+                text += minutes;
+            }
+
+            return text;
+        },
+
         getMiscInfoHtml: function (item) {
 
             var miscInfo = [];
@@ -2680,7 +2706,7 @@
                     miscInfo.push(text);
 
                     if (item.Type != "Recording") {
-                        text = LiveTvHelpers.getDisplayTime(date);
+                        text = LibraryBrowser.getDisplayTime(date);
                         miscInfo.push(text);
                     }
                 }
@@ -2924,4 +2950,4 @@
         }
     };
 
-})(window, document, jQuery, screen, window.store);
+})(window, document, jQuery, screen, window.appStorage);

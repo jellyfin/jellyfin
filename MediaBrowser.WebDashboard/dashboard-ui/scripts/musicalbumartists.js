@@ -135,7 +135,7 @@
         }
     }
 
-    $(document).on('pageinit', "#musicAlbumArtistsPage", function () {
+    $(document).on('pageinitdepends', "#musicAlbumArtistsPage", function () {
 
         var page = this;
 
@@ -190,7 +190,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#musicAlbumArtistsPage", function () {
+    }).on('pageshowready', "#musicAlbumArtistsPage", function () {
 
         var page = this;
         query.ParentId = LibraryMenu.getTopParentId();
@@ -216,8 +216,6 @@
                 reloadItems(page);
             }
         });
-
-    }).on('pageshow', "#musicAlbumArtistsPage", function () {
 
         updateFilterControls(this);
     });

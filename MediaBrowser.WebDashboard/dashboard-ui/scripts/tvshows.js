@@ -50,7 +50,8 @@
                     shape: "backdrop",
                     preferThumb: true,
                     context: 'tv',
-                    lazy: true
+                    lazy: true,
+                    overlayText: true
                 });
 
             }
@@ -104,9 +105,9 @@
                     items: result.Items,
                     shape: "portrait",
                     context: 'tv',
-                    showTitle: false,
                     centerText: true,
-                    lazy: true
+                    lazy: true,
+                    overlayText: true
                 });
             }
 
@@ -201,7 +202,7 @@
         }
     }
 
-    $(document).on('pageinit', "#tvShowsPage", function () {
+    $(document).on('pageinitdepends', "#tvShowsPage", function () {
 
         var page = this;
 
@@ -359,7 +360,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#tvShowsPage", function () {
+    }).on('pageshowready', "#tvShowsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -385,8 +386,6 @@
                 reloadItems(page);
             }
         });
-
-    }).on('pageshow', "#tvShowsPage", function () {
 
         updateFilterControls(this);
     });

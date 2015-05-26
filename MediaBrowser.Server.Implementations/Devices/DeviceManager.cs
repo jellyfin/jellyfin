@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Events;
 using MediaBrowser.Common.IO;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Devices;
@@ -26,6 +27,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         private readonly ILibraryMonitor _libraryMonitor;
         private readonly IConfigurationManager _config;
         private readonly ILogger _logger;
+        private readonly INetworkManager _network;
 
         public event EventHandler<GenericEventArgs<CameraImageUploadInfo>> CameraImageUploaded;
 
@@ -34,7 +36,7 @@ namespace MediaBrowser.Server.Implementations.Devices
         /// </summary>
         public event EventHandler<GenericEventArgs<DeviceInfo>> DeviceOptionsUpdated;
 
-        public DeviceManager(IDeviceRepository repo, IUserManager userManager, IFileSystem fileSystem, ILibraryMonitor libraryMonitor, IConfigurationManager config, ILogger logger)
+        public DeviceManager(IDeviceRepository repo, IUserManager userManager, IFileSystem fileSystem, ILibraryMonitor libraryMonitor, IConfigurationManager config, ILogger logger, INetworkManager network)
         {
             _repo = repo;
             _userManager = userManager;
@@ -42,6 +44,7 @@ namespace MediaBrowser.Server.Implementations.Devices
             _libraryMonitor = libraryMonitor;
             _config = config;
             _logger = logger;
+            _network = network;
         }
 
         public async Task<DeviceInfo> RegisterDevice(string reportedId, string name, string appName, string appVersion, string usedByUserId)
@@ -233,6 +236,12 @@ namespace MediaBrowser.Server.Implementations.Devices
             }
 
             var user = _userManager.GetUserById(userId);
+
+            if (user == null)
+            {
+                throw new ArgumentException("user not found");
+            }
+
             if (!CanAccessDevice(user.Policy, deviceId))
             {
                 var capabilities = GetCapabilities(deviceId);

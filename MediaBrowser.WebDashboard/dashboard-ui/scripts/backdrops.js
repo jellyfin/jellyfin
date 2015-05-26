@@ -66,7 +66,7 @@
 
     function showBackdrop(type, parentId) {
 
-        var apiClient = ConnectionManager.currentApiClient();
+        var apiClient = window.ApiClient;
 
         if (!apiClient) {
             return;
@@ -97,6 +97,19 @@
         });
     }
 
+    function setDefault(page) {
+        
+        var backdropContainer = $('.backdropContainer');
+
+        if (backdropContainer.length) {
+            backdropContainer.css('backgroundImage', 'url(css/images/splash.jpg)');
+        } else {
+            $(document.body).prepend('<div class="backdropContainer" style="background-image:url(css/images/splash.jpg);top:0;"></div>');
+        }
+
+        $(page).addClass('backdropPage staticBackdropPage');
+    }
+
     function clearBackdrop() {
 
         $('.backdropContainer').css('backgroundImage', '');
@@ -115,20 +128,18 @@
             return false;
         }
 
-        if (!$.browser.mobile) {
-            return true;
+        if ($.browser.mobile) {
+            return false;
         }
 
-        var screenWidth = $(window).width();
-
-        return screenWidth >= 600;
+        return true;
     }
 
     function enabled() {
 
         var userId = Dashboard.getCurrentUserId();
 
-        var val = store.getItem('enableBackdrops-' + userId);
+        var val = appStorage.getItem('enableBackdrops-' + userId);
 
         // For bandwidth
         return val == '1' || (val != '0' && isEnabledByDefault());
@@ -182,7 +193,7 @@
         }
     }
 
-    $(document).on('pagebeforeshow', ".page", function () {
+    $(document).on('pagebeforeshowready', ".page", function () {
 
         var page = this;
 
@@ -213,7 +224,8 @@
     window.Backdrops = {
 
         setBackdrops: setBackdrops,
-        setBackdropUrl: setBackdropUrl
+        setBackdropUrl: setBackdropUrl,
+        setDefault: setDefault
     };
 
 })(jQuery, document);

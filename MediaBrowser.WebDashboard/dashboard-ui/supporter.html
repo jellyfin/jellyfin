@@ -4,7 +4,7 @@
     <title>${TitleSupport}</title>
 </head>
 <body>
-    <div id="supporterPage" data-role="page" class="page type-interior">
+    <div id="supporterPage" data-role="page" class="page type-interior" data-require="scripts/supporterpage,scripts/registrationservices">
 
         <div data-role="content">
             <div class="content-primary">
@@ -13,8 +13,8 @@
                     <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                         <a href="support.html" data-role="button">${TabGeneral}</a>
                         <a href="log.html" data-role="button">${TabLogs}</a>
-                        <a href="supporter.html" data-role="button" class="ui-btn-active">${TabDonate}</a>
-                        <a href="supporterkey.html" data-role="button">${TabSupporterKey}</a>
+                        <a href="supporter.html" data-role="button" class="ui-btn-active tabSupporterMembership">${TabDonate}</a>
+                        <a href="supporterkey.html" data-role="button" class="tabSupporterMembership">${TabSupporterKey}</a>
                         <a href="about.html" data-role="button">${TabAbout}</a>
                     </div>
 
@@ -27,7 +27,7 @@
                         <p class="planSummary"></p>
                     </div>
 
-                    <form style="margin-top:1.5em;" name="_xclick" action="https://www.paypal.com/cgi-bin/webscr" id="payPalSupporterForm" method="post">
+                    <form style="margin-top:1.5em;" name="_xclick" class="supporterForm" method="post">
 
                         <fieldset data-role="controlgroup">
                             <legend>${HeaderDonationType}</legend>
@@ -52,16 +52,10 @@
                                     <span class="monthlyAmount"></span>
                                 </label>
                             </div>
-                            <!--<div class="fldDaily">
-                                <input type="radio" class="radioDonationType" name="radioDonationType" id="radioDailySupporter" value="daily">
-                                <label for="radioDailySupporter">
-                                    Daily supporter membership<br />
-                                    <span class="dailyAmount"></span>
-                                </label>
-                            </div>-->
                         </fieldset>
-                        <div class="fieldDescription">${LabelRecurringDonationCanBeCancelledHelp}</div>
+                        <div class="fieldDescription recurringSubscriptionCancellationHelp"></div>
 
+                        <!--CORDOVA_EXCLUDE_START-->
                         <fieldset data-role="controlgroup" style="margin-top:1.5em;">
                             <input type="radio" class="radioDonationType" name="radioDonationType" id="radioOneTimeDonation" value="once">
                             <label for="radioOneTimeDonation">
@@ -96,11 +90,14 @@
                         <input type="hidden" name="item_name" value="Emby Supporter">
                         <input type="hidden" name="item_number" id="ppItemNo" value="MBSupporter">
                         <input type="hidden" name="notify_url" value="http://mb3admin.com/admin/service/services/ppipn.php">
-                        <input type="hidden" name="return" id="paypalReturnUrl" value="#">
+                        <input type="hidden" name="return" id="returnUrl" value="#">
+                        <!--CORDOVA_EXCLUDE_END-->
 
                         <button type="submit" data-role="none" class="btn" style="background-color:#179BD7">
+                            <!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_START-->
                             <i class="fa fa-paypal"></i>
                             <span>${ButtonDonateWithPayPal}</span>
+                            <!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_END-->
                         </button>
 
                         <input type="hidden" id="donateAmt" name="amount" />
@@ -116,10 +113,6 @@
                 </div>
             </div>
         </div>
-
-        <script type="text/javascript">
-            $('#payPalSupporterForm').off('submit', SupporterPage.onSubmit).on('submit', SupporterPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

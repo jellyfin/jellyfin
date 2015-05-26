@@ -18,17 +18,32 @@ namespace MediaBrowser.ServerApplication.Native
         {
             var shortcutPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Media Browser 3", "Media Browser Server.lnk");
 
+            if (!Directory.Exists(Path.GetDirectoryName(shortcutPath)))
+            {
+                shortcutPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Emby", "Emby Server.lnk");
+            }
+
             var startupPath = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+
+            // Remove lnk from old name
+            try
+            {
+                fileSystem.DeleteFile(Path.Combine(startupPath, Path.GetFileName(shortcutPath) ?? "Media Browser Server.lnk"));
+            }
+            catch
+            {
+                
+            }
 
             if (autorun)
             {
                 //Copy our shortut into the startup folder for this user
-                File.Copy(shortcutPath, Path.Combine(startupPath, Path.GetFileName(shortcutPath) ?? "MBstartup.lnk"), true);
+                File.Copy(shortcutPath, Path.Combine(startupPath, Path.GetFileName(shortcutPath) ?? "Emby Server.lnk"), true);
             }
             else
             {
                 //Remove our shortcut from the startup folder for this user
-                fileSystem.DeleteFile(Path.Combine(startupPath, Path.GetFileName(shortcutPath) ?? "MBstartup.lnk"));
+                fileSystem.DeleteFile(Path.Combine(startupPath, Path.GetFileName(shortcutPath) ?? "Emby Server.lnk"));
             }
         }
     }

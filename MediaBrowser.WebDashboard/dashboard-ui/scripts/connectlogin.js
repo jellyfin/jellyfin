@@ -1,21 +1,17 @@
 ﻿(function () {
 
-    function onLoggedIn() {
-
-        Dashboard.navigate('selectserver.html');
-    }
-
     function login(page, username, password) {
 
-        Dashboard.showLoadingMsg();
+        Dashboard.showModalLoadingMsg();
 
         ConnectionManager.loginToConnect(username, password).done(function () {
 
-            onLoggedIn();
+            Dashboard.hideModalLoadingMsg();
+            Dashboard.navigate('selectserver.html');
 
         }).fail(function () {
 
-            Dashboard.hideLoadingMsg();
+            Dashboard.hideModalLoadingMsg();
 
             Dashboard.alert({
                 message: Globalize.translate('MessageInvalidUser'),
@@ -30,25 +26,26 @@
 
     function handleConnectionResult(page, result) {
 
+        Dashboard.hideModalLoadingMsg();
+
         switch (result.State) {
 
             case MediaBrowser.ConnectionState.SignedIn:
                 {
                     var apiClient = result.ApiClient;
 
-                    Dashboard.serverAddress(apiClient.serverAddress());
-                    Dashboard.setCurrentUser(apiClient.getCurrentUserId(), apiClient.accessToken());
-                    window.location = 'index.html';
+                    Dashboard.onServerChanged(apiClient.getCurrentUserId(), apiClient.accessToken(), apiClient);
+                    Dashboard.navigate('index.html');
                 }
                 break;
             case MediaBrowser.ConnectionState.ServerSignIn:
                 {
-                    window.location = 'login.html?serverid=' + result.Servers[0].Id;
+                    Dashboard.navigate('login.html?serverid=' + result.Servers[0].Id, false, 'none');
                 }
                 break;
             case MediaBrowser.ConnectionState.ServerSelection:
                 {
-                    onLoggedIn();
+                    Dashboard.navigate('selectserver.html', false, 'none');
                 }
                 break;
             case MediaBrowser.ConnectionState.ConnectSignIn:
@@ -71,11 +68,9 @@
 
     function loadAppConnection(page) {
 
-        Dashboard.showLoadingMsg();
+        Dashboard.showModalLoadingMsg();
 
         ConnectionManager.connect().done(function (result) {
-
-            Dashboard.hideLoadingMsg();
 
             handleConnectionResult(page, result);
 
@@ -99,8 +94,7 @@
     }
     function loadMode(page, mode) {
 
-        $(document.body).prepend('<div class="backdropContainer" style="background-image:url(css/images/splash.jpg);top:0;"></div>');
-        $(page).addClass('backdropPage staticBackdropPage');
+        Backdrops.setDefault(page);
 
         if (mode == 'welcome') {
             $('.connectLoginForm', page).hide();
@@ -119,16 +113,39 @@
         }
     }
 
-    $(document).on('pageinit', "#connectLoginPage", function () {
+    function skip() {
+
+        Dashboard.navigate('selectserver.html');
+    }
+
+    function onSubmit() {
+        var page = $(this).parents('.page');
+
+        submit(page);
+
+        return false;
+    }
+
+    function onManualServerSubmit() {
+        var page = $(this).parents('.page');
+
+        submitManualServer(page);
+
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#connectLoginPage", function () {
 
         var page = this;
 
-        $('.btnSkipConnect', page).on('click', function() {
-
-            Dashboard.navigate('connectlogin.html?mode=manualserver');
+        $('.btnSkipConnect', page).on('click', function () {
+            skip();
         });
 
-    }).on('pageshow', "#connectLoginPage", function () {
+        $('.connectLoginForm').off('submit', onSubmit).on('submit', onSubmit);
+        $('.manualServerForm').off('submit', onManualServerSubmit).on('submit', onManualServerSubmit);
+
+    }).on('pageshowready', "#connectLoginPage", function () {
 
         var page = this;
 
@@ -138,13 +155,9 @@
         $('.embyIntroDownloadMessage', page).html(Globalize.translate('EmbyIntroDownloadMessage', link));
 
         if (Dashboard.isRunningInCordova()) {
-            $('.newUsers', page).hide();
-            $('.forgotPassword', page).hide();
             $('.skip', page).show();
         } else {
             $('.skip', page).hide();
-            $('.newUsers', page).show();
-            $('.forgotPassword', page).show();
         }
     });
 
@@ -157,17 +170,13 @@
             host += ':' + port;
         }
 
-        Dashboard.showLoadingMsg();
+        Dashboard.showModalLoadingMsg();
 
         ConnectionManager.connectToAddress(host).done(function (result) {
-
-            Dashboard.hideLoadingMsg();
 
             handleConnectionResult(page, result);
 
         }).fail(function () {
-
-            Dashboard.hideLoadingMsg();
 
             handleConnectionResult(page, {
                 State: MediaBrowser.ConnectionState.Unavailable
@@ -183,26 +192,5 @@
 
         login(page, user, password);
     }
-
-    window.ConnectLoginPage = {
-
-        onSubmit: function () {
-
-            var page = $(this).parents('.page');
-
-            submit(page);
-
-            return false;
-        },
-
-        onManualServerSubmit: function () {
-            var page = $(this).parents('.page');
-
-            submitManualServer(page);
-
-            return false;
-
-        }
-    };
 
 })();

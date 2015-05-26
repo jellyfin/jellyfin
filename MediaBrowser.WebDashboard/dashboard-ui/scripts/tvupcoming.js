@@ -1,11 +1,11 @@
 ﻿(function ($, document) {
 
-    $(document).on('pagebeforeshow', "#tvUpcomingPage", function () {
+    $(document).on('pageshowready', "#tvUpcomingPage", function () {
 
         var page = this;
 
         var limit = AppInfo.hasLowImageBandwidth ?
-         20 :
+         24 :
          40;
 
         var query = {
@@ -52,6 +52,7 @@
                 preferThumb: true,
                 context: context || 'home-upcoming',
                 lazy: true,
+                showDetailsMenu: true
 
             })).lazyChildren();
         });

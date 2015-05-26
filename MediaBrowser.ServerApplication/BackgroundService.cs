@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Model.Logging;
+using System.Linq;
 using System.ServiceProcess;
 
 namespace MediaBrowser.ServerApplication
@@ -8,8 +9,25 @@ namespace MediaBrowser.ServerApplication
     /// </summary>
     public class BackgroundService : ServiceBase
     {
-        public static string Name = "MediaBrowser";
-        public static string DisplayName = "Media Browser";
+        public static string Name = "Emby";
+        public static string DisplayName = "Emby Server";
+
+        public static string GetExistingServiceName()
+        {
+            try
+            {
+                if (ServiceController.GetServices().Any(s => s.ServiceName == "MediaBrowser"))
+                {
+                    return "MediaBrowser";
+                }
+            }
+            catch
+            {
+                return "MediaBrowser";
+            }
+
+            return Name;
+        }
 
         private readonly ILogger _logger;
 
@@ -24,7 +42,7 @@ namespace MediaBrowser.ServerApplication
 
             CanStop = true;
 
-            ServiceName = Name;
+            ServiceName = GetExistingServiceName();
         }
 
         /// <summary>

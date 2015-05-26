@@ -57,7 +57,7 @@
 
                 html += ' - ' + Globalize.translate('LabelAnytime');
             } else {
-                html += ' - ' + LiveTvHelpers.getDisplayTime(timer.StartDate);
+                html += ' - ' + LibraryBrowser.getDisplayTime(timer.StartDate);
             }
             html += '</p>';
 
@@ -116,7 +116,7 @@
         }).checkboxradio('refresh');
     }
 
-    $(document).on('pagebeforeshow', "#liveTvSeriesTimersPage", function () {
+    $(document).on('pageshowready', "#liveTvSeriesTimersPage", function () {
 
         var page = this;
 
@@ -137,8 +137,6 @@
             query.SortOrder = this.getAttribute('data-sortorder');
             reload(page);
         });
-
-    }).on('pageshow', "#liveTvSeriesTimersPage", function () {
 
         updateFilterControls(this);
     });

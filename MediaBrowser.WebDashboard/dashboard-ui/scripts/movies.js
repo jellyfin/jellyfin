@@ -56,7 +56,7 @@
                     context: 'movies',
                     lazy: true,
                     overlayText: true,
-                    showTitle: false
+                    showDetailsMenu: true
                 });
             }
             else if (view == "ThumbCard") {
@@ -69,7 +69,8 @@
                     lazy: true,
                     showTitle: true,
                     cardLayout: true,
-                    showYear: true
+                    showYear: true,
+                    showDetailsMenu: true
                 });
             }
             else if (view == "Banner") {
@@ -79,7 +80,8 @@
                     shape: "banner",
                     preferBanner: true,
                     context: 'movies',
-                    lazy: true
+                    lazy: true,
+                    showDetailsMenu: true
                 });
             }
             else if (view == "List") {
@@ -96,10 +98,10 @@
                     items: result.Items,
                     shape: "portrait",
                     context: 'movies',
-                    showTitle: false,
                     centerText: true,
                     lazy: true,
-                    overlayText: true
+                    overlayText: true,
+                    showDetailsMenu: true
                 });
             }
             else if (view == "PosterCard") {
@@ -110,7 +112,8 @@
                     showTitle: true,
                     showYear: true,
                     lazy: true,
-                    cardLayout: true
+                    cardLayout: true,
+                    showDetailsMenu: true
                 });
             }
             else if (view == "Timeline") {
@@ -121,7 +124,8 @@
                     showTitle: true,
                     timeline: true,
                     centerText: true,
-                    lazy: true
+                    lazy: true,
+                    showDetailsMenu: true
                 });
             }
 
@@ -212,7 +216,7 @@
         }
     }
 
-    $(document).on('pageinit', "#moviesPage", function () {
+    $(document).on('pageinitdepends', "#moviesPage", function () {
 
         var page = this;
 
@@ -395,7 +399,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#moviesPage", function () {
+    }).on('pageshowready', "#moviesPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -422,10 +426,6 @@
                 reloadItems(page);
             }
         });
-
-    }).on('pageshow', "#moviesPage", function () {
-
-        var page = this;
 
         updateFilterControls(page);
 

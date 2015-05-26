@@ -17,13 +17,13 @@
         var randomId = '';
 
         //  Since the above is not guaranteed to be unique per device, add a little more
-        randomId = store.getItem(keyName);
+        randomId = appStorage.getItem(keyName);
 
         if (!randomId) {
 
             randomId = new Date().getTime();
 
-            store.setItem(keyName, randomId.toString());
+            appStorage.setItem(keyName, randomId.toString());
         }
 
         keys.push(randomId);

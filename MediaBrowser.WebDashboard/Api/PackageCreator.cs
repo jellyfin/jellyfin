@@ -38,17 +38,17 @@ namespace MediaBrowser.WebDashboard.Api
             string appVersion,
             bool enableMinification)
         {
-            var isHtml = IsHtml(path);
-
             Stream resourceStream;
 
             if (path.Equals("scripts/all.js", StringComparison.OrdinalIgnoreCase))
             {
                 resourceStream = await GetAllJavascript(mode, localizationCulture, appVersion, enableMinification).ConfigureAwait(false);
+                enableMinification = false;
             }
             else if (path.Equals("css/all.css", StringComparison.OrdinalIgnoreCase))
             {
                 resourceStream = await GetAllCss(enableMinification).ConfigureAwait(false);
+                enableMinification = false;
             }
             else
             {
@@ -59,9 +59,26 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 // Don't apply any caching for html pages
                 // jQuery ajax doesn't seem to handle if-modified-since correctly
-                if (isHtml && path.IndexOf("cordovaindex.html", StringComparison.OrdinalIgnoreCase) == -1)
+                if (IsFormat(path, "html"))
                 {
-                    resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
+                    if (path.IndexOf("cordovaindex.html", StringComparison.OrdinalIgnoreCase) == -1)
+                    {
+                        resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
+                    }
+                }
+                else if (IsFormat(path, "js"))
+                {
+                    if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1)
+                    {
+                        resourceStream = await ModifyJs(resourceStream, enableMinification).ConfigureAwait(false);
+                    }
+                }
+                else if (IsFormat(path, "css"))
+                {
+                    if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1)
+                    {
+                        resourceStream = await ModifyCss(resourceStream, enableMinification).ConfigureAwait(false);
+                    }
                 }
             }
 
@@ -72,10 +89,11 @@ namespace MediaBrowser.WebDashboard.Api
         /// Determines whether the specified path is HTML.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="format">The format.</param>
         /// <returns><c>true</c> if the specified path is HTML; otherwise, <c>false</c>.</returns>
-        private bool IsHtml(string path)
+        private bool IsFormat(string path, string format)
         {
-            return Path.GetExtension(path).EndsWith("html", StringComparison.OrdinalIgnoreCase);
+            return Path.GetExtension(path).EndsWith(format, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -102,7 +120,97 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>System.String.</returns>
         private string GetDashboardResourcePath(string virtualPath)
         {
-            return Path.Combine(DashboardUIPath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
+            var rootPath = DashboardUIPath;
+
+            var fullPath = Path.Combine(rootPath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
+
+            // Don't allow file system access outside of the source folder
+            if (!_fileSystem.ContainsSubPath(rootPath, fullPath))
+            {
+                throw new UnauthorizedAccessException();
+            }
+
+            return fullPath;
+        }
+
+        public async Task<Stream> ModifyCss(Stream sourceStream, bool enableMinification)
+        {
+            using (sourceStream)
+            {
+                string content;
+
+                using (var memoryStream = new MemoryStream())
+                {
+                    await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
+
+                    content = Encoding.UTF8.GetString(memoryStream.ToArray());
+
+                    if (enableMinification)
+                    {
+                        try
+                        {
+                            var result = new KristensenCssMinifier().Minify(content, false, Encoding.UTF8);
+
+                            if (result.Errors.Count > 0)
+                            {
+                                _logger.Error("Error minifying css: " + result.Errors[0].Message);
+                            }
+                            else
+                            {
+                                content = result.MinifiedContent;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error minifying css", ex);
+                        }
+                    }
+                }
+
+                var bytes = Encoding.UTF8.GetBytes(content);
+
+                return new MemoryStream(bytes);
+            }
+        }
+
+        public async Task<Stream> ModifyJs(Stream sourceStream, bool enableMinification)
+        {
+            using (sourceStream)
+            {
+                string content;
+
+                using (var memoryStream = new MemoryStream())
+                {
+                    await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
+
+                    content = Encoding.UTF8.GetString(memoryStream.ToArray());
+
+                    if (enableMinification)
+                    {
+                        try
+                        {
+                            var result = new CrockfordJsMinifier().Minify(content, false, Encoding.UTF8);
+
+                            if (result.Errors.Count > 0)
+                            {
+                                _logger.Error("Error minifying javascript: " + result.Errors[0].Message);
+                            }
+                            else
+                            {
+                                content = result.MinifiedContent;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ErrorException("Error minifying javascript", ex);
+                        }
+                    }
+                }
+
+                var bytes = Encoding.UTF8.GetBytes(content);
+
+                return new MemoryStream(bytes);
+            }
         }
 
         /// <summary>
@@ -124,6 +232,11 @@ namespace MediaBrowser.WebDashboard.Api
                     await sourceStream.CopyToAsync(memoryStream).ConfigureAwait(false);
 
                     html = Encoding.UTF8.GetString(memoryStream.ToArray());
+
+                    if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+                    {
+                        html = ModifyForCordova(html);
+                    }
 
                     if (!string.IsNullOrWhiteSpace(localizationCulture))
                     {
@@ -170,6 +283,39 @@ namespace MediaBrowser.WebDashboard.Api
 
                 return new MemoryStream(bytes);
             }
+        }
+
+        private string ModifyForCordova(string html)
+        {
+            // Strip everything between CORDOVA_EXCLUDE_START and CORDOVA_EXCLUDE_END
+            html = ReplaceBetween(html, "<!--CORDOVA_EXCLUDE_START-->", "<!--CORDOVA_EXCLUDE_END-->", string.Empty);
+
+            // Replace CORDOVA_REPLACE_SUPPORTER_SUBMIT_START
+            html = ReplaceBetween(html, "<!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_START-->", "<!--CORDOVA_REPLACE_SUPPORTER_SUBMIT_END-->", "<i class=\"fa fa-check\"></i><span>${ButtonPurchase}</span>");
+
+            return html;
+        }
+
+        private string ReplaceBetween(string html, string startToken, string endToken, string newHtml)
+        {
+            var start = html.IndexOf(startToken, StringComparison.OrdinalIgnoreCase);
+
+            if (start == -1)
+            {
+                return html;
+            }
+
+            var end = html.IndexOf(endToken, start, StringComparison.OrdinalIgnoreCase);
+
+            if (end == -1)
+            {
+                return html;
+            }
+
+            string result = html.Substring(start, end - start);
+            html = html.Replace(result, newHtml);
+
+            return ReplaceBetween(html, startToken, endToken, newHtml);
         }
 
         private string GetLocalizationToken(string phrase)
@@ -283,7 +429,14 @@ namespace MediaBrowser.WebDashboard.Api
 
             await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
 
-            await AppendLocalization(memoryStream, culture).ConfigureAwait(false);
+            var excludePhrases = new List<string>();
+
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                excludePhrases.Add("paypal");
+            }
+
+            await AppendLocalization(memoryStream, culture, excludePhrases).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(mode))
@@ -326,11 +479,6 @@ namespace MediaBrowser.WebDashboard.Api
                 apiClientFiles.Add("thirdparty/apiclient/serverdiscovery.js");
             }
             apiClientFiles.Add("thirdparty/apiclient/connectionmanager.js");
-
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
-            {
-                apiClientFiles.Add("thirdparty/cordova/remotecontrols.js");
-            }
 
             foreach (var file in apiClientFiles)
             {
@@ -400,7 +548,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "editorsidebar.js",
                                 "librarymenu.js",
                                 "mediacontroller.js",
-                                "chromecast.js",
                                 "backdrops.js",
                                 "sync.js",
                                 "syncjob.js",
@@ -413,24 +560,13 @@ namespace MediaBrowser.WebDashboard.Api
                                 "nowplayingpage.js",
                                 "taskbutton.js",
 
-                                "ratingdialog.js",
-                                "aboutpage.js",
                                 "alphapicker.js",
                                 "addpluginpage.js",
-                                "advancedconfigurationpage.js",
-                                "metadataadvanced.js",
                                 "autoorganizetv.js",
                                 "autoorganizelog.js",
-                                "channels.js",
-                                "channelslatest.js",
-                                "channelitems.js",
                                 "channelsettings.js",
-                                "connectlogin.js",
                                 "dashboardgeneral.js",
-                                "dashboardhosting.js",
                                 "dashboardpage.js",
-                                "device.js",
-                                "devices.js",
                                 "devicesupload.js",
                                 "directorybrowser.js",
                                 "dlnaprofile.js",
@@ -439,68 +575,32 @@ namespace MediaBrowser.WebDashboard.Api
                                 "dlnaserversettings.js",
                                 "editcollectionitems.js",
                                 "edititemmetadata.js",
-                                "edititemimages.js",
                                 "edititemsubtitles.js",
 
                                 "playbackconfiguration.js",
                                 "cinemamodeconfiguration.js",
                                 "encodingsettings.js",
 
-                                "externalplayer.js",
-                                "favorites.js",
                                 "forgotpassword.js",
                                 "forgotpasswordpin.js",
-                                "gamesrecommendedpage.js",
-                                "gamesystemspage.js",
-                                "gamespage.js",
-                                "gamegenrepage.js",
-                                "gamestudiospage.js",
-                                "homelatest.js",
                                 "indexpage.js",
                                 "itembynamedetailpage.js",
                                 "itemdetailpage.js",
-                                "itemlistpage.js",
                                 "kids.js",
                                 "librarypathmapping.js",
-                                "reports.js",
                                 "librarysettings.js",
-                                "livetvchannel.js",
-                                "livetvchannels.js",
-                                "livetvguide.js",
-                                "livetvitems.js",
-                                "livetvnewrecording.js",
-                                "livetvprogram.js",
                                 "livetvrecording.js",
-                                "livetvrecordinglist.js",
-                                "livetvrecordings.js",
                                 "livetvtimer.js",
                                 "livetvseriestimer.js",
-                                "livetvseriestimers.js",
                                 "livetvsettings.js",
-                                "livetvsuggested.js",
                                 "livetvstatus.js",
-                                "livetvtimers.js",
 
-                                "loginpage.js",
-                                "logpage.js",
                                 "medialibrarypage.js",
                                 "metadataconfigurationpage.js",
                                 "metadataimagespage.js",
                                 "metadatasubtitles.js",
                                 "metadatanfo.js",
-                                "moviegenres.js",
                                 "moviecollections.js",
-                                "movies.js",
-                                "moviepeople.js",
-                                "moviesrecommended.js",
-                                "moviestudios.js",
-                                "movietrailers.js",
-                                "musicalbums.js",
-                                "musicalbumartists.js",
-                                "musicartists.js",
-                                "musicgenres.js",
-                                "musicrecommended.js",
-                                "musicvideos.js",
 
                                 "mypreferencesdisplay.js",
                                 "mypreferenceslanguages.js",
@@ -510,7 +610,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "notificationlist.js",
                                 "notificationsetting.js",
                                 "notificationsettings.js",
-                                "photos.js",
                                 "playlists.js",
                                 "playlistedit.js",
 
@@ -520,25 +619,10 @@ namespace MediaBrowser.WebDashboard.Api
                                 "scheduledtaskpage.js",
                                 "scheduledtaskspage.js",
                                 "search.js",
-                                "selectserver.js",
-                                "serversecurity.js",
-                                "songs.js",
-                                "streamingsettings.js",
-                                "supporterkeypage.js",
-                                "supporterpage.js",
                                 "syncactivity.js",
                                 "syncsettings.js",
-                                "episodes.js",
                                 "thememediaplayer.js",
-                                "tvgenres.js",
-                                "tvlatest.js",
-                                "tvpeople.js",
-                                "tvrecommended.js",
-                                "tvshows.js",
-                                "tvstudios.js",
-                                "tvupcoming.js",
                                 "useredit.js",
-                                "usernew.js",
                                 "myprofile.js",
                                 "userpassword.js",
                                 "userprofilespage.js",
@@ -547,15 +631,33 @@ namespace MediaBrowser.WebDashboard.Api
                                 "wizardagreement.js",
                                 "wizardfinishpage.js",
                                 "wizardservice.js",
-                                "wizardstartpage.js",
-                                "wizardsettings.js",
-                                "wizarduserpage.js"
+                                "wizardstartpage.js"
                             };
         }
 
-        private async Task AppendLocalization(Stream stream, string culture)
+        private async Task AppendLocalization(Stream stream, string culture, List<string> excludePhrases)
         {
-            var js = "window.localizationGlossary=" + _jsonSerializer.SerializeToString(_localization.GetJavaScriptLocalizationDictionary(culture));
+            var dictionary = _localization.GetJavaScriptLocalizationDictionary(culture);
+
+            if (excludePhrases.Count > 0)
+            {
+                var removes = new List<string>();
+
+                foreach (var pair in dictionary)
+                {
+                    if (excludePhrases.Any(i => pair.Key.IndexOf(i, StringComparison.OrdinalIgnoreCase) != -1 || pair.Value.IndexOf(i, StringComparison.OrdinalIgnoreCase) != -1))
+                    {
+                        removes.Add(pair.Key);
+                    }
+                }
+
+                foreach (var remove in removes)
+                {
+                    dictionary.Remove(remove);
+                }
+            }
+
+            var js = "window.localizationGlossary=" + _jsonSerializer.SerializeToString(dictionary);
 
             var bytes = Encoding.UTF8.GetBytes(js);
             await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);

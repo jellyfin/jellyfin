@@ -4,7 +4,7 @@
     <title>${TitleAdvanced}</title>
 </head>
 <body>
-    <div id="serverSecurityPage" data-role="page" class="page type-interior advancedConfigurationPage">
+    <div id="serverSecurityPage" data-role="page" class="page type-interior advancedConfigurationPage" data-require="scripts/serversecurity">
 
         <div data-role="content">
             <div class="content-primary">
@@ -55,10 +55,6 @@
                 </p>
             </form>
         </div>
-
-        <script type="text/javascript">
-            $('.newKeyForm').off('submit', ServerSecurityPage.onSubmit).on('submit', ServerSecurityPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

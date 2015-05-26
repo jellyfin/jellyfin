@@ -4,12 +4,12 @@
     <title>${TitleNewUser}</title>
 </head>
 <body>
-    <div id="newUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users">
+    <div id="newUserPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/usernew">
 
         <div data-role="content">
             <div class="content-primary">
 
-                <form id="newUserProfileForm">
+                <form class="newUserProfileForm">
                     <ul data-role="listview" class="ulForm">
                         <li id="fldUserName">
                             <label for="txtUserName">${LabelName}</label>
@@ -62,9 +62,6 @@
                 </form>
             </div>
         </div>
-        <script type="text/javascript">
-            $('#newUserProfileForm').on('submit', NewUserPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

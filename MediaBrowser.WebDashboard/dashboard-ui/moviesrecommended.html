@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="moviesRecommendedPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="movie">
+    <div id="moviesRecommendedPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="movie" data-require="scripts/moviesrecommended">
 
         <div class="libraryViewNav scopedLibraryViewNav">
             <a href="#" class="ui-btn-active">${TabSuggestions}</a>
@@ -18,7 +18,7 @@
         <div data-role="content">
 
             <div class="ehsContent">
-                <div id="resumableSection" style="display: none;">
+                <div id="resumableSection" style="display: none;" class="homePageSection">
                     <div>
                         <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
                         <a href="#" class="accentButton categorySyncButton" data-category="Resume"><i class="fa fa-cloud"></i>${ButtonSync}</a>
@@ -28,15 +28,17 @@
                     </div>
                 </div>
 
-                <div>
-                    <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestMovies}</h1>
-                    <a href="#" class="accentButton categorySyncButton" data-category="Latest"><i class="fa fa-cloud"></i>${ButtonSync}</a>
+                <div class="homePageSection">
+                    <div>
+                        <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestMovies}</h1>
+                        <a href="#" class="accentButton categorySyncButton" data-category="Latest"><i class="fa fa-cloud"></i>${ButtonSync}</a>
+                    </div>
+
+                    <div id="recentlyAddedItems" class="itemsContainer">
+                    </div>
                 </div>
 
-                <div id="recentlyAddedItems" class="itemsContainer">
-                </div>
-
-                <div class="recommendations">
+                <div class="recommendations homePageSection">
                 </div>
                 <div class="noItemsMessage" style="display: none;">
                     <br />

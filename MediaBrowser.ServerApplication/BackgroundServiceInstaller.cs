@@ -22,7 +22,7 @@ namespace MediaBrowser.ServerApplication
 
                 DelayedAutoStart = true,
 
-                Description = "The windows background service for Media Browser Server.",
+                Description = "The windows background service for Emby Server.",
 
                 // Will ensure the network is available
                 ServicesDependedOn = new[] { "LanmanServer", "Tcpip" }

@@ -10,6 +10,14 @@
 
         Dashboard.showLoadingMsg();
 
+        if (AppInfo.enableAppStorePolicy) {
+            $('.optionAdultContainer', page).hide();
+        } else {
+            $('.optionAdultContainer', page).show();
+        }
+
+        query.IsAppStoreSafe = true;
+
         var promise1 = ApiClient.getAvailablePlugins(query);
 
         var promise2 = ApiClient.getInstalledPlugins();
@@ -128,7 +136,7 @@
             if (!plugin.isExternal) {
                 html += "<div class='cardText packageReviewText'>";
                 html += plugin.price > 0 ? "$" + plugin.price.toFixed(2) : Globalize.translate('LabelFree');
-                html += RatingHelpers.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name);
+                html += RatingHelpers.getStoreRatingHtml(plugin.avgRating, plugin.id, plugin.name, true);
 
                 html += "<span class='storeReviewCount'>";
                 html += " " + Globalize.translate('LabelNumberReviews').replace("{0}", plugin.totalRatings);

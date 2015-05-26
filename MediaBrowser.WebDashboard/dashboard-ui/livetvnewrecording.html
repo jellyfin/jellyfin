@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvNewRecordingPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}">
+    <div id="liveTvNewRecordingPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvnewrecording">
         <div class="libraryViewNav">
             <a href="livetvsuggested.html">${TabSuggestions}</a>
             <a href="livetvguide.html">${TabGuide}</a>
@@ -116,9 +116,6 @@
                 </ul>
             </form>
         </div>
-        <script type="text/javascript">
-            $('.liveTvNewRecordingForm').off('submit', LiveTvNewRecordingPage.onSubmit).on('submit', LiveTvNewRecordingPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

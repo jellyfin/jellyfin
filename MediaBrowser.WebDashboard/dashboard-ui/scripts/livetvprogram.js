@@ -94,7 +94,7 @@
         });
     }
 
-    $(document).on('pageinit', "#liveTvProgramPage", function () {
+    $(document).on('pageinitdepends', "#liveTvProgramPage", function () {
 
         var page = this;
 
@@ -121,7 +121,7 @@
             deleteTimer(page, currentItem.TimerId);
         });
 
-    }).on('pageshow', "#liveTvProgramPage", function () {
+    }).on('pageshowready', "#liveTvProgramPage", function () {
 
         var page = this;
 
