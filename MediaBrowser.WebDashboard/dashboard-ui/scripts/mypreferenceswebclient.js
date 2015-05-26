@@ -15,6 +15,8 @@
         $('#selectHomeSection3', page).val(displayPreferences.CustomPrefs.home2 || '').selectmenu("refresh");
         $('#selectHomeSection4', page).val(displayPreferences.CustomPrefs.home3 || '').selectmenu("refresh");
 
+        $('#selectEnableItemPreviews', page).val(AppSettings.enableItemPreviews().toString().toLowerCase()).selectmenu("refresh");
+
         $('#chkEnableLibraryTileNames', page).checked(displayPreferences.CustomPrefs.enableLibraryTileNames != '0').checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
@@ -48,6 +50,8 @@
 
         AppSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
         AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
+
+        AppSettings.enableItemPreviews($('#selectEnableItemPreviews', page).val() == 'true');
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
