@@ -61,11 +61,7 @@
         return false;
     }
 
-    $(document).on('pageinit', "#webClientPreferencesPage", function () {
-
-        var page = this;
-
-    }).on('pagebeforeshow', "#webClientPreferencesPage", function () {
+    $(document).on('pageshowready', "#webClientPreferencesPage", function () {
 
         var page = this;
 
@@ -85,6 +81,14 @@
             $('.homePageConfigurationSection', page).hide();
         } else {
             $('.homePageConfigurationSection', page).show();
+        }
+
+        if (AppInfo.hasKnownExternalPlayerSupport) {
+            $('.labelNativeExternalPlayers', page).show();
+            $('.labelGenericExternalPlayers', page).hide();
+        } else {
+            $('.labelGenericExternalPlayers', page).show();
+            $('.labelNativeExternalPlayers', page).hide();
         }
     });
 
@@ -121,6 +125,14 @@
             }
 
             return store.getItem('externalplayers') == 'true';
+        },
+        enableItemPreviews: function (val) {
+
+            if (val != null) {
+                store.setItem('enableItemPreviews', val.toString());
+            }
+
+            return store.getItem('enableItemPreviews') != 'false';
         }
 
     };

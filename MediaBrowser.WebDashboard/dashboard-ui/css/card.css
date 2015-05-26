@@ -51,6 +51,10 @@
     margin: 8px;
 }
 
+.mediumCardMargin .cardBox {
+    margin: 4px;
+}
+
 /*@media all and (max-width: 600px) {
 
     .cardBox {

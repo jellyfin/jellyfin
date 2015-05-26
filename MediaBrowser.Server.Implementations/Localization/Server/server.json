@@ -1276,6 +1276,7 @@
     "ButtonLearnMoreAboutEmbyConnect": "Learn more about Emby Connect",
     "LabelExternalPlayers": "External players:",
     "LabelExternalPlayersHelp": "Display buttons to play content in external players. This is only available on devices that support url schemes, generally Android and iOS. With external players there is generally no support for remote control or resuming.",
+    "LabelNativeExternalPlayersHelp":  "Display buttons to play content in external players.",
     "HeaderSubtitleProfile": "Subtitle Profile",
     "HeaderSubtitleProfiles": "Subtitle Profiles",
     "HeaderSubtitleProfilesHelp": "Subtitle profiles describe the subtitle formats supported by the device.",

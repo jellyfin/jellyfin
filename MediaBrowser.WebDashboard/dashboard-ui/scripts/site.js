@@ -1386,7 +1386,7 @@ var Dashboard = {
             // The native app can handle a little bit more than safari
             if (Dashboard.isRunningInCordova()) {
 
-                quality -= 15;
+                quality -= 20;
 
                 if (isBackdrop) {
                     quality -= 20;
@@ -1549,12 +1549,13 @@ var AppInfo = {};
 
             if (isCordova) {
                 AppInfo.enableBottomTabs = true;
+                AppInfo.cardMargin = 'mediumCardMargin';
             } else {
                 AppInfo.enableDetailPageChapters = false;
                 AppInfo.enableDetailsMenuImages = false;
                 AppInfo.enableHeaderImages = false;
                 AppInfo.enableMovieHomeSuggestions = false;
-                AppInfo.enableLargeCardMargin = true;
+                AppInfo.cardMargin = 'largeCardMargin';
             }
         }
         else {
@@ -1577,6 +1578,7 @@ var AppInfo = {};
 
         if (isCordova) {
             AppInfo.enableAppLayouts = true;
+            AppInfo.hasKnownExternalPlayerSupport = true;
         }
         else {
             AppInfo.enableFooterNotifications = true;
@@ -1670,8 +1672,8 @@ var AppInfo = {};
             initFastClick();
         }
 
-        if (AppInfo.enableLargeCardMargin) {
-            $(document.body).addClass('largeCardMargin');
+        if (AppInfo.cardMargin) {
+            $(document.body).addClass(AppInfo.cardMargin);
         }
 
         if (!AppInfo.enableLatestChannelItems) {

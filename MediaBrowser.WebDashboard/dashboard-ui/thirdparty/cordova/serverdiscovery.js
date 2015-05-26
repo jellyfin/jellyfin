@@ -23,6 +23,15 @@
         return result;
     }
 
+    function closeSocket(socketId) {
+
+        try {
+            chrome.sockets.udp.close(socketId);
+        } catch (err) {
+
+        }
+    }
+
     function findServersInternal(timeoutMs) {
 
         var deferred = DeferredBuilder.Deferred();
@@ -54,7 +63,7 @@
 
                 if (socketId) {
                     chrome.sockets.udp.onReceive.removeListener(onReceive);
-                    chrome.sockets.udp.close(socketId);
+                    closeSocket(socketId);
                 }
 
             }, timeoutMs);
@@ -62,13 +71,13 @@
 
         function onReceive(info) {
 
-            console.log('ServerDiscovery message received');
+            try {
 
-            console.log(info);
+                console.log('ServerDiscovery message received');
 
-            if (info.socketId == socketId) {
+                console.log(info);
 
-                try {
+                if (info != null && info.socketId == socketId) {
                     var json = arrayBufferToString(info.data);
                     console.log('Server discovery json: ' + json);
                     var server = JSON.parse(json);
@@ -80,9 +89,10 @@
                     }
 
                     servers.push(server);
-                } catch (err) {
-                    console.log('Error receiving server info: ' + err);
                 }
+
+            } catch (err) {
+                console.log('Error receiving server info: ' + err);
             }
         }
 
@@ -105,24 +115,24 @@
 
             console.log('chrome.sockets.udp.bind');
 
-            chrome.sockets.udp.bind(createInfo.socketId, '0.0.0.0', 0, function (result) {
+            chrome.sockets.udp.bind(createInfo.socketId, '0.0.0.0', 0, function (bindResult) {
 
-                if (getResultCode(result) != 0) {
-                    console.log('bind fail: ' + result);
+                if (getResultCode(bindResult) != 0) {
+                    console.log('bind fail: ' + bindResult);
                     deferred.resolveWith(null, [servers]);
-                    chrome.sockets.udp.close(createInfo.socketId);
+                    closeSocket(createInfo.socketId);
                     return;
                 }
 
                 var data = stringToArrayBuffer('who is EmbyServer?');
 
                 console.log('chrome.sockets.udp.send');
-                chrome.sockets.udp.send(createInfo.socketId, data, '255.255.255.255', port, function (result) {
+                chrome.sockets.udp.send(createInfo.socketId, data, '255.255.255.255', port, function (sendResult) {
 
-                    if (getResultCode(result) != 0) {
-                        console.log('send fail: ' + result);
+                    if (getResultCode(sendResult) != 0) {
+                        console.log('send fail: ' + sendResult);
                         deferred.resolveWith(null, [servers]);
-                        chrome.sockets.udp.close(createInfo.socketId);
+                        closeSocket(createInfo.socketId);
 
                     } else {
 

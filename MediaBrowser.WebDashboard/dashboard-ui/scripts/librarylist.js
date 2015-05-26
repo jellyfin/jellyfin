@@ -784,12 +784,14 @@
             return;
         }
 
-        showItemsOverlay({
-            ids: [itemId],
-            context: context
-        });
+        if (AppSettings.enableItemPreviews()) {
+            showItemsOverlay({
+                ids: [itemId],
+                context: context
+            });
 
-        return false;
+            return false;
+        }
     }
 
     $.fn.createCardMenus = function (options) {

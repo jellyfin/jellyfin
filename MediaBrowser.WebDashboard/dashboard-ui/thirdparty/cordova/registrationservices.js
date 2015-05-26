@@ -197,7 +197,7 @@
         $('.btnSignInSupporter', elem).on('click', function () {
 
             Dashboard.alert({
-                message: 'MessagePleaseSignInLocalNetwork',
+                message: Globalize.translate('MessagePleaseSignInLocalNetwork'),
                 callback: function () {
                     cancelInAppPurchase();
                     Dashboard.logout();
