@@ -146,6 +146,39 @@ namespace MediaBrowser.Server.Mac
 			MenuBarIcon.Instance.Terminate ();
 		}
 
+        public static void Restart()
+        {
+            _logger.Info("Disposing app host");
+            AppHost.Dispose();
+
+            _logger.Info("Starting new instance");
+
+            var args = Environment.GetCommandLineArgs()
+				.Skip(1)
+                .Select(NormalizeCommandLineArgument);
+
+            var commandLineArgsString = string.Join(" ", args.ToArray());
+			var module = Environment.GetCommandLineArgs().First();
+
+			_logger.Info ("Executable: {0}", module);
+			_logger.Info ("Arguments: {0}", commandLineArgsString);
+
+            Process.Start(module, commandLineArgsString);
+
+            _logger.Info("AppController.Terminate");
+            MenuBarIcon.Instance.Terminate();
+        }
+
+        private static string NormalizeCommandLineArgument(string arg)
+        {
+            if (arg.IndexOf(" ", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                return arg;
+            }
+
+            return "\"" + arg + "\"";
+        }
+
 		/// <summary>
 		/// Handles the UnhandledException event of the CurrentDomain control.
 		/// </summary>

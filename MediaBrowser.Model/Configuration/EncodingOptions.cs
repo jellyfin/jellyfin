@@ -9,7 +9,7 @@ namespace MediaBrowser.Model.Configuration
         public string H264Encoder { get; set; }
         public bool EnableDebugLogging { get; set; }
         public bool EnableThrottling { get; set; }
-        public int ThrottleThresholdSeconds { get; set; }
+        public int ThrottleThresholdInSeconds { get; set; }
 
         public EncodingOptions()
         {
@@ -17,7 +17,7 @@ namespace MediaBrowser.Model.Configuration
             DownMixAudioBoost = 2;
             EncodingQuality = EncodingQuality.Auto;
             EnableThrottling = true;
-            ThrottleThresholdSeconds = 110;
+            ThrottleThresholdInSeconds = 120;
         }
     }
 }

@@ -17,6 +17,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
 using System;
@@ -330,12 +331,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public async Task<MediaSourceInfo> GetRecordingStream(string id, CancellationToken cancellationToken)
         {
-            return await GetLiveStream(id, false, cancellationToken).ConfigureAwait(false);
+            return await GetLiveStream(id, null, false, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<MediaSourceInfo> GetChannelStream(string id, CancellationToken cancellationToken)
+        public async Task<MediaSourceInfo> GetChannelStream(string id, string mediaSourceId, CancellationToken cancellationToken)
         {
-            return await GetLiveStream(id, true, cancellationToken).ConfigureAwait(false);
+            return await GetLiveStream(id, mediaSourceId, true, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<MediaSourceInfo>> GetRecordingMediaSources(string id, CancellationToken cancellationToken)
@@ -351,7 +352,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var item = GetInternalChannel(id);
             var service = GetService(item);
 
-            return await service.GetChannelStreamMediaSources(id, cancellationToken).ConfigureAwait(false);
+            var sources = await service.GetChannelStreamMediaSources(item.ExternalId, cancellationToken).ConfigureAwait(false);
+            var list = sources.ToList();
+
+            foreach (var source in list)
+            {
+                Normalize(source, item.ChannelType == ChannelType.TV);
+            }
+
+            return list;
         }
 
         private ILiveTvService GetService(ILiveTvItem item)
@@ -364,7 +373,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return _services.FirstOrDefault(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
         }
 
-        private async Task<MediaSourceInfo> GetLiveStream(string id, bool isChannel, CancellationToken cancellationToken)
+        private async Task<MediaSourceInfo> GetLiveStream(string id, string mediaSourceId, bool isChannel, CancellationToken cancellationToken)
         {
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -379,7 +388,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     isVideo = channel.ChannelType == ChannelType.TV;
                     var service = GetService(channel);
                     _logger.Info("Opening channel stream from {0}, external channel Id: {1}", service.Name, channel.ExternalId);
-                    info = await service.GetChannelStream(channel.ExternalId, null, cancellationToken).ConfigureAwait(false);
+                    info = await service.GetChannelStream(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
                     info.RequiresClosing = true;
 
                     if (info.RequiresClosing)
@@ -517,6 +526,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 foreach (var stream in mediaSource.MediaStreams)
                 {
                     stream.Index = -1;
+                }
+            }
+
+            // Set the total bitrate if not already supplied
+            if (!mediaSource.Bitrate.HasValue)
+            {
+                var total = mediaSource.MediaStreams.Select(i => i.BitRate ?? 0).Sum();
+
+                if (total > 0)
+                {
+                    mediaSource.Bitrate = total;
                 }
             }
         }

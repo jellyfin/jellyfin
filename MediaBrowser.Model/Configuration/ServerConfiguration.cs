@@ -277,7 +277,7 @@ namespace MediaBrowser.Model.Configuration
                     {
                         new ImageOption
                         {
-                            Limit = 3,
+                            Limit = 2,
                             MinWidth = 1280,
                             Type = ImageType.Backdrop
                         },
@@ -304,7 +304,7 @@ namespace MediaBrowser.Model.Configuration
 
                         new ImageOption
                         {
-                            Limit = 1,
+                            Limit = 0,
                             Type = ImageType.Banner
                         },
 
@@ -374,7 +374,7 @@ namespace MediaBrowser.Model.Configuration
                     {
                         new ImageOption
                         {
-                            Limit = 1,
+                            Limit = 0,
                             MinWidth = 1280,
                             Type = ImageType.Backdrop
                         },
@@ -414,6 +414,14 @@ namespace MediaBrowser.Model.Configuration
                         {
                             Limit = 0,
                             Type = ImageType.Art
+                        },
+
+                        // Don't download this by default
+                        // Generally not used
+                        new ImageOption
+                        {
+                            Limit = 0,
+                            Type = ImageType.Logo
                         }
                     }
                 },

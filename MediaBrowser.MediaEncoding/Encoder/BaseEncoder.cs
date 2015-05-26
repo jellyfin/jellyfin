@@ -2,13 +2,10 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.MediaEncoding.Subtitles;
 using MediaBrowser.Model.Configuration;
-using MediaBrowser.Model.Dlna;
-using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
@@ -39,7 +36,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
 
-        public BaseEncoder(MediaEncoder mediaEncoder,
+        protected BaseEncoder(MediaEncoder mediaEncoder,
             ILogger logger,
             IServerConfigurationManager configurationManager,
             IFileSystem fileSystem,
@@ -64,7 +61,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             IProgress<double> progress,
             CancellationToken cancellationToken)
         {
-            var encodingJob = await new EncodingJobFactory(Logger, LibraryManager, MediaSourceManager)
+            var encodingJob = await new EncodingJobFactory(Logger, LibraryManager, MediaSourceManager, ConfigurationManager)
                 .CreateJob(options, IsVideoEncoder, progress, cancellationToken).ConfigureAwait(false);
 
             encodingJob.OutputFilePath = GetOutputFilePath(encodingJob);
@@ -305,25 +302,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             return job.Options.CpuCoreLimit ?? 0;
         }
 
-        protected EncodingQuality GetQualitySetting()
-        {
-            var quality = GetEncodingOptions().EncodingQuality;
-
-            if (quality == EncodingQuality.Auto)
-            {
-                var cpuCount = Environment.ProcessorCount;
-
-                if (cpuCount >= 4)
-                {
-                    //return EncodingQuality.HighQuality;
-                }
-
-                return EncodingQuality.HighSpeed;
-            }
-
-            return quality;
-        }
-
         protected string GetInputModifier(EncodingJob job, bool genPts = true)
         {
             var inputModifier = string.Empty;
@@ -543,7 +521,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var isVc1 = state.VideoStream != null &&
                 string.Equals(state.VideoStream.Codec, "vc1", StringComparison.OrdinalIgnoreCase);
 
-            var qualitySetting = GetQualitySetting();
+            var qualitySetting = state.Quality;
 
             if (string.Equals(videoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
             {

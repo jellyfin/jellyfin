@@ -130,7 +130,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return ItemUpdateType.MetadataImport;
         }
 
-        private const string SchemaVersion = "4";
+        private const string SchemaVersion = "5";
 
         private async Task<Model.MediaInfo.MediaInfo> GetMediaInfo(Video item,
             IIsoMount isoMount,

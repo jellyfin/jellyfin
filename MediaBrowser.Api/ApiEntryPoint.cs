@@ -250,19 +250,19 @@ namespace MediaBrowser.Api
             return GetTranscodingJob(path, type) != null;
         }
 
+        public TranscodingJob GetTranscodingJobByPlaySessionId(string playSessionId)
+        {
+            lock (_activeTranscodingJobs)
+            {
+                return _activeTranscodingJobs.FirstOrDefault(j => j.PlaySessionId.Equals(playSessionId, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
         public TranscodingJob GetTranscodingJob(string path, TranscodingJobType type)
         {
             lock (_activeTranscodingJobs)
             {
                 return _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
-            }
-        }
-
-        public TranscodingJob GetTranscodingJob(string id)
-        {
-            lock (_activeTranscodingJobs)
-            {
-                return _activeTranscodingJobs.FirstOrDefault(j => j.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
             }
         }
 
@@ -339,14 +339,17 @@ namespace MediaBrowser.Api
                 return;
             }
 
-            var timerDuration = job.Type == TranscodingJobType.Progressive ?
-                1000 :
-                1800000;
+            var timerDuration = 1000;
 
-            // We can really reduce the timeout for apps that are using the newer api
-            if (!string.IsNullOrWhiteSpace(job.PlaySessionId) && job.Type != TranscodingJobType.Progressive)
+            if (job.Type != TranscodingJobType.Progressive)
             {
-                timerDuration = 50000;
+                timerDuration = 1800000;
+                
+                // We can really reduce the timeout for apps that are using the newer api
+                if (!string.IsNullOrWhiteSpace(job.PlaySessionId))
+                {
+                    timerDuration = 60000;
+                }
             }
 
             job.PingTimeout = timerDuration;
@@ -628,6 +631,9 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The live stream identifier.</value>
         public string LiveStreamId { get; set; }
+
+        public bool IsLiveOutput { get; set; }
+
         /// <summary>
         /// Gets or sets the path.
         /// </summary>

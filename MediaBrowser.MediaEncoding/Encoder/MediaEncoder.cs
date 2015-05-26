@@ -199,7 +199,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             await _ffProbeResourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            using (var processWrapper = new ProcessWrapper(process, this))
+            using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
                 try
                 {
@@ -308,7 +308,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            using (var processWrapper = new ProcessWrapper(process, this))
+            using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
                 StartProcess(processWrapper);
 
@@ -492,7 +492,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             await resourcePool.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-            using (var processWrapper = new ProcessWrapper(process, this))
+            using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
                 bool ranToCompletion;
 
@@ -607,7 +607,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             bool ranToCompletion = false;
 
-            using (var processWrapper = new ProcessWrapper(process, this))
+            using (var processWrapper = new ProcessWrapper(process, this, _logger))
             {
                 try
                 {
@@ -792,11 +792,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
             public bool HasExited;
             public int? ExitCode;
             private readonly MediaEncoder _mediaEncoder;
+            private readonly ILogger _logger;
 
-            public ProcessWrapper(Process process, MediaEncoder mediaEncoder)
+            public ProcessWrapper(Process process, MediaEncoder mediaEncoder, ILogger logger)
             {
                 Process = process;
                 this._mediaEncoder = mediaEncoder;
+                _logger = logger;
                 Process.Exited += Process_Exited;
             }
 
@@ -806,7 +808,14 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 HasExited = true;
 
-                ExitCode = process.ExitCode;
+                try
+                {
+                    ExitCode = process.ExitCode;
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error determing process exit code", ex);
+                }
 
                 lock (_mediaEncoder._runningProcesses)
                 {

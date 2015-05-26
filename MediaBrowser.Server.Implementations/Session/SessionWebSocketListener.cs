@@ -92,7 +92,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 if (session == null)
                 {
-                    e.AllowConnection = false;
+                    //e.AllowConnection = false;
                 }
             }
         }

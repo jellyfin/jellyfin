@@ -84,13 +84,13 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                             return new[]
                             {
                                 "http://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20150331-git-5cba529-win64-static.7z",
-                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20150331-git-5cba529-win64-static.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20150331-git-5cba529-win64-static.7z"
                             };
                         case Architecture.X86:
                             return new[]
                             {
                                 "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20150331-git-5cba529-win32-static.7z",
-                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/windows/ffmpeg-20150331-git-5cba529-win32-static.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20150331-git-5cba529-win32-static.7z"
                             };
                     }
                     break;
@@ -102,12 +102,12 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                         case Architecture.X86_X64:
                             return new[]
                             {
-                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/osx/ffmpeg-x64-2.5.3.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x64-2.5.3.7z"
                             };
                         case Architecture.X86:
                             return new[]
                             {
-                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/osx/ffmpeg-x86-2.5.3.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x86-2.5.3.7z"
                             };
                     }
                     break;
@@ -119,12 +119,12 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                         case Architecture.X86_X64:
                             return new[]
                             {
-                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/linux/ffmpeg-2.6.1-64bit-static.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-2.6.1-64bit-static.7z"
                             };
                         case Architecture.X86:
                             return new[]
                             {
-                                "https://github.com/MediaBrowser/MediaBrowser.Resources/raw/master/ffmpeg/linux/ffmpeg-2.6.1-32bit-static.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/linux/ffmpeg-2.6.1-32bit-static.7z"
                             };
                     }
                     break;

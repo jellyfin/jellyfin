@@ -34,8 +34,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
             //    }
             //}
 
-            var session = _sessionManager.GetSession(authorization.DeviceId, authorization.Client, authorization.Version);
-            return Task.FromResult(session);
+            var user = string.IsNullOrWhiteSpace(authorization.UserId) ? null : _userManager.GetUserById(authorization.UserId);
+            return _sessionManager.LogSessionActivity(authorization.Client, authorization.Version, authorization.DeviceId, authorization.Device, requestContext.RemoteIp, user);
         }
 
         private AuthenticationInfo GetTokenInfo(IServiceRequest request)

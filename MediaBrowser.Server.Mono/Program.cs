@@ -1,4 +1,3 @@
-using System.IO;
 using MediaBrowser.Common.Implementations.IO;
 using MediaBrowser.Common.Implementations.Logging;
 using MediaBrowser.Model.Logging;
@@ -8,6 +7,8 @@ using MediaBrowser.Server.Startup.Common;
 using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Reflection;
@@ -16,133 +17,167 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Mono
 {
-	public class MainClass
-	{
-		private static ApplicationHost _appHost;
+    public class MainClass
+    {
+        private static ApplicationHost _appHost;
 
-		private static ILogger _logger;
+        private static ILogger _logger;
 
-		public static void Main (string[] args)
-		{
+        public static void Main(string[] args)
+        {
             var applicationPath = Assembly.GetEntryAssembly().Location;
-			
-			var options = new StartupOptions();
 
-			// Allow this to be specified on the command line.
-			var customProgramDataPath = options.GetOption("-programdata");
+            var options = new StartupOptions();
 
-			var appPaths = CreateApplicationPaths(applicationPath, customProgramDataPath);
+            // Allow this to be specified on the command line.
+            var customProgramDataPath = options.GetOption("-programdata");
 
-			var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
-			logManager.ReloadLogger(LogSeverity.Info);
-			logManager.AddConsoleOutput();
+            var appPaths = CreateApplicationPaths(applicationPath, customProgramDataPath);
 
-			var logger = _logger = logManager.GetLogger("Main");
+            var logManager = new NlogManager(appPaths.LogDirectoryPath, "server");
+            logManager.ReloadLogger(LogSeverity.Info);
+            logManager.AddConsoleOutput();
+
+            var logger = _logger = logManager.GetLogger("Main");
 
             ApplicationHost.LogEnvironmentInfo(logger, appPaths, true);
 
-			AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
-			try
-			{
-				RunApplication(appPaths, logManager, options);
-			}
-			finally
-			{
-				logger.Info("Shutting down");
+            try
+            {
+                RunApplication(appPaths, logManager, options);
+            }
+            finally
+            {
+                logger.Info("Shutting down");
 
-				_appHost.Dispose();
-			}
-		}
+                _appHost.Dispose();
+            }
+        }
 
-		private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, string programDataPath)
-		{
-			if (string.IsNullOrEmpty(programDataPath))
-			{
-			    programDataPath = ApplicationPathHelper.GetProgramDataPath(applicationPath);
-			}
-			
-			return new ServerApplicationPaths(programDataPath, applicationPath, Path.GetDirectoryName(applicationPath));
-		}
+        private static ServerApplicationPaths CreateApplicationPaths(string applicationPath, string programDataPath)
+        {
+            if (string.IsNullOrEmpty(programDataPath))
+            {
+                programDataPath = ApplicationPathHelper.GetProgramDataPath(applicationPath);
+            }
 
-		private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
+            return new ServerApplicationPaths(programDataPath, applicationPath, Path.GetDirectoryName(applicationPath));
+        }
 
-		private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options)
-		{
-			SystemEvents.SessionEnding += SystemEvents_SessionEnding;
+        private static readonly TaskCompletionSource<bool> ApplicationTaskCompletionSource = new TaskCompletionSource<bool>();
 
-			// Allow all https requests
-			ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
+        private static void RunApplication(ServerApplicationPaths appPaths, ILogManager logManager, StartupOptions options)
+        {
+            SystemEvents.SessionEnding += SystemEvents_SessionEnding;
 
-		    var fileSystem = new CommonFileSystem(logManager.GetLogger("FileSystem"), false, true);
+            // Allow all https requests
+            ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 
-		    var nativeApp = new NativeApp();
+            var fileSystem = new CommonFileSystem(logManager.GetLogger("FileSystem"), false, true);
+
+            var nativeApp = new NativeApp();
 
             _appHost = new ApplicationHost(appPaths, logManager, options, fileSystem, "MBServer.Mono", nativeApp);
-			
-			if (options.ContainsOption("-v")) {
-				Console.WriteLine (_appHost.ApplicationVersion.ToString());
-				return;
-			}
 
-			Console.WriteLine ("appHost.Init");
+            if (options.ContainsOption("-v"))
+            {
+                Console.WriteLine(_appHost.ApplicationVersion.ToString());
+                return;
+            }
 
-			var initProgress = new Progress<double>();
+            Console.WriteLine("appHost.Init");
 
-			var task = _appHost.Init(initProgress);
-			Task.WaitAll (task);
+            var initProgress = new Progress<double>();
 
-			Console.WriteLine ("Running startup tasks");
+            var task = _appHost.Init(initProgress);
+            Task.WaitAll(task);
 
-			task = _appHost.RunStartupTasks();
-			Task.WaitAll (task);
+            Console.WriteLine("Running startup tasks");
 
-			task = ApplicationTaskCompletionSource.Task;
+            task = _appHost.RunStartupTasks();
+            Task.WaitAll(task);
 
-			Task.WaitAll (task);
-		}
+            task = ApplicationTaskCompletionSource.Task;
 
-		/// <summary>
-		/// Handles the SessionEnding event of the SystemEvents control.
-		/// </summary>
-		/// <param name="sender">The source of the event.</param>
-		/// <param name="e">The <see cref="SessionEndingEventArgs"/> instance containing the event data.</param>
-		static void SystemEvents_SessionEnding(object sender, SessionEndingEventArgs e)
-		{
-			if (e.Reason == SessionEndReasons.SystemShutdown)
-			{
-				Shutdown();
-			}
-		}
+            Task.WaitAll(task);
+        }
 
-		/// <summary>
-		/// Handles the UnhandledException event of the CurrentDomain control.
-		/// </summary>
-		/// <param name="sender">The source of the event.</param>
-		/// <param name="e">The <see cref="UnhandledExceptionEventArgs"/> instance containing the event data.</param>
-		static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-		{
-			var exception = (Exception)e.ExceptionObject;
+        /// <summary>
+        /// Handles the SessionEnding event of the SystemEvents control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="SessionEndingEventArgs"/> instance containing the event data.</param>
+        static void SystemEvents_SessionEnding(object sender, SessionEndingEventArgs e)
+        {
+            if (e.Reason == SessionEndReasons.SystemShutdown)
+            {
+                Shutdown();
+            }
+        }
+
+        /// <summary>
+        /// Handles the UnhandledException event of the CurrentDomain control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="UnhandledExceptionEventArgs"/> instance containing the event data.</param>
+        static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            var exception = (Exception)e.ExceptionObject;
 
             new UnhandledExceptionWriter(_appHost.ServerConfigurationManager.ApplicationPaths, _logger, _appHost.LogManager).Log(exception);
 
-			if (!Debugger.IsAttached)
-			{
-				Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
-			}
-		}
+            if (!Debugger.IsAttached)
+            {
+                Environment.Exit(System.Runtime.InteropServices.Marshal.GetHRForException(exception));
+            }
+        }
 
-		public static void Shutdown()
-		{
-			ApplicationTaskCompletionSource.SetResult (true);
-		}
-	}
+        public static void Shutdown()
+        {
+            ApplicationTaskCompletionSource.SetResult(true);
+        }
 
-	class NoCheckCertificatePolicy : ICertificatePolicy
-	{
-		public bool CheckValidationResult (ServicePoint srvPoint, X509Certificate certificate, WebRequest request, int certificateProblem)
-		{
-			return true;
-		}
-	}
+        public static void Restart()
+        {
+            _logger.Info("Disposing app host");
+            _appHost.Dispose();
+
+            _logger.Info("Starting new instance");
+
+            var args = Environment.GetCommandLineArgs()
+                            .Skip(1)
+                            .Select(NormalizeCommandLineArgument);
+
+            var commandLineArgsString = string.Join(" ", args.ToArray());
+            var module = Environment.GetCommandLineArgs().First();
+
+            _logger.Info("Executable: {0}", module);
+            _logger.Info("Arguments: {0}", commandLineArgsString);
+
+            Process.Start(module, commandLineArgsString);
+
+            _logger.Info("Calling Environment.Exit");
+            Environment.Exit(0);
+        }
+
+        private static string NormalizeCommandLineArgument(string arg)
+        {
+            if (arg.IndexOf(" ", StringComparison.OrdinalIgnoreCase) == -1)
+            {
+                return arg;
+            }
+
+            return "\"" + arg + "\"";
+        }
+    }
+
+    class NoCheckCertificatePolicy : ICertificatePolicy
+    {
+        public bool CheckValidationResult(ServicePoint srvPoint, X509Certificate certificate, WebRequest request, int certificateProblem)
+        {
+            return true;
+        }
+    }
 }
