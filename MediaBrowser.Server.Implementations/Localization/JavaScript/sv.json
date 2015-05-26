@@ -40,6 +40,7 @@
     "TitleLiveTV": "Live-TV",
     "TitleSync": "Sync",
     "ButtonDonate": "Donera",
+    "LabelRecurringDonationCanBeCancelledHelp": "St\u00e5ende donationer kan avbrytas n\u00e4r som helst via ditt PayPal-konto.",
     "HeaderMyMedia": "My Media",
     "TitleNotifications": "Notifications",
     "ErrorLaunchingChromecast": "Det gick inte att starta Chromecast. Kontrollera att enheten \u00e4r ansluten till det tr\u00e5dl\u00f6sa n\u00e4tverket.",

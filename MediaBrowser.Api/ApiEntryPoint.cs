@@ -339,14 +339,17 @@ namespace MediaBrowser.Api
                 return;
             }
 
-            var timerDuration = job.Type == TranscodingJobType.Progressive ?
-                1000 :
-                1800000;
+            var timerDuration = 1000;
 
-            // We can really reduce the timeout for apps that are using the newer api
-            if (!string.IsNullOrWhiteSpace(job.PlaySessionId) && job.Type != TranscodingJobType.Progressive)
+            if (job.Type != TranscodingJobType.Progressive)
             {
-                timerDuration = 50000;
+                timerDuration = 1800000;
+                
+                // We can really reduce the timeout for apps that are using the newer api
+                if (!string.IsNullOrWhiteSpace(job.PlaySessionId))
+                {
+                    timerDuration = 60000;
+                }
             }
 
             job.PingTimeout = timerDuration;
@@ -628,6 +631,9 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The live stream identifier.</value>
         public string LiveStreamId { get; set; }
+
+        public bool IsLiveOutput { get; set; }
+
         /// <summary>
         /// Gets or sets the path.
         /// </summary>

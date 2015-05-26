@@ -370,7 +370,8 @@ namespace MediaBrowser.ServerApplication
 
         private static void RunServiceInstallationIfNeeded(string applicationPath)
         {
-            var ctl = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == BackgroundService.Name);
+            var serviceName = BackgroundService.GetExistingServiceName();
+            var ctl = ServiceController.GetServices().FirstOrDefault(s => s.ServiceName == serviceName);
 
             if (ctl == null)
             {
@@ -476,7 +477,7 @@ namespace MediaBrowser.ServerApplication
                 // Update is there - execute update
                 try
                 {
-                    var serviceName = _isRunningAsService ? BackgroundService.Name : string.Empty;
+                    var serviceName = _isRunningAsService ? BackgroundService.GetExistingServiceName() : string.Empty;
                     new ApplicationUpdater().UpdateApplication(appPaths, updateArchive, logger, serviceName);
 
                     // And just let the app exit so it can update
@@ -515,11 +516,11 @@ namespace MediaBrowser.ServerApplication
                 _logger.Info("Hiding server notify icon");
                 _serverNotifyIcon.Visible = false;
 
-                _logger.Info("Executing windows forms restart");
+                _logger.Info("Starting new instance");
                 //Application.Restart();
                 Process.Start(_appHost.ServerConfigurationManager.ApplicationPaths.ApplicationPath);
 
-                _logger.Info("Calling Application.Exit");
+                _logger.Info("Calling Environment.Exit");
                 Environment.Exit(0);
             }
         }
@@ -539,7 +540,7 @@ namespace MediaBrowser.ServerApplication
         private static void ShutdownWindowsService()
         {
             _logger.Info("Stopping background service");
-            var service = new ServiceController(BackgroundService.Name);
+            var service = new ServiceController(BackgroundService.GetExistingServiceName());
 
             service.Refresh();
 

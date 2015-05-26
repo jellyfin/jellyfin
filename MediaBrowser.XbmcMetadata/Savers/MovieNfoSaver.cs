@@ -33,7 +33,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
             {
                 var path = item.ContainingFolderPath;
 
-                list.Add(Path.Combine(path, "VIDEO_TS.nfo"));
+                list.Add(Path.Combine(path, "VIDEO_TS", "VIDEO_TS.nfo"));
             }
 
             if (item.VideoType == VideoType.Dvd || item.VideoType == VideoType.BluRay || item.VideoType == VideoType.HdDvd)

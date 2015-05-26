@@ -148,7 +148,6 @@ namespace MediaBrowser.Api.Playback
         }
 
         protected readonly CultureInfo UsCulture = new CultureInfo("en-US");
-        private readonly long _slowSeekTicks = TimeSpan.FromSeconds(0).Ticks;
 
         /// <summary>
         /// Gets the fast seek command line parameter.
@@ -162,35 +161,10 @@ namespace MediaBrowser.Api.Playback
 
             if (time > 0)
             {
-                if (time > _slowSeekTicks && EnableSlowSeek)
-                {
-                    time -= _slowSeekTicks;
-                }
-
                 return string.Format("-ss {0}", MediaEncoder.GetTimeParameter(time));
             }
 
             return string.Empty;
-        }
-
-        protected string GetSlowSeekCommandLineParameter(StreamRequest request)
-        {
-            var time = request.StartTimeTicks ?? 0;
-
-            if (time > _slowSeekTicks && _slowSeekTicks > 0)
-            {
-                return string.Format("-ss {0}", MediaEncoder.GetTimeParameter(_slowSeekTicks));
-            }
-
-            return string.Empty;
-        }
-
-        protected virtual bool EnableSlowSeek
-        {
-            get
-            {
-                return false;
-            }
         }
 
         /// <summary>
@@ -716,7 +690,7 @@ namespace MediaBrowser.Api.Playback
 
                 // TODO: Perhaps also use original_size=1920x800 ??
                 return string.Format("subtitles=filename='{0}'{1},setpts=PTS -{2}/TB",
-                    subtitlePath.Replace('\\', '/').Replace(":/", "\\:/"),
+                    subtitlePath.Replace("'", "\\'").Replace('\\', '/').Replace(":/", "\\:/"),
                     charsetParam,
                     seconds.ToString(UsCulture));
             }
@@ -724,7 +698,7 @@ namespace MediaBrowser.Api.Playback
             var mediaPath = state.MediaPath ?? string.Empty;
 
             return string.Format("subtitles='{0}:si={1}',setpts=PTS -{2}/TB",
-                mediaPath.Replace('\\', '/').Replace(":/", "\\:/"),
+                mediaPath.Replace("'", "\\'").Replace('\\', '/').Replace(":/", "\\:/"),
                 state.InternalSubtitleStreamOffset.ToString(UsCulture),
                 seconds.ToString(UsCulture));
         }
@@ -1086,7 +1060,7 @@ namespace MediaBrowser.Api.Playback
 
         private void StartThrottler(StreamState state, TranscodingJob transcodingJob)
         {
-            if (EnableThrottling && state.InputProtocol == MediaProtocol.File &&
+            if (EnableThrottling(state) && state.InputProtocol == MediaProtocol.File &&
                            state.RunTimeTicks.HasValue &&
                            state.VideoType == VideoType.VideoFile &&
                            !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
@@ -1099,12 +1073,9 @@ namespace MediaBrowser.Api.Playback
             }
         }
 
-        protected virtual bool EnableThrottling
+        protected virtual bool EnableThrottling(StreamState state)
         {
-            get
-            {
-                return true;
-            }
+            return true;
         }
 
         private async void StartStreamingLog(TranscodingJob transcodingJob, StreamState state, Stream source, Stream target)

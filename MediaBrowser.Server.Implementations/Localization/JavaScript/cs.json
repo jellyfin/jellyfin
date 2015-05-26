@@ -40,6 +40,7 @@
     "TitleLiveTV": "\u017div\u00e1 TV",
     "TitleSync": "Sync",
     "ButtonDonate": "Donate",
+    "LabelRecurringDonationCanBeCancelledHelp": "Recurring donations can be cancelled at any time from within your PayPal account.",
     "HeaderMyMedia": "My Media",
     "TitleNotifications": "Notifications",
     "ErrorLaunchingChromecast": "There was an error launching chromecast. Please ensure your device is connected to your wireless network.",
