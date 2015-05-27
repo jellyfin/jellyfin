@@ -228,7 +228,7 @@ namespace MediaBrowser.Api
         {
             lock (_activeTranscodingJobs)
             {
-                var job = _activeTranscodingJobs.First(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+                var job = _activeTranscodingJobs.First(j => j.Type == type && string.Equals(j.Path, path, StringComparison.OrdinalIgnoreCase));
 
                 _activeTranscodingJobs.Remove(job);
             }
@@ -250,19 +250,11 @@ namespace MediaBrowser.Api
             return GetTranscodingJob(path, type) != null;
         }
 
-        public TranscodingJob GetTranscodingJobByPlaySessionId(string playSessionId)
-        {
-            lock (_activeTranscodingJobs)
-            {
-                return _activeTranscodingJobs.FirstOrDefault(j => j.PlaySessionId.Equals(playSessionId, StringComparison.OrdinalIgnoreCase));
-            }
-        }
-
         public TranscodingJob GetTranscodingJob(string path, TranscodingJobType type)
         {
             lock (_activeTranscodingJobs)
             {
-                return _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+                return _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && string.Equals(j.Path, path, StringComparison.OrdinalIgnoreCase));
             }
         }
 
@@ -275,7 +267,7 @@ namespace MediaBrowser.Api
         {
             lock (_activeTranscodingJobs)
             {
-                var job = _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && j.Path.Equals(path, StringComparison.OrdinalIgnoreCase));
+                var job = _activeTranscodingJobs.FirstOrDefault(j => j.Type == type && string.Equals(j.Path, path, StringComparison.OrdinalIgnoreCase));
 
                 if (job == null)
                 {
@@ -344,7 +336,7 @@ namespace MediaBrowser.Api
             if (job.Type != TranscodingJobType.Progressive)
             {
                 timerDuration = 1800000;
-                
+
                 // We can really reduce the timeout for apps that are using the newer api
                 if (!string.IsNullOrWhiteSpace(job.PlaySessionId))
                 {
@@ -462,7 +454,7 @@ namespace MediaBrowser.Api
             job.DisposeKillTimer();
 
             Logger.Debug("KillTranscodingJob - JobId {0} PlaySessionId {1}. Killing transcoding", job.Id, job.PlaySessionId);
-            
+
             lock (_activeTranscodingJobs)
             {
                 _activeTranscodingJobs.Remove(job);

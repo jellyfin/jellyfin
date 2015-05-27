@@ -259,6 +259,9 @@
     </BundleResource>
     <BundleResource Include="Resources\appicon.icns" />
     <BundleResource Include="Resources\MediaBrowser.Server.Mac\Images.xcassets\AppIcon.appiconset\Contents.json" />
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\.DS_Store">
+      <Link>Resources\dashboard-ui\.DS_Store</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\about.html">
       <Link>Resources\dashboard-ui\about.html</Link>
     </BundleResource>
@@ -651,6 +654,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\wizarduser.html">
       <Link>Resources\dashboard-ui\wizarduser.html</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\.DS_Store">
+      <Link>Resources\dashboard-ui\css\.DS_Store</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\card.css">
       <Link>Resources\dashboard-ui\css\card.css</Link>
@@ -1672,6 +1678,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\connectsdk.js">
       <Link>Resources\dashboard-ui\thirdparty\cordova\connectsdk.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\externalplayer.js">
+      <Link>Resources\dashboard-ui\thirdparty\cordova\externalplayer.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\generaldevice.js">
       <Link>Resources\dashboard-ui\thirdparty\cordova\generaldevice.js</Link>
     </BundleResource>
@@ -1686,6 +1695,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\serverdiscovery.js">
       <Link>Resources\dashboard-ui\thirdparty\cordova\serverdiscovery.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\android\immersive.js">
+      <Link>Resources\dashboard-ui\thirdparty\cordova\android\immersive.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\css\font-awesome.css">
       <Link>Resources\dashboard-ui\thirdparty\fontawesome\css\font-awesome.css</Link>
