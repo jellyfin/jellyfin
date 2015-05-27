@@ -185,7 +185,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     var startTranscoding = false;
 
-                    var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, request.PlaySessionId, segmentExtension);
+                    var currentTranscodingIndex = GetCurrentTranscodingIndex(playlistPath, segmentExtension);
                     var segmentGapRequiringTranscodingChange = 24 / state.SegmentLength;
 
                     if (currentTranscodingIndex == null)
@@ -325,11 +325,9 @@ namespace MediaBrowser.Api.Playback.Hls
             return position;
         }
 
-        public int? GetCurrentTranscodingIndex(string playlist, string playSessionId, string segmentExtension)
+        public int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
         {
-            var job = string.IsNullOrWhiteSpace(playSessionId) ?
-                ApiEntryPoint.Instance.GetTranscodingJob(playlist, TranscodingJobType) :
-                ApiEntryPoint.Instance.GetTranscodingJobByPlaySessionId(playSessionId);
+            var job = ApiEntryPoint.Instance.GetTranscodingJob(playlist, TranscodingJobType);
 
             if (job == null || job.HasExited)
             {
@@ -844,11 +842,14 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             // See if we can save come cpu cycles by avoiding encoding
-            if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
-                args += state.VideoStream != null && IsH264(state.VideoStream)
-                    ? args + " -bsf:v h264_mp4toannexb"
-                    : args;
+                if (state.VideoStream != null && IsH264(state.VideoStream))
+                {
+                    args += " -bsf:v h264_mp4toannexb";
+                }
+
+                args += " -flags -global_header -sc_threshold 0";
             }
             else
             {
@@ -872,9 +873,14 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     args += GetGraphicalSubtitleParam(state, codec);
                 }
+
+                args += " -flags +loop-global_header -sc_threshold 0";
             }
 
-            args += " -flags +loop-global_header -sc_threshold 0";
+            if (!EnableSplitTranscoding(state))
+            {
+                args += " -copyts";
+            }
 
             return args;
         }
@@ -889,6 +895,8 @@ namespace MediaBrowser.Api.Playback.Hls
             var startNumberParam = isEncoding ? GetStartNumber(state).ToString(UsCulture) : "0";
 
             var toTimeParam = string.Empty;
+            var timestampOffsetParam = string.Empty;
+
             if (EnableSplitTranscoding(state))
             {
                 var startTime = state.Request.StartTimeTicks ?? 0;
@@ -902,14 +910,13 @@ namespace MediaBrowser.Api.Playback.Hls
                     //toTimeParam = " -to " + MediaEncoder.GetTimeParameter(endTime);
                     toTimeParam = " -t " + MediaEncoder.GetTimeParameter(TimeSpan.FromSeconds(durationSeconds).Ticks);
                 }
+
+                if (state.IsOutputVideo && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) && (state.Request.StartTimeTicks ?? 0) > 0)
+                {
+                    timestampOffsetParam = " -output_ts_offset " + MediaEncoder.GetTimeParameter(state.Request.StartTimeTicks ?? 0).ToString(CultureInfo.InvariantCulture);
+                }
             }
 
-            var timestampOffsetParam = string.Empty;
-            if (state.IsOutputVideo)
-            {
-                timestampOffsetParam = " -output_ts_offset " + MediaEncoder.GetTimeParameter(state.Request.StartTimeTicks ?? 0).ToString(CultureInfo.InvariantCulture);
-            }
-            
             var mapArgs = state.IsOutputVideo ? GetMapArgs(state) : string.Empty;
 
             //var outputTsArg = Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileNameWithoutExtension(outputPath)) + "%d" + GetSegmentFileExtension(state);
@@ -958,6 +965,11 @@ namespace MediaBrowser.Api.Playback.Hls
             }
 
             if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
