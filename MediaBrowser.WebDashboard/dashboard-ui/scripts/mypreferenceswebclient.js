@@ -87,7 +87,7 @@
 
         $('.fldEnableBackdrops', page).show();
 
-        if (Dashboard.isRunningInCordova()) {
+        if (AppInfo.isNativeApp) {
             $('.homePageConfigurationSection', page).hide();
         } else {
             $('.homePageConfigurationSection', page).show();

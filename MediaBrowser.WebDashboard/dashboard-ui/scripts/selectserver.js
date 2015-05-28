@@ -373,7 +373,7 @@
 
             servers = servers.slice(0);
 
-            if (Dashboard.isRunningInCordova()) {
+            if (AppInfo.isNativeApp) {
                 servers.push({
                     Name: Globalize.translate('ButtonNewServer'),
                     Id: 'new',

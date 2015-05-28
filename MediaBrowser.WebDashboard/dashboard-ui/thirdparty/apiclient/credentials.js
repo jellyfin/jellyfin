@@ -8,12 +8,12 @@
 
         var self = this;
         var credentials;
-        var key = 'servercredentials3';
+        var key = 'servercredentials4';
 
         function ensure() {
 
             credentials = credentials || JSON.parse(appStorage.getItem(key) || '{}');
-            credentials.servers = credentials.servers || [];
+            credentials.Servers = credentials.Servers || [];
         }
 
         function get() {
@@ -30,6 +30,8 @@
             } else {
                 self.clear();
             }
+
+            Events.trigger(self, 'credentialsupdated');
         }
 
         self.clear = function () {

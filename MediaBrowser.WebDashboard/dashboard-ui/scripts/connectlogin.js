@@ -83,7 +83,7 @@
 
         if (mode == 'auto') {
 
-            if (Dashboard.isRunningInCordova()) {
+            if (AppInfo.isNativeApp) {
                 loadAppConnection(page);
                 return;
             }
@@ -154,7 +154,7 @@
         var link = '<a href="http://emby.media" target="_blank">http://emby.media</a>';
         $('.embyIntroDownloadMessage', page).html(Globalize.translate('EmbyIntroDownloadMessage', link));
 
-        if (Dashboard.isRunningInCordova()) {
+        if (AppInfo.isNativeApp) {
             $('.skip', page).show();
         } else {
             $('.skip', page).hide();

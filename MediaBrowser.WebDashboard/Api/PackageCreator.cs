@@ -59,14 +59,7 @@ namespace MediaBrowser.WebDashboard.Api
             {
                 // Don't apply any caching for html pages
                 // jQuery ajax doesn't seem to handle if-modified-since correctly
-                if (IsFormat(path, "html"))
-                {
-                    if (path.IndexOf("cordovaindex.html", StringComparison.OrdinalIgnoreCase) == -1)
-                    {
-                        resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
-                    }
-                }
-                else if (IsFormat(path, "js"))
+                if (IsFormat(path, "js"))
                 {
                     if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1)
                     {

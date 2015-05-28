@@ -128,7 +128,7 @@
             return false;
         }
 
-        if ($.browser.android && Dashboard.isRunningInCordova()) {
+        if ($.browser.android && AppInfo.isNativeApp) {
             return true;
         }
 

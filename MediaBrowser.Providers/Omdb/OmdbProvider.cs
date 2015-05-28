@@ -29,6 +29,11 @@ namespace MediaBrowser.Providers.Omdb
 
         public async Task Fetch(BaseItem item, string imdbId, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(imdbId))
+            {
+                throw new ArgumentNullException("imdbId");
+            }
+
             var imdbParam = imdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? imdbId : "tt" + imdbId;
 
             var url = string.Format("http://www.omdbapi.com/?i={0}&tomatoes=true", imdbParam);

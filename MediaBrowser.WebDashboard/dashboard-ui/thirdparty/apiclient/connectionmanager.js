@@ -88,8 +88,16 @@
             return appVersion;
         };
 
+        self.capabilities = function () {
+            return capabilities;
+        };
+
         self.deviceId = function () {
             return deviceId;
+        };
+
+        self.credentialProvider = function () {
+            return credentialProvider;
         };
 
         self.connectUserId = function () {
@@ -103,7 +111,7 @@
 
         self.getLastUsedApiClient = function () {
 
-            var servers = credentialProvider.credentials().servers;
+            var servers = credentialProvider.credentials().Servers;
 
             servers.sort(function (a, b) {
                 return b.DateLastAccessed - a.DateLastAccessed;
@@ -122,7 +130,7 @@
 
             apiClients.push(apiClient);
 
-            var existingServer = credentialProvider.credentials().servers.filter(function (s) {
+            var existingServer = credentialProvider.credentials().Servers.filter(function (s) {
 
                 return stringEqualsIgnoreCase(s.ManualAddress, apiClient.serverAddress());
 
@@ -145,7 +153,7 @@
 
                 var credentials = credentialProvider.credentials();
 
-                var server = credentials.servers.filter(function (s) {
+                var server = credentials.Servers.filter(function (s) {
 
                     return s.Id == systemInfo.Id;
 
@@ -159,7 +167,7 @@
 
                 apiClient.serverInfo(server);
 
-                credentialProvider.addOrUpdateServer(credentials.servers, server);
+                credentialProvider.addOrUpdateServer(credentials.Servers, server);
                 credentialProvider.credentials(credentials);
             });
         };
@@ -213,7 +221,7 @@
             }
 
             var credentials = credentialProvider.credentials();
-            var server = credentials.servers.filter(function (s) {
+            var server = credentials.Servers.filter(function (s) {
                 return stringEqualsIgnoreCase(s.Id, serverId);
 
             })[0];
@@ -238,7 +246,7 @@
                 server.AccessToken = null;
             }
 
-            credentialProvider.addOrUpdateServer(credentials.servers, server);
+            credentialProvider.addOrUpdateServer(credentials.Servers, server);
             saveUserInfoIntoCredentials(server, result.User);
             credentialProvider.credentials(credentials);
 
@@ -513,7 +521,7 @@
 
                 var credentials = credentialProvider.credentials();
 
-                var servers = credentials.servers.filter(function (u) {
+                var servers = credentials.Servers.filter(function (u) {
                     return u.UserLinkType != "Guest";
                 });
 
@@ -533,7 +541,7 @@
                     }
                 }
 
-                credentials.servers = servers;
+                credentials.Servers = servers;
                 credentials.ConnectAccessToken = null;
                 credentials.ConnectUserId = null;
 
@@ -622,7 +630,7 @@
 
                 findServersPromise.done(function (foundServers) {
 
-                    var servers = credentials.servers.slice(0);
+                    var servers = credentials.Servers.slice(0);
                     mergeServers(servers, foundServers);
                     mergeServers(servers, connectServers);
 
@@ -632,7 +640,7 @@
                         return b.DateLastAccessed - a.DateLastAccessed;
                     });
 
-                    credentials.servers = servers;
+                    credentials.Servers = servers;
 
                     credentialProvider.credentials(credentials);
 
@@ -921,7 +929,7 @@
 
             server.DateLastAccessed = new Date().getTime();
             server.LastConnectionMode = connectionMode;
-            credentialProvider.addOrUpdateServer(credentials.servers, server);
+            credentialProvider.addOrUpdateServer(credentials.Servers, server);
             credentialProvider.credentials(credentials);
 
             var result = {
@@ -1089,7 +1097,7 @@
 
             var credentials = credentialProvider.credentials();
 
-            var serverInfo = credentials.servers = credentials.servers.filter(function (s) {
+            var serverInfo = credentials.Servers = credentials.Servers.filter(function (s) {
                 return s.ConnectServerId == serverId;
             });
 
@@ -1097,7 +1105,7 @@
 
                 credentials = credentialProvider.credentials();
 
-                credentials.servers = credentials.servers.filter(function (s) {
+                credentials.Servers = credentials.Servers.filter(function (s) {
                     return s.ConnectServerId != serverId;
                 });
 

@@ -165,7 +165,7 @@ namespace MediaBrowser.Providers.Omdb
 
             var imdbId = result.Item.GetProviderId(MetadataProviders.Imdb);
 
-            if (!string.IsNullOrEmpty(info.GetProviderId(MetadataProviders.Imdb)))
+            if (!string.IsNullOrEmpty(imdbId))
             {
                 result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
                 result.HasMetadata = true;
@@ -195,7 +195,7 @@ namespace MediaBrowser.Providers.Omdb
             var searchResult = await GetMovieImdbId(info, cancellationToken).ConfigureAwait(false);
             result.Item.Name = searchResult.Item3;
 
-            if (string.IsNullOrEmpty(imdbId))
+            if (string.IsNullOrWhiteSpace(imdbId))
             {
                 imdbId = searchResult.Item1;
 
@@ -205,7 +205,7 @@ namespace MediaBrowser.Providers.Omdb
                 }
             }
 
-            if (!string.IsNullOrEmpty(imdbId))
+            if (!string.IsNullOrWhiteSpace(imdbId))
             {
                 result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
                 result.HasMetadata = true;

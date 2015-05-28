@@ -1025,7 +1025,7 @@
 
         self.canAutoPlayVideo = function () {
 
-            if (Dashboard.isRunningInCordova()) {
+            if (AppInfo.isNativeApp) {
                 return true;
             }
 

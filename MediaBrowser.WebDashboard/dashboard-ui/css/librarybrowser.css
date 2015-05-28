@@ -1519,14 +1519,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     position: absolute;
     left: 0;
     top: 0;
-    padding: 23px 15px;
+    padding: 32px 15px;
 }
 
 .detailsMenuRightButton {
     position: absolute;
     right: 0;
     top: 0;
-    padding: 23px 15px;
+    padding: 32px 15px;
 }
 
 .detailsMenuHeaderWithLogo .detailsMenuLeftButton, .detailsMenuHeaderWithLogo .detailsMenuRightButton {

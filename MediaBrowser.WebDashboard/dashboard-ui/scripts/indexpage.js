@@ -654,7 +654,7 @@
 
     function getDisplayPreferencesAppName() {
 
-        if (Dashboard.isRunningInCordova()) {
+        if (AppInfo.isNativeApp) {
             return 'Emby Mobile';
         }
 

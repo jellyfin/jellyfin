@@ -49,7 +49,7 @@ var Dashboard = {
 
     isConnectMode: function () {
 
-        if (Dashboard.isRunningInCordova()) {
+        if (AppInfo.isNativeApp) {
             return true;
         }
 
@@ -1366,13 +1366,19 @@ var Dashboard = {
     capabilities: function () {
 
         var caps = {
-            PlayableMediaTypes: "Audio,Video",
+            PlayableMediaTypes: ['Audio', 'Video'],
 
-            SupportedCommands: Dashboard.getSupportedRemoteCommands().join(','),
-            SupportsPersistentIdentifier: Dashboard.isRunningInCordova(),
+            SupportedCommands: Dashboard.getSupportedRemoteCommands(),
+            SupportsPersistentIdentifier: AppInfo.isNativeApp,
             SupportsMediaControl: true,
             SupportedLiveMediaTypes: ['Audio', 'Video']
         };
+
+        if (Dashboard.isRunningInCordova() && $.browser.android) {
+            caps.SupportsOfflineAccess = true;
+            caps.SupportsSync = true;
+            caps.SupportsContentUploading = true;
+        }
 
         return caps;
     },
@@ -1389,7 +1395,7 @@ var Dashboard = {
         if (AppInfo.hasLowImageBandwidth) {
 
             // The native app can handle a little bit more than safari
-            if (Dashboard.isRunningInCordova()) {
+            if (AppInfo.isNativeApp) {
 
                 quality -= 20;
 
@@ -1588,6 +1594,7 @@ var AppInfo = {};
         if (isCordova) {
             AppInfo.enableAppLayouts = true;
             AppInfo.hasKnownExternalPlayerSupport = true;
+            AppInfo.isNativeApp = true;
         }
         else {
             AppInfo.enableFooterNotifications = true;
@@ -1615,11 +1622,11 @@ var AppInfo = {};
     }
 
     //localStorage.clear();
-    function createConnectionManager(appInfo, capabilities) {
+    function createConnectionManager(capabilities) {
 
         var credentialProvider = new MediaBrowser.CredentialProvider();
 
-        window.ConnectionManager = new MediaBrowser.ConnectionManager(Logger, credentialProvider, appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId, capabilities);
+        window.ConnectionManager = new MediaBrowser.ConnectionManager(Logger, credentialProvider, AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, capabilities);
 
         $(ConnectionManager).on('apiclientcreated', function (e, newApiClient) {
 
@@ -1642,7 +1649,7 @@ var AppInfo = {};
 
         } else {
 
-            apiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), appInfo.appName, appInfo.appVersion, appInfo.deviceName, appInfo.deviceId);
+            apiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId);
             ConnectionManager.addApiClient(apiClient);
         }
 
@@ -1652,7 +1659,7 @@ var AppInfo = {};
             ApiClient.getDefaultImageQuality = Dashboard.getDefaultImageQuality;
             ApiClient.normalizeImageOptions = Dashboard.normalizeImageOptions;
 
-            if (!Dashboard.isRunningInCordova()) {
+            if (!AppInfo.isNativeApp) {
                 Dashboard.importCss(ApiClient.getUrl('Branding/Css'));
             }
         }
@@ -1722,7 +1729,7 @@ var AppInfo = {};
             $(document.body).addClass('supporterMembershipDisabled');
         }
 
-        if (Dashboard.isRunningInCordova()) {
+        if (AppInfo.isNativeApp) {
             $(document).addClass('nativeApp');
         }
 
@@ -1842,7 +1849,7 @@ var AppInfo = {};
             requirejs(['thirdparty/cordova/connectsdk', 'scripts/registrationservices']);
 
             if ($.browser.android) {
-                requirejs(['thirdparty/cordova/android/immersive']);
+                requirejs(['thirdparty/cordova/android/androidcredentials', 'thirdparty/cordova/android/immersive']);
             }
 
             if ($.browser.safari) {
@@ -1874,9 +1881,9 @@ var AppInfo = {};
 
         setAppInfo();
 
-        var appInfo = Dashboard.getAppInfo(appName, deviceId, deviceName);
+        $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
 
-        createConnectionManager(appInfo, capabilities);
+        createConnectionManager(capabilities);
 
         if (!resolveOnReady) {
 

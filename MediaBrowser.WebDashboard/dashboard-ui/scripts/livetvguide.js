@@ -403,6 +403,8 @@
 
     function reloadPage(page) {
 
+        showLoadingMessage(page);
+
         $('.guideRequiresUnlock', page).hide();
 
         RegistrationServices.validateFeature('livetv').done(function () {
