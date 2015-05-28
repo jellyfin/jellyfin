@@ -1,38 +1,5 @@
 ﻿(function () {
 
-    var updatedProducts = [];
-
-    var unlockAlias = "premium features";
-
-    function updateProductInfo(p) {
-
-        updatedProducts = updatedProducts.filter(function (r) {
-            return r.alias != p.alias;
-        });
-
-        updatedProducts.push(p);
-    }
-
-    function getProduct(alias) {
-        var products = updatedProducts.filter(function (r) {
-            return r.alias == alias;
-        });
-
-        return products.length ? products[0] : null;
-    }
-
-    function hasPurchased(alias) {
-        var product = getProduct(alias);
-
-        return product != null && product.owned;
-    }
-
-    function isPurchaseAvailable(alias) {
-        var product = getProduct(alias);
-
-        return product != null && product.canPurchase;
-    }
-
     function isAndroid() {
 
         var platform = (device.platform || '').toLowerCase();
@@ -50,8 +17,7 @@
 
         validateFeature({
 
-            id: 'appunlock',
-            alias: unlockAlias
+            id: 'premiumunlock'
 
         }, deferred);
     }
@@ -66,8 +32,7 @@
 
         validateFeature({
 
-            id: 'premiumunlock',
-            alias: unlockAlias
+            id: 'premiumunlock'
 
         }, deferred);
     }
@@ -82,8 +47,7 @@
 
         validateFeature({
 
-            id: 'premiumunlock',
-            alias: unlockAlias
+            id: 'premiumunlock'
 
         }, deferred);
     }
@@ -100,14 +64,15 @@
 
     function validateFeature(info, deferred) {
 
-        if (hasPurchased(info.alias)) {
+        if (IapManager.hasPurchased(info.id)) {
             deferred.resolve();
             return;
         }
 
         var productInfo = {
             enableSupporterUnlock: isAndroid(),
-            enableAppUnlock: isPurchaseAvailable(info.alias)
+            enableAppUnlock: IapManager.isPurchaseAvailable(info.id),
+            id: info.id
         };
 
         var prefix = isAndroid() ? 'android' : 'ios';
@@ -163,13 +128,7 @@
         }
 
         if (info.enableAppUnlock) {
-            html += '<p style="margin:2em 0;">';
-            html += Globalize.translate('MessageToValidateSupporter');
-            html += '</p>';
-        }
-
-        if (info.enableAppUnlock) {
-            html += '<button class="btn btnActionAccent btnAppUnlock" data-role="none" type="button"><span>' + Globalize.translate('ButtonUnlockWithPurchase') + '</span><i class="fa fa-check"></i></button>';
+            html += '<button class="btn btnActionAccent btnAppUnlock" data-role="none" type="submit"><span>' + Globalize.translate('ButtonUnlockWithPurchase') + '</span><i class="fa fa-check"></i></button>';
         }
 
         if (info.enableSupporterUnlock) {
@@ -199,6 +158,7 @@
 
         $('.inAppPurchaseForm', elem).on('submit', function () {
 
+            IapManager.beginPurchase(info.id);
             return false;
         });
 
@@ -221,11 +181,6 @@
                     Dashboard.logout();
                 }
             });
-        });
-
-        $('.btnAppUnlock', elem).on('click', function () {
-
-            alert('coming soon');
         });
     }
 
@@ -260,76 +215,8 @@
         }
     };
 
-    function validateProduct(product, callback) {
+    var depends = isAndroid() ? 'thirdparty/cordova/android/iap' : 'thirdparty/cordova/iap';
 
-        // product attributes:
-        // https://github.com/j3k0/cordova-plugin-purchase/blob/master/doc/api.md#validation-error-codes
-
-        callback(true, {
-
-        });
-
-        //callback(true, { ... transaction details ... }); // success!
-
-        //// OR
-        //callback(false, {
-        //    error: {
-        //        code: store.PURCHASE_EXPIRED,
-        //        message: "XYZ"
-        //    }
-        //});
-
-        //// OR
-        //callback(false, "Impossible to proceed with validation");  
-    }
-
-    function initializeStore() {
-
-        if (isAndroid()) {
-            return;
-        }
-        // Let's set a pretty high verbosity level, so that we see a lot of stuff
-        // in the console (reassuring us that something is happening).
-        store.verbosity = store.INFO;
-
-        store.validator = validateProduct;
-
-        // iOS
-        store.register({
-            id: "appunlock",
-            alias: unlockAlias,
-            type: store.NON_CONSUMABLE
-        });
-
-        // When purchase of the full version is approved,
-        // show some logs and finish the transaction.
-        store.when(unlockAlias).approved(function (order) {
-            log('You just unlocked the FULL VERSION!');
-            order.finish();
-        });
-
-        // The play button can only be accessed when the user
-        // owns the full version.
-        store.when(unlockAlias).updated(function (product) {
-
-            updateProductInfo(product);
-        });
-
-        // When every goes as expected, it's time to celebrate!
-        // The "ready" event should be welcomed with music and fireworks,
-        // go ask your boss about it! (just in case)
-        store.ready(function () {
-
-            console.log("Store ready");
-        });
-
-        // After we've done our setup, we tell the store to do
-        // it's first refresh. Nothing will happen if we do not call store.refresh()
-        store.refresh();
-    }
-
-    // We must wait for the "deviceready" event to fire
-    // before we can use the store object.
-    initializeStore();
+    requirejs([depends]);
 
 })();
