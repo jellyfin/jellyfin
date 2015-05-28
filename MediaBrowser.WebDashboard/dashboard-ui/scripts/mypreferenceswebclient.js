@@ -65,7 +65,13 @@
         return false;
     }
 
-    $(document).on('pageshowready', "#webClientPreferencesPage", function () {
+    $(document).on('pageinitdepends', "#webClientPreferencesPage", function () {
+
+        var page = this;
+
+        $('.webClientPreferencesForm', page).off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#webClientPreferencesPage", function () {
 
         var page = this;
 
@@ -96,50 +102,4 @@
         }
     });
 
-    window.WebClientPreferencesPage = {
-        onSubmit: onSubmit
-    };
-
 })(jQuery, window, document);
-
-(function (window, store) {
-
-    window.AppSettings = {
-
-        maxStreamingBitrate: function (val) {
-
-            if (val != null) {
-                store.setItem('preferredVideoBitrate', val);
-            }
-
-            return parseInt(store.getItem('preferredVideoBitrate') || '') || 1500000;
-        },
-        maxChromecastBitrate: function (val) {
-
-            if (val != null) {
-                store.setItem('chromecastBitrate', val);
-            }
-
-            return parseInt(store.getItem('chromecastBitrate') || '') || 3000000;
-        },
-        enableExternalPlayers: function (val) {
-
-            if (val != null) {
-                store.setItem('externalplayers', val.toString());
-            }
-
-            return store.getItem('externalplayers') == 'true';
-        },
-        enableItemPreviews: function (val) {
-
-            if (val != null) {
-                store.setItem('enableItemPreviews', val.toString());
-            }
-
-            return store.getItem('enableItemPreviews') != 'false';
-        }
-
-    };
-
-
-})(window, window.appStorage);

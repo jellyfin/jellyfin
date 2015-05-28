@@ -553,6 +553,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "syncjob.js",
                                 "appservices.js",
                                 "playlistmanager.js",
+                                "appsettings.js",
 
                                 "mediaplayer.js",
                                 "mediaplayer-video.js",
@@ -602,10 +603,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "metadatanfo.js",
                                 "moviecollections.js",
 
-                                "mypreferencesdisplay.js",
-                                "mypreferenceslanguages.js",
-                                "mypreferenceswebclient.js",
-
                                 "notifications.js",
                                 "notificationlist.js",
                                 "notificationsetting.js",
@@ -623,7 +620,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "syncsettings.js",
                                 "thememediaplayer.js",
                                 "useredit.js",
-                                "myprofile.js",
                                 "userpassword.js",
                                 "userprofilespage.js",
                                 "userparentalcontrol.js",

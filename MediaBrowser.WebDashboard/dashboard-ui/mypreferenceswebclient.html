@@ -5,7 +5,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="webClientPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage" data-contextname="${HeaderPreferences}">
+    <div id="webClientPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage" data-contextname="${HeaderPreferences}" data-require="scripts/mypreferenceswebclient,scripts/mypreferencescommon">
         <div class="libraryViewNav">
             <a href="#" class="lnkDisplayPreferences">${TabDisplay}</a>
             <a href="#" class="lnkLanguagePreferences">${TabPlayback}</a>
@@ -150,6 +150,18 @@
                                 <option value="192000">192kbps</option>
                             </select>
                         </div>
+
+                        <br />
+                        <div>
+                            <fieldset data-role="controlgroup">
+                                <legend>${LabelExternalPlayers}</legend>
+                                <input type="checkbox" id="chkExternalVideoPlayer" />
+                                <label for="chkExternalVideoPlayer">${OptionEnableExternalVideoPlayers}</label>
+                            </fieldset>
+                            <div style="padding: 0 2px;display:none;" class="labelGenericExternalPlayers">${LabelExternalPlayersHelp}</div>
+                            <div style="padding: 0 2px;display:none;" class="labelNativeExternalPlayers">${LabelNativeExternalPlayersHelp}</div>
+                        </div>
+                        <br />
                         <br />
                         <div>
                             <label for="selectThemeSong">${LabelEnableThemeSongs}</label>
@@ -180,17 +192,6 @@
                             </select>
                             <div>${LabelEnableItemPreviewsHelp}</div>
                         </div>
-
-                        <br />
-                        <div>
-                            <fieldset data-role="controlgroup">
-                                <legend>${LabelExternalPlayers}</legend>
-                                <input type="checkbox" id="chkExternalVideoPlayer" />
-                                <label for="chkExternalVideoPlayer">${OptionEnableExternalVideoPlayers}</label>
-                            </fieldset>
-                            <div style="padding: 0 2px;display:none;" class="labelGenericExternalPlayers">${LabelExternalPlayersHelp}</div>
-                            <div style="padding: 0 2px;display:none;" class="labelNativeExternalPlayers">${LabelNativeExternalPlayersHelp}</div>
-                        </div>
                     </div>
                 </div>
 
@@ -206,9 +207,6 @@
                 </ul>
             </form>
         </div>
-        <script type="text/javascript">
-            $('.webClientPreferencesForm').off('submit', WebClientPreferencesPage.onSubmit).on('submit', WebClientPreferencesPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

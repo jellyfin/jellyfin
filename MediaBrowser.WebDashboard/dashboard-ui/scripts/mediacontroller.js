@@ -130,6 +130,7 @@
             triggerPlayerChange(player, targetInfo);
         };
 
+        var currentPairingId = null;
         self.trySetActivePlayer = function (player, targetInfo) {
 
             if (typeof (player) === 'string') {
@@ -141,6 +142,12 @@
             if (!player) {
                 throw new Error('null player');
             }
+
+            if (currentPairingId == targetInfo.id) {
+                return;
+            }
+
+            currentPairingId = targetInfo.id;
 
             player.tryPair(targetInfo).done(function () {
 

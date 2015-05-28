@@ -57,9 +57,9 @@
     position: relative;
 }
 
-.btn:not(.btnStatic), .btn-large:not(.btnStatic) {
-    cursor: pointer;
-}
+    .btn:not(.btnStatic), .btn-large:not(.btnStatic) {
+        cursor: pointer;
+    }
 
 .btn-floating {
     -webkit-border-radius: 2px;
@@ -119,7 +119,7 @@
     }
 
 .btn {
-    padding: .6em 2em;
+    padding: .6em 1.6em .6em 2em;
 }
 
 .btn-large {
@@ -191,7 +191,7 @@
     display: inline-block;
     width: auto;
     margin-bottom: 0;
-    padding: .6em .5em .6em .5em!important;
+    padding: .6em .5em .6em .5em !important;
 }
 
 button.btn:not(.btn-inline), button.btn-large:not(.btn-inline) {
@@ -219,7 +219,7 @@ button.btn:not(.btn-inline), button.btn-large:not(.btn-inline) {
 }
 
 .btnNoText {
-    padding: .6em .5em!important;
+    padding: .6em .5em !important;
 }
 
 .btnNoText {

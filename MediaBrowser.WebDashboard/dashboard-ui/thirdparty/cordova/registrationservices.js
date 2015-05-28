@@ -2,6 +2,8 @@
 
     var updatedProducts = [];
 
+    var unlockAlias = "premium features";
+
     function updateProductInfo(p) {
 
         updatedProducts = updatedProducts.filter(function (r) {
@@ -9,6 +11,26 @@
         });
 
         updatedProducts.push(p);
+    }
+
+    function getProduct(alias) {
+        var products = updatedProducts.filter(function (r) {
+            return r.alias == alias;
+        });
+
+        return products.length ? products[0] : null;
+    }
+
+    function hasPurchased(alias) {
+        var product = getProduct(alias);
+
+        return product != null && product.owned;
+    }
+
+    function isPurchaseAvailable(alias) {
+        var product = getProduct(alias);
+
+        return product != null && product.canPurchase;
     }
 
     function isAndroid() {
@@ -29,7 +51,7 @@
         validateFeature({
 
             id: 'appunlock',
-            alias: "premium features"
+            alias: unlockAlias
 
         }, deferred);
     }
@@ -45,7 +67,7 @@
         validateFeature({
 
             id: 'premiumunlock',
-            alias: "premium features"
+            alias: unlockAlias
 
         }, deferred);
     }
@@ -61,7 +83,7 @@
         validateFeature({
 
             id: 'premiumunlock',
-            alias: "premium features"
+            alias: unlockAlias
 
         }, deferred);
     }
@@ -78,24 +100,20 @@
 
     function validateFeature(info, deferred) {
 
-        var products = updatedProducts.filter(function (r) {
-            return r.alias == info.alias;
-        });
-
-        var product = products.length ? products[0] : null;
-
-        if (product && product.owned) {
+        if (hasPurchased(info.alias)) {
             deferred.resolve();
             return;
         }
 
         var productInfo = {
             enableSupporterUnlock: isAndroid(),
-            enableAppUnlock: product != null && product.canPurchase
+            enableAppUnlock: isPurchaseAvailable(info.alias)
         };
 
+        var prefix = isAndroid() ? 'android' : 'ios';
+
         // Get supporter status
-        getRegistrationInfo('appunlock', productInfo.enableSupporterUnlock).done(function (registrationInfo) {
+        getRegistrationInfo(prefix + 'appunlock', productInfo.enableSupporterUnlock).done(function (registrationInfo) {
 
             if (registrationInfo.IsRegistered) {
                 deferred.resolve();
@@ -267,38 +285,32 @@
 
     function initializeStore() {
 
+        if (isAndroid()) {
+            return;
+        }
         // Let's set a pretty high verbosity level, so that we see a lot of stuff
         // in the console (reassuring us that something is happening).
         store.verbosity = store.INFO;
 
         store.validator = validateProduct;
 
-        if (isAndroid) {
-            store.register({
-                id: "premiumunlock",
-                alias: "premium features",
-                type: store.NON_CONSUMABLE
-            });
-        } else {
-
-            // iOS
-            store.register({
-                id: "appunlock",
-                alias: "premium features",
-                type: store.NON_CONSUMABLE
-            });
-        }
+        // iOS
+        store.register({
+            id: "appunlock",
+            alias: unlockAlias,
+            type: store.NON_CONSUMABLE
+        });
 
         // When purchase of the full version is approved,
         // show some logs and finish the transaction.
-        store.when("premium feautres").approved(function (order) {
+        store.when(unlockAlias).approved(function (order) {
             log('You just unlocked the FULL VERSION!');
             order.finish();
         });
 
         // The play button can only be accessed when the user
         // owns the full version.
-        store.when("premium feautres").updated(function (product) {
+        store.when(unlockAlias).updated(function (product) {
 
             updateProductInfo(product);
         });
@@ -309,11 +321,11 @@
         store.ready(function () {
 
             console.log("Store ready");
-
-            // After we've done our setup, we tell the store to do
-            // it's first refresh. Nothing will happen if we do not call store.refresh()
-            store.refresh();
         });
+
+        // After we've done our setup, we tell the store to do
+        // it's first refresh. Nothing will happen if we do not call store.refresh()
+        store.refresh();
     }
 
     // We must wait for the "deviceready" event to fire

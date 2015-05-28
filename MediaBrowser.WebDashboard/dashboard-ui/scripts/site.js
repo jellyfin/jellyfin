@@ -640,6 +640,11 @@ var Dashboard = {
 
         html += '<form>';
 
+        if (AppInfo.supportsFullScreen) {
+            var checkedHtml = AppSettings.enableFullScreen() ? ' checked="checked"' : '';
+            html += '<p style="margin:1.5em 0;"><label for="chkFullScreen">' + Globalize.translate('OptionEnableFullscreen') + '</label><input type="checkbox"' + checkedHtml + ' id="chkFullScreen" data-mini="true" onchange="AppSettings.enableFullScreen(this.checked);" /></p>';
+        }
+
         html += '<p class="preferencesContainer"></p>';
 
         if (Dashboard.isConnectMode()) {
@@ -1540,9 +1545,13 @@ var AppInfo = {};
 
         AppInfo.enableAppStorePolicy = isCordova;
 
-        if ($.browser.safari) {
+        var isSafari = $.browser.safari;
+        var isAndroid = $.browser.android;
+        var isMobile = $.browser.mobile;
 
-            if ($.browser.mobile) {
+        if (isSafari) {
+
+            if (isMobile) {
                 AppInfo.hasLowImageBandwidth = true;
                 AppInfo.forcedImageFormat = 'jpg';
             }
@@ -1584,15 +1593,16 @@ var AppInfo = {};
             AppInfo.enableFooterNotifications = true;
             AppInfo.enableSupporterMembership = true;
 
-            if (!$.browser.android && !$.browser.ipad && !$.browser.iphone) {
+            if (!isAndroid && !isSafari) {
                 AppInfo.enableAppLayouts = true;
             }
         }
 
         AppInfo.enableUserImage = true;
-        AppInfo.hasPhysicalVolumeButtons = isCordova || $.browser.mobile;
+        AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
 
-        AppInfo.enableBackButton = ($.browser.safari && window.navigator.standalone) || (isCordova && $.browser.safari);
+        AppInfo.enableBackButton = (isSafari && window.navigator.standalone) || (isCordova && isSafari);
+        AppInfo.supportsFullScreen = isCordova && isAndroid;
     }
 
     function initializeApiClient(apiClient) {
@@ -1829,11 +1839,16 @@ var AppInfo = {};
         });
 
         if (Dashboard.isRunningInCordova()) {
-            requirejs(['thirdparty/cordova/connectsdk', 'thirdparty/cordova/remotecontrols', 'scripts/registrationservices']);
+            requirejs(['thirdparty/cordova/connectsdk', 'scripts/registrationservices']);
 
             if ($.browser.android) {
                 requirejs(['thirdparty/cordova/android/immersive']);
             }
+
+            if ($.browser.safari) {
+                requirejs(['thirdparty/cordova/remotecontrols']);
+            }
+
         } else {
             if ($.browser.chrome) {
                 requirejs(['scripts/chromecast']);

@@ -176,7 +176,7 @@
 
             if (!apiClient) {
 
-                var url = self.getServerAddress(server, connectionMode);
+                var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
 
                 apiClient = new MediaBrowser.ApiClient(logger, url, appName, appVersion, deviceName, deviceId);
 
@@ -339,7 +339,7 @@
                 throw new Error("credentials.ConnectUserId cannot be null");
             }
 
-            var url = self.getServerAddress(server, connectionMode);
+            var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
 
             url += "/Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId;
 
@@ -367,7 +367,7 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            var url = self.getServerAddress(server, connectionMode);
+            var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
 
             AjaxApi.ajax({
 
@@ -663,7 +663,7 @@
         function findServers() {
 
             var deferred = DeferredBuilder.Deferred();
-            ServerDiscovery.findServers(2000).done(function (foundServers) {
+            ServerDiscovery.findServers(2500).done(function (foundServers) {
 
                 var servers = foundServers.map(function (foundServer) {
 
@@ -710,26 +710,15 @@
             logger.log('Begin connect');
 
             var deferred = DeferredBuilder.Deferred();
-            var isResolved = false;
 
-            if (capabilities.SupportsOfflineAccess) {
-                if (!NetworkStatus.isNetworkAvailable()) {
+            self.getAvailableServers().done(function (servers) {
 
-                    deferred.resolveWith(null, [self.getOffineResult()]);
-                    isResolved = true;
-                }
-            }
+                self.connectToServers(servers).done(function (result) {
 
-            if (!isResolved) {
-                self.getAvailableServers().done(function (servers) {
+                    deferred.resolveWith(null, [result]);
 
-                    self.connectToServers(servers).done(function (result) {
-
-                        deferred.resolveWith(null, [result]);
-
-                    });
                 });
-            }
+            });
 
             return deferred.promise();
         };
@@ -813,8 +802,7 @@
             if (tests.indexOf(MediaBrowser.ConnectionMode.Local) == -1) { tests.push(MediaBrowser.ConnectionMode.Local); }
             if (tests.indexOf(MediaBrowser.ConnectionMode.Remote) == -1) { tests.push(MediaBrowser.ConnectionMode.Remote); }
 
-            var isLocalNetworkAvailable = NetworkStatus.isAnyLocalNetworkAvailable();
-            var sendWakeOnLan = server.WakeOnLanInfos && server.WakeOnLanInfos.length && isLocalNetworkAvailable;
+            var sendWakeOnLan = server.WakeOnLanInfos && server.WakeOnLanInfos.length;
 
             if (sendWakeOnLan) {
                 beginWakeServer(server);
@@ -822,7 +810,7 @@
 
             var wakeOnLanSendTime = new Date().getTime();
 
-            testNextConnectionMode(tests, 0, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred);
+            testNextConnectionMode(tests, 0, server, wakeOnLanSendTime, options, deferred);
 
             return deferred.promise();
         };
@@ -832,7 +820,7 @@
             return (str1 || '').toLowerCase() == (str2 || '').toLowerCase();
         }
 
-        function testNextConnectionMode(tests, index, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred) {
+        function testNextConnectionMode(tests, index, server, wakeOnLanSendTime, options, deferred) {
 
             if (index >= tests.length) {
 
@@ -842,16 +830,13 @@
             }
 
             var mode = tests[index];
-            var address = self.getServerAddress(server, mode);
+            var address = MediaBrowser.ServerInfo.getServerAddress(server, mode);
             var enableRetry = false;
             var skipTest = false;
             var timeout = defaultTimeout;
 
             if (mode == MediaBrowser.ConnectionMode.Local) {
 
-                if (!isLocalNetworkAvailable) {
-                    skipTest = true;
-                }
                 enableRetry = true;
                 timeout = 5000;
             }
@@ -865,7 +850,7 @@
             }
 
             if (skipTest || !address) {
-                testNextConnectionMode(tests, index + 1, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred);
+                testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, deferred);
                 return;
             }
 
@@ -886,10 +871,10 @@
 
                     // TODO: Implement delay and retry
 
-                    testNextConnectionMode(tests, index + 1, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred);
+                    testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, deferred);
 
                 } else {
-                    testNextConnectionMode(tests, index + 1, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred);
+                    testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, deferred);
 
                 }
             });
@@ -949,7 +934,7 @@
                 MediaBrowser.ConnectionState.ServerSignIn;
 
             result.Servers.push(server);
-            result.ApiClient.enableAutomaticNetworking(server, connectionMode, self.getServerAddress(server, connectionMode));
+            result.ApiClient.enableAutomaticNetworking(server, connectionMode, MediaBrowser.ServerInfo.getServerAddress(server, connectionMode));
 
             if (result.State == MediaBrowser.ConnectionState.SignedIn) {
                 afterConnected(result.ApiClient, options);
@@ -959,20 +944,6 @@
 
             Events.trigger(self, 'connected', [result]);
         }
-
-        self.getServerAddress = function (server, mode) {
-
-            switch (mode) {
-                case MediaBrowser.ConnectionMode.Local:
-                    return server.LocalAddress;
-                case MediaBrowser.ConnectionMode.Manual:
-                    return server.ManualAddress;
-                case MediaBrowser.ConnectionMode.Remote:
-                    return server.RemoteAddress;
-                default:
-                    return server.ManualAddress || server.LocalAddress || server.RemoteAddress;
-            }
-        };
 
         function normalizeAddress(address) {
 

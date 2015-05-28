@@ -92,10 +92,9 @@
 
         // Disable default form submission
         return false;
-
     }
 
-    $(document).on('pageinit', "#languagePreferencesPage", function () {
+    $(document).on('pageinitdepends', "#languagePreferencesPage", function () {
 
         var page = this;
 
@@ -105,15 +104,14 @@
             $('.subtitles' + this.value + 'Help', page).show();
         });
 
-    }).on('pageshow', "#languagePreferencesPage", function () {
+        $('.languagePreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
+
+
+    }).on('pageshowready', "#languagePreferencesPage", function () {
 
         var page = this;
 
         loadPage(page);
     });
-
-    window.LanguagePreferencesPage = {
-        onSubmit: onSubmit
-    };
 
 })(jQuery, window, document);

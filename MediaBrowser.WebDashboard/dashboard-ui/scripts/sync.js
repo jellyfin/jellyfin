@@ -346,10 +346,6 @@
 
     function isAvailable(item, user) {
 
-        if (Dashboard.isRunningInCordova()) {
-            return false;
-        }
-
         return item.SupportsSync;
     }
 

@@ -98,7 +98,7 @@
     }
 
     function setDefault(page) {
-        
+
         var backdropContainer = $('.backdropContainer');
 
         if (backdropContainer.length) {
@@ -126,6 +126,10 @@
         if ($.browser.msie) {
 
             return false;
+        }
+
+        if ($.browser.android && Dashboard.isRunningInCordova()) {
+            return true;
         }
 
         if ($.browser.mobile) {
@@ -179,7 +183,7 @@
             $(page).removeClass('backdropPage');
         }
     }
-    
+
     function setBackdropUrl(page, url) {
 
         if (url) {

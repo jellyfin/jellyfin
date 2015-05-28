@@ -257,10 +257,9 @@
 
         // Disable default form submission
         return false;
-
     }
 
-    $(document).on('pageinit', "#displayPreferencesPage", function () {
+    $(document).on('pageinitdepends', "#displayPreferencesPage", function () {
 
         var page = this;
 
@@ -295,7 +294,9 @@
             ul.listview('destroy').listview({});
         });
 
-    }).on('pageshow', "#displayPreferencesPage", function () {
+        $('.displayPreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#displayPreferencesPage", function () {
 
         var page = this;
 
@@ -308,21 +309,6 @@
             loadForm(page, user);
 
         });
-
-    }).on('pageshow', ".userPreferencesPage", function () {
-
-        var page = this;
-
-        var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
-
-        $('.lnkDisplayPreferences', page).attr('href', 'mypreferencesdisplay.html?userId=' + userId);
-        $('.lnkLanguagePreferences', page).attr('href', 'mypreferenceslanguages.html?userId=' + userId);
-        $('.lnkWebClientPreferences', page).attr('href', 'mypreferenceswebclient.html?userId=' + userId);
-        $('.lnkMyProfile', page).attr('href', 'myprofile.html?userId=' + userId);
     });
-
-    window.DisplayPreferencesPage = {
-        onSubmit: onSubmit
-    };
 
 })(jQuery, window, document);

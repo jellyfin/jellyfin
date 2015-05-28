@@ -631,7 +631,7 @@
             takeTour(page, Dashboard.getCurrentUserId());
         });
 
-    }).on('pagebeforeshowready', "#indexPage", function () {
+    }).on('pageshowready', "#indexPage", function () {
 
         var page = this;
 

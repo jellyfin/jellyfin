@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="userImagePage" data-role="page" class="page libraryPage userPreferencesPage userPasswordPage" data-contextname="${HeaderPreferences}">
+    <div id="userImagePage" data-role="page" class="page libraryPage userPreferencesPage userPasswordPage" data-contextname="${HeaderPreferences}" data-require="scripts/myprofile,scripts/mypreferencescommon">
 
         <div class="libraryViewNav">
             <a href="#" class="lnkDisplayPreferences">${TabDisplay}</a>
@@ -124,11 +124,6 @@
                 </div>
             </form>
         </div>
-        <script type="text/javascript">
-            $('.newImageForm').off('submit', MyProfilePage.onImageSubmit).on('submit', MyProfilePage.onImageSubmit);
-            $('.updatePasswordForm').off('submit', UpdatePasswordPage.onSubmit).on('submit', UpdatePasswordPage.onSubmit);
-            $('.localAccessForm').off('submit', UpdatePasswordPage.onLocalAccessSubmit).on('submit', UpdatePasswordPage.onLocalAccessSubmit);
-        </script>
     </div>
 </body>
 </html>

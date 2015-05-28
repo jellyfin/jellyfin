@@ -15,12 +15,10 @@
 
     function getThreshold() {
 
-        if (window.AppInfo && AppInfo.hasLowImageBandwidth) {
-            return 0;
-        }
-
-        // Test search before setting to 0
-        return 100;
+        // If less than 100, the search window ends up not getting images
+        // If less than 200, this happens on the home page
+        // Need to fix those before this can be set to 0
+        return 200;
     }
 
     $.fn.unveil = function () {

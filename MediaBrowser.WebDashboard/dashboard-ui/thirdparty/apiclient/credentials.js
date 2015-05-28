@@ -94,4 +94,21 @@
         };
     };
 
+    globalScope.MediaBrowser.ServerInfo = {
+
+        getServerAddress: function (server, mode) {
+
+            switch (mode) {
+                case MediaBrowser.ConnectionMode.Local:
+                    return server.LocalAddress;
+                case MediaBrowser.ConnectionMode.Manual:
+                    return server.ManualAddress;
+                case MediaBrowser.ConnectionMode.Remote:
+                    return server.RemoteAddress;
+                default:
+                    return server.ManualAddress || server.LocalAddress || server.RemoteAddress;
+            }
+        }
+    };
+
 })(window, window.JSON);

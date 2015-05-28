@@ -5,7 +5,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="languagePreferencesPage" data-role="page" class="page libraryPage userPreferencesPage" data-contextname="${HeaderPreferences}">
+    <div id="languagePreferencesPage" data-role="page" class="page libraryPage userPreferencesPage" data-contextname="${HeaderPreferences}" data-require="scripts/mypreferenceslanguages,scripts/mypreferencescommon">
         <div class="libraryViewNav">
             <a href="#" class="lnkDisplayPreferences">${TabDisplay}</a>
             <a href="#" class="ui-btn-active lnkLanguagePreferences">${TabPlayback}</a>
@@ -82,9 +82,6 @@
                     </li>
                 </ul>
             </form>
-            <script type="text/javascript">
-                $('.languagePreferencesForm').off('submit', LanguagePreferencesPage.onSubmit).on('submit', LanguagePreferencesPage.onSubmit);
-            </script>
         </div>
     </div>
 </body>
