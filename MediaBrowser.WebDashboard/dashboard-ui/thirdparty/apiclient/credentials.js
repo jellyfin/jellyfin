@@ -8,12 +8,14 @@
 
         var self = this;
         var credentials;
-        var key = 'servercredentials4';
+        var key = 'servercredentials3';
 
         function ensure() {
 
             credentials = credentials || JSON.parse(appStorage.getItem(key) || '{}');
-            credentials.Servers = credentials.Servers || [];
+            credentials.Servers = credentials.Servers || credentials.servers || [];
+
+            credentials.servers = null;
         }
 
         function get() {
