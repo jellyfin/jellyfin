@@ -537,6 +537,8 @@
 
         function tryJoinWebSession(device, enableRetry) {
 
+            // First try to join existing session. If it fails, launch a new one
+
             console.log('calling joinWebApp');
             device.getWebAppLauncher().joinWebApp(ApplicationID).success(function (session) {
 
@@ -560,29 +562,7 @@
 
         function launchWebApp(device) {
 
-            // First try to join existing session. If it fails, launch a new one
-
-            device.getWebAppLauncher().joinWebApp(ApplicationID).success(function (session) {
-
-                console.log('joinWebApp success. calling onSessionConnected');
-                setupWebAppSession(device, session);
-
-            }).error(function (err) {
-
-                console.log('joinWebApp error: ' + JSON.stringify(err) + '. calling launchWebApp');
-
-                device.getWebAppLauncher().launchWebApp(ApplicationID).success(function (session) {
-
-                    console.log('launchWebApp success. calling onSessionConnected');
-                    setupWebAppSession(device, session);
-
-                }).error(function (err1) {
-
-                    console.log('launchWebApp error:' + JSON.stringify(err1));
-
-                });
-
-            });
+            tryJoinWebSession(device, true);
         }
 
         function onDeviceReady(device) {

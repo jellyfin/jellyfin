@@ -220,14 +220,14 @@ namespace MediaBrowser.Controller.Session
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="userId">The user identifier.</param>
-        void AddAdditionalUser(string sessionId, Guid userId);
+        void AddAdditionalUser(string sessionId, string userId);
 
         /// <summary>
         /// Removes the additional user.
         /// </summary>
         /// <param name="sessionId">The session identifier.</param>
         /// <param name="userId">The user identifier.</param>
-        void RemoveAdditionalUser(string sessionId, Guid userId);
+        void RemoveAdditionalUser(string sessionId, string userId);
 
         /// <summary>
         /// Reports the now viewing item.

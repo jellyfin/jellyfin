@@ -198,15 +198,15 @@ namespace MediaBrowser.Api
             return libraryManager.GetPerson(DeSlugPersonName(name, libraryManager));
         }
 
-        protected IList<BaseItem> GetAllLibraryItems(Guid? userId, IUserManager userManager, ILibraryManager libraryManager, string parentId, Func<BaseItem,bool> filter)
+        protected IList<BaseItem> GetAllLibraryItems(string userId, IUserManager userManager, ILibraryManager libraryManager, string parentId, Func<BaseItem,bool> filter)
         {
             if (!string.IsNullOrEmpty(parentId))
             {
                 var folder = (Folder)libraryManager.GetItemById(new Guid(parentId));
 
-                if (userId.HasValue)
+                if (!string.IsNullOrWhiteSpace(userId))
                 {
-                    var user = userManager.GetUserById(userId.Value);
+                    var user = userManager.GetUserById(userId);
 
                     if (user == null)
                     {
@@ -221,9 +221,9 @@ namespace MediaBrowser.Api
                 return folder
                     .GetRecursiveChildren(filter);
             }
-            if (userId.HasValue)
+            if (!string.IsNullOrWhiteSpace(userId))
             {
-                var user = userManager.GetUserById(userId.Value);
+                var user = userManager.GetUserById(userId);
 
                 if (user == null)
                 {
@@ -231,7 +231,7 @@ namespace MediaBrowser.Api
                 }
 
                 return userManager
-                    .GetUserById(userId.Value)
+                    .GetUserById(userId)
                     .RootFolder
                     .GetRecursiveChildren(user, filter)
                     .ToList();

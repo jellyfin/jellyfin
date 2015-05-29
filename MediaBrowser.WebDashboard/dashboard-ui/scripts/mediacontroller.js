@@ -561,6 +561,11 @@
                 return true;
             }
 
+            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == 'File') {
+
+                return FileSystem.fileExists(mediaSource.Path);
+            }
+
             return false;
         };
     }

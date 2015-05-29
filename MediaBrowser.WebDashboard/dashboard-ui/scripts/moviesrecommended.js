@@ -2,12 +2,12 @@
 
     function getView() {
 
-        return 'PosterCard';
+        return 'Poster';
     }
 
     function getResumeView() {
 
-        return 'ThumbCard';
+        return 'Thumb';
     }
 
     function enableScrollX() {
@@ -62,7 +62,8 @@
                     shape: getPortraitShape(),
                     centerText: true,
                     lazy: true,
-                    overlayText: true
+                    overlayText: true,
+                    showDetailsMenu: true
                 });
             }
 

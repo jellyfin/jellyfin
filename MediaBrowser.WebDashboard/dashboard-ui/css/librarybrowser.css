@@ -704,7 +704,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .lblDetailTab {
-    border-color: #1f1f1f !important;
+    border-color: #212121 !important;
 }
 
 .editMetadataForm {

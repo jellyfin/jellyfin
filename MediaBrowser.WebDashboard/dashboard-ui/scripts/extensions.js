@@ -126,8 +126,17 @@ var WebNotifications = {
 
         if (window.cordova && window.cordova.plugins && window.cordova.plugins.notification) {
 
+            if (!WebNotifications.lastId) {
+                // Cordova plugin will crash on android with long. need an int
+                WebNotifications.lastId = new Date().getDate() + new Date().getMilliseconds();
+            }
+
+            WebNotifications.lastId++;
+
             window.cordova.plugins.notification.local.schedule({
-                id: new Date().getTime(),
+
+                id: WebNotifications.lastId,
+
                 title: data.title,
                 text: data.body,
                 //firstAt: monday_9_am,

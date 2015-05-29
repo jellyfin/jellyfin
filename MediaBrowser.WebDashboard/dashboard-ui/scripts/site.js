@@ -630,71 +630,6 @@ var Dashboard = {
         }, 500);
     },
 
-    showUserFlyout: function (context) {
-
-        var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
-
-        html += '<h3 class="userHeader">';
-
-        html += '</h3>';
-
-        html += '<form>';
-
-        if (AppInfo.supportsFullScreen) {
-            var checkedHtml = AppSettings.enableFullScreen() ? ' checked="checked"' : '';
-            html += '<p style="margin:1.5em 0;"><label for="chkFullScreen">' + Globalize.translate('OptionEnableFullscreen') + '</label><input type="checkbox"' + checkedHtml + ' id="chkFullScreen" data-mini="true" onchange="AppSettings.enableFullScreen(this.checked);" /></p>';
-        }
-
-        html += '<p class="preferencesContainer"></p>';
-
-        if (Dashboard.isConnectMode()) {
-            html += '<p><a data-mini="true" data-role="button" href="selectserver.html" data-icon="cloud">' + Globalize.translate('ButtonSelectServer') + '</button></a>';
-        }
-
-        html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
-
-        html += '</form>';
-        html += '</div>';
-
-        $(document.body).append(html);
-
-        var elem = $('#userFlyout').panel({}).lazyChildren().trigger('create').panel("open").on("panelclose", function () {
-
-            $(this).off("panelclose").remove();
-        });
-
-        ConnectionManager.user(window.ApiClient).done(function (user) {
-            Dashboard.updateUserFlyout(elem, user);
-        });
-    },
-
-    updateUserFlyout: function (elem, user) {
-
-        var html = '';
-        var imgWidth = 48;
-
-        if (user.imageUrl && AppInfo.enableUserImage) {
-            var url = user.imageUrl;
-
-            if (user.supportsImageParams) {
-                url += "&width=" + (imgWidth * Math.max(window.devicePixelRatio || 1, 2));
-            }
-
-            html += '<div class="lazy" data-src="' + url + '" style="width:' + imgWidth + 'px;height:' + imgWidth + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin-right:.8em;display:inline-block;"></div>';
-        }
-        html += user.name;
-
-        $('.userHeader', elem).html(html).lazyChildren();
-
-        html = '';
-
-        if (user.localUser && user.localUser.Policy.EnableUserPreferenceAccess) {
-            html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.localUser.Id + '" data-icon="gear">' + Globalize.translate('ButtonMyPreferences') + '</button></a>';
-        }
-
-        $('.preferencesContainer', elem).html(html).trigger('create');
-    },
-
     getPluginSecurityInfo: function () {
 
         var apiClient = ApiClient;
@@ -1546,7 +1481,6 @@ var AppInfo = {};
 
         AppInfo.enableDetailPageChapters = true;
         AppInfo.enableDetailsMenuImages = true;
-        AppInfo.enableHeaderImages = true;
         AppInfo.enableMovieHomeSuggestions = true;
 
         AppInfo.enableAppStorePolicy = isCordova;
@@ -1568,7 +1502,6 @@ var AppInfo = {};
             } else {
                 AppInfo.enableDetailPageChapters = false;
                 AppInfo.enableDetailsMenuImages = false;
-                AppInfo.enableHeaderImages = false;
                 AppInfo.enableMovieHomeSuggestions = false;
                 AppInfo.cardMargin = 'largeCardMargin';
             }
@@ -1849,7 +1782,9 @@ var AppInfo = {};
             requirejs(['thirdparty/cordova/connectsdk', 'scripts/registrationservices']);
 
             if ($.browser.android) {
-                requirejs(['thirdparty/cordova/android/androidcredentials', 'thirdparty/cordova/android/immersive']);
+                requirejs(['thirdparty/cordova/android/androidcredentials', 'thirdparty/cordova/android/immersive', 'thirdparty/cordova/android/filesystem']);
+            } else {
+                requirejs(['thirdparty/cordova/filesystem']);
             }
 
             if ($.browser.safari) {
@@ -1860,6 +1795,7 @@ var AppInfo = {};
             if ($.browser.chrome) {
                 requirejs(['scripts/chromecast']);
             }
+            requirejs(['thirdparty/filesystem']);
         }
     }
 
@@ -1908,7 +1844,11 @@ var AppInfo = {};
 
     function initCordovaWithDeviceProfile(deferred, deviceId, deviceProfile) {
 
-        requirejs(['thirdparty/cordova/imagestore.js']);
+        if ($.browser.android) {
+            requirejs(['thirdparty/cordova/android/imagestore.js']);
+        } else {
+            requirejs(['thirdparty/cordova/imagestore.js']);
+        }
 
         var capablities = Dashboard.capabilities();
 

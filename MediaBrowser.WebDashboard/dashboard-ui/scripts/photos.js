@@ -168,12 +168,17 @@
 
     function showSlideshow(page, items, startItemId) {
 
+        var screenWidth = $(window).width();
+        var screenHeight = $(window).height();
+
         var slideshowItems = items.map(function (item) {
 
             var imgUrl = ApiClient.getScaledImageUrl(item.Id, {
 
                 tag: item.ImageTags.Primary,
-                type: 'Primary'
+                type: 'Primary',
+                maxWidth: screenWidth,
+                maxHeight: screenHeight
 
             });
 

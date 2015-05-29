@@ -175,7 +175,7 @@ namespace MediaBrowser.Api.Reports
 		{
 			// Placeholder in case needed later
 			request.Recursive = true;
-			var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+			var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 			request.Fields = "MediaSources,DateCreated,Settings,Studios,SyncInfo,ItemCounts";
 
 			var parentItem = string.IsNullOrEmpty(request.ParentId) ?

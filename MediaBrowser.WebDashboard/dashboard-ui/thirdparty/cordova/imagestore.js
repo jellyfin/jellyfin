@@ -35,23 +35,19 @@
 
         var self = this;
 
-        self.addImageToDatabase = function (blob, key) {
-
-            var deferred = DeferredBuilder.Deferred();
+        self.addImageToDatabase = function (blob, key, deferred) {
 
             console.log("addImageToDatabase");
 
             self.db().transaction(function (tx) {
 
-                tx.executeSql("INSERT INTO images (id, data) VALUES (?,?)", [key, blob], function (tx, res) {
+                tx.executeSql("REPLACE INTO images (id, data) VALUES (?,?)", [key, blob], function (tx, res) {
 
                     deferred.resolve();
                 }, function (e) {
                     deferred.reject();
                 });
             });
-
-            return deferred.promise();
         };
 
         self.db = function () {
@@ -146,11 +142,7 @@
                         var dataURL = "data:image/jpeg;base64," + b64;
 
                         // Put the received blob into the database
-                        self.addImageToDatabase(dataURL, key).done(function () {
-                            deferred.resolve();
-                        }).fail(function () {
-                            deferred.reject();
-                        });
+                        self.addImageToDatabase(dataURL, key, deferred);
                     } catch (err) {
                         console.log("Error adding image to database");
                         deferred.reject();

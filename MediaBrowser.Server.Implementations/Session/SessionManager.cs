@@ -1203,22 +1203,22 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="userId">The user identifier.</param>
         /// <exception cref="System.UnauthorizedAccessException">Cannot modify additional users without authenticating first.</exception>
         /// <exception cref="System.ArgumentException">The requested user is already the primary user of the session.</exception>
-        public void AddAdditionalUser(string sessionId, Guid userId)
+        public void AddAdditionalUser(string sessionId, string userId)
         {
             var session = GetSession(sessionId);
 
-            if (session.UserId.HasValue && session.UserId.Value == userId)
+            if (session.UserId.HasValue && session.UserId.Value == new Guid(userId))
             {
                 throw new ArgumentException("The requested user is already the primary user of the session.");
             }
 
-            if (session.AdditionalUsers.All(i => new Guid(i.UserId) != userId))
+            if (session.AdditionalUsers.All(i => new Guid(i.UserId) != new Guid(userId)))
             {
                 var user = _userManager.GetUserById(userId);
 
                 session.AdditionalUsers.Add(new SessionUserInfo
                 {
-                    UserId = userId.ToString("N"),
+                    UserId = userId,
                     UserName = user.Name
                 });
             }
@@ -1231,16 +1231,16 @@ namespace MediaBrowser.Server.Implementations.Session
         /// <param name="userId">The user identifier.</param>
         /// <exception cref="System.UnauthorizedAccessException">Cannot modify additional users without authenticating first.</exception>
         /// <exception cref="System.ArgumentException">The requested user is already the primary user of the session.</exception>
-        public void RemoveAdditionalUser(string sessionId, Guid userId)
+        public void RemoveAdditionalUser(string sessionId, string userId)
         {
             var session = GetSession(sessionId);
 
-            if (session.UserId.HasValue && session.UserId.Value == userId)
+            if (session.UserId.HasValue && session.UserId.Value == new Guid(userId))
             {
                 throw new ArgumentException("The requested user is already the primary user of the session.");
             }
 
-            var user = session.AdditionalUsers.FirstOrDefault(i => new Guid(i.UserId) == userId);
+            var user = session.AdditionalUsers.FirstOrDefault(i => new Guid(i.UserId) == new Guid(userId));
 
             if (user != null)
             {

@@ -44,7 +44,7 @@
 }
 
 .cardBox {
-    margin: 1px;
+    margin: 3px;
 }
 
 .largeCardMargin .cardBox {
@@ -55,12 +55,12 @@
     margin: 4px;
 }
 
-/*@media all and (max-width: 600px) {
+@media all and (max-width: 600px) {
 
     .cardBox {
-        margin: 0;
+        margin: 1px;
     }
-}*/
+}
 
 .grayscale {
     -webkit-filter: grayscale(100%);

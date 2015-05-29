@@ -723,7 +723,7 @@
     "MessageInvitationSentToNewUser": "An email has been sent to {0} inviting them to sign up with Emby.",
     "HeaderConnectionFailure": "Connection Failure",
     "MessageUnableToConnectToServer": "We're unable to connect to the selected server right now. Please ensure it is running and try again.",
-    "ButtonSelectServer": "Select server",
+    "ButtonSelectServer": "Select Server",
     "MessagePluginConfigurationRequiresLocalAccess": "To configure this plugin please sign in to your local server directly.",
     "MessageLoggedOutParentalControl": "Access is currently restricted. Please try again later.",
     "DefaultErrorMessage": "There was an error processing the request. Please try again later.",
@@ -787,5 +787,8 @@
     "MessagePleaseSignInLocalNetwork": "Before proceeding, please ensure that you're connected to your local network using a Wifi or LAN connection.",
     "ButtonUnlockWithPurchase": "Unlock with Purchase",
     "MessageLiveTvGuideRequiresUnlock": "The Live TV Guide is currently limited to {0} channels. Click the unlock button to learn how to enjoy the full experience.",
-    "OptionEnableFullscreen": "Enable Fullscreen"
+    "OptionEnableFullscreen": "Enable Fullscreen",
+    "ButtonServer": "Server",
+    "HeaderAdmin": "Admin",
+    "HeaderLibrary": "Library"
 }

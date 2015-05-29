@@ -2,8 +2,6 @@
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Collections;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -22,7 +20,7 @@ namespace MediaBrowser.Api.Movies
         public string Name { get; set; }
 
         [ApiMember(Name = "ParentId", Description = "Optional - create the collection within a specific folder", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public Guid? ParentId { get; set; }
+        public string ParentId { get; set; }
 
         [ApiMember(Name = "Ids", Description = "Item Ids to add to the collection", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST", AllowMultiple = true)]
         public string Ids { get; set; }
@@ -35,7 +33,7 @@ namespace MediaBrowser.Api.Movies
         public string Ids { get; set; }
 
         [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     [Route("/Collections/{Id}/Items", "DELETE", Summary = "Removes items from a collection")]
@@ -45,7 +43,7 @@ namespace MediaBrowser.Api.Movies
         public string Ids { get; set; }
 
         [ApiMember(Name = "Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     [Authenticated]
@@ -64,11 +62,13 @@ namespace MediaBrowser.Api.Movies
         {
             var userId = AuthorizationContext.GetAuthorizationInfo(Request).UserId;
 
+            var parentId = string.IsNullOrWhiteSpace(request.ParentId) ? (Guid?)null : new Guid(request.ParentId);
+
             var item = await _collectionManager.CreateCollection(new CollectionCreationOptions
             {
                 IsLocked = request.IsLocked,
                 Name = request.Name,
-                ParentId = request.ParentId,
+                ParentId = parentId,
                 ItemIdList = (request.Ids ?? string.Empty).Split(',').Where(i => !string.IsNullOrWhiteSpace(i)).Select(i => new Guid(i)).ToList(),
                 UserIds = new List<Guid> { new Guid(userId) }
 
@@ -86,14 +86,14 @@ namespace MediaBrowser.Api.Movies
 
         public void Post(AddToCollection request)
         {
-            var task = _collectionManager.AddToCollection(request.Id, request.Ids.Split(',').Select(i => new Guid(i)));
+            var task = _collectionManager.AddToCollection(new Guid(request.Id), request.Ids.Split(',').Select(i => new Guid(i)));
 
             Task.WaitAll(task);
         }
 
         public void Delete(RemoveFromCollection request)
         {
-            var task = _collectionManager.RemoveFromCollection(request.Id, request.Ids.Split(',').Select(i => new Guid(i)));
+            var task = _collectionManager.RemoveFromCollection(new Guid(request.Id), request.Ids.Split(',').Select(i => new Guid(i)));
 
             Task.WaitAll(task);
         }

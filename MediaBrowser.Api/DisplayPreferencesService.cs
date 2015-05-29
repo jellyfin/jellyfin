@@ -23,7 +23,7 @@ namespace MediaBrowser.Api
         public string DisplayPreferencesId { get; set; }
 
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "POST")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
     }
 
     [Route("/DisplayPreferences/{Id}", "GET", Summary = "Gets a user's display preferences for an item")]
@@ -37,7 +37,7 @@ namespace MediaBrowser.Api
         public string Id { get; set; }
 
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         [ApiMember(Name = "Client", Description = "Client", IsRequired = true, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Client { get; set; }
