@@ -34,7 +34,7 @@ namespace MediaBrowser.Api.Movies
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
     }
 
     /// <summary>
@@ -103,7 +103,7 @@ namespace MediaBrowser.Api.Movies
 
         public async Task<object> Get(Getrailers request)
         {
-            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
             var result = await GetAllTrailers(user).ConfigureAwait(false);
 
             IEnumerable<BaseItem> items = result.Items;

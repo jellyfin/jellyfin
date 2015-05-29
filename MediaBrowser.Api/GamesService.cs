@@ -32,7 +32,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
     }
 
     /// <summary>
@@ -106,7 +106,7 @@ namespace MediaBrowser.Api
                 .Cast<GameSystem>()
                 .ToList();
 
-            var user = request.UserId == null ? null : _userManager.GetUserById(request.UserId.Value);
+            var user = request.UserId == null ? null : _userManager.GetUserById(request.UserId);
 
             var result = gameSystems
                 .Select(i => GetSummary(i, user))

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common.Events;
+﻿using MediaBrowser.Common.Events;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -10,6 +9,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -262,5 +262,9 @@ namespace MediaBrowser.Server.Implementations.Library
             return playedToCompletion;
         }
 
+        public UserItemData GetUserData(string userId, string key)
+        {
+            return GetUserData(new Guid(userId), key);
+        }
     }
 }
