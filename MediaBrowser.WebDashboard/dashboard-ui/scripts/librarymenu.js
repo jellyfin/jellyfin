@@ -311,6 +311,8 @@
             html += user.name;
             html += '</a>';
 
+            //html += '<a href="#" class="btnNotifications"><div class="btnNotificationsInner">0</div></a>';
+
             html += '<div class="libraryMenuDivider" style="margin-top:0;"></div>';
 
             var homeHref = window.ApiClient ? 'index.html' : 'selectserver.html';

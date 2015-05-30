@@ -1,9 +1,17 @@
 ﻿.btnNotifications {
     text-decoration: none !important;
+    position: absolute;
+    top: 25px !important;
+    right: 10px !important;
+    padding: 0 !important;
+    outline: 0 !important;
 }
 
+    .btnNotifications:hover {
+        background: none !important;
+    }
+
 .btnNotificationsInner {
-    text-decoration: none !important;
     vertical-align: middle;
     border-radius: 1000px;
     padding: 6px 10px 5px;
