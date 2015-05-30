@@ -83,7 +83,7 @@
 
         if (server.showOptions !== false) {
             html += '<div class="cardText" style="text-align:right; float:right;">';
-            html += '<button class="listviewMenuButton imageButton btnCardOptions btnServerMenu" type="button" data-role="none" style="margin: 4px 0 0;"><i class="fa fa-ellipsis-v"></i></button>';
+            html += '<button class="listviewMenuButton imageButton btnCardOptions btnServerMenu" type="button" data-role="none" style="margin: 4px 0 0;"><i class="material-icons">more_vert</i></button>';
             html += "</div>";
         }
 
@@ -306,7 +306,7 @@
         html += '<div class="cardFooter outerCardFooter">';
 
         html += '<div class="cardText" style="text-align:right; float:right;">';
-        html += '<button class="listviewMenuButton imageButton btnCardOptions btnInviteMenu" type="button" data-role="none" style="margin: 4px 0 0;"><i class="fa fa-ellipsis-v"></i></button>';
+        html += '<button class="listviewMenuButton imageButton btnCardOptions btnInviteMenu" type="button" data-role="none" style="margin: 4px 0 0;"><i class="material-icons">more_vert</i></button>';
         html += "</div>";
 
         html += '<div class="cardText">';

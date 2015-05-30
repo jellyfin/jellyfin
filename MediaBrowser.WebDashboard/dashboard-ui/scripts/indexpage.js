@@ -147,7 +147,7 @@
 
             var html = '';
 
-            var cardLayout = AppInfo.hasLowImageBandwidth;
+            var cardLayout = false;
 
             if (items.length) {
                 html += '<div>';

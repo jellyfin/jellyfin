@@ -370,6 +370,7 @@ namespace MediaBrowser.WebDashboard.Api
                             {
                                 "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.css",
                                 "thirdparty/fontawesome/css/font-awesome.min.css" + versionString,
+                                "thirdparty/materialicons/style.css" + versionString,
                                 "css/all.css" + versionString
                             };
 

@@ -31,7 +31,7 @@
     display: inline-block;
 }
 
-.viewMenuBar .fa {
+.viewMenuBar .material-icons, .viewMenuBar .fa {
     color: #e8e8e8;
     font-size: 24px;
     vertical-align: middle;

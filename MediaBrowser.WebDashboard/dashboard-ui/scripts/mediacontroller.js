@@ -823,7 +823,7 @@
 
     $(document).on('headercreated', function () {
 
-        $('.btnCast').on('click', function () {
+        $('.btnCast').off('.mediacontroller').on('click.mediacontroller', function () {
 
             showPlayerSelection($.mobile.activePage);
         });

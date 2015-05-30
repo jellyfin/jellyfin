@@ -226,9 +226,9 @@
     $(document).on('headercreated', function (e) {
 
         if (window.ApiClient) {
-            $('<button class="headerButton headerButtonRight btnNotifications" data-role="none" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></button>').insertAfter($('.headerSearchButton')).on('click', Notifications.showNotificationsFlyout);
+            //$('<button class="headerButton headerButtonRight btnNotifications" data-role="none" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></button>').insertAfter($('.headerSearchButton')).on('click', Notifications.showNotificationsFlyout);
 
-            Notifications.updateNotificationCount();
+            //Notifications.updateNotificationCount();
         }
     });
 

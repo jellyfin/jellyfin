@@ -856,7 +856,7 @@
                 html += '</a>';
 
                 html += '<button type="button" data-role="none" class="listviewMenuButton imageButton listViewMoreButton" data-icon="none">';
-                html += '<i class="fa fa-ellipsis-v"></i>';
+                html += '<i class="material-icons">more_vert</i>';
                 html += '</button>';
 
                 html += '</li>';
@@ -1536,7 +1536,7 @@
 
             if (options.cardLayout) {
                 html += '<div class="cardText" style="text-align:right; float:right;">';
-                html += '<button class="listviewMenuButton imageButton btnCardOptions" type="button" data-role="none" style="margin: 4px 0 0;"><i class="fa fa-ellipsis-v"></i></button>';
+                html += '<button class="listviewMenuButton imageButton btnCardOptions" type="button" data-role="none" style="margin: 4px 0 0;"><i class="material-icons">more_vert</i></button>';
                 html += "</div>";
             }
 
@@ -2223,7 +2223,7 @@
 
             btnCssClass += " imageButton";
 
-            return '<button data-itemid="' + itemId + '" class="' + btnCssClass + '" type="button" onclick="LibraryBrowser.' + method + '(this);return false;" title="' + tooltip + '"><div class="fa ' + icon + '"></div></button>';
+            return '<button data-itemid="' + itemId + '" class="' + btnCssClass + '" type="button" onclick="LibraryBrowser.' + method + '(this);return false;" title="' + tooltip + '"><i class="fa ' + icon + '"></i></button>';
 
         },
 

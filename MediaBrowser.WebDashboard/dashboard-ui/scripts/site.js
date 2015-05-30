@@ -1485,11 +1485,11 @@ var AppInfo = {};
 
         AppInfo.enableAppStorePolicy = isCordova;
 
-        var isSafari = $.browser.safari;
+        var isIOS = $.browser.safari || $.browser.ipad || $.browser.iphone;
         var isAndroid = $.browser.android;
         var isMobile = $.browser.mobile;
 
-        if (isSafari) {
+        if (isIOS) {
 
             if (isMobile) {
                 AppInfo.hasLowImageBandwidth = true;
@@ -1533,7 +1533,7 @@ var AppInfo = {};
             AppInfo.enableFooterNotifications = true;
             AppInfo.enableSupporterMembership = true;
 
-            if (!isAndroid && !isSafari) {
+            if (!isAndroid && !isIOS) {
                 AppInfo.enableAppLayouts = true;
             }
         }
@@ -1541,7 +1541,7 @@ var AppInfo = {};
         AppInfo.enableUserImage = true;
         AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
 
-        AppInfo.enableBackButton = (isSafari && window.navigator.standalone) || (isCordova && isSafari);
+        AppInfo.enableBackButton = (isIOS && window.navigator.standalone) || (isCordova && isIOS);
         AppInfo.supportsFullScreen = isCordova && isAndroid;
     }
 
