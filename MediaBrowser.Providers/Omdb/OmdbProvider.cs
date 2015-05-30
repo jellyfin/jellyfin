@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Globalization;
@@ -50,6 +51,20 @@ namespace MediaBrowser.Providers.Omdb
             {
                 var result = _jsonSerializer.DeserializeFromStream<RootObject>(stream);
 
+                item.Name = result.Title;
+
+                int year;
+
+                if (!string.IsNullOrEmpty(result.Year)
+                    && int.TryParse(result.Year, NumberStyles.Number, _usCulture, out year)
+                    && year >= 0)
+                {
+                    item.ProductionYear = year;
+                }
+
+                item.OfficialRating = result.Rated;
+
+
                 var hasCriticRating = item as IHasCriticRating;
                 if (hasCriticRating != null)
                 {
@@ -94,6 +109,12 @@ namespace MediaBrowser.Providers.Omdb
                         && !string.Equals(result.Website, "n/a", StringComparison.OrdinalIgnoreCase))
                 {
                     item.HomePageUrl = result.Website;
+                }
+
+                if (!string.IsNullOrWhiteSpace(result.imdbID)
+                        && !string.Equals(result.imdbID, "n/a", StringComparison.OrdinalIgnoreCase))
+                {
+                    item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
                 }
 
                 ParseAdditionalMetadata(item, result);
@@ -153,7 +174,7 @@ namespace MediaBrowser.Providers.Omdb
             return string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase);
         }
 
-        public class RootObject
+        private class RootObject
         {
             public string Title { get; set; }
             public string Year { get; set; }

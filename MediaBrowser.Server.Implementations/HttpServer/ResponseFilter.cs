@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.HttpServer.SocketSharp;
-using ServiceStack;
 using ServiceStack.Web;
 using System;
 using System.Globalization;
@@ -29,6 +28,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             // Try to prevent compatibility view
             res.AddHeader("X-UA-Compatible", "IE=Edge");
+            res.AddHeader("X-Frame-Options", "DENY");
 
             var exception = dto as Exception;
 
@@ -52,7 +52,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (hasOptions != null)
             {
-                //hasOptions.Options["Server"] = "Mono-HTTPAPI/1.1";
+                hasOptions.Options["Server"] = "Mono-HTTPAPI/1.1";
 
                 // Content length has to be explicitly set on on HttpListenerResponse or it won't be happy
                 string contentLength;
