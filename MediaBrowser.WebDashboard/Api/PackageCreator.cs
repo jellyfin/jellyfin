@@ -602,7 +602,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "moviecollections.js",
 
                                 "notifications.js",
-                                "notificationlist.js",
                                 "notificationsetting.js",
                                 "notificationsettings.js",
                                 "playlists.js",

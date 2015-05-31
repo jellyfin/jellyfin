@@ -791,5 +791,6 @@
     "ButtonServer": "Server",
     "HeaderAdmin": "Admin",
     "HeaderLibrary": "Library",
-    "HeaderMedia": "Media"
+    "HeaderMedia": "Media",
+    "ButtonInbox": "Inbox"
 }
