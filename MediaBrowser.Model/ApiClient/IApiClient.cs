@@ -930,14 +930,6 @@ namespace MediaBrowser.Model.ApiClient
         string GetImageUrl(ChannelInfoDto item, ImageOptions options);
 
         /// <summary>
-        /// Gets the image URL.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="options">The options.</param>
-        /// <returns>System.String.</returns>
-        string GetImageUrl(ProgramInfoDto item, ImageOptions options);
-
-        /// <summary>
         /// Gets the subtitle URL.
         /// </summary>
         /// <param name="options">The options.</param>
@@ -1111,7 +1103,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{ProgramInfoDto}}.</returns>
-        Task<QueryResult<ProgramInfoDto>> GetLiveTvProgramsAsync(ProgramQuery query, CancellationToken cancellationToken = default(CancellationToken));
+        Task<QueryResult<BaseItemDto>> GetLiveTvProgramsAsync(ProgramQuery query, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Gets the live tv program asynchronous.
@@ -1120,7 +1112,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="userId">The user identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ProgramInfoDto}.</returns>
-        Task<ProgramInfoDto> GetLiveTvProgramAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken));
+        Task<BaseItemDto> GetLiveTvProgramAsync(string id, string userId, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Gets the recommended live tv programs asynchronous.
@@ -1128,7 +1120,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{ProgramInfoDto}}.</returns>
-        Task<QueryResult<ProgramInfoDto>> GetRecommendedLiveTvProgramsAsync(RecommendedProgramQuery query, CancellationToken cancellationToken = default(CancellationToken));
+        Task<QueryResult<BaseItemDto>> GetRecommendedLiveTvProgramsAsync(RecommendedProgramQuery query, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Creates the live tv timer asynchronous.

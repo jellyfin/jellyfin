@@ -357,6 +357,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 _livetvManager().AddInfoToRecordingDto(item, dto, user);
             }
 
+            else if (item is LiveTvProgram)
+            {
+                _livetvManager().AddInfoToProgramDto(item, dto, user);
+            }
+
             return dto;
         }
 

@@ -699,9 +699,6 @@
     <Compile Include="..\MediaBrowser.Model\LiveTv\ProgramAudio.cs">
       <Link>LiveTv\ProgramAudio.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\LiveTv\ProgramInfoDto.cs">
-      <Link>LiveTv\ProgramInfoDto.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\ProgramQuery.cs">
       <Link>LiveTv\ProgramQuery.cs</Link>
     </Compile>
