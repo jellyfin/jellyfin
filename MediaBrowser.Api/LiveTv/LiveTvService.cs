@@ -78,7 +78,7 @@ namespace MediaBrowser.Api.LiveTv
 
     [Route("/LiveTv/Recordings", "GET", Summary = "Gets live tv recordings")]
     [Authenticated]
-    public class GetRecordings : IReturn<QueryResult<RecordingInfoDto>>
+    public class GetRecordings : IReturn<QueryResult<BaseItemDto>>
     {
         [ApiMember(Name = "ChannelId", Description = "Optional filter by channel id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string ChannelId { get; set; }
@@ -107,7 +107,7 @@ namespace MediaBrowser.Api.LiveTv
 
     [Route("/LiveTv/Recordings/Groups", "GET", Summary = "Gets live tv recording groups")]
     [Authenticated]
-    public class GetRecordingGroups : IReturn<QueryResult<RecordingGroupDto>>
+    public class GetRecordingGroups : IReturn<QueryResult<BaseItemDto>>
     {
         [ApiMember(Name = "UserId", Description = "Optional filter by user and attach user data.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string UserId { get; set; }
@@ -115,7 +115,7 @@ namespace MediaBrowser.Api.LiveTv
 
     [Route("/LiveTv/Recordings/{Id}", "GET", Summary = "Gets a live tv recording")]
     [Authenticated]
-    public class GetRecording : IReturn<RecordingInfoDto>
+    public class GetRecording : IReturn<BaseItemDto>
     {
         [ApiMember(Name = "Id", Description = "Recording Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
@@ -310,7 +310,7 @@ namespace MediaBrowser.Api.LiveTv
 
     [Route("/LiveTv/Recordings/Groups/{Id}", "GET", Summary = "Gets a recording group")]
     [Authenticated]
-    public class GetRecordingGroup : IReturn<RecordingGroupDto>
+    public class GetRecordingGroup : IReturn<BaseItemDto>
     {
         [ApiMember(Name = "Id", Description = "Recording group Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }

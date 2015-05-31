@@ -262,7 +262,6 @@
     <Compile Include="LiveTv\ProgramInfoDto.cs" />
     <Compile Include="LiveTv\ProgramQuery.cs" />
     <Compile Include="LiveTv\RecommendedProgramQuery.cs" />
-    <Compile Include="LiveTv\RecordingGroupDto.cs" />
     <Compile Include="LiveTv\RecordingGroupQuery.cs" />
     <Compile Include="LiveTv\RecordingQuery.cs" />
     <Compile Include="LiveTv\RecordingStatus.cs" />
@@ -299,7 +298,6 @@
     <Compile Include="IO\IIsoMounter.cs" />
     <Compile Include="LiveTv\ChannelType.cs" />
     <Compile Include="LiveTv\LiveTvServiceInfo.cs" />
-    <Compile Include="LiveTv\RecordingInfoDto.cs" />
     <Compile Include="Net\WebSocketMessage.cs" />
     <Compile Include="Net\WebSocketMessageType.cs" />
     <Compile Include="Net\WebSocketState.cs" />

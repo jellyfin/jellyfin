@@ -192,7 +192,7 @@
             if (connectionMode == MediaBrowser.ConnectionMode.Local && currentServerInfo.RemoteAddress) {
                 newConnectionMode = MediaBrowser.ConnectionMode.Remote;
             }
-            else if (connectionMode == MediaBrowser.ConnectionMode.Remote && currentServerInfo.LocalAddress) {
+            else if (connectionMode != MediaBrowser.ConnectionMode.Local && currentServerInfo.LocalAddress) {
                 newConnectionMode = MediaBrowser.ConnectionMode.Local;
             }
             else {
@@ -204,6 +204,7 @@
 
         function tryReconnectInternal(deferred, connectionMode, currentRetryCount) {
 
+            connectionMode = switchConnectionMode(connectionMode);
             var url = MediaBrowser.ServerInfo.getServerAddress(self.serverInfo(), connectionMode);
 
             logger.log("Attempting reconnection to " + url);

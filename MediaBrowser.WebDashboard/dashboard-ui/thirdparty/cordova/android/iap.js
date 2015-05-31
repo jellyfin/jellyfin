@@ -35,7 +35,7 @@
     }
 
     function beginPurchase(id) {
-        return NativeIapManager.beginPurchase(id);
+        return MainActivity.beginPurchase(id);
     }
 
     window.IapManager = {

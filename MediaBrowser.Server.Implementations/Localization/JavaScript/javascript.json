@@ -790,5 +790,6 @@
     "OptionEnableFullscreen": "Enable Fullscreen",
     "ButtonServer": "Server",
     "HeaderAdmin": "Admin",
-    "HeaderLibrary": "Library"
+    "HeaderLibrary": "Library",
+    "HeaderMedia": "Media"
 }

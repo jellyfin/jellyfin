@@ -725,8 +725,9 @@
                 contentType = 'video/' + mediaSource.Container;
 
                 if (mediaSource.enableDirectPlay) {
-                    mediaUrl = mediaSource.Path;
+                    mediaUrl = FileSystem.translateFilePath(mediaSource.Path);
                     playMethod = 'DirectPlay';
+
                 } else {
 
                     if (mediaSource.SupportsDirectStream) {
@@ -761,9 +762,9 @@
 
                 if (mediaSource.enableDirectPlay) {
 
-                    mediaUrl = mediaSource.Path;
-
+                    mediaUrl = FileSystem.translateFilePath(mediaSource.Path);
                     playMethod = 'DirectPlay';
+
                 } else {
 
                     var isDirectStream = mediaSource.SupportsDirectStream;

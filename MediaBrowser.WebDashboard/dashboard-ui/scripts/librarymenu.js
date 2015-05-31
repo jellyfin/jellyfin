@@ -192,7 +192,7 @@
 
             var html = '';
             html += '<div class="sidebarHeader">';
-            html += Globalize.translate('HeaderLibrary');
+            html += Globalize.translate('HeaderMedia');
             html += '</div>';
 
             html += items.map(function (i) {

@@ -33,7 +33,6 @@
             $('#recentlyAddedSongs', page).html(LibraryBrowser.getPosterViewHtml({
                 items: items,
                 showUnplayedIndicator: false,
-                showChildCountIndicator: true,
                 showLatestItemsPopup: false,
                 shape: getSquareShape(),
                 showTitle: true,

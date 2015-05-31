@@ -50,6 +50,7 @@ using MediaBrowser.Dlna.Main;
 using MediaBrowser.Dlna.MediaReceiverRegistrar;
 using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.LocalMetadata.Providers;
+using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.MediaEncoding.Subtitles;
@@ -449,7 +450,7 @@ namespace MediaBrowser.Server.Startup.Common
             SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager, () => MediaSourceManager, JsonSerializer);
             RegisterSingleInstance(SyncManager);
 
-            DtoService = new DtoService(LogManager.GetLogger("DtoService"), LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager, () => MediaSourceManager);
+            DtoService = new DtoService(LogManager.GetLogger("DtoService"), LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager, () => MediaSourceManager, () => LiveTvManager);
             RegisterSingleInstance(DtoService);
 
             var encryptionManager = new EncryptionManager();
@@ -989,7 +990,7 @@ namespace MediaBrowser.Server.Startup.Common
             list.Add(typeof(DlnaEntryPoint).Assembly);
 
             // Local metadata 
-            list.Add(typeof(AlbumXmlProvider).Assembly);
+            list.Add(typeof(BoxSetXmlSaver).Assembly);
 
             // Xbmc 
             list.Add(typeof(ArtistNfoProvider).Assembly);

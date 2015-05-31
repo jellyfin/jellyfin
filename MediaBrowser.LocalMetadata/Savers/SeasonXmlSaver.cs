@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
-    public class SeasonXmlSaver : IMetadataFileSaver
+    public class SeasonXmlSaver
     {
         public string Name
         {
