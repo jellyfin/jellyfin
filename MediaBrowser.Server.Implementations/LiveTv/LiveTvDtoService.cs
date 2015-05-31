@@ -167,122 +167,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return val.Value;
         }
 
-        public string GetStatusName(RecordingStatus status)
-        {
-            if (status == RecordingStatus.InProgress)
-            {
-                return "In Progress";
-            }
-
-            if (status == RecordingStatus.ConflictedNotOk)
-            {
-                return "Conflicted";
-            }
-
-            if (status == RecordingStatus.ConflictedOk)
-            {
-                return "Scheduled";
-            }
-
-            return status.ToString();
-        }
-
-        public RecordingInfoDto GetRecordingInfoDto(ILiveTvRecording recording, LiveTvChannel channel, ILiveTvService service, User user = null)
-        {
-            var info = recording.RecordingInfo;
-
-            var dto = new RecordingInfoDto
-            {
-                Id = GetInternalRecordingId(service.Name, info.Id).ToString("N"),
-                SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId) ? null : GetInternalSeriesTimerId(service.Name, info.SeriesTimerId).ToString("N"),
-                Type = recording.GetClientTypeName(),
-                Overview = info.Overview,
-                EndDate = info.EndDate,
-                Name = info.Name,
-                StartDate = info.StartDate,
-                ExternalId = info.Id,
-                ChannelId = GetInternalChannelId(service.Name, info.ChannelId).ToString("N"),
-                Status = info.Status,
-                StatusName = GetStatusName(info.Status),
-                Path = info.Path,
-                Genres = info.Genres,
-                IsRepeat = info.IsRepeat,
-                EpisodeTitle = info.EpisodeTitle,
-                ChannelType = info.ChannelType,
-                MediaType = info.ChannelType == ChannelType.Radio ? MediaType.Audio : MediaType.Video,
-                CommunityRating = GetClientCommunityRating(info.CommunityRating),
-                OfficialRating = info.OfficialRating,
-                Audio = info.Audio,
-                IsHD = info.IsHD,
-                ServiceName = service.Name,
-                IsMovie = info.IsMovie,
-                IsSeries = info.IsSeries,
-                IsSports = info.IsSports,
-                IsLive = info.IsLive,
-                IsNews = info.IsNews,
-                IsKids = info.IsKids,
-                IsPremiere = info.IsPremiere,
-                RunTimeTicks = (info.EndDate - info.StartDate).Ticks,
-                OriginalAirDate = info.OriginalAirDate,
-
-                MediaSources = recording.GetMediaSources(true).ToList(),
-                ServerId = _appHost.SystemId
-            };
-
-            dto.CanDelete = user == null
-                ? recording.CanDelete()
-                : recording.CanDelete(user);
-            
-            dto.MediaStreams = dto.MediaSources.SelectMany(i => i.MediaStreams).ToList();
-
-            if (info.Status == RecordingStatus.InProgress)
-            {
-                var now = DateTime.UtcNow.Ticks;
-                var start = info.StartDate.Ticks;
-                var end = info.EndDate.Ticks;
-
-                var pct = now - start;
-                pct /= end;
-                pct *= 100;
-                dto.CompletionPercentage = pct;
-            }
-
-            var imageTag = GetImageTag(recording);
-
-            if (imageTag != null)
-            {
-                dto.ImageTags[ImageType.Primary] = imageTag;
-                _dtoService.AttachPrimaryImageAspectRatio(dto, recording, new List<ItemFields>
-                    {
-                        ItemFields.PrimaryImageAspectRatio
-                    });
-            }
-
-            if (user != null)
-            {
-                dto.UserData = _userDataManager.GetUserDataDto(recording, user);
-
-                dto.PlayAccess = recording.GetPlayAccess(user);
-            }
-
-            if (!string.IsNullOrEmpty(info.ProgramId))
-            {
-                dto.ProgramId = GetInternalProgramId(service.Name, info.ProgramId).ToString("N");
-            }
-
-            if (channel != null)
-            {
-                dto.ChannelName = channel.Name;
-
-                if (!string.IsNullOrEmpty(channel.PrimaryImagePath))
-                {
-                    dto.ChannelPrimaryImageTag = GetImageTag(channel);
-                }
-            }
-
-            return dto;
-        }
-
         public LiveTvTunerInfoDto GetTunerInfoDto(string serviceName, LiveTvTunerInfo info, string channelName)
         {
             var dto = new LiveTvTunerInfoDto
@@ -430,7 +314,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return dto;
         }
 
-        private string GetImageTag(IHasImages info)
+        internal string GetImageTag(IHasImages info)
         {
             try
             {

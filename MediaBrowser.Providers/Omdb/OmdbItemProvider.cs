@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Linq;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -52,28 +53,34 @@ namespace MediaBrowser.Providers.Omdb
             var list = new List<RemoteSearchResult>();
 
             var imdbId = searchInfo.GetProviderId(MetadataProviders.Imdb);
-            if (!string.IsNullOrWhiteSpace(imdbId))
-            {
-                return list;
-            }
 
             var url = "http://www.omdbapi.com/?plot=short&r=json";
 
             var name = searchInfo.Name;
             var year = searchInfo.Year;
 
-            var parsedName = _libraryManager.ParseName(name);
-            var yearInName = parsedName.Year;
-            name = parsedName.Name;
-            year = year ?? yearInName;
-            
-            if (year.HasValue)
+            if (!string.IsNullOrWhiteSpace(name))
             {
-                url += "&y=" + year.Value.ToString(CultureInfo.InvariantCulture);
+                var parsedName = _libraryManager.ParseName(name);
+                var yearInName = parsedName.Year;
+                name = parsedName.Name;
+                year = year ?? yearInName;
             }
+            
+            if (string.IsNullOrWhiteSpace(imdbId))
+            {
+                if (year.HasValue)
+                {
+                    url += "&y=" + year.Value.ToString(CultureInfo.InvariantCulture);
+                }
 
-            url += "&t=" + WebUtility.UrlEncode(name);
-            url += "&type=" + type;
+                url += "&t=" + WebUtility.UrlEncode(name);
+                url += "&type=" + type;
+            }
+            else
+            {
+                url += "&i=" + imdbId;
+            }
 
             using (var stream = await _httpClient.Get(new HttpRequestOptions
             {
@@ -81,7 +88,7 @@ namespace MediaBrowser.Providers.Omdb
                 ResourcePool = OmdbProvider.ResourcePool,
                 CancellationToken = cancellationToken,
                 CacheMode = CacheMode.Unconditional,
-                CacheLength = TimeSpan.FromDays(7)
+                CacheLength = TimeSpan.FromDays(2)
 
             }).ConfigureAwait(false))
             {
@@ -145,33 +152,18 @@ namespace MediaBrowser.Providers.Omdb
                 Item = new Series()
             };
 
-            var searchResult = await GetSeriesImdbId(info, cancellationToken).ConfigureAwait(false);
-            result.Item.Name = searchResult.Item4;
-
-            if (!string.IsNullOrEmpty(searchResult.Item1))
+            var imdbId = info.GetProviderId(MetadataProviders.Imdb);
+            if (string.IsNullOrWhiteSpace(imdbId))
             {
-                result.Item.SetProviderId(MetadataProviders.Imdb, searchResult.Item1);
+                imdbId = await GetSeriesImdbId(info, cancellationToken).ConfigureAwait(false);
             }
-
-            if (!string.IsNullOrEmpty(searchResult.Item2))
-            {
-                result.Item.SetProviderId(MetadataProviders.Tmdb, searchResult.Item2);
-            }
-
-            if (!string.IsNullOrEmpty(searchResult.Item3))
-            {
-                result.Item.SetProviderId(MetadataProviders.Tvdb, searchResult.Item3);
-            }
-
-            var imdbId = result.Item.GetProviderId(MetadataProviders.Imdb);
 
             if (!string.IsNullOrEmpty(imdbId))
             {
                 result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
                 result.HasMetadata = true;
 
-                await new OmdbProvider(_jsonSerializer, _httpClient).Fetch(result.Item, imdbId, cancellationToken)
-                        .ConfigureAwait(false);
+                await new OmdbProvider(_jsonSerializer, _httpClient).Fetch(result.Item, imdbId, cancellationToken).ConfigureAwait(false);
             }
 
             return result;
@@ -191,64 +183,34 @@ namespace MediaBrowser.Providers.Omdb
             };
 
             var imdbId = info.GetProviderId(MetadataProviders.Imdb);
-
-            var searchResult = await GetMovieImdbId(info, cancellationToken).ConfigureAwait(false);
-            result.Item.Name = searchResult.Item3;
-
             if (string.IsNullOrWhiteSpace(imdbId))
             {
-                imdbId = searchResult.Item1;
-
-                if (!string.IsNullOrEmpty(searchResult.Item2))
-                {
-                    result.Item.SetProviderId(MetadataProviders.Tmdb, searchResult.Item2);
-                }
+                imdbId = await GetMovieImdbId(info, cancellationToken).ConfigureAwait(false);
             }
 
-            if (!string.IsNullOrWhiteSpace(imdbId))
+            if (!string.IsNullOrEmpty(imdbId))
             {
                 result.Item.SetProviderId(MetadataProviders.Imdb, imdbId);
                 result.HasMetadata = true;
 
-                await new OmdbProvider(_jsonSerializer, _httpClient).Fetch(result.Item, imdbId, cancellationToken)
-                        .ConfigureAwait(false);
+                await new OmdbProvider(_jsonSerializer, _httpClient).Fetch(result.Item, imdbId, cancellationToken).ConfigureAwait(false);
             }
 
             return result;
         }
 
-        private async Task<Tuple<string, string, string>> GetMovieImdbId(ItemLookupInfo info, CancellationToken cancellationToken)
+        private async Task<string> GetMovieImdbId(ItemLookupInfo info, CancellationToken cancellationToken)
         {
-            var result = await new GenericMovieDbInfo<Movie>(_logger, _jsonSerializer, _libraryManager).GetMetadata(info, cancellationToken)
-                        .ConfigureAwait(false);
-
-            var imdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Imdb) : null;
-            var tmdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Tmdb) : null;
-            var name = result.HasMetadata ? result.Item.Name : null;
-
-            return new Tuple<string, string, string>(imdb, tmdb, name);
+            var results = await GetSearchResults(info, "movie", cancellationToken).ConfigureAwait(false);
+            var first = results.FirstOrDefault();
+            return first == null ? null : first.GetProviderId(MetadataProviders.Imdb);
         }
 
-        private async Task<Tuple<string, string, string, string>> GetSeriesImdbId(SeriesInfo info, CancellationToken cancellationToken)
+        private async Task<string> GetSeriesImdbId(SeriesInfo info, CancellationToken cancellationToken)
         {
-            //var result = await TvdbSeriesProvider.Current.GetMetadata(info, cancellationToken)
-            //       .ConfigureAwait(false);
-
-            //var imdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Imdb) : null;
-            //var tvdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Tvdb) : null;
-            //var name = result.HasMetadata ? result.Item.Name : null;
-
-            //return new Tuple<string, string, string>(imdb, tvdb, name);
-
-            var result = await MovieDbSeriesProvider.Current.GetMetadata(info, cancellationToken)
-                        .ConfigureAwait(false);
-
-            var imdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Imdb) : null;
-            var tmdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Tmdb) : null;
-            var tvdb = result.HasMetadata ? result.Item.GetProviderId(MetadataProviders.Tvdb) : null;
-            var name = result.HasMetadata ? result.Item.Name : null;
-
-            return new Tuple<string, string, string, string>(imdb, tmdb, tvdb, name);
+            var results = await GetSearchResults(info, cancellationToken).ConfigureAwait(false);
+            var first = results.FirstOrDefault();
+            return first == null ? null : first.GetProviderId(MetadataProviders.Imdb);
         }
 
         public Task<HttpResponseInfo> GetImageResponse(string url, CancellationToken cancellationToken)

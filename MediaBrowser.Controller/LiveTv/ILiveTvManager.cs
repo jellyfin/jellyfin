@@ -79,7 +79,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task{RecordingInfoDto}.</returns>
-        Task<RecordingInfoDto> GetRecording(string id, DtoOptions options, CancellationToken cancellationToken, User user = null);
+        Task<BaseItemDto> GetRecording(string id, DtoOptions options, CancellationToken cancellationToken, User user = null);
 
         /// <summary>
         /// Gets the channel.
@@ -113,7 +113,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>QueryResult{RecordingInfoDto}.</returns>
-        Task<QueryResult<RecordingInfoDto>> GetRecordings(RecordingQuery query, DtoOptions options, CancellationToken cancellationToken);
+        Task<QueryResult<BaseItemDto>> GetRecordings(RecordingQuery query, DtoOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the timers.
@@ -218,7 +218,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{RecordingGroupDto}}.</returns>
-        Task<QueryResult<RecordingGroupDto>> GetRecordingGroups(RecordingGroupQuery query, CancellationToken cancellationToken);
+        Task<QueryResult<BaseItemDto>> GetRecordingGroups(RecordingGroupQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Closes the live stream.
@@ -321,5 +321,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;IEnumerable&lt;MediaSourceInfo&gt;&gt;.</returns>
         Task<IEnumerable<MediaSourceInfo>> GetChannelMediaSources(string id, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Adds the information to recording dto.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="dto">The dto.</param>
+        /// <param name="user">The user.</param>
+        void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, User user = null);
     }
 }

@@ -46,8 +46,9 @@ namespace MediaBrowser.Server.Implementations.Dto
         private readonly IApplicationHost _appHost;
         private readonly Func<IDeviceManager> _deviceManager;
         private readonly Func<IMediaSourceManager> _mediaSourceManager;
+        private readonly Func<ILiveTvManager> _livetvManager;
 
-        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory, ISyncManager syncManager, IApplicationHost appHost, Func<IDeviceManager> deviceManager, Func<IMediaSourceManager> mediaSourceManager)
+        public DtoService(ILogger logger, ILibraryManager libraryManager, IUserDataManager userDataRepository, IItemRepository itemRepo, IImageProcessor imageProcessor, IServerConfigurationManager config, IFileSystem fileSystem, IProviderManager providerManager, Func<IChannelManager> channelManagerFactory, ISyncManager syncManager, IApplicationHost appHost, Func<IDeviceManager> deviceManager, Func<IMediaSourceManager> mediaSourceManager, Func<ILiveTvManager> livetvManager)
         {
             _logger = logger;
             _libraryManager = libraryManager;
@@ -62,6 +63,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             _appHost = appHost;
             _deviceManager = deviceManager;
             _mediaSourceManager = mediaSourceManager;
+            _livetvManager = livetvManager;
         }
 
         /// <summary>
@@ -348,6 +350,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (fields.Contains(ItemFields.Etag))
             {
                 dto.Etag = item.GetEtag(user);
+            }
+
+            if (item is ILiveTvRecording)
+            {
+                _livetvManager().AddInfoToRecordingDto(item, dto, user);
             }
 
             return dto;
@@ -1384,7 +1391,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 dto.AirDays = series.AirDays;
                 dto.AirTime = series.AirTime;
-                dto.Status = series.Status;
+                dto.SeriesStatus = series.Status;
 
                 dto.SeasonCount = series.SeasonCount;
 

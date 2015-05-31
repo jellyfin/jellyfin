@@ -58,10 +58,13 @@ namespace MediaBrowser.Providers.Movies
 
             var tmdbImageUrl = tmdbSettings.images.base_url + "original";
 
-            var parsedName = _libraryManager.ParseName(name);
-            var yearInName = parsedName.Year;
-            name = parsedName.Name;
-            year = year ?? yearInName;
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                var parsedName = _libraryManager.ParseName(name);
+                var yearInName = parsedName.Year;
+                name = parsedName.Name;
+                year = year ?? yearInName;
+            }
 
             _logger.Info("MovieDbProvider: Finding id for item: " + name);
             var language = idInfo.MetadataLanguage.ToLower();
