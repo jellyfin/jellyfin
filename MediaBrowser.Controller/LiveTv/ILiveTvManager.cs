@@ -170,7 +170,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="user">The user.</param>
         /// <returns>Task{ProgramInfoDto}.</returns>
-        Task<ProgramInfoDto> GetProgram(string id, CancellationToken cancellationToken, User user = null);
+        Task<BaseItemDto> GetProgram(string id, CancellationToken cancellationToken, User user = null);
         
         /// <summary>
         /// Gets the programs.
@@ -178,7 +178,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>IEnumerable{ProgramInfo}.</returns>
-        Task<QueryResult<ProgramInfoDto>> GetPrograms(ProgramQuery query, CancellationToken cancellationToken);
+        Task<QueryResult<BaseItemDto>> GetPrograms(ProgramQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the timer.
@@ -240,7 +240,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{ProgramInfoDto}}.</returns>
-        Task<QueryResult<ProgramInfoDto>> GetRecommendedPrograms(RecommendedProgramQuery query,
+        Task<QueryResult<BaseItemDto>> GetRecommendedPrograms(RecommendedProgramQuery query,
             CancellationToken cancellationToken);
 
         /// <summary>
@@ -329,5 +329,13 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="dto">The dto.</param>
         /// <param name="user">The user.</param>
         void AddInfoToRecordingDto(BaseItem item, BaseItemDto dto, User user = null);
+
+        /// <summary>
+        /// Adds the information to program dto.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="dto">The dto.</param>
+        /// <param name="user">The user.</param>
+        void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, User user = null);
     }
 }

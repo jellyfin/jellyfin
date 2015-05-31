@@ -259,7 +259,6 @@
     <Compile Include="LiveTv\LiveTvTunerInfoDto.cs" />
     <Compile Include="LiveTv\LiveTvTunerStatus.cs" />
     <Compile Include="LiveTv\ProgramAudio.cs" />
-    <Compile Include="LiveTv\ProgramInfoDto.cs" />
     <Compile Include="LiveTv\ProgramQuery.cs" />
     <Compile Include="LiveTv\RecommendedProgramQuery.cs" />
     <Compile Include="LiveTv\RecordingGroupQuery.cs" />

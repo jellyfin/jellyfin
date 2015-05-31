@@ -38,11 +38,16 @@
         return MainActivity.beginPurchase(id);
     }
 
+    function onPurchaseComplete(result) {
+        alert(result);
+    }
+
     window.IapManager = {
         isPurchaseAvailable: isPurchaseAvailable,
         hasPurchased: hasPurchased,
         updateProduct: updateProductInfo,
-        beginPurchase: beginPurchase
+        beginPurchase: beginPurchase,
+        onPurchaseComplete: onPurchaseComplete
     };
 
     NativeIapManager.isPurchased(unlockId, "window.IapManager.updateProduct");

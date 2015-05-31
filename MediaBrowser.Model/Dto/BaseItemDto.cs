@@ -1175,5 +1175,11 @@ namespace MediaBrowser.Model.Dto
         /// <value><c>true</c> if this instance is premiere; otherwise, <c>false</c>.</value>
         public bool? IsPremiere { get; set; }
 
+        /// <summary>
+        /// Gets or sets the timer identifier.
+        /// </summary>
+        /// <value>The timer identifier.</value>
+        public string TimerId { get; set; }
+
     }
 }

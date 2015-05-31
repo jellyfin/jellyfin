@@ -161,7 +161,7 @@ namespace MediaBrowser.Api.LiveTv
 
     [Route("/LiveTv/Programs", "GET,POST", Summary = "Gets available live tv epgs..")]
     [Authenticated]
-    public class GetPrograms : IReturn<QueryResult<ProgramInfoDto>>
+    public class GetPrograms : IReturn<QueryResult<BaseItemDto>>
     {
         [ApiMember(Name = "ChannelIds", Description = "The channels to return guide information for.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
         public string ChannelIds { get; set; }
@@ -208,7 +208,7 @@ namespace MediaBrowser.Api.LiveTv
 
     [Route("/LiveTv/Programs/Recommended", "GET", Summary = "Gets available live tv epgs..")]
     [Authenticated]
-    public class GetRecommendedPrograms : IReturn<QueryResult<ProgramInfoDto>>
+    public class GetRecommendedPrograms : IReturn<QueryResult<BaseItemDto>>
     {
         [ApiMember(Name = "UserId", Description = "Optional filter by user id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET,POST")]
         public string UserId { get; set; }
@@ -231,7 +231,7 @@ namespace MediaBrowser.Api.LiveTv
 
     [Route("/LiveTv/Programs/{Id}", "GET", Summary = "Gets a live tv program")]
     [Authenticated]
-    public class GetProgram : IReturn<ProgramInfoDto>
+    public class GetProgram : IReturn<BaseItemDto>
     {
         [ApiMember(Name = "Id", Description = "Program Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
