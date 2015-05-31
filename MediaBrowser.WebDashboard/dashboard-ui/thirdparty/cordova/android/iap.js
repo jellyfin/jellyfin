@@ -1,6 +1,6 @@
 ﻿(function () {
 
-    var unlockId = "premiumunlock";
+    var unlockId = "com.mb.android.unlock";
     var updatedProducts = [];
 
     function updateProductInfo(id, owned) {

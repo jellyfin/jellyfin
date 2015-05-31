@@ -1,61 +1,35 @@
 ﻿.btnNotifications {
     text-decoration: none !important;
-    position: absolute;
-    top: 25px !important;
-    right: 10px !important;
     padding: 0 !important;
     outline: 0 !important;
+    margin: 0 !important;
+    float: right;
+    vertical-align: middle;
 }
 
-    .btnNotifications:hover {
-        background: none !important;
-    }
-
 .btnNotificationsInner {
-    vertical-align: middle;
-    border-radius: 1000px;
-    padding: 6px 10px 5px;
-    text-align: center;
-    text-decoration: none !important;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    background-color: #444;
-    color: #fff;
-    font-size: 13px;
-    font-weight: normal;
-    display: inline;
+    color: #aaa;
+    font-weight: 500;
+    display: none;
 }
 
 .levelNormal {
-    background-color: #4d90fe;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#4d90fe),to(#4787ed));
-    background-image: -webkit-linear-gradient(top,#4d90fe,#4787ed);
-    background-image: -moz-linear-gradient(top,#4d90fe,#4787ed);
-    background-image: -ms-linear-gradient(top,#4d90fe,#4787ed);
-    background-image: -o-linear-gradient(top,#4d90fe,#4787ed);
-    background-image: linear-gradient(top,#4d90fe,#4787ed);
-    color: #fff !important;
+    color: #4d90fe;
+    display: block;
 }
 
 .levelWarning {
-    background-color: #FF7537;
-    background-image: none;
-    color: #fff !important;
+    color: #FF7537;
+    display: block;
 }
 
 .levelError {
-    background-color: #d14836;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#dd4b39),to(#d14836));
-    background-image: -webkit-linear-gradient(top,#dd4b39,#d14836);
-    background-image: -moz-linear-gradient(top,#dd4b39,#d14836);
-    background-image: -ms-linear-gradient(top,#dd4b39,#d14836);
-    background-image: -o-linear-gradient(top,#dd4b39,#d14836);
-    background-image: linear-gradient(top,#dd4b39,#d14836);
-    color: #fff !important;
+    color: #d14836;
+    display: block;
 }
 
 .flyoutNotification {
-    border-top: 1px solid #eee;
+    border-top: 1px solid #444;
     padding: 0 0 .5em;
 }
 
@@ -66,11 +40,15 @@
     }
 
     .flyoutNotification:last-child {
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid #444;
+    }
+
+    .flyoutNotification a {
+        font-weight: 500 !important;
     }
 
 .notificationTime {
-    color: green;
+    color: #52B54B;
 }
 
 .notificationImage {
@@ -89,10 +67,6 @@
 
 .unreadFlyoutNotification {
     color: blue;
-}
-
-.notificationsList {
-    border-bottom: 1px solid #ddd;
 }
 
 .imgNotification, .imgNotificationInner {

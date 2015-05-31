@@ -484,14 +484,6 @@ h1 .imageLink {
     color: #666;
 }
 
-.sidebarDivider {
-    height: 0;
-    border-width: 1px 0 0;
-    border-style: solid;
-    margin: .7em 0;
-    border-radius: 0;
-}
-
 .sidebarHeader {
     padding-left: 20px;
     margin: 15px 0 10px;

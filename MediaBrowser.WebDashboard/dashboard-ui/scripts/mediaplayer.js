@@ -217,6 +217,15 @@
                 Protocol: 'http'
             });
 
+            profile.TranscodingProfiles.push({
+                Container: 'mp4',
+                Type: 'Video',
+                AudioCodec: 'aac',
+                VideoCodec: 'h264',
+                Context: 'Static',
+                Protocol: 'http'
+            });
+
             if (canPlayAac && $.browser.safari) {
                 profile.TranscodingProfiles.push({
                     Container: 'aac',
@@ -225,12 +234,26 @@
                     Context: 'Streaming',
                     Protocol: 'http'
                 });
+                profile.TranscodingProfiles.push({
+                    Container: 'aac',
+                    Type: 'Audio',
+                    AudioCodec: 'aac',
+                    Context: 'Static',
+                    Protocol: 'http'
+                });
             } else {
                 profile.TranscodingProfiles.push({
                     Container: 'mp3',
                     Type: 'Audio',
                     AudioCodec: 'mp3',
                     Context: 'Streaming',
+                    Protocol: 'http'
+                });
+                profile.TranscodingProfiles.push({
+                    Container: 'mp3',
+                    Type: 'Audio',
+                    AudioCodec: 'mp3',
+                    Context: 'Static',
                     Protocol: 'http'
                 });
             }

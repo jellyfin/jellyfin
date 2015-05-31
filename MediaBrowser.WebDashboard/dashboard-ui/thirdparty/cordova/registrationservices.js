@@ -7,6 +7,15 @@
         return platform.indexOf('android') != -1;
     }
 
+    function getPremiumUnlockFeatureId() {
+
+        if (isAndroid()) {
+            return "com.mb.android.unlock";
+        }
+
+        return 'premiumunlock';
+    }
+
     function validatePlayback(deferred) {
 
         // Don't require validation on android
@@ -17,37 +26,16 @@
 
         validateFeature({
 
-            id: 'premiumunlock'
+            id: getPremiumUnlockFeatureId()
 
         }, deferred);
     }
 
     function validateLiveTV(deferred) {
 
-        // Don't require validation if not android
-        if (!isAndroid()) {
-            deferred.resolve();
-            return;
-        }
-
         validateFeature({
 
-            id: 'premiumunlock'
-
-        }, deferred);
-    }
-
-    function validateSmb(deferred) {
-
-        // Don't require validation if not android
-        if (!isAndroid()) {
-            deferred.resolve();
-            return;
-        }
-
-        validateFeature({
-
-            id: 'premiumunlock'
+            id: getPremiumUnlockFeatureId()
 
         }, deferred);
     }
@@ -215,8 +203,10 @@
         }
     };
 
-    var depends = isAndroid() ? 'thirdparty/cordova/android/iap' : 'thirdparty/cordova/iap';
-
-    requirejs([depends]);
+    if (isAndroid()) {
+        requirejs(['thirdparty/cordova/android/iap']);
+    } else {
+        requirejs(['thirdparty/cordova/iap']);
+    }
 
 })();
