@@ -134,6 +134,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "ChannelId", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsMovie", "BIT");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsSports", "BIT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "IsKids", "BIT");
 
             PrepareStatements();
 
@@ -152,7 +153,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private void PrepareStatements()
         {
             _saveItemCommand = _connection.CreateCommand();
-            _saveItemCommand.CommandText = "replace into TypedBaseItems (guid, type, data, StartDate, EndDate, ChannelId, IsMovie, IsSports) values (@1, @2, @3, @4, @5, @6, @7, @8)";
+            _saveItemCommand.CommandText = "replace into TypedBaseItems (guid, type, data, StartDate, EndDate, ChannelId, IsKids, IsMovie, IsSports) values (@1, @2, @3, @4, @5, @6, @7, @8, @9)";
             _saveItemCommand.Parameters.Add(_saveItemCommand, "@1");
             _saveItemCommand.Parameters.Add(_saveItemCommand, "@2");
             _saveItemCommand.Parameters.Add(_saveItemCommand, "@3");
@@ -161,6 +162,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _saveItemCommand.Parameters.Add(_saveItemCommand, "@6");
             _saveItemCommand.Parameters.Add(_saveItemCommand, "@7");
             _saveItemCommand.Parameters.Add(_saveItemCommand, "@8");
+            _saveItemCommand.Parameters.Add(_saveItemCommand, "@9");
 
             _deleteChildrenCommand = _connection.CreateCommand();
             _deleteChildrenCommand.CommandText = "delete from ChildrenIds where ParentId=@ParentId";
@@ -247,13 +249,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     var hasProgramAttributes = item as IHasProgramAttributes;
                     if (hasProgramAttributes != null)
                     {
-                        _saveItemCommand.GetParameter(6).Value = hasProgramAttributes.IsMovie;
-                        _saveItemCommand.GetParameter(7).Value = hasProgramAttributes.IsSports;
+                        _saveItemCommand.GetParameter(6).Value = hasProgramAttributes.IsKids;
+                        _saveItemCommand.GetParameter(7).Value = hasProgramAttributes.IsMovie;
+                        _saveItemCommand.GetParameter(8).Value = hasProgramAttributes.IsSports;
                     }
                     else
                     {
                         _saveItemCommand.GetParameter(6).Value = null;
                         _saveItemCommand.GetParameter(7).Value = null;
+                        _saveItemCommand.GetParameter(8).Value = null;
                     }
 
                     _saveItemCommand.Transaction = transaction;
@@ -753,6 +757,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 whereClauses.Add("IsMovie=@IsMovie");
                 cmd.Parameters.Add(cmd, "@IsMovie", DbType.Boolean).Value = query.IsMovie;
+            }
+            if (query.IsKids.HasValue)
+            {
+                whereClauses.Add("IsKids=@IsKids");
+                cmd.Parameters.Add(cmd, "@IsKids", DbType.Boolean).Value = query.IsKids;
             }
             if (query.IsSports.HasValue)
             {
