@@ -8,23 +8,27 @@
 }
 
 .btnNotificationsInner {
-    color: #aaa;
-    font-weight: 500;
+    color: #fff;
+    font-weight: 300;
     display: none;
+    position: relative;
+    top: -6px;
+    padding: 5px 10px;
+    border-radius: 1000px;
 }
 
 .levelNormal {
-    color: #4d90fe;
+    background-color: #4d90fe;
     display: block;
 }
 
 .levelWarning {
-    color: #FF7537;
+    background-color: #FF7537;
     display: block;
 }
 
 .levelError {
-    color: #d14836;
+    background-color: #d14836;
     display: block;
 }
 
