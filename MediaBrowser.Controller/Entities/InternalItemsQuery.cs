@@ -81,7 +81,8 @@ namespace MediaBrowser.Controller.Entities
 
         public bool? IsMovie { get; set; }
         public bool? IsSports { get; set; }
-        
+        public bool? IsKids { get; set; }
+     
         public string[] ChannelIds { get; set; }
         
         public InternalItemsQuery()
