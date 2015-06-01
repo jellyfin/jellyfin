@@ -9,10 +9,14 @@
             return r.id != id;
         });
 
-        updatedProducts.push({
+        var product = {
             id: id,
             owned: owned
-        });
+        };
+
+        updatedProducts.push(product);
+
+        Events.trigger(IapManager, 'productupdated', [product]);
     }
 
     function hasPurchased(id) {
@@ -39,7 +43,14 @@
     }
 
     function onPurchaseComplete(result) {
-        alert(result);
+
+        if (result) {
+            refreshPurchases();
+        }
+    }
+
+    function refreshPurchases() {
+        NativeIapManager.isPurchased(unlockId, "window.IapManager.updateProduct");
     }
 
     window.IapManager = {
@@ -50,6 +61,6 @@
         onPurchaseComplete: onPurchaseComplete
     };
 
-    NativeIapManager.isPurchased(unlockId, "window.IapManager.updateProduct");
+    refreshPurchases();
 
 })();

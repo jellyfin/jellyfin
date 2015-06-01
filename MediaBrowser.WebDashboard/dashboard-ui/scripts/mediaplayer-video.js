@@ -68,7 +68,7 @@
             elem.popup("open").parents(".ui-popup-container").css("margin-top", 30);
 
             if ($.browser.safari) {
-                $('.itemVideo').css('visibility', 'hidden');
+                //$('.itemVideo').css('visibility', 'hidden');
             }
         }
 

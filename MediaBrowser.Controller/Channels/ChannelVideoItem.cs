@@ -16,7 +16,6 @@ namespace MediaBrowser.Controller.Channels
     {
         public string ExternalId { get; set; }
 
-        public string ChannelId { get; set; }
         public string DataVersion { get; set; }
 
         public ChannelItemType ChannelItemType { get; set; }

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -131,6 +132,13 @@ namespace MediaBrowser.Controller.Library
         /// <param name="id">The id.</param>
         /// <returns>BaseItem.</returns>
         BaseItem GetItemById(Guid id);
+
+        /// <summary>
+        /// Gets the items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
+        QueryResult<BaseItem> GetItems(InternalItemsQuery query);
 
         /// <summary>
         /// Gets the memory item by identifier.

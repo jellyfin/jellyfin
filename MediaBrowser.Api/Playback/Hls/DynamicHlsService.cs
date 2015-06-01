@@ -879,7 +879,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (!EnableSplitTranscoding(state))
             {
-                args += " -copyts";
+                //args += " -copyts";
             }
 
             return args;
@@ -910,11 +910,11 @@ namespace MediaBrowser.Api.Playback.Hls
                     //toTimeParam = " -to " + MediaEncoder.GetTimeParameter(endTime);
                     toTimeParam = " -t " + MediaEncoder.GetTimeParameter(TimeSpan.FromSeconds(durationSeconds).Ticks);
                 }
+            }
 
-                if (state.IsOutputVideo && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) && (state.Request.StartTimeTicks ?? 0) > 0)
-                {
-                    timestampOffsetParam = " -output_ts_offset " + MediaEncoder.GetTimeParameter(state.Request.StartTimeTicks ?? 0).ToString(CultureInfo.InvariantCulture);
-                }
+            if (state.IsOutputVideo && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) && (state.Request.StartTimeTicks ?? 0) > 0)
+            {
+                timestampOffsetParam = " -output_ts_offset " + MediaEncoder.GetTimeParameter(state.Request.StartTimeTicks ?? 0).ToString(CultureInfo.InvariantCulture);
             }
 
             var mapArgs = state.IsOutputVideo ? GetMapArgs(state) : string.Empty;
@@ -959,6 +959,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private bool EnableSplitTranscoding(StreamState state)
         {
+            return false;
             if (string.Equals(Request.QueryString["EnableSplitTranscoding"], "false", StringComparison.OrdinalIgnoreCase))
             {
                 return false;

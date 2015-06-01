@@ -73,6 +73,17 @@ namespace MediaBrowser.Controller.Entities
         public string[] Tags { get; set; }
         public string[] OfficialRatings { get; set; }
 
+        public DateTime? MinStartDate { get; set; }
+        public DateTime? MaxStartDate { get; set; }
+        public DateTime? MinEndDate { get; set; }
+        public DateTime? MaxEndDate { get; set; }
+        public bool? IsAiring { get; set; }
+
+        public bool? IsMovie { get; set; }
+        public bool? IsSports { get; set; }
+        
+        public string[] ChannelIds { get; set; }
+        
         public InternalItemsQuery()
         {
             Tags = new string[] { };
@@ -89,6 +100,7 @@ namespace MediaBrowser.Controller.Entities
             Years = new int[] { };
             PersonTypes = new string[] { };
             PersonIds = new string[] { };
+            ChannelIds = new string[] { };
         }
     }
 }

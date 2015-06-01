@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.LiveTv;
@@ -7,12 +6,10 @@ using MediaBrowser.Model.Users;
 using System;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public class LiveTvProgram : BaseItem, ILiveTvItem, IHasLookupInfo<LiveTvProgramLookupInfo>
+    public class LiveTvProgram : BaseItem, ILiveTvItem, IHasLookupInfo<LiveTvProgramLookupInfo>, IHasStartDate, IHasProgramAttributes
     {
         /// <summary>
         /// Gets the user data key.
@@ -27,12 +24,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// Id of the program.
         /// </summary>
         public string ExternalId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the channel identifier.
-        /// </summary>
-        /// <value>The channel identifier.</value>
-        public string ExternalChannelId { get; set; }
 
         /// <summary>
         /// Gets or sets the original air date.
@@ -202,15 +193,6 @@ namespace MediaBrowser.Controller.LiveTv
         public override string GetClientTypeName()
         {
             return "Program";
-        }
-
-        public override Task UpdateToRepository(ItemUpdateType updateReason, CancellationToken cancellationToken)
-        {
-            DateLastSaved = DateTime.UtcNow;
-            
-            // Avoid library manager and keep out of in-memory cache
-            // Not great that this class has to know about that, but we'll improve that later.
-            return ItemRepository.SaveItem(this, cancellationToken);
         }
 
         protected override bool GetBlockUnratedValue(UserPolicy config)

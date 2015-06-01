@@ -29,7 +29,7 @@
 }
 
 .flyoutNotification {
-    border-top: 1px solid #444;
+    border-top: 1px solid #404040;
     padding: 0 0 .5em;
 }
 
@@ -40,7 +40,7 @@
     }
 
     .flyoutNotification:last-child {
-        border-bottom: 1px solid #444;
+        border-bottom: 1px solid #404040;
     }
 
     .flyoutNotification a {

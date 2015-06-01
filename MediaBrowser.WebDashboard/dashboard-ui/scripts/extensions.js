@@ -124,7 +124,8 @@ var WebNotifications = {
 
     show: function (data) {
 
-        if (window.cordova && window.cordova.plugins && window.cordova.plugins.notification) {
+        // Seeing crashes in android
+        if (window.cordova && window.cordova.plugins && window.cordova.plugins.notification && !$.browser.android) {
 
             if (!WebNotifications.lastId) {
                 // Cordova plugin will crash on android with long. need an int

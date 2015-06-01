@@ -140,9 +140,20 @@
         $('.inAppPurchaseOverlay').remove();
     }
 
+    var currentDisplayingProductInfo = null;
+    var currentDisplayingDeferred = null;
+
+    function clearCurrentDisplayingInfo() {
+        currentDisplayingProductInfo = null;
+        currentDisplayingDeferred = null;
+    }
+
     function showInAppPurchaseInfo(info, serverRegistrationInfo, deferred) {
 
         var elem = getInAppPurchaseElement(info);
+
+        currentDisplayingProductInfo = info;
+        currentDisplayingDeferred = deferred;
 
         $('.inAppPurchaseForm', elem).on('submit', function () {
 
@@ -151,6 +162,8 @@
         });
 
         $('.btnCancel', elem).on('click', function () {
+
+            clearCurrentDisplayingInfo();
             cancelInAppPurchase();
 
             // For testing purposes
@@ -162,6 +175,8 @@
         });
         $('.btnSignInSupporter', elem).on('click', function () {
 
+            clearCurrentDisplayingInfo();
+
             Dashboard.alert({
                 message: Globalize.translate('MessagePleaseSignInLocalNetwork'),
                 callback: function () {
@@ -170,6 +185,21 @@
                 }
             });
         });
+    }
+
+    function onProductUpdated(e, product) {
+
+        var currentInfo = currentDisplayingProductInfo;
+        var deferred = currentDisplayingDeferred;
+
+        if (currentInfo && deferred) {
+            if (product.owned && product.id == currentInfo.id) {
+
+                clearCurrentDisplayingInfo();
+                cancelInAppPurchase();
+                deferred.resolve();
+            }
+        }
     }
 
     window.RegistrationServices = {
@@ -203,10 +233,14 @@
         }
     };
 
+    function onIapManagerLoaded() {
+        Events.on(IapManager, 'productupdated', onProductUpdated);
+    }
+
     if (isAndroid()) {
-        requirejs(['thirdparty/cordova/android/iap']);
+        requirejs(['thirdparty/cordova/android/iap', onIapManagerLoaded]);
     } else {
-        requirejs(['thirdparty/cordova/iap']);
+        requirejs(['thirdparty/cordova/iap', onIapManagerLoaded]);
     }
 
 })();

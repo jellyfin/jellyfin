@@ -76,12 +76,29 @@
 
             return deferred.promise();
         };
+        function getCacheKey(url) {
+            
+            // Try to strip off the domain to share the cache between local and remote connections
+            var index = url.indexOf('://');
+
+            if (index != -1) {
+                url = url.substring(index + 3);
+
+                index = url.indexOf('/');
+
+                if (index != -1) {
+                    url = url.substring(index + 1);
+                }
+
+            }
+            return CryptoJS.MD5(url).toString();
+        }
 
         self.getImageUrl = function (originalUrl) {
 
             console.log('getImageUrl:' + originalUrl);
 
-            var key = CryptoJS.SHA1(originalUrl).toString();
+            var key = getCacheKey(originalUrl);
 
             var deferred = DeferredBuilder.Deferred();
 

@@ -185,21 +185,28 @@
 
         function switchConnectionMode(connectionMode) {
 
-            var newConnectionMode;
-
             var currentServerInfo = self.serverInfo();
+            var newConnectionMode = connectionMode;
 
-            if (connectionMode == MediaBrowser.ConnectionMode.Local && currentServerInfo.RemoteAddress) {
-                newConnectionMode = MediaBrowser.ConnectionMode.Remote;
-            }
-            else if (connectionMode != MediaBrowser.ConnectionMode.Local && currentServerInfo.LocalAddress) {
-                newConnectionMode = MediaBrowser.ConnectionMode.Local;
-            }
-            else {
-                newConnectionMode = connectionMode;
+            newConnectionMode--;
+            if (newConnectionMode < 0) {
+                newConnectionMode = MediaBrowser.ConnectionMode.Manual;
             }
 
-            return newConnectionMode;
+            if (MediaBrowser.ServerInfo.getServerAddress(currentServerInfo, newConnectionMode)) {
+                return newConnectionMode;
+            }
+
+            newConnectionMode--;
+            if (newConnectionMode < 0) {
+                newConnectionMode = MediaBrowser.ConnectionMode.Manual;
+            }
+
+            if (MediaBrowser.ServerInfo.getServerAddress(currentServerInfo, newConnectionMode)) {
+                return newConnectionMode;
+            }
+
+            return connectionMode;
         }
 
         function tryReconnectInternal(deferred, connectionMode, currentRetryCount) {
@@ -209,13 +216,15 @@
 
             logger.log("Attempting reconnection to " + url);
 
+            var timeout = connectionMode == MediaBrowser.ConnectionMode.Local ? 5000 : 15000;
+
             AjaxApi.ajax({
 
                 type: "GET",
                 url: url + "/system/info/public",
                 dataType: "json",
 
-                timeout: 15000
+                timeout: timeout
 
             }).done(function () {
 
