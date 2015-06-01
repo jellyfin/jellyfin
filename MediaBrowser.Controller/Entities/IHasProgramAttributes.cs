@@ -1,9 +1,19 @@
-﻿
+﻿using MediaBrowser.Model.LiveTv;
+using System;
+
 namespace MediaBrowser.Controller.Entities
 {
     public interface IHasProgramAttributes
     {
         bool IsMovie { get; set; }
         bool IsSports { get; set; }
+        bool IsNews { get; set; }
+        bool IsKids { get; set; }
+        bool IsRepeat { get; set; }
+        bool? IsHD { get; set; }
+        bool IsLive { get; set; }
+        bool IsPremiere { get; set; }
+        ProgramAudio? Audio { get; set; }
+        DateTime? OriginalAirDate { get; set; }
     }
 }

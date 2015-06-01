@@ -759,14 +759,17 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add("IsSports=@IsSports");
                 cmd.Parameters.Add(cmd, "@IsSports", DbType.Boolean).Value = query.IsSports;
             }
-            if (query.IncludeItemTypes.Length == 1)
+
+            var includeTypes = query.IncludeItemTypes.SelectMany(MapIncludeItemTypes).ToArray();
+
+            if (includeTypes.Length == 1)
             {
                 whereClauses.Add("type=@type");
-                cmd.Parameters.Add(cmd, "@type", DbType.String).Value = MapIncludeItemType(query.IncludeItemTypes[0]);
+                cmd.Parameters.Add(cmd, "@type", DbType.String).Value = includeTypes[0];
             }
-            if (query.IncludeItemTypes.Length > 1)
+            if (includeTypes.Length > 1)
             {
-                var inClause = string.Join(",", query.IncludeItemTypes.Select(i => "'" + MapIncludeItemType(i) + "'").ToArray());
+                var inClause = string.Join(",", includeTypes.Select(i => "'" + i + "'").ToArray());
                 whereClauses.Add(string.Format("type in ({0})", inClause));
             }
             if (query.ChannelIds.Length == 1)
@@ -818,7 +821,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     whereClauses.Add("(StartDate>@IsAiringDate OR EndDate < @IsAiringDate)");
                     cmd.Parameters.Add(cmd, "@IsAiringDate", DbType.Date).Value = DateTime.UtcNow;
-                } 
+                }
             }
 
             if (addPaging)
@@ -839,21 +842,24 @@ namespace MediaBrowser.Server.Implementations.Persistence
         }
 
         // Not crazy about having this all the way down here, but at least it's in one place
-        readonly Dictionary<string, string> _types = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        readonly Dictionary<string, string[]> _types = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
             {
-                {typeof(LiveTvProgram).Name, typeof(LiveTvProgram).FullName},
-                {typeof(LiveTvChannel).Name, typeof(LiveTvChannel).FullName}
+                {typeof(LiveTvProgram).Name, new []{typeof(LiveTvProgram).FullName}},
+                {typeof(LiveTvChannel).Name, new []{typeof(LiveTvChannel).FullName}},
+                {typeof(LiveTvVideoRecording).Name, new []{typeof(LiveTvVideoRecording).FullName}},
+                {typeof(LiveTvAudioRecording).Name, new []{typeof(LiveTvAudioRecording).FullName}},
+                {"Recording", new []{typeof(LiveTvAudioRecording).FullName, typeof(LiveTvVideoRecording).FullName}}
             };
 
-        private string MapIncludeItemType(string value)
+        private IEnumerable<string> MapIncludeItemTypes(string value)
         {
-            string result;
+            string[] result;
             if (_types.TryGetValue(value, out result))
             {
                 return result;
             }
 
-            return value;
+            return new[] { value };
         }
 
         public IEnumerable<Guid> GetItemIdsOfType(Type type)

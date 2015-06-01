@@ -290,7 +290,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public Guid GetInternalRecordingId(string serviceName, string externalId)
         {
-            var name = serviceName + externalId + InternalVersionNumber;
+            var name = serviceName + externalId + InternalVersionNumber + "0";
 
             return name.ToLower().GetMBId(typeof(ILiveTvRecording));
         }

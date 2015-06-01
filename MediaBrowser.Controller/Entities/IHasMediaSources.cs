@@ -1,17 +1,10 @@
 ﻿using MediaBrowser.Model.Dto;
-using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public interface IHasMediaSources
+    public interface IHasMediaSources : IHasId
     {
-        /// <summary>
-        /// Gets the identifier.
-        /// </summary>
-        /// <value>The identifier.</value>
-        Guid Id { get; }
-
         /// <summary>
         /// Gets the media sources.
         /// </summary>

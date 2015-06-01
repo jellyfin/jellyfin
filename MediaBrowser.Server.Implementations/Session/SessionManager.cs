@@ -1528,16 +1528,16 @@ namespace MediaBrowser.Server.Implementations.Session
             }
 
             var recording = item as ILiveTvRecording;
-            if (recording != null && recording.RecordingInfo != null)
+            if (recording != null)
             {
-                if (recording.RecordingInfo.IsSeries)
+                if (recording.IsSeries)
                 {
-                    info.Name = recording.RecordingInfo.EpisodeTitle;
-                    info.SeriesName = recording.RecordingInfo.Name;
+                    info.Name = recording.EpisodeTitle;
+                    info.SeriesName = recording.Name;
 
                     if (string.IsNullOrWhiteSpace(info.Name))
                     {
-                        info.Name = recording.RecordingInfo.Name;
+                        info.Name = recording.Name;
                     }
                 }
             }
