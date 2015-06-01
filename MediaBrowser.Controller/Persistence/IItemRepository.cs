@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Persistence
 {
@@ -103,13 +104,6 @@ namespace MediaBrowser.Controller.Persistence
         IEnumerable<Guid> GetChildren(Guid parentId);
 
         /// <summary>
-        /// Gets the type of the items of.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>IEnumerable{Guid}.</returns>
-        IEnumerable<Guid> GetItemIdsOfType(Type type);
-
-        /// <summary>
         /// Saves the children.
         /// </summary>
         /// <param name="parentId">The parent id.</param>
@@ -135,11 +129,24 @@ namespace MediaBrowser.Controller.Persistence
         Task SaveMediaStreams(Guid id, IEnumerable<MediaStream> streams, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the type of the items of.
+        /// Gets the item ids.
         /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>IEnumerable&lt;BaseItem&gt;.</returns>
-        IEnumerable<BaseItem> GetItemsOfType(Type type);
+        /// <param name="query">The query.</param>
+        /// <returns>IEnumerable&lt;Guid&gt;.</returns>
+        QueryResult<Guid> GetItemIds(InternalItemsQuery query);
+        /// <summary>
+        /// Gets the items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
+        QueryResult<BaseItem> GetItems(InternalItemsQuery query);
+
+        /// <summary>
+        /// Gets the item ids list.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>List&lt;Guid&gt;.</returns>
+        List<Guid> GetItemIdsList(InternalItemsQuery query);
     }
 }
 
