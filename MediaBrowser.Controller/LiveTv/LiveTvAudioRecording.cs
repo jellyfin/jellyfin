@@ -3,7 +3,9 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Users;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -12,6 +14,27 @@ namespace MediaBrowser.Controller.LiveTv
 {
     public class LiveTvAudioRecording : Audio, ILiveTvRecording
     {
+        public string ExternalId { get; set; }
+        public string ProviderImagePath { get; set; }
+        public string ProviderImageUrl { get; set; }
+        public string EpisodeTitle { get; set; }
+        public bool IsSeries { get; set; }
+        public string SeriesTimerId { get; set; }
+        public DateTime StartDate { get; set; }
+        public RecordingStatus Status { get; set; }
+        public bool IsSports { get; set; }
+        public bool IsNews { get; set; }
+        public bool IsKids { get; set; }
+        public bool IsRepeat { get; set; }
+        public bool IsMovie { get; set; }
+        public bool? IsHD { get; set; }
+        public bool IsLive { get; set; }
+        public bool IsPremiere { get; set; }
+        public ChannelType ChannelType { get; set; }
+        public string ProgramId { get; set; }
+        public ProgramAudio? Audio { get; set; }
+        public DateTime? OriginalAirDate { get; set; }
+
         /// <summary>
         /// Gets the user data key.
         /// </summary>

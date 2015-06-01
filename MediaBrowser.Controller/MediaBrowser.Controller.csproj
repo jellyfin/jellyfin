@@ -142,6 +142,7 @@
     <Compile Include="Entities\IHasBudget.cs" />
     <Compile Include="Entities\IHasCriticRating.cs" />
     <Compile Include="Entities\IHasDisplayOrder.cs" />
+    <Compile Include="Entities\IHasId.cs" />
     <Compile Include="Entities\IHasImages.cs" />
     <Compile Include="Entities\IHasKeywords.cs" />
     <Compile Include="Entities\IHasMediaSources.cs" />
