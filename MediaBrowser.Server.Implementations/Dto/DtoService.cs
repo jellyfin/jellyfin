@@ -1668,7 +1668,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 {
                     double percent = 0;
                     SyncedItemProgress syncItemProgress;
-                    if (syncProgress.TryGetValue(dto.Id, out syncItemProgress))
+                    if (syncProgress.TryGetValue(child.Id.ToString("N"), out syncItemProgress))
                     {
                         switch (syncItemProgress.Status)
                         {
@@ -1695,7 +1695,11 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 if (addSyncInfo)
                 {
-                    dto.SyncPercent = totalSyncPercent / recursiveItemCount;
+                    var pct = totalSyncPercent / recursiveItemCount;
+                    if (pct > 0)
+                    {
+                        dto.SyncPercent = pct;
+                    }
                 }
             }
 
