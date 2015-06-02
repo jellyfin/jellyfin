@@ -234,7 +234,7 @@
 
             html += '<br/>';
             html += '<p>';
-            html += '<button type="submit" data-icon="cloud" data-theme="b">' + Globalize.translate('ButtonSync') + '</button>';
+            html += '<button type="submit" data-icon="refresh" data-theme="b">' + Globalize.translate('ButtonSync') + '</button>';
             html += '</p>';
 
             html += '</form>';

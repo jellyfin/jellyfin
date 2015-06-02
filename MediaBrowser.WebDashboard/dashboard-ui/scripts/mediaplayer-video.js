@@ -1110,12 +1110,12 @@
 
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresNativeControls) {
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" controls="controls"' + posterCode + ' webkit-playsinline>';
+                html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" controls="controls"' + posterCode + ' webkit-playsinline>';
             }
             else {
 
                 // Chrome 35 won't play with preload none
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" crossorigin="anonymous" autoplay' + posterCode + '>';
+                html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" crossorigin="anonymous" autoplay' + posterCode + '>';
             }
 
             html += '<source type="' + contentType + '" src="' + videoUrl + '" />';

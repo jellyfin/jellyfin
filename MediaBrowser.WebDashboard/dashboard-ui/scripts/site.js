@@ -843,7 +843,7 @@ var Dashboard = {
             name: Globalize.translate('TabSync'),
             href: "syncactivity.html",
             selected: page.hasClass('syncConfigurationPage') || (isServicesPage && context == 'sync'),
-            icon: 'fa-cloud'
+            icon: 'fa-refresh'
         }, {
             divider: true,
             name: Globalize.translate('TabExtras')
@@ -1838,6 +1838,8 @@ var AppInfo = {};
         define('jquery', [], function () {
             return jQuery;
         });
+
+        //requirejs(['http://viblast.com/player/free-version/qy2fdwajo1/viblast.js']);
 
         setAppInfo();
 

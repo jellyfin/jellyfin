@@ -447,7 +447,7 @@
             return currentSrc.substring(currentSrc.lastIndexOf('.'));
         };
 
-        self.canPlayHls = function () {
+        self.canPlayNativeHls = function () {
 
             var media = testableVideoElement;
 
@@ -457,6 +457,16 @@
                 return true;
             }
 
+            return false;
+        };
+
+        self.canPlayHls = function () {
+
+            if (self.canPlayNativeHls()) {
+                return true;
+            }
+
+            //return $.browser.chrome || $.browser.msie;
             return false;
         };
 

@@ -5,7 +5,7 @@
 </head>
 <body>
     <div class="backdropContainer kidsBackdropContainer" style="top:0;"></div>
-    <div id="kidsPage" data-role="page" class="page standalonePage noHeaderPage  backdropPage staticBackdropPage" style="background-color: rgba(255,255,255,.6)!important;">
+    <div id="kidsPage" data-role="page" class="page standalonePage noHeaderPage  backdropPage staticBackdropPage" style="background-color: rgba(255,255,255,.6)!important;" data-require="scripts/kids">
 
         <div data-role="content" style="padding-left: 0;padding-right:0;">
             <div class="kidsWelcome" style="position:absolute;width:100%;">
@@ -75,11 +75,6 @@
                 <i class="fa fa-lock"></i>
             </button>
         </div>
-
-        <script type="text/javascript">
-            $('.kidPinForm').off('submit', KidsPage.onPinSubmit).on('submit', KidsPage.onPinSubmit);
-            $('.kidsOptionsForm').off('submit', KidsPage.onOptionsSubmit).on('submit', KidsPage.onOptionsSubmit);
-        </script>
     </div>
 </body>
 </html>

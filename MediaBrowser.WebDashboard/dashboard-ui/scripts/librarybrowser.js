@@ -1480,6 +1480,8 @@
                 html += LibraryBrowser.getGroupCountIndicator(item);
             }
 
+            html += LibraryBrowser.getSyncIndicator(item);
+
             if (mediaSourceCount > 1) {
                 html += '<div class="mediaSourceIndicator">' + mediaSourceCount + '</div>';
             }
@@ -1843,6 +1845,23 @@
 
             if (item.ChildCount) {
                 return '<div class="playedIndicator">' + item.ChildCount + '</div>';
+            }
+
+            return '';
+        },
+
+        getSyncIndicator: function (item) {
+
+            if (item.SyncStatus) {
+                if (item.SyncStatus == 'Queued' || item.SyncStatus == 'Converting' || item.SyncStatus == 'ReadyToTransfer' || item.SyncStatus == 'Transferring') {
+
+                    return '<div class="syncIndicator syncWorkingIndicator"><i class="fa fa-refresh"></i></div>';
+                }
+
+                if (item.SyncStatus == 'Synced') {
+
+                    return '<div class="syncIndicator"><i class="fa fa-refresh"></i></div>';
+                }
             }
 
             return '';

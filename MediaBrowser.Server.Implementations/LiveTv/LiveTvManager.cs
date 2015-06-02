@@ -1153,7 +1153,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                     if (item != null)
                     {
-                        await _libraryManager.DeleteItem(item).ConfigureAwait(false);
+                        await _libraryManager.DeleteItem(item, new DeleteOptions
+                        {
+                            DeleteFileLocation = false
+
+                        }).ConfigureAwait(false);
                     }
                 }
 

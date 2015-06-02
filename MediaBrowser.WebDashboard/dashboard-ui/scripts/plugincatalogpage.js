@@ -23,6 +23,7 @@
         var promise2 = ApiClient.getInstalledPlugins();
 
         $.when(promise1, promise2).done(function (response1, response2) {
+
             populateList({
 
                 catalogElement: $('#pluginTiles', page),
@@ -33,8 +34,13 @@
             });
         });
     }
-
     function populateList(options) {
+        requirejs(['scripts/ratingdialog'], function () {
+            populateListInternal(options);
+        });
+    }
+
+    function populateListInternal(options) {
 
         var availablePlugins = options.availablePlugins;
         var installedPlugins = options.installedPlugins;

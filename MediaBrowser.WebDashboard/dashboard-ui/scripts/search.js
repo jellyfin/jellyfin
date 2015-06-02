@@ -85,7 +85,7 @@
 
         var html = LibraryBrowser.getPosterViewHtml({
             items: hints,
-            shape: "square",
+            shape: "auto",
             lazy: true,
             overlayText: false,
             showTitle: true,
