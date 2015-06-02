@@ -87,13 +87,14 @@ namespace MediaBrowser.Server.Implementations.Dto
 
         public IEnumerable<BaseItemDto> GetBaseItemDtos(IEnumerable<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
         {
-            var tuple = GetItemIdsWithSyncJobs(options);
+            var syncJobItems = GetSyncedItemProgress(options);
+            var syncDictionary = syncJobItems.ToDictionary(i => i.ItemId);
 
             var list = new List<BaseItemDto>();
 
             foreach (var item in items)
             {
-                var dto = GetBaseItemDtoInternal(item, options, user, owner);
+                var dto = GetBaseItemDtoInternal(item, options, syncDictionary, user, owner);
 
                 var byName = item as IItemByName;
 
@@ -111,7 +112,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
                 }
 
-                FillSyncInfo(dto, item, tuple.Item1, tuple.Item2, options, user);
+                FillSyncInfo(dto, item, syncJobItems, options, user);
 
                 list.Add(dto);
             }
@@ -121,7 +122,9 @@ namespace MediaBrowser.Server.Implementations.Dto
 
         public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
         {
-            var dto = GetBaseItemDtoInternal(item, options, user, owner);
+            var syncProgress = GetSyncedItemProgress(options);
+
+            var dto = GetBaseItemDtoInternal(item, options, syncProgress.ToDictionary(i => i.ItemId), user, owner);
 
             var byName = item as IItemByName;
 
@@ -138,35 +141,35 @@ namespace MediaBrowser.Server.Implementations.Dto
                     SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
                 }
 
-                FillSyncInfo(dto, item, options, user);
+                FillSyncInfo(dto, item, options, user, syncProgress);
                 return dto;
             }
 
-            FillSyncInfo(dto, item, options, user);
+            FillSyncInfo(dto, item, options, user, syncProgress);
 
             return dto;
         }
 
-        private Tuple<IEnumerable<string>, IEnumerable<string>> GetItemIdsWithSyncJobs(DtoOptions options)
+        private SyncedItemProgress[] GetSyncedItemProgress(DtoOptions options)
         {
             if (!options.Fields.Contains(ItemFields.SyncInfo))
             {
-                return new Tuple<IEnumerable<string>, IEnumerable<string>>(new List<string>(), new List<string>());
+                return new SyncedItemProgress[]{};
             }
 
             var deviceId = options.DeviceId;
             if (string.IsNullOrWhiteSpace(deviceId))
             {
-                return new Tuple<IEnumerable<string>, IEnumerable<string>>(new List<string>(), new List<string>());
+                return new SyncedItemProgress[] { };
             }
 
             var caps = _deviceManager().GetCapabilities(deviceId);
             if (caps == null || !caps.SupportsSync)
             {
-                return new Tuple<IEnumerable<string>, IEnumerable<string>>(new List<string>(), new List<string>());
+                return new SyncedItemProgress[] { };
             }
 
-            var result1 = _syncManager.GetLibraryItemIds(new SyncJobItemQuery
+            return _syncManager.GetSyncedItemProgresses(new SyncJobItemQuery
             {
                 TargetId = deviceId,
                 Statuses = new[]
@@ -174,38 +177,28 @@ namespace MediaBrowser.Server.Implementations.Dto
                     SyncJobItemStatus.Converting,
                     SyncJobItemStatus.Queued,
                     SyncJobItemStatus.Transferring,
-                    SyncJobItemStatus.ReadyToTransfer
-                }
-            });
-
-            var result2 = _syncManager.GetLibraryItemIds(new SyncJobItemQuery
-            {
-                TargetId = deviceId,
-                Statuses = new[]
-                {
+                    SyncJobItemStatus.ReadyToTransfer,
                     SyncJobItemStatus.Synced
                 }
-            });
-
-            return new Tuple<IEnumerable<string>, IEnumerable<string>>(result1.Items, result2.Items);
+            }).Items;
         }
 
         public void FillSyncInfo(IEnumerable<IHasSyncInfo> dtos, DtoOptions options, User user)
         {
             if (options.Fields.Contains(ItemFields.SyncInfo))
             {
-                var tuple = GetItemIdsWithSyncJobs(options);
+                var syncProgress = GetSyncedItemProgress(options);
 
                 foreach (var dto in dtos)
                 {
                     var item = _libraryManager.GetItemById(dto.Id);
 
-                    FillSyncInfo(dto, item, tuple.Item1, tuple.Item2, options, user);
+                    FillSyncInfo(dto, item, syncProgress, options, user);
                 }
             }
         }
 
-        private void FillSyncInfo(IHasSyncInfo dto, BaseItem item, DtoOptions options, User user)
+        private void FillSyncInfo(IHasSyncInfo dto, BaseItem item, DtoOptions options, User user, SyncedItemProgress[] syncProgress)
         {
             if (options.Fields.Contains(ItemFields.SyncInfo))
             {
@@ -215,10 +208,8 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (dto.SupportsSync ?? false)
             {
-                var tuple = GetItemIdsWithSyncJobs(options);
-
-                dto.HasSyncJob = tuple.Item1.Contains(dto.Id, StringComparer.OrdinalIgnoreCase);
-                dto.IsSynced = tuple.Item2.Contains(dto.Id, StringComparer.OrdinalIgnoreCase);
+                dto.HasSyncJob = syncProgress.Any(i => i.Status != SyncJobItemStatus.Synced && string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase));
+                dto.IsSynced = syncProgress.Any(i => i.Status == SyncJobItemStatus.Synced && string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase));
 
                 if (dto.IsSynced.Value)
                 {
@@ -232,7 +223,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
         }
 
-        private void FillSyncInfo(IHasSyncInfo dto, BaseItem item, IEnumerable<string> itemIdsWithPendingSyncJobs, IEnumerable<string> syncedItemIds, DtoOptions options, User user)
+        private void FillSyncInfo(IHasSyncInfo dto, BaseItem item, SyncedItemProgress[] syncProgress, DtoOptions options, User user)
         {
             if (options.Fields.Contains(ItemFields.SyncInfo))
             {
@@ -242,8 +233,8 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (dto.SupportsSync ?? false)
             {
-                dto.HasSyncJob = itemIdsWithPendingSyncJobs.Contains(dto.Id, StringComparer.OrdinalIgnoreCase);
-                dto.IsSynced = syncedItemIds.Contains(dto.Id, StringComparer.OrdinalIgnoreCase);
+                dto.HasSyncJob = syncProgress.Any(i => i.Status != SyncJobItemStatus.Synced && string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase));
+                dto.IsSynced = syncProgress.Any(i => i.Status == SyncJobItemStatus.Synced && string.Equals(i.ItemId, dto.Id, StringComparison.OrdinalIgnoreCase));
 
                 if (dto.IsSynced.Value)
                 {
@@ -257,7 +248,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, Dictionary<string,SyncedItemProgress> syncProgress, User user = null, BaseItem owner = null)
         {
             var fields = options.Fields;
 
@@ -301,7 +292,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             if (user != null)
             {
-                AttachUserSpecificInfo(dto, item, user, fields);
+                AttachUserSpecificInfo(dto, item, user, fields, syncProgress);
             }
 
             var hasMediaSources = item as IHasMediaSources;
@@ -368,14 +359,16 @@ namespace MediaBrowser.Server.Implementations.Dto
         public BaseItemDto GetItemByNameDto<T>(T item, DtoOptions options, List<BaseItem> taggedItems, User user = null)
             where T : BaseItem, IItemByName
         {
-            var dto = GetBaseItemDtoInternal(item, options, user);
+            var syncProgress = GetSyncedItemProgress(options);
+
+            var dto = GetBaseItemDtoInternal(item, options, syncProgress.ToDictionary(i => i.ItemId), user);
 
             if (options.Fields.Contains(ItemFields.ItemCounts))
             {
                 SetItemByNameInfo(item, dto, taggedItems, user);
             }
 
-            FillSyncInfo(dto, item, options, user);
+            FillSyncInfo(dto, item, options, user, syncProgress);
 
             return dto;
         }
@@ -415,7 +408,8 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <param name="item">The item.</param>
         /// <param name="user">The user.</param>
         /// <param name="fields">The fields.</param>
-        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields)
+        /// <param name="syncProgress">The synchronize progress.</param>
+        private void AttachUserSpecificInfo(BaseItemDto dto, BaseItem item, User user, List<ItemFields> fields, Dictionary<string, SyncedItemProgress> syncProgress)
         {
             if (item.IsFolder)
             {
@@ -433,7 +427,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 // TODO: Disable for CollectionFolder
                 if (!(folder is UserRootFolder) && !(folder is UserView))
                 {
-                    SetSpecialCounts(folder, user, dto, fields);
+                    SetSpecialCounts(folder, user, dto, fields, syncProgress);
                 }
 
                 dto.UserData.Played = dto.UserData.PlayedPercentage.HasValue && dto.UserData.PlayedPercentage.Value >= 100;
@@ -1599,8 +1593,9 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <param name="user">The user.</param>
         /// <param name="dto">The dto.</param>
         /// <param name="fields">The fields.</param>
+        /// <param name="syncProgress">The synchronize progress.</param>
         /// <returns>Task.</returns>
-        private void SetSpecialCounts(Folder folder, User user, BaseItemDto dto, List<ItemFields> fields)
+        private void SetSpecialCounts(Folder folder, User user, BaseItemDto dto, List<ItemFields> fields, Dictionary<string,SyncedItemProgress> syncProgress)
         {
             var recursiveItemCount = 0;
             var unplayed = 0;
@@ -1608,6 +1603,8 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             DateTime? dateLastMediaAdded = null;
             double totalPercentPlayed = 0;
+            double totalSyncPercent = 0;
+            var addSyncInfo = fields.Contains(ItemFields.SyncInfo);
 
             IEnumerable<BaseItem> children;
 
@@ -1666,6 +1663,27 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
 
                 runtime += child.RunTimeTicks ?? 0;
+
+                if (addSyncInfo)
+                {
+                    double percent = 0;
+                    SyncedItemProgress syncItemProgress;
+                    if (syncProgress.TryGetValue(dto.Id, out syncItemProgress))
+                    {
+                        switch (syncItemProgress.Status)
+                        {
+                            case SyncJobItemStatus.Synced:
+                                percent = 100;
+                                break;
+                            case SyncJobItemStatus.Converting:
+                            case SyncJobItemStatus.ReadyToTransfer:
+                            case SyncJobItemStatus.Transferring:
+                                percent = 50;
+                                break;
+                        }
+                    }
+                    totalSyncPercent += percent;
+                }
             }
 
             dto.RecursiveItemCount = recursiveItemCount;
@@ -1674,6 +1692,11 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (recursiveItemCount > 0)
             {
                 dto.UserData.PlayedPercentage = totalPercentPlayed / recursiveItemCount;
+
+                if (addSyncInfo)
+                {
+                    dto.SyncPercent = totalSyncPercent / recursiveItemCount;
+                }
             }
 
             if (runtime > 0 && fields.Contains(ItemFields.CumulativeRunTimeTicks))

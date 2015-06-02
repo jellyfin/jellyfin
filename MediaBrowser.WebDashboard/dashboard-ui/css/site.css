@@ -154,16 +154,7 @@ h1 a:hover {
     bottom: 0;
     right: 0;
     overflow: hidden;
-    overflow-y: scroll;
-    -webkit-overflow-scrolling: touch;
-    -ms-overflow-style: none;
-    overflow: -moz-scrollbars-none;
 }
-
-    .ui-panel-inner::-webkit-scrollbar {
-        width: 0 !important;
-        display: none;
-    }
 
 .ui-slider-track.ui-mini .ui-slider-handle {
     height: 18px;
@@ -189,15 +180,15 @@ h1 a:hover {
     }
 
 
-.hiddenScrollY {
-    overflow-y: scroll;
+.hiddenScrollY, .ui-panel-inner {
+    overflow-y: auto;
     -ms-overflow-style: none;
     overflow: -moz-scrollbars-none;
     -webkit-overflow-scrolling: touch;
     overflow-x: hidden;
 }
 
-    .hiddenScrollY::-webkit-scrollbar {
+    .touch .hiddenScrollY::-webkit-scrollbar, .touch .ui-panel-inner::-webkit-scrollbar {
         width: 0 !important;
         display: none;
     }

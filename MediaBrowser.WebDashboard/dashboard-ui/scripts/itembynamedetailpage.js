@@ -452,7 +452,6 @@
 
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    smallIcon: true,
                     playFromHere: true,
                     defaultAction: 'playallfromhere'
                 });
@@ -504,8 +503,7 @@
             else {
 
                 html = LibraryBrowser.getListViewHtml({
-                    items: result.Items,
-                    smallIcon: true
+                    items: result.Items
                 });
             }
 

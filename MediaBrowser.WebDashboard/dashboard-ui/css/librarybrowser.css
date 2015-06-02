@@ -920,12 +920,65 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     padding-top: 3px;
     border-radius: 50%;
     color: #fff;
-    background: rgba(51, 136, 204, .8);
+    background: rgba(82, 181, 75, .8);
     line-height: 16px;
 }
 
 .syncWorkingIndicator {
     background: rgba(255, 106, 0, .8);
+}
+
+.pieIndicator {
+    height: 24px;
+    position: absolute;
+    top: 32px;
+    right: 29px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.pieBackground {
+    background-color: rgb(82, 181, 75);
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    -moz-border-radius: 50px;
+    -webkit-border-radius: 50px;
+    -o-border-radius: 50px;
+    border-radius: 50px;
+    z-index: 1;
+}
+
+.pieIndicator .fa {
+    color: #fff;
+    z-index: 4;
+    position: absolute;
+    margin: 5px 0 0 6px;
+}
+
+.pie {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    -moz-border-radius: 50px;
+    -webkit-border-radius: 50px;
+    -o-border-radius: 50px;
+    border-radius: 50px;
+    clip: rect(0px, 12px, 24px, 0px);
+    background-color: rgba(31, 31, 31, .8);
+    z-index: 2;
+}
+
+.hold {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    -moz-border-radius: 50px;
+    -webkit-border-radius: 50px;
+    -o-border-radius: 50px;
+    border-radius: 50px;
+    clip: rect(0px, 24px, 24px, 12px);
+    z-index: 3;
 }
 
 .playedIndicator {
@@ -1387,6 +1440,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .listItem a:first-child {
     margin-right: 0 !important;
     background-color: transparent !important;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.listItem.ui-li-has-thumb .ui-btn {
+    padding-left: 5.9em !important;
 }
 
 .ui-page-theme-a .listItem a:first-child {
@@ -1408,6 +1467,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .ui-page-theme-b .listItem:hover a {
     background-color: rgba(51,51,51,.6) !important;
+}
+
+.listviewSubLink:hover {
+    color: #2ad;
 }
 
 @media all and (max-width: 600px) {

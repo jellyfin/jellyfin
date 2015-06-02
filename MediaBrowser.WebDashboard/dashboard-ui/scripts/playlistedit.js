@@ -98,7 +98,6 @@
                         showIndex: false,
                         title: item.Name,
                         showRemoveFromPlaylist: true,
-                        smallIcon: true,
                         playFromHere: true,
                         defaultAction: 'playallfromhere'
                     });

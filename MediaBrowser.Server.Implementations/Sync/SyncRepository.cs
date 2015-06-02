@@ -627,9 +627,9 @@ namespace MediaBrowser.Server.Implementations.Sync
             }
         }
 
-        public QueryResult<string> GetLibraryItemIds(SyncJobItemQuery query)
+        public QueryResult<SyncedItemProgress> GetSyncedItemProgresses(SyncJobItemQuery query)
         {
-            return GetJobItemReader(query, "select ItemId from SyncJobItems", GetItemId);
+            return GetJobItemReader(query, "select ItemId,Status from SyncJobItems", GetSyncedItemProgress);
         }
 
         public QueryResult<SyncJobItem> GetJobItems(SyncJobItemQuery query)
@@ -788,9 +788,18 @@ namespace MediaBrowser.Server.Implementations.Sync
             return info;
         }
 
-        private string GetItemId(IDataReader reader)
+        private SyncedItemProgress GetSyncedItemProgress(IDataReader reader)
         {
-            return reader.GetString(0);
+            var item = new SyncedItemProgress();
+
+            item.ItemId = reader.GetString(0);
+
+            if (!reader.IsDBNull(1))
+            {
+                item.Status = (SyncJobItemStatus)Enum.Parse(typeof(SyncJobItemStatus), reader.GetString(1), true);
+            }
+
+            return item;
         }
 
         /// <summary>

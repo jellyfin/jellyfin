@@ -232,9 +232,9 @@
             return html;
         },
 
-        playInExternalPlayer: function(id) {
-            
-             Dashboard.loadExternalPlayer().done(function () {
+        playInExternalPlayer: function (id) {
+
+            Dashboard.loadExternalPlayer().done(function () {
                 ExternalPlayer.showMenu(id);
             });
         },
@@ -811,11 +811,27 @@
                 }
                 textlines.push(displayName);
 
+                var verticalTextLines = 2;
+                var enableSubLinks = !AppInfo.isTouchPreferred;
+
                 if (item.Type == 'Audio') {
                     textlines.push(item.ArtistItems.map(function (a) {
-                        return a.Name;
+                        if (enableSubLinks) {
+                            return '<span class="listviewSubLink" data-href="itembynamedetails.html?id=' + a.Id + '&context=music">' + a.Name + '</span>';
+                        } else {
+                            return a.Name;
+                        }
 
                     }).join(', ') || '&nbsp;');
+
+                    if (item.Album && item.AlbumId && !options.smallIcon) {
+                        verticalTextLines++;
+                        if (enableSubLinks) {
+                            textlines.push('<span class="listviewSubLink" data-href="itemdetails.html?id=' + item.AlbumId + '&context=music">' + item.Album + '</span>');
+                        } else {
+                            textlines.push(item.Album);
+                        }
+                    }
                 }
 
                 if (item.Type == 'Game') {
@@ -836,14 +852,20 @@
                 html += textlines[0];
                 html += '</h3>';
 
-                if (textlines.length > 1) {
+                if (textlines.length > 1 && verticalTextLines > 1) {
                     html += '<p>';
                     html += textlines[1];
                     html += '</p>';
                 }
 
+                if (textlines.length > 2 && verticalTextLines > 2) {
+                    html += '<p>';
+                    html += textlines[2];
+                    html += '</p>';
+                }
+
                 html += '<div class="ui-li-aside">';
-                html += textlines[2] || LibraryBrowser.getRatingHtml(item, false);
+                html += textlines[verticalTextLines] || LibraryBrowser.getRatingHtml(item, false);
                 html += '</div>';
 
                 if (item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.MediaType == 'Video') {
@@ -1851,6 +1873,16 @@
         },
 
         getSyncIndicator: function (item) {
+
+            if (item.SyncPercent) {
+
+                if (item.SyncPercent >= 100) {
+                    return '<div class="syncIndicator"><i class="fa fa-refresh"></i></div>';
+                }
+
+                var degree = (item.SyncPercent / 100) * 360;
+                return '<div class="pieIndicator"><i class="fa fa-refresh"></i><div class="pieBackground"></div><div class="hold"><div class="pie" style="-webkit-transform: rotate(' + degree + 'deg);-moz-transform: rotate(' + degree + 'deg);-o-transform: rotate(' + degree + 'deg);transform: rotate(' + degree + 'deg);"></div></div></div>';
+            }
 
             if (item.SyncStatus) {
                 if (item.SyncStatus == 'Queued' || item.SyncStatus == 'Converting' || item.SyncStatus == 'ReadyToTransfer' || item.SyncStatus == 'Transferring') {

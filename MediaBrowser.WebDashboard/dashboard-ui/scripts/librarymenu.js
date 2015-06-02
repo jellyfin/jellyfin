@@ -56,7 +56,7 @@
             $('.btnCast', header).show();
             $('.headerSearchButton', header).show();
 
-            requirejs(['scripts/voice'], function () {
+            requirejs(['voice/voice'], function () {
 
                 if (VoiceInputManager.isSupported()) {
                     $('.headerVoiceButton', header).show();

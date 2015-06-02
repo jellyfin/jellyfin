@@ -1049,6 +1049,13 @@
         PlaylistManager.showPanel(selection);
     }
 
+    function onListviewSubLinkClick(e) {
+        
+        var elem = e.target;
+        Dashboard.navigate(elem.getAttribute('data-href'));
+        return false;
+    }
+
     function onItemWithActionClick(e) {
 
         var elem = this;
@@ -1129,7 +1136,7 @@
 
             toggleSelections(page);
 
-        }).on('click', '.itemWithAction', onItemWithActionClick);
+        }).on('click', '.itemWithAction', onItemWithActionClick).on('click', '.listviewSubLink', onListviewSubLinkClick);
 
         $('.itemsContainer', page).createCardMenus();
 

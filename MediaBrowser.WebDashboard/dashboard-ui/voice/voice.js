@@ -148,7 +148,7 @@
 
         var words = text.toLowerCase().split(' ');
 
-        if (words.indexOf('show') != -1 || words.indexOf('pull') != -1 || words.indexOf('display') != -1) {
+        if (words.indexOf('show') != -1 || words.indexOf('pull') != -1 || words.indexOf('display') != -1 || words.indexOf('go') != -1) {
 
             if (words.indexOf('guide') != -1) {
                 result.action = 'show';
@@ -164,6 +164,7 @@
             result.removeWords.push('pull up');
             result.removeWords.push('pull');
             result.removeWords.push('display');
+            result.removeWords.push('go to');
             return result;
         }
 
@@ -450,7 +451,7 @@
         destroyCurrentRecognition();
 
         require([
-       'css!/web/css/voice'
+       'css!voice/voice'
         ], function () {
 
             startListeningInternal();
@@ -486,6 +487,12 @@
     window.VoiceInputManager = {
 
         isSupported: function () {
+
+            // Crashing. Don't want to fight it right now
+            if (AppInfo.isNativeApp && $.browser.safari) {
+                return false;
+            }
+
             return window.SpeechRecognition || window.webkitSpeechRecognition;
         },
 
