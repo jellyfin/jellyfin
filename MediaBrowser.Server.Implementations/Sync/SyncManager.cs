@@ -1131,9 +1131,9 @@ namespace MediaBrowser.Server.Implementations.Sync
             await processor.UpdateJobStatus(jobItem.JobId).ConfigureAwait(false);
         }
 
-        public QueryResult<string> GetLibraryItemIds(SyncJobItemQuery query)
+        public QueryResult<SyncedItemProgress> GetSyncedItemProgresses(SyncJobItemQuery query)
         {
-            return _repo.GetLibraryItemIds(query);
+            return _repo.GetSyncedItemProgresses(query);
         }
 
         public SyncJobOptions GetAudioOptions(SyncJobItem jobItem, SyncJob job)

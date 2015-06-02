@@ -411,6 +411,7 @@
     <Compile Include="Sync\ISyncProvider.cs" />
     <Compile Include="Sync\ISyncRepository.cs" />
     <Compile Include="Sync\SyncedFileInfo.cs" />
+    <Compile Include="Sync\SyncedItemProgress.cs" />
     <Compile Include="Themes\IAppThemeManager.cs" />
     <Compile Include="Themes\InternalThemeImage.cs" />
     <Compile Include="TV\ITVSeriesManager.cs" />

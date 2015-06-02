@@ -100,6 +100,11 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The synchronize status.</value>
         public SyncJobItemStatus? SyncStatus { get; set; }
+        /// <summary>
+        /// Gets or sets the synchronize percent.
+        /// </summary>
+        /// <value>The synchronize percent.</value>
+        public double? SyncPercent { get; set; }
 
         /// <summary>
         /// Gets or sets the DVD season number.
