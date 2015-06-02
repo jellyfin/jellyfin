@@ -2088,6 +2088,15 @@ namespace MediaBrowser.Api.Playback
             responseHeaders["transferMode.dlna.org"] = string.IsNullOrEmpty(transferMode) ? "Streaming" : transferMode;
             responseHeaders["realTimeInfo.dlna.org"] = "DLNA.ORG_TLAG=*";
 
+            if (string.Equals(GetHeader("getMediaInfo.sec"), "1", StringComparison.OrdinalIgnoreCase))
+            {
+                if (state.RunTimeTicks.HasValue)
+                {
+                    var ms = TimeSpan.FromTicks(state.RunTimeTicks.Value).TotalMilliseconds;
+                    responseHeaders["MediaInfo.sec"] = string.Format("SEC_Duration={0};", Convert.ToInt32(ms).ToString(CultureInfo.InvariantCulture));
+                }
+            }
+
             if (state.RunTimeTicks.HasValue && !isStaticallyStreamed && profile != null)
             {
                 AddTimeSeekResponseHeaders(state, responseHeaders);
