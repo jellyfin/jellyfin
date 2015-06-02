@@ -793,5 +793,11 @@
     "HeaderLibrary": "Library",
     "HeaderMedia": "Media",
     "ButtonInbox": "Inbox",
-    "HeaderAdvanced":  "Advanced"
+    "HeaderAdvanced": "Advanced",
+    "HeaderSaySomethingLike": "Say Something Like...",
+    "ButtonTryAgain": "Try Again",
+    "HeaderYouSaid": "You Said...",
+    "MessageWeDidntRecognizeCommand": "We're sorry, we didn't recognize that command.",
+    "MessageIfYouBlockedVoice": "If you denied voice access to the app you'll need to reconfigure before trying again.",
+    "MessageNoItemsFound": "No items found."
 }
