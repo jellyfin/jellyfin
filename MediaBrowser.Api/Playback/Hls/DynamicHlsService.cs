@@ -797,7 +797,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 return string.Join(" ", audioTranscodeParams.ToArray());
             }
 
-            var codec = state.OutputAudioCodec;
+            var codec = GetAudioEncoder(state.Request);
 
             if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
@@ -832,7 +832,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 return string.Empty;
             }
 
-            var codec = state.OutputVideoCodec;
+            var codec = GetVideoEncoder(state.VideoRequest);
 
             var args = "-codec:v:0 " + codec;
 

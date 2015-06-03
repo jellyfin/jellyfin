@@ -813,11 +813,11 @@ namespace MediaBrowser.Api.Playback
         }
 
         /// <summary>
-        /// Gets the name of the output audio codec
+        /// Gets the audio encoder.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.String.</returns>
-        private string GetAudioCodec(StreamRequest request)
+        protected string GetAudioEncoder(StreamRequest request)
         {
             var codec = request.AudioCodec;
 
@@ -846,7 +846,7 @@ namespace MediaBrowser.Api.Playback
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns>System.String.</returns>
-        private string GetVideoCodec(VideoStreamRequest request)
+        protected string GetVideoEncoder(VideoStreamRequest request)
         {
             var codec = request.VideoCodec;
 
@@ -1665,13 +1665,13 @@ namespace MediaBrowser.Api.Playback
             state.OutputAudioBitrate = GetAudioBitrateParam(state.Request, state.AudioStream);
             state.OutputAudioSampleRate = request.AudioSampleRate;
 
-            state.OutputAudioCodec = GetAudioCodec(state.Request);
+            state.OutputAudioCodec = state.Request.AudioCodec;
 
             state.OutputAudioChannels = GetNumAudioChannelsParam(state.Request, state.AudioStream, state.OutputAudioCodec);
 
             if (videoRequest != null)
             {
-                state.OutputVideoCodec = GetVideoCodec(videoRequest);
+                state.OutputVideoCodec = state.VideoRequest.VideoCodec;
                 state.OutputVideoBitrate = GetVideoBitrateParamValue(state.VideoRequest, state.VideoStream);
 
                 if (state.OutputVideoBitrate.HasValue)
@@ -2061,15 +2061,18 @@ namespace MediaBrowser.Api.Playback
                 state.MimeType = mediaProfile.MimeType;
             }
 
-            var transcodingProfile = state.VideoRequest == null ?
-                profile.GetAudioTranscodingProfile(state.OutputContainer, audioCodec) :
-                profile.GetVideoTranscodingProfile(state.OutputContainer, audioCodec, videoCodec);
-
-            if (transcodingProfile != null)
+            if (!state.Request.Static)
             {
-                state.EstimateContentLength = transcodingProfile.EstimateContentLength;
-                state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
-                state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
+                var transcodingProfile = state.VideoRequest == null ?
+                    profile.GetAudioTranscodingProfile(state.OutputContainer, audioCodec) :
+                    profile.GetVideoTranscodingProfile(state.OutputContainer, audioCodec, videoCodec);
+
+                if (transcodingProfile != null)
+                {
+                    state.EstimateContentLength = transcodingProfile.EstimateContentLength;
+                    state.EnableMpegtsM2TsMode = transcodingProfile.EnableMpegtsM2TsMode;
+                    state.TranscodeSeekInfo = transcodingProfile.TranscodeSeekInfo;
+                }
             }
         }
 
