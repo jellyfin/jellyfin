@@ -42,15 +42,13 @@ namespace MediaBrowser.Controller.LiveTv
         {
             var name = GetClientTypeName();
 
-            if (!string.IsNullOrEmpty(RecordingInfo.ProgramId))
+            if (!string.IsNullOrEmpty(ProgramId))
             {
-                return name + "-" + RecordingInfo.ProgramId;
+                return name + "-" + ProgramId;
             }
 
-            return name + "-" + RecordingInfo.Name + (RecordingInfo.EpisodeTitle ?? string.Empty);
+            return name + "-" + Name + (EpisodeTitle ?? string.Empty);
         }
-
-        public RecordingInfo RecordingInfo { get; set; }
 
         public string ServiceName { get; set; }
 
