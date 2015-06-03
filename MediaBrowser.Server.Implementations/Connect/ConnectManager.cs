@@ -376,6 +376,11 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         public async Task<UserLinkResult> LinkUser(string userId, string connectUsername)
         {
+            if (string.IsNullOrWhiteSpace(ConnectServerId))
+            {
+                await UpdateConnectInfo().ConfigureAwait(false);
+            }
+            
             await _operationLock.WaitAsync().ConfigureAwait(false);
 
             try
@@ -397,10 +402,6 @@ namespace MediaBrowser.Server.Implementations.Connect
             if (string.IsNullOrWhiteSpace(connectUsername))
             {
                 throw new ArgumentNullException("connectUsername");
-            }
-            if (string.IsNullOrWhiteSpace(ConnectServerId))
-            {
-                await UpdateConnectInfo().ConfigureAwait(false);
             }
             if (string.IsNullOrWhiteSpace(ConnectServerId))
             {
@@ -474,6 +475,11 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         public async Task<UserLinkResult> InviteUser(ConnectAuthorizationRequest request)
         {
+            if (string.IsNullOrWhiteSpace(ConnectServerId))
+            {
+                await UpdateConnectInfo().ConfigureAwait(false);
+            }
+            
             await _operationLock.WaitAsync().ConfigureAwait(false);
 
             try
@@ -494,10 +500,6 @@ namespace MediaBrowser.Server.Implementations.Connect
             if (string.IsNullOrWhiteSpace(connectUsername))
             {
                 throw new ArgumentNullException("connectUsername");
-            }
-            if (string.IsNullOrWhiteSpace(ConnectServerId))
-            {
-                await UpdateConnectInfo().ConfigureAwait(false);
             }
             if (string.IsNullOrWhiteSpace(ConnectServerId))
             {
