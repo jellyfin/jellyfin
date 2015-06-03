@@ -1448,6 +1448,25 @@ var Dashboard = {
         return deferred.promise();
     },
 
+    loadLocalAssetManager: function () {
+
+        var deferred = DeferredBuilder.Deferred();
+
+        var file = 'thirdparty/apiclient/localassetmanager';
+
+        if (AppInfo.isNativeApp && $.browser.android) {
+            file = 'thirdparty/cordova/android/localassetmanager';
+        }
+
+        require([
+            file
+        ], function () {
+
+            deferred.resolve();
+        });
+        return deferred.promise();
+    },
+
     ready: function (fn) {
 
         if (Dashboard.initPromiseDone) {

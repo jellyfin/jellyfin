@@ -123,8 +123,10 @@
             textLines.push('&nbsp;');
         }
 
-        html += '<div class="cardText" style="text-align:right; position:absolute; bottom:5px; right: 5px;">';
-        html += '<button class="btnJobMenu" type="button" data-inline="true" data-iconpos="notext" data-icon="ellipsis-v" style="margin: 0 0 0;"></button>';
+        html += '<div class="cardText" style="text-align:right; position:absolute; bottom:5px; right: 5px;font-size:20px;">';
+        html += '<button type="button" data-role="none" class="btnJobMenu imageButton">';
+        html += '<i class="material-icons">more_vert</i>';
+        html += '</button>';
         html += "</div>";
 
         for (var i = 0, length = textLines.length; i < length; i++) {

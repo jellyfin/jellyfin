@@ -46,7 +46,7 @@ namespace MediaBrowser.Api.Playback
     }
 
     [Route("/Playback/BitrateTest", "GET")]
-    public class GetBitrateTestBytes : IReturn<PlaybackInfoResponse>
+    public class GetBitrateTestBytes
     {
         [ApiMember(Name = "Size", Description = "Size", IsRequired = true, DataType = "int", ParameterType = "query", Verb = "GET")]
         public long Size { get; set; }
