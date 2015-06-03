@@ -7,7 +7,7 @@
         },
 
         translateFilePath: function (path) {
-            return path;
+            return 'file://' + path;
         }
     };
 

@@ -130,44 +130,44 @@
 
             apiClients.push(apiClient);
 
-            var existingServer = credentialProvider.credentials().Servers.filter(function (s) {
+            var existingServers = credentialProvider.credentials().Servers.filter(function (s) {
 
-                return stringEqualsIgnoreCase(s.ManualAddress, apiClient.serverAddress());
+                return stringEqualsIgnoreCase(s.ManualAddress, apiClient.serverAddress()) ||
+                    stringEqualsIgnoreCase(s.LocalAddress, apiClient.serverAddress()) ||
+                    stringEqualsIgnoreCase(s.RemoteAddress, apiClient.serverAddress());
 
-            })[0];
+            });
 
-            if (existingServer) {
+            var existingServer = existingServers.length ? existingServers[0] : {};
 
-                existingServer.DateLastAccessed = new Date().getTime();
-                existingServer.LastConnectionMode = MediaBrowser.ConnectionMode.Manual;
-                apiClient.serverInfo(existingServer);
-            }
+            existingServer.DateLastAccessed = new Date().getTime();
+            existingServer.LastConnectionMode = MediaBrowser.ConnectionMode.Manual;
+            existingServer.ManualAddress = apiClient.serverAddress();
+            apiClient.serverInfo(existingServer);
 
             Events.on(apiClient, 'authenticated', function (e, result) {
                 onAuthenticated(this, result, {}, true);
             });
 
+            if (!existingServers.length) {
+                var credentials = credentialProvider.credentials();
+                credentials.Servers = [existingServer];
+                credentialProvider.credentials(credentials);
+            }
+
             Events.trigger(self, 'apiclientcreated', [apiClient]);
 
-            return apiClient.getPublicSystemInfo().done(function (systemInfo) {
+            if (existingServer.Id) {
+                return;
+            }
+
+            apiClient.getPublicSystemInfo().done(function (systemInfo) {
 
                 var credentials = credentialProvider.credentials();
+                existingServer.Id = systemInfo.Id;
+                apiClient.serverInfo(existingServer);
 
-                var server = credentials.Servers.filter(function (s) {
-
-                    return s.Id == systemInfo.Id;
-
-                })[0] || {};
-
-                updateServerInfo(server, systemInfo);
-
-                server.DateLastAccessed = new Date().getTime();
-                server.LastConnectionMode = MediaBrowser.ConnectionMode.Manual;
-                server.ManualAddress = apiClient.serverAddress();
-
-                apiClient.serverInfo(server);
-
-                credentialProvider.addOrUpdateServer(credentials.Servers, server);
+                credentials.Servers = [existingServer];
                 credentialProvider.credentials(credentials);
             });
         };

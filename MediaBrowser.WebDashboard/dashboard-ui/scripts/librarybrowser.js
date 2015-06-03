@@ -868,6 +868,8 @@
                 html += textlines[verticalTextLines] || LibraryBrowser.getRatingHtml(item, false);
                 html += '</div>';
 
+                html += LibraryBrowser.getSyncIndicator(item);
+
                 if (item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.MediaType == 'Video') {
                     if (item.UserData.UnplayedItemCount) {
                         //html += '<span class="ui-li-count">' + item.UserData.UnplayedItemCount + '</span>';

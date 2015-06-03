@@ -933,7 +933,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     position: absolute;
     top: 32px;
     right: 29px;
-    text-align: center;
     vertical-align: middle;
 }
 
@@ -953,7 +952,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     color: #fff;
     z-index: 4;
     position: absolute;
-    margin: 5px 0 0 6px;
+    margin: 4px 0 0 6px;
 }
 
 .pie {
@@ -965,7 +964,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     -o-border-radius: 50px;
     border-radius: 50px;
     clip: rect(0px, 12px, 24px, 0px);
-    background-color: rgba(31, 31, 31, .8);
+    background-color: rgba(10, 10, 10, .9);
     z-index: 2;
 }
 
@@ -1385,7 +1384,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .itemsListview .playedIndicator {
         left: 55px;
         top: 2px;
-        background: rgba(82, 181, 75, .8);
+    }
+
+    .itemsListview .syncIndicator, .itemsListview .pieIndicator {
+        left: 55px;
     }
 
 .listviewImage {
