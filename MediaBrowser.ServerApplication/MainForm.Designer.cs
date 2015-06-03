@@ -32,19 +32,19 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.cmdExit = new System.Windows.Forms.ToolStripMenuItem();
-            this.cmdCommunity = new System.Windows.Forms.ToolStripMenuItem();
-            this.cmdLogWindow = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.cmdRestart = new System.Windows.Forms.ToolStripMenuItem();
-            this.cmdLibraryExplorer = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.cmdConfigure = new System.Windows.Forms.ToolStripMenuItem();
             this.cmdBrowse = new System.Windows.Forms.ToolStripMenuItem();
+            this.cmdConfigure = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.cmdLibraryExplorer = new System.Windows.Forms.ToolStripMenuItem();
+            this.cmdRestart = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.cmdApiDocs = new System.Windows.Forms.ToolStripMenuItem();
             this.cmdStandardDocs = new System.Windows.Forms.ToolStripMenuItem();
             this.cmdSwagger = new System.Windows.Forms.ToolStripMenuItem();
             this.cmdGtihub = new System.Windows.Forms.ToolStripMenuItem();
+            this.cmdLogWindow = new System.Windows.Forms.ToolStripMenuItem();
+            this.cmdCommunity = new System.Windows.Forms.ToolStripMenuItem();
+            this.cmdExit = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -71,48 +71,13 @@
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.ShowCheckMargin = true;
             this.contextMenuStrip1.ShowImageMargin = false;
-            this.contextMenuStrip1.Size = new System.Drawing.Size(209, 214);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(209, 192);
             // 
-            // cmdExit
+            // cmdBrowse
             // 
-            this.cmdExit.Name = "cmdExit";
-            this.cmdExit.Size = new System.Drawing.Size(208, 22);
-            this.cmdExit.Text = "Exit";
-            // 
-            // cmdCommunity
-            // 
-            this.cmdCommunity.Name = "cmdCommunity";
-            this.cmdCommunity.Size = new System.Drawing.Size(208, 22);
-            this.cmdCommunity.Text = "Visit Community";
-            // 
-            // cmdLogWindow
-            // 
-            this.cmdLogWindow.CheckOnClick = true;
-            this.cmdLogWindow.Name = "cmdLogWindow";
-            this.cmdLogWindow.Size = new System.Drawing.Size(208, 22);
-            this.cmdLogWindow.Text = "Show Log Window";
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(205, 6);
-            // 
-            // cmdRestart
-            // 
-            this.cmdRestart.Name = "cmdRestart";
-            this.cmdRestart.Size = new System.Drawing.Size(208, 22);
-            this.cmdRestart.Text = "Restart Server";
-            // 
-            // cmdLibraryExplorer
-            // 
-            this.cmdLibraryExplorer.Name = "cmdLibraryExplorer";
-            this.cmdLibraryExplorer.Size = new System.Drawing.Size(208, 22);
-            this.cmdLibraryExplorer.Text = "Open Library Explorer";
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(205, 6);
+            this.cmdBrowse.Name = "cmdBrowse";
+            this.cmdBrowse.Size = new System.Drawing.Size(208, 22);
+            this.cmdBrowse.Text = "Browse Library";
             // 
             // cmdConfigure
             // 
@@ -120,11 +85,27 @@
             this.cmdConfigure.Size = new System.Drawing.Size(208, 22);
             this.cmdConfigure.Text = "Configure Media Browser";
             // 
-            // cmdBrowse
+            // toolStripSeparator2
             // 
-            this.cmdBrowse.Name = "cmdBrowse";
-            this.cmdBrowse.Size = new System.Drawing.Size(208, 22);
-            this.cmdBrowse.Text = "Browse Library";
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(205, 6);
+            // 
+            // cmdLibraryExplorer
+            // 
+            this.cmdLibraryExplorer.Name = "cmdLibraryExplorer";
+            this.cmdLibraryExplorer.Size = new System.Drawing.Size(208, 22);
+            this.cmdLibraryExplorer.Text = "Open Library Explorer";
+            // 
+            // cmdRestart
+            // 
+            this.cmdRestart.Name = "cmdRestart";
+            this.cmdRestart.Size = new System.Drawing.Size(208, 22);
+            this.cmdRestart.Text = "Restart Server";
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(205, 6);
             // 
             // cmdApiDocs
             // 
@@ -153,6 +134,25 @@
             this.cmdGtihub.Name = "cmdGtihub";
             this.cmdGtihub.Size = new System.Drawing.Size(136, 22);
             this.cmdGtihub.Text = "Github Wiki";
+            // 
+            // cmdLogWindow
+            // 
+            this.cmdLogWindow.CheckOnClick = true;
+            this.cmdLogWindow.Name = "cmdLogWindow";
+            this.cmdLogWindow.Size = new System.Drawing.Size(208, 22);
+            this.cmdLogWindow.Text = "Show Log Window";
+            // 
+            // cmdCommunity
+            // 
+            this.cmdCommunity.Name = "cmdCommunity";
+            this.cmdCommunity.Size = new System.Drawing.Size(208, 22);
+            this.cmdCommunity.Text = "Visit Community";
+            // 
+            // cmdExit
+            // 
+            this.cmdExit.Name = "cmdExit";
+            this.cmdExit.Size = new System.Drawing.Size(208, 22);
+            this.cmdExit.Text = "Exit";
             // 
             // MainForm
             // 
