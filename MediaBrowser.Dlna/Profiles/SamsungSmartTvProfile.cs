@@ -42,7 +42,8 @@ namespace MediaBrowser.Dlna.Profiles
                    Container = "ts",
                    AudioCodec = "ac3",
                    VideoCodec = "h264",
-                   Type = DlnaProfileType.Video
+                   Type = DlnaProfileType.Video,
+                   EstimateContentLength = true
                },
                new TranscodingProfile
                {
