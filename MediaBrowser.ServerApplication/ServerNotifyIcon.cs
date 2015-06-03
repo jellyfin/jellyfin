@@ -74,7 +74,7 @@ namespace MediaBrowser.ServerApplication
             // notifyIcon1
             // 
             notifyIcon1.ContextMenuStrip = contextMenuStrip1;
-            notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")));
+            notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             notifyIcon1.Text = "Emby";
             notifyIcon1.Visible = true;
             // 

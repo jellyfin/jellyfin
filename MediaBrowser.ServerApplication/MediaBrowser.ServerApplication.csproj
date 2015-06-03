@@ -37,7 +37,7 @@
     <StartupObject>MediaBrowser.ServerApplication.MainStartup</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\Images\Icon.ico</ApplicationIcon>
+    <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -237,6 +237,7 @@
     <Content Include="CORE_RL_zlib_.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Icon.ico" />
     <Content Include="IM_MOD_RL_bgr_.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -399,7 +400,6 @@
     <Content Include="IM_MOD_RL_yuv_.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Resources\Images\Icon.ico" />
     <Content Include="Resources\Images\mb3logo800.png" />
   </ItemGroup>
   <ItemGroup>
