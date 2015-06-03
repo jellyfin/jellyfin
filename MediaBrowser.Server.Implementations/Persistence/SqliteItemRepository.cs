@@ -135,6 +135,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "IsMovie", "BIT");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsSports", "BIT");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsKids", "BIT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "CommunityRating", "Float");
+            _connection.AddColumn(_logger, "TypedBaseItems", "CustomRating", "Text");
 
             PrepareStatements();
 
@@ -152,17 +154,26 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// </summary>
         private void PrepareStatements()
         {
+            var saveColumns = new List<string>
+            {
+                "guid",
+                "type",
+                "data",
+                "StartDate",
+                "EndDate",
+                "ChannelId",
+                "IsKids",
+                "IsMovie",
+                "IsSports",
+                "CommunityRating",
+                "CustomRating"
+            };
             _saveItemCommand = _connection.CreateCommand();
-            _saveItemCommand.CommandText = "replace into TypedBaseItems (guid, type, data, StartDate, EndDate, ChannelId, IsKids, IsMovie, IsSports) values (@1, @2, @3, @4, @5, @6, @7, @8, @9)";
-            _saveItemCommand.Parameters.Add(_saveItemCommand, "@1");
-            _saveItemCommand.Parameters.Add(_saveItemCommand, "@2");
-            _saveItemCommand.Parameters.Add(_saveItemCommand, "@3");
-            _saveItemCommand.Parameters.Add(_saveItemCommand, "@4");
-            _saveItemCommand.Parameters.Add(_saveItemCommand, "@5");
-            _saveItemCommand.Parameters.Add(_saveItemCommand, "@6");
-            _saveItemCommand.Parameters.Add(_saveItemCommand, "@7");
-            _saveItemCommand.Parameters.Add(_saveItemCommand, "@8");
-            _saveItemCommand.Parameters.Add(_saveItemCommand, "@9");
+            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11)";
+            for (var i = 1; i <= saveColumns.Count; i++)
+            {
+                _saveItemCommand.Parameters.Add(_saveItemCommand, "@" + i.ToString(CultureInfo.InvariantCulture));
+            }
 
             _deleteChildrenCommand = _connection.CreateCommand();
             _deleteChildrenCommand.CommandText = "delete from ChildrenIds where ParentId=@ParentId";
@@ -229,36 +240,41 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    _saveItemCommand.GetParameter(0).Value = item.Id;
-                    _saveItemCommand.GetParameter(1).Value = item.GetType().FullName;
-                    _saveItemCommand.GetParameter(2).Value = _jsonSerializer.SerializeToBytes(item);
+                    var index = 0;
+
+                    _saveItemCommand.GetParameter(index++).Value = item.Id;
+                    _saveItemCommand.GetParameter(index++).Value = item.GetType().FullName;
+                    _saveItemCommand.GetParameter(index++).Value = _jsonSerializer.SerializeToBytes(item);
 
                     var hasStartDate = item as IHasStartDate;
                     if (hasStartDate != null)
                     {
-                        _saveItemCommand.GetParameter(3).Value = hasStartDate.StartDate;
+                        _saveItemCommand.GetParameter(index++).Value = hasStartDate.StartDate;
                     }
                     else
                     {
-                        _saveItemCommand.GetParameter(3).Value = null;
+                        _saveItemCommand.GetParameter(index++).Value = null;
                     }
 
-                    _saveItemCommand.GetParameter(4).Value = item.EndDate;
-                    _saveItemCommand.GetParameter(5).Value = item.ChannelId;
+                    _saveItemCommand.GetParameter(index++).Value = item.EndDate;
+                    _saveItemCommand.GetParameter(index++).Value = item.ChannelId;
 
                     var hasProgramAttributes = item as IHasProgramAttributes;
                     if (hasProgramAttributes != null)
                     {
-                        _saveItemCommand.GetParameter(6).Value = hasProgramAttributes.IsKids;
-                        _saveItemCommand.GetParameter(7).Value = hasProgramAttributes.IsMovie;
-                        _saveItemCommand.GetParameter(8).Value = hasProgramAttributes.IsSports;
+                        _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.IsKids;
+                        _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.IsMovie;
+                        _saveItemCommand.GetParameter(index++).Value = hasProgramAttributes.IsSports;
                     }
                     else
                     {
-                        _saveItemCommand.GetParameter(6).Value = null;
-                        _saveItemCommand.GetParameter(7).Value = null;
-                        _saveItemCommand.GetParameter(8).Value = null;
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                        _saveItemCommand.GetParameter(index++).Value = null;
                     }
+
+                    _saveItemCommand.GetParameter(index++).Value = item.CommunityRating;
+                    _saveItemCommand.GetParameter(index++).Value = item.CustomRating;
 
                     _saveItemCommand.Transaction = transaction;
 
