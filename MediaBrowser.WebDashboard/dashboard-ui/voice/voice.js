@@ -488,11 +488,6 @@
 
         isSupported: function () {
 
-            // Crashing. Don't want to fight it right now
-            if (AppInfo.isNativeApp && $.browser.safari) {
-                return false;
-            }
-
             return window.SpeechRecognition || window.webkitSpeechRecognition;
         },
 

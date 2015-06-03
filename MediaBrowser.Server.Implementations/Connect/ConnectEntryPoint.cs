@@ -3,6 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using System;
 using System.IO;
 using System.Net;
@@ -59,8 +60,12 @@ namespace MediaBrowser.Server.Implementations.Connect
                     }
                 }
             }
-            catch
+            catch (HttpException)
             {
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error getting connection info", ex);
             }
         }
 

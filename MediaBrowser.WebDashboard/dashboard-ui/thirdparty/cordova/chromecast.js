@@ -618,6 +618,7 @@
 
                 device.on("disconnect", function () {
                     device.off("ready");
+                    device.off("disconnect");
                 });
 
                 console.log('Calling device.connect');

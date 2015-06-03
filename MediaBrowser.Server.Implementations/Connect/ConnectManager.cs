@@ -130,7 +130,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             UpdateConnectInfo();
         }
 
-        private async void UpdateConnectInfo()
+        private async Task UpdateConnectInfo()
         {
             await _operationLock.WaitAsync().ConfigureAwait(false);
 
@@ -400,6 +400,10 @@ namespace MediaBrowser.Server.Implementations.Connect
             }
             if (string.IsNullOrWhiteSpace(ConnectServerId))
             {
+                await UpdateConnectInfo().ConfigureAwait(false);
+            }
+            if (string.IsNullOrWhiteSpace(ConnectServerId))
+            {
                 throw new ArgumentNullException("ConnectServerId");
             }
 
@@ -490,6 +494,10 @@ namespace MediaBrowser.Server.Implementations.Connect
             if (string.IsNullOrWhiteSpace(connectUsername))
             {
                 throw new ArgumentNullException("connectUsername");
+            }
+            if (string.IsNullOrWhiteSpace(ConnectServerId))
+            {
+                await UpdateConnectInfo().ConfigureAwait(false);
             }
             if (string.IsNullOrWhiteSpace(ConnectServerId))
             {
