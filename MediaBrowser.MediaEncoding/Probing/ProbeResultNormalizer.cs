@@ -56,10 +56,33 @@ namespace MediaBrowser.MediaEncoding.Probing
             {
                 SetAudioRuntimeTicks(data, info);
 
+                var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                // tags are normally located under data.format, but we've seen some cases with ogg where they're part of the audio stream
+                // so let's create a combined list of both
+
+                if (data.streams != null)
+                {
+                    var audioStream = data.streams.FirstOrDefault(i => string.Equals(i.codec_type, "audio", StringComparison.OrdinalIgnoreCase));
+
+                    if (audioStream != null && audioStream.tags != null)
+                    {
+                        foreach (var pair in audioStream.tags)
+                        {
+                            tags[pair.Key] = pair.Value;
+                        }
+                    }
+                }
+
                 if (data.format != null && data.format.tags != null)
                 {
-                    SetAudioInfoFromTags(info, data.format.tags);
+                    foreach (var pair in data.format.tags)
+                    {
+                        tags[pair.Key] = pair.Value;
+                    }
                 }
+
+                SetAudioInfoFromTags(info, tags);
             }
             else
             {
