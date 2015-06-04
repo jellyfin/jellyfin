@@ -33,7 +33,12 @@
 
         html += '<button onclick="VoiceInputManager.startListening();" type="button" data-role="none" class="headerButton headerButtonRight headerVoiceButton" style="display:none;"><i class="material-icons">mic</i></button>';
 
-        if (!$.browser.mobile) {
+        //if (AppInfo.isNativeApp && $.browser.android)
+        //{
+        //    html += '<button class="headerButtonViewMenu headerButton headerButtonRight" type="button" data-role="none"><i class="material-icons">more_vert</i></button>';
+        //}
+
+        if (!$.browser.mobile && !AppInfo.isTouchPreferred) {
             html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton" style="display:none;"><i class="material-icons">settings</i></a>';
         }
 
@@ -94,7 +99,26 @@
         // Have to wait for document ready here because otherwise 
         // we may see the jQM redirect back and forth problem
         $(initViewMenuBarHeadroom);
+
+        //$('.headerButtonViewMenu').off('click', onViewButtonClick).on('click', onViewButtonClick);
     }
+
+    //function onViewButtonClick() {
+
+    //    var html = '<div class="appViewMenuPanel" data-role="panel" data-position="right" data-display="overlay" data-position-fixed="true" data-theme="a">';
+
+
+    //    html += '</div>';
+
+    //    $(document.body).append(html);
+
+    //    var elem = $('.appViewMenuPanel').panel({}).trigger('create').panel("open").on("panelclose", function () {
+
+    //        $(this).off("panelclose").remove();
+    //    });
+
+
+    //}
 
     function initViewMenuBarHeadroom() {
 

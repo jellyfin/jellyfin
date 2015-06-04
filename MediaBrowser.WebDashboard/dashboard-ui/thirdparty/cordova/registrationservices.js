@@ -13,7 +13,7 @@
             return "com.mb.android.unlock";
         }
 
-        return 'premiumunlock';
+        return 'appunlock';
     }
 
     function validatePlayback(deferred) {
@@ -24,20 +24,12 @@
             return;
         }
 
-        validateFeature({
-
-            id: getPremiumUnlockFeatureId()
-
-        }, deferred);
+        validateFeature(getPremiumUnlockFeatureId(), deferred);
     }
 
     function validateLiveTV(deferred) {
 
-        validateFeature({
-
-            id: getPremiumUnlockFeatureId()
-
-        }, deferred);
+        validateFeature(getPremiumUnlockFeatureId(), deferred);
     }
 
     function getRegistrationInfo(feature, enableSupporterUnlock) {
@@ -50,17 +42,20 @@
         return ConnectionManager.getRegistrationInfo(feature, ApiClient);
     }
 
-    function validateFeature(info, deferred) {
+    function validateFeature(id, deferred) {
 
-        if (IapManager.hasPurchased(info.id)) {
+        var info = IapManager.getProductInfo(id) || {};
+
+        if (info.owned) {
             deferred.resolve();
             return;
         }
 
         var productInfo = {
             enableSupporterUnlock: isAndroid(),
-            enableAppUnlock: IapManager.isPurchaseAvailable(info.id),
-            id: info.id
+            enableAppUnlock: IapManager.isPurchaseAvailable(id),
+            id: id,
+            price: info.price
         };
 
         var prefix = isAndroid() ? 'android' : 'ios';
@@ -89,7 +84,7 @@
         html += '<div class="inAppPurchaseOverlayInner" style="background:rgba(10,10,10,.8);width:100%;height:100%;color:#eee;">';
 
 
-        html += '<form class="inAppPurchaseForm" style="margin: 0 auto;padding: 30px 1em 0;">';
+        html += '<div class="inAppPurchaseForm" style="margin: 0 auto;padding: 30px 1em 0;">';
 
         html += '<h1 style="color:#fff;">' + Globalize.translate('HeaderUnlockApp') + '</h1>';
 
@@ -116,7 +111,12 @@
         }
 
         if (info.enableAppUnlock) {
-            html += '<button class="btn btnActionAccent btnAppUnlock" data-role="none" type="submit"><span>' + Globalize.translate('ButtonUnlockWithPurchase') + '</span><i class="fa fa-check"></i></button>';
+
+            var unlockText = Globalize.translate('ButtonUnlockWithPurchase');
+            if (info.price) {
+                unlockText = Globalize.translate('ButtonUnlockPrice', info.price);
+            }
+            html += '<button class="btn btnActionAccent btnAppUnlock" data-role="none" type="button"><span>' + unlockText + '</span><i class="fa fa-check"></i></button>';
         }
 
         if (info.enableSupporterUnlock) {
@@ -125,7 +125,7 @@
 
         html += '<button class="btn btnCancel" data-role="none" type="button"><span>' + Globalize.translate('ButtonCancel') + '</span><i class="fa fa-close"></i></button>';
 
-        html += '</form>';
+        html += '</div>';
 
         html += '</div>';
         html += '</div>';
@@ -155,10 +155,9 @@
         currentDisplayingProductInfo = info;
         currentDisplayingDeferred = deferred;
 
-        $('.inAppPurchaseForm', elem).on('submit', function () {
+        $('.btnAppUnlock', elem).on('click', function () {
 
             IapManager.beginPurchase(info.id);
-            return false;
         });
 
         $('.btnCancel', elem).on('click', function () {
@@ -166,12 +165,7 @@
             clearCurrentDisplayingInfo();
             cancelInAppPurchase();
 
-            // For testing purposes
-            if (!info.enableSupporterUnlock && !info.enableAppUnlock) {
-                deferred.resolve();
-            } else {
-                deferred.reject();
-            }
+            deferred.reject();
         });
         $('.btnSignInSupporter', elem).on('click', function () {
 
@@ -238,9 +232,9 @@
     }
 
     if (isAndroid()) {
-        requirejs(['thirdparty/cordova/android/iap', onIapManagerLoaded]);
+        requirejs(['thirdparty/cordova/android/iap'], onIapManagerLoaded);
     } else {
-        requirejs(['thirdparty/cordova/iap', onIapManagerLoaded]);
+        requirejs(['thirdparty/cordova/iap'], onIapManagerLoaded);
     }
 
 })();

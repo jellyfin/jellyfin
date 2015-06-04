@@ -173,7 +173,7 @@
                 }
             }
 
-            if (!self.enableAutomaticNetwork || self.connectionMode == null) {
+            if (self.enableAutomaticNetworking === false || request.type != "GET") {
                 logger.log('Requesting url without automatic networking: ' + request.url);
                 return AjaxApi.ajax(request).fail(onRequestFail);
             }
@@ -230,7 +230,7 @@
 
                 logger.log("Reconnect succeeeded to " + url);
 
-                self.connectionMode = connectionMode;
+                self.serverInfo().LastConnectionMode = connectionMode;
                 self.serverAddress(url);
 
                 deferred.resolve();
@@ -257,7 +257,7 @@
 
             var deferred = DeferredBuilder.Deferred();
             setTimeout(function () {
-                tryReconnectInternal(deferred, self.connectionMode, 0);
+                tryReconnectInternal(deferred, self.serverInfo().LastConnectionMode, 0);
             }, 500);
             return deferred.promise();
         }
@@ -271,7 +271,9 @@
 
             if (replaceUrl) {
 
-                var baseUrl = MediaBrowser.ServerInfo.getServerAddress(self.serverInfo(), self.connectionMode);
+                var currentServerInfo = self.serverInfo();
+
+                var baseUrl = MediaBrowser.ServerInfo.getServerAddress(currentServerInfo, currentServerInfo.LastConnectionMode);
 
                 request.url = replaceServerAddress(request.url, baseUrl);
             }
@@ -360,7 +362,7 @@
             return url;
         };
 
-        self.enableAutomaticNetworking = function (server, connectionMode, serverUrl) {
+        self.updateServerInfo = function (server, connectionMode) {
 
             if (server == null) {
                 throw new Error('server cannot be null');
@@ -370,16 +372,11 @@
                 throw new Error('connectionMode cannot be null');
             }
 
-            if (!serverUrl) {
-                throw new Error('serverUrl cannot be null or empty');
-            }
-
-            logger.log('Begin enableAutomaticNetworking');
+            logger.log('Begin updateServerInfo');
 
             self.serverInfo(server);
-            self.connectionMode = connectionMode;
-            self.enableAutomaticNetwork = true;
 
+            var serverUrl = MediaBrowser.ServerInfo.getServerAddress(connectionMode);
             logger.log('Setting server address to ' + serverUrl);
             self.serverAddress(serverUrl);
         };

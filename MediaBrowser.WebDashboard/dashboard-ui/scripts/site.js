@@ -1626,6 +1626,7 @@ var AppInfo = {};
         } else {
 
             apiClient = new MediaBrowser.ApiClient(Logger, Dashboard.serverAddress(), AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId);
+            apiClient.enableAutomaticNetworking = false;
             ConnectionManager.addApiClient(apiClient);
         }
 

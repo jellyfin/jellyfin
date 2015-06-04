@@ -3,7 +3,7 @@
     var unlockId = "com.mb.android.unlock";
     var updatedProducts = [];
 
-    function updateProductInfo(id, owned) {
+    function updateProductInfo(id, owned, price) {
 
         updatedProducts = updatedProducts.filter(function (r) {
             return r.id != id;
@@ -11,18 +11,13 @@
 
         var product = {
             id: id,
-            owned: owned
+            owned: owned,
+            price: price
         };
 
         updatedProducts.push(product);
 
         Events.trigger(IapManager, 'productupdated', [product]);
-    }
-
-    function hasPurchased(id) {
-        var product = getProduct(id);
-
-        return product != null && product.owned;
     }
 
     function getProduct(id) {
@@ -55,7 +50,7 @@
 
     window.IapManager = {
         isPurchaseAvailable: isPurchaseAvailable,
-        hasPurchased: hasPurchased,
+        getProductInfo: getProduct,
         updateProduct: updateProductInfo,
         beginPurchase: beginPurchase,
         onPurchaseComplete: onPurchaseComplete

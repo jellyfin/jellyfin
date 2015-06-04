@@ -786,6 +786,7 @@
     "ButtonUnlockWithSupporter": "Sign in with Emby Supporter Membership",
     "MessagePleaseSignInLocalNetwork": "Before proceeding, please ensure that you're connected to your local network using a Wifi or LAN connection.",
     "ButtonUnlockWithPurchase": "Unlock with Purchase",
+    "ButtonUnlockPrice": "Unlock {0}",
     "MessageLiveTvGuideRequiresUnlock": "The Live TV Guide is currently limited to {0} channels. Click the unlock button to learn how to enjoy the full experience.",
     "OptionEnableFullscreen": "Enable Fullscreen",
     "ButtonServer": "Server",

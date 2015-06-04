@@ -1831,21 +1831,22 @@
                 return '<div class="posterRibbon offlinePosterRibbon">' + Globalize.translate('HeaderOffline') + '</div>';
             }
 
-            try {
+            if (item.Type == 'Episode') {
+                try {
 
-                var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
+                    var date = parseISO8601Date(item.PremiereDate, { toLocal: true });
 
-                if (item.PremiereDate && (new Date().getTime() < date.getTime())) {
-                    return '<div class="posterRibbon unairedPosterRibbon">' + Globalize.translate('HeaderUnaired') + '</div>';
+                    if (item.PremiereDate && (new Date().getTime() < date.getTime())) {
+                        return '<div class="posterRibbon unairedPosterRibbon">' + Globalize.translate('HeaderUnaired') + '</div>';
+                    }
+                } catch (err) {
+
                 }
-            } catch (err) {
 
+                return '<div class="posterRibbon missingPosterRibbon">' + Globalize.translate('HeaderMissing') + '</div>';
             }
 
-            if (item.IsFolder) {
-                return '';
-            }
-            return '<div class="posterRibbon missingPosterRibbon">' + Globalize.translate('HeaderMissing') + '</div>';
+            return '';
         },
 
         getPlayedIndicatorHtml: function (item) {

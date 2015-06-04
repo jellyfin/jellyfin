@@ -54,7 +54,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
                         if (IsValid(address))
                         {
-                            ((ConnectManager) _connectManager).OnWanAddressResolved(address);
+                            ((ConnectManager)_connectManager).OnWanAddressResolved(address);
                             CacheAddress(address);
                         }
                     }
@@ -115,7 +115,14 @@ namespace MediaBrowser.Server.Implementations.Connect
         private bool IsValid(string address)
         {
             IPAddress ipAddress;
-            return IPAddress.TryParse(address, out ipAddress);
+            var valid = IPAddress.TryParse(address, out ipAddress);
+
+            if (!valid)
+            {
+                _logger.Error("{0} is not a valid ip address", address);
+            }
+
+            return valid;
         }
 
         public void Dispose()

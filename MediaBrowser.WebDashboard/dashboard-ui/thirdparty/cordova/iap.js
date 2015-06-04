@@ -1,15 +1,19 @@
 ﻿(function () {
 
     var unlockAlias = "premium features";
+    var unlockAppProductId = 'appunlock';
+
     var updatedProducts = [];
 
-    function updateProductInfo(p) {
+    function updateProductInfo(product) {
 
         updatedProducts = updatedProducts.filter(function (r) {
-            return r.id != p.id;
+            return r.id != product.id;
         });
 
-        updatedProducts.push(p);
+        updatedProducts.push(product);
+
+        Events.trigger(IapManager, 'productupdated', [product]);
     }
 
     function normalizeId(id) {
@@ -31,20 +35,15 @@
         return products.length ? products[0] : null;
     }
 
-    function hasPurchased(id) {
-        var product = getProduct(id);
-
-        return product != null && product.owned;
-    }
-
     function isPurchaseAvailable(id) {
         var product = getProduct(id);
 
-        return product != null && product.canPurchase;
+        return product != null && product.valid /*&& product.canPurchase*/;
     }
 
     function beginPurchase(id) {
-
+        id = normalizeId(id);
+        store.order(id);
     }
 
     function validateProduct(product, callback) {
@@ -80,22 +79,33 @@
 
         // iOS
         store.register({
-            id: "appunlock",
+            id: unlockAppProductId,
             alias: unlockAlias,
             type: store.NON_CONSUMABLE
         });
 
         // When purchase of the full version is approved,
         // show some logs and finish the transaction.
-        store.when(unlockAlias).approved(function (order) {
+        store.when(unlockAppProductId).approved(function (order) {
             log('You just unlocked the FULL VERSION!');
+            alert('approved');
             order.finish();
+        });
+
+        store.when(unlockAppProductId).verified(function (p) {
+            alert('verified');
+            log("verified");
+            p.finish();
         });
 
         // The play button can only be accessed when the user
         // owns the full version.
-        store.when(unlockAlias).updated(function (product) {
+        store.when(unlockAppProductId).updated(function (product) {
 
+            if (product.loaded && product.valid && product.state == store.APPROVED) {
+                console.log('finishing previously created transaction');
+                product.finish();
+            }
             updateProductInfo(product);
         });
 
@@ -114,7 +124,7 @@
 
     window.IapManager = {
         isPurchaseAvailable: isPurchaseAvailable,
-        hasPurchased: hasPurchased,
+        getProductInfo: getProduct,
         beginPurchase: beginPurchase
     };
 

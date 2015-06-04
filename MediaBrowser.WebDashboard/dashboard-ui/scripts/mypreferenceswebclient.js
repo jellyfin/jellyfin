@@ -18,6 +18,7 @@
         $('#selectEnableItemPreviews', page).val(AppSettings.enableItemPreviews().toString().toLowerCase()).selectmenu("refresh");
 
         $('#chkEnableLibraryTileNames', page).checked(displayPreferences.CustomPrefs.enableLibraryTileNames != '0').checkboxradio("refresh");
+        $('#chkEnableFullScreen', page).checked(AppSettings.enableFullScreen().toString().toLowerCase() == 'true').checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -52,6 +53,7 @@
         AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
 
         AppSettings.enableItemPreviews($('#selectEnableItemPreviews', page).val() == 'true');
+        AppSettings.enableFullScreen($('#chkEnableFullScreen', page).checked());
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
@@ -99,6 +101,12 @@
         } else {
             $('.labelGenericExternalPlayers', page).show();
             $('.labelNativeExternalPlayers', page).hide();
+        }
+
+        if (AppInfo.supportsFullScreen) {
+            $('.fldFullscreen', page).show();
+        } else {
+            $('.fldFullscreen', page).hide();
         }
     });
 

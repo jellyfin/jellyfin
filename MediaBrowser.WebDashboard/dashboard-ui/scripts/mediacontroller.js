@@ -508,7 +508,7 @@
 
             Dashboard.loadLocalAssetManager().done(function () {
 
-                var serverInfo = ApiClient.serverInfo().Id;
+                var serverInfo = ApiClient.serverInfo();
 
                 if (serverInfo.Id) {
                     var localMediaSource = window.LocalAssetManager.getLocalMediaSource(serverInfo.Id, itemId);
