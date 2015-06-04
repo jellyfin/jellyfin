@@ -1768,6 +1768,12 @@ namespace MediaBrowser.Api.Playback
                 state.InputAudioSync = "1";
             }
 
+            if (string.Equals(mediaSource.Container, "wma", StringComparison.OrdinalIgnoreCase))
+            {
+                // Seeing some stuttering when transcoding wma to audio-only HLS
+                state.InputAudioSync = "1";
+            }
+
             var mediaStreams = mediaSource.MediaStreams;
 
             if (videoRequest != null)

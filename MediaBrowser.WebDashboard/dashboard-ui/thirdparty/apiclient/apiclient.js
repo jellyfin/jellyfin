@@ -372,11 +372,15 @@
                 throw new Error('connectionMode cannot be null');
             }
 
-            logger.log('Begin updateServerInfo');
+            logger.log('Begin updateServerInfo. connectionMode: ' + connectionMode);
 
             self.serverInfo(server);
 
-            var serverUrl = MediaBrowser.ServerInfo.getServerAddress(connectionMode);
+            var serverUrl = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
+
+            if (!serverUrl) {
+                throw new Error('serverUrl cannot be null. serverInfo: ' + JSON.stringify(server));
+            }
             logger.log('Setting server address to ' + serverUrl);
             self.serverAddress(serverUrl);
         };

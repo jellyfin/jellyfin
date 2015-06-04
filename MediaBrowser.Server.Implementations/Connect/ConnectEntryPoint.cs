@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Linq;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Plugins;
@@ -38,34 +39,40 @@ namespace MediaBrowser.Server.Implementations.Connect
             _timer = new Timer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(3));
         }
 
+        private readonly string[] _ipLookups = { "http://bot.whatismyipaddress.com", "https://connect.mediabrowser.tv/service/ip" };
+
         private async void TimerCallback(object state)
         {
-            try
+            foreach (var ipLookupUrl in _ipLookups)
             {
-                using (var stream = await _httpClient.Get(new HttpRequestOptions
+                try
                 {
-                    Url = "http://bot.whatismyipaddress.com/"
-
-                }).ConfigureAwait(false))
-                {
-                    using (var reader = new StreamReader(stream))
+                    using (var stream = await _httpClient.Get(new HttpRequestOptions
                     {
-                        var address = await reader.ReadToEndAsync().ConfigureAwait(false);
+                        Url = ipLookupUrl
 
-                        if (IsValid(address))
+                    }).ConfigureAwait(false))
+                    {
+                        using (var reader = new StreamReader(stream))
                         {
-                            ((ConnectManager)_connectManager).OnWanAddressResolved(address);
-                            CacheAddress(address);
+                            var address = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                            if (IsValid(address))
+                            {
+                                ((ConnectManager)_connectManager).OnWanAddressResolved(address);
+                                CacheAddress(address);
+                                return;
+                            }
                         }
                     }
                 }
-            }
-            catch (HttpException)
-            {
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error getting connection info", ex);
+                catch (HttpException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting connection info", ex);
+                }
             }
         }
 

@@ -88,12 +88,10 @@
         // show some logs and finish the transaction.
         store.when(unlockAppProductId).approved(function (order) {
             log('You just unlocked the FULL VERSION!');
-            alert('approved');
             order.finish();
         });
 
         store.when(unlockAppProductId).verified(function (p) {
-            alert('verified');
             log("verified");
             p.finish();
         });

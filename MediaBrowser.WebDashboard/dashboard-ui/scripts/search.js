@@ -91,8 +91,7 @@
             showTitle: true,
             coverImage: true,
             centerImage: true,
-            textLines: getAdditionalTextLines,
-            cardLayout: true
+            textLines: getAdditionalTextLines
         });
         $('.itemsContainer', elem).html(html).lazyChildren();
     }

@@ -48,7 +48,10 @@
         var player = this;
 
         if (player.isLocalPlayer && state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
-            AndroidFullScreen.showSystemUI(onSuccess, onError);
+
+            if (!AppSettings.enableFullScreen()) {
+                AndroidFullScreen.showSystemUI(onSuccess, onError);
+            }
         }
     }
 

@@ -8,7 +8,8 @@
     background-position: center center;
     background-size: 100% 100%;
     background-repeat: no-repeat;
-    z-index: 999999;
+    /* Need to make sure it is on top of content but underneath slideout panels */
+    z-index: 1097;
 }
 
 .voiceInputHelpInner {

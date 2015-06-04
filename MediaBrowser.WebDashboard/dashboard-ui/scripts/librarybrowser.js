@@ -812,7 +812,8 @@
                 textlines.push(displayName);
 
                 var verticalTextLines = 2;
-                var enableSubLinks = !AppInfo.isTouchPreferred;
+                var enableSubLinks = !$.browser.mobile;
+                ;
 
                 if (item.Type == 'Audio') {
                     textlines.push(item.ArtistItems.map(function (a) {
@@ -1053,7 +1054,7 @@
 
                 var shapeWidth = screenWidth / imagesPerRow[currentShape];
 
-                if (!AppInfo.isTouchPreferred) {
+                if (!$.browser.mobile) {
 
                     shapeWidth = Math.round(shapeWidth / roundTo) * roundTo;
                 }

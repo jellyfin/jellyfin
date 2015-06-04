@@ -75,6 +75,9 @@
                 if (server.RemoteAddress) {
                     existing.RemoteAddress = server.RemoteAddress;
                 }
+                if (server.ManualAddress) {
+                    existing.ManualAddress = server.ManualAddress;
+                }
                 if (server.LocalAddress) {
                     existing.LocalAddress = server.LocalAddress;
                 }

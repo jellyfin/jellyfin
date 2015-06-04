@@ -604,6 +604,9 @@
 
             console.log('Will attempt to connect to Chromecast');
 
+            Dashboard.showModalLoadingMsg();
+            setTimeout(Dashboard.hideModalLoadingMsg, 3000);
+
             if (device.isReady()) {
                 console.log('Device is already ready, calling onDeviceReady');
                 onDeviceReady(device);

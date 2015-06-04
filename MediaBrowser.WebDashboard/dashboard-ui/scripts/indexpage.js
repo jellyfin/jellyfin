@@ -15,7 +15,7 @@
     }
 
     function enableScrollX() {
-        return AppInfo.isTouchPreferred && AppInfo.enableAppLayouts;
+        return $.browser.mobile && AppInfo.enableAppLayouts;
     }
 
     function getThumbShape() {

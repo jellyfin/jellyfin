@@ -769,7 +769,7 @@
 
             } else {
 
-                var firstServer = servers[0];
+                var firstServer = servers.length ? servers[0] : null;
                 // See if we have any saved credentials and can auto sign in
                 if (firstServer) {
                     self.connectToServer(firstServer).done(function (result) {
