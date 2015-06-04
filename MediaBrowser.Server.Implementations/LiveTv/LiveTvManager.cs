@@ -664,6 +664,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var recording = (ILiveTvRecording)item;
 
+            recording.ExternalId = info.Id;
+
             recording.ProgramId = _tvDtoService.GetInternalProgramId(serviceName, info.ProgramId).ToString("N");
             recording.Audio = info.Audio;
             recording.ChannelType = info.ChannelType;

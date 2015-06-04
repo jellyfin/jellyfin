@@ -5,5 +5,6 @@ namespace MediaBrowser.Controller.LiveTv
     public interface ILiveTvItem : IHasId
     {
         string ServiceName { get; set; }
+        string ExternalId { get; set; }
     }
 }
