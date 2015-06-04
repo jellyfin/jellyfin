@@ -1452,5 +1452,6 @@
     "HeaderColumns": "Columns",
     "ButtonReset": "Reset",
     "OptionEnableExternalVideoPlayers": "Enable external video players",
-    "ButtonUnlockGuide": "Unlock Guide"
+    "ButtonUnlockGuide": "Unlock Guide",
+    "LabelEnableFullScreen":  "Enable fullScreen mode"
 }
