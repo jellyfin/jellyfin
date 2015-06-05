@@ -108,7 +108,7 @@
             this.lblVersion.Location = new System.Drawing.Point(3, 59);
             this.lblVersion.MaximumSize = new System.Drawing.Size(0, 100);
             this.lblVersion.Name = "lblVersion";
-            this.lblVersion.Size = new System.Drawing.Size(270, 59);
+            this.lblVersion.Size = new System.Drawing.Size(267, 59);
             this.lblVersion.TabIndex = 1;
             this.lblVersion.Text = "Version 1234";
             this.lblVersion.UseWaitCursor = true;
