@@ -766,5 +766,22 @@
     "ButtonRemote": "Fernbedienung",
     "TabInfo": "Info",
     "TabCast": "Darsteller",
-    "TabScenes": "Szenen"
+    "TabScenes": "Szenen",
+    "HeaderUnlockApp": "App freischalten",
+    "MessageUnlockAppWithPurchase": "Schalten Sie weitere Funktionen mit einem kleinen & einmaligen Kauf frei.",
+    "MessageUnlockAppWithPurchaseOrSupporter": "Schalten Sie alle Funktionen mit einem einmaligen kleinen Kauf frei. Alternativ k\u00f6nnen Sie sich auch mit einer aktiven Emby Unterst\u00fctzer-Mitgliedschaft anmelden.",
+    "MessageUnlockAppWithSupporter": "Schalten Sie alle Funktionen der Anwendung frei, indem Sie sich mit einer aktiven Emby Unterst\u00fctzer-Mitgliedschaft anmelden.",
+    "MessageToValidateSupporter": "Wenn Sie bereits ein aktiver Emby Suporter sind, melden Sie sich einfach mit der App in Ihrem Heimnetzwerk via WLAN an.",
+    "MessagePaymentServicesUnavailable": "Die Zahlungsdienste stehen leider gerade nicht zur Verf\u00fcgung. Bitte versuchen Sie es sp\u00e4ter erneut.",
+    "ButtonUnlockWithSupporter": "Anmelden mit Emby Unterst\u00fctzer Mitgliedschaft",
+    "MessagePleaseSignInLocalNetwork": "Bevor Sie fortsetzen sollten Sie sicher sein, dass Sie mit Ihrem Heimnetzwerk verbunden sind.",
+    "ButtonUnlockWithPurchase": "Freischalten durch Kauf",
+    "MessageLiveTvGuideRequiresUnlock": "Ihr TV-Guide ist begrenzt auf {0} Kan\u00e4le. Klicken Sie auf die Freischalten Schaltfl\u00e4che um weitere Informationen zu erhalten.",
+    "OptionEnableFullscreen": "Aktivieren Vollbild",
+    "ButtonServer": "Server",
+    "HeaderAdmin": "Admin",
+    "HeaderLibrary": "Bibliothek",
+    "HeaderMedia": "Medien",
+    "ButtonInbox": "Posteingang",
+    "HeaderAdvanced": "Erweitert"
 }

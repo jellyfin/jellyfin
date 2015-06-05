@@ -1228,7 +1228,7 @@
     "OptionNoThemeVideo": "Geen thema film",
     "LabelOneTimeDonationAmount": "Donatie bedrag:",
     "ButtonDonate": "Doneren",
-    "ButtonPurchase": "Purchase",
+    "ButtonPurchase": "Aankoop",
     "OptionActor": "Acteur",
     "OptionComposer": "Componist",
     "OptionDirector": "Regiseur",
@@ -1261,6 +1261,9 @@
     "ButtonLearnMoreAboutEmbyConnect": "Leer meer over Emby Connect",
     "LabelExternalPlayers": "Externe spelers:",
     "LabelExternalPlayersHelp": "Toon knoppen om inhoud in externe spelers of te spelen. Dit is alleen mogelijk op apparaten die 'url schemes' ondersteunen, meest Android en iOS. Met externe spelers is er over het algemeen geen ondersteuning voor afstandsbediening of hervatten.",
+    "LabelNativeExternalPlayersHelp": "Toon knoppen om media in externe spelers te kunnen spelen.",
+    "LabelEnableItemPreviews": "Schakel item preview in",
+    "LabelEnableItemPreviewsHelp": "if enabled, sliding previews will appear when clicking items on certain screens.",
     "HeaderSubtitleProfile": "Ondertitelingsprofiel",
     "HeaderSubtitleProfiles": "Ondertitelingsprofielen",
     "HeaderSubtitleProfilesHelp": "Ondertitelingsprofielen beschrijven de ondertitelings formaten ondersteund door het apparaat.",
@@ -1432,5 +1435,6 @@
     "HeaderExport": "Export",
     "HeaderColumns": "Kolommen",
     "ButtonReset": "Rest",
-    "OptionEnableExternalVideoPlayers": "Enable external video players"
+    "OptionEnableExternalVideoPlayers": "Inschakelen van externe video-spelers",
+    "ButtonUnlockGuide": "Gids vrijgeven"
 }

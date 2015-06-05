@@ -1261,6 +1261,9 @@
     "ButtonLearnMoreAboutEmbyConnect": "Learn more about Emby Connect",
     "LabelExternalPlayers": "Externa uppspelare:",
     "LabelExternalPlayersHelp": "Visa knappar f\u00f6r att spela upp inneh\u00e5ll i externa uppspelare. Detta ar enbart tillg\u00e4ngligt p\u00e5 enheter som st\u00f6djer url-scheman, i allm\u00e4nhet Android och iOS. Externa uppspelare har normalt ej st\u00f6d f\u00f6r fj\u00e4rrkontroll eller \u00e5terupptagande.",
+    "LabelNativeExternalPlayersHelp": "Display buttons to play content in external players.",
+    "LabelEnableItemPreviews": "Enable item previews",
+    "LabelEnableItemPreviewsHelp": "if enabled, sliding previews will appear when clicking items on certain screens.",
     "HeaderSubtitleProfile": "Undertextprofil",
     "HeaderSubtitleProfiles": "Undertextprofiler",
     "HeaderSubtitleProfilesHelp": "Undertextprofiler beskriver de undertextformat som st\u00f6ds av enheten.",
@@ -1432,5 +1435,6 @@
     "HeaderExport": "Export",
     "HeaderColumns": "Columns",
     "ButtonReset": "Reset",
-    "OptionEnableExternalVideoPlayers": "Enable external video players"
+    "OptionEnableExternalVideoPlayers": "Enable external video players",
+    "ButtonUnlockGuide": "Unlock Guide"
 }

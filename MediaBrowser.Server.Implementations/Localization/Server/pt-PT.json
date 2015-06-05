@@ -1261,6 +1261,9 @@
     "ButtonLearnMoreAboutEmbyConnect": "Saiba mais sobre o Emby Connect",
     "LabelExternalPlayers": "External players:",
     "LabelExternalPlayersHelp": "Display buttons to play content in external players. This is only available on devices that support url schemes, generally Android and iOS. With external players there is generally no support for remote control or resuming.",
+    "LabelNativeExternalPlayersHelp": "Display buttons to play content in external players.",
+    "LabelEnableItemPreviews": "Enable item previews",
+    "LabelEnableItemPreviewsHelp": "if enabled, sliding previews will appear when clicking items on certain screens.",
     "HeaderSubtitleProfile": "Subtitle Profile",
     "HeaderSubtitleProfiles": "Subtitle Profiles",
     "HeaderSubtitleProfilesHelp": "Subtitle profiles describe the subtitle formats supported by the device.",
@@ -1432,5 +1435,6 @@
     "HeaderExport": "Export",
     "HeaderColumns": "Columns",
     "ButtonReset": "Reset",
-    "OptionEnableExternalVideoPlayers": "Enable external video players"
+    "OptionEnableExternalVideoPlayers": "Enable external video players",
+    "ButtonUnlockGuide": "Unlock Guide"
 }

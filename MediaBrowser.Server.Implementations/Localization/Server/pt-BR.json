@@ -1261,6 +1261,9 @@
     "ButtonLearnMoreAboutEmbyConnect": "Saiba mais sobre o Emby Connect",
     "LabelExternalPlayers": "Reprodutores externos:",
     "LabelExternalPlayersHelp": "Exibir bot\u00f5es para reproduzir conte\u00fado em reprodutores externos. Isto est\u00e1 dispon\u00edvel apenas em dispositivos que suportam esquemas url, geralmente Android e iOS. Com os reprodutores externos, geralmente n\u00e3o existe suporte para controle remoto ou para retomar.",
+    "LabelNativeExternalPlayersHelp": "Exibir bot\u00f5es para reproduzir o conte\u00fado em reprodutores externos.",
+    "LabelEnableItemPreviews": "Ativar pr\u00e9-visualiza\u00e7\u00e3o de itens",
+    "LabelEnableItemPreviewsHelp": "Se ativada, pr\u00e9-visualiza\u00e7\u00f5es deslizantes ser\u00e3o exibidas ao clicar nos itens em certas telas.",
     "HeaderSubtitleProfile": "Perfil da Legenda",
     "HeaderSubtitleProfiles": "Perfis da Legenda",
     "HeaderSubtitleProfilesHelp": "Perfis da legenda descrevem os formatos da legenda suportados pelo dispositivo.",
@@ -1432,5 +1435,6 @@
     "HeaderExport": "Exportar",
     "HeaderColumns": "Colunas",
     "ButtonReset": "Redefinir",
-    "OptionEnableExternalVideoPlayers": "Enable external video players"
+    "OptionEnableExternalVideoPlayers": "Ativar reprodutores de v\u00eddeo externos",
+    "ButtonUnlockGuide": "Desbloquear Guia"
 }

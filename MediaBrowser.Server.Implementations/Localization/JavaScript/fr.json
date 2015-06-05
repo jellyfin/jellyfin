@@ -766,5 +766,22 @@
     "ButtonRemote": "T\u00e9l\u00e9commande",
     "TabInfo": "Info",
     "TabCast": "Distribution",
-    "TabScenes": "Sc\u00e8nes"
+    "TabScenes": "Sc\u00e8nes",
+    "HeaderUnlockApp": "Unlock App",
+    "MessageUnlockAppWithPurchase": "Unlock the full features of the app with a small one-time purchase.",
+    "MessageUnlockAppWithPurchaseOrSupporter": "Unlock the full features of the app with a small one-time purchase, or by signing in with an active Emby Supporter Membership.",
+    "MessageUnlockAppWithSupporter": "Unlock the full features of the app by signing in with an active Emby Supporter Membership.",
+    "MessageToValidateSupporter": "If you have an active Emby Supporter Membership, simply sign into the app using your Wifi connection within your home network.",
+    "MessagePaymentServicesUnavailable": "Payment services are currently unavailable. Please try again later.",
+    "ButtonUnlockWithSupporter": "Sign in with Emby Supporter Membership",
+    "MessagePleaseSignInLocalNetwork": "Before proceeding, please ensure that you're connected to your local network using a Wifi or LAN connection.",
+    "ButtonUnlockWithPurchase": "Unlock with Purchase",
+    "MessageLiveTvGuideRequiresUnlock": "The Live TV Guide is currently limited to {0} channels. Click the unlock button to learn how to enjoy the full experience.",
+    "OptionEnableFullscreen": "Enable Fullscreen",
+    "ButtonServer": "Server",
+    "HeaderAdmin": "Admin",
+    "HeaderLibrary": "Library",
+    "HeaderMedia": "Media",
+    "ButtonInbox": "Inbox",
+    "HeaderAdvanced": "Avanc\u00e9"
 }

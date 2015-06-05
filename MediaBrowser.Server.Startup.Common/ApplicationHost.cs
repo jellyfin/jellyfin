@@ -927,7 +927,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             Logger.Debug("Calling NativeApp.Restart");
 
-            NativeApp.Restart();
+            NativeApp.Restart(_startupOptions);
         }
 
         /// <summary>
