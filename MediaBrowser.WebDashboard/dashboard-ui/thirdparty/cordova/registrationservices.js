@@ -29,6 +29,11 @@
 
     function validateLiveTV(deferred) {
 
+        if (!isAndroid()) {
+            deferred.resolve();
+            return;
+        }
+
         validateFeature(getPremiumUnlockFeatureId(), deferred);
     }
 

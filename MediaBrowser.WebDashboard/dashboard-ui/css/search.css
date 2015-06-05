@@ -206,7 +206,21 @@
 }
 
 .searchResultsContainer {
-    padding: 2em;
+    padding: .5em;
+}
+
+@media all and (min-width: 800px) {
+    .searchResultsContainer {
+        padding-left: 1em;
+        padding-right: 1em;
+    }
+}
+
+@media all and (min-height: 800px) {
+    .searchResultsContainer {
+        padding-top: 1em;
+        padding-bottom: 1em;
+    }
 }
 
 .btnCloseSearch {

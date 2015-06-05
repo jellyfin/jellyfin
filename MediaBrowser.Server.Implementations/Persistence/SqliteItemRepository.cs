@@ -137,6 +137,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "IsKids", "BIT");
             _connection.AddColumn(_logger, "TypedBaseItems", "CommunityRating", "Float");
             _connection.AddColumn(_logger, "TypedBaseItems", "CustomRating", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "IndexNumber", "INT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "IsLocked", "BIT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "Name", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "OfficialRating", "Text");
 
             PrepareStatements();
 
@@ -166,10 +170,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "IsMovie",
                 "IsSports",
                 "CommunityRating",
-                "CustomRating"
+                "CustomRating",
+                "IndexNumber",
+                "IsLocked",
+                "Name",
+                "OfficialRating"
             };
             _saveItemCommand = _connection.CreateCommand();
-            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11)";
+            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15)";
             for (var i = 1; i <= saveColumns.Count; i++)
             {
                 _saveItemCommand.Parameters.Add(_saveItemCommand, "@" + i.ToString(CultureInfo.InvariantCulture));
@@ -276,6 +284,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.CommunityRating;
                     _saveItemCommand.GetParameter(index++).Value = item.CustomRating;
 
+                    _saveItemCommand.GetParameter(index++).Value = item.IndexNumber;
+                    _saveItemCommand.GetParameter(index++).Value = item.IsLocked;
+
+                    _saveItemCommand.GetParameter(index++).Value = item.Name;
+                    _saveItemCommand.GetParameter(index++).Value = item.OfficialRating;
+                    
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();

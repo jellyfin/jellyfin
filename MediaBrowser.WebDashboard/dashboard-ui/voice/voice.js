@@ -311,7 +311,7 @@
             items = shuffleArray(items);
         }
 
-        items = items.map(function(i) {
+        items = items.map(function (i) {
             return i.Id;
         });
 
@@ -437,7 +437,7 @@
 
         $('.voiceInputText').html(text);
 
-        if (text) {
+        if (text || AppInfo.isNativeApp) {
             $('.blockedMessage').hide();
         } else {
             $('.blockedMessage').show();

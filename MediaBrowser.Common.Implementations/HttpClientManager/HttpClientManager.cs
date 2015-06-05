@@ -723,9 +723,20 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <returns>System.String.</returns>
         private string GetHostFromUrl(string url)
         {
-            var start = url.IndexOf("://", StringComparison.OrdinalIgnoreCase) + 3;
-            var len = url.IndexOf('/', start) - start;
-            return url.Substring(start, len);
+            var index = url.IndexOf("://", StringComparison.OrdinalIgnoreCase);
+
+            if (index != -1)
+            {
+                url = url.Substring(index + 3);
+                var host = url.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+
+                if (!string.IsNullOrWhiteSpace(host))
+                {
+                    return host;
+                }
+            }
+
+            return url;
         }
 
         /// <summary>
