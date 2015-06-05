@@ -42,14 +42,7 @@ namespace MediaBrowser.Api.Playback
 
             var options = GetOptions();
 
-            var threshold = options.ThrottleThresholdInSeconds;
-
-            if (!options.EnableThrottling)
-            {
-                threshold *= 2;
-            }
-
-            if (IsThrottleAllowed(_job, threshold))
+            if (options.EnableThrottling && IsThrottleAllowed(_job, options.ThrottleThresholdInSeconds))
             {
                 PauseTranscoding();
             }
@@ -63,7 +56,7 @@ namespace MediaBrowser.Api.Playback
         {
             if (!_isPaused)
             {
-                //_logger.Debug("Sending pause command to ffmpeg");
+                _logger.Debug("Sending pause command to ffmpeg");
 
                 try
                 {
@@ -81,7 +74,7 @@ namespace MediaBrowser.Api.Playback
         {
             if (_isPaused)
             {
-                //_logger.Debug("Sending unpause command to ffmpeg");
+                _logger.Debug("Sending unpause command to ffmpeg");
 
                 try
                 {
