@@ -472,6 +472,7 @@
             currentWebAppSession.connect().success(function () {
 
                 console.log('session.connect succeeded');
+                currentWebAppSession.setWebAppSessionListener();
                 currentWebAppSession.on('disconnect', handleSessionDisconnect);
 
                 MediaController.setActivePlayer(PlayerName, convertDeviceToTarget(device));

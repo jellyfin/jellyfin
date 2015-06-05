@@ -255,33 +255,32 @@
 
             var html = '<div data-role="popup" class="playFlyout" data-history="false" data-theme="a">';
 
-            html += '<ul data-role="listview" style="min-width: 180px;">';
-            html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
+            html += '<ul data-role="listview" style="min-width: 160px;">';
 
-            html += '<li><a href="#" onclick="MediaController.play(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonPlay') + '</a></li>';
+            html += '<li data-icon="false"><a href="#" onclick="MediaController.play(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonPlay') + '</a></li>';
 
             if (!isFolder && externalPlayers) {
-                html += '<li><a href="#" onclick="LibraryBrowser.closePlayMenu();LibraryBrowser.playInExternalPlayer(\'' + itemId + '\');">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" onclick="LibraryBrowser.closePlayMenu();LibraryBrowser.playInExternalPlayer(\'' + itemId + '\');">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
             }
 
             if (resumePositionTicks) {
-                html += '<li><a href="#" onclick="MediaController.play({ids:[\'' + itemId + '\'],startPositionTicks:' + resumePositionTicks + '});LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonResume') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" onclick="MediaController.play({ids:[\'' + itemId + '\'],startPositionTicks:' + resumePositionTicks + '});LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonResume') + '</a></li>';
             }
 
             if (MediaController.canQueueMediaType(mediaType, itemType)) {
-                html += '<li><a href="#" onclick="MediaController.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonQueue') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" onclick="MediaController.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonQueue') + '</a></li>';
             }
 
             if (itemType == "Audio" || itemType == "MusicAlbum" || itemType == "MusicArtist" || itemType == "MusicGenre") {
-                html += '<li><a href="#" onclick="MediaController.instantMix(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonInstantMix') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" onclick="MediaController.instantMix(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonInstantMix') + '</a></li>';
             }
 
             if (isFolder || itemType == "MusicArtist" || itemType == "MusicGenre") {
-                html += '<li><a href="#" onclick="MediaController.shuffle(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonShuffle') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" onclick="MediaController.shuffle(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonShuffle') + '</a></li>';
             }
 
             if (showAddToPlaylist) {
-                html += '<li><a href="#" onclick="PlaylistManager.showPanel([\'' + itemId + '\']);LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" onclick="PlaylistManager.showPanel([\'' + itemId + '\']);LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
             }
 
             html += '</ul>';
@@ -380,35 +379,34 @@
 
             var html = '<div data-role="popup" class="playFlyout" data-history="false" data-theme="a">';
 
-            html += '<ul data-role="listview" style="min-width: 180px;">';
-            html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
+            html += '<ul data-role="listview" style="min-width: 160px;">';
 
             if (commands.indexOf('addtocollection') != -1) {
-                html += '<li data-icon="plus"><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');BoxSetEditor.showPanel([\'' + itemId + '\']);">' + Globalize.translate('ButtonAddToCollection') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');BoxSetEditor.showPanel([\'' + itemId + '\']);">' + Globalize.translate('ButtonAddToCollection') + '</a></li>';
             }
 
             if (commands.indexOf('playlist') != -1) {
-                html += '<li data-icon="plus"><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');PlaylistManager.showPanel([\'' + itemId + '\']);">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');PlaylistManager.showPanel([\'' + itemId + '\']);">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
             }
 
             if (commands.indexOf('delete') != -1) {
-                html += '<li data-icon="delete"><a class="btnMoreMenuDelete" href="#" onclick="$(\'.playFlyout\').popup(\'close\');LibraryBrowser.deleteItem([\'' + itemId + '\']);">' + Globalize.translate('ButtonDelete') + '</a></li>';
+                html += '<li data-icon="false"><a class="btnMoreMenuDelete" href="#" onclick="$(\'.playFlyout\').popup(\'close\');LibraryBrowser.deleteItem([\'' + itemId + '\']);">' + Globalize.translate('ButtonDelete') + '</a></li>';
             }
 
-            if (commands.indexOf('download') != -1) {
+            if (commands.indexOf('false') != -1) {
                 var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
                     api_key: ApiClient.accessToken()
                 });
 
-                html += '<li data-icon="arrow-d"><a class="btnMoreMenuDownload" data-ajax="false" href="' + downloadHref + '" onclick="$(\'.playFlyout\').popup(\'close\');">' + Globalize.translate('ButtonDownload') + '</a></li>';
+                html += '<li data-icon="false"><a class="btnMoreMenuDownload" data-ajax="false" href="' + downloadHref + '" onclick="$(\'.playFlyout\').popup(\'close\');">' + Globalize.translate('ButtonDownload') + '</a></li>';
             }
 
             if (commands.indexOf('edit') != -1) {
-                html += '<li data-icon="edit"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
+                html += '<li data-icon="false"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
             }
 
             if (commands.indexOf('refresh') != -1) {
-                html += '<li data-icon="refresh"><a class="btnMoreMenuRefresh" href="#">' + Globalize.translate('ButtonRefresh') + '</a></li>';
+                html += '<li data-icon="false"><a class="btnMoreMenuRefresh" href="#">' + Globalize.translate('ButtonRefresh') + '</a></li>';
             }
 
             html += '</ul>';
@@ -812,27 +810,12 @@
                 textlines.push(displayName);
 
                 var verticalTextLines = 2;
-                var enableSubLinks = !$.browser.mobile;
-                ;
 
                 if (item.Type == 'Audio') {
                     textlines.push(item.ArtistItems.map(function (a) {
-                        if (enableSubLinks) {
-                            return '<span class="listviewSubLink" data-href="itembynamedetails.html?id=' + a.Id + '&context=music">' + a.Name + '</span>';
-                        } else {
-                            return a.Name;
-                        }
+                        return a.Name;
 
                     }).join(', ') || '&nbsp;');
-
-                    if (item.Album && item.AlbumId && !options.smallIcon) {
-                        verticalTextLines++;
-                        if (enableSubLinks) {
-                            textlines.push('<span class="listviewSubLink" data-href="itemdetails.html?id=' + item.AlbumId + '&context=music">' + item.Album + '</span>');
-                        } else {
-                            textlines.push(item.Album);
-                        }
-                    }
                 }
 
                 if (item.Type == 'Game') {
@@ -918,6 +901,14 @@
 
             if (options.showDetailsMenu) {
                 atts.push('data-detailsmenu="true"');
+            }
+
+            if (item.AlbumId) {
+                atts.push('data-albumid="' + item.AlbumId + '"');
+            }
+
+            if (item.ArtistItems && item.ArtistItems.length) {
+                atts.push('data-artistid="' + item.ArtistItems[0].Id + '"');
             }
 
             var html = atts.join(' ');

@@ -1261,6 +1261,9 @@
     "ButtonLearnMoreAboutEmbyConnect": "Learn more about Emby Connect",
     "LabelExternalPlayers": "\u5916\u90e8\u64ad\u653e\u5668\uff1a",
     "LabelExternalPlayersHelp": "\u663e\u793a\u5728\u5916\u90e8\u64ad\u653e\u5668\u4e0a\u64ad\u653e\u7684\u6309\u94ae\u3002\u8fd9\u4ec5\u9002\u7528\u4e8e\u652f\u6301URL\u65b9\u6848\u7684Android\u548ciOS\u8bbe\u5907\u3002\u5916\u90e8\u64ad\u653e\u5668\u901a\u5e38\u4e0d\u652f\u6301\u8fdb\u884c\u8fdc\u7a0b\u63a7\u5236\u6216\u6062\u590d\u64ad\u653e\u3002",
+    "LabelNativeExternalPlayersHelp": "Display buttons to play content in external players.",
+    "LabelEnableItemPreviews": "Enable item previews",
+    "LabelEnableItemPreviewsHelp": "if enabled, sliding previews will appear when clicking items on certain screens.",
     "HeaderSubtitleProfile": "\u5b57\u5e55\u914d\u7f6e",
     "HeaderSubtitleProfiles": "\u5b57\u5e55\u914d\u7f6e",
     "HeaderSubtitleProfilesHelp": "\u5b57\u5e55\u914d\u7f6e\u6587\u4ef6\u63cf\u8ff0\u8bbe\u5907\u6240\u652f\u6301\u7684\u5b57\u5e55\u683c\u5f0f\u3002",
@@ -1432,5 +1435,6 @@
     "HeaderExport": "Export",
     "HeaderColumns": "Columns",
     "ButtonReset": "Reset",
-    "OptionEnableExternalVideoPlayers": "Enable external video players"
+    "OptionEnableExternalVideoPlayers": "Enable external video players",
+    "ButtonUnlockGuide": "Unlock Guide"
 }

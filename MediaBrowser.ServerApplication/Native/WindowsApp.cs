@@ -90,7 +90,7 @@ namespace MediaBrowser.ServerApplication.Native
             MainStartup.Shutdown();
         }
 
-        public void Restart()
+        public void Restart(StartupOptions startupOptions)
         {
             MainStartup.Restart();
         }

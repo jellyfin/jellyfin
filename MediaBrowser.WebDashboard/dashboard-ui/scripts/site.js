@@ -33,7 +33,7 @@ var Dashboard = {
         //$.mobile.listview.prototype.options.dividerTheme = "b";
 
         //$.mobile.popup.prototype.options.theme = "c";
-        $.mobile.popup.prototype.options.transition = "fade";
+        $.mobile.popup.prototype.options.transition = "pop";
 
         if ($.browser.mobile) {
             $.mobile.defaultPageTransition = "slide";

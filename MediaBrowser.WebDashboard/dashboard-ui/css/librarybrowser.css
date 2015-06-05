@@ -407,8 +407,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 
 .lnkSibling {
-    position: fixed;
-    top: 105px;
+    position: absolute;
+    top: 15px;
     text-decoration: none;
     font-weight: normal !important;
     display: none;
@@ -1484,6 +1484,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .tapHoldMenu li a, .playFlyout li a {
     font-size: 14px;
+    font-weight: 500 !important;
+    color: #000 !important;
 }
 
 .userProfileSettingsForm {

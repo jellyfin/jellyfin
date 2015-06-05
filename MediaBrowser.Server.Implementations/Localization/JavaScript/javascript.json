@@ -801,5 +801,8 @@
     "MessageWeDidntRecognizeCommand": "We're sorry, we didn't recognize that command.",
     "MessageIfYouBlockedVoice": "If you denied voice access to the app you'll need to reconfigure before trying again.",
     "MessageNoItemsFound": "No items found.",
-    "ButtonManageServer": "Manage Server"
+    "ButtonManageServer": "Manage Server",
+    "ButtonPreferences": "Preferences",
+    "ButtonViewArtist": "View artist",
+    "ButtonViewAlbum": "View album"
 }
