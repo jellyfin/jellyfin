@@ -1,4 +1,5 @@
 ﻿using System;
+using MediaBrowser.Server.Startup.Common;
 
 namespace MediaBrowser.Server.Mac
 {
@@ -30,7 +31,7 @@ namespace MediaBrowser.Server.Mac
         /// <summary>
         /// Restarts this instance.
         /// </summary>
-        public override void Restart()
+		public override void Restart(StartupOptions options)
         {
             MainClass.Restart();
         }

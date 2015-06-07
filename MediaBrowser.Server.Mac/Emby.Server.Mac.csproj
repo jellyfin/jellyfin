@@ -259,9 +259,6 @@
     </BundleResource>
     <BundleResource Include="Resources\appicon.icns" />
     <BundleResource Include="Resources\MediaBrowser.Server.Mac\Images.xcassets\AppIcon.appiconset\Contents.json" />
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\.DS_Store">
-      <Link>Resources\dashboard-ui\.DS_Store</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\about.html">
       <Link>Resources\dashboard-ui\about.html</Link>
     </BundleResource>
@@ -655,9 +652,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\wizarduser.html">
       <Link>Resources\dashboard-ui\wizarduser.html</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\.DS_Store">
-      <Link>Resources\dashboard-ui\css\.DS_Store</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\card.css">
       <Link>Resources\dashboard-ui\css\card.css</Link>
     </BundleResource>
@@ -787,45 +781,6 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\userflyoutdefault.png">
       <Link>Resources\dashboard-ui\css\images\userflyoutdefault.png</Link>
     </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\chromecast\ic_media_route_disabled_holo_dark.png">
-      <Link>Resources\dashboard-ui\css\images\chromecast\ic_media_route_disabled_holo_dark.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\chromecast\ic_media_route_disabled_holo_light.png">
-      <Link>Resources\dashboard-ui\css\images\chromecast\ic_media_route_disabled_holo_light.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\chromecast\ic_media_route_off_holo_dark.png">
-      <Link>Resources\dashboard-ui\css\images\chromecast\ic_media_route_off_holo_dark.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\chromecast\ic_media_route_off_holo_light.png">
-      <Link>Resources\dashboard-ui\css\images\chromecast\ic_media_route_off_holo_light.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\chromecast\ic_media_route_on_0_holo_dark.png">
-      <Link>Resources\dashboard-ui\css\images\chromecast\ic_media_route_on_0_holo_dark.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\chromecast\ic_media_route_on_0_holo_light.png">
-      <Link>Resources\dashboard-ui\css\images\chromecast\ic_media_route_on_0_holo_light.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\chromecast\ic_media_route_on_1_holo_dark.png">
-      <Link>Resources\dashboard-ui\css\images\chromecast\ic_media_route_on_1_holo_dark.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\chromecast\ic_media_route_on_1_holo_light.png">
-      <Link>Resources\dashboard-ui\css\images\chromecast\ic_media_route_on_1_holo_light.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\chromecast\ic_media_route_on_2_holo_dark.png">
-      <Link>Resources\dashboard-ui\css\images\chromecast\ic_media_route_on_2_holo_dark.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\chromecast\ic_media_route_on_2_holo_light.png">
-      <Link>Resources\dashboard-ui\css\images\chromecast\ic_media_route_on_2_holo_light.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\chromecast\ic_media_route_on_holo_dark.png">
-      <Link>Resources\dashboard-ui\css\images\chromecast\ic_media_route_on_holo_dark.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\chromecast\ic_media_route_on_holo_light.png">
-      <Link>Resources\dashboard-ui\css\images\chromecast\ic_media_route_on_holo_light.png</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\chromecast\ic_notification_media_route.png">
-      <Link>Resources\dashboard-ui\css\images\chromecast\ic_notification_media_route.png</Link>
-    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\clients\amazon.png">
       <Link>Resources\dashboard-ui\css\images\clients\amazon.png</Link>
     </BundleResource>
@@ -840,6 +795,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\clients\chrome_companion.png">
       <Link>Resources\dashboard-ui\css\images\clients\chrome_companion.png</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\clients\chromecast.png">
+      <Link>Resources\dashboard-ui\css\images\clients\chromecast.png</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\images\clients\dlna.png">
       <Link>Resources\dashboard-ui\css\images\clients\dlna.png</Link>
@@ -1150,6 +1108,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\appservices.js">
       <Link>Resources\dashboard-ui\scripts\appservices.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\appsettings.js">
+      <Link>Resources\dashboard-ui\scripts\appsettings.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\autoorganizelog.js">
       <Link>Resources\dashboard-ui\scripts\autoorganizelog.js</Link>
     </BundleResource>
@@ -1420,6 +1381,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\musicvideos.js">
       <Link>Resources\dashboard-ui\scripts\musicvideos.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\mypreferencescommon.js">
+      <Link>Resources\dashboard-ui\scripts\mypreferencescommon.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\scripts\mypreferencesdisplay.js">
       <Link>Resources\dashboard-ui\scripts\mypreferencesdisplay.js</Link>
     </BundleResource>
@@ -1600,6 +1564,9 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fastclick.js">
       <Link>Resources\dashboard-ui\thirdparty\fastclick.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\filesystem.js">
+      <Link>Resources\dashboard-ui\thirdparty\filesystem.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\headroom.js">
       <Link>Resources\dashboard-ui\thirdparty\headroom.js</Link>
     </BundleResource>
@@ -1617,6 +1584,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\requirecss.js">
       <Link>Resources\dashboard-ui\thirdparty\requirecss.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\velocity.min.js">
+      <Link>Resources\dashboard-ui\thirdparty\velocity.min.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\ajax.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\ajax.js</Link>
@@ -1641,6 +1611,9 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\events.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\events.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\localassetmanager.js">
+      <Link>Resources\dashboard-ui\thirdparty\apiclient\localassetmanager.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\apiclient\logger.js">
       <Link>Resources\dashboard-ui\thirdparty\apiclient\logger.js</Link>
@@ -1681,8 +1654,14 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\externalplayer.js">
       <Link>Resources\dashboard-ui\thirdparty\cordova\externalplayer.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\filesystem.js">
+      <Link>Resources\dashboard-ui\thirdparty\cordova\filesystem.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\generaldevice.js">
       <Link>Resources\dashboard-ui\thirdparty\cordova\generaldevice.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\iap.js">
+      <Link>Resources\dashboard-ui\thirdparty\cordova\iap.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\imagestore.js">
       <Link>Resources\dashboard-ui\thirdparty\cordova\imagestore.js</Link>
@@ -1696,8 +1675,26 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\serverdiscovery.js">
       <Link>Resources\dashboard-ui\thirdparty\cordova\serverdiscovery.js</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\android\androidcredentials.js">
+      <Link>Resources\dashboard-ui\thirdparty\cordova\android\androidcredentials.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\android\filesystem.js">
+      <Link>Resources\dashboard-ui\thirdparty\cordova\android\filesystem.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\android\iap.js">
+      <Link>Resources\dashboard-ui\thirdparty\cordova\android\iap.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\android\imagestore.js">
+      <Link>Resources\dashboard-ui\thirdparty\cordova\android\imagestore.js</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\android\immersive.js">
       <Link>Resources\dashboard-ui\thirdparty\cordova\android\immersive.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\android\localassetmanager.js">
+      <Link>Resources\dashboard-ui\thirdparty\cordova\android\localassetmanager.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\cordova\ios\orientation.js">
+      <Link>Resources\dashboard-ui\thirdparty\cordova\ios\orientation.js</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\fontawesome\css\font-awesome.css">
       <Link>Resources\dashboard-ui\thirdparty\fontawesome\css\font-awesome.css</Link>
@@ -2374,6 +2371,24 @@
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\throbber.gif">
       <Link>Resources\dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\throbber.gif</Link>
     </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.eot">
+      <Link>Resources\dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.eot</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.ttf">
+      <Link>Resources\dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.ttf</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.woff">
+      <Link>Resources\dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.woff</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.woff2">
+      <Link>Resources\dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.woff2</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\materialicons\codepoints.txt">
+      <Link>Resources\dashboard-ui\thirdparty\materialicons\codepoints.txt</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\materialicons\style.css">
+      <Link>Resources\dashboard-ui\thirdparty\materialicons\style.css</Link>
+    </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\swipebox-master\css\swipebox.css">
       <Link>Resources\dashboard-ui\thirdparty\swipebox-master\css\swipebox.css</Link>
     </BundleResource>
@@ -2394,6 +2409,12 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\thirdparty\swipebox-master\js\jquery.swipebox.min.js">
       <Link>Resources\dashboard-ui\thirdparty\swipebox-master\js\jquery.swipebox.min.js</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\voice.css">
+      <Link>Resources\dashboard-ui\voice\voice.css</Link>
+    </BundleResource>
+    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\voice\voice.js">
+      <Link>Resources\dashboard-ui\voice\voice.js</Link>
     </BundleResource>
   </ItemGroup>
 </Project>
