@@ -446,21 +446,28 @@ namespace MediaBrowser.Api.Playback.Hls
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                using (var fileStream = GetPlaylistFileStream(playlistPath))
+                try
                 {
-                    using (var reader = new StreamReader(fileStream))
+                    using (var fileStream = GetPlaylistFileStream(playlistPath))
                     {
-                        while (!reader.EndOfStream)
+                        using (var reader = new StreamReader(fileStream))
                         {
-                            var text = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                            // If it appears in the playlist, it's done
-                            if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                            while (!reader.EndOfStream)
                             {
-                                return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
+                                var text = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                                // If it appears in the playlist, it's done
+                                if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                                {
+                                    return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
+                                }
                             }
                         }
                     }
+                }
+                catch (IOException)
+                {
+                    // May get an error if the file is locked
                 }
 
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
