@@ -19,7 +19,29 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageshow', "#liveTvSettingsPage", function () {
+    function onSubmit() {
+
+			Dashboard.showLoadingMsg();
+
+            var form = this;
+
+            ApiClient.getNamedConfiguration("livetv").done(function (config) {
+
+                config.GuideDays = $('#selectGuideDays', form).val() || null;
+                config.EnableMovieProviders = $('#chkMovies', form).checked();
+
+                ApiClient.updateNamedConfiguration("livetv", config).done(Dashboard.processServerConfigurationUpdateResult);
+            });
+
+            // Disable default form submission
+            return false;
+    }
+
+    $(document).on('pageinitdepends', "#liveTvSettingsPage", function () {
+
+        $('.liveTvSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#liveTvSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -36,26 +58,5 @@
         });
 
     });
-
-    window.LiveTvSettingsPage = {
-
-        onSubmit: function () {
-
-            Dashboard.showLoadingMsg();
-
-            var form = this;
-
-            ApiClient.getNamedConfiguration("livetv").done(function (config) {
-
-                config.GuideDays = $('#selectGuideDays', form).val() || null;
-                config.EnableMovieProviders = $('#chkMovies', form).checked();
-
-                ApiClient.updateNamedConfiguration("livetv", config).done(Dashboard.processServerConfigurationUpdateResult);
-            });
-
-            // Disable default form submission
-            return false;
-        }
-    };
 
 })(jQuery, document, window);
