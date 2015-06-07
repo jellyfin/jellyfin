@@ -44,7 +44,7 @@
 }
 
 .cardBox {
-    margin: 3px;
+    margin: 2px;
 }
 
 .largeCardMargin .cardBox {
@@ -55,7 +55,7 @@
     margin: 4px;
 }
 
-@media all and (max-width: 600px) {
+@media all and (max-width: 800px) {
 
     .cardBox {
         margin: 1px;

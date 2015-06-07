@@ -257,7 +257,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#boxsetsPage", function () {
+    }).on('pageshowready', "#boxsetsPage", function () {
 
         var page = this;
 
@@ -273,6 +273,9 @@
             $('.collectionTabs', page).show();
             $('.movieTabs', page).hide();
             query.ParentId = LibraryMenu.getTopParentId();
+
+            // Doing this for now due to reports of the page being empty for AutoBoxSet users
+            query.ParentId = null;
         }
 
         var limit = LibraryBrowser.getDefaultPageSize();
@@ -295,8 +298,6 @@
                 reloadItems(page);
             }
         });
-
-    }).on('pageshowready', "#boxsetsPage", function () {
 
         updateFilterControls(this);
 

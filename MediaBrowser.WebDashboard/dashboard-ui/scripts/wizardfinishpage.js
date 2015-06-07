@@ -1,8 +1,8 @@
-﻿var WizardFinishPage = {
+﻿(function(){
 
-    onFinish: function () {
+	function onFinish() {
 
-        ApiClient.ajax({
+		ApiClient.ajax({
 
             url: ApiClient.getUrl('Startup/Complete'),
             type: 'POST'
@@ -11,5 +11,11 @@
 
             Dashboard.navigate('dashboard.html');
         });
-    }
-};
+	}
+
+    $(document).on('pageinitdepends', '#wizardFinishPage', function(){
+
+    	$('.btnWizardNext', this).on('click', onFinish);
+    });
+
+})();

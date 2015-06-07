@@ -282,7 +282,7 @@
     }
 }
 
-@media all and (max-width: 1200px) {
+@media all and (max-width: 800px) {
 
     /* They can use the left menu */
     .dashboardEntryHeaderButton {

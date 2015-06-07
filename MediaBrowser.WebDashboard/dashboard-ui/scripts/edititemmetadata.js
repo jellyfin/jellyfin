@@ -808,7 +808,11 @@
 
     function getAlbumArtists(form) {
 
-        return $('#txtAlbumArtist', form).val().split(';').map(function (a) {
+        return $('#txtAlbumArtist', form).val().trim().split(';').filter(function(s){
+
+        	return s.length > 0;
+
+        }).map(function (a) {
 
             return {
                 Name: a
@@ -818,7 +822,11 @@
 
     function getArtists(form) {
 
-        return $('#txtArtist', form).val().split(';').map(function (a) {
+        return $('#txtArtist', form).val().trim().split(';').filter(function(s){
+
+        	return s.length > 0;
+
+        }).map(function (a) {
 
             return {
                 Name: a

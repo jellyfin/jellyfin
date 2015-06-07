@@ -1,6 +1,7 @@
 ﻿(function () {
 
-    function connectToServer(page, server) {
+	var serverList = [];
+	function connectToServer(page, server) {
 
         Dashboard.showLoadingMsg();
 
@@ -109,6 +110,8 @@
 
     function renderServers(page, servers) {
 
+    	serverList = servers;
+
         if (servers.length) {
             $('.noServersMessage', page).hide();
         } else {
@@ -178,7 +181,13 @@
         ConnectionManager.deleteServer(id).done(function () {
 
             Dashboard.hideModalLoadingMsg();
-            loadPage(page);
+
+            // Just re-render the servers without discovering them again
+            // If we re-discover then the one they deleted may just come back
+            var newServerList = serverList.filter(function(s){
+            	return s.Id != id;
+            });
+            renderServers(page, newServerList);
 
         }).fail(function () {
 
@@ -195,6 +204,7 @@
         ConnectionManager.rejectServer(id).done(function () {
 
             Dashboard.hideModalLoadingMsg();
+
             loadPage(page);
 
         }).fail(function () {

@@ -129,7 +129,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _connection.RunQueries(queries, _logger);
 
-            _connection.AddColumn(_logger, "TypedBaseItems", "StartDate", "DATETIME");
+			_connection.AddColumn(_logger, "TypedBaseItems", "Path", "Text");
+			_connection.AddColumn(_logger, "TypedBaseItems", "StartDate", "DATETIME");
             _connection.AddColumn(_logger, "TypedBaseItems", "EndDate", "DATETIME");
             _connection.AddColumn(_logger, "TypedBaseItems", "ChannelId", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsMovie", "BIT");
@@ -163,6 +164,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "guid",
                 "type",
                 "data",
+				"Path",
                 "StartDate",
                 "EndDate",
                 "ChannelId",
@@ -177,7 +179,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "OfficialRating"
             };
             _saveItemCommand = _connection.CreateCommand();
-            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15)";
+			_saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16)";
             for (var i = 1; i <= saveColumns.Count; i++)
             {
                 _saveItemCommand.Parameters.Add(_saveItemCommand, "@" + i.ToString(CultureInfo.InvariantCulture));
@@ -254,7 +256,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.GetType().FullName;
                     _saveItemCommand.GetParameter(index++).Value = _jsonSerializer.SerializeToBytes(item);
 
-                    var hasStartDate = item as IHasStartDate;
+					_saveItemCommand.GetParameter(index++).Value = item.Path;
+
+					var hasStartDate = item as IHasStartDate;
                     if (hasStartDate != null)
                     {
                         _saveItemCommand.GetParameter(index++).Value = hasStartDate.StartDate;

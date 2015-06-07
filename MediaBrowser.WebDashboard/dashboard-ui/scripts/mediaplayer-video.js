@@ -271,7 +271,7 @@
 
             var mediaControls = $("#videoPlayer");
 
-            var state = self.getPlayerStateInternal(self.currentMediaElement, item, self.currentMediaSource);
+            var state = self.getPlayerStateInternal(self.currentMediaRenderer, item, self.currentMediaSource);
 
             var url = "";
             var imageWidth = 400;
@@ -751,7 +751,7 @@
                 return currentStream.Type == "Audio";
             });
 
-            var currentIndex = getParameterByName('AudioStreamIndex', self.getCurrentSrc(self.currentMediaElement));
+            var currentIndex = getParameterByName('AudioStreamIndex', self.getCurrentSrc(self.currentMediaRenderer));
 
             var html = '';
             html += '<div class="videoPlayerPopupContent">';
@@ -917,7 +917,7 @@
 
         function getQualityFlyoutHtml() {
 
-            var currentSrc = self.getCurrentSrc(self.currentMediaElement).toLowerCase();
+            var currentSrc = self.getCurrentSrc(self.currentMediaRenderer).toLowerCase();
             var isStatic = currentSrc.indexOf('static=true') != -1;
 
             var videoStream = self.currentMediaSource.MediaStreams.filter(function (stream) {
@@ -1042,13 +1042,11 @@
         };
 
         // Replace audio version
-        self.cleanup = function (playerElement) {
+        self.cleanup = function (mediaRenderer) {
 
-            if (playerElement.tagName.toLowerCase() == 'video') {
-                currentTimeElement.html('--:--');
+            currentTimeElement.html('--:--');
 
-                unbindEventsForPlayback();
-            }
+            unbindEventsForPlayback();
         };
 
         self.playVideo = function (item, mediaSource, startPosition) {
@@ -1109,10 +1107,7 @@
             var requiresNativeControls = !self.enableCustomVideoControls();
 
             // Can't autoplay in these browsers so we need to use the full controls
-            if (requiresNativeControls && AppInfo.isNativeApp && $.browser.android) {
-                html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" ' + posterCode + ' webkit-playsinline>';
-            }
-            else if (requiresNativeControls) {
+            if (requiresNativeControls) {
                 html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" controls="controls"' + posterCode + ' webkit-playsinline>';
             }
             else {
@@ -1192,45 +1187,18 @@
                 videoControls.removeClass('hide');
             }
 
-            var video = $("video", videoElement);
+            var mediaRenderer = new HtmlMediaRenderer('video');
 
             initialVolume = self.getSavedVolume();
 
-            video.each(function () {
-                this.volume = initialVolume;
-            });
+            mediaRenderer.volume(initialVolume);
 
             volumeSlider.val(initialVolume).slider('refresh');
             updateVolumeButtons(initialVolume);
 
-            video.one("loadedmetadata.mediaplayerevent", function (e) {
+            $(mediaRenderer).on("volumechange.mediaplayerevent", function (e) {
 
-                // The IE video player won't autoplay without this
-                if ($.browser.msie) {
-                    this.play();
-                }
-
-            }).one("playing.mediaplayerevent", function (e) {
-
-                // TODO: This is not working in chrome. Is it too early?
-
-                // Appending #t=xxx to the query string doesn't seem to work with HLS
-                if (startPositionInSeekParam && this.currentSrc && this.currentSrc.toLowerCase().indexOf('.m3u8') != -1) {
-                    var element = this;
-                    setTimeout(function () {
-                        element.currentTime = startPositionInSeekParam;
-                    }, 3000);
-                }
-
-                if (requiresNativeControls) {
-                    $(this).attr('controls', 'controls');
-                }
-
-            }).on("volumechange.mediaplayerevent", function (e) {
-
-                var vol = this.volume;
-
-                updateVolumeButtons(vol);
+                updateVolumeButtons(this.volume());
 
             }).one("playing.mediaplayerevent", function () {
 
@@ -1269,9 +1237,6 @@
 
                 self.stop();
 
-                var errorCode = this.error ? this.error.code : '';
-                console.log('Html5 Video error code: ' + errorCode);
-
                 var errorMsg = Globalize.translate('MessageErrorPlayingVideo');
 
                 if (item.Type == "TvChannel") {
@@ -1296,7 +1261,7 @@
             }).on("click.mediaplayerevent", function (e) {
 
                 if (!$.browser.mobile) {
-                    if (this.paused) {
+                    if (this.paused()) {
                         self.unpause();
                     } else {
                         self.pause();
@@ -1318,7 +1283,7 @@
 
             $('body').addClass('bodyWithPopupOpen');
 
-            self.currentMediaElement = video[0];
+            self.currentMediaRenderer = mediaRenderer;
             self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
 
             self.updateNowPlayingInfo(item);
