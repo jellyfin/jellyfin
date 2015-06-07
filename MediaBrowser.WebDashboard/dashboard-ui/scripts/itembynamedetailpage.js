@@ -453,7 +453,8 @@
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
                     playFromHere: true,
-                    defaultAction: 'playallfromhere'
+                    defaultAction: 'playallfromhere',
+                    smallIcon: true
                 });
             }
             else if (query.IncludeItemTypes == "Movie" || query.IncludeItemTypes == "Trailer") {
@@ -503,7 +504,8 @@
             else {
 
                 html = LibraryBrowser.getListViewHtml({
-                    items: result.Items
+                    items: result.Items,
+                    smallIcon: true
                 });
             }
 

@@ -1367,13 +1367,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin: 0 auto !important;
 }
 
-    .itemsListview .ui-li-aside {
-        right: 70px;
-        font-size: 13px;
-        top: 35%;
-        font-weight: 300 !important;
-    }
-
     .itemsListview .ui-li-count {
         right: 1em;
         top: 70%;
@@ -1409,11 +1402,20 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-position: center center;
 }
 
-.listViewMoreButton {
+.listViewAside {
     position: absolute;
     right: 0;
     top: 10%;
-    padding: 15px 20px;
+}
+
+    .listViewAside button {
+        padding: 15px 10px;
+        margin: 0 !important;
+        vertical-align: middle;
+    }
+
+.listViewMoreButton {
+    padding-left: 20px !important;
     font-size: 20px;
 }
 
@@ -1475,9 +1477,27 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     color: #2ad;
 }
 
+.listViewUserDataButtons {
+    visibility: hidden;
+}
+
+@media all and (min-width: 1200px) {
+
+    li:hover .listViewUserDataButtons {
+        visibility: visible !important;
+    }
+}
+
+@media all and (max-width: 1200px) {
+
+    .listViewUserDataButtons {
+        display: none;
+    }
+}
+
 @media all and (max-width: 600px) {
 
-    .itemsListview .ui-li-aside {
+    .listViewAsideText {
         display: none;
     }
 }

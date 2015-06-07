@@ -848,10 +848,6 @@
                     html += '</p>';
                 }
 
-                html += '<div class="ui-li-aside">';
-                html += textlines[verticalTextLines] || LibraryBrowser.getRatingHtml(item, false);
-                html += '</div>';
-
                 html += LibraryBrowser.getSyncIndicator(item);
 
                 if (item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.MediaType == 'Video') {
@@ -863,9 +859,17 @@
                 }
                 html += '</a>';
 
+                html += '<div class="listViewAside">';
+                html += '<span class="listViewAsideText">';
+                html += textlines[verticalTextLines] || LibraryBrowser.getRatingHtml(item, false);
+                html += '</span>';
                 html += '<button type="button" data-role="none" class="listviewMenuButton imageButton listViewMoreButton" data-icon="none">';
                 html += '<i class="material-icons">more_vert</i>';
                 html += '</button>';
+                html += '<span class="listViewUserDataButtons">';
+                html += LibraryBrowser.getUserDataIconsHtml(item);
+                html += '</span>';
+                html += '</div>';
 
                 html += '</li>';
 
@@ -1553,7 +1557,7 @@
             html += '<div class="' + footerClass + '">';
 
             if (options.cardLayout) {
-                html += '<div class="cardText" style="text-align:right; float:right;">';
+                html += '<div class="cardButtonContainer">';
                 html += '<button class="listviewMenuButton imageButton btnCardOptions" type="button" data-role="none" style="margin: 4px 0 0;"><i class="material-icons">more_vert</i></button>';
                 html += "</div>";
             }
@@ -2269,7 +2273,7 @@
 
             btnCssClass += " imageButton";
 
-            return '<button data-itemid="' + itemId + '" class="' + btnCssClass + '" type="button" onclick="LibraryBrowser.' + method + '(this);return false;" title="' + tooltip + '"><i class="fa ' + icon + '"></i></button>';
+            return '<button data-itemid="' + itemId + '" class="' + btnCssClass + '" type="button" onclick="LibraryBrowser.' + method + '(this);return false;" title="' + tooltip + '" data-role="none"><i class="fa ' + icon + '"></i></button>';
 
         },
 
@@ -2284,7 +2288,7 @@
 
             var tooltipPlayed = Globalize.translate('TooltipPlayed');
 
-            if ((item.MediaType || item.IsFolder) && type != "TvChannel" && type != "MusicArtist") {
+            if ((item.MediaType || item.IsFolder) && type != "TvChannel" && type != "MusicArtist" && item.MediaType != "Audio") {
                 if (userData.Played) {
                     html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRating', 'fa-check', tooltipPlayed);
                 } else {

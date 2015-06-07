@@ -85,7 +85,7 @@
                     type: "Backdrop",
                     tag: item.tag,
                     maxWidth: screenWidth,
-                    quality: 80
+                    quality: 50
                 });
 
                 setBackdropImage(getElement(), imgUrl);
@@ -174,7 +174,7 @@
                 type: "Backdrop",
                 tag: item.tag,
                 maxWidth: screenWidth,
-                quality: 80
+                quality: 50
             });
 
             setBackdropImage(getElement(), imgUrl);

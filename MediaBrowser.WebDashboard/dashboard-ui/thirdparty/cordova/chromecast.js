@@ -2,9 +2,6 @@
 
     var PlayerName = "Chromecast";
     var ApplicationID = "2D4B1DA3";
-    var currentPairingDeviceId;
-    var currentPairedDeviceId;
-    var currentDeviceFriendlyName;
     var currentWebAppSession;
     var currentDevice;
 
@@ -87,7 +84,7 @@
                 accessToken: ApiClient.accessToken(),
                 serverAddress: ApiClient.serverAddress(),
                 maxBitrate: bitrateSetting,
-                receiverName: currentDeviceFriendlyName
+                receiverName: currentDevice.getFriendlyName()
             });
 
             getEndpointInfo().done(function (endpoint) {
@@ -462,32 +459,45 @@
             MediaController.removeActivePlayer(PlayerName);
         }
 
-        function setupWebAppSession(device, session) {
+        function onWebAppSessionConnect(webAppSession, device) {
+
+            currentWebAppSession = webAppSession;
+
+            console.log('session.connect succeeded');
+            webAppSession.setWebAppSessionListener();
+
+            MediaController.setActivePlayer(PlayerName, convertDeviceToTarget(device));
+            currentDevice = device;
+
+            $(castPlayer).trigger('connect');
+
+            sendIdentifyMessage();
+        }
+
+        function setupWebAppSession(device, session, connectToSession) {
 
             // hold on to a reference
-            currentWebAppSession = session.acquire();
+            var currentSession = session.acquire();
 
-            currentWebAppSession.on('message', handleMessage);
+            currentSession.on('message', handleMessage);
+            currentSession.on('disconnect', handleSessionDisconnect);
 
-            currentWebAppSession.connect().success(function () {
+            if (connectToSession || $.browser.safari) {
+                currentSession.connect().success(function () {
 
-                console.log('session.connect succeeded');
-                currentWebAppSession.setWebAppSessionListener();
-                currentWebAppSession.on('disconnect', handleSessionDisconnect);
+                    onWebAppSessionConnect(currentSession, device);
 
-                MediaController.setActivePlayer(PlayerName, convertDeviceToTarget(device));
-                currentDeviceFriendlyName = device.getFriendlyName();
-                currentPairedDeviceId = device.getId();
-                currentDevice = device;
+                }).error(handleSessionError);
+            } else {
+                onWebAppSessionConnect(currentSession, device);
+            }
+        }
 
-                $(castPlayer).trigger('connect');
-
-                sendMessageToDevice({
-                    options: {},
-                    command: 'Identify'
-                });
-
-            }).error(handleSessionError);
+        function sendIdentifyMessage() {
+            sendMessageToDevice({
+                options: {},
+                command: 'Identify'
+            });
         }
 
         function handleSessionError() {
@@ -508,17 +518,7 @@
                 session.release();
             }
 
-            if (currentDevice != null) {
-                currentDevice.off("ready");
-                currentDevice.off("disconnect");
-
-                currentDevice.disconnect();
-            }
-
             currentWebAppSession = null;
-            currentPairedDeviceId = null;
-            currentDeviceFriendlyName = null;
-            currentDevice = null;
         }
 
         function tryLaunchWebSession(device) {
@@ -527,7 +527,7 @@
             device.getWebAppLauncher().launchWebApp(ApplicationID).success(function (session) {
 
                 console.log('launchWebApp success. calling onSessionConnected');
-                setupWebAppSession(device, session);
+                setupWebAppSession(device, session, true);
 
             }).error(function (err1) {
 
@@ -544,7 +544,7 @@
             device.getWebAppLauncher().joinWebApp(ApplicationID).success(function (session) {
 
                 console.log('joinWebApp success. calling onSessionConnected');
-                setupWebAppSession(device, session);
+                setupWebAppSession(device, session, false);
 
             }).error(function (err) {
 
@@ -563,15 +563,16 @@
 
         function launchWebApp(device) {
 
+            if (currentWebAppSession) {
+                cleanupSession();
+            }
+
             tryJoinWebSession(device, true);
         }
 
         function onDeviceReady(device) {
 
-            if (currentPairingDeviceId != device.getId()) {
-                console.log('device ready fired for a different device. ignoring.');
-                return;
-            }
+            device.off("ready");
 
             console.log('creating webAppSession');
 
@@ -600,10 +601,12 @@
 
         self.tryPairWithDevice = function (device, deferred) {
 
-            var deviceId = device.getId();
-            currentPairingDeviceId = deviceId;
-
             console.log('Will attempt to connect to Chromecast');
+
+            device.on("disconnect", function () {
+                device.off("ready");
+                device.off("disconnect");
+            });
 
             if (device.isReady()) {
                 console.log('Device is already ready, calling onDeviceReady');
@@ -617,11 +620,6 @@
                     onDeviceReady(device);
                 });
 
-                device.on("disconnect", function () {
-                    device.off("ready");
-                    device.off("disconnect");
-                });
-
                 console.log('Calling device.connect');
                 device.connect();
             }
@@ -629,11 +627,12 @@
 
         $(MediaController).on('playerchange', function (e, newPlayer, newTarget) {
 
-            if (currentPairedDeviceId) {
-                if (newTarget.id != currentPairedDeviceId) {
+            if (currentDevice) {
+                if (newTarget.id != currentDevice.getId()) {
                     if (currentWebAppSession) {
                         console.log('Disconnecting from chromecast');
-                        cleanupSession();
+                        currentDevice.disconnect();
+                        currentDevice = null;
                     }
                 }
             }

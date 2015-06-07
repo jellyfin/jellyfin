@@ -69,7 +69,7 @@
 }
 
 .bottomPaddedCard .cardBox {
-    margin-bottom: 5px;
+    margin-bottom: 12px;
 }
 
 .visualCardBox {
@@ -85,7 +85,7 @@
 }
 
 .ui-page-theme-b .visualCardBox {
-    background: rgba(45,45,45,.85);
+    background: rgba(40,40,40,.85);
     border-radius: 3px;
 }
 
@@ -174,7 +174,7 @@
 }
 
 .visualCardBox .outerCardFooter {
-    padding: 5px;
+    padding: 3px;
     position: relative;
 }
 
@@ -193,6 +193,12 @@
     padding: 5px 5px 2px;
     font-weight: 400;
     line-height: 1.4;
+}
+
+.cardButtonContainer {
+    text-align: right;
+    float: right;
+    padding: 5px 0 2px;
 }
 
 .cardContent .cardFooter .cardText {
@@ -220,7 +226,6 @@
 }
 
 .cardBox:not(.visualCardBox) .outerCardFooter .cardText:last-child {
-    margin-bottom: 2em;
 }
 
 @media all and (max-width: 600px) {

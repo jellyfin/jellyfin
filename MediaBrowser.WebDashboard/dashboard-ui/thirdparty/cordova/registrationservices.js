@@ -37,6 +37,10 @@
         validateFeature(getPremiumUnlockFeatureId(), deferred);
     }
 
+    function validateServerManagement(deferred) {
+        deferred.resolve();
+    }
+
     function getRegistrationInfo(feature, enableSupporterUnlock) {
 
         if (!enableSupporterUnlock) {
@@ -224,6 +228,8 @@
                 validatePlayback(deferred);
             } else if (name == 'livetv') {
                 validateLiveTV(deferred);
+            } else if (name == 'manageserver') {
+                validateServerManagement(deferred);
             } else {
                 deferred.resolve();
             }

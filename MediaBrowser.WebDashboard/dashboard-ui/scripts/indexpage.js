@@ -32,51 +32,51 @@
             var item = items[i];
 
             var icon;
-            var backgroundColor = 'rgba(82, 181, 75, 0.7)';
+            var backgroundColor = 'rgba(82, 181, 75, 0.9)';
 
             switch (item.CollectionType) {
                 case "movies":
                     icon = "fa-film";
-                    backgroundColor = 'rgba(176, 94, 81, 0.7)';
+                    backgroundColor = 'rgba(176, 94, 81, 0.9)';
                     break;
                 case "music":
                     icon = "fa-music";
-                    backgroundColor = 'rgba(217, 145, 67, 0.7)';
+                    backgroundColor = 'rgba(217, 145, 67, 0.9)';
                     break;
                 case "photos":
                     icon = "fa-photo";
-                    backgroundColor = 'rgba(127, 0, 0, 0.7)';
+                    backgroundColor = 'rgba(127, 0, 0, 0.9)';
                     break;
                 case "livetv":
                     icon = "fa-video-camera";
-                    backgroundColor = 'rgba(255, 233, 127, 0.7)';
+                    backgroundColor = 'rgba(217, 145, 67, 0.9)';
                     break;
                 case "tvshows":
                     icon = "fa-video-camera";
-                    backgroundColor = 'rgba(77, 88, 164, 0.7)';
+                    backgroundColor = 'rgba(77, 88, 164, 0.9)';
                     break;
                 case "games":
                     icon = "fa-gamepad";
-                    backgroundColor = 'rgba(183, 202, 72, 0.7)';
+                    backgroundColor = 'rgba(183, 202, 72, 0.9)';
                     break;
                 case "trailers":
                     icon = "fa-film";
-                    backgroundColor = 'rgba(176, 94, 81, 0.7)';
+                    backgroundColor = 'rgba(176, 94, 81, 0.9)';
                     break;
                 case "homevideos":
                     icon = "fa-video-camera";
-                    backgroundColor = 'rgba(110, 52, 32, 0.7)';
+                    backgroundColor = 'rgba(110, 52, 32, 0.9)';
                     break;
                 case "musicvideos":
                     icon = "fa-video-camera";
-                    backgroundColor = 'rgba(143, 54, 168, 0.7)';
+                    backgroundColor = 'rgba(143, 54, 168, 0.9)';
                     break;
                 case "books":
                     icon = "fa-book";
                     break;
                 case "channels":
                     icon = "fa-globe";
-                    backgroundColor = 'rgba(51, 136, 204, 0.7)';
+                    backgroundColor = 'rgba(51, 136, 204, 0.9)';
                     break;
                 case "playlists":
                     icon = "fa-list";
@@ -153,7 +153,7 @@
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
 
-                if (user.Policy.EnableUserPreferenceAccess) {
+                if (user.Policy.EnableUserPreferenceAccess && !AppInfo.isNativeApp) {
                     html += '<a href="mypreferencesdisplay.html" class="accentButton"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</a>';
                 }
 
@@ -235,7 +235,7 @@
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderMyMedia') + '</h1>';
 
-                if (user.Policy.EnableUserPreferenceAccess) {
+                if (user.Policy.EnableUserPreferenceAccess && !AppInfo.isNativeApp) {
                     html += '<a href="mypreferencesdisplay.html" class="accentButton"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</a>';
                 }
 
@@ -461,7 +461,7 @@
 
 (function ($, document) {
 
-    var defaultFirstSection = 'smalllibrarytiles-automobile';
+    var defaultFirstSection = 'smalllibrarytiles';
 
     function getDefaultSection(index) {
 
@@ -643,7 +643,10 @@
                 Dashboard.getCurrentUser().done(function (user) {
 
                     loadSections(page, user, result).done(function () {
-                        showWelcomeIfNeeded(page, result);
+
+                        if (!AppInfo.isNativeApp) {
+                            showWelcomeIfNeeded(page, result);
+                        }
                     });
 
                 });

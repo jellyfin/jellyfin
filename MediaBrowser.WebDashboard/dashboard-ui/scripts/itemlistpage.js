@@ -125,7 +125,7 @@
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            if (user.Policy.IsAdministrator && query.ParentId) {
+            if (user.Policy.IsAdministrator && query.ParentId && !AppInfo.isNativeApp) {
                 $('#editButtonContainer', page).show();
             } else {
                 $('#editButtonContainer', page).hide();

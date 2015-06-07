@@ -38,7 +38,7 @@
                 update('enableItemPreviews', val.toString());
             }
 
-            return store.getItem('enableItemPreviews') != 'false';
+            return store.getItem('enableItemPreviews') == 'true';
         },
         enableFullScreen: function (val) {
 

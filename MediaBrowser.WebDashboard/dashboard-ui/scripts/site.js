@@ -36,7 +36,7 @@ var Dashboard = {
         $.mobile.popup.prototype.options.transition = "pop";
 
         if ($.browser.mobile) {
-            $.mobile.defaultPageTransition = "slide";
+            $.mobile.defaultPageTransition = "none";
         } else {
             $.mobile.defaultPageTransition = "none";
         }
@@ -45,6 +45,9 @@ var Dashboard = {
         // Make panels a little larger than the defaults
         $.mobile.panel.prototype.options.classes.modalOpen = "largePanelModalOpen ui-panel-dismiss-open";
         $.mobile.panel.prototype.options.classes.panel = "largePanel ui-panel";
+
+        $.event.special.swipe.verticalDistanceThreshold = 40;
+        $.mobile.loader.prototype.options.disabled = true;
     },
 
     isConnectMode: function () {
@@ -92,7 +95,7 @@ var Dashboard = {
         }
         Dashboard.hideLoadingMsg();
 
-        if (!Dashboard.suppressAjaxErrors && data.type != 'GET') {
+        if (!Dashboard.suppressAjaxErrors && data.type != 'GET' && !AppInfo.isNativeApp) {
 
             setTimeout(function () {
 
@@ -731,7 +734,7 @@ var Dashboard = {
                     if (item.selected) {
                         menuHtml += '<a class="sidebarLink selectedSidebarLink" href="' + item.href + '">';
                     } else {
-                        menuHtml += '<a data-transition="none" class="sidebarLink" href="' + item.href + '">';
+                        menuHtml += '<a class="sidebarLink" href="' + item.href + '">';
                     }
 
                     var icon = item.icon;
@@ -765,7 +768,7 @@ var Dashboard = {
 
             html += '<div data-role="panel" id="dashboardPanel" class="dashboardPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="a">';
 
-            html += '<p class="libraryPanelHeader" style="margin: 15px 0 15px 20px;"><a href="index.html" data-transition="none" class="imageLink"><img src="css/images/mblogoicon.png" /><span style="color:#333;">EMBY</span></a></p>';
+            html += '<p class="libraryPanelHeader" style="margin: 15px 0 15px 20px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span style="color:#333;">EMBY</span></a></p>';
 
             html += '<div class="sidebarLinks">';
             html += menuHtml;
@@ -1982,7 +1985,7 @@ $(document).on('pagecreate', ".page", function () {
         Dashboard.firePageEvent(page, 'pageinitdepends');
     }
 
-    $('.localnav a, .libraryViewNav a').attr('data-transition', 'none');
+    //$('.localnav a, .libraryViewNav a').attr('data-transition', 'none');
 
 }).on('pagebeforeshow', ".page", function () {
 

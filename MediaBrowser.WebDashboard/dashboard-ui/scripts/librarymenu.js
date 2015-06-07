@@ -38,7 +38,7 @@
         //    html += '<button class="headerButtonViewMenu headerButton headerButtonRight" type="button" data-role="none"><i class="material-icons">more_vert</i></button>';
         //}
 
-        if (!$.browser.mobile && !AppInfo.isTouchPreferred) {
+        if (!$.browser.mobile && !AppInfo.isNativeApp) {
             html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton" style="display:none;"><i class="material-icons">settings</i></a>';
         }
 
@@ -101,6 +101,21 @@
         $(initViewMenuBarHeadroom);
 
         //$('.headerButtonViewMenu').off('click', onViewButtonClick).on('click', onViewButtonClick);
+
+        if (AppInfo.isNativeApp) {
+            $(document).off('swiperight.drawer').on('swiperight.drawer', '.libraryPage', onSwipeRight);
+        }
+    }
+
+    function onSwipeRight(event) {
+
+        if (event.swipestop && event.swipestop.coords) {
+            var x = event.swipestop.coords[0];
+
+            if (x < 50) {
+                showLibraryMenu();
+            }
+        }
     }
 
     //function onViewButtonClick() {
@@ -155,7 +170,7 @@
         html += Globalize.translate('HeaderAdmin');
         html += '</div>';
 
-        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="dashboard" href="dashboard.html"><span class="fa fa-server sidebarLinkIcon"></span>' + Globalize.translate('ButtonManageServer') + '</a>';
+        html += '<a class="sidebarLink lnkMediaFolder lnkManageServer" data-itemid="dashboard" href="#"><span class="fa fa-server sidebarLinkIcon"></span>' + Globalize.translate('ButtonManageServer') + '</a>';
         html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html"><span class="fa fa-edit sidebarLinkIcon"></span>' + Globalize.translate('ButtonMetadataManager') + '</a>';
 
         if (!$.browser.mobile && !AppInfo.isTouchPreferred) {
@@ -412,6 +427,8 @@
 
             panel = $('#libraryPanel').panel({}).lazyChildren().trigger('create');
 
+            $('.lnkManageServer', panel).on('click', onManageServerClicked);
+
             updateLibraryMenu();
         }
         else if (requiresLibraryMenuRefresh) {
@@ -420,6 +437,17 @@
         }
 
         return panel;
+    }
+
+    function onManageServerClicked() {
+
+        requirejs(["scripts/registrationservices"], function () {
+
+            RegistrationServices.validateFeature('manageserver').done(function () {
+                Dashboard.navigate('dashboard.html');
+
+            });
+        });
     }
 
     function getDashboardMenu(page) {

@@ -99,7 +99,8 @@
                         title: item.Name,
                         showRemoveFromPlaylist: true,
                         playFromHere: true,
-                        defaultAction: 'playallfromhere'
+                        defaultAction: 'playallfromhere',
+                        smallIcon: true
                     });
                 }
 

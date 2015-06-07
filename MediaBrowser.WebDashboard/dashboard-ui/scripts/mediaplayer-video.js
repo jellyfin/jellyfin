@@ -1109,7 +1109,10 @@
             var requiresNativeControls = !self.enableCustomVideoControls();
 
             // Can't autoplay in these browsers so we need to use the full controls
-            if (requiresNativeControls) {
+            if (requiresNativeControls && AppInfo.isNativeApp && $.browser.android) {
+                html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" ' + posterCode + ' webkit-playsinline>';
+            }
+            else if (requiresNativeControls) {
                 html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" controls="controls"' + posterCode + ' webkit-playsinline>';
             }
             else {
@@ -1217,6 +1220,10 @@
                     setTimeout(function () {
                         element.currentTime = startPositionInSeekParam;
                     }, 3000);
+                }
+
+                if (requiresNativeControls) {
+                    $(this).attr('controls', 'controls');
                 }
 
             }).on("volumechange.mediaplayerevent", function (e) {
