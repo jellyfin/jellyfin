@@ -590,7 +590,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "livetvrecording.js",
                                 "livetvtimer.js",
                                 "livetvseriestimer.js",
-                                "livetvsettings.js",
 
                                 "medialibrarypage.js",
                                 "metadataconfigurationpage.js",
@@ -618,9 +617,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "userprofilespage.js",
                                 "userparentalcontrol.js",
                                 "userlibraryaccess.js",
-                                "wizardagreement.js",
-                                "wizardfinishpage.js",
-                                "wizardservice.js",
                                 "wizardstartpage.js"
                             };
         }
