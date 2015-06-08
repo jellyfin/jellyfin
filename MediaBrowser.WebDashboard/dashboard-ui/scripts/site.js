@@ -35,6 +35,8 @@ var Dashboard = {
         //$.mobile.popup.prototype.options.theme = "c";
         $.mobile.popup.prototype.options.transition = "pop";
 
+        //$.mobile.keepNative = "input[type='text'],input[type='password'],input[type='number']";
+
         if ($.browser.mobile) {
             $.mobile.defaultPageTransition = "none";
         } else {

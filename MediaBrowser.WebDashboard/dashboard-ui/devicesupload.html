@@ -4,7 +4,7 @@
     <title>${TitleDevices}</title>
 </head>
 <body>
-    <div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload">
+    <div id="devicesUploadPage" data-role="page" class="page type-interior devicesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Camera%20upload" data-require="scripts/devicesupload">
 
         <div data-role="content">
             <div class="content-primary">
@@ -60,9 +60,6 @@
                 </div>
             </div>
         </div>
-        <script type="text/javascript">
-            $('.devicesUploadForm').off('submit', DevicesUploadPage.onSubmit).on('submit', DevicesUploadPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

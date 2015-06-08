@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="editItemSubtitlesPage" data-role="page" class="page libraryPage metadataEditorPage" data-contextname="${HeaderMetadataManager}">
+    <div id="editItemSubtitlesPage" data-role="page" class="page libraryPage metadataEditorPage" data-contextname="${HeaderMetadataManager}" data-require="scripts/edititemsubtitles">
         <div data-role="content editPageContent">
             <div class="editPageSidebar smoothScrollY">
                 <div class="libraryTree">
@@ -49,11 +49,6 @@
                 <pre class="subtitleContent" style="margin: 0; border-radius: 0;"></pre>
             </div>
         </div>
-
-        <script type="text/javascript">
-            $('.subtitleSearchForm').off('submit', EditItemSubtitlesPage.onSearchSubmit).on('submit', EditItemSubtitlesPage.onSearchSubmit);
-        </script>
-
     </div>
 </body>
 </html>

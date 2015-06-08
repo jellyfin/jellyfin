@@ -4,7 +4,7 @@
     <title>${TitlePlugins}</title>
 </head>
 <body>
-    <div id="channelSettingsPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Channels">
+    <div id="channelSettingsPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Channels" data-require="scripts/channelsettings">
 
         <div data-role="content">
             <div class="content-primary">
@@ -73,10 +73,6 @@
 
             </div>
         </div>
-
-        <script type="text/javascript">
-            $('.channelSettingsForm').off('submit', ChannelSettingsPage.onSubmit).on('submit', ChannelSettingsPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

@@ -46,7 +46,7 @@
         });
     }
 
-    $(document).on('pageshow', "#notificationSettingsPage", function () {
+    $(document).on('pageshowready', "#notificationSettingsPage", function () {
 
         var page = this;
 

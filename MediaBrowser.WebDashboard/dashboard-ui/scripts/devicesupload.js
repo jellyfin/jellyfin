@@ -102,7 +102,16 @@
 
     }
 
-    $(document).on('pageinit', "#devicesUploadPage", function () {
+    function onSubmit() {
+        var form = this;
+        var page = $(form).parents('.page');
+
+        save(page);
+
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#devicesUploadPage", function () {
 
         var page = this;
 
@@ -124,26 +133,15 @@
             });
         });
 
+        $('.devicesUploadForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshow', "#devicesUploadPage", function () {
+
+    }).on('pageshowready', "#devicesUploadPage", function () {
 
         var page = this;
 
         loadData(page);
 
     });
-
-    window.DevicesUploadPage = {
-
-        onSubmit: function () {
-
-            var form = this;
-            var page = $(form).parents('.page');
-
-            save(page);
-
-            return false;
-        }
-    };
 
 })();
