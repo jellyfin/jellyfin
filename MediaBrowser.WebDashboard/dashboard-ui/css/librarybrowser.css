@@ -596,7 +596,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .itemOverview {
     text-overflow: ellipsis;
     max-height: 100px;
-    overflow-y: auto;
     padding-right: .5em;
 }
 

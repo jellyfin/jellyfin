@@ -134,7 +134,7 @@
 
         if (createIfNeeded && !elem.length) {
 
-            var html = '<div class="searchResultsOverlay ui-page-theme-b">';
+            var html = '<div class="searchResultsOverlay ui-page-theme-b smoothScrollY">';
 
             html += '<div class="searchResultsContainer"><div class="itemsContainer"></div></div></div>';
 

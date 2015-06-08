@@ -179,16 +179,9 @@
         }
     }
 
-    $(document).on('pageshow', "#scheduledTasksPage", function () {
+    $(document).on('pageinitdepends', "#scheduledTasksPage", function () {
 
         var page = this;
-
-        Dashboard.showLoadingMsg();
-
-        startInterval();
-        reloadList(page);
-
-        $(ApiClient).on("websocketmessage", onWebSocketMessage).on("websocketopen", onWebSocketConnectionOpen);
 
         $('#divScheduledTasks', page).on('click', '.btnStartTask', function () {
 
@@ -210,6 +203,17 @@
                 reloadList(page);
             });
         });
+
+    }).on('pageshowready', "#scheduledTasksPage", function () {
+
+        var page = this;
+
+        Dashboard.showLoadingMsg();
+
+        startInterval();
+        reloadList(page);
+
+        $(ApiClient).on("websocketmessage", onWebSocketMessage).on("websocketopen", onWebSocketConnectionOpen);
 
     }).on('pagehide', "#scheduledTasksPage", function () {
 

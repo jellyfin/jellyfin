@@ -31,8 +31,6 @@
     left: 0;
     right: 0;
     background-color: rgba(0,0,0,.9);
-    overflow-x: auto;
-    overflow-y: hidden;
     z-index: 1000;
 }
 

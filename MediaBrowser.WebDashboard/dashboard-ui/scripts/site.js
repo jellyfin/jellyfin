@@ -1331,7 +1331,7 @@ var Dashboard = {
             PlayableMediaTypes: ['Audio', 'Video'],
 
             SupportedCommands: Dashboard.getSupportedRemoteCommands(),
-            SupportsPersistentIdentifier: AppInfo.isNativeApp,
+            SupportsPersistentIdentifier: AppInfo.isNativeApp === true,
             SupportsMediaControl: true,
             SupportedLiveMediaTypes: ['Audio', 'Video']
         };

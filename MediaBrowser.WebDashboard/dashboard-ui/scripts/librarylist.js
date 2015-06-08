@@ -520,6 +520,12 @@
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
+            if (items.length == 1) {
+
+                Dashboard.navigate(LibraryBrowser.getHref(items[0], context));
+                return;
+            }
+
             var ids = items.map(function (i) {
                 return i.Id;
             });

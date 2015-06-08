@@ -201,8 +201,6 @@
     bottom: 0;
     z-index: 1000;
     border: 0 !important;
-    overflow-x: hidden;
-    overflow-y: auto;
 }
 
 .searchResultsContainer {

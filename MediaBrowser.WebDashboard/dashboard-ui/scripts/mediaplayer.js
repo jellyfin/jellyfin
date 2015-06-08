@@ -186,7 +186,7 @@
 
                 if (canPlayAac && $.browser.safari) {
                     profile.TranscodingProfiles.push({
-                        Container: 'aac',
+                        Container: 'ts',
                         Type: 'Audio',
                         AudioCodec: 'aac',
                         Context: 'Streaming',
@@ -447,6 +447,15 @@
         };
 
         self.canPlayNativeHls = function () {
+
+            // Don't use HLS on android 4.4, regardless of what the browser reports
+            if ($.browser.android) {
+                var agent = navigator.userAgent.toLowerCase();
+
+                if (agent.indexOf('android 4.4') != -1) {
+                    return false;
+                }
+            }
 
             var media = document.createElement('video');
 
@@ -1597,9 +1606,9 @@
         self._canPlayWebm = null;
         self.canPlayWebm = function () {
 
-        	if (self._canPlayWebm == null) {
-        		self._canPlayWebm = document.createElement('video').canPlayType('video/webm').replace(/no/, '');
-        	}
+            if (self._canPlayWebm == null) {
+                self._canPlayWebm = document.createElement('video').canPlayType('video/webm').replace(/no/, '');
+            }
             return self._canPlayWebm;
         };
 
@@ -1699,111 +1708,111 @@
 
 })(document, setTimeout, clearTimeout, screen, window.appStorage, $, setInterval, window);
 
-(function(){
+(function () {
 
-	function htmlMediaRenderer(type) {
+    function htmlMediaRenderer(type) {
 
-		var mediaElement;
-		var self = this;
+        var mediaElement;
+        var self = this;
 
-		function onEnded() {
-			$(self).trigger('ended');
-		}
+        function onEnded() {
+            $(self).trigger('ended');
+        }
 
-		function onTimeUpdate() {
-			$(self).trigger('timeupdate');
-		}
+        function onTimeUpdate() {
+            $(self).trigger('timeupdate');
+        }
 
-		function onVolumeChange() {
-			$(self).trigger('volumechange');
-		}
+        function onVolumeChange() {
+            $(self).trigger('volumechange');
+        }
 
-		function onOneAudioPlaying() {
-			$('.mediaPlayerAudioContainer').hide();
-		}
+        function onOneAudioPlaying() {
+            $('.mediaPlayerAudioContainer').hide();
+        }
 
-		function onPlaying() {
-			$(self).trigger('playing');
-		}
+        function onPlaying() {
+            $(self).trigger('playing');
+        }
 
-		function onPlay() {
-			$(self).trigger('play');
-		}
+        function onPlay() {
+            $(self).trigger('play');
+        }
 
-		function onPause() {
-			$(self).trigger('pause');
-		}
+        function onPause() {
+            $(self).trigger('pause');
+        }
 
-		function onClick() {
-			$(self).trigger('click');
-		}
+        function onClick() {
+            $(self).trigger('click');
+        }
 
-		function onDblClick() {
-			$(self).trigger('dblclick');
-		}
+        function onDblClick() {
+            $(self).trigger('dblclick');
+        }
 
-		function onError() {
+        function onError() {
 
-			var errorCode = this.error ? this.error.code : '';
+            var errorCode = this.error ? this.error.code : '';
             console.log('Media element error code: ' + errorCode);
 
             $(self).trigger('error');
-		}
+        }
 
-		function onLoadedMetadata() {
+        function onLoadedMetadata() {
 
-			// The IE video player won't autoplay without this
-	                if ($.browser.msie) {
-	                    this.play();
-	                }
-		}
+            // The IE video player won't autoplay without this
+            if ($.browser.msie) {
+                this.play();
+            }
+        }
 
-		function onOneVideoPlaying() {
+        function onOneVideoPlaying() {
 
-			var currentSrc = (this.currentSrc || '').toLowerCase();
+            var currentSrc = (this.currentSrc || '').toLowerCase();
 
-			var parts = currentSrc.split('#');
+            var parts = currentSrc.split('#');
 
-			if (parts.length > 1) {
+            if (parts.length > 1) {
 
-				var parts = parts[parts.length -1].split('=');
+                var parts = parts[parts.length - 1].split('=');
 
-				if (parts.length == 2) {
+                if (parts.length == 2) {
 
-					var startPositionInSeekParam = parseFloat(parts[1]);
+                    var startPositionInSeekParam = parseFloat(parts[1]);
 
-					// Appending #t=xxx to the query string doesn't seem to work with HLS
-	                if (startPositionInSeekParam && currentSrc.indexOf('.m3u8') != -1) {
-	                    var element = this;
-	                    setTimeout(function () {
-	                        element.currentTime = startPositionInSeekParam;
-	                    }, 3000);
-	                }
-				}
-			}		
-         }
+                    // Appending #t=xxx to the query string doesn't seem to work with HLS
+                    if (startPositionInSeekParam && currentSrc.indexOf('.m3u8') != -1) {
+                        var element = this;
+                        setTimeout(function () {
+                            element.currentTime = startPositionInSeekParam;
+                        }, 3000);
+                    }
+                }
+            }
+        }
 
-		function createAudioElement() {
+        function createAudioElement() {
 
-			var elem = $('.mediaPlayerAudio');
+            var elem = $('.mediaPlayerAudio');
 
             if (!elem.length) {
-				var html = '';
+                var html = '';
 
-	            var requiresControls = !MediaPlayer.canAutoPlayAudio();
+                var requiresControls = !MediaPlayer.canAutoPlayAudio();
 
-	            if (requiresControls) {
-	                html += '<div class="mediaPlayerAudioContainer"><div class="mediaPlayerAudioContainerInner">';;
-	            } else {
-	                html += '<div class="mediaPlayerAudioContainer" style="display:none;"><div class="mediaPlayerAudioContainerInner">';;
-	            }
+                if (requiresControls) {
+                    html += '<div class="mediaPlayerAudioContainer"><div class="mediaPlayerAudioContainerInner">';;
+                } else {
+                    html += '<div class="mediaPlayerAudioContainer" style="display:none;"><div class="mediaPlayerAudioContainerInner">';;
+                }
 
-	            html += '<audio class="mediaPlayerAudio" crossorigin="anonymous" controls>';
-	            html += '</audio></div></div>';
+                html += '<audio class="mediaPlayerAudio" crossorigin="anonymous" controls>';
+                html += '</audio></div></div>';
 
-	            $(document.body).append(html);   
+                $(document.body).append(html);
 
-	            elem = $('.mediaPlayerAudio');         
+                elem = $('.mediaPlayerAudio');
             }
 
             return $(elem)
@@ -1815,11 +1824,11 @@
 	            .on('pause', onPause)
 	            .on('playing', onPlaying)
 	            .on('error', onError)[0];
-		}
+        }
 
-		function createVideoElement() {
+        function createVideoElement() {
 
-			var elem = $('.itemVideo');
+            var elem = $('.itemVideo');
 
             return $(elem)
             	.one('.loadedmetadata')
@@ -1831,62 +1840,62 @@
 	            .on('pause', onPause)
 	            .on('playing', onPlaying)
 	            .on('error', onError)[0];
-		}
+        }
 
-		self.currentTime = function(val) {
+        self.currentTime = function (val) {
 
-			if (mediaElement) {
-				if (val != null) {
-					mediaElement.currentTime = val;
-					return;	
-				}
+            if (mediaElement) {
+                if (val != null) {
+                    mediaElement.currentTime = val;
+                    return;
+                }
 
-				return mediaElement.currentTime;
-			}
-		};
+                return mediaElement.currentTime;
+            }
+        };
 
-		self.duration = function(val) {
+        self.duration = function (val) {
 
-			if (mediaElement) {
-				return mediaElement.duration;
-			}
+            if (mediaElement) {
+                return mediaElement.duration;
+            }
 
-			return null;
-		};
+            return null;
+        };
 
-		self.pause = function() {
-			if (mediaElement) {
-				mediaElement.pause();
-			}
-		};
+        self.pause = function () {
+            if (mediaElement) {
+                mediaElement.pause();
+            }
+        };
 
-		self.unpause = function() {
-			if (mediaElement) {
-				mediaElement.play();
-			}
-		};
+        self.unpause = function () {
+            if (mediaElement) {
+                mediaElement.play();
+            }
+        };
 
-		self.volume = function(val) {
-			if (mediaElement) {
-				if (val != null) {
-					mediaElement.volume = val;
-					return;	
-				}
+        self.volume = function (val) {
+            if (mediaElement) {
+                if (val != null) {
+                    mediaElement.volume = val;
+                    return;
+                }
 
-				return mediaElement.volume;
-			}
-		};
+                return mediaElement.volume;
+            }
+        };
 
-		self.setCurrentSrc = function(val) {
+        self.setCurrentSrc = function (val) {
 
-			var elem = mediaElement;
+            var elem = mediaElement;
 
-			if (!elem) {
-				return;
-			}
+            if (!elem) {
+                return;
+            }
 
-			if (!val) {
-				elem.src = null;
+            if (!val) {
+                elem.src = null;
                 elem.src = "";
 
                 // When the browser regains focus it may start auto-playing the last video
@@ -1895,67 +1904,67 @@
                     elem.play();
                 }
 
-                return;    
-			}
+                return;
+            }
 
-			elem.src = val;
+            elem.src = val;
 
-			if (elem.tagName.toLowerCase() == 'audio') {
-				elem.play();
-			}
-			else {
+            if (elem.tagName.toLowerCase() == 'audio') {
+                elem.play();
+            }
+            else {
 
-				$(elem).one("loadedmetadata.mediaplayerevent", onLoadedMetadata);
-			}
-		};
+                $(elem).one("loadedmetadata.mediaplayerevent", onLoadedMetadata);
+            }
+        };
 
-		self.currentSrc = function() {
-			if (mediaElement) {
-				return mediaElement.currentSrc;
-			}
-		};
+        self.currentSrc = function () {
+            if (mediaElement) {
+                return mediaElement.currentSrc;
+            }
+        };
 
-		self.paused = function() {
+        self.paused = function () {
 
-			if (mediaElement) {
-				return mediaElement.paused;
-			}
+            if (mediaElement) {
+                return mediaElement.paused;
+            }
 
-			return false;
-		};
+            return false;
+        };
 
-		self.destroy = function() {
+        self.destroy = function () {
 
-			self.setCurrentSrc(null);
+            self.setCurrentSrc(null);
 
-			var elem = mediaElement;
+            var elem = mediaElement;
 
-			if (elem) {
+            if (elem) {
 
-				$(elem).off();
+                $(elem).off();
 
-				if (elem.tagName.toLowerCase() != 'audio') {
-					$(elem).remove();
+                if (elem.tagName.toLowerCase() != 'audio') {
+                    $(elem).remove();
                 }
-			}     
-		};
+            }
+        };
 
-		self.setPoster = function(url) {
-			var elem = mediaElement;
+        self.setPoster = function (url) {
+            var elem = mediaElement;
 
-			if (elem) {
-				elem.poster = url;
-			}  
-		};
+            if (elem) {
+                elem.poster = url;
+            }
+        };
 
-		if (type == 'audio') {
-			mediaElement = createAudioElement();
-		}
-		else {
-			mediaElement = createVideoElement();
-		}
-	}
+        if (type == 'audio') {
+            mediaElement = createAudioElement();
+        }
+        else {
+            mediaElement = createVideoElement();
+        }
+    }
 
-	window.HtmlMediaRenderer = htmlMediaRenderer;
+    window.HtmlMediaRenderer = htmlMediaRenderer;
 
 })();

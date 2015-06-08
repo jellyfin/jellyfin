@@ -1,7 +1,7 @@
 ﻿(function ($, document, window) {
 
     var metadataKey = "xbmcmetadata";
-    
+
     function loadPage(page, config, users) {
 
         var html = '<option value="" selected="selected"></option>';
@@ -19,7 +19,31 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageshow', "#metadataNfoPage", function () {
+    function onSubmit() {
+        Dashboard.showLoadingMsg();
+
+        var form = this;
+
+        ApiClient.getNamedConfiguration(metadataKey).done(function (config) {
+
+            config.UserId = $('#selectUser', form).val() || null;
+            config.ReleaseDateFormat = $('#selectReleaseDateFormat', form).val();
+            config.SaveImagePathsInNfo = $('#chkSaveImagePaths', form).checked();
+            config.EnablePathSubstitution = $('#chkEnablePathSubstitution', form).checked();
+            config.EnableExtraThumbsDuplication = $('#chkEnableExtraThumbs', form).checked();
+
+            ApiClient.updateNamedConfiguration(metadataKey, config).done(Dashboard.processServerConfigurationUpdateResult);
+        });
+
+        // Disable default form submission
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#metadataNfoPage", function () {
+
+        $('.metadataNfoForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#metadataNfoPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -33,29 +57,5 @@
             loadPage(page, response2[0], response1[0]);
         });
     });
-
-    window.NfoMetadataPage = {
-
-        onSubmit: function () {
-
-            Dashboard.showLoadingMsg();
-
-            var form = this;
-
-            ApiClient.getNamedConfiguration(metadataKey).done(function (config) {
-
-                config.UserId = $('#selectUser', form).val() || null;
-                config.ReleaseDateFormat = $('#selectReleaseDateFormat', form).val();
-                config.SaveImagePathsInNfo = $('#chkSaveImagePaths', form).checked();
-                config.EnablePathSubstitution = $('#chkEnablePathSubstitution', form).checked();
-                config.EnableExtraThumbsDuplication = $('#chkEnableExtraThumbs', form).checked();
-
-                ApiClient.updateNamedConfiguration(metadataKey, config).done(Dashboard.processServerConfigurationUpdateResult);
-            });
-
-            // Disable default form submission
-            return false;
-        }
-    };
 
 })(jQuery, document, window);

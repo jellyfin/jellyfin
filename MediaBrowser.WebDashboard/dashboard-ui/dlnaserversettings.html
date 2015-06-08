@@ -4,7 +4,7 @@
     <title>${TitleDlna}</title>
 </head>
 <body>
-    <div id="dlnaServerSettingsPage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20server">
+    <div id="dlnaServerSettingsPage" data-role="page" class="page type-interior dlnaPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Dlna%20server" data-require="scripts/dlnaserversettings">
 
         <div data-role="content">
             <div class="content-primary">
@@ -58,10 +58,6 @@
 
             </div>
         </div>
-
-        <script type="text/javascript">
-            $('.dlnaServerSettingsForm').off('submit', DlnaServerSettingsPage.onSubmit).on('submit', DlnaServerSettingsPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

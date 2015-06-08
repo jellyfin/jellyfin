@@ -20,7 +20,30 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageshow', "#librarySettingsPage", function () {
+    function onSubmit() {
+        Dashboard.showLoadingMsg();
+
+        var form = this;
+
+        ApiClient.getServerConfiguration().done(function (config) {
+
+            config.ItemsByNamePath = $('#txtItemsByNamePath', form).val();
+
+            config.SeasonZeroDisplayName = $('#txtSeasonZeroName', form).val();
+
+            config.EnableRealtimeMonitor = $('#chkEnableRealtimeMonitor', form).checked();
+
+            config.EnableAudioArchiveFiles = $('#chkEnableAudioArchiveFiles', form).checked();
+            config.EnableVideoArchiveFiles = $('#chkEnableVideoArchiveFiles', form).checked();
+
+            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+        });
+
+        // Disable default form submission
+        return false;
+    }
+
+    $(document).on('pageshowready', "#librarySettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -32,7 +55,7 @@
 
         });
 
-    }).on('pageinit', "#librarySettingsPage", function () {
+    }).on('pageinitdepends', "#librarySettingsPage", function () {
 
         var page = this;
 
@@ -55,36 +78,8 @@
                 instruction: Globalize.translate('HeaderSelectImagesByNamePathHelp')
             });
         });
+
+        $('.librarySettingsForm').off('submit', onSubmit).on('submit', onSubmit);
     });
-
-    function librarySettingsPage() {
-
-        var self = this;
-
-        self.onSubmit = function () {
-            Dashboard.showLoadingMsg();
-
-            var form = this;
-
-            ApiClient.getServerConfiguration().done(function (config) {
-
-                config.ItemsByNamePath = $('#txtItemsByNamePath', form).val();
-
-                config.SeasonZeroDisplayName = $('#txtSeasonZeroName', form).val();
-
-                config.EnableRealtimeMonitor = $('#chkEnableRealtimeMonitor', form).checked();
-
-                config.EnableAudioArchiveFiles = $('#chkEnableAudioArchiveFiles', form).checked();
-                config.EnableVideoArchiveFiles = $('#chkEnableVideoArchiveFiles', form).checked();
-
-                ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
-            });
-
-            // Disable default form submission
-            return false;
-        };
-    }
-
-    window.LibrarySettingsPage = new librarySettingsPage();
 
 })(jQuery, document, window);

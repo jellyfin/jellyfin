@@ -162,6 +162,12 @@ h1 a:hover {
     margin: -10px 0 0 -10px;
 }
 
+.smoothScrollX {
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+    overflow-y: hidden;
+}
+
 .hiddenScrollX {
     overflow-x: scroll;
     -webkit-overflow-scrolling: touch;
@@ -180,12 +186,21 @@ h1 a:hover {
     }
 
 
-.hiddenScrollY, .ui-panel-inner {
+.smoothScrollY {
     overflow-y: auto;
-    -ms-overflow-style: none;
-    overflow: -moz-scrollbars-none;
     -webkit-overflow-scrolling: touch;
     overflow-x: hidden;
+}
+
+.hiddenScrollY, .ui-panel-inner {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+}
+
+.touch .hiddenScrollY {
+    -ms-overflow-style: none;
+    overflow: -moz-scrollbars-none;
 }
 
     .touch .hiddenScrollY::-webkit-scrollbar, .touch .ui-panel-inner::-webkit-scrollbar {

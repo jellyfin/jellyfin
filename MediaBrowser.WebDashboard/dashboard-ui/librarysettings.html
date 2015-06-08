@@ -4,7 +4,7 @@
     <title>${TitleMediaLibrary}</title>
 </head>
 <body>
-    <div id="librarySettingsPage" data-role="page" class="page type-interior mediaLibraryPage">
+    <div id="librarySettingsPage" data-role="page" class="page type-interior mediaLibraryPage" data-require="scripts/librarysettings">
 
         <div data-role="content">
             <div class="content-primary">
@@ -14,7 +14,7 @@
                     <a href="#" data-role="button" class="ui-btn-active">${TabAdvanced}</a>
                 </div>
 
-                <form id="librarySettingsForm">
+                <form class="librarySettingsForm">
 
                     <ul data-role="listview" class="ulForm">
                         <li class="fldImagesByName" style="display:none;">
@@ -87,10 +87,6 @@
 
             </div>
         </div>
-
-        <script type="text/javascript">
-            $('#librarySettingsForm').on('submit', LibrarySettingsPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>
