@@ -1453,5 +1453,6 @@
     "ButtonReset": "Reset",
     "OptionEnableExternalVideoPlayers": "Enable external video players",
     "ButtonUnlockGuide": "Unlock Guide",
-    "LabelEnableFullScreen":  "Enable fullscreen mode"
+    "LabelEnableFullScreen": "Enable fullscreen mode",
+    "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough"
 }
