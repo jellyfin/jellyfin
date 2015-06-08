@@ -782,9 +782,19 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override string GetAudioArguments(StreamState state)
         {
+            var codec = GetAudioEncoder(state.Request);
+
             if (!state.IsOutputVideo)
             {
+                if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "-acodec copy";
+                }
+
                 var audioTranscodeParams = new List<string>();
+
+                audioTranscodeParams.Add("-acodec " + codec);
+                
                 if (state.OutputAudioBitrate.HasValue)
                 {
                     audioTranscodeParams.Add("-ab " + state.OutputAudioBitrate.Value.ToString(UsCulture));
@@ -803,8 +813,6 @@ namespace MediaBrowser.Api.Playback.Hls
                 audioTranscodeParams.Add("-vn");
                 return string.Join(" ", audioTranscodeParams.ToArray());
             }
-
-            var codec = GetAudioEncoder(state.Request);
 
             if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
