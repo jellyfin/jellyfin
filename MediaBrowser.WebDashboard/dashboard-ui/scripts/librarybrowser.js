@@ -393,7 +393,7 @@
                 html += '<li data-icon="false"><a class="btnMoreMenuDelete" href="#" onclick="$(\'.playFlyout\').popup(\'close\');LibraryBrowser.deleteItem([\'' + itemId + '\']);">' + Globalize.translate('ButtonDelete') + '</a></li>';
             }
 
-            if (commands.indexOf('false') != -1) {
+            if (commands.indexOf('download') != -1) {
                 var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
                     api_key: ApiClient.accessToken()
                 });

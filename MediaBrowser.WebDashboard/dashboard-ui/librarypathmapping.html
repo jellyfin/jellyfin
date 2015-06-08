@@ -4,7 +4,7 @@
     <title>${TitleMediaLibrary}</title>
 </head>
 <body>
-    <div id="libraryPathMappingPage" data-role="page" class="page type-interior mediaLibraryPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup">
+    <div id="libraryPathMappingPage" data-role="page" class="page type-interior mediaLibraryPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Library%20setup" data-require="scripts/librarypathmapping">
 
         <div data-role="content">
             <div class="content-primary">
@@ -56,10 +56,6 @@
 
             </div>
         </div>
-
-        <script type="text/javascript">
-            $('.libraryPathMappingForm').off('submit', LibraryPathMappingPage.onSubmit).on('submit', LibraryPathMappingPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

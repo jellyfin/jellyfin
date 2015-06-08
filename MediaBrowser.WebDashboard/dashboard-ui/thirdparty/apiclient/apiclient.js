@@ -239,7 +239,7 @@
 
                 logger.log("Reconnect attempt failed to " + url);
 
-                if (currentRetryCount <= 6) {
+                if (currentRetryCount <= 5) {
 
                     var newConnectionMode = switchConnectionMode(connectionMode);
 

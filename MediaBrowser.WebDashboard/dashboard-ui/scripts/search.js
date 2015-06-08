@@ -60,9 +60,7 @@
 
         self.showSearchPanel = function () {
 
-            var viewMenuSearch = $('.viewMenuSearch');
-
-            viewMenuSearch.removeClass('hide');
+            showSearchMenu();
             $('.headerSearchInput').focus();
         };
     }
@@ -199,7 +197,43 @@
     function closeSearchOverlay() {
         $('.headerSearchInput').val('');
         onHeaderSearchChange('');
-        $('.viewMenuSearch').addClass('hide');
+        hideSearchMenu();
+    }
+
+    function showSearchMenu() {
+
+        require(["jquery", "velocity"], function ($, Velocity) {
+
+            $('.btnCloseSearch').hide();
+            var elem = $('.viewMenuSearch')
+                .css({ left: '100%' })
+                .removeClass('hide')[0];
+
+            Velocity.animate(elem, { "left": "0px" },
+            {
+                complete: function () {
+                    $('.btnCloseSearch').show();
+                }
+            });
+        });
+    }
+
+    function hideSearchMenu() {
+
+        require(["jquery", "velocity"], function ($, Velocity) {
+
+            $('.btnCloseSearch').hide();
+            var elem = $('.viewMenuSearch')
+                .css({ left: '0' })[0];
+
+            Velocity.animate(elem, { "left": "100%" },
+            {
+                complete: function () {
+                    $('.viewMenuSearch').addClass('hide');
+                },
+                duration: 'fast'
+            });
+        });
     }
 
     $(document).on('pagehide', ".libraryPage", function () {

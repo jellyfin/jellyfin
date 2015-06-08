@@ -10,5 +10,4 @@
             return 'file://' + path;
         }
     };
-
 })();

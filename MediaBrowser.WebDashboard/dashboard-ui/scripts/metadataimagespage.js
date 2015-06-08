@@ -518,7 +518,7 @@
         return false;
     }
 
-    $(document).on('pageinit', "#metadataImagesConfigurationPage", function () {
+    $(document).on('pageinitdepends', "#metadataImagesConfigurationPage", function () {
 
         var page = this;
 
@@ -558,7 +558,9 @@
             loadType(page, this.value);
         });
 
-    }).on('pageshow', "#metadataImagesConfigurationPage", function () {
+        $('.metadataImagesConfigurationForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#metadataImagesConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -566,10 +568,5 @@
 
         loadPage(page);
     });
-
-    window.MetadataImagesPage = {
-
-        onSubmit: onSubmit
-    };
 
 })(jQuery, document, window);

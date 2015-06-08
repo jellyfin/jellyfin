@@ -4,7 +4,7 @@
     <title>${TitlePlayback}</title>
 </head>
 <body>
-    <div id="playbackConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage">
+    <div id="playbackConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage" data-require="scripts/playbackconfiguration">
 
         <div data-role="content">
             <div class="content-primary">
@@ -61,10 +61,6 @@
                 </form>
             </div>
         </div>
-
-        <script type="text/javascript">
-            $('.playbackConfigurationForm').off('submit', PlaybackConfigurationPage.onSubmit).on('submit', PlaybackConfigurationPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

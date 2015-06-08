@@ -274,6 +274,8 @@
 
         });
 
+        $('.liveTvSeriesTimerForm').off('submit', onSubmit).on('submit', onSubmit);
+
     }).on('pagebeforeshowready', "#liveTvSeriesTimerPage", function () {
 
         var page = this;
@@ -287,14 +289,5 @@
 
         currentItem = null;
     });
-
-    function liveTvSeriesTimerPage() {
-
-        var self = this;
-
-        self.onSubmit = onSubmit;
-    }
-
-    window.LiveTvSeriesTimerPage = new liveTvSeriesTimerPage();
 
 })(window, jQuery, document);

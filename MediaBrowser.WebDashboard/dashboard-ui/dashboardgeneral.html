@@ -4,7 +4,7 @@
     <title>${TitleServer}</title>
 </head>
 <body>
-    <div id="dashboardGeneralPage" data-role="page" class="page type-interior dashboardHomePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Server%20Settings">
+    <div id="dashboardGeneralPage" data-role="page" class="page type-interior dashboardHomePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Server%20Settings" data-require="scripts/dashboardgeneral">
 
         <div data-role="content">
             <div class="content-primary">
@@ -88,12 +88,6 @@
 
             </div>
         </div>
-
-
-
-        <script type="text/javascript">
-            $('.dashboardGeneralForm').off('submit', DashboardGeneralPage.onSubmit).on('submit', DashboardGeneralPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

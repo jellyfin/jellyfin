@@ -1,13 +1,14 @@
 ﻿(function () {
 
-    var PlayerName = "Chromecast";
-    var ApplicationID = "2D4B1DA3";
-    var currentWebAppSession;
-    var currentDevice;
-
     function chromecastPlayer() {
 
         var self = this;
+
+        var PlayerName = "Chromecast";
+        var ApplicationID = "2D4B1DA3";
+        var currentWebAppSession;
+        var currentDevice;
+        var currentDeviceId;
 
         // MediaController needs this
         self.name = PlayerName;
@@ -301,9 +302,7 @@
 
         self.getTargets = function () {
 
-            var manager = ConnectSDK.discoveryManager;
-
-            return manager.getDeviceList().filter(function (d) {
+            return ConnectHelper.getDeviceList().filter(function (d) {
 
                 return isChromecast(d.getModelName()) || isChromecast(d.getFriendlyName());
 
@@ -469,6 +468,7 @@
 
             MediaController.setActivePlayer(PlayerName, convertDeviceToTarget(device));
             currentDevice = device;
+            currentDeviceId = device.getId();
 
             $(castPlayer).trigger('connect');
 
@@ -584,7 +584,7 @@
 
             var deferred = $.Deferred();
 
-            var device = ConnectSDK.discoveryManager.getDeviceList().filter(function (d) {
+            var device = ConnectHelper.getDeviceList().filter(function (d) {
 
                 return d.getId() == target.id;
             })[0];
@@ -629,22 +629,31 @@
         $(MediaController).on('playerchange', function (e, newPlayer, newTarget) {
 
             if (currentDevice) {
-                if (newTarget.id != currentDevice.getId()) {
+                if (newTarget.id != currentDeviceId) {
                     if (currentWebAppSession) {
                         console.log('Disconnecting from chromecast');
-                        currentDevice.disconnect();
+                        //currentDevice.disconnect();
                         currentDevice = null;
+                        currentDeviceId = null;
                     }
                 }
             }
         });
+
+        function onResume() {
+
+            var deviceId = currentDeviceId;
+
+            if (deviceId) {
+                self.tryPair({
+                    id: deviceId
+                });
+            }
+        }
+
+        document.addEventListener("resume", onResume, false);
     }
 
-    function initSdk() {
-
-        MediaController.registerPlayer(new chromecastPlayer());
-    }
-
-    initSdk();
+    MediaController.registerPlayer(new chromecastPlayer());
 
 })();

@@ -4,7 +4,7 @@
     <title>${TitleMetadata}</title>
 </head>
 <body>
-    <div id="metadataConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage">
+    <div id="metadataConfigurationPage" data-role="page" class="page type-interior metadataConfigurationPage" data-require="scripts/metadataconfigurationpage">
 
         <div data-role="content">
 
@@ -17,7 +17,7 @@
                     <a href="metadataadvanced.html" data-role="button">${TabAdvanced}</a>
                 </div>
 
-                <form id="metadataConfigurationForm">
+                <form class="metadataConfigurationForm">
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <input type="checkbox" id="chkEnableInternetProviders" name="chkEnableInternetProviders" data-mini="true" />
@@ -58,10 +58,6 @@
             </div>
 
         </div>
-
-        <script type="text/javascript">
-            $('#metadataConfigurationForm').on('submit', MetadataConfigurationPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

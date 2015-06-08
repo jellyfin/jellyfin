@@ -400,9 +400,7 @@
 
         self.getTargets = function () {
 
-            var manager = ConnectSDK.discoveryManager;
-
-            return manager.getDeviceList().filter(function (d) {
+            return ConnectHelper.getDeviceList().filter(function (d) {
 
                 return isValid(d);
 
@@ -506,7 +504,7 @@
 
             var deferred = $.Deferred();
 
-            var device = ConnectSDK.discoveryManager.getDeviceList().filter(function (d) {
+            var device = ConnectHelper.getDeviceList().filter(function (d) {
 
                 return d.getId() == target.id;
             })[0];

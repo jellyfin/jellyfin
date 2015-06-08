@@ -52,7 +52,7 @@
 }
 
 .mediumCardMargin .cardBox {
-    margin: 4px;
+    margin: 5px;
 }
 
 @media all and (max-width: 800px) {

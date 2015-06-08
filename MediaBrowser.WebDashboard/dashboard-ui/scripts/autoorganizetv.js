@@ -1,16 +1,16 @@
 ﻿(function ($, document, window) {
-    
+
     function updateSeasonPatternHelp(page, value) {
-        
+
         var resultValue = value.replace('%s', '1').replace('%0s', '01').replace('%00s', '001');
 
         var replacementHtmlResult = Globalize.translate('OrganizePatternResult').replace('{0}', resultValue);
 
         $('.seasonFolderFieldDescription', page).html(replacementHtmlResult);
     }
-    
+
     function getEpisodeFileName(value, enableMultiEpisode) {
-        
+
         var seriesName = "Series Name";
         var episodeTitle = "Episode Four";
 
@@ -24,7 +24,7 @@
             .replace('%en', episodeTitle)
             .replace('%e.n', episodeTitle.replace(' ', '.'))
             .replace('%e_n', episodeTitle.replace(' ', '_'));
-        
+
         if (enableMultiEpisode) {
             result = result
             .replace('%ed', '5')
@@ -41,7 +41,7 @@
     function updateEpisodePatternHelp(page, value) {
 
         value = getEpisodeFileName(value, false);
-        
+
         var replacementHtmlResult = Globalize.translate('OrganizePatternResult').replace('{0}', value);
 
         $('.episodePatternDescription', page).html(replacementHtmlResult);
@@ -74,11 +74,42 @@
 
         $('#txtDeleteLeftOverFiles', page).val(tvOptions.LeftOverFileExtensionsToDelete.join(';'));
 
-		$('#copyOrMoveFile', page).val(tvOptions.CopyOriginalFile.toString()).selectmenu('refresh');
+        $('#copyOrMoveFile', page).val(tvOptions.CopyOriginalFile.toString()).selectmenu('refresh');
 
     }
-    
-    $(document).on('pageinit', "#libraryFileOrganizerPage", function () {
+
+    function onSubmit() {
+        var form = this;
+
+        ApiClient.getNamedConfiguration('autoorganize').done(function (config) {
+
+            var tvOptions = config.TvOptions;
+
+            tvOptions.IsEnabled = $('#chkEnableTvSorting', form).checked();
+            tvOptions.OverwriteExistingEpisodes = $('#chkOverwriteExistingEpisodes', form).checked();
+            tvOptions.DeleteEmptyFolders = $('#chkDeleteEmptyFolders', form).checked();
+
+            tvOptions.MinFileSizeMb = $('#txtMinFileSize', form).val();
+            tvOptions.SeasonFolderPattern = $('#txtSeasonFolderPattern', form).val();
+            tvOptions.SeasonZeroFolderName = $('#txtSeasonZeroName', form).val();
+
+            tvOptions.EpisodeNamePattern = $('#txtEpisodePattern', form).val();
+            tvOptions.MultiEpisodeNamePattern = $('#txtMultiEpisodePattern', form).val();
+
+            tvOptions.LeftOverFileExtensionsToDelete = $('#txtDeleteLeftOverFiles', form).val().split(';');
+
+            var watchLocation = $('#txtWatchFolder', form).val();
+            tvOptions.WatchLocations = watchLocation ? [watchLocation] : [];
+
+            tvOptions.CopyOriginalFile = $('#copyOrMoveFile', form).val();
+
+            ApiClient.updateNamedConfiguration('autoorganize', config).done(Dashboard.processServerConfigurationUpdateResult);
+        });
+
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#libraryFileOrganizerPage", function () {
 
         var page = this;
 
@@ -120,7 +151,9 @@
             });
         });
 
-    }).on('pageshow', "#libraryFileOrganizerPage", function () {
+        $('.libraryFileOrganizerForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#libraryFileOrganizerPage", function () {
 
         var page = this;
 
@@ -128,41 +161,5 @@
             loadPage(page, config);
         });
     });
-
-    window.LibraryFileOrganizerPage = {
-      
-        onSubmit: function() {
-
-            var form = this;
-
-            ApiClient.getNamedConfiguration('autoorganize').done(function (config) {
-                
-                var tvOptions = config.TvOptions;
-
-                tvOptions.IsEnabled = $('#chkEnableTvSorting', form).checked();
-                tvOptions.OverwriteExistingEpisodes = $('#chkOverwriteExistingEpisodes', form).checked();
-                tvOptions.DeleteEmptyFolders = $('#chkDeleteEmptyFolders', form).checked();
-
-                tvOptions.MinFileSizeMb = $('#txtMinFileSize', form).val();
-                tvOptions.SeasonFolderPattern = $('#txtSeasonFolderPattern', form).val();
-                tvOptions.SeasonZeroFolderName = $('#txtSeasonZeroName', form).val();
-
-                tvOptions.EpisodeNamePattern = $('#txtEpisodePattern', form).val();
-                tvOptions.MultiEpisodeNamePattern = $('#txtMultiEpisodePattern', form).val();
-
-                tvOptions.LeftOverFileExtensionsToDelete = $('#txtDeleteLeftOverFiles', form).val().split(';');
-
-                var watchLocation = $('#txtWatchFolder', form).val();
-                tvOptions.WatchLocations = watchLocation ? [watchLocation] : [];
-
-				tvOptions.CopyOriginalFile = $('#copyOrMoveFile', form).val();
-
-				ApiClient.updateNamedConfiguration('autoorganize', config).done(Dashboard.processServerConfigurationUpdateResult);
-            });
-
-            return false;
-        }
-
-    };
 
 })(jQuery, document, window);

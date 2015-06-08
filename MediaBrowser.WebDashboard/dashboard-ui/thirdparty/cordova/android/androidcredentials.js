@@ -30,62 +30,6 @@
         //initAjax();
     }
 
-    var baseAjaxMethod;
-    var currentId = 0;
-    function getNewRequestId() {
-        var id = currentId++;
-        return id.toString();
-    }
-    function initAjax() {
-        baseAjaxMethod = AjaxApi.ajax;
-        AjaxApi.ajax = sendRequest;
-    }
-
-    function sendRequest(request) {
-
-        if (request.data || request.contentType || request.dataType != 'json') {
-            return baseAjaxMethod(request);
-        }
-
-        var deferred = DeferredBuilder.Deferred();
-
-        var id = getNewRequestId();
-
-        request.headers = request.headers || {};
-
-        if (request.dataType == 'json') {
-            request.headers.accept = 'application/json';
-        }
-
-        var requestHeaders = [];
-        for (name in request.headers) {
-            requestHeaders.push(name + "=" + request.headers[name]);
-        }
-
-        ApiClientBridge.sendRequest(request.url, request.type, requestHeaders.join('|||||'), "window.AndroidAjax.onResponse", id);
-
-        Events.on(AndroidAjax, 'response' + id, function (e, status, response) {
-
-            Events.off(AndroidAjax, 'response' + id);
-
-            response = decodeURIComponent(response);
-
-            if (status >= 400) {
-                alert(status);
-                deferred.reject();
-            }
-            else if (request.dataType == 'json') {
-                deferred.resolveWith(null, [JSON.parse(response)]);
-            }
-            else {
-                deferred.resolveWith(null, [response]);
-            }
-
-        });
-
-        return deferred.promise();
-    }
-
     Events.on(ConnectionManager.credentialProvider(), 'credentialsupdated', updateCredentials);
 
     updateCredentials();

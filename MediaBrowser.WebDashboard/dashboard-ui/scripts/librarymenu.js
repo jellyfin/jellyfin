@@ -4,7 +4,7 @@
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        html += '<button type="button" data-role="none" onclick="history.back();" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-left"></div></button>';
+        html += '<button type="button" data-role="none" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-left"></div></button>';
 
         html += '<button type="button" data-role="none" title="Menu" class="headerButton dashboardMenuButton barsMenuButton headerButtonLeft">';
         html += '<div class="barMenuInner fa fa-bars">';
@@ -53,6 +53,15 @@
         bindMenuEvents();
     }
 
+    function onBackClick() {
+        if (Dashboard.exitOnBack()) {
+            Dashboard.exit();
+        }
+        else {
+            history.back();
+        }
+    }
+
     function addUserToHeader(user) {
 
         var header = $('.viewMenuBar');
@@ -95,6 +104,8 @@
             $('.libraryMenuButton').createHoverTouch().on('hovertouch', showLibraryMenu);
             $('.dashboardMenuButton').createHoverTouch().on('hovertouch', showDashboardMenu);
         }
+
+        $('.headerBackButton').on('click', onBackClick);
 
         // Have to wait for document ready here because otherwise 
         // we may see the jQM redirect back and forth problem

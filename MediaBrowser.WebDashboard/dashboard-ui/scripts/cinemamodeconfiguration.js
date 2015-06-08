@@ -20,7 +20,36 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageinit', "#cinemaModeConfigurationPage", function () {
+    function onSubmit() {
+        Dashboard.showLoadingMsg();
+
+        var form = this;
+
+        var page = $(form).parents('.page');
+
+        ApiClient.getNamedConfiguration("cinemamode").done(function (config) {
+
+            config.CustomIntroPath = $('#txtCustomIntrosPath', page).val();
+            config.TrailerLimit = $('#txtNumTrailers', page).val();
+
+            config.EnableIntrosForMovies = $('#chkMovies', page).checked();
+            config.EnableIntrosForEpisodes = $('#chkEpisodes', page).checked();
+            config.EnableIntrosFromMoviesInLibrary = $('#chkMyMovieTrailers', page).checked();
+            config.EnableIntrosForWatchedContent = !$('#chkUnwatchedOnly', page).checked();
+            config.EnableIntrosParentalControl = $('#chkEnableParentalControl', page).checked();
+
+            config.EnableIntrosFromUpcomingTrailers = $('#chkUpcomingTheaterTrailers', page).checked();
+            config.EnableIntrosFromUpcomingDvdMovies = $('#chkUpcomingDvdTrailers', page).checked();
+            config.EnableIntrosFromUpcomingStreamingMovies = $('#chkUpcomingStreamingTrailers', page).checked();
+
+            ApiClient.updateNamedConfiguration("cinemamode", config).done(Dashboard.processServerConfigurationUpdateResult);
+        });
+
+        // Disable default form submission
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#cinemaModeConfigurationPage", function () {
 
         var page = this;
 
@@ -42,7 +71,9 @@
             });
         });
 
-    }).on('pageshow', "#cinemaModeConfigurationPage", function () {
+        $('.cinemaModeConfigurationForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#cinemaModeConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -60,40 +91,6 @@
             $('.lnkSupporterLearnMore', page).hide();
         }
     });
-
-    function cinemaModeConfigurationPage() {
-
-        var self = this;
-
-        self.onSubmit = function () {
-            Dashboard.showLoadingMsg();
-
-            var form = this;
-
-            var page = $(form).parents('.page');
-
-            ApiClient.getNamedConfiguration("cinemamode").done(function (config) {
-
-                config.CustomIntroPath = $('#txtCustomIntrosPath', page).val();
-                config.TrailerLimit = $('#txtNumTrailers', page).val();
-
-                config.EnableIntrosForMovies = $('#chkMovies', page).checked();
-                config.EnableIntrosForEpisodes = $('#chkEpisodes', page).checked();
-                config.EnableIntrosFromMoviesInLibrary = $('#chkMyMovieTrailers', page).checked();
-                config.EnableIntrosForWatchedContent = !$('#chkUnwatchedOnly', page).checked();
-                config.EnableIntrosParentalControl = $('#chkEnableParentalControl', page).checked();
-
-                config.EnableIntrosFromUpcomingTrailers = $('#chkUpcomingTheaterTrailers', page).checked();
-                config.EnableIntrosFromUpcomingDvdMovies = $('#chkUpcomingDvdTrailers', page).checked();
-                config.EnableIntrosFromUpcomingStreamingMovies = $('#chkUpcomingStreamingTrailers', page).checked();
-
-                ApiClient.updateNamedConfiguration("cinemamode", config).done(Dashboard.processServerConfigurationUpdateResult);
-            });
-
-            // Disable default form submission
-            return false;
-        };
-    }
 
     window.CinemaModeConfigurationPage = new cinemaModeConfigurationPage();
 

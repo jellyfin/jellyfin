@@ -94,7 +94,30 @@
         });
     }
 
-    $(document).on('pageshow', "#libraryPathMappingPage", function () {
+    function onSubmit() {
+        Dashboard.showLoadingMsg();
+
+        var form = this;
+        var page = $(form).parents('.page');
+
+        ApiClient.getServerConfiguration().done(function (config) {
+
+            addSubstitution(page, config);
+            ApiClient.updateServerConfiguration(config).done(function () {
+
+                reload(page);
+            });
+        });
+
+        // Disable default form submission
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#libraryPathMappingPage", function () {
+
+        $('.libraryPathMappingForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#libraryPathMappingPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -111,30 +134,5 @@
         currentConfig = null;
 
     });
-
-    window.LibraryPathMappingPage = {
-
-        onSubmit: function () {
-
-            Dashboard.showLoadingMsg();
-
-            var form = this;
-            var page = $(form).parents('.page');
-
-            ApiClient.getServerConfiguration().done(function (config) {
-
-                addSubstitution(page, config);
-                ApiClient.updateServerConfiguration(config).done(function () {
-
-                    reload(page);
-                });
-            });
-
-            // Disable default form submission
-            return false;
-
-        }
-
-    };
 
 })(jQuery, document, window);

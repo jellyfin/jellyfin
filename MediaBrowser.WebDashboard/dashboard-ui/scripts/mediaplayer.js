@@ -448,12 +448,14 @@
 
         self.canPlayNativeHls = function () {
 
-            // Don't use HLS on android 4.4, regardless of what the browser reports
+            // Don't use HLS on android 4.x, regardless of what the browser reports
             if ($.browser.android) {
                 var agent = navigator.userAgent.toLowerCase();
 
-                if (agent.indexOf('android 4.4') != -1) {
-                    return false;
+                for (var i = 0; i <= 4; i++) {
+                    if (agent.indexOf('android 4.' + i) != -1) {
+                        return false;
+                    }
                 }
             }
 

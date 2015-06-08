@@ -506,7 +506,7 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            Dashboard.loadLocalAssetManager().done(function () {
+            require(['localassetmanager'], function () {
 
                 var serverInfo = ApiClient.serverInfo();
 
@@ -528,7 +528,6 @@
                 }).fail(function () {
                     deferred.reject();
                 });
-
             });
 
             return deferred.promise();

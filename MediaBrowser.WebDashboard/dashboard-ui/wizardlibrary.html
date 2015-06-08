@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="wizardLibraryPage" data-role="page" class="page standalonePage wizardPage mediaLibraryPage">
+    <div id="wizardLibraryPage" data-role="page" class="page standalonePage wizardPage mediaLibraryPage" data-require="scripts/medialibrarypage">
 
         <div data-role="content">
 
@@ -56,7 +56,7 @@
                     </div>
 
                 </div>
-                <br/>
+                <br />
                 <div class="wizardNavigation">
                     <button type="button" data-iconpos="left" data-icon="arrow-l" data-inline="true" onclick="history.back();">${LabelPrevious}</button>
                     <button type="button" data-iconpos="right" data-icon="arrow-r" data-inline="true" onclick="WizardLibraryPage.next();">${LabelNext}</button>
