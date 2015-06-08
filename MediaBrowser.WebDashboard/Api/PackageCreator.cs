@@ -458,24 +458,14 @@ namespace MediaBrowser.WebDashboard.Api
                 "thirdparty/apiclient/md5.js",
                 "thirdparty/apiclient/sha1.js",
                 "thirdparty/apiclient/store.js",
-                "thirdparty/apiclient/network.js",
                 "thirdparty/apiclient/device.js",
                 "thirdparty/apiclient/credentials.js",
                 "thirdparty/apiclient/ajax.js",
                 "thirdparty/apiclient/events.js",
                 "thirdparty/apiclient/deferred.js",
-                "thirdparty/apiclient/apiclient.js",
-                "thirdparty/apiclient/connectservice.js"
+                "thirdparty/apiclient/apiclient.js"
             }.ToList();
 
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
-            {
-                apiClientFiles.Add("thirdparty/cordova/serverdiscovery.js");
-            }
-            else
-            {
-                apiClientFiles.Add("thirdparty/apiclient/serverdiscovery.js");
-            }
             apiClientFiles.Add("thirdparty/apiclient/connectionmanager.js");
 
             foreach (var file in apiClientFiles)
@@ -559,30 +549,14 @@ namespace MediaBrowser.WebDashboard.Api
                                 "taskbutton.js",
                                 "alphapicker.js",
                                 "addpluginpage.js",
-                                "autoorganizetv.js",
-                                "autoorganizelog.js",
-                                "dashboardgeneral.js",
                                 "dashboardpage.js",
                                 "directorybrowser.js",
                                 "editcollectionitems.js",
                                 "edititemmetadata.js",
-                                "playbackconfiguration.js",
-                                "cinemamodeconfiguration.js",
                                 "indexpage.js",
-                                "itembynamedetailpage.js",
                                 "itemdetailpage.js",
-                                "librarypathmapping.js",
-                                "livetvrecording.js",
-                                "livetvtimer.js",
-                                "livetvseriestimer.js",
-                                "medialibrarypage.js",
-                                "metadataconfigurationpage.js",
-                                "metadataimagespage.js",
-                                "metadatasubtitles.js",
                                 "moviecollections.js",
                                 "notifications.js",
-                                "playlists.js",
-                                "playlistedit.js",
                                 "plugincatalogpage.js",
                                 "pluginspage.js",
                                 "remotecontrol.js",
