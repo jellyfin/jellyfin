@@ -22,7 +22,7 @@
             config.UICulture = $('#selectLocalizationLanguage', page).val();
 
             apiClient.ajax({
-                
+
                 type: 'POST',
                 data: config,
                 url: apiClient.getUrl('Startup/Configuration')
@@ -36,7 +36,17 @@
 
     }
 
-    $(document).on('pageshow', "#wizardStartPage", function () {
+    function onSubmit() {
+        save($(this).parents('.page'));
+
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#wizardStartPage", function () {
+
+        $('.wizardStartForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#wizardStartPage", function () {
 
         Dashboard.showLoadingMsg();
         var page = this;
@@ -53,15 +63,5 @@
 
         });
     });
-
-    window.WizardStartPage = {
-
-        onSubmit: function () {
-
-            save($(this).parents('.page'));
-
-            return false;
-        }
-    };
 
 })(window, jQuery);

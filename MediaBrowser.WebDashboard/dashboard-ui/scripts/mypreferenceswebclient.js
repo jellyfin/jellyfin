@@ -18,7 +18,9 @@
         $('#selectEnableItemPreviews', page).val(AppSettings.enableItemPreviews().toString().toLowerCase()).selectmenu("refresh");
 
         $('#chkEnableLibraryTileNames', page).checked(displayPreferences.CustomPrefs.enableLibraryTileNames != '0').checkboxradio("refresh");
-        $('#chkEnableFullScreen', page).checked(AppSettings.enableFullScreen().toString().toLowerCase() == 'true').checkboxradio("refresh");
+        $('#chkEnableFullScreen', page).checked(AppSettings.enableFullScreen()).checkboxradio("refresh");
+
+        $('#chkEnableChromecastAc3', page).checked(AppSettings.enableChromecastAc3()).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -54,6 +56,8 @@
 
         AppSettings.enableItemPreviews($('#selectEnableItemPreviews', page).val() == 'true');
         AppSettings.enableFullScreen($('#chkEnableFullScreen', page).checked());
+
+        AppSettings.enableChromecastAc3($('#chkEnableChromecastAc3', page).checked());
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 

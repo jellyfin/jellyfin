@@ -84,7 +84,8 @@
                 accessToken: ApiClient.accessToken(),
                 serverAddress: ApiClient.serverAddress(),
                 maxBitrate: bitrateSetting,
-                receiverName: currentDevice.getFriendlyName()
+                receiverName: currentDevice.getFriendlyName(),
+                supportsAc3: AppSettings.enableChromecastAc3()
             });
 
             getEndpointInfo().done(function (endpoint) {

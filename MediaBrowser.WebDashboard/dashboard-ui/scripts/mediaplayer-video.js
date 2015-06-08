@@ -2,7 +2,6 @@
 
     function createVideoPlayer(self) {
 
-        var timeout;
         var initialVolume;
         var idleState = true;
 
@@ -1051,29 +1050,31 @@
 
         self.playVideo = function (item, mediaSource, startPosition) {
 
-            var streamInfo = self.createStreamInfo('Video', item, mediaSource, startPosition);
+            requirejs(['scripts/htmlmediarenderer'], function () {
 
-            // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
-            // This will start the transcoding process before actually feeding the video url into the player
-            if ($.browser.safari && !mediaSource.RunTimeTicks) {
+                var streamInfo = self.createStreamInfo('Video', item, mediaSource, startPosition);
 
-                Dashboard.showLoadingMsg();
+                // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
+                // This will start the transcoding process before actually feeding the video url into the player
+                if ($.browser.safari && !mediaSource.RunTimeTicks) {
 
-                ApiClient.ajax({
-                    type: 'GET',
-                    url: streamInfo.url.replace('master.m3u8', 'live.m3u8')
-                }).always(function () {
+                    Dashboard.showLoadingMsg();
 
-                    Dashboard.hideLoadingMsg();
+                    ApiClient.ajax({
+                        type: 'GET',
+                        url: streamInfo.url.replace('master.m3u8', 'live.m3u8')
+                    }).always(function () {
 
-                }).done(function () {
+                        Dashboard.hideLoadingMsg();
+
+                    }).done(function () {
+                        self.playVideoInternal(item, mediaSource, startPosition, streamInfo);
+                    });
+
+                } else {
                     self.playVideoInternal(item, mediaSource, startPosition, streamInfo);
-                });
-
-            } else {
-                self.playVideoInternal(item, mediaSource, startPosition, streamInfo);
-            }
-
+                }
+            });
         };
 
         function supportsContentOverVideoPlayer() {
@@ -1107,7 +1108,10 @@
             var requiresNativeControls = !self.enableCustomVideoControls();
 
             // Can't autoplay in these browsers so we need to use the full controls
-            if (requiresNativeControls) {
+            if (requiresNativeControls && AppInfo.isNativeApp && $.browser.android) {
+                html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" ' + posterCode + ' webkit-playsinline>';
+            }
+            else if (requiresNativeControls) {
                 html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" controls="controls"' + posterCode + ' webkit-playsinline>';
             }
             else {

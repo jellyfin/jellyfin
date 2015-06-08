@@ -518,6 +518,15 @@
             GroupItems: false
         };
 
+        var target = $(e.target);
+        if (target.is('a') || target.is('button')) {
+            return;
+        }
+
+        if (target.parents('a').length || target.parents('button').length) {
+            return;
+        }
+
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
             if (items.length == 1) {
@@ -774,7 +783,8 @@
 
     function onCardClick(e) {
 
-        if ($(e.target).is('.itemSelectionPanel') || $('.itemSelectionPanel', this).length) {
+        var target = $(e.target);
+        if (target.is('.itemSelectionPanel') || $('.itemSelectionPanel', this).length) {
             return false;
         }
 
@@ -797,6 +807,14 @@
         }
 
         if (card.attr('data-detailsmenu') != 'true') {
+            return;
+        }
+
+        if (target.is('a') || target.is('button')) {
+            return;
+        }
+
+        if (target.parents('a').length || target.parents('button').length) {
             return;
         }
 

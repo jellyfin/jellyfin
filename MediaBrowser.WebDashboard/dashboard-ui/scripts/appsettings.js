@@ -24,6 +24,14 @@
 
             return parseInt(store.getItem('chromecastBitrate') || '') || 3000000;
         },
+        enableChromecastAc3: function (val) {
+
+            if (val != null) {
+                update('enablechromecastac3', val.toString());
+            }
+
+            return store.getItem('enablechromecastac3') == 'true';
+        },
         enableExternalPlayers: function (val) {
 
             if (val != null) {

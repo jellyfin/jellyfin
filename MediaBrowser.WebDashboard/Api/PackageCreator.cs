@@ -597,11 +597,7 @@ namespace MediaBrowser.WebDashboard.Api
                                 "syncactivity.js",
                                 "thememediaplayer.js",
                                 "useredit.js",
-                                "userpassword.js",
-                                "userprofilespage.js",
-                                "userparentalcontrol.js",
-                                "userlibraryaccess.js",
-                                "wizardstartpage.js"
+                                "userprofilespage.js"
                             };
         }
 
