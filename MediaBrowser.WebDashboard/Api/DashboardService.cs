@@ -281,7 +281,7 @@ namespace MediaBrowser.WebDashboard.Api
             }
             catch (IOException)
             {
-                
+
             }
 
             var creator = GetPackageCreator();
@@ -300,6 +300,8 @@ namespace MediaBrowser.WebDashboard.Api
                 var cordovaVersion = Path.Combine(path, "thirdparty", "cordova", "registrationservices.js");
                 File.Copy(cordovaVersion, Path.Combine(path, "scripts", "registrationservices.js"), true);
                 File.Delete(cordovaVersion);
+
+                Directory.Delete(Path.Combine(path, "css", "images", "tour"), true);
             }
 
             await DumpHtml(creator.DashboardUIPath, path, mode, culture, appVersion);
@@ -307,7 +309,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             await DumpFile("scripts/all.js", Path.Combine(path, "scripts", "all.js"), mode, culture, appVersion).ConfigureAwait(false);
             await DumpFile("css/all.css", Path.Combine(path, "css", "all.css"), mode, culture, appVersion).ConfigureAwait(false);
- 
+
             return "";
         }
 
