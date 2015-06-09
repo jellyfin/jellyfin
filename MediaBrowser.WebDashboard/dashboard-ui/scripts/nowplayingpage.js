@@ -714,13 +714,16 @@
         return null;
     };
 
-    $(document).on('pageinit', "#nowPlayingPage", function () {
+    $(document).on('pageinitdepends', "#nowPlayingPage", function () {
 
         var page = this;
 
         bindEvents(page);
 
-    }).on('pageshow', "#nowPlayingPage", function () {
+        $('.sendMessageForm').off('submit', NowPlayingPage.onMessageSubmit).on('submit', NowPlayingPage.onMessageSubmit);
+        $('.typeTextForm').off('submit', NowPlayingPage.onSendStringSubmit).on('submit', NowPlayingPage.onSendStringSubmit);
+
+    }).on('pageshowready', "#nowPlayingPage", function () {
 
         var page = this;
 

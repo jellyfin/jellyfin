@@ -230,7 +230,14 @@
         });
     }
 
-    $(document).on('pageinit', "#editCollectionTitlesPage", function () {
+    function onSearchFormSubmit() {
+        var page = $(this).parents('.page');
+
+        showSearchResults(page, $('#txtLookupName', page).val());
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#editCollectionTitlesPage", function () {
 
         var page = this;
 
@@ -270,8 +277,9 @@
             removeItemsFromCollection(page);
         });
 
+        $('.collectionItemSearchForm').off('submit', onSearchFormSubmit).on('submit', onSearchFormSubmit);
 
-    }).on('pagebeforeshow', "#editCollectionTitlesPage", function () {
+    }).on('pagebeforeshowready', "#editCollectionTitlesPage", function () {
 
         var page = this;
 
@@ -289,16 +297,5 @@
 
         $("body").off("popupafteropen.collections");
     });
-
-    window.EditCollectionItemsPage = {
-
-        onSearchFormSubmit: function () {
-
-            var page = $(this).parents('.page');
-
-            showSearchResults(page, $('#txtLookupName', page).val());
-            return false;
-        }
-    };
 
 })(jQuery, document, window, window.FileReader, escape);

@@ -230,8 +230,7 @@
             {
                 complete: function () {
                     $('.viewMenuSearch').addClass('hide');
-                },
-                duration: 'fast'
+                }
             });
         });
     }

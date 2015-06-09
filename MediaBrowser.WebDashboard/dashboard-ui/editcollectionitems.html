@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="editCollectionTitlesPage" data-role="page" class="page libraryPage metadataEditorPage" data-contextname="${HeaderMetadataManager}">
+    <div id="editCollectionTitlesPage" data-role="page" class="page libraryPage metadataEditorPage" data-contextname="${HeaderMetadataManager}" data-require="scripts/editcollectionitems">
         <div data-role="content editPageContent">
             <div class="editPageSidebar">
                 <div class="libraryTree">
@@ -68,10 +68,6 @@
             </div>
 
         </div>
-
-        <script type="text/javascript">
-            $('.collectionItemSearchForm').off('submit', EditCollectionItemsPage.onSearchFormSubmit).on('submit', EditCollectionItemsPage.onSearchFormSubmit);
-        </script>
     </div>
 </body>
 </html>

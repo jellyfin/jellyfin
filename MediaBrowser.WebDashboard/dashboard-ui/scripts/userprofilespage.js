@@ -430,7 +430,17 @@
         });
     }
 
-    $(document).on('pageinit', "#userProfilesPage", function () {
+    function onSubmit() {
+        var form = this;
+
+        var page = $(form).parents('.page');
+
+        inviteUser(page);
+
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#userProfilesPage", function () {
 
         var page = this;
 
@@ -439,25 +449,13 @@
             showInvitePopup(page);
         });
 
-    }).on('pagebeforeshow', "#userProfilesPage", function () {
+        $('.addUserForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pagebeforeshowready', "#userProfilesPage", function () {
 
         var page = this;
 
         loadData(page);
     });
-
-    window.UserProfilesPage = {
-
-        onSubmit: function () {
-
-            var form = this;
-
-            var page = $(form).parents('.page');
-
-            inviteUser(page);
-
-            return false;
-        }
-    };
 
 })(document, window, jQuery);

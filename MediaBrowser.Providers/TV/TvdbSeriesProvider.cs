@@ -419,7 +419,11 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            _logger.Info("TVDb Provider - Could not find " + name + ". Check name on Thetvdb.org.");
+            if (searchResults.Count == 0)
+            {
+                _logger.Info("TVDb Provider - Could not find " + name + ". Check name on Thetvdb.org.");
+            }
+
             return searchResults;
         }
 

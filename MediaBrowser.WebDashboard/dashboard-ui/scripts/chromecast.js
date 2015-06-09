@@ -743,12 +743,18 @@
 
         self.volumeDown = function () {
 
-            self.setVolume(getCurrentVolume() - 2);
+            castPlayer.sendMessage({
+                options: {},
+                command: 'VolumeDown'
+            });
         };
 
         self.volumeUp = function () {
 
-            self.setVolume(getCurrentVolume() + 2);
+            castPlayer.sendMessage({
+                options: {},
+                command: 'VolumeUp'
+            });
         };
 
         self.setVolume = function (vol) {

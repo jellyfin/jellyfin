@@ -1377,7 +1377,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
 
         var apiClient = ApiClient;
 
-        if (apiClient) {
+        if (apiClient && !AppInfo.isNativeApp) {
             showWelcomeIfNeeded(page, apiClient);
         }
 

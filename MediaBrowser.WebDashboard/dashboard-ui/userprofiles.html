@@ -4,7 +4,7 @@
     <title>${TitleUsers}</title>
 </head>
 <body>
-    <div id="userProfilesPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users">
+    <div id="userProfilesPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userprofilespage">
 
         <div data-role="content">
             <div class="content-primary">
@@ -84,9 +84,6 @@
             </div>
 
         </div>
-        <script type="text/javascript">
-            $('.addUserForm').off('submit', UserProfilesPage.onSubmit).on('submit', UserProfilesPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

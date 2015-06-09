@@ -289,7 +289,7 @@
 
     }
 
-    $(document).on('pageshow', ".syncActivityPage", function () {
+    $(document).on('pageshowready', ".syncActivityPage", function () {
 
         var page = this;
 
