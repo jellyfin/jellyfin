@@ -1454,5 +1454,6 @@
     "OptionEnableExternalVideoPlayers": "Enable external video players",
     "ButtonUnlockGuide": "Unlock Guide",
     "LabelEnableFullScreen": "Enable fullscreen mode",
-    "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough"
+    "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
+    "LabelSyncPath": "Synced content path:"
 }

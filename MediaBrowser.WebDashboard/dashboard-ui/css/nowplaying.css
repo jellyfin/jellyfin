@@ -3,8 +3,8 @@
 }
 
 .nowPlayingPageImage img {
-    max-height: 300px;
-    max-width: 300px;
+    max-height: 250px;
+    max-width: 250px;
 }
 
 .nowPlayingPage .positionSliderContainer {
@@ -74,6 +74,14 @@
 
     .nowPlayingPage .positionSliderContainer {
         width: 300px;
+    }
+}
+
+@media all and (max-height: 600px) {
+
+    .nowPlayingPageImage img {
+        max-height: 160px;
+        max-width: 250px;
     }
 }
 

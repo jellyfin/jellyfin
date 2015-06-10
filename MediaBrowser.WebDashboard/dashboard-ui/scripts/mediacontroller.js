@@ -608,7 +608,7 @@
 
             if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == 'File') {
 
-                return FileSystem.fileExists(mediaSource.Path);
+                return FileSystemBridge.fileExists(mediaSource.Path);
             }
 
             return false;

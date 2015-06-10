@@ -186,7 +186,7 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageinit', "#pluginCatalogPage", function () {
+    $(document).on('pageinitdepends', "#pluginCatalogPage", function () {
 
         var page = this;
 
@@ -214,7 +214,7 @@
             reloadList(page);
         });
 
-    }).on('pageshow', "#pluginCatalogPage", function () {
+    }).on('pageshowready', "#pluginCatalogPage", function () {
 
         var page = this;
 

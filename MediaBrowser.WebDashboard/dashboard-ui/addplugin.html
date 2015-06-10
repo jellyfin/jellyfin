@@ -4,7 +4,7 @@
     <title>${TitlePlugins}</title>
 </head>
 <body>
-    <div id="addPluginPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="scripts/registrationservices,scripts/ratingdialog">
+    <div id="addPluginPage" data-role="page" class="page type-interior pluginConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Plugins" data-require="scripts/registrationservices,scripts/ratingdialog,scripts/addplugin">
 
         <div data-role="content">
             <div class="content-primary">
@@ -125,9 +125,6 @@
                 </div>
             </div>
         </div>
-        <script type="text/javascript">
-            $('.addPluginForm').off('submit', AddPluginPage.onSubmit).on('submit', AddPluginPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

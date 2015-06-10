@@ -523,7 +523,8 @@
             return;
         }
 
-        if (target.parents('a').length || target.parents('button').length) {
+        var buttonParents = target.parents('a:not(.card,.cardContent),button:not(.card,.cardContent)');
+        if (buttonParents.length) {
             return;
         }
 

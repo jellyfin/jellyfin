@@ -1586,6 +1586,7 @@ var AppInfo = {};
 
         AppInfo.enableBackButton = (isIOS && window.navigator.standalone) || (isCordova && isIOS);
         AppInfo.supportsFullScreen = isCordova && isAndroid;
+        AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
     }
 
     function initializeApiClient(apiClient) {
@@ -1893,6 +1894,10 @@ var AppInfo = {};
             define("filesystem", ["thirdparty/filesystem"]);
         }
 
+        if (Dashboard.isRunningInCordova() && $.browser.android) {
+            define("nativedirectorychooser", ["thirdparty/cordova/android/nativedirectorychooser"]);
+        }
+
         define("connectservice", ["thirdparty/apiclient/connectservice"]);
 
         //requirejs(['http://viblast.com/player/free-version/qy2fdwajo1/viblast.js']);
@@ -2019,6 +2024,8 @@ $(document).on('pagecreate', ".page", function () {
     var page = this;
     var require = this.getAttribute('data-require');
 
+    Dashboard.ensurePageTitle($(page));
+
     if (require) {
         requirejs(require.split(','), function () {
 
@@ -2088,7 +2095,6 @@ $(document).on('pagecreate', ".page", function () {
     Dashboard.firePageEvent(page, 'pageshowready');
 
     Dashboard.ensureHeader(page);
-    Dashboard.ensurePageTitle(page);
 
     if (apiClient && !apiClient.isWebSocketOpen()) {
         Dashboard.refreshSystemInfoFromServer();

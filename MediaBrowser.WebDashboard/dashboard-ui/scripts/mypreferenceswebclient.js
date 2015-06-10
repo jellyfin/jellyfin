@@ -22,6 +22,8 @@
 
         $('#chkEnableChromecastAc3', page).checked(AppSettings.enableChromecastAc3()).checkboxradio("refresh");
 
+        $('#txtSyncPath', page).val(AppSettings.syncPath());
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -59,6 +61,8 @@
 
         AppSettings.enableChromecastAc3($('#chkEnableChromecastAc3', page).checked());
 
+        AppSettings.syncPath($('#txtSyncPath', page).val());
+
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
         ApiClient.getDisplayPreferences('home', userId, 'webclient').done(function (result) {
@@ -76,6 +80,15 @@
         var page = this;
 
         $('.webClientPreferencesForm', page).off('submit', onSubmit).on('submit', onSubmit);
+
+        $('.btnSelectSyncPath', page).on('click', function () {
+
+            require(['nativedirectorychooser'], function () {
+                NativeDirectoryChooser.chooseDirectory().done(function (path) {
+                    $('#txtSyncPath', page).val(path);
+                });
+            });
+        });
 
     }).on('pageshowready', "#webClientPreferencesPage", function () {
 
@@ -111,6 +124,12 @@
             $('.fldFullscreen', page).show();
         } else {
             $('.fldFullscreen', page).hide();
+        }
+
+        if (AppInfo.supportsSyncPathSetting) {
+            $('.fldSyncPath', page).show();
+        } else {
+            $('.fldSyncPath', page).hide();
         }
     });
 

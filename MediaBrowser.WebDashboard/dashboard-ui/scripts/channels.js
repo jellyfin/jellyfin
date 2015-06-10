@@ -30,6 +30,7 @@
                     shape: "backdrop",
                     context: 'channels',
                     showTitle: true,
+                    lazy: true,
                     centerText: true,
                     preferThumb: true
                 });

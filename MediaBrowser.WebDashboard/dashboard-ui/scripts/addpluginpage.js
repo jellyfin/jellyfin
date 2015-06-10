@@ -169,7 +169,11 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageshowready', "#addPluginPage", function () {
+    $(document).on('pageinitdepends', "#addPluginPage", function () {
+
+        $('.addPluginForm').off('submit', AddPluginPage.onSubmit).on('submit', AddPluginPage.onSubmit);
+
+    }).on('pageshowready', "#addPluginPage", function () {
 
         var page = this;
 
@@ -187,7 +191,6 @@
             renderPackage(response1[0], response2[0], response3[0], page);
 
         });
-
 
     }).on('pagebeforeshow pageinit pageshow', "#addPluginPage", function () {
 

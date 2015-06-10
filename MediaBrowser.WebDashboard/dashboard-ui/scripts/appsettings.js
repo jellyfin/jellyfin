@@ -55,6 +55,14 @@
             }
 
             return store.getItem('enableFullScreen') == 'true';
+        },
+        syncPath: function (val) {
+
+            if (val != null) {
+                update('syncPath', val.toString());
+            }
+
+            return store.getItem('syncPath');
         }
 
     };

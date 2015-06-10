@@ -1,6 +1,6 @@
 ﻿(function () {
 
-    window.FileSystem = {
+    window.FileSystemBridge = {
 
         fileExists: function (path) {
             return false;

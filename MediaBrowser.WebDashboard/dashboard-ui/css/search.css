@@ -151,7 +151,7 @@
     font-family: Roboto;
     outline: none;
     vertical-align: middle;
-    width: 90%;
+    width: 85%;
 }
 
 .searchInputIcon {
@@ -169,6 +169,12 @@
     right: 0;
     background: #000000;
     z-index: 1000;
+}
+
+@media all and (min-width: 600px) {
+    .headerSearchInput {
+        width: 90%;
+    }
 }
 
 @media all and (min-width: 800px) {

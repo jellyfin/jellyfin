@@ -274,7 +274,10 @@ namespace MediaBrowser.WebDashboard.Api
 
                 var version = GetType().Assembly.GetName().Version;
 
-                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetCommonJavascript(mode, version));
+                var imports = "<link rel=\"import\" href=\"thirdparty/polymer/polymer.html\">";
+                imports = "";
+
+                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetCommonJavascript(mode, version) + imports);
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
@@ -393,6 +396,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new List<string>
             {
+                //"thirdparty/webcomponentsjs/webcomponents-lite.min.js",
                 "scripts/all.js" + versionString
             };
 
@@ -545,21 +549,16 @@ namespace MediaBrowser.WebDashboard.Api
                                 "mediaplayer-video.js",
                                 "nowplayingbar.js",
                                 "alphapicker.js",
-                                "addpluginpage.js",
-                                "dashboardpage.js",
                                 "directorybrowser.js",
                                 "edititemmetadata.js",
                                 "indexpage.js",
                                 "itemdetailpage.js",
                                 "moviecollections.js",
                                 "notifications.js",
-                                "plugincatalogpage.js",
-                                "pluginspage.js",
                                 "remotecontrol.js",
                                 "search.js",
                                 "thememediaplayer.js",
-                                "useredit.js",
-                                "userprofilespage.js"
+                                "useredit.js"
                             };
         }
 
