@@ -2,6 +2,7 @@
 {
     public enum ConnectSignupResponse
     {
+        Failure,
         Success,
         EmailInUse,
         UsernameInUser
