@@ -1263,7 +1263,7 @@
     "LabelExternalPlayersHelp": "Toon knoppen om inhoud in externe spelers of te spelen. Dit is alleen mogelijk op apparaten die 'url schemes' ondersteunen, meest Android en iOS. Met externe spelers is er over het algemeen geen ondersteuning voor afstandsbediening of hervatten.",
     "LabelNativeExternalPlayersHelp": "Toon knoppen om media in externe spelers te kunnen spelen.",
     "LabelEnableItemPreviews": "Schakel item preview in",
-    "LabelEnableItemPreviewsHelp": "if enabled, sliding previews will appear when clicking items on certain screens.",
+    "LabelEnableItemPreviewsHelp": "Bij inschakelen zal op sommige schermen een preview getoond worden als er op een item geklikt wordt.",
     "HeaderSubtitleProfile": "Ondertitelingsprofiel",
     "HeaderSubtitleProfiles": "Ondertitelingsprofielen",
     "HeaderSubtitleProfilesHelp": "Ondertitelingsprofielen beschrijven de ondertitelings formaten ondersteund door het apparaat.",
