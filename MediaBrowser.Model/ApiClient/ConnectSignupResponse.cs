@@ -1,10 +1,9 @@
-﻿
-namespace MediaBrowser.Model.ApiClient
+﻿namespace MediaBrowser.Model.ApiClient
 {
-    public class ConnectSignupResponse
+    public enum ConnectSignupResponse
     {
-        public bool IsSuccessful { get; set; }
-        public bool IsEmailInUse { get; set; }
-        public bool IsUsernameInUse { get; set; }
+        Success,
+        EmailInUse,
+        UsernameInUser
     }
 }

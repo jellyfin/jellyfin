@@ -185,7 +185,8 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="email">The email.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task.</returns>
-        Task<ConnectSignupResponse> SignupForConnect(string email, string username, string password);
+        Task<ConnectSignupResponse> SignupForConnect(string email, string username, string password, CancellationToken cancellationToken = default(CancellationToken));
     }
 }
