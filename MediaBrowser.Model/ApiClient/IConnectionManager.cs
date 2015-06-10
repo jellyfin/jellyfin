@@ -178,5 +178,14 @@ namespace MediaBrowser.Model.ApiClient
         /// </summary>
         /// <returns>Task&lt;List&lt;UserDto&gt;&gt;.</returns>
         Task<List<UserDto>> GetOfflineUsers();
+
+        /// <summary>
+        /// Signups for connect.
+        /// </summary>
+        /// <param name="email">The email.</param>
+        /// <param name="username">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <returns>Task.</returns>
+        Task<ConnectSignupResponse> SignupForConnect(string email, string username, string password);
     }
 }

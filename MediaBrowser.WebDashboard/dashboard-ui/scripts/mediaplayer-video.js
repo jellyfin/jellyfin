@@ -1050,7 +1050,7 @@
 
         self.playVideo = function (item, mediaSource, startPosition) {
 
-            requirejs(['scripts/htmlmediarenderer'], function () {
+            requirejs(['videorenderer'], function () {
 
                 var streamInfo = self.createStreamInfo('Video', item, mediaSource, startPosition);
 
@@ -1191,7 +1191,7 @@
                 videoControls.removeClass('hide');
             }
 
-            var mediaRenderer = new HtmlMediaRenderer('video');
+            var mediaRenderer = new VideoRenderer('video');
 
             initialVolume = self.getSavedVolume();
 

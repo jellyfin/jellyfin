@@ -636,6 +636,62 @@ var Dashboard = {
         }, 500);
     },
 
+    showUserFlyout: function () {
+
+        var html = '<div data-role="panel" data-position="right" data-display="overlay" id="userFlyout" data-position-fixed="true" data-theme="a">';
+
+        html += '<h3 class="userHeader">';
+
+        html += '</h3>';
+
+        html += '<form>';
+
+        html += '<p class="preferencesContainer"></p>';
+
+        html += '<p><button data-mini="true" type="button" onclick="Dashboard.logout();" data-icon="lock">' + Globalize.translate('ButtonSignOut') + '</button></p>';
+
+        html += '</form>';
+        html += '</div>';
+
+        $(document.body).append(html);
+
+        var elem = $('#userFlyout').panel({}).lazyChildren().trigger('create').panel("open").on("panelclose", function () {
+
+            $(this).off("panelclose").remove();
+        });
+
+        ConnectionManager.user(window.ApiClient).done(function (user) {
+            Dashboard.updateUserFlyout(elem, user);
+        });
+    },
+
+    updateUserFlyout: function (elem, user) {
+
+        var html = '';
+        var imgWidth = 48;
+
+        if (user.imageUrl && AppInfo.enableUserImage) {
+            var url = user.imageUrl;
+
+            if (user.supportsImageParams) {
+                url += "&width=" + (imgWidth * Math.max(window.devicePixelRatio || 1, 2));
+            }
+
+            html += '<div class="lazy" data-src="' + url + '" style="width:' + imgWidth + 'px;height:' + imgWidth + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin-right:.8em;display:inline-block;"></div>';
+        }
+        html += user.name;
+
+        $('.userHeader', elem).html(html).lazyChildren();
+
+        html = '';
+
+        if (user.localUser && user.localUser.Policy.EnableUserPreferenceAccess) {
+            html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.localUser.Id + '" data-icon="gear">' + Globalize.translate('ButtonSettings') + '</button></a>';
+        }
+
+        $('.preferencesContainer', elem).html(html).trigger('create');
+    },
+
     getPluginSecurityInfo: function () {
 
         var apiClient = ApiClient;
@@ -1334,7 +1390,10 @@ var Dashboard = {
             PlayableMediaTypes: ['Audio', 'Video'],
 
             SupportedCommands: Dashboard.getSupportedRemoteCommands(),
-            SupportsPersistentIdentifier: AppInfo.isNativeApp === true,
+
+            // Need to use this rather than AppInfo.isNativeApp because the property isn't set yet at the time we call this
+            SupportsPersistentIdentifier: Dashboard.isRunningInCordova(),
+
             SupportsMediaControl: true,
             SupportedLiveMediaTypes: ['Audio', 'Video']
         };
@@ -1898,6 +1957,16 @@ var AppInfo = {};
             define("nativedirectorychooser", ["thirdparty/cordova/android/nativedirectorychooser"]);
         }
 
+        if (Dashboard.isRunningInCordova() && $.browser.android) {
+            //define("audiorenderer", ["thirdparty/cordova/android/vlcplayer"]);
+            define("audiorenderer", ["scripts/htmlmediarenderer"]);
+            define("videorenderer", ["scripts/htmlmediarenderer"]);
+        }
+        else {
+            define("audiorenderer", ["scripts/htmlmediarenderer"]);
+            define("videorenderer", ["scripts/htmlmediarenderer"]);
+        }
+
         define("connectservice", ["thirdparty/apiclient/connectservice"]);
 
         //requirejs(['http://viblast.com/player/free-version/qy2fdwajo1/viblast.js']);
@@ -1911,7 +1980,7 @@ var AppInfo = {};
             require(['appstorage'], function () {
 
                 capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
-                createConnectionManager(capabilities).done(function() {
+                createConnectionManager(capabilities).done(function () {
                     $(function () {
                         onDocumentReady();
                         Dashboard.initPromiseDone = true;

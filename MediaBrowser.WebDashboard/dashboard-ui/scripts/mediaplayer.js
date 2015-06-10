@@ -760,7 +760,7 @@
                 contentType = 'video/' + mediaSource.Container;
 
                 if (mediaSource.enableDirectPlay) {
-                    mediaUrl = FileSystem.translateFilePath(mediaSource.Path);
+                    mediaUrl = FileSystemBridge.translateFilePath(mediaSource.Path);
                     playMethod = 'DirectPlay';
 
                 } else {
@@ -797,7 +797,7 @@
 
                 if (mediaSource.enableDirectPlay) {
 
-                    mediaUrl = FileSystem.translateFilePath(mediaSource.Path);
+                    mediaUrl = FileSystemBridge.translateFilePath(mediaSource.Path);
                     playMethod = 'DirectPlay';
 
                 } else {
@@ -1628,7 +1628,7 @@
 
         function getAudioRenderer() {
 
-            return new HtmlMediaRenderer('audio');
+            return new AudioRenderer('audio');
         }
 
         function onTimeUpdate() {
@@ -1639,7 +1639,7 @@
 
         function playAudio(item, mediaSource, startPositionTicks) {
 
-            requirejs(['scripts/htmlmediarenderer'], function () {
+            requirejs(['audiorenderer'], function () {
                 playAudioInternal(item, mediaSource, startPositionTicks);
             });
         }

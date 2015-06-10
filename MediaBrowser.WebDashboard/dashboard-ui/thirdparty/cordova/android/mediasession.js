@@ -34,7 +34,7 @@
         var canSeek = playState.CanSeek || false;
 
         var url = '';
-        var imgHeight = 200;
+        var imgHeight = 400;
 
         var nowPlayingItem = state.NowPlayingItem;
 

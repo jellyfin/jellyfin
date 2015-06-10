@@ -66,6 +66,9 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\ConnectionState.cs">
       <Link>ApiClient\ConnectionState.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\ConnectSignupResponse.cs">
+      <Link>ApiClient\ConnectSignupResponse.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\GeneralCommandEventArgs.cs">
       <Link>ApiClient\GeneralCommandEventArgs.cs</Link>
     </Compile>

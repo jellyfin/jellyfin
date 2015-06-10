@@ -261,6 +261,12 @@
         }
     }
 
-    window.HtmlMediaRenderer = htmlMediaRenderer;
+    if (!window.AudioRenderer) {
+        window.AudioRenderer = htmlMediaRenderer;
+    }
+
+    if (!window.VideoRenderer) {
+        window.VideoRenderer = htmlMediaRenderer;
+    }
 
 })();

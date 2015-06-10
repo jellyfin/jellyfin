@@ -33,10 +33,11 @@
 
         html += '<button onclick="VoiceInputManager.startListening();" type="button" data-role="none" class="headerButton headerButtonRight headerVoiceButton" style="display:none;"><i class="material-icons">mic</i></button>';
 
-        //if (AppInfo.isNativeApp && $.browser.android)
-        //{
-        //    html += '<button class="headerButtonViewMenu headerButton headerButtonRight" type="button" data-role="none"><i class="material-icons">more_vert</i></button>';
-        //}
+        if (!showUserAtTop()) {
+            html += '<button class="headerButton headerButtonRight headerUserButton" type="button" data-role="none" onclick="Dashboard.showUserFlyout(this);">';
+            html += '<div class="fa fa-user"></div>';
+            html += '</button>';
+        }
 
         if (!$.browser.mobile && !AppInfo.isNativeApp) {
             html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton" style="display:none;"><i class="material-icons">settings</i></a>';
@@ -91,6 +92,26 @@
         } else {
             $('.dashboardEntryHeaderButton', header).hide();
         }
+
+        var userButtonHtml = '';
+        if (user.name) {
+
+            if (user.imageUrl && AppInfo.enableUserImage) {
+
+                var userButtonHeight = 26;
+
+                var url = user.imageUrl;
+
+                if (user.supportsImageParams) {
+                    url += "&height=" + (userButtonHeight * Math.max(devicePixelRatio || 1, 2));
+                }
+
+                userButtonHtml += '<div class="lazy headerUserImage" data-src="' + url + '" style="width:' + userButtonHeight + 'px;height:' + userButtonHeight + 'px;"></div>';
+            } else {
+                userButtonHtml += '<div class="fa fa-user"></div>';
+            }
+            $('.headerUserButton', header).html(userButtonHtml).lazyChildren();
+        }
     }
 
     function bindMenuEvents() {
@@ -128,23 +149,6 @@
             }
         }
     }
-
-    //function onViewButtonClick() {
-
-    //    var html = '<div class="appViewMenuPanel" data-role="panel" data-position="right" data-display="overlay" data-position-fixed="true" data-theme="a">';
-
-
-    //    html += '</div>';
-
-    //    $(document.body).append(html);
-
-    //    var elem = $('.appViewMenuPanel').panel({}).trigger('create').panel("open").on("panelclose", function () {
-
-    //        $(this).off("panelclose").remove();
-    //    });
-
-
-    //}
 
     function initViewMenuBarHeadroom() {
 
@@ -203,7 +207,10 @@
             html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" href="selectserver.html"><span class="fa fa-globe sidebarLinkIcon"></span>' + Globalize.translate('ButtonSelectServer') + '</a>';
         }
 
-        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="logout" href="#" onclick="Dashboard.logout();"><span class="fa fa-lock sidebarLinkIcon"></span>' + Globalize.translate('ButtonSignOut') + '</a>';
+        if (showUserAtTop()) {
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="logout" href="#" onclick="Dashboard.logout();"><span class="fa fa-lock sidebarLinkIcon"></span>' + Globalize.translate('ButtonSignOut') + '</a>';
+        }
+
         html += '</div>';
 
 
@@ -406,22 +413,6 @@
                 html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '">';
                 html += '<div class="lazy" data-src="css/images/mblogoicon.png" style="width:' + 28 + 'px;height:' + 28 + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.4em 0 1.3em;display:inline-block;"></div>';
                 html += Globalize.translate('ButtonHome');
-                html += '</a>';
-
-                html += '<a class="sidebarLink lnkMediaFolder" href="' + userHref + '">';
-                if (hasUserImage) {
-                    var imgWidth = 20;
-                    var url = user.imageUrl;
-
-                    if (user.supportsImageParams) {
-                        url += "&width=" + (imgWidth * Math.max(devicePixelRatio || 1, 2));
-                    }
-
-                    html += '<div class="lazy" data-src="' + url + '" style="width:' + imgWidth + 'px;height:' + imgWidth + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.6em 0 1.6em;display:inline-block;"></div>';
-                } else {
-                    html += '<span class="fa fa-user sidebarLinkIcon"></span>';
-                }
-                html += Globalize.translate('ButtonPreferences');
                 html += '</a>';
             }
 

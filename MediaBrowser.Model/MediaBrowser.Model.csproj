@@ -64,6 +64,7 @@
     <Compile Include="ApiClient\ConnectionMode.cs" />
     <Compile Include="ApiClient\ConnectionResult.cs" />
     <Compile Include="ApiClient\ConnectionState.cs" />
+    <Compile Include="ApiClient\ConnectSignupResponse.cs" />
     <Compile Include="ApiClient\HttpResponseEventArgs.cs" />
     <Compile Include="ApiClient\IApiClient.cs" />
     <Compile Include="ApiClient\ApiClientExtensions.cs" />
