@@ -1261,9 +1261,9 @@
     "ButtonLearnMoreAboutEmbyConnect": "Plus d'infos sur Emby Connect",
     "LabelExternalPlayers": "Lecteurs externes:",
     "LabelExternalPlayersHelp": "Afficher les boutons pour lire du contenu sur le lecteur externe. Ceci est valable uniquement sur des appareils supportant les URLs, g\u00e9n\u00e9ralement Android et iOS. Avec les lecteurs externes il n'y a g\u00e9n\u00e9ralement pas de support pour le contr\u00f4le \u00e0 distance ou la reprise.",
-    "LabelNativeExternalPlayersHelp": "Display buttons to play content in external players.",
-    "LabelEnableItemPreviews": "Enable item previews",
-    "LabelEnableItemPreviewsHelp": "if enabled, sliding previews will appear when clicking items on certain screens.",
+    "LabelNativeExternalPlayersHelp": "Afficher les boutons pour lire le contenu sur les lecteurs externes.",
+    "LabelEnableItemPreviews": "Activer les aper\u00e7us des \u00e9l\u00e9ments",
+    "LabelEnableItemPreviewsHelp": "Activez cette option pour faire appara\u00eetre des aper\u00e7us d\u00e9roulants lorsque vous cliquez sur les \u00e9l\u00e9ments de certains \u00e9crans",
     "HeaderSubtitleProfile": "Profil de sous-titre",
     "HeaderSubtitleProfiles": "Profils de sous-titre",
     "HeaderSubtitleProfilesHelp": "Les profils de sous-titre d\u00e9crivent les formats de sous-titre support\u00e9s par l'appareil.",
@@ -1436,5 +1436,5 @@
     "HeaderColumns": "Colonnes",
     "ButtonReset": "R\u00e9initialiser",
     "OptionEnableExternalVideoPlayers": "Activer les lecteurs vid\u00e9o externes",
-    "ButtonUnlockGuide": "Unlock Guide"
+    "ButtonUnlockGuide": "D\u00e9verrouiller le Guide"
 }
