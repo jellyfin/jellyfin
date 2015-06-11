@@ -42,6 +42,15 @@ namespace MediaBrowser.Api.Reports
 		AudioAlbumArtist,
 		MusicArtist,
 		AudioAlbum,
-		Status
+		Status,
+        //Activity logs
+        Overview,
+        ShortOverview,
+        Type,
+        Date,
+        UserPrimaryImageTag,
+        Severity,
+        Item,
+        User
 	}
 }

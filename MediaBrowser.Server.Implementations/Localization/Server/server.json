@@ -1448,6 +1448,7 @@
     "OptionReportList": "List View",
     "OptionReportStatistics": "Statistics",
     "OptionReportGrouping": "Grouping",
+    "OptionReportActivities": "Activities Log",
     "HeaderExport": "Export",
     "HeaderColumns": "Columns",
     "ButtonReset": "Reset",
@@ -1455,5 +1456,9 @@
     "ButtonUnlockGuide": "Unlock Guide",
     "LabelEnableFullScreen": "Enable fullscreen mode",
     "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
-    "LabelSyncPath": "Synced content path:"
+    "LabelSyncPath": "Synced content path:",
+    "HeaderOverview": "Overview",
+    "HeaderShortOverview": "Short Overview",
+    "HeaderType": "Type",
+    "HeaderSeverity": "Severity"
 }
