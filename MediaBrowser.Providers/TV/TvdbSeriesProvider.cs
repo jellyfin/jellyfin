@@ -398,21 +398,21 @@ namespace MediaBrowser.Providers.TV
                             }
                         }
 
-                        if (titles.Any(t => string.Equals(t, comparableName, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            var id = node.SelectSingleNode("./seriesid") ??
-                                node.SelectSingleNode("./id");
-
-                            if (id != null)
-                            {
-                                searchResult.Name = titles.FirstOrDefault();
-                                searchResult.SetProviderId(MetadataProviders.Tvdb, id.InnerText);
-                                searchResults.Add(searchResult);
-                            }
-                        }
-
                         foreach (var title in titles)
                         {
+                            if (string.Equals(title, comparableName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                var id = node.SelectSingleNode("./seriesid") ??
+                                    node.SelectSingleNode("./id");
+
+                                if (id != null)
+                                {
+                                    searchResult.Name = title;
+                                    searchResult.SetProviderId(MetadataProviders.Tvdb, id.InnerText);
+                                    searchResults.Add(searchResult);
+                                }
+                                break;
+                            }
                             _logger.Info("TVDb Provider - " + title + " did not match " + comparableName);
                         }
                     }

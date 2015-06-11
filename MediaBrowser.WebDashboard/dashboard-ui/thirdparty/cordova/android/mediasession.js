@@ -4,7 +4,7 @@
 
     var currentPlayer;
     var lastPlayerState;
-    var lastUpdateTime;
+    var lastUpdateTime = 0;
 
     function updatePlayerState(state, eventName) {
 
@@ -68,8 +68,9 @@
 
         // Don't go crazy reporting position changes
         if (eventName == 'positionchange') {
-            var time = new Date().getTime();
-            if ((time - lastUpdateTime) < 500) {
+            if (lastUpdateTime) {
+                // Only report if this item hasn't been reported yet, or if there's an actual playback change.
+                // Don't report on simple time updates
                 return;
             }
         }
@@ -118,6 +119,7 @@
 
     function hideMediaControls() {
         MainActivity.hideMediaSession();
+        lastUpdateTime = 0;
     }
 
     function bindToPlayer(player) {
