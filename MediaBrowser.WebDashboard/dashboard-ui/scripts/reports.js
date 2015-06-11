@@ -1,6 +1,5 @@
 ﻿(function ($, document) {
     var defaultSortBy = "SortName";
-    var SelectedReportView = "ReportData";
     var topItems = 5;
 
     var query = {
@@ -8,7 +7,8 @@
         Limit: 100,
         IncludeItemTypes: "Movie",
         HasQueryLimit: true,
-        GroupBy: "None"
+        GroupBy: "None",
+        ReportView: "ReportData"
     };
 
     function getTable(result) {
@@ -263,7 +263,18 @@
         $(document).scrollTop(0);
         var html = '';
 
-        if (SelectedReportView === "ReportData") {
+        if (query.ReportView === "ReportData" || query.ReportView === "ReportStatistics") {
+            $('#selectIncludeItemTypesBox', page).show();
+            $('#tabFilterBox', page).show();
+            $('#tabFilter', page).show();
+        }
+        else {
+            $('#selectIncludeItemTypesBox', page).hide();
+            $('#tabFilterBox', page).hide();
+            $('#tabFilter', page).hide();
+        }
+
+        if (query.ReportView === "ReportData" || query.ReportView === "ReportActivities") {
 
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
@@ -368,15 +379,19 @@
         query.UserId = Dashboard.getCurrentUserId();
         var url = "";
 
-        switch (SelectedReportView) {
+        switch (query.ReportView) {
             case "ReportData":
                 query.HasQueryLimit = true;
                 url = ApiClient.getUrl("Reports/Items", query);
                 break;
-            case "ReportStatistic":
+            case "ReportStatistics":
                 query.TopItems = topItems;
                 query.HasQueryLimit = false;
                 url = ApiClient.getUrl("Reports/Statistics", query);
+                break;
+            case "ReportActivities":
+                query.HasQueryLimit = true;
+                url = ApiClient.getUrl("Reports/Activities", query);
                 break;
         }
 
@@ -455,7 +470,7 @@
         $('#chkMissingEpisode', page).checked(query.IsMissing == true).checkboxradio('refresh');
         $('#chkFutureEpisode', page).checked(query.IsUnaired == true).checkboxradio('refresh');
 
-        $('#selectView').val(query.IncludeItemTypes).selectmenu('refresh');
+        $('#selectIncludeItemTypes').val(query.IncludeItemTypes).selectmenu('refresh');
     }
 
     var filtersLoaded;
@@ -482,10 +497,10 @@
 
         var page = this;
 
-        $('#selectView', page).on('change', function () {
+        $('#selectIncludeItemTypes', page).on('change', function () {
 
             query.StartIndex = 0;
-            SelectedReportView = $('#selectReportType', page).val();
+            query.ReportView = $('#selectViewType', page).val();
             query.IncludeItemTypes = this.value;
             query.SortOrder = "Ascending";
             query.ReportColumns = null;
@@ -498,13 +513,14 @@
 
         });
 
-        $('#selectReportType', page).on('change', function () {
+        $('#selectViewType', page).on('change', function () {
 
             query.StartIndex = 0;
-            query.IncludeItemTypes = $('#selectView', page).val();
-            SelectedReportView = this.value;
+            query.ReportView = this.value;
+            query.IncludeItemTypes = $('#selectIncludeItemTypes', page).val();
             query.SortOrder = "Ascending";
             filtersLoaded = false;
+            query.ReportColumns = null;
             loadGroupByFilters(page);
             reloadFiltersIfNeeded(page);
             reloadItems(page);
@@ -540,7 +556,6 @@
         });
 
         $('.viewPanel', page).on('panelopen', function () {
-
             reloadFiltersIfNeeded(page);
         });
 
@@ -789,7 +804,7 @@
 
 	    QueryReportFilters.onPageShow(page, query);
 	    QueryReportColumns.onPageShow(page, query);
-	    $('#selectView', page).val(query.IncludeItemTypes).selectmenu('refresh').trigger('change');
+	    $('#selectIncludeItemTypes', page).val(query.IncludeItemTypes).selectmenu('refresh').trigger('change');
 
 	    updateFilterControls(page);
 
@@ -974,7 +989,8 @@
 
             UserId: userId,
             ParentId: itemQuery.ParentId,
-            IncludeItemTypes: itemQuery.IncludeItemTypes
+            IncludeItemTypes: itemQuery.IncludeItemTypes,
+            ReportView: itemQuery.ReportView
 
 
         })).done(function (result) {
@@ -990,7 +1006,8 @@
         return ApiClient.getJSON(ApiClient.getUrl('Reports/Headers', {
 
             UserId: userId,
-            IncludeItemTypes: itemQuery.IncludeItemTypes
+            IncludeItemTypes: itemQuery.IncludeItemTypes,
+            ReportView: itemQuery.ReportView
 
         })).done(function (result) {
 

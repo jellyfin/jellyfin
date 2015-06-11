@@ -17,162 +17,89 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Reports
 {
-	/// <summary> A report builder. </summary>
-	/// <seealso cref="T:MediaBrowser.Api.Reports.ReportBuilderBase"/>
-	public class ReportBuilder : ReportBuilderBase
-	{
+    /// <summary> A report builder. </summary>
+    /// <seealso cref="T:MediaBrowser.Api.Reports.ReportBuilderBase"/>
+    public class ReportBuilder : ReportBuilderBase
+    {
 
-		/// <summary>
-		/// Initializes a new instance of the MediaBrowser.Api.Reports.ReportBuilder class. </summary>
-		/// <param name="libraryManager"> Manager for library. </param>
-		public ReportBuilder(ILibraryManager libraryManager)
-			: base(libraryManager)
-		{
-		}
+        #region [Constructors]
 
-		private Func<bool, string> GetBoolString = s => s == true ? "x" : "";
+        /// <summary>
+        /// Initializes a new instance of the MediaBrowser.Api.Reports.ReportBuilder class. </summary>
+        /// <param name="libraryManager"> Manager for library. </param>
+        public ReportBuilder(ILibraryManager libraryManager)
+            : base(libraryManager)
+        {
+        }
 
-		public ReportResult GetReportResult(BaseItem[] items, ReportViewType reportRowType, BaseReportRequest request)
-		{
-			List<HeaderMetadata> headersMetadata = this.GetFilteredReportHeaderMetadata(reportRowType, request);
+        #endregion
 
-			var headers = GetReportHeaders(reportRowType, headersMetadata);
-			var rows = GetReportRows(items, headersMetadata);
+        #region [Public Methods]
 
-			ReportResult result = new ReportResult { Headers = headers };
-			HeaderMetadata groupBy = ReportHelper.GetHeaderMetadataType(request.GroupBy);
-			int i = headers.FindIndex(x => x.FieldName == groupBy);
-			if (groupBy != HeaderMetadata.None && i > 0)
-			{
-				var rowsGroup = rows.SelectMany(x => x.Columns[i].Name.Split(';'), (x, g) => new { Genre = g.Trim(), Rows = x })
-					.GroupBy(x => x.Genre)
-					.OrderBy(x => x.Key)
-					.Select(x => new ReportGroup { Name = x.Key, Rows = x.Select(r => r.Rows).ToList() });
+        /// <summary> Gets report result. </summary>
+        /// <param name="items"> The items. </param>
+        /// <param name="request"> The request. </param>
+        /// <returns> The report result. </returns>
+        public ReportResult GetResult(BaseItem[] items, IReportsQuery request)
+        {
+            ReportIncludeItemTypes reportRowType = ReportHelper.GetRowType(request.IncludeItemTypes);
+            List<ReportOptions<BaseItem>> options = this.GetReportOptions<BaseItem>(request,
+                () => this.GetDefaultHeaderMetadata(reportRowType),
+                (hm) => this.GetOption(hm)).Where(x => x.Header.Visible == true).ToList();
 
-				result.Groups = rowsGroup.ToList();
-				result.IsGrouped = true;
-			}
-			else
-			{
-				result.Rows = rows;
-				result.IsGrouped = false;
-			}
+            var headers = GetHeaders<BaseItem>(options);
+            var rows = GetReportRows(items, options);
 
-			return result;
-		}
+            ReportResult result = new ReportResult { Headers = headers };
+            HeaderMetadata groupBy = ReportHelper.GetHeaderMetadataType(request.GroupBy);
+            int i = headers.FindIndex(x => x.FieldName == groupBy);
+            if (groupBy != HeaderMetadata.None && i >= 0)
+            {
+                var rowsGroup = rows.SelectMany(x => x.Columns[i].Name.Split(';'), (x, g) => new { Group = g.Trim(), Rows = x })
+                    .GroupBy(x => x.Group)
+                    .OrderBy(x => x.Key)
+                    .Select(x => new ReportGroup { Name = x.Key, Rows = x.Select(r => r.Rows).ToList() });
 
-		public List<ReportHeader> GetReportHeaders(ReportViewType reportRowType, BaseReportRequest request)
-		{
-			List<ReportHeader> headersMetadata = this.GetReportHeaders(reportRowType);
-			if (request != null && !string.IsNullOrEmpty(request.ReportColumns))
-			{
-				List<HeaderMetadata> headersMetadataFiltered = this.GetFilteredReportHeaderMetadata(reportRowType, request);
-				foreach (ReportHeader reportHeader in headersMetadata)
-				{
-					if (!headersMetadataFiltered.Contains(reportHeader.FieldName))
-					{
-						reportHeader.Visible = false;
-					}
-				}
+                result.Groups = rowsGroup.ToList();
+                result.IsGrouped = true;
+            }
+            else
+            {
+                result.Rows = rows;
+                result.IsGrouped = false;
+            }
 
+            return result;
+        }
 
-			}
+        #endregion
 
-			return headersMetadata;
-		}
+        #region [Protected Internal Methods]
 
-		public List<ReportHeader> GetReportHeaders(ReportViewType reportRowType, List<HeaderMetadata> headersMetadata = null)
-		{
-			if (headersMetadata == null)
-				headersMetadata = this.GetDefaultReportHeaderMetadata(reportRowType);
+        /// <summary> Gets the headers. </summary>
+        /// <typeparam name="H"> Type of the header. </typeparam>
+        /// <param name="request"> The request. </param>
+        /// <returns> The headers. </returns>
+        /// <seealso cref="M:MediaBrowser.Api.Reports.ReportBuilderBase.GetHeaders{H}(H)"/>
+        protected internal override List<ReportHeader> GetHeaders<H>(H request)
+        {
+            ReportIncludeItemTypes reportRowType = ReportHelper.GetRowType(request.IncludeItemTypes);
+            return this.GetHeaders<BaseItem>(request, () => this.GetDefaultHeaderMetadata(reportRowType), (hm) => this.GetOption(hm));
+        }
 
-			List<ReportOptions<BaseItem>> options = new List<ReportOptions<BaseItem>>();
-			foreach (HeaderMetadata header in headersMetadata)
-			{
-				options.Add(GetReportOption(header));
-			}
+        #endregion
 
+        #region [Private Methods]
 
-			List<ReportHeader> headers = new List<ReportHeader>();
-			foreach (ReportOptions<BaseItem> option in options)
-			{
-				headers.Add(option.Header);
-			}
-			return headers;
-		}
-
-		private List<ReportRow> GetReportRows(IEnumerable<BaseItem> items, List<HeaderMetadata> headersMetadata)
-		{
-			List<ReportOptions<BaseItem>> options = new List<ReportOptions<BaseItem>>();
-			foreach (HeaderMetadata header in headersMetadata)
-			{
-				options.Add(GetReportOption(header));
-			}
-
-			var rows = new List<ReportRow>();
-
-			foreach (BaseItem item in items)
-			{
-				ReportRow rRow = GetRow(item);
-				foreach (ReportOptions<BaseItem> option in options)
-				{
-					object itemColumn = option.Column != null ? option.Column(item, rRow) : "";
-					object itemId = option.ItemID != null ? option.ItemID(item) : "";
-					ReportItem rItem = new ReportItem
-					{
-						Name = ReportHelper.ConvertToString(itemColumn, option.Header.HeaderFieldType),
-						Id = ReportHelper.ConvertToString(itemId, ReportFieldType.Object)
-					};
-					rRow.Columns.Add(rItem);
-				}
-
-				rows.Add(rRow);
-			}
-
-			return rows;
-		}
-
-		/// <summary> Gets a row. </summary>
-		/// <param name="item"> The item. </param>
-		/// <returns> The row. </returns>
-		private ReportRow GetRow(BaseItem item)
-		{
-			var hasTrailers = item as IHasTrailers;
-			var hasSpecialFeatures = item as IHasSpecialFeatures;
-			var video = item as Video;
-			ReportRow rRow = new ReportRow
-			{
-				Id = item.Id.ToString("N"),
-				HasLockData = item.IsLocked,
-				IsUnidentified = item.IsUnidentified,
-				HasLocalTrailer = hasTrailers != null ? hasTrailers.GetTrailerIds().Count() > 0 : false,
-				HasImageTagsPrimary = (item.ImageInfos != null && item.ImageInfos.Count(n => n.Type == ImageType.Primary) > 0),
-				HasImageTagsBackdrop = (item.ImageInfos != null && item.ImageInfos.Count(n => n.Type == ImageType.Backdrop) > 0),
-				HasImageTagsLogo = (item.ImageInfos != null && item.ImageInfos.Count(n => n.Type == ImageType.Logo) > 0),
-				HasSpecials = hasSpecialFeatures != null ? hasSpecialFeatures.SpecialFeatureIds.Count > 0 : false,
-				HasSubtitles = video != null ? video.HasSubtitles : false,
-				RowType = ReportHelper.GetRowType(item.GetClientTypeName())
-			};
-			return rRow;
-		}
-		public List<HeaderMetadata> GetFilteredReportHeaderMetadata(ReportViewType reportRowType, BaseReportRequest request)
-		{
-			if (request != null && !string.IsNullOrEmpty(request.ReportColumns))
-			{
-				var s = request.ReportColumns.Split('|').Select(x => ReportHelper.GetHeaderMetadataType(x)).Where(x => x != HeaderMetadata.None);
-				return s.ToList();
-			}
-			else
-				return this.GetDefaultReportHeaderMetadata(reportRowType);
-
-		}
-
-		public List<HeaderMetadata> GetDefaultReportHeaderMetadata(ReportViewType reportRowType)
-		{
-			switch (reportRowType)
-			{
-				case ReportViewType.Season:
-					return new List<HeaderMetadata>
+        /// <summary> Gets default report header metadata. </summary>
+        /// <param name="reportIncludeItemTypes"> Type of the report row. </param>
+        /// <returns> The default report header metadata. </returns>
+        private List<HeaderMetadata> GetDefaultHeaderMetadata(ReportIncludeItemTypes reportIncludeItemTypes)
+        {
+            switch (reportIncludeItemTypes)
+            {
+                case ReportIncludeItemTypes.Season:
+                    return new List<HeaderMetadata>
 					{
 						HeaderMetadata.StatusImage,
 						HeaderMetadata.Series,
@@ -183,8 +110,8 @@ namespace MediaBrowser.Api.Reports
 						HeaderMetadata.Genres
 					};
 
-				case ReportViewType.Series:
-					return new List<HeaderMetadata>
+                case ReportIncludeItemTypes.Series:
+                    return new List<HeaderMetadata>
 					{
 						HeaderMetadata.StatusImage,
 						HeaderMetadata.Name,
@@ -199,8 +126,8 @@ namespace MediaBrowser.Api.Reports
 						HeaderMetadata.Specials
 					};
 
-				case ReportViewType.MusicAlbum:
-					return new List<HeaderMetadata>
+                case ReportIncludeItemTypes.MusicAlbum:
+                    return new List<HeaderMetadata>
 					{
 						HeaderMetadata.StatusImage,
 						HeaderMetadata.Name,
@@ -212,8 +139,8 @@ namespace MediaBrowser.Api.Reports
 						HeaderMetadata.Genres
 					};
 
-				case ReportViewType.MusicArtist:
-					return new List<HeaderMetadata>
+                case ReportIncludeItemTypes.MusicArtist:
+                    return new List<HeaderMetadata>
 					{
 						HeaderMetadata.StatusImage,
 						HeaderMetadata.MusicArtist,
@@ -223,8 +150,8 @@ namespace MediaBrowser.Api.Reports
 						HeaderMetadata.Genres
 					};
 
-				case ReportViewType.Game:
-					return new List<HeaderMetadata>
+                case ReportIncludeItemTypes.Game:
+                    return new List<HeaderMetadata>
 					{
 						HeaderMetadata.StatusImage,
 						HeaderMetadata.Name,
@@ -239,8 +166,8 @@ namespace MediaBrowser.Api.Reports
 						HeaderMetadata.Trailers
 					};
 
-				case ReportViewType.Movie:
-					return new List<HeaderMetadata>
+                case ReportIncludeItemTypes.Movie:
+                    return new List<HeaderMetadata>
 					{
 						HeaderMetadata.StatusImage,
 						HeaderMetadata.Name,
@@ -259,8 +186,8 @@ namespace MediaBrowser.Api.Reports
 						HeaderMetadata.Specials
 					};
 
-				case ReportViewType.Book:
-					return new List<HeaderMetadata>
+                case ReportIncludeItemTypes.Book:
+                    return new List<HeaderMetadata>
 					{
 						HeaderMetadata.StatusImage,
 						HeaderMetadata.Name,
@@ -272,8 +199,8 @@ namespace MediaBrowser.Api.Reports
 						HeaderMetadata.CommunityRating
 					};
 
-				case ReportViewType.BoxSet:
-					return new List<HeaderMetadata>
+                case ReportIncludeItemTypes.BoxSet:
+                    return new List<HeaderMetadata>
 					{
 						HeaderMetadata.StatusImage,
 						HeaderMetadata.Name,
@@ -286,8 +213,8 @@ namespace MediaBrowser.Api.Reports
 						HeaderMetadata.Trailers
 					};
 
-				case ReportViewType.Audio:
-					return new List<HeaderMetadata>
+                case ReportIncludeItemTypes.Audio:
+                    return new List<HeaderMetadata>
 					{
 						HeaderMetadata.StatusImage,
 						HeaderMetadata.Name,
@@ -305,8 +232,8 @@ namespace MediaBrowser.Api.Reports
 						HeaderMetadata.Audio
 					};
 
-				case ReportViewType.Episode:
-					return new List<HeaderMetadata>
+                case ReportIncludeItemTypes.Episode:
+                    return new List<HeaderMetadata>
 					{
 						HeaderMetadata.StatusImage,
 						HeaderMetadata.Name,
@@ -327,12 +254,12 @@ namespace MediaBrowser.Api.Reports
 						HeaderMetadata.Specials
 					};
 
-				case ReportViewType.Video:
-				case ReportViewType.MusicVideo:
-				case ReportViewType.Trailer:
-				case ReportViewType.BaseItem:
-				default:
-					return new List<HeaderMetadata>
+                case ReportIncludeItemTypes.Video:
+                case ReportIncludeItemTypes.MusicVideo:
+                case ReportIncludeItemTypes.Trailer:
+                case ReportIncludeItemTypes.BaseItem:
+                default:
+                    return new List<HeaderMetadata>
 					{
 						HeaderMetadata.StatusImage,
 						HeaderMetadata.Name,
@@ -351,239 +278,282 @@ namespace MediaBrowser.Api.Reports
 						HeaderMetadata.Specials
 					};
 
-			}
+            }
 
-		}
+        }
 
-		/// <summary> Gets report option. </summary>
-		/// <param name="header"> The header. </param>
-		/// <param name="sortField"> The sort field. </param>
-		/// <returns> The report option. </returns>
-		private ReportOptions<BaseItem> GetReportOption(HeaderMetadata header, string sortField = "")
-		{
-			ReportHeader reportHeader = new ReportHeader
-			{
-				HeaderFieldType = ReportFieldType.String,
-				SortField = sortField,
-				Type = "",
-				ItemViewType = ItemViewType.None
-			};
+        /// <summary> Gets report option. </summary>
+        /// <param name="header"> The header. </param>
+        /// <param name="sortField"> The sort field. </param>
+        /// <returns> The report option. </returns>
+        private ReportOptions<BaseItem> GetOption(HeaderMetadata header, string sortField = "")
+        {
+            HeaderMetadata internalHeader = header;
 
-			Func<BaseItem, ReportRow, object> column = null;
-			Func<BaseItem, object> itemId = null;
-			HeaderMetadata internalHeader = header;
+            ReportOptions<BaseItem> option = new ReportOptions<BaseItem>()
+            {
+                Header = new ReportHeader
+                {
+                    HeaderFieldType = ReportFieldType.String,
+                    SortField = sortField,
+                    Type = "",
+                    ItemViewType = ItemViewType.None
+                }
+            };
 
-			switch (header)
-			{
-				case HeaderMetadata.StatusImage:
-					reportHeader.ItemViewType = ItemViewType.StatusImage;
-					internalHeader = HeaderMetadata.Status;
-					reportHeader.CanGroup = false;
-					break;
+            switch (header)
+            {
+                case HeaderMetadata.StatusImage:
+                    option.Header.ItemViewType = ItemViewType.StatusImage;
+                    internalHeader = HeaderMetadata.Status;
+                    option.Header.CanGroup = false;
+                    break;
 
-				case HeaderMetadata.Name:
-					column = (i, r) => i.Name;
-					reportHeader.ItemViewType = ItemViewType.Detail;
-					reportHeader.SortField = "SortName";
-					break;
+                case HeaderMetadata.Name:
+                    option.Column = (i, r) => i.Name;
+                    option.Header.ItemViewType = ItemViewType.Detail;
+                    option.Header.SortField = "SortName";
+                    break;
 
-				case HeaderMetadata.DateAdded:
-					column = (i, r) => i.DateCreated;
-					reportHeader.SortField = "DateCreated,SortName";
-					reportHeader.HeaderFieldType = ReportFieldType.DateTime;
-					reportHeader.Type = "";
-					break;
+                case HeaderMetadata.DateAdded:
+                    option.Column = (i, r) => i.DateCreated;
+                    option.Header.SortField = "DateCreated,SortName";
+                    option.Header.HeaderFieldType = ReportFieldType.DateTime;
+                    option.Header.Type = "";
+                    break;
 
-				case HeaderMetadata.PremiereDate:
-				case HeaderMetadata.ReleaseDate:
-					column = (i, r) => i.PremiereDate;
-					reportHeader.HeaderFieldType = ReportFieldType.DateTime;
-					reportHeader.SortField = "ProductionYear,PremiereDate,SortName";
-					break;
+                case HeaderMetadata.PremiereDate:
+                case HeaderMetadata.ReleaseDate:
+                    option.Column = (i, r) => i.PremiereDate;
+                    option.Header.HeaderFieldType = ReportFieldType.DateTime;
+                    option.Header.SortField = "ProductionYear,PremiereDate,SortName";
+                    break;
 
-				case HeaderMetadata.Runtime:
-					column = (i, r) => this.GetRuntimeDateTime(i.RunTimeTicks);
-					reportHeader.HeaderFieldType = ReportFieldType.Minutes;
-					reportHeader.SortField = "Runtime,SortName";
-					break;
+                case HeaderMetadata.Runtime:
+                    option.Column = (i, r) => this.GetRuntimeDateTime(i.RunTimeTicks);
+                    option.Header.HeaderFieldType = ReportFieldType.Minutes;
+                    option.Header.SortField = "Runtime,SortName";
+                    break;
 
-				case HeaderMetadata.PlayCount:
-					reportHeader.HeaderFieldType = ReportFieldType.Int;
-					break;
+                case HeaderMetadata.PlayCount:
+                    option.Header.HeaderFieldType = ReportFieldType.Int;
+                    break;
 
-				case HeaderMetadata.Season:
-					column = (i, r) => this.GetEpisode(i);
-					reportHeader.ItemViewType = ItemViewType.Detail;
-					reportHeader.SortField = "SortName";
-					break;
+                case HeaderMetadata.Season:
+                    option.Column = (i, r) => this.GetEpisode(i);
+                    option.Header.ItemViewType = ItemViewType.Detail;
+                    option.Header.SortField = "SortName";
+                    break;
 
-				case HeaderMetadata.SeasonNumber:
-					column = (i, r) => this.GetObject<Season, string>(i, (x) => x.IndexNumber == null ? "" : x.IndexNumber.ToString());
-					reportHeader.SortField = "IndexNumber";
-					reportHeader.HeaderFieldType = ReportFieldType.Int;
-					break;
+                case HeaderMetadata.SeasonNumber:
+                    option.Column = (i, r) => this.GetObject<Season, string>(i, (x) => x.IndexNumber == null ? "" : x.IndexNumber.ToString());
+                    option.Header.SortField = "IndexNumber";
+                    option.Header.HeaderFieldType = ReportFieldType.Int;
+                    break;
 
-				case HeaderMetadata.Series:
-					column = (i, r) => this.GetObject<IHasSeries, string>(i, (x) => x.SeriesName);
-					reportHeader.ItemViewType = ItemViewType.Detail;
-					reportHeader.SortField = "SeriesSortName,SortName";
-					break;
+                case HeaderMetadata.Series:
+                    option.Column = (i, r) => this.GetObject<IHasSeries, string>(i, (x) => x.SeriesName);
+                    option.Header.ItemViewType = ItemViewType.Detail;
+                    option.Header.SortField = "SeriesSortName,SortName";
+                    break;
 
-				case HeaderMetadata.EpisodeSeries:
-					column = (i, r) => this.GetObject<IHasSeries, string>(i, (x) => x.SeriesName);
-					reportHeader.ItemViewType = ItemViewType.Detail;
-					itemId = (i) =>
-					{
-						Series series = this.GetObject<Episode, Series>(i, (x) => x.Series);
-						if (series == null)
-							return string.Empty;
-						return series.Id;
-					};
-					reportHeader.SortField = "SeriesSortName,SortName";
-					internalHeader = HeaderMetadata.Series;
-					break;
+                case HeaderMetadata.EpisodeSeries:
+                    option.Column = (i, r) => this.GetObject<IHasSeries, string>(i, (x) => x.SeriesName);
+                    option.Header.ItemViewType = ItemViewType.Detail;
+                    option.ItemID = (i) =>
+                    {
+                        Series series = this.GetObject<Episode, Series>(i, (x) => x.Series);
+                        if (series == null)
+                            return string.Empty;
+                        return series.Id;
+                    };
+                    option.Header.SortField = "SeriesSortName,SortName";
+                    internalHeader = HeaderMetadata.Series;
+                    break;
 
-				case HeaderMetadata.EpisodeSeason:
-					column = (i, r) => this.GetObject<IHasSeries, string>(i, (x) => x.SeriesName);
-					reportHeader.ItemViewType = ItemViewType.Detail;
-					itemId = (i) =>
-					{
-						Season season = this.GetObject<Episode, Season>(i, (x) => x.Season);
-						if (season == null)
-							return string.Empty;
-						return season.Id;
-					};
-					reportHeader.SortField = "SortName";
-					internalHeader = HeaderMetadata.Season;
-					break;
+                case HeaderMetadata.EpisodeSeason:
+                    option.Column = (i, r) => this.GetObject<IHasSeries, string>(i, (x) => x.SeriesName);
+                    option.Header.ItemViewType = ItemViewType.Detail;
+                    option.ItemID = (i) =>
+                    {
+                        Season season = this.GetObject<Episode, Season>(i, (x) => x.Season);
+                        if (season == null)
+                            return string.Empty;
+                        return season.Id;
+                    };
+                    option.Header.SortField = "SortName";
+                    internalHeader = HeaderMetadata.Season;
+                    break;
 
-				case HeaderMetadata.Network:
-					column = (i, r) => this.GetListAsString(i.Studios);
-					itemId = (i) => this.GetStudioID(i.Studios.FirstOrDefault());
-					reportHeader.ItemViewType = ItemViewType.ItemByNameDetails;
-					reportHeader.SortField = "Studio,SortName";
-					break;
+                case HeaderMetadata.Network:
+                    option.Column = (i, r) => this.GetListAsString(i.Studios);
+                    option.ItemID = (i) => this.GetStudioID(i.Studios.FirstOrDefault());
+                    option.Header.ItemViewType = ItemViewType.ItemByNameDetails;
+                    option.Header.SortField = "Studio,SortName";
+                    break;
 
-				case HeaderMetadata.Year:
-					column = (i, r) => this.GetSeriesProductionYear(i);
-					reportHeader.SortField = "ProductionYear,PremiereDate,SortName";
-					break;
+                case HeaderMetadata.Year:
+                    option.Column = (i, r) => this.GetSeriesProductionYear(i);
+                    option.Header.SortField = "ProductionYear,PremiereDate,SortName";
+                    break;
 
-				case HeaderMetadata.ParentalRating:
-					column = (i, r) => i.OfficialRating;
-					reportHeader.SortField = "OfficialRating,SortName";
-					break;
+                case HeaderMetadata.ParentalRating:
+                    option.Column = (i, r) => i.OfficialRating;
+                    option.Header.SortField = "OfficialRating,SortName";
+                    break;
 
-				case HeaderMetadata.CommunityRating:
-					column = (i, r) => i.CommunityRating;
-					reportHeader.SortField = "CommunityRating,SortName";
-					break;
+                case HeaderMetadata.CommunityRating:
+                    option.Column = (i, r) => i.CommunityRating;
+                    option.Header.SortField = "CommunityRating,SortName";
+                    break;
 
-				case HeaderMetadata.Trailers:
-					column = (i, r) => this.GetBoolString(r.HasLocalTrailer);
-					reportHeader.ItemViewType = ItemViewType.TrailersImage;
-					break;
+                case HeaderMetadata.Trailers:
+                    option.Column = (i, r) => this.GetBoolString(r.HasLocalTrailer);
+                    option.Header.ItemViewType = ItemViewType.TrailersImage;
+                    break;
 
-				case HeaderMetadata.Specials:
-					column = (i, r) => this.GetBoolString(r.HasSpecials);
-					reportHeader.ItemViewType = ItemViewType.SpecialsImage;
-					break;
+                case HeaderMetadata.Specials:
+                    option.Column = (i, r) => this.GetBoolString(r.HasSpecials);
+                    option.Header.ItemViewType = ItemViewType.SpecialsImage;
+                    break;
 
-				case HeaderMetadata.GameSystem:
-					column = (i, r) => this.GetObject<Game, string>(i, (x) => x.GameSystem);
-					reportHeader.SortField = "GameSystem,SortName";
-					break;
+                case HeaderMetadata.GameSystem:
+                    option.Column = (i, r) => this.GetObject<Game, string>(i, (x) => x.GameSystem);
+                    option.Header.SortField = "GameSystem,SortName";
+                    break;
 
-				case HeaderMetadata.Players:
-					column = (i, r) => this.GetObject<Game, int?>(i, (x) => x.PlayersSupported);
-					reportHeader.SortField = "Players,GameSystem,SortName";
-					break;
+                case HeaderMetadata.Players:
+                    option.Column = (i, r) => this.GetObject<Game, int?>(i, (x) => x.PlayersSupported);
+                    option.Header.SortField = "Players,GameSystem,SortName";
+                    break;
 
-				case HeaderMetadata.AlbumArtist:
-					column = (i, r) => this.GetObject<MusicAlbum, string>(i, (x) => x.AlbumArtist);
-					itemId = (i) => this.GetPersonID(this.GetObject<MusicAlbum, string>(i, (x) => x.AlbumArtist));
-					reportHeader.ItemViewType = ItemViewType.Detail;
-					reportHeader.SortField = "AlbumArtist,Album,SortName";
+                case HeaderMetadata.AlbumArtist:
+                    option.Column = (i, r) => this.GetObject<MusicAlbum, string>(i, (x) => x.AlbumArtist);
+                    option.ItemID = (i) => this.GetPersonID(this.GetObject<MusicAlbum, string>(i, (x) => x.AlbumArtist));
+                    option.Header.ItemViewType = ItemViewType.Detail;
+                    option.Header.SortField = "AlbumArtist,Album,SortName";
 
-					break;
-				case HeaderMetadata.MusicArtist:
-					column = (i, r) => this.GetObject<MusicArtist, string>(i, (x) => x.GetLookupInfo().Name);
-					reportHeader.ItemViewType = ItemViewType.Detail;
-					reportHeader.SortField = "AlbumArtist,Album,SortName";
-					internalHeader = HeaderMetadata.AlbumArtist;
-					break;
-				case HeaderMetadata.AudioAlbumArtist:
-					column = (i, r) => this.GetListAsString(this.GetObject<Audio, List<string>>(i, (x) => x.AlbumArtists));
-					reportHeader.SortField = "AlbumArtist,Album,SortName";
-					internalHeader = HeaderMetadata.AlbumArtist;
-					break;
+                    break;
+                case HeaderMetadata.MusicArtist:
+                    option.Column = (i, r) => this.GetObject<MusicArtist, string>(i, (x) => x.GetLookupInfo().Name);
+                    option.Header.ItemViewType = ItemViewType.Detail;
+                    option.Header.SortField = "AlbumArtist,Album,SortName";
+                    internalHeader = HeaderMetadata.AlbumArtist;
+                    break;
+                case HeaderMetadata.AudioAlbumArtist:
+                    option.Column = (i, r) => this.GetListAsString(this.GetObject<Audio, List<string>>(i, (x) => x.AlbumArtists));
+                    option.Header.SortField = "AlbumArtist,Album,SortName";
+                    internalHeader = HeaderMetadata.AlbumArtist;
+                    break;
 
-				case HeaderMetadata.AudioAlbum:
-					column = (i, r) => this.GetObject<Audio, string>(i, (x) => x.Album);
-					reportHeader.SortField = "Album,SortName";
-					internalHeader = HeaderMetadata.Album;
-					break;
+                case HeaderMetadata.AudioAlbum:
+                    option.Column = (i, r) => this.GetObject<Audio, string>(i, (x) => x.Album);
+                    option.Header.SortField = "Album,SortName";
+                    internalHeader = HeaderMetadata.Album;
+                    break;
 
-				case HeaderMetadata.Countries:
-					column = (i, r) => this.GetListAsString(this.GetObject<IHasProductionLocations, List<string>>(i, (x) => x.ProductionLocations));
-					break;
+                case HeaderMetadata.Countries:
+                    option.Column = (i, r) => this.GetListAsString(this.GetObject<IHasProductionLocations, List<string>>(i, (x) => x.ProductionLocations));
+                    break;
 
-				case HeaderMetadata.Disc:
-					column = (i, r) => i.ParentIndexNumber;
-					break;
+                case HeaderMetadata.Disc:
+                    option.Column = (i, r) => i.ParentIndexNumber;
+                    break;
 
-				case HeaderMetadata.Track:
-					column = (i, r) => i.IndexNumber;
-					break;
+                case HeaderMetadata.Track:
+                    option.Column = (i, r) => i.IndexNumber;
+                    break;
 
-				case HeaderMetadata.Tracks:
-					column = (i, r) => this.GetObject<MusicAlbum, List<Audio>>(i, (x) => x.Tracks.ToList(), new List<Audio>()).Count();
-					break;
+                case HeaderMetadata.Tracks:
+                    option.Column = (i, r) => this.GetObject<MusicAlbum, List<Audio>>(i, (x) => x.Tracks.ToList(), new List<Audio>()).Count();
+                    break;
 
-				case HeaderMetadata.Audio:
-					column = (i, r) => this.GetAudioStream(i);
-					break;
+                case HeaderMetadata.Audio:
+                    option.Column = (i, r) => this.GetAudioStream(i);
+                    break;
 
-				case HeaderMetadata.EmbeddedImage:
-					break;
+                case HeaderMetadata.EmbeddedImage:
+                    break;
 
-				case HeaderMetadata.Video:
-					column = (i, r) => this.GetVideoStream(i);
-					break;
+                case HeaderMetadata.Video:
+                    option.Column = (i, r) => this.GetVideoStream(i);
+                    break;
 
-				case HeaderMetadata.Resolution:
-					column = (i, r) => this.GetVideoResolution(i);
-					break;
+                case HeaderMetadata.Resolution:
+                    option.Column = (i, r) => this.GetVideoResolution(i);
+                    break;
 
-				case HeaderMetadata.Subtitles:
-					column = (i, r) => this.GetBoolString(r.HasSubtitles);
-					reportHeader.ItemViewType = ItemViewType.SubtitleImage;
-					break;
+                case HeaderMetadata.Subtitles:
+                    option.Column = (i, r) => this.GetBoolString(r.HasSubtitles);
+                    option.Header.ItemViewType = ItemViewType.SubtitleImage;
+                    break;
 
-				case HeaderMetadata.Genres:
-					column = (i, r) => this.GetListAsString(i.Genres);
-					break;
+                case HeaderMetadata.Genres:
+                    option.Column = (i, r) => this.GetListAsString(i.Genres);
+                    break;
 
-			}
+            }
 
-			string headerName = "";
-			if (internalHeader != HeaderMetadata.None)
-			{
-				string localHeader = "Header" + internalHeader.ToString();
-				headerName = internalHeader != HeaderMetadata.None ? ReportHelper.GetJavaScriptLocalizedString(localHeader) : "";
-				if (string.Compare(localHeader, headerName, StringComparison.CurrentCultureIgnoreCase) == 0)
-					headerName = ReportHelper.GetServerLocalizedString(localHeader);
-			}
+            option.Header.Name = GetLocalizedHeader(internalHeader);
+            option.Header.FieldName = header;
 
-			reportHeader.Name = headerName;
-			reportHeader.FieldName = header;
-			ReportOptions<BaseItem> option = new ReportOptions<BaseItem>()
-			{
-				Header = reportHeader,
-				Column = column,
-				ItemID = itemId
-			};
-			return option;
-		}
-	}
+            return option;
+        }
+
+        /// <summary> Gets report rows. </summary>
+        /// <param name="items"> The items. </param>
+        /// <param name="options"> Options for controlling the operation. </param>
+        /// <returns> The report rows. </returns>
+        private List<ReportRow> GetReportRows(IEnumerable<BaseItem> items, List<ReportOptions<BaseItem>> options)
+        {
+            var rows = new List<ReportRow>();
+
+            foreach (BaseItem item in items)
+            {
+                ReportRow rRow = GetRow(item);
+                foreach (ReportOptions<BaseItem> option in options)
+                {
+                    object itemColumn = option.Column != null ? option.Column(item, rRow) : "";
+                    object itemId = option.ItemID != null ? option.ItemID(item) : "";
+                    ReportItem rItem = new ReportItem
+                    {
+                        Name = ReportHelper.ConvertToString(itemColumn, option.Header.HeaderFieldType),
+                        Id = ReportHelper.ConvertToString(itemId, ReportFieldType.Object)
+                    };
+                    rRow.Columns.Add(rItem);
+                }
+
+                rows.Add(rRow);
+            }
+
+            return rows;
+        }
+
+        /// <summary> Gets a row. </summary>
+        /// <param name="item"> The item. </param>
+        /// <returns> The row. </returns>
+        private ReportRow GetRow(BaseItem item)
+        {
+            var hasTrailers = item as IHasTrailers;
+            var hasSpecialFeatures = item as IHasSpecialFeatures;
+            var video = item as Video;
+            ReportRow rRow = new ReportRow
+            {
+                Id = item.Id.ToString("N"),
+                HasLockData = item.IsLocked,
+                IsUnidentified = item.IsUnidentified,
+                HasLocalTrailer = hasTrailers != null ? hasTrailers.GetTrailerIds().Count() > 0 : false,
+                HasImageTagsPrimary = (item.ImageInfos != null && item.ImageInfos.Count(n => n.Type == ImageType.Primary) > 0),
+                HasImageTagsBackdrop = (item.ImageInfos != null && item.ImageInfos.Count(n => n.Type == ImageType.Backdrop) > 0),
+                HasImageTagsLogo = (item.ImageInfos != null && item.ImageInfos.Count(n => n.Type == ImageType.Logo) > 0),
+                HasSpecials = hasSpecialFeatures != null ? hasSpecialFeatures.SpecialFeatureIds.Count > 0 : false,
+                HasSubtitles = video != null ? video.HasSubtitles : false,
+                RowType = ReportHelper.GetRowType(item.GetClientTypeName())
+            };
+            return rRow;
+        }
+
+        #endregion
+
+    }
 }

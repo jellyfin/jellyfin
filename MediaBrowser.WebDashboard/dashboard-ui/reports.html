@@ -10,13 +10,14 @@
                 <div class="viewControls">
                     <span style="margin-right: 10px; vertical-align: middle;">${LabelReport}</span>
                     <div style="display: inline-block;">
-                        <select data-mini="true" data-inline="true" id="selectReportType">
+                        <select data-mini="true" data-inline="true" id="selectViewType">
                             <option value="ReportData">${OptionReportList}</option>
-                            <option value="ReportStatistic">${OptionReportStatistics}</option>
+                            <option value="ReportStatistics">${OptionReportStatistics}</option>
+                            <option value="ReportActivities">${OptionReportActivities}</option>
                         </select>
                     </div>
-                    <div style="display: inline-block;">
-                        <select data-mini="true" data-inline="true" id="selectView" name="selectView">
+                    <div style="display: inline-block;" id="selectIncludeItemTypesBox">
+                        <select data-mini="true" data-inline="true" id="selectIncludeItemTypes" name="selectIncludeItemTypes">
                             <option value="MusicAlbum">${OptionReportAlbums}</option>
                             <option value="MusicArtist">${OptionReportArtists}</option>
                             <option value="Book">${OptionReportBooks}</option>
@@ -88,7 +89,7 @@
                         </div>
                     </div>
 
-                    <div class="tabFilter viewTab">
+                    <div class="tabFilter viewTab" id="tabFilterBox" style="display: none;">
                         <fieldset data-role="controlgroup">
                             <legend>
                                 ${HeaderFilters}

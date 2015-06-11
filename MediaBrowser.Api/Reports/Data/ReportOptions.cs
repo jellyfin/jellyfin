@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Reports
 {
+
 	/// <summary> A report options. </summary>
-	internal class ReportOptions<I>
+	public class ReportOptions<I>
 	{
 		/// <summary> Initializes a new instance of the ReportOptions class. </summary>
 		public ReportOptions()
