@@ -96,9 +96,6 @@
     <Content Include="dashboard-ui\css\images\empty.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\css\images\kids\bg.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="dashboard-ui\css\images\logo536.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -171,19 +168,10 @@
     <Content Include="dashboard-ui\thirdparty\velocity.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\webcomponentsjs\CustomElements.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="dashboard-ui\thirdparty\webcomponentsjs\CustomElements.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\webcomponentsjs\HTMLImports.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="dashboard-ui\thirdparty\webcomponentsjs\HTMLImports.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\webcomponentsjs\MutationObserver.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\webcomponentsjs\MutationObserver.min.js">
@@ -405,9 +393,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\css\images\clients\chrome_companion.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\css\images\clients\mediaportal.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\css\images\clients\nuvue.png">
@@ -681,9 +666,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\collections.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\css\images\clients\mbkinect.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\css\images\editor\lock.png">
@@ -1730,25 +1712,7 @@
     <Content Include="dashboard-ui\thirdparty\apiclient\md5.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree3.0.8\jstree.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="dashboard-ui\thirdparty\jstree3.0.8\jstree.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\32px.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\40px.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\style.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\style.min.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree3.0.8\themes\default-dark\throbber.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\jstree3.0.8\themes\default\32px.png">
@@ -1781,9 +1745,6 @@
     <Content Include="dashboard-ui\thirdparty\requirecss.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\swipebox-master\css\swipebox.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="dashboard-ui\thirdparty\swipebox-master\css\swipebox.min.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -1794,9 +1755,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\swipebox-master\img\loader.gif">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\swipebox-master\js\jquery.swipebox.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\swipebox-master\js\jquery.swipebox.min.js">
