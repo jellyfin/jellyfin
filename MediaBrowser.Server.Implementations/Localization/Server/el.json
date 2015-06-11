@@ -86,7 +86,7 @@
     "OptionDetectArchiveFilesAsMedia": "\u0391\u03bd\u03b1\u03b3\u03bd\u03ce\u03c1\u03b9\u03c3\u03b5 \u03a3\u03c5\u03bc\u03c0\u03b9\u03b5\u03c3\u03bc\u03ad\u03bd\u03b1 \u03b1\u03c1\u03c7\u03b5\u03af\u03b1 \u03c9\u03c2 \u03c0\u03bf\u03bb\u03c5\u03bc\u03ad\u03c3\u03b1.",
     "OptionDetectArchiveFilesAsMediaHelp": "\u0391\u03c1\u03c7\u03b5\u03af\u03b1 \u03bc\u03b5 .rar \u03ba\u03b1\u03b9 .zip \u03ba\u03b1\u03c4\u03b1\u03bb\u03ae\u03be\u03b5\u03b9\u03c2 \u03b8\u03b1 \u03b1\u03bd\u03b1\u03b3\u03bd\u03c9\u03c1\u03af\u03b6\u03bf\u03bd\u03c4\u03b1\u03b9 \u03c9\u03c2 \u03b1\u03c1\u03c7\u03b5\u03af\u03b1 \u03c0\u03bf\u03bb\u03c5\u03bc\u03ad\u03c3\u03c9\u03bd.",
     "LabelEnterConnectUserName": "\u038c\u03bd\u03bf\u03bc\u03b1 \u03a7\u03c1\u03ae\u03c3\u03c4\u03b7 \u03ae email:",
-    "LabelEnterConnectUserNameHelp": "This is your Emby online account user name or password.",
+    "LabelEnterConnectUserNameHelp": "This is your Emby online account username or password.",
     "LabelEnableEnhancedMovies": "Enable enhanced movie displays",
     "LabelEnableEnhancedMoviesHelp": "When enabled, movies will be displayed as folders to include trailers, extras, cast & crew, and other related content.",
     "HeaderSyncJobInfo": "\u0395\u03c1\u03b3\u03b1\u03c3\u03af\u03b1 \u03a3\u03c5\u03b3\u03c7\u03c1\u03bf\u03bd\u03b9\u03c3\u03bc\u03bf\u03cd",
@@ -1436,5 +1436,8 @@
     "HeaderColumns": "Columns",
     "ButtonReset": "Reset",
     "OptionEnableExternalVideoPlayers": "Enable external video players",
-    "ButtonUnlockGuide": "Unlock Guide"
+    "ButtonUnlockGuide": "Unlock Guide",
+    "LabelEnableFullScreen": "Enable fullscreen mode",
+    "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
+    "LabelSyncPath": "Synced content path:"
 }

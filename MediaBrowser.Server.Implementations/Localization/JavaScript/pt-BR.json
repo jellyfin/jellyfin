@@ -776,6 +776,7 @@
     "ButtonUnlockWithSupporter": "Entre com a Conta de Colaborador do Emby",
     "MessagePleaseSignInLocalNetwork": "Antes de continuar, por favor assegure-se que esteja conectado \u00e0 sua rede local usando Wifi ou uma conex\u00e3o de rede.",
     "ButtonUnlockWithPurchase": "Desbloquear com Compra",
+    "ButtonUnlockPrice": "Unlock {0}",
     "MessageLiveTvGuideRequiresUnlock": "O Guia de TV ao Vivo est\u00e1 atualmente limitado a {0} canais. Clique no bot\u00e3o desbloquear para saber como aproveitar a experi\u00eancia completa.",
     "OptionEnableFullscreen": "Ativar Tela Cheia",
     "ButtonServer": "Servidor",
@@ -783,5 +784,15 @@
     "HeaderLibrary": "Biblioteca",
     "HeaderMedia": "M\u00eddia",
     "ButtonInbox": "Caixa de Entrada",
-    "HeaderAdvanced": "Avan\u00e7ado"
+    "HeaderAdvanced": "Avan\u00e7ado",
+    "HeaderSaySomethingLike": "Say Something Like...",
+    "ButtonTryAgain": "Try Again",
+    "HeaderYouSaid": "You Said...",
+    "MessageWeDidntRecognizeCommand": "We're sorry, we didn't recognize that command.",
+    "MessageIfYouBlockedVoice": "If you denied voice access to the app you'll need to reconfigure before trying again.",
+    "MessageNoItemsFound": "No items found.",
+    "ButtonManageServer": "Manage Server",
+    "ButtonPreferences": "Preferences",
+    "ButtonViewArtist": "View artist",
+    "ButtonViewAlbum": "View album"
 }

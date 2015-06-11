@@ -85,8 +85,8 @@
     "ButtonDonateWithPayPal": "Doner via PayPal",
     "OptionDetectArchiveFilesAsMedia": "Opfat arkiver som medier",
     "OptionDetectArchiveFilesAsMediaHelp": "Aktiver dette for at f\u00e5 filer med .zip og .rar endelser genkendt dom medier.",
-    "LabelEnterConnectUserName": "Brugernavn eller e-mail:",
-    "LabelEnterConnectUserNameHelp": "Dette er dit Emby online brugernavn eller angangskode.",
+    "LabelEnterConnectUserName": "Username or email:",
+    "LabelEnterConnectUserNameHelp": "This is your Emby online account username or password.",
     "LabelEnableEnhancedMovies": "Aktiver udvidede filmvisninger",
     "LabelEnableEnhancedMoviesHelp": "Aktiver dette for at f\u00e5 vist film som mapper med trailere, medvirkende og andet relateret inhold.",
     "HeaderSyncJobInfo": "Sync Job",
@@ -1436,5 +1436,8 @@
     "HeaderColumns": "S\u00f8jler",
     "ButtonReset": "Reset",
     "OptionEnableExternalVideoPlayers": "Aktiver eksterne afspillere",
-    "ButtonUnlockGuide": "Opl\u00e5s guide"
+    "ButtonUnlockGuide": "Opl\u00e5s guide",
+    "LabelEnableFullScreen": "Enable fullscreen mode",
+    "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
+    "LabelSyncPath": "Synced content path:"
 }

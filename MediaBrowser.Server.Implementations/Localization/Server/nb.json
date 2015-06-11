@@ -1436,5 +1436,8 @@
     "HeaderColumns": "Kolonner",
     "ButtonReset": "Resett",
     "OptionEnableExternalVideoPlayers": "Aktiver eksterne videoavspillere",
-    "ButtonUnlockGuide": "Unlock Guide"
+    "ButtonUnlockGuide": "Unlock Guide",
+    "LabelEnableFullScreen": "Enable fullscreen mode",
+    "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
+    "LabelSyncPath": "Synced content path:"
 }
