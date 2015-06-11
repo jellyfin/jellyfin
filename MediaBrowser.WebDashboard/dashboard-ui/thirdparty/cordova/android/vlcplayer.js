@@ -131,10 +131,10 @@
         self.report = function (eventName, duration, position, isPaused, volume) {
 
             var state = playerState;
-            console.log('Vlc: ' + eventName + ' - ' + position + ' - ' + duration);
+
             state.duration = duration;
             state.currentTime = position;
-            state.isPaused = isPaused;
+            state.paused = isPaused;
             state.volume = (volume || 0) / 100;
 
             if (eventName == 'playbackstop') {

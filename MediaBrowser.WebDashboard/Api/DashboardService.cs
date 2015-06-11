@@ -301,7 +301,11 @@ namespace MediaBrowser.WebDashboard.Api
                 File.Copy(cordovaVersion, Path.Combine(path, "scripts", "registrationservices.js"), true);
                 File.Delete(cordovaVersion);
 
+                // Delete things that are unneeded in an attempt to keep the output as trim as possible
                 Directory.Delete(Path.Combine(path, "css", "images", "tour"), true);
+                Directory.Delete(Path.Combine(path, "thirdparty", "apiclient", "alt"), true);
+
+                File.Delete(Path.Combine(path, "thirdparty", "jquerymobile-1.4.5", "jquery.mobile-1.4.5.min.map"));
             }
 
             await DumpHtml(creator.DashboardUIPath, path, mode, culture, appVersion);

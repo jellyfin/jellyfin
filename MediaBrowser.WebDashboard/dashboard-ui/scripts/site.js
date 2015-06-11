@@ -1646,6 +1646,12 @@ var AppInfo = {};
         AppInfo.enableBackButton = (isIOS && window.navigator.standalone) || (isCordova && isIOS);
         AppInfo.supportsFullScreen = isCordova && isAndroid;
         AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
+
+        if (isCordova && isAndroid) {
+            AppInfo.directPlayAudioContainers = ['aac', 'mp3', 'ogg', 'flac', 'wma', 'm4a', 'oga'];
+        } else {
+            AppInfo.directPlayAudioContainers = [];
+        }
     }
 
     function initializeApiClient(apiClient) {

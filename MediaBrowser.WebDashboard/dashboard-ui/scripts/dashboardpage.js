@@ -682,10 +682,6 @@
 
             return "<img src='css/images/clients/dlna.png' />";
         }
-        if (clientLowered == "mbkinect") {
-
-            return "<img src='css/images/clients/mbkinect.png' />";
-        }
         if (clientLowered == "kodi" || clientLowered == "xbmc") {
             return "<img src='css/images/clients/kodi.png' />";
         }
