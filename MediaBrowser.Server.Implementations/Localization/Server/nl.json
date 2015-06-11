@@ -85,8 +85,8 @@
     "ButtonDonateWithPayPal": "Doneer met PayPal",
     "OptionDetectArchiveFilesAsMedia": "Herken archief bestanden als media",
     "OptionDetectArchiveFilesAsMediaHelp": "Indien ingeschakeld zullen bestanden met .rar en .zip extensies herkend worden als media bestanden.",
-    "LabelEnterConnectUserName": "Gebruikersnaam of e-mail:",
-    "LabelEnterConnectUserNameHelp": "Dit is uw Emby online account gebruikersnaam en wachtwoord.",
+    "LabelEnterConnectUserName": "Username or email:",
+    "LabelEnterConnectUserNameHelp": "This is your Emby online account username or password.",
     "LabelEnableEnhancedMovies": "Verbeterde film displays inschakelen",
     "LabelEnableEnhancedMoviesHelp": "Wanneer ingeschakeld, zullen films worden weergegeven als mappen inclusief trailers, extra's, cast & crew en andere gerelateerde inhoud.",
     "HeaderSyncJobInfo": "Sync Opdrachten",
@@ -1436,5 +1436,8 @@
     "HeaderColumns": "Kolommen",
     "ButtonReset": "Rest",
     "OptionEnableExternalVideoPlayers": "Inschakelen van externe video-spelers",
-    "ButtonUnlockGuide": "Gids vrijgeven"
+    "ButtonUnlockGuide": "Gids vrijgeven",
+    "LabelEnableFullScreen": "Enable fullscreen mode",
+    "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
+    "LabelSyncPath": "Synced content path:"
 }

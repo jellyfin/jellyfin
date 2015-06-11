@@ -776,6 +776,7 @@
     "ButtonUnlockWithSupporter": "Connectez-vous avec votre compte de supporteur Emby.",
     "MessagePleaseSignInLocalNetwork": "Avant de continuer, veuillez vous assurer que vous \u00eates connect\u00e9s sur votre r\u00e9seau local en Wifi ou LAN.",
     "ButtonUnlockWithPurchase": "D\u00e9verrouillez par un achat.",
+    "ButtonUnlockPrice": "D\u00e9verrouiller {0}",
     "MessageLiveTvGuideRequiresUnlock": "Le Guide TV en direct est actuellement limit\u00e9 \u00e0 {0} cha\u00eenes. Cliquez sur le bouton d\u00e9verrouiller pour d\u00e9couvrir comment profiter de l'ensemble.",
     "OptionEnableFullscreen": "Activer le plein \u00e9cran",
     "ButtonServer": "Serveur",
@@ -783,5 +784,15 @@
     "HeaderLibrary": "Biblioth\u00e8que",
     "HeaderMedia": "M\u00e9dia",
     "ButtonInbox": "Bo\u00eete de r\u00e9ception",
-    "HeaderAdvanced": "Avanc\u00e9"
+    "HeaderAdvanced": "Avanc\u00e9",
+    "HeaderSaySomethingLike": "Dites quelque chose...",
+    "ButtonTryAgain": "Veuillez r\u00e9essayer",
+    "HeaderYouSaid": "Vous avez dit...",
+    "MessageWeDidntRecognizeCommand": "D\u00e9sol\u00e9, cette commande n'a pas \u00e9t\u00e9 reconnue.",
+    "MessageIfYouBlockedVoice": "Si vous avez supprim\u00e9 l'acc\u00e8s par commande vocale \u00e0 l'application, vous devrez reconfigurer avant de r\u00e9essayer.",
+    "MessageNoItemsFound": "Aucun \u00e9l\u00e9ment trouv\u00e9",
+    "ButtonManageServer": "G\u00e9rer le serveur",
+    "ButtonPreferences": "Pr\u00e9f\u00e9rences",
+    "ButtonViewArtist": "Voir l'artiste",
+    "ButtonViewAlbum": "Voir l'album"
 }

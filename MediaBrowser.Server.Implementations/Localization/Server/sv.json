@@ -86,7 +86,7 @@
     "OptionDetectArchiveFilesAsMedia": "Identifiera arkivfiler som media",
     "OptionDetectArchiveFilesAsMediaHelp": "Om aktiverad, kommer filer med .rar och .zip f\u00f6rl\u00e4ngningar att uppt\u00e4ckas som mediefiler.",
     "LabelEnterConnectUserName": "Anv\u00e4ndarnamn eller email:",
-    "LabelEnterConnectUserNameHelp": "This is your Emby online account user name or password.",
+    "LabelEnterConnectUserNameHelp": "This is your Emby online account username or password.",
     "LabelEnableEnhancedMovies": "Enable enhanced movie displays",
     "LabelEnableEnhancedMoviesHelp": "When enabled, movies will be displayed as folders to include trailers, extras, cast & crew, and other related content.",
     "HeaderSyncJobInfo": "Synk jobb",
@@ -1436,5 +1436,8 @@
     "HeaderColumns": "Columns",
     "ButtonReset": "Reset",
     "OptionEnableExternalVideoPlayers": "Enable external video players",
-    "ButtonUnlockGuide": "Unlock Guide"
+    "ButtonUnlockGuide": "Unlock Guide",
+    "LabelEnableFullScreen": "Enable fullscreen mode",
+    "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
+    "LabelSyncPath": "Synced content path:"
 }

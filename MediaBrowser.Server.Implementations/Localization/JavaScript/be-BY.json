@@ -776,6 +776,7 @@
     "ButtonUnlockWithSupporter": "Sign in with Emby Supporter Membership",
     "MessagePleaseSignInLocalNetwork": "Before proceeding, please ensure that you're connected to your local network using a Wifi or LAN connection.",
     "ButtonUnlockWithPurchase": "Unlock with Purchase",
+    "ButtonUnlockPrice": "Unlock {0}",
     "MessageLiveTvGuideRequiresUnlock": "The Live TV Guide is currently limited to {0} channels. Click the unlock button to learn how to enjoy the full experience.",
     "OptionEnableFullscreen": "Enable Fullscreen",
     "ButtonServer": "Server",
@@ -783,5 +784,15 @@
     "HeaderLibrary": "Library",
     "HeaderMedia": "Media",
     "ButtonInbox": "Inbox",
-    "HeaderAdvanced": "Advanced"
+    "HeaderAdvanced": "Advanced",
+    "HeaderSaySomethingLike": "Say Something Like...",
+    "ButtonTryAgain": "Try Again",
+    "HeaderYouSaid": "You Said...",
+    "MessageWeDidntRecognizeCommand": "We're sorry, we didn't recognize that command.",
+    "MessageIfYouBlockedVoice": "If you denied voice access to the app you'll need to reconfigure before trying again.",
+    "MessageNoItemsFound": "No items found.",
+    "ButtonManageServer": "Manage Server",
+    "ButtonPreferences": "Preferences",
+    "ButtonViewArtist": "View artist",
+    "ButtonViewAlbum": "View album"
 }

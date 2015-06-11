@@ -86,7 +86,7 @@
     "OptionDetectArchiveFilesAsMedia": "\u628a\u538b\u7f29\u6587\u4ef6\u4f5c\u4e3a\u5a92\u4f53\u6587\u4ef6\u68c0\u6d4b",
     "OptionDetectArchiveFilesAsMediaHelp": "\u5982\u679c\u542f\u7528\uff0c\u4e0e.RAR\u548c.zip\u6269\u5c55\u540d\u7684\u6587\u4ef6\u5c06\u88ab\u68c0\u6d4b\u4e3a\u5a92\u4f53\u6587\u4ef6\u3002",
     "LabelEnterConnectUserName": "\u7528\u6237\u540d\u6216\u7535\u5b50\u90ae\u4ef6\uff1a",
-    "LabelEnterConnectUserNameHelp": "This is your Emby online account user name or password.",
+    "LabelEnterConnectUserNameHelp": "This is your Emby online account username or password.",
     "LabelEnableEnhancedMovies": "Enable enhanced movie displays",
     "LabelEnableEnhancedMoviesHelp": "When enabled, movies will be displayed as folders to include trailers, extras, cast & crew, and other related content.",
     "HeaderSyncJobInfo": "\u540c\u6b65\u4f5c\u4e1a",
@@ -1436,5 +1436,8 @@
     "HeaderColumns": "Columns",
     "ButtonReset": "Reset",
     "OptionEnableExternalVideoPlayers": "Enable external video players",
-    "ButtonUnlockGuide": "Unlock Guide"
+    "ButtonUnlockGuide": "Unlock Guide",
+    "LabelEnableFullScreen": "Enable fullscreen mode",
+    "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
+    "LabelSyncPath": "Synced content path:"
 }

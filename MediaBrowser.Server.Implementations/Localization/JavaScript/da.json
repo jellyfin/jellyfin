@@ -741,7 +741,7 @@
     "LabelQuality": "Kvalitet:",
     "HeaderSettings": "Indstillinger",
     "OptionAutomaticallySyncNewContent": "Synkroniser automatisk nyt indhold",
-    "OptionAutomaticallySyncNewContentHelp": "Nyt indhold i denne kategori vil automatisk blive synkroniseret til enheden.",
+    "OptionAutomaticallySyncNewContentHelp": "New content added to will be automatically synced to the device.",
     "OptionSyncUnwatchedVideosOnly": "Synkroniser kun usete videoer",
     "OptionSyncUnwatchedVideosOnlyHelp": "Kun usete videoer vil blive synkroniseret, og videoer vil blive fjernet fra enheden n\u00e5r de er blevet set.",
     "LabelItemLimit": "Maks. filer:",
@@ -776,6 +776,7 @@
     "ButtonUnlockWithSupporter": "Log ind med et Emby Supporter medlemsskab",
     "MessagePleaseSignInLocalNetwork": "F\u00f8r du forts\u00e6tter bedes du sikre dig at du har forbindelse til dit lokale netv\u00e6rk via Wifi eller Lan forbindelse.",
     "ButtonUnlockWithPurchase": "L\u00e5s op gennem k\u00f8b",
+    "ButtonUnlockPrice": "Unlock {0}",
     "MessageLiveTvGuideRequiresUnlock": "Live TV Guiden er p\u00e5 nuv\u00e6rende tidspunkt begr\u00e6nset til {0} kanaler. Klik p\u00e5 \"L\u00e5s op\" knappen for at f\u00e5 mere at vide omkring hvordan du kan f\u00e5 den fulde oplevelse.",
     "OptionEnableFullscreen": "Aktiver fuldsk\u00e6rm",
     "ButtonServer": "Server",
@@ -783,5 +784,15 @@
     "HeaderLibrary": "Bibliotek",
     "HeaderMedia": "Medier",
     "ButtonInbox": "Indbakke",
-    "HeaderAdvanced": "Avanceret"
+    "HeaderAdvanced": "Avanceret",
+    "HeaderSaySomethingLike": "Say Something Like...",
+    "ButtonTryAgain": "Try Again",
+    "HeaderYouSaid": "You Said...",
+    "MessageWeDidntRecognizeCommand": "We're sorry, we didn't recognize that command.",
+    "MessageIfYouBlockedVoice": "If you denied voice access to the app you'll need to reconfigure before trying again.",
+    "MessageNoItemsFound": "No items found.",
+    "ButtonManageServer": "Manage Server",
+    "ButtonPreferences": "Preferences",
+    "ButtonViewArtist": "View artist",
+    "ButtonViewAlbum": "View album"
 }

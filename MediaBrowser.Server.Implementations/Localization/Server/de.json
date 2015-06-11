@@ -85,8 +85,8 @@
     "ButtonDonateWithPayPal": "Spende mit PayPal",
     "OptionDetectArchiveFilesAsMedia": "Behandle Archive wie Medien",
     "OptionDetectArchiveFilesAsMediaHelp": "Wenn aktiviert werden .rar und .zip Datei-Erweiterungen wie Medien behandelt.",
-    "LabelEnterConnectUserName": "Benutzername oder Email:",
-    "LabelEnterConnectUserNameHelp": "Dies ist Ihr Emby online Konto Benutzername oder Passwort.",
+    "LabelEnterConnectUserName": "Username or email:",
+    "LabelEnterConnectUserNameHelp": "This is your Emby online account username or password.",
     "LabelEnableEnhancedMovies": "Aktiviere erweiterte Filmdarstellung.",
     "LabelEnableEnhancedMoviesHelp": "Wenn aktiviert, werden Filme als Verzeichnisse dargestellt, welche Trailer, Extras, Besetzung & Crew sowie weitere Inhalte enth\u00e4lt.",
     "HeaderSyncJobInfo": "Synchronisations-Aufgabe",
@@ -1436,5 +1436,8 @@
     "HeaderColumns": "Spalten",
     "ButtonReset": "Reset",
     "OptionEnableExternalVideoPlayers": "Aktiviere externe Videoplayer",
-    "ButtonUnlockGuide": "Guide freischalten"
+    "ButtonUnlockGuide": "Guide freischalten",
+    "LabelEnableFullScreen": "Enable fullscreen mode",
+    "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
+    "LabelSyncPath": "Synced content path:"
 }

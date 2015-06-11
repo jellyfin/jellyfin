@@ -1436,5 +1436,8 @@
     "HeaderColumns": "Columnas",
     "ButtonReset": "Resetear",
     "OptionEnableExternalVideoPlayers": "Habilitar reproductores externos de video",
-    "ButtonUnlockGuide": "Desbloquear Gu\u00eda"
+    "ButtonUnlockGuide": "Desbloquear Gu\u00eda",
+    "LabelEnableFullScreen": "Habilitar modo de pantalla completa",
+    "LabelEnableChromecastAc3Passthrough": "Habilitar transferencia directa de AC3 en Chromecast",
+    "LabelSyncPath": "Ruta para contenido sincronizado:"
 }

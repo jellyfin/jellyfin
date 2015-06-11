@@ -776,6 +776,7 @@
     "ButtonUnlockWithSupporter": "Iniciar sesi\u00f3n con una Membres\u00eda de Aficionado Emby",
     "MessagePleaseSignInLocalNetwork": "Antes de continuar, por favor aseg\u00farese de que esta conectado a su red local usando una conexi\u00f3n Wifi o LAN.",
     "ButtonUnlockWithPurchase": "Desbloquear con una compra",
+    "ButtonUnlockPrice": "Desbloquear {0}",
     "MessageLiveTvGuideRequiresUnlock": "La Guia de TV en Vivo actualmente esta limitada a {0} canales. De clic en el bot\u00f3n Desbloquear para saber como desbloquear la experiencia completa.",
     "OptionEnableFullscreen": "Habilitar Pantalla Completa",
     "ButtonServer": "Servidor",
@@ -783,5 +784,15 @@
     "HeaderLibrary": "Biblioteca",
     "HeaderMedia": "Medios",
     "ButtonInbox": "Inbox",
-    "HeaderAdvanced": "Avanzado"
+    "HeaderAdvanced": "Avanzado",
+    "HeaderSaySomethingLike": "Decir Algo Como...",
+    "ButtonTryAgain": "Intentar de Nuevo",
+    "HeaderYouSaid": "Ha Dicho...",
+    "MessageWeDidntRecognizeCommand": "Lo sentimos, no reconocimos ese comando.",
+    "MessageIfYouBlockedVoice": "Si ha negado el acceso a la voz a la aplicaci\u00f3n necesitara reconfigurar antes de intentarlo de nuevo.",
+    "MessageNoItemsFound": "No se encontraron \u00edtems.",
+    "ButtonManageServer": "Administrar Servidor",
+    "ButtonPreferences": "Preferencias",
+    "ButtonViewArtist": "Ver artista",
+    "ButtonViewAlbum": "Ver album"
 }

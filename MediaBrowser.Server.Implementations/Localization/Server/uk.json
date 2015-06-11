@@ -86,7 +86,7 @@
     "OptionDetectArchiveFilesAsMedia": "Detect archive files as media",
     "OptionDetectArchiveFilesAsMediaHelp": "If enabled, files with .rar and .zip extensions will be detected as media files.",
     "LabelEnterConnectUserName": "\u0406\u043c\u2019\u044f \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0430 \u0430\u0431\u043e email:",
-    "LabelEnterConnectUserNameHelp": "This is your Emby online account user name or password.",
+    "LabelEnterConnectUserNameHelp": "This is your Emby online account username or password.",
     "LabelEnableEnhancedMovies": "Enable enhanced movie displays",
     "LabelEnableEnhancedMoviesHelp": "When enabled, movies will be displayed as folders to include trailers, extras, cast & crew, and other related content.",
     "HeaderSyncJobInfo": "Sync Job",
@@ -1436,5 +1436,8 @@
     "HeaderColumns": "Columns",
     "ButtonReset": "Reset",
     "OptionEnableExternalVideoPlayers": "Enable external video players",
-    "ButtonUnlockGuide": "Unlock Guide"
+    "ButtonUnlockGuide": "Unlock Guide",
+    "LabelEnableFullScreen": "Enable fullscreen mode",
+    "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
+    "LabelSyncPath": "Synced content path:"
 }
