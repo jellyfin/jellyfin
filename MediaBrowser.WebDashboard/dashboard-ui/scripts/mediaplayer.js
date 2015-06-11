@@ -1338,7 +1338,7 @@
 
             if (mediaRenderer) {
 
-                mediaRenderer.pause();
+                mediaRenderer.stop();
 
                 $(mediaRenderer).off("ended.playnext").one("ended", function () {
 
@@ -1654,9 +1654,10 @@
 
             var mediaRenderer = getAudioRenderer();
 
-            mediaRenderer.setCurrentSrc(audioUrl);
+            // Set volume first to avoid an audible change
             mediaRenderer.volume(initialVolume);
             mediaRenderer.setPoster(self.getPosterUrl(item));
+            mediaRenderer.setCurrentSrc(audioUrl);
 
             $(mediaRenderer).on("volumechange.mediaplayerevent", function () {
 

@@ -49,7 +49,7 @@
         self.currentTime = function (val) {
 
             if (val != null) {
-                AndroidVlcPlayer.setPosition(val);
+                AndroidVlcPlayer.sendVlcCommand("setposition", val.toString());
                 return;
             }
 
@@ -65,18 +65,22 @@
             return null;
         };
 
+        self.stop = function () {
+            AndroidVlcPlayer.sendVlcCommand("stop", null);
+        };
+
         self.pause = function () {
-            AndroidVlcPlayer.pause();
+            AndroidVlcPlayer.sendVlcCommand("pause", null);
         };
 
         self.unpause = function () {
-            AndroidVlcPlayer.unpause();
+            AndroidVlcPlayer.sendVlcCommand("unpause", null);
         };
 
         self.volume = function (val) {
             if (playerState) {
                 if (val != null) {
-                    AndroidVlcPlayer.setVolume(val);
+                    AndroidVlcPlayer.sendVlcCommand("setvolume", (val * 100).toString());
                     return;
                 }
 
@@ -88,6 +92,7 @@
 
             if (!val) {
                 self.destroy();
+                return;
             }
 
             if (type == 'audio') {
@@ -95,6 +100,8 @@
             } else {
                 AndroidVlcPlayer.playVideoVlc(val);
             }
+
+            playerState.currentSrc = val;
         };
 
         self.currentSrc = function () {
@@ -114,12 +121,43 @@
 
         self.destroy = function () {
 
-            AndroidVlcPlayer.destroy();
+            AndroidVlcPlayer.destroyVlc();
             playerState = {};
         };
 
         self.setPoster = function (url) {
         };
+
+        self.report = function (eventName, duration, position, isPaused, volume) {
+
+            var state = playerState;
+            console.log('Vlc: ' + eventName + ' - ' + position + ' - ' + duration);
+            state.duration = duration;
+            state.currentTime = position;
+            state.isPaused = isPaused;
+            state.volume = (volume || 0) / 100;
+
+            if (eventName == 'playbackstop') {
+                onEnded();
+            }
+            else if (eventName == 'volumechange') {
+                onVolumeChange();
+            }
+            else if (eventName == 'positionchange') {
+                onTimeUpdate();
+            }
+            else if (eventName == 'paused') {
+                onPause();
+            }
+            else if (eventName == 'unpaused') {
+                onPlaying();
+            }
+            else if (eventName == 'playing') {
+                onPlaying();
+            }
+        };
+
+        window.AudioRenderer.Current = self;
     }
 
     window.AudioRenderer = vlcRenderer;

@@ -159,6 +159,12 @@
             return null;
         };
 
+        self.stop = function () {
+            if (mediaElement) {
+                mediaElement.pause();
+            }
+        };
+
         self.pause = function () {
             if (mediaElement) {
                 mediaElement.pause();

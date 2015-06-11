@@ -1958,8 +1958,8 @@ var AppInfo = {};
         }
 
         if (Dashboard.isRunningInCordova() && $.browser.android) {
-            //define("audiorenderer", ["thirdparty/cordova/android/vlcplayer"]);
-            define("audiorenderer", ["scripts/htmlmediarenderer"]);
+            define("audiorenderer", ["thirdparty/cordova/android/vlcplayer"]);
+            //define("audiorenderer", ["scripts/htmlmediarenderer"]);
             define("videorenderer", ["scripts/htmlmediarenderer"]);
         }
         else {

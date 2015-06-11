@@ -18,6 +18,14 @@
         // If less than 100, the search window ends up not getting images
         // If less than 200, this happens on the home page
         // Need to fix those before this can be set to 0
+
+        // Non-ios browsers can generally handle a higher value and still perform well
+        // This helps eliminate the draw-in effect as you scroll
+        if (!$.browser.ipad && !$.browser.iphone) {
+            return 1000;
+            //return Math.max(screen.height, screen.width, 1000);
+        }
+
         return 500;
     }
 
