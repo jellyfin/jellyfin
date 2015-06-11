@@ -395,7 +395,7 @@
                 var chapterIndex = 0;
                 html += item.Chapters.map(function (c) {
 
-                    var width = 320;
+                    var width = 240;
                     var chapterHtml = '<a class="card backdropCard chapterCard" href="#" style="margin-right:1em;width:' + width + 'px;" data-position="' + c.StartPositionTicks + '">';
                     chapterHtml += '<div class="cardBox">';
                     chapterHtml += '<div class="cardScalable">';

@@ -135,6 +135,8 @@
 	            .on('play', onPlay)
 	            .on('pause', onPause)
 	            .on('playing', onPlaying)
+	            .on('click', onClick)
+	            .on('dblclick', onDblClick)
 	            .on('error', onError)[0];
         }
 

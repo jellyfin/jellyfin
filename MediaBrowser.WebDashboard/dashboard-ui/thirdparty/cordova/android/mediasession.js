@@ -4,6 +4,7 @@
 
     var currentPlayer;
     var lastPlayerState;
+    var lastUpdateTime;
 
     function updatePlayerState(state, eventName) {
 
@@ -29,6 +30,7 @@
         var album = state.NowPlayingItem.Album || '';
         var duration = state.NowPlayingItem.RunTimeTicks ? (state.NowPlayingItem.RunTimeTicks / 10000000) : 0;
         var position = playState.PositionTicks ? (playState.PositionTicks / 10000000) : 0;
+        var itemId = state.NowPlayingItem.Id;
 
         var isPaused = playState.IsPaused || false;
         var canSeek = playState.CanSeek || false;
@@ -64,7 +66,16 @@
 
         }
 
-        MainActivity.updateMediaSession(eventName, title, artist, album, parseInt(duration), parseInt(position), url, canSeek, isPaused);
+        // Don't go crazy reporting position changes
+        if (eventName == 'positionchange') {
+            var time = new Date().getTime();
+            if ((time - lastUpdateTime) < 500) {
+                return;
+            }
+        }
+
+        MainActivity.updateMediaSession(eventName, itemId, title, artist, album, parseInt(duration), parseInt(position), url, canSeek, isPaused);
+        lastUpdateTime = new Date().getTime();
     }
 
     function onStateChanged(e, state) {
