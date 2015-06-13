@@ -75,7 +75,9 @@
             }
         }
 
-        MainActivity.updateMediaSession(eventName, itemId, title, artist, album, parseInt(duration), parseInt(position), url, canSeek, isPaused);
+        var isLocalPlayer = MediaController.getPlayerInfo().isLocalPlayer || false;
+
+        MainActivity.updateMediaSession(eventName, isLocalPlayer, itemId, title, artist, album, parseInt(duration), parseInt(position), url, canSeek, isPaused);
         lastUpdateTime = new Date().getTime();
     }
 

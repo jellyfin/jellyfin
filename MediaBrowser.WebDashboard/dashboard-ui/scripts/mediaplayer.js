@@ -38,53 +38,56 @@
 
         var canPlayAac = document.createElement('audio').canPlayType('audio/aac').replace(/no/, '');
 
-        self.getVideoQualityOptions = function (videoWidth) {
+        self.getVideoQualityOptions = function (videoHeight) {
 
             var bitrateSetting = AppSettings.maxStreamingBitrate();
 
-            var maxAllowedWidth = videoWidth || 4096;
+            var maxAllowedHeight = videoHeight || 2304;
 
             var options = [];
 
             // Some 1080- videos are reported as 1912?
-            if (maxAllowedWidth >= 1900) {
-                options.push({ name: '1080p - 30Mbps', maxWidth: 1920, bitrate: 30000000 });
-                options.push({ name: '1080p - 25Mbps', maxWidth: 1920, bitrate: 25000000 });
-                options.push({ name: '1080p - 20Mbps', maxWidth: 1920, bitrate: 20000000 });
-                options.push({ name: '1080p - 15Mbps', maxWidth: 1920, bitrate: 15000000 });
-                options.push({ name: '1080p - 10Mbps', maxWidth: 1920, bitrate: 10000000 });
-                options.push({ name: '1080p - 8Mbps', maxWidth: 1920, bitrate: 8000000 });
-                options.push({ name: '1080p - 6Mbps', maxWidth: 1920, bitrate: 6000000 });
-                options.push({ name: '1080p - 5Mbps', maxWidth: 1920, bitrate: 5000000 });
-            } else if (maxAllowedWidth >= 1260) {
-                options.push({ name: '720p - 10Mbps', maxWidth: 1280, bitrate: 10000000 });
-                options.push({ name: '720p - 8Mbps', maxWidth: 1280, bitrate: 8000000 });
-                options.push({ name: '720p - 6Mbps', maxWidth: 1280, bitrate: 6000000 });
-                options.push({ name: '720p - 5Mbps', maxWidth: 1280, bitrate: 5000000 });
-            } else if (maxAllowedWidth >= 460) {
-                options.push({ name: '480p - 4Mbps', maxWidth: 720, bitrate: 4000000 });
-                options.push({ name: '480p - 3Mbps', maxWidth: 720, bitrate: 3000000 });
-                options.push({ name: '480p - 2.5Mbps', maxWidth: 720, bitrate: 2500000 });
-                options.push({ name: '480p - 2Mbps', maxWidth: 720, bitrate: 2000000 });
-                options.push({ name: '480p - 1.5Mbps', maxWidth: 720, bitrate: 1500000 });
+            if (maxAllowedHeight >= 1060) {
+
+                options.push({ name: '1080p - 30Mbps', maxHeight: 1080, bitrate: 30000000 });
+                options.push({ name: '1080p - 25Mbps', maxHeight: 1080, bitrate: 25000000 });
+                options.push({ name: '1080p - 20Mbps', maxHeight: 1080, bitrate: 20000000 });
+                options.push({ name: '1080p - 15Mbps', maxHeight: 1080, bitrate: 15000000 });
+                options.push({ name: '1080p - 10Mbps', maxHeight: 1080, bitrate: 10000000 });
+                options.push({ name: '1080p - 8Mbps', maxHeight: 1080, bitrate: 8000000 });
+                options.push({ name: '1080p - 6Mbps', maxHeight: 1080, bitrate: 6000000 });
+                options.push({ name: '1080p - 5Mbps', maxHeight: 1080, bitrate: 5000000 });
+
+            } else if (maxAllowedHeight >= 700) {
+                options.push({ name: '720p - 10Mbps', maxHeight: 720, bitrate: 10000000 });
+                options.push({ name: '720p - 8Mbps', maxHeight: 720, bitrate: 8000000 });
+                options.push({ name: '720p - 6Mbps', maxHeight: 720, bitrate: 6000000 });
+                options.push({ name: '720p - 5Mbps', maxHeight: 720, bitrate: 5000000 });
+
+            } else if (maxAllowedHeight >= 460) {
+                options.push({ name: '480p - 4Mbps', maxHeight: 480, bitrate: 4000000 });
+                options.push({ name: '480p - 3Mbps', maxHeight: 480, bitrate: 3000000 });
+                options.push({ name: '480p - 2.5Mbps', maxHeight: 480, bitrate: 2500000 });
+                options.push({ name: '480p - 2Mbps', maxHeight: 480, bitrate: 2000000 });
+                options.push({ name: '480p - 1.5Mbps', maxHeight: 480, bitrate: 1500000 });
             }
 
-            if (maxAllowedWidth >= 1260) {
-                options.push({ name: '720p - 4Mbps', maxWidth: 1280, bitrate: 4000000 });
-                options.push({ name: '720p - 3Mbps', maxWidth: 1280, bitrate: 3000000 });
-                options.push({ name: '720p - 2Mbps', maxWidth: 1280, bitrate: 2000000 });
+            if (maxAllowedHeight >= 700) {
+                options.push({ name: '720p - 4Mbps', maxHeight: 720, bitrate: 4000000 });
+                options.push({ name: '720p - 3Mbps', maxHeight: 720, bitrate: 3000000 });
+                options.push({ name: '720p - 2Mbps', maxHeight: 720, bitrate: 2000000 });
 
                 // The extra 1 is because they're keyed off the bitrate value
-                options.push({ name: '720p - 1.5Mbps', maxWidth: 1280, bitrate: 1500001 });
-                options.push({ name: '720p - 1Mbps', maxWidth: 1280, bitrate: 1000001 });
+                options.push({ name: '720p - 1.5Mbps', maxHeight: 720, bitrate: 1500001 });
+                options.push({ name: '720p - 1Mbps', maxHeight: 720, bitrate: 1000001 });
             }
 
-            options.push({ name: '480p - 1.0Mbps', maxWidth: 720, bitrate: 1000000 });
-            options.push({ name: '480p - 720kbps', maxWidth: 720, bitrate: 720000 });
-            options.push({ name: '480p - 420kbps', maxWidth: 720, bitrate: 420000 });
-            options.push({ name: '360p', maxWidth: 640, bitrate: 400000 });
-            options.push({ name: '240p', maxWidth: 426, bitrate: 320000 });
-            options.push({ name: '144p', maxWidth: 256, bitrate: 192000 });
+            options.push({ name: '480p - 1.0Mbps', maxHeight: 480, bitrate: 1000000 });
+            options.push({ name: '480p - 720kbps', maxHeight: 480, bitrate: 720000 });
+            options.push({ name: '480p - 420kbps', maxHeight: 480, bitrate: 420000 });
+            options.push({ name: '360p', maxHeight: 360, bitrate: 400000 });
+            options.push({ name: '240p', maxHeight: 240, bitrate: 320000 });
+            options.push({ name: '144p', maxHeight: 144, bitrate: 192000 });
 
             var i, length, option;
             var selectedIndex = -1;
@@ -107,12 +110,12 @@
             return options;
         };
 
-        self.getDeviceProfile = function (maxWidth) {
+        self.getDeviceProfile = function (maxHeight) {
 
-            if (!maxWidth) {
-                maxWidth = self.getVideoQualityOptions().filter(function (q) {
+            if (!maxHeight) {
+                maxHeight = self.getVideoQualityOptions().filter(function (q) {
                     return q.selected;
-                })[0].maxWidth;
+                })[0].maxHeight;
             }
 
             var bitrateSetting = AppSettings.maxStreamingBitrate();
@@ -348,8 +351,8 @@
                 },
                 {
                     Condition: 'LessThanEqual',
-                    Property: 'Width',
-                    Value: maxWidth
+                    Property: 'Height',
+                    Value: maxHeight
                 }]
             });
 
@@ -365,8 +368,8 @@
                 },
                 {
                     Condition: 'LessThanEqual',
-                    Property: 'Width',
-                    Value: maxWidth
+                    Property: 'Height',
+                    Value: maxHeight
                 }]
             });
 
@@ -401,6 +404,17 @@
             });
 
             return profile;
+        };
+
+        var supportsTextTracks;
+        self.supportsTextTracks = function () {
+
+            if (supportsTextTracks == null) {
+                supportsTextTracks = document.createElement('video').textTracks != null;
+            }
+
+            // For now, until ready
+            return supportsTextTracks;
         };
 
         self.updateCanClientSeek = function (mediaRenderer) {
@@ -601,18 +615,6 @@
             var state = self.getPlayerStateInternal(self.currentMediaRenderer, self.currentItem, self.currentMediaSource);
 
             $(self).trigger('positionchange', [state]);
-        };
-
-        var supportsTextTracks;
-
-        self.supportsTextTracks = function () {
-
-            if (supportsTextTracks == null) {
-                supportsTextTracks = document.createElement('video').textTracks != null;
-            }
-
-            // For now, until ready
-            return supportsTextTracks;
         };
 
         self.canQueueMediaType = function (mediaType) {

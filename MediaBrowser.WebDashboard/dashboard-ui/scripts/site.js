@@ -1668,7 +1668,8 @@ var AppInfo = {};
     //localStorage.clear();
     function createConnectionManager(capabilities) {
 
-        var credentialProvider = new MediaBrowser.CredentialProvider();
+        var credentialKey = Dashboard.isConnectMode() ? null : 'servercredentials4';
+        var credentialProvider = new MediaBrowser.CredentialProvider(credentialKey);
 
         window.ConnectionManager = new MediaBrowser.ConnectionManager(Logger, credentialProvider, AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, capabilities);
 

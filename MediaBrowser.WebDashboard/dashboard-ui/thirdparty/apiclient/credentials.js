@@ -4,11 +4,11 @@
         globalScope.MediaBrowser = {};
     }
 
-    globalScope.MediaBrowser.CredentialProvider = function () {
+    globalScope.MediaBrowser.CredentialProvider = function (key) {
 
         var self = this;
         var credentials = null;
-        var key = 'servercredentials3';
+        key = key || 'servercredentials3';
 
         function ensure() {
 

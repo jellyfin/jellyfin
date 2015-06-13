@@ -129,7 +129,7 @@
 
         self.setSubtitleStreamIndex = function (index) {
 
-            if (!self.supportsTextTracks()) {
+            if (!self.currentMediaRenderer.supportsTextTracks()) {
 
                 self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: index });
                 self.currentSubtitleStreamIndex = index;
@@ -184,8 +184,6 @@
 
         self.setCurrentTrackElement = function (index) {
 
-            var modes = ['disabled', 'showing', 'hidden'];
-
             var textStreams = self.currentMediaSource.MediaStreams.filter(function (s) {
                 return s.DeliveryMethod == 'External';
             });
@@ -196,70 +194,12 @@
 
             var trackIndex = newStream ? textStreams.indexOf(newStream) : -1;
 
-            console.log('Setting new text track index to: ' + trackIndex);
-
-            var allTracks = self.currentMediaElement.textTracks; // get list of tracks
-
-            for (var i = 0; i < allTracks.length; i++) {
-
-                var mode;
-
-                if (trackIndex == i) {
-                    mode = 1; // show this track
-                } else {
-                    mode = 0; // hide all other tracks
-                }
-
-                console.log('Setting track ' + i + ' mode to: ' + mode);
-
-                // Safari uses integers for the mode property
-                // http://www.jwplayer.com/html5/scripting/
-                var useNumericMode = false;
-
-                if (!isNaN(allTracks[i].mode)) {
-                    useNumericMode = true;
-                }
-
-                if (useNumericMode) {
-                    allTracks[i].mode = mode;
-                } else {
-                    allTracks[i].mode = modes[mode];
-                }
-            }
+            self.currentMediaRenderer.setCurrentTrackElement(trackIndex);
         };
 
         self.updateTextStreamUrls = function (startPositionTicks) {
 
-            if (!self.supportsTextTracks()) {
-                return;
-            }
-
-            var allTracks = self.currentMediaElement.textTracks; // get list of tracks
-
-            for (var i = 0; i < allTracks.length; i++) {
-
-                var track = allTracks[i];
-
-                // This throws an error in IE, but is fine in chrome
-                // In IE it's not necessary anyway because changing the src seems to be enough
-                try {
-                    while (track.cues.length) {
-                        track.removeCue(track.cues[0]);
-                    }
-                } catch (e) {
-                    console.log('Error removing cue from textTrack');
-                }
-            }
-
-            $('track', self.currentMediaElement).each(function () {
-
-                var currentSrc = this.src;
-
-                currentSrc = replaceQueryString(currentSrc, 'startPositionTicks', startPositionTicks);
-
-                this.src = currentSrc;
-
-            });
+            self.currentMediaRenderer.updateTextStreamUrls(startPositionTicks);
         };
 
         self.updateNowPlayingInfo = function (item) {
@@ -922,9 +862,9 @@
             var videoStream = self.currentMediaSource.MediaStreams.filter(function (stream) {
                 return stream.Type == "Video";
             })[0];
-            var videoWidth = videoStream ? videoStream.Width : null;
+            var videoHeight = videoStream ? videoStream.Height : null;
 
-            var options = self.getVideoQualityOptions(videoWidth);
+            var options = self.getVideoQualityOptions(videoHeight);
 
             if (isStatic) {
                 options[0].name = "Direct";

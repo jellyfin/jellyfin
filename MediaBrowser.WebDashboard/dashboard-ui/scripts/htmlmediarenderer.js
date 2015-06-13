@@ -1,5 +1,7 @@
 ﻿(function () {
 
+    var supportsTextTracks;
+
     function htmlMediaRenderer(type) {
 
         var mediaElement;
@@ -259,6 +261,86 @@
             if (elem) {
                 elem.poster = url;
             }
+        };
+
+        self.supportsTextTracks = function () {
+
+            if (supportsTextTracks == null) {
+                supportsTextTracks = document.createElement('video').textTracks != null;
+            }
+
+            // For now, until ready
+            return supportsTextTracks;
+        };
+
+        self.setCurrentTrackElement = function (trackIndex) {
+
+            console.log('Setting new text track index to: ' + trackIndex);
+
+            var allTracks = mediaElement.textTracks; // get list of tracks
+
+            var modes = ['disabled', 'showing', 'hidden'];
+
+            for (var i = 0; i < allTracks.length; i++) {
+
+                var mode;
+
+                if (trackIndex == i) {
+                    mode = 1; // show this track
+                } else {
+                    mode = 0; // hide all other tracks
+                }
+
+                console.log('Setting track ' + i + ' mode to: ' + mode);
+
+                // Safari uses integers for the mode property
+                // http://www.jwplayer.com/html5/scripting/
+                var useNumericMode = false;
+
+                if (!isNaN(allTracks[i].mode)) {
+                    useNumericMode = true;
+                }
+
+                if (useNumericMode) {
+                    allTracks[i].mode = mode;
+                } else {
+                    allTracks[i].mode = modes[mode];
+                }
+            }
+        };
+
+        self.updateTextStreamUrls = function (startPositionTicks) {
+
+            if (!self.supportsTextTracks()) {
+                return;
+            }
+
+            var allTracks = mediaElement.textTracks; // get list of tracks
+
+            for (var i = 0; i < allTracks.length; i++) {
+
+                var track = allTracks[i];
+
+                // This throws an error in IE, but is fine in chrome
+                // In IE it's not necessary anyway because changing the src seems to be enough
+                try {
+                    while (track.cues.length) {
+                        track.removeCue(track.cues[0]);
+                    }
+                } catch (e) {
+                    console.log('Error removing cue from textTrack');
+                }
+            }
+
+            $('track', mediaElement).each(function () {
+
+                var currentSrc = this.src;
+
+                currentSrc = replaceQueryString(currentSrc, 'startPositionTicks', startPositionTicks);
+
+                this.src = currentSrc;
+
+            });
         };
 
         if (type == 'audio') {
