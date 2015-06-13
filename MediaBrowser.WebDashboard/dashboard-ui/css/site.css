@@ -771,7 +771,7 @@ progress {
     margin-right: .85em;
     cursor: pointer;
     vertical-align: middle;
-    color: #cc3333 !important;
+    color: #aaa;
     font-size: 17px;
     width: auto !important;
     display: inline-block !important;
@@ -784,8 +784,8 @@ progress {
         border: 0;
     }
 
-.btnUserItemRatingOff {
-    color: #aaa !important;
+.btnUserItemRatingOn {
+    color: #cc3333 !important;
 }
 
 .btnUserItemRating:last-child {

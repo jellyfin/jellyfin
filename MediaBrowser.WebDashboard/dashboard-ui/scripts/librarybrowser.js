@@ -2290,9 +2290,9 @@
 
             if ((item.MediaType || item.IsFolder) && type != "TvChannel" && type != "MusicArtist" && item.MediaType != "Audio") {
                 if (userData.Played) {
-                    html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRating', 'fa-check', tooltipPlayed);
+                    html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRatingOn', 'fa-check', tooltipPlayed);
                 } else {
-                    html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRatingOff', 'fa-check', tooltipPlayed);
+                    html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating', 'fa-check', tooltipPlayed);
                 }
             }
 
@@ -2300,24 +2300,24 @@
             var tooltipDislike = Globalize.translate('TooltipDislike');
 
             if (typeof userData.Likes == "undefined") {
-                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating btnUserItemRatingOff', 'fa-thumbs-down', tooltipDislike);
-                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating btnUserItemRatingOff', 'fa-thumbs-up', tooltipLike);
-            }
-            else if (userData.Likes) {
-                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating btnUserItemRatingOff', 'fa-thumbs-down', tooltipDislike);
+                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'fa-thumbs-down', tooltipDislike);
                 html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'fa-thumbs-up', tooltipLike);
             }
-            else {
+            else if (userData.Likes) {
                 html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'fa-thumbs-down', tooltipDislike);
-                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating btnUserItemRatingOff', 'fa-thumbs-up', tooltipLike);
+                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'fa-thumbs-up', tooltipLike);
+            }
+            else {
+                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'fa-thumbs-down', tooltipDislike);
+                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'fa-thumbs-up', tooltipLike);
             }
 
             var tooltipFavorite = Globalize.translate('TooltipFavorite');
             if (userData.IsFavorite) {
 
-                html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating', 'fa-heart', tooltipFavorite);
+                html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating btnUserItemRatingOn', 'fa-heart', tooltipFavorite);
             } else {
-                html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating btnUserItemRatingOff', 'fa-heart', tooltipFavorite);
+                html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating', 'fa-heart', tooltipFavorite);
             }
 
             return html;
@@ -2329,14 +2329,14 @@
 
             var $link = $(link);
 
-            var markAsPlayed = $link.hasClass('btnUserItemRatingOff');
+            var markAsPlayed = !$link.hasClass('btnUserItemRatingOn');
 
             if (markAsPlayed) {
                 ApiClient.markPlayed(Dashboard.getCurrentUserId(), id);
-                $link.removeClass('btnUserItemRatingOff');
+                $link.addClass('btnUserItemRatingOn');
             } else {
                 ApiClient.markUnplayed(Dashboard.getCurrentUserId(), id);
-                $link.addClass('btnUserItemRatingOff');
+                $link.removeClass('btnUserItemRatingOn');
             }
         },
 
@@ -2346,14 +2346,14 @@
 
             var $link = $(link);
 
-            var markAsFavorite = $link.hasClass('btnUserItemRatingOff');
+            var markAsFavorite = !$link.hasClass('btnUserItemRatingOn');
 
             ApiClient.updateFavoriteStatus(Dashboard.getCurrentUserId(), id, markAsFavorite);
 
             if (markAsFavorite) {
-                $link.removeClass('btnUserItemRatingOff');
+                $link.addClass('btnUserItemRatingOn');
             } else {
-                $link.addClass('btnUserItemRatingOff');
+                $link.removeClass('btnUserItemRatingOn');
             }
         },
 
@@ -2363,20 +2363,20 @@
 
             var $link = $(link);
 
-            if ($link.hasClass('btnUserItemRatingOff')) {
+            if (!$link.hasClass('btnUserItemRatingOn')) {
 
                 ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, true);
 
-                $link.removeClass('btnUserItemRatingOff');
+                $link.addClass('btnUserItemRatingOn');
 
             } else {
 
                 ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
 
-                $link.addClass('btnUserItemRatingOff');
+                $link.removeClass('btnUserItemRatingOn');
             }
 
-            $link.prev().addClass('btnUserItemRatingOff');
+            $link.prev().removeClass('btnUserItemRatingOn');
         },
 
         markDislike: function (link) {
@@ -2385,20 +2385,20 @@
 
             var $link = $(link);
 
-            if ($link.hasClass('btnUserItemRatingOff')) {
+            if (!$link.hasClass('btnUserItemRatingOn')) {
 
                 ApiClient.updateUserItemRating(Dashboard.getCurrentUserId(), id, false);
 
-                $link.removeClass('btnUserItemRatingOff');
+                $link.addClass('btnUserItemRatingOn');
 
             } else {
 
                 ApiClient.clearUserItemRating(Dashboard.getCurrentUserId(), id);
 
-                $link.addClass('btnUserItemRatingOff');
+                $link.removeClass('btnUserItemRatingOn');
             }
 
-            $link.next().addClass('btnUserItemRatingOff');
+            $link.next().removeClass('btnUserItemRatingOn');
         },
 
         getDetailImageHtml: function (item, href, preferThumb) {
