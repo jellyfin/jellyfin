@@ -1455,5 +1455,9 @@
     "ButtonUnlockGuide": "Unlock Guide",
     "LabelEnableFullScreen": "Enable fullscreen mode",
     "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
-    "LabelSyncPath": "Synced content path:"
+    "LabelSyncPath": "Synced content path:",
+    "LabelEmail": "Email:",
+    "LabelUsername": "Username:",
+    "HeaderSignUp": "Sign Up",
+    "LabelPasswordConfirm": "Password (confirm):"
 }
