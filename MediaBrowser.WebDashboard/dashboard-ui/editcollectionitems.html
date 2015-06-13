@@ -4,12 +4,11 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="editCollectionTitlesPage" data-role="page" class="page libraryPage metadataEditorPage" data-contextname="${HeaderMetadataManager}" data-require="scripts/editcollectionitems">
+    <div id="editCollectionTitlesPage" data-role="page" class="page libraryPage metadataEditorPage" data-contextname="${HeaderMetadataManager}" data-require="scripts/editorsidebar,scripts/editcollectionitems">
         <div data-role="content editPageContent">
             <div class="editPageSidebar">
                 <div class="libraryTree">
-                    <ul>
-                    </ul>
+                    <ul></ul>
                 </div>
             </div>
 
@@ -38,7 +37,8 @@
         <div data-role="popup" class="popupIdentify popup" data-theme="a">
 
             <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3>${HeaderAddTitles}
+                <h3>
+                    ${HeaderAddTitles}
                 </h3>
             </div>
 

@@ -326,7 +326,7 @@
 
         $('.subtitleSearchForm').off('submit', onSearchSubmit).on('submit', onSearchSubmit);
 
-    }).on('pagebeforeshowready', "#editItemSubtitlesPage", function () {
+    }).on('pageshowready', "#editItemSubtitlesPage", function () {
 
         var page = this;
 

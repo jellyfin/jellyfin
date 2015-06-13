@@ -157,7 +157,7 @@ input[type="range"]::-ms-fill-upper {
         margin-bottom: 0;
     }
 
-        .nowPlayingBar .mediaButton:not(.unpauseButton):not(.pauseButton):not(.remoteControlButton):not(.stopButton) {
+        .nowPlayingBar .mediaButton:not(.unpauseButton):not(.pauseButton):not(.remoteControlButton) {
             display: none;
         }
 
@@ -165,7 +165,7 @@ input[type="range"]::-ms-fill-upper {
         float: right;
     }
 
-    .nowPlayingBar .unpauseButton, .nowPlayingBar .pauseButton, .nowPlayingBar .stopButton {
+    .nowPlayingBar .unpauseButton, .nowPlayingBar .pauseButton {
         float: right;
     }
 

@@ -26,7 +26,7 @@
         return ConnectSDK.discoveryManager.getDeviceList();
     }
 
-    window.ConnectHelper = {
+    window.ConnectSDKHelper = {
 
         getDeviceList: getDeviceList
     };

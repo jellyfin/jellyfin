@@ -302,7 +302,7 @@
 
         self.getTargets = function () {
 
-            return ConnectHelper.getDeviceList().filter(function (d) {
+            return ConnectSDKHelper.getDeviceList().filter(function (d) {
 
                 return isChromecast(d.getModelName()) || isChromecast(d.getFriendlyName());
 
@@ -590,7 +590,7 @@
 
             var deferred = $.Deferred();
 
-            var device = ConnectHelper.getDeviceList().filter(function (d) {
+            var device = ConnectSDKHelper.getDeviceList().filter(function (d) {
 
                 return d.getId() == target.id;
             })[0];

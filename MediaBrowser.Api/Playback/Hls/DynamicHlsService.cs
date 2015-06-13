@@ -295,6 +295,10 @@ namespace MediaBrowser.Api.Playback.Hls
                     }
                 }
             }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
             catch (FileNotFoundException)
             {
 

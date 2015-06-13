@@ -32,6 +32,7 @@
 
             if (item.Type == "UserRootFolder") {
                 $('.editPageInnerContent', page).hide();
+                Dashboard.hideLoadingMsg();
                 return;
             } else {
                 $('.editPageInnerContent', page).show();
@@ -1378,7 +1379,7 @@
         $(ApiClient).off("websocketmessage", onWebSocketMessageReceived);
     }
 
-    $(document).on('pageinit', "#editItemMetadataPage", function () {
+    $(document).on('pageinitdepends', "#editItemMetadataPage", function () {
 
         var page = this;
 
@@ -1437,7 +1438,13 @@
             editPerson(page, {});
         });
 
-    }).on('pagebeforeshow', "#editItemMetadataPage", function () {
+        $('.editItemMetadataForm').off('submit', EditItemMetadataPage.onSubmit).on('submit', EditItemMetadataPage.onSubmit);
+        $('.popupIdentifyForm').off('submit', EditItemMetadataPage.onIdentificationFormSubmitted).on('submit', EditItemMetadataPage.onIdentificationFormSubmitted);
+        $('.popupEditPersonForm').off('submit', EditItemMetadataPage.onPersonInfoFormSubmit).on('submit', EditItemMetadataPage.onPersonInfoFormSubmit);
+        $('.popupAdvancedRefreshForm').off('submit', EditItemMetadataPage.onRefreshFormSubmit).on('submit', EditItemMetadataPage.onRefreshFormSubmit);
+        $('.identifyOptionsForm').off('submit', EditItemMetadataPage.onIdentificationOptionsSubmit).on('submit', EditItemMetadataPage.onIdentificationOptionsSubmit);
+
+    }).on('pageshowready', "#editItemMetadataPage", function () {
 
         var page = this;
 

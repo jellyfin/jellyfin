@@ -537,12 +537,10 @@ namespace MediaBrowser.WebDashboard.Api
                                 "site.js",
                                 "librarybrowser.js",
                                 "librarylist.js",
-                                "editorsidebar.js",
                                 "librarymenu.js",
                                 "mediacontroller.js",
                                 "backdrops.js",
                                 "sync.js",
-                                "appservices.js",
                                 "playlistmanager.js",
                                 "appsettings.js",
                                 "mediaplayer.js",
@@ -550,15 +548,12 @@ namespace MediaBrowser.WebDashboard.Api
                                 "nowplayingbar.js",
                                 "alphapicker.js",
                                 "directorybrowser.js",
-                                "edititemmetadata.js",
                                 "indexpage.js",
-                                "itemdetailpage.js",
                                 "moviecollections.js",
                                 "notifications.js",
                                 "remotecontrol.js",
                                 "search.js",
-                                "thememediaplayer.js",
-                                "useredit.js"
+                                "thememediaplayer.js"
                             };
         }
 
