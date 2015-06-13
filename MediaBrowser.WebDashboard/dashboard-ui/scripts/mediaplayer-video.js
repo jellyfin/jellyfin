@@ -862,9 +862,10 @@
             var videoStream = self.currentMediaSource.MediaStreams.filter(function (stream) {
                 return stream.Type == "Video";
             })[0];
+            var videoWidth = videoStream ? videoStream.Width : null;
             var videoHeight = videoStream ? videoStream.Height : null;
 
-            var options = self.getVideoQualityOptions(videoHeight);
+            var options = self.getVideoQualityOptions(videoWidth, videoHeight);
 
             if (isStatic) {
                 options[0].name = "Direct";
