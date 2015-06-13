@@ -548,7 +548,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "nowplayingbar.js",
                                 "alphapicker.js",
                                 "directorybrowser.js",
-                                "indexpage.js",
                                 "moviecollections.js",
                                 "notifications.js",
                                 "remotecontrol.js",

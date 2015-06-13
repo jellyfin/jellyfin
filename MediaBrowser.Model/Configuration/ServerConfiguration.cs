@@ -208,6 +208,8 @@ namespace MediaBrowser.Model.Configuration
         public bool EnableVideoArchiveFiles { get; set; }
         public int RemoteClientBitrateLimit { get; set; }
 
+        public bool DenyIFrameEmbedding { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -224,6 +226,7 @@ namespace MediaBrowser.Model.Configuration
             EnableDashboardResourceMinification = true;
 
             EnableAutomaticRestart = true;
+            DenyIFrameEmbedding = true;
 
             EnableUPnP = true;
 
