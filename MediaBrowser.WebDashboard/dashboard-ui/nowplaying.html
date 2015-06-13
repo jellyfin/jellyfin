@@ -13,71 +13,84 @@
             <a href="#" class="tabButton tabButtonPlaylist" data-tab="tabPlaylist">${TabPlaylist}</a>
         </div>
 
-        <div data-role="content" style="padding: 1em 0;">
+        <div data-role="content">
 
             <div style="text-align: center;">
                 <div class="tabNowPlaying tabContent" style="display:none;">
-                    <div class="itemName" style="line-height: normal;"></div>
-                    <div class="nowPlayingPageImage" style="margin: 1em 0;"></div>
-                    <div>
-                        <div class="positionTime" style="display: inline-block; vertical-align: top; padding-top: 1px;"></div>
-                        <div class="positionSliderContainer sliderContainer" style="margin: 0 auto;">
-                            <input type="range" style="display: none;" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" data-mini="true" data-theme="a" data-highlight="true" />
-                        </div>
-                        <div class="runtime" style="display: inline-block; vertical-align: top; padding-top: 1px;"></div>
+
+                    <div class="nowPlayingPageTitle">
+                        <div class="itemName" style="line-height: normal;"></div>
                     </div>
 
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="previous-track" data-inline="true" data-iconpos="notext" title="${ButtonPreviousTrack}" class="btnPreviousTrack btnPlayStateCommand">${ButtonPreviousTrack}</button>
-                        <button data-icon="pause" data-inline="true" data-iconpos="notext" title="${ButtonPause}" class="btnPause btnPlayStateCommand">${ButtonPause}</button>
-                        <button data-icon="play" data-inline="true" data-iconpos="notext" title="${ButtonPlay}" class="btnPlay btnPlayStateCommand">${ButtonPlay}</button>
-                        <button data-icon="stop" data-inline="true" data-iconpos="notext" title="${ButtonStop}" class="btnStop btnPlayStateCommand">${ButtonStop}</button>
-                        <button data-icon="next-track" data-inline="true" data-iconpos="notext" title="${ButtonNextTrack}" class="btnNextTrack btnPlayStateCommand">${ButtonNextTrack}</button>
+                    <div class="nowPlayingInfoMetadata">
+                        <div class="nowPlayingPageImage" style="margin: 1em 0;"></div>
+                        
+                        <div class="nowPlayingTimeContainer">
+                            <div>
+                                <div class="positionSliderContainer sliderContainer" style="margin: 0 auto;">
+                                    <input type="range" style="display: none;" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" data-mini="true" data-theme="a" data-highlight="true" />
+                                </div>
+                            </div>
+                            <div style="text-align:left;">
+                                <div class="positionTime" style="float:left;"></div>
+                                <div class="runtime" style="float: right;"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="volume-up" data-inline="true" data-iconpos="notext" title="${ButtonVolumeUp}" class="btnCommand" data-command="VolumeUp">${ButtonVolumeUp}</button>
-                        <button data-icon="volume-off" data-inline="true" data-iconpos="notext" title="${ButtonMute}" class="btnCommand" data-command="ToggleMute">${ButtonMute}</button>
-                        <button data-icon="grid" data-inline="true" data-iconpos="notext" title="${ButtonOsd}" class="btnCommand videoButton" data-command="ToggleOsdMenu">${ButtonOsd}</button>
-                        <button data-icon="expand" data-inline="true" data-iconpos="notext" title="${ButtonFullscreen}" class="btnToggleFullscreen videoButton btnPlayStateCommand" data-command="ToggleFullscreen">${ButtonFullscreen}</button>
-                    </div>
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="volume-down" data-inline="true" data-iconpos="notext" title="${ButtonVolumeDown}" class="btnCommand" data-command="VolumeDown">${ButtonVolumeDown}</button>
-                        <button data-icon="audiocd" data-inline="true" data-iconpos="notext" title="${ButtonAudioTracks}" class="btnAudioTracks videoButton btnPlayStateCommand" data-command="GoToSearch">${ButtonAudioTracks}</button>
-                        <button data-icon="subtitles" data-inline="true" data-iconpos="notext" title="${ButtonSubtitles}" class="btnSubtitles videoButton btnPlayStateCommand" data-command="GoToSearch">${ButtonSubtitles}</button>
-                        <button data-icon="video" data-inline="true" data-iconpos="notext" title="${ButtonScenes}" class="btnChapters videoButton btnPlayStateCommand" data-command="GoToSearch">${ButtonScenes}</button>
+
+                    <div class="nowPlayingInfoButtons">
+                        <div>
+                            <button type="button" data-role="none" title="${ButtonPreviousTrack}" class="btnPreviousTrack btnPlayStateCommand imageButton"><i class="fa fa-step-backward"></i></button>
+                            <button type="button" data-role="none" title="${ButtonPause}" class="btnPause btnPlayStateCommand imageButton"><i class="fa fa-pause"></i></button>
+                            <button type="button" data-role="none" title="${ButtonPlay}" class="btnPlay btnPlayStateCommand imageButton"><i class="fa fa-play"></i></button>
+                            <button type="button" data-role="none" title="${ButtonStop}" class="btnStop btnPlayStateCommand imageButton"><i class="fa fa-stop"></i></button>
+                            <button type="button" data-role="none" title="${ButtonNextTrack}" class="btnNextTrack btnPlayStateCommand imageButton"><i class="fa fa-step-forward"></i></button>
+                        </div>
+                        <div>
+                            <button type="button" data-role="none" title="${ButtonVolumeUp}" class="btnCommand imageButton" data-command="VolumeUp"><i class="fa fa-volume-up"></i></button>
+                            <button type="button" data-role="none" title="${ButtonMute}" class="btnCommand imageButton" data-command="ToggleMute"><i class="fa fa-volume-off"></i></button>
+                            <button type="button" data-role="none" title="${ButtonOsd}" class="btnCommand videoButton imageButton" data-command="ToggleOsdMenu"><i class="fa fa-info-circle"></i></button>
+                            <button type="button" data-role="none" title="${ButtonFullscreen}" class="btnToggleFullscreen videoButton btnPlayStateCommand imageButton" data-command="ToggleFullscreen"><i class="fa fa-expand"></i></button>
+                        </div>
+                        <div>
+                            <button type="button" data-role="none" title="${ButtonVolumeDown}" class="btnCommand imageButton" data-command="VolumeDown"><i class="fa fa-volume-down"></i></button>
+                            <button type="button" data-role="none" title="${ButtonAudioTracks}" class="btnAudioTracks videoButton btnPlayStateCommand imageButton" data-command="GoToSearch"><i class="fa fa-music"></i></button>
+                            <button type="button" data-role="none" title="${ButtonSubtitles}" class="btnSubtitles videoButton btnPlayStateCommand imageButton" data-command="GoToSearch"><i class="fa fa-text-width"></i></button>
+                            <button type="button" data-role="none" title="${ButtonScenes}" class="btnChapters videoButton btnPlayStateCommand imageButton" data-command="GoToSearch"><i class="fa fa-video-camera"></i></button>
+                        </div>
                     </div>
 
                 </div>
 
                 <div class="tabNavigation tabContent" style="display: none;">
 
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="arrow-u" data-inline="true" data-iconpos="notext" title="${ButtonArrowUp}" class="btnArrowUp btnCommand" data-command="MoveUp">${ButtonArrowUp}</button>
+                    <div>
+                        <button type="button" data-role="none" title="${ButtonArrowUp}" class="btnArrowUp btnCommand imageButton" data-command="MoveUp"><i class="fa fa-arrow-up"></i></button>
                     </div>
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="arrow-l" data-inline="true" data-iconpos="notext" title="${ButtonArrowLeft}" class="btnArrowLeft btnCommand" data-command="MoveLeft">${ButtonArrowLeft}</button>
-                        <button data-icon="check" data-inline="true" data-iconpos="notext" title="${ButtonOk}" class="btnOk btnCommand" data-command="Select">${ButtonOk}</button>
-                        <button data-icon="arrow-r" data-inline="true" data-iconpos="notext" title="${ButtonArrowRight}" class="btnArrowRight btnCommand" data-command="MoveRight">${ButtonArrowRight}</button>
+                    <div>
+                        <button type="button" data-role="none" title="${ButtonArrowLeft}" class="btnArrowLeft btnCommand imageButton" data-command="MoveLeft"><i class="fa fa-arrow-left"></i></button>
+                        <button type="button" data-role="none" title="${ButtonOk}" class="btnOk btnCommand imageButton" data-command="Select"><i class="fa fa-check"></i></button>
+                        <button type="button" data-role="none" title="${ButtonArrowRight}" class="btnArrowRight btnCommand imageButton" data-command="MoveRight"><i class="fa fa-arrow-right"></i></button>
                     </div>
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="arrow-d" data-inline="true" data-iconpos="notext" title="${ButtonArrowDown}" class="btnArrowDown btnCommand" data-command="MoveDown">${ButtonArrowDown}</button>
+                    <div>
+                        <button type="button" data-role="none" title="${ButtonArrowDown}" class="btnArrowDown btnCommand imageButton" data-command="MoveDown"><i class="fa fa-arrow-down"></i></button>
                     </div>
-                    <div data-role="controlgroup" data-type="horizontal">
+                    <div>
                         <button data-icon="back" data-inline="true" data-iconpos="notext" title="${ButtonBack}" class="btnBack btnCommand" data-command="Back">${ButtonBack}</button>
                         <button data-icon="info" data-inline="true" data-iconpos="notext" title="${ButtonInfo}" class="btnInfo btnCommand" data-command="ToggleContextMenu">${ButtonInfo}</button>
                     </div>
                     <br />
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="home" data-inline="true" data-iconpos="notext" title="${ButtonHome}" class="btnGoHome btnCommand" data-command="GoHome">${ButtonHome}</button>
-                        <button data-inline="true" data-iconpos="right" title="${ButtonPageUp}" data-icon="plus" class="btnPageUp btnCommand ui-nodisc-icon" data-command="PageUp">${PageButtonAbbreviation}</button>
-                        <button data-inline="true" data-iconpos="right" title="${ButtonLetterUp}" data-icon="plus" class="btnLetterUp btnCommand ui-nodisc-icon" data-command="NextLetter">${LetterButtonAbbreviation}</button>
-                        <button data-icon="search" data-inline="true" data-iconpos="notext" title="${ButtonSearch}" class="btnShowSearch btnCommand" data-command="GoToSearch">${ButtonSearch}</button>
+                    <div>
+                        <button type="button" data-role="none" title="${ButtonHome}" class="btnGoHome btnCommand imageButton" data-command="GoHome"><i class="fa fa-home"></i></button>
+                        <!--<button data-inline="true" data-iconpos="right" title="${ButtonPageUp}" data-icon="plus" class="btnPageUp btnCommand ui-nodisc-icon" data-command="PageUp">${PageButtonAbbreviation}</button>
+                        <button data-inline="true" data-iconpos="right" title="${ButtonLetterUp}" data-icon="plus" class="btnLetterUp btnCommand ui-nodisc-icon" data-command="NextLetter">${LetterButtonAbbreviation}</button>-->
+                        <button type="button" data-role="none" title="${ButtonSearch}" class="btnShowSearch btnCommand imageButton" data-command="GoToSearch"><i class="fa fa-search"></i></button>
                     </div>
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="gear" data-inline="true" data-iconpos="notext" title="${ButtonSettings}" class="bthShowSettings btnCommand" data-command="GoToSettings">${ButtonSettings}</button>
-                        <button data-inline="true" data-iconpos="right" title="${ButtonPageDown}" data-icon="minus" class="btnPageDown btnCommand ui-nodisc-icon" data-command="PageDown">${PageButtonAbbreviation}</button>
-                        <button data-inline="true" data-iconpos="right" title="${ButtonLetterDown}" data-icon="minus" class="btnLetterDown btnCommand ui-nodisc-icon" data-command="PreviousLetter">${LetterButtonAbbreviation}</button>
-                        <button data-icon="camera" data-inline="true" data-iconpos="notext" title="${ButtonTakeScreenshot}" class="btnScreenshot btnCommand" data-command="TakeScreenshot">${ButtonTakeScreenshot}</button>
+                    <div>
+                        <button type="button" data-role="none" title="${ButtonSettings}" class="bthShowSettings btnCommand imageButton" data-command="GoToSettings"><i class="fa fa-gear"></i></button>
+                        <!--<button data-inline="true" data-iconpos="right" title="${ButtonPageDown}" data-icon="minus" class="btnPageDown btnCommand ui-nodisc-icon" data-command="PageDown">${PageButtonAbbreviation}</button>
+                        <button data-inline="true" data-iconpos="right" title="${ButtonLetterDown}" data-icon="minus" class="btnLetterDown btnCommand ui-nodisc-icon" data-command="PreviousLetter">${LetterButtonAbbreviation}</button>-->
+                        <button type="button" data-role="none" title="${ButtonTakeScreenshot}" class="btnScreenshot btnCommand imageButton" data-command="TakeScreenshot"><i class="fa fa-video-camera"></i></button>
                     </div>
                 </div>
                 <div class="tabAdvanced tabContent" style="display: none;">

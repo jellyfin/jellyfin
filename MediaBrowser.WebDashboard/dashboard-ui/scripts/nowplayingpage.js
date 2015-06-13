@@ -368,7 +368,6 @@
 
         $(page).on('swipedown', function () {
 
-            document.title = new Date().getTime();
             history.back();
         });
 
