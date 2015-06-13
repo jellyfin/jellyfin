@@ -1106,6 +1106,70 @@
             return deferred.promise();
         };
 
+        self.signupForConnect = function (email, username, password, passwordConfirm) {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            if (!email) {
+                deferred.rejectWith(null, [{ errorCode: 'invalidinput' }]);
+                return deferred.promise();
+            }
+            if (!username) {
+                deferred.rejectWith(null, [{ errorCode: 'invalidinput' }]);
+                return deferred.promise();
+            }
+            if (!password) {
+                deferred.rejectWith(null, [{ errorCode: 'invalidinput' }]);
+                return deferred.promise();
+            }
+            if (!passwordConfirm) {
+                deferred.rejectWith(null, [{ errorCode: 'passwordmatch' }]);
+                return deferred.promise();
+            }
+            if (password != passwordConfirm) {
+                deferred.rejectWith(null, [{ errorCode: 'passwordmatch' }]);
+                return deferred.promise();
+            }
+
+            require(['connectservice'], function () {
+
+                var md5 = self.getConnectPasswordHash(password);
+
+                AjaxApi.ajax({
+                    type: "POST",
+                    url: "https://connect.mediabrowser.tv/service/register",
+                    data: {
+                        email: email,
+                        userName: username,
+                        password: md5
+                    },
+                    dataType: "json",
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                    headers: {
+                        "X-Application": appName + "/" + appVersion,
+                        "X-CONNECT-TOKEN": "CONNECT-REGISTER"
+                    }
+
+                }).done(function (result) {
+
+                    deferred.resolve(null, []);
+
+                }).fail(function (e) {
+
+                    try {
+
+                        var result = JSON.parse(e.responseText);
+
+                        deferred.rejectWith(null, [{ errorCode: result.Status }]);
+                    } catch (err) {
+                        deferred.rejectWith(null, [{}]);
+                    }
+                });
+            });
+
+            return deferred.promise();
+        };
+
         self.getConnectPasswordHash = function (password) {
 
             password = globalScope.MediaBrowser.ConnectService.cleanPassword(password);

@@ -306,7 +306,7 @@ pre, textarea.pre {
 }
 
 .imgLogoIcon {
-    height: 45px;
+    height: 40px;
     vertical-align: middle;
 }
 
@@ -540,13 +540,6 @@ h1 .imageLink {
 
     .currentUsername {
         display: inline;
-    }
-}
-
-@media all and (min-width: 650px) {
-
-    .imgLogoIcon {
-        height: 50px;
     }
 }
 

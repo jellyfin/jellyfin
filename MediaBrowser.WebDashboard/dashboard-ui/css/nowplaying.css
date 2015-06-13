@@ -124,11 +124,22 @@
 }
 
 .nowPlayingPageTitle {
-    margin: 1em 0;
+    margin: .5em 0;
 }
 
 .nowPlayingInfoButtons {
-    padding-top: 1em;
+    padding-top: .5em;
+}
+
+@media all and (min-height: 600px) {
+
+    .nowPlayingPageTitle {
+        margin: 1em 0;
+    }
+
+    .nowPlayingInfoButtons {
+        padding-top: 1em;
+    }
 }
 
 @media (orientation: landscape) {

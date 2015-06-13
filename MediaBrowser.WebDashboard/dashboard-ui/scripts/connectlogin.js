@@ -100,16 +100,25 @@
             $('.connectLoginForm', page).hide();
             $('.welcomeContainer', page).show();
             $('.manualServerForm', page).hide();
+            $('.signupForm', page).hide();
         }
         else if (mode == 'connect') {
             $('.connectLoginForm', page).show();
             $('.welcomeContainer', page).hide();
             $('.manualServerForm', page).hide();
+            $('.signupForm', page).hide();
         }
         else if (mode == 'manualserver') {
             $('.manualServerForm', page).show();
             $('.connectLoginForm', page).hide();
             $('.welcomeContainer', page).hide();
+            $('.signupForm', page).hide();
+        }
+        else if (mode == 'signup') {
+            $('.manualServerForm', page).hide();
+            $('.connectLoginForm', page).hide();
+            $('.welcomeContainer', page).hide();
+            $('.signupForm', page).show();
         }
     }
 
@@ -134,6 +143,46 @@
         return false;
     }
 
+    function onSignupFormSubmit() {
+
+        var page = $(this).parents('.page');
+
+        ConnectionManager.signupForConnect($('#txtSignupEmail', page).val(), $('#txtSignupUsername', page).val(), $('#txtSignupPassword', page).val(), $('#txtSignupPasswordConfirm', page).val()).done(function () {
+
+            Dashboard.alert({
+                message: Globalize.translate('MessageThankYouForConnectSignUp'),
+                callback: function () {
+                    Dashboard.navigate('connectlogin.html?mode=welcome');
+                }
+            });
+
+        }).fail(function (result) {
+
+            if (result.errorCode == 'passwordmatch') {
+                Dashboard.alert({
+                    message: Globalize.translate('ErrorMessagePasswordNotMatchConfirm')
+                });
+            }
+            else if (result.errorCode == 'USERNAME_IN_USE') {
+                Dashboard.alert({
+                    message: Globalize.translate('ErrorMessageUsernameInUse')
+                });
+            }
+            else if (result.errorCode == 'EMAIL_IN_USE') {
+                Dashboard.alert({
+                    message: Globalize.translate('ErrorMessageEmailInUse')
+                });
+            } else {
+                Dashboard.alert({
+                    message: Globalize.translate('DefaultErrorMessage')
+                });
+            }
+
+        });
+
+        return false;
+    }
+
     $(document).on('pageinitdepends', "#connectLoginPage", function () {
 
         var page = this;
@@ -144,21 +193,31 @@
 
         $('.connectLoginForm').off('submit', onSubmit).on('submit', onSubmit);
         $('.manualServerForm').off('submit', onManualServerSubmit).on('submit', onManualServerSubmit);
+        $('.signupForm').off('submit', onSignupFormSubmit).on('submit', onSignupFormSubmit);
 
-    }).on('pageshowready', "#connectLoginPage", function () {
+    }).on('pagebeforeshowready', "#connectLoginPage", function () {
 
         var page = this;
 
-        loadPage(page);
-
-        var link = '<a href="http://emby.media" target="_blank">http://emby.media</a>';
-        $('.embyIntroDownloadMessage', page).html(Globalize.translate('EmbyIntroDownloadMessage', link));
+        $('#txtSignupEmail', page).val('');
+        $('#txtSignupUsername', page).val('');
+        $('#txtSignupPassword', page).val('');
+        $('#txtSignupPasswordConfirm', page).val('');
 
         if (AppInfo.isNativeApp) {
             $('.skip', page).show();
         } else {
             $('.skip', page).hide();
         }
+
+        var link = '<a href="http://emby.media" target="_blank">http://emby.media</a>';
+        $('.embyIntroDownloadMessage', page).html(Globalize.translate('EmbyIntroDownloadMessage', link));
+
+    }).on('pageshowready', "#connectLoginPage", function () {
+
+        var page = this;
+
+        loadPage(page);
     });
 
     function submitManualServer(page) {

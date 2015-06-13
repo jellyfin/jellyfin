@@ -567,7 +567,7 @@ function ticks_to_human(str) {
                             $this.unbind(touchMoveEvent, moveHandler);
                             if (start && stop) {
                                 if (stop.time - start.time < 1000 &&
-                                        Math.abs(start.coords[1] - stop.coords[1]) > 30 &&
+                                        Math.abs(start.coords[1] - stop.coords[1]) > 100 &&
                                         Math.abs(start.coords[0] - stop.coords[0]) < 75) {
                                     start.origin
                                             .trigger("swipeupdown")

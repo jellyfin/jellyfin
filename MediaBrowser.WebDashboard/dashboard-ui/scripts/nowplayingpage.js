@@ -522,7 +522,7 @@
 
         var item = state.NowPlayingItem;
 
-        $('.itemName', page).html(item ? MediaController.getNowPlayingNameHtml(item) : '');
+        $('.itemName', page).html(item ? MediaController.getNowPlayingNameHtml(item).replace('<br/>', ' - ') : '');
 
         var url;
         var backdropUrl = null;
