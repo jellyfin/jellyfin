@@ -55,7 +55,6 @@ var Dashboard = {
 
     isConnectMode: function () {
 
-        return true;
         if (AppInfo.isNativeApp) {
             return true;
         }
