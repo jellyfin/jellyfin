@@ -382,7 +382,7 @@
 
         if (nowPlayingItem.Id) {
             ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).done(function (item) {
-                nowPlayingUserData.html(LibraryBrowser.getUserDataIconsHtml(item));
+                nowPlayingUserData.html(LibraryBrowser.getUserDataIconsHtml(item, false));
             });
         }
     }

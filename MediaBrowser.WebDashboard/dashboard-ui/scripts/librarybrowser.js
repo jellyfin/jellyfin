@@ -2277,7 +2277,7 @@
 
         },
 
-        getUserDataIconsHtml: function (item) {
+        getUserDataIconsHtml: function (item, includePlayed) {
 
             var html = '';
 
@@ -2286,13 +2286,15 @@
             var itemId = item.Id;
             var type = item.Type;
 
-            var tooltipPlayed = Globalize.translate('TooltipPlayed');
+            if (includePlayed !== false) {
+                var tooltipPlayed = Globalize.translate('TooltipPlayed');
 
-            if ((item.MediaType || item.IsFolder) && type != "TvChannel" && type != "MusicArtist" && item.MediaType != "Audio") {
-                if (userData.Played) {
-                    html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRatingOn', 'fa-check', tooltipPlayed);
-                } else {
-                    html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating', 'fa-check', tooltipPlayed);
+                if ((item.MediaType || item.IsFolder) && type != "TvChannel" && type != "MusicArtist" && item.MediaType != "Audio") {
+                    if (userData.Played) {
+                        html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRatingOn', 'fa-check', tooltipPlayed);
+                    } else {
+                        html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating', 'fa-check', tooltipPlayed);
+                    }
                 }
             }
 

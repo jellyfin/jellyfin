@@ -67,8 +67,12 @@
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <input type="checkbox" id="chkEnableRealtimeMonitor" name="chkEnableRealtimeMonitor" />
-                            <label for="chkEnableRealtimeMonitor">${LabelEnableRealtimeMonitor}</label>
+                            <label for="selectEnableRealtimeMonitor">${LabelEnableRealtimeMonitor}</label>
+                            <select id="selectEnableRealtimeMonitor" data-mini="true">
+                                <option value="Auto">${OptionAuto}</option>
+                                <option value="Enabled">${OptionYes}</option>
+                                <option value="Disabled">${OptionNo}</option>
+                            </select>
                             <div class="fieldDescription">
                                 ${LabelEnableRealtimeMonitorHelp}
                             </div>

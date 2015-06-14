@@ -10,7 +10,7 @@
 
         $('#txtSeasonZeroName', page).val(config.SeasonZeroDisplayName);
 
-        $('#chkEnableRealtimeMonitor', page).checked(config.EnableRealtimeMonitor).checkboxradio("refresh");
+        $('#selectEnableRealtimeMonitor', page).val(config.EnableLibraryMonitor).selectmenu("refresh");
 
         $('#txtItemsByNamePath', page).val(config.ItemsByNamePath || '');
 
@@ -31,7 +31,7 @@
 
             config.SeasonZeroDisplayName = $('#txtSeasonZeroName', form).val();
 
-            config.EnableRealtimeMonitor = $('#chkEnableRealtimeMonitor', form).checked();
+            config.EnableLibraryMonitor = $('#selectEnableRealtimeMonitor', form).val();
 
             config.EnableAudioArchiveFiles = $('#chkEnableAudioArchiveFiles', form).checked();
             config.EnableVideoArchiveFiles = $('#chkEnableVideoArchiveFiles', form).checked();
