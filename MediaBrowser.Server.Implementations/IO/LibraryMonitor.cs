@@ -3,6 +3,7 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 using Microsoft.Win32;
@@ -147,9 +148,25 @@ namespace MediaBrowser.Server.Implementations.IO
             Start();
         }
 
+        private bool EnableLibraryMonitor
+        {
+            get
+            {
+                switch (ConfigurationManager.Configuration.EnableLibraryMonitor)
+                {
+                    case AutoOnOff.Auto:
+                        return Environment.OSVersion.Platform == PlatformID.Win32NT;
+                    case AutoOnOff.Enabled:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
+
         public void Start()
         {
-            if (ConfigurationManager.Configuration.EnableRealtimeMonitor)
+            if (EnableLibraryMonitor)
             {
                 StartInternal();
             }

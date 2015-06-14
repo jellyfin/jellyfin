@@ -187,7 +187,6 @@ namespace MediaBrowser.Model.Configuration
 
         public bool EnableAutomaticRestart { get; set; }
 
-        public bool EnableRealtimeMonitor { get; set; }
         public PathSubstitution[] PathSubstitutions { get; set; }
 
         public string ServerName { get; set; }
@@ -209,6 +208,8 @@ namespace MediaBrowser.Model.Configuration
         public int RemoteClientBitrateLimit { get; set; }
 
         public bool DenyIFrameEmbedding { get; set; }
+
+        public AutoOnOff EnableLibraryMonitor { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
@@ -236,6 +237,7 @@ namespace MediaBrowser.Model.Configuration
             // 5 minutes
             MinResumeDurationSeconds = 300;
 
+            EnableLibraryMonitor = AutoOnOff.Auto;
             RealtimeLibraryMonitorDelay = 40;
 
             EnableInternetProviders = true;
@@ -252,8 +254,6 @@ namespace MediaBrowser.Model.Configuration
             SortRemoveWords = new[] { "the", "a", "an" };
 
             SeasonZeroDisplayName = "Specials";
-
-            EnableRealtimeMonitor = true;
 
             UICulture = "en-us";
 
