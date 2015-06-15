@@ -713,7 +713,7 @@
     "MessageInvitationSentToNewUser": "Een email is verzonden naar {0} met een uitnodiging om aan te melden bij Emby.",
     "HeaderConnectionFailure": "Verbindingsfout",
     "MessageUnableToConnectToServer": "Het is momenteel niet mogelijk met de geselecteerde server te verbinden. Controleer dat deze draait en probeer het opnieuw.",
-    "ButtonSelectServer": "Select Server",
+    "ButtonSelectServer": "Server Selecteren",
     "MessagePluginConfigurationRequiresLocalAccess": "Meld svp. op de lokale server aan om deze plugin te configureren.",
     "MessageLoggedOutParentalControl": "Toegang is momenteel bepertk, probeer later opnieuw.",
     "DefaultErrorMessage": "Er is een fout opgetreden. Probeer later opnieuw.",
@@ -786,13 +786,13 @@
     "ButtonInbox": "inbox",
     "HeaderAdvanced": "Geavanceerd",
     "HeaderSaySomethingLike": "Say Something Like...",
-    "ButtonTryAgain": "Try Again",
+    "ButtonTryAgain": "Opnieuw Proberen",
     "HeaderYouSaid": "You Said...",
     "MessageWeDidntRecognizeCommand": "We're sorry, we didn't recognize that command.",
     "MessageIfYouBlockedVoice": "If you denied voice access to the app you'll need to reconfigure before trying again.",
     "MessageNoItemsFound": "No items found.",
     "ButtonManageServer": "Manage Server",
-    "ButtonPreferences": "Preferences",
-    "ButtonViewArtist": "View artist",
-    "ButtonViewAlbum": "View album"
+    "ButtonPreferences": "Voorkeuren",
+    "ButtonViewArtist": "Bekijk artiest",
+    "ButtonViewAlbum": "Bekijk album"
 }
