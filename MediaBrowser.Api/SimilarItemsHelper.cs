@@ -32,7 +32,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// The maximum number of items to return
@@ -70,10 +70,10 @@ namespace MediaBrowser.Api
         /// <returns>ItemsResult.</returns>
         internal static ItemsResult GetSimilarItemsResult(DtoOptions dtoOptions, IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, ILogger logger, BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
         {
-            var user = request.UserId.HasValue ? userManager.GetUserById(request.UserId.Value) : null;
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? userManager.GetUserById(request.UserId) : null;
 
             var item = string.IsNullOrEmpty(request.Id) ?
-                (request.UserId.HasValue ? user.RootFolder :
+                (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
                 libraryManager.RootFolder) : libraryManager.GetItemById(request.Id);
 
             Func<BaseItem, bool> filter = i => i.Id != item.Id && includeInSearch(i);

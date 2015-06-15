@@ -85,8 +85,8 @@
     "ButtonDonateWithPayPal": "Spende mit PayPal",
     "OptionDetectArchiveFilesAsMedia": "Behandle Archive wie Medien",
     "OptionDetectArchiveFilesAsMediaHelp": "Wenn aktiviert werden .rar und .zip Datei-Erweiterungen wie Medien behandelt.",
-    "LabelEnterConnectUserName": "Benutzername oder Email:",
-    "LabelEnterConnectUserNameHelp": "Dies ist Ihr Emby online Konto Benutzername oder Passwort.",
+    "LabelEnterConnectUserName": "Username or email:",
+    "LabelEnterConnectUserNameHelp": "This is your Emby online account username or password.",
     "LabelEnableEnhancedMovies": "Aktiviere erweiterte Filmdarstellung.",
     "LabelEnableEnhancedMoviesHelp": "Wenn aktiviert, werden Filme als Verzeichnisse dargestellt, welche Trailer, Extras, Besetzung & Crew sowie weitere Inhalte enth\u00e4lt.",
     "HeaderSyncJobInfo": "Synchronisations-Aufgabe",
@@ -1261,6 +1261,9 @@
     "ButtonLearnMoreAboutEmbyConnect": "Erfahren Sie mehr \u00fcber Emby-Connect",
     "LabelExternalPlayers": "Externe Abspielger\u00e4te:",
     "LabelExternalPlayersHelp": "Zeige Buttons um Inhalt auf externen Ger\u00e4te abzuspielen. Dies ist nur auf Ger\u00e4ten verf\u00fcgbar, die URL Schemes unterst\u00fctzen (Generell Android und iOS). In Verbindung mit externen Abspielern gibt es generell keine Unterst\u00fctzung f\u00fcr die Fernbedienung oder die Fortsetzung von gesehenen Inhalten.",
+    "LabelNativeExternalPlayersHelp": "Zeige Schaltfl\u00e4chen f\u00fcr Wiedergabe in externen Playern.",
+    "LabelEnableItemPreviews": "Aktiviere Vorschaubild f\u00fcr Eintrag",
+    "LabelEnableItemPreviewsHelp": "Wenn aktiviert, wird bei bestimmten Darstellungen eine Vorschauen bei Klick angezeigt.",
     "HeaderSubtitleProfile": "Untertitel Profil",
     "HeaderSubtitleProfiles": "Untertitel Profile",
     "HeaderSubtitleProfilesHelp": "Untertitel Profile beschreiben die vom Ger\u00e4t unterst\u00fctzten Untertitelformate.",
@@ -1432,5 +1435,9 @@
     "HeaderExport": "Export",
     "HeaderColumns": "Spalten",
     "ButtonReset": "Reset",
-    "OptionEnableExternalVideoPlayers": "Aktiviere externe Videoplayer"
+    "OptionEnableExternalVideoPlayers": "Aktiviere externe Videoplayer",
+    "ButtonUnlockGuide": "Guide freischalten",
+    "LabelEnableFullScreen": "Enable fullscreen mode",
+    "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
+    "LabelSyncPath": "Synced content path:"
 }

@@ -24,7 +24,10 @@ namespace MediaBrowser.Common.Implementations
         /// <summary>
         /// Gets the path to the system folder
         /// </summary>
-        public string ProgramSystemPath { get { return Path.Combine(ProgramDataPath, "system"); } }
+        public string ProgramSystemPath
+        {
+            get { return Path.GetDirectoryName(ApplicationPath); }
+        }
 
         /// <summary>
         /// The _data directory

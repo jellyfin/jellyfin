@@ -50,6 +50,7 @@ using MediaBrowser.Dlna.Main;
 using MediaBrowser.Dlna.MediaReceiverRegistrar;
 using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.LocalMetadata.Providers;
+using MediaBrowser.LocalMetadata.Savers;
 using MediaBrowser.MediaEncoding.BdInfo;
 using MediaBrowser.MediaEncoding.Encoder;
 using MediaBrowser.MediaEncoding.Subtitles;
@@ -430,7 +431,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             RegisterSingleInstance<ISearchEngine>(() => new SearchEngine(LogManager, LibraryManager, UserManager));
 
-            HttpServer = ServerFactory.CreateServer(this, LogManager, "Emby", "web/index.html");
+            HttpServer = ServerFactory.CreateServer(this, LogManager, ServerConfigurationManager, "Emby", "web/index.html");
             RegisterSingleInstance(HttpServer, false);
             progress.Report(10);
 
@@ -446,10 +447,10 @@ namespace MediaBrowser.Server.Startup.Common
             TVSeriesManager = new TVSeriesManager(UserManager, UserDataManager, LibraryManager);
             RegisterSingleInstance(TVSeriesManager);
 
-            SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager, () => MediaSourceManager, JsonSerializer);
+			SyncManager = new SyncManager(LibraryManager, SyncRepository, ImageProcessor, LogManager.GetLogger("SyncManager"), UserManager, () => DtoService, this, TVSeriesManager, () => MediaEncoder, FileSystemManager, () => SubtitleEncoder, ServerConfigurationManager, UserDataManager, () => MediaSourceManager, JsonSerializer, TaskManager);
             RegisterSingleInstance(SyncManager);
 
-            DtoService = new DtoService(LogManager.GetLogger("DtoService"), LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager, () => MediaSourceManager);
+            DtoService = new DtoService(LogManager.GetLogger("DtoService"), LibraryManager, UserDataManager, ItemRepository, ImageProcessor, ServerConfigurationManager, FileSystemManager, ProviderManager, () => ChannelManager, SyncManager, this, () => DeviceManager, () => MediaSourceManager, () => LiveTvManager);
             RegisterSingleInstance(DtoService);
 
             var encryptionManager = new EncryptionManager();
@@ -926,7 +927,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             Logger.Debug("Calling NativeApp.Restart");
 
-            NativeApp.Restart();
+            NativeApp.Restart(_startupOptions);
         }
 
         /// <summary>
@@ -989,7 +990,7 @@ namespace MediaBrowser.Server.Startup.Common
             list.Add(typeof(DlnaEntryPoint).Assembly);
 
             // Local metadata 
-            list.Add(typeof(AlbumXmlProvider).Assembly);
+            list.Add(typeof(BoxSetXmlSaver).Assembly);
 
             // Xbmc 
             list.Add(typeof(ArtistNfoProvider).Assembly);

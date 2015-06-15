@@ -75,7 +75,7 @@ namespace MediaBrowser.Api.Music
         {
             var item = _libraryManager.GetItemById(request.Id);
 
-            var user = _userManager.GetUserById(request.UserId.Value);
+            var user = _userManager.GetUserById(request.UserId);
 
             var items = _musicManager.GetInstantMixFromItem(item, user);
 
@@ -86,7 +86,7 @@ namespace MediaBrowser.Api.Music
         {
             var item = _libraryManager.GetItemById(request.Id);
 
-            var user = _userManager.GetUserById(request.UserId.Value);
+            var user = _userManager.GetUserById(request.UserId);
 
             var items = _musicManager.GetInstantMixFromItem(item, user);
 
@@ -97,7 +97,7 @@ namespace MediaBrowser.Api.Music
         {
             var item = _libraryManager.GetItemById(request.Id);
 
-            var user = _userManager.GetUserById(request.UserId.Value);
+            var user = _userManager.GetUserById(request.UserId);
 
             var items = _musicManager.GetInstantMixFromItem(item, user);
 
@@ -108,7 +108,7 @@ namespace MediaBrowser.Api.Music
         {
             var album = _libraryManager.GetItemById(request.Id);
 
-            var user = _userManager.GetUserById(request.UserId.Value);
+            var user = _userManager.GetUserById(request.UserId);
 
             var items = _musicManager.GetInstantMixFromItem(album, user);
 
@@ -119,7 +119,7 @@ namespace MediaBrowser.Api.Music
         {
             var playlist = (Playlist)_libraryManager.GetItemById(request.Id);
 
-            var user = _userManager.GetUserById(request.UserId.Value);
+            var user = _userManager.GetUserById(request.UserId);
 
             var items = _musicManager.GetInstantMixFromItem(playlist, user);
 
@@ -128,7 +128,7 @@ namespace MediaBrowser.Api.Music
 
         public object Get(GetInstantMixFromMusicGenre request)
         {
-            var user = _userManager.GetUserById(request.UserId.Value);
+            var user = _userManager.GetUserById(request.UserId);
 
             var items = _musicManager.GetInstantMixFromGenres(new[] { request.Name }, user);
 
@@ -137,7 +137,7 @@ namespace MediaBrowser.Api.Music
 
         public object Get(GetInstantMixFromArtist request)
         {
-            var user = _userManager.GetUserById(request.UserId.Value);
+            var user = _userManager.GetUserById(request.UserId);
 
             var items = _musicManager.GetInstantMixFromArtist(request.Name, user);
 

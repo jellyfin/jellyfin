@@ -130,7 +130,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             UpdateConnectInfo();
         }
 
-        private async void UpdateConnectInfo()
+        private async Task UpdateConnectInfo()
         {
             await _operationLock.WaitAsync().ConfigureAwait(false);
 
@@ -376,6 +376,11 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         public async Task<UserLinkResult> LinkUser(string userId, string connectUsername)
         {
+            if (string.IsNullOrWhiteSpace(ConnectServerId))
+            {
+                await UpdateConnectInfo().ConfigureAwait(false);
+            }
+            
             await _operationLock.WaitAsync().ConfigureAwait(false);
 
             try
@@ -470,6 +475,11 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         public async Task<UserLinkResult> InviteUser(ConnectAuthorizationRequest request)
         {
+            if (string.IsNullOrWhiteSpace(ConnectServerId))
+            {
+                await UpdateConnectInfo().ConfigureAwait(false);
+            }
+            
             await _operationLock.WaitAsync().ConfigureAwait(false);
 
             try

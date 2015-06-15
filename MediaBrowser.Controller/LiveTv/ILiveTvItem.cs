@@ -1,10 +1,10 @@
-﻿using System;
+﻿using MediaBrowser.Controller.Entities;
 
 namespace MediaBrowser.Controller.LiveTv
 {
-    public interface ILiveTvItem
+    public interface ILiveTvItem : IHasId
     {
-        Guid Id { get; }
         string ServiceName { get; set; }
+        string ExternalId { get; set; }
     }
 }

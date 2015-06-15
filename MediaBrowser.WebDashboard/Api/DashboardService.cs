@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Text;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -13,10 +14,10 @@ using ServiceStack;
 using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using WebMarkupMin.Core.Minifiers;
 
 namespace MediaBrowser.WebDashboard.Api
 {
@@ -282,7 +283,7 @@ namespace MediaBrowser.WebDashboard.Api
             }
             catch (IOException)
             {
-                
+
             }
 
             var creator = GetPackageCreator();
@@ -301,15 +302,80 @@ namespace MediaBrowser.WebDashboard.Api
                 var cordovaVersion = Path.Combine(path, "thirdparty", "cordova", "registrationservices.js");
                 File.Copy(cordovaVersion, Path.Combine(path, "scripts", "registrationservices.js"), true);
                 File.Delete(cordovaVersion);
+
+                // Delete things that are unneeded in an attempt to keep the output as trim as possible
+                Directory.Delete(Path.Combine(path, "css", "images", "tour"), true);
+                Directory.Delete(Path.Combine(path, "thirdparty", "apiclient", "alt"), true);
+
+                File.Delete(Path.Combine(path, "thirdparty", "jquerymobile-1.4.5", "jquery.mobile-1.4.5.min.map"));
             }
+
+            MinifyCssDirectory(Path.Combine(path, "css"));
+            MinifyJsDirectory(Path.Combine(path, "scripts"));
+            MinifyJsDirectory(Path.Combine(path, "thirdparty", "apiclient"));
+            MinifyJsDirectory(Path.Combine(path, "voice"));
 
             await DumpHtml(creator.DashboardUIPath, path, mode, culture, appVersion);
             await DumpJs(creator.DashboardUIPath, path, mode, culture, appVersion);
 
             await DumpFile("scripts/all.js", Path.Combine(path, "scripts", "all.js"), mode, culture, appVersion).ConfigureAwait(false);
             await DumpFile("css/all.css", Path.Combine(path, "css", "all.css"), mode, culture, appVersion).ConfigureAwait(false);
- 
+
             return "";
+        }
+
+        private void MinifyCssDirectory(string path)
+        {
+            foreach (var file in Directory.GetFiles(path, "*.css", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    var text = File.ReadAllText(file, Encoding.UTF8);
+
+                    var result = new KristensenCssMinifier().Minify(text, false, Encoding.UTF8);
+
+                    if (result.Errors.Count > 0)
+                    {
+                        Logger.Error("Error minifying css: " + result.Errors[0].Message);
+                    }
+                    else
+                    {
+                        text = result.MinifiedContent;
+                        File.WriteAllText(file, text, Encoding.UTF8);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error minifying css", ex);
+                }
+            }
+        }
+
+        private void MinifyJsDirectory(string path)
+        {
+            foreach (var file in Directory.GetFiles(path, "*.js", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    var text = File.ReadAllText(file, Encoding.UTF8);
+
+                    var result = new CrockfordJsMinifier().Minify(text, false, Encoding.UTF8);
+
+                    if (result.Errors.Count > 0)
+                    {
+                        Logger.Error("Error minifying javascript: " + result.Errors[0].Message);
+                    }
+                    else
+                    {
+                        text = result.MinifiedContent;
+                        File.WriteAllText(file, text, Encoding.UTF8);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error minifying css", ex);
+                }
+            }
         }
 
         private async Task DumpHtml(string source, string destination, string mode, string culture, string appVersion)

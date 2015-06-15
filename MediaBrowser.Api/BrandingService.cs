@@ -34,7 +34,8 @@ namespace MediaBrowser.Api
         {
             var result = _config.GetConfiguration<BrandingOptions>("branding");
 
-            return ResultFactory.GetResult(result.CustomCss, "text/css");
+			// When null this throws a 405 error under Mono OSX, so default to empty string
+			return ResultFactory.GetResult(result.CustomCss ?? string.Empty, "text/css");
         }
     }
 }

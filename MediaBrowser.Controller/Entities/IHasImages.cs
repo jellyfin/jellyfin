@@ -1,13 +1,12 @@
 ﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Entities
 {
-    public interface IHasImages : IHasProviderIds
+    public interface IHasImages : IHasProviderIds, IHasId
     {
         /// <summary>
         /// Gets the name.
@@ -26,12 +25,6 @@ namespace MediaBrowser.Controller.Entities
         /// </summary>
         /// <value>The file name without extension.</value>
         string FileNameWithoutExtension { get; }
-
-        /// <summary>
-        /// Gets the identifier.
-        /// </summary>
-        /// <value>The identifier.</value>
-        Guid Id { get; }
 
         /// <summary>
         /// Gets the type of the location.

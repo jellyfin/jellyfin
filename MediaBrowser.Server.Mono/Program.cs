@@ -139,19 +139,28 @@ namespace MediaBrowser.Server.Mono
             ApplicationTaskCompletionSource.SetResult(true);
         }
 
-        public static void Restart()
+        public static void Restart(StartupOptions startupOptions)
         {
             _logger.Info("Disposing app host");
             _appHost.Dispose();
 
             _logger.Info("Starting new instance");
 
-            var args = Environment.GetCommandLineArgs()
-                            .Skip(1)
-                            .Select(NormalizeCommandLineArgument);
+            string module = startupOptions.GetOption("-restartpath");
+            string commandLineArgsString = startupOptions.GetOption("-restartargs") ?? string.Empty;
 
-            var commandLineArgsString = string.Join(" ", args.ToArray());
-            var module = Environment.GetCommandLineArgs().First();
+            if (string.IsNullOrWhiteSpace(module))
+            {
+                module = Environment.GetCommandLineArgs().First();
+            }
+            if (!startupOptions.ContainsOption("-restartargs"))
+            {
+                var args = Environment.GetCommandLineArgs()
+                                .Skip(1)
+                                .Select(NormalizeCommandLineArgument);
+
+                commandLineArgsString = string.Join(" ", args.ToArray());
+            }
 
             _logger.Info("Executable: {0}", module);
             _logger.Info("Arguments: {0}", commandLineArgsString);

@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.HttpServer.SocketSharp;
-using ServiceStack;
 using ServiceStack.Web;
 using System;
 using System.Globalization;
@@ -13,10 +12,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer
     {
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
         private readonly ILogger _logger;
+        private readonly Func<bool> _denyIframeEmbedding;
 
-        public ResponseFilter(ILogger logger)
+        public ResponseFilter(ILogger logger, Func<bool> denyIframeEmbedding)
         {
             _logger = logger;
+            _denyIframeEmbedding = denyIframeEmbedding;
         }
 
         /// <summary>
@@ -29,6 +30,11 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         {
             // Try to prevent compatibility view
             res.AddHeader("X-UA-Compatible", "IE=Edge");
+
+            if (_denyIframeEmbedding())
+            {
+                res.AddHeader("X-Frame-Options", "DENY");
+            }
 
             var exception = dto as Exception;
 
@@ -52,7 +58,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (hasOptions != null)
             {
-                //hasOptions.Options["Server"] = "Mono-HTTPAPI/1.1";
+                hasOptions.Options["Server"] = "Mono-HTTPAPI/1.1";
 
                 // Content length has to be explicitly set on on HttpListenerResponse or it won't be happy
                 string contentLength;

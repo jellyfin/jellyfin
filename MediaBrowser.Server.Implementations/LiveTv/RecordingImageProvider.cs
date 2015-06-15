@@ -36,17 +36,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var imageResponse = new DynamicImageResponse();
 
-            if (!string.IsNullOrEmpty(liveTvItem.RecordingInfo.ImagePath))
+            if (!string.IsNullOrEmpty(liveTvItem.ProviderImagePath))
             {
-                imageResponse.Path = liveTvItem.RecordingInfo.ImagePath;
+                imageResponse.Path = liveTvItem.ProviderImagePath;
                 imageResponse.HasImage = true;
             }
-            else if (!string.IsNullOrEmpty(liveTvItem.RecordingInfo.ImageUrl))
+            else if (!string.IsNullOrEmpty(liveTvItem.ProviderImageUrl))
             {
                 var options = new HttpRequestOptions
                 {
                     CancellationToken = cancellationToken,
-                    Url = liveTvItem.RecordingInfo.ImageUrl
+                    Url = liveTvItem.ProviderImageUrl
                 };
 
                 var response = await _httpClient.GetResponse(options).ConfigureAwait(false);
@@ -62,7 +62,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     _logger.Error("Provider did not return an image content type.");
                 }
             }
-            else if (liveTvItem.RecordingInfo.HasImage ?? true)
+            else
             {
                 var service = _liveTvManager.Services.FirstOrDefault(i => string.Equals(i.Name, liveTvItem.ServiceName, StringComparison.OrdinalIgnoreCase));
 
@@ -70,7 +70,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 {
                     try
                     {
-                        var response = await service.GetRecordingImageAsync(liveTvItem.RecordingInfo.Id, cancellationToken).ConfigureAwait(false);
+                        var response = await service.GetRecordingImageAsync(liveTvItem.ExternalId, cancellationToken).ConfigureAwait(false);
 
                         if (response != null)
                         {
@@ -109,7 +109,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (liveTvItem != null)
             {
-                return !liveTvItem.HasImage(ImageType.Primary) && (liveTvItem.RecordingInfo.HasImage ?? true);
+                return !liveTvItem.HasImage(ImageType.Primary) && (!string.IsNullOrWhiteSpace(liveTvItem.ProviderImagePath) || !string.IsNullOrWhiteSpace(liveTvItem.ProviderImageUrl));
             }
             return false;
         }

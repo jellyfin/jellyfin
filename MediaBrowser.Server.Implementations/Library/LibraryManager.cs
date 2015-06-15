@@ -16,6 +16,7 @@ using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Naming.Audio;
 using MediaBrowser.Naming.Common;
 using MediaBrowser.Naming.TV;
@@ -1207,6 +1208,18 @@ namespace MediaBrowser.Server.Implementations.Library
             LibraryItemsCache.TryGetValue(id, out item);
 
             return item;
+        }
+
+        public QueryResult<BaseItem> GetItems(InternalItemsQuery query)
+        {
+            var result = ItemRepository.GetItemIdsList(query);
+
+            var items = result.Select(GetItemById).ToArray();
+
+            return new QueryResult<BaseItem>
+            {
+                Items = items
+            };
         }
 
         /// <summary>

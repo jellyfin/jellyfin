@@ -30,7 +30,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Limit results to items containing a specific person
@@ -325,7 +325,7 @@ namespace MediaBrowser.Api.UserLibrary
         private async Task<ItemsResult> GetItems(GetItems request)
         {
             var parentItem = string.IsNullOrEmpty(request.ParentId) ? null : _libraryManager.GetItemById(request.ParentId);
-            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
             var result = await GetItemsToSerialize(request, user, parentItem).ConfigureAwait(false);
 

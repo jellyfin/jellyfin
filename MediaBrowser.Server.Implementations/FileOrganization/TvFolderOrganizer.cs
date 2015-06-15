@@ -59,11 +59,18 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     var organizer = new EpisodeFileOrganizer(_organizationService, _config, _fileSystem, _logger, _libraryManager,
                         _libraryMonitor, _providerManager);
 
-                    var result = await organizer.OrganizeEpisodeFile(file.FullName, options, options.OverwriteExistingEpisodes, cancellationToken).ConfigureAwait(false);
-
-                    if (result.Status == FileSortingStatus.Success)
+                    try
                     {
-                        scanLibrary = true;
+                        var result = await organizer.OrganizeEpisodeFile(file.FullName, options, options.OverwriteExistingEpisodes, cancellationToken).ConfigureAwait(false);
+
+                        if (result.Status == FileSortingStatus.Success)
+                        {
+                            scanLibrary = true;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error organizing episode {0}", ex, file);
                     }
 
                     numComplete++;

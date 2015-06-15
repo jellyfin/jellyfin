@@ -142,6 +142,7 @@
     <Compile Include="Entities\IHasBudget.cs" />
     <Compile Include="Entities\IHasCriticRating.cs" />
     <Compile Include="Entities\IHasDisplayOrder.cs" />
+    <Compile Include="Entities\IHasId.cs" />
     <Compile Include="Entities\IHasImages.cs" />
     <Compile Include="Entities\IHasKeywords.cs" />
     <Compile Include="Entities\IHasMediaSources.cs" />
@@ -149,10 +150,12 @@
     <Compile Include="Entities\IHasOriginalTitle.cs" />
     <Compile Include="Entities\IHasPreferredMetadataLanguage.cs" />
     <Compile Include="Entities\IHasProductionLocations.cs" />
+    <Compile Include="Entities\IHasProgramAttributes.cs" />
     <Compile Include="Entities\IHasScreenshots.cs" />
     <Compile Include="Entities\IHasSeries.cs" />
     <Compile Include="Entities\IHasShortOverview.cs" />
     <Compile Include="Entities\IHasSpecialFeatures.cs" />
+    <Compile Include="Entities\IHasStartDate.cs" />
     <Compile Include="Entities\IHasTaglines.cs" />
     <Compile Include="Entities\IHasTags.cs" />
     <Compile Include="Entities\IHasThemeMedia.cs" />
@@ -408,6 +411,7 @@
     <Compile Include="Sync\ISyncProvider.cs" />
     <Compile Include="Sync\ISyncRepository.cs" />
     <Compile Include="Sync\SyncedFileInfo.cs" />
+    <Compile Include="Sync\SyncedItemProgress.cs" />
     <Compile Include="Themes\IAppThemeManager.cs" />
     <Compile Include="Themes\InternalThemeImage.cs" />
     <Compile Include="TV\ITVSeriesManager.cs" />

@@ -428,7 +428,7 @@ namespace MediaBrowser.Api
             var series = item as Series;
             if (series != null)
             {
-                series.Status = request.Status;
+                series.Status = request.SeriesStatus;
                 series.AirDays = request.AirDays;
                 series.AirTime = request.AirTime;
 

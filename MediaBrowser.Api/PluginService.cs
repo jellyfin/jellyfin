@@ -42,7 +42,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Plugin Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Plugin Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ namespace MediaBrowser.Api
         /// </summary>
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Plugin Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// The raw Http Request Input Stream
@@ -239,7 +239,8 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetPluginConfiguration request)
         {
-            var plugin = _appHost.Plugins.First(p => p.Id == request.Id);
+            var guid = new Guid(request.Id);
+            var plugin = _appHost.Plugins.First(p => p.Id == guid);
 
             var dateModified = plugin.ConfigurationDateLastModified;
 
@@ -298,7 +299,8 @@ namespace MediaBrowser.Api
         /// <param name="request">The request.</param>
         public void Delete(UninstallPlugin request)
         {
-            var plugin = _appHost.Plugins.First(p => p.Id == request.Id);
+            var guid = new Guid(request.Id);
+            var plugin = _appHost.Plugins.First(p => p.Id == guid);
 
             _installationManager.UninstallPlugin(plugin);
         }

@@ -19,7 +19,7 @@ namespace MediaBrowser.Api
     public class GetAdditionalParts : IReturn<ItemsResult>
     {
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -71,10 +71,10 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public object Get(GetAdditionalParts request)
         {
-            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
             var item = string.IsNullOrEmpty(request.Id)
-                           ? (request.UserId.HasValue
+                           ? (!string.IsNullOrWhiteSpace(request.UserId)
                                   ? user.RootFolder
                                   : _libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);

@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.MediaEncoding;
-using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -136,25 +135,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private async Task AddMediaInfo(MediaSourceInfo mediaSource, bool isAudio, CancellationToken cancellationToken)
         {
             var originalRuntime = mediaSource.RunTimeTicks;
-
-            var info = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
-            {
-                InputPath = mediaSource.Path,
-                Protocol = mediaSource.Protocol,
-                MediaType = isAudio ? DlnaProfileType.Audio : DlnaProfileType.Video,
-                ExtractChapters = false
-
-            }, cancellationToken).ConfigureAwait(false);
-
-            mediaSource.Bitrate = info.Bitrate;
-            mediaSource.Container = info.Container;
-            mediaSource.Formats = info.Formats;
-            mediaSource.MediaStreams = info.MediaStreams;
-            mediaSource.RunTimeTicks = info.RunTimeTicks;
-            mediaSource.Size = info.Size;
-            mediaSource.Timestamp = info.Timestamp;
-            mediaSource.Video3DFormat = info.Video3DFormat;
-            mediaSource.VideoType = info.VideoType;
 
             mediaSource.DefaultSubtitleStreamIndex = null;
 

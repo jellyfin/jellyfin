@@ -66,6 +66,9 @@
     <Compile Include="..\MediaBrowser.Model\ApiClient\ConnectionState.cs">
       <Link>ApiClient\ConnectionState.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\ApiClient\ConnectSignupResponse.cs">
+      <Link>ApiClient\ConnectSignupResponse.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\ApiClient\GeneralCommandEventArgs.cs">
       <Link>ApiClient\GeneralCommandEventArgs.cs</Link>
     </Compile>
@@ -143,6 +146,9 @@
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\AccessSchedule.cs">
       <Link>Configuration\AccessSchedule.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\Configuration\AutoOnOff.cs">
+      <Link>Configuration\AutoOnOff.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\Configuration\BaseApplicationConfiguration.cs">
       <Link>Configuration\BaseApplicationConfiguration.cs</Link>
@@ -699,23 +705,14 @@
     <Compile Include="..\MediaBrowser.Model\LiveTv\ProgramAudio.cs">
       <Link>LiveTv\ProgramAudio.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\LiveTv\ProgramInfoDto.cs">
-      <Link>LiveTv\ProgramInfoDto.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\ProgramQuery.cs">
       <Link>LiveTv\ProgramQuery.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\RecommendedProgramQuery.cs">
       <Link>LiveTv\RecommendedProgramQuery.cs</Link>
     </Compile>
-    <Compile Include="..\MediaBrowser.Model\LiveTv\RecordingGroupDto.cs">
-      <Link>LiveTv\RecordingGroupDto.cs</Link>
-    </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\RecordingGroupQuery.cs">
       <Link>LiveTv\RecordingGroupQuery.cs</Link>
-    </Compile>
-    <Compile Include="..\MediaBrowser.Model\LiveTv\RecordingInfoDto.cs">
-      <Link>LiveTv\RecordingInfoDto.cs</Link>
     </Compile>
     <Compile Include="..\MediaBrowser.Model\LiveTv\RecordingQuery.cs">
       <Link>LiveTv\RecordingQuery.cs</Link>

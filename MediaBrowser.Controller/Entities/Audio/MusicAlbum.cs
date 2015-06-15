@@ -121,6 +121,15 @@ namespace MediaBrowser.Controller.Entities.Audio
                 .Select(i => i.GetLookupInfo())
                 .ToList();
 
+            var album = id.SongInfos
+                .Select(i => i.Album)
+                .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
+
+            if (!string.IsNullOrWhiteSpace(album))
+            {
+                id.Name = album;
+            }
+
             return id;
         }
     }

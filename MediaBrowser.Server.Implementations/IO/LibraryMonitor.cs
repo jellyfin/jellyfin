@@ -3,6 +3,7 @@ using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.ScheduledTasks;
 using Microsoft.Win32;
@@ -81,10 +82,10 @@ namespace MediaBrowser.Server.Implementations.IO
                 throw new ArgumentNullException("path");
             }
 
-            // This is an arbitraty amount of time, but delay it because file system writes often trigger events after RemoveTempIgnore has been called. 
+            // This is an arbitraty amount of time, but delay it because file system writes often trigger events long after the file was actually written to.
             // Seeing long delays in some situations, especially over the network, sometimes up to 45 seconds
-            // But if we make this delay too high, we risk missing legitimate changes
-            await Task.Delay(10000).ConfigureAwait(false);
+            // But if we make this delay too high, we risk missing legitimate changes, such as user adding a new file, or hand-editing metadata
+            await Task.Delay(20000).ConfigureAwait(false);
 
             string val;
             _tempIgnoredPaths.TryRemove(path, out val);
@@ -147,9 +148,25 @@ namespace MediaBrowser.Server.Implementations.IO
             Start();
         }
 
+        private bool EnableLibraryMonitor
+        {
+            get
+            {
+                switch (ConfigurationManager.Configuration.EnableLibraryMonitor)
+                {
+                    case AutoOnOff.Auto:
+                        return Environment.OSVersion.Platform == PlatformID.Win32NT;
+                    case AutoOnOff.Enabled:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        }
+
         public void Start()
         {
-            if (ConfigurationManager.Configuration.EnableRealtimeMonitor)
+            if (EnableLibraryMonitor)
             {
                 StartInternal();
             }

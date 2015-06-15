@@ -61,9 +61,9 @@ namespace MediaBrowser.Api.UserLibrary
             BaseItem parentItem;
             List<BaseItem> libraryItems = null;
 
-            if (request.UserId.HasValue)
+            if (!string.IsNullOrWhiteSpace(request.UserId))
             {
-                user = UserManager.GetUserById(request.UserId.Value);
+                user = UserManager.GetUserById(request.UserId);
                 parentItem = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : LibraryManager.GetItemById(request.ParentId);
 
                 if (RequiresLibraryItems(request, dtoOptions))
@@ -92,7 +92,7 @@ namespace MediaBrowser.Api.UserLibrary
             {
                 var folder = (Folder)parentItem;
 
-                if (request.UserId.HasValue)
+                if (!string.IsNullOrWhiteSpace(request.UserId))
                 {
                     items = request.Recursive ?
                         folder.GetRecursiveChildren(user, filter) :
@@ -388,7 +388,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
 
         [ApiMember(Name = "NameStartsWithOrGreater", Description = "Optional filter by items whose name is sorted equally or greater than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string NameStartsWithOrGreater { get; set; }

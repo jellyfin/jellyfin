@@ -66,7 +66,7 @@ namespace MediaBrowser.Server.Startup.Common
         /// <summary>
         /// Restarts this instance.
         /// </summary>
-        void Restart();
+        void Restart(StartupOptions startupOptions);
 
         /// <summary>
         /// Configures the automatic run.

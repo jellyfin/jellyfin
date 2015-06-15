@@ -42,7 +42,7 @@ namespace MediaBrowser.Api.Movies
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Specify this to localize the search to a specific item or folder. Omit to use the root.
@@ -119,7 +119,7 @@ namespace MediaBrowser.Api.Movies
 
         public async Task<object> Get(GetMovieRecommendations request)
         {
-            var user = _userManager.GetUserById(request.UserId.Value);
+            var user = _userManager.GetUserById(request.UserId);
 
             IEnumerable<BaseItem> movies = GetAllLibraryItems(request.UserId, _userManager, _libraryManager, request.ParentId, i => i is Movie);
 
@@ -167,10 +167,10 @@ namespace MediaBrowser.Api.Movies
 
         private async Task<ItemsResult> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
         {
-            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
             var item = string.IsNullOrEmpty(request.Id) ?
-                (request.UserId.HasValue ? user.RootFolder :
+                (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
                 _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
 
             Func<BaseItem, bool> filter = i => i.Id != item.Id && includeInSearch(i);

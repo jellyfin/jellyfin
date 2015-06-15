@@ -5,9 +5,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
-using MoreLinq;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -28,7 +26,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -49,7 +47,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
     }
 
     /// <summary>
@@ -63,7 +61,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the item id.
@@ -84,7 +82,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -105,7 +103,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -126,7 +124,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "DELETE")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -147,7 +145,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -175,7 +173,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -196,7 +194,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -515,7 +513,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="itemId">The item id.</param>
         /// <param name="isFavorite">if set to <c>true</c> [is favorite].</param>
         /// <returns>Task{UserItemDataDto}.</returns>
-        private async Task<UserItemDataDto> MarkFavorite(Guid userId, string itemId, bool isFavorite)
+        private async Task<UserItemDataDto> MarkFavorite(string userId, string itemId, bool isFavorite)
         {
             var user = _userManager.GetUserById(userId);
 
@@ -563,7 +561,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="itemId">The item id.</param>
         /// <param name="likes">if set to <c>true</c> [likes].</param>
         /// <returns>Task{UserItemDataDto}.</returns>
-        private async Task<UserItemDataDto> UpdateUserItemRating(Guid userId, string itemId, bool? likes)
+        private async Task<UserItemDataDto> UpdateUserItemRating(string userId, string itemId, bool? likes)
         {
             var user = _userManager.GetUserById(userId);
 

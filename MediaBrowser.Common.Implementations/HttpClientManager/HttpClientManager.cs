@@ -105,6 +105,23 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             return client;
         }
 
+        private WebRequest CreateWebRequest(string url)
+        {
+            try
+            {
+                return WebRequest.Create(url);
+            }
+            catch (NotSupportedException)
+            {
+                //Webrequest creation does fail on MONO randomly when using WebRequest.Create
+                //the issue occurs in the GetCreator method here: http://www.oschina.net/code/explore/mono-2.8.1/mcs/class/System/System.Net/WebRequest.cs
+
+                var type = Type.GetType("System.Net.HttpRequestCreator, System, Version=4.0.0.0,Culture=neutral, PublicKeyToken=b77a5c561934e089");
+                var creator = Activator.CreateInstance(type, nonPublic: true) as IWebRequestCreate;
+                return creator.Create(new Uri(url)) as HttpWebRequest;
+            }
+        }
+
         private WebRequest GetRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
         {
             var request = WebRequest.Create(options.Url);
@@ -723,9 +740,20 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
         /// <returns>System.String.</returns>
         private string GetHostFromUrl(string url)
         {
-            var start = url.IndexOf("://", StringComparison.OrdinalIgnoreCase) + 3;
-            var len = url.IndexOf('/', start) - start;
-            return url.Substring(start, len);
+            var index = url.IndexOf("://", StringComparison.OrdinalIgnoreCase);
+
+            if (index != -1)
+            {
+                url = url.Substring(index + 3);
+                var host = url.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+
+                if (!string.IsNullOrWhiteSpace(host))
+                {
+                    return host;
+                }
+            }
+
+            return url;
         }
 
         /// <summary>

@@ -35,6 +35,14 @@ namespace MediaBrowser.Controller.Library
         /// <param name="userId">The user id.</param>
         /// <param name="key">The key.</param>
         /// <returns>Task{UserItemData}.</returns>
+        UserItemData GetUserData(string userId, string key);
+
+        /// <summary>
+        /// Gets the user data.
+        /// </summary>
+        /// <param name="userId">The user id.</param>
+        /// <param name="key">The key.</param>
+        /// <returns>Task{UserItemData}.</returns>
         UserItemData GetUserData(Guid userId, string key);
 
         /// <summary>

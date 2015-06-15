@@ -1,4 +1,6 @@
-﻿namespace MediaBrowser.Model.LiveTv
+﻿using MediaBrowser.Model.Dto;
+
+namespace MediaBrowser.Model.LiveTv
 {
     public class TimerInfoDto : BaseTimerInfoDto
     {
@@ -30,7 +32,7 @@
         /// Gets or sets the program information.
         /// </summary>
         /// <value>The program information.</value>
-        public ProgramInfoDto ProgramInfo { get; set; }
+        public BaseItemDto ProgramInfo { get; set; }
 
     }
 }

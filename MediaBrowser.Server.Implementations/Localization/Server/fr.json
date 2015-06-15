@@ -85,8 +85,8 @@
     "ButtonDonateWithPayPal": "Faire un don avec Paypal",
     "OptionDetectArchiveFilesAsMedia": "Reconna\u00eetre les fichiers archives comme m\u00e9dias",
     "OptionDetectArchiveFilesAsMediaHelp": "Activez cette option pour reconna\u00eetre les fichiers portant l'extension .rar ou .zip comme des fichiers de m\u00e9dias. ",
-    "LabelEnterConnectUserName": "Nom d'utilisateur ou adresse email :",
-    "LabelEnterConnectUserNameHelp": "C'est votre nom d'utilisateur et mot de passe de votre compte Emby  en ligne.",
+    "LabelEnterConnectUserName": "Nom d'utilisateur ou adresse mail :",
+    "LabelEnterConnectUserNameHelp": "C'est le nom d'utilisateur ou mot de passe de votre compte Emby en ligne.",
     "LabelEnableEnhancedMovies": "Activer le mode d'affichage \u00e9tendu des films",
     "LabelEnableEnhancedMoviesHelp": "Lorsque ce mode est activ\u00e9, les films seront affich\u00e9s comme des dossiers et incluront les bandes-annonces, les extras, l'\u00e9quipe de tournage et les autre contenus li\u00e9s.",
     "HeaderSyncJobInfo": "T\u00e2che de synchronisation",
@@ -1261,6 +1261,9 @@
     "ButtonLearnMoreAboutEmbyConnect": "Plus d'infos sur Emby Connect",
     "LabelExternalPlayers": "Lecteurs externes:",
     "LabelExternalPlayersHelp": "Afficher les boutons pour lire du contenu sur le lecteur externe. Ceci est valable uniquement sur des appareils supportant les URLs, g\u00e9n\u00e9ralement Android et iOS. Avec les lecteurs externes il n'y a g\u00e9n\u00e9ralement pas de support pour le contr\u00f4le \u00e0 distance ou la reprise.",
+    "LabelNativeExternalPlayersHelp": "Afficher les boutons pour lire le contenu sur les lecteurs externes.",
+    "LabelEnableItemPreviews": "Activer les aper\u00e7us des \u00e9l\u00e9ments",
+    "LabelEnableItemPreviewsHelp": "Activez cette option pour faire appara\u00eetre des aper\u00e7us d\u00e9roulants lorsque vous cliquez sur les \u00e9l\u00e9ments de certains \u00e9crans",
     "HeaderSubtitleProfile": "Profil de sous-titre",
     "HeaderSubtitleProfiles": "Profils de sous-titre",
     "HeaderSubtitleProfilesHelp": "Les profils de sous-titre d\u00e9crivent les formats de sous-titre support\u00e9s par l'appareil.",
@@ -1432,5 +1435,9 @@
     "HeaderExport": "Exporter",
     "HeaderColumns": "Colonnes",
     "ButtonReset": "R\u00e9initialiser",
-    "OptionEnableExternalVideoPlayers": "Enable external video players"
+    "OptionEnableExternalVideoPlayers": "Activer les lecteurs vid\u00e9o externes",
+    "ButtonUnlockGuide": "D\u00e9verrouiller le Guide",
+    "LabelEnableFullScreen": "Activer le mode plein \u00e9cran",
+    "LabelEnableChromecastAc3Passthrough": "Activer le mode Chromecast AC3 Passthrough",
+    "LabelSyncPath": "Chemin du contenu synchronis\u00e9:"
 }

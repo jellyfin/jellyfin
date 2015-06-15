@@ -77,7 +77,7 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -102,7 +102,7 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -127,7 +127,7 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -159,7 +159,7 @@ namespace MediaBrowser.Api.Library
     public class GetItemCounts : IReturn<ItemCounts>
     {
         [ApiMember(Name = "UserId", Description = "Optional. Get counts from a specific user's library.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
 
         [ApiMember(Name = "IsFavorite", Description = "Optional. Get counts of favorite items", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsFavorite { get; set; }
@@ -174,7 +174,7 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Gets or sets the id.
@@ -193,7 +193,7 @@ namespace MediaBrowser.Api.Library
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
 
         [ApiMember(Name = "IncludeItemTypes", Description = "Optional. If specified, results will be filtered based on item type. This allows multiple, comma delimeted.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string IncludeItemTypes { get; set; }
@@ -412,7 +412,7 @@ namespace MediaBrowser.Api.Library
 
             var baseItemDtos = new List<BaseItemDto>();
 
-            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
             var dtoOptions = GetDtoOptions(request);
 
@@ -483,15 +483,15 @@ namespace MediaBrowser.Api.Library
             return ToOptimizedSerializedResultUsingCache(counts);
         }
 
-        private bool FilterItem(BaseItem item, GetItemCounts request, Guid? userId)
+        private bool FilterItem(BaseItem item, GetItemCounts request, string userId)
         {
-            if (userId.HasValue)
+            if (!string.IsNullOrWhiteSpace(userId))
             {
                 if (request.IsFavorite.HasValue)
                 {
                     var val = request.IsFavorite.Value;
 
-                    if (_userDataManager.GetUserData(userId.Value, item.GetUserDataKey()).IsFavorite != val)
+                    if (_userDataManager.GetUserData(userId, item.GetUserDataKey()).IsFavorite != val)
                     {
                         return false;
                     }
@@ -609,10 +609,10 @@ namespace MediaBrowser.Api.Library
 
         private ThemeMediaResult GetThemeSongs(GetThemeSongs request)
         {
-            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
             var item = string.IsNullOrEmpty(request.Id)
-                           ? (request.UserId.HasValue
+                           ? (!string.IsNullOrWhiteSpace(request.UserId)
                                   ? user.RootFolder
                                   : (Folder)_libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);
@@ -652,10 +652,10 @@ namespace MediaBrowser.Api.Library
 
         public ThemeMediaResult GetThemeVideos(GetThemeVideos request)
         {
-            var user = request.UserId.HasValue ? _userManager.GetUserById(request.UserId.Value) : null;
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
             var item = string.IsNullOrEmpty(request.Id)
-                           ? (request.UserId.HasValue
+                           ? (!string.IsNullOrWhiteSpace(request.UserId)
                                   ? user.RootFolder
                                   : (Folder)_libraryManager.RootFolder)
                            : _libraryManager.GetItemById(request.Id);

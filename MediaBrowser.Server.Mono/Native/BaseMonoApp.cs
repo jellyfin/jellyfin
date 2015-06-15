@@ -21,7 +21,7 @@ namespace MediaBrowser.Server.Mono.Native
         /// <summary>
         /// Restarts this instance.
         /// </summary>
-        public virtual void Restart()
+        public virtual void Restart(StartupOptions startupOptions)
         {
             throw new NotImplementedException();
         }
