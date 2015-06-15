@@ -2968,7 +2968,7 @@
 
         renderDetailPageBackdrop: function (page, item) {
 
-            var screenWidth = Math.max(screen.height, screen.width);
+            var screenWidth = screen.availWidth;
 
             var imgUrl;
 

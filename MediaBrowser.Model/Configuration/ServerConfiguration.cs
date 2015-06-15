@@ -429,7 +429,10 @@ namespace MediaBrowser.Model.Configuration
                     }
                 },
 
-                new MetadataOptions(0, 1280) {ItemType = "Season"}
+                new MetadataOptions(0, 1280)
+                {
+                    ItemType = "Season"
+                }
             };
         }
     }

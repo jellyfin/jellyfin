@@ -119,6 +119,7 @@
             $('.connectLoginForm', page).hide();
             $('.welcomeContainer', page).hide();
             $('.signupForm', page).show();
+            initSignup(page);
         }
     }
 
@@ -144,6 +145,10 @@
     }
 
     function onSignupFormSubmit() {
+
+        if (!supportInAppSignup()) {
+            return false;
+        }
 
         var page = $(this).parents('.page');
 
@@ -183,6 +188,30 @@
         return false;
     }
 
+    function requireCaptcha() {
+        return !AppInfo.isNativeApp && getWindowUrl().toLowerCase().indexOf('https') == 0;
+    }
+
+    function supportInAppSignup() {
+        return AppInfo.isNativeApp;
+        return AppInfo.isNativeApp || getWindowUrl().toLowerCase().indexOf('https') == 0;
+    }
+
+    function initSignup(page) {
+
+        if (!supportInAppSignup()) {
+            return;
+        }
+
+        if (!requireCaptcha()) {
+            return;
+        }
+
+        require(['https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit'], function () {
+
+        });
+    }
+
     $(document).on('pageinitdepends', "#connectLoginPage", function () {
 
         var page = this;
@@ -194,6 +223,14 @@
         $('.connectLoginForm').off('submit', onSubmit).on('submit', onSubmit);
         $('.manualServerForm').off('submit', onManualServerSubmit).on('submit', onManualServerSubmit);
         $('.signupForm').off('submit', onSignupFormSubmit).on('submit', onSignupFormSubmit);
+
+        $('.btnSignupForConnect', page).on('click', function () {
+
+            if (supportInAppSignup()) {
+                Dashboard.navigate('connectlogin.html?mode=signup');
+                return false;
+            }
+        });
 
     }).on('pagebeforeshowready', "#connectLoginPage", function () {
 

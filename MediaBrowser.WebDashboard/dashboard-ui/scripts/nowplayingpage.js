@@ -687,7 +687,7 @@
 
     function getBackdropUrl(item) {
 
-        var screenWidth = Math.max(screen.height, screen.width);
+        var screenWidth = screen.availWidth;
 
         if (item.BackdropImageTags && item.BackdropImageTags.length) {
 

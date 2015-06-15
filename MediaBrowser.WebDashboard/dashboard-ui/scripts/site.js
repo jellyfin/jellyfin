@@ -1643,7 +1643,7 @@ var AppInfo = {};
         AppInfo.enableUserImage = true;
         AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
 
-        AppInfo.enableBackButton = (isIOS && window.navigator.standalone) || (isCordova && isIOS);
+        AppInfo.enableBackButton = isIOS && window.navigator.standalone && !AppInfo.isNativeApp;
         AppInfo.supportsFullScreen = isCordova && isAndroid;
         AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
 
@@ -1725,6 +1725,10 @@ var AppInfo = {};
 
     function onDocumentReady() {
 
+        if (AppInfo.enableBottomTabs) {
+            $(document.body).addClass('bottomSecondaryNav');
+        }
+
         if (AppInfo.isTouchPreferred) {
             $(document.body).addClass('touch');
         }
@@ -1763,10 +1767,6 @@ var AppInfo = {};
 
         if (!AppInfo.enableMovieTrailersTab) {
             $(document.body).addClass('movieTrailersTabDisabled');
-        }
-
-        if (AppInfo.enableBottomTabs) {
-            $(document.body).addClass('bottomSecondaryNav');
         }
 
         if (!AppInfo.enableSupporterMembership) {
@@ -2008,11 +2008,7 @@ var AppInfo = {};
 
     function initCordovaWithDeviceId(deferred, deviceId) {
 
-        if ($.browser.android) {
-            requirejs(['thirdparty/cordova/android/imagestore.js']);
-        } else {
-            requirejs(['thirdparty/cordova/imagestore.js']);
-        }
+        requirejs(['thirdparty/cordova/imagestore.js']);
 
         var capablities = Dashboard.capabilities();
 

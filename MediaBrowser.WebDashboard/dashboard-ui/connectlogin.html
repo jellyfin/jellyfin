@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>${TitleSignIn}</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body class="serverlessPage">
     <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b" data-require="scripts/connectlogin">
@@ -45,7 +46,7 @@
 
                 <div class="newUsers">
                     <h2 style="text-align: left;">${HeaderNewUsers}</h2>
-                    <a class="btn" href="connectlogin.html?mode=signup">
+                    <a class="btn btnSignupForConnect" href="http://emby.media/community/index.php?app=core&module=global&section=register" target="_blank">
                         <span>
                             ${ButtonSignUp}
                         </span>
@@ -104,6 +105,9 @@
                     <label for="txtSignupPasswordConfirm" style="text-align: left;">${LabelPasswordConfirm}</label>
                     <input type="password" id="txtSignupPasswordConfirm" required="required" autocomplete="off" />
                 </div>
+                <br />
+
+                <div class="g-recaptcha" id="recaptchaWidget" data-sitekey="6Le2LAgTAAAAAK06Wvttt_yUnbISTy6q3Azqp9po" data-theme="dark"></div>
                 <br />
 
                 <button class="btn btnActionAccent" data-role="none" type="submit">

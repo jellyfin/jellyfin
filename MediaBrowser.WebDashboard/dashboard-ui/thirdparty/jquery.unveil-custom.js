@@ -19,14 +19,10 @@
         // If less than 200, this happens on the home page
         // Need to fix those before this can be set to 0
 
-        // Non-ios browsers can generally handle a higher value and still perform well
-        // This helps eliminate the draw-in effect as you scroll
-        if (!$.browser.ipad && !$.browser.iphone) {
-            return 1000;
-            //return Math.max(screen.height, screen.width, 1000);
-        }
+        var screens = $.browser.mobile ? 2 : 1;
 
-        return 500;
+        // This helps eliminate the draw-in effect as you scroll
+        return screen.availHeight * screens;
     }
 
     $.fn.unveil = function () {
