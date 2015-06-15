@@ -148,11 +148,14 @@
             }
 
             if (includeAuthorization !== false) {
+
+                var currentServerInfo = self.serverInfo();
+
                 if (clientName) {
 
                     var auth = 'MediaBrowser Client="' + clientName + '", Device="' + deviceName + '", DeviceId="' + deviceId + '", Version="' + applicationVersion + '"';
 
-                    var userId = serverInfo.UserId;
+                    var userId = currentServerInfo.UserId;
 
                     if (userId) {
                         auth += ', UserId="' + userId + '"';
@@ -163,14 +166,14 @@
                     };
                 }
 
-                var accessToken = serverInfo.AccessToken;
+                var accessToken = currentServerInfo.AccessToken;
 
                 if (accessToken) {
                     request.headers['X-MediaBrowser-Token'] = accessToken;
                 }
             }
 
-            if (!self.enableAutomaticNetwork || self.connectionMode == null) {
+            if (self.enableAutomaticNetworking === false || request.type != "GET") {
                 logger.log('Requesting url without automatic networking: ' + request.url);
                 return AjaxApi.ajax(request).fail(onRequestFail);
             }
@@ -182,28 +185,38 @@
 
         function switchConnectionMode(connectionMode) {
 
-            var newConnectionMode;
+            var currentServerInfo = self.serverInfo();
+            var newConnectionMode = connectionMode;
 
-            if (connectionMode == MediaBrowser.ConnectionMode.Local && serverInfo.RemoteAddress) {
-                newConnectionMode = MediaBrowser.ConnectionMode.Remote;
-            }
-            else if (connectionMode == MediaBrowser.ConnectionMode.Remote && serverInfo.LocalAddress) {
-                newConnectionMode = MediaBrowser.ConnectionMode.Local;
-            }
-            else {
-                newConnectionMode = connectionMode;
+            newConnectionMode--;
+            if (newConnectionMode < 0) {
+                newConnectionMode = MediaBrowser.ConnectionMode.Manual;
             }
 
-            return newConnectionMode;
+            if (MediaBrowser.ServerInfo.getServerAddress(currentServerInfo, newConnectionMode)) {
+                return newConnectionMode;
+            }
+
+            newConnectionMode--;
+            if (newConnectionMode < 0) {
+                newConnectionMode = MediaBrowser.ConnectionMode.Manual;
+            }
+
+            if (MediaBrowser.ServerInfo.getServerAddress(currentServerInfo, newConnectionMode)) {
+                return newConnectionMode;
+            }
+
+            return connectionMode;
         }
 
         function tryReconnectInternal(deferred, connectionMode, currentRetryCount) {
 
-            var url = connectionMode == MediaBrowser.ConnectionMode.Local ?
-                self.serverInfo().LocalAddress :
-                self.serverInfo().RemoteAddress;
+            connectionMode = switchConnectionMode(connectionMode);
+            var url = MediaBrowser.ServerInfo.getServerAddress(self.serverInfo(), connectionMode);
 
             logger.log("Attempting reconnection to " + url);
+
+            var timeout = connectionMode == MediaBrowser.ConnectionMode.Local ? 5000 : 15000;
 
             AjaxApi.ajax({
 
@@ -211,13 +224,13 @@
                 url: url + "/system/info/public",
                 dataType: "json",
 
-                timeout: 15000
+                timeout: timeout
 
             }).done(function () {
 
                 logger.log("Reconnect succeeeded to " + url);
 
-                self.connectionMode = connectionMode;
+                self.serverInfo().LastConnectionMode = connectionMode;
                 self.serverAddress(url);
 
                 deferred.resolve();
@@ -226,7 +239,7 @@
 
                 logger.log("Reconnect attempt failed to " + url);
 
-                if (currentRetryCount <= 6) {
+                if (currentRetryCount <= 5) {
 
                     var newConnectionMode = switchConnectionMode(connectionMode);
 
@@ -244,7 +257,7 @@
 
             var deferred = DeferredBuilder.Deferred();
             setTimeout(function () {
-                tryReconnectInternal(deferred, self.connectionMode, 0);
+                tryReconnectInternal(deferred, self.serverInfo().LastConnectionMode, 0);
             }, 500);
             return deferred.promise();
         }
@@ -258,9 +271,9 @@
 
             if (replaceUrl) {
 
-                var baseUrl = self.connectionMode == MediaBrowser.ConnectionMode.Local ?
-                    self.serverInfo().LocalAddress :
-                    self.serverInfo().RemoteAddress;
+                var currentServerInfo = self.serverInfo();
+
+                var baseUrl = MediaBrowser.ServerInfo.getServerAddress(currentServerInfo, currentServerInfo.LastConnectionMode);
 
                 request.url = replaceServerAddress(request.url, baseUrl);
             }
@@ -349,7 +362,7 @@
             return url;
         };
 
-        self.enableAutomaticNetworking = function (server, connectionMode, serverUrl) {
+        self.updateServerInfo = function (server, connectionMode) {
 
             if (server == null) {
                 throw new Error('server cannot be null');
@@ -359,16 +372,15 @@
                 throw new Error('connectionMode cannot be null');
             }
 
-            if (!serverUrl) {
-                throw new Error('serverUrl cannot be null or empty');
-            }
-
-            logger.log('Begin enableAutomaticNetworking');
+            logger.log('Begin updateServerInfo. connectionMode: ' + connectionMode);
 
             self.serverInfo(server);
-            self.connectionMode = connectionMode;
-            self.enableAutomaticNetwork = true;
 
+            var serverUrl = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
+
+            if (!serverUrl) {
+                throw new Error('serverUrl cannot be null. serverInfo: ' + JSON.stringify(server));
+            }
             logger.log('Setting server address to ' + serverUrl);
             self.serverAddress(serverUrl);
         };
@@ -379,7 +391,7 @@
 
         self.openWebSocket = function () {
 
-            var accessToken = serverInfo.AccessToken;
+            var accessToken = self.serverInfo().AccessToken;
 
             if (!accessToken) {
                 throw new Error("Cannot open web socket without access token.");
@@ -578,7 +590,7 @@
                 self.setAuthenticationInfo(null, null);
             };
 
-            if (serverInfo.AccessToken) {
+            if (self.serverInfo().AccessToken) {
                 var url = self.getUrl("Sessions/Logout");
 
                 return self.ajax({

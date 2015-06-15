@@ -1,10 +1,9 @@
-﻿using System;
-using System.Linq;
-using MediaBrowser.Api.UserLibrary;
-using MediaBrowser.Controller.Net;
+﻿using MediaBrowser.Api.UserLibrary;
 using MediaBrowser.Model.Entities;
 using ServiceStack;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Api.Reports
 {
@@ -15,7 +14,7 @@ namespace MediaBrowser.Api.Reports
         /// </summary>
         /// <value>The user id.</value>
         [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public Guid? UserId { get; set; }
+        public string UserId { get; set; }
 
         /// <summary>
         /// Limit results to items containing a specific person

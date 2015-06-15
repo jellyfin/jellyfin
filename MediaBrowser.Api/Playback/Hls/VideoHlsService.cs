@@ -48,9 +48,9 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.String.</returns>
         protected override string GetAudioArguments(StreamState state)
         {
-            var codec = state.OutputAudioCodec;
+            var codec = GetAudioEncoder(state.Request);
 
-            if (codec.Equals("copy", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
                 return "-codec:a:0 copy";
             }
@@ -83,7 +83,7 @@ namespace MediaBrowser.Api.Playback.Hls
         /// <returns>System.String.</returns>
         protected override string GetVideoArguments(StreamState state)
         {
-            var codec = state.OutputVideoCodec;
+            var codec = GetVideoEncoder(state.VideoRequest);
 
             var args = "-codec:v:0 " + codec;
 

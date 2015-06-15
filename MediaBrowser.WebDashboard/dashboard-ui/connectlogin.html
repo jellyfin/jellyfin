@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>${TitleSignIn}</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body class="serverlessPage">
     <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b" data-require="scripts/connectlogin">
@@ -44,9 +45,13 @@
                 </div>
 
                 <div class="newUsers">
-                    <br />
                     <h2 style="text-align: left;">${HeaderNewUsers}</h2>
-                    <a data-role="button" data-icon="action" href="http://emby.media/community/index.php?app=core&module=global&section=register" target="_blank">${ButtonSignUp}</a>
+                    <a class="btn btnSignupForConnect" href="http://emby.media/community/index.php?app=core&module=global&section=register" target="_blank">
+                        <span>
+                            ${ButtonSignUp}
+                        </span>
+                        <i class="fa fa-plus-circle"></i>
+                    </a>
                 </div>
             </form>
 
@@ -64,11 +69,50 @@
                     <label for="txtServerPort" style="text-align: left;">${LabelServerPort}</label>
                     <input type="number" id="txtServerPort" step="1" min="0" />
                 </div>
-                <br /><br />
+                <br />
 
                 <button class="btn btnActionAccent" data-role="none" type="submit">
                     <span>
                         ${ButtonConnect}
+                    </span>
+                    <i class="fa fa-check"></i>
+                </button>
+                <a class="btn btnDarkAccent" href="#" data-rel="back">
+                    <span>
+                        ${ButtonCancel}
+                    </span>
+                    <i class="fa fa-close"></i>
+                </a>
+            </form>
+
+            <form class="signupForm" style="text-align: center; margin: 0 auto;display:none;">
+
+                <h1 style="text-align: left;">${HeaderSignUp}</h1>
+                <br />
+                <div>
+                    <label for="txtSignupEmail" style="text-align: left;">${LabelEmail}</label>
+                    <input type="email" id="txtSignupEmail" required="required" />
+                </div>
+                <div>
+                    <label for="txtSignupUsername" style="text-align: left;">${LabelUsername}</label>
+                    <input type="text" id="txtSignupUsername" required="required" />
+                </div>
+                <div>
+                    <label for="txtSignupPassword" style="text-align: left;">${LabelPassword}</label>
+                    <input type="password" id="txtSignupPassword" required="required" autocomplete="off" />
+                </div>
+                <div>
+                    <label for="txtSignupPasswordConfirm" style="text-align: left;">${LabelPasswordConfirm}</label>
+                    <input type="password" id="txtSignupPasswordConfirm" required="required" autocomplete="off" />
+                </div>
+                <br />
+
+                <div class="g-recaptcha" id="recaptchaWidget" data-sitekey="6Le2LAgTAAAAAK06Wvttt_yUnbISTy6q3Azqp9po" data-theme="dark"></div>
+                <br />
+
+                <button class="btn btnActionAccent" data-role="none" type="submit">
+                    <span>
+                        ${ButtonSignUp}
                     </span>
                     <i class="fa fa-check"></i>
                 </button>

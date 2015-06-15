@@ -130,6 +130,7 @@
             triggerPlayerChange(player, targetInfo);
         };
 
+        var currentPairingId = null;
         self.trySetActivePlayer = function (player, targetInfo) {
 
             if (typeof (player) === 'string') {
@@ -141,6 +142,12 @@
             if (!player) {
                 throw new Error('null player');
             }
+
+            if (currentPairingId == targetInfo.id) {
+                return;
+            }
+
+            currentPairingId = targetInfo.id;
 
             player.tryPair(targetInfo).done(function () {
 
@@ -481,7 +488,52 @@
 
         };
 
+        function getPlaybackInfoFromLocalMediaSource(itemId, deviceProfile, startPosition, mediaSource) {
+
+            mediaSource.SupportsDirectPlay = true;
+
+            return {
+
+                MediaSources: [mediaSource],
+
+                // Just dummy this up
+                PlaySessionId: new Date().getTime().toString()
+            };
+
+        }
+
         self.getPlaybackInfo = function (itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId) {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            require(['localassetmanager'], function () {
+
+                var serverInfo = ApiClient.serverInfo();
+
+                if (serverInfo.Id) {
+                    var localMediaSource = window.LocalAssetManager.getLocalMediaSource(serverInfo.Id, itemId);
+
+                    // Use the local media source if a specific one wasn't requested, or the smae one was requested
+                    if (localMediaSource && (!mediaSource || mediaSource.Id == localMediaSource.Id)) {
+
+                        var playbackInfo = getPlaybackInfoFromLocalMediaSource(itemId, deviceProfile, startPosition, localMediaSource);
+
+                        deferred.resolveWith(null, [playbackInfo]);
+                        return;
+                    }
+                }
+
+                self.getPlaybackInfoInternal(itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId).done(function (result) {
+                    deferred.resolveWith(null, [result]);
+                }).fail(function () {
+                    deferred.reject();
+                });
+            });
+
+            return deferred.promise();
+        }
+
+        self.getPlaybackInfoInternal = function (itemId, deviceProfile, startPosition, mediaSource, audioStreamIndex, subtitleStreamIndex, liveStreamId) {
 
             var postData = {
                 DeviceProfile: deviceProfile
@@ -552,6 +604,11 @@
 
                 // TODO: Need to verify the host is going to be reachable
                 return true;
+            }
+
+            if (mediaSource.SupportsDirectPlay && mediaSource.Protocol == 'File') {
+
+                return FileSystemBridge.fileExists(mediaSource.Path);
             }
 
             return false;
@@ -811,7 +868,7 @@
 
     $(document).on('headercreated', function () {
 
-        $('.btnCast').on('click', function () {
+        $('.btnCast').off('.mediacontroller').on('click.mediacontroller', function () {
 
             showPlayerSelection($.mobile.activePage);
         });

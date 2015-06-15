@@ -128,7 +128,7 @@
             buttonCount++;
         }
 
-        html += '<button data-role="button" class="btnMoreCommands" data-mini="true" data-inline="true" data-icon="ellipsis-v" data-iconpos="notext" title="' + Globalize.translate('ButtonMore') + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonMore') + '</button>';
+        html += '<button type="button" class="btnMoreCommands" data-mini="true" data-inline="true" data-icon="ellipsis-v" data-iconpos="notext" title="' + Globalize.translate('ButtonMore') + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonMore') + '</button>';
         buttonCount++;
 
         html += '</div>';
@@ -376,81 +376,91 @@
         var locationType = card.getAttribute('data-locationtype');
         var index = card.getAttribute('data-index');
 
+        var albumid = card.getAttribute('data-albumid');
+        var artistid = card.getAttribute('data-artistid');
+
         $(card).addClass('hasContextMenu');
 
         Dashboard.getCurrentUser().done(function (user) {
 
             var html = '<div data-role="popup" class="tapHoldMenu" data-theme="a">';
 
-            html += '<ul data-role="listview" style="min-width: 240px;">';
-            html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
+            html += '<ul data-role="listview" style="min-width: 180px;">';
 
             var href = card.getAttribute('data-href') || card.href || $('a', card).attr('href');
 
             if (commands.indexOf('addtocollection') != -1) {
-                html += '<li data-icon="plus"><a href="#" class="btnAddToCollection" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToCollection') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" class="btnAddToCollection" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToCollection') + '</a></li>';
             }
 
             if (commands.indexOf('playlist') != -1) {
-                html += '<li data-icon="plus"><a href="#" class="btnAddToPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" class="btnAddToPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
             }
 
             if (commands.indexOf('delete') != -1) {
-                html += '<li data-icon="delete"><a href="#" class="btnDelete" data-itemId="' + itemId + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" class="btnDelete" data-itemId="' + itemId + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
             }
 
             if (user.Policy.IsAdministrator && commands.indexOf('edit') != -1) {
-                html += '<li data-icon="edit"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
+                html += '<li data-icon="false"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
             }
 
             if (commands.indexOf('instantmix') != -1) {
-                html += '<li data-icon="recycle"><a href="#" class="btnInstantMix" data-itemid="' + itemId + '">' + Globalize.translate('ButtonInstantMix') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" class="btnInstantMix" data-itemid="' + itemId + '">' + Globalize.translate('ButtonInstantMix') + '</a></li>';
             }
 
-            html += '<li><a href="' + href + '">' + Globalize.translate('ButtonOpen') + '</a></li>';
+            html += '<li data-icon="false"><a href="' + href + '">' + Globalize.translate('ButtonOpen') + '</a></li>';
             //html += '<li><a href="' + href + '" target="_blank">' + Globalize.translate('ButtonOpenInNewTab') + '</a></li>';
 
             if (options.showPlayOptions !== false) {
 
                 if (MediaController.canPlayByAttributes(itemType, mediaType, playAccess, locationType)) {
-                    html += '<li data-icon="play"><a href="#" class="btnPlay" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlay') + '</a></li>';
+                    html += '<li data-icon="false"><a href="#" class="btnPlay" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlay') + '</a></li>';
 
                     if (commands.indexOf('playfromhere') != -1) {
-                        html += '<li data-icon="play"><a href="#" class="btnPlayAllFromHere" data-index="' + index + '">' + Globalize.translate('ButtonPlayAllFromHere') + '</a></li>';
+                        html += '<li data-icon="false"><a href="#" class="btnPlayAllFromHere" data-index="' + index + '">' + Globalize.translate('ButtonPlayAllFromHere') + '</a></li>';
                     }
                 }
 
                 if (mediaType == 'Video' && AppSettings.enableExternalPlayers()) {
-                    html += '<li data-icon="play"><a href="#" class="btnExternalPlayer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
+                    html += '<li data-icon="false"><a href="#" class="btnExternalPlayer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
                 }
 
                 if (playbackPositionTicks && mediaType != "Audio") {
-                    html += '<li data-icon="play"><a href="#" class="btnResume" data-ticks="' + playbackPositionTicks + '" data-itemid="' + itemId + '">' + Globalize.translate('ButtonResume') + '</a></li>';
+                    html += '<li data-icon="false"><a href="#" class="btnResume" data-ticks="' + playbackPositionTicks + '" data-itemid="' + itemId + '">' + Globalize.translate('ButtonResume') + '</a></li>';
                 }
 
                 if (commands.indexOf('trailer') != -1) {
-                    html += '<li data-icon="video"><a href="#" class="btnPlayTrailer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayTrailer') + '</a></li>';
+                    html += '<li data-icon="false"><a href="#" class="btnPlayTrailer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayTrailer') + '</a></li>';
                 }
             }
 
             if (MediaController.canQueueMediaType(mediaType, itemType)) {
-                html += '<li data-icon="plus"><a href="#" class="btnQueue" data-itemid="' + itemId + '">' + Globalize.translate('ButtonQueue') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" class="btnQueue" data-itemid="' + itemId + '">' + Globalize.translate('ButtonQueue') + '</a></li>';
 
                 if (commands.indexOf('queuefromhere') != -1) {
-                    html += '<li data-icon="plus"><a href="#" class="btnQueueAllFromHere" data-index="' + index + '">' + Globalize.translate('ButtonQueueAllFromHere') + '</a></li>';
+                    html += '<li data-icon="false"><a href="#" class="btnQueueAllFromHere" data-index="' + index + '">' + Globalize.translate('ButtonQueueAllFromHere') + '</a></li>';
                 }
             }
 
             if (commands.indexOf('shuffle') != -1) {
-                html += '<li data-icon="recycle"><a href="#" class="btnShuffle" data-itemid="' + itemId + '">' + Globalize.translate('ButtonShuffle') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" class="btnShuffle" data-itemid="' + itemId + '">' + Globalize.translate('ButtonShuffle') + '</a></li>';
             }
 
             if (commands.indexOf('removefromplaylist') != -1) {
-                html += '<li data-icon="delete"><a href="#" class="btnRemoveFromPlaylist" data-playlistitemid="' + playlistItemId + '">' + Globalize.translate('ButtonRemoveFromPlaylist') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" class="btnRemoveFromPlaylist" data-playlistitemid="' + playlistItemId + '">' + Globalize.translate('ButtonRemoveFromPlaylist') + '</a></li>';
             }
 
             if (commands.indexOf('sync') != -1) {
-                html += '<li data-icon="cloud"><a href="#" class="btnSync" data-itemId="' + itemId + '">' + Globalize.translate('ButtonSync') + '</a></li>';
+                html += '<li data-icon="false"><a href="#" class="btnSync" data-itemId="' + itemId + '">' + Globalize.translate('ButtonSync') + '</a></li>';
+            }
+
+            if (albumid) {
+                html += '<li data-icon="false"><a href="itemdetails.html?id=' + albumid + '">' + Globalize.translate('ButtonViewAlbum') + '</a></li>';
+            }
+
+            if (artistid) {
+                html += '<li data-icon="false"><a href="itembynamedetails.html?context=music&id=' + artistid + '">' + Globalize.translate('ButtonViewArtist') + '</a></li>';
             }
 
             html += '</ul>';
@@ -508,7 +518,23 @@
             GroupItems: false
         };
 
+        var target = $(e.target);
+        if (target.is('a') || target.is('button')) {
+            return;
+        }
+
+        var buttonParents = target.parents('a:not(.card,.cardContent),button:not(.card,.cardContent)');
+        if (buttonParents.length) {
+            return;
+        }
+
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
+
+            if (items.length == 1) {
+
+                Dashboard.navigate(LibraryBrowser.getHref(items[0], context));
+                return;
+            }
 
             var ids = items.map(function (i) {
                 return i.Id;
@@ -707,7 +733,7 @@
             if (SyncManager.isAvailable(item, user)) {
                 contentHtml += '<div class="detailsMenuButtonContainer">';
                 contentHtml += '<a href="#" class="btn btnSync">';
-                contentHtml += '<i class="fa fa-cloud"></i>';
+                contentHtml += '<i class="fa fa-refresh"></i>';
                 contentHtml += '<span>' + Globalize.translate('ButtonSync') + '</span>';
                 contentHtml += '</a>';
                 contentHtml += '</div>';
@@ -758,7 +784,8 @@
 
     function onCardClick(e) {
 
-        if ($(e.target).is('.itemSelectionPanel') || $('.itemSelectionPanel', this).length) {
+        var target = $(e.target);
+        if (target.is('.itemSelectionPanel') || $('.itemSelectionPanel', this).length) {
             return false;
         }
 
@@ -781,6 +808,14 @@
         }
 
         if (card.attr('data-detailsmenu') != 'true') {
+            return;
+        }
+
+        if (target.is('a') || target.is('button')) {
+            return;
+        }
+
+        if (target.parents('a').length || target.parents('button').length) {
             return;
         }
 
@@ -1049,6 +1084,13 @@
         PlaylistManager.showPanel(selection);
     }
 
+    function onListviewSubLinkClick(e) {
+
+        var elem = e.target;
+        Dashboard.navigate(elem.getAttribute('data-href'));
+        return false;
+    }
+
     function onItemWithActionClick(e) {
 
         var elem = this;
@@ -1129,7 +1171,7 @@
 
             toggleSelections(page);
 
-        }).on('click', '.itemWithAction', onItemWithActionClick);
+        }).on('click', '.itemWithAction', onItemWithActionClick).on('click', '.listviewSubLink', onListviewSubLinkClick);
 
         $('.itemsContainer', page).createCardMenus();
 

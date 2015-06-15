@@ -1,6 +1,7 @@
 ﻿(function () {
 
-    function connectToServer(page, server) {
+	var serverList = [];
+	function connectToServer(page, server) {
 
         Dashboard.showLoadingMsg();
 
@@ -83,7 +84,7 @@
 
         if (server.showOptions !== false) {
             html += '<div class="cardText" style="text-align:right; float:right;">';
-            html += '<button class="listviewMenuButton imageButton btnCardOptions btnServerMenu" type="button" data-role="none" style="margin: 4px 0 0;"><i class="fa fa-ellipsis-v"></i></button>';
+            html += '<button class="listviewMenuButton imageButton btnCardOptions btnServerMenu" type="button" data-role="none" style="margin: 4px 0 0;"><i class="material-icons">more_vert</i></button>';
             html += "</div>";
         }
 
@@ -108,6 +109,8 @@
     }
 
     function renderServers(page, servers) {
+
+    	serverList = servers;
 
         if (servers.length) {
             $('.noServersMessage', page).hide();
@@ -178,7 +181,13 @@
         ConnectionManager.deleteServer(id).done(function () {
 
             Dashboard.hideModalLoadingMsg();
-            loadPage(page);
+
+            // Just re-render the servers without discovering them again
+            // If we re-discover then the one they deleted may just come back
+            var newServerList = serverList.filter(function(s){
+            	return s.Id != id;
+            });
+            renderServers(page, newServerList);
 
         }).fail(function () {
 
@@ -195,6 +204,7 @@
         ConnectionManager.rejectServer(id).done(function () {
 
             Dashboard.hideModalLoadingMsg();
+
             loadPage(page);
 
         }).fail(function () {
@@ -306,7 +316,7 @@
         html += '<div class="cardFooter outerCardFooter">';
 
         html += '<div class="cardText" style="text-align:right; float:right;">';
-        html += '<button class="listviewMenuButton imageButton btnCardOptions btnInviteMenu" type="button" data-role="none" style="margin: 4px 0 0;"><i class="fa fa-ellipsis-v"></i></button>';
+        html += '<button class="listviewMenuButton imageButton btnCardOptions btnInviteMenu" type="button" data-role="none" style="margin: 4px 0 0;"><i class="material-icons">more_vert</i></button>';
         html += "</div>";
 
         html += '<div class="cardText">';
@@ -373,7 +383,7 @@
 
             servers = servers.slice(0);
 
-            if (Dashboard.isRunningInCordova()) {
+            if (AppInfo.isNativeApp) {
                 servers.push({
                     Name: Globalize.translate('ButtonNewServer'),
                     Id: 'new',

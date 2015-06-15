@@ -151,7 +151,7 @@
     font-family: Roboto;
     outline: none;
     vertical-align: middle;
-    width: 90%;
+    width: 85%;
 }
 
 .searchInputIcon {
@@ -169,6 +169,12 @@
     right: 0;
     background: #000000;
     z-index: 1000;
+}
+
+@media all and (min-width: 600px) {
+    .headerSearchInput {
+        width: 90%;
+    }
 }
 
 @media all and (min-width: 800px) {
@@ -201,12 +207,24 @@
     bottom: 0;
     z-index: 1000;
     border: 0 !important;
-    overflow-x: hidden;
-    overflow-y: auto;
 }
 
 .searchResultsContainer {
-    padding: 2em;
+    padding: .5em;
+}
+
+@media all and (min-width: 800px) {
+    .searchResultsContainer {
+        padding-left: 1em;
+        padding-right: 1em;
+    }
+}
+
+@media all and (min-height: 800px) {
+    .searchResultsContainer {
+        padding-top: 1em;
+        padding-bottom: 1em;
+    }
 }
 
 .btnCloseSearch {

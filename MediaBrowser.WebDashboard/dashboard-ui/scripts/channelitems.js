@@ -147,9 +147,9 @@
                 context: 'channels',
                 showTitle: true,
                 coverImage: true,
-                cardLayout: true,
                 showYear: true,
-                lazy: true
+                lazy: true,
+                centerText: true
             });
 
             var elem = $('#items', page).html(html).lazyChildren();

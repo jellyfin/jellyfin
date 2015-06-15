@@ -148,7 +148,7 @@
 }
 
 .videoNowPlayingName {
-    font-size: 22px;
+    font-size: 18px;
 }
 
 .videoNowPlayingOverview, .videoNowPlayingRating {
@@ -221,7 +221,7 @@
     }
 }
 
-@media all and (max-width: 800px), all and (max-height: 600px) {
+@media all and (max-width: 1400px), all and (max-height: 800px) {
 
     #mediaPlayer .nowPlayingInfo {
         display: none !important;
@@ -252,7 +252,7 @@
     #videoPlayer .nowPlayingImage img {
         height: auto !important;
         max-width: 400px;
-        max-height: 300px;
+        max-height: 240px;
     }
 }
 

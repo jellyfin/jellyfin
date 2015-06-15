@@ -61,10 +61,7 @@ namespace MediaBrowser.WebDashboard.Api
                 // jQuery ajax doesn't seem to handle if-modified-since correctly
                 if (IsFormat(path, "html"))
                 {
-                    if (path.IndexOf("cordovaindex.html", StringComparison.OrdinalIgnoreCase) == -1)
-                    {
-                        resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
-                    }
+                    resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
                 }
                 else if (IsFormat(path, "js"))
                 {
@@ -277,7 +274,10 @@ namespace MediaBrowser.WebDashboard.Api
 
                 var version = GetType().Assembly.GetName().Version;
 
-                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetCommonJavascript(mode, version));
+                var imports = "<link rel=\"import\" href=\"thirdparty/polymer/polymer.html\">";
+                imports = "";
+
+                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetCommonJavascript(mode, version) + imports);
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
@@ -339,7 +339,7 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<meta http-equiv=\"X-UA-Compatibility\" content=\"IE=Edge\">");
             sb.Append("<meta name=\"format-detection\" content=\"telephone=no\">");
             sb.Append("<meta name=\"msapplication-tap-highlight\" content=\"no\">");
-            sb.Append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no\">");
+            sb.Append("<meta name=\"viewport\" content=\"user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, target-densitydpi=device-dpi\">");
             sb.Append("<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">");
             sb.Append("<meta name=\"mobile-web-app-capable\" content=\"yes\">");
             sb.Append("<meta name=\"application-name\" content=\"Emby\">");
@@ -373,6 +373,7 @@ namespace MediaBrowser.WebDashboard.Api
                             {
                                 "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.css",
                                 "thirdparty/fontawesome/css/font-awesome.min.css" + versionString,
+                                "thirdparty/materialicons/style.css" + versionString,
                                 "css/all.css" + versionString
                             };
 
@@ -395,6 +396,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new List<string>
             {
+                //"thirdparty/webcomponentsjs/webcomponents-lite.min.js",
                 "scripts/all.js" + versionString
             };
 
@@ -460,24 +462,14 @@ namespace MediaBrowser.WebDashboard.Api
                 "thirdparty/apiclient/md5.js",
                 "thirdparty/apiclient/sha1.js",
                 "thirdparty/apiclient/store.js",
-                "thirdparty/apiclient/network.js",
                 "thirdparty/apiclient/device.js",
                 "thirdparty/apiclient/credentials.js",
                 "thirdparty/apiclient/ajax.js",
                 "thirdparty/apiclient/events.js",
                 "thirdparty/apiclient/deferred.js",
-                "thirdparty/apiclient/apiclient.js",
-                "thirdparty/apiclient/connectservice.js"
+                "thirdparty/apiclient/apiclient.js"
             }.ToList();
 
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
-            {
-                apiClientFiles.Add("thirdparty/cordova/serverdiscovery.js");
-            }
-            else
-            {
-                apiClientFiles.Add("thirdparty/apiclient/serverdiscovery.js");
-            }
             apiClientFiles.Add("thirdparty/apiclient/connectionmanager.js");
 
             foreach (var file in apiClientFiles)
@@ -545,93 +537,22 @@ namespace MediaBrowser.WebDashboard.Api
                                 "site.js",
                                 "librarybrowser.js",
                                 "librarylist.js",
-                                "editorsidebar.js",
                                 "librarymenu.js",
                                 "mediacontroller.js",
                                 "backdrops.js",
                                 "sync.js",
-                                "syncjob.js",
-                                "appservices.js",
                                 "playlistmanager.js",
-
+                                "appsettings.js",
                                 "mediaplayer.js",
                                 "mediaplayer-video.js",
                                 "nowplayingbar.js",
-                                "nowplayingpage.js",
-                                "taskbutton.js",
-
                                 "alphapicker.js",
-                                "addpluginpage.js",
-                                "autoorganizetv.js",
-                                "autoorganizelog.js",
-                                "channelsettings.js",
-                                "dashboardgeneral.js",
-                                "dashboardpage.js",
-                                "devicesupload.js",
                                 "directorybrowser.js",
-                                "dlnaprofile.js",
-                                "dlnaprofiles.js",
-                                "dlnasettings.js",
-                                "dlnaserversettings.js",
-                                "editcollectionitems.js",
-                                "edititemmetadata.js",
-                                "edititemsubtitles.js",
-
-                                "playbackconfiguration.js",
-                                "cinemamodeconfiguration.js",
-                                "encodingsettings.js",
-
-                                "forgotpassword.js",
-                                "forgotpasswordpin.js",
-                                "indexpage.js",
-                                "itembynamedetailpage.js",
-                                "itemdetailpage.js",
-                                "kids.js",
-                                "librarypathmapping.js",
-                                "librarysettings.js",
-                                "livetvrecording.js",
-                                "livetvtimer.js",
-                                "livetvseriestimer.js",
-                                "livetvsettings.js",
-                                "livetvstatus.js",
-
-                                "medialibrarypage.js",
-                                "metadataconfigurationpage.js",
-                                "metadataimagespage.js",
-                                "metadatasubtitles.js",
-                                "metadatanfo.js",
                                 "moviecollections.js",
-
-                                "mypreferencesdisplay.js",
-                                "mypreferenceslanguages.js",
-                                "mypreferenceswebclient.js",
-
                                 "notifications.js",
-                                "notificationlist.js",
-                                "notificationsetting.js",
-                                "notificationsettings.js",
-                                "playlists.js",
-                                "playlistedit.js",
-
-                                "plugincatalogpage.js",
-                                "pluginspage.js",
                                 "remotecontrol.js",
-                                "scheduledtaskpage.js",
-                                "scheduledtaskspage.js",
                                 "search.js",
-                                "syncactivity.js",
-                                "syncsettings.js",
-                                "thememediaplayer.js",
-                                "useredit.js",
-                                "myprofile.js",
-                                "userpassword.js",
-                                "userprofilespage.js",
-                                "userparentalcontrol.js",
-                                "userlibraryaccess.js",
-                                "wizardagreement.js",
-                                "wizardfinishpage.js",
-                                "wizardservice.js",
-                                "wizardstartpage.js"
+                                "thememediaplayer.js"
                             };
         }
 

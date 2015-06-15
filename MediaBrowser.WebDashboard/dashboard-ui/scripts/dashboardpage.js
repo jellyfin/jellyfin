@@ -682,22 +682,17 @@
 
             return "<img src='css/images/clients/dlna.png' />";
         }
-        if (clientLowered == "mbkinect") {
-
-            return "<img src='css/images/clients/mbkinect.png' />";
-        }
         if (clientLowered == "kodi" || clientLowered == "xbmc") {
             return "<img src='css/images/clients/kodi.png' />";
         }
         if (clientLowered == "chromecast") {
 
-            return "<img src='css/images/chromecast/ic_media_route_on_holo_light.png' />";
+            return "<img src='css/images/clients/chromecast.png' />";
         }
         if (clientLowered == "chrome companion") {
 
             return "<img src='css/images/clients/chrome_companion.png' />";
         }
-
 
         return null;
     },
@@ -1378,7 +1373,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
 
         var apiClient = ApiClient;
 
-        if (apiClient) {
+        if (apiClient && !AppInfo.isNativeApp) {
             showWelcomeIfNeeded(page, apiClient);
         }
 

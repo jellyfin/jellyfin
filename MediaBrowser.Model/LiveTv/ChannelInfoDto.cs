@@ -97,7 +97,7 @@ namespace MediaBrowser.Model.LiveTv
         /// Gets or sets the now playing program.
         /// </summary>
         /// <value>The now playing program.</value>
-        public ProgramInfoDto CurrentProgram { get; set; }
+        public BaseItemDto CurrentProgram { get; set; }
 
         /// <summary>
         /// Gets or sets the primary image aspect ratio, after image enhancements.

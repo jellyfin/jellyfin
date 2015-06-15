@@ -675,10 +675,18 @@ namespace MediaBrowser.Api.Images
 
         private ImageFormat[] GetClientSupportedFormats()
         {
-            if ((Request.AcceptTypes ?? new string[] { }).Contains("image/webp", StringComparer.OrdinalIgnoreCase))
-            {
-                var userAgent = Request.UserAgent ?? string.Empty;
+            var supportsWebP = (Request.AcceptTypes ?? new string[] {}).Contains("image/webp", StringComparer.OrdinalIgnoreCase);
 
+            var userAgent = Request.UserAgent ?? string.Empty;
+
+            if (userAgent.IndexOf("crosswalk", StringComparison.OrdinalIgnoreCase) != -1 &&
+                userAgent.IndexOf("android", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                supportsWebP = true;
+            }
+
+            if (supportsWebP)
+            {
                 // Not displaying properly on iOS
                 if (userAgent.IndexOf("cfnetwork", StringComparison.OrdinalIgnoreCase) == -1)
                 {

@@ -47,7 +47,35 @@
 
     }
 
-    $(document).on('pageshow', "#kidsPage", function () {
+    function onPinSubmit() {
+        var page = $(this).parents('.page');
+
+        if (validatePin(page)) {
+
+            $('.kidsOptionsLogin', page).hide();
+            $('.kidsOptions', page).fadeIn();
+
+        } else {
+            Dashboard.alert({
+                message: 'Invalid pin code entered. Please try again.',
+                title: 'Input Error'
+            });
+        }
+
+        return false;
+    }
+
+    function onOptionsSubmit() {
+        var page = $(this).parents('.page');
+
+        $('.kidsOptions', page).fadeOut();
+        $('.btnOptions', page).show();
+        $('.kidContent', page).show();
+
+        return false;
+    }
+
+    $(document).on('pageshowready', "#kidsPage", function () {
 
         var page = this;
 
@@ -63,7 +91,7 @@
 
         $('.kidsBackdropContainer').css('background-image', 'url(css/images/kids/bg.jpg)');
 
-    }).on('pageinit', "#kidsPage", function () {
+    }).on('pageinitdepends', "#kidsPage", function () {
 
         var page = this;
 
@@ -87,39 +115,9 @@
             $('.btnOptions', page).show();
             $('.kidContent', page).show();
         });
+
+        $('.kidPinForm').off('submit', onPinSubmit).on('submit', onPinSubmit);
+        $('.kidsOptionsForm').off('submit', onOptionsSubmit).on('submit', onOptionsSubmit);
     });
-
-    window.KidsPage = {
-
-        onPinSubmit: function () {
-
-            var page = $(this).parents('.page');
-
-            if (validatePin(page)) {
-
-                $('.kidsOptionsLogin', page).hide();
-                $('.kidsOptions', page).fadeIn();
-
-            } else {
-                Dashboard.alert({
-                    message: 'Invalid pin code entered. Please try again.',
-                    title: 'Input Error'
-                });
-            }
-
-            return false;
-        },
-
-        onOptionsSubmit: function () {
-
-            var page = $(this).parents('.page');
-
-            $('.kidsOptions', page).fadeOut();
-            $('.btnOptions', page).show();
-            $('.kidContent', page).show();
-
-            return false;
-        }
-    };
 
 })(jQuery, document, window);

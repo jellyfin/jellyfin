@@ -4,7 +4,7 @@
     <title></title>
 </head>
 <body>
-    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage" data-theme="b">
+    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage" data-theme="b" data-require="scripts/itemdetailpage">
 
         <div class="itemTabs homeTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
@@ -62,10 +62,10 @@
         <div id="songTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
                 <a href="musicrecommended.html">${TabSuggestions}</a>
-                <a href="songs.html" class="ui-btn-active musicSongsTab">${TabSongs}</a>
                 <a href="musicalbums.html">${TabAlbums}</a>
                 <a href="musicalbumartists.html">${TabAlbumArtists}</a>
                 <a href="musicartists.html" class="musicArtistsTab">${TabArtists}</a>
+                <a href="songs.html" class="ui-btn-active musicSongsTab">${TabSongs}</a>
                 <a href="musicgenres.html">${TabGenres}</a>
                 <a href="musicvideos.html">${TabMusicVideos}</a>
             </div>
@@ -73,10 +73,10 @@
         <div id="albumTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
                 <a href="musicrecommended.html">${TabSuggestions}</a>
-                <a href="songs.html" class="musicSongsTab">${TabSongs}</a>
                 <a href="musicalbums.html" class="ui-btn-active">${TabAlbums}</a>
                 <a href="musicalbumartists.html">${TabAlbumArtists}</a>
                 <a href="musicartists.html" class="musicArtistsTab">${TabArtists}</a>
+                <a href="songs.html" class="musicSongsTab">${TabSongs}</a>
                 <a href="musicgenres.html">${TabGenres}</a>
                 <a href="musicvideos.html">${TabMusicVideos}</a>
             </div>
@@ -84,10 +84,10 @@
         <div id="musicVideoTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
                 <a href="musicrecommended.html">${TabSuggestions}</a>
-                <a href="songs.html" class="musicSongsTab">${TabSongs}</a>
                 <a href="musicalbums.html">${TabAlbums}</a>
                 <a href="musicalbumartists.html">${TabAlbumArtists}</a>
                 <a href="musicartists.html" class="musicArtistsTab">${TabArtists}</a>
+                <a href="songs.html" class="musicSongsTab">${TabSongs}</a>
                 <a href="musicgenres.html">${TabGenres}</a>
                 <a href="musicvideos.html" class="ui-btn-active">${TabMusicVideos}</a>
             </div>
@@ -145,7 +145,7 @@
                             <button class="btnPlayTrailer hide" type="button" data-icon="video" data-inline="true" data-mini="true">${ButtonPlayTrailer}</button>
                             <a class="btnPlayExternalTrailer hide" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlayTrailer}</a>
                             <a class="btnPlayExternal hide" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlay}</a>
-                            <a class="btnSync hide" data-role="button" data-icon="cloud" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
+                            <a class="btnSync hide" data-role="button" data-icon="refresh" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
                             <button class="btnMoreCommands hide jqmButtonNoText" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true" data-iconpos="notext">${ButtonMore}</button>
                         </div>
                     </div>
@@ -172,12 +172,12 @@
                             <button class="btnPlayTrailer hide" type="button" data-icon="video" data-inline="true" data-mini="true">${ButtonPlayTrailer}</button>
                             <a class="btnPlayExternalTrailer hide" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlayTrailer}</a>
                             <a class="btnPlayExternal hide" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlay}</a>
-                            <a class="btnSync hide" data-role="button" data-icon="cloud" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
+                            <a class="btnSync hide" data-role="button" data-icon="refresh" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
                             <button class="btnMoreCommands hide jqmButtonNoText" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true" data-iconpos="notext">${ButtonMore}</button>
                         </div>
                         <p id="artist"></p>
                         <p class="itemGenres"></p>
-                        <p class="itemOverview"></p>
+                        <p class="itemOverview smoothScrollY"></p>
                         <p id="seriesAirTime"></p>
                     </div>
                 </div>

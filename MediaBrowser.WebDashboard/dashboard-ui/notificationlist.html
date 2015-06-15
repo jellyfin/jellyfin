@@ -4,19 +4,16 @@
     <title>${TitleNotifications}</title>
 </head>
 <body>
-    <div id="notificationsPage" data-role="page" class="page type-interior notificationConfigurationPage">
+    <div id="notificationsPage" data-role="page" class="page libraryPage noSecondaryNavPage" data-require="scripts/notificationlist">
 
         <div data-role="content">
-            <div class="content-primary">
 
-                <div class="readOnlyContent">
+            <div class="readOnlyContent" style="margin: auto;max-width:900px;">
 
-                    <div class="notificationsList" style="margin-top: 1em;">
-                    </div>
-
-                    <p style="display:none;" class="btnMarkReadContainer"><button class="btnMarkRead" type="button" data-icon="check">${ButtonMarkRead}</button></p>
-
+                <h1>${TitleNotifications}</h1>
+                <div class="notificationsList" style="margin-top: 1em;">
                 </div>
+
             </div>
         </div>
     </div>

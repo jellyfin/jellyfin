@@ -113,6 +113,8 @@
 
         });
 
+        $('.liveTvTimerForm').off('submit', onSubmit).on('submit', onSubmit);
+
     }).on('pagebeforeshowready', "#liveTvTimerPage", function () {
 
         var page = this;
@@ -123,14 +125,5 @@
 
         currentItem = null;
     });
-
-    function liveTvTimerPage() {
-
-        var self = this;
-
-        self.onSubmit = onSubmit;
-    }
-
-    window.LiveTvTimerPage = new liveTvTimerPage();
 
 })(window, jQuery, document);

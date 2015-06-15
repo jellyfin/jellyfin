@@ -1,6 +1,8 @@
 ﻿(function (window, $) {
 
-    function onSubmit(page) {
+    function onSubmit() {
+
+        var page = $(this).parents('.page');
 
         if ($('#chkAccept', page).checked()) {
             Dashboard.navigate('wizardfinish.html');
@@ -11,18 +13,13 @@
                 title: ''
             });
         }
+
+        return false;
     }
 
-    window.WizardAgreementPage = {
+    $(document).on('pageinitdepends', '#wizardAgreementPage', function(){
 
-        onSubmit: function () {
-
-            var page = $(this).parents('.page');
-
-            onSubmit(page);
-
-            return false;
-        }
-    };
+    	$('.wizardAgreementForm').off('submit', onSubmit).on('submit', onSubmit);
+    });
 
 })(window, jQuery);

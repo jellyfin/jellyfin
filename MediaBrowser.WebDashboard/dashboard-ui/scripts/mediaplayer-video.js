@@ -2,7 +2,6 @@
 
     function createVideoPlayer(self) {
 
-        var timeout;
         var initialVolume;
         var idleState = true;
 
@@ -45,8 +44,8 @@
 
             if (document.exitFullscreen) {
                 document.exitFullscreen();
-            } else if (document.mozExitFullScreen) {
-                document.mozExitFullScreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
             } else if (document.webkitExitFullscreen) {
                 document.webkitExitFullscreen();
             } else if (document.msExitFullscreen) {
@@ -68,7 +67,7 @@
             elem.popup("open").parents(".ui-popup-container").css("margin-top", 30);
 
             if ($.browser.safari) {
-                $('.itemVideo').css('visibility', 'hidden');
+                //$('.itemVideo').css('visibility', 'hidden');
             }
         }
 
@@ -130,7 +129,7 @@
 
         self.setSubtitleStreamIndex = function (index) {
 
-            if (!self.supportsTextTracks()) {
+            if (!self.currentMediaRenderer.supportsTextTracks()) {
 
                 self.changeStream(self.getCurrentTicks(), { SubtitleStreamIndex: index });
                 self.currentSubtitleStreamIndex = index;
@@ -185,8 +184,6 @@
 
         self.setCurrentTrackElement = function (index) {
 
-            var modes = ['disabled', 'showing', 'hidden'];
-
             var textStreams = self.currentMediaSource.MediaStreams.filter(function (s) {
                 return s.DeliveryMethod == 'External';
             });
@@ -197,70 +194,12 @@
 
             var trackIndex = newStream ? textStreams.indexOf(newStream) : -1;
 
-            console.log('Setting new text track index to: ' + trackIndex);
-
-            var allTracks = self.currentMediaElement.textTracks; // get list of tracks
-
-            for (var i = 0; i < allTracks.length; i++) {
-
-                var mode;
-
-                if (trackIndex == i) {
-                    mode = 1; // show this track
-                } else {
-                    mode = 0; // hide all other tracks
-                }
-
-                console.log('Setting track ' + i + ' mode to: ' + mode);
-
-                // Safari uses integers for the mode property
-                // http://www.jwplayer.com/html5/scripting/
-                var useNumericMode = false;
-
-                if (!isNaN(allTracks[i].mode)) {
-                    useNumericMode = true;
-                }
-
-                if (useNumericMode) {
-                    allTracks[i].mode = mode;
-                } else {
-                    allTracks[i].mode = modes[mode];
-                }
-            }
+            self.currentMediaRenderer.setCurrentTrackElement(trackIndex);
         };
 
         self.updateTextStreamUrls = function (startPositionTicks) {
 
-            if (!self.supportsTextTracks()) {
-                return;
-            }
-
-            var allTracks = self.currentMediaElement.textTracks; // get list of tracks
-
-            for (var i = 0; i < allTracks.length; i++) {
-
-                var track = allTracks[i];
-
-                // This throws an error in IE, but is fine in chrome
-                // In IE it's not necessary anyway because changing the src seems to be enough
-                try {
-                    while (track.cues.length) {
-                        track.removeCue(track.cues[0]);
-                    }
-                } catch (e) {
-                    console.log('Error removing cue from textTrack');
-                }
-            }
-
-            $('track', self.currentMediaElement).each(function () {
-
-                var currentSrc = this.src;
-
-                currentSrc = replaceQueryString(currentSrc, 'startPositionTicks', startPositionTicks);
-
-                this.src = currentSrc;
-
-            });
+            self.currentMediaRenderer.updateTextStreamUrls(startPositionTicks);
         };
 
         self.updateNowPlayingInfo = function (item) {
@@ -271,7 +210,7 @@
 
             var mediaControls = $("#videoPlayer");
 
-            var state = self.getPlayerStateInternal(self.currentMediaElement, item, self.currentMediaSource);
+            var state = self.getPlayerStateInternal(self.currentMediaRenderer, item, self.currentMediaSource);
 
             var url = "";
             var imageWidth = 400;
@@ -396,7 +335,7 @@
                 var chapterIndex = 0;
                 html += item.Chapters.map(function (c) {
 
-                    var width = 360;
+                    var width = 240;
                     var chapterHtml = '<a class="card backdropCard chapterCard" href="#" style="margin-right:1em;width:' + width + 'px;" data-position="' + c.StartPositionTicks + '">';
                     chapterHtml += '<div class="cardBox">';
                     chapterHtml += '<div class="cardScalable">';
@@ -445,11 +384,12 @@
                     var personHtml = '<div class="tileItem smallPosterTileItem" style="width:300px;">';
 
                     var imgUrl;
+                    var height = 160;
 
                     if (cast.PrimaryImageTag) {
 
                         imgUrl = ApiClient.getScaledImageUrl(cast.Id, {
-                            height: 160,
+                            height: height,
                             tag: cast.PrimaryImageTag,
                             type: "primary",
                             minScale: 2
@@ -460,7 +400,7 @@
                         imgUrl = "css/images/items/list/person.png";
                     }
 
-                    personHtml += '<div class="tileImage lazy" data-src="' + imgUrl + '" style="height:160px;"></div>';
+                    personHtml += '<div class="tileImage lazy" data-src="' + imgUrl + '" style="height:' + height + 'px;"></div>';
 
 
 
@@ -623,7 +563,7 @@
                 idleState = true;
                 $('.hiddenOnIdle').addClass("inactive");
                 $('#videoPlayer').addClass('idlePlayer');
-            }, 5000);
+            }, 4000);
         }
 
         function updateVolumeButtons(vol) {
@@ -750,7 +690,7 @@
                 return currentStream.Type == "Audio";
             });
 
-            var currentIndex = getParameterByName('AudioStreamIndex', self.getCurrentSrc(self.currentMediaElement));
+            var currentIndex = getParameterByName('AudioStreamIndex', self.getCurrentSrc(self.currentMediaRenderer));
 
             var html = '';
             html += '<div class="videoPlayerPopupContent">';
@@ -916,15 +856,16 @@
 
         function getQualityFlyoutHtml() {
 
-            var currentSrc = self.getCurrentSrc(self.currentMediaElement).toLowerCase();
+            var currentSrc = self.getCurrentSrc(self.currentMediaRenderer).toLowerCase();
             var isStatic = currentSrc.indexOf('static=true') != -1;
 
             var videoStream = self.currentMediaSource.MediaStreams.filter(function (stream) {
                 return stream.Type == "Video";
             })[0];
             var videoWidth = videoStream ? videoStream.Width : null;
+            var videoHeight = videoStream ? videoStream.Height : null;
 
-            var options = self.getVideoQualityOptions(videoWidth);
+            var options = self.getVideoQualityOptions(videoWidth, videoHeight);
 
             if (isStatic) {
                 options[0].name = "Direct";
@@ -1024,7 +965,7 @@
 
         self.canAutoPlayVideo = function () {
 
-            if (Dashboard.isRunningInCordova()) {
+            if (AppInfo.isNativeApp) {
                 return true;
             }
 
@@ -1041,40 +982,40 @@
         };
 
         // Replace audio version
-        self.cleanup = function (playerElement) {
+        self.cleanup = function (mediaRenderer) {
 
-            if (playerElement.tagName.toLowerCase() == 'video') {
-                currentTimeElement.html('--:--');
+            currentTimeElement.html('--:--');
 
-                unbindEventsForPlayback();
-            }
+            unbindEventsForPlayback();
         };
 
         self.playVideo = function (item, mediaSource, startPosition) {
 
-            var streamInfo = self.createStreamInfo('Video', item, mediaSource, startPosition);
+            requirejs(['videorenderer'], function () {
 
-            // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
-            // This will start the transcoding process before actually feeding the video url into the player
-            if ($.browser.safari && !mediaSource.RunTimeTicks) {
+                var streamInfo = self.createStreamInfo('Video', item, mediaSource, startPosition);
 
-                Dashboard.showLoadingMsg();
+                // Huge hack alert. Safari doesn't seem to like if the segments aren't available right away when playback starts
+                // This will start the transcoding process before actually feeding the video url into the player
+                if ($.browser.safari && !mediaSource.RunTimeTicks) {
 
-                ApiClient.ajax({
-                    type: 'GET',
-                    url: streamInfo.url.replace('master.m3u8', 'live.m3u8')
-                }).always(function () {
+                    Dashboard.showLoadingMsg();
 
-                    Dashboard.hideLoadingMsg();
+                    ApiClient.ajax({
+                        type: 'GET',
+                        url: streamInfo.url.replace('master.m3u8', 'live.m3u8')
+                    }).always(function () {
 
-                }).done(function () {
+                        Dashboard.hideLoadingMsg();
+
+                    }).done(function () {
+                        self.playVideoInternal(item, mediaSource, startPosition, streamInfo);
+                    });
+
+                } else {
                     self.playVideoInternal(item, mediaSource, startPosition, streamInfo);
-                });
-
-            } else {
-                self.playVideoInternal(item, mediaSource, startPosition, streamInfo);
-            }
-
+                }
+            });
         };
 
         function supportsContentOverVideoPlayer() {
@@ -1108,13 +1049,16 @@
             var requiresNativeControls = !self.enableCustomVideoControls();
 
             // Can't autoplay in these browsers so we need to use the full controls
-            if (requiresNativeControls) {
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" controls="controls"' + posterCode + ' webkit-playsinline>';
+            if (requiresNativeControls && AppInfo.isNativeApp && $.browser.android) {
+                html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" ' + posterCode + ' webkit-playsinline>';
+            }
+            else if (requiresNativeControls) {
+                html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" controls="controls"' + posterCode + ' webkit-playsinline>';
             }
             else {
 
                 // Chrome 35 won't play with preload none
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" crossorigin="anonymous" autoplay' + posterCode + '>';
+                html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" crossorigin="anonymous" autoplay' + posterCode + '>';
             }
 
             html += '<source type="' + contentType + '" src="' + videoUrl + '" />';
@@ -1188,41 +1132,18 @@
                 videoControls.removeClass('hide');
             }
 
-            var video = $("video", videoElement);
+            var mediaRenderer = new VideoRenderer('video');
 
             initialVolume = self.getSavedVolume();
 
-            video.each(function () {
-                this.volume = initialVolume;
-            });
+            mediaRenderer.volume(initialVolume);
 
             volumeSlider.val(initialVolume).slider('refresh');
             updateVolumeButtons(initialVolume);
 
-            video.one("loadedmetadata.mediaplayerevent", function (e) {
+            $(mediaRenderer).on("volumechange.mediaplayerevent", function (e) {
 
-                // The IE video player won't autoplay without this
-                if ($.browser.msie) {
-                    this.play();
-                }
-
-            }).one("playing.mediaplayerevent", function (e) {
-
-                // TODO: This is not working in chrome. Is it too early?
-
-                // Appending #t=xxx to the query string doesn't seem to work with HLS
-                if (startPositionInSeekParam && this.currentSrc && this.currentSrc.toLowerCase().indexOf('.m3u8') != -1) {
-                    var element = this;
-                    setTimeout(function () {
-                        element.currentTime = startPositionInSeekParam;
-                    }, 3000);
-                }
-
-            }).on("volumechange.mediaplayerevent", function (e) {
-
-                var vol = this.volume;
-
-                updateVolumeButtons(vol);
+                updateVolumeButtons(this.volume());
 
             }).one("playing.mediaplayerevent", function () {
 
@@ -1261,9 +1182,6 @@
 
                 self.stop();
 
-                var errorCode = this.error ? this.error.code : '';
-                console.log('Html5 Video error code: ' + errorCode);
-
                 var errorMsg = Globalize.translate('MessageErrorPlayingVideo');
 
                 if (item.Type == "TvChannel") {
@@ -1288,7 +1206,7 @@
             }).on("click.mediaplayerevent", function (e) {
 
                 if (!$.browser.mobile) {
-                    if (this.paused) {
+                    if (this.paused()) {
                         self.unpause();
                     } else {
                         self.pause();
@@ -1310,17 +1228,17 @@
 
             $('body').addClass('bodyWithPopupOpen');
 
-            self.currentMediaElement = video[0];
+            self.currentMediaRenderer = mediaRenderer;
             self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
 
             self.updateNowPlayingInfo(item);
         };
 
         self.updatePlaylistUi = function () {
-            var index = self.currentPlaylistIndex(null),
-                length = self.playlist.length,
-                requiresNativeControls = !self.enableCustomVideoControls(),
-                controls = $(requiresNativeControls ? '.videoAdvancedControls' : '.videoControls');
+            var index = self.currentPlaylistIndex(null);
+            var length = self.playlist.length;
+            var requiresNativeControls = !self.enableCustomVideoControls();
+            var controls = $(requiresNativeControls ? '.videoAdvancedControls' : '.videoControls');
 
             if (length < 2) {
                 $('.videoTrackControl').hide();

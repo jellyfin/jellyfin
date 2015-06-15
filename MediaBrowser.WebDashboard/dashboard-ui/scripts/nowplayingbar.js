@@ -5,6 +5,7 @@
     var currentTimeElement;
     var nowPlayingImageElement;
     var nowPlayingTextElement;
+    var nowPlayingUserData;
     var unmuteButton;
     var muteButton;
     var volumeSlider;
@@ -52,6 +53,9 @@
         html += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
         html += '</div>';
 
+        html += '<div class="nowPlayingBarUserDataButtons">';
+        html += '</div>';
+
         html += '</div>';
 
         return html;
@@ -62,6 +66,7 @@
         currentTimeElement = $('.currentTime', elem);
         nowPlayingImageElement = $('.nowPlayingImage', elem);
         nowPlayingTextElement = $('.nowPlayingText', elem);
+        nowPlayingUserData = $('.nowPlayingBarUserDataButtons', elem);
 
         $(elem).on('swipeup', function () {
             Dashboard.navigate('nowplaying.html');
@@ -374,6 +379,12 @@
         currentImgUrl = url;
 
         nowPlayingImageElement.html('<img src="' + url + '" />');
+
+        if (nowPlayingItem.Id) {
+            ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).done(function (item) {
+                nowPlayingUserData.html(LibraryBrowser.getUserDataIconsHtml(item, false));
+            });
+        }
     }
 
     function onPlaybackStart(e, state) {
@@ -398,7 +409,9 @@
 
         // Use a timeout to prevent the bar from hiding and showing quickly
         // in the event of a stop->play command
-        getNowPlayingBar().hide();
+
+        // Don't call getNowPlayingBar here because we don't want to end up creating it just to hide it
+        $('.nowPlayingBar').hide();
     }
 
     function onPlaybackStopped(e, state) {

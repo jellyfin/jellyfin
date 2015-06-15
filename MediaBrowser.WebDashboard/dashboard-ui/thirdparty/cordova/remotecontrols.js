@@ -21,8 +21,8 @@
 
         var artist = parts.length == 1 ? '' : parts[0];
         var title = parts[parts.length - 1];
-        var album = state.NowPlayingItem || '';
-        var duration = state.NowPlayingItem.RunTimeTicks ? (state.NowPlayingItem / 10000000) : 0;
+        var album = state.NowPlayingItem.Album || '';
+        var duration = state.NowPlayingItem.RunTimeTicks ? (state.NowPlayingItem.RunTimeTicks / 10000000) : 0;
         var elapsedTime = playState.PositionTicks ? (playState.PositionTicks / 10000000) : 0;
 
         var url = '';

@@ -1,6 +1,7 @@
 ﻿(function () {
 
     var currentPairingDeviceId;
+    var currentPairedDeviceId;
     var currentDevice;
 
     var PlayerName = "ConnectSDK";
@@ -399,9 +400,7 @@
 
         self.getTargets = function () {
 
-            var manager = ConnectSDK.discoveryManager;
-
-            return manager.getDeviceList().filter(function (d) {
+            return ConnectSDKHelper.getDeviceList().filter(function (d) {
 
                 return isValid(d);
 
@@ -478,69 +477,41 @@
             return data;
         };
 
-        function onDisconnected(device) {
+        function cleanupSession() {
 
-            if (currentDevice && device.getId() == currentDevice.getId()) {
-                currentDevice = null;
-                MediaController.removeActiveTarget(device.getId());
+            if (currentDevice != null) {
+                currentDevice.off("ready");
+                currentDevice.off("disconnect");
+
+                currentDevice.disconnect();
             }
+
+            currentPairedDeviceId = null;
+            currentDevice = null;
         }
 
-        function onDeviceReady(device) {
+        function onDeviceReady(device, deferred) {
 
             if (currentPairingDeviceId != device.getId()) {
                 console.log('device ready fired for a different device. ignoring.');
                 return;
             }
 
-            currentDevice = device;
-            MediaController.setActivePlayer(PlayerName, convertDeviceToTarget(device));
+            deferred.resolve();
         }
-
-        var boundHandlers = [];
 
         self.tryPair = function (target) {
 
             var deferred = $.Deferred();
 
-            var manager = ConnectSDK.discoveryManager;
-
-            var device = manager.getDeviceList().filter(function (d) {
+            var device = ConnectSDKHelper.getDeviceList().filter(function (d) {
 
                 return d.getId() == target.id;
             })[0];
 
             if (device) {
 
-                var deviceId = device.getId();
-                currentPairingDeviceId = deviceId;
-
-                console.log('Will attempt to connect to device');
-
-                if (device.isReady()) {
-                    console.log('Device is already ready, calling onDeviceReady');
-                    onDeviceReady(device);
-                } else {
-
-                    console.log('Binding device ready handler');
-
-                    if (boundHandlers.indexOf(deviceId) == -1) {
-
-                        boundHandlers.push(deviceId);
-                        device.on("ready", function () {
-                            console.log('device.ready fired');
-                            onDeviceReady(device);
-                        });
-                        device.on("disconnect", function () {
-                            console.log('device.disconnect fired');
-                            onDisconnected(device);
-                        });
-                    }
-
-                    console.log('Calling device.connect');
-                    device.connect();
-                }
-                //deferred.resolve();
+                self.tryPairWithDevice(device, deferred);
 
             } else {
                 deferred.reject();
@@ -549,11 +520,47 @@
             return deferred.promise();
         };
 
+        self.tryPairWithDevice = function (device, deferred) {
+
+            var deviceId = device.getId();
+            currentPairingDeviceId = deviceId;
+
+            console.log('Will attempt to connect to Connect device');
+
+            Dashboard.showModalLoadingMsg();
+            setTimeout(Dashboard.hideModalLoadingMsg, 3000);
+
+            if (device.isReady()) {
+                console.log('Device is already ready, calling onDeviceReady');
+                onDeviceReady(device, deferred);
+            } else {
+
+                console.log('Binding device ready handler');
+
+                device.on("ready", function () {
+                    console.log('device.ready fired');
+                    onDeviceReady(device, deferred);
+                });
+
+                device.on("disconnect", function () {
+                    device.off("ready");
+                    device.off("disconnect");
+                });
+
+                console.log('Calling device.connect');
+                device.connect();
+            }
+        };
+
         $(MediaController).on('playerchange', function (e, newPlayer, newTarget) {
 
-            if (currentDevice && newTarget.id != currentDevice.getId()) {
-                MediaController.removeActiveTarget(currentDevice.getId());
-                currentDevice = null;
+            if (currentPairedDeviceId) {
+                if (newTarget.id != currentPairedDeviceId) {
+                    if (currentDevice) {
+                        console.log('Disconnecting from connect device');
+                        cleanupSession();
+                    }
+                }
             }
         });
     }

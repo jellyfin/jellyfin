@@ -4,7 +4,7 @@
     <title>${TitleNotifications}</title>
 </head>
 <body>
-    <div id="notificationSettingPage" data-role="page" class="page type-interior notificationConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Notifications">
+    <div id="notificationSettingPage" data-role="page" class="page type-interior notificationConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Notifications" data-require="scripts/notificationsetting">
 
         <div data-role="content">
             <div class="content-primary">
@@ -85,10 +85,6 @@
 
             </div>
         </div>
-
-        <script type="text/javascript">
-            $('.notificationSettingForm').off('submit', NotificationSettingPage.onSubmit).on('submit', NotificationSettingPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

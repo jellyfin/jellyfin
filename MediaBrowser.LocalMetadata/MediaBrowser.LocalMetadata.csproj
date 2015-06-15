@@ -58,8 +58,6 @@
     <Compile Include="Parsers\SeasonXmlParser.cs" />
     <Compile Include="Parsers\SeriesXmlParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Providers\AlbumXmlProvider.cs" />
-    <Compile Include="Providers\ArtistXmlProvider.cs" />
     <Compile Include="Providers\BoxSetXmlProvider.cs" />
     <Compile Include="Providers\EpisodeXmlProvider.cs" />
     <Compile Include="Providers\FolderXmlProvider.cs" />
@@ -80,7 +78,6 @@
     <Compile Include="Savers\MovieXmlSaver.cs" />
     <Compile Include="Savers\PersonXmlSaver.cs" />
     <Compile Include="Savers\PlaylistXmlSaver.cs" />
-    <Compile Include="Savers\SeasonXmlSaver.cs" />
     <Compile Include="Savers\SeriesXmlSaver.cs" />
     <Compile Include="Savers\XmlSaverHelpers.cs" />
   </ItemGroup>

@@ -373,7 +373,21 @@
 
     }
 
-    $(document).on('pageshow', ".syncJobPage", function () {
+    function onSubmit() {
+        var form = this;
+
+        var page = $(form).parents('.page');
+
+        saveJob(page);
+
+        return false;
+    }
+
+    $(document).on('pageinitdepends', ".syncJobPage", function () {
+
+        $('.syncJobForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', ".syncJobPage", function () {
 
         var page = this;
         loadJob(page);
@@ -388,19 +402,5 @@
         stopListening();
         $(ApiClient).off(".syncJobPage");
     });
-
-    window.SyncJobPage = {
-
-        onSubmit: function () {
-
-            var form = this;
-
-            var page = $(form).parents('.page');
-
-            saveJob(page);
-
-            return false;
-        }
-    };
 
 })();

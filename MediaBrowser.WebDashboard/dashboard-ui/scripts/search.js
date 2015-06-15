@@ -60,9 +60,7 @@
 
         self.showSearchPanel = function () {
 
-            var viewMenuSearch = $('.viewMenuSearch');
-
-            viewMenuSearch.removeClass('hide');
+            showSearchMenu();
             $('.headerSearchInput').focus();
         };
     }
@@ -85,14 +83,13 @@
 
         var html = LibraryBrowser.getPosterViewHtml({
             items: hints,
-            shape: "square",
+            shape: "auto",
             lazy: true,
             overlayText: false,
             showTitle: true,
             coverImage: true,
             centerImage: true,
-            textLines: getAdditionalTextLines,
-            cardLayout: true
+            textLines: getAdditionalTextLines
         });
         $('.itemsContainer', elem).html(html).lazyChildren();
     }
@@ -135,7 +132,7 @@
 
         if (createIfNeeded && !elem.length) {
 
-            var html = '<div class="searchResultsOverlay ui-page-theme-b">';
+            var html = '<div class="searchResultsOverlay ui-page-theme-b smoothScrollY">';
 
             html += '<div class="searchResultsContainer"><div class="itemsContainer"></div></div></div>';
 
@@ -200,7 +197,42 @@
     function closeSearchOverlay() {
         $('.headerSearchInput').val('');
         onHeaderSearchChange('');
-        $('.viewMenuSearch').addClass('hide');
+        hideSearchMenu();
+    }
+
+    function showSearchMenu() {
+
+        require(["jquery", "velocity"], function ($, Velocity) {
+
+            $('.btnCloseSearch').hide();
+            var elem = $('.viewMenuSearch')
+                .css({ left: '100%' })
+                .removeClass('hide')[0];
+
+            Velocity.animate(elem, { "left": "0px" },
+            {
+                complete: function () {
+                    $('.btnCloseSearch').show();
+                }
+            });
+        });
+    }
+
+    function hideSearchMenu() {
+
+        require(["jquery", "velocity"], function ($, Velocity) {
+
+            $('.btnCloseSearch').hide();
+            var elem = $('.viewMenuSearch')
+                .css({ left: '0' })[0];
+
+            Velocity.animate(elem, { "left": "100%" },
+            {
+                complete: function () {
+                    $('.viewMenuSearch').addClass('hide');
+                }
+            });
+        });
     }
 
     $(document).on('pagehide', ".libraryPage", function () {

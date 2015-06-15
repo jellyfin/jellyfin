@@ -1,21 +1,19 @@
 ﻿(function () {
 
-    var updatedProducts = [];
-
-    function updateProductInfo(p) {
-
-        updatedProducts = updatedProducts.filter(function (r) {
-            return r.alias != p.alias;
-        });
-
-        updatedProducts.push(p);
-    }
-
     function isAndroid() {
 
         var platform = (device.platform || '').toLowerCase();
 
         return platform.indexOf('android') != -1;
+    }
+
+    function getPremiumUnlockFeatureId() {
+
+        if (isAndroid()) {
+            return "com.mb.android.unlock";
+        }
+
+        return 'appunlock';
     }
 
     function validatePlayback(deferred) {
@@ -26,44 +24,21 @@
             return;
         }
 
-        validateFeature({
-
-            id: 'appunlock',
-            alias: "premium features"
-
-        }, deferred);
+        validateFeature(getPremiumUnlockFeatureId(), deferred);
     }
 
     function validateLiveTV(deferred) {
 
-        // Don't require validation if not android
         if (!isAndroid()) {
             deferred.resolve();
             return;
         }
 
-        validateFeature({
-
-            id: 'premiumunlock',
-            alias: "premium features"
-
-        }, deferred);
+        validateFeature(getPremiumUnlockFeatureId(), deferred);
     }
 
-    function validateSmb(deferred) {
-
-        // Don't require validation if not android
-        if (!isAndroid()) {
-            deferred.resolve();
-            return;
-        }
-
-        validateFeature({
-
-            id: 'premiumunlock',
-            alias: "premium features"
-
-        }, deferred);
+    function validateServerManagement(deferred) {
+        deferred.resolve();
     }
 
     function getRegistrationInfo(feature, enableSupporterUnlock) {
@@ -76,26 +51,26 @@
         return ConnectionManager.getRegistrationInfo(feature, ApiClient);
     }
 
-    function validateFeature(info, deferred) {
+    function validateFeature(id, deferred) {
 
-        var products = updatedProducts.filter(function (r) {
-            return r.alias == info.alias;
-        });
+        var info = IapManager.getProductInfo(id) || {};
 
-        var product = products.length ? products[0] : null;
-
-        if (product && product.owned) {
+        if (info.owned) {
             deferred.resolve();
             return;
         }
 
         var productInfo = {
             enableSupporterUnlock: isAndroid(),
-            enableAppUnlock: product != null && product.canPurchase
+            enableAppUnlock: IapManager.isPurchaseAvailable(id),
+            id: id,
+            price: info.price
         };
 
+        var prefix = isAndroid() ? 'android' : 'ios';
+
         // Get supporter status
-        getRegistrationInfo('appunlock', productInfo.enableSupporterUnlock).done(function (registrationInfo) {
+        getRegistrationInfo(prefix + 'appunlock', productInfo.enableSupporterUnlock).done(function (registrationInfo) {
 
             if (registrationInfo.IsRegistered) {
                 deferred.resolve();
@@ -118,7 +93,7 @@
         html += '<div class="inAppPurchaseOverlayInner" style="background:rgba(10,10,10,.8);width:100%;height:100%;color:#eee;">';
 
 
-        html += '<form class="inAppPurchaseForm" style="margin: 0 auto;padding: 30px 1em 0;">';
+        html += '<div class="inAppPurchaseForm" style="margin: 0 auto;padding: 30px 1em 0;">';
 
         html += '<h1 style="color:#fff;">' + Globalize.translate('HeaderUnlockApp') + '</h1>';
 
@@ -145,13 +120,12 @@
         }
 
         if (info.enableAppUnlock) {
-            html += '<p style="margin:2em 0;">';
-            html += Globalize.translate('MessageToValidateSupporter');
-            html += '</p>';
-        }
 
-        if (info.enableAppUnlock) {
-            html += '<button class="btn btnActionAccent btnAppUnlock" data-role="none" type="button"><span>' + Globalize.translate('ButtonUnlockWithPurchase') + '</span><i class="fa fa-check"></i></button>';
+            var unlockText = Globalize.translate('ButtonUnlockWithPurchase');
+            if (info.price) {
+                unlockText = Globalize.translate('ButtonUnlockPrice', info.price);
+            }
+            html += '<button class="btn btnActionAccent btnAppUnlock" data-role="none" type="button"><span>' + unlockText + '</span><i class="fa fa-check"></i></button>';
         }
 
         if (info.enableSupporterUnlock) {
@@ -160,7 +134,7 @@
 
         html += '<button class="btn btnCancel" data-role="none" type="button"><span>' + Globalize.translate('ButtonCancel') + '</span><i class="fa fa-close"></i></button>';
 
-        html += '</form>';
+        html += '</div>';
 
         html += '</div>';
         html += '</div>';
@@ -175,26 +149,36 @@
         $('.inAppPurchaseOverlay').remove();
     }
 
+    var currentDisplayingProductInfo = null;
+    var currentDisplayingDeferred = null;
+
+    function clearCurrentDisplayingInfo() {
+        currentDisplayingProductInfo = null;
+        currentDisplayingDeferred = null;
+    }
+
     function showInAppPurchaseInfo(info, serverRegistrationInfo, deferred) {
 
         var elem = getInAppPurchaseElement(info);
 
-        $('.inAppPurchaseForm', elem).on('submit', function () {
+        currentDisplayingProductInfo = info;
+        currentDisplayingDeferred = deferred;
 
-            return false;
+        $('.btnAppUnlock', elem).on('click', function () {
+
+            IapManager.beginPurchase(info.id);
         });
 
         $('.btnCancel', elem).on('click', function () {
+
+            clearCurrentDisplayingInfo();
             cancelInAppPurchase();
 
-            // For testing purposes
-            if (!info.enableSupporterUnlock && !info.enableAppUnlock) {
-                deferred.resolve();
-            } else {
-                deferred.reject();
-            }
+            deferred.reject();
         });
         $('.btnSignInSupporter', elem).on('click', function () {
+
+            clearCurrentDisplayingInfo();
 
             Dashboard.alert({
                 message: Globalize.translate('MessagePleaseSignInLocalNetwork'),
@@ -204,11 +188,21 @@
                 }
             });
         });
+    }
 
-        $('.btnAppUnlock', elem).on('click', function () {
+    function onProductUpdated(e, product) {
 
-            alert('coming soon');
-        });
+        var currentInfo = currentDisplayingProductInfo;
+        var deferred = currentDisplayingDeferred;
+
+        if (currentInfo && deferred) {
+            if (product.owned && product.id == currentInfo.id) {
+
+                clearCurrentDisplayingInfo();
+                cancelInAppPurchase();
+                deferred.resolve();
+            }
+        }
     }
 
     window.RegistrationServices = {
@@ -234,6 +228,8 @@
                 validatePlayback(deferred);
             } else if (name == 'livetv') {
                 validateLiveTV(deferred);
+            } else if (name == 'manageserver') {
+                validateServerManagement(deferred);
             } else {
                 deferred.resolve();
             }
@@ -242,82 +238,14 @@
         }
     };
 
-    function validateProduct(product, callback) {
-
-        // product attributes:
-        // https://github.com/j3k0/cordova-plugin-purchase/blob/master/doc/api.md#validation-error-codes
-
-        callback(true, {
-
-        });
-
-        //callback(true, { ... transaction details ... }); // success!
-
-        //// OR
-        //callback(false, {
-        //    error: {
-        //        code: store.PURCHASE_EXPIRED,
-        //        message: "XYZ"
-        //    }
-        //});
-
-        //// OR
-        //callback(false, "Impossible to proceed with validation");  
+    function onIapManagerLoaded() {
+        Events.on(IapManager, 'productupdated', onProductUpdated);
     }
 
-    function initializeStore() {
-
-        // Let's set a pretty high verbosity level, so that we see a lot of stuff
-        // in the console (reassuring us that something is happening).
-        store.verbosity = store.INFO;
-
-        store.validator = validateProduct;
-
-        if (isAndroid) {
-            store.register({
-                id: "premiumunlock",
-                alias: "premium features",
-                type: store.NON_CONSUMABLE
-            });
-        } else {
-
-            // iOS
-            store.register({
-                id: "appunlock",
-                alias: "premium features",
-                type: store.NON_CONSUMABLE
-            });
-        }
-
-        // When purchase of the full version is approved,
-        // show some logs and finish the transaction.
-        store.when("premium feautres").approved(function (order) {
-            log('You just unlocked the FULL VERSION!');
-            order.finish();
-        });
-
-        // The play button can only be accessed when the user
-        // owns the full version.
-        store.when("premium feautres").updated(function (product) {
-
-            updateProductInfo(product);
-        });
-
-        // When every goes as expected, it's time to celebrate!
-        // The "ready" event should be welcomed with music and fireworks,
-        // go ask your boss about it! (just in case)
-        store.ready(function () {
-
-            console.log("Store ready");
-
-            // After we've done our setup, we tell the store to do
-            // it's first refresh. Nothing will happen if we do not call store.refresh()
-            store.refresh();
-        });
+    if (isAndroid()) {
+        requirejs(['thirdparty/cordova/android/iap'], onIapManagerLoaded);
+    } else {
+        requirejs(['thirdparty/cordova/iap'], onIapManagerLoaded);
     }
-
-    // We must wait for the "deviceready" event to fire
-    // before we can use the store object.
-    initializeStore();
 
 })();

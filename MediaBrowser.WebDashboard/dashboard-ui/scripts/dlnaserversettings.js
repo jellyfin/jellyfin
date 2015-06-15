@@ -17,23 +17,6 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageshow', "#dlnaServerSettingsPage", function () {
-
-        Dashboard.showLoadingMsg();
-
-        var page = this;
-
-        var promise1 = ApiClient.getNamedConfiguration("dlna");
-        var promise2 = ApiClient.getUsers();
-
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            loadPage(page, response1[0], response2[0]);
-
-        });
-
-    });
-
     function onSubmit() {
 
         Dashboard.showLoadingMsg();
@@ -56,8 +39,25 @@
         return false;
     }
 
-    window.DlnaServerSettingsPage = {
-        onSubmit: onSubmit
-    };
+    $(document).on('pageinitdepends', "#dlnaServerSettingsPage", function () {
+
+        $('.dlnaServerSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#dlnaServerSettingsPage", function () {
+
+        Dashboard.showLoadingMsg();
+
+        var page = this;
+
+        var promise1 = ApiClient.getNamedConfiguration("dlna");
+        var promise2 = ApiClient.getUsers();
+
+        $.when(promise1, promise2).done(function (response1, response2) {
+
+            loadPage(page, response1[0], response2[0]);
+
+        });
+
+    });
 
 })(jQuery, document, window);

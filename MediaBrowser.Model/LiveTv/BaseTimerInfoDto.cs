@@ -1,7 +1,7 @@
-﻿using System;
-using System.ComponentModel;
-using MediaBrowser.Model.Dto;
+﻿using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Extensions;
+using System;
+using System.ComponentModel;
 
 namespace MediaBrowser.Model.LiveTv
 {

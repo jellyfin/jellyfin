@@ -9,22 +9,8 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageshow', "#dlnaSettingsPage", function () {
-
-        Dashboard.showLoadingMsg();
-
-        var page = this;
-
-        ApiClient.getNamedConfiguration("dlna").done(function (config) {
-
-            loadPage(page, config);
-
-        });
-
-    });
-    
     function onSubmit() {
-        
+
         Dashboard.showLoadingMsg();
 
         var form = this;
@@ -42,8 +28,22 @@
         return false;
     }
 
-    window.DlnaSettingsPage = {
-        onSubmit: onSubmit
-    };
+    $(document).on('pageinitdepends', "#dlnaSettingsPage", function () {
+
+        $('.dlnaSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#dlnaSettingsPage", function () {
+
+        Dashboard.showLoadingMsg();
+
+        var page = this;
+
+        ApiClient.getNamedConfiguration("dlna").done(function (config) {
+
+            loadPage(page, config);
+
+        });
+
+    });
 
 })(jQuery, document, window);

@@ -181,7 +181,7 @@
 
     window.MyProfilePage = new myProfilePage();
 
-    $(document).on('pageinit', "#userImagePage", function () {
+    $(document).on('pageinitdepends', "#userImagePage", function () {
 
         var page = this;
 
@@ -204,6 +204,9 @@
 
             });
         });
+
+        $('.newImageForm').off('submit', MyProfilePage.onImageSubmit).on('submit', MyProfilePage.onImageSubmit);
+
     });
 
 
@@ -316,7 +319,7 @@
 
                 Dashboard.showError(Globalize.translate('PasswordMatchError'));
             } else {
-                
+
                 Dashboard.showLoadingMsg();
                 savePassword(page);
             }
@@ -403,7 +406,14 @@
 
     window.UpdatePasswordPage = new updatePasswordPage();
 
-    $(document).on('pageshow', ".userPasswordPage", function () {
+    $(document).on('pageinitdepends', ".userPasswordPage", function () {
+
+        var page = this;
+
+        $('.updatePasswordForm').off('submit', UpdatePasswordPage.onSubmit).on('submit', UpdatePasswordPage.onSubmit);
+        $('.localAccessForm').off('submit', UpdatePasswordPage.onLocalAccessSubmit).on('submit', UpdatePasswordPage.onLocalAccessSubmit);
+
+    }).on('pageshowready', ".userPasswordPage", function () {
 
         var page = this;
 

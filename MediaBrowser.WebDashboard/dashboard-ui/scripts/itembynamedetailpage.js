@@ -452,9 +452,9 @@
 
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    smallIcon: true,
                     playFromHere: true,
-                    defaultAction: 'playallfromhere'
+                    defaultAction: 'playallfromhere',
+                    smallIcon: true
                 });
             }
             else if (query.IncludeItemTypes == "Movie" || query.IncludeItemTypes == "Trailer") {
@@ -535,7 +535,7 @@
         });
     }
 
-    $(document).on('pageinit', "#itemByNameDetailPage", function () {
+    $(document).on('pageinitdepends', "#itemByNameDetailPage", function () {
 
         var page = this;
 
@@ -571,7 +571,7 @@
             });
         });
 
-    }).on('pageshow', "#itemByNameDetailPage", function () {
+    }).on('pageshowready', "#itemByNameDetailPage", function () {
 
         var page = this;
 

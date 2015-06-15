@@ -1,19 +1,12 @@
 ﻿using MediaBrowser.Model.Dto;
-using System;
 
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
     /// Interface IHasUserData
     /// </summary>
-    public interface IHasUserData
+    public interface IHasUserData : IHasId
     {
-        /// <summary>
-        /// Gets or sets the identifier.
-        /// </summary>
-        /// <value>The identifier.</value>
-        Guid Id { get; set; }
-
         /// <summary>
         /// Gets the user data key.
         /// </summary>

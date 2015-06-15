@@ -160,7 +160,6 @@
 
 .timeslotHeaders {
     white-space: nowrap;
-    overflow-x: scroll;
 }
 
 .mobileGuide .timeslotHeaders {
@@ -248,7 +247,6 @@
 
 .programGrid {
     padding-bottom: 4px;
-    overflow-x: scroll;
 }
 
 .programGrid, .timeslotHeaders {

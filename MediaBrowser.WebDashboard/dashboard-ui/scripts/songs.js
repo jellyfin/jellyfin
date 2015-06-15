@@ -63,9 +63,9 @@
 
             html += LibraryBrowser.getListViewHtml({
                 items: result.Items,
-                smallIcon: true,
                 showIndex: true,
-                defaultAction: 'play'
+                defaultAction: 'play',
+                smallIcon: true
             });
 
             var elem = $('#items', page).html(html).trigger('create').lazyChildren();

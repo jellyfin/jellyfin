@@ -4,7 +4,7 @@
     <title></title>
 </head>
 <body>
-    <div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users">
+    <div id="userParentalControlPage" data-role="page" class="page type-interior userProfilesPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Users" data-require="scripts/userparentalcontrol">
 
         <div data-role="content">
             <div class="content-primary">
@@ -139,11 +139,6 @@
                 </div>
             </div>
         </div>
-        <script type="text/javascript">
-            $('.blockedTagForm').off('submit', UserParentalControlPage.onBlockedTagFormSubmit).on('submit', UserParentalControlPage.onBlockedTagFormSubmit);
-            $('.scheduleForm').off('submit', UserParentalControlPage.onScheduleFormSubmit).on('submit', UserParentalControlPage.onScheduleFormSubmit);
-            $('.userParentalControlForm').off('submit', UserParentalControlPage.onSubmit).on('submit', UserParentalControlPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

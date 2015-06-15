@@ -6,10 +6,14 @@
         padding-top: 98px !important;
     }
 
-.libraryMenuDivider {
+.sidebarDivider {
     height: 1px;
-    background: #282828;
+    background: #333;
     margin: .5em 0;
+}
+
+.ui-page-theme-a .sidebarDivider {
+    background: #ddd !important;
 }
 
 .headerBackButton {
@@ -31,7 +35,7 @@
     display: inline-block;
 }
 
-.viewMenuBar .fa {
+.viewMenuBar .material-icons, .viewMenuBar .fa {
     color: #e8e8e8;
     font-size: 24px;
     vertical-align: middle;
@@ -196,7 +200,7 @@
     }
 
         .librarySidebarLinks a:hover {
-            background-color: #38c !important;
+            background-color: #383838 !important;
             color: #fff !important;
         }
 
@@ -208,7 +212,7 @@
 }
 
 .selectedMediaFolder {
-    background-color: #52B54B !important;
+    background-color: #3388cc !important;
     color: #fff !important;
 }
 
@@ -217,7 +221,7 @@
 }
 
 .ui-panel.ui-body-b {
-    background-color: #161616;
+    background-color: #212121;
 }
 
 .libraryViewNav .ui-btn-active {
@@ -278,7 +282,7 @@
     }
 }
 
-@media all and (max-width: 1000px) {
+@media all and (max-width: 800px) {
 
     /* They can use the left menu */
     .dashboardEntryHeaderButton {

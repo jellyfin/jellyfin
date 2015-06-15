@@ -21,7 +21,7 @@ namespace MediaBrowser.Api.Session
     public class GetSessions : IReturn<List<SessionInfoDto>>
     {
         [ApiMember(Name = "ControllableByUserId", Description = "Optional. Filter by sessions that a given user is allowed to remote control.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public Guid? ControllableByUserId { get; set; }
+        public string ControllableByUserId { get; set; }
 
         [ApiMember(Name = "DeviceId", Description = "Optional. Filter by device id.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string DeviceId { get; set; }
@@ -200,7 +200,7 @@ namespace MediaBrowser.Api.Session
         public string Id { get; set; }
 
         [ApiMember(Name = "UserId", Description = "UserId Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
     }
 
     [Route("/Sessions/{Id}/Users/{UserId}", "DELETE", Summary = "Removes an additional user from a session")]
@@ -211,7 +211,7 @@ namespace MediaBrowser.Api.Session
         public string Id { get; set; }
 
         [ApiMember(Name = "UserId", Description = "UserId Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
     }
 
     [Route("/Sessions/Capabilities", "POST", Summary = "Updates capabilities for a device")]
@@ -375,15 +375,15 @@ namespace MediaBrowser.Api.Session
                 result = result.Where(i => string.Equals(i.DeviceId, request.DeviceId, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (request.ControllableByUserId.HasValue)
+            if (!string.IsNullOrWhiteSpace(request.ControllableByUserId))
             {
                 result = result.Where(i => i.SupportsMediaControl);
 
-                var user = _userManager.GetUserById(request.ControllableByUserId.Value);
+                var user = _userManager.GetUserById(request.ControllableByUserId);
 
                 if (!user.Policy.EnableRemoteControlOfOtherUsers)
                 {
-                    result = result.Where(i => !i.UserId.HasValue || i.ContainsUser(request.ControllableByUserId.Value));
+                    result = result.Where(i => !i.UserId.HasValue || i.ContainsUser(request.ControllableByUserId));
                 }
 
                 if (!user.Policy.EnableSharedDeviceControl)

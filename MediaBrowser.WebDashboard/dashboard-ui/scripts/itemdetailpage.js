@@ -1604,7 +1604,7 @@
         });
     }
 
-    $(document).on('pageinit', "#itemDetailPage", function () {
+    $(document).on('pageinitdepends', "#itemDetailPage", function () {
 
         var page = this;
 
@@ -1661,7 +1661,7 @@
 
         });
 
-    }).on('pageshow', "#itemDetailPage", function () {
+    }).on('pageshowready', "#itemDetailPage", function () {
 
         var page = this;
 
@@ -1719,6 +1719,5 @@
     }
 
     window.ItemDetailPage = new itemDetailPage();
-
 
 })(jQuery, document, LibraryBrowser, window);

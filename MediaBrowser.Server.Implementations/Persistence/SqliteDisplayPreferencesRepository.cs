@@ -309,5 +309,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _connection = null;
             }
         }
+
+        public Task SaveDisplayPreferences(DisplayPreferences displayPreferences, string userId, string client, CancellationToken cancellationToken)
+        {
+            return SaveDisplayPreferences(displayPreferences, new Guid(userId), client, cancellationToken);
+        }
+
+        public DisplayPreferences GetDisplayPreferences(string displayPreferencesId, string userId, string client)
+        {
+            return GetDisplayPreferences(displayPreferencesId, new Guid(userId), client);
+        }
     }
 }

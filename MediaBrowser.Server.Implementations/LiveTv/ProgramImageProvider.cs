@@ -70,7 +70,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 {
                     try
                     {
-                        var response = await service.GetProgramImageAsync(liveTvItem.ExternalId, liveTvItem.ExternalChannelId, cancellationToken).ConfigureAwait(false);
+                        var channel = _liveTvManager.GetInternalChannel(liveTvItem.ChannelId);
+
+                        var response = await service.GetProgramImageAsync(liveTvItem.ExternalId, channel.ExternalId, cancellationToken).ConfigureAwait(false);
 
                         if (response != null)
                         {

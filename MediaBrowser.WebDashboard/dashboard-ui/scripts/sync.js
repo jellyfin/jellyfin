@@ -99,7 +99,9 @@
 
             html += targets.map(function (t) {
 
-                return '<option value="' + t.Id + '">' + t.Name + '</option>';
+                var isSelected = t.Id == AppInfo.deviceId;
+                var selectedHtml = isSelected ? ' selected="selected"' : '';
+                return '<option' + selectedHtml + ' value="' + t.Id + '">' + t.Name + '</option>';
 
             }).join('');
             html += '</select>';
@@ -134,15 +136,6 @@
         html += '</div>';
         html += '</div>';
 
-        if (dialogOptions.Options.indexOf('SyncNewContent') != -1) {
-            html += '<br/>';
-            html += '<div>';
-            html += '<label for="chkSyncNewContent">' + Globalize.translate('OptionAutomaticallySyncNewContent') + '</label>';
-            html += '<input type="checkbox" id="chkSyncNewContent" data-mini="true" checked="checked" />';
-            html += '<div class="fieldDescription">' + Globalize.translate('OptionAutomaticallySyncNewContentHelp') + '</div>';
-            html += '</div>';
-        }
-
         if (dialogOptions.Options.indexOf('UnwatchedOnly') != -1) {
             html += '<br/>';
             html += '<div>';
@@ -152,12 +145,31 @@
             html += '</div>';
         }
 
-        if (dialogOptions.Options.indexOf('ItemLimit') != -1) {
+        if (dialogOptions.Options.indexOf('SyncNewContent') != -1 ||
+            dialogOptions.Options.indexOf('ItemLimit') != -1) {
+
             html += '<br/>';
-            html += '<div>';
-            html += '<label for="txtItemLimit">' + Globalize.translate('LabelItemLimit') + '</label>';
-            html += '<input type="number" id="txtItemLimit" step="1" min="1" />';
-            html += '<div class="fieldDescription">' + Globalize.translate('LabelItemLimitHelp') + '</div>';
+            html += '<div data-role="collapsible" data-mini="true">';
+            html += '<h2>' + Globalize.translate('HeaderAdvanced') + '</h2>';
+            html += '<div style="padding:0 0 1em;">';
+            if (dialogOptions.Options.indexOf('SyncNewContent') != -1) {
+                html += '<br/>';
+                html += '<div>';
+                html += '<label for="chkSyncNewContent">' + Globalize.translate('OptionAutomaticallySyncNewContent') + '</label>';
+                html += '<input type="checkbox" id="chkSyncNewContent" data-mini="true" checked="checked" />';
+                html += '<div class="fieldDescription">' + Globalize.translate('OptionAutomaticallySyncNewContentHelp') + '</div>';
+                html += '</div>';
+            }
+
+            if (dialogOptions.Options.indexOf('ItemLimit') != -1) {
+                html += '<br/>';
+                html += '<div>';
+                html += '<label for="txtItemLimit">' + Globalize.translate('LabelItemLimit') + '</label>';
+                html += '<input type="number" id="txtItemLimit" step="1" min="1" />';
+                html += '<div class="fieldDescription">' + Globalize.translate('LabelItemLimitHelp') + '</div>';
+                html += '</div>';
+            }
+            html += '</div>';
             html += '</div>';
         }
 
@@ -222,7 +234,7 @@
 
             html += '<br/>';
             html += '<p>';
-            html += '<button type="submit" data-icon="cloud" data-theme="b">' + Globalize.translate('ButtonSync') + '</button>';
+            html += '<button type="submit" data-icon="refresh" data-theme="b">' + Globalize.translate('ButtonSync') + '</button>';
             html += '</p>';
 
             html += '</form>';
@@ -345,10 +357,6 @@
     }
 
     function isAvailable(item, user) {
-
-        if (Dashboard.isRunningInCordova()) {
-            return false;
-        }
 
         return item.SupportsSync;
     }

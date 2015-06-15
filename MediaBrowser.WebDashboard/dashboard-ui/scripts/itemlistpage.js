@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'PosterCard');
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
     // The base query options
     var query = {
@@ -125,7 +125,7 @@
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            if (user.Policy.IsAdministrator && query.ParentId) {
+            if (user.Policy.IsAdministrator && query.ParentId && !AppInfo.isNativeApp) {
                 $('#editButtonContainer', page).show();
             } else {
                 $('#editButtonContainer', page).hide();

@@ -137,7 +137,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#playlistsPage", function () {
+    $(document).on('pageinitdepends', "#playlistsPage", function () {
 
         var page = this;
 
@@ -183,7 +183,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshow', "#playlistsPage", function () {
+    }).on('pageshowready', "#playlistsPage", function () {
 
         var page = this;
 
@@ -209,8 +209,6 @@
                 reloadItems(page);
             }
         });
-
-    }).on('pageshow', "#playlistsPage", function () {
 
         updateFilterControls(this);
 

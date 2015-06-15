@@ -326,7 +326,12 @@
         }
     }
 
-    $(document).on('pageinit', "#libraryFileOrganizerLogPage", function () {
+    function onEpisodeCorrectionFormSubmit() {
+        submitEpisodeForm(this);
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#libraryFileOrganizerLogPage", function () {
 
         var page = this;
 
@@ -338,7 +343,9 @@
 
         });
 
-    }).on('pageshow', "#libraryFileOrganizerLogPage", function () {
+        $('.episodeCorrectionForm').off('submit', onEpisodeCorrectionFormSubmit).on('submit', onEpisodeCorrectionFormSubmit);
+
+    }).on('pageshowready', "#libraryFileOrganizerLogPage", function () {
 
         var page = this;
 
@@ -367,14 +374,5 @@
 
         $(ApiClient).off(".autoorganizelog");
     });
-
-    window.OrganizerLogPage = {
-
-        onEpisodeCorrectionFormSubmit: function () {
-
-            submitEpisodeForm(this);
-            return false;
-        }
-    };
 
 })(jQuery, document, window);

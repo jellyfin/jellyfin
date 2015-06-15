@@ -4,7 +4,7 @@
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        html += '<button type="button" data-role="none" onclick="history.back();" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-left"></div></button>';
+        html += '<button type="button" data-role="none" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-left"></div></button>';
 
         html += '<button type="button" data-role="none" title="Menu" class="headerButton dashboardMenuButton barsMenuButton headerButtonLeft">';
         html += '<div class="barMenuInner fa fa-bars">';
@@ -20,15 +20,9 @@
 
         html += '<div class="viewMenuSecondary">';
 
-        if (!AppInfo.enableHeaderImages) {
-            html += '<button id="btnCast" class="btnCast btnCastIcon btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="display:none;">';
-            html += '<div class="headerSelectedPlayer"></div><i class="fa fa-wifi"></i>';
-            html += '</button>';
-        } else {
-            html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="display:none;"><div class="headerSelectedPlayer"></div><div class="btnCastImage"></div></button>';
-        }
+        html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="display:none;"><div class="headerSelectedPlayer"></div><i class="material-icons btnCastImageDefault">cast</i><i class="material-icons btnCastImageActive">cast_connected</i></button>';
 
-        html += '<button onclick="Search.showSearchPanel();" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton" style="display:none;"><div class="fa fa-search" style="font-size:21px;"></div></button>';
+        html += '<button onclick="Search.showSearchPanel();" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton" style="display:none;"><i class="material-icons">search</i></button>';
         html += '<div class="viewMenuSearch hide">';
         html += '<form class="viewMenuSearchForm">';
         html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
@@ -37,13 +31,17 @@
         html += '</form>';
         html += '</div>';
 
-        html += '<button class="headerButton headerButtonRight headerUserButton" type="button" data-role="none" onclick="Dashboard.showUserFlyout(this);">';
+        html += '<button onclick="VoiceInputManager.startListening();" type="button" data-role="none" class="headerButton headerButtonRight headerVoiceButton" style="display:none;"><i class="material-icons">mic</i></button>';
 
-        html += '<div class="fa fa-user"></div>';
+        if (!showUserAtTop()) {
+            html += '<button class="headerButton headerButtonRight headerUserButton" type="button" data-role="none" onclick="Dashboard.showUserFlyout(this);">';
+            html += '<div class="fa fa-user"></div>';
+            html += '</button>';
+        }
 
-        html += '</button>';
-
-        html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton" style="display:none;"><div class="fa fa-cog"></div></a>';
+        if (!$.browser.mobile && !AppInfo.isNativeApp) {
+            html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton" style="display:none;"><i class="material-icons">settings</i></a>';
+        }
 
         html += '</div>';
 
@@ -56,6 +54,15 @@
         bindMenuEvents();
     }
 
+    function onBackClick() {
+        if (Dashboard.exitOnBack()) {
+            Dashboard.exit();
+        }
+        else {
+            history.back();
+        }
+    }
+
     function addUserToHeader(user) {
 
         var header = $('.viewMenuBar');
@@ -63,8 +70,20 @@
         if (user.localUser) {
             $('.btnCast', header).show();
             $('.headerSearchButton', header).show();
+
+            requirejs(['voice/voice'], function () {
+
+                if (VoiceInputManager.isSupported()) {
+                    $('.headerVoiceButton', header).show();
+                } else {
+                    $('.headerVoiceButton', header).hide();
+                }
+
+            });
+
         } else {
             $('.btnCast', header).hide();
+            $('.headerVoiceButton', header).hide();
             $('.headerSearchButton', header).hide();
         }
 
@@ -107,9 +126,28 @@
             $('.dashboardMenuButton').createHoverTouch().on('hovertouch', showDashboardMenu);
         }
 
+        $('.headerBackButton').on('click', onBackClick);
+
         // Have to wait for document ready here because otherwise 
         // we may see the jQM redirect back and forth problem
         $(initViewMenuBarHeadroom);
+
+        //$('.headerButtonViewMenu').off('click', onViewButtonClick).on('click', onViewButtonClick);
+
+        if (AppInfo.isNativeApp) {
+            $(document).off('swiperight.drawer').on('swiperight.drawer', '.libraryPage', onSwipeRight);
+        }
+    }
+
+    function onSwipeRight(event) {
+
+        if (event.swipestop && event.swipestop.coords) {
+            var x = event.swipestop.coords[0];
+
+            if (x < 50) {
+                showLibraryMenu();
+            }
+        }
     }
 
     function initViewMenuBarHeadroom() {
@@ -140,14 +178,41 @@
         html += '<div class="libraryMenuOptions">';
         html += '</div>';
 
-        html += '<div class="libraryMenuDivider"></div>';
         html += '<div class="adminMenuOptions">';
+        html += '<div class="sidebarDivider"></div>';
 
-        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="dashboard" data-rel="none" href="dashboard.html"><span class="fa fa-cog sidebarLinkIcon"></span>' + Globalize.translate('ButtonDashboard') + '</a>';
-        html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html"><span class="fa fa-edit sidebarLinkIcon"></span>' + Globalize.translate('ButtonMetadataManager') + '</a>';
-        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" href="reports.html"><span class="fa fa-bar-chart sidebarLinkIcon"></span>' + Globalize.translate('ButtonReports') + '</a>';
+        html += '<div class="sidebarHeader">';
+        html += Globalize.translate('HeaderAdmin');
         html += '</div>';
-        html += '<a class="sidebarLink lnkMediaFolder syncViewMenu" data-itemid="mysync" href="mysync.html"><span class="fa fa-cloud sidebarLinkIcon"></span>' + Globalize.translate('ButtonSync') + '</a>';
+
+        html += '<a class="sidebarLink lnkMediaFolder lnkManageServer" data-itemid="dashboard" href="#"><span class="fa fa-server sidebarLinkIcon"></span>' + Globalize.translate('ButtonManageServer') + '</a>';
+        html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html"><span class="fa fa-edit sidebarLinkIcon"></span>' + Globalize.translate('ButtonMetadataManager') + '</a>';
+
+        if (!$.browser.mobile && !AppInfo.isTouchPreferred) {
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" href="reports.html"><span class="fa fa-bar-chart sidebarLinkIcon"></span>' + Globalize.translate('ButtonReports') + '</a>';
+        }
+        html += '</div>';
+
+        html += '<div class="userMenuOptions">';
+        html += '<div class="sidebarDivider"></div>';
+
+        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="inbox" href="notificationlist.html"><span class="fa fa-inbox sidebarLinkIcon"></span>';
+        html += Globalize.translate('ButtonInbox');
+        html += '<div class="btnNotifications"><div class="btnNotificationsInner">0</div></div>';
+        html += '</a>';
+
+        html += '<a class="sidebarLink lnkMediaFolder syncViewMenu" data-itemid="mysync" href="mysync.html"><span class="fa fa-refresh sidebarLinkIcon" ></span>' + Globalize.translate('ButtonSync') + '</a>';
+
+        if (Dashboard.isConnectMode()) {
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" href="selectserver.html"><span class="fa fa-globe sidebarLinkIcon"></span>' + Globalize.translate('ButtonSelectServer') + '</a>';
+        }
+
+        if (showUserAtTop()) {
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="logout" href="#" onclick="Dashboard.logout();"><span class="fa fa-lock sidebarLinkIcon"></span>' + Globalize.translate('ButtonSignOut') + '</a>';
+        }
+
+        html += '</div>';
+
 
         return html;
     }
@@ -162,11 +227,15 @@
             panel = getLibraryMenu(user);
             updateLibraryNavLinks(page);
 
-            $(panel).panel('toggle').off('mouseleave.librarymenu').on('mouseleave.librarymenu', function () {
+            panel = $(panel).panel('toggle').off('mouseleave.librarymenu');
 
-                $(this).panel("close");
+            if (!AppInfo.isTouchPreferred) {
+                panel.on('mouseleave.librarymenu', function () {
 
-            });
+                    $(this).panel("close");
+
+                });
+            }
         });
     }
 
@@ -175,11 +244,15 @@
         var page = $.mobile.activePage;
         var panel = getDashboardMenu(page);
 
-        $(panel).panel('toggle').off('mouseleave.librarymenu').on('mouseleave.librarymenu', function () {
+        panel = $(panel).panel('toggle').off('mouseleave.librarymenu');
 
-            $(this).panel("close");
+        if (!AppInfo.isTouchPreferred) {
+            panel.on('mouseleave.librarymenu', function () {
 
-        });
+                $(this).panel("close");
+
+            });
+        }
     }
 
     function updateLibraryMenu(panel) {
@@ -190,6 +263,7 @@
 
             $('.adminMenuOptions').hide();
             $('.syncViewMenu').hide();
+            $('.userMenuOptions').hide();
             return;
         }
 
@@ -199,7 +273,12 @@
 
             var items = result.Items;
 
-            var html = items.map(function (i) {
+            var html = '';
+            html += '<div class="sidebarHeader">';
+            html += Globalize.translate('HeaderMedia');
+            html += '</div>';
+
+            html += items.map(function (i) {
 
                 var iconCssClass = 'fa';
 
@@ -275,6 +354,11 @@
         });
     }
 
+    function showUserAtTop() {
+
+        return $.browser.mobile || AppInfo.isNativeApp;
+    }
+
     var requiresLibraryMenuRefresh = false;
     var requiresViewMenuRefresh = false;
 
@@ -290,17 +374,18 @@
 
             html += '<div class="sidebarLinks librarySidebarLinks">';
 
-            var showUserAtTop = AppInfo.isTouchPreferred;
+            var userAtTop = showUserAtTop();
 
-            if (showUserAtTop) {
+            var homeHref = window.ApiClient ? 'index.html' : 'selectserver.html';
 
-                var userHref = user.localUser && user.localUser.Policy.EnableUserPreferenceAccess ?
-                    'mypreferencesdisplay.html?userId=' + user.localUser.Id :
-                    (user.localUser ? 'index.html' : '#');
+            var userHref = user.localUser && user.localUser.Policy.EnableUserPreferenceAccess ?
+                'mypreferencesdisplay.html?userId=' + user.localUser.Id :
+                (user.localUser ? ('mypreferenceswebclient.html?userId=' + user.localUser.Id) : '#');
 
-                var hasUserImage = user.imageUrl && AppInfo.enableUserImage;
+            var hasUserImage = user.imageUrl && AppInfo.enableUserImage;
+            if (userAtTop) {
                 var paddingLeft = hasUserImage ? 'padding-left:.7em;' : '';
-                html += '<a style="margin-top:0;' + paddingLeft + 'display:block;color:#fff;text-decoration:none;font-size:16px;font-weight:400!important;background: #000;" href="' + userHref + '">';
+                html += '<a style="margin-top:0;' + paddingLeft + 'display:block;color:#fff;text-decoration:none;font-size:16px;font-weight:400!important;background: #111;" href="' + userHref + '">';
 
                 var imgWidth = 44;
 
@@ -319,35 +404,32 @@
                 html += user.name;
                 html += '</a>';
 
-                html += '<div class="libraryMenuDivider" style="margin-top:0;"></div>';
-            }
+                html += '<div class="sidebarDivider" style="margin-top:0;"></div>';
 
-            var homeHref = window.ApiClient ? 'index.html' : 'selectserver.html';
-
-            if (showUserAtTop) {
                 html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '"><span class="fa fa-home sidebarLinkIcon"></span><span>' + Globalize.translate('ButtonHome') + '</span></a>';
-
             } else {
-                html += '<a class="lnkMediaFolder sidebarLink" style="margin-top:.5em;padding-left:1em;display:block;color:#fff;text-decoration:none;" href="' + homeHref + '">';
+                html += '<div style="margin-top:5px;"></div>';
 
-                html += '<img style="max-width:36px;vertical-align:middle;margin-right:1em;" src="css/images/mblogoicon.png" />';
-
+                html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '">';
+                html += '<div class="lazy" data-src="css/images/mblogoicon.png" style="width:' + 28 + 'px;height:' + 28 + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.4em 0 1.3em;display:inline-block;"></div>';
                 html += Globalize.translate('ButtonHome');
                 html += '</a>';
             }
 
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="dashboard" data-rel="none" href="nowplaying.html"><span class="fa fa-tablet sidebarLinkIcon"></span>' + Globalize.translate('ButtonRemote') + '</a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="nowplaying.html"><span class="fa fa-tablet sidebarLinkIcon"></span>' + Globalize.translate('ButtonRemote') + '</a>';
 
-            html += '<div class="libraryMenuDivider"></div>';
+            html += '<div class="sidebarDivider"></div>';
 
             html += getViewsHtml();
             html += '</div>';
 
             html += '</div>';
 
-            $(document.body).append(html);
+            $(document.body).append(html).trigger('libraryMenuCreated');
 
             panel = $('#libraryPanel').panel({}).lazyChildren().trigger('create');
+
+            $('.lnkManageServer', panel).on('click', onManageServerClicked);
 
             updateLibraryMenu();
         }
@@ -357,6 +439,17 @@
         }
 
         return panel;
+    }
+
+    function onManageServerClicked() {
+
+        requirejs(["scripts/registrationservices"], function () {
+
+            RegistrationServices.validateFeature('manageserver').done(function () {
+                Dashboard.navigate('dashboard.html');
+
+            });
+        });
     }
 
     function getDashboardMenu(page) {

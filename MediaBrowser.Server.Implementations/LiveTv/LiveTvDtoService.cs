@@ -68,7 +68,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (program != null)
             {
-                dto.ProgramInfo = GetProgramInfoDto(program, channel);
+                dto.ProgramInfo = _dtoService.GetBaseItemDto(program, new DtoOptions());
 
                 dto.ProgramInfo.TimerId = dto.Id;
                 dto.ProgramInfo.SeriesTimerId = dto.SeriesTimerId;
@@ -167,122 +167,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return val.Value;
         }
 
-        public string GetStatusName(RecordingStatus status)
-        {
-            if (status == RecordingStatus.InProgress)
-            {
-                return "In Progress";
-            }
-
-            if (status == RecordingStatus.ConflictedNotOk)
-            {
-                return "Conflicted";
-            }
-
-            if (status == RecordingStatus.ConflictedOk)
-            {
-                return "Scheduled";
-            }
-
-            return status.ToString();
-        }
-
-        public RecordingInfoDto GetRecordingInfoDto(ILiveTvRecording recording, LiveTvChannel channel, ILiveTvService service, User user = null)
-        {
-            var info = recording.RecordingInfo;
-
-            var dto = new RecordingInfoDto
-            {
-                Id = GetInternalRecordingId(service.Name, info.Id).ToString("N"),
-                SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId) ? null : GetInternalSeriesTimerId(service.Name, info.SeriesTimerId).ToString("N"),
-                Type = recording.GetClientTypeName(),
-                Overview = info.Overview,
-                EndDate = info.EndDate,
-                Name = info.Name,
-                StartDate = info.StartDate,
-                ExternalId = info.Id,
-                ChannelId = GetInternalChannelId(service.Name, info.ChannelId).ToString("N"),
-                Status = info.Status,
-                StatusName = GetStatusName(info.Status),
-                Path = info.Path,
-                Genres = info.Genres,
-                IsRepeat = info.IsRepeat,
-                EpisodeTitle = info.EpisodeTitle,
-                ChannelType = info.ChannelType,
-                MediaType = info.ChannelType == ChannelType.Radio ? MediaType.Audio : MediaType.Video,
-                CommunityRating = GetClientCommunityRating(info.CommunityRating),
-                OfficialRating = info.OfficialRating,
-                Audio = info.Audio,
-                IsHD = info.IsHD,
-                ServiceName = service.Name,
-                IsMovie = info.IsMovie,
-                IsSeries = info.IsSeries,
-                IsSports = info.IsSports,
-                IsLive = info.IsLive,
-                IsNews = info.IsNews,
-                IsKids = info.IsKids,
-                IsPremiere = info.IsPremiere,
-                RunTimeTicks = (info.EndDate - info.StartDate).Ticks,
-                OriginalAirDate = info.OriginalAirDate,
-
-                MediaSources = recording.GetMediaSources(true).ToList(),
-                ServerId = _appHost.SystemId
-            };
-
-            dto.CanDelete = user == null
-                ? recording.CanDelete()
-                : recording.CanDelete(user);
-            
-            dto.MediaStreams = dto.MediaSources.SelectMany(i => i.MediaStreams).ToList();
-
-            if (info.Status == RecordingStatus.InProgress)
-            {
-                var now = DateTime.UtcNow.Ticks;
-                var start = info.StartDate.Ticks;
-                var end = info.EndDate.Ticks;
-
-                var pct = now - start;
-                pct /= end;
-                pct *= 100;
-                dto.CompletionPercentage = pct;
-            }
-
-            var imageTag = GetImageTag(recording);
-
-            if (imageTag != null)
-            {
-                dto.ImageTags[ImageType.Primary] = imageTag;
-                _dtoService.AttachPrimaryImageAspectRatio(dto, recording, new List<ItemFields>
-                    {
-                        ItemFields.PrimaryImageAspectRatio
-                    });
-            }
-
-            if (user != null)
-            {
-                dto.UserData = _userDataManager.GetUserDataDto(recording, user);
-
-                dto.PlayAccess = recording.GetPlayAccess(user);
-            }
-
-            if (!string.IsNullOrEmpty(info.ProgramId))
-            {
-                dto.ProgramId = GetInternalProgramId(service.Name, info.ProgramId).ToString("N");
-            }
-
-            if (channel != null)
-            {
-                dto.ChannelName = channel.Name;
-
-                if (!string.IsNullOrEmpty(channel.PrimaryImagePath))
-                {
-                    dto.ChannelPrimaryImageTag = GetImageTag(channel);
-                }
-            }
-
-            return dto;
-        }
-
         public LiveTvTunerInfoDto GetTunerInfoDto(string serviceName, LiveTvTunerInfo info, string channelName)
         {
             var dto = new LiveTvTunerInfoDto
@@ -354,83 +238,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (currentProgram != null)
             {
-                dto.CurrentProgram = GetProgramInfoDto(currentProgram, info, user);
+                dto.CurrentProgram = _dtoService.GetBaseItemDto(currentProgram, new DtoOptions(), user);
             }
 
             return dto;
         }
 
-        public ProgramInfoDto GetProgramInfoDto(LiveTvProgram item, LiveTvChannel channel, User user = null)
-        {
-            var dto = new ProgramInfoDto
-            {
-                Id = GetInternalProgramId(item.ServiceName, item.ExternalId).ToString("N"),
-                ChannelId = GetInternalChannelId(item.ServiceName, item.ExternalChannelId).ToString("N"),
-                Overview = item.Overview,
-                Genres = item.Genres,
-                ExternalId = item.ExternalId,
-                Name = item.Name,
-                ServiceName = item.ServiceName,
-                StartDate = item.StartDate,
-                OfficialRating = item.OfficialRating,
-                IsHD = item.IsHD,
-                OriginalAirDate = item.OriginalAirDate,
-                Audio = item.Audio,
-                CommunityRating = GetClientCommunityRating(item.CommunityRating),
-                IsRepeat = item.IsRepeat,
-                EpisodeTitle = item.EpisodeTitle,
-                IsMovie = item.IsMovie,
-                IsSeries = item.IsSeries,
-                IsSports = item.IsSports,
-                IsLive = item.IsLive,
-                IsNews = item.IsNews,
-                IsKids = item.IsKids,
-                IsPremiere = item.IsPremiere,
-                Type = "Program",
-                MediaType = item.MediaType,
-                ServerId = _appHost.SystemId,
-                ProductionYear = item.ProductionYear
-            };
-
-            if (item.EndDate.HasValue)
-            {
-                dto.EndDate = item.EndDate.Value;
-
-                dto.RunTimeTicks = (item.EndDate.Value - item.StartDate).Ticks;
-            }
-
-            if (channel != null)
-            {
-                dto.ChannelName = channel.Name;
-
-                if (!string.IsNullOrEmpty(channel.PrimaryImagePath))
-                {
-                    dto.ChannelPrimaryImageTag = GetImageTag(channel);
-                }
-            }
-
-            var imageTag = GetImageTag(item);
-
-            if (imageTag != null)
-            {
-                dto.ImageTags[ImageType.Primary] = imageTag;
-                _dtoService.AttachPrimaryImageAspectRatio(dto, item, new List<ItemFields>
-                    {
-                        ItemFields.PrimaryImageAspectRatio
-                    });
-            }
-
-            if (user != null)
-            {
-                dto.UserData = _userDataManager.GetUserDataDto(item, user);
-
-                dto.PlayAccess = item.GetPlayAccess(user);
-            }
-
-            return dto;
-        }
-
-        private string GetImageTag(IHasImages info)
+        internal string GetImageTag(IHasImages info)
         {
             try
             {
@@ -476,12 +290,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         public Guid GetInternalRecordingId(string serviceName, string externalId)
         {
-            var name = serviceName + externalId + InternalVersionNumber;
+            var name = serviceName + externalId + InternalVersionNumber + "0";
 
             return name.ToLower().GetMBId(typeof(ILiveTvRecording));
         }
 
-        public async Task<TimerInfo> GetTimerInfo(TimerInfoDto dto, bool isNew, ILiveTvManager liveTv, CancellationToken cancellationToken)
+        public async Task<TimerInfo> GetTimerInfo(TimerInfoDto dto, bool isNew, LiveTvManager liveTv, CancellationToken cancellationToken)
         {
             var info = new TimerInfo
             {
@@ -521,7 +335,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (!string.IsNullOrEmpty(dto.ProgramId) && string.IsNullOrEmpty(info.ProgramId))
             {
-                var program = await liveTv.GetProgram(dto.ProgramId, cancellationToken).ConfigureAwait(false);
+                var program = liveTv.GetInternalProgram(dto.ProgramId);
 
                 if (program != null)
                 {
@@ -542,7 +356,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return info;
         }
 
-        public async Task<SeriesTimerInfo> GetSeriesTimerInfo(SeriesTimerInfoDto dto, bool isNew, ILiveTvManager liveTv, CancellationToken cancellationToken)
+        public async Task<SeriesTimerInfo> GetSeriesTimerInfo(SeriesTimerInfoDto dto, bool isNew, LiveTvManager liveTv, CancellationToken cancellationToken)
         {
             var info = new SeriesTimerInfo
             {
@@ -584,7 +398,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (!string.IsNullOrEmpty(dto.ProgramId) && string.IsNullOrEmpty(info.ProgramId))
             {
-                var program = await liveTv.GetProgram(dto.ProgramId, cancellationToken).ConfigureAwait(false);
+                var program = liveTv.GetInternalProgram(dto.ProgramId);
 
                 if (program != null)
                 {

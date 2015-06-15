@@ -85,7 +85,7 @@
                     type: "Backdrop",
                     tag: item.tag,
                     maxWidth: screenWidth,
-                    quality: 80
+                    quality: 50
                 });
 
                 setBackdropImage(getElement(), imgUrl);
@@ -98,7 +98,7 @@
     }
 
     function setDefault(page) {
-        
+
         var backdropContainer = $('.backdropContainer');
 
         if (backdropContainer.length) {
@@ -126,6 +126,10 @@
         if ($.browser.msie) {
 
             return false;
+        }
+
+        if ($.browser.android && AppInfo.isNativeApp) {
+            return true;
         }
 
         if ($.browser.mobile) {
@@ -170,7 +174,7 @@
                 type: "Backdrop",
                 tag: item.tag,
                 maxWidth: screenWidth,
-                quality: 80
+                quality: 50
             });
 
             setBackdropImage(getElement(), imgUrl);
@@ -179,7 +183,7 @@
             $(page).removeClass('backdropPage');
         }
     }
-    
+
     function setBackdropUrl(page, url) {
 
         if (url) {

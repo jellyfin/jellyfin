@@ -9,10 +9,10 @@
     vertical-align: top;
 }
 
-.mediaButton {
+.mediaButton, .nowPlayingBarUserDataButtons .btnUserItemRating {
     vertical-align: middle;
     font-size: 30px;
-    color: #e8e8e8 !important;
+    color: #e8e8e8;
     margin: 0 10px;
     min-width: 30px;
     text-align: center;
@@ -157,7 +157,7 @@ input[type="range"]::-ms-fill-upper {
         margin-bottom: 0;
     }
 
-        .nowPlayingBar .mediaButton:not(.unpauseButton):not(.pauseButton):not(.remoteControlButton):not(.stopButton) {
+        .nowPlayingBar .mediaButton:not(.unpauseButton):not(.pauseButton):not(.remoteControlButton) {
             display: none;
         }
 
@@ -165,7 +165,7 @@ input[type="range"]::-ms-fill-upper {
         float: right;
     }
 
-    .nowPlayingBar .unpauseButton, .nowPlayingBar .pauseButton, .nowPlayingBar .stopButton {
+    .nowPlayingBar .unpauseButton, .nowPlayingBar .pauseButton {
         float: right;
     }
 
@@ -196,4 +196,16 @@ input[type="range"]::-ms-fill-upper {
 .mediaPlayerAudioContainerInner {
     padding: 1em;
     background: #222;
+}
+
+.nowPlayingBarUserDataButtons {
+    display: inline-block;
+    margin-left: 2em;
+}
+
+@media all and (max-width: 1200px) {
+
+    .nowPlayingBarUserDataButtons {
+        display: none;
+    }
 }

@@ -9,7 +9,29 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageshow', "#playbackConfigurationPage", function () {
+    function onSubmit() {
+        Dashboard.showLoadingMsg();
+
+        var form = this;
+
+        ApiClient.getServerConfiguration().done(function (config) {
+
+            config.MinResumePct = $('#txtMinResumePct', form).val();
+            config.MaxResumePct = $('#txtMaxResumePct', form).val();
+            config.MinResumeDurationSeconds = $('#txtMinResumeDuration', form).val();
+
+            ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
+        });
+
+        // Disable default form submission
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#playbackConfigurationPage", function () {
+
+        $('.playbackConfigurationForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#playbackConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -22,30 +44,5 @@
         });
 
     });
-
-    function playbackConfigurationPage() {
-
-        var self = this;
-
-        self.onSubmit = function () {
-            Dashboard.showLoadingMsg();
-
-            var form = this;
-
-            ApiClient.getServerConfiguration().done(function (config) {
-
-                config.MinResumePct = $('#txtMinResumePct', form).val();
-                config.MaxResumePct = $('#txtMaxResumePct', form).val();
-                config.MinResumeDurationSeconds = $('#txtMinResumeDuration', form).val();
-
-                ApiClient.updateServerConfiguration(config).done(Dashboard.processServerConfigurationUpdateResult);
-            });
-
-            // Disable default form submission
-            return false;
-        };
-    }
-
-    window.PlaybackConfigurationPage = new playbackConfigurationPage();
 
 })(jQuery, document, window);

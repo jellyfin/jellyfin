@@ -4,16 +4,24 @@
         globalScope.MediaBrowser = {};
     }
 
-    globalScope.MediaBrowser.CredentialProvider = function () {
+    globalScope.MediaBrowser.CredentialProvider = function (key) {
 
         var self = this;
-        var credentials;
-        var key = 'servercredentials3';
+        var credentials = null;
+        key = key || 'servercredentials3';
 
         function ensure() {
 
-            credentials = credentials || JSON.parse(appStorage.getItem(key) || '{}');
-            credentials.servers = credentials.servers || [];
+            if (!credentials) {
+                
+                var json = appStorage.getItem(key) || '{}';
+
+                console.log('credentials initialized with: ' + json);
+                credentials = JSON.parse(json);
+                credentials.Servers = credentials.Servers || credentials.servers || [];
+
+                credentials.servers = null;
+            }
         }
 
         function get() {
@@ -30,6 +38,8 @@
             } else {
                 self.clear();
             }
+
+            Events.trigger(self, 'credentialsupdated');
         }
 
         self.clear = function () {
@@ -61,6 +71,8 @@
                 // Merge the data
                 existing.DateLastAccessed = Math.max(existing.DateLastAccessed || 0, server.DateLastAccessed || 0);
 
+                existing.UserLinkType = server.UserLinkType;
+
                 if (server.AccessToken) {
                     existing.AccessToken = server.AccessToken;
                     existing.UserId = server.UserId;
@@ -70,6 +82,9 @@
                 }
                 if (server.RemoteAddress) {
                     existing.RemoteAddress = server.RemoteAddress;
+                }
+                if (server.ManualAddress) {
+                    existing.ManualAddress = server.ManualAddress;
                 }
                 if (server.LocalAddress) {
                     existing.LocalAddress = server.LocalAddress;

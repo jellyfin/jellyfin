@@ -295,6 +295,10 @@ namespace MediaBrowser.Api.Playback.Hls
                     }
                 }
             }
+            catch (DirectoryNotFoundException)
+            {
+
+            }
             catch (FileNotFoundException)
             {
 
@@ -446,21 +450,28 @@ namespace MediaBrowser.Api.Playback.Hls
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                using (var fileStream = GetPlaylistFileStream(playlistPath))
+                try
                 {
-                    using (var reader = new StreamReader(fileStream))
+                    using (var fileStream = GetPlaylistFileStream(playlistPath))
                     {
-                        while (!reader.EndOfStream)
+                        using (var reader = new StreamReader(fileStream))
                         {
-                            var text = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                            // If it appears in the playlist, it's done
-                            if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                            while (!reader.EndOfStream)
                             {
-                                return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
+                                var text = await reader.ReadLineAsync().ConfigureAwait(false);
+
+                                // If it appears in the playlist, it's done
+                                if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                                {
+                                    return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
+                                }
                             }
                         }
                     }
+                }
+                catch (IOException)
+                {
+                    // May get an error if the file is locked
                 }
 
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
@@ -775,9 +786,19 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override string GetAudioArguments(StreamState state)
         {
+            var codec = GetAudioEncoder(state.Request);
+
             if (!state.IsOutputVideo)
             {
+                if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "-acodec copy";
+                }
+
                 var audioTranscodeParams = new List<string>();
+
+                audioTranscodeParams.Add("-acodec " + codec);
+                
                 if (state.OutputAudioBitrate.HasValue)
                 {
                     audioTranscodeParams.Add("-ab " + state.OutputAudioBitrate.Value.ToString(UsCulture));
@@ -796,8 +817,6 @@ namespace MediaBrowser.Api.Playback.Hls
                 audioTranscodeParams.Add("-vn");
                 return string.Join(" ", audioTranscodeParams.ToArray());
             }
-
-            var codec = state.OutputAudioCodec;
 
             if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
@@ -832,7 +851,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 return string.Empty;
             }
 
-            var codec = state.OutputVideoCodec;
+            var codec = GetVideoEncoder(state.VideoRequest);
 
             var args = "-codec:v:0 " + codec;
 
@@ -879,7 +898,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
             if (!EnableSplitTranscoding(state))
             {
-                args += " -copyts";
+                //args += " -copyts";
             }
 
             return args;
@@ -910,11 +929,11 @@ namespace MediaBrowser.Api.Playback.Hls
                     //toTimeParam = " -to " + MediaEncoder.GetTimeParameter(endTime);
                     toTimeParam = " -t " + MediaEncoder.GetTimeParameter(TimeSpan.FromSeconds(durationSeconds).Ticks);
                 }
+            }
 
-                if (state.IsOutputVideo && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) && (state.Request.StartTimeTicks ?? 0) > 0)
-                {
-                    timestampOffsetParam = " -output_ts_offset " + MediaEncoder.GetTimeParameter(state.Request.StartTimeTicks ?? 0).ToString(CultureInfo.InvariantCulture);
-                }
+            if (state.IsOutputVideo && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) && (state.Request.StartTimeTicks ?? 0) > 0)
+            {
+                timestampOffsetParam = " -output_ts_offset " + MediaEncoder.GetTimeParameter(state.Request.StartTimeTicks ?? 0).ToString(CultureInfo.InvariantCulture);
             }
 
             var mapArgs = state.IsOutputVideo ? GetMapArgs(state) : string.Empty;
@@ -959,6 +978,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         private bool EnableSplitTranscoding(StreamState state)
         {
+            return false;
             if (string.Equals(Request.QueryString["EnableSplitTranscoding"], "false", StringComparison.OrdinalIgnoreCase))
             {
                 return false;

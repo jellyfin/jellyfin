@@ -18,6 +18,23 @@
         Manual: 2
     };
 
+    globalScope.MediaBrowser.ServerInfo = {
+
+        getServerAddress: function (server, mode) {
+
+            switch (mode) {
+                case MediaBrowser.ConnectionMode.Local:
+                    return server.LocalAddress;
+                case MediaBrowser.ConnectionMode.Manual:
+                    return server.ManualAddress;
+                case MediaBrowser.ConnectionMode.Remote:
+                    return server.RemoteAddress;
+                default:
+                    return server.ManualAddress || server.LocalAddress || server.RemoteAddress;
+            }
+        }
+    };
+
     globalScope.MediaBrowser.ConnectionManager = function (logger, credentialProvider, appName, appVersion, deviceName, deviceId, capabilities) {
 
         logger.log('Begin MediaBrowser.ConnectionManager constructor');
@@ -88,8 +105,16 @@
             return appVersion;
         };
 
+        self.capabilities = function () {
+            return capabilities;
+        };
+
         self.deviceId = function () {
             return deviceId;
+        };
+
+        self.credentialProvider = function () {
+            return credentialProvider;
         };
 
         self.connectUserId = function () {
@@ -101,12 +126,27 @@
             return credentialProvider.credentials().ConnectAccessToken;
         };
 
-        self.getLastUsedApiClient = function () {
+        self.getLastUsedServer = function () {
 
-            var servers = credentialProvider.credentials().servers;
+            var servers = credentialProvider.credentials().Servers;
 
             servers.sort(function (a, b) {
-                return b.DateLastAccessed - a.DateLastAccessed;
+                return (b.DateLastAccessed || 0) - (a.DateLastAccessed || 0);
+            });
+
+            if (!servers.length) {
+                return null;
+            }
+
+            return servers[0];
+        };
+
+        self.getLastUsedApiClient = function () {
+
+            var servers = credentialProvider.credentials().Servers;
+
+            servers.sort(function (a, b) {
+                return (b.DateLastAccessed || 0) - (a.DateLastAccessed || 0);
             });
 
             if (!servers.length) {
@@ -122,44 +162,44 @@
 
             apiClients.push(apiClient);
 
-            var existingServer = credentialProvider.credentials().servers.filter(function (s) {
+            var existingServers = credentialProvider.credentials().Servers.filter(function (s) {
 
-                return stringEqualsIgnoreCase(s.ManualAddress, apiClient.serverAddress());
+                return stringEqualsIgnoreCase(s.ManualAddress, apiClient.serverAddress()) ||
+                    stringEqualsIgnoreCase(s.LocalAddress, apiClient.serverAddress()) ||
+                    stringEqualsIgnoreCase(s.RemoteAddress, apiClient.serverAddress());
 
-            })[0];
+            });
 
-            if (existingServer) {
+            var existingServer = existingServers.length ? existingServers[0] : {};
 
-                existingServer.DateLastAccessed = new Date().getTime();
-                existingServer.LastConnectionMode = MediaBrowser.ConnectionMode.Manual;
-                apiClient.serverInfo(existingServer);
-            }
+            existingServer.DateLastAccessed = new Date().getTime();
+            existingServer.LastConnectionMode = MediaBrowser.ConnectionMode.Manual;
+            existingServer.ManualAddress = apiClient.serverAddress();
+            apiClient.serverInfo(existingServer);
 
             Events.on(apiClient, 'authenticated', function (e, result) {
                 onAuthenticated(this, result, {}, true);
             });
 
+            if (!existingServers.length) {
+                var credentials = credentialProvider.credentials();
+                credentials.Servers = [existingServer];
+                credentialProvider.credentials(credentials);
+            }
+
             Events.trigger(self, 'apiclientcreated', [apiClient]);
 
-            return apiClient.getPublicSystemInfo().done(function (systemInfo) {
+            if (existingServer.Id) {
+                return;
+            }
+
+            apiClient.getPublicSystemInfo().done(function (systemInfo) {
 
                 var credentials = credentialProvider.credentials();
+                existingServer.Id = systemInfo.Id;
+                apiClient.serverInfo(existingServer);
 
-                var server = credentials.servers.filter(function (s) {
-
-                    return s.Id == systemInfo.Id;
-
-                })[0] || {};
-
-                updateServerInfo(server, systemInfo);
-
-                server.DateLastAccessed = new Date().getTime();
-                server.LastConnectionMode = MediaBrowser.ConnectionMode.Manual;
-                server.ManualAddress = apiClient.serverAddress();
-
-                apiClient.serverInfo(server);
-
-                credentialProvider.addOrUpdateServer(credentials.servers, server);
+                credentials.Servers = [existingServer];
                 credentialProvider.credentials(credentials);
             });
         };
@@ -176,7 +216,7 @@
 
             if (!apiClient) {
 
-                var url = self.getServerAddress(server, connectionMode);
+                var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
 
                 apiClient = new MediaBrowser.ApiClient(logger, url, appName, appVersion, deviceName, deviceId);
 
@@ -213,19 +253,28 @@
             }
 
             var credentials = credentialProvider.credentials();
-            var server = credentials.servers.filter(function (s) {
+            var servers = credentials.Servers.filter(function (s) {
                 return stringEqualsIgnoreCase(s.Id, serverId);
 
-            })[0];
+            });
+
+            if (!servers.length) {
+                throw new Error('Server not found: ' + serverId);
+            }
+
+            var server = servers[0];
 
             return getOrAddApiClient(server, server.LastConnectionMode);
         };
 
         function onAuthenticated(apiClient, result, options, saveCredentials) {
 
-            var server = apiClient.serverInfo();
-
             var credentials = credentialProvider.credentials();
+            var servers = credentials.Servers.filter(function (s) {
+                return s.Id == result.ServerId;
+            });
+
+            var server = servers.length ? servers[0] : apiClient.serverInfo();
 
             server.DateLastAccessed = new Date().getTime();
             server.Id = result.ServerId;
@@ -238,7 +287,7 @@
                 server.AccessToken = null;
             }
 
-            credentialProvider.addOrUpdateServer(credentials.servers, server);
+            credentialProvider.addOrUpdateServer(credentials.Servers, server);
             saveUserInfoIntoCredentials(server, result.User);
             credentialProvider.credentials(credentials);
 
@@ -339,7 +388,7 @@
                 throw new Error("credentials.ConnectUserId cannot be null");
             }
 
-            var url = self.getServerAddress(server, connectionMode);
+            var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
 
             url += "/Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId;
 
@@ -367,7 +416,7 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            var url = self.getServerAddress(server, connectionMode);
+            var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
 
             AjaxApi.ajax({
 
@@ -498,6 +547,7 @@
 
         self.logout = function () {
 
+            console.log('begin connectionManager loguot');
             var promises = [];
 
             for (var i = 0, length = apiClients.length; i < length; i++) {
@@ -513,7 +563,7 @@
 
                 var credentials = credentialProvider.credentials();
 
-                var servers = credentials.servers.filter(function (u) {
+                var servers = credentials.Servers.filter(function (u) {
                     return u.UserLinkType != "Guest";
                 });
 
@@ -533,7 +583,7 @@
                     }
                 }
 
-                credentials.servers = servers;
+                credentials.Servers = servers;
                 credentials.ConnectAccessToken = null;
                 credentials.ConnectUserId = null;
 
@@ -622,17 +672,17 @@
 
                 findServersPromise.done(function (foundServers) {
 
-                    var servers = credentials.servers.slice(0);
+                    var servers = credentials.Servers.slice(0);
                     mergeServers(servers, foundServers);
                     mergeServers(servers, connectServers);
 
                     servers = filterServers(servers, connectServers);
 
                     servers.sort(function (a, b) {
-                        return b.DateLastAccessed - a.DateLastAccessed;
+                        return (b.DateLastAccessed || 0) - (a.DateLastAccessed || 0);
                     });
 
-                    credentials.servers = servers;
+                    credentials.Servers = servers;
 
                     credentialProvider.credentials(credentials);
 
@@ -663,23 +713,27 @@
         function findServers() {
 
             var deferred = DeferredBuilder.Deferred();
-            ServerDiscovery.findServers(2000).done(function (foundServers) {
 
-                var servers = foundServers.map(function (foundServer) {
+            require(['serverdiscovery'], function () {
+                ServerDiscovery.findServers(2500).done(function (foundServers) {
 
-                    var info = {
-                        Id: foundServer.Id,
-                        LocalAddress: foundServer.Address,
-                        Name: foundServer.Name,
-                        ManualAddress: convertEndpointAddressToManualAddress(foundServer),
-                        DateLastLocalConnection: new Date().getTime()
-                    };
+                    var servers = foundServers.map(function (foundServer) {
 
-                    info.LastConnectionMode = info.ManualAddress ? MediaBrowser.ConnectionMode.Manual : MediaBrowser.ConnectionMode.Local;
+                        var info = {
+                            Id: foundServer.Id,
+                            LocalAddress: foundServer.Address,
+                            Name: foundServer.Name,
+                            ManualAddress: convertEndpointAddressToManualAddress(foundServer),
+                            DateLastLocalConnection: new Date().getTime()
+                        };
 
-                    return info;
+                        info.LastConnectionMode = info.ManualAddress ? MediaBrowser.ConnectionMode.Manual : MediaBrowser.ConnectionMode.Local;
+
+                        return info;
+                    });
+                    deferred.resolveWith(null, [servers]);
                 });
-                deferred.resolveWith(null, [servers]);
+
             });
             return deferred.promise();
         }
@@ -710,26 +764,15 @@
             logger.log('Begin connect');
 
             var deferred = DeferredBuilder.Deferred();
-            var isResolved = false;
 
-            if (capabilities.SupportsOfflineAccess) {
-                if (!NetworkStatus.isNetworkAvailable()) {
+            self.getAvailableServers().done(function (servers) {
 
-                    deferred.resolveWith(null, [self.getOffineResult()]);
-                    isResolved = true;
-                }
-            }
+                self.connectToServers(servers).done(function (result) {
 
-            if (!isResolved) {
-                self.getAvailableServers().done(function (servers) {
+                    deferred.resolveWith(null, [result]);
 
-                    self.connectToServers(servers).done(function (result) {
-
-                        deferred.resolveWith(null, [result]);
-
-                    });
                 });
-            }
+            });
 
             return deferred.promise();
         };
@@ -763,7 +806,7 @@
 
             } else {
 
-                var firstServer = servers[0];
+                var firstServer = servers.length ? servers[0] : null;
                 // See if we have any saved credentials and can auto sign in
                 if (firstServer) {
                     self.connectToServer(firstServer).done(function (result) {
@@ -798,6 +841,14 @@
 
         function beginWakeServer(server) {
 
+            require(['wakeonlan'], function () {
+                var infos = server.WakeOnLanInfos || [];
+
+                for (var i = 0, length = infos.length; i < length; i++) {
+
+                    WakeOnLan.send(infos[i]);
+                }
+            });
         }
 
         self.connectToServer = function (server, options) {
@@ -813,16 +864,11 @@
             if (tests.indexOf(MediaBrowser.ConnectionMode.Local) == -1) { tests.push(MediaBrowser.ConnectionMode.Local); }
             if (tests.indexOf(MediaBrowser.ConnectionMode.Remote) == -1) { tests.push(MediaBrowser.ConnectionMode.Remote); }
 
-            var isLocalNetworkAvailable = NetworkStatus.isAnyLocalNetworkAvailable();
-            var sendWakeOnLan = server.WakeOnLanInfos && server.WakeOnLanInfos.length && isLocalNetworkAvailable;
-
-            if (sendWakeOnLan) {
-                beginWakeServer(server);
-            }
+            beginWakeServer(server);
 
             var wakeOnLanSendTime = new Date().getTime();
 
-            testNextConnectionMode(tests, 0, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred);
+            testNextConnectionMode(tests, 0, server, wakeOnLanSendTime, options, deferred);
 
             return deferred.promise();
         };
@@ -832,7 +878,7 @@
             return (str1 || '').toLowerCase() == (str2 || '').toLowerCase();
         }
 
-        function testNextConnectionMode(tests, index, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred) {
+        function testNextConnectionMode(tests, index, server, wakeOnLanSendTime, options, deferred) {
 
             if (index >= tests.length) {
 
@@ -842,16 +888,13 @@
             }
 
             var mode = tests[index];
-            var address = self.getServerAddress(server, mode);
+            var address = MediaBrowser.ServerInfo.getServerAddress(server, mode);
             var enableRetry = false;
             var skipTest = false;
             var timeout = defaultTimeout;
 
             if (mode == MediaBrowser.ConnectionMode.Local) {
 
-                if (!isLocalNetworkAvailable) {
-                    skipTest = true;
-                }
                 enableRetry = true;
                 timeout = 5000;
             }
@@ -865,7 +908,7 @@
             }
 
             if (skipTest || !address) {
-                testNextConnectionMode(tests, index + 1, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred);
+                testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, deferred);
                 return;
             }
 
@@ -886,10 +929,10 @@
 
                     // TODO: Implement delay and retry
 
-                    testNextConnectionMode(tests, index + 1, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred);
+                    testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, deferred);
 
                 } else {
-                    testNextConnectionMode(tests, index + 1, isLocalNetworkAvailable, server, wakeOnLanSendTime, options, deferred);
+                    testNextConnectionMode(tests, index + 1, server, wakeOnLanSendTime, options, deferred);
 
                 }
             });
@@ -898,7 +941,6 @@
         function onSuccessfulConnection(server, systemInfo, connectionMode, options, deferred) {
 
             var credentials = credentialProvider.credentials();
-
             if (credentials.ConnectAccessToken) {
 
                 ensureConnectUser(credentials).done(function () {
@@ -936,7 +978,7 @@
 
             server.DateLastAccessed = new Date().getTime();
             server.LastConnectionMode = connectionMode;
-            credentialProvider.addOrUpdateServer(credentials.servers, server);
+            credentialProvider.addOrUpdateServer(credentials.Servers, server);
             credentialProvider.credentials(credentials);
 
             var result = {
@@ -949,7 +991,7 @@
                 MediaBrowser.ConnectionState.ServerSignIn;
 
             result.Servers.push(server);
-            result.ApiClient.enableAutomaticNetworking(server, connectionMode, self.getServerAddress(server, connectionMode));
+            result.ApiClient.updateServerInfo(server, connectionMode);
 
             if (result.State == MediaBrowser.ConnectionState.SignedIn) {
                 afterConnected(result.ApiClient, options);
@@ -960,21 +1002,10 @@
             Events.trigger(self, 'connected', [result]);
         }
 
-        self.getServerAddress = function (server, mode) {
-
-            switch (mode) {
-                case MediaBrowser.ConnectionMode.Local:
-                    return server.LocalAddress;
-                case MediaBrowser.ConnectionMode.Manual:
-                    return server.ManualAddress;
-                case MediaBrowser.ConnectionMode.Remote:
-                    return server.RemoteAddress;
-                default:
-                    return server.ManualAddress || server.LocalAddress || server.RemoteAddress;
-            }
-        };
-
         function normalizeAddress(address) {
+
+            // attempt to correct bad input
+            address = address.trim();
 
             if (address.toLowerCase().indexOf('http') != 0) {
                 address = "http://" + address;
@@ -1026,43 +1057,112 @@
 
         self.loginToConnect = function (username, password) {
 
+            var deferred = DeferredBuilder.Deferred();
+
             if (!username) {
-                var deferred = DeferredBuilder.Deferred();
                 deferred.reject();
                 return deferred.promise();
             }
             if (!password) {
-                var deferred = DeferredBuilder.Deferred();
                 deferred.reject();
                 return deferred.promise();
             }
 
-            var md5 = self.getConnectPasswordHash(password);
+            require(['connectservice'], function () {
 
-            return AjaxApi.ajax({
+                var md5 = self.getConnectPasswordHash(password);
+
+                AjaxApi.ajax({
+                    type: "POST",
+                    url: "https://connect.mediabrowser.tv/service/user/authenticate",
+                    data: {
+                        nameOrEmail: username,
+                        password: md5
+                    },
+                    dataType: "json",
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                    headers: {
+                        "X-Application": appName + "/" + appVersion
+                    }
+
+                }).done(function (result) {
+
+                    var credentials = credentialProvider.credentials();
+
+                    credentials.ConnectAccessToken = result.AccessToken;
+                    credentials.ConnectUserId = result.User.Id;
+
+                    credentialProvider.credentials(credentials);
+
+                    onConnectUserSignIn(result.User);
+
+                    deferred.resolveWith(null, [result]);
+
+                }).fail(function () {
+                    deferred.reject();
+                });
+            });
+
+            return deferred.promise();
+        };
+
+        self.signupForConnect = function (email, username, password, passwordConfirm) {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            if (!email) {
+                deferred.rejectWith(null, [{ errorCode: 'invalidinput' }]);
+                return deferred.promise();
+            }
+            if (!username) {
+                deferred.rejectWith(null, [{ errorCode: 'invalidinput' }]);
+                return deferred.promise();
+            }
+            if (!password) {
+                deferred.rejectWith(null, [{ errorCode: 'invalidinput' }]);
+                return deferred.promise();
+            }
+            if (!passwordConfirm) {
+                deferred.rejectWith(null, [{ errorCode: 'passwordmatch' }]);
+                return deferred.promise();
+            }
+            if (password != passwordConfirm) {
+                deferred.rejectWith(null, [{ errorCode: 'passwordmatch' }]);
+                return deferred.promise();
+            }
+
+            AjaxApi.ajax({
                 type: "POST",
-                url: "https://connect.mediabrowser.tv/service/user/authenticate",
+                url: "https://connect.mediabrowser.tv/service/register",
                 data: {
-                    nameOrEmail: username,
-                    password: md5
+                    email: email,
+                    userName: username,
+                    password: password
                 },
                 dataType: "json",
                 contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
                 headers: {
-                    "X-Application": appName + "/" + appVersion
+                    "X-Application": appName + "/" + appVersion,
+                    "X-CONNECT-TOKEN": "CONNECT-REGISTER"
                 }
 
             }).done(function (result) {
 
-                var credentials = credentialProvider.credentials();
+                deferred.resolve(null, []);
 
-                credentials.ConnectAccessToken = result.AccessToken;
-                credentials.ConnectUserId = result.User.Id;
+            }).fail(function (e) {
 
-                credentialProvider.credentials(credentials);
+                try {
 
-                onConnectUserSignIn(result.User);
+                    var result = JSON.parse(e.responseText);
+
+                    deferred.rejectWith(null, [{ errorCode: result.Status }]);
+                } catch (err) {
+                    deferred.rejectWith(null, [{}]);
+                }
             });
+
+            return deferred.promise();
         };
 
         self.getConnectPasswordHash = function (password) {
@@ -1118,7 +1218,7 @@
 
             var credentials = credentialProvider.credentials();
 
-            var serverInfo = credentials.servers = credentials.servers.filter(function (s) {
+            var serverInfo = credentials.Servers = credentials.Servers.filter(function (s) {
                 return s.ConnectServerId == serverId;
             });
 
@@ -1126,7 +1226,7 @@
 
                 credentials = credentialProvider.credentials();
 
-                credentials.servers = credentials.servers.filter(function (s) {
+                credentials.Servers = credentials.Servers.filter(function (s) {
                     return s.ConnectServerId != serverId;
                 });
 

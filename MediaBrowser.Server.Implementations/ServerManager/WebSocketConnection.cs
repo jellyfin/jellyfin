@@ -179,7 +179,8 @@ namespace MediaBrowser.Server.Implementations.ServerManager
 
             if (!message.StartsWith("{", StringComparison.OrdinalIgnoreCase))
             {
-                _logger.Error("Received web socket message that is not a json structure: " + message);
+                // This info is useful sometimes but also clogs up the log
+                //_logger.Error("Received web socket message that is not a json structure: " + message);
                 return;
             }
 

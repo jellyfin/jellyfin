@@ -36,7 +36,75 @@
         });
     }
 
-    $(document).on('pageshow', "#dashboardGeneralPage", function () {
+    function onSubmit() {
+        Dashboard.showLoadingMsg();
+
+        var form = this;
+        var page = $(form).parents('.page');
+
+        ApiClient.getServerConfiguration().done(function (config) {
+
+            config.ServerName = $('#txtServerName', form).val();
+            config.UICulture = $('#selectLocalizationLanguage', form).val();
+
+            config.CachePath = $('#txtCachePath', form).val();
+
+            if (config.UICulture != currentLanguage) {
+                Dashboard.showDashboardRefreshNotification();
+            }
+
+            ApiClient.updateServerConfiguration(config).done(function () {
+
+                refreshPageTitle(page);
+
+                ApiClient.getNamedConfiguration(brandingConfigKey).done(function (brandingConfig) {
+
+                    brandingConfig.LoginDisclaimer = $('#txtLoginDisclaimer', form).val();
+                    brandingConfig.CustomCss = $('#txtCustomCss', form).val();
+
+                    var cssChanged = currentBrandingOptions && brandingConfig.CustomCss != currentBrandingOptions.CustomCss;
+
+                    ApiClient.updateNamedConfiguration(brandingConfigKey, brandingConfig).done(Dashboard.processServerConfigurationUpdateResult);
+
+                    if (cssChanged) {
+                        Dashboard.showDashboardRefreshNotification();
+                    }
+                });
+
+            });
+        });
+
+        // Disable default form submission
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#dashboardGeneralPage", function () {
+
+        var page = this;
+
+        $('#btnSelectCachePath', page).on("click.selectDirectory", function () {
+
+            var picker = new DirectoryBrowser(page);
+
+            picker.show({
+
+                callback: function (path) {
+
+                    if (path) {
+                        $('#txtCachePath', page).val(path);
+                    }
+                    picker.close();
+                },
+
+                header: Globalize.translate('HeaderSelectServerCachePath'),
+
+                instruction: Globalize.translate('HeaderSelectServerCachePathHelp')
+            });
+        });
+
+        $('.dashboardGeneralForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#dashboardGeneralPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -60,75 +128,6 @@
             $('#txtCustomCss', page).val(config.CustomCss || '');
         });
 
-    }).on('pageinit', "#dashboardGeneralPage", function () {
-
-        var page = this;
-
-        $('#btnSelectCachePath', page).on("click.selectDirectory", function () {
-
-            var picker = new DirectoryBrowser(page);
-
-            picker.show({
-
-                callback: function (path) {
-
-                    if (path) {
-                        $('#txtCachePath', page).val(path);
-                    }
-                    picker.close();
-                },
-
-                header: Globalize.translate('HeaderSelectServerCachePath'),
-
-                instruction: Globalize.translate('HeaderSelectServerCachePathHelp')
-            });
-        });
     });
-
-    window.DashboardGeneralPage = {
-
-        onSubmit: function () {
-            Dashboard.showLoadingMsg();
-
-            var form = this;
-            var page = $(form).parents('.page');
-
-            ApiClient.getServerConfiguration().done(function (config) {
-
-                config.ServerName = $('#txtServerName', form).val();
-                config.UICulture = $('#selectLocalizationLanguage', form).val();
-
-                config.CachePath = $('#txtCachePath', form).val();
-
-                if (config.UICulture != currentLanguage) {
-                    Dashboard.showDashboardRefreshNotification();
-                }
-
-                ApiClient.updateServerConfiguration(config).done(function () {
-
-                    refreshPageTitle(page);
-
-                    ApiClient.getNamedConfiguration(brandingConfigKey).done(function (brandingConfig) {
-
-                        brandingConfig.LoginDisclaimer = $('#txtLoginDisclaimer', form).val();
-                        brandingConfig.CustomCss = $('#txtCustomCss', form).val();
-
-                        var cssChanged = currentBrandingOptions && brandingConfig.CustomCss != currentBrandingOptions.CustomCss;
-
-                        ApiClient.updateNamedConfiguration(brandingConfigKey, brandingConfig).done(Dashboard.processServerConfigurationUpdateResult);
-
-                        if (cssChanged) {
-                            Dashboard.showDashboardRefreshNotification();
-                        }
-                    });
-
-                });
-            });
-
-            // Disable default form submission
-            return false;
-        }
-
-    };
 
 })(jQuery, document, window);

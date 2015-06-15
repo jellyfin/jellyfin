@@ -54,7 +54,35 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageinit', "#channelSettingsPage", function () {
+    function onSubmit() {
+
+        Dashboard.showLoadingMsg();
+
+        var form = this;
+
+        ApiClient.getNamedConfiguration("channels").done(function (config) {
+
+            // This should be null if empty
+            config.PreferredStreamingWidth = $('#selectChannelResolution', form).val() || null;
+            config.MaxDownloadAge = $('#txtDownloadAge', form).val() || null;
+            config.DownloadSizeLimit = $('#txtDownloadSizeLimit', form).val() || null;
+
+            config.DownloadPath = $('#txtCachePath', form).val() || null;
+
+            config.DownloadingChannels = $('.chkChannelDownload:checked', form)
+                .get()
+                .map(function (i) {
+                    return i.getAttribute('data-channelid');
+                });
+
+            ApiClient.updateNamedConfiguration("channels", config).done(Dashboard.processServerConfigurationUpdateResult);
+        });
+
+        // Disable default form submission
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#channelSettingsPage", function () {
 
         var page = this;
 
@@ -78,7 +106,9 @@
             });
         });
 
-    }).on('pageshow', "#channelSettingsPage", function () {
+        $('.channelSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#channelSettingsPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -97,37 +127,5 @@
         });
 
     });
-
-    function onSubmit() {
-
-        Dashboard.showLoadingMsg();
-
-        var form = this;
-
-        ApiClient.getNamedConfiguration("channels").done(function (config) {
-
-            // This should be null if empty
-            config.PreferredStreamingWidth = $('#selectChannelResolution', form).val() || null;
-            config.MaxDownloadAge = $('#txtDownloadAge', form).val() || null;
-            config.DownloadSizeLimit = $('#txtDownloadSizeLimit', form).val() || null;
-
-            config.DownloadPath = $('#txtCachePath', form).val() || null;
-
-            config.DownloadingChannels = $('.chkChannelDownload:checked', form)
-                .get()
-                .map(function(i) {
-                    return i.getAttribute('data-channelid');
-                });
-
-            ApiClient.updateNamedConfiguration("channels", config).done(Dashboard.processServerConfigurationUpdateResult);
-        });
-
-        // Disable default form submission
-        return false;
-    }
-
-    window.ChannelSettingsPage = {
-        onSubmit: onSubmit
-    };
 
 })(jQuery, document, window);

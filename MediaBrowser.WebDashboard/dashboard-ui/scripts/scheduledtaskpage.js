@@ -1,10 +1,5 @@
 ﻿var ScheduledTaskPage = {
 
-    onPageShow: function () {
-
-        ScheduledTaskPage.refreshScheduledTask();
-    },
-
     refreshScheduledTask: function () {
         Dashboard.showLoadingMsg();
 
@@ -154,42 +149,13 @@
 
         $('#selectTriggerType', page).val('DailyTrigger').trigger('change').selectmenu('refresh');
 
-        $('#popupAddTrigger', page).on("popupafteropen",function() {
+        $('#popupAddTrigger', page).on("popupafteropen", function () {
             $('#addTriggerForm input:first', this).focus();
         }).popup("open").on("popupafterclose", function () {
 
             $('#addTriggerForm', page).off("submit");
             $(this).off("popupafterclose");
         });
-    },
-    
-    onSubmit: function() {
-        
-        ScheduledTaskPage.addTrigger();
-
-        return false;
-    },
-
-    addTrigger: function () {
-
-        Dashboard.showLoadingMsg();
-
-        var id = getParameterByName('id');
-
-        ApiClient.getScheduledTask(id).done(function (task) {
-
-            task.Triggers.push(ScheduledTaskPage.getTriggerToAdd());
-
-            ApiClient.updateScheduledTaskTriggers(task.Id, task.Triggers).done(function () {
-
-                $('#popupAddTrigger').popup('close');
-
-                ScheduledTaskPage.refreshScheduledTask();
-
-            });
-
-        });
-
     },
 
     confirmDeleteTrigger: function (index) {
@@ -319,4 +285,39 @@
     }
 };
 
-$(document).on('pageshow', "#scheduledTaskPage", ScheduledTaskPage.onPageShow);
+(function () {
+
+    function onSubmit() {
+
+        Dashboard.showLoadingMsg();
+
+        var id = getParameterByName('id');
+
+        ApiClient.getScheduledTask(id).done(function (task) {
+
+            task.Triggers.push(ScheduledTaskPage.getTriggerToAdd());
+
+            ApiClient.updateScheduledTaskTriggers(task.Id, task.Triggers).done(function () {
+
+                $('#popupAddTrigger').popup('close');
+
+                ScheduledTaskPage.refreshScheduledTask();
+
+            });
+
+        });
+
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#scheduledTaskPage", function () {
+
+        $('.addTriggerForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#scheduledTaskPage", function () {
+
+        ScheduledTaskPage.refreshScheduledTask();
+    });
+
+})();
+

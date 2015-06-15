@@ -396,7 +396,7 @@
 
         updateEditorNode(this, item);
 
-    }).on('pagebeforeshow', ".metadataEditorPage", function () {
+    }).on('pagebeforeshowready', ".metadataEditorPage", function () {
 
         window.MetadataEditor = new metadataEditor();
 

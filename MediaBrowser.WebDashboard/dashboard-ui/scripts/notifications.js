@@ -43,51 +43,6 @@
             });
         };
 
-        self.showNotificationsFlyout = function () {
-
-            Dashboard.getCurrentUser().done(function (user) {
-                var html = '<div data-role="panel" data-position="right" data-display="overlay" class="notificationsFlyout" data-position-fixed="true" data-theme="a">';
-
-                html += '<h1 style="margin: .25em 0;">';
-                html += '<span style="vertical-align:middle;">' + Globalize.translate('HeaderNotifications') + '</span>';
-
-                if (user.Policy.IsAdministrator) {
-                    html += '<a data-role="button" data-inline="true" data-icon="arrow-r" href="notificationlist.html" data-iconpos="notext" style="vertical-align:middle;margin-left:.5em;">' + Globalize.translate('ButtonViewNotifications') + '</a>';
-                }
-
-                html += '</h1>';
-
-                html += '<div>';
-
-                html += '<div class="notificationsFlyoutlist">Loading...';
-
-                html += '</div>';
-
-                html += '</div>';
-
-                html += '</div>';
-
-                $(document.body).append(html);
-
-                $('.notificationsFlyout').panel({}).trigger('create').panel("open").on("panelclose", function () {
-
-                    $(this).off("panelclose").remove();
-
-                });
-
-                self.isFlyout = true;
-
-                var startIndex = 0;
-                var limit = 5;
-                var elem = $('.notificationsFlyoutlist');
-
-                refreshNotifications(startIndex, limit, elem, null, false).done(function () {
-
-                    self.markNotificationsRead([]);
-                });
-            });
-        };
-
         self.markNotificationsRead = function (ids, callback) {
 
             ApiClient.markNotificationsRead(Dashboard.getCurrentUserId(), ids, true).done(function () {
@@ -104,50 +59,35 @@
 
         };
 
-        self.showNotificationsList = function (startIndex, limit, elem, btn) {
+        self.showNotificationsList = function (startIndex, limit, elem) {
 
-            refreshNotifications(startIndex, limit, elem, btn, true);
+            refreshNotifications(startIndex, limit, elem, true);
 
         };
     }
 
-    function refreshNotifications(startIndex, limit, elem, btn, showPaging) {
+    function refreshNotifications(startIndex, limit, elem, showPaging) {
 
         var apiClient = window.ApiClient;
 
         if (apiClient) {
             return apiClient.getNotifications(Dashboard.getCurrentUserId(), { StartIndex: startIndex, Limit: limit }).done(function (result) {
 
-                listUnreadNotifications(result.Notifications, result.TotalRecordCount, startIndex, limit, elem, btn, showPaging);
+                listUnreadNotifications(result.Notifications, result.TotalRecordCount, startIndex, limit, elem, showPaging);
 
             });
         }
     }
 
-    function listUnreadNotifications(list, totalRecordCount, startIndex, limit, elem, btn, showPaging) {
+    function listUnreadNotifications(list, totalRecordCount, startIndex, limit, elem, showPaging) {
 
         if (!totalRecordCount) {
             elem.html('<p style="padding:.5em 1em;">' + Globalize.translate('LabelNoUnreadNotifications') + '</p>');
 
-            if (btn) {
-                btn.hide();
-            }
             return;
         }
 
         Notifications.total = totalRecordCount;
-
-        if (btn) {
-            if (list.filter(function (n) {
-
-                return !n.IsRead;
-
-            }).length) {
-                btn.show();
-            } else {
-                btn.hide();
-            }
-        }
 
         var html = '';
 
@@ -194,7 +134,7 @@
         html += '<p class="notificationTime" style="margin: .5em 0;">' + humane_date(notification.Date) + '</p>';
 
         if (notification.Description) {
-            html += '<p style="margin: .5em 0;max-height:100px;overflow:hidden;text-overflow:ellipsis;">' + notification.Description + '</p>';
+            html += '<p style="margin: .5em 0;max-height:150px;overflow:hidden;text-overflow:ellipsis;">' + notification.Description + '</p>';
         }
 
         html += '</div>';
@@ -223,11 +163,9 @@
 
     window.Notifications = new notifications();
 
-    $(document).on('headercreated', function (e) {
+    $(document).on('libraryMenuCreated', function (e) {
 
         if (window.ApiClient) {
-            $('<button class="headerButton headerButtonRight btnNotifications" data-role="none" type="button" title="Notifications"><div class="btnNotificationsInner">0</div></button>').insertAfter($('.headerSearchButton')).on('click', Notifications.showNotificationsFlyout);
-
             Notifications.updateNotificationCount();
         }
     });

@@ -130,7 +130,7 @@ namespace MediaBrowser.Providers.TV
                 {
                     var json = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                    if (string.Equals(json, "null", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(json, "null", StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(json))
                     {
                         return new List<string>();
                     }

@@ -43,7 +43,45 @@
         }).checkboxradio('refresh');
     }
 
-    $(document).on('pageshow', "#metadataSubtitlesPage", function () {
+    function onSubmit() {
+        Dashboard.showLoadingMsg();
+
+        var form = this;
+
+        ApiClient.getNamedConfiguration("subtitles").done(function (config) {
+
+            config.DownloadMovieSubtitles = $('#chkSubtitlesMovies', form).checked();
+            config.DownloadEpisodeSubtitles = $('#chkSubtitlesEpisodes', form).checked();
+
+            config.SkipIfGraphicalSubtitlesPresent = $('#chkSkipIfGraphicalSubsPresent', form).checked();
+            config.SkipIfAudioTrackMatches = $('#chkSkipIfAudioTrackPresent', form).checked();
+
+            config.OpenSubtitlesUsername = $('#txtOpenSubtitleUsername', form).val();
+
+            var newPassword = $('#txtOpenSubtitlePassword', form).val();
+
+            if (newPassword) {
+                config.OpenSubtitlesPasswordHash = newPassword;
+            }
+
+            config.DownloadLanguages = $('.chkLang:checked', form).get().map(function (c) {
+
+                return c.getAttribute('data-lang');
+
+            });
+
+            ApiClient.updateNamedConfiguration("subtitles", config).done(Dashboard.processServerConfigurationUpdateResult);
+        });
+
+        // Disable default form submission
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#metadataSubtitlesPage", function () {
+
+        $('.metadataSubtitlesForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#metadataSubtitlesPage", function () {
 
         Dashboard.showLoadingMsg();
 
@@ -59,46 +97,5 @@
         });
 
     });
-
-    function metadataSubtitlesPage() {
-
-        var self = this;
-
-        self.onSubmit = function () {
-            Dashboard.showLoadingMsg();
-
-            var form = this;
-
-            ApiClient.getNamedConfiguration("subtitles").done(function (config) {
-
-                config.DownloadMovieSubtitles = $('#chkSubtitlesMovies', form).checked();
-                config.DownloadEpisodeSubtitles = $('#chkSubtitlesEpisodes', form).checked();
-
-                config.SkipIfGraphicalSubtitlesPresent = $('#chkSkipIfGraphicalSubsPresent', form).checked();
-                config.SkipIfAudioTrackMatches = $('#chkSkipIfAudioTrackPresent', form).checked();
-
-                config.OpenSubtitlesUsername = $('#txtOpenSubtitleUsername', form).val();
-
-                var newPassword = $('#txtOpenSubtitlePassword', form).val();
-                
-                if (newPassword) {
-                    config.OpenSubtitlesPasswordHash = newPassword;
-                }
-
-                config.DownloadLanguages = $('.chkLang:checked', form).get().map(function (c) {
-
-                    return c.getAttribute('data-lang');
-
-                });
-
-                ApiClient.updateNamedConfiguration("subtitles", config).done(Dashboard.processServerConfigurationUpdateResult);
-            });
-
-            // Disable default form submission
-            return false;
-        };
-    }
-
-    window.MetadataSubtitlesPage = new metadataSubtitlesPage();
 
 })(jQuery, document, window);

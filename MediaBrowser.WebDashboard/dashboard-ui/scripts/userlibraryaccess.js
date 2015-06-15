@@ -150,26 +150,22 @@
         });
     }
 
-    window.LibraryAccessPage = {
+    function onSubmit() {
+        var page = $(this).parents('.page');
 
-        onSubmit: function () {
+        Dashboard.showLoadingMsg();
 
-            var page = $(this).parents('.page');
+        var userId = getParameterByName("userId");
 
-            Dashboard.showLoadingMsg();
+        ApiClient.getUser(userId).done(function (result) {
+            saveUser(result, page);
+        });
 
-            var userId = getParameterByName("userId");
+        // Disable default form submission
+        return false;
+    }
 
-            ApiClient.getUser(userId).done(function (result) {
-                saveUser(result, page);
-            });
-
-            // Disable default form submission
-            return false;
-        }
-    };
-
-    $(document).on('pageinit', "#userLibraryAccessPage", function () {
+    $(document).on('pageinitdepends', "#userLibraryAccessPage", function () {
 
         var page = this;
 
@@ -203,7 +199,9 @@
 
         });
 
-    }).on('pageshow', "#userLibraryAccessPage", function () {
+        $('.userLibraryAccessForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#userLibraryAccessPage", function () {
 
         var page = this;
 

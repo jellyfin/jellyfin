@@ -4,7 +4,7 @@
     <title>${TitlePlayback}</title>
 </head>
 <body>
-    <div id="cinemaModeConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode">
+    <div id="cinemaModeConfigurationPage" data-role="page" class="page type-interior playbackConfigurationPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Cinema-Mode" data-require="scripts/cinemamodeconfiguration">
 
         <div data-role="content">
             <div class="content-primary">
@@ -51,7 +51,7 @@
                         </li>
                         <li>
                             <label for="txtCustomIntrosPath">${LabelCustomIntrosPath}</label>
-                            <div style="display: inline-block; width: 92%;">
+                            <div style="display: inline-block; width: 85%;">
                                 <input type="text" id="txtCustomIntrosPath" />
                             </div>
                             <button id="btnSelectCustomIntrosPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
@@ -86,10 +86,6 @@
                 </form>
             </div>
         </div>
-
-        <script type="text/javascript">
-            $('.cinemaModeConfigurationForm').off('submit', CinemaModeConfigurationPage.onSubmit).on('submit', CinemaModeConfigurationPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

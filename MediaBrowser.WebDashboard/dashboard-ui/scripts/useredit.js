@@ -52,6 +52,64 @@
         Dashboard.hideLoadingMsg();
     }
 
+    function updateUserInfo(user, newConnectUsername, actionCallback, noActionCallback) {
+        var currentConnectUsername = user.ConnectUserName || '';
+        var enteredConnectUsername = newConnectUsername;
+
+        var linkUrl = ApiClient.getUrl('Users/' + user.Id + '/Connect/Link');
+
+        if (currentConnectUsername && !enteredConnectUsername) {
+
+            // Remove connect info
+            // Add/Update connect info
+            ApiClient.ajax({
+
+                type: "DELETE",
+                url: linkUrl
+
+            }).done(function () {
+
+                Dashboard.alert({
+
+                    message: Globalize.translate('MessageEmbyAccontRemoved'),
+                    title: Globalize.translate('HeaderEmbyAccountRemoved'),
+
+                    callback: actionCallback
+
+                });
+            });
+
+        }
+        else if (currentConnectUsername != enteredConnectUsername) {
+
+            // Add/Update connect info
+            ApiClient.ajax({
+                type: "POST",
+                url: linkUrl,
+                data: {
+                    ConnectUsername: enteredConnectUsername
+                },
+                dataType: 'json'
+
+            }).done(function (result) {
+
+                var msgKey = result.IsPending ? 'MessagePendingEmbyAccountAdded' : 'MessageEmbyAccountAdded';
+
+                Dashboard.alert({
+                    message: Globalize.translate(msgKey),
+                    title: Globalize.translate('HeaderEmbyAccountAdded'),
+
+                    callback: actionCallback
+
+                });
+            });
+        } else {
+            if (noActionCallback) {
+                noActionCallback();
+            }
+        }
+    }
+
     function onSaveComplete(page, user) {
 
         Dashboard.hideLoadingMsg();
@@ -63,7 +121,7 @@
             Dashboard.alert(Globalize.translate('SettingsSaved'));
         } else {
 
-            ConnectHelper.updateUserInfo(user, $('#txtConnectUserName', page).val(), function () {
+            updateUserInfo(user, $('#txtConnectUserName', page).val(), function () {
 
                 loadData(page);
             });
@@ -103,23 +161,17 @@
         });
     }
 
-    function editUserPage() {
+    function onSubmit() {
+        var page = $(this).parents('.page');
 
-        var self = this;
+        Dashboard.showLoadingMsg();
 
-        self.onSubmit = function () {
+        getUser().done(function (result) {
+            saveUser(result, page);
+        });
 
-            var page = $(this).parents('.page');
-
-            Dashboard.showLoadingMsg();
-
-            getUser().done(function (result) {
-                saveUser(result, page);
-            });
-
-            // Disable default form submission
-            return false;
-        };
+        // Disable default form submission
+        return false;
     }
 
     function getUser() {
@@ -136,13 +188,14 @@
         getUser().done(function (user) {
 
             loadUser(page, user);
-
         });
     }
 
-    window.EditUserPage = new editUserPage();
+    $(document).on('pageinitdepends', "#editUserPage", function () {
 
-    $(document).on('pagebeforeshow', "#editUserPage", function () {
+        $('.editUserProfileForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pagebeforeshowready', "#editUserPage", function () {
 
         var page = this;
 
@@ -151,72 +204,3 @@
     });
 
 })(jQuery, window, document);
-
-(function () {
-
-    window.ConnectHelper = {
-
-        updateUserInfo: function (user, newConnectUsername, actionCallback, noActionCallback) {
-
-            var currentConnectUsername = user.ConnectUserName || '';
-            var enteredConnectUsername = newConnectUsername;
-
-            var linkUrl = ApiClient.getUrl('Users/' + user.Id + '/Connect/Link');
-
-            if (currentConnectUsername && !enteredConnectUsername) {
-
-                // Remove connect info
-                // Add/Update connect info
-                ApiClient.ajax({
-
-                    type: "DELETE",
-                    url: linkUrl
-
-                }).done(function () {
-
-                    Dashboard.alert({
-
-                        message: Globalize.translate('MessageEmbyAccontRemoved'),
-                        title: Globalize.translate('HeaderEmbyAccountRemoved'),
-
-                        callback: actionCallback
-
-                    });
-                });
-
-            }
-            else if (currentConnectUsername != enteredConnectUsername) {
-
-                // Add/Update connect info
-                ApiClient.ajax({
-                    type: "POST",
-                    url: linkUrl,
-                    data: {
-                        ConnectUsername: enteredConnectUsername
-                    },
-                    dataType: 'json'
-
-                }).done(function (result) {
-
-                    var msgKey = result.IsPending ? 'MessagePendingEmbyAccountAdded' : 'MessageEmbyAccountAdded';
-
-                    Dashboard.alert({
-                        message: Globalize.translate(msgKey),
-                        title: Globalize.translate('HeaderEmbyAccountAdded'),
-
-                        callback: actionCallback
-
-                    });
-                });
-            } else {
-                if (noActionCallback) {
-                    noActionCallback();
-                }
-            }
-
-        }
-
-    };
-
-
-})();

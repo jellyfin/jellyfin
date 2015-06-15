@@ -1261,6 +1261,9 @@
     "ButtonLearnMoreAboutEmbyConnect": "Scopri di pi\u00f9 su Emby Connect",
     "LabelExternalPlayers": "Player esterni:",
     "LabelExternalPlayersHelp": "Pulsanti di visualizzazione di riprodurre contenuti in lettori esterni. Questo \u00e8 disponibile solo su dispositivi che supportano schemi URL, generalmente Android e iOS. Con i giocatori esterni vi \u00e8 generalmente alcun supporto per il controllo remoto o ripresa.",
+    "LabelNativeExternalPlayersHelp": "Display buttons to play content in external players.",
+    "LabelEnableItemPreviews": "Enable item previews",
+    "LabelEnableItemPreviewsHelp": "if enabled, sliding previews will appear when clicking items on certain screens.",
     "HeaderSubtitleProfile": "Profilo sottotitolo",
     "HeaderSubtitleProfiles": "Profili sottotitoli",
     "HeaderSubtitleProfilesHelp": "Profili sottotitoli descrivono i formati di sottotitoli supportati dal dispositivo.",
@@ -1432,5 +1435,9 @@
     "HeaderExport": "Export",
     "HeaderColumns": "Columns",
     "ButtonReset": "Reset",
-    "OptionEnableExternalVideoPlayers": "Enable external video players"
+    "OptionEnableExternalVideoPlayers": "Enable external video players",
+    "ButtonUnlockGuide": "Unlock Guide",
+    "LabelEnableFullScreen": "Enable fullscreen mode",
+    "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
+    "LabelSyncPath": "Synced content path:"
 }

@@ -4,7 +4,7 @@
     <title>${TitleMediaLibrary}</title>
 </head>
 <body>
-    <div id="librarySettingsPage" data-role="page" class="page type-interior mediaLibraryPage">
+    <div id="librarySettingsPage" data-role="page" class="page type-interior mediaLibraryPage" data-require="scripts/librarysettings">
 
         <div data-role="content">
             <div class="content-primary">
@@ -14,12 +14,12 @@
                     <a href="#" data-role="button" class="ui-btn-active">${TabAdvanced}</a>
                 </div>
 
-                <form id="librarySettingsForm">
+                <form class="librarySettingsForm">
 
                     <ul data-role="listview" class="ulForm">
                         <li class="fldImagesByName" style="display:none;">
                             <label for="txtItemsByNamePath">${LabelImagesByNamePath}</label>
-                            <div style="display: inline-block; width: 92%;">
+                            <div style="display: inline-block; width: 85%;">
                                 <input type="text" id="txtItemsByNamePath" name="txtItemsByNamePath" />
                             </div>
                             <button id="btnSelectIBNPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
@@ -67,8 +67,12 @@
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <input type="checkbox" id="chkEnableRealtimeMonitor" name="chkEnableRealtimeMonitor" />
-                            <label for="chkEnableRealtimeMonitor">${LabelEnableRealtimeMonitor}</label>
+                            <label for="selectEnableRealtimeMonitor">${LabelEnableRealtimeMonitor}</label>
+                            <select id="selectEnableRealtimeMonitor" data-mini="true">
+                                <option value="Auto">${OptionAuto}</option>
+                                <option value="Enabled">${OptionYes}</option>
+                                <option value="Disabled">${OptionNo}</option>
+                            </select>
                             <div class="fieldDescription">
                                 ${LabelEnableRealtimeMonitorHelp}
                             </div>
@@ -87,10 +91,6 @@
 
             </div>
         </div>
-
-        <script type="text/javascript">
-            $('#librarySettingsForm').on('submit', LibrarySettingsPage.onSubmit);
-        </script>
     </div>
 </body>
 </html>

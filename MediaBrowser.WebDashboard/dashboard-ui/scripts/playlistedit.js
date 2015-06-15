@@ -98,9 +98,9 @@
                         showIndex: false,
                         title: item.Name,
                         showRemoveFromPlaylist: true,
-                        smallIcon: true,
                         playFromHere: true,
-                        defaultAction: 'playallfromhere'
+                        defaultAction: 'playallfromhere',
+                        smallIcon: true
                     });
                 }
 
@@ -175,7 +175,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinit', "#playlistEditorPage", function () {
+    $(document).on('pageinitdepends', "#playlistEditorPage", function () {
 
         var page = this;
 
@@ -215,7 +215,7 @@
 
         });
 
-    }).on('pagebeforeshow', "#playlistEditorPage", function () {
+    }).on('pageshowready', "#playlistEditorPage", function () {
 
         var page = this;
 
@@ -233,8 +233,6 @@
 
         LibraryBrowser.loadSavedQueryValues(viewkey, query);
         reloadItems(page);
-
-    }).on('pageshow', "#playlistEditorPage", function () {
 
         updateFilterControls(this);
 

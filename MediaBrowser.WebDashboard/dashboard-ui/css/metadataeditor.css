@@ -290,8 +290,6 @@
         bottom: 0;
         left: 0;
         width: 30%;
-        overflow-y: scroll;
-        overflow-x: auto !important;
         display: block;
         border-right: 1px solid #555;
     }

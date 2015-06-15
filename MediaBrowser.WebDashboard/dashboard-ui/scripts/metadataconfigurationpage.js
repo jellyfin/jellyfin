@@ -1,39 +1,6 @@
-﻿var MetadataConfigurationPage = {
+﻿(function () {
 
-    onPageShow: function () {
-        Dashboard.showLoadingMsg();
-
-        var page = this;
-
-        var config;
-        var allCultures;
-        var allCountries;
-
-        ApiClient.getServerConfiguration().done(function (result) {
-
-            config = result;
-            MetadataConfigurationPage.load(page, config, allCultures, allCountries);
-        });
-
-        ApiClient.getCultures().done(function (result) {
-
-            Dashboard.populateLanguages($('#selectLanguage', page), result);
-
-            allCultures = result;
-            MetadataConfigurationPage.load(page, config, allCultures, allCountries);
-        });
-
-        ApiClient.getCountries().done(function (result) {
-
-            Dashboard.populateCountries($('#selectCountry', page), result);
-
-            allCountries = result;
-            MetadataConfigurationPage.load(page, config, allCultures, allCountries);
-        });
-    },
-
-    load: function (page, config, allCultures, allCountries) {
-
+    function load(page, config, allCultures, allCountries) {
         if (!config || !allCultures || !allCountries) {
             return;
         }
@@ -46,9 +13,9 @@
         $('#selectImageSavingConvention', page).val(config.ImageSavingConvention).selectmenu("refresh");
 
         Dashboard.hideLoadingMsg();
-    },
-    
-    onSubmit: function () {
+    }
+
+    function onSubmit() {
         var form = this;
 
         Dashboard.showLoadingMsg();
@@ -68,6 +35,44 @@
         // Disable default form submission
         return false;
     }
-};
 
-$(document).on('pageshow', "#metadataConfigurationPage", MetadataConfigurationPage.onPageShow);
+    $(document).on('pageinitdepends', "#metadataConfigurationPage", function () {
+
+        Dashboard.showLoadingMsg();
+
+        $('.metadataConfigurationForm').off('submit', onSubmit).on('submit', onSubmit);
+
+    }).on('pageshowready', "#metadataConfigurationPage", function () {
+
+        Dashboard.showLoadingMsg();
+
+        var page = this;
+
+        var config;
+        var allCultures;
+        var allCountries;
+
+        ApiClient.getServerConfiguration().done(function (result) {
+
+            config = result;
+            load(page, config, allCultures, allCountries);
+        });
+
+        ApiClient.getCultures().done(function (result) {
+
+            Dashboard.populateLanguages($('#selectLanguage', page), result);
+
+            allCultures = result;
+            load(page, config, allCultures, allCountries);
+        });
+
+        ApiClient.getCountries().done(function (result) {
+
+            Dashboard.populateCountries($('#selectCountry', page), result);
+
+            allCountries = result;
+            load(page, config, allCultures, allCountries);
+        });
+    });
+
+})();

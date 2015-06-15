@@ -4,7 +4,7 @@
     <title>${TitleAutoOrganize}</title>
 </head>
 <body>
-    <div id="libraryFileOrganizerLogPage" data-role="page" class="page type-interior organizePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize">
+    <div id="libraryFileOrganizerLogPage" data-role="page" class="page type-interior organizePage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Auto-Organize" data-require="scripts/autoorganizelog,scripts/taskbutton">
 
         <div data-role="content">
             <div class="content-primary">
@@ -94,10 +94,6 @@
             </div>
 
         </div>
-
-        <script type="text/javascript">
-            $('.episodeCorrectionForm').off('submit', OrganizerLogPage.onEpisodeCorrectionFormSubmit).on('submit', OrganizerLogPage.onEpisodeCorrectionFormSubmit);
-        </script>
     </div>
 </body>
 </html>

@@ -11,157 +11,86 @@
         }
     }
 
-    function onDbOpened(imageStore, db) {
+    var fileSystem;
+    function getFileSystem() {
 
-        imageStore._db = db;
-        window.ImageStore = imageStore;
+        var deferred = DeferredBuilder.Deferred();
+
+        if (fileSystem) {
+            deferred.resolveWith(null, [fileSystem]);
+        } else {
+            requestFileSystem(PERSISTENT, 0, function (fs) {
+                fileSystem = fs;
+                deferred.resolveWith(null, [fileSystem]);
+            });
+        }
+
+        return deferred.promise();
     }
 
-    function openDb(imageStore) {
-
-        // Create/open database
-        var db = window.sqlitePlugin.openDatabase({ name: "my.db" });
-
-        db.transaction(function (tx) {
-
-            tx.executeSql('CREATE TABLE IF NOT EXISTS images (id text primary key, data text)');
-            tx.executeSql('create index if not exists idx_images on images(id)');
-
-            onDbOpened(imageStore, db);
-        });
-    }
-
-    function sqliteImageStore() {
+    function indexedDbBlobImageStore() {
 
         var self = this;
 
-        self.addImageToDatabase = function (blob, key) {
+        function getCacheKey(url) {
 
-            var deferred = DeferredBuilder.Deferred();
+            // Try to strip off the domain to share the cache between local and remote connections
+            var index = url.indexOf('://');
 
-            console.log("addImageToDatabase");
+            if (index != -1) {
+                url = url.substring(index + 3);
 
-            self.db().transaction(function (tx) {
+                index = url.indexOf('/');
 
-                tx.executeSql("INSERT INTO images (id, data) VALUES (?,?)", [key, blob], function (tx, res) {
+                if (index != -1) {
+                    url = url.substring(index + 1);
+                }
 
-                    deferred.resolve();
-                }, function (e) {
-                    deferred.reject();
-                });
-            });
+            }
 
-            return deferred.promise();
-        };
+            return CryptoJS.MD5(url).toString();
+        }
 
-        self.db = function () {
-
-            return self._db;
-        };
-
-        self.get = function (key) {
-
-            var deferred = DeferredBuilder.Deferred();
-
-            self.db().transaction(function (tx) {
-
-                tx.executeSql("SELECT data from images where id=?", [key], function (tx, res) {
-
-                    if (res.rows.length) {
-
-                        deferred.resolveWith(null, [res.rows.item(0).data]);
-                    } else {
-                        deferred.reject();
-                    }
-                }, function (e) {
-                    deferred.reject();
-                });
-            });
-
-            return deferred.promise();
-        };
+        function normalizeReturnUrl(url) {
+            if ($.browser.safari) {
+                return url.replace('file://', '');
+            }
+            return url;
+        }
 
         self.getImageUrl = function (originalUrl) {
 
-            console.log('getImageUrl:' + originalUrl);
-
-            var key = CryptoJS.SHA1(originalUrl).toString();
+            if ($.browser.android && originalUrl.indexOf('tag=') != -1) {
+                originalUrl += "&format=webp";
+            }
 
             var deferred = DeferredBuilder.Deferred();
+            var key = getCacheKey(originalUrl);
 
-            self.get(key).done(function (url) {
+            console.log('getImageUrl:' + originalUrl);
 
-                deferred.resolveWith(null, [url]);
+            getFileSystem().done(function (fileSystem) {
+                var path = fileSystem.root.toURL() + "/emby/cache/" + key;
 
-            }).fail(function () {
+                resolveLocalFileSystemURL(path, function (fileEntry) {
+                    var localUrl = normalizeReturnUrl(fileEntry.toURL());
+                    console.log('returning cached file: ' + localUrl);
+                    deferred.resolveWith(null, [localUrl]);
 
-                self.downloadImage(originalUrl, key).done(function () {
-                    self.get(key).done(function (url) {
+                }, function () {
 
-                        deferred.resolveWith(null, [url]);
+                    console.log('downloading: ' + originalUrl);
+                    var ft = new FileTransfer();
+                    ft.download(originalUrl, path, function (entry) {
 
-                    }).fail(function () {
+                        var localUrl = normalizeReturnUrl(entry.toURL());
 
-                        deferred.reject();
+                        console.log(localUrl);
+                        deferred.resolveWith(null, [localUrl]);
                     });
-                }).fail(function () {
-
-                    deferred.reject();
                 });
             });
 
-            return deferred.promise();
-        };
-
-        self.downloadImage = function (url, key) {
-
-            var deferred = DeferredBuilder.Deferred();
-
-            console.log('downloadImage:' + url);
-
-            // Create XHR
-            var xhr = new XMLHttpRequest();
-
-            xhr.open("GET", url, true);
-            // Set the responseType to blob
-            xhr.responseType = "arraybuffer";
-
-            xhr.addEventListener("load", function () {
-
-                if (xhr.status === 200) {
-                    console.log("Image retrieved");
-
-                    try {
-
-                        var arr = new Uint8Array(this.response);
-
-                        // Convert the int array to a binary string
-                        // We have to use apply() as we are converting an *array*
-                        // and String.fromCharCode() takes one or more single values, not
-                        // an array.
-                        var raw = String.fromCharCode.apply(null, arr);
-
-                        // This works!!!
-                        var b64 = btoa(raw);
-                        var dataURL = "data:image/jpeg;base64," + b64;
-
-                        // Put the received blob into the database
-                        self.addImageToDatabase(dataURL, key).done(function () {
-                            deferred.resolve();
-                        }).fail(function () {
-                            deferred.reject();
-                        });
-                    } catch (err) {
-                        console.log("Error adding image to database");
-                        deferred.reject();
-                    }
-                } else {
-                    deferred.reject();
-                }
-            }, false);
-
-            // Send XHR
-            xhr.send();
             return deferred.promise();
         };
 
@@ -172,14 +101,15 @@
             }
 
             self.getImageUrl(url).done(function (localUrl) {
+
                 setImageIntoElement(elem, localUrl);
 
             }).fail(onFail);
         };
 
-        openDb(self);
+        window.ImageStore = self;
     }
 
-    new sqliteImageStore();
+    new indexedDbBlobImageStore();
 
 })();

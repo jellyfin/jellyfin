@@ -474,7 +474,7 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         private Timer _closeTimer;
-        private readonly TimeSpan _openStreamMaxAge = TimeSpan.FromSeconds(40);
+        private readonly TimeSpan _openStreamMaxAge = TimeSpan.FromSeconds(60);
 
         private void StartCloseTimer()
         {

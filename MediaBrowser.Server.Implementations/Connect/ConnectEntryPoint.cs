@@ -1,8 +1,10 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using System;
 using System.IO;
 using System.Net;
@@ -20,14 +22,16 @@ namespace MediaBrowser.Server.Implementations.Connect
         private readonly IConnectManager _connectManager;
 
         private readonly INetworkManager _networkManager;
+        private readonly IApplicationHost _appHost;
 
-        public ConnectEntryPoint(IHttpClient httpClient, IApplicationPaths appPaths, ILogger logger, INetworkManager networkManager, IConnectManager connectManager)
+        public ConnectEntryPoint(IHttpClient httpClient, IApplicationPaths appPaths, ILogger logger, INetworkManager networkManager, IConnectManager connectManager, IApplicationHost appHost)
         {
             _httpClient = httpClient;
             _appPaths = appPaths;
             _logger = logger;
             _networkManager = networkManager;
             _connectManager = connectManager;
+            _appHost = appHost;
         }
 
         public void Run()
@@ -37,30 +41,41 @@ namespace MediaBrowser.Server.Implementations.Connect
             _timer = new Timer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(3));
         }
 
+        private readonly string[] _ipLookups = { "http://bot.whatismyipaddress.com", "https://connect.mediabrowser.tv/service/ip" };
+
         private async void TimerCallback(object state)
         {
-            try
+            foreach (var ipLookupUrl in _ipLookups)
             {
-                using (var stream = await _httpClient.Get(new HttpRequestOptions
+                try
                 {
-                    Url = "http://bot.whatismyipaddress.com/"
-
-                }).ConfigureAwait(false))
-                {
-                    using (var reader = new StreamReader(stream))
+                    using (var stream = await _httpClient.Get(new HttpRequestOptions
                     {
-                        var address = await reader.ReadToEndAsync().ConfigureAwait(false);
+                        Url = ipLookupUrl,
+                        UserAgent = "Emby Server/" + _appHost.ApplicationVersion
 
-                        if (IsValid(address))
+                    }).ConfigureAwait(false))
+                    {
+                        using (var reader = new StreamReader(stream))
                         {
-                            ((ConnectManager) _connectManager).OnWanAddressResolved(address);
-                            CacheAddress(address);
+                            var address = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                            if (IsValid(address))
+                            {
+                                ((ConnectManager)_connectManager).OnWanAddressResolved(address);
+                                CacheAddress(address);
+                                return;
+                            }
                         }
                     }
                 }
-            }
-            catch
-            {
+                catch (HttpException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting connection info", ex);
+                }
             }
         }
 
@@ -110,7 +125,14 @@ namespace MediaBrowser.Server.Implementations.Connect
         private bool IsValid(string address)
         {
             IPAddress ipAddress;
-            return IPAddress.TryParse(address, out ipAddress);
+            var valid = IPAddress.TryParse(address, out ipAddress);
+
+            if (!valid)
+            {
+                _logger.Error("{0} is not a valid ip address", address);
+            }
+
+            return valid;
         }
 
         public void Dispose()

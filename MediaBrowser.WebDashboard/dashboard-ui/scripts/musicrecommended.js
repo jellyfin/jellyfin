@@ -8,7 +8,7 @@
     }
 
     function enableScrollX() {
-        return AppInfo.isTouchPreferred && AppInfo.enableAppLayouts;
+        return $.browser.mobile && AppInfo.enableAppLayouts;
     }
 
     function getSquareShape() {
@@ -33,7 +33,6 @@
             $('#recentlyAddedSongs', page).html(LibraryBrowser.getPosterViewHtml({
                 items: items,
                 showUnplayedIndicator: false,
-                showChildCountIndicator: true,
                 showLatestItemsPopup: false,
                 shape: getSquareShape(),
                 showTitle: true,

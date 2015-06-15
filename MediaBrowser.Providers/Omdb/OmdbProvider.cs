@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Globalization;
@@ -29,6 +30,11 @@ namespace MediaBrowser.Providers.Omdb
 
         public async Task Fetch(BaseItem item, string imdbId, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(imdbId))
+            {
+                throw new ArgumentNullException("imdbId");
+            }
+
             var imdbParam = imdbId.StartsWith("tt", StringComparison.OrdinalIgnoreCase) ? imdbId : "tt" + imdbId;
 
             var url = string.Format("http://www.omdbapi.com/?i={0}&tomatoes=true", imdbParam);
@@ -44,6 +50,20 @@ namespace MediaBrowser.Providers.Omdb
             }).ConfigureAwait(false))
             {
                 var result = _jsonSerializer.DeserializeFromStream<RootObject>(stream);
+
+                item.Name = result.Title;
+
+                int year;
+
+                if (!string.IsNullOrEmpty(result.Year)
+                    && int.TryParse(result.Year, NumberStyles.Number, _usCulture, out year)
+                    && year >= 0)
+                {
+                    item.ProductionYear = year;
+                }
+
+                item.OfficialRating = result.Rated;
+
 
                 var hasCriticRating = item as IHasCriticRating;
                 if (hasCriticRating != null)
@@ -89,6 +109,12 @@ namespace MediaBrowser.Providers.Omdb
                         && !string.Equals(result.Website, "n/a", StringComparison.OrdinalIgnoreCase))
                 {
                     item.HomePageUrl = result.Website;
+                }
+
+                if (!string.IsNullOrWhiteSpace(result.imdbID)
+                        && !string.Equals(result.imdbID, "n/a", StringComparison.OrdinalIgnoreCase))
+                {
+                    item.SetProviderId(MetadataProviders.Imdb, result.imdbID);
                 }
 
                 ParseAdditionalMetadata(item, result);
@@ -148,7 +174,7 @@ namespace MediaBrowser.Providers.Omdb
             return string.Equals(lang, "en", StringComparison.OrdinalIgnoreCase);
         }
 
-        public class RootObject
+        private class RootObject
         {
             public string Title { get; set; }
             public string Year { get; set; }

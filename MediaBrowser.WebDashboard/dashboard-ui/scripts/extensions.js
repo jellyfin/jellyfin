@@ -47,10 +47,6 @@ Array.prototype.remove = function (from, to) {
     return this.push.apply(this, rest);
 };
 
-String.prototype.endsWith = function (suffix) {
-    return this.indexOf(suffix, this.length - suffix.length) !== -1;
-};
-
 $.fn.checked = function (value) {
     if (value === true || value === false) {
         // Set the value of the checkbox
@@ -66,31 +62,6 @@ $.fn.checked = function (value) {
 $.fn.buttonEnabled = function (enabled) {
 
     return enabled ? this.attr('disabled', '').removeAttr('disabled') : this.attr('disabled', 'disabled');
-};
-
-$.fn.dateTimeVal = function (val) {
-
-    if (val != null) {
-
-        var now = val;
-
-        var year = now.getFullYear();
-        var month = now.getMonth().toString().length === 1 ? '0' + (now.getMonth() + 1).toString() : now.getMonth() + 1;
-        var date = now.getDate().toString().length === 1 ? '0' + (now.getDate()).toString() : now.getDate();
-        var hours = now.getHours().toString().length === 1 ? '0' + now.getHours().toString() : now.getHours();
-        var minutes = now.getMinutes().toString().length === 1 ? '0' + now.getMinutes().toString() : now.getMinutes();
-        var seconds = now.getSeconds().toString().length === 1 ? '0' + now.getSeconds().toString() : now.getSeconds();
-
-        var formattedDateTime = year + '-' + month + '-' + date + 'T' + hours + ':' + minutes + ':' + seconds;
-
-        //if (onlyBlank === true && $(this).val()) {
-        //    return this;
-        //}
-
-        return this.val(formattedDateTime);
-    }
-
-    return this.val();
 };
 
 if (!Array.prototype.filter) {
@@ -124,10 +95,20 @@ var WebNotifications = {
 
     show: function (data) {
 
+        // Seeing crashes in android
         if (window.cordova && window.cordova.plugins && window.cordova.plugins.notification) {
 
+            if (!WebNotifications.lastId) {
+                // Cordova plugin will crash on android with long. need an int
+                WebNotifications.lastId = new Date().getDate() + new Date().getMilliseconds();
+            }
+
+            WebNotifications.lastId++;
+
             window.cordova.plugins.notification.local.schedule({
-                id: new Date().getTime(),
+
+                id: WebNotifications.lastId,
+
                 title: data.title,
                 text: data.body,
                 //firstAt: monday_9_am,
@@ -586,7 +567,7 @@ function ticks_to_human(str) {
                             $this.unbind(touchMoveEvent, moveHandler);
                             if (start && stop) {
                                 if (stop.time - start.time < 1000 &&
-                                        Math.abs(start.coords[1] - stop.coords[1]) > 30 &&
+                                        Math.abs(start.coords[1] - stop.coords[1]) > 100 &&
                                         Math.abs(start.coords[0] - stop.coords[0]) < 75) {
                                     start.origin
                                             .trigger("swipeupdown")

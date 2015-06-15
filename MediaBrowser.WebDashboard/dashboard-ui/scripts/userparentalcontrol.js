@@ -367,7 +367,7 @@
         $('#txtBlockedTag', page).val('').focus();
     }
 
-    $(document).on('pageinit', "#userParentalControlPage", function () {
+    $(document).on('pageinitdepends', "#userParentalControlPage", function () {
 
         var page = this;
 
@@ -384,7 +384,11 @@
 
         populateHours(page);
 
-    }).on('pageshow', "#userParentalControlPage", function () {
+        $('.blockedTagForm').off('submit', UserParentalControlPage.onBlockedTagFormSubmit).on('submit', UserParentalControlPage.onBlockedTagFormSubmit);
+        $('.scheduleForm').off('submit', UserParentalControlPage.onScheduleFormSubmit).on('submit', UserParentalControlPage.onScheduleFormSubmit);
+        $('.userParentalControlForm').off('submit', UserParentalControlPage.onSubmit).on('submit', UserParentalControlPage.onSubmit);
+
+    }).on('pageshowready', "#userParentalControlPage", function () {
 
         var page = this;
 

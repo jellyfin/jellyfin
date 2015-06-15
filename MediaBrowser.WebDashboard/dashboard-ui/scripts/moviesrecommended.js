@@ -2,16 +2,16 @@
 
     function getView() {
 
-        return 'PosterCard';
+        return 'Poster';
     }
 
     function getResumeView() {
 
-        return 'ThumbCard';
+        return 'Thumb';
     }
 
     function enableScrollX() {
-        return AppInfo.isTouchPreferred && AppInfo.enableAppLayouts;
+        return $.browser.mobile && AppInfo.enableAppLayouts;
     }
 
     function getPortraitShape() {
@@ -62,7 +62,8 @@
                     shape: getPortraitShape(),
                     centerText: true,
                     lazy: true,
-                    overlayText: true
+                    overlayText: true,
+                    showDetailsMenu: true
                 });
             }
 

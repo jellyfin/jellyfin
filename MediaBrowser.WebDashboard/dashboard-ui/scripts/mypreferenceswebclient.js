@@ -18,6 +18,11 @@
         $('#selectEnableItemPreviews', page).val(AppSettings.enableItemPreviews().toString().toLowerCase()).selectmenu("refresh");
 
         $('#chkEnableLibraryTileNames', page).checked(displayPreferences.CustomPrefs.enableLibraryTileNames != '0').checkboxradio("refresh");
+        $('#chkEnableFullScreen', page).checked(AppSettings.enableFullScreen()).checkboxradio("refresh");
+
+        $('#chkEnableChromecastAc3', page).checked(AppSettings.enableChromecastAc3()).checkboxradio("refresh");
+
+        $('#txtSyncPath', page).val(AppSettings.syncPath());
 
         Dashboard.hideLoadingMsg();
     }
@@ -52,6 +57,11 @@
         AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
 
         AppSettings.enableItemPreviews($('#selectEnableItemPreviews', page).val() == 'true');
+        AppSettings.enableFullScreen($('#chkEnableFullScreen', page).checked());
+
+        AppSettings.enableChromecastAc3($('#chkEnableChromecastAc3', page).checked());
+
+        AppSettings.syncPath($('#txtSyncPath', page).val());
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
@@ -65,7 +75,22 @@
         return false;
     }
 
-    $(document).on('pageshowready', "#webClientPreferencesPage", function () {
+    $(document).on('pageinitdepends', "#webClientPreferencesPage", function () {
+
+        var page = this;
+
+        $('.webClientPreferencesForm', page).off('submit', onSubmit).on('submit', onSubmit);
+
+        $('.btnSelectSyncPath', page).on('click', function () {
+
+            require(['nativedirectorychooser'], function () {
+                NativeDirectoryChooser.chooseDirectory().done(function (path) {
+                    $('#txtSyncPath', page).val(path);
+                });
+            });
+        });
+
+    }).on('pageshowready', "#webClientPreferencesPage", function () {
 
         var page = this;
 
@@ -81,7 +106,7 @@
 
         $('.fldEnableBackdrops', page).show();
 
-        if (Dashboard.isRunningInCordova()) {
+        if (AppInfo.isNativeApp) {
             $('.homePageConfigurationSection', page).hide();
         } else {
             $('.homePageConfigurationSection', page).show();
@@ -94,52 +119,18 @@
             $('.labelGenericExternalPlayers', page).show();
             $('.labelNativeExternalPlayers', page).hide();
         }
-    });
 
-    window.WebClientPreferencesPage = {
-        onSubmit: onSubmit
-    };
-
-})(jQuery, window, document);
-
-(function (window, store) {
-
-    window.AppSettings = {
-
-        maxStreamingBitrate: function (val) {
-
-            if (val != null) {
-                store.setItem('preferredVideoBitrate', val);
-            }
-
-            return parseInt(store.getItem('preferredVideoBitrate') || '') || 1500000;
-        },
-        maxChromecastBitrate: function (val) {
-
-            if (val != null) {
-                store.setItem('chromecastBitrate', val);
-            }
-
-            return parseInt(store.getItem('chromecastBitrate') || '') || 3000000;
-        },
-        enableExternalPlayers: function (val) {
-
-            if (val != null) {
-                store.setItem('externalplayers', val.toString());
-            }
-
-            return store.getItem('externalplayers') == 'true';
-        },
-        enableItemPreviews: function (val) {
-
-            if (val != null) {
-                store.setItem('enableItemPreviews', val.toString());
-            }
-
-            return store.getItem('enableItemPreviews') != 'false';
+        if (AppInfo.supportsFullScreen) {
+            $('.fldFullscreen', page).show();
+        } else {
+            $('.fldFullscreen', page).hide();
         }
 
-    };
+        if (AppInfo.supportsSyncPathSetting) {
+            $('.fldSyncPath', page).show();
+        } else {
+            $('.fldSyncPath', page).hide();
+        }
+    });
 
-
-})(window, window.appStorage);
+})(jQuery, window, document);

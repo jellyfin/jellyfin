@@ -295,7 +295,17 @@
         }
     }
 
-    $(document).on('pageinit', "#editItemSubtitlesPage", function () {
+    function onSearchSubmit() {
+        var form = this;
+
+        var lang = $('#selectLanguage', form).val();
+
+        searchForSubtitles($(form).parents('.page'), lang);
+
+        return false;
+    }
+
+    $(document).on('pageinitdepends', "#editItemSubtitlesPage", function () {
 
         var page = this;
 
@@ -314,7 +324,9 @@
             }
         });
 
-    }).on('pagebeforeshow', "#editItemSubtitlesPage", function () {
+        $('.subtitleSearchForm').off('submit', onSearchSubmit).on('submit', onSearchSubmit);
+
+    }).on('pageshowready', "#editItemSubtitlesPage", function () {
 
         var page = this;
 
@@ -339,19 +351,5 @@
 
         $(ApiClient).off("websocketmessage", onWebSocketMessageReceived);
     });
-
-    window.EditItemSubtitlesPage = {
-
-        onSearchSubmit: function () {
-
-            var form = this;
-
-            var lang = $('#selectLanguage', form).val();
-
-            searchForSubtitles($(form).parents('.page'), lang);
-
-            return false;
-        }
-    };
 
 })(jQuery, window, document);

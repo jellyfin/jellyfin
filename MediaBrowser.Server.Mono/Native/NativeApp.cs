@@ -1,4 +1,5 @@
-﻿
+﻿using MediaBrowser.Server.Startup.Common;
+
 namespace MediaBrowser.Server.Mono.Native
 {
     /// <summary>
@@ -29,9 +30,9 @@ namespace MediaBrowser.Server.Mono.Native
         /// <summary>
         /// Restarts this instance.
         /// </summary>
-        public override void Restart()
+        public override void Restart(StartupOptions startupOptions)
         {
-            MainClass.Restart();
+            MainClass.Restart(startupOptions);
         }
     }
 }

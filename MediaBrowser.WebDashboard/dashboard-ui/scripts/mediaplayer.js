@@ -4,12 +4,11 @@
 
         var self = this;
 
-        var testableVideoElement = document.createElement('video');
         var currentProgressInterval;
         var canClientSeek;
         var currentPlaylistIndex = 0;
 
-        self.currentMediaElement = null;
+        self.currentMediaRenderer = null;
         self.currentItem = null;
         self.currentMediaSource = null;
 
@@ -39,53 +38,57 @@
 
         var canPlayAac = document.createElement('audio').canPlayType('audio/aac').replace(/no/, '');
 
-        self.getVideoQualityOptions = function (videoWidth) {
+        self.getVideoQualityOptions = function (videoWidth, videoHeight) {
 
             var bitrateSetting = AppSettings.maxStreamingBitrate();
 
             var maxAllowedWidth = videoWidth || 4096;
+            var maxAllowedHeight = videoHeight || 2304;
 
             var options = [];
 
             // Some 1080- videos are reported as 1912?
             if (maxAllowedWidth >= 1900) {
-                options.push({ name: '1080p - 30Mbps', maxWidth: 1920, bitrate: 30000000 });
-                options.push({ name: '1080p - 25Mbps', maxWidth: 1920, bitrate: 25000000 });
-                options.push({ name: '1080p - 20Mbps', maxWidth: 1920, bitrate: 20000000 });
-                options.push({ name: '1080p - 15Mbps', maxWidth: 1920, bitrate: 15000000 });
-                options.push({ name: '1080p - 10Mbps', maxWidth: 1920, bitrate: 10000000 });
-                options.push({ name: '1080p - 8Mbps', maxWidth: 1920, bitrate: 8000000 });
-                options.push({ name: '1080p - 6Mbps', maxWidth: 1920, bitrate: 6000000 });
-                options.push({ name: '1080p - 5Mbps', maxWidth: 1920, bitrate: 5000000 });
+
+                options.push({ name: '1080p - 30Mbps', maxHeight: 1080, bitrate: 30000000 });
+                options.push({ name: '1080p - 25Mbps', maxHeight: 1080, bitrate: 25000000 });
+                options.push({ name: '1080p - 20Mbps', maxHeight: 1080, bitrate: 20000000 });
+                options.push({ name: '1080p - 15Mbps', maxHeight: 1080, bitrate: 15000000 });
+                options.push({ name: '1080p - 10Mbps', maxHeight: 1080, bitrate: 10000000 });
+                options.push({ name: '1080p - 8Mbps', maxHeight: 1080, bitrate: 8000000 });
+                options.push({ name: '1080p - 6Mbps', maxHeight: 1080, bitrate: 6000000 });
+                options.push({ name: '1080p - 5Mbps', maxHeight: 1080, bitrate: 5000000 });
+
             } else if (maxAllowedWidth >= 1260) {
-                options.push({ name: '720p - 10Mbps', maxWidth: 1280, bitrate: 10000000 });
-                options.push({ name: '720p - 8Mbps', maxWidth: 1280, bitrate: 8000000 });
-                options.push({ name: '720p - 6Mbps', maxWidth: 1280, bitrate: 6000000 });
-                options.push({ name: '720p - 5Mbps', maxWidth: 1280, bitrate: 5000000 });
-            } else if (maxAllowedWidth >= 460) {
-                options.push({ name: '480p - 4Mbps', maxWidth: 720, bitrate: 4000000 });
-                options.push({ name: '480p - 3Mbps', maxWidth: 720, bitrate: 3000000 });
-                options.push({ name: '480p - 2.5Mbps', maxWidth: 720, bitrate: 2500000 });
-                options.push({ name: '480p - 2Mbps', maxWidth: 720, bitrate: 2000000 });
-                options.push({ name: '480p - 1.5Mbps', maxWidth: 720, bitrate: 1500000 });
+                options.push({ name: '720p - 10Mbps', maxHeight: 720, bitrate: 10000000 });
+                options.push({ name: '720p - 8Mbps', maxHeight: 720, bitrate: 8000000 });
+                options.push({ name: '720p - 6Mbps', maxHeight: 720, bitrate: 6000000 });
+                options.push({ name: '720p - 5Mbps', maxHeight: 720, bitrate: 5000000 });
+
+            } else if (maxAllowedWidth >= 700) {
+                options.push({ name: '480p - 4Mbps', maxHeight: 480, bitrate: 4000000 });
+                options.push({ name: '480p - 3Mbps', maxHeight: 480, bitrate: 3000000 });
+                options.push({ name: '480p - 2.5Mbps', maxHeight: 480, bitrate: 2500000 });
+                options.push({ name: '480p - 2Mbps', maxHeight: 480, bitrate: 2000000 });
+                options.push({ name: '480p - 1.5Mbps', maxHeight: 480, bitrate: 1500000 });
             }
 
             if (maxAllowedWidth >= 1260) {
-                options.push({ name: '720p - 4Mbps', maxWidth: 1280, bitrate: 4000000 });
-                options.push({ name: '720p - 3Mbps', maxWidth: 1280, bitrate: 3000000 });
-                options.push({ name: '720p - 2Mbps', maxWidth: 1280, bitrate: 2000000 });
+                options.push({ name: '720p - 4Mbps', maxHeight: 720, bitrate: 4000000 });
+                options.push({ name: '720p - 3Mbps', maxHeight: 720, bitrate: 3000000 });
+                options.push({ name: '720p - 2Mbps', maxHeight: 720, bitrate: 2000000 });
 
                 // The extra 1 is because they're keyed off the bitrate value
-                options.push({ name: '720p - 1.5Mbps', maxWidth: 1280, bitrate: 1500001 });
-                options.push({ name: '720p - 1Mbps', maxWidth: 1280, bitrate: 1000001 });
+                options.push({ name: '720p - 1.5Mbps', maxHeight: 720, bitrate: 1500001 });
+                options.push({ name: '720p - 1Mbps', maxHeight: 720, bitrate: 1000001 });
             }
 
-            options.push({ name: '480p - 1.0Mbps', maxWidth: 720, bitrate: 1000000 });
-            options.push({ name: '480p - 720kbps', maxWidth: 720, bitrate: 720000 });
-            options.push({ name: '480p - 420kbps', maxWidth: 720, bitrate: 420000 });
-            options.push({ name: '360p', maxWidth: 640, bitrate: 400000 });
-            options.push({ name: '240p', maxWidth: 426, bitrate: 320000 });
-            options.push({ name: '144p', maxWidth: 256, bitrate: 192000 });
+            options.push({ name: '480p - 1.0Mbps', maxHeight: 480, bitrate: 1000000 });
+            options.push({ name: '480p - 720kbps', maxHeight: 480, bitrate: 720000 });
+            options.push({ name: '480p - 420kbps', maxHeight: 480, bitrate: 420000 });
+            options.push({ name: '360p', maxHeight: 360, bitrate: 400000 });
+            options.push({ name: '240p', maxHeight: 240, bitrate: 320000 });
+            options.push({ name: '144p', maxHeight: 144, bitrate: 192000 });
 
             var i, length, option;
             var selectedIndex = -1;
@@ -108,12 +111,12 @@
             return options;
         };
 
-        self.getDeviceProfile = function (maxWidth) {
+        self.getDeviceProfile = function (maxHeight) {
 
-            if (!maxWidth) {
-                maxWidth = self.getVideoQualityOptions().filter(function (q) {
+            if (!maxHeight) {
+                maxHeight = self.getVideoQualityOptions().filter(function (q) {
                     return q.selected;
-                })[0].maxWidth;
+                })[0].maxHeight;
             }
 
             var bitrateSetting = AppSettings.maxStreamingBitrate();
@@ -162,6 +165,15 @@
                 });
             }
 
+            var directPlayAudioContainers = AppInfo.directPlayAudioContainers;
+
+            if (directPlayAudioContainers && directPlayAudioContainers.length) {
+                profile.DirectPlayProfiles.push({
+                    Container: directPlayAudioContainers.join(','),
+                    Type: 'Audio'
+                });
+            }
+
             if (canPlayWebm) {
                 profile.DirectPlayProfiles.push({
                     Container: 'webm',
@@ -187,7 +199,7 @@
 
                 if (canPlayAac && $.browser.safari) {
                     profile.TranscodingProfiles.push({
-                        Container: 'aac',
+                        Container: 'ts',
                         Type: 'Audio',
                         AudioCodec: 'aac',
                         Context: 'Streaming',
@@ -217,6 +229,15 @@
                 Protocol: 'http'
             });
 
+            profile.TranscodingProfiles.push({
+                Container: 'mp4',
+                Type: 'Video',
+                AudioCodec: 'aac',
+                VideoCodec: 'h264',
+                Context: 'Static',
+                Protocol: 'http'
+            });
+
             if (canPlayAac && $.browser.safari) {
                 profile.TranscodingProfiles.push({
                     Container: 'aac',
@@ -225,12 +246,26 @@
                     Context: 'Streaming',
                     Protocol: 'http'
                 });
+                profile.TranscodingProfiles.push({
+                    Container: 'aac',
+                    Type: 'Audio',
+                    AudioCodec: 'aac',
+                    Context: 'Static',
+                    Protocol: 'http'
+                });
             } else {
                 profile.TranscodingProfiles.push({
                     Container: 'mp3',
                     Type: 'Audio',
                     AudioCodec: 'mp3',
                     Context: 'Streaming',
+                    Protocol: 'http'
+                });
+                profile.TranscodingProfiles.push({
+                    Container: 'mp3',
+                    Type: 'Audio',
+                    AudioCodec: 'mp3',
+                    Context: 'Static',
                     Protocol: 'http'
                 });
             }
@@ -317,8 +352,8 @@
                 },
                 {
                     Condition: 'LessThanEqual',
-                    Property: 'Width',
-                    Value: maxWidth
+                    Property: 'Height',
+                    Value: maxHeight
                 }]
             });
 
@@ -334,8 +369,8 @@
                 },
                 {
                     Condition: 'LessThanEqual',
-                    Property: 'Width',
-                    Value: maxWidth
+                    Property: 'Height',
+                    Value: maxHeight
                 }]
             });
 
@@ -372,20 +407,31 @@
             return profile;
         };
 
-        self.updateCanClientSeek = function (elem) {
+        var supportsTextTracks;
+        self.supportsTextTracks = function () {
 
-            var duration = elem.duration;
+            if (supportsTextTracks == null) {
+                supportsTextTracks = document.createElement('video').textTracks != null;
+            }
+
+            // For now, until ready
+            return supportsTextTracks;
+        };
+
+        self.updateCanClientSeek = function (mediaRenderer) {
+
+            var duration = mediaRenderer.duration();
 
             canClientSeek = duration && !isNaN(duration) && duration != Number.POSITIVE_INFINITY && duration != Number.NEGATIVE_INFINITY;
         };
 
-        self.getCurrentSrc = function (mediaElement) {
-            return mediaElement.currentSrc;
+        self.getCurrentSrc = function (mediaRenderer) {
+            return mediaRenderer.currentSrc();
         };
 
-        self.getCurrentTicks = function (mediaElement) {
+        self.getCurrentTicks = function (mediaRenderer) {
 
-            var playerTime = Math.floor(10000000 * (mediaElement || self.currentMediaElement).currentTime);
+            var playerTime = Math.floor(10000000 * (mediaRenderer || self.currentMediaRenderer).currentTime());
 
             playerTime += self.startTimeTicksOffset;
 
@@ -406,7 +452,7 @@
 
             currentProgressInterval = setInterval(function () {
 
-                if (self.currentMediaElement) {
+                if (self.currentMediaRenderer) {
 
                     if ((new Date().getTime() - self.lastProgressReport) > intervalTime) {
 
@@ -424,9 +470,20 @@
             return currentSrc.substring(currentSrc.lastIndexOf('.'));
         };
 
-        self.canPlayHls = function () {
+        self.canPlayNativeHls = function () {
 
-            var media = testableVideoElement;
+            // Don't use HLS on android 4.x, regardless of what the browser reports
+            //if ($.browser.android) {
+            //    var agent = navigator.userAgent.toLowerCase();
+
+            //    for (var i = 0; i <= 4; i++) {
+            //        if (agent.indexOf('android 4.' + i) != -1) {
+            //            return false;
+            //        }
+            //    }
+            //}
+
+            var media = document.createElement('video');
 
             // safari
             if (media.canPlayType('application/x-mpegURL').replace(/no/, '') ||
@@ -437,19 +494,29 @@
             return false;
         };
 
+        self.canPlayHls = function () {
+
+            if (self.canPlayNativeHls()) {
+                return true;
+            }
+
+            //return $.browser.chrome || $.browser.msie;
+            return false;
+        };
+
         self.changeStream = function (ticks, params) {
 
-            var element = self.currentMediaElement;
+            var mediaRenderer = self.currentMediaRenderer;
 
             if (canClientSeek && params == null) {
 
-                element.currentTime = ticks / (1000 * 10000);
+                mediaRenderer.currentTime(ticks / (1000 * 10000));
                 return;
             }
 
             params = params || {};
 
-            var currentSrc = element.currentSrc;
+            var currentSrc = mediaRenderer.currentSrc();
 
             var playSessionId = getParameterByName('PlaySessionId', currentSrc);
             var liveStreamId = getParameterByName('LiveStreamId', currentSrc);
@@ -457,7 +524,7 @@
             if (params.AudioStreamIndex == null && params.SubtitleStreamIndex == null && params.Bitrate == null) {
 
                 currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks || 0);
-                changeStreamToUrl(element, playSessionId, currentSrc, ticks);
+                changeStreamToUrl(mediaRenderer, playSessionId, currentSrc, ticks);
                 return;
             }
 
@@ -481,23 +548,16 @@
                     self.currentSubtitleStreamIndex = subtitleStreamIndex;
 
                     currentSrc = ApiClient.getUrl(self.currentMediaSource.TranscodingUrl);
-                    changeStreamToUrl(element, playSessionId, currentSrc, ticks);
+                    changeStreamToUrl(mediaRenderer, playSessionId, currentSrc, ticks);
                 }
             });
         };
 
-        function changeStreamToUrl(element, playSessionId, url, newPositionTicks) {
+        function changeStreamToUrl(mediaRenderer, playSessionId, url, newPositionTicks) {
 
             clearProgressInterval();
 
-            $(element).off('ended.playbackstopped').off('ended.playnext').one("loadedmetadata.mediaplayerevent", function (e) {
-
-                // The IE video player won't autoplay without this
-                if ($.browser.msie && self.currentItem.MediaType == "Video") {
-                    this.play();
-                }
-
-            }).one("play", function () {
+            $(mediaRenderer).off('ended.playbackstopped').off('ended.playnext').one("play", function () {
 
                 self.updateCanClientSeek(this);
 
@@ -512,15 +572,14 @@
                 ApiClient.stopActiveEncodings(playSessionId).done(function () {
 
                     self.startTimeTicksOffset = newPositionTicks;
-                    element.src = url;
+                    mediaRenderer.setCurrentSrc(url);
 
                 });
 
                 self.updateTextStreamUrls(newPositionTicks || 0);
             } else {
                 self.startTimeTicksOffset = newPositionTicks;
-                element.src = url;
-                element.play();
+                mediaRenderer.setCurrentSrc(url);
             }
         }
 
@@ -554,21 +613,9 @@
                 currentTimeElement.html(timeText);
             }
 
-            var state = self.getPlayerStateInternal(self.currentMediaElement, self.currentItem, self.currentMediaSource);
+            var state = self.getPlayerStateInternal(self.currentMediaRenderer, self.currentItem, self.currentMediaSource);
 
             $(self).trigger('positionchange', [state]);
-        };
-
-        var supportsTextTracks;
-
-        self.supportsTextTracks = function () {
-
-            if (supportsTextTracks == null) {
-                supportsTextTracks = document.createElement('video').textTracks != null;
-            }
-
-            // For now, until ready
-            return supportsTextTracks;
         };
 
         self.canQueueMediaType = function (mediaType) {
@@ -725,8 +772,9 @@
                 contentType = 'video/' + mediaSource.Container;
 
                 if (mediaSource.enableDirectPlay) {
-                    mediaUrl = mediaSource.Path;
+                    mediaUrl = FileSystemBridge.translateFilePath(mediaSource.Path);
                     playMethod = 'DirectPlay';
+
                 } else {
 
                     if (mediaSource.SupportsDirectStream) {
@@ -761,9 +809,9 @@
 
                 if (mediaSource.enableDirectPlay) {
 
-                    mediaUrl = mediaSource.Path;
-
+                    mediaUrl = FileSystemBridge.translateFilePath(mediaSource.Path);
                     playMethod = 'DirectPlay';
+
                 } else {
 
                     var isDirectStream = mediaSource.SupportsDirectStream;
@@ -868,8 +916,7 @@
 
             } else if (item.MediaType === "Audio") {
 
-                self.currentMediaElement = playAudio(item, self.currentMediaSource, startPosition);
-                self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+                playAudio(item, self.currentMediaSource, startPosition);
             }
 
             if (callback) {
@@ -1037,7 +1084,7 @@
 
         self.queue = function (options) {
 
-            if (!self.currentMediaElement) {
+            if (!self.playlist.length) {
                 self.play(options);
                 return;
             }
@@ -1071,7 +1118,7 @@
 
         self.queueNext = function (options) {
 
-            if (!self.currentMediaElement) {
+            if (!self.playlist.length) {
                 self.play(options);
                 return;
             }
@@ -1102,11 +1149,11 @@
 
         self.pause = function () {
 
-            self.currentMediaElement.pause();
+            self.currentMediaRenderer.pause();
         };
 
         self.unpause = function () {
-            self.currentMediaElement.play();
+            self.currentMediaRenderer.unpause();
         };
 
         self.seek = function (position) {
@@ -1125,12 +1172,12 @@
         };
 
         self.volume = function () {
-            return self.currentMediaElement.volume * 100;
+            return self.currentMediaRenderer.volume() * 100;
         };
 
         self.toggleMute = function () {
 
-            if (self.currentMediaElement) {
+            if (self.currentMediaRenderer) {
 
                 console.log('MediaPlayer toggling mute');
 
@@ -1144,14 +1191,14 @@
 
         self.volumeDown = function () {
 
-            if (self.currentMediaElement) {
+            if (self.currentMediaRenderer) {
                 self.setVolume(Math.max(self.volume() - 2, 0));
             }
         };
 
         self.volumeUp = function () {
 
-            if (self.currentMediaElement) {
+            if (self.currentMediaRenderer) {
                 self.setVolume(Math.min(self.volume() + 2, 100));
             }
         };
@@ -1159,14 +1206,14 @@
         // Sets volume using a 0-100 scale
         self.setVolume = function (val) {
 
-            if (self.currentMediaElement) {
+            if (self.currentMediaRenderer) {
 
                 console.log('MediaPlayer setting volume to ' + val);
-                self.currentMediaElement.volume = val / 100;
+                self.currentMediaRenderer.volume(val / 100);
 
-                self.onVolumeChanged(self.currentMediaElement);
+                self.onVolumeChanged(self.currentMediaRenderer);
 
-                self.saveVolume();
+                //self.saveVolume();
             }
         };
 
@@ -1299,36 +1346,25 @@
 
         self.stop = function () {
 
-            var elem = self.currentMediaElement;
+            var mediaRenderer = self.currentMediaRenderer;
 
-            if (elem) {
+            if (mediaRenderer) {
 
-                elem.pause();
+                mediaRenderer.stop();
 
-                $(elem).off("ended.playnext").one("ended", function () {
+                $(mediaRenderer).off("ended.playnext").one("ended", function () {
 
                     $(this).off();
 
-                    if (this.tagName.toLowerCase() != 'audio') {
-                        $(this).remove();
-                    }
-
-                    elem.src = null;
-                    elem.src = "";
-                    self.currentMediaElement = null;
+                    this.destroy();
+                    self.currentMediaRenderer = null;
                     self.currentItem = null;
                     self.currentMediaSource = null;
-
-                    // When the browser regains focus it may start auto-playing the last video
-                    if ($.browser.safari) {
-                        elem.src = 'files/dummy.mp4';
-                        elem.play();
-                    }
 
                 }).trigger("ended");
 
             } else {
-                self.currentMediaElement = null;
+                self.currentMediaRenderer = null;
                 self.currentItem = null;
                 self.currentMediaSource = null;
             }
@@ -1340,34 +1376,34 @@
         };
 
         self.isPlaying = function () {
-            return self.currentMediaElement != null;
+            return self.playlist.length > 0;
         };
 
         self.getPlayerState = function () {
 
             var deferred = $.Deferred();
 
-            var result = self.getPlayerStateInternal(self.currentMediaElement, self.currentItem, self.currentMediaSource);
+            var result = self.getPlayerStateInternal(self.currentMediaRenderer, self.currentItem, self.currentMediaSource);
 
             deferred.resolveWith(null, [result]);
 
             return deferred.promise();
         };
 
-        self.getPlayerStateInternal = function (playerElement, item, mediaSource) {
+        self.getPlayerStateInternal = function (mediaRenderer, item, mediaSource) {
 
             var state = {
                 PlayState: {}
             };
 
-            if (playerElement) {
+            if (mediaRenderer) {
 
-                state.PlayState.VolumeLevel = playerElement.volume * 100;
-                state.PlayState.IsMuted = playerElement.volume == 0;
-                state.PlayState.IsPaused = playerElement.paused;
-                state.PlayState.PositionTicks = self.getCurrentTicks(playerElement);
+                state.PlayState.VolumeLevel = mediaRenderer.volume() * 100;
+                state.PlayState.IsMuted = mediaRenderer.volume() == 0;
+                state.PlayState.IsPaused = mediaRenderer.paused();
+                state.PlayState.PositionTicks = self.getCurrentTicks(mediaRenderer);
 
-                var currentSrc = playerElement.currentSrc;
+                var currentSrc = mediaRenderer.currentSrc();
 
                 if (currentSrc) {
 
@@ -1487,22 +1523,22 @@
             // Nothing to setup here
         };
 
-        self.onPlaybackStart = function (playerElement, item, mediaSource) {
+        self.onPlaybackStart = function (mediaRenderer, item, mediaSource) {
 
-            self.updateCanClientSeek(playerElement);
+            self.updateCanClientSeek(mediaRenderer);
 
-            var state = self.getPlayerStateInternal(playerElement, item, mediaSource);
+            var state = self.getPlayerStateInternal(mediaRenderer, item, mediaSource);
 
             $(self).trigger('playbackstart', [state]);
 
             self.startProgressInterval();
         };
 
-        self.onVolumeChanged = function (playerElement) {
+        self.onVolumeChanged = function (mediaRenderer) {
 
-            self.saveVolume(playerElement.volume);
+            self.saveVolume(mediaRenderer.volume());
 
-            var state = self.getPlayerStateInternal(playerElement, self.currentItem, self.currentMediaSource);
+            var state = self.getPlayerStateInternal(mediaRenderer, self.currentItem, self.currentMediaSource);
 
             $(self).trigger('volumechange', [state]);
         };
@@ -1517,11 +1553,11 @@
 
             $('body').removeClass('bodyWithPopupOpen');
 
-            var playerElement = this;
+            var mediaRenderer = this;
 
-            $(playerElement).off('.mediaplayerevent').off('ended.playbackstopped');
+            $(mediaRenderer).off('.mediaplayerevent').off('ended.playbackstopped');
 
-            self.cleanup(playerElement);
+            self.cleanup(mediaRenderer);
 
             clearProgressInterval();
 
@@ -1536,14 +1572,14 @@
                 self.resetEnhancements();
             }
 
-            var state = self.getPlayerStateInternal(playerElement, item, mediaSource);
+            var state = self.getPlayerStateInternal(mediaRenderer, item, mediaSource);
 
             $(self).trigger('playbackstop', [state]);
         };
 
-        self.onPlaystateChange = function (playerElement) {
+        self.onPlaystateChange = function (mediaRenderer) {
 
-            var state = self.getPlayerStateInternal(playerElement, self.currentItem, self.currentMediaSource);
+            var state = self.getPlayerStateInternal(mediaRenderer, self.currentItem, self.currentMediaSource);
 
             $(self).trigger('playstatechange', [state]);
         };
@@ -1551,16 +1587,15 @@
         $(window).on("beforeunload", function () {
 
             // Try to report playback stopped before the browser closes
-            if (self.currentItem && self.currentMediaElement && currentProgressInterval) {
+            if (self.currentItem && self.currentMediaRenderer && currentProgressInterval) {
 
-                self.onPlaybackStopped.call(self.currentMediaElement);
+                self.onPlaybackStopped.call(self.currentMediaRenderer);
             }
         });
 
         function sendProgressUpdate() {
 
-            var element = self.currentMediaElement;
-            var state = self.getPlayerStateInternal(element, self.currentItem, self.currentMediaSource);
+            var state = self.getPlayerStateInternal(self.currentMediaRenderer, self.currentItem, self.currentMediaSource);
 
             var info = {
                 QueueableMediaTypes: state.NowPlayingItem.MediaType,
@@ -1581,14 +1616,18 @@
             }
         }
 
+        self._canPlayWebm = null;
         self.canPlayWebm = function () {
 
-            return testableVideoElement.canPlayType('video/webm').replace(/no/, '');
+            if (self._canPlayWebm == null) {
+                self._canPlayWebm = document.createElement('video').canPlayType('video/webm').replace(/no/, '');
+            }
+            return self._canPlayWebm;
         };
 
         self.canAutoPlayAudio = function () {
 
-            if (Dashboard.isRunningInCordova()) {
+            if (AppInfo.isNativeApp) {
                 return true;
             }
 
@@ -1599,30 +1638,9 @@
             return true;
         };
 
-        function getAudioElement() {
+        function getAudioRenderer() {
 
-            var elem = $('.mediaPlayerAudio');
-
-            if (elem.length) {
-                return elem;
-            }
-
-            var html = '';
-
-            var requiresControls = !self.canAutoPlayAudio();
-
-            if (requiresControls) {
-                html += '<div class="mediaPlayerAudioContainer"><div class="mediaPlayerAudioContainerInner">';;
-            } else {
-                html += '<div class="mediaPlayerAudioContainer" style="display:none;"><div class="mediaPlayerAudioContainerInner">';;
-            }
-
-            html += '<audio class="mediaPlayerAudio" crossorigin="anonymous" controls>';
-            html += '</audio></div></div>';
-
-            $(document.body).append(html);
-
-            return $('.mediaPlayerAudio');
+            return new AudioRenderer('audio');
         }
 
         function onTimeUpdate() {
@@ -1633,20 +1651,27 @@
 
         function playAudio(item, mediaSource, startPositionTicks) {
 
+            requirejs(['audiorenderer'], function () {
+                playAudioInternal(item, mediaSource, startPositionTicks);
+            });
+        }
+
+        function playAudioInternal(item, mediaSource, startPositionTicks) {
+
             var streamInfo = self.createStreamInfo('Audio', item, mediaSource, startPositionTicks);
             var audioUrl = streamInfo.url;
             self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
 
             var initialVolume = self.getSavedVolume();
 
-            return getAudioElement().each(function () {
+            var mediaRenderer = getAudioRenderer();
 
-                this.src = audioUrl;
-                this.volume = initialVolume;
-                this.poster = self.getPosterUrl(item);
-                this.play();
+            // Set volume first to avoid an audible change
+            mediaRenderer.volume(initialVolume);
+            mediaRenderer.setPoster(self.getPosterUrl(item));
+            mediaRenderer.setCurrentSrc(audioUrl);
 
-            }).on("volumechange.mediaplayerevent", function () {
+            $(mediaRenderer).on("volumechange.mediaplayerevent", function () {
 
                 console.log('audio element event: volumechange');
 
@@ -1655,8 +1680,6 @@
             }).one("playing.mediaplayerevent", function () {
 
                 console.log('audio element event: playing');
-
-                $('.mediaPlayerAudioContainer').hide();
 
                 // For some reason this is firing at the start, so don't bind until playback has begun
                 $(this).on("ended.playbackstopped", self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
@@ -1681,8 +1704,11 @@
                 // In the event timeupdate isn't firing, at least we can update when this happens
                 self.setCurrentTime(self.getCurrentTicks());
 
-            }).on("timeupdate.mediaplayerevent", onTimeUpdate)[0];
-        };
+            }).on("timeupdate.mediaplayerevent", onTimeUpdate);
+
+            self.currentMediaRenderer = mediaRenderer;
+            self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
+        }
 
         var getItemFields = "MediaSources,Chapters";
 

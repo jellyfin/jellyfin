@@ -368,7 +368,6 @@
 
         $(page).on('swipedown', function () {
 
-            document.title = new Date().getTime();
             history.back();
         });
 
@@ -523,7 +522,7 @@
 
         var item = state.NowPlayingItem;
 
-        $('.itemName', page).html(item ? MediaController.getNowPlayingNameHtml(item) : '');
+        $('.itemName', page).html(item ? MediaController.getNowPlayingNameHtml(item).replace('<br/>', ' - ') : '');
 
         var url;
         var backdropUrl = null;
@@ -688,7 +687,7 @@
 
     function getBackdropUrl(item) {
 
-        var screenWidth = Math.max(screen.height, screen.width);
+        var screenWidth = screen.availWidth;
 
         if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
@@ -714,13 +713,16 @@
         return null;
     };
 
-    $(document).on('pageinit', "#nowPlayingPage", function () {
+    $(document).on('pageinitdepends', "#nowPlayingPage", function () {
 
         var page = this;
 
         bindEvents(page);
 
-    }).on('pageshow', "#nowPlayingPage", function () {
+        $('.sendMessageForm').off('submit', NowPlayingPage.onMessageSubmit).on('submit', NowPlayingPage.onMessageSubmit);
+        $('.typeTextForm').off('submit', NowPlayingPage.onSendStringSubmit).on('submit', NowPlayingPage.onSendStringSubmit);
+
+    }).on('pageshowready', "#nowPlayingPage", function () {
 
         var page = this;
 

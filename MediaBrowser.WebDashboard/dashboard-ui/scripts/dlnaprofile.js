@@ -940,7 +940,7 @@
         profile.UserId = $('#selectUser', page).val();
     }
 
-    $(document).on('pageinit', "#dlnaProfilePage", function () {
+    $(document).on('pageinitdepends', "#dlnaProfilePage", function () {
 
         var page = this;
 
@@ -1056,19 +1056,24 @@
             editSubtitleProfile(page);
         });
 
-    }).on('pageshow', "#dlnaProfilePage", function () {
+        $('.dlnaProfileForm').off('submit', DlnaProfilePage.onSubmit).on('submit', DlnaProfilePage.onSubmit);
+        $('.editDirectPlayProfileForm').off('submit', DlnaProfilePage.onDirectPlayFormSubmit).on('submit', DlnaProfilePage.onDirectPlayFormSubmit);
+        $('.transcodingProfileForm').off('submit', DlnaProfilePage.onTranscodingProfileFormSubmit).on('submit', DlnaProfilePage.onTranscodingProfileFormSubmit);
+        $('.containerProfileForm').off('submit', DlnaProfilePage.onContainerProfileFormSubmit).on('submit', DlnaProfilePage.onContainerProfileFormSubmit);
+        $('.codecProfileForm').off('submit', DlnaProfilePage.onCodecProfileFormSubmit).on('submit', DlnaProfilePage.onCodecProfileFormSubmit);
+        $('.editResponseProfileForm').off('submit', DlnaProfilePage.onResponseProfileFormSubmit).on('submit', DlnaProfilePage.onResponseProfileFormSubmit);
+        $('.identificationHeaderForm').off('submit', DlnaProfilePage.onIdentificationHeaderFormSubmit).on('submit', DlnaProfilePage.onIdentificationHeaderFormSubmit);
+        $('.xmlAttributeForm').off('submit', DlnaProfilePage.onXmlAttributeFormSubmit).on('submit', DlnaProfilePage.onXmlAttributeFormSubmit);
+        $('.subtitleProfileForm').off('submit', DlnaProfilePage.onSubtitleProfileFormSubmit).on('submit', DlnaProfilePage.onSubtitleProfileFormSubmit);
 
-        var page = this;
-
-        loadProfile(page);
-
-    }).on('pagebeforeshow', "#dlnaProfilePage", function () {
+    }).on('pageshowready', "#dlnaProfilePage", function () {
 
         var page = this;
 
         $('.radioTabButton', page).checked(false).checkboxradio('refresh');
         $('#radioInfo', page).checked(true).checkboxradio('refresh').trigger('change');
 
+        loadProfile(page);
     });
 
     window.DlnaProfilePage = {

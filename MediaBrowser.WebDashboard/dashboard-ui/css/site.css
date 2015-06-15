@@ -154,21 +154,18 @@ h1 a:hover {
     bottom: 0;
     right: 0;
     overflow: hidden;
-    overflow-y: scroll;
-    -webkit-overflow-scrolling: touch;
-    -ms-overflow-style: none;
-    overflow: -moz-scrollbars-none;
 }
-
-    .ui-panel-inner::-webkit-scrollbar {
-        width: 0 !important;
-        display: none;
-    }
 
 .ui-slider-track.ui-mini .ui-slider-handle {
     height: 18px;
     width: 18px;
     margin: -10px 0 0 -10px;
+}
+
+.smoothScrollX {
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+    overflow-y: hidden;
 }
 
 .hiddenScrollX {
@@ -189,15 +186,24 @@ h1 a:hover {
     }
 
 
-.hiddenScrollY {
-    overflow-y: scroll;
-    -ms-overflow-style: none;
-    overflow: -moz-scrollbars-none;
+.smoothScrollY {
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overflow-x: hidden;
 }
 
-    .hiddenScrollY::-webkit-scrollbar {
+.hiddenScrollY, .ui-panel-inner {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+}
+
+.touch .hiddenScrollY {
+    -ms-overflow-style: none;
+    overflow: -moz-scrollbars-none;
+}
+
+    .touch .hiddenScrollY::-webkit-scrollbar, .touch .ui-panel-inner::-webkit-scrollbar {
         width: 0 !important;
         display: none;
     }
@@ -243,6 +249,22 @@ body:not(.enableBackButton) .headerBackButton {
     left: 270px !important;
 }
 
+@media all and (min-width: 340px) {
+
+    .largePanel {
+        width: 300px;
+    }
+
+    /* Make panels larger */
+    .largePanelModalOpen.ui-panel-dismiss-position-right {
+        right: 300px !important;
+    }
+
+    .largePanelModalOpen.ui-panel-dismiss-position-left {
+        left: 300px !important;
+    }
+}
+
 
 pre, textarea.pre {
     display: block;
@@ -284,7 +306,7 @@ pre, textarea.pre {
 }
 
 .imgLogoIcon {
-    height: 45px;
+    height: 40px;
     vertical-align: middle;
 }
 
@@ -453,28 +475,26 @@ h1 .imageLink {
 }
 
 .sidebarLinkIcon {
-    font-size: 17px;
+    font-size: 16px;
     width: 66px;
     text-align: center;
     vertical-align: middle;
+    color: #ddd;
 }
+
+    .sidebarLinkIcon + span {
+        vertical-align: middle;
+    }
 
 .ui-page-theme-a .sidebarLinkIcon {
     color: #666;
 }
 
-.sidebarDivider {
-    height: 0;
-    border-width: 1px 0 0;
-    border-style: solid;
-    margin: .7em 0;
-    border-radius: 0;
-}
-
 .sidebarHeader {
     padding-left: 20px;
-    margin: 1em 0;
+    margin: 15px 0 10px;
     font-size: 90%;
+    color: #ccc;
 }
 
 .ui-page-theme-a .sidebarHeader {
@@ -520,13 +540,6 @@ h1 .imageLink {
 
     .currentUsername {
         display: inline;
-    }
-}
-
-@media all and (min-width: 650px) {
-
-    .imgLogoIcon {
-        height: 50px;
     }
 }
 
@@ -751,7 +764,7 @@ progress {
     margin-right: .85em;
     cursor: pointer;
     vertical-align: middle;
-    color: #cc3333 !important;
+    color: #aaa;
     font-size: 17px;
     width: auto !important;
     display: inline-block !important;
@@ -764,8 +777,8 @@ progress {
         border: 0;
     }
 
-.btnUserItemRatingOff {
-    color: #aaa !important;
+.btnUserItemRatingOn {
+    color: #cc3333 !important;
 }
 
 .btnUserItemRating:last-child {

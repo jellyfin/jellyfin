@@ -86,7 +86,7 @@
     "OptionDetectArchiveFilesAsMedia": "Identifiera arkivfiler som media",
     "OptionDetectArchiveFilesAsMediaHelp": "Om aktiverad, kommer filer med .rar och .zip f\u00f6rl\u00e4ngningar att uppt\u00e4ckas som mediefiler.",
     "LabelEnterConnectUserName": "Anv\u00e4ndarnamn eller email:",
-    "LabelEnterConnectUserNameHelp": "This is your Emby online account user name or password.",
+    "LabelEnterConnectUserNameHelp": "This is your Emby online account username or password.",
     "LabelEnableEnhancedMovies": "Enable enhanced movie displays",
     "LabelEnableEnhancedMoviesHelp": "When enabled, movies will be displayed as folders to include trailers, extras, cast & crew, and other related content.",
     "HeaderSyncJobInfo": "Synk jobb",
@@ -1261,6 +1261,9 @@
     "ButtonLearnMoreAboutEmbyConnect": "Learn more about Emby Connect",
     "LabelExternalPlayers": "Externa uppspelare:",
     "LabelExternalPlayersHelp": "Visa knappar f\u00f6r att spela upp inneh\u00e5ll i externa uppspelare. Detta ar enbart tillg\u00e4ngligt p\u00e5 enheter som st\u00f6djer url-scheman, i allm\u00e4nhet Android och iOS. Externa uppspelare har normalt ej st\u00f6d f\u00f6r fj\u00e4rrkontroll eller \u00e5terupptagande.",
+    "LabelNativeExternalPlayersHelp": "Display buttons to play content in external players.",
+    "LabelEnableItemPreviews": "Enable item previews",
+    "LabelEnableItemPreviewsHelp": "if enabled, sliding previews will appear when clicking items on certain screens.",
     "HeaderSubtitleProfile": "Undertextprofil",
     "HeaderSubtitleProfiles": "Undertextprofiler",
     "HeaderSubtitleProfilesHelp": "Undertextprofiler beskriver de undertextformat som st\u00f6ds av enheten.",
@@ -1432,5 +1435,9 @@
     "HeaderExport": "Export",
     "HeaderColumns": "Columns",
     "ButtonReset": "Reset",
-    "OptionEnableExternalVideoPlayers": "Enable external video players"
+    "OptionEnableExternalVideoPlayers": "Enable external video players",
+    "ButtonUnlockGuide": "Unlock Guide",
+    "LabelEnableFullScreen": "Enable fullscreen mode",
+    "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
+    "LabelSyncPath": "Synced content path:"
 }

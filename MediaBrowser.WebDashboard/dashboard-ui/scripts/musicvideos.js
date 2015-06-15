@@ -65,7 +65,7 @@
                 });
             }
 
-            $('#items', page).html(html).trigger('create');
+            $('#items', page).html(html).trigger('create').lazyChildren();
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

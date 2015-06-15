@@ -59,6 +59,12 @@ namespace MediaBrowser.Controller.Entities
 
         public List<ItemImageInfo> ImageInfos { get; set; }
 
+        /// <summary>
+        /// Gets or sets the channel identifier.
+        /// </summary>
+        /// <value>The channel identifier.</value>
+        public string ChannelId { get; set; }
+
         [IgnoreDataMember]
         public virtual bool SupportsAddingToPlaylist
         {
