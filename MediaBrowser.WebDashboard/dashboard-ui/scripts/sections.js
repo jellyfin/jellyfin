@@ -154,7 +154,7 @@
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
 
                 if (user.Policy.EnableUserPreferenceAccess && !AppInfo.isNativeApp) {
-                    html += '<a href="mypreferencesdisplay.html" class="accentButton"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</a>';
+                    html += '<a href="mypreferencesdisplay.html" class="clearLink" style="margin-left:2em;"><paper-button raised class="secondary mini"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</paper-button></a>';
                 }
 
                 html += '</div>';
@@ -230,13 +230,13 @@
 
             if (items.length) {
 
-                var cssClass = index !== 0 ? 'listHeader' : 'listHeader firstListHeader';
+                var cssClass = index !== 0 ? 'listHeader' : 'listHeader';
 
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderMyMedia') + '</h1>';
 
                 if (user.Policy.EnableUserPreferenceAccess && !AppInfo.isNativeApp) {
-                    html += '<a href="mypreferencesdisplay.html" class="accentButton"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</a>';
+                    html += '<a href="mypreferencesdisplay.html" class="clearLink" style="margin-left:2em;"><paper-button raised class="secondary mini"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</paper-button></a>';
                 }
 
                 html += '</div>';
@@ -382,7 +382,7 @@
 
             if (result.Items.length) {
 
-                var cssClass = index !== 0 ? 'listHeader' : 'listHeader firstListHeader';
+                var cssClass = index !== 0 ? 'listHeader' : 'listHeader';
 
                 html += '<div>';
                 var text = Globalize.translate('HeaderLatestFromChannel').replace('{0}', channel.Name);
@@ -421,7 +421,7 @@
 
             if (result.Items.length) {
 
-                var cssClass = index !== 0 ? 'listHeader' : 'listHeader firstListHeader';
+                var cssClass = index !== 0 ? 'listHeader' : 'listHeader';
 
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderLatestTvRecordings') + '</h1>';

@@ -197,7 +197,7 @@
         }
     }
 
-    $(document).on('pagebeforeshowready', ".page", function () {
+    $(document).on('pageshowready', ".page", function () {
 
         var page = this;
 
@@ -212,7 +212,10 @@
 
                     var parentId = $page.hasClass('globalBackdropPage') ? '' : LibraryMenu.getTopParentId();
 
-                    showBackdrop(type, parentId);
+                    // This is an artificial timeout, but we want to give priority to the regular data requests for the page
+                    setTimeout(function () {
+                        showBackdrop(type, parentId);
+                    }, 100);
 
                 } else {
                     $page.removeClass('backdropPage');

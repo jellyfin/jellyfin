@@ -1,0 +1,117 @@
+﻿paper-button {
+    font-weight: 500;
+    vertical-align: middle;
+}
+
+    paper-button.block {
+        display: block;
+        margin-bottom: 1em;
+    }
+
+    paper-button[toggles] {
+        transition: background-color 0.3s;
+    }
+
+        paper-button[toggles][active] {
+            background-color: rgba(0, 0, 0, 0.25);
+        }
+
+    paper-button.secondary {
+        color: #4285f4;
+    }
+
+    paper-button[raised].secondary {
+        background: #4285f4;
+        color: #fff;
+    }
+
+    paper-button[toggles][active].secondary {
+        background-color: rgba(66, 133, 244, 0.25);
+    }
+
+    paper-button[toggles][active][raised].secondary {
+        background-color: rgba(66, 133, 244, 0.75);
+    }
+
+    paper-button.submit {
+        color: #52B54B;
+    }
+
+    paper-button[raised].submit {
+        background: #52B54B;
+        color: #fff;
+    }
+
+    paper-button[toggles][active].submit {
+        background-color: rgba(82, 181, 75, 0.25);
+    }
+
+    paper-button[toggles][active][raised].submit {
+        background-color: rgba(82, 181, 75, 0.75);
+    }
+
+    paper-button.cancel {
+        color: #444;
+    }
+
+    paper-button[raised].cancel {
+        background: #444;
+        color: #fff;
+    }
+
+    paper-button[toggles][active].cancel {
+        background-color: rgba(68, 68, 68, 0.25);
+    }
+
+    paper-button[toggles][active][raised].cancel {
+        background-color: rgba(68, 68, 68, 0.75);
+    }
+
+    paper-button.hover:hover {
+        background: #eee;
+    }
+
+    paper-button.ripple::shadow paper-ripple {
+        color: var(--paper-pink-a200);
+    }
+
+    paper-button.ripple paper-ripple {
+        color: var(--paper-pink-a200);
+    }
+
+    paper-button span {
+        vertical-align: middle;
+    }
+
+    paper-button:not(.iconRight) iron-icon, paper-button:not(.iconRight) .fa {
+        margin-right: .5em;
+    }
+
+    paper-button.iconRight iron-icon, paper-button.iconRight .fa {
+        position: absolute;
+        right: 5px;
+        top: 5px;
+    }
+
+.clearButton {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    outline: none;
+    color: inherit;
+    width: 100%;
+}
+
+.clearLink {
+    text-decoration: none;
+    font-weight: inherit !important;
+}
+
+paper-button.mini {
+    min-width: initial;
+}
+
+    paper-button.mini .content {
+        padding: 0.35em 0.9em;
+    }

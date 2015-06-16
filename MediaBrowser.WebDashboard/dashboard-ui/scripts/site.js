@@ -1270,12 +1270,16 @@ var Dashboard = {
         html += '<h1 class="pageTitle" style="display:inline-block;">' + (document.title || '&nbsp;') + '</h1>';
 
         if (helpUrl) {
-            html += '<a href="' + helpUrl + '" target="_blank" class="accentButton accentButton-g" style="margin-top:-10px;"><i class="fa fa-info-circle"></i>' + Globalize.translate('ButtonHelp') + '</a>';
+            html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-top:-10px;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><i class="fa fa-info-circle"></i>'+Globalize.translate('ButtonHelp')+'</paper-button></a>';
         }
 
         html += '</div>';
 
         $(parent).prepend(html);
+
+        if (helpUrl) {
+            require(['css!thirdparty/paper-button/paper-button-style']);
+        }
     },
 
     setPageTitle: function (title) {
@@ -1611,7 +1615,7 @@ var AppInfo = {};
         else {
 
             if (!$.browser.tv) {
-                AppInfo.enableHeadRoom = true;
+                //AppInfo.enableHeadRoom = true;
             }
         }
 
@@ -1724,10 +1728,6 @@ var AppInfo = {};
     }
 
     function onDocumentReady() {
-
-        if (AppInfo.enableBottomTabs) {
-            $(document.body).addClass('bottomSecondaryNav');
-        }
 
         if (AppInfo.isTouchPreferred) {
             $(document.body).addClass('touch');
@@ -1982,6 +1982,15 @@ var AppInfo = {};
 
         $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
 
+        // Do these now to prevent a flash of content
+        if (AppInfo.isNativeApp && $.browser.safari) {
+            require(['css!themes/ios']);
+        }
+
+        if (AppInfo.enableBottomTabs) {
+            $(document.body).addClass('bottomSecondaryNav');
+        }
+
         if (Dashboard.isConnectMode()) {
 
             require(['appstorage'], function () {
@@ -1999,10 +2008,12 @@ var AppInfo = {};
         } else {
             createConnectionManager(capabilities);
 
-            Dashboard.initPromiseDone = true;
-            deferred.resolve();
 
-            $(onDocumentReady);
+            $(function() {
+                onDocumentReady();
+                Dashboard.initPromiseDone = true;
+                deferred.resolve();
+            });
         }
     }
 

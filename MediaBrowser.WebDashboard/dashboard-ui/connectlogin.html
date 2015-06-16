@@ -2,10 +2,12 @@
 <html>
 <head>
     <title>${TitleSignIn}</title>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body class="serverlessPage">
-    <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b" data-require="scripts/connectlogin">
+    <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b" data-require="scripts/connectlogin,css!thirdparty/paper-button/paper-button-style">
+
+        <link rel="import" href="thirdparty/iron-icons/iron-icons.html">
+        <link rel="import" href="thirdparty/paper-button/paper-button.html">
 
         <div data-role="content">
 
@@ -24,33 +26,25 @@
                     <input type="password" id="txtManualPassword" required="required" />
                 </div>
 
-                <button class="btn btnActionAccent" data-role="none" type="submit">
-                    <span>
-                        ${ButtonSignIn}
-                    </span>
-                    <i class="fa fa-check"></i>
+                <button type="submit" style="display:none" class="btnSubmitConnectLoginForm"></button>
+                <button type="submit" data-role="none" class="clearButton">
+                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSignIn}</span></paper-button>
                 </button>
                 <p class="forgotPassword">
-                    <a href="http://emby.media/community/index.php?app=core&module=global&section=lostpass" target="_blank">${ButtonForgotPassword}</a>
+                    <a href="http://emby.media/community/index.php?app=core&module=global&section=lostpass" target="_blank" class="clearLink">
+                        <paper-button raised class="cancel block"><iron-icon icon="close"></iron-icon><span>${ButtonForgotPassword}</span></paper-button>
+                    </a>
                 </p>
                 <div class="skip">
                     <br />
-                    <button class="btn btnDarkAccent btnSkipConnect" data-role="none" type="button">
-                        <span>
-                            ${ButtonSkip}
-                        </span>
-                        <i class="fa fa-close"></i>
-                    </button>
+                    <paper-button raised class="cancel block btnSkipConnect"><iron-icon icon="close"></iron-icon><span>${ButtonSkip}</span></paper-button>
                     <div class="fieldDescription">${TextConnectToServerManually}</div>
                 </div>
 
-                <div class="newUsers">
+                <div class="newUsers" style="margin-top:2em;">
                     <h2 style="text-align: left;">${HeaderNewUsers}</h2>
-                    <a class="btn btnSignupForConnect" href="http://emby.media/community/index.php?app=core&module=global&section=register" target="_blank">
-                        <span>
-                            ${ButtonSignUp}
-                        </span>
-                        <i class="fa fa-plus-circle"></i>
+                    <a href="http://emby.media/community/index.php?app=core&module=global&section=register" target="_blank" class="clearLink">
+                        <paper-button raised class="secondary block btnSignupForConnect"><iron-icon icon="add"></iron-icon><span>${ButtonSignUp}</span></paper-button>
                     </a>
                 </div>
             </form>
@@ -71,18 +65,11 @@
                 </div>
                 <br />
 
-                <button class="btn btnActionAccent" data-role="none" type="submit">
-                    <span>
-                        ${ButtonConnect}
-                    </span>
-                    <i class="fa fa-check"></i>
+                <button type="submit" style="display:none" class="btnSubmitManualServerForm"></button>
+                <button type="submit" data-role="none" class="clearButton">
+                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonConnect}</span></paper-button>
                 </button>
-                <a class="btn btnDarkAccent" href="#" data-rel="back">
-                    <span>
-                        ${ButtonCancel}
-                    </span>
-                    <i class="fa fa-close"></i>
-                </a>
+                <paper-button raised class="cancel block btnCancelManualServer"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
             </form>
 
             <form class="signupForm" style="text-align: center; margin: 0 auto;display:none;">
@@ -110,18 +97,10 @@
                 <div class="g-recaptcha" id="recaptchaWidget" data-sitekey="6Le2LAgTAAAAAK06Wvttt_yUnbISTy6q3Azqp9po" data-theme="dark"></div>
                 <br />
 
-                <button class="btn btnActionAccent" data-role="none" type="submit">
-                    <span>
-                        ${ButtonSignUp}
-                    </span>
-                    <i class="fa fa-check"></i>
+                <button type="submit" data-role="none" class="clearButton">
+                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSignUp}</span></paper-button>
                 </button>
-                <a class="btn btnDarkAccent" href="#" data-rel="back">
-                    <span>
-                        ${ButtonCancel}
-                    </span>
-                    <i class="fa fa-close"></i>
-                </a>
+                <paper-button raised class="cancel block btnCancelSignup"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
             </form>
 
             <div class="welcomeContainer readOnlyContent" style="text-align: center; margin: 0 auto;display:none;">
@@ -132,12 +111,7 @@
                     <p style="margin:2em 0;" class="embyIntroDownloadMessage"></p>
 
 
-                    <a class="btn btnActionAccent btnIconRight" href="connectlogin.html?mode=connect">
-                        <span>
-                            ${ButtonNext}
-                        </span>
-                        <i class="fa fa-arrow-right"></i>
-                    </a>
+                    <paper-button raised class="submit block btnWelcomeNext iconRight"><iron-icon icon="arrow-forward"></iron-icon><span>${ButtonNext}</span></paper-button>
                 </div>
             </div>
         </div>

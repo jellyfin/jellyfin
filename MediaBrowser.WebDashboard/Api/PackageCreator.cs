@@ -274,10 +274,19 @@ namespace MediaBrowser.WebDashboard.Api
 
                 var version = GetType().Assembly.GetName().Version;
 
-                var imports = "<link rel=\"import\" href=\"thirdparty/polymer/polymer.html\">";
-                imports = "";
+                var imports = new[]
+                {
+                    "thirdparty/polymer/polymer.html",
+                    "thirdparty/paper-button/paper-button.html",
+                    "thirdparty/iron-icons/iron-icons.html"
+                };
+                var importsHtml = string.Join("", imports.Select(i => "<link rel=\"import\" href=\"" + i + "\">").ToArray());
 
-                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetCommonJavascript(mode, version) + imports);
+                // It would be better to make polymer completely dynamic and loaded on demand, but seeing issues with that
+                // In chrome it is causing the body to be hidden while loading, which leads to width-check methods to return 0 for everything
+                //imports = "";
+
+                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetCommonJavascript(mode, version) + importsHtml);
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
@@ -396,7 +405,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new List<string>
             {
-                //"thirdparty/webcomponentsjs/webcomponents-lite.min.js",
+                "thirdparty/webcomponentsjs/webcomponents-lite.min.js",
                 "scripts/all.js" + versionString
             };
 

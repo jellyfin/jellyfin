@@ -4,7 +4,9 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvRecordingsPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvrecordings">
+    <div id="liveTvRecordingsPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvrecordings,css!thirdparty/paper-button/paper-button-style">
+        <link rel="import" href="thirdparty/paper-button/paper-button.html">
+
         <div class="libraryViewNav">
             <a href="livetvsuggested.html">${TabSuggestions}</a>
             <a href="livetvguide.html">${TabGuide}</a>
@@ -23,7 +25,7 @@
                 <div id="latestRecordings" style="display: none;">
                     <div>
                         <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestRecordings}</h1>
-                        <a href="#" class="accentButton categorySyncButton" data-category="Latest"><i class="fa fa-refresh"></i>${ButtonSync}</a>
+                        <paper-button raised class="secondary mini categorySyncButton" data-category="Latest"><i class="fa fa-refresh"></i>${ButtonSync}</paper-button>
                     </div>
                     <div class="recordingItems itemsContainer"></div>
                     <br />

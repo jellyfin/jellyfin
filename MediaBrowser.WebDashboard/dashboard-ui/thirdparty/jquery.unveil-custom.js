@@ -19,10 +19,14 @@
         // If less than 200, this happens on the home page
         // Need to fix those before this can be set to 0
 
+        if (window.AppInfo && AppInfo.isNativeApp && $.browser.safari) {
+            return 10000;
+        }
+
         var screens = $.browser.mobile ? 2 : 1;
 
         // This helps eliminate the draw-in effect as you scroll
-        return screen.availHeight * screens;
+        return Math.max(screen.availHeight * screens, 1000);
     }
 
     $.fn.unveil = function () {

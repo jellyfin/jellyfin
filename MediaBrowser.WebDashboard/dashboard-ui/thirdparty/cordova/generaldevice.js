@@ -1,14 +1,12 @@
 ﻿(function () {
 
-    var currentPairingDeviceId;
-    var currentPairedDeviceId;
-    var currentDevice;
-
-    var PlayerName = "ConnectSDK";
-
-    function connectPlayer() {
+    function connectSDKPlayer() {
 
         var self = this;
+
+        var PlayerName = "ConnectSDK";
+        var currentDevice;
+        var currentDeviceId;
 
         // MediaController needs this
         self.name = PlayerName;
@@ -90,14 +88,8 @@
                 return;
             }
 
-            playInternal(options.items);
-        };
-
-        function playInternal(items, serverAddress) {
-
             playItemInternal(items[0], null, serverAddress);
-
-        }
+        };
 
         function playItemInternal(items, startPosition) {
 
@@ -149,13 +141,16 @@
 
             //});
         }
-
         self.unpause = function () {
-            currentDevice.getMediaControl().play();
+            if (currentDevice) {
+                currentDevice.getMediaControl().pause();
+            }
         };
 
         self.pause = function () {
-            currentDevice.getMediaControl().pause();
+            if (currentDevice) {
+                currentDevice.getMediaControl().pause();
+            }
         };
 
         self.shuffle = function (id) {
@@ -191,36 +186,48 @@
         };
 
         self.canQueueMediaType = function (mediaType) {
-            return false;
+            return mediaType == "Audio";
         };
 
         self.queue = function (options) {
+            self.playWithCommnd(options, 'PlayLast');
         };
 
         self.queueNext = function (options) {
+            self.playWithCommand(options, 'PlayNext');
         };
 
         self.stop = function () {
-            currentDevice.getMediaControl().stop();
+            if (currentDevice) {
+                currentDevice.getMediaControl().stop();
+            }
         };
 
         self.displayContent = function (options) {
 
+            // TODO
         };
 
         self.mute = function () {
-            currentDevice.getVolumeControl().setMute(true);
+            if (currentDevice) {
+                currentDevice.getVolumeControl().setMute(true);
+            }
         };
 
         self.unMute = function () {
-            currentDevice.getVolumeControl().setMute(false);
+            self.setVolume(getCurrentVolume() + 2);
         };
 
         self.toggleMute = function () {
 
-            var volumeControl = currentDevice.getVolumeControl();
+            var state = self.lastPlayerData || {};
+            state = state.PlayState || {};
 
-            volumeControl.setMute(!volumeControl.getMute());
+            if (state.IsMuted) {
+                self.unMute();
+            } else {
+                self.mute();
+            }
         };
 
         self.getDeviceProfile = function () {
@@ -358,7 +365,6 @@
             return profile;
         };
 
-
         function getBaseTargetInfo() {
             var target = {};
 
@@ -408,18 +414,27 @@
         };
 
         self.seek = function (position) {
+
+            position = parseInt(position);
+            position = position / 10000000;
+
+            // TODO
         };
 
         self.setAudioStreamIndex = function (index) {
+            // TODO
         };
 
         self.setSubtitleStreamIndex = function (index) {
+            // TODO
         };
 
         self.nextTrack = function () {
+            // TODO
         };
 
         self.previousTrack = function () {
+            // TODO
         };
 
         self.beginPlayerUpdates = function () {
@@ -439,12 +454,16 @@
 
         self.volumeDown = function () {
 
-            currentDevice.getVolumeControl().volumeDown();
+            if (currentDevice) {
+                currentDevice.getVolumeControl().volumeDown();
+            }
         };
 
         self.volumeUp = function () {
 
-            currentDevice.getVolumeControl().volumeUp();
+            if (currentDevice) {
+                currentDevice.getVolumeControl().volumeUp();
+            }
         };
 
         self.setVolume = function (vol) {
@@ -452,7 +471,9 @@
             vol = Math.min(vol, 100);
             vol = Math.max(vol, 0);
 
-            currentDevice.getVolumeControl().setVolume(vol / 100);
+            if (currentDevice) {
+                currentDevice.getVolumeControl().setVolume(vol / 100);
+            }
         };
 
         self.getPlayerState = function () {
@@ -477,27 +498,37 @@
             return data;
         };
 
-        function cleanupSession() {
+        function handleSessionDisconnect() {
+            console.log("session disconnected");
 
-            if (currentDevice != null) {
-                currentDevice.off("ready");
-                currentDevice.off("disconnect");
-
-                currentDevice.disconnect();
-            }
-
-            currentPairedDeviceId = null;
-            currentDevice = null;
+            cleanupSession();
+            MediaController.removeActivePlayer(PlayerName);
         }
 
-        function onDeviceReady(device, deferred) {
+        function cleanupSession() {
 
-            if (currentPairingDeviceId != device.getId()) {
-                console.log('device ready fired for a different device. ignoring.');
-                return;
+        }
+
+        function launchWebApp(device) {
+
+            if (currentDevice) {
+                cleanupSession();
             }
 
-            deferred.resolve();
+            console.log('session.connect succeeded');
+
+            MediaController.setActivePlayer(PlayerName, convertDeviceToTarget(device));
+            currentDevice = device;
+            currentDeviceId = device.getId();
+        }
+
+        function onDeviceReady(device) {
+
+            device.off("ready");
+
+            console.log('creating webAppSession');
+
+            launchWebApp(device);
         }
 
         self.tryPair = function (target) {
@@ -522,29 +553,23 @@
 
         self.tryPairWithDevice = function (device, deferred) {
 
-            var deviceId = device.getId();
-            currentPairingDeviceId = deviceId;
+            console.log('Will attempt to connect to Connect Device');
 
-            console.log('Will attempt to connect to Connect device');
-
-            Dashboard.showModalLoadingMsg();
-            setTimeout(Dashboard.hideModalLoadingMsg, 3000);
+            device.on("disconnect", function () {
+                device.off("ready");
+                device.off("disconnect");
+            });
 
             if (device.isReady()) {
                 console.log('Device is already ready, calling onDeviceReady');
-                onDeviceReady(device, deferred);
+                onDeviceReady(device);
             } else {
 
                 console.log('Binding device ready handler');
 
                 device.on("ready", function () {
                     console.log('device.ready fired');
-                    onDeviceReady(device, deferred);
-                });
-
-                device.on("disconnect", function () {
-                    device.off("ready");
-                    device.off("disconnect");
+                    onDeviceReady(device);
                 });
 
                 console.log('Calling device.connect');
@@ -554,22 +579,32 @@
 
         $(MediaController).on('playerchange', function (e, newPlayer, newTarget) {
 
-            if (currentPairedDeviceId) {
-                if (newTarget.id != currentPairedDeviceId) {
+            if (currentDevice) {
+                if (newTarget.id != currentDeviceId) {
                     if (currentDevice) {
                         console.log('Disconnecting from connect device');
-                        cleanupSession();
+                        //currentDevice.disconnect();
+                        currentDevice = null;
+                        currentDeviceId = null;
                     }
                 }
             }
         });
+
+        function onResume() {
+
+            var deviceId = currentDeviceId;
+
+            if (deviceId) {
+                self.tryPair({
+                    id: deviceId
+                });
+            }
+        }
+
+        document.addEventListener("resume", onResume, false);
     }
 
-    function initSdk() {
-
-        MediaController.registerPlayer(new connectPlayer());
-    }
-
-    initSdk();
+    MediaController.registerPlayer(new connectSDKPlayer());
 
 })();

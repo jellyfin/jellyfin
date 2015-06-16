@@ -221,4 +221,8 @@ $(document).on('pageinitdepends', "#loginPage", function () {
 
     $('.manualLoginForm', page).off('submit', LoginPage.onManualSubmit).on('submit', LoginPage.onManualSubmit);
 
+    $('.btnForgotPassword', page).on('click', function () {
+        Dashboard.navigate('forgotpassword.html');
+    });
+
 }).on('pageshowready', "#loginPage", LoginPage.onPageShow);

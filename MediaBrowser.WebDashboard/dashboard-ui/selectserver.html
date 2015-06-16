@@ -4,7 +4,9 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="selectServerPage" data-role="page" class="page libraryPage noSecondaryNavPage" data-theme="b" data-require="scripts/selectserver">
+    <div id="selectServerPage" data-role="page" class="page libraryPage noSecondaryNavPage" data-theme="b" data-require="scripts/selectserver,css!thirdparty/paper-button/paper-button-style">
+
+        <link rel="import" href="thirdparty/paper-button/paper-button.html">
 
         <div data-role="content">
 
@@ -12,10 +14,7 @@
 
                 <div style="margin:1em 0 .5em;padding-left:5px;">
                     <h1 style="display:inline-block;vertical-align:middle;margin: 0;">${HeaderSelectServer}</h1>
-                    <a class="accentButton accentButton-g" style="display:inline-block;vertical-align:middle;margin-top:0;" href="https://github.com/MediaBrowser/Wiki/wiki/Emby%20Connect" target="_blank">
-                        <i class="fa fa-info-circle"></i>
-                        ${ButtonHelp}
-                    </a>
+                    <a href="https://github.com/MediaBrowser/Wiki/wiki/Emby%20Connect" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><i class="fa fa-info-circle"></i>${ButtonHelp}</paper-button></a>
                 </div>
 
                 <div class="serverList"></div>

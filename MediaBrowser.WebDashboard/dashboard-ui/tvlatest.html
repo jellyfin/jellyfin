@@ -4,7 +4,9 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="tvNextUpPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="series" data-require="scripts/tvlatest">
+    <div id="tvNextUpPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="series" data-require="scripts/tvlatest,css!thirdparty/paper-button/paper-button-style">
+        <link rel="import" href="thirdparty/paper-button/paper-button.html">
+
         <div class="libraryViewNav scopedLibraryViewNav">
             <a href="tvrecommended.html">${TabSuggestions}</a>
             <a href="#" class="ui-btn-active">${TabLatest}</a>
@@ -17,11 +19,14 @@
         </div>
         <div data-role="content">
             <div class="ehsContent">
-                <div>
-                    <h1 class="listHeader firstListHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestEpisodes}</h1>
-                    <a href="#" class="accentButton categorySyncButton" data-category="Latest"><i class="fa fa-refresh"></i>${ButtonSync}</a>
-                </div>
-                <div id="latestEpisodes" class="itemsContainer">
+                
+                <div class="homePageSection">
+                    <div>
+                        <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestEpisodes}</h1>
+                        <paper-button raised class="secondary mini categorySyncButton" data-category="Latest"><i class="fa fa-refresh"></i>${ButtonSync}</paper-button>
+                    </div>
+                    <div id="latestEpisodes" class="itemsContainer">
+                    </div>
                 </div>
             </div>
         </div>

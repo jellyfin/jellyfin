@@ -224,10 +224,8 @@
 
             html += '<div style="margin:1em 0 1.5em;">';
             html += '<h1 style="margin: 0;display:inline-block;vertical-align:middle;">' + Globalize.translate('SyncMedia') + '</h1>';
-            html += '<a class="accentButton accentButton-g" style="display:inline-block;vertical-align:middle;margin-top:0;margin-left: 20px;" href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank">';
-            html += '<i class="fa fa-info-circle"></i>';
-            html += Globalize.translate('ButtonHelp');
-            html += '</a>';
+
+            html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><i class="fa fa-info-circle"></i>' + Globalize.translate('ButtonHelp') + '</paper-button></a>';
             html += '</div>';
 
             html += '<div class="formFields"></div>';
@@ -242,6 +240,7 @@
             html += '</div>';
 
             $(document.body).append(html);
+            require(['css!thirdparty/paper-button/paper-button-style']);
 
             var elem = $('.syncPanel').panel({}).trigger('create').panel("open").on("panelclose", function () {
                 $(this).off("panelclose").remove();
@@ -379,12 +378,7 @@
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            if (user.Policy.EnableSync) {
-                $('.categorySyncButton', page).show();
-            } else {
-                $('.categorySyncButton', page).hide();
-            }
-
+            $('.categorySyncButton', page).visible(user.Policy.EnableSync);
         });
     }
 

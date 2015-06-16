@@ -1,0 +1,91 @@
+﻿body {
+    font-family: Helvetica Neue;
+}
+
+.viewMenuBar, .libraryViewNav, .ui-page-theme-b {
+    background-color: #1c1c1c;
+}
+
+    .libraryViewNav a {
+        font-weight: 400;
+        text-transform: none;
+        color: #ccc !important;
+    }
+
+    .libraryViewNav .ui-btn-active {
+        border-bottom-color: transparent;
+        color: #2ad !important;
+    }
+
+.libraryViewNav {
+    border-top: 1px solid #333;
+    font-size: 12px;
+    height: 47px !important;
+}
+
+.viewMenuBar {
+    border-bottom: 1px solid #333;
+}
+
+.barsMenuButton .fa {
+    color: #2ad !important;
+}
+
+
+.btn, .btn-large {
+    font-family: Helvetica Neue !important;
+}
+
+.pageTitle {
+    font-family: Helvetica Neue;
+}
+
+.ui-btn {
+    font-family: Helvetica Neue;
+}
+
+.ui-loader h1 {
+    font-family: Helvetica Neue;
+}
+
+h1, h1 a {
+    font-weight: 400 !important;
+}
+
+.btnNotificationsInner {
+    font-weight: 400;
+}
+
+.channelList {
+    font-weight: 400;
+}
+
+.channelHeaderCellInner {
+    font-weight: 400;
+}
+
+.librarySidebarLinks a {
+    font-weight: 400 !important;
+}
+
+.libraryMenuButtonText {
+    font-weight: 500 !important;
+    position: relative;
+    top: 2px;
+}
+
+.libraryPanelHeader span {
+    font-weight: 400;
+}
+
+.visualCardBox {
+    background: none !important;
+    -moz-box-shadow: none;
+    -ms-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+    .visualCardBox .outerCardFooter {
+        padding: 0;
+    }

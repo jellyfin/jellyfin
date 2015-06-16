@@ -114,6 +114,9 @@
     <Content Include="dashboard-ui\css\images\tour\web\tourmysync.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\themes\ios.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\css\materialize.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -154,6 +157,87 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\cordova\wakeonlan.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\iron-a11y-keys-behavior\iron-a11y-keys-behavior.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\iron-behaviors\iron-button-state.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\iron-behaviors\iron-control-state.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\iron-flex-layout\classes\iron-flex-layout.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\iron-flex-layout\classes\iron-shadow-flex-layout.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\iron-flex-layout\iron-flex-layout.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\iron-iconset-svg\iron-iconset-svg.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\iron-icons\iron-icons.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\iron-icon\iron-icon.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\iron-meta\iron-meta.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-behaviors\paper-button-behavior.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-behaviors\paper-inky-focus-behavior.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-button\paper-button-style.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-button\paper-button.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-material\paper-material.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-ripple\hero.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-ripple\paper-ripple.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-styles\classes\global.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-styles\classes\shadow-layout.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-styles\classes\shadow.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-styles\classes\typography.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-styles\color.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-styles\default-theme.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-styles\paper-styles-classes.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-styles\paper-styles.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-styles\shadow.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\paper-styles\typography.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\polymer\LICENSE.txt">
@@ -2338,22 +2422,82 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <None Include="dashboard-ui\css\fonts\roboto\RobotoBold.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\RobotoLight.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\RobotoMedium.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\RobotoRegular.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\RobotoThin.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\-L14Jk06m6pUHB-5mXQQnRJtnKITppOI_IvcXXDNrsc.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\0eC6fl06luXEYWpBSJvXCBJtnKITppOI_IvcXXDNrsc.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\2tsd397wLxj96qwHyNIkxPesZW2xOQ-xsNqO47m55DA.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\97uahxiqZRoncBaCEI3aWxJtnKITppOI_IvcXXDNrsc.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\aZMswpodYeVhtRvuABJWvBTbgVql8nDJpwnrE27mub0.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\CWB0XYA8bzo0kSThX0UTuA.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\d-6IYplOFocCacKzxwXSOFtXRa8TVwTICgirnJhmVJw.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\e7MeVAyvogMqFwwl61PKhBTbgVql8nDJpwnrE27mub0.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\Fcx7Wwv8OzT71A3E1XOAjvesZW2xOQ-xsNqO47m55DA.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\Fl4y0QdOxyyTHEGMXX8kcRJtnKITppOI_IvcXXDNrsc.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\frNV30OaYdlFRtH2VnZZdhTbgVql8nDJpwnrE27mub0.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\gwVJDERN2Amz39wrSoZ7FxTbgVql8nDJpwnrE27mub0.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="dashboard-ui\css\fonts\Montserrat.woff">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="dashboard-ui\css\fonts\RobotoBold.woff">
+    <None Include="dashboard-ui\css\fonts\roboto\Hgo13k-tfSpn0qi1SFdUfVtXRa8TVwTICgirnJhmVJw.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="dashboard-ui\css\fonts\RobotoLight.woff">
+    <None Include="dashboard-ui\css\fonts\roboto\I3S1wsgSg9YCurV6PUkTORJtnKITppOI_IvcXXDNrsc.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="dashboard-ui\css\fonts\RobotoMedium.woff">
+    <None Include="dashboard-ui\css\fonts\roboto\NYDWBdD4gIq26G5XYbHsFBJtnKITppOI_IvcXXDNrsc.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="dashboard-ui\css\fonts\RobotoRegular.woff">
+    <None Include="dashboard-ui\css\fonts\roboto\oOeFwZNlrTefzLYmlVV1UBJtnKITppOI_IvcXXDNrsc.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="dashboard-ui\css\fonts\RobotoThin.woff">
+    <None Include="dashboard-ui\css\fonts\roboto\Pru33qjShpZSmG3z6VYwnRJtnKITppOI_IvcXXDNrsc.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\RxZJdnzeo3R5zSexge8UUVtXRa8TVwTICgirnJhmVJw.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\ty9dfvLAziwdqQ2dHoyjphTbgVql8nDJpwnrE27mub0.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\css\fonts\roboto\VvXUGKZXbHtX_S_VCTLpGhTbgVql8nDJpwnrE27mub0.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="dashboard-ui\thirdparty\fontawesome\css\font-awesome.css.map">

@@ -591,3 +591,12 @@ function ticks_to_human(str) {
     });
 
 })();
+
+// This only exists because the polymer elements get distorted when using regular jquery show/hide
+$.fn.visible = function(visible) {
+
+    if (visible) {
+        return this.removeClass('hide');
+    }
+    return this.addClass('hide');
+};

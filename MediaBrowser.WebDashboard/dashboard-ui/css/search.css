@@ -148,7 +148,7 @@
     padding: 4px 0 3px 0;
     text-indent: 50px;
     font-size: 16px;
-    font-family: Roboto;
+    font-family: inherit;
     outline: none;
     vertical-align: middle;
     width: 85%;

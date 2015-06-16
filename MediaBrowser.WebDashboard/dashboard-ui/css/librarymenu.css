@@ -95,7 +95,7 @@
 .libraryMenuButtonText {
     color: #fff !important;
     text-decoration: none;
-    font-weight: 300 !important;
+    font-weight: 400 !important;
     font-size: 15px;
     display: inline-block;
     vertical-align: middle;
@@ -212,7 +212,7 @@
 }
 
 .selectedMediaFolder {
-    background-color: #3388cc !important;
+    background-color: #38c !important;
     color: #fff !important;
 }
 

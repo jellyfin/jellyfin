@@ -992,10 +992,17 @@
 
         getPostersPerRow: function (screenWidth) {
 
+            var cache = true;
             function getValue(shape) {
-
                 var div = $('<div class="card ' + shape + 'Card"><div class="cardBox"><div class="cardImage"></div></div></div>').appendTo(document.body);
-                var width = screenWidth / $('.cardImage', div).innerWidth();
+                var innerWidth = $('.cardImage', div).innerWidth();
+
+                if (!innerWidth || isNaN(innerWidth)) {
+                    cache = false;
+                    innerWidth = Math.min(400, screenWidth / 2);
+                }
+
+                var width = screenWidth / innerWidth;
                 div.remove();
                 return Math.floor(width);
             }
@@ -1006,6 +1013,7 @@
                 var currentShape = LibraryBrowser.shapes[i];
                 info[currentShape] = getValue(currentShape);
             }
+            info.cache = cache;
             return info;
         },
 
@@ -1025,8 +1033,11 @@
             }
 
             var result = LibraryBrowser.getPosterViewInfoInternal(screenWidth);
+            result.screenWidth = screenWidth;
 
-            cachedResults.push(result);
+            if (result.cache) {
+                cachedResults.push(result);
+            }
 
             return result;
         },
@@ -1039,7 +1050,7 @@
             result.screenWidth = screenWidth;
 
             if (!AppInfo.hasLowImageBandwidth) {
-                screenWidth *= 1.25;
+                screenWidth *= 1.2;
             }
 
             var roundTo = 100;
@@ -1056,6 +1067,8 @@
 
                 result[currentShape + 'Width'] = Math.round(shapeWidth);
             }
+
+            result.cache = imagesPerRow.cache;
 
             return result;
         },
@@ -1785,7 +1798,7 @@
                 throw new Error("null item passed into getPosterViewDisplayName");
             }
 
-            var name = item.EpisodeTitle || item.Name;
+            var name = item.EpisodeTitle || item.Name || '';
 
             if (item.Type == "TvChannel") {
 

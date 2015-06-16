@@ -1,0 +1,177 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-ripple/paper-ripple.html">
+<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
+
+<!--
+
+Material Design: <a href="http://www.google.com/design/spec/components/buttons.html">Buttons</a>
+
+`paper-button` is a button. When the user touches the button, a ripple effect emanates
+from the point of contact. It may be flat or raised. A raised button is styled with a
+shadow.
+
+Example:
+
+    <paper-button>flat button</paper-button>
+    <paper-button raised>raised button</paper-button>
+    <paper-button noink>No ripple effect</paper-button>
+
+You may use custom DOM in the button body to create a variety of buttons. For example, to
+create a button with an icon and some text:
+
+    <paper-button>
+      <core-icon icon="favorite"></core-icon>
+      custom button content
+    </paper-button>
+
+### Styling
+
+Style the button with CSS as you would a normal DOM element.
+
+    /* make #my-button green with yellow text */
+    #my-button {
+        background: green;
+        color: yellow;
+    }
+
+By default, the ripple is the same color as the foreground at 25% opacity. You may
+customize the color using this selector:
+
+    /* make #my-button use a blue ripple instead of foreground color */
+    #my-button::shadow paper-ripple {
+      color: blue;
+    }
+
+The opacity of the ripple is not customizable via CSS.
+
+The following custom properties and mixins are also available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-button-flat-focus-color` | Background color of a focused flat button | `--paper-grey-200`
+`--paper-button` | Mixin applied to the button | `{}`
+`--paper-button-disabled` | Mixin applied to the disabled button | `{}`
+
+@demo demo/index.html
+-->
+
+<dom-module id="paper-button">
+
+  <style>
+
+    :host {
+      display: inline-block;
+      position: relative;
+      box-sizing: border-box;
+      min-width: 5.14em;
+      margin: 0 0.29em;
+      background: transparent;
+      text-align: center;
+      font: inherit;
+      text-transform: uppercase;
+      outline: none;
+      border-radius: 3px;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      -webkit-user-select: none;
+      user-select: none;
+      cursor: pointer;
+      z-index: 0;
+
+      @apply(--paper-button);
+    }
+
+    .keyboard-focus {
+      font-weight: bold;
+    }
+
+    :host([disabled]) {
+      background: #eaeaea;
+      color: #a8a8a8;
+      cursor: auto;
+      pointer-events: none;
+
+      @apply(--paper-button-disabled);
+    }
+
+    :host([noink]) paper-ripple {
+      display: none;
+    }
+
+    paper-material {
+      border-radius: inherit;
+    }
+
+    .content > ::content * {
+      text-transform: inherit;
+    }
+
+    .content {
+      padding: 0.7em 0.57em
+    }
+  </style>
+
+  <template>
+
+    <paper-ripple></paper-ripple>
+
+    <paper-material class$="[[_computeContentClass(receivedFocusFromKeyboard)]]" elevation="[[_elevation]]" animated>
+      <content></content>
+    </paper-material>
+
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'paper-button',
+
+    behaviors: [
+      Polymer.PaperButtonBehavior
+    ],
+
+    properties: {
+
+      /**
+       * If true, the button should be styled with a shadow.
+       */
+      raised: {
+        type: Boolean,
+        reflectToAttribute: true,
+        value: false,
+        observer: '_calculateElevation'
+      }
+    },
+
+    _calculateElevation: function() {
+      if (!this.raised) {
+        this._elevation = 0;
+      } else {
+        Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
+      }
+    },
+
+    _computeContentClass: function(receivedFocusFromKeyboard) {
+      var className = 'content ';
+      if (receivedFocusFromKeyboard) {
+        className += ' keyboard-focus';
+      }
+      return className;
+    }
+  });
+
+</script>

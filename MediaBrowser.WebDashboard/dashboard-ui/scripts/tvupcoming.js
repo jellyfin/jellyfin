@@ -1,6 +1,20 @@
 ﻿(function ($, document) {
 
-    $(document).on('pageshowready', "#tvUpcomingPage", function () {
+    $(document).on('pagebeforeshowready', "#tvUpcomingPage", function () {
+
+        var page = this;
+
+        if (LibraryMenu.getTopParentId()) {
+
+            $('.scopedLibraryViewNav', page).show();
+            $('.globalNav', page).hide();
+
+        } else {
+            $('.scopedLibraryViewNav', page).hide();
+            $('.globalNav', page).show();
+        }
+
+    }).on('pageshowready', "#tvUpcomingPage", function () {
 
         var page = this;
 

@@ -28,7 +28,6 @@
             $('.globalNav', page).hide();
             $('.scopedContent', page).show();
             context = 'tv';
-            $('.nextUpHeader', page).removeClass('firstListHeader');
 
             loadResume(page);
 
@@ -36,7 +35,6 @@
             $('.scopedLibraryViewNav', page).hide();
             $('.globalNav', page).show();
             $('.scopedContent', page).hide();
-            $('.nextUpHeader', page).addClass('firstListHeader');
         }
 
         loadNextUp(page, context || 'home-nextup');
@@ -144,7 +142,6 @@
                 $('#resumableSection', page).show();
             } else {
                 $('#resumableSection', page).hide();
-                $('.nextUpHeader', page).addClass('firstListHeader');
             }
 
             var view = getResumeView();

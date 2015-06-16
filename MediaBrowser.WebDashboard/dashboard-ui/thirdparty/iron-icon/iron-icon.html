@@ -1,0 +1,179 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-meta/iron-meta.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+
+<!--
+
+The `iron-icon` element displays an icon. By default an icon renders as a 24px square.
+
+Example using src:
+
+    <iron-icon src="star.png"></iron-icon>
+
+Example setting size to 32px x 32px:
+
+    <iron-icon class="big" src="big_star.png"></iron-icon>
+
+    <style is="custom-style">
+      .big {
+        --iron-icon-height: 32px;
+        --iron-icon-width: 32px;
+      }
+    </style>
+
+The iron elements include several sets of icons.
+To use the default set of icons, import  `iron-icons.html` and use the `icon` attribute to specify an icon:
+
+    &lt;!-- import default iconset and iron-icon --&gt;
+    <link rel="import" href="/components/iron-icons/iron-icons.html">
+
+    <iron-icon icon="menu"></iron-icon>
+
+To use a different built-in set of icons, import  `iron-icons/<iconset>-icons.html`, and
+specify the icon as `<iconset>:<icon>`. For example:
+
+    &lt;!-- import communication iconset and iron-icon --&gt;
+    <link rel="import" href="/components/iron-icons/communication-icons.html">
+
+    <iron-icon icon="communication:email"></iron-icon>
+
+You can also create custom icon sets of bitmap or SVG icons.
+
+Example of using an icon named `cherry` from a custom iconset with the ID `fruit`:
+
+    <iron-icon icon="fruit:cherry"></iron-icon>
+
+See [iron-iconset](#iron-iconset) and [iron-iconset-svg](#iron-iconset-svg) for more information about
+how to create a custom iconset.
+
+See [iron-icons](https://elements.polymer-project.org/elements/iron-icons?view=demo:demo/index.html) for the default set of icons.
+
+
+### Styling
+
+The following custom properties are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--iron-icon-width` | Width of the icon | `24px`
+`--iron-icon-height` | Height of the icon | `24px`
+
+@group Iron Elements
+@element iron-icon
+@demo demo/index.html
+@hero hero.svg
+@homepage polymer.github.io
+-->
+
+<dom-module id="iron-icon">
+
+  <style>
+    :host {
+      @apply(--layout-inline);
+      @apply(--layout-center-center);
+      position: relative;
+
+      vertical-align: middle;
+
+      fill: currentcolor;
+
+      width: var(--iron-icon-width, 24px);
+      height: var(--iron-icon-height, 24px);
+    }
+  </style>
+
+  <template>
+    <iron-meta id="meta" type="iconset"></iron-meta>
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'iron-icon',
+
+      properties: {
+
+        /**
+         * The name of the icon to use. The name should be of the form:
+         * `iconset_name:icon_name`.
+         */
+        icon: {
+          type: String,
+          observer: '_iconChanged'
+        },
+
+        /**
+         * The name of the theme to used, if one is specified by the
+         * iconset.
+         */
+        theme: {
+          type: String,
+          observer: '_updateIcon'
+        },
+
+        /**
+         * If using iron-icon without an iconset, you can set the src to be
+         * the URL of an individual icon image file. Note that this will take
+         * precedence over a given icon attribute.
+         */
+        src: {
+          type: String,
+          observer: '_srcChanged'
+        }
+      },
+
+      _DEFAULT_ICONSET: 'icons',
+
+      _iconChanged: function(icon) {
+        var parts = (icon || '').split(':');
+        this._iconName = parts.pop();
+        this._iconsetName = parts.pop() || this._DEFAULT_ICONSET;
+        this._updateIcon();
+      },
+
+      _srcChanged: function(src) {
+        this._updateIcon();
+      },
+
+      _usesIconset: function() {
+        return this.icon || !this.src;
+      },
+
+      _updateIcon: function() {
+        if (this._usesIconset()) {
+          if (this._iconsetName) {
+            this._iconset = this.$.meta.byKey(this._iconsetName);
+            if (this._iconset) {
+              this._iconset.applyIcon(this, this._iconName, this.theme);
+            } else {
+              this._warn(this._logf('_updateIcon', 'could not find iconset `'
+                + this._iconsetName + '`, did you import the iconset?'));
+            }
+          }
+        } else {
+          if (!this._img) {
+            this._img = document.createElement('img');
+            this._img.style.width = '100%';
+            this._img.style.height = '100%';
+          }
+          this._img.src = this.src;
+          Polymer.dom(this.root).appendChild(this._img);
+        }
+      }
+
+    });
+
+  </script>
+
+</dom-module>

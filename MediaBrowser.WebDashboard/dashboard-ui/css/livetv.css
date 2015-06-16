@@ -198,10 +198,6 @@
     font-size: 16px;
 }
 
-.channelTimeslotHeader .accentButton {
-    font-size: 15px;
-}
-
 .channelTimeslotHeader .timeslotHeaderInner {
     padding-top: .4em;
 }
@@ -230,7 +226,7 @@
     padding: .35em .5em .5em;
     display: block;
     text-decoration: none;
-    font-weight: 300 !important;
+    font-weight: 400 !important;
     color: #fff !important;
     position: relative;
 }
@@ -242,7 +238,7 @@
 .channelList {
     float: left;
     font-size: 16px;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .programGrid {
@@ -342,7 +338,7 @@
         width: 6500px;
     }
 
-    .channelList, .channelTimeslotHeader .accentButton {
+    .channelList {
         font-size: 14px;
     }
 
