@@ -450,12 +450,8 @@
 
         destroyCurrentRecognition();
 
-        require([
-       'css!voice/voice'
-        ], function () {
-
-            startListeningInternal();
-        });
+        Dashboard.importCss('voice/voice.css');
+        startListeningInternal();
     }
 
     function startListeningInternal() {

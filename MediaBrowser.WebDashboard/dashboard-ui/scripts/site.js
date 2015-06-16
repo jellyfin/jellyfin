@@ -214,6 +214,17 @@ var Dashboard = {
     },
 
     importCss: function (url) {
+
+        if (!Dashboard.importedCss) {
+            Dashboard.importedCss = [];
+        }
+
+        if (Dashboard.importedCss.indexOf(url) != -1) {
+            return;
+        }
+
+        Dashboard.importedCss.push(url);
+
         if (document.createStyleSheet) {
             document.createStyleSheet(url);
         }
@@ -470,7 +481,7 @@ var Dashboard = {
 
             setTimeout(function () {
                 elem.active = false;
-            }, 500);
+            }, 300);
         }
     },
 
@@ -1545,10 +1556,10 @@ var Dashboard = {
         var deferred = DeferredBuilder.Deferred();
 
         require([
-            'thirdparty/swipebox-master/js/jquery.swipebox.min',
-            'css!thirdparty/swipebox-master/css/swipebox.min'
+            'thirdparty/swipebox-master/js/jquery.swipebox.min'
         ], function () {
 
+            Dashboard.importCss('thirdparty/swipebox-master/css/swipebox.min.css');
             deferred.resolve();
         });
         return deferred.promise();
@@ -1564,10 +1575,17 @@ var Dashboard = {
         Dashboard.initPromise.done(fn);
     },
 
-    firePageEvent: function (page, name) {
+    firePageEvent: function (page, name, dependencies) {
 
         Dashboard.ready(function () {
-            $(page).trigger(name);
+
+            if (dependencies && dependencies.length) {
+                require(dependencies, function () {
+                    $(page).trigger(name);
+                });
+            } else {
+                $(page).trigger(name);
+            }
         });
     },
 
@@ -1949,11 +1967,6 @@ var AppInfo = {};
     function init(deferred, capabilities, appName, deviceId, deviceName) {
 
         requirejs.config({
-            map: {
-                '*': {
-                    'css': 'thirdparty/requirecss' // or whatever the path to require-css is
-                }
-            },
             urlArgs: "v=" + window.dashboardVersion,
 
             paths: {
@@ -2012,7 +2025,10 @@ var AppInfo = {};
         }
 
         define("connectservice", ["thirdparty/apiclient/connectservice"]);
-        define("paperbuttonstyle", ["css!thirdparty/paper-button/paper-button-style"]);
+        define("paperbuttonstyle", [], function () {
+            Dashboard.importCss('thirdparty/paper-button/paper-button-style.css');
+            return {};
+        });
 
         //requirejs(['http://viblast.com/player/free-version/qy2fdwajo1/viblast.js']);
 
@@ -2022,7 +2038,7 @@ var AppInfo = {};
 
         // Do these now to prevent a flash of content
         if (AppInfo.isNativeApp && $.browser.safari) {
-            require(['css!themes/ios']);
+            Dashboard.importCss('themes/ios.css');
         }
 
         if (AppInfo.enableBottomTabs) {
@@ -2129,15 +2145,8 @@ $(document).on('pagecreate', ".page", function () {
     var page = this;
 
     var dependencies = this.getAttribute('data-require');
-
-    if (dependencies) {
-        require(dependencies.split(','), function () {
-
-            Dashboard.firePageEvent(page, 'pageinitdepends');
-        });
-    } else {
-        Dashboard.firePageEvent(page, 'pageinitdepends');
-    }
+    dependencies = dependencies ? dependencies.split(',') : null;
+    Dashboard.firePageEvent(page, 'pageinitdepends', dependencies);
 
     //$('.localnav a, .libraryViewNav a').attr('data-transition', 'none');
 
@@ -2147,29 +2156,15 @@ $(document).on('pagecreate', ".page", function () {
     var dependencies = this.getAttribute('data-require');
 
     Dashboard.ensurePageTitle($(page));
-
-    if (dependencies) {
-        require(dependencies.split(','), function () {
-
-            Dashboard.firePageEvent(page, 'pagebeforeshowready');
-        });
-    } else {
-        Dashboard.firePageEvent(page, 'pagebeforeshowready');
-    }
+    dependencies = dependencies ? dependencies.split(',') : null;
+    Dashboard.firePageEvent(page, 'pagebeforeshowready', dependencies);
 
 }).on('pageshow', ".page", function () {
 
     var page = this;
     var dependencies = this.getAttribute('data-require');
-
-    if (dependencies) {
-        require(dependencies.split(','), function () {
-
-            Dashboard.firePageEvent(page, 'pageshowbeginready');
-        });
-    } else {
-        Dashboard.firePageEvent(page, 'pageshowbeginready');
-    }
+    dependencies = dependencies ? dependencies.split(',') : null;
+    Dashboard.firePageEvent(page, 'pageshowbeginready', dependencies);
 
 }).on('pageshowbeginready', ".page", function () {
 

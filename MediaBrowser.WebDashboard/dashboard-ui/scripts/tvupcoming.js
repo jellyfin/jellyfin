@@ -16,6 +16,8 @@
 
     }).on('pagebeforeshowready', "#tvUpcomingPage", function () {
 
+        Dashboard.showLoadingMsg();
+
         var page = this;
 
         var limit = AppInfo.hasLowImageBandwidth ?
@@ -69,6 +71,9 @@
                 showDetailsMenu: true
 
             })).lazyChildren();
+
+            Dashboard.hideLoadingMsg();
+
         });
     });
 

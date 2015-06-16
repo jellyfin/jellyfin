@@ -31,11 +31,11 @@
 
     function showLoadingMessage(page) {
 
-        $('#popupDialog', page).popup('open');
+        Dashboard.showModalLoadingMsg();
     }
 
     function hideLoadingMessage(page) {
-        $('#popupDialog', page).popup('close');
+        Dashboard.hideModalLoadingMsg();
     }
 
     function reloadFeatures(page) {

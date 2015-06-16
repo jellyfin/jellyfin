@@ -20,6 +20,8 @@
 
     function reload(page) {
 
+        Dashboard.showLoadingMsg();
+
         var context = '';
 
         if (LibraryMenu.getTopParentId()) {
@@ -99,7 +101,7 @@
             }
 
             $('#nextUpItems', page).html(html).lazyChildren();
-
+            Dashboard.hideLoadingMsg();
         });
     }
 

@@ -212,6 +212,7 @@
             Velocity.animate(elem, { "left": "0px" },
             {
                 complete: function () {
+                    $('.headerSearchInput').focus();
                     $('.btnCloseSearch').show();
                 }
             });
