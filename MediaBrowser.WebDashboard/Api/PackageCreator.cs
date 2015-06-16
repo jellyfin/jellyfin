@@ -274,11 +274,14 @@ namespace MediaBrowser.WebDashboard.Api
 
                 var version = GetType().Assembly.GetName().Version;
 
-                var imports = new[]
+                var imports = new string[]
                 {
-                    "thirdparty/polymer/polymer.html",
+                    //"thirdparty/polymer/polymer.html",
                     "thirdparty/paper-button/paper-button.html",
-                    "thirdparty/iron-icons/iron-icons.html"
+                    "thirdparty/paper-toast/paper-toast.html",
+                    "thirdparty/paper-spinner/paper-spinner.html",
+                    //"thirdparty/paper-icon-button/paper-icon-button.html",
+                    //"thirdparty/iron-icons/iron-icons.html"
                 };
                 var importsHtml = string.Join("", imports.Select(i => "<link rel=\"import\" href=\"" + i + "\">").ToArray());
 
@@ -342,7 +345,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
-                sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'\">");
+                //sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'\">");
             }
 
             sb.Append("<meta http-equiv=\"X-UA-Compatibility\" content=\"IE=Edge\">");

@@ -1408,7 +1408,7 @@
     "HeaderUpcomingMovies": "Upcoming Movies",
     "HeaderUpcomingSports": "Upcoming Sports",
     "HeaderUpcomingPrograms": "Upcoming Programs",
-    "ButtonMoreItems": "More...",
+    "ButtonMoreItems": "More",
     "LabelShowLibraryTileNames": "Show library tile names",
     "LabelShowLibraryTileNamesHelp": "Determines if labels will be displayed underneath library tiles on the home page",
     "OptionEnableTranscodingThrottle": "Enable throttling",
