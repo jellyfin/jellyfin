@@ -51,6 +51,12 @@ var Dashboard = {
         $.event.special.swipe.verticalDistanceThreshold = 40;
         $.mobile.loader.prototype.options.disabled = true;
         //$.mobile.page.prototype.options.domCache = true;
+
+        $.mobile.loadingMessage = false;
+        $.mobile.loader.prototype.options.html = "";
+        $.mobile.loader.prototype.options.textVisible = false;
+        $.mobile.loader.prototype.options.textOnly = true;
+        $.mobile.loader.prototype.options.text = "";
     },
 
     isConnectMode: function () {
@@ -218,15 +224,7 @@ var Dashboard = {
 
     showError: function (message) {
 
-        $.mobile.loading('show', {
-            text: message,
-            textonly: true,
-            textVisible: true
-        });
-
-        setTimeout(function () {
-            $.mobile.loading('hide');
-        }, 3000);
+        Dashboard.alert(message);
     },
 
     updateSystemInfo: function (info) {
@@ -442,11 +440,38 @@ var Dashboard = {
     },
 
     showLoadingMsg: function () {
-        $.mobile.loading("show");
+
+        require(['paperbuttonstyle'], function () {
+            var elem = document.getElementById('docspinner');
+
+            if (elem) {
+
+                // This is just an attempt to prevent the fade-in animation from running repeating and causing flickering
+                if (!elem.active) {
+                    elem.active = true;
+                }
+
+            } else {
+                elem = document.createElement("paper-spinner");
+                elem.id = 'docspinner';
+
+                document.body.appendChild(elem);
+
+                elem.active = true;
+            }
+        });
     },
 
     hideLoadingMsg: function () {
-        $.mobile.loading("hide");
+
+        var elem = document.getElementById('docspinner');
+
+        if (elem) {
+
+            setTimeout(function () {
+                elem.active = false;
+            }, 500);
+        }
     },
 
     getModalLoadingMsg: function () {
@@ -492,17 +517,29 @@ var Dashboard = {
 
         if (typeof options == "string") {
 
-            var message = options;
+            require(['paperbuttonstyle'], function () {
+                var message = options;
 
-            $.mobile.loading('show', {
-                text: message,
-                textonly: true,
-                textVisible: true
+                Dashboard.toastId = Dashboard.toastId || 0;
+
+                var id = 'toast' + (Dashboard.toastId++);
+
+                var elem = document.createElement("paper-toast");
+                elem.setAttribute('text', message);
+                elem.id = id;
+
+                document.body.appendChild(elem);
+
+                // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
+                // element onload never fires
+                setTimeout(function () {
+                    elem.show();
+
+                    setTimeout(function () {
+                        elem.parentNode.removeChild(elem);
+                    }, 5000);
+                }, 300);
             });
-
-            setTimeout(function () {
-                $.mobile.loading('hide');
-            }, 3000);
 
             return;
         }
@@ -1270,7 +1307,7 @@ var Dashboard = {
         html += '<h1 class="pageTitle" style="display:inline-block;">' + (document.title || '&nbsp;') + '</h1>';
 
         if (helpUrl) {
-            html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-top:-10px;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><i class="fa fa-info-circle"></i>'+Globalize.translate('ButtonHelp')+'</paper-button></a>';
+            html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-top:-10px;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><i class="fa fa-info-circle"></i>' + Globalize.translate('ButtonHelp') + '</paper-button></a>';
         }
 
         html += '</div>';
@@ -1278,7 +1315,7 @@ var Dashboard = {
         $(parent).prepend(html);
 
         if (helpUrl) {
-            require(['css!thirdparty/paper-button/paper-button-style']);
+            require(['paperbuttonstyle']);
         }
     },
 
@@ -1615,7 +1652,7 @@ var AppInfo = {};
         else {
 
             if (!$.browser.tv) {
-                //AppInfo.enableHeadRoom = true;
+                AppInfo.enableHeadRoom = true;
             }
         }
 
@@ -1715,7 +1752,7 @@ var AppInfo = {};
 
     function initFastClick() {
 
-        requirejs(["thirdparty/fastclick"], function (FastClick) {
+        require(["thirdparty/fastclick"], function (FastClick) {
 
             FastClick.attach(document.body);
 
@@ -1892,19 +1929,19 @@ var AppInfo = {};
         require(['filesystem']);
 
         if (Dashboard.isRunningInCordova()) {
-            requirejs(['thirdparty/cordova/connectsdk', 'scripts/registrationservices', 'thirdparty/cordova/volume', 'thirdparty/cordova/back']);
+            require(['thirdparty/cordova/connectsdk', 'scripts/registrationservices', 'thirdparty/cordova/volume', 'thirdparty/cordova/back']);
 
             if ($.browser.android) {
-                requirejs(['thirdparty/cordova/android/androidcredentials', 'thirdparty/cordova/android/immersive', 'thirdparty/cordova/android/mediasession']);
+                require(['thirdparty/cordova/android/androidcredentials', 'thirdparty/cordova/android/immersive', 'thirdparty/cordova/android/mediasession']);
             }
 
             if ($.browser.safari) {
-                requirejs(['thirdparty/cordova/remotecontrols', 'thirdparty/cordova/ios/orientation']);
+                require(['thirdparty/cordova/remotecontrols', 'thirdparty/cordova/ios/orientation']);
             }
 
         } else {
             if ($.browser.chrome) {
-                requirejs(['scripts/chromecast']);
+                require(['scripts/chromecast']);
             }
         }
     }
@@ -1975,6 +2012,7 @@ var AppInfo = {};
         }
 
         define("connectservice", ["thirdparty/apiclient/connectservice"]);
+        define("paperbuttonstyle", ["css!thirdparty/paper-button/paper-button-style"]);
 
         //requirejs(['http://viblast.com/player/free-version/qy2fdwajo1/viblast.js']);
 
@@ -1991,35 +2029,36 @@ var AppInfo = {};
             $(document.body).addClass('bottomSecondaryNav');
         }
 
-        if (Dashboard.isConnectMode()) {
+        $(document).on('WebComponentsReady', function () {
+            if (Dashboard.isConnectMode()) {
 
-            require(['appstorage'], function () {
+                require(['appstorage'], function () {
 
-                capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
-                createConnectionManager(capabilities).done(function () {
-                    $(function () {
-                        onDocumentReady();
-                        Dashboard.initPromiseDone = true;
-                        deferred.resolve();
+                    capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
+                    createConnectionManager(capabilities).done(function () {
+                        $(function () {
+                            onDocumentReady();
+                            Dashboard.initPromiseDone = true;
+                            deferred.resolve();
+                        });
                     });
                 });
-            });
 
-        } else {
-            createConnectionManager(capabilities);
+            } else {
+                createConnectionManager(capabilities);
 
-
-            $(function() {
-                onDocumentReady();
                 Dashboard.initPromiseDone = true;
                 deferred.resolve();
-            });
-        }
+                $(function () {
+                    onDocumentReady();
+                });
+            }
+        });
     }
 
     function initCordovaWithDeviceId(deferred, deviceId) {
 
-        requirejs(['thirdparty/cordova/imagestore.js']);
+        require(['thirdparty/cordova/imagestore']);
 
         var capablities = Dashboard.capabilities();
 
@@ -2089,10 +2128,10 @@ $(document).on('pagecreate', ".page", function () {
 
     var page = this;
 
-    var require = this.getAttribute('data-require');
+    var dependencies = this.getAttribute('data-require');
 
-    if (require) {
-        requirejs(require.split(','), function () {
+    if (dependencies) {
+        require(dependencies.split(','), function () {
 
             Dashboard.firePageEvent(page, 'pageinitdepends');
         });
@@ -2105,12 +2144,12 @@ $(document).on('pagecreate', ".page", function () {
 }).on('pagebeforeshow', ".page", function () {
 
     var page = this;
-    var require = this.getAttribute('data-require');
+    var dependencies = this.getAttribute('data-require');
 
     Dashboard.ensurePageTitle($(page));
 
-    if (require) {
-        requirejs(require.split(','), function () {
+    if (dependencies) {
+        require(dependencies.split(','), function () {
 
             Dashboard.firePageEvent(page, 'pagebeforeshowready');
         });
@@ -2121,10 +2160,10 @@ $(document).on('pagecreate', ".page", function () {
 }).on('pageshow', ".page", function () {
 
     var page = this;
-    var require = this.getAttribute('data-require');
+    var dependencies = this.getAttribute('data-require');
 
-    if (require) {
-        requirejs(require.split(','), function () {
+    if (dependencies) {
+        require(dependencies.split(','), function () {
 
             Dashboard.firePageEvent(page, 'pageshowbeginready');
         });

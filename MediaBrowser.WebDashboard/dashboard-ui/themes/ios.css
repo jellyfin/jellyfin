@@ -2,20 +2,24 @@
     font-family: Helvetica Neue;
 }
 
-.viewMenuBar, .libraryViewNav, .ui-page-theme-b {
+.viewMenuBar, .libraryViewNav {
+    background-color: rgba(28,28,28,.97);
+}
+
+.ui-page-theme-b {
     background-color: #1c1c1c;
 }
 
-    .libraryViewNav a {
-        font-weight: 400;
-        text-transform: none;
-        color: #ccc !important;
-    }
+.libraryViewNav a {
+    font-weight: 400;
+    text-transform: none;
+    color: #ccc !important;
+}
 
-    .libraryViewNav .ui-btn-active {
-        border-bottom-color: transparent;
-        color: #2ad !important;
-    }
+.libraryViewNav .ui-btn-active {
+    border-bottom-color: transparent;
+    color: #2ad !important;
+}
 
 .libraryViewNav {
     border-top: 1px solid #333;
@@ -30,7 +34,6 @@
 .barsMenuButton .fa {
     color: #2ad !important;
 }
-
 
 .btn, .btn-large {
     font-family: Helvetica Neue !important;

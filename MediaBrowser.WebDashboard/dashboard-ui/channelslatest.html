@@ -4,7 +4,9 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="channelsLatestPage" data-role="page" class="page libraryPage channelsPage" data-contextname="${HeaderChannels}" data-require="scripts/sections,scripts/channelslatest">
+    <div id="channelsLatestPage" data-role="page" class="page libraryPage channelsPage" data-contextname="${HeaderChannels}" data-require="scripts/sections,scripts/channelslatest,paperbuttonstyle">
+
+        <link rel="import" href="thirdparty/paper-button/paper-button.html">
 
         <div class="libraryViewNav scopedLibraryViewNav">
             <a href="#" class="ui-btn-active latestChannelItemsTab">${TabLatest}</a>

@@ -1,0 +1,156 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-styles/default-theme.html">
+<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
+<link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
+<link rel="import" href="../paper-ripple/paper-ripple.html">
+
+<!--
+Material Design: <a href="http://www.google.com/design/spec/components/buttons.html">Buttons</a>
+
+`paper-icon-button` is a button with an image placed at the center. When the user touches
+the button, a ripple effect emanates from the center of the button.
+
+`paper-icon-button` includes a default icon set.  Use `icon` to specify which icon
+from the icon set to use.
+
+    <paper-icon-button icon="menu"></paper-icon-button>
+
+See [`iron-iconset`](#iron-iconset) for more information about
+how to use a custom icon set.
+
+Example:
+
+    <link href="path/to/iron-icons/iron-icons.html" rel="import">
+
+    <paper-icon-button icon="favorite"></paper-icon-button>
+    <paper-icon-button src="star.png"></paper-icon-button>
+
+###Styling
+
+Style the button with CSS as you would a normal DOM element. If you are using the icons
+provided by `iron-icons`, they will inherit the foreground color of the button.
+
+    /* make a red "favorite" button */
+    <paper-icon-button icon="favorite" style="color: red;"></paper-icon-button>
+
+By default, the ripple is the same color as the foreground at 25% opacity. You may
+customize the color using this selector:
+
+    /* make #my-button use a blue ripple instead of foreground color */
+    #my-button::shadow #ripple {
+      color: blue;
+    }
+
+The opacity of the ripple is not customizable via CSS.
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-icon-button-disabled-text` | The color of the disabled button | `--primary-text-color`
+`--paper-icon-button-ink-color` | Selected/focus ripple color | `--default-primary-color`
+`--paper-icon-button` | Mixin for a button | `{}`
+`--paper-icon-button-disabled` | Mixin for a disabled button | `{}`
+
+@group Paper Elements
+@element paper-icon-button
+@demo demo/index.html
+-->
+
+<dom-module id="paper-icon-button">
+  <style>
+
+    :host {
+      display: inline-block;
+      position: relative;
+      padding: 8px;
+      outline: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      cursor: pointer;
+      z-index: 0;
+
+      @apply(--paper-icon-button);
+    }
+
+    :host #ink {
+      color: var(--paper-icon-button-ink-color, --primary-text-color);
+      opacity: 0.6;
+    }
+
+    :host([disabled]) {
+      color: var(--paper-icon-button-disabled-text, --disabled-text-color);
+      pointer-events: none;
+      cursor: auto;
+      @apply(--paper-icon-button-disabled);
+    }
+  </style>
+  <template>
+    <paper-ripple id="ink" class="circle" center></paper-ripple>
+    <iron-icon id="icon" src="[[src]]" icon="[[icon]]" alt$="[[alt]]"></iron-icon>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'paper-icon-button',
+
+    hostAttributes: {
+      role: 'button',
+      tabindex: '0'
+    },
+
+    behaviors: [
+      Polymer.PaperInkyFocusBehavior
+    ],
+
+    properties: {
+      /**
+       * The URL of an image for the icon. If the src property is specified,
+       * the icon property should not be.
+       */
+      src: {
+        type: String
+      },
+
+      /**
+       * Specifies the icon name or index in the set of icons available in
+       * the icon's icon set. If the icon property is specified,
+       * the src property should not be.
+       */
+      icon: {
+        type: String
+      },
+
+      /**
+       * Specifies the alternate text for the button, for accessibility.
+       */
+      alt: {
+        type: String,
+        observer: "_altChanged"
+      }
+    },
+
+    _altChanged: function(newValue, oldValue) {
+      var label = this.getAttribute('aria-label');
+
+      // Don't stomp over a user-set aria-label.
+      if (!label || oldValue == label) {
+        this.setAttribute('aria-label', newValue);
+      }
+    }
+  });
+</script>

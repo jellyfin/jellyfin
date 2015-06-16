@@ -20,11 +20,11 @@
 
     function showLoadingMessage(page) {
 
-        $('.popupLoading', page).popup('open');
+        Dashboard.showLoadingMsg();
     }
 
     function hideLoadingMessage(page) {
-        $('.popupLoading', page).popup('close');
+        Dashboard.hideLoadingMsg();
     }
 
     function reloadItems(page) {

@@ -21,11 +21,11 @@
 
     function showLoadingMessage(page) {
 
-        $('.popupLoading', page).popup('open');
+        Dashboard.showModalLoadingMsg();
     }
 
     function hideLoadingMessage(page) {
-        $('.popupLoading', page).popup('close');
+        Dashboard.hideModalLoadingMsg();
     }
 
     function normalizeDateToTimeslot(date) {

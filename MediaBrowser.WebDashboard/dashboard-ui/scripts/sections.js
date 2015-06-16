@@ -154,7 +154,7 @@
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
 
                 if (user.Policy.EnableUserPreferenceAccess && !AppInfo.isNativeApp) {
-                    html += '<a href="mypreferencesdisplay.html" class="clearLink" style="margin-left:2em;"><paper-button raised class="secondary mini"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</paper-button></a>';
+                    html += '<a href="mypreferencesdisplay.html" class="clearLink" style="margin-left:2em;"><paper-button raised class="submit mini"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</paper-button></a>';
                 }
 
                 html += '</div>';
@@ -236,7 +236,7 @@
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderMyMedia') + '</h1>';
 
                 if (user.Policy.EnableUserPreferenceAccess && !AppInfo.isNativeApp) {
-                    html += '<a href="mypreferencesdisplay.html" class="clearLink" style="margin-left:2em;"><paper-button raised class="secondary mini"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</paper-button></a>';
+                    html += '<a href="mypreferencesdisplay.html" class="clearLink" style="margin-left:2em;"><paper-button raised class="submit mini"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</paper-button></a>';
                 }
 
                 html += '</div>';
@@ -387,7 +387,7 @@
                 html += '<div>';
                 var text = Globalize.translate('HeaderLatestFromChannel').replace('{0}', channel.Name);
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + text + '</h1>';
-                html += '<a href="channelitems.html?context=channels&id=' + channel.Id + '" data-role="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" class="sectionHeaderButton"></a>';
+                html += '<a href="channelitems.html?context=channels&id=' + channel.Id + '" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
                 html += '</div>';
             }
             html += '<div class="itemsContainer">';
@@ -425,7 +425,7 @@
 
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderLatestTvRecordings') + '</h1>';
-                html += '<a href="livetvrecordings.html?context=livetv" data-role="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" class="sectionHeaderButton"></a>';
+                html += '<a href="livetvrecordings.html?context=livetv" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
                 html += '</div>';
             }
 

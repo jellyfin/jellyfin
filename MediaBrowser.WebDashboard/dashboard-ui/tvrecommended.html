@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="tvRecommendedPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="series" data-require="scripts/tvrecommended,css!thirdparty/paper-button/paper-button-style">
+    <div id="tvRecommendedPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="series" data-require="scripts/tvrecommended,paperbuttonstyle">
 
         <link rel="import" href="thirdparty/paper-button/paper-button.html">
 
@@ -31,7 +31,7 @@
                 <div id="resumableSection" style="display: none;" class="scopedContent homePageSection">
                     <div>
                         <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
-                        <paper-button raised class="secondary mini categorySyncButton" data-category="Resume"><i class="fa fa-refresh"></i>${ButtonSync}</paper-button>
+                        <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><i class="fa fa-refresh"></i>${ButtonSync}</paper-button>
                     </div>
 
                     <div id="resumableItems" class="itemsContainer">
@@ -41,7 +41,7 @@
                 <div class="homePageSection">
                     <div>
                         <h1 class="listHeader nextUpHeader" style="display:inline-block;vertical-align:middle;">${HeaderNextUp}</h1>
-                        <paper-button raised class="secondary mini categorySyncButton" data-category="NextUp"><i class="fa fa-refresh"></i>${ButtonSync}</paper-button>
+                        <paper-button raised class="submit mini categorySyncButton" data-category="NextUp"><i class="fa fa-refresh"></i>${ButtonSync}</paper-button>
                     </div>
                     <div id="nextUpItems" class="itemsContainer">
                     </div>

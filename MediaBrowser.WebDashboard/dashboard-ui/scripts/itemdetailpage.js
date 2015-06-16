@@ -1090,7 +1090,7 @@
         }
 
         if (limit && result.TotalRecordCount > limit) {
-            html += '<p style="margin: 0;padding-left: .5em;"><button class="moreCriticReviews" data-inline="true" data-mini="true">' + Globalize.translate('ButtonMoreItems') + '</button></p>';
+            html += '<p style="margin: 0;"><paper-button raised class="more mini moreCriticReviews">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
         }
 
         $('#criticReviewsContent', page).html(html).trigger('create');
@@ -1248,7 +1248,7 @@
         }
 
         if (limit && chapters.length > limit) {
-            html += '<p style="margin: 0;padding-left: .5em;"><button class="moreScenes" data-inline="true" data-mini="true">' + Globalize.translate('ButtonMoreItems') + '</button></p>';
+            html += '<p style="margin: 0;"><paper-button raised class="more mini moreScenes">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
         }
 
         $('#scenesContent', page).html(html).trigger('create').lazyChildren();
@@ -1480,7 +1480,7 @@
         }
 
         if (limit && items.length > limit) {
-            html += '<p style="margin: 0;padding-left: .5em;"><button class="' + moreButtonClass + '" data-inline="true" data-mini="true">' + Globalize.translate('ButtonMoreItems') + '</button></p>';
+            html += '<p style="margin: 0;"><paper-button raised class="more mini ' + moreButtonClass + '">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
         }
 
         return html;
@@ -1557,7 +1557,7 @@
         }
 
         if (limit && casts.length > limit) {
-            html += '<p style="margin: 0;padding-left: .5em;"><button class="morePeople" data-inline="true" data-mini="true">' + Globalize.translate('ButtonMoreItems') + '</button></p>';
+            html += '<p style="margin: 0;"><paper-button raised class="more mini morePeople">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
         }
 
         $('#castContent', page).html(html).lazyChildren().trigger('create');

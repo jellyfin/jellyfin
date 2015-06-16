@@ -4,7 +4,9 @@
     <title></title>
 </head>
 <body>
-    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage" data-theme="b" data-require="scripts/itemdetailpage">
+    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage" data-theme="b" data-require="scripts/itemdetailpage,paperbuttonstyle">
+
+        <link rel="import" href="thirdparty/paper-button/paper-button.html">
 
         <div class="itemTabs homeTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
@@ -202,22 +204,6 @@
                     </div>
                     <div id="castContent" class="detailSectionContent"></div>
                 </div>
-                <div class="detailSection detailsSection">
-                    <div class="detailSectionHeader">
-                        ${HeaderDetails}
-                    </div>
-                    <div class="detailSectionContent" style="padding:0 1em;">
-                        <div class="tabDetails">
-                            <p id="players"></p>
-                            <p id="itemBudget"></p>
-                            <p id="itemRevenue"></p>
-                            <p class="itemExternalLinks"></p>
-                            <p class="itemStudios"></p>
-                            <p class="itemKeywords"></p>
-                            <p class="itemTags"></p>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="detailSection photoInfo hide">
                     <div class="detailSectionHeader">
@@ -260,6 +246,22 @@
                             <div class="criticRatingSummaryText"></div>
                         </div>
                         <div id="criticReviewsContent" class="detailSectionContent"></div>
+                    </div>
+                </div>
+                <div class="detailSection detailsSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderDetails}
+                    </div>
+                    <div class="detailSectionContent" style="padding:0 1em;">
+                        <div class="tabDetails">
+                            <p id="players"></p>
+                            <p id="itemBudget"></p>
+                            <p id="itemRevenue"></p>
+                            <p class="itemExternalLinks"></p>
+                            <p class="itemStudios"></p>
+                            <p class="itemKeywords"></p>
+                            <p class="itemTags"></p>
+                        </div>
                     </div>
                 </div>
                 <div id="scenesCollapsible" style="display: none;" class="detailSection">

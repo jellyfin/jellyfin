@@ -333,14 +333,8 @@ h1, h1 a {
     font-size: 24px;
 }
 
-.ui-loader h1 {
-    font-family: Roboto;
-    font-weight: 500 !important;
-    font-size: 18px;
-}
-
-.ui-loader h1 {
-    font-weight: bold;
+.ui-loader {
+    display: none !important;
 }
 
 h2 {

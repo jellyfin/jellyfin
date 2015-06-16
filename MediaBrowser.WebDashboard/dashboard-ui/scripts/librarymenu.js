@@ -41,6 +41,7 @@
 
         if (!$.browser.mobile && !AppInfo.isNativeApp) {
             html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton" style="display:none;"><i class="material-icons">settings</i></a>';
+            //html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton clearLink" style="display:none;"><paper-icon-button icon="settings"></paper-icon-button></a>';
         }
 
         html += '</div>';

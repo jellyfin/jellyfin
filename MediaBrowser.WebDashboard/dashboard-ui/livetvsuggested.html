@@ -4,7 +4,9 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvSuggestedPage" data-role="page" class="page libraryPage liveTvPage backdropPage globalBackdropPage" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="scripts/livetvsuggested">
+    <div id="liveTvSuggestedPage" data-role="page" class="page libraryPage liveTvPage backdropPage globalBackdropPage" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="scripts/livetvsuggested,paperbuttonstyle">
+        <link rel="import" href="thirdparty/paper-button/paper-button.html">
+
         <div class="libraryViewNav">
             <a href="#" class="ui-btn-active">${TabSuggestions}</a>
             <a href="livetvguide.html">${TabGuide}</a>
@@ -26,19 +28,19 @@
                     <br />
                 </div>
                 <div id="upcomingTvMovies">
-                    <h1 class="listHeader">${HeaderUpcomingMovies}</h1>
-                    <div class="upcomingTvMovieItems itemsContainer"></div>
                     <div>
-                        <a data-role="button" href="livetvitems.html?type=movies" data-inline="true" data-mini="true">${ButtonMoreItems}</a>
+                        <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderUpcomingMovies}</h1>
+                        <a href="livetvitems.html?type=movies" class="clearLink" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more mini">${ButtonMoreItems}</paper-button></a>
                     </div>
+                    <div class="upcomingTvMovieItems itemsContainer"></div>
                     <br />
                 </div>
                 <div id="upcomingSports">
-                    <h1 class="listHeader">${HeaderUpcomingSports}</h1>
-                    <div class="upcomingSportsItems itemsContainer"></div>
                     <div>
-                        <a data-role="button" href="livetvitems.html?type=sports" data-inline="true" data-mini="true">${ButtonMoreItems}</a>
+                        <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderUpcomingSports}</h1>
+                        <a href="livetvitems.html?type=sports" class="clearLink" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more mini">${ButtonMoreItems}</paper-button></a>
                     </div>
+                    <div class="upcomingSportsItems itemsContainer"></div>
                     <br />
                 </div>
             </div>

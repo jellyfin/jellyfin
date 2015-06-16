@@ -14,7 +14,7 @@
             $('.globalNav', page).show();
         }
 
-    }).on('pageshowready', "#tvUpcomingPage", function () {
+    }).on('pagebeforeshowready', "#tvUpcomingPage", function () {
 
         var page = this;
 

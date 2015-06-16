@@ -240,7 +240,7 @@
             html += '</div>';
 
             $(document.body).append(html);
-            require(['css!thirdparty/paper-button/paper-button-style']);
+            require(['paperbuttonstyle']);
 
             var elem = $('.syncPanel').panel({}).trigger('create').panel("open").on("panelclose", function () {
                 $(this).off("panelclose").remove();

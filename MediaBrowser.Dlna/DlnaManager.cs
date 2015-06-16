@@ -525,6 +525,7 @@ namespace MediaBrowser.Dlna
                 new Xbox360Profile(),
                 new XboxOneProfile(),
                 new SonyPs3Profile(),
+                new SonyPs4Profile(),
                 new SonyBravia2010Profile(),
                 new SonyBravia2011Profile(),
                 new SonyBravia2012Profile(),

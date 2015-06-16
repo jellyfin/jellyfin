@@ -1,0 +1,222 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+
+<!--
+Element providing material design circular spinner.
+
+    <paper-spinner active></paper-spinner>
+
+The default spinner cycles between four layers of colors; by default they are
+blue, red, yellow and green. It can be customized so that it uses one color only
+by setting all the layer colors to the same value.
+
+### Accessibility
+
+Alt attribute should be set to provide adequate context for accessibility. If not provided,
+it defaults to 'loading'.
+Empty alt can be provided to mark the element as decorative if alternative content is provided
+in another form (e.g. a text block following the spinner).
+
+    <paper-spinner alt="Loading contacts list" active></paper-spinner>
+
+### Styling
+
+The following custom properties and mixins are available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-spinner-layer-1-color` | Color of the first spinner rotation | `--google-blue-500`
+`--paper-spinner-layer-2-color` | Color of the second spinner rotation | `--google-red-500`
+`--paper-spinner-layer-3-color` | Color of the third spinner rotation | `--google-yellow-500`
+`--paper-spinner-layer-4-color` | Color of the fourth spinner rotation | `--google-green-500`
+
+@group Paper Elements
+@element paper-spinner
+@hero hero.svg
+@demo demo/index.html
+-->
+
+<dom-module id="paper-spinner">
+
+  <link rel="import" type="css" href="paper-spinner.css">
+
+  <template>
+
+    <div id="spinnerContainer" class-name="[[_spinnerContainerClassName]]">
+      <div class="spinner-layer layer-1">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer layer-2">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer layer-3">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer layer-4">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+
+  </template>
+
+  <script>
+
+    (function() {
+
+      'use strict';
+
+      function classNames(obj) {
+        var classNames = [];
+        for (var key in obj) {
+          if (obj.hasOwnProperty(key) && obj[key]) {
+            classNames.push(key);
+          }
+        }
+
+        return classNames.join(' ');
+      }
+
+      Polymer({
+
+        is: 'paper-spinner',
+
+        listeners: {
+          'animationend': 'reset',
+          'webkitAnimationEnd': 'reset'
+        },
+
+        properties: {
+
+          /**
+           * Displays the spinner.
+           *
+           * @attribute active
+           * @type boolean
+           * @default false
+           */
+          active: {
+            observer: '_activeChanged',
+            type: Boolean,
+            value: false
+          },
+
+          /**
+           * Alternative text content for accessibility support.
+           * If alt is present, it will add an aria-label whose content matches alt when active.
+           * If alt is not present, it will default to 'loading' as the alt value.
+           *
+           * @attribute alt
+           * @type string
+           * @default 'loading'
+           */
+          alt: {
+            observer: '_altChanged',
+            type: String,
+            value: 'loading'
+          },
+
+          /**
+           * True when the spinner is going from active to inactive. This is represented by a fade
+           * to 0% opacity to the user.
+           */
+          _coolingDown: {
+            type: Boolean,
+            value: false
+          },
+
+          _spinnerContainerClassName: {
+            type: String,
+            computed: '_computeSpinnerContainerClassName(active, _coolingDown)'
+          }
+
+        },
+
+        _computeSpinnerContainerClassName: function(active, _coolingDown) {
+          return classNames({
+            active: active || _coolingDown,
+            cooldown: _coolingDown
+          });
+        },
+
+        ready: function() {
+          // Allow user-provided `aria-label` take preference to any other text alternative.
+          if (this.hasAttribute('aria-label')) {
+            this.alt = this.getAttribute('aria-label');
+          } else {
+            this.setAttribute('aria-label', this.alt);
+          }
+
+          if (!this.active) {
+            this.setAttribute('aria-hidden', 'true');
+          }
+        },
+
+        _activeChanged: function() {
+          if (this.active) {
+            this.removeAttribute('aria-hidden');
+          } else {
+            this._coolingDown = true;
+            this.setAttribute('aria-hidden', 'true');
+          }
+        },
+
+        _altChanged: function() {
+          if (this.alt === '') {
+            this.setAttribute('aria-hidden', 'true');
+          } else {
+            this.removeAttribute('aria-hidden');
+          }
+
+          this.setAttribute('aria-label', this.alt);
+        },
+
+        reset: function() {
+          this.active = false;
+          this._coolingDown = false;
+        }
+
+      });
+
+    }());
+
+  </script>
+
+</dom-module>

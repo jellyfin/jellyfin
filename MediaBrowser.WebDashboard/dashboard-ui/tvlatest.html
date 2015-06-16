@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="tvNextUpPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="series" data-require="scripts/tvlatest,css!thirdparty/paper-button/paper-button-style">
+    <div id="tvNextUpPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="series" data-require="scripts/tvlatest,paperbuttonstyle">
         <link rel="import" href="thirdparty/paper-button/paper-button.html">
 
         <div class="libraryViewNav scopedLibraryViewNav">
@@ -23,7 +23,7 @@
                 <div class="homePageSection">
                     <div>
                         <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestEpisodes}</h1>
-                        <paper-button raised class="secondary mini categorySyncButton" data-category="Latest"><i class="fa fa-refresh"></i>${ButtonSync}</paper-button>
+                        <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><i class="fa fa-refresh"></i>${ButtonSync}</paper-button>
                     </div>
                     <div id="latestEpisodes" class="itemsContainer">
                     </div>
