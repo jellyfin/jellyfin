@@ -50,13 +50,15 @@ var Dashboard = {
 
         $.event.special.swipe.verticalDistanceThreshold = 40;
         $.mobile.loader.prototype.options.disabled = true;
-        //$.mobile.page.prototype.options.domCache = true;
+        $.mobile.page.prototype.options.domCache = true;
 
         $.mobile.loadingMessage = false;
         $.mobile.loader.prototype.options.html = "";
         $.mobile.loader.prototype.options.textVisible = false;
         $.mobile.loader.prototype.options.textOnly = true;
         $.mobile.loader.prototype.options.text = "";
+
+        $.mobile.changePage.defaults.showLoadMsg = false;
     },
 
     isConnectMode: function () {
@@ -481,7 +483,7 @@ var Dashboard = {
 
             setTimeout(function () {
                 elem.active = false;
-            }, 300);
+            }, 100);
         }
     },
 
@@ -711,6 +713,8 @@ var Dashboard = {
         ConnectionManager.user(window.ApiClient).done(function (user) {
             Dashboard.updateUserFlyout(elem, user);
         });
+
+        require(['jqmicons']);
     },
 
     updateUserFlyout: function (elem, user) {
@@ -1473,7 +1477,7 @@ var Dashboard = {
             // The native app can handle a little bit more than safari
             if (AppInfo.isNativeApp) {
 
-                quality -= 20;
+                quality -= 15;
 
                 if (isBackdrop) {
                     quality -= 20;
@@ -1782,58 +1786,68 @@ var AppInfo = {};
 
     }
 
-    function onDocumentReady() {
+    function setDocumentClasses() {
+
+        var elem = $(document.documentElement);
+
+        if (AppInfo.enableBottomTabs) {
+            elem.addClass('bottomSecondaryNav');
+        }
 
         if (AppInfo.isTouchPreferred) {
-            $(document.body).addClass('touch');
+            elem.addClass('touch');
+        }
+
+        if (AppInfo.cardMargin) {
+            elem.addClass(AppInfo.cardMargin);
+        }
+
+        if (!AppInfo.enableLatestChannelItems) {
+            elem.addClass('latestChannelItemsDisabled');
+        }
+
+        if (!AppInfo.enableStudioTabs) {
+            elem.addClass('studioTabDisabled');
+        }
+
+        if (!AppInfo.enablePeopleTabs) {
+            elem.addClass('peopleTabDisabled');
+        }
+
+        if (!AppInfo.enableTvEpisodesTab) {
+            elem.addClass('tvEpisodesTabDisabled');
+        }
+
+        if (!AppInfo.enableMusicSongsTab) {
+            elem.addClass('musicSongsTabDisabled');
+        }
+
+        if (!AppInfo.enableMusicArtistsTab) {
+            elem.addClass('musicArtistsTabDisabled');
+        }
+
+        if (!AppInfo.enableMovieTrailersTab) {
+            elem.addClass('movieTrailersTabDisabled');
+        }
+
+        if (!AppInfo.enableSupporterMembership) {
+            elem.addClass('supporterMembershipDisabled');
+        }
+
+        if (AppInfo.isNativeApp) {
+            elem.addClass('nativeApp');
+        }
+    }
+
+    function onDocumentReady() {
+
+        // Do these now to prevent a flash of content
+        if (AppInfo.isNativeApp && $.browser.safari) {
+            Dashboard.importCss('themes/ios.css');
         }
 
         if ($.browser.safari && $.browser.mobile) {
             initFastClick();
-        }
-
-        if (AppInfo.cardMargin) {
-            $(document.body).addClass(AppInfo.cardMargin);
-        }
-
-        if (!AppInfo.enableLatestChannelItems) {
-            $(document.body).addClass('latestChannelItemsDisabled');
-        }
-
-        if (!AppInfo.enableStudioTabs) {
-            $(document.body).addClass('studioTabDisabled');
-        }
-
-        if (!AppInfo.enablePeopleTabs) {
-            $(document.body).addClass('peopleTabDisabled');
-        }
-
-        if (!AppInfo.enableTvEpisodesTab) {
-            $(document.body).addClass('tvEpisodesTabDisabled');
-        }
-
-        if (!AppInfo.enableMusicSongsTab) {
-            $(document.body).addClass('musicSongsTabDisabled');
-        }
-
-        if (!AppInfo.enableMusicArtistsTab) {
-            $(document.body).addClass('musicArtistsTabDisabled');
-        }
-
-        if (!AppInfo.enableMovieTrailersTab) {
-            $(document.body).addClass('movieTrailersTabDisabled');
-        }
-
-        if (!AppInfo.enableSupporterMembership) {
-            $(document.body).addClass('supporterMembershipDisabled');
-        }
-
-        if (AppInfo.isNativeApp) {
-            $(document).addClass('nativeApp');
-        }
-
-        if (AppInfo.enableBackButton) {
-            $(document.body).addClass('enableBackButton');
         }
 
         var videoPlayerHtml = '<div id="mediaPlayer" data-theme="b" class="ui-bar-b" style="display: none;">';
@@ -1962,6 +1976,9 @@ var AppInfo = {};
                 require(['scripts/chromecast']);
             }
         }
+
+        // just until this can be removed
+        require(['jqmicons']);
     }
 
     function init(deferred, capabilities, appName, deviceId, deviceName) {
@@ -2029,21 +2046,14 @@ var AppInfo = {};
             Dashboard.importCss('thirdparty/paper-button/paper-button-style.css');
             return {};
         });
+        define("jqmicons", [], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css');
+            return {};
+        });
 
         //requirejs(['http://viblast.com/player/free-version/qy2fdwajo1/viblast.js']);
 
-        setAppInfo();
-
         $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
-
-        // Do these now to prevent a flash of content
-        if (AppInfo.isNativeApp && $.browser.safari) {
-            Dashboard.importCss('themes/ios.css');
-        }
-
-        if (AppInfo.enableBottomTabs) {
-            $(document.body).addClass('bottomSecondaryNav');
-        }
 
         $(document).on('WebComponentsReady', function () {
             if (Dashboard.isConnectMode()) {
@@ -2099,6 +2109,9 @@ var AppInfo = {};
 
     var initDeferred = $.Deferred();
     Dashboard.initPromise = initDeferred.promise();
+
+    setAppInfo();
+    setDocumentClasses();
 
     if (Dashboard.isRunningInCordova()) {
         initCordova(initDeferred);
@@ -2215,5 +2228,9 @@ $(document).on('pagecreate', ".page", function () {
 
     if (apiClient && !apiClient.isWebSocketOpen()) {
         Dashboard.refreshSystemInfoFromServer();
+    }
+
+    if (!page.hasClass('libraryPage')) {
+        require(['jqmicons']);
     }
 });

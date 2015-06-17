@@ -2,18 +2,10 @@
 
     function getView() {
 
-        if (AppInfo.hasLowImageBandwidth) {
-            return 'ThumbCard';
-        }
-
         return 'Thumb';
     }
 
     function getResumeView() {
-
-        if (AppInfo.hasLowImageBandwidth) {
-            return 'PosterCard';
-        }
 
         return 'Poster';
     }
@@ -119,9 +111,7 @@
 
         var screenWidth = $(window).width();
 
-        var limit = AppInfo.hasLowImageBandwidth ?
-         4 :
-         6;
+        var limit = 6;
 
         var options = {
 

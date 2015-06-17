@@ -1131,35 +1131,40 @@
                 return deferred.promise();
             }
 
-            AjaxApi.ajax({
-                type: "POST",
-                url: "https://connect.mediabrowser.tv/service/register",
-                data: {
-                    email: email,
-                    userName: username,
-                    password: password
-                },
-                dataType: "json",
-                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-                headers: {
-                    "X-Application": appName + "/" + appVersion,
-                    "X-CONNECT-TOKEN": "CONNECT-REGISTER"
-                }
+            require(['connectservice'], function () {
 
-            }).done(function (result) {
+                var md5 = self.getConnectPasswordHash(password);
 
-                deferred.resolve(null, []);
+                AjaxApi.ajax({
+                    type: "POST",
+                    url: "https://connect.mediabrowser.tv/service/register",
+                    data: {
+                        email: email,
+                        userName: username,
+                        password: md5
+                    },
+                    dataType: "json",
+                    contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                    headers: {
+                        "X-Application": appName + "/" + appVersion,
+                        "X-CONNECT-TOKEN": "CONNECT-REGISTER"
+                    }
 
-            }).fail(function (e) {
+                }).done(function (result) {
 
-                try {
+                    deferred.resolve(null, []);
 
-                    var result = JSON.parse(e.responseText);
+                }).fail(function (e) {
 
-                    deferred.rejectWith(null, [{ errorCode: result.Status }]);
-                } catch (err) {
-                    deferred.rejectWith(null, [{}]);
-                }
+                    try {
+
+                        var result = JSON.parse(e.responseText);
+
+                        deferred.rejectWith(null, [{ errorCode: result.Status }]);
+                    } catch (err) {
+                        deferred.rejectWith(null, [{}]);
+                    }
+                });
             });
 
             return deferred.promise();

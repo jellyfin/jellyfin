@@ -1,0 +1,13 @@
+removed:
+
+flip
+flow
+slidefade
+turn
+zoom handling
+ios orientation
+grid layouts
+accordions
+filterable
+tabs
+toolbars:fixed

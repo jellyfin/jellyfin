@@ -4,7 +4,9 @@
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        html += '<button type="button" data-role="none" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-left"></div></button>';
+        if (AppInfo.enableBackButton) {
+            html += '<button type="button" data-role="none" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-left"></div></button>';
+        }
 
         html += '<button type="button" data-role="none" title="Menu" class="headerButton dashboardMenuButton barsMenuButton headerButtonLeft">';
         html += '<div class="barMenuInner fa fa-bars">';
@@ -16,7 +18,7 @@
         html += '</div>';
         html += '</button>';
 
-        html += '<div class="libraryMenuButtonText headerButton"><span>EMBY</span></div>';
+        html += '<div class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</div>';
 
         html += '<div class="viewMenuSecondary">';
 
@@ -584,7 +586,7 @@
 
         }
         else if (jPage.hasClass('allLibraryPage') || jPage.hasClass('type-interior')) {
-            $('.libraryMenuButtonText').html('<span class="logoLibraryMenuButtonText">EMBY</span>');
+            $('.libraryMenuButtonText').html(Globalize.translate('ButtonHome'));
         }
     }
 

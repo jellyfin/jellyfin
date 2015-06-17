@@ -6,6 +6,7 @@
 <body>
     <div id="selectServerPage" data-role="page" class="page libraryPage noSecondaryNavPage" data-theme="b" data-require="scripts/selectserver,paperbuttonstyle">
 
+        <link rel="import" href="thirdparty/iron-icons/iron-icons.html">
         <link rel="import" href="thirdparty/paper-button/paper-button.html">
 
         <div data-role="content">
@@ -24,12 +25,7 @@
                 </div>
 
                 <div class="connectLogin" style="margin:1.5em 0;display:none;">
-                    <a class="btn btnActionAccent" href="connectlogin.html?mode=connect">
-                        <span>
-                            ${ButtonSignInWithConnect}
-                        </span>
-                        <i class="fa fa-check"></i>
-                    </a>
+                    <a href="connectlogin.html?mode=connect" class="clearLink"><paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSignInWithConnect}</span></paper-button></a>
                 </div>
 
                 <div class="invitationSection" style="display:none;">

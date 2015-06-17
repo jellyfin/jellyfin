@@ -45,14 +45,14 @@
             <div class="readOnlyContent" style="margin: 0 auto 1em;">
                 <paper-button raised class="cancel block btnForgotPassword" onclick="LoginPage.cancelLogin();"><iron-icon icon="info"></iron-icon><span>${ButtonForgotPassword}</span></paper-button>
 
-                <p class="disclaimer" style="text-align: center; margin-top: 2em;"></p>
-
                 <div class="connectButtons" style="display:none;">
                     <br />
-                    <a href="selectserver.html" data-role="button" data-icon="action">
-                        ${ButtonChangeServer}
+                    <a href="selectserver.html" class="clearLink">
+                        <paper-button raised class="cancel block"><iron-icon icon="settings"></iron-icon><span>${ButtonChangeServer}</span></paper-button>
                     </a>
                 </div>
+
+                <p class="disclaimer" style="text-align: center; margin-top: 2em;"></p>
             </div>
 
         </div>

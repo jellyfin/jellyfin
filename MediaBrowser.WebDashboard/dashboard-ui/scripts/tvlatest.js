@@ -2,10 +2,6 @@
 
     function getView() {
 
-        if (AppInfo.hasLowImageBandwidth) {
-            return 'ThumbCard';
-        }
-
         return 'Thumb';
     }
 

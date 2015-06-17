@@ -109,3 +109,8 @@ paper-toast {
     left: 50%;
     z-index: 9999999;
 }
+
+/*paper-toast {
+    background-color: #eee;
+    color: #000;
+}*/

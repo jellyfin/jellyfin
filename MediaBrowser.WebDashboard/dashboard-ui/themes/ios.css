@@ -24,7 +24,6 @@
 .libraryViewNav {
     border-top: 1px solid #333;
     font-size: 12px;
-    height: 47px !important;
 }
 
 .viewMenuBar {
@@ -96,4 +95,15 @@ h1, h1 a {
 
 .viewMenuSearch {
     background: #1c1c1c;
+}
+
+.libraryViewNavLinkContent {
+    padding-top: 4px;
+}
+
+.libraryMenuButtonText {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
 }

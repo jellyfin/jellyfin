@@ -193,7 +193,6 @@
     }
 
     function supportInAppSignup() {
-        return false;
         return AppInfo.isNativeApp;
         return AppInfo.isNativeApp || getWindowUrl().toLowerCase().indexOf('https') == 0;
     }

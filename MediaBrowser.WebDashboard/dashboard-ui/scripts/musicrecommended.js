@@ -17,6 +17,8 @@
 
     function loadLatest(page, parentId) {
 
+        Dashboard.showLoadingMsg();
+
         var userId = Dashboard.getCurrentUserId();
 
         var options = {
@@ -42,6 +44,7 @@
 
             })).lazyChildren();
 
+            Dashboard.hideLoadingMsg();
         });
     }
 
