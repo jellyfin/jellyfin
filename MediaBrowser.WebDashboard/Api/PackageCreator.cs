@@ -281,7 +281,7 @@ namespace MediaBrowser.WebDashboard.Api
                     "thirdparty/paper-toast/paper-toast.html",
                     "thirdparty/paper-spinner/paper-spinner.html",
                     //"thirdparty/paper-icon-button/paper-icon-button.html",
-                    //"thirdparty/iron-icons/iron-icons.html"
+                    "thirdparty/iron-icons/iron-icons.html"
                 };
                 var importsHtml = string.Join("", imports.Select(i => "<link rel=\"import\" href=\"" + i + "\">").ToArray());
 
@@ -383,7 +383,6 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.css",
                                 "thirdparty/fontawesome/css/font-awesome.min.css" + versionString,
                                 "thirdparty/materialicons/style.css" + versionString,
                                 "css/all.css" + versionString
@@ -627,6 +626,12 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{Stream}.</returns>
         private async Task<Stream> GetAllCss(bool enableMinification)
         {
+            var memoryStream = new MemoryStream();
+            var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
+
+            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.min.css", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.structure.min.css", newLineBytes).ConfigureAwait(false);
+    
             var files = new[]
                                   {
                                       "site.css",
@@ -690,7 +695,8 @@ namespace MediaBrowser.WebDashboard.Api
                 }
             }
 
-            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(css));
+            var bytes = Encoding.UTF8.GetBytes(css);
+            memoryStream.Write(bytes, 0, bytes.Length);
 
             memoryStream.Position = 0;
             return memoryStream;
