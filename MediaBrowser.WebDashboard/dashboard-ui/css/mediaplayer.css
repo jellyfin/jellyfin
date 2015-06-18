@@ -1,6 +1,6 @@
 ﻿/* Now playing bar */
 .nowPlayingBar {
-    padding: 16px 0 16px 0;
+    padding: 0;
     border-top: 1px solid #444;
     text-align: center;
 }
@@ -13,13 +13,18 @@
     vertical-align: middle;
     font-size: 30px;
     color: #e8e8e8;
-    margin: 0 10px;
+    margin: 0;
+    padding: 16px 12px;
     min-width: 30px;
     text-align: center;
 }
 
 .videoTopControls .mediaButton {
     font-size: 26px;
+}
+
+.videoControls .mediaButton {
+    padding: 0 10px;
 }
 
 #mediaElement {

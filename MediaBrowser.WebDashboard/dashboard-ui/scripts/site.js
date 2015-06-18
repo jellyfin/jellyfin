@@ -35,7 +35,7 @@ var Dashboard = {
         //$.mobile.popup.prototype.options.theme = "c";
         $.mobile.popup.prototype.options.transition = "pop";
 
-        //$.mobile.keepNative = "input[type='text'],input[type='password'],input[type='number']";
+        //$.mobile.keepNative = "textarea";
 
         if ($.browser.mobile) {
             $.mobile.defaultPageTransition = "none";
@@ -400,7 +400,7 @@ var Dashboard = {
             elem.slideDown(400);
         }
 
-        elem.html(options.html).trigger("create");
+        elem.html(options.html).trigger('create');
 
         if (options.timeout) {
 
@@ -1658,6 +1658,7 @@ var AppInfo = {};
             if (isCordova) {
                 AppInfo.enableBottomTabs = true;
                 AppInfo.cardMargin = 'mediumCardMargin';
+                AppInfo.enableSectionTransitions = true;
 
             } else {
                 if (isMobile) {
@@ -1678,14 +1679,10 @@ var AppInfo = {};
             }
         }
 
-        AppInfo.enableMusicSongsTab = true;
-
         if (!AppInfo.hasLowImageBandwidth) {
-            AppInfo.enableLatestChannelItems = true;
             AppInfo.enableStudioTabs = true;
             AppInfo.enablePeopleTabs = true;
             AppInfo.enableTvEpisodesTab = true;
-            AppInfo.enableMusicArtistsTab = true;
             AppInfo.enableMovieTrailersTab = true;
         }
 
@@ -1706,7 +1703,8 @@ var AppInfo = {};
         AppInfo.enableUserImage = true;
         AppInfo.hasPhysicalVolumeButtons = isCordova || isMobile;
 
-        AppInfo.enableBackButton = isIOS && window.navigator.standalone && !AppInfo.isNativeApp;
+        AppInfo.enableBackButton = isIOS && (window.navigator.standalone || AppInfo.isNativeApp);
+
         AppInfo.supportsFullScreen = isCordova && isAndroid;
         AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
 
@@ -1802,10 +1800,6 @@ var AppInfo = {};
             elem.addClass(AppInfo.cardMargin);
         }
 
-        if (!AppInfo.enableLatestChannelItems) {
-            elem.addClass('latestChannelItemsDisabled');
-        }
-
         if (!AppInfo.enableStudioTabs) {
             elem.addClass('studioTabDisabled');
         }
@@ -1816,14 +1810,6 @@ var AppInfo = {};
 
         if (!AppInfo.enableTvEpisodesTab) {
             elem.addClass('tvEpisodesTabDisabled');
-        }
-
-        if (!AppInfo.enableMusicSongsTab) {
-            elem.addClass('musicSongsTabDisabled');
-        }
-
-        if (!AppInfo.enableMusicArtistsTab) {
-            elem.addClass('musicArtistsTabDisabled');
         }
 
         if (!AppInfo.enableMovieTrailersTab) {

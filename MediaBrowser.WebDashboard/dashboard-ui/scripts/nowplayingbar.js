@@ -22,13 +22,15 @@
 
         var html = '';
 
-        html += '<div class="nowPlayingBar" style="display:none;">';
+        // add return false because on iOS clicking the bar often ends up clicking the content underneath. 
+        html += '<div class="nowPlayingBar" style="display:none;" onclick="return false;">';
 
         html += '<div class="nowPlayingImage"></div>';
         html += '<div class="nowPlayingText"></div>';
 
-        html += '<a class="mediaButton remoteControlButton imageButton" href="nowplaying.html" data-transition="slideup" title="' + Globalize.translate('ButtonRemoteControl') + '"><i class="fa fa-tablet"></i></a>';
-        html += '<a class="mediaButton playlistButton imageButton" href="nowplaying.html?tab=Playlist" data-transition="slideup" title="' + Globalize.translate('ButtonPlaylist') + '"><i class="fa fa-list"></i></a>';
+        // The onclicks are needed due to the return false above
+        html += '<a class="mediaButton remoteControlButton imageButton" href="nowplaying.html" onclick="Dashboard.navigate(this.href);return false;" data-transition="slideup" title="' + Globalize.translate('ButtonRemoteControl') + '"><i class="fa fa-tablet"></i></a>';
+        html += '<a class="mediaButton playlistButton imageButton" href="nowplaying.html?tab=Playlist" onclick="Dashboard.navigate(this.href);return false;" data-transition="slideup" title="' + Globalize.translate('ButtonPlaylist') + '"><i class="fa fa-list"></i></a>';
 
         html += '<button class="mediaButton previousTrackButton imageButton" title="' + Globalize.translate('ButtonPreviousTrack') + '" type="button" data-role="none"><i class="fa fa-step-backward"></i></button>';
 

@@ -230,9 +230,8 @@
 
             html += '<div class="formFields"></div>';
 
-            html += '<br/>';
             html += '<p>';
-            html += '<button type="submit" data-icon="refresh" data-theme="b">' + Globalize.translate('ButtonSync') + '</button>';
+            html += '<button type="submit" data-role="none" class="clearButton"><paper-button raised class="submit block"><iron-icon icon="refresh"></iron-icon><span>' + Globalize.translate('ButtonSync') + '</span></paper-button></button>';
             html += '</p>';
 
             html += '</form>';

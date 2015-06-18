@@ -248,7 +248,8 @@
                     showTitle: showTitles,
                     centerText: true,
                     lazy: true,
-                    autoThumb: true
+                    autoThumb: true,
+                    transition: false
                 });
                 html += '</div>';
             }

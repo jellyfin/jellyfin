@@ -467,7 +467,7 @@ h1 a:hover {
     transform: translateY(-100%);
 }
 
-.libraryViewNav.headroom--unpinned {
+.libraryViewNav.headroom--unpinned:not(.headroomDisabled) {
     -webkit-transform: translateY(-200%);
     transform: translateY(-200%);
 }
@@ -501,6 +501,9 @@ h1 a:hover {
     }
 }
 
+textarea {
+    width: 100%;
+}
 
 pre, textarea.pre {
     display: block;
@@ -532,6 +535,10 @@ pre, textarea.pre {
 
 .hide {
     display: none;
+}
+
+.forceHide {
+    display: none !important;
 }
 
 /*

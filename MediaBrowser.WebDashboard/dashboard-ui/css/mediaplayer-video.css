@@ -47,7 +47,7 @@
 }
 
 .videoTopControls {
-    padding: 1em;
+    padding: 0 1em;
     background-color: rgba(0, 0, 0, .5);
     position: absolute;
     left: 0;
@@ -157,6 +157,8 @@
 
 .videoTopControlsLogo {
     float: left;
+    /* Matches .mediaButton */
+    padding-top: 16px;
 }
 
     .videoTopControlsLogo img {

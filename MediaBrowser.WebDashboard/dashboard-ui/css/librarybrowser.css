@@ -80,9 +80,9 @@
     margin-top: 20px;
 }
 
-.homePageSection + .homePageSection {
-    margin-top: 30px;
-}
+    .homePageSection + .homePageSection {
+        margin-top: 30px;
+    }
 
 .sectionHeaderButton {
     vertical-align: middle;
@@ -1150,16 +1150,20 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     line-height: 1;
 }
 
-    .alphabetPicker a {
-        display: block;
-        text-decoration: none;
-        padding: 1px 0;
-        font-weight: 500;
-    }
+.bottomSecondaryNav .alphabetPicker{
+    bottom: 55px;
+}
 
-        .alphabetPicker a:not(.selectedCharacter) {
-            color: #bbb !important;
-        }
+.alphabetPicker a {
+    display: block;
+    text-decoration: none;
+    padding: 1px 0;
+    font-weight: 500;
+}
+
+    .alphabetPicker a:not(.selectedCharacter) {
+        color: #bbb !important;
+    }
 
 
 .selectedCharacter {
@@ -1199,7 +1203,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         margin-right: auto;
     }
 
-@media all and (min-height: 500px) {
+@media all and (min-height: 520px) {
 
     .alphabetPicker {
         display: block;
@@ -1217,7 +1221,35 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (min-height: 800px) {
+@media all and (min-height: 600px) {
+
+    .alphabetPicker a {
+        padding: 2px 0;
+    }
+}
+
+@media all and (min-height: 650px) {
+
+    .alphabetPicker a {
+        padding: 3px 0;
+    }
+}
+
+@media all and (min-height: 700px) {
+
+    .alphabetPicker a {
+        padding: 4px 0;
+    }
+}
+
+@media all and (min-height: 750px) {
+
+    .alphabetPicker a {
+        padding: 5px 0;
+    }
+}
+
+@media all and (min-height: 750px) {
 
     .alphabetPicker a {
         padding: 5px 0;
@@ -1546,10 +1578,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-.latestChannelItemsDisabled .latestChannelItemsTab {
-    display: none !important;
-}
-
 .studioTabDisabled .tvStudiosTab, .studioTabDisabled .movieStudiosTab {
     display: none !important;
 }
@@ -1559,14 +1587,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .tvEpisodesTabDisabled .tvEpisodesTab {
-    display: none !important;
-}
-
-.musicSongsTabDisabled .musicSongsTab {
-    display: none !important;
-}
-
-.musicArtistsTabDisabled .musicArtistsTab {
     display: none !important;
 }
 

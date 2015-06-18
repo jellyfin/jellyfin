@@ -75,21 +75,21 @@ namespace MediaBrowser.Dlna.Profiles
                 {
                     Container = "ts",
                     VideoCodec = "mpeg2video",
-                    AudioCodec = "mp3,mp2",
+                    AudioCodec = "mp3",
                     Type = DlnaProfileType.Video
                 },
                 new DirectPlayProfile
                 {
                     Container = "mp4",
                     VideoCodec = "h264,mpeg4",
-                    AudioCodec = "ac3,aac,mp3,mp2",
+                    AudioCodec = "ac3,aac,mp3",
                     Type = DlnaProfileType.Video
                 },
                 new DirectPlayProfile
                 {
                     Container = "mpeg",
                     VideoCodec = "mpeg2video,mpeg1video",
-                    AudioCodec = "mp3,mp2",
+                    AudioCodec = "mp3",
                     Type = DlnaProfileType.Video
                 },
                 new DirectPlayProfile
@@ -348,6 +348,22 @@ namespace MediaBrowser.Dlna.Profiles
                             Condition = ProfileConditionType.NotEquals,
                             Property = ProfileConditionValue.AudioProfile,
                             Value = "he-aac"
+                        }
+                    }
+                },
+
+                new CodecProfile
+                {
+                    Type = CodecType.VideoAudio,
+                    Codec = "mp3,mp2",
+
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.AudioChannels,
+                            Value = "2"
                         }
                     }
                 }

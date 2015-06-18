@@ -18,11 +18,11 @@
     }
 
     paper-button.more {
-        color: #388E3C;
+        color: #EC407A;
     }
 
     paper-button[raised].more {
-        background: #388E3C;
+        background: #EC407A;
         color: #fff;
     }
 
@@ -92,7 +92,7 @@ paper-button.mini {
 }
 
     paper-button.mini .content {
-        padding: 0.35em 0.7em;
+        padding: 0.4em 0.7em;
     }
 
 

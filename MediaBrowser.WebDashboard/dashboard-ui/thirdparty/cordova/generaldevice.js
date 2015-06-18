@@ -7,6 +7,7 @@
         var PlayerName = "ConnectSDK";
         var currentDevice;
         var currentDeviceId;
+        var currentMediaControl;
 
         // MediaController needs this
         self.name = PlayerName;
@@ -91,7 +92,41 @@
             playItemInternal(items[0], null, serverAddress);
         };
 
-        function playItemInternal(items, startPosition) {
+        function validatePlaybackInfoResult(result) {
+
+            if (result.ErrorCode) {
+
+                MediaController.showPlaybackInfoErrorMessage(result.ErrorCode);
+                return false;
+            }
+
+            return true;
+        }
+
+        function getOptimalMediaSource(mediaType, versions) {
+
+            var optimalVersion = versions.filter(function (v) {
+
+                v.enableDirectPlay = MediaController.supportsDirectPlay(v);
+
+                return v.enableDirectPlay;
+
+            })[0];
+
+            if (!optimalVersion) {
+                optimalVersion = versions.filter(function (v) {
+
+                    return v.SupportsDirectStream;
+
+                })[0];
+            }
+
+            return optimalVersion || versions.filter(function (s) {
+                return s.SupportsTranscoding;
+            })[0];
+        }
+
+        function playItemInternal(item, startPosition) {
 
             if (item == null) {
                 throw new Error("item cannot be null");
@@ -113,43 +148,71 @@
                 Dashboard.showModalLoadingMsg();
             }
 
-            //getPlaybackInfo(item.Id, deviceProfile, startPosition).done(function (playbackInfoResult) {
+            MediaController.getPlaybackInfo(item.Id, deviceProfile, startPosition).done(function (playbackInfoResult) {
 
-            //    if (validatePlaybackInfoResult(playbackInfoResult)) {
+                if (validatePlaybackInfoResult(playbackInfoResult)) {
 
-            //        var mediaSource = getOptimalMediaSource(item.MediaType, playbackInfoResult.MediaSources);
+                    var mediaSource = getOptimalMediaSource(item.MediaType, playbackInfoResult.MediaSources);
 
-            //        if (mediaSource) {
+                    if (mediaSource) {
 
-            //            if (mediaSource.RequiresOpening) {
+                        if (mediaSource.RequiresOpening) {
 
-            //                getLiveStream(item.Id, playbackInfoResult.PlaySessionId, deviceProfile, startPosition, mediaSource, null, null).done(function (openLiveStreamResult) {
+                            getLiveStream(item.Id, playbackInfoResult.PlaySessionId, deviceProfile, startPosition, mediaSource, null, null).done(function (openLiveStreamResult) {
 
-            //                    openLiveStreamResult.MediaSource.enableDirectPlay = supportsDirectPlay(openLiveStreamResult.MediaSource);
+                                openLiveStreamResult.MediaSource.enableDirectPlay = supportsDirectPlay(openLiveStreamResult.MediaSource);
 
-            //                    playInternalPostMediaSourceSelection(item, openLiveStreamResult.MediaSource, startPosition, callback);
-            //                });
+                                playInternalPostMediaSourceSelection(item, openLiveStreamResult.MediaSource, startPosition, callback);
+                            });
 
-            //            } else {
-            //                playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback);
-            //            }
-            //        } else {
-            //            Dashboard.hideModalLoadingMsg();
-            //            MediaController.showPlaybackInfoErrorMessage('NoCompatibleStream');
-            //        }
-            //    }
+                        } else {
+                            playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback);
+                        }
+                    } else {
+                        Dashboard.hideModalLoadingMsg();
+                        MediaController.showPlaybackInfoErrorMessage('NoCompatibleStream');
+                    }
+                }
 
-            //});
+            });
         }
+
+        function playInternalPostMediaSourceSelection(item, mediaSource, startPosition, deferred) {
+
+            Dashboard.hideModalLoadingMsg();
+
+            var streamInfo = MediaPlayer.createStreamInfo('Video', item, mediaSource, startPosition);
+
+            currentDevice.getMediaPlayer().playMedia(
+                        streamInfo.url,
+                        streamInfo.MimeType,
+                        {
+                            title: item.Name,
+                            description: item.Overview || '',
+                            shouldLoop: false
+                        }
+                    ).success(function (launchSession, mediaControl) {
+
+                        console.log("Video launch successful");
+                        currentMediaControl = mediaControl && mediaControl.acquire();
+
+                    }).error(function (err) {
+
+                        console.log("error: " + err.message);
+                    });
+
+            deferred.resolveWith(null, [streamInfo]);
+        }
+
         self.unpause = function () {
-            if (currentDevice) {
-                currentDevice.getMediaControl().pause();
+            if (currentMediaControl) {
+                currentMediaControl.pause();
             }
         };
 
         self.pause = function () {
-            if (currentDevice) {
-                currentDevice.getMediaControl().pause();
+            if (currentMediaControl) {
+                currentMediaControl.pause();
             }
         };
 
@@ -198,8 +261,8 @@
         };
 
         self.stop = function () {
-            if (currentDevice) {
-                currentDevice.getMediaControl().stop();
+            if (currentMediaControl) {
+                currentMediaControl.stop();
             }
         };
 
@@ -586,6 +649,7 @@
                         //currentDevice.disconnect();
                         currentDevice = null;
                         currentDeviceId = null;
+                        currentMediaControl = null;
                     }
                 }
             }

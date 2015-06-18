@@ -9,7 +9,6 @@
             { name: Globalize.translate('HeaderFavoriteGames'), types: "Game", id: "favoriteGames", shape: 'autohome', preferThumb: false, showTitle: true },
             { name: Globalize.translate('HeaderFavoriteAlbums'), types: "MusicAlbum", id: "favoriteAlbums", shape: 'square', preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true }
         ];
-
     }
 
     function loadSection(elem, userId, section, isSingleSection) {
@@ -33,7 +32,7 @@
             options.Limit = null;
         }
 
-        ApiClient.getItems(userId, options).done(function (result) {
+        return ApiClient.getItems(userId, options).done(function (result) {
 
             var html = '';
 
@@ -53,22 +52,21 @@
                 });
 
                 if (result.TotalRecordCount > result.Items.length) {
-                    html += '<div class="itemsContainer">';
-
                     var href = "favorites.html?sectionid=" + section.id;
 
-                    html += '<a data-role="button" href="' + href + '" data-mini="true" data-inline="true">' + Globalize.translate('ButtonMoreItems') + '</a>';
-                    html += '</div>';
+                    html += '<a class="clearLink" href="' + href + '"><paper-button raised class="more">' + Globalize.translate('ButtonMoreItems') + '</paper-button></a>';
                 }
                 html += '</div>';
             }
 
-            elem = $(elem).html(html).trigger('create').lazyChildren();
+            elem = $(elem).html(html).lazyChildren();
             elem.createCardMenus();
         });
     }
 
     function loadSections(page, userId) {
+
+        Dashboard.showLoadingMsg();
 
         var sections = getSections();
 
@@ -95,14 +93,20 @@
             elem.html(html);
         }
 
+        var promises = [];
+
         for (i = 0, length = sections.length; i < length; i++) {
 
             var section = sections[i];
 
             elem = $('.section' + section.id, page);
 
-            loadSection(elem, userId, section, sections.length == 1);
+            promises.push(loadSection(elem, userId, section, sections.length == 1));
         }
+
+        $.when(promises).done(function () {
+            Dashboard.hideLoadingMsg();
+        });
     }
 
     $(document).on('pageshowready', "#favoritesPage", function () {

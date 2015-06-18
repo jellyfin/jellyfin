@@ -142,6 +142,10 @@
     -webkit-overflow-scrolling: touch;
 }
 
+    .libraryViewNav .material-icons {
+        display: none;
+    }
+
 .bottomSecondaryNav .libraryViewNav {
     top: initial;
     bottom: 0;
@@ -231,7 +235,7 @@
 
 .libraryViewNav a {
     display: inline-block;
-    padding: 12px 0 9px;
+    padding: 14px 13px 11px;
     color: rgba(255,255,255,.8) !important;
     text-decoration: none;
     margin: 0 0;
@@ -240,17 +244,8 @@
     border-bottom: 5px solid transparent;
 }
 
-.bottomSecondaryNav .libraryViewNav a {
-    padding: 12px 0 12px;
-}
-
 .libraryViewNav a:not(.ui-btn-active):hover {
     color: #2ad !important;
-}
-
-.libraryViewNavLinkContent {
-    display: inline-block;
-    padding: 2px 13px 2px 13px;
 }
 
 @media all and (max-width: 500px) {

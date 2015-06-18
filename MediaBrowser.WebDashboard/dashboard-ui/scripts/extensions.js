@@ -596,7 +596,7 @@ function ticks_to_human(str) {
 $.fn.visible = function(visible) {
 
     if (visible) {
-        return this.removeClass('hide');
+        return this.removeClass('forceHide');
     }
-    return this.addClass('hide');
+    return this.addClass('forceHide');
 };

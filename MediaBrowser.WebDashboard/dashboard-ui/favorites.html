@@ -4,14 +4,15 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="favoritesPage" data-role="page" class="page type-home libraryPage allLibraryPage backdropPage" data-backdroptype="movie,series,game,book" data-require="scripts/favorites">
+    <div id="favoritesPage" data-role="page" class="page type-home libraryPage allLibraryPage backdropPage" data-backdroptype="movie,series,game,book" data-require="scripts/favorites,paperbuttonstyle">
 
+        <link rel="import" href="thirdparty/paper-button/paper-button.html">
         <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="index.html">${TabHome}</a>
-            <a href="homelatest.html">${TabLatest}</a>
-            <a href="tvrecommended.html">${TabNextUp}</a>
-            <a href="favorites.html" class="ui-btn-active">${TabFavorites}</a>
-            <a href="tvupcoming.html">${TabUpcoming}</a>
+            <a href="index.html"><i class="material-icons">home</i>${TabHome}</a>
+            <a href="homelatest.html"><i class="material-icons">new_releases</i>${TabLatest}</a>
+            <a href="tvrecommended.html"><i class="material-icons">navigate_next</i>${TabNextUp}</a>
+            <a href="favorites.html" class="ui-btn-active"><i class="material-icons">favorite</i>${TabFavorites}</a>
+            <a href="tvupcoming.html"><i class="material-icons">schedule</i>${TabUpcoming}</a>
         </div>
 
         <div data-role="content">

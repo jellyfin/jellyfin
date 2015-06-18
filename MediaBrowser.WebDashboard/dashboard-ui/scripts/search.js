@@ -97,14 +97,17 @@
     function requestSearchHintsForOverlay(elem, searchTerm) {
 
         var currentTimeout = searchHintTimeout;
+        Dashboard.showLoadingMsg();
 
         ApiClient.getSearchHints({ userId: Dashboard.getCurrentUserId(), searchTerm: searchTerm, limit: 30 }).done(function (result) {
 
-            if (currentTimeout != searchHintTimeout) {
-                return;
+            if (currentTimeout == searchHintTimeout) {
+                renderSearchResultsInOverlay(elem, result.SearchHints);
             }
 
-            renderSearchResultsInOverlay(elem, result.SearchHints);
+            Dashboard.hideLoadingMsg();
+        }).fail(function () {
+            Dashboard.hideLoadingMsg();
         });
     }
 

@@ -1,11 +1,14 @@
 ﻿(function (window, document, $, devicePixelRatio) {
 
+    var backStack = [];
+    var addNextToBackStack = true;
+
     function renderHeader() {
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
         if (AppInfo.enableBackButton) {
-            html += '<button type="button" data-role="none" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-left"></div></button>';
+            html += '<button type="button" data-role="none" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-chevron-left"></div></button>';
         }
 
         html += '<button type="button" data-role="none" title="Menu" class="headerButton dashboardMenuButton barsMenuButton headerButtonLeft">';
@@ -58,10 +61,14 @@
     }
 
     function onBackClick() {
+
         if (Dashboard.exitOnBack()) {
             Dashboard.exit();
         }
         else {
+            addNextToBackStack = false;
+
+            backStack.length = Math.max(0, backStack.length - 1);
             history.back();
         }
     }
@@ -163,10 +170,15 @@
     function updateViewMenuBarHeadroom(page, viewMenuBar) {
 
         if ($(page).hasClass('libraryPage')) {
-            viewMenuBar.removeClass('headroomDisabled');
+            // Don't like this timeout at all but if headroom is activated during the page events it will jump and flicker on us
+            setTimeout(reEnableHeadroom, 700);
         } else {
             viewMenuBar.addClass('headroomDisabled');
         }
+    }
+
+    function reEnableHeadroom() {
+        $('.headroomDisabled').removeClass('headroomDisabled');
     }
 
     function getItemHref(item, context) {
@@ -640,15 +652,7 @@
     // Otherwise we run into the jQM redirect back and forth problem
     var updateViewMenuBarBeforePageShow = false;
 
-    $(document).on('pageinit', ".page", function () {
-
-        var page = this;
-
-        $(function () {
-            onPageInitDocumentReady(page);
-        });
-
-    }).on('pagebeforeshowready', ".page", function () {
+    $(document).on('pagebeforeshowready', ".page", function () {
 
         var page = this;
 
@@ -670,16 +674,21 @@
         var page = this;
 
         onPageShowDocumentReady(page);
+
+    }).on('pagehide', ".page", function () {
+
+        if (addNextToBackStack) {
+            var text = $('.libraryMenuButtonText').text() || document.title;
+
+            backStack.push(text);
+        }
+
+        addNextToBackStack = true;
+
+    }).on('pagebeforehide', ".page", function () {
+
+        $('.headroomEnabled').addClass('headroomDisabled');
     });
-
-    function onPageInitDocumentReady(page) {
-        $('.libraryViewNav', page).wrapInner('<div class="libraryViewNavInner"></div>');
-
-        $('.libraryViewNav a', page).each(function () {
-
-            this.innerHTML = '<span class="libraryViewNavLinkContent">' + this.innerHTML + '</span>';
-        });
-    }
 
     function onPageBeforeShowDocumentReady(page) {
 
@@ -713,10 +722,39 @@
         } else {
             $(document.body).removeClass('dashboardDocument').removeClass('libraryDocument');
         }
+
+        if (AppInfo.enableBackButton)
+        {
+            updateBackButton(page);
+        }
+    }
+
+    function updateBackButton(page) {
+
+        var jPage = $(page);
+
+        var canGoBack = backStack.length > 0 && jPage.is('.itemDetailPage');
+
+        $('.headerBackButton').visible(canGoBack);
+
+        jPage.off('swipeleft', onPageSwipeLeft);
+
+        if (canGoBack) {
+            jPage.on('swipeleft', onPageSwipeLeft);
+        }
+    }
+
+    function onPageSwipeLeft(e) {
+
+        var target = $(e.target);
+
+        if (!target.is('.hiddenScrollX') && !target.parents('.hiddenScrollX').length) {
+            history.back();
+        }
     }
 
     function onPageShowDocumentReady(page) {
-        var elem = $('.libraryViewNavInner .ui-btn-active:visible', page);
+        var elem = $('.libraryViewNav .ui-btn-active:visible', page);
 
         if (elem.length) {
             elem[0].scrollIntoView();
@@ -738,6 +776,7 @@
             var headroom = new Headroom(elem);
             // initialise
             headroom.init();
+            $(elem).addClass('headroomEnabled');
         });
     }
 

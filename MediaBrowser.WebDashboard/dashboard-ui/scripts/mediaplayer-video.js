@@ -1222,7 +1222,7 @@
 
             bindEventsForPlayback();
 
-            mediaPlayerContainer.trigger("create");
+            mediaPlayerContainer.trigger('create');
 
             self.currentSubtitleStreamIndex = mediaSource.DefaultSubtitleStreamIndex;
 

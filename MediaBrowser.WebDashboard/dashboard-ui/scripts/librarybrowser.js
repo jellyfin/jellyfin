@@ -1494,7 +1494,8 @@
                 anchorCssClass += ' itemWithAction';
             }
 
-            html += '<a class="' + anchorCssClass + '" href="' + href + '"' + defaultActionAttribute + '>';
+            var transition = options.transition === false || !AppInfo.enableSectionTransitions ? '' : ' data-transition="slide"';
+            html += '<a' + transition + ' class="' + anchorCssClass + '" href="' + href + '"' + defaultActionAttribute + '>';
             html += '<div class="' + imageCssClass + '" style="' + style + '"' + dataSrc + '>';
             if (icon) {
                 html += '<i class="fa ' + icon + '"></i>';
