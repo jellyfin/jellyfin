@@ -281,7 +281,7 @@ namespace MediaBrowser.WebDashboard.Api
                     "thirdparty/paper-toast/paper-toast.html",
                     "thirdparty/paper-spinner/paper-spinner.html",
                     //"thirdparty/paper-icon-button/paper-icon-button.html",
-                    "thirdparty/iron-icons/iron-icons.html"
+                    "thirdparty/iron-icons/emby-icons.html"
                 };
                 var importsHtml = string.Join("", imports.Select(i => "<link rel=\"import\" href=\"" + i + "\">").ToArray());
 
@@ -651,7 +651,6 @@ namespace MediaBrowser.WebDashboard.Api
                                       "userimage.css",
                                       "livetv.css",
                                       "nowplaying.css",
-                                      "icons.css",
                                       "materialize.css"
                                   };
 
