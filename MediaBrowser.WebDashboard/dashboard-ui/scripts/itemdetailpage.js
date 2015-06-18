@@ -71,11 +71,7 @@
                 $('.splitVersionContainer', page).hide();
             }
 
-            if (LibraryBrowser.getMoreCommands(item, user).length) {
-                $('.btnMoreCommands', page).show();
-            } else {
-                $('.btnMoreCommands', page).show();
-            }
+            $('.btnMoreCommands', page).visible(LibraryBrowser.getMoreCommands(item, user).length > 0);
 
             if (user.Policy.IsAdministrator) {
                 $('.chapterSettingsButton', page).show();

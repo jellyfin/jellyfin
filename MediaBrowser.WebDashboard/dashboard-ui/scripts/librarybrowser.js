@@ -2117,20 +2117,19 @@
 
                 if (showControls) {
 
-                    html += '<button data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '>' + Globalize.translate('ButtonPreviousPage') + '</button>';
-
-                    html += '<button data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '>' + Globalize.translate('ButtonNextPage') + '</button>';
+                    html += '<paper-button raised class="subdued notext btnPreviousPage" ' + (startIndex ? '' : 'disabled') + '><iron-icon icon="arrow-back"></iron-icon></paper-button>';
+                    html += '<paper-button raised class="subdued notext btnNextPage" ' + (startIndex + limit >= totalRecordCount ? 'disabled' : '') + '><iron-icon icon="arrow-forward"></iron-icon></paper-button>';
                 }
 
                 html += (options.additionalButtonsHtml || '');
 
                 if (options.addSelectionButton) {
-                    html += '<button data-mini="true" data-icon="check" data-inline="true" data-iconpos="notext" title="' + Globalize.translate('ButtonSelect') + '" class="btnToggleSelections">' + Globalize.translate('ButtonSelect') + '</button>';
+                    html += '<paper-button raised class="subdued notext btnToggleSelections"><iron-icon icon="check"></iron-icon></paper-button>';
                 }
 
                 if (options.viewButton) {
 
-                    html += '<button data-icon="ellipsis-v" data-iconpos="notext" data-inline="true" data-mini="true" onclick="$(\'.viewPanel\', $(this).parents(\'.page\')).panel(\'toggle\');">' + Globalize.translate('ButtonView') + '</button>';
+                    html += '<paper-button raised class="subdued notext" onclick="require([\'jqmicons\']);jQuery(\'.viewPanel\', jQuery(this).parents(\'.page\')).panel(\'toggle\');"><iron-icon icon="more-vert"></iron-icon></paper-button>';
                 }
 
                 html += '</div>';
@@ -2153,72 +2152,6 @@
 
                     // Add styles to defeat jquery mobile
                     html += '<div class="pageSizeContainer"><label style="font-size:inherit;" class="labelPageSize" for="' + id + '">' + Globalize.translate('LabelLimit') + '</label><select class="selectPageSize" id="' + id + '" data-inline="true" data-mini="true">' + optionsHtml + '</select></div>';
-                }
-            }
-
-            html += '</div>';
-
-            return html;
-        },
-
-        getPagingHtml: function (query, totalRecordCount, updatePageSizeSetting, pageSizes, showLimit) {
-
-            if (query.Limit && updatePageSizeSetting !== false) {
-                try {
-                    store.setItem(pageSizeKey, query.Limit);
-                } catch (e) {
-
-                }
-            }
-
-            var html = '';
-
-            var recordsEnd = Math.min(query.StartIndex + query.Limit, totalRecordCount);
-
-            // 20 is the minimum page size
-            var showControls = totalRecordCount > 20 || query.Limit < totalRecordCount;
-
-            html += '<div class="listPaging">';
-
-            html += '<span style="margin-right: 10px;vertical-align:middle;">';
-
-            var startAtDisplay = totalRecordCount ? query.StartIndex + 1 : 0;
-            html += startAtDisplay + '-' + recordsEnd + ' of ' + totalRecordCount;
-
-            html += '</span>';
-
-            if (showControls) {
-
-                html += '<div data-role="controlgroup" data-type="horizontal" style="display:inline-block;">';
-                html += '<button type="button" data-icon="arrow-l" data-iconpos="notext" data-inline="true" data-mini="true" class="btnPreviousPage" ' + (query.StartIndex ? '' : 'disabled') + '>' + Globalize.translate('ButtonPreviousPage') + '</button>';
-
-                html += '<button type="button" data-icon="arrow-r" data-iconpos="notext" data-inline="true" data-mini="true" class="btnNextPage" ' + (query.StartIndex + query.Limit >= totalRecordCount ? 'disabled' : '') + '>' + Globalize.translate('ButtonNextPage') + '</button>';
-                html += '</div>';
-
-                if (showLimit !== false) {
-                    var id = "selectPageSize" + new Date().getTime();
-
-                    var options = '';
-
-                    function getOption(val) {
-
-                        if (query.Limit == val) {
-
-                            return '<option value="' + val + '" selected="selected">' + val + '</option>';
-
-                        } else {
-                            return '<option value="' + val + '">' + val + '</option>';
-                        }
-                    }
-
-                    pageSizes = pageSizes || [20, 50, 100, 200, 300, 400, 500];
-
-                    for (var j = 0, length = pageSizes.length; j < length; j++) {
-                        options += getOption(pageSizes[j]);
-                    }
-
-                    // Add styles to defeat jquery mobile
-                    html += '<div class="pageSizeContainer"><label style="font-size:inherit;" class="labelPageSize" for="' + id + '">' + Globalize.translate('LabelLimit') + '</label><select class="selectPageSize" id="' + id + '" data-inline="true" data-mini="true">' + options + '</select></div>';
                 }
             }
 

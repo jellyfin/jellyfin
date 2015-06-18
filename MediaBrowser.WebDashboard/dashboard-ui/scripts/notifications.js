@@ -95,7 +95,13 @@
 
             var query = { StartIndex: startIndex, Limit: limit };
 
-            html += LibraryBrowser.getPagingHtml(query, totalRecordCount, false, limit, false);
+            html += LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: totalRecordCount,
+                showLimit: false,
+                updatePageSizeSetting: false
+            });
         }
 
         for (var i = 0, length = list.length; i < length; i++) {

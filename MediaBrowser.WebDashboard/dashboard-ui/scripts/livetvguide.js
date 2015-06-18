@@ -81,7 +81,13 @@
 
             });
 
-            var channelPagingHtml = LibraryBrowser.getPagingHtml(channelQuery, channelsResult.TotalRecordCount, false, [10, 20, 30, 50, 100]);
+            var channelPagingHtml = LibraryBrowser.getQueryPagingHtml({
+                startIndex: channelQuery.StartIndex,
+                limit: channelQuery.Limit,
+                totalRecordCount: channelsResult.TotalRecordCount,
+                updatePageSizeSetting: false
+            });
+
             $('.channelPaging', page).html(channelPagingHtml).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {

@@ -93,11 +93,7 @@
                 $('#ports', page).html(Globalize.translate('LabelRunningOnPort', '<b>' + systemInfo.HttpServerPortNumber + '</b>'));
             }
 
-            if (systemInfo.CanSelfRestart) {
-                $('.btnRestartContainer', page).removeClass('hide');
-            } else {
-                $('.btnRestartContainer', page).addClass('hide');
-            }
+            $('.btnRestartContainer', page).visible(systemInfo.CanSelfRestart);
 
             DashboardPage.renderUrls(page, systemInfo);
             DashboardPage.renderPendingInstallations(page, systemInfo);
@@ -142,7 +138,13 @@
 
             var pagingHtml = '';
             pagingHtml += '<div>';
-            pagingHtml += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, [], false);
+            pagingHtml += LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                showLimit: false,
+                updatePageSizeSetting: false
+            });
             pagingHtml += '</div>';
 
             html = html.join('') + pagingHtml;
@@ -1159,7 +1161,13 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
 
             var query = { StartIndex: startIndex, Limit: limit };
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, limit, false);
+            html += LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                showLimit: false,
+                updatePageSizeSetting: false
+            });
         }
 
         $(elem).html(html).trigger('create');

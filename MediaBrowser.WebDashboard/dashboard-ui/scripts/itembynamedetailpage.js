@@ -439,7 +439,17 @@
             var html = '';
 
             if (result.TotalRecordCount > query.Limit) {
-                $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+
+                var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                    startIndex: query.StartIndex,
+                    limit: query.Limit,
+                    totalRecordCount: result.TotalRecordCount,
+                    showLimit: false,
+                    updatePageSizeSetting: false
+                });
+
+                $('.listTopPaging', page).html(pagingHtml);
+
                 $('.viewSettings', page).show();
             } else {
                 $('.listTopPaging', page).html('');
@@ -509,7 +519,13 @@
                 });
             }
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+            html += LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                showLimit: false,
+                updatePageSizeSetting: false
+            });
 
             $('#items', page).html(html).trigger('create').lazyChildren();
 

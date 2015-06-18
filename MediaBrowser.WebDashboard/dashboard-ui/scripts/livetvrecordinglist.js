@@ -18,7 +18,13 @@
 
             var html = '';
 
-            $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+            $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                showLimit: false,
+                updatePageSizeSetting: false
+            }));
 
             updateFilterControls();
 
@@ -35,7 +41,13 @@
 
             });
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+            html += LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                showLimit: false,
+                updatePageSizeSetting: false
+            });
 
             $('#items', page).html(html).lazyChildren();
 
@@ -75,7 +87,7 @@
     }).on('pageshowready', "#liveTvRecordingListPage", function () {
 
         var page = this;
-        
+
         var limit = LibraryBrowser.getDefaultPageSize();
 
         // If the default page size has changed, the start index will have to be reset

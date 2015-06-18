@@ -62,44 +62,53 @@
         color: #fff;
     }
 
-    paper-button.hover:hover {
-        background: #eee;
-    }
+.ui-page-theme-a paper-button.subdued {
+    color: #fff;
+}
 
-    paper-button.ripple::shadow paper-ripple {
-        color: var(--paper-pink-a200);
-    }
+.ui-page-theme-a paper-button[raised].subdued {
+    background: #fff;
+    color: #000;
+}
 
-    paper-button.ripple paper-ripple {
-        color: var(--paper-pink-a200);
-    }
+paper-button.hover:hover {
+    background: #eee;
+}
 
-    paper-button span {
-        vertical-align: middle;
-    }
+paper-button.ripple::shadow paper-ripple {
+    color: var(--paper-pink-a200);
+}
 
-    paper-button:not(.iconRight) iron-icon, paper-button:not(.iconRight) .fa {
-        margin-right: .5em;
-    }
+paper-button.ripple paper-ripple {
+    color: var(--paper-pink-a200);
+}
 
-    paper-button:not(.iconRight) .material-icons {
-        margin-right: .25em;
-    }
+paper-button span {
+    vertical-align: middle;
+}
 
-    paper-button.iconRight iron-icon, paper-button.iconRight .fa, paper-button.iconRight .material-icons {
-        position: absolute;
-        right: 5px;
-        top: 5px;
-    }
+paper-button:not(.iconRight) iron-icon, paper-button:not(.iconRight) .fa {
+    margin-right: .5em;
+}
 
-    paper-button .material-icons {
-        font-size: 150%;
-        vertical-align: middle;
-    }
+paper-button:not(.iconRight) .material-icons {
+    margin-right: .25em;
+}
 
-    paper-button .fa {
-        vertical-align: middle;
-    }
+paper-button.iconRight iron-icon, paper-button.iconRight .fa, paper-button.iconRight .material-icons {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
+paper-button .material-icons {
+    font-size: 150%;
+    vertical-align: middle;
+}
+
+paper-button .fa {
+    vertical-align: middle;
+}
 
 .clearButton {
     background: transparent;
@@ -132,13 +141,13 @@ paper-toast {
 }
 
 paper-button.notext {
-    min-width: 2em;
+    min-width: 2.8em;
 }
 
-paper-button.notext .content {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-}
+    paper-button.notext .content {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
 
     paper-button.notext iron-icon {
         margin-right: 0;

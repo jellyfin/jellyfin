@@ -233,7 +233,7 @@
             Velocity.animate(elem, { "left": "100%" },
             {
                 complete: function () {
-                    $('.viewMenuSearch').addClass('hide');
+                    $('.viewMenuSearch').visible(false);
                 }
             });
         });

@@ -112,33 +112,12 @@ h1, h1 a {
 .libraryViewNav .material-icons {
     display: block;
     margin-top: -5px;
-    font-size: 14px;
-}
-
-paper-button[raised].submit {
-    background: none !important;
-    color: #539FFD !important;
-    border: 1px solid #539FFD !important;
-}
-
-paper-button[raised].more {
-    background: none !important;
-    color: orange !important;
-    border: 1px solid orange !important;
-}
-
-paper-button[raised].secondary {
-    background: none !important;
-    color: green !important;
-    border: 1px solid green !important;
-}
-
-paper-button[raised].cancel {
-    background: none !important;
-    color: #666 !important;
-    border: 1px solid #666 !important;
+    font-size: 15px;
 }
 
 .btnActiveCast i {
+    color: #539FFD !important;
+}
+.libraryViewNav a:not(.ui-btn-active):hover {
     color: #539FFD !important;
 }

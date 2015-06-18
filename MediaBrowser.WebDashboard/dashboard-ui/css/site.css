@@ -539,10 +539,6 @@ textarea {
 }
 
 .hide {
-    display: none;
-}
-
-.forceHide {
     display: none !important;
 }
 

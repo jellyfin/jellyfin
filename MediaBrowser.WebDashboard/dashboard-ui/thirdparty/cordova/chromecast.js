@@ -657,7 +657,9 @@
             }
         }
 
-        document.addEventListener("resume", onResume, false);
+        if (!$.browser.safari) {
+            document.addEventListener("resume", onResume, false);
+        }
     }
 
     MediaController.registerPlayer(new chromecastPlayer());

@@ -285,7 +285,14 @@
             deleteOriginalFile(page, id);
         });
 
-        var pagingHtml = LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, [], false);
+        var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+            startIndex: query.StartIndex,
+            limit: query.Limit,
+            totalRecordCount: result.TotalRecordCount,
+            showLimit: false,
+            updatePageSizeSetting: false
+        });
+
         $('.listTopPaging', page).html(pagingHtml).trigger('create');
 
         if (result.TotalRecordCount > query.Limit && result.TotalRecordCount > 50) {
