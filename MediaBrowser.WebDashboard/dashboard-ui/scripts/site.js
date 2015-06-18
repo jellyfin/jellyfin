@@ -1964,8 +1964,9 @@ var AppInfo = {};
             }
         }
 
-        // just until this can be removed
-        // require(['jqmicons']);
+        if (navigator.splashscreen) {
+            navigator.splashscreen.hide();
+        }
     }
 
     function init(deferred, capabilities, appName, deviceId, deviceName) {

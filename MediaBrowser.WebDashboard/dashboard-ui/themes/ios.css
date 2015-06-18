@@ -19,6 +19,14 @@
     padding-top: 16px;
 }
 
+@media all and (max-width: 600px) {
+
+    .libraryViewNav a {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
+
 .libraryViewNav .ui-btn-active {
     border-bottom-color: transparent;
     color: #539FFD !important;
@@ -111,13 +119,14 @@ h1, h1 a {
 
 .libraryViewNav .material-icons {
     display: block;
-    margin-top: -5px;
+    margin-top: -6px;
     font-size: 15px;
 }
 
 .btnActiveCast i {
     color: #539FFD !important;
 }
+
 .libraryViewNav a:not(.ui-btn-active):hover {
     color: #539FFD !important;
 }
