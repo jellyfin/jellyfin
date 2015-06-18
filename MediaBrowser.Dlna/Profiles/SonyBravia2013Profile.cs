@@ -286,6 +286,22 @@ namespace MediaBrowser.Dlna.Profiles
                             Value = "30"
                         }
                     }
+                },
+
+                new CodecProfile
+                {
+                    Type = CodecType.VideoAudio,
+                    Codec = "mp3,mp2",
+
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.AudioChannels,
+                            Value = "2"
+                        }
+                    }
                 }
             };
         }

@@ -333,6 +333,22 @@ namespace MediaBrowser.Dlna.Profiles
                             Value = "he-aac"
                         }
                     }
+                },
+
+                new CodecProfile
+                {
+                    Type = CodecType.VideoAudio,
+                    Codec = "mp3,mp2",
+
+                    Conditions = new []
+                    {
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.AudioChannels,
+                            Value = "2"
+                        }
+                    }
                 }
             };
         }
