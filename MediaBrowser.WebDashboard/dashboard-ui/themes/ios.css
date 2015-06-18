@@ -1,5 +1,7 @@
-﻿body {
+﻿html, body {
     font-family: Helvetica Neue;
+    /* Setting it here will help prevent white flashes */
+    background-color: #1c1c1c;
 }
 
 .viewMenuBar, .libraryViewNav {
@@ -19,7 +21,7 @@
 
 .libraryViewNav .ui-btn-active {
     border-bottom-color: transparent;
-    color: #2ad !important;
+    color: #539FFD !important;
 }
 
 .libraryViewNav {
@@ -32,7 +34,7 @@
 }
 
 .barsMenuButton .fa {
-    color: #2ad !important;
+    color: #539FFD !important;
 }
 
 .btn, .btn-large {
@@ -115,8 +117,8 @@ h1, h1 a {
 
 paper-button[raised].submit {
     background: none !important;
-    color: #2ad !important;
-    border: 1px solid #2ad !important;
+    color: #539FFD !important;
+    border: 1px solid #539FFD !important;
 }
 
 paper-button[raised].more {
@@ -135,4 +137,8 @@ paper-button[raised].cancel {
     background: none !important;
     color: #666 !important;
     border: 1px solid #666 !important;
+}
+
+.btnActiveCast i {
+    color: #539FFD !important;
 }

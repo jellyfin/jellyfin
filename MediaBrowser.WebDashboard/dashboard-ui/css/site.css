@@ -288,6 +288,11 @@
     unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
 }
 
+/* Prevent white flickering */
+html, body {
+    background-color: #1f1f1f;
+}
+
 /* For some reason jquery mobile 1.4.5 wants to horitontally pad mini form fields. */
 .ui-mini {
     margin-left: 0;
@@ -505,24 +510,24 @@ textarea {
     width: 100%;
 }
 
-pre, textarea.pre {
-    display: block;
-    padding: 8.5px;
-    font-size: 12.025px;
-    line-height: 18px;
-    word-break: break-all;
-    word-wrap: break-word;
-    white-space: pre;
-    white-space: pre-wrap;
-    background-color: #f5f5f5;
-    border: 1px solid #ccc;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
-    font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-    color: #000;
-}
+    pre, textarea.pre {
+        display: block;
+        padding: 8.5px;
+        font-size: 12.025px;
+        line-height: 18px;
+        word-break: break-all;
+        word-wrap: break-word;
+        white-space: pre;
+        white-space: pre-wrap;
+        background-color: #f5f5f5;
+        border: 1px solid #ccc;
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        -webkit-border-radius: 4px;
+        -moz-border-radius: 4px;
+        border-radius: 4px;
+        font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+        color: #000;
+    }
 
 .type-interior h2 {
     color: #1B58B8;

@@ -1559,11 +1559,12 @@ var Dashboard = {
 
         var deferred = DeferredBuilder.Deferred();
 
+        Dashboard.importCss('thirdparty/swipebox-master/css/swipebox.min.css');
+
         require([
             'thirdparty/swipebox-master/js/jquery.swipebox.min'
         ], function () {
 
-            Dashboard.importCss('thirdparty/swipebox-master/css/swipebox.min.css');
             deferred.resolve();
         });
         return deferred.promise();
@@ -1964,7 +1965,7 @@ var AppInfo = {};
         }
 
         // just until this can be removed
-        require(['jqmicons']);
+        // require(['jqmicons']);
     }
 
     function init(deferred, capabilities, appName, deviceId, deviceName) {

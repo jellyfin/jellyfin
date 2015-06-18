@@ -257,6 +257,8 @@
                 dialogOptionsFn: getTargetDialogOptionsFn(dialogOptionsQuery)
             });
         });
+
+        require(['jqmicons']);
     }
 
     function getTargetDialogOptionsFn(query) {

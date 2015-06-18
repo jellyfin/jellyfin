@@ -261,7 +261,7 @@
     position: relative;
 }
 
-.cardImage .fa {
+.iconCardImage .fa {
     color: rgb(255, 255, 255);
     position: absolute;
     left: 0;

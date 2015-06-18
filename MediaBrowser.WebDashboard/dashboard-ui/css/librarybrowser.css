@@ -986,17 +986,22 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     text-align: center;
     vertical-align: middle;
     width: 24px;
-    height: 19px;
-    padding-top: 3px;
+    height: 24px;
     border-radius: 50%;
     color: #fff;
     background: rgb(82, 181, 75);
     background: rgba(82, 181, 75, .8);
-    line-height: 16px;
+    line-height: 19px;
 }
 
-    .playedIndicator div:after {
-        background-color: transparent !important;
+    .playedIndicator .fa {
+        margin-top: 5px;
+        display: inline-block;
+    }
+
+    .textIndicator {
+        height: 22px;
+        padding-top: 2px;
     }
 
 .mediaSourceIndicator {
@@ -1024,16 +1029,17 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     text-align: center;
     vertical-align: middle;
     width: 24px;
-    height: 19px;
-    padding-top: 3px;
+    height: 24px;
     border-radius: 50%;
     color: #fff;
     background: rgb(204, 0, 0);
     background: rgba(204, 0, 0, .8);
+    line-height: 19px;
 }
 
-    .unidentifiedIndicator div:after {
-        background-color: transparent !important;
+    .unidentifiedIndicator .fa {
+        margin-top: 5px;
+        display: inline-block;
     }
 
 .itemProgress {
@@ -1140,9 +1146,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .alphabetPicker {
     position: fixed;
-    right: 2px;
+    right: 0;
     bottom: 5px;
-    width: 27px;
     z-index: 999;
     text-align: center;
     font-size: 13px;
@@ -1150,14 +1155,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     line-height: 1;
 }
 
-.bottomSecondaryNav .alphabetPicker{
+.bottomSecondaryNav .alphabetPicker {
     bottom: 55px;
 }
 
 .alphabetPicker a {
     display: block;
     text-decoration: none;
-    padding: 1px 0;
+    padding: 1px 5px 1px 10px;
     font-weight: 500;
 }
 
@@ -1210,49 +1215,46 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .itemsContainerWithAlphaPicker {
-        margin-right: 25px;
+        margin-right: 15px;
     }
 }
 
-@media all and (min-width: 600px) {
+@media all and (min-width: 1200px) {
 
     .itemsContainerWithAlphaPicker {
-        margin-right: 10px;
+        margin-right: 0;
     }
 }
 
 @media all and (min-height: 600px) {
 
     .alphabetPicker a {
-        padding: 2px 0;
+        padding-top: 2px;
+        padding-bottom: 2px;
     }
 }
 
 @media all and (min-height: 650px) {
 
     .alphabetPicker a {
-        padding: 3px 0;
+        padding-top: 3px;
+        padding-bottom: 3px;
     }
 }
 
 @media all and (min-height: 700px) {
 
     .alphabetPicker a {
-        padding: 4px 0;
+        padding-top: 4px;
+        padding-bottom: 4px;
     }
 }
 
 @media all and (min-height: 750px) {
 
     .alphabetPicker a {
-        padding: 5px 0;
-    }
-}
-
-@media all and (min-height: 750px) {
-
-    .alphabetPicker a {
-        padding: 5px 0;
+        padding-top: 5px;
+        padding-bottom: 5px;
     }
 }
 

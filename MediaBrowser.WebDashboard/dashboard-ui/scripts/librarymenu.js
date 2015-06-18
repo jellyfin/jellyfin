@@ -737,10 +737,10 @@
 
         $('.headerBackButton').visible(canGoBack);
 
-        jPage.off('swipeleft', onPageSwipeLeft);
+        jPage.off('swiperight', onPageSwipeLeft);
 
         if (canGoBack) {
-            jPage.on('swipeleft', onPageSwipeLeft);
+            jPage.on('swiperight', onPageSwipeLeft);
         }
     }
 

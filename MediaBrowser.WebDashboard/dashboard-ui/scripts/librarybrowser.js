@@ -854,7 +854,7 @@
                     if (item.UserData.UnplayedItemCount) {
                         //html += '<span class="ui-li-count">' + item.UserData.UnplayedItemCount + '</span>';
                     } else if (item.UserData.Played && item.Type != 'TvChannel') {
-                        html += '<div class="playedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
+                        html += '<div class="playedIndicator"><i class="fa fa-check"></i></div>';
                     }
                 }
                 html += '</a>';
@@ -1520,7 +1520,7 @@
                 html += '<div class="mediaSourceIndicator">' + mediaSourceCount + '</div>';
             }
             if (item.IsUnidentified) {
-                html += '<div class="unidentifiedIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';
+                html += '<div class="unidentifiedIndicator"><i class="fa fa-exclamation"></i></div>';
             }
 
             var progressHtml = options.showProgress === false || item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
@@ -1863,12 +1863,12 @@
 
             if (item.Type == "Series" || item.Type == "Season" || item.Type == "BoxSet" || item.MediaType == "Video" || item.MediaType == "Game" || item.MediaType == "Book") {
                 if (item.UserData.UnplayedItemCount) {
-                    return '<div class="playedIndicator">' + item.UserData.UnplayedItemCount + '</div>';
+                    return '<div class="playedIndicator textIndicator">' + item.UserData.UnplayedItemCount + '</div>';
                 }
 
                 if (item.Type != 'TvChannel') {
                     if (item.UserData.PlayedPercentage && item.UserData.PlayedPercentage >= 100 || (item.UserData && item.UserData.Played)) {
-                        return '<div class="playedIndicator"><div class="ui-icon-check ui-btn-icon-notext"></div></div>';
+                        return '<div class="playedIndicator"><i class="fa fa-check"></i></div>';
                     }
                 }
             }
@@ -1879,7 +1879,7 @@
         getGroupCountIndicator: function (item) {
 
             if (item.ChildCount) {
-                return '<div class="playedIndicator">' + item.ChildCount + '</div>';
+                return '<div class="playedIndicator textIndicator">' + item.ChildCount + '</div>';
             }
 
             return '';

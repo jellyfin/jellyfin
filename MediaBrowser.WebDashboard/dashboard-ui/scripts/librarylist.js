@@ -706,37 +706,16 @@
 
             if (MediaController.canPlay(item)) {
                 if (item.MediaType == 'Video' && !item.IsFolder && item.UserData && item.UserData.PlaybackPositionTicks) {
-                    contentHtml += '<div class="detailsMenuButtonContainer">';
-                    contentHtml += '<a href="#" class="btn btnAltAction btnResume">';
-                    contentHtml += '<i class="fa fa-play"></i>';
-                    contentHtml += '<span>' + Globalize.translate('ButtonResume') + '</span>';
-                    contentHtml += '</a>';
-                    contentHtml += '</div>';
+                    contentHtml += '<paper-button raised class="secondary btnResume" style="background-color:#ff8f00;"><iron-icon icon="play-arrow"></iron-icon><span>' + Globalize.translate('ButtonResume') + '</span></paper-button>';
                 }
 
-                contentHtml += '<div class="detailsMenuButtonContainer">';
-                contentHtml += '<a href="#" class="btn btnActionAccent btnPlay">';
-                contentHtml += '<i class="fa fa-play"></i>';
-                contentHtml += '<span>' + Globalize.translate('ButtonPlay') + '</span>';
-                contentHtml += '</a>';
-                contentHtml += '</div>';
-
+                contentHtml += '<paper-button raised class="secondary btnPlay"><iron-icon icon="play-arrow"></iron-icon><span>' + Globalize.translate('ButtonPlay') + '</span></paper-button>';
             }
 
-            contentHtml += '<div class="detailsMenuButtonContainer">';
-            contentHtml += '<a href="' + LibraryBrowser.getHref(item, context) + '" class="btn" style="background-color: #673AB7;">';
-            contentHtml += '<i class="fa fa-folder-open"></i>';
-            contentHtml += '<span>' + Globalize.translate('ButtonOpen') + '</span>';
-            contentHtml += '</a>';
-            contentHtml += '</div>';
+            contentHtml += '<paper-button data-href="' + LibraryBrowser.getHref(item, context) + '" raised class="submit btnSync" style="background-color: #673AB7;" onclick="Dashboard.navigate(this.getAttribute(\'data-href\'));"><iron-icon icon="folder-open"></iron-icon><span>' + Globalize.translate('ButtonOpen') + '</span></paper-button>';
 
             if (SyncManager.isAvailable(item, user)) {
-                contentHtml += '<div class="detailsMenuButtonContainer">';
-                contentHtml += '<a href="#" class="btn btnSync">';
-                contentHtml += '<i class="fa fa-refresh"></i>';
-                contentHtml += '<span>' + Globalize.translate('ButtonSync') + '</span>';
-                contentHtml += '</a>';
-                contentHtml += '</div>';
+                contentHtml += '<paper-button raised class="submit btnSync"><iron-icon icon="refresh"></iron-icon><span>' + Globalize.translate('ButtonSync') + '</span></paper-button>';
             }
 
             contentHtml += '</div>';
@@ -1125,11 +1104,6 @@
         return false;
     }
 
-    function resetImages(page) {
-
-        $('cardImage', page).remove();
-    }
-
     $(document).on('pageinitdepends', ".libraryPage", function () {
 
         var page = this;
@@ -1182,11 +1156,6 @@
         hideSelections(page);
 
         $('.viewTabButton:first', page).trigger('click');
-
-    }).on('pagebeforehide', ".libraryPage", function () {
-
-        var page = this;
-        resetImages(page);
     });
 
     function renderUserDataChanges(card, userData) {
@@ -1197,7 +1166,7 @@
 
                 $('<div class="playedIndicator"></div>').insertAfter($('.cardOverlayTarget', card));
             }
-            $('.playedIndicator', card).html('<div class="ui-icon-check ui-btn-icon-notext"></div>');
+            $('.playedIndicator', card).html('<i class="fa fa-check"></i>');
             $('.cardProgress', card).remove();
         }
         else if (userData.UnplayedItemCount) {

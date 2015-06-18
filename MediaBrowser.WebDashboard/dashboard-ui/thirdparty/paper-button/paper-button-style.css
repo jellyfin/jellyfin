@@ -35,12 +35,30 @@
         color: #fff;
     }
 
+    paper-button.alt {
+        color: #F57F17;
+    }
+
+    paper-button[raised].alt {
+        background: #F57F17;
+        color: #fff;
+    }
+
     paper-button.cancel {
         color: #444;
     }
 
     paper-button[raised].cancel {
         background: #444;
+        color: #fff;
+    }
+
+    paper-button.subdued {
+        color: #555;
+    }
+
+    paper-button[raised].subdued {
+        background: #555;
         color: #fff;
     }
 
@@ -64,10 +82,23 @@
         margin-right: .5em;
     }
 
-    paper-button.iconRight iron-icon, paper-button.iconRight .fa {
+    paper-button:not(.iconRight) .material-icons {
+        margin-right: .25em;
+    }
+
+    paper-button.iconRight iron-icon, paper-button.iconRight .fa, paper-button.iconRight .material-icons {
         position: absolute;
         right: 5px;
         top: 5px;
+    }
+
+    paper-button .material-icons {
+        font-size: 150%;
+        vertical-align: middle;
+    }
+
+    paper-button .fa {
+        vertical-align: middle;
     }
 
 .clearButton {
@@ -92,13 +123,26 @@ paper-button.mini {
 }
 
     paper-button.mini .content {
-        padding: 0.4em 0.7em;
+        padding: 0.3em 0.7em;
     }
 
 
 paper-toast {
     z-index: 9999999;
 }
+
+paper-button.notext {
+    min-width: 2em;
+}
+
+paper-button.notext .content {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+    paper-button.notext iron-icon {
+        margin-right: 0;
+    }
 
 #docspinner {
     display: block;

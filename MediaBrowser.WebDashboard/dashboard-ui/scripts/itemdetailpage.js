@@ -2,22 +2,6 @@
 
     var currentItem;
 
-    function getExternalPlayUrl(item) {
-
-        var providerIds = item.ProviderIds || {};
-        if (item.GameSystem == "Nintendo" && item.MediaType == "Game" && providerIds.NesBox && providerIds.NesBoxRom) {
-
-            return "http://nesbox.com/game/" + providerIds.NesBox + '/rom/' + providerIds.NesBoxRom;
-        }
-
-        if (item.GameSystem == "Super Nintendo" && item.MediaType == "Game" && providerIds.NesBox && providerIds.NesBoxRom) {
-
-            return "http://snesbox.com/game/" + providerIds.NesBox + '/rom/' + providerIds.NesBoxRom;
-        }
-
-        return null;
-    }
-
     function reload(page) {
 
         var id = getParameterByName('id');
@@ -49,20 +33,11 @@
             renderDetails(page, item, context);
             LibraryBrowser.renderDetailPageBackdrop(page, item);
 
-            var externalPlayUrl = getExternalPlayUrl(item);
-            $('.btnPlayExternal', page).attr('href', externalPlayUrl || '#');
-
-            if (externalPlayUrl) {
-                $('.btnPlayExternal', page).removeClass('hide');
-                $('.btnPlay', page).addClass('hide');
-            }
-            else if (MediaController.canPlay(item)) {
+            if (MediaController.canPlay(item)) {
                 $('.btnPlay', page).removeClass('hide');
-                $('.btnPlayExternal', page).addClass('hide');
             }
             else {
                 $('.btnPlay', page).addClass('hide');
-                $('.btnPlayExternal', page).addClass('hide');
             }
 
             if (item.LocalTrailerCount && item.PlayAccess == 'Full') {
@@ -1622,11 +1597,6 @@
 
         $('.btnPlayTrailer', page).on('click', function () {
             playTrailer(page);
-        });
-
-        $('.btnPlayExternal', page).on('click', function () {
-
-            ApiClient.markPlayed(Dashboard.getCurrentUserId(), currentItem.Id, new Date());
         });
 
         $('.btnSplitVersions', page).on('click', function () {
