@@ -280,6 +280,7 @@ namespace MediaBrowser.WebDashboard.Api
                     "thirdparty/paper-button/paper-button.html",
                     "thirdparty/paper-toast/paper-toast.html",
                     "thirdparty/paper-spinner/paper-spinner.html",
+                    "thirdparty/paper-fab/paper-fab.html",
                     //"thirdparty/paper-icon-button/paper-icon-button.html",
                     "thirdparty/iron-icons/emby-icons.html"
                 };
@@ -351,7 +352,7 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<meta http-equiv=\"X-UA-Compatibility\" content=\"IE=Edge\">");
             sb.Append("<meta name=\"format-detection\" content=\"telephone=no\">");
             sb.Append("<meta name=\"msapplication-tap-highlight\" content=\"no\">");
-            sb.Append("<meta name=\"viewport\" content=\"user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, target-densitydpi=device-dpi\">");
+            sb.Append("<meta name=\"viewport\" content=\"user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width\">");
             sb.Append("<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">");
             sb.Append("<meta name=\"mobile-web-app-capable\" content=\"yes\">");
             sb.Append("<meta name=\"application-name\" content=\"Emby\">");
