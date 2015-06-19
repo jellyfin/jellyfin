@@ -423,7 +423,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .lnkNextItem {
-    right: 0;
+    right: 10px;
 }
 
 .detailImageContainer {

@@ -1,0 +1,77 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>paper-icon-button basic tests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+  <link rel="import" href="../../iron-icons/iron-icons.html">
+  <link rel="import" href="../paper-icon-button.html">
+
+</head>
+<body>
+
+  <test-fixture id="TrivialIconButton">
+    <template>
+      <div style="line-height:30px;">
+        <paper-icon-button id="fab1" icon="add"></paper-icon-button>
+      </div>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="SrcIconButton">
+    <template>
+      <paper-icon-button src="add.png"></paper-icon-button>
+    </template>
+  </test-fixture>
+
+  <script>
+
+    var b1;
+    var b2;
+
+    function centerOf(element) {
+      var rect = element.getBoundingClientRect();
+      return {left: rect.left + rect.width / 2, top: rect.top + rect.height / 2};
+    }
+
+    function approxEqual(p1, p2) {
+      return Math.abs(p1.left - p2.left) <= 2 && Math.abs(p1.top-p2.top) <= 2;
+    }
+
+    setup(function() {
+      b1 = fixture('TrivialIconButton').querySelector('#fab1');
+      b2 = fixture('SrcIconButton');
+    });
+
+    test('applies an icon specified by the `icon` attribute', function() {
+      assert.strictEqual(!!b1.$.icon.src, false);
+      assert.ok(Polymer.dom(b1.$.icon.root).querySelector('svg'));
+    });
+
+    test('applies an icon specified by the `src` attribute', function() {
+
+      assert.strictEqual(!!b2.$.icon.src, true);
+      assert.ok(b2.$.icon.src);
+    });
+
+    test('renders correctly independent of line height', function() {
+      assert.ok(approxEqual(centerOf(b1.$.icon), centerOf(b1)));
+    });
+  </script>
+</body>
+</html>

@@ -966,13 +966,13 @@
     }
 
     if (browser.ipad || browser.iphone) {
-        if (userAgent.toLowerCase().indexOf('CPU OS 9') != -1) {
+        if (userAgent.toLowerCase().indexOf('cpu os 9') != -1) {
             browser.iOSVersion = 9;
         }
-        else if (userAgent.toLowerCase().indexOf('CPU OS 8') != -1) {
+        else if (userAgent.toLowerCase().indexOf('cpu os 8') != -1) {
             browser.iOSVersion = 8;
         }
-        else if (userAgent.toLowerCase().indexOf('CPU OS 7') != -1) {
+        else if (userAgent.toLowerCase().indexOf('cpu os 7') != -1) {
             browser.iOSVersion = 7;
         }
     }

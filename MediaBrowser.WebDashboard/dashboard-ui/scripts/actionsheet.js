@@ -13,7 +13,7 @@
             var id = 'dlg' + new Date().getTime();
             var html = '';
 
-            html += '<paper-dialog id="' + id + '" entry-animation="scale-up-animation" exit-animation="fade-out-animation">';
+            html += '<paper-dialog id="' + id + '" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>';
 
             if (options.title) {
                 html += '<h2>';
@@ -26,7 +26,10 @@
 
                 var option = options.items[i];
 
-                html += '<paper-button class="block blue ripple btnOption" data-id="' + option.id + '" style="margin:0;">' + option.name + '</paper-button>';
+                html += '<paper-button class="block blue ripple btnOption" data-id="' + option.id + '" style="margin:0;">';
+                //html += '<iron-icon icon="close"></iron-icon>';
+                html += '<span>' + option.name + '</span>';
+                html += '</paper-button>';
             }
 
             html += '</paper-dialog-scrollable>';

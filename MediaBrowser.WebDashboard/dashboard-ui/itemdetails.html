@@ -151,8 +151,8 @@
                 </div>
 
             </div>
-            <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide" data-role="button" title="${ButtonPrevious}" data-icon="carat-l" data-mini="true" data-inline="true" data-iconpos="notext">${ButtonPrevious}</a>
-            <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide" data-role="button" title="${ButtonNext}" data-icon="carat-r" data-mini="true" data-inline="true" data-iconpos="notext">${ButtonNext}</a>
+            <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide clearLink"><paper-button raised class="subdued notext"><iron-icon icon="arrow-back"></iron-icon></paper-button></a>
+            <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide clearLink"><paper-button raised class="subdued notext"><iron-icon icon="arrow-forward"></iron-icon></paper-button></a>
         </div>
         <div data-role="content">
             <div class="detailPageContent">
@@ -260,10 +260,11 @@
                         </div>
                     </div>
                 </div>
+
                 <div id="scenesCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
                         ${HeaderScenes}
-                        <a class="detailSectionHeaderButton chapterSettingsButton" href="metadataadvanced.html" data-role="button" data-icon="gear" data-iconpos="notext" data-inline="true" title="${ButtonSettings}" style="display:none;">${ButtonSettings}</a>
+                        <a class="detailSectionHeaderButton chapterSettingsButton clearLink" style="margin-top:-3px;display:inline-block;" href="metadataadvanced.html" title="${ButtonSettings}" style="display:none;"><paper-icon-button icon="settings"></paper-icon-button></a>
                     </div>
                     <div id="scenesContent" class="detailSectionContent smallItemsContainer"></div>
                 </div>

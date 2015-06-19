@@ -373,66 +373,95 @@
 
         showMoreCommands: function (positionTo, itemId, commands) {
 
-            $('.playFlyout').popup("close").remove();
-
-            var html = '<div data-role="popup" class="playFlyout" data-history="false" data-theme="a">';
-
-            html += '<ul data-role="listview" style="min-width: 160px;">';
+            var items = [];
 
             if (commands.indexOf('addtocollection') != -1) {
-                html += '<li data-icon="false"><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');BoxSetEditor.showPanel([\'' + itemId + '\']);">' + Globalize.translate('ButtonAddToCollection') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonAddToCollection'),
+                    id: 'addtocollection'
+                });
             }
 
             if (commands.indexOf('playlist') != -1) {
-                html += '<li data-icon="false"><a href="#" onclick="$(\'.playFlyout\').popup(\'close\');PlaylistManager.showPanel([\'' + itemId + '\']);">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonAddToPlaylist'),
+                    id: 'playlist'
+                });
             }
 
             if (commands.indexOf('delete') != -1) {
-                html += '<li data-icon="false"><a class="btnMoreMenuDelete" href="#" onclick="$(\'.playFlyout\').popup(\'close\');LibraryBrowser.deleteItem([\'' + itemId + '\']);">' + Globalize.translate('ButtonDelete') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonDelete'),
+                    id: 'delete'
+                });
             }
 
             if (commands.indexOf('download') != -1) {
-                var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
-                    api_key: ApiClient.accessToken()
+                items.push({
+                    name: Globalize.translate('ButtonDownload'),
+                    id: 'download'
                 });
-
-                html += '<li data-icon="false"><a class="btnMoreMenuDownload" data-ajax="false" href="' + downloadHref + '" onclick="$(\'.playFlyout\').popup(\'close\');">' + Globalize.translate('ButtonDownload') + '</a></li>';
             }
 
             if (commands.indexOf('edit') != -1) {
-                html += '<li data-icon="false"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonEdit'),
+                    id: 'edit'
+                });
             }
 
             if (commands.indexOf('refresh') != -1) {
-                html += '<li data-icon="false"><a class="btnMoreMenuRefresh" href="#">' + Globalize.translate('ButtonRefresh') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonRefresh'),
+                    id: 'refresh'
+                });
             }
 
-            html += '</ul>';
+            require(['actionsheet'], function () {
 
-            html += '</div>';
+                ActionSheetElement.show({
+                    items: items,
+                    callback: function (id) {
 
-            $($.mobile.activePage).append(html);
+                        switch (id) {
 
-            var elem = $('.playFlyout').popup({ positionTo: positionTo || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
+                            case 'addtocollection':
+                                BoxSetEditor.showPanel(itemId);
+                                break;
+                            case 'icon':
+                                PlaylistManager.showPanel(itemId);
+                                break;
+                            case 'delete':
+                                LibraryBrowser.deleteItem(itemId);
+                                break;
+                            case 'download':
+                                {
+                                    var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
+                                        api_key: ApiClient.accessToken()
+                                    });
+                                    window.location.href = downloadHref;
 
-                $(this).off("popupafterclose").remove();
+                                    break;
+                                }
+                            case 'edit':
+                                Dashboard.navigate('edititemmetadata.html?id=' + itemId);
+                                break;
+                            case 'refresh':
+                                ApiClient.refreshItem(itemId, {
 
-            });
-
-            $('.btnMoreMenuRefresh', elem).on('click', function () {
-
-                $('.playFlyout').popup('close');
-
-                ApiClient.refreshItem(itemId, {
-
-                    Recursive: true,
-                    ImageRefreshMode: 'FullRefresh',
-                    MetadataRefreshMode: 'FullRefresh',
-                    ReplaceAllImages: false,
-                    ReplaceAllMetadata: true
-                }).done(function () {
-
+                                    Recursive: true,
+                                    ImageRefreshMode: 'FullRefresh',
+                                    MetadataRefreshMode: 'FullRefresh',
+                                    ReplaceAllImages: false,
+                                    ReplaceAllMetadata: true
+                                });
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                 });
+
             });
         },
 
