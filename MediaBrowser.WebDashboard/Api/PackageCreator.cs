@@ -276,13 +276,16 @@ namespace MediaBrowser.WebDashboard.Api
 
                 var imports = new string[]
                 {
-                    //"thirdparty/polymer/polymer.html",
-                    "thirdparty/paper-button/paper-button.html",
-                    "thirdparty/paper-toast/paper-toast.html",
-                    "thirdparty/paper-spinner/paper-spinner.html",
-                    "thirdparty/paper-fab/paper-fab.html",
-                    //"thirdparty/paper-icon-button/paper-icon-button.html",
-                    "thirdparty/iron-icons/emby-icons.html"
+                    "bower_components/paper-button/paper-button.html",
+                    "bower_components/paper-toast/paper-toast.html",
+                    "bower_components/paper-spinner/paper-spinner.html",
+                    "bower_components/paper-fab/paper-fab.html",
+                    "bower_components/paper-dialog/paper-dialog.html",
+                    "bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html",
+                    "bower_components/neon-animation/animations/scale-up-animation.html",
+                    "bower_components/neon-animation/animations/fade-out-animation.html",
+                    //"bower_components/paper-icon-button/paper-icon-button.html",
+                    "thirdparty/emby-icons.html"
                 };
                 var importsHtml = string.Join("", imports.Select(i => "<link rel=\"import\" href=\"" + i + "\">").ToArray());
 
@@ -408,7 +411,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new List<string>
             {
-                "thirdparty/webcomponentsjs/webcomponents-lite.min.js",
+                "bower_components/webcomponentsjs/webcomponents-lite.min.js",
                 "scripts/all.js" + versionString
             };
 
