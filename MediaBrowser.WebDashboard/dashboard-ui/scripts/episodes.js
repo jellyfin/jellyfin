@@ -321,7 +321,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#episodesPage", function () {
+    }).on('pagebeforeshowready', "#episodesPage", function () {
 
         var page = this;
         query.ParentId = LibraryMenu.getTopParentId();

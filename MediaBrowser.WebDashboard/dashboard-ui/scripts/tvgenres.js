@@ -169,7 +169,7 @@
             LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
         });
 
-    }).on('pageshowready', "#tvGenresPage", function () {
+    }).on('pagebeforeshowready', "#tvGenresPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
         var page = this;

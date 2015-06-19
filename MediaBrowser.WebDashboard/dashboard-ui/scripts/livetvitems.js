@@ -137,7 +137,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#liveTvItemsPage", function () {
+    }).on('pagebeforeshowready', "#liveTvItemsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

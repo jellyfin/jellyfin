@@ -190,7 +190,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#musicAlbumArtistsPage", function () {
+    }).on('pagebeforeshowready', "#musicAlbumArtistsPage", function () {
 
         var page = this;
         query.ParentId = LibraryMenu.getTopParentId();

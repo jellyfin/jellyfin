@@ -37,17 +37,12 @@
 
             var html = '';
 
-            var addiontalButtonsHtml = user.Policy.IsAdministrator ?
-                ('<button class="btnNewCollection" data-mini="true" data-icon="plus" data-inline="true" data-iconpos="notext">' + Globalize.translate('ButtonNew') + '</button>') :
-                '';
-
             $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false,
-                additionalButtonsHtml: addiontalButtonsHtml
             })).trigger('create');
 
             updateFilterControls(page);
@@ -257,7 +252,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#boxsetsPage", function () {
+    }).on('pagebeforeshowready', "#boxsetsPage", function () {
 
         var page = this;
 

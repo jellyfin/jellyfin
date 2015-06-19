@@ -20,7 +20,7 @@
         // Need to fix those before this can be set to 0
 
         if (window.AppInfo && AppInfo.isNativeApp && $.browser.safari) {
-            return 10000;
+            return 8000;
         }
 
         var screens = $.browser.mobile ? 2 : 1;

@@ -116,7 +116,7 @@
         }).checkboxradio('refresh');
     }
 
-    $(document).on('pageshowready', "#liveTvSeriesTimersPage", function () {
+    $(document).on('pagebeforeshowready', "#liveTvSeriesTimersPage", function () {
 
         var page = this;
 

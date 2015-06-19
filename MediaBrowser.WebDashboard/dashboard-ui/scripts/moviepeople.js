@@ -140,7 +140,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#moviePeoplePage", function () {
+    }).on('pagebeforeshowready', "#moviePeoplePage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

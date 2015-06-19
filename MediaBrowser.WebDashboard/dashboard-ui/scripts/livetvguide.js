@@ -478,7 +478,7 @@
             reloadPage(page);
         });
 
-    }).on('pageshowready', "#liveTvGuidePage", function () {
+    }).on('pagebeforeshowready', "#liveTvGuidePage", function () {
 
         var page = this;
         reloadPage(page);

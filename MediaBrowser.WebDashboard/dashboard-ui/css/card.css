@@ -55,6 +55,10 @@
     margin: 4px;
 }
 
+.defaultBackground .cardImage {
+    background-color: #333;
+}
+
 @media all and (max-width: 800px) {
 
     .cardBox {
@@ -261,15 +265,15 @@
     position: relative;
 }
 
-.iconCardImage .fa {
-    color: rgb(255, 255, 255);
-    position: absolute;
-    left: 0;
-    right: 0;
-    font-size: 50px;
-    margin: auto;
-    top: 25%;
-}
+    .iconCardImage .fa {
+        color: rgb(255, 255, 255);
+        position: absolute;
+        left: 0;
+        right: 0;
+        font-size: 50px;
+        margin: auto;
+        top: 25%;
+    }
 
 .bannerCard {
     width: 100%;

@@ -634,14 +634,13 @@
 
         $(MediaController).on('playerchange', function (e, newPlayer, newTarget) {
 
-            if (currentDevice) {
-                if (newTarget.id != currentDeviceId) {
-                    if (currentWebAppSession) {
-                        console.log('Disconnecting from chromecast');
-                        //currentDevice.disconnect();
-                        currentDevice = null;
-                        currentDeviceId = null;
-                    }
+            if (newTarget.id != currentDeviceId) {
+                if (currentWebAppSession) {
+                    console.log('Disconnecting from chromecast');
+                    //currentDevice.disconnect();
+                    cleanupSession();
+                    currentDevice = null;
+                    currentDeviceId = null;
                 }
             }
         });
@@ -657,9 +656,7 @@
             }
         }
 
-        if (!$.browser.safari) {
-            document.addEventListener("resume", onResume, false);
-        }
+        document.addEventListener("resume", onResume, false);
     }
 
     MediaController.registerPlayer(new chromecastPlayer());

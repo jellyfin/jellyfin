@@ -13,24 +13,16 @@
 }
 
 .backdropPage.ui-page-theme-a {
-    background-color: rgba(240, 240,240, .90) !important;
+    background-color: rgba(240, 240,240, .94) !important;
 }
-
-    .backdropPage.ui-page-theme-a:not(.lightBackdropPage) {
-        background-color: rgba(240, 240,240, .94) !important;
-    }
 
 .ui-page-theme-b {
     background-color: #1f1f1f;
 }
 
 .backdropPage.ui-page-theme-b {
-    background-color: rgba(20, 20,20, .90) !important;
+    background-color: rgba(20, 20,20, .94) !important;
 }
-
-    .backdropPage.ui-page-theme-b:not(.lightBackdropPage) {
-        background-color: rgba(20, 20,20, .94) !important;
-    }
 
 .backdropContainer {
     position: fixed;
@@ -999,10 +991,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         display: inline-block;
     }
 
-    .textIndicator {
-        height: 22px;
-        padding-top: 2px;
-    }
+.textIndicator {
+    height: 22px;
+    padding-top: 2px;
+}
 
 .mediaSourceIndicator {
     display: block;

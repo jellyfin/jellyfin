@@ -122,6 +122,7 @@
                 throw new Error('null player');
             }
 
+            currentPairingId = null;
             currentPlayer = player;
             currentTargetInfo = targetInfo;
 
@@ -745,11 +746,13 @@
         html += '<div class="players"></div>';
 
         html += '<br/>';
-        html += '<p><a href="nowplaying.html" data-role="button" data-icon="remote" data-transition="slideup">' + Globalize.translate('ButtonRemoteControl') + '</a></p>';
+        html += '<p><a href="nowplaying.html" data-transition="slideup" class="clearLink"><paper-button raised class="block"><iron-icon icon="tablet-android"></iron-icon><span>' + Globalize.translate('ButtonRemoteControl') + '</span></paper-button></a></p>';
 
         html += '</div>';
 
         $(document.body).append(html);
+
+        require(['jqmicons']);
 
         var elem = $('#playerSelectionPanel').panel({}).trigger('create').panel("open").on("panelclose", function () {
 

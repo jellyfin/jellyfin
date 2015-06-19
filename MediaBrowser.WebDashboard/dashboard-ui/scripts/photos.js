@@ -282,7 +282,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#photosPage", function () {
+    }).on('pagebeforeshowready', "#photosPage", function () {
 
         var page = this;
 

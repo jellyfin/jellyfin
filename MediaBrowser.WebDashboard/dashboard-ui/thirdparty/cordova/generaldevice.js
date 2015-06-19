@@ -647,6 +647,7 @@
                     if (currentDevice) {
                         console.log('Disconnecting from connect device');
                         //currentDevice.disconnect();
+                        cleanupSession();
                         currentDevice = null;
                         currentDeviceId = null;
                         currentMediaControl = null;

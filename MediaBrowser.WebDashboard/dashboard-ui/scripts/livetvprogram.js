@@ -121,7 +121,7 @@
             deleteTimer(page, currentItem.TimerId);
         });
 
-    }).on('pageshowready', "#liveTvProgramPage", function () {
+    }).on('pagebeforeshowready', "#liveTvProgramPage", function () {
 
         var page = this;
 

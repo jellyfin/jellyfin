@@ -111,7 +111,7 @@
     border-bottom: 2px solid #0B487D;
 }
 
-.tvProgram:hover, .tvProgram:hover .tvProgramInfo {
+.pointerInput .tvProgram:hover, .pointerInput .tvProgram:hover .tvProgramInfo {
     background-color: #444;
 }
 
@@ -231,7 +231,7 @@
     position: relative;
 }
 
-.channelHeaderCell:hover {
+.pointerInput .channelHeaderCell:hover {
     background-color: #444;
 }
 
@@ -269,7 +269,7 @@
     overflow: hidden;
 }
 
-    .programCellInner:hover {
+    .pointerInput .programCellInner:hover {
         background-color: #444;
     }
 

@@ -171,7 +171,6 @@
             });
 
             var existingServer = existingServers.length ? existingServers[0] : {};
-
             existingServer.DateLastAccessed = new Date().getTime();
             existingServer.LastConnectionMode = MediaBrowser.ConnectionMode.Manual;
             existingServer.ManualAddress = apiClient.serverAddress();
@@ -202,6 +201,18 @@
                 credentials.Servers = [existingServer];
                 credentialProvider.credentials(credentials);
             });
+        };
+
+        self.clearData = function () {
+
+            logger.log('connection manager clearing data');
+
+            connectUser = null;
+            var credentials = credentialProvider.credentials();
+            credentials.ConnectAccessToken = null;
+            credentials.ConnectUserId = null;
+            credentials.Servers = [];
+            credentialProvider.credentials(credentials);
         };
 
         function onConnectUserSignIn(user) {

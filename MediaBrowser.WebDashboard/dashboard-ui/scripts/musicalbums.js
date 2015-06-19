@@ -242,7 +242,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#musicAlbumsPage", function () {
+    }).on('pagebeforeshowready', "#musicAlbumsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

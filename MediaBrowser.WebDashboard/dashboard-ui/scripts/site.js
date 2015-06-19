@@ -50,7 +50,7 @@ var Dashboard = {
 
         $.event.special.swipe.verticalDistanceThreshold = 40;
         $.mobile.loader.prototype.options.disabled = true;
-        $.mobile.page.prototype.options.domCache = true;
+        //$.mobile.page.prototype.options.domCache = true;
 
         $.mobile.loadingMessage = false;
         $.mobile.loader.prototype.options.html = "";
@@ -1735,6 +1735,10 @@ var AppInfo = {};
 
         window.ConnectionManager = new MediaBrowser.ConnectionManager(Logger, credentialProvider, AppInfo.appName, AppInfo.appVersion, AppInfo.deviceName, AppInfo.deviceId, capabilities);
 
+        if (getWindowUrl().toLowerCase().indexOf('wizardstart.html') != -1) {
+            window.ConnectionManager.clearData();
+        }
+
         $(ConnectionManager).on('apiclientcreated', function (e, newApiClient) {
 
             initializeApiClient(newApiClient);
@@ -1795,6 +1799,8 @@ var AppInfo = {};
 
         if (AppInfo.isTouchPreferred) {
             elem.addClass('touch');
+        } else {
+            elem.addClass('pointerInput');
         }
 
         if (AppInfo.cardMargin) {
@@ -1829,8 +1835,13 @@ var AppInfo = {};
     function onDocumentReady() {
 
         // Do these now to prevent a flash of content
-        if (AppInfo.isNativeApp && $.browser.safari) {
-            Dashboard.importCss('themes/ios.css');
+        if (AppInfo.isNativeApp) {
+            if ($.browser.android) {
+                Dashboard.importCss('themes/android.css');
+            }
+            else if ($.browser.safari) {
+                Dashboard.importCss('themes/ios.css');
+            }
         }
 
         if ($.browser.safari && $.browser.mobile) {
@@ -2038,6 +2049,7 @@ var AppInfo = {};
             Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css');
             return {};
         });
+        define("actionsheet", ["scripts/actionsheet"]);
 
         //requirejs(['http://viblast.com/player/free-version/qy2fdwajo1/viblast.js']);
 

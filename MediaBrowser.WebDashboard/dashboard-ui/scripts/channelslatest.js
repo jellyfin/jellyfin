@@ -5,7 +5,7 @@
         Sections.loadLatestChannelItems($(".items", page), Dashboard.getCurrentUserId());
     }
 
-    $(document).on('pageshowready', "#channelsLatestPage", function () {
+    $(document).on('pagebeforeshowready', "#channelsLatestPage", function () {
 
         reloadItems(this);
 

@@ -55,11 +55,11 @@
     }
 
 .ui-page-theme-b paper-button.subdued:not([disabled]) {
-    color: #555;
+    color: #484848;
 }
 
 .ui-page-theme-b paper-button[raised].subdued:not([disabled]) {
-    background: #555;
+    background: #484848;
     color: #fff;
 }
 

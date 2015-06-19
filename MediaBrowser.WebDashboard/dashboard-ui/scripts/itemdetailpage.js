@@ -1627,7 +1627,7 @@
 
         });
 
-    }).on('pageshowready', "#itemDetailPage", function () {
+    }).on('pagebeforeshowready', "#itemDetailPage", function () {
 
         var page = this;
 

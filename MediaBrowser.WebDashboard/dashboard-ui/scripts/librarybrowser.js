@@ -2,8 +2,6 @@
 
     var pageSizeKey = 'pagesize_v4';
 
-    var defaultBackground = "#333";
-
     return {
         getDefaultPageSize: function (key, defaultValue) {
 
@@ -1214,13 +1212,14 @@
             var html = '';
             var imgUrl = null;
             var icon;
-            var background = null;
             var width = null;
             var height = null;
 
             var forceName = false;
 
             var enableImageEnhancers = options.enableImageEnhancers !== false;
+
+            var cssClass = "card";
 
             if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.5) {
 
@@ -1386,7 +1385,7 @@
                 if (item.Name && options.showTitle) {
                     icon = 'fa-music';
                 }
-                background = defaultBackground;
+                cssClass += " defaultBackground";
 
             } else if (item.Type == "Recording" || item.Type == "Program" || item.Type == "TvChannel") {
 
@@ -1394,27 +1393,25 @@
                     icon = 'fa-folder-open';
                 }
 
-                background = defaultBackground;
+                cssClass += " defaultBackground";
             } else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
 
                 if (item.Name && options.showTitle) {
                     icon = 'fa-video-camera';
                 }
-                background = defaultBackground;
+                cssClass += " defaultBackground";
             } else if (item.Type == "Person") {
 
                 if (item.Name && options.showTitle) {
                     icon = 'fa-user';
                 }
-                background = defaultBackground;
+                cssClass += " defaultBackground";
             } else {
                 if (item.Name && options.showTitle) {
                     icon = 'fa-folder-open';
                 }
-                background = defaultBackground;
+                cssClass += " defaultBackground";
             }
-
-            var cssClass = "card";
 
             cssClass += ' ' + options.shape + 'Card';
 
@@ -1451,10 +1448,6 @@
 
             if (imgUrl && !options.lazy) {
                 style += 'background-image:url(\'' + imgUrl + '\');';
-            }
-
-            if (background) {
-                style += "background-color:" + background + ";";
             }
 
             var imageCssClass = 'cardImage';
@@ -2129,12 +2122,15 @@
 
                 if (options.viewButton) {
 
+                    //html += '<paper-button raised class="subdued notext"><iron-icon icon="view-comfy"></iron-icon></paper-button>';
                     html += '<paper-button raised class="subdued notext" onclick="require([\'jqmicons\']);jQuery(\'.viewPanel\', jQuery(this).parents(\'.page\')).panel(\'toggle\');"><iron-icon icon="more-vert"></iron-icon></paper-button>';
                 }
 
                 html += '</div>';
 
                 if (showControls && options.showLimit !== false) {
+
+                    require(['jqmicons']);
                     var id = "selectPageSize";
 
                     var pageSizes = options.pageSizes || LibraryBrowser.getDefaultPageSizeSelections();

@@ -109,7 +109,7 @@
         });
     }
 
-    $(document).on('pageshowready', "#favoritesPage", function () {
+    $(document).on('pagebeforeshowready', "#favoritesPage", function () {
 
         var page = this;
 

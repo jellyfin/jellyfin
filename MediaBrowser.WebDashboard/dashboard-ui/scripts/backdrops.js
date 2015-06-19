@@ -129,7 +129,7 @@
         }
 
         if ($.browser.android && AppInfo.isNativeApp) {
-            return true;
+            return screen.availWidth >= 1200;
         }
 
         if ($.browser.mobile) {

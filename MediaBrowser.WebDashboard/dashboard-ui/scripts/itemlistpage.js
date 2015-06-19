@@ -244,7 +244,7 @@
 
         $(page).on('click', '.mediaItem', onListItemClick);
 
-    }).on('pageshowready', "#itemListPage", function () {
+    }).on('pagebeforeshowready', "#itemListPage", function () {
 
         var page = this;
 

@@ -84,7 +84,7 @@
         var page = this;
 
 
-    }).on('pageshowready', "#liveTvRecordingListPage", function () {
+    }).on('pagebeforeshowready', "#liveTvRecordingListPage", function () {
 
         var page = this;
 

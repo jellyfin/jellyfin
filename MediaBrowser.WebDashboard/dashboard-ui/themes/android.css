@@ -1,0 +1,15 @@
+﻿.viewMenuBar, .libraryViewNav {
+    background-color: #181818;
+}
+
+.ui-page-theme-b {
+    background-color: #282828;
+}
+
+.backdropPage.ui-page-theme-b {
+    background-color: rgba(20, 20,20, .94) !important;
+}
+
+.defaultBackground .cardImage {
+    background-color: #383838;
+}

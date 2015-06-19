@@ -8,6 +8,10 @@
     background-color: rgba(28,28,28,.97);
 }
 
+.backdropPage.ui-page-theme-b {
+    background-color: rgba(28,28,28,.92) !important;
+}
+
 .ui-page-theme-b {
     background-color: #1c1c1c;
 }
@@ -129,4 +133,16 @@ h1, h1 a {
 
 .libraryViewNav a:not(.ui-btn-active):hover {
     color: #539FFD !important;
+}
+
+@media (min-width: 600px) {
+
+    /* This needs a little extra space to account for the longer date format */
+    .channelHeaderCell, .channelTimeslotHeader {
+        width: 209px;
+    }
+
+    .programGrid, .timeslotHeaders {
+        margin-left: 210px;
+    }
 }

@@ -321,13 +321,11 @@
 
     function handleLibraryLinkNavigations(elem) {
 
-        $('a.posterItem', elem).on('click', function () {
+        $('a', elem).on('click', function () {
 
-            var textElem = $('.posterItemText span', this);
+            var card = $(this).parents('.card');
+            var textElem = $('.cardText', card);
 
-            if (!textElem.length) {
-                textElem = $('.posterItemText', this);
-            }
             var text = textElem.html();
 
             LibraryMenu.setText(text);

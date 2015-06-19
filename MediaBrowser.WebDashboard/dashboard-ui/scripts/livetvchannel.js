@@ -176,7 +176,7 @@
             Dashboard.navigate("edititemmetadata.html?channelid=" + currentItem.Id);
         });
 
-    }).on('pageshowready', "#liveTvChannelPage", function () {
+    }).on('pagebeforeshowready', "#liveTvChannelPage", function () {
 
         var page = this;
 

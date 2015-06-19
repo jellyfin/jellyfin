@@ -61,7 +61,7 @@
 
     }
 
-    $(document).on('pageshowready', "#channelsPage", function () {
+    $(document).on('pagebeforeshowready', "#channelsPage", function () {
 
         LibraryBrowser.loadSavedQueryValues('channels', query);
 

@@ -722,7 +722,7 @@
         $('.sendMessageForm').off('submit', NowPlayingPage.onMessageSubmit).on('submit', NowPlayingPage.onMessageSubmit);
         $('.typeTextForm').off('submit', NowPlayingPage.onSendStringSubmit).on('submit', NowPlayingPage.onSendStringSubmit);
 
-    }).on('pageshowready', "#nowPlayingPage", function () {
+    }).on('pagebeforeshowready', "#nowPlayingPage", function () {
 
         var page = this;
 

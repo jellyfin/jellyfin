@@ -170,7 +170,7 @@
             takeTour(page, Dashboard.getCurrentUserId());
         });
 
-    }).on('pageshowready', "#indexPage", function () {
+    }).on('pagebeforeshowready', "#indexPage", function () {
 
         var page = this;
 

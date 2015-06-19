@@ -360,7 +360,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#tvShowsPage", function () {
+    }).on('pagebeforeshowready', "#tvShowsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

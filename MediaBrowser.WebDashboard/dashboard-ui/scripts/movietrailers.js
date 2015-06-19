@@ -212,7 +212,7 @@
 
         $('.popupTrailerReelForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#movieTrailersPage", function () {
+    }).on('pagebeforeshowready', "#movieTrailersPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

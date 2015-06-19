@@ -81,8 +81,9 @@
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
-                viewButton: true,
-                showLimit: false
+                showLimit: false,
+                updatePageSizeSetting: false
+
             })).trigger('create');
 
             updateFilterControls(page);
@@ -171,19 +172,11 @@
         }).checkboxradio('refresh');
 
         $('#selectView', page).val(view).selectmenu('refresh');
-
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
     $(document).on('pageinitdepends', "#playlistEditorPage", function () {
 
         var page = this;
-
-        $('#selectPageSize', page).on('change', function () {
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
 
         $('.btnPlay', page).on('click', function () {
             var userdata = currentItem.UserData || {};
@@ -215,7 +208,7 @@
 
         });
 
-    }).on('pageshowready', "#playlistEditorPage", function () {
+    }).on('pagebeforeshowready', "#playlistEditorPage", function () {
 
         var page = this;
 

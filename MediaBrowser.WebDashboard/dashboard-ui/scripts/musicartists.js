@@ -191,7 +191,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#musicArtistsPage", function () {
+    }).on('pagebeforeshowready', "#musicArtistsPage", function () {
 
         var page = this;
 

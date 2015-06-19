@@ -587,7 +587,7 @@
             });
         });
 
-    }).on('pageshowready', "#itemByNameDetailPage", function () {
+    }).on('pagebeforeshowready', "#itemByNameDetailPage", function () {
 
         var page = this;
 
