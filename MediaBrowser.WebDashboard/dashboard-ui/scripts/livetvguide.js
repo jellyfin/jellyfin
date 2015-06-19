@@ -353,6 +353,8 @@
         $('.currentDate', page).html(text);
     }
 
+    var dateOptions = [];
+
     function setDateRange(page, guideInfo) {
 
         var today = new Date();
@@ -370,28 +372,23 @@
 
         start = new Date(Math.max(today, start));
 
-        var html = '';
+        dateOptions = [];
 
         while (start <= end) {
 
-
-            html += '<option value="' + start.getTime() + '">' + LibraryBrowser.getFutureDateText(start) + '</option>';
+            dateOptions.push({
+                name: LibraryBrowser.getFutureDateText(start),
+                id: start.getTime()
+            });
 
             start.setDate(start.getDate() + 1);
             start.setHours(0, 0, 0, 0);
         }
 
-        var elem = $('#selectDate', page).html(html).selectmenu('refresh');
-
-        if (currentDate) {
-            elem.val(currentDate.getTime()).selectmenu('refresh');
-        }
-
-        var val = elem.val();
         var date = new Date();
 
-        if (val) {
-            date.setTime(parseInt(val));
+        if (currentDate) {
+            date.setTime(currentDate.getTime());
         }
 
         changeDate(page, date);
@@ -425,6 +422,25 @@
         });
     }
 
+    function selectDate(page) {
+
+        require(['actionsheet'], function() {
+            
+            ActionSheetElement.show({
+                items: dateOptions,
+                showCancel: true,
+                title: Globalize.translate('HeaderSelectDate'),
+                callback: function (id) {
+
+                    var date = new Date();
+                    date.setTime(parseInt(id));
+                    changeDate(page, date);
+                }
+            });
+
+        });
+    }
+
     $(document).on('pageinitdepends', "#liveTvGuidePage", function () {
 
         var page = this;
@@ -432,19 +448,6 @@
         $('.programGrid', page).on('scroll', function () {
 
             onProgramGridScroll(page, this);
-        });
-
-        $('#selectDate', page).on('change', function () {
-
-            var date = new Date();
-            date.setTime(parseInt(this.value));
-
-            $('#popupConfig', page).popup('close');
-
-            setTimeout(function () {
-
-                changeDate(page, date);
-            }, 300);
         });
 
         if ($.browser.mobile) {
@@ -476,6 +479,11 @@
         $('.btnUnlockGuide', page).on('click', function () {
 
             reloadPage(page);
+        });
+
+        $('.btnSelectDate', page).on('click', function () {
+
+            selectDate(page);
         });
 
     }).on('pagebeforeshowready', "#liveTvGuidePage", function () {

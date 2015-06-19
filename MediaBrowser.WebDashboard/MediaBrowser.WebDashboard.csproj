@@ -87,6 +87,423 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="dashboard-ui\bower_components\iron-a11y-announcer\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\iron-a11y-announcer\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-a11y-announcer\demo\x-announces.html" />
+    <Content Include="dashboard-ui\bower_components\iron-a11y-announcer\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-a11y-announcer\iron-a11y-announcer.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-a11y-announcer\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-a11y-announcer\test\iron-a11y-announcer.html" />
+    <Content Include="dashboard-ui\bower_components\iron-a11y-keys-behavior\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\iron-a11y-keys-behavior\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-a11y-keys-behavior\demo\x-key-aware.html" />
+    <Content Include="dashboard-ui\bower_components\iron-a11y-keys-behavior\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-a11y-keys-behavior\iron-a11y-keys-behavior.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-a11y-keys-behavior\test\basic-test.html" />
+    <Content Include="dashboard-ui\bower_components\iron-a11y-keys-behavior\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-behaviors\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\iron-behaviors\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-behaviors\demo\simple-button.html" />
+    <Content Include="dashboard-ui\bower_components\iron-behaviors\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-behaviors\iron-button-state.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-behaviors\iron-control-state.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-behaviors\test\active-state.html" />
+    <Content Include="dashboard-ui\bower_components\iron-behaviors\test\disabled-state.html" />
+    <Content Include="dashboard-ui\bower_components\iron-behaviors\test\focused-state.html" />
+    <Content Include="dashboard-ui\bower_components\iron-behaviors\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-behaviors\test\test-elements.html" />
+    <Content Include="dashboard-ui\bower_components\iron-fit-behavior\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\iron-fit-behavior\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-fit-behavior\demo\simple-fit.html" />
+    <Content Include="dashboard-ui\bower_components\iron-fit-behavior\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-fit-behavior\iron-fit-behavior.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-fit-behavior\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-fit-behavior\test\iron-fit-behavior.html" />
+    <Content Include="dashboard-ui\bower_components\iron-fit-behavior\test\test-fit.html" />
+    <Content Include="dashboard-ui\bower_components\iron-flex-layout\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\iron-flex-layout\classes\iron-flex-layout.html" />
+    <Content Include="dashboard-ui\bower_components\iron-flex-layout\classes\iron-shadow-flex-layout.html" />
+    <Content Include="dashboard-ui\bower_components\iron-flex-layout\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-flex-layout\demo\x-app.html" />
+    <Content Include="dashboard-ui\bower_components\iron-flex-layout\iron-flex-layout.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-iconset-svg\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\iron-iconset-svg\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-iconset-svg\demo\svg-sample-icons.html" />
+    <Content Include="dashboard-ui\bower_components\iron-iconset-svg\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-iconset-svg\iron-iconset-svg.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-iconset-svg\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-iconset-svg\test\iron-iconset-svg.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icons\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\iron-icons\av-icons.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icons\communication-icons.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icons\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icons\device-icons.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icons\editor-icons.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icons\hardware-icons.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icons\hero.svg" />
+    <Content Include="dashboard-ui\bower_components\iron-icons\image-icons.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icons\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icons\iron-icons.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icons\maps-icons.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icons\notification-icons.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icons\social-icons.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icon\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\iron-icon\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icon\demo\location.png" />
+    <Content Include="dashboard-ui\bower_components\iron-icon\hero.svg" />
+    <Content Include="dashboard-ui\bower_components\iron-icon\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icon\iron-icon.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-icon\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-icon\test\iron-icon.html" />
+    <Content Include="dashboard-ui\bower_components\iron-meta\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\iron-meta\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-meta\hero.svg" />
+    <Content Include="dashboard-ui\bower_components\iron-meta\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-meta\iron-meta.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-meta\test\basic.html" />
+    <Content Include="dashboard-ui\bower_components\iron-meta\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-meta\test\iron-meta.html" />
+    <Content Include="dashboard-ui\bower_components\iron-overlay-behavior\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\iron-overlay-behavior\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-overlay-behavior\demo\simple-overlay.html" />
+    <Content Include="dashboard-ui\bower_components\iron-overlay-behavior\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-overlay-behavior\iron-overlay-backdrop.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-overlay-behavior\iron-overlay-behavior.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-overlay-behavior\iron-overlay-manager.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-overlay-behavior\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-overlay-behavior\test\iron-overlay-behavior.html" />
+    <Content Include="dashboard-ui\bower_components\iron-overlay-behavior\test\test-overlay.html" />
+    <Content Include="dashboard-ui\bower_components\iron-resizable-behavior\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\iron-resizable-behavior\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-resizable-behavior\demo\src\x-app.html" />
+    <Content Include="dashboard-ui\bower_components\iron-resizable-behavior\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-resizable-behavior\iron-resizable-behavior.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-resizable-behavior\test\basic.html" />
+    <Content Include="dashboard-ui\bower_components\iron-resizable-behavior\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-resizable-behavior\test\test-elements.html" />
+    <Content Include="dashboard-ui\bower_components\iron-selector\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\iron-selector\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-selector\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-selector\iron-multi-selectable.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-selector\iron-selectable.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-selector\iron-selection.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-selector\iron-selector.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\iron-selector\test\activate-event.html" />
+    <Content Include="dashboard-ui\bower_components\iron-selector\test\basic.html" />
+    <Content Include="dashboard-ui\bower_components\iron-selector\test\content-element.html" />
+    <Content Include="dashboard-ui\bower_components\iron-selector\test\content.html" />
+    <Content Include="dashboard-ui\bower_components\iron-selector\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-selector\test\multi.html" />
+    <Content Include="dashboard-ui\bower_components\iron-selector\test\next-previous.html" />
+    <Content Include="dashboard-ui\bower_components\iron-selector\test\selected-attribute.html" />
+    <Content Include="dashboard-ui\bower_components\iron-selector\test\template-repeat.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\cascaded-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\fade-in-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\fade-out-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\hero-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\opaque-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\ripple-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\scale-down-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\scale-up-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\slide-down-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\slide-from-left-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\slide-from-right-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\slide-left-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\slide-right-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\slide-up-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\animations\transform-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\declarative\index.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\doc\basic.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\doc\my-animatable.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\doc\my-dialog.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\doc\types.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\dropdown\animated-dropdown.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\dropdown\index.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\grid\animated-grid.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\grid\fullsize-page-with-card.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\grid\index.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\list\full-view.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\list\index.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\list\list-demo.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\list\list-view.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\load\animated-grid.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\load\full-page.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\load\index.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\reprojection\animated-grid.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\reprojection\fullsize-page-with-card.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\reprojection\index.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\reprojection\reprojected-pages.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\shared.css" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\tiles\circles-page.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\tiles\index.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\demo\tiles\squares-page.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\index.html" />
+    <Content Include="dashboard-ui\bower_components\neon-animation\neon-animatable-behavior.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\neon-animatable.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\neon-animated-pages.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\neon-animation-behavior.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\neon-animation-runner-behavior.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\neon-animation.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\neon-animations.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\neon-shared-element-animatable-behavior.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\neon-shared-element-animation-behavior.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\neon-animation\web-animations.html" />
+    <Content Include="dashboard-ui\bower_components\paper-behaviors\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\paper-behaviors\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-behaviors\demo\paper-button.html" />
+    <Content Include="dashboard-ui\bower_components\paper-behaviors\demo\paper-radio-button.html" />
+    <Content Include="dashboard-ui\bower_components\paper-behaviors\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-behaviors\paper-button-behavior.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-behaviors\paper-inky-focus-behavior.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-behaviors\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-behaviors\test\paper-button-behavior.html" />
+    <Content Include="dashboard-ui\bower_components\paper-behaviors\test\paper-radio-button-behavior.html" />
+    <Content Include="dashboard-ui\bower_components\paper-behaviors\test\test-button.html" />
+    <Content Include="dashboard-ui\bower_components\paper-behaviors\test\test-radio-button.html" />
+    <Content Include="dashboard-ui\bower_components\paper-button\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\paper-button\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-button\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-button\paper-button.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-button\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-button\test\paper-button.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-behavior\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-behavior\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-behavior\demo\simple-dialog.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-behavior\hero.svg" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-behavior\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-behavior\paper-dialog-behavior.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-behavior\paper-dialog-common.css" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-behavior\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-behavior\test\paper-dialog-behavior.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-behavior\test\test-dialog.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-scrollable\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-scrollable\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-scrollable\hero.svg" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-scrollable\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-scrollable\paper-dialog-scrollable.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-dialog-scrollable\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog-scrollable\test\paper-dialog-scrollable.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog\hero.svg" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog\paper-dialog.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-dialog\test\paper-dialog.html" />
+    <Content Include="dashboard-ui\bower_components\paper-fab\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\paper-fab\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-fab\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-fab\paper-fab.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-fab\test\a11y.html" />
+    <Content Include="dashboard-ui\bower_components\paper-fab\test\basic.html" />
+    <Content Include="dashboard-ui\bower_components\paper-fab\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-material\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\paper-material\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-material\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-material\paper-material.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-material\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-material\test\paper-material.html" />
+    <Content Include="dashboard-ui\bower_components\paper-ripple\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\paper-ripple\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-ripple\hero.svg" />
+    <Content Include="dashboard-ui\bower_components\paper-ripple\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-ripple\paper-ripple.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-ripple\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-ripple\test\paper-ripple.html" />
+    <Content Include="dashboard-ui\bower_components\paper-spinner\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\paper-spinner\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-spinner\hero.svg" />
+    <Content Include="dashboard-ui\bower_components\paper-spinner\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-spinner\paper-spinner.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-spinner\paper-spinner.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-spinner\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-spinner\test\paper-spinner.html" />
+    <Content Include="dashboard-ui\bower_components\paper-styles\classes\global.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-styles\classes\shadow-layout.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-styles\classes\shadow.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-styles\classes\typography.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-styles\color.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-styles\default-theme.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-styles\demo-pages.html" />
+    <Content Include="dashboard-ui\bower_components\paper-styles\demo.css" />
+    <Content Include="dashboard-ui\bower_components\paper-styles\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-styles\paper-styles-classes.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-styles\paper-styles.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-styles\shadow.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-styles\typography.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-toast\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\paper-toast\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-toast\hero.svg" />
+    <Content Include="dashboard-ui\bower_components\paper-toast\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-toast\paper-toast.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\polymer\LICENSE.txt" />
+    <Content Include="dashboard-ui\bower_components\polymer\polymer-micro.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\polymer\polymer-mini.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\polymer\polymer.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\web-animations-js\web-animations-next-lite.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\web-animations-js\web-animations-next.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\web-animations-js\web-animations.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\web-animations-js\web-animations.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\webcomponentsjs\CustomElements.js" />
+    <Content Include="dashboard-ui\bower_components\webcomponentsjs\CustomElements.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\webcomponentsjs\HTMLImports.js" />
+    <Content Include="dashboard-ui\bower_components\webcomponentsjs\HTMLImports.min.js" />
+    <Content Include="dashboard-ui\bower_components\webcomponentsjs\MutationObserver.js" />
+    <Content Include="dashboard-ui\bower_components\webcomponentsjs\MutationObserver.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\webcomponentsjs\ShadowDOM.js" />
+    <Content Include="dashboard-ui\bower_components\webcomponentsjs\ShadowDOM.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\webcomponentsjs\webcomponents-lite.js" />
+    <Content Include="dashboard-ui\bower_components\webcomponentsjs\webcomponents-lite.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\webcomponentsjs\webcomponents.js" />
+    <Content Include="dashboard-ui\bower_components\webcomponentsjs\webcomponents.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\css\images\clients\androidtv-tile.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -165,67 +582,7 @@
     <Content Include="dashboard-ui\thirdparty\cordova\wakeonlan.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-a11y-announcer\iron-a11y-announcer.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-a11y-keys-behavior\iron-a11y-keys-behavior.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-behaviors\iron-button-state.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-behaviors\iron-control-state.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-flex-layout\classes\iron-flex-layout.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-flex-layout\classes\iron-shadow-flex-layout.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-flex-layout\iron-flex-layout.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-iconset-svg\iron-iconset-svg.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-icons\av-icons.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-icons\communication-icons.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-icons\device-icons.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-icons\editor-icons.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-icons\emby-icons.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-icons\hardware-icons.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-icons\image-icons.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-icons\iron-icons.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-icons\maps-icons.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-icons\notification-icons.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-icons\social-icons.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-icon\iron-icon.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\iron-meta\iron-meta.html">
+    <Content Include="dashboard-ui\thirdparty\emby-icons.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.icons.css">
@@ -237,70 +594,7 @@
     <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.theme.min.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-behaviors\paper-button-behavior.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-behaviors\paper-inky-focus-behavior.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-button\paper-button-style.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-button\paper-button.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-fab\paper-fab.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-icon-button\paper-icon-button.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-material\paper-material.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-ripple\hero.svg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-ripple\paper-ripple.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-spinner\paper-spinner.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-spinner\paper-spinner.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-styles\classes\global.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-styles\classes\shadow-layout.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-styles\classes\shadow.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-styles\classes\typography.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-styles\color.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-styles\default-theme.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-styles\paper-styles-classes.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-styles\paper-styles.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-styles\shadow.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-styles\typography.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\paper-toast\paper-toast.html">
+    <Content Include="dashboard-ui\thirdparty\paper-button-style.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\polymer\LICENSE.txt">
@@ -316,24 +610,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\velocity.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\webcomponentsjs\CustomElements.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\webcomponentsjs\HTMLImports.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\webcomponentsjs\MutationObserver.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\webcomponentsjs\ShadowDOM.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\webcomponentsjs\webcomponents-lite.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\webcomponentsjs\webcomponents.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\voice\voice.css">
@@ -2407,6 +2683,96 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <None Include="dashboard-ui\bower_components\iron-a11y-announcer\.bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-a11y-announcer\bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-a11y-announcer\README.md" />
+    <None Include="dashboard-ui\bower_components\iron-a11y-keys-behavior\.bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-a11y-keys-behavior\bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-a11y-keys-behavior\README.md" />
+    <None Include="dashboard-ui\bower_components\iron-behaviors\.bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-behaviors\bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-behaviors\README.md" />
+    <None Include="dashboard-ui\bower_components\iron-fit-behavior\.bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-fit-behavior\bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-fit-behavior\README.md" />
+    <None Include="dashboard-ui\bower_components\iron-flex-layout\.bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-flex-layout\bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-flex-layout\README.md" />
+    <None Include="dashboard-ui\bower_components\iron-iconset-svg\.bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-iconset-svg\bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-iconset-svg\README.md" />
+    <None Include="dashboard-ui\bower_components\iron-icons\.bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-icons\bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-icons\README.md" />
+    <None Include="dashboard-ui\bower_components\iron-icon\.bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-icon\bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-icon\README.md" />
+    <None Include="dashboard-ui\bower_components\iron-meta\.bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-meta\bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-meta\README.md" />
+    <None Include="dashboard-ui\bower_components\iron-overlay-behavior\.bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-overlay-behavior\bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-overlay-behavior\README.md" />
+    <None Include="dashboard-ui\bower_components\iron-resizable-behavior\.bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-resizable-behavior\bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-resizable-behavior\README.md" />
+    <None Include="dashboard-ui\bower_components\iron-selector\.bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-selector\bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-selector\README.md" />
+    <None Include="dashboard-ui\bower_components\neon-animation\.bower.json" />
+    <None Include="dashboard-ui\bower_components\neon-animation\bower.json" />
+    <None Include="dashboard-ui\bower_components\neon-animation\guides\neon-animation.md" />
+    <None Include="dashboard-ui\bower_components\neon-animation\README.md" />
+    <None Include="dashboard-ui\bower_components\paper-behaviors\.bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-behaviors\bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-behaviors\README.md" />
+    <None Include="dashboard-ui\bower_components\paper-button\.bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-button\bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-button\README.md" />
+    <None Include="dashboard-ui\bower_components\paper-dialog-behavior\.bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-dialog-behavior\bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-dialog-behavior\README.md" />
+    <None Include="dashboard-ui\bower_components\paper-dialog-scrollable\.bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-dialog-scrollable\bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-dialog-scrollable\README.md" />
+    <None Include="dashboard-ui\bower_components\paper-dialog\.bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-dialog\bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-dialog\README.md" />
+    <None Include="dashboard-ui\bower_components\paper-fab\.bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-fab\bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-fab\README.md" />
+    <None Include="dashboard-ui\bower_components\paper-material\.bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-material\bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-material\README.md" />
+    <None Include="dashboard-ui\bower_components\paper-ripple\.bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-ripple\bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-ripple\README.md" />
+    <None Include="dashboard-ui\bower_components\paper-spinner\.bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-spinner\bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-spinner\README.md" />
+    <None Include="dashboard-ui\bower_components\paper-styles\.bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-styles\bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-styles\README.md" />
+    <None Include="dashboard-ui\bower_components\paper-toast\.bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-toast\bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-toast\README.md" />
+    <None Include="dashboard-ui\bower_components\polymer\.bower.json" />
+    <None Include="dashboard-ui\bower_components\polymer\bower.json" />
+    <None Include="dashboard-ui\bower_components\polymer\build.log" />
+    <None Include="dashboard-ui\bower_components\web-animations-js\.bower.json" />
+    <None Include="dashboard-ui\bower_components\web-animations-js\bower.json" />
+    <None Include="dashboard-ui\bower_components\web-animations-js\COPYING" />
+    <None Include="dashboard-ui\bower_components\web-animations-js\History.md" />
+    <None Include="dashboard-ui\bower_components\web-animations-js\README.md" />
+    <None Include="dashboard-ui\bower_components\web-animations-js\web-animations-next-lite.min.js.map" />
+    <None Include="dashboard-ui\bower_components\web-animations-js\web-animations-next.min.js.map" />
+    <None Include="dashboard-ui\bower_components\web-animations-js\web-animations.min.js.gz" />
+    <None Include="dashboard-ui\bower_components\web-animations-js\web-animations.min.js.map" />
+    <None Include="dashboard-ui\bower_components\webcomponentsjs\.bower.json" />
+    <None Include="dashboard-ui\bower_components\webcomponentsjs\bower.json" />
+    <None Include="dashboard-ui\bower_components\webcomponentsjs\build.log" />
+    <None Include="dashboard-ui\bower_components\webcomponentsjs\package.json" />
+    <None Include="dashboard-ui\bower_components\webcomponentsjs\README.md" />
     <None Include="dashboard-ui\css\fonts\roboto\RobotoBold.woff">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -2519,15 +2885,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="dashboard-ui\thirdparty\polymer\bower.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="dashboard-ui\thirdparty\webcomponentsjs\bower.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="dashboard-ui\thirdparty\webcomponentsjs\package.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="dashboard-ui\thirdparty\webcomponentsjs\README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />

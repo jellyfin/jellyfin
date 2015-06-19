@@ -1,0 +1,248 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>iron-a11y-keys</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+  <link rel="import" href="../iron-a11y-keys-behavior.html">
+</head>
+<body>
+  <test-fixture id="BasicKeys">
+    <template>
+      <x-a11y-basic-keys></x-a11y-basic-keys>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="ComboKeys">
+    <template>
+      <x-a11y-combo-keys></x-a11y-combo-keys>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="AlternativeEventKeys">
+    <template>
+      <x-a11y-alternate-event-keys></x-a11y-alternate-event-keys>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="BehaviorKeys">
+    <template>
+      <x-a11y-behavior-keys></x-a11y-behavior-keys>
+    </template>
+  </test-fixture>
+
+  <script>
+suite('Polymer.IronA11yKeysBehavior', function() {
+  var keys;
+
+  suiteSetup(function() {
+    var KeysTestBehavior = [Polymer.IronA11yKeysBehavior, {
+      properties: {
+        keyCount: {
+          type: Number,
+          value: 0
+        }
+      },
+
+      _keyHandler: function(event) {
+        this.keyCount++;
+        this.lastEvent = event;
+      }
+    }];
+
+    Polymer({
+      is: 'x-a11y-basic-keys',
+
+      behaviors: [
+        KeysTestBehavior
+      ],
+
+      keyBindings: {
+        'space': '_keyHandler'
+      }
+    });
+
+    Polymer({
+      is: 'x-a11y-combo-keys',
+
+      behaviors: [
+        KeysTestBehavior
+      ],
+
+      keyBindings: {
+        'ctrl+shift+a': '_keyHandler'
+      }
+    });
+
+    Polymer({
+      is: 'x-a11y-alternate-event-keys',
+
+      behaviors: [
+        KeysTestBehavior
+      ],
+
+      keyBindings: {
+        'space:keyup': '_keyHandler'
+      }
+    });
+
+    var XA11yBehavior = {
+      keyBindings: {
+        'enter': '_keyHandler'
+      }
+    };
+
+    Polymer({
+      is: 'x-a11y-behavior-keys',
+
+      behaviors: [
+        KeysTestBehavior,
+        XA11yBehavior
+      ],
+
+      keyBindings: {
+        'space': '_keyHandler'
+      }
+    });
+  });
+
+  suite('basic keys', function() {
+    setup(function() {
+      keys = fixture('BasicKeys');
+    });
+
+    test('trigger the handler when the specified key is pressed', function() {
+      MockInteractions.pressSpace(keys);
+
+      expect(keys.keyCount).to.be.equal(1);
+    });
+
+    test('do not trigger the handler for non-specified keys', function() {
+      MockInteractions.pressEnter(keys);
+
+      expect(keys.keyCount).to.be.equal(0);
+    });
+
+    test('can have bindings added imperatively', function() {
+      keys.addOwnKeyBinding('enter', '_keyHandler');
+
+      MockInteractions.pressEnter(keys);
+      expect(keys.keyCount).to.be.equal(1);
+
+      MockInteractions.pressSpace(keys);
+      expect(keys.keyCount).to.be.equal(2);
+    });
+
+    test('can remove imperatively added bindings', function() {
+      keys.addOwnKeyBinding('enter', '_keyHandler');
+      keys.removeOwnKeyBindings();
+
+      MockInteractions.pressEnter(keys);
+      expect(keys.keyCount).to.be.equal(0);
+
+      MockInteractions.pressSpace(keys);
+      expect(keys.keyCount).to.be.equal(1);
+    });
+
+    suite('edge cases', function() {
+      test('knows that `spacebar` is the same as `space`', function() {
+        var event = new CustomEvent('keydown');
+        event.key = 'spacebar';
+        expect(keys.keyboardEventMatchesKeys(event, 'space')).to.be.equal(true);
+      });
+    });
+
+    suite('matching keyboard events to keys', function() {
+      test('can be done imperatively', function() {
+        var event = new CustomEvent('keydown');
+        event.keyCode = 65;
+        expect(keys.keyboardEventMatchesKeys(event, 'a')).to.be.equal(true);
+      });
+
+      test('can be done with a provided keyboardEvent', function() {
+        var event;
+        MockInteractions.pressSpace(keys);
+        event = keys.lastEvent;
+
+        expect(event.detail.keyboardEvent).to.be.okay;
+        expect(keys.keyboardEventMatchesKeys(event, 'space')).to.be.equal(true);
+      });
+
+      test('can handle variations in arrow key names', function() {
+        var event = new CustomEvent('keydown');
+        event.key = 'up';
+        expect(keys.keyboardEventMatchesKeys(event, 'up')).to.be.equal(true);
+        event.key = 'ArrowUp';
+        expect(keys.keyboardEventMatchesKeys(event, 'up')).to.be.equal(true);
+      });
+    });
+  });
+
+  suite('combo keys', function() {
+    setup(function() {
+      keys = fixture('ComboKeys');
+    });
+
+    test('trigger the handler when the combo is pressed', function() {
+      var event = new CustomEvent('keydown');
+
+      event.ctrlKey = true;
+      event.shiftKey = true;
+      event.keyCode = event.code = 65;
+
+      keys.dispatchEvent(event);
+
+      expect(keys.keyCount).to.be.equal(1);
+    });
+  });
+
+  suite('alternative event keys', function() {
+    setup(function() {
+      keys = fixture('AlternativeEventKeys');
+    });
+
+    test('trigger on the specified alternative keyboard event', function() {
+      MockInteractions.keyDownOn(keys, 32);
+
+      expect(keys.keyCount).to.be.equal(0);
+
+      MockInteractions.keyUpOn(keys, 32);
+
+      expect(keys.keyCount).to.be.equal(1);
+    });
+  });
+
+  suite('behavior keys', function() {
+    setup(function() {
+      keys = fixture('BehaviorKeys');
+    });
+
+    test('bindings in other behaviors are transitive', function() {
+      MockInteractions.pressEnter(keys);
+      MockInteractions.pressSpace(keys);
+
+      expect(keys.keyCount).to.be.equal(2);
+    });
+  });
+
+});
+  </script>
+</body>
+</html>

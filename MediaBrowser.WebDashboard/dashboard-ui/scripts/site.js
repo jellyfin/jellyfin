@@ -2042,14 +2042,19 @@ var AppInfo = {};
 
         define("connectservice", ["thirdparty/apiclient/connectservice"]);
         define("paperbuttonstyle", [], function () {
-            Dashboard.importCss('thirdparty/paper-button/paper-button-style.css');
+            Dashboard.importCss('thirdparty/paper-button-style.css');
             return {};
         });
         define("jqmicons", [], function () {
             Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css');
             return {};
         });
-        define("actionsheet", ["scripts/actionsheet"]);
+
+        if (Dashboard.isRunningInCordova() && $.browser.safari) {
+            define("actionsheet", ["thirdparty/cordova/ios/actionsheet"]);
+        } else {
+            define("actionsheet", ["scripts/actionsheet"]);
+        }
 
         //requirejs(['http://viblast.com/player/free-version/qy2fdwajo1/viblast.js']);
 

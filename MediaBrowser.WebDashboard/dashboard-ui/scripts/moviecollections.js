@@ -163,8 +163,6 @@
         $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
         $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
 
-        $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
-
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
@@ -219,20 +217,6 @@
 
             query.StartIndex = 0;
             query.HasThemeVideo = this.checked ? true : null;
-
-            reloadItems(page);
-        });
-
-        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
-
-            query.NameStartsWithOrGreater = character;
-            query.StartIndex = 0;
-
-            reloadItems(page);
-
-        }).on('alphaclear', function (e) {
-
-            query.NameStartsWithOrGreater = '';
 
             reloadItems(page);
         });

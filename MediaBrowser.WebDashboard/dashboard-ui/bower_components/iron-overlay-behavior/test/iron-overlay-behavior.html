@@ -1,0 +1,314 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+
+    <title>iron-overlay-behavior tests</title>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../test-fixture/test-fixture-mocha.js"></script>
+    <script src="../../iron-test-helpers/test-helpers.js"></script>
+
+    <link rel="import" href="../../test-fixture/test-fixture.html">
+    <link rel="import" href="test-overlay.html">
+
+  </head>
+  <body>
+
+    <test-fixture id="basic">
+      <template>
+        <test-overlay>
+          Basic Overlay
+        </test-overlay>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="opened">
+      <template>
+        <test-overlay opened>
+          Basic Overlay
+        </test-overlay>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="autofocus">
+      <template>
+        <test-overlay>
+          Autofocus
+          <button autofocus>button</button>
+        </test-overlay>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="multiple">
+      <template>
+        <test-overlay class="overlay-1">
+          Overlay 1
+        </test-overlay>
+        <test-overlay class="overlay-2">
+          Overlay 2
+        </test-overlay>
+        <test-overlay class="overlay-3">
+          Overlay 3
+        </test-overlay>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="backdrop-multiple">
+      <template>
+        <test-overlay with-backdrop class="overlay-1">
+          Overlay 1 with backdrop
+        </test-overlay>
+        <test-overlay with-backdrop class="overlay-2">
+          Overlay 2 with backdrop
+        </test-overlay>
+        <test-overlay with-backdrop class="overlay-3">
+          Overlay 3 with backdrop
+        </test-overlay>
+      </template>
+    </test-fixture>
+
+    <script>
+
+      function runAfterOpen(overlay, cb) {
+        overlay.addEventListener('iron-overlay-opened', function() {
+          cb();
+        });
+        overlay.open();
+      }
+
+      suite('basic overlay tests', function() {
+        var overlay;
+
+        setup(function() {
+          overlay = fixture('basic');
+        });
+
+        test('overlay starts hidden', function() {
+          assert.isFalse(overlay.opened, 'overlay starts closed');
+          assert.equal(getComputedStyle(overlay).display, 'none', 'overlay starts hidden');
+        });
+
+        test('overlay open by default', function() {
+          overlay = fixture('opened');
+          runAfterOpen(overlay, function() {
+            assert.isTrue(overlay.opened, 'overlay starts opened');
+            assert.notEqual(getComputedStyle(overlay).display, 'none', 'overlay starts showing');
+          });
+        });
+
+        test('overlay open/close events', function(done) {
+          var nevents = 0;
+
+          overlay.addEventListener('iron-overlay-opened', function() {
+            nevents += 1;
+            overlay.opened = false;
+          });
+
+          overlay.addEventListener('iron-overlay-closed', function() {
+            nevents += 1;
+            assert.equal(nevents, 2, 'opened and closed events fired');
+            done();
+          });
+
+          overlay.opened = true;
+        });
+
+        test('close an overlay quickly after open', function(done) {
+          // first, open the overlay
+          overlay.open();
+          overlay.async(function() {
+            // during the opening transition, close the overlay
+            this.close();
+            // wait for any exceptions to be thrown until the transition is done
+            this.async(function() {
+              done();
+            }, 300);
+          });
+        });
+
+        test('clicking an overlay does not close it', function(done) {
+          runAfterOpen(overlay, function() {
+            overlay.addEventListener('iron-overlay-closed', function() {
+              assert('iron-overlay-closed should not fire');
+            });
+            overlay.fire('click');
+            setTimeout(function() {
+              done();
+            }, 10);
+          });
+        });
+
+        test('node with autofocus is focused', function(done) {
+          overlay = fixture('autofocus');
+          runAfterOpen(overlay, function() {
+            assert.equal(Polymer.dom(overlay).querySelector('[autofocus]'), document.activeElement, '<button autofocus> is focused');
+            done();
+          });
+        });
+
+        test('cancel an overlay by clicking outside', function(done) {
+          runAfterOpen(overlay, function() {
+            overlay.addEventListener('iron-overlay-closed', function(event) {
+              assert.isTrue(event.detail.canceled, 'overlay is canceled');
+              done();
+            });
+            Polymer.Base.fire.call(document, 'click');
+          });
+        });
+
+        test('cancel an overlay with esc key', function(done) {
+          runAfterOpen(overlay, function() {
+            overlay.addEventListener('iron-overlay-closed', function(event) {
+              assert.isTrue(event.detail.canceled, 'overlay is canceled');
+              done();
+            });
+            fireEvent('keydown', {
+              keyCode: 27
+            }, document);
+          });
+        });
+
+        test('no-cancel-on-outside-click property', function(done) {
+          overlay.noCancelOnOutsideClick = true;
+          runAfterOpen(overlay, function() {
+            overlay.addEventListener('iron-overlay-closed', function() {
+              assert('iron-overlay-closed should not fire');
+            });
+            Polymer.Base.fire.call(document, 'click');
+            setTimeout(function() {
+              done();
+            }, 10);
+          });
+        });
+
+        test('no-cancel-on-esc-key property', function(done) {
+          overlay.noCancelOnEscKey = true;
+          runAfterOpen(overlay, function() {
+            overlay.addEventListener('iron-overlay-closed', function() {
+              assert('iron-overlay-cancel should not fire');
+            });
+            fireEvent('keydown', {
+              keyCode: 27
+            }, document);
+            setTimeout(function() {
+              done();
+            }, 10);
+          });
+        });
+
+      });
+
+      suite('multiple overlays', function() {
+        var overlays;
+
+        setup(function() {
+          overlays = fixture('multiple');
+        });
+
+        test('new overlays appear on top', function(done) {
+          runAfterOpen(overlays[0], function() {
+            runAfterOpen(overlays[1], function() {
+              var styleZ = parseInt(window.getComputedStyle(overlays[0]).zIndex, 10);
+              var styleZ1 = parseInt(window.getComputedStyle(overlays[1]).zIndex, 10);
+              assert.isTrue(styleZ1 > styleZ, 'overlays[1] has higher z-index than overlays[0]');
+              done();
+            });
+          });
+        });
+      });
+
+      suite('overlays with backdrop', function() {
+        var overlays;
+
+        setup(function() {
+          overlays = fixture('backdrop-multiple');
+        });
+
+        test('backdrop appears behind the overlay', function(done) {
+          runAfterOpen(overlays[0], function() {
+            assert.isDefined(overlays[0].backdropElement, 'backdrop is defined');
+            assert.isDefined(overlays[0].backdropElement.parentNode, 'backdrop is inserted in the DOM');
+
+            styleZ = parseInt(window.getComputedStyle(overlays[0]).zIndex, 10);
+            backdropStyleZ = parseInt(window.getComputedStyle(overlays[0].backdropElement).zIndex, 10);
+            assert.isTrue(styleZ > backdropStyleZ, 'overlay has higher z-index than backdrop');
+            done();
+          });
+        });
+
+        test('backdrop is removed when the element is removed from DOM', function(done) {
+          runAfterOpen(overlays[0], function() {
+            var backdrop = overlays[0].backdropElement;
+            Polymer.dom(backdrop.parentNode).removeChild(backdrop);
+            Polymer.dom.flush();
+            assert.isNull(backdrop.parentNode, 'backdrop is removed from DOM');
+            done();
+          });
+        });
+
+        test('backdrop is opened when iron-overlay-open-completed fires', function(done) {
+          runAfterOpen(overlays[0], function() {
+            assert.isTrue(overlays[0].backdropElement.opened, 'backdrop is opened');
+            done();
+          });
+        });
+      });
+
+      suite('multiple overlays with backdrop', function() {
+        var overlays;
+
+        setup(function() {
+          overlays = fixture('backdrop-multiple');
+        });
+
+        test('multiple overlays share the same backdrop', function() {
+          assert.isTrue(overlays[0].backdropElement === overlays[1].backdropElement, 'overlays[0] has the same backdrop element as overlays[1]');
+        });
+
+        test('newest overlay appear on top', function(done) {
+          runAfterOpen(overlays[0], function() {
+            runAfterOpen(overlays[1], function() {
+              var styleZ = parseInt(window.getComputedStyle(overlays[0]).zIndex, 10);
+              var style1Z = parseInt(window.getComputedStyle(overlays[1]).zIndex, 10);
+              var bgStyleZ = parseInt(window.getComputedStyle(overlays[0].backdropElement).zIndex, 10);
+              assert.isTrue(style1Z > styleZ, 'overlays[1] has higher z-index than overlays[0]');
+              assert.isTrue(styleZ > bgStyleZ, 'overlays[0] has higher z-index than backdrop');
+              done();
+            });
+          });
+        });
+
+      });
+
+      suite('a11y', function() {
+
+        test('overlay has aria-hidden=true when opened', function() {
+          var overlay = fixture('basic');
+          assert.equal(overlay.getAttribute('aria-hidden'), 'true', 'overlay has aria-hidden="true"');
+          overlay.open();
+          assert.isFalse(overlay.hasAttribute('aria-hidden'), 'overlay does not have aria-hidden attribute');
+          overlay.close();
+          assert.equal(overlay.getAttribute('aria-hidden'), 'true', 'overlay has aria-hidden="true"');
+        });
+
+      })
+
+    </script>
+
+  </body>
+</html>

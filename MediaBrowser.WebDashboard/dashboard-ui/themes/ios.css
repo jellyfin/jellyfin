@@ -146,3 +146,7 @@ h1, h1 a {
         margin-left: 210px;
     }
 }
+
+.bottomFab {
+    bottom: 70px;
+}

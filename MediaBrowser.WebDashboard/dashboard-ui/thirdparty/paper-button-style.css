@@ -1,0 +1,185 @@
+﻿paper-button {
+    font-weight: 500;
+    vertical-align: middle;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+    paper-button.block {
+        display: block;
+    }
+
+    paper-button.blue {
+        color: #03a9f4;
+    }
+
+        paper-button.blue:hover {
+            background: #e1f5f3;
+        }
+
+    paper-button.ripple::shadow paper-ripple {
+        color: #ff3bee;
+    }
+
+    paper-button.ripple paper-ripple {
+        color: #ff3bee;
+    }
+
+    paper-button.submit {
+        color: #4285f4;
+    }
+
+    paper-button[raised].submit {
+        background: #4285f4;
+        color: #fff;
+    }
+
+    paper-button.more {
+        color: #EC407A;
+    }
+
+    paper-button[raised].more {
+        background: #EC407A;
+        color: #fff;
+    }
+
+    paper-button.secondary {
+        color: #52B54B;
+    }
+
+    paper-button[raised].secondary {
+        background: #52B54B;
+        color: #fff;
+    }
+
+    paper-button.alt {
+        color: #F57F17;
+    }
+
+    paper-button[raised].alt {
+        background: #F57F17;
+        color: #fff;
+    }
+
+    paper-button.cancel {
+        color: #444;
+    }
+
+    paper-button[raised].cancel {
+        background: #444;
+        color: #fff;
+    }
+
+.ui-page-theme-b paper-button.subdued:not([disabled]) {
+    color: #484848;
+}
+
+.ui-page-theme-b paper-button[raised].subdued:not([disabled]) {
+    background: #484848;
+    color: #fff;
+}
+
+.ui-page-theme-b paper-button[raised][disabled].subdued {
+    background: #111;
+}
+
+paper-button.hover:hover {
+    background: #eee;
+}
+
+paper-button.ripple::shadow paper-ripple {
+    color: var(--paper-pink-a200);
+}
+
+paper-button.ripple paper-ripple {
+    color: var(--paper-pink-a200);
+}
+
+paper-button span {
+    vertical-align: middle;
+}
+
+paper-button:not(.iconRight) iron-icon, paper-button:not(.iconRight) .fa {
+    margin-right: .5em;
+}
+
+paper-button:not(.iconRight) .material-icons {
+    margin-right: .25em;
+}
+
+paper-button.iconRight iron-icon, paper-button.iconRight .fa, paper-button.iconRight .material-icons {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
+paper-button .material-icons {
+    font-size: 150%;
+    vertical-align: middle;
+}
+
+paper-button .fa {
+    vertical-align: middle;
+}
+
+.clearButton {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    outline: none;
+    color: inherit;
+    width: 100%;
+    vertical-align: middle;
+}
+
+.clearLink {
+    text-decoration: none;
+    font-weight: inherit !important;
+    vertical-align: middle;
+}
+
+paper-button.mini {
+    min-width: initial;
+}
+
+    paper-button.mini .content {
+        padding: 0.3em 0.7em;
+    }
+
+
+paper-toast {
+    z-index: 9999999;
+}
+
+paper-button.notext {
+    min-width: 2.8em;
+}
+
+    paper-button.notext .content {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    paper-button.notext iron-icon {
+        margin-right: 0;
+    }
+
+#docspinner {
+    display: block;
+    margin-top: -14px;
+    margin-left: -14px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 9999999;
+}
+
+/*paper-toast {
+    background-color: #eee;
+    color: #000;
+}*/
+
+.bottomFab {
+    bottom: 30px;
+}

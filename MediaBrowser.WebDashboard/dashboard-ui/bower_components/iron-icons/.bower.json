@@ -1,0 +1,46 @@
+{
+  "name": "iron-icons",
+  "version": "1.0.2",
+  "description": "A set of icons for use with iron-icon",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "keywords": [
+    "web-components",
+    "polymer",
+    "icon"
+  ],
+  "main": "iron-icons.html",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/paper-icons"
+  },
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/PolymerElements/paper-icons",
+  "dependencies": {
+    "iron-icon": "polymerelements/iron-icon#^1.0.0",
+    "iron-iconset-svg": "polymerelements/iron-iconset-svg#^1.0.0",
+    "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "devDependencies": {
+    "paper-styles": "polymerelements/paper-styles#^1.0.2",
+    "iron-component-page": "polymerelements/iron-component-page#1.0.0",
+    "iron-flex-layout": "polymerelements/iron-flex-layout#^1.0.0",
+    "iron-meta": "polymerelements/iron-meta#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": [
+    "util",
+    "update-icons.sh"
+  ],
+  "_release": "1.0.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.0.2",
+    "commit": "7340b4e26a0235ffdf2477299ccecd0c5d3d99e8"
+  },
+  "_source": "git://github.com/polymerelements/iron-icons.git",
+  "_target": "^1.0.0",
+  "_originalSource": "polymerelements/iron-icons"
+}
