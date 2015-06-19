@@ -51,7 +51,7 @@ namespace MediaBrowser.Dlna.Profiles
                 {
                     Container = "ts",
                     VideoCodec = "h264",
-                    AudioCodec = "aac",
+                    AudioCodec = "ac3",
                     Type = DlnaProfileType.Video,
                     EnableMpegtsM2TsMode = true
                 },

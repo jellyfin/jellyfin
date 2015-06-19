@@ -391,6 +391,15 @@
     <Content Include="dashboard-ui\bower_components\paper-fab\test\a11y.html" />
     <Content Include="dashboard-ui\bower_components\paper-fab\test\basic.html" />
     <Content Include="dashboard-ui\bower_components\paper-fab\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-icon-button\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\paper-icon-button\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-icon-button\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-icon-button\paper-icon-button.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\bower_components\paper-icon-button\test\a11y.html" />
+    <Content Include="dashboard-ui\bower_components\paper-icon-button\test\basic.html" />
+    <Content Include="dashboard-ui\bower_components\paper-icon-button\test\index.html" />
     <Content Include="dashboard-ui\bower_components\paper-material\.gitignore" />
     <Content Include="dashboard-ui\bower_components\paper-material\demo\index.html" />
     <Content Include="dashboard-ui\bower_components\paper-material\index.html" />
@@ -2741,6 +2750,9 @@
     <None Include="dashboard-ui\bower_components\paper-fab\.bower.json" />
     <None Include="dashboard-ui\bower_components\paper-fab\bower.json" />
     <None Include="dashboard-ui\bower_components\paper-fab\README.md" />
+    <None Include="dashboard-ui\bower_components\paper-icon-button\.bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-icon-button\bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-icon-button\README.md" />
     <None Include="dashboard-ui\bower_components\paper-material\.bower.json" />
     <None Include="dashboard-ui\bower_components\paper-material\bower.json" />
     <None Include="dashboard-ui\bower_components\paper-material\README.md" />
