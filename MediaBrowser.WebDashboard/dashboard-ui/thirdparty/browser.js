@@ -965,6 +965,18 @@
         browser.tv = true;
     }
 
+    if (browser.ipad || browser.iphone) {
+        if (userAgent.toLowerCase().indexOf('CPU OS 9') != -1) {
+            browser.iOSVersion = 9;
+        }
+        else if (userAgent.toLowerCase().indexOf('CPU OS 8') != -1) {
+            browser.iOSVersion = 8;
+        }
+        else if (userAgent.toLowerCase().indexOf('CPU OS 7') != -1) {
+            browser.iOSVersion = 7;
+        }
+    }
+
     jQuery.browser = browser;
 
 })(jQuery, window);

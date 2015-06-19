@@ -53,7 +53,10 @@
 
         function normalizeReturnUrl(url) {
             if ($.browser.safari) {
-                return url.replace('file://', '');
+
+                if ($.browser.iOSVersion == 8) {
+                    return url.replace('file://', '');
+                }
             }
             return url;
         }
