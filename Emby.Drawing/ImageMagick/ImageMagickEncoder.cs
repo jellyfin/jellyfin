@@ -1,11 +1,13 @@
-﻿using System.Linq;
+﻿using System.Threading.Tasks;
 using ImageMagickSharp;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace Emby.Drawing.ImageMagick
 {
@@ -13,11 +15,13 @@ namespace Emby.Drawing.ImageMagick
     {
         private readonly ILogger _logger;
         private readonly IApplicationPaths _appPaths;
+        private readonly IHttpClient _httpClient;
 
-        public ImageMagickEncoder(ILogger logger, IApplicationPaths appPaths)
+        public ImageMagickEncoder(ILogger logger, IApplicationPaths appPaths, IHttpClient httpClient)
         {
             _logger = logger;
             _appPaths = appPaths;
+            _httpClient = httpClient;
 
             LogImageMagickVersion();
         }
@@ -177,7 +181,8 @@ namespace Emby.Drawing.ImageMagick
                 {
                     var currentImageSize = new ImageSize(imageWidth, imageHeight);
 
-                    new PlayedIndicatorDrawer(_appPaths).DrawPlayedIndicator(wand, currentImageSize);
+                    var task = new PlayedIndicatorDrawer(_appPaths, _httpClient).DrawPlayedIndicator(wand, currentImageSize);
+                    Task.WaitAll(task);
                 }
                 else if (options.UnplayedCount.HasValue)
                 {
