@@ -14,7 +14,8 @@
             })
         };
 
-        if (options.showCancel) {
+        // Show cancel unless the caller explicitly set it to false
+        if (options.showCancel !== false) {
             innerOptions.addCancelButtonWithLabel = Globalize.translate('ButtonCancel');
         }
 

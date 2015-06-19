@@ -50,7 +50,9 @@ var Dashboard = {
 
         $.event.special.swipe.verticalDistanceThreshold = 40;
         $.mobile.loader.prototype.options.disabled = true;
-        //$.mobile.page.prototype.options.domCache = true;
+
+
+        $.mobile.page.prototype.options.domCache = true;
 
         $.mobile.loadingMessage = false;
         $.mobile.loader.prototype.options.html = "";
@@ -570,7 +572,7 @@ var Dashboard = {
     confirm: function (message, title, callback) {
 
         // Cordova
-        if (navigator.notification && navigator.notification.alert && message.indexOf('<') == -1) {
+        if (navigator.notification && navigator.notification.confirm && message.indexOf('<') == -1) {
 
             var buttonLabels = [Globalize.translate('ButtonOk'), Globalize.translate('ButtonCancel')];
 

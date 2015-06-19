@@ -284,6 +284,7 @@ namespace MediaBrowser.WebDashboard.Api
                     "bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html",
                     "bower_components/neon-animation/animations/scale-up-animation.html",
                     "bower_components/neon-animation/animations/fade-out-animation.html",
+                    "bower_components/neon-animation/animations/fade-in-animation.html",
                     "bower_components/paper-icon-button/paper-icon-button.html",
                     "thirdparty/emby-icons.html"
                 };

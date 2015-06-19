@@ -378,7 +378,8 @@
 
             dateOptions.push({
                 name: LibraryBrowser.getFutureDateText(start),
-                id: start.getTime()
+                id: start.getTime(),
+                ironIcon: 'today'
             });
 
             start.setDate(start.getDate() + 1);

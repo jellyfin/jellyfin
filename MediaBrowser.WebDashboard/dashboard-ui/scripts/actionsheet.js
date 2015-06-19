@@ -5,7 +5,7 @@
     }
     function show(options) {
 
-        require(['paperbuttonstyle'], function() {
+        require(['paperbuttonstyle'], function () {
             // items
             // positionTo
             // showCancel
@@ -13,7 +13,39 @@
             var id = 'dlg' + new Date().getTime();
             var html = '';
 
-            html += '<paper-dialog id="' + id + '" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>';
+            var style = "";
+
+            if (options.positionTo) {
+
+                var pos = $(options.positionTo).offset();
+
+                pos.top += $(options.positionTo).innerHeight() / 2;
+                pos.left += $(options.positionTo).innerWidth() / 2;
+
+                // Account for margins
+                pos.top -= 24;
+                pos.left -= 24;
+
+                // Account for popup size - we can't predict this yet so just estimate
+                pos.top -= 100;
+                pos.left -= 80;
+
+                // Account for scroll position
+                pos.top -= $(window).scrollTop();
+                pos.left -= $(window).scrollLeft();
+
+                // Avoid showing too close to the bottom
+                pos.top = Math.min(pos.top, $(window).height() - 300);
+                pos.left = Math.min(pos.left, $(window).width() - 300);
+
+                // Do some boundary checking
+                pos.top = Math.max(pos.top, 0);
+                pos.left = Math.max(pos.left, 0);
+
+                style += 'position:fixed;top:' + pos.top + 'px;left:' + pos.left + 'px';
+            }
+
+            html += '<paper-dialog id="' + id + '" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop style="' + style + '">';
 
             if (options.title) {
                 html += '<h2>';
@@ -26,8 +58,11 @@
 
                 var option = options.items[i];
 
-                html += '<paper-button class="block blue ripple btnOption" data-id="' + option.id + '" style="margin:0;">';
-                //html += '<iron-icon icon="close"></iron-icon>';
+                html += '<paper-button class="block menuButton ripple btnOption" data-id="' + option.id + '" style="margin:0;">';
+
+                if (option.ironIcon) {
+                    html += '<iron-icon icon="' + option.ironIcon + '"></iron-icon>';
+                }
                 html += '<span>' + option.name + '</span>';
                 html += '</paper-button>';
             }
@@ -53,10 +88,18 @@
 
                 $('.btnOption', dlg).on('click', function () {
 
-                    if (options.callback) {
-                        options.callback(this.getAttribute('data-id'));
-                    }
-                    dlg.close();
+                    var selectedId = this.getAttribute('data-id');
+
+                    // Add a delay here to allow the click animation to finish, for nice effect
+                    setTimeout(function () {
+
+                        dlg.close();
+
+                        if (options.callback) {
+                            options.callback(selectedId);
+                        }
+
+                    }, 100);
                 });
             }, 100);
         });

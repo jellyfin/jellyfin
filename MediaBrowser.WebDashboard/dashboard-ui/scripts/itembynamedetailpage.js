@@ -557,7 +557,7 @@
 
         $('.btnPlay', page).on('click', function () {
             var userdata = currentItem.UserData || {};
-            LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, false, "Audio", userdata.PlaybackPositionTicks);
+            LibraryBrowser.showPlayMenu(null, currentItem.Id, currentItem.Type, false, "Audio", userdata.PlaybackPositionTicks);
         });
 
         $('.itemsContainer', page).on('playallfromhere', function (e, index) {

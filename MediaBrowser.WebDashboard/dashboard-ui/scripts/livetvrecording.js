@@ -27,7 +27,7 @@
 
         var mediaType = currentItem.MediaType;
 
-        LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, false, mediaType, userdata.PlaybackPositionTicks);
+        LibraryBrowser.showPlayMenu(null, currentItem.Id, currentItem.Type, false, mediaType, userdata.PlaybackPositionTicks);
     }
 
     function renderRecording(page, item) {

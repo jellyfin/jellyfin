@@ -237,7 +237,7 @@
             });
         },
 
-        showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks, showAddToPlaylist) {
+        showPlayMenu: function (positionTo, itemId, itemType, isFolder, mediaType, resumePositionTicks) {
 
             var externalPlayers = AppSettings.enableExternalPlayers();
 
@@ -249,49 +249,91 @@
                 }
             }
 
-            $('.playFlyout').popup("close").remove();
-
-            var html = '<div data-role="popup" class="playFlyout" data-history="false" data-theme="a">';
-
-            html += '<ul data-role="listview" style="min-width: 160px;">';
-
-            html += '<li data-icon="false"><a href="#" onclick="MediaController.play(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonPlay') + '</a></li>';
-
-            if (!isFolder && externalPlayers) {
-                html += '<li data-icon="false"><a href="#" onclick="LibraryBrowser.closePlayMenu();LibraryBrowser.playInExternalPlayer(\'' + itemId + '\');">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
-            }
+            var menuItems = [];
 
             if (resumePositionTicks) {
-                html += '<li data-icon="false"><a href="#" onclick="MediaController.play({ids:[\'' + itemId + '\'],startPositionTicks:' + resumePositionTicks + '});LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonResume') + '</a></li>';
+                menuItems.push({
+                    name: Globalize.translate('ButtonResume'),
+                    id: 'resume',
+                    ironIcon: 'play-arrow'
+                });
+            }
+
+            menuItems.push({
+                name: Globalize.translate('ButtonPlay'),
+                id: 'play',
+                ironIcon: 'play-arrow'
+            });
+
+            if (!isFolder && externalPlayers && mediaType != "Audio") {
+                menuItems.push({
+                    name: Globalize.translate('ButtonPlayExternalPlayer'),
+                    id: 'externalplayer',
+                    ironIcon: 'airplay'
+                });
             }
 
             if (MediaController.canQueueMediaType(mediaType, itemType)) {
-                html += '<li data-icon="false"><a href="#" onclick="MediaController.queue(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonQueue') + '</a></li>';
+                menuItems.push({
+                    name: Globalize.translate('ButtonQueue'),
+                    id: 'queue',
+                    ironIcon: 'playlist-add'
+                });
             }
 
             if (itemType == "Audio" || itemType == "MusicAlbum" || itemType == "MusicArtist" || itemType == "MusicGenre") {
-                html += '<li data-icon="false"><a href="#" onclick="MediaController.instantMix(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonInstantMix') + '</a></li>';
+                menuItems.push({
+                    name: Globalize.translate('ButtonInstantMix'),
+                    id: 'instantmix',
+                    ironIcon: 'shuffle'
+                });
             }
 
             if (isFolder || itemType == "MusicArtist" || itemType == "MusicGenre") {
-                html += '<li data-icon="false"><a href="#" onclick="MediaController.shuffle(\'' + itemId + '\');LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonShuffle') + '</a></li>';
+                menuItems.push({
+                    name: Globalize.translate('ButtonShuffle'),
+                    id: 'shuffle',
+                    ironIcon: 'shuffle'
+                });
             }
 
-            if (showAddToPlaylist) {
-                html += '<li data-icon="false"><a href="#" onclick="PlaylistManager.showPanel([\'' + itemId + '\']);LibraryBrowser.closePlayMenu();">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
-            }
+            require(['actionsheet'], function () {
 
-            html += '</ul>';
+                ActionSheetElement.show({
+                    items: menuItems,
+                    positionTo: positionTo,
+                    callback: function (id) {
 
-            html += '</div>';
+                        switch (id) {
 
-            $($.mobile.activePage).append(html);
+                            case 'play':
+                                MediaController.play(itemId);
+                                break;
+                            case 'externalplayer':
+                                LibraryBrowser.playInExternalPlayer(itemId);
+                                break;
+                            case 'resume':
+                                MediaController.play({
+                                    ids: [itemId],
+                                    startPositionTicks: resumePositionTicks
+                                });
+                                break;
+                            case 'queue':
+                                MediaController.queue(itemId);
+                                break;
+                            case 'instantmix':
+                                MediaController.instantMix(itemId);
+                                break;
+                            case 'shuffle':
+                                MediaController.shuffle(itemId);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                });
 
-            $('.playFlyout').popup({ positionTo: positionTo || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
-
-                $(this).off("popupafterclose").remove();
-
-            }).parents(".ui-popup-container");
+            });
         },
 
         closePlayMenu: function () {
@@ -357,7 +399,7 @@
             // The timeout allows the flyout to close
             setTimeout(function () {
 
-                var msg = "<p>" + Globalize.translate('ConfirmDeleteItem') + "</p>";
+                var msg = Globalize.translate('ConfirmDeleteItem');
 
                 Dashboard.confirm(msg, Globalize.translate('HeaderDeleteItem'), function (result) {
 
@@ -426,10 +468,10 @@
                         switch (id) {
 
                             case 'addtocollection':
-                                BoxSetEditor.showPanel(itemId);
+                                BoxSetEditor.showPanel([itemId]);
                                 break;
-                            case 'icon':
-                                PlaylistManager.showPanel(itemId);
+                            case 'playlist':
+                                PlaylistManager.showPanel([itemId]);
                                 break;
                             case 'delete':
                                 LibraryBrowser.deleteItem(itemId);

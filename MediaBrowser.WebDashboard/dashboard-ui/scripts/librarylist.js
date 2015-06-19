@@ -1006,7 +1006,7 @@
 
         msg += "<br/><br/>" + Globalize.translate('MessageConfirmItemGrouping');
 
-        Dashboard.confirm(msg, "Group Versions", function (confirmResult) {
+        Dashboard.confirm(msg, Globalize.translate('HeaderGroupVersions'), function (confirmResult) {
 
             if (confirmResult) {
 

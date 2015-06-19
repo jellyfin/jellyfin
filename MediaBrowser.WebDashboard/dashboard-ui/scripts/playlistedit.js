@@ -187,7 +187,7 @@
                 mediaType = "Audio";
             }
 
-            LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, currentItem.IsFolder, mediaType, userdata.PlaybackPositionTicks);
+            LibraryBrowser.showPlayMenu(null, currentItem.Id, currentItem.Type, currentItem.IsFolder, mediaType, userdata.PlaybackPositionTicks);
         });
 
         $('.itemsContainer', page).on('needsrefresh', function () {

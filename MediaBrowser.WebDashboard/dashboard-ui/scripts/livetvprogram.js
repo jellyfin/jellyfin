@@ -112,7 +112,7 @@
                 
                 var userdata = channel.UserData || {};
 
-                LibraryBrowser.showPlayMenu(this, channel.Id, channel.Type, false, channel.MediaType, userdata.PlaybackPositionTicks);
+                LibraryBrowser.showPlayMenu(null, channel.Id, channel.Type, false, channel.MediaType, userdata.PlaybackPositionTicks);
             });
         });
 
