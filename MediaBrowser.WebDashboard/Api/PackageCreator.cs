@@ -449,7 +449,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             // jQuery + jQuery mobile
             await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.min.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/browser.js", newLineBytes).ConfigureAwait(false);
 

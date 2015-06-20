@@ -11,3 +11,4 @@ accordions
 filterable
 tabs
 toolbars:fixed
+selects: custom menus
