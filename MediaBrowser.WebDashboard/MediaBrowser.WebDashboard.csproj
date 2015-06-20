@@ -558,40 +558,40 @@
     <Content Include="dashboard-ui\scripts\sections.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\localassetmanager.js">
+    <Content Include="dashboard-ui\apiclient\localassetmanager.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\wakeonlan.js">
+    <Content Include="dashboard-ui\apiclient\wakeonlan.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\android\appstorage.js">
+    <Content Include="dashboard-ui\cordova\android\appstorage.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\android\localassetmanager.js">
+    <Content Include="dashboard-ui\cordova\android\localassetmanager.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\android\mediasession.js">
+    <Content Include="dashboard-ui\cordova\android\mediasession.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\android\nativedirectorychooser.js">
+    <Content Include="dashboard-ui\cordova\android\nativedirectorychooser.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\android\vlcplayer.js">
+    <Content Include="dashboard-ui\cordova\android\vlcplayer.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\back.js">
+    <Content Include="dashboard-ui\cordova\back.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\ios\actionsheet.js">
+    <Content Include="dashboard-ui\cordova\ios\actionsheet.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\ios\orientation.js">
+    <Content Include="dashboard-ui\cordova\ios\orientation.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\volume.js">
+    <Content Include="dashboard-ui\cordova\volume.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\wakeonlan.js">
+    <Content Include="dashboard-ui\cordova\wakeonlan.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\emby-icons.html">
@@ -729,75 +729,75 @@
     <Content Include="dashboard-ui\syncsettings.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\ajax.js">
+    <Content Include="dashboard-ui\apiclient\ajax.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\alt\ajax.js">
+    <Content Include="dashboard-ui\apiclient\alt\ajax.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\alt\bean.js">
+    <Content Include="dashboard-ui\apiclient\alt\bean.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\alt\events.js">
+    <Content Include="dashboard-ui\apiclient\alt\events.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\connectservice.js">
+    <Content Include="dashboard-ui\apiclient\connectservice.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\android\androidcredentials.js">
+    <Content Include="dashboard-ui\cordova\android\androidcredentials.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\android\filesystem.js">
+    <Content Include="dashboard-ui\cordova\android\filesystem.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\android\iap.js">
+    <Content Include="dashboard-ui\cordova\android\iap.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\android\immersive.js" />
-    <Content Include="dashboard-ui\thirdparty\cordova\chromecast.js">
+    <Content Include="dashboard-ui\cordova\android\immersive.js" />
+    <Content Include="dashboard-ui\cordova\chromecast.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\connectsdk.js">
+    <Content Include="dashboard-ui\cordova\connectsdk.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\externalplayer.js">
+    <Content Include="dashboard-ui\cordova\externalplayer.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\filesystem.js">
+    <Content Include="dashboard-ui\cordova\filesystem.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\generaldevice.js" />
-    <Content Include="dashboard-ui\thirdparty\cordova\iap.js">
+    <Content Include="dashboard-ui\cordova\generaldevice.js" />
+    <Content Include="dashboard-ui\cordova\iap.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\imagestore.js">
+    <Content Include="dashboard-ui\cordova\imagestore.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\registrationservices.js">
+    <Content Include="dashboard-ui\cordova\registrationservices.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\remotecontrols.js">
+    <Content Include="dashboard-ui\cordova\remotecontrols.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\cordova\serverdiscovery.js">
+    <Content Include="dashboard-ui\cordova\serverdiscovery.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\deferred.js">
+    <Content Include="dashboard-ui\apiclient\deferred.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\alt\deferred.js">
+    <Content Include="dashboard-ui\apiclient\alt\deferred.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\device.js">
+    <Content Include="dashboard-ui\apiclient\device.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\events.js">
+    <Content Include="dashboard-ui\apiclient\events.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\logger.js">
+    <Content Include="dashboard-ui\apiclient\logger.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\apiclient.js">
+    <Content Include="dashboard-ui\apiclient\apiclient.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\channelitems.html">
@@ -1412,19 +1412,19 @@
     <Content Include="dashboard-ui\serversecurity.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\connectionmanager.js">
+    <Content Include="dashboard-ui\apiclient\connectionmanager.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\credentials.js">
+    <Content Include="dashboard-ui\apiclient\credentials.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\serverdiscovery.js">
+    <Content Include="dashboard-ui\apiclient\serverdiscovery.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\sha1.js">
+    <Content Include="dashboard-ui\apiclient\sha1.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\store.js">
+    <Content Include="dashboard-ui\apiclient\store.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\browser.js">
@@ -2069,7 +2069,7 @@
     <Content Include="dashboard-ui\livetvsuggested.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\apiclient\md5.js">
+    <Content Include="dashboard-ui\apiclient\md5.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\jstree3.0.8\jstree.min.js">
@@ -2130,6 +2130,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\userpassword.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\vulcanize-in.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\vulcanize-out.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\wizardagreement.html">
