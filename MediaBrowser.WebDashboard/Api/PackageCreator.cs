@@ -61,7 +61,10 @@ namespace MediaBrowser.WebDashboard.Api
                 // jQuery ajax doesn't seem to handle if-modified-since correctly
                 if (IsFormat(path, "html"))
                 {
-                    resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
+                    if (IsCoreHtml(path))
+                    {
+                        resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
+                    }
                 }
                 else if (IsFormat(path, "js"))
                 {
@@ -210,6 +213,22 @@ namespace MediaBrowser.WebDashboard.Api
             }
         }
 
+        private bool IsCoreHtml(string path)
+        {
+            if (path.IndexOf("vulcanize", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return false;
+            }
+
+            path = GetDashboardResourcePath(path);
+            var parent = Path.GetDirectoryName(path);
+
+            var basePath = DashboardUIPath;
+
+            return string.Equals(basePath, parent, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(Path.Combine(basePath, "voice"), parent, StringComparison.OrdinalIgnoreCase);
+        }
+
         /// <summary>
         /// Modifies the HTML by adding common meta tags, css and js.
         /// </summary>
@@ -276,17 +295,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                 var imports = new string[]
                 {
-                    "bower_components/paper-button/paper-button.html",
-                    "bower_components/paper-toast/paper-toast.html",
-                    "bower_components/paper-spinner/paper-spinner.html",
-                    "bower_components/paper-fab/paper-fab.html",
-                    "bower_components/paper-dialog/paper-dialog.html",
-                    "bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html",
-                    "bower_components/neon-animation/animations/scale-up-animation.html",
-                    "bower_components/neon-animation/animations/fade-out-animation.html",
-                    "bower_components/neon-animation/animations/fade-in-animation.html",
-                    "bower_components/paper-icon-button/paper-icon-button.html",
-                    "thirdparty/emby-icons.html"
+                    "vulcanize-out.html"
                 };
                 var importsHtml = string.Join("", imports.Select(i => "<link rel=\"import\" href=\"" + i + "\">").ToArray());
 
@@ -412,7 +421,6 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new List<string>
             {
-                "bower_components/webcomponentsjs/webcomponents-lite.min.js",
                 "scripts/all.js" + versionString
             };
 
@@ -436,6 +444,8 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var memoryStream = new MemoryStream();
             var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
+
+            await AppendResource(memoryStream, "bower_components/webcomponentsjs/webcomponents-lite.min.js", newLineBytes).ConfigureAwait(false);
 
             // jQuery + jQuery mobile
             await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
@@ -474,19 +484,19 @@ namespace MediaBrowser.WebDashboard.Api
 
             var apiClientFiles = new[]
             {
-                "thirdparty/apiclient/logger.js",
-                "thirdparty/apiclient/md5.js",
-                "thirdparty/apiclient/sha1.js",
-                "thirdparty/apiclient/store.js",
-                "thirdparty/apiclient/device.js",
-                "thirdparty/apiclient/credentials.js",
-                "thirdparty/apiclient/ajax.js",
-                "thirdparty/apiclient/events.js",
-                "thirdparty/apiclient/deferred.js",
-                "thirdparty/apiclient/apiclient.js"
+                "apiclient/logger.js",
+                "apiclient/md5.js",
+                "apiclient/sha1.js",
+                "apiclient/store.js",
+                "apiclient/device.js",
+                "apiclient/credentials.js",
+                "apiclient/ajax.js",
+                "apiclient/events.js",
+                "apiclient/deferred.js",
+                "apiclient/apiclient.js"
             }.ToList();
 
-            apiClientFiles.Add("thirdparty/apiclient/connectionmanager.js");
+            apiClientFiles.Add("apiclient/connectionmanager.js");
 
             foreach (var file in apiClientFiles)
             {

@@ -16,7 +16,7 @@
 
         manager.startDiscovery();
 
-        requirejs(['thirdparty/cordova/chromecast', 'thirdparty/cordova/generaldevice']);
+        requirejs(['cordova/chromecast', 'cordova/generaldevice']);
     }
 
     function onDeviceListChanged(list) {

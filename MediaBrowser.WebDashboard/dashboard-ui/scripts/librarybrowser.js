@@ -420,42 +420,48 @@
             if (commands.indexOf('addtocollection') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonAddToCollection'),
-                    id: 'addtocollection'
+                    id: 'addtocollection',
+                    ironIcon: 'add'
                 });
             }
 
             if (commands.indexOf('playlist') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonAddToPlaylist'),
-                    id: 'playlist'
+                    id: 'playlist',
+                    ironIcon: 'playlist-add'
                 });
             }
 
             if (commands.indexOf('delete') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonDelete'),
-                    id: 'delete'
+                    id: 'delete',
+                    ironIcon: 'delete'
                 });
             }
 
             if (commands.indexOf('download') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonDownload'),
-                    id: 'download'
+                    id: 'download',
+                    ironIcon: 'file-download'
                 });
             }
 
             if (commands.indexOf('edit') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonEdit'),
-                    id: 'edit'
+                    id: 'edit',
+                    ironIcon: 'mode-edit'
                 });
             }
 
             if (commands.indexOf('refresh') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonRefresh'),
-                    id: 'refresh'
+                    id: 'refresh',
+                    ironIcon: 'refresh'
                 });
             }
 

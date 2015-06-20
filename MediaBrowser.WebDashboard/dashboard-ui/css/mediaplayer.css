@@ -166,12 +166,9 @@ input[type="range"]::-ms-fill-upper {
             display: none;
         }
 
-    .remoteControlButton {
+    .remoteControlButton, .nowPlayingBar .unpauseButton, .nowPlayingBar .pauseButton {
         float: right;
-    }
-
-    .nowPlayingBar .unpauseButton, .nowPlayingBar .pauseButton {
-        float: right;
+        padding-top: 0;
     }
 
     .nowPlayingBar .currentTime, .nowPlayingBar .positionSliderContainer, .nowPlayingBar .volumeSliderContainer, #nowPlayingBar .muteButton, #nowPlayingBar .unmuteButton {

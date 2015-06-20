@@ -196,6 +196,7 @@ paper-button.notext {
 
 paper-dialog {
     border-radius: 4px;
+    z-index: 999999 !important;
 }
 
 iron-overlay-backdrop {

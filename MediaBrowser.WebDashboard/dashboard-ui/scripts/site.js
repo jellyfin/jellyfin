@@ -1603,7 +1603,7 @@ var Dashboard = {
         require(['scripts/externalplayer.js'], function () {
 
             if (Dashboard.isRunningInCordova()) {
-                require(['thirdparty/cordova/externalplayer.js'], function () {
+                require(['cordova/externalplayer.js'], function () {
 
                     deferred.resolve();
                 });
@@ -1961,14 +1961,14 @@ var AppInfo = {};
         require(['filesystem']);
 
         if (Dashboard.isRunningInCordova()) {
-            require(['thirdparty/cordova/connectsdk', 'scripts/registrationservices', 'thirdparty/cordova/volume', 'thirdparty/cordova/back']);
+            require(['cordova/connectsdk', 'scripts/registrationservices', 'cordova/volume', 'cordova/back']);
 
             if ($.browser.android) {
-                require(['thirdparty/cordova/android/androidcredentials', 'thirdparty/cordova/android/immersive', 'thirdparty/cordova/android/mediasession']);
+                require(['cordova/android/androidcredentials', 'cordova/android/immersive', 'cordova/android/mediasession']);
             }
 
             if ($.browser.safari) {
-                require(['thirdparty/cordova/remotecontrols', 'thirdparty/cordova/ios/orientation']);
+                require(['cordova/remotecontrols', 'cordova/ios/orientation']);
             }
 
         } else {
@@ -1998,42 +1998,42 @@ var AppInfo = {};
         });
 
         if (Dashboard.isRunningInCordova() && $.browser.android) {
-            define("appstorage", ["thirdparty/cordova/android/appstorage"]);
+            define("appstorage", ["cordova/android/appstorage"]);
         } else {
             define('appstorage', [], function () {
                 return appStorage;
             });
         }
         if (Dashboard.isRunningInCordova()) {
-            define("serverdiscovery", ["thirdparty/cordova/serverdiscovery"]);
-            define("wakeonlan", ["thirdparty/cordova/wakeonlan"]);
+            define("serverdiscovery", ["cordova/serverdiscovery"]);
+            define("wakeonlan", ["cordova/wakeonlan"]);
         } else {
-            define("serverdiscovery", ["thirdparty/apiclient/serverdiscovery"]);
-            define("wakeonlan", ["thirdparty/apiclient/wakeonlan"]);
+            define("serverdiscovery", ["apiclient/serverdiscovery"]);
+            define("wakeonlan", ["apiclient/wakeonlan"]);
         }
 
         if (Dashboard.isRunningInCordova() && $.browser.android) {
-            define("localassetmanager", ["thirdparty/cordova/android/localassetmanager"]);
+            define("localassetmanager", ["cordova/android/localassetmanager"]);
         } else {
-            define("localassetmanager", ["thirdparty/apiclient/localassetmanager"]);
+            define("localassetmanager", ["apiclient/localassetmanager"]);
         }
 
         if (Dashboard.isRunningInCordova() && $.browser.android) {
-            define("filesystem", ["thirdparty/cordova/android/filesystem"]);
+            define("filesystem", ["cordova/android/filesystem"]);
         }
         else if (Dashboard.isRunningInCordova()) {
-            define("filesystem", ["thirdparty/cordova/filesystem"]);
+            define("filesystem", ["cordova/filesystem"]);
         }
         else {
             define("filesystem", ["thirdparty/filesystem"]);
         }
 
         if (Dashboard.isRunningInCordova() && $.browser.android) {
-            define("nativedirectorychooser", ["thirdparty/cordova/android/nativedirectorychooser"]);
+            define("nativedirectorychooser", ["cordova/android/nativedirectorychooser"]);
         }
 
         if (Dashboard.isRunningInCordova() && $.browser.android) {
-            define("audiorenderer", ["thirdparty/cordova/android/vlcplayer"]);
+            define("audiorenderer", ["cordova/android/vlcplayer"]);
             //define("audiorenderer", ["scripts/htmlmediarenderer"]);
             define("videorenderer", ["scripts/htmlmediarenderer"]);
         }
@@ -2042,7 +2042,7 @@ var AppInfo = {};
             define("videorenderer", ["scripts/htmlmediarenderer"]);
         }
 
-        define("connectservice", ["thirdparty/apiclient/connectservice"]);
+        define("connectservice", ["apiclient/connectservice"]);
         define("paperbuttonstyle", [], function () {
             Dashboard.importCss('thirdparty/paper-button-style.css');
             return {};
@@ -2053,7 +2053,7 @@ var AppInfo = {};
         });
 
         if (Dashboard.isRunningInCordova() && $.browser.safari) {
-            define("actionsheet", ["thirdparty/cordova/ios/actionsheet"]);
+            define("actionsheet", ["cordova/ios/actionsheet"]);
         } else {
             define("actionsheet", ["scripts/actionsheet"]);
         }
@@ -2091,7 +2091,7 @@ var AppInfo = {};
 
     function initCordovaWithDeviceId(deferred, deviceId) {
 
-        require(['thirdparty/cordova/imagestore']);
+        require(['cordova/imagestore']);
 
         var capablities = Dashboard.capabilities();
 

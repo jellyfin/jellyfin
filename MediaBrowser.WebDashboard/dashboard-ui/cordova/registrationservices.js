@@ -243,9 +243,9 @@
     }
 
     if (isAndroid()) {
-        requirejs(['thirdparty/cordova/android/iap'], onIapManagerLoaded);
+        requirejs(['cordova/android/iap'], onIapManagerLoaded);
     } else {
-        requirejs(['thirdparty/cordova/iap'], onIapManagerLoaded);
+        requirejs(['cordova/iap'], onIapManagerLoaded);
     }
 
 })();
