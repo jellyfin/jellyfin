@@ -296,6 +296,7 @@
 /* jQuery mobile adds a text shadow that seems unnecessary. */
 * {
     text-shadow: none !important;
+    -webkit-font-smoothing: antialiased;
 }
 
 /* Remove IE mobile 300ms tap delay */
@@ -693,9 +694,9 @@ h1 .imageLink {
 
 .sidebarLink {
     display: block;
-    padding: .6em 20px .6em 0;
+    padding: .8em 20px .8em 0;
     text-decoration: none;
-    color: inherit !important;
+    color: #111 !important;
     font-weight: 500 !important;
     font-size: 14px;
     vertical-align: middle;
@@ -706,45 +707,27 @@ h1 .imageLink {
     }
 
     .sidebarLink.selectedSidebarLink {
-        margin-right: 0;
+        background: #f2f2f2 !important;
     }
 
-.ui-page-theme-a .selectedSidebarLink {
-    background: #f2f2f2 !important;
-}
-
-.ui-page-theme-b .selectedSidebarLink {
-    background: #38c !important;
-    color: #fff !important;
-}
-
 .sidebarLinkIcon {
-    font-size: 16px;
-    width: 66px;
+    font-size: 20px;
+    width: 72px!important;
     text-align: center;
     vertical-align: middle;
-    color: #ddd;
+    color: #7f7f7f;
 }
 
     .sidebarLinkIcon + span {
         vertical-align: middle;
     }
 
-.ui-page-theme-a .sidebarLinkIcon {
-    color: #666;
-}
-
 .sidebarHeader {
     padding-left: 20px;
     margin: 15px 0 10px;
-    font-size: 90%;
-    color: #ccc;
+    color: #666;
+    font-weight: 500;
 }
-
-.ui-page-theme-a .sidebarHeader {
-    color: #888;
-}
-
 
 .invalidEntry {
     background-color: lightpink !important;

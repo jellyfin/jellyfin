@@ -817,6 +817,61 @@ var Dashboard = {
         }
     },
 
+    getToolsMenuHtml: function (page) {
+
+        var items = Dashboard.getToolsMenuLinks(page);
+
+        var i, length, item;
+        var menuHtml = '';
+
+        for (i = 0, length = items.length; i < length; i++) {
+
+            item = items[i];
+
+            if (item.divider) {
+                menuHtml += "<div class='sidebarDivider'></div>";
+            }
+
+            if (item.href) {
+
+                var style = item.color ? ' style="color:' + item.color + '"' : '';
+
+                if (item.selected) {
+                    menuHtml += '<a class="sidebarLink selectedSidebarLink" href="' + item.href + '">';
+                } else {
+                    menuHtml += '<a class="sidebarLink" href="' + item.href + '">';
+                }
+
+                var icon = item.icon;
+
+                if (icon) {
+                    menuHtml += '<iron-icon icon="' + icon + '" class="sidebarLinkIcon"' + style + '></iron-icon>';
+                    //if (icon.indexOf('fa') == 0) {
+                    //    menuHtml += '<span class="fa ' + icon + ' sidebarLinkIcon"' + style + '></span>';
+                    //}
+                    //else if (icon.indexOf('fa') == 0) {
+                    //    menuHtml += '<span class="fa ' + icon + ' sidebarLinkIcon"' + style + '></span>';
+                    //}
+                    //else {
+                    //    menuHtml += '<i class="material-icons sidebarLinkIcon"' + style + '>' + icon + '</i>';
+                    //}
+                }
+
+                menuHtml += '<span class="sidebarLinkText">';
+                menuHtml += item.name;
+                menuHtml += '</span>';
+                menuHtml += '</a>';
+            } else {
+
+                menuHtml += '<div class="sidebarHeader">';
+                menuHtml += item.name;
+                menuHtml += '</div>';
+            }
+        }
+
+        return menuHtml;
+    },
+
     ensureToolsMenu: function (page) {
 
         var sidebar = $('.toolsSidebar', page);
@@ -827,86 +882,11 @@ var Dashboard = {
 
             html += '<div class="sidebarLinks">';
 
-            var items = Dashboard.getToolsMenuLinks(page);
-
-            var i, length, item;
-            var menuHtml = '';
-
-            for (i = 0, length = items.length; i < length; i++) {
-
-                item = items[i];
-
-                if (item.divider) {
-                    menuHtml += "<div class='sidebarDivider'></div>";
-                }
-
-                if (item.href) {
-
-                    var style = item.color ? ' style="color:' + item.color + '"' : '';
-
-                    if (item.selected) {
-                        menuHtml += '<a class="sidebarLink selectedSidebarLink" href="' + item.href + '">';
-                    } else {
-                        menuHtml += '<a class="sidebarLink" href="' + item.href + '">';
-                    }
-
-                    var icon = item.icon;
-
-                    if (icon) {
-                        if (icon.indexOf('fa') == 0) {
-                            menuHtml += '<span class="fa ' + icon + ' sidebarLinkIcon"' + style + '></span>';
-                        } else {
-                            menuHtml += '<i class="material-icons sidebarLinkIcon"' + style + '>' + icon + '</i>';
-                        }
-                    }
-
-                    menuHtml += '<span class="sidebarLinkText">';
-                    menuHtml += item.name;
-                    menuHtml += '</span>';
-                    menuHtml += '</a>';
-                } else {
-
-                    menuHtml += '<div class="sidebarHeader">';
-                    menuHtml += item.name;
-                    menuHtml += '</div>';
-                }
-            }
-
-            html += menuHtml;
+            html += Dashboard.getToolsMenuHtml(page);
             // sidebarLinks
             html += '</div>';
 
             // content-secondary
-            html += '</div>';
-
-            html += '<div data-role="panel" id="dashboardPanel" class="dashboardPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="a">';
-
-            html += '<p class="libraryPanelHeader" style="margin: 15px 0 15px 20px;"><a href="index.html" class="imageLink"><img src="css/images/mblogoicon.png" /><span style="color:#333;">EMBY</span></a></p>';
-
-            html += '<div class="sidebarLinks">';
-            html += menuHtml;
-            // sidebarLinks
-
-            html += '<div class="sidebarDivider"></div>';
-            html += '<div class="userMenuOptions">';
-
-            if (Dashboard.isConnectMode()) {
-                html += '<a class="sidebarLink" data-itemid="selectserver" href="selectserver.html"><span class="fa fa-globe sidebarLinkIcon"></span>';
-                html += '<span class="sidebarLinkText">';
-                html += Globalize.translate('ButtonSelectServer');
-                html += '</span>';
-                html += '</a>';
-            }
-
-            html += '<a class="sidebarLink" data-itemid="logout" href="#" onclick="Dashboard.logout();"><span class="fa fa-sign-out sidebarLinkIcon"></span>';
-            html += '<span class="sidebarLinkText">';
-            html += Globalize.translate('ButtonSignOut');
-            html += '</span>';
-            html += '</a>';
-
-            html += '</div>';
-
-            html += '</div>';
             html += '</div>';
 
             $('.content-primary', page).before(html);
@@ -925,41 +905,41 @@ var Dashboard = {
             name: Globalize.translate('TabServer'),
             href: "dashboard.html",
             selected: page.hasClass("dashboardHomePage"),
-            icon: 'fa-dashboard',
+            icon: 'dashboard',
             color: '#38c'
         }, {
             name: Globalize.translate('TabDevices'),
             href: "devices.html",
             selected: page.hasClass("devicesPage"),
-            icon: 'fa-tablet',
+            icon: 'tablet',
             color: '#ECA403'
         }, {
             name: Globalize.translate('TabUsers'),
             href: "userprofiles.html",
             selected: page.hasClass("userProfilesPage"),
-            icon: 'fa-users',
+            icon: 'people',
             color: '#679C34'
         }, {
             name: Globalize.translate('TabLibrary'),
             divider: true,
             href: "library.html",
             selected: page.hasClass("mediaLibraryPage"),
-            icon: 'fa-film'
+            icon: 'video-library'
         }, {
             name: Globalize.translate('TabMetadata'),
             href: "metadata.html",
             selected: page.hasClass('metadataConfigurationPage'),
-            icon: 'fa-file-text'
+            icon: 'details'
         }, {
             name: Globalize.translate('TabPlayback'),
             href: "playbackconfiguration.html",
             selected: page.hasClass('playbackConfigurationPage'),
-            icon: 'fa-play-circle'
+            icon: 'play-circle-filled'
         }, {
             name: Globalize.translate('TabSync'),
             href: "syncactivity.html",
             selected: page.hasClass('syncConfigurationPage') || (isServicesPage && context == 'sync'),
-            icon: 'fa-refresh'
+            icon: 'refresh'
         }, {
             divider: true,
             name: Globalize.translate('TabExtras')
@@ -967,31 +947,31 @@ var Dashboard = {
             name: Globalize.translate('TabAutoOrganize'),
             href: "autoorganizelog.html",
             selected: page.hasClass("organizePage"),
-            icon: 'fa-files-o',
+            icon: 'folder',
             color: '#01C0DD'
         }, {
             name: Globalize.translate('TabDLNA'),
             href: "dlnasettings.html",
             selected: page.hasClass("dlnaPage"),
-            icon: 'fa-film',
+            icon: 'tv',
             color: '#E5342E'
         }, {
             name: Globalize.translate('TabLiveTV'),
             href: "livetvstatus.html",
             selected: page.hasClass("liveTvSettingsPage") || (isServicesPage && context == 'livetv'),
-            icon: 'fa-video-camera',
+            icon: 'live-tv',
             color: '#293AAE'
         }, {
             name: Globalize.translate('TabNotifications'),
             href: "notificationsettings.html",
             selected: page.hasClass("notificationConfigurationPage"),
-            icon: 'fa-wifi',
+            icon: 'notifications',
             color: 'brown'
         }, {
             name: Globalize.translate('TabPlugins'),
             href: "plugins.html",
             selected: page.hasClass("pluginConfigurationPage"),
-            icon: 'fa-plus-circle',
+            icon: 'add-shopping-cart',
             color: '#9D22B1'
         }, {
             divider: true,
@@ -1000,20 +980,20 @@ var Dashboard = {
             name: Globalize.translate('TabAdvanced'),
             href: "advanced.html",
             selected: page.hasClass("advancedConfigurationPage"),
-            icon: 'fa-gears',
+            icon: 'settings',
             color: '#F16834'
         }, {
             name: Globalize.translate('TabScheduledTasks'),
             href: "scheduledtasks.html",
             selected: page.hasClass("scheduledTasksConfigurationPage"),
-            icon: 'fa-clock-o',
+            icon: 'schedule',
             color: '#38c'
         }, {
             name: Globalize.translate('TabHelp'),
             divider: true,
             href: "support.html",
             selected: pageElem.id == "supportPage" || pageElem.id == "logPage" || pageElem.id == "supporterPage" || pageElem.id == "supporterKeyPage" || pageElem.id == "aboutPage",
-            icon: 'fa-info-circle',
+            icon: 'help',
             color: '#679C34'
         }];
 
@@ -1675,12 +1655,6 @@ var AppInfo = {};
                 }
             }
         }
-        else {
-
-            if (!$.browser.tv) {
-                AppInfo.enableHeadRoom = true;
-            }
-        }
 
         if (!AppInfo.hasLowImageBandwidth) {
             AppInfo.enableStudioTabs = true;
@@ -1700,6 +1674,15 @@ var AppInfo = {};
 
             if (!isAndroid && !isIOS) {
                 AppInfo.enableAppLayouts = true;
+            }
+        }
+
+        if (!$.browser.tv && !isIOS) {
+
+            // Don't enable headroom on mobile chrome when the address bar is visible
+            // With two bars hiding and showing it gets a little awkward
+            if (AppInfo.isNativeApp || window.navigator.standalone || !$.browser.mobile) {
+                AppInfo.enableHeadRoom = true;
             }
         }
 
@@ -2063,6 +2046,12 @@ var AppInfo = {};
         $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
 
         $(document).on('WebComponentsReady', function () {
+
+            var drawer = $('.mainDrawerPanel').removeClass('mainDrawerPanelPreInit')[0];
+            drawer.forceNarrow = true;
+            drawer.drawerWidth = screen.availWidth >= 330 ? "310px" : "270px";
+            drawer.transition = true;
+
             if (Dashboard.isConnectMode()) {
 
                 require(['appstorage'], function () {
@@ -2154,7 +2143,7 @@ $(document).on('pagecreate', ".page", function () {
         current = newTheme;
     }
 
-    if (current == 'b') {
+    if (current == 'b' && !$.browser.mobile) {
         $(document.body).addClass('darkScrollbars');
     } else {
         $(document.body).removeClass('darkScrollbars');

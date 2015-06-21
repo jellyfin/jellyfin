@@ -12844,7 +12844,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   });
 </script>
 <dom-module id="paper-drawer-panel" assetpath="bower_components/paper-drawer-panel/">
-  <style>
+    <style>
 /**
 @license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
@@ -12853,8 +12853,8 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-
 */
+
 :host {
   display: block;
   position: absolute;
@@ -12871,16 +12871,16 @@ iron-selector > #drawer {
   left: 0;
   height: 100%;
   background-color: white;
-  will-change: transform;
-  box-sizing: border-box;
+
   -moz-box-sizing: border-box;
+  box-sizing: border-box;
 
   @apply(--paper-drawer-panel-drawer-container);
 }
 
 .transition > #drawer {
-  transition: -webkit-transform ease-in-out 0.3s, width ease-in-out 0.3s;
-  transition: transform ease-in-out 0.3s, width ease-in-out 0.3s;
+  transition: -webkit-transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;
+  transition: transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;
 }
 
 .left-drawer > #drawer {
@@ -12935,6 +12935,10 @@ iron-selector > #main {
   background-color: rgba(0, 0, 0, 0.3);
 }
 
+.narrow-layout > #drawer {
+  will-change: transform;
+}
+
 .narrow-layout > #drawer.iron-selected {
   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
 }
@@ -12954,19 +12958,24 @@ iron-selector > #main {
 
 .right-drawer.narrow-layout > #drawer:not(.iron-selected) {
   left: auto;
+  visibility: hidden;
+
   -webkit-transform: translateX(100%);
   transform: translateX(100%);
 }
 
+.right-drawer.narrow-layout.dragging > #drawer:not(.iron-selected),
+.right-drawer.narrow-layout.peeking > #drawer:not(.iron-selected) {
+  visibility: visible;
+}
+
 .narrow-layout > #main {
-  left: 0 !important;
   padding: 0;
 }
 
 .right-drawer.narrow-layout > #main {
   left: 0;
   right: 0;
-  padding: 0;
 }
 
 .narrow-layout > #main:not(.iron-selected) > #scrim,
@@ -12980,8 +12989,9 @@ iron-selector > #main {
   min-height: 100%;
   left: 0;
   right: 0;
-  box-sizing: border-box;
+
   -moz-box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
@@ -12989,482 +12999,485 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 }
 </style>
 
-  <template>
-    <iron-media-query id="mq" on-query-matches-changed="_onQueryMatchesChanged" query="[[_computeMediaQuery(forceNarrow, responsiveWidth)]]">
-    </iron-media-query>
+    <template>
+        <iron-media-query id="mq" on-query-matches-changed="_onQueryMatchesChanged" query="[[_computeMediaQuery(forceNarrow, responsiveWidth)]]">
+        </iron-media-query>
 
-    <iron-selector attr-for-selected="id" class$="[[_computeIronSelectorClass(narrow, transition, dragging, rightDrawer)]]" activate-event="" selected="[[selected]]">
+        <iron-selector attr-for-selected="id" class$="[[_computeIronSelectorClass(narrow, transition, dragging, rightDrawer, peeking)]]" activate-event="" selected="[[selected]]">
 
-      <div id="main" style$="[[_computeMainStyle(narrow, rightDrawer, drawerWidth)]]">
-        <content select="[main]"></content>
-        <div id="scrim" on-tap="closeDrawer"></div>
-      </div>
+            <div id="main" style$="[[_computeMainStyle(narrow, rightDrawer, drawerWidth)]]">
+                <content select="[main]"></content>
+                <div id="scrim" on-tap="closeDrawer"></div>
+            </div>
 
-      <div id="drawer" style$="[[_computeDrawerStyle(drawerWidth)]]">
-        <content select="[drawer]"></content>
-      </div>
+            <div id="drawer" style$="[[_computeDrawerStyle(drawerWidth)]]">
+                <content select="[drawer]"></content>
+            </div>
 
-    </iron-selector>
-  </template>
+        </iron-selector>
+    </template>
 
 </dom-module>
 
 <script>
 
-  (function() {
-
-    'use strict';
-
-   // this would be the only `paper-drawer-panel` in
-   // the whole app that can be in `dragging` state
-    var sharedPanel = null;
-
-    function classNames(obj) {
-      var classes = [];
-      for (var key in obj) {
-        if (obj.hasOwnProperty(key) && obj[key]) {
-          classes.push(key);
-        }
-      }
-
-      return classes.join(' ');
-    }
-
-    Polymer({
-
-      is: 'paper-drawer-panel',
-
-      /**
-       * Fired when the narrow layout changes.
-       *
-       * @event paper-responsive-change {{narrow: boolean}} detail -
-       *     narrow: true if the panel is in narrow layout.
-       */
-
-      /**
-       * Fired when the selected panel changes.
-       *
-       * Listening for this event is an alternative to observing changes in the `selected` attribute.
-       * This event is fired both when a panel is selected and deselected.
-       * The `isSelected` detail property contains the selection state.
-       *
-       * @event paper-select {{isSelected: boolean, item: Object}} detail -
-       *     isSelected: True for selection and false for deselection.
-       *     item: The panel that the event refers to.
-       */
-
-      properties: {
-
-        /**
-         * The panel to be selected when `paper-drawer-panel` changes to narrow
-         * layout.
-         */
-        defaultSelected: {
-          type: String,
-          value: 'main'
-        },
-
-        /**
-         * If true, swipe from the edge is disable.
-         */
-        disableEdgeSwipe: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * If true, swipe to open/close the drawer is disabled.
-         */
-        disableSwipe: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * Whether the user is dragging the drawer interactively.
-         */
-        dragging: {
-          type: Boolean,
-          value: false,
-          readOnly: true,
-          notify: true
-        },
-
-        /**
-         * Width of the drawer panel.
-         */
-        drawerWidth: {
-          type: String,
-          value: '256px'
-        },
-
-        /**
-         * How many pixels on the side of the screen are sensitive to edge
-         * swipes and peek.
-         */
-        edgeSwipeSensitivity: {
-          type: Number,
-          value: 30
-        },
-
-        /**
-         * If true, ignore `responsiveWidth` setting and force the narrow layout.
-         */
-        forceNarrow: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * Whether the browser has support for the transform CSS property.
-         */
-        hasTransform: {
-          type: Boolean,
-          value: function() {
-            return 'transform' in this.style;
-          }
-        },
-
-        /**
-         * Whether the browser has support for the will-change CSS property.
-         */
-        hasWillChange: {
-          type: Boolean,
-          value: function() {
-            return 'willChange' in this.style;
-          }
-        },
-
-        /**
-         * Returns true if the panel is in narrow layout.  This is useful if you
-         * need to show/hide elements based on the layout.
-         */
-        narrow: {
-          reflectToAttribute: true,
-          type: Boolean,
-          value: false,
-          readOnly: true,
-          notify: true
-        },
-
-        /**
-         * Whether the drawer is peeking out from the edge.
-         */
-        peeking: {
-          type: Boolean,
-          value: false,
-          readOnly: true,
-          notify: true
-        },
-
-        /**
-         * Max-width when the panel changes to narrow layout.
-         */
-        responsiveWidth: {
-          type: String,
-          value: '640px'
-        },
-
-        /**
-         * If true, position the drawer to the right.
-         */
-        rightDrawer: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * The panel that is being selected. `drawer` for the drawer panel and
-         * `main` for the main panel.
-         */
-        selected: {
-          reflectToAttribute: true,
-          notify: true,
-          type: String,
-          value: null
-        },
-
-        /**
-         * The attribute on elements that should toggle the drawer on tap, also elements will
-         * automatically be hidden in wide layout.
-         */
-        drawerToggleAttribute: {
-          type: String,
-          value: 'paper-drawer-toggle'
-        },
-
-        /**
-         * Whether the transition is enabled.
-         */
-        transition: {
-          type: Boolean,
-          value: false
-        },
-
-      },
-
-      listeners: {
-        tap: '_onTap',
-        track: '_onTrack',
-        down: '_downHandler',
-        up: '_upHandler'
-      },
-
-      observers: [
-        '_forceNarrowChanged(forceNarrow, defaultSelected)'
-      ],
-
-      /**
-       * Toggles the panel open and closed.
-       *
-       * @method togglePanel
-       */
-      togglePanel: function() {
-        if (this._isMainSelected()) {
-          this.openDrawer();
-        } else {
-          this.closeDrawer();
-        }
-      },
-
-      /**
-       * Opens the drawer.
-       *
-       * @method openDrawer
-       */
-      openDrawer: function() {
-        this.selected = 'drawer';
-      },
-
-      /**
-       * Closes the drawer.
-       *
-       * @method closeDrawer
-       */
-      closeDrawer: function() {
-        this.selected = 'main';
-      },
-
-      ready: function() {
-        // Avoid transition at the beginning e.g. page loads and enable
-        // transitions only after the element is rendered and ready.
-        this.transition = true;
-      },
-
-      _computeIronSelectorClass: function(narrow, transition, dragging, rightDrawer) {
-        return classNames({
-          dragging: dragging,
-          'narrow-layout': narrow,
-          'right-drawer': rightDrawer,
-          'left-drawer': !rightDrawer,
-          transition: transition
-        });
-      },
-
-      _computeDrawerStyle: function(drawerWidth) {
-        return 'width:' + drawerWidth + ';';
-      },
-
-      _computeMainStyle: function(narrow, rightDrawer, drawerWidth) {
-        var style = '';
-
-        style += 'left:' + ((narrow || rightDrawer) ? '0' : drawerWidth) + ';';
-
-        if (rightDrawer) {
-          style += 'right:' + (narrow ? '' : drawerWidth) + ';';
-        } else {
-          style += 'right:;';
-        }
-
-        return style;
-      },
-
-      _computeMediaQuery: function(forceNarrow, responsiveWidth) {
-        return forceNarrow ? '' : '(max-width: ' + responsiveWidth + ')';
-      },
-
-      _computeSwipeOverlayHidden: function(narrow, disableEdgeSwipe) {
-        return !narrow || disableEdgeSwipe;
-      },
-
-      _onTrack: function(e) {
-        if (sharedPanel && this !== sharedPanel) {
-          return;
-        }
-        switch (e.detail.state) {
-          case 'start':
-            this._trackStart(e);
-            break;
-          case 'track':
-            this._trackX(e);
-            break;
-          case 'end':
-            this._trackEnd(e);
-            break;
-        }
-
-      },
-
-      _responsiveChange: function(narrow) {
-        this._setNarrow(narrow);
-
-        if (this.narrow) {
-          this.selected = this.defaultSelected;
-        }
-
-        this.setScrollDirection(this._swipeAllowed() ? 'y' : 'all');
-        this.fire('paper-responsive-change', {narrow: this.narrow});
-      },
-
-      _onQueryMatchesChanged: function(e) {
-        this._responsiveChange(e.detail.value);
-      },
-
-      _forceNarrowChanged: function() {
-        // set the narrow mode only if we reached the `responsiveWidth`
-        this._responsiveChange(this.forceNarrow || this.$.mq.queryMatches);
-      },
-
-      _swipeAllowed: function() {
-        return this.narrow && !this.disableSwipe;
-      },
-
-      _isMainSelected: function() {
-        return this.selected === 'main';
-      },
-
-      _startEdgePeek: function() {
-        this.width = this.$.drawer.offsetWidth;
-        this._moveDrawer(this._translateXForDeltaX(this.rightDrawer ?
-            -this.edgeSwipeSensitivity : this.edgeSwipeSensitivity));
-        this._setPeeking(true);
-      },
-
-      _stopEdgePeek: function() {
-        if (this.peeking) {
-          this._setPeeking(false);
-          this._moveDrawer(null);
-        }
-      },
-
-      _downHandler: function(e) {
-        if (!this.dragging && this._isMainSelected() && this._isEdgeTouch(e) && !sharedPanel) {
-          this._startEdgePeek();
-          // grab this panel
-          sharedPanel = this;
-        }
-      },
-
-      _upHandler: function() {
-        this._stopEdgePeek();
-        // release the panel
-        sharedPanel = null;
-      },
-
-      _onTap: function(e) {
-        var targetElement = Polymer.dom(e).localTarget;
-        var isTargetToggleElement = targetElement &&
-          this.drawerToggleAttribute &&
-          targetElement.hasAttribute(this.drawerToggleAttribute);
-
-        if (isTargetToggleElement) {
-          this.togglePanel();
-        }
-      },
-
-      _isEdgeTouch: function(e) {
-        var x = e.detail.x;
-
-        return !this.disableEdgeSwipe && this._swipeAllowed() &&
-          (this.rightDrawer ?
-            x >= this.offsetWidth - this.edgeSwipeSensitivity :
-            x <= this.edgeSwipeSensitivity);
-      },
-
-      _trackStart: function(event) {
-        if (this._swipeAllowed()) {
-          sharedPanel = this;
-          this._setDragging(true);
-
-          if (this._isMainSelected()) {
-            this._setDragging(this.peeking || this._isEdgeTouch(event));
-          }
-
-          if (this.dragging) {
-            this.width = this.$.drawer.offsetWidth;
-            this.transition = false;
-          }
-        }
-      },
-
-      _translateXForDeltaX: function(deltaX) {
-        var isMain = this._isMainSelected();
-
-        if (this.rightDrawer) {
-          return Math.max(0, isMain ? this.width + deltaX : deltaX);
-        } else {
-          return Math.min(0, isMain ? deltaX - this.width : deltaX);
-        }
-      },
-
-      _trackX: function(e) {
-        if (this.dragging) {
-          var dx = e.detail.dx;
-
-          if (this.peeking) {
-            if (Math.abs(dx) <= this.edgeSwipeSensitivity) {
-              // Ignore trackx until we move past the edge peek.
-              return;
+    (function () {
+
+        'use strict';
+
+        // this would be the only `paper-drawer-panel` in
+        // the whole app that can be in `dragging` state
+        var sharedPanel = null;
+
+        function classNames(obj) {
+            var classes = [];
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key) && obj[key]) {
+                    classes.push(key);
+                }
             }
-            this._setPeeking(false);
-          }
 
-          this._moveDrawer(this._translateXForDeltaX(dx));
-        }
-      },
-
-      _trackEnd: function(e) {
-        if (this.dragging) {
-          var xDirection = e.detail.dx > 0;
-
-          this._setDragging(false);
-          this.transition = true;
-          sharedPanel = null;
-          this._moveDrawer(null);
-
-          if (this.rightDrawer) {
-            this[xDirection ? 'closeDrawer' : 'openDrawer']();
-          } else {
-            this[xDirection ? 'openDrawer' : 'closeDrawer']();
-          }
-        }
-      },
-
-      _transformForTranslateX: function(translateX) {
-        if (translateX === null) {
-          return '';
+            return classes.join(' ');
         }
 
-        return this.hasWillChange ? 'translateX(' + translateX + 'px)' :
-            'translate3d(' + translateX + 'px, 0, 0)';
-      },
+        Polymer({
 
-      _moveDrawer: function(translateX) {
-        var s = this.$.drawer.style;
+            is: 'paper-drawer-panel',
 
-        if (this.hasTransform) {
-          s.transform = this._transformForTranslateX(translateX);
-        } else {
-          s.webkitTransform = this._transformForTranslateX(translateX);
-        }
-      }
+            /**
+             * Fired when the narrow layout changes.
+             *
+             * @event paper-responsive-change {{narrow: boolean}} detail -
+             *     narrow: true if the panel is in narrow layout.
+             */
 
-    });
+            /**
+             * Fired when the a panel is selected.
+             *
+             * Listening for this event is an alternative to observing changes in the `selected` attribute.
+             * This event is fired both when a panel is selected.
+             *
+             * @event iron-select {{item: Object}} detail -
+             *     item: The panel that the event refers to.
+             */
 
-  }());
+            /**
+             * Fired when a panel is deselected.
+             *
+             * Listening for this event is an alternative to observing changes in the `selected` attribute.
+             * This event is fired both when a panel is deselected.
+             *
+             * @event iron-deselect {{item: Object}} detail -
+             *     item: The panel that the event refers to.
+             */
+            properties: {
 
-</script>
-<iron-iconset-svg name="icons" size="24">
+                /**
+                 * The panel to be selected when `paper-drawer-panel` changes to narrow
+                 * layout.
+                 */
+                defaultSelected: {
+                    type: String,
+                    value: 'main'
+                },
+
+                /**
+                 * If true, swipe from the edge is disable.
+                 */
+                disableEdgeSwipe: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If true, swipe to open/close the drawer is disabled.
+                 */
+                disableSwipe: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * Whether the user is dragging the drawer interactively.
+                 */
+                dragging: {
+                    type: Boolean,
+                    value: false,
+                    readOnly: true,
+                    notify: true
+                },
+
+                /**
+                 * Width of the drawer panel.
+                 */
+                drawerWidth: {
+                    type: String,
+                    value: '256px'
+                },
+
+                /**
+                 * How many pixels on the side of the screen are sensitive to edge
+                 * swipes and peek.
+                 */
+                edgeSwipeSensitivity: {
+                    type: Number,
+                    value: 30
+                },
+
+                /**
+                 * If true, ignore `responsiveWidth` setting and force the narrow layout.
+                 */
+                forceNarrow: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * Whether the browser has support for the transform CSS property.
+                 */
+                hasTransform: {
+                    type: Boolean,
+                    value: function () {
+                        return 'transform' in this.style;
+                    }
+                },
+
+                /**
+                 * Whether the browser has support for the will-change CSS property.
+                 */
+                hasWillChange: {
+                    type: Boolean,
+                    value: function () {
+                        return 'willChange' in this.style;
+                    }
+                },
+
+                /**
+                 * Returns true if the panel is in narrow layout.  This is useful if you
+                 * need to show/hide elements based on the layout.
+                 */
+                narrow: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false,
+                    readOnly: true,
+                    notify: true
+                },
+
+                /**
+                 * Whether the drawer is peeking out from the edge.
+                 */
+                peeking: {
+                    type: Boolean,
+                    value: false,
+                    readOnly: true,
+                    notify: true
+                },
+
+                /**
+                 * Max-width when the panel changes to narrow layout.
+                 */
+                responsiveWidth: {
+                    type: String,
+                    value: '640px'
+                },
+
+                /**
+                 * If true, position the drawer to the right.
+                 */
+                rightDrawer: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The panel that is being selected. `drawer` for the drawer panel and
+                 * `main` for the main panel.
+                 */
+                selected: {
+                    reflectToAttribute: true,
+                    notify: true,
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * The attribute on elements that should toggle the drawer on tap, also elements will
+                 * automatically be hidden in wide layout.
+                 */
+                drawerToggleAttribute: {
+                    type: String,
+                    value: 'paper-drawer-toggle'
+                },
+
+                /**
+                 * Whether the transition is enabled.
+                 */
+                transition: {
+                    type: Boolean,
+                    value: false
+                },
+
+            },
+
+            listeners: {
+                tap: '_onTap',
+                track: '_onTrack',
+                down: '_downHandler',
+                up: '_upHandler'
+            },
+
+            observers: [
+              '_forceNarrowChanged(forceNarrow, defaultSelected)'
+            ],
+
+            /**
+             * Toggles the panel open and closed.
+             *
+             * @method togglePanel
+             */
+            togglePanel: function () {
+                if (this._isMainSelected()) {
+                    this.openDrawer();
+                } else {
+                    this.closeDrawer();
+                }
+            },
+
+            /**
+             * Opens the drawer.
+             *
+             * @method openDrawer
+             */
+            openDrawer: function () {
+                this.selected = 'drawer';
+                this.fire('paper-drawer-panel-open');
+            },
+
+            /**
+             * Closes the drawer.
+             *
+             * @method closeDrawer
+             */
+            closeDrawer: function () {
+                this.selected = 'main';
+                this.fire('paper-drawer-panel-close');
+            },
+
+            ready: function () {
+                // Avoid transition at the beginning e.g. page loads and enable
+                // transitions only after the element is rendered and ready.
+                this.transition = true;
+            },
+
+            _computeIronSelectorClass: function (narrow, transition, dragging, rightDrawer, peeking) {
+                return classNames({
+                    dragging: dragging,
+                    'narrow-layout': narrow,
+                    'right-drawer': rightDrawer,
+                    'left-drawer': !rightDrawer,
+                    transition: transition,
+                    peeking: peeking
+                });
+            },
+
+            _computeDrawerStyle: function (drawerWidth) {
+                return 'width:' + drawerWidth + ';';
+            },
+
+            _computeMainStyle: function (narrow, rightDrawer, drawerWidth) {
+                var style = '';
+
+                style += 'left:' + ((narrow || rightDrawer) ? '0' : drawerWidth) + ';';
+
+                if (rightDrawer) {
+                    style += 'right:' + (narrow ? '' : drawerWidth) + ';';
+                }
+
+                return style;
+            },
+
+            _computeMediaQuery: function (forceNarrow, responsiveWidth) {
+                return forceNarrow ? '' : '(max-width: ' + responsiveWidth + ')';
+            },
+
+            _computeSwipeOverlayHidden: function (narrow, disableEdgeSwipe) {
+                return !narrow || disableEdgeSwipe;
+            },
+
+            _onTrack: function (event) {
+                if (sharedPanel && this !== sharedPanel) {
+                    return;
+                }
+                switch (event.detail.state) {
+                    case 'start':
+                        this._trackStart(event);
+                        break;
+                    case 'track':
+                        this._trackX(event);
+                        break;
+                    case 'end':
+                        this._trackEnd(event);
+                        break;
+                }
+
+            },
+
+            _responsiveChange: function (narrow) {
+                this._setNarrow(narrow);
+
+                if (this.narrow) {
+                    this.selected = this.defaultSelected;
+                }
+
+                this.setScrollDirection(this._swipeAllowed() ? 'y' : 'all');
+                this.fire('paper-responsive-change', { narrow: this.narrow });
+            },
+
+            _onQueryMatchesChanged: function (event) {
+                this._responsiveChange(event.detail.value);
+            },
+
+            _forceNarrowChanged: function () {
+                // set the narrow mode only if we reached the `responsiveWidth`
+                this._responsiveChange(this.forceNarrow || this.$.mq.queryMatches);
+            },
+
+            _swipeAllowed: function () {
+                return this.narrow && !this.disableSwipe;
+            },
+
+            _isMainSelected: function () {
+                return this.selected === 'main';
+            },
+
+            _startEdgePeek: function () {
+                this.width = this.$.drawer.offsetWidth;
+                this._moveDrawer(this._translateXForDeltaX(this.rightDrawer ?
+                    -this.edgeSwipeSensitivity : this.edgeSwipeSensitivity));
+                this._setPeeking(true);
+            },
+
+            _stopEdgePeek: function () {
+                if (this.peeking) {
+                    this._setPeeking(false);
+                    this._moveDrawer(null);
+                }
+            },
+
+            _downHandler: function (event) {
+                if (!this.dragging && this._isMainSelected() && this._isEdgeTouch(event) && !sharedPanel) {
+                    this._startEdgePeek();
+                    // cancel selection
+                    event.preventDefault();
+                    // grab this panel
+                    sharedPanel = this;
+                }
+            },
+
+            _upHandler: function () {
+                this._stopEdgePeek();
+                // release the panel
+                sharedPanel = null;
+            },
+
+            _onTap: function (event) {
+                var targetElement = Polymer.dom(event).localTarget;
+                var isTargetToggleElement = targetElement &&
+                  this.drawerToggleAttribute &&
+                  targetElement.hasAttribute(this.drawerToggleAttribute);
+
+                if (isTargetToggleElement) {
+                    this.togglePanel();
+                }
+            },
+
+            _isEdgeTouch: function (event) {
+                var x = event.detail.x;
+
+                return !this.disableEdgeSwipe && this._swipeAllowed() &&
+                  (this.rightDrawer ?
+                    x >= this.offsetWidth - this.edgeSwipeSensitivity :
+                    x <= this.edgeSwipeSensitivity);
+            },
+
+            _trackStart: function (event) {
+                if (this._swipeAllowed()) {
+                    sharedPanel = this;
+                    this._setDragging(true);
+
+                    if (this._isMainSelected()) {
+                        this._setDragging(this.peeking || this._isEdgeTouch(event));
+                    }
+
+                    if (this.dragging) {
+                        this.width = this.$.drawer.offsetWidth;
+                        this.transition = false;
+                    }
+                }
+            },
+
+            _translateXForDeltaX: function (deltaX) {
+                var isMain = this._isMainSelected();
+
+                if (this.rightDrawer) {
+                    return Math.max(0, isMain ? this.width + deltaX : deltaX);
+                } else {
+                    return Math.min(0, isMain ? deltaX - this.width : deltaX);
+                }
+            },
+
+            _trackX: function (event) {
+                if (this.dragging) {
+                    var dx = event.detail.dx;
+
+                    if (this.peeking) {
+                        if (Math.abs(dx) <= this.edgeSwipeSensitivity) {
+                            // Ignore trackx until we move past the edge peek.
+                            return;
+                        }
+                        this._setPeeking(false);
+                    }
+
+                    this._moveDrawer(this._translateXForDeltaX(dx));
+                }
+            },
+
+            _trackEnd: function (event) {
+                if (this.dragging) {
+                    var xDirection = event.detail.dx > 0;
+
+                    this._setDragging(false);
+                    this.transition = true;
+                    sharedPanel = null;
+                    this._moveDrawer(null);
+
+                    if (this.rightDrawer) {
+                        this[xDirection ? 'closeDrawer' : 'openDrawer']();
+                    } else {
+                        this[xDirection ? 'openDrawer' : 'closeDrawer']();
+                    }
+                }
+            },
+
+            _transformForTranslateX: function (translateX) {
+                if (translateX === null) {
+                    return '';
+                }
+
+                return this.hasWillChange ? 'translateX(' + translateX + 'px)' :
+                    'translate3d(' + translateX + 'px, 0, 0)';
+            },
+
+            _moveDrawer: function (translateX) {
+                this.transform(this._transformForTranslateX(translateX), this.$.drawer);
+            }
+
+        });
+
+    }());
+
+</script><iron-iconset-svg name="icons" size="24">
     <svg>
         <defs>
             <g id="add"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></g>
@@ -13495,7 +13508,26 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
             <g id="tablet-android"><path d="M18 0H6C4.34 0 3 1.34 3 3v18c0 1.66 1.34 3 3 3h12c1.66 0 3-1.34 3-3V3c0-1.66-1.34-3-3-3zm-4 22h-4v-1h4v1zm5.25-3H4.75V3h14.5v16z"></path></g>
             <g id="view-comfy"><path d="M3 9h4V5H3v4zm0 5h4v-4H3v4zm5 0h4v-4H8v4zm5 0h4v-4h-4v4zM8 9h4V5H8v4zm5-4v4h4V5h-4zm5 9h4v-4h-4v4zM3 19h4v-4H3v4zm5 0h4v-4H8v4zm5 0h4v-4h-4v4zm5 0h4v-4h-4v4zm0-14v4h4V5h-4z"></path></g>
             <g id="videocam"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"></path></g>
-        </defs>
+            <g id="schedule"><path fill-opacity=".9" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zM12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"></path></g>
+            <g id="help"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"></path></g>
+            <g id="tv"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"></path></g>
+            <g id="live-tv"><path d="M21 6h-7.59l3.29-3.29L16 2l-4 4-4-4-.71.71L10.59 6H3c-1.1 0-2 .89-2 2v12c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.11-.9-2-2-2zm0 14H3V8h18v12zM9 10v8l7-4z"></path></g>
+            <g id="notifications"><path d="M11.5 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6.5-6v-5.5c0-3.07-2.13-5.64-5-6.32V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5v.68c-2.87.68-5 3.25-5 6.32V16l-2 2v1h17v-1l-2-2z"></path></g>
+            <g id="add-shopping-cart"><path d="M11 9h2V6h3V4h-3V1h-2v3H8v2h3v3zm-4 9c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2zm-9.83-3.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.86-7.01L19.42 4h-.01l-1.1 2-2.76 5H8.53l-.13-.27L6.16 6l-.95-2-.94-2H1v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.13 0-.25-.11-.25-.25z"></path></g>
+            <g id="play-circle-filled"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"></path></g>
+            <g id="folder"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"></path></g>
+            <g id="details"><path d="M3 4l9 16 9-16H3zm3.38 2h11.25L12 16 6.38 6z"></path></g>
+            <g id="video-library"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"></path></g>
+            <g id="people"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"></path></g>
+            <g id="tablet"><path d="M21 4H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h18c1.1 0 1.99-.9 1.99-2L23 6c0-1.1-.9-2-2-2zm-2 14H5V6h14v12z"></path></g>
+            <g id="dashboard"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"></path></g>
+            <g id="insert-chart"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"></path></g>
+            <g id="inbox"><path d="M19 3H4.99c-1.1 0-1.98.9-1.98 2L3 19c0 1.1.89 2 1.99 2H19c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12h-4c0 1.66-1.34 3-3 3s-3-1.34-3-3H4.99V5H19v10zm-3-5h-2V7h-4v3H8l4 4 4-4z"></path></g>
+            <g id="photo-library"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"></path></g>
+            <g id="view-list"><path d="M4 14h4v-4H4v4zm0 5h4v-4H4v4zM4 9h4V5H4v4zm5 5h12v-4H9v4zm0 5h12v-4H9v4zM9 5v4h12V5H9z"></path></g>
+            <g id="library-music"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 5h-3v5.5c0 1.38-1.12 2.5-2.5 2.5S10 13.88 10 12.5s1.12-2.5 2.5-2.5c.57 0 1.08.19 1.5.51V5h4v2zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"></path></g>
+            <g id="home"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></g>
+       </defs>
     </svg>
 </iron-iconset-svg>
 </div></body></html>

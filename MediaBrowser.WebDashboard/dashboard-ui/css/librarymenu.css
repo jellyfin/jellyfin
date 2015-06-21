@@ -8,12 +8,8 @@
 
 .sidebarDivider {
     height: 1px;
-    background: #333;
+    background: #ddd;
     margin: .5em 0;
-}
-
-.ui-page-theme-a .sidebarDivider {
-    background: #ddd !important;
 }
 
 .headerBackButton {
@@ -39,6 +35,40 @@
     color: #e8e8e8;
     font-size: 24px;
     vertical-align: middle;
+}
+
+.mainDrawerPanel {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+.mainDrawerPanelPreInit #drawer {
+    display: none !important;
+}
+
+.mainDrawerPanel #drawer {
+    z-index: 1000 !important;
+    position: fixed !important;
+    bottom: 0;
+    height: auto !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+}
+
+.mainDrawerPanel #main {
+    left: 0 !important;
+    position: static !important;
+}
+
+.mainDrawer {
+    height: auto !important;
+    border-right: 1px solid #e0e0e0;
+}
+
+.mainDrawerContent {
+    padding-bottom: 40px;
 }
 
 .headerButton {
@@ -80,8 +110,12 @@
         border-width: 0 !important;
     }
 
-.libraryMenuButton, .dashboardMenuButton {
+.mainDrawerButton {
     padding-left: 10px !important;
+}
+
+.hideMainDrawer .mainDrawerButton {
+    display: none;
 }
 
 .barMenuInner {
@@ -191,23 +225,6 @@
     vertical-align: top;
 }
 
-.librarySidebarLinks {
-    margin-left: -1em;
-    margin-right: -1em;
-    margin-top: -1em;
-    padding-top: 0;
-}
-
-    .librarySidebarLinks a {
-        font-weight: 300 !important;
-        padding: .8em 20px .8em 0;
-    }
-
-        .librarySidebarLinks a:hover {
-            background-color: #383838 !important;
-            color: #fff !important;
-        }
-
 .viewMenuSecondary {
     position: absolute;
     top: 0;
@@ -216,12 +233,7 @@
 }
 
 .selectedMediaFolder {
-    background-color: #38c !important;
-    color: #fff !important;
-}
-
-.itemDetailPage .selectedMediaFolder {
-    background-color: rgba(51,136,204,.8) !important;
+    background-color: #f2f2f2 !important;
 }
 
 .ui-panel.ui-body-b {
@@ -255,20 +267,6 @@
     }
 }
 
-@media all and (min-width: 800px) {
-
-    .dashboardDocument .dashboardMenuButton {
-        display: none !important;
-    }
-}
-
-@media all and (max-width: 800px) {
-
-    .dashboardDocument .libraryMenuButton {
-        display: none !important;
-    }
-}
-
 @media all and (max-width: 800px) {
 
     /* The sidebar isn't visible at this size, so there's no way to navigate within the editor */
@@ -277,14 +275,96 @@
     }
 }
 
-@media all and (max-width: 800px) {
+@media all and (min-width: 800px) {
 
-    /* They can use the left menu */
-    .dashboardEntryHeaderButton {
+    .dashboardDocument .dashboardDrawerContent {
         display: none !important;
     }
 }
 
-.libraryDocument .dashboardMenuButton {
+@media all and (max-width: 800px) {
+
+    .dashboardDocument .libraryDrawerContent {
+        display: none !important;
+    }
+}
+
+.drawerUserPanel {
+    background: url(images/splash.jpg);
+    background-size: cover;
+    background-position: center center;
+    margin-bottom: 1em;
+    position: relative;
+    color: #fff;
+    height: 140px;
+}
+
+.drawerUserPanelInner {
+    background-color: rgba(0, 0, 0, .75);
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+}
+
+.drawerUserPanelContent {
+    color: #fff;
+    font-weight: 500;
+    padding: 1.1em;
+    font-size: 14px;
+}
+
+.drawerUserPanelUserImage {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    border-radius: 1000px;
+    vertical-align: middle;
+}
+
+.drawerUserPanelUserName {
+    padding-top: 1.5em;
+    padding-left: .25em;
+}
+
+.libraryDocument .dashboardDrawerContent {
     display: none !important;
 }
+
+.dashboardDocument .lnkMySync {
+    display: none !important;
+}
+
+.dashboardDocument .lnkManageServer {
+    display: none !important;
+}
+
+.darkDrawer {
+    background-color: #282828 !important;
+}
+
+    .darkDrawer .sidebarLinkIcon {
+        color: #ccc !important;
+    }
+
+    .darkDrawer .sidebarLinkText, .darkDrawer .sidebarLink {
+        color: #fff !important;
+        font-weight: 300 !important;
+    }
+
+    .darkDrawer .sidebarHeader {
+        color: #bbb !important;
+    }
+
+    .darkDrawer .sidebarDivider {
+        background: #555 !important;
+    }
+
+    .darkDrawer .sidebarLink:hover {
+        background: #444;
+    }
+
+    .darkDrawer .sidebarLink.selectedSidebarLink, .darkDrawer .selectedMediaFolder {
+        background: #444 !important;
+    }

@@ -260,7 +260,9 @@ namespace MediaBrowser.WebDashboard.Api
 
                         html = _localization.LocalizeDocument(html, localizationCulture, GetLocalizationToken);
 
-                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">").Replace("<body>", "<body><div class=\"pageContainer\">").Replace("</body>", "</div></body>");
+                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">")
+                            .Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div main><div class=\"pageContainer\">")
+                            .Replace("</body>", "</div></div></body>");
                     }
 
                     if (enableMinification)

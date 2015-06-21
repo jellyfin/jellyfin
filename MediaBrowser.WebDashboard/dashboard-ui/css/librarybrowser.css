@@ -609,8 +609,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .darkScrollbars ::-webkit-scrollbar {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
 }
 
 .darkScrollbars ::-webkit-scrollbar-button:start:decrement,

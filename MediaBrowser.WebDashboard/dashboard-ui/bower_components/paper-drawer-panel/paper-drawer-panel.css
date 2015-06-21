@@ -6,8 +6,8 @@ The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
 The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-
 */
+
 :host {
   display: block;
   position: absolute;
@@ -24,16 +24,16 @@ iron-selector > #drawer {
   left: 0;
   height: 100%;
   background-color: white;
-  will-change: transform;
-  box-sizing: border-box;
+
   -moz-box-sizing: border-box;
+  box-sizing: border-box;
 
   @apply(--paper-drawer-panel-drawer-container);
 }
 
 .transition > #drawer {
-  transition: -webkit-transform ease-in-out 0.3s, width ease-in-out 0.3s;
-  transition: transform ease-in-out 0.3s, width ease-in-out 0.3s;
+  transition: -webkit-transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;
+  transition: transform ease-in-out 0.3s, width ease-in-out 0.3s, visibility 0.3s;
 }
 
 .left-drawer > #drawer {
@@ -88,6 +88,10 @@ iron-selector > #main {
   background-color: rgba(0, 0, 0, 0.3);
 }
 
+.narrow-layout > #drawer {
+  will-change: transform;
+}
+
 .narrow-layout > #drawer.iron-selected {
   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
 }
@@ -107,19 +111,24 @@ iron-selector > #main {
 
 .right-drawer.narrow-layout > #drawer:not(.iron-selected) {
   left: auto;
+  visibility: hidden;
+
   -webkit-transform: translateX(100%);
   transform: translateX(100%);
 }
 
+.right-drawer.narrow-layout.dragging > #drawer:not(.iron-selected),
+.right-drawer.narrow-layout.peeking > #drawer:not(.iron-selected) {
+  visibility: visible;
+}
+
 .narrow-layout > #main {
-  left: 0 !important;
   padding: 0;
 }
 
 .right-drawer.narrow-layout > #main {
   left: 0;
   right: 0;
-  padding: 0;
 }
 
 .narrow-layout > #main:not(.iron-selected) > #scrim,
@@ -133,8 +142,9 @@ iron-selector > #main {
   min-height: 100%;
   left: 0;
   right: 0;
-  box-sizing: border-box;
+
   -moz-box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {

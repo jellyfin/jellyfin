@@ -1,0 +1,108 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+
+    <title>iron-menu-behavior tests</title>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+    <link rel="import" href="../../test-fixture/test-fixture.html">
+    <link rel="import" href="test-menu.html">
+
+  </head>
+  <body>
+
+    <test-fixture id="basic">
+      <template>
+        <test-menu>
+          <div>item 1</div>
+          <div>item 2</div>
+          <div>item 3</div>
+        </test-menu>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="multi">
+      <template>
+        <test-menu multi>
+          <div>item 1</div>
+          <div>item 2</div>
+          <div>item 3</div>
+        </test-menu>
+      </template>
+    </test-fixture>
+
+    <script>
+
+      suite('menu a11y tests', function() {
+
+        test('menu has role="menu"', function() {
+          var menu = fixture('basic');
+          assert.equal(menu.getAttribute('role'), 'menu', 'has role="menu"');
+        });
+
+        test('first item gets focus when menu is focused', function(done) {
+          var menu = fixture('basic');
+          menu.focus();
+          setTimeout(function() {
+            assert.equal(document.activeElement, menu.firstElementChild, 'document.activeElement is first item')
+            done();
+          // wait for async in _onFocus
+          }, 200);
+        });
+
+        test('selected item gets focus when menu is focused', function(done) {
+          var menu = fixture('basic');
+          menu.selected = 1;
+          menu.focus();
+          setTimeout(function() {
+            assert.equal(document.activeElement, menu.selectedItem, 'document.activeElement is selected item');
+            done();
+          // wait for async in _onFocus
+          }, 200);
+        });
+
+        test('last activated item in a multi select menu is focused', function(done) {
+          var menu = fixture('multi');
+          menu.selected = 0;
+          menu.items[1].click();
+          setTimeout(function() {
+            assert.equal(document.activeElement, menu.items[1], 'document.activeElement is last activated item');
+            done();
+          // wait for async in _onFocus
+          }, 200);
+        });
+
+        test('deselection in a multi select menu focuses deselected item', function(done) {
+          var menu = fixture('multi');
+          menu.selected = 0;
+          menu.items[0].click();
+          setTimeout(function() {
+            assert.equal(document.activeElement, menu.items[0], 'document.activeElement is last activated item');
+            done();
+          // wait for async in _onFocus
+          }, 200);
+        });
+
+      });
+
+    </script>
+
+  </body>
+</html>
