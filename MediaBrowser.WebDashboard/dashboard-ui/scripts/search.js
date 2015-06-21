@@ -239,7 +239,7 @@
         });
     }
 
-    $(document).on('pagehide', ".libraryPage", function () {
+    $(document).on('pagebeforehide', ".libraryPage", function () {
 
         $('#txtSearch', this).val('');
         $('#searchHints', this).empty();

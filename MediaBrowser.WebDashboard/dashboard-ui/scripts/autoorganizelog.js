@@ -368,7 +368,7 @@
 
         $(ApiClient).on("websocketmessage.autoorganizelog", onWebSocketMessage);
 
-    }).on('pagehide', "#libraryFileOrganizerLogPage", function () {
+    }).on('pagebeforehide', "#libraryFileOrganizerLogPage", function () {
 
         var page = this;
 

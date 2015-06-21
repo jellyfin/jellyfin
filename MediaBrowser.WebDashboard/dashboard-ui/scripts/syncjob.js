@@ -395,7 +395,7 @@
         startListening(page);
         $(ApiClient).on("websocketmessage.syncJobPage", onWebSocketMessage);
 
-    }).on('pagehide', ".syncJobPage", function () {
+    }).on('pagebeforehide', ".syncJobPage", function () {
 
         var page = this;
 

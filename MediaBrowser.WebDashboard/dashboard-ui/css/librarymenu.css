@@ -244,9 +244,9 @@
     border-bottom: 5px solid transparent;
 }
 
-.libraryViewNav a:not(.ui-btn-active):hover {
-    color: #2ad !important;
-}
+    .libraryViewNav a:not(.ui-btn-active):hover {
+        color: #2ad !important;
+    }
 
 @media all and (max-width: 500px) {
 

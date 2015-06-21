@@ -4903,6 +4903,112 @@ $.fn.grid = function( options ) {
 			$.mobile.pageContainer.toggleClass( "ui-mobile-viewport-transitioning viewport-" + this.name );
 		},
 
+		slide: function (Velocity) {
+
+		    var trans = this;
+
+		    if (trans.reverse) {
+
+		        $(trans.$from).show().css('left', '0').css('right', '0');
+
+		        Velocity.animate($(trans.$from)[0], { "left": "100%", "right": "-100%" },
+                {
+                    easing: "ease-in-out",
+                    duration: 800,
+
+                    begin: function (elements, complete, remaining, start, tweenValue) {
+
+                        $(trans.$to).show().css('left', '-100%').css('right', '100%');
+
+                        Velocity.animate($(trans.$to)[0], { "left": "0", "right": "0" },
+                        {
+                            complete: function () {
+                                $(trans.$from).hide();
+                                trans.toggleViewportClass();
+                                trans.deferred.resolve(trans.name, trans.reverse, trans.$to, trans.$from, true);
+                            },
+
+                            easing: "ease-in-out",
+                            duration: 800
+
+                        });
+                    }
+
+                });
+
+		    } else {
+
+		        Velocity.animate($(trans.$from)[0], {
+		            "left": "-100%",
+		            "right": "100%"
+		        },
+                {
+                    easing: "ease-in-out",
+                    duration: 800,
+
+                    begin: function (elements, complete, remaining, start, tweenValue) {
+
+                        $(trans.$to).show().css('left', '100%');
+
+                        Velocity.animate($(trans.$to)[0], { "left": "0px" },
+                        {
+                            complete: function () {
+                                $(trans.$from).hide();
+                                trans.toggleViewportClass();
+                                trans.deferred.resolve(trans.name, trans.reverse, trans.$to, trans.$from, true);
+                            },
+
+                            easing: "ease-in-out",
+                            duration: 800
+
+                        });
+                    }
+
+                });
+
+		    }
+		},
+
+		slideUp: function (Velocity) {
+
+		    var trans = this;
+
+            if (trans.reverse) {
+
+                $(trans.$to).show();
+
+                Velocity.animate($(trans.$from)[0], { "top": "100%", bottom: '-100%' },
+                {
+                    complete: function () {
+                        $(trans.$from).hide();
+                        trans.toggleViewportClass();
+                        trans.deferred.resolve(trans.name, trans.reverse, trans.$to, trans.$from, true);
+                    },
+
+                    easing: "ease-in-out",
+                    duration: 800
+
+                });
+
+            } else {
+
+                $(trans.$to).show().css('top', '100%').css('bottom', '-100%');
+
+                Velocity.animate($(trans.$to)[0], { "top": "0px", bottom: 0 },
+                {
+                    complete: function () {
+                        $(trans.$from).hide();
+                        trans.toggleViewportClass();
+                        trans.deferred.resolve(trans.name, trans.reverse, trans.$to, trans.$from, true);
+                    },
+
+                    easing: "ease-in-out",
+                    duration: 800
+
+                });
+            }
+        },
+
 		transition: function() {
 			// NOTE many of these could be calculated/recorded in the constructor, it's my
 			//      opinion that binding them as late as possible has value with regards to
@@ -4924,11 +5030,25 @@ $.fn.grid = function( options ) {
 
 			this.toggleViewportClass();
 
-			if ( this.$from && !none ) {
-				this.startOut( screenHeight, reverseClass, none );
-			} else {
-				this.doneOut( screenHeight, reverseClass, none, true );
-			}
+            if (none) {
+                if (this.$from && !none) {
+                    this.startOut(screenHeight, reverseClass, none);
+                } else {
+                    this.doneOut(screenHeight, reverseClass, none, true);
+                }
+            } else {
+
+                var trans = this;
+
+                require(["jquery", "velocity"], function (d, Velocity) {
+
+                    if (trans.name == 'slideup') {
+                        trans.slideUp(Velocity);
+                    } else {
+                        trans.slide(Velocity);
+                    }
+                });
+            }
 
 			return this.deferred.promise();
 		}

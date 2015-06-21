@@ -288,11 +288,6 @@
     unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
 }
 
-/* Prevent white flickering */
-html, body {
-    background-color: #1f1f1f;
-}
-
 /* For some reason jquery mobile 1.4.5 wants to horitontally pad mini form fields. */
 .ui-mini {
     margin-left: 0;
@@ -307,12 +302,17 @@ html, body {
 html {
     -ms-touch-action: manipulation;
     touch-action: manipulation;
+    /* Prevent white flickering */
+    background-color: #1f1f1f;
 }
 
 body {
     overflow-y: scroll !important;
     font-size: 13px;
     font-family: Roboto, Arial, Helvetica, sans-serif;
+    -webkit-overflow-scrolling: touch;
+    /* Remove the white default from jqm */
+    background-color: transparent !important;
 }
 
 .bodyWithPopupOpen {

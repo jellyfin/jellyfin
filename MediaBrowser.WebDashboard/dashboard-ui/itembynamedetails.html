@@ -136,18 +136,18 @@
 
                         <p id="itemLinks"></p>
                         <div class="detailButtonsContainer desktopDetailButtons" style="text-align: left;">
-                            <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
-                            <a class="btnSync hide" data-role="button" data-icon="refresh" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
-                            <button class="btnMoreCommands hide jqmButtonNoText" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true" data-iconpos="notext">${ButtonMore}</button>
+                            <paper-button raised class="secondary btnPlay hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlay}</span></paper-button>
+                            <paper-button raised class="submit btnSync hide"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
+                            <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
                         </div>
                     </td>
                 </tr>
             </table>
         </div>
         <div class="detailButtonsContainer mobileDetailButtons">
-            <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
-            <a class="btnSync hide" data-role="button" data-icon="refresh" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
-            <button class="btnMoreCommands hide jqmButtonNoText" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true" data-iconpos="notext">${ButtonMore}</button>
+            <paper-button raised class="secondary btnPlay hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlay}</span></paper-button>
+            <paper-button raised class="submit btnSync hide"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
+            <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
         </div>
         <p class="itemOverview mobileOverview smoothScrollY"></p>
         <div data-role="content" style="padding-top: 0;">

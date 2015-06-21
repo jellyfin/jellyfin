@@ -314,7 +314,7 @@
         startListening(page);
         $(ApiClient).on("websocketmessage.syncactivity", onWebSocketMessage);
 
-    }).on('pagehide', ".syncActivityPage", function () {
+    }).on('pagebeforehide', ".syncActivityPage", function () {
 
         var page = this;
 

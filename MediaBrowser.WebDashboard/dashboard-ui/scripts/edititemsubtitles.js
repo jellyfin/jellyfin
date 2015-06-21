@@ -343,7 +343,7 @@
 
         $(ApiClient).on("websocketmessage", onWebSocketMessageReceived);
 
-    }).on('pagehide', "#editItemSubtitlesPage", function () {
+    }).on('pagebeforehide', "#editItemSubtitlesPage", function () {
 
         var page = this;
 

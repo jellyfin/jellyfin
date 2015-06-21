@@ -1462,7 +1462,7 @@
             }
         });
 
-    }).on('pagehide', "#editItemMetadataPage", function () {
+    }).on('pagebeforehide', "#editItemMetadataPage", function () {
 
         var page = this;
         $(LibraryBrowser).off('itemdeleting.editor');

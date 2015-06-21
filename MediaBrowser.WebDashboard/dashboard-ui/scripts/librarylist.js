@@ -185,169 +185,6 @@
         return false;
     }
 
-    function onAddToCollectionButtonClick() {
-
-        var id = this.getAttribute('data-itemid');
-
-        closeContextMenu();
-
-        BoxSetEditor.showPanel([id]);
-
-        return false;
-    }
-
-    function onAddToPlaylistButtonClick() {
-
-        var id = this.getAttribute('data-itemid');
-
-        closeContextMenu();
-
-        PlaylistManager.showPanel([id]);
-
-        return false;
-    }
-
-    function onShuffleButtonClick() {
-
-        var id = this.getAttribute('data-itemid');
-
-        MediaController.shuffle(id);
-
-        closeContextMenu();
-
-        return false;
-    }
-
-    function onInstantMixButtonClick() {
-
-        var id = this.getAttribute('data-itemid');
-
-        MediaController.instantMix(id);
-
-        closeContextMenu();
-
-        return false;
-    }
-
-    function onQueueButtonClick() {
-
-        var id = this.getAttribute('data-itemid');
-
-        MediaController.queue(id);
-
-        closeContextMenu();
-
-        return false;
-    }
-
-    function onPlayButtonClick() {
-
-        var id = this.getAttribute('data-itemid');
-
-        MediaController.play(id);
-
-        closeContextMenu();
-
-        return false;
-    }
-
-    function onDeleteButtonClick() {
-
-        var id = this.getAttribute('data-itemid');
-
-        closeContextMenu();
-
-        LibraryBrowser.deleteItem(id);
-
-        return false;
-    }
-
-    function onSyncButtonClick() {
-
-        var id = this.getAttribute('data-itemid');
-
-        closeContextMenu();
-
-        SyncManager.showMenu({
-            items: [
-            {
-                Id: id
-            }]
-        });
-
-        return false;
-    }
-
-    function onExternalPlayerButtonClick() {
-
-        closeContextMenu();
-
-        var id = this.getAttribute('data-itemid');
-
-        LibraryBrowser.playInExternalPlayer(id);
-
-        return false;
-    }
-
-    function onPlayAllFromHereButtonClick() {
-
-        var index = this.getAttribute('data-index');
-
-        var page = $(this).parents('.page');
-
-        var itemsContainer = $('.hasContextMenu', page).parents('.itemsContainer');
-
-        closeContextMenu();
-
-        itemsContainer.trigger('playallfromhere', [index]);
-
-        return false;
-    }
-
-    function onQueueAllFromHereButtonClick() {
-
-        var index = this.getAttribute('data-index');
-
-        var page = $(this).parents('.page');
-
-        var itemsContainer = $('.hasContextMenu', page).parents('.itemsContainer');
-
-        closeContextMenu();
-
-        itemsContainer.trigger('queueallfromhere', [index]);
-
-        return false;
-    }
-
-    function onRemoveFromPlaylistButtonClick() {
-
-        var playlistItemId = this.getAttribute('data-playlistitemid');
-
-        var page = $(this).parents('.page');
-
-        var itemsContainer = $('.hasContextMenu', page).parents('.itemsContainer');
-
-        itemsContainer.trigger('removefromplaylist', [playlistItemId]);
-
-        closeContextMenu();
-
-        return false;
-    }
-
-    function onResumeButtonClick() {
-
-        var id = this.getAttribute('data-itemid');
-
-        MediaController.play({
-            ids: [id],
-            startPositionTicks: parseInt(this.getAttribute('data-ticks'))
-        });
-
-        closeContextMenu();
-
-        return false;
-    }
-
     function onCardTapHold(e) {
 
         showContextMenu(this, {});
@@ -379,116 +216,256 @@
         var albumid = card.getAttribute('data-albumid');
         var artistid = card.getAttribute('data-artistid');
 
-        $(card).addClass('hasContextMenu');
-
         Dashboard.getCurrentUser().done(function (user) {
 
-            var html = '<div data-role="popup" class="tapHoldMenu" data-theme="a">';
-
-            html += '<ul data-role="listview" style="min-width: 180px;">';
-
-            var href = card.getAttribute('data-href') || card.href || $('a', card).attr('href');
+            var items = [];
 
             if (commands.indexOf('addtocollection') != -1) {
-                html += '<li data-icon="false"><a href="#" class="btnAddToCollection" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToCollection') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonAddToCollection'),
+                    id: 'addtocollection',
+                    ironIcon: 'add'
+                });
             }
 
             if (commands.indexOf('playlist') != -1) {
-                html += '<li data-icon="false"><a href="#" class="btnAddToPlaylist" data-itemid="' + itemId + '">' + Globalize.translate('ButtonAddToPlaylist') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonAddToPlaylist'),
+                    id: 'playlist',
+                    ironIcon: 'playlist-add'
+                });
             }
 
             if (commands.indexOf('delete') != -1) {
-                html += '<li data-icon="false"><a href="#" class="btnDelete" data-itemId="' + itemId + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonDelete'),
+                    id: 'delete',
+                    ironIcon: 'delete'
+                });
             }
 
             if (user.Policy.IsAdministrator && commands.indexOf('edit') != -1) {
-                html += '<li data-icon="false"><a href="edititemmetadata.html?id=' + itemId + '">' + Globalize.translate('ButtonEdit') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonEdit'),
+                    id: 'edit',
+                    ironIcon: 'mode-edit'
+                });
             }
 
             if (commands.indexOf('instantmix') != -1) {
-                html += '<li data-icon="false"><a href="#" class="btnInstantMix" data-itemid="' + itemId + '">' + Globalize.translate('ButtonInstantMix') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonInstantMix'),
+                    id: 'instantmix',
+                    ironIcon: 'shuffle'
+                });
             }
 
-            html += '<li data-icon="false"><a href="' + href + '">' + Globalize.translate('ButtonOpen') + '</a></li>';
-            //html += '<li><a href="' + href + '" target="_blank">' + Globalize.translate('ButtonOpenInNewTab') + '</a></li>';
+            items.push({
+                name: Globalize.translate('ButtonOpen'),
+                id: 'open',
+                ironIcon: 'folder-open'
+            });
 
             if (options.showPlayOptions !== false) {
 
                 if (MediaController.canPlayByAttributes(itemType, mediaType, playAccess, locationType)) {
-                    html += '<li data-icon="false"><a href="#" class="btnPlay" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlay') + '</a></li>';
+                    items.push({
+                        name: Globalize.translate('ButtonPlay'),
+                        id: 'play',
+                        ironIcon: 'play-arrow'
+                    });
 
                     if (commands.indexOf('playfromhere') != -1) {
-                        html += '<li data-icon="false"><a href="#" class="btnPlayAllFromHere" data-index="' + index + '">' + Globalize.translate('ButtonPlayAllFromHere') + '</a></li>';
+                        items.push({
+                            name: Globalize.translate('ButtonPlayAllFromHere'),
+                            id: 'playallfromhere',
+                            ironIcon: 'play-arrow'
+                        });
                     }
                 }
 
                 if (mediaType == 'Video' && AppSettings.enableExternalPlayers()) {
-                    html += '<li data-icon="false"><a href="#" class="btnExternalPlayer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayExternalPlayer') + '</a></li>';
+                    items.push({
+                        name: Globalize.translate('ButtonPlayExternalPlayer'),
+                        id: 'externalplayer',
+                        ironIcon: 'airplay'
+                    });
                 }
 
                 if (playbackPositionTicks && mediaType != "Audio") {
-                    html += '<li data-icon="false"><a href="#" class="btnResume" data-ticks="' + playbackPositionTicks + '" data-itemid="' + itemId + '">' + Globalize.translate('ButtonResume') + '</a></li>';
+                    items.push({
+                        name: Globalize.translate('ButtonResume'),
+                        id: 'resume',
+                        ironIcon: 'play-arrow'
+                    });
                 }
 
                 if (commands.indexOf('trailer') != -1) {
-                    html += '<li data-icon="false"><a href="#" class="btnPlayTrailer" data-itemid="' + itemId + '">' + Globalize.translate('ButtonPlayTrailer') + '</a></li>';
+                    items.push({
+                        name: Globalize.translate('ButtonPlayTrailer'),
+                        id: 'trailer',
+                        ironIcon: 'play-arrow'
+                    });
                 }
             }
 
             if (MediaController.canQueueMediaType(mediaType, itemType)) {
-                html += '<li data-icon="false"><a href="#" class="btnQueue" data-itemid="' + itemId + '">' + Globalize.translate('ButtonQueue') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonQueue'),
+                    id: 'queue',
+                    ironIcon: 'playlist-add'
+                });
 
                 if (commands.indexOf('queuefromhere') != -1) {
-                    html += '<li data-icon="false"><a href="#" class="btnQueueAllFromHere" data-index="' + index + '">' + Globalize.translate('ButtonQueueAllFromHere') + '</a></li>';
+                    items.push({
+                        name: Globalize.translate('ButtonQueueAllFromHere'),
+                        id: 'queueallfromhere',
+                        ironIcon: 'playlist-add'
+                    });
                 }
             }
 
             if (commands.indexOf('shuffle') != -1) {
-                html += '<li data-icon="false"><a href="#" class="btnShuffle" data-itemid="' + itemId + '">' + Globalize.translate('ButtonShuffle') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonShuffle'),
+                    id: 'shuffle',
+                    ironIcon: 'shuffle'
+                });
             }
 
             if (commands.indexOf('removefromplaylist') != -1) {
-                html += '<li data-icon="false"><a href="#" class="btnRemoveFromPlaylist" data-playlistitemid="' + playlistItemId + '">' + Globalize.translate('ButtonRemoveFromPlaylist') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonRemoveFromPlaylist'),
+                    id: 'removefromplaylist',
+                    ironIcon: 'remove'
+                });
             }
 
             if (commands.indexOf('sync') != -1) {
-                html += '<li data-icon="false"><a href="#" class="btnSync" data-itemId="' + itemId + '">' + Globalize.translate('ButtonSync') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonSync'),
+                    id: 'sync',
+                    ironIcon: 'refresh'
+                });
             }
 
             if (albumid) {
-                html += '<li data-icon="false"><a href="itemdetails.html?id=' + albumid + '">' + Globalize.translate('ButtonViewAlbum') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonViewAlbum'),
+                    id: 'album',
+                    ironIcon: 'album'
+                });
             }
 
             if (artistid) {
-                html += '<li data-icon="false"><a href="itembynamedetails.html?context=music&id=' + artistid + '">' + Globalize.translate('ButtonViewArtist') + '</a></li>';
+                items.push({
+                    name: Globalize.translate('ButtonViewArtist'),
+                    id: 'artist',
+                    ironIcon: 'person'
+                });
             }
 
-            html += '</ul>';
+            var href = card.getAttribute('data-href') || card.href || $('a', card).attr('href');
 
-            html += '</div>';
+            require(['actionsheet'], function () {
 
-            $($.mobile.activePage).append(html);
+                ActionSheetElement.show({
+                    items: items,
+                    positionTo: displayContextItem,
+                    callback: function (id) {
 
-            var elem = $('.tapHoldMenu').popup({ positionTo: displayContextItem }).trigger('create').popup("open").on("popupafterclose", function () {
+                        switch (id) {
 
-                $(this).off("popupafterclose").remove();
-                $(card).removeClass('hasContextMenu');
+                            case 'addtocollection':
+                                BoxSetEditor.showPanel([itemId]);
+                                break;
+                            case 'playlist':
+                                PlaylistManager.showPanel([itemId]);
+                                break;
+                            case 'delete':
+                                LibraryBrowser.deleteItem(itemId);
+                                break;
+                            case 'download':
+                                {
+                                    var downloadHref = ApiClient.getUrl("Items/" + itemId + "/Download", {
+                                        api_key: ApiClient.accessToken()
+                                    });
+                                    window.location.href = downloadHref;
+
+                                    break;
+                                }
+                            case 'edit':
+                                Dashboard.navigate('edititemmetadata.html?id=' + itemId);
+                                break;
+                            case 'refresh':
+                                ApiClient.refreshItem(itemId, {
+
+                                    Recursive: true,
+                                    ImageRefreshMode: 'FullRefresh',
+                                    MetadataRefreshMode: 'FullRefresh',
+                                    ReplaceAllImages: false,
+                                    ReplaceAllMetadata: true
+                                });
+                                break;
+                            case 'instantmix':
+                                MediaController.instantMix(itemId);
+                                break;
+                            case 'shuffle':
+                                MediaController.shuffle(itemId);
+                                break;
+                            case 'open':
+                                Dashboard.navigate(href);
+                                break;
+                            case 'album':
+                                Dashboard.navigate('itemdetails.html?id=' + albumid);
+                                break;
+                            case 'artist':
+                                Dashboard.navigate('tembynamedetails.html?context=music&id=' + artistid);
+                                break;
+                            case 'play':
+                                MediaController.MediaController(itemId);
+                                break;
+                            case 'playallfromhere':
+                                $(card).parents('.itemsContainer').trigger('playallfromhere', [index]);
+                                break;
+                            case 'queue':
+                                MediaController.queue(itemId);
+                                break;
+                            case 'trailer':
+                                ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), itemId).done(function (trailers) {
+                                    MediaController.play({ items: trailers });
+                                });
+                                break;
+                            case 'resume':
+                                MediaController.play({
+                                    ids: [itemId],
+                                    startPositionTicks: playbackPositionTicks
+                                });
+                                break;
+                            case 'queueallfromhere':
+                                $(card).parents('.itemsContainer').trigger('queueallfromhere', [index]);
+                                break;
+                            case 'sync':
+                                SyncManager.showMenu({
+                                    items: [
+                                    {
+                                        Id: itemId
+                                    }]
+                                });
+                                break;
+                            case 'externalplayer':
+                                LibraryBrowser.playInExternalPlayer(itemId);
+                                break;
+                            case 'removefromplaylist':
+                                $(card).parents('.itemsContainer').trigger('removefromplaylist', [playlistItemId]);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                });
+
             });
-
-            $('.btnPlay', elem).on('click', onPlayButtonClick);
-            $('.btnResume', elem).on('click', onResumeButtonClick);
-            $('.btnQueue', elem).on('click', onQueueButtonClick);
-            $('.btnInstantMix', elem).on('click', onInstantMixButtonClick);
-            $('.btnShuffle', elem).on('click', onShuffleButtonClick);
-            $('.btnPlayTrailer', elem).on('click', onTrailerButtonClick);
-            $('.btnAddToPlaylist', elem).on('click', onAddToPlaylistButtonClick);
-            $('.btnRemoveFromPlaylist', elem).on('click', onRemoveFromPlaylistButtonClick);
-            $('.btnPlayAllFromHere', elem).on('click', onPlayAllFromHereButtonClick);
-            $('.btnQueueAllFromHere', elem).on('click', onQueueAllFromHereButtonClick);
-            $('.btnExternalPlayer', elem).on('click', onExternalPlayerButtonClick);
-            $('.btnDelete', elem).on('click', onDeleteButtonClick);
-            $('.btnSync', elem).on('click', onSyncButtonClick);
-            $('.btnAddToCollection', elem).on('click', onAddToCollectionButtonClick);
         });
     }
 
@@ -505,8 +482,6 @@
         var card = this;
         var itemId = card.getAttribute('data-itemid');
         var context = card.getAttribute('data-context');
-
-        $(card).addClass('hasContextMenu');
 
         var userId = Dashboard.getCurrentUserId();
 
@@ -815,10 +790,6 @@
         function onShowTimerExpired(elem) {
 
             elem = $('a', elem)[0];
-
-            if ($(elem).hasClass('hasContextMenu')) {
-                return;
-            }
 
             if ($('.itemSelectionPanel:visible', elem).length) {
                 return;

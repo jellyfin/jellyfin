@@ -383,7 +383,7 @@ var WizardLibraryPage = {
             taskKey: 'RefreshLibrary'
         });
 
-    }).on('pagehide', "#mediaLibraryPage", function () {
+    }).on('pagebeforehide', "#mediaLibraryPage", function () {
 
         var page = this;
 

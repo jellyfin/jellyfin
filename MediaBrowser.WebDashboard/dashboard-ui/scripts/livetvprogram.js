@@ -98,7 +98,7 @@
 
         var page = this;
 
-        $('#btnRecord', page).on('click', function() {
+        $('.btnRecord', page).on('click', function() {
 
             var id = getParameterByName('id');
             
@@ -106,7 +106,7 @@
 
         });
 
-        $('#btnPlay', page).on('click', function () {
+        $('.btnPlay', page).on('click', function () {
 
             ApiClient.getLiveTvChannel(currentItem.ChannelId, Dashboard.getCurrentUserId()).done(function (channel) {
                 
@@ -116,7 +116,7 @@
             });
         });
 
-        $('#btnCancelRecording', page).on('click', function () {
+        $('.btnCancelRecording', page).on('click', function () {
 
             deleteTimer(page, currentItem.TimerId);
         });
@@ -127,7 +127,7 @@
 
         reload(page);
 
-    }).on('pagehide', "#liveTvProgramPage", function () {
+    }).on('pagebeforehide', "#liveTvProgramPage", function () {
 
         currentItem = null;
     });

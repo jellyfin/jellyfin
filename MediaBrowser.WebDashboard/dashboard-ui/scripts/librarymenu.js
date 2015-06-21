@@ -675,7 +675,7 @@
 
         onPageShowDocumentReady(page);
 
-    }).on('pagehide', ".page", function () {
+    }).on('pagebeforehide', ".page", function () {
 
         if (addNextToBackStack) {
             var text = $('.libraryMenuButtonText').text() || document.title;
@@ -684,8 +684,6 @@
         }
 
         addNextToBackStack = true;
-
-    }).on('pagebeforehide', ".page", function () {
 
         $('.headroomEnabled').addClass('headroomDisabled');
     });

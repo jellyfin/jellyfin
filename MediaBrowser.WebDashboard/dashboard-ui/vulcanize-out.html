@@ -9873,6 +9873,624 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 </script>
 
 
+
+
+<script>
+
+  Polymer({
+
+    is: 'iron-media-query',
+
+    properties: {
+
+      /**
+       * The Boolean return value of the media query.
+       */
+      queryMatches: {
+        type: Boolean,
+        value: false,
+        readOnly: true,
+        notify: true
+      },
+
+      /**
+       * The CSS media query to evaluate.
+       */
+      query: {
+        type: String,
+        observer: 'queryChanged'
+      }
+
+    },
+
+    created: function() {
+      this._mqHandler = this.queryHandler.bind(this);
+    },
+
+    queryChanged: function(query) {
+      if (this._mq) {
+        this._mq.removeListener(this._mqHandler);
+      }
+      if (query[0] !== '(') {
+        query = '(' + query + ')';
+      }
+      this._mq = window.matchMedia(query);
+      this._mq.addListener(this._mqHandler);
+      this.queryHandler(this._mq);
+    },
+
+    queryHandler: function(mq) {
+      this._setQueryMatches(mq.matches);
+    }
+
+  });
+
+</script>
+<script>
+
+  /**
+   * @param {!Function} selectCallback
+   * @constructor
+   */
+  Polymer.IronSelection = function(selectCallback) {
+    this.selection = [];
+    this.selectCallback = selectCallback;
+  };
+
+  Polymer.IronSelection.prototype = {
+
+    /**
+     * Retrieves the selected item(s).
+     *
+     * @method get
+     * @returns Returns the selected item(s). If the multi property is true,
+     * `get` will return an array, otherwise it will return
+     * the selected item or undefined if there is no selection.
+     */
+    get: function() {
+      return this.multi ? this.selection : this.selection[0];
+    },
+
+    /**
+     * Clears all the selection except the ones indicated.
+     *
+     * @method clear
+     * @param {Array} excludes items to be excluded.
+     */
+    clear: function(excludes) {
+      this.selection.slice().forEach(function(item) {
+        if (!excludes || excludes.indexOf(item) < 0) {
+          this.setItemSelected(item, false);
+        }
+      }, this);
+    },
+
+    /**
+     * Indicates if a given item is selected.
+     *
+     * @method isSelected
+     * @param {*} item The item whose selection state should be checked.
+     * @returns Returns true if `item` is selected.
+     */
+    isSelected: function(item) {
+      return this.selection.indexOf(item) >= 0;
+    },
+
+    /**
+     * Sets the selection state for a given item to either selected or deselected.
+     *
+     * @method setItemSelected
+     * @param {*} item The item to select.
+     * @param {boolean} isSelected True for selected, false for deselected.
+     */
+    setItemSelected: function(item, isSelected) {
+      if (item != null) {
+        if (isSelected) {
+          this.selection.push(item);
+        } else {
+          var i = this.selection.indexOf(item);
+          if (i >= 0) {
+            this.selection.splice(i, 1);
+          }
+        }
+        if (this.selectCallback) {
+          this.selectCallback(item, isSelected);
+        }
+      }
+    },
+
+    /**
+     * Sets the selection state for a given item. If the `multi` property
+     * is true, then the selected state of `item` will be toggled; otherwise
+     * the `item` will be selected.
+     *
+     * @method select
+     * @param {*} item The item to select.
+     */
+    select: function(item) {
+      if (this.multi) {
+        this.toggle(item);
+      } else if (this.get() !== item) {
+        this.setItemSelected(this.get(), false);
+        this.setItemSelected(item, true);
+      }
+    },
+
+    /**
+     * Toggles the selection state for `item`.
+     *
+     * @method toggle
+     * @param {*} item The item to toggle.
+     */
+    toggle: function(item) {
+      this.setItemSelected(item, !this.isSelected(item));
+    }
+
+  };
+
+</script>
+<script>
+
+  /** @polymerBehavior */
+  Polymer.IronSelectableBehavior = {
+
+    properties: {
+
+      /**
+       * If you want to use the attribute value of an element for `selected` instead of the index,
+       * set this to the name of the attribute.
+       *
+       * @attribute attrForSelected
+       * @type {string}
+       */
+      attrForSelected: {
+        type: String,
+        value: null
+      },
+
+      /**
+       * Gets or sets the selected element. The default is to use the index of the item.
+       *
+       * @attribute selected
+       * @type {string}
+       */
+      selected: {
+        type: String,
+        notify: true
+      },
+
+      /**
+       * Returns the currently selected item.
+       *
+       * @attribute selectedItem
+       * @type {Object}
+       */
+      selectedItem: {
+        type: Object,
+        readOnly: true,
+        notify: true
+      },
+
+      /**
+       * The event that fires from items when they are selected. Selectable
+       * will listen for this event from items and update the selection state.
+       * Set to empty string to listen to no events.
+       *
+       * @attribute activateEvent
+       * @type {string}
+       * @default 'tap'
+       */
+      activateEvent: {
+        type: String,
+        value: 'tap',
+        observer: '_activateEventChanged'
+      },
+
+      /**
+       * This is a CSS selector sting.  If this is set, only items that matches the CSS selector
+       * are selectable.
+       *
+       * @attribute selectable
+       * @type {string}
+       */
+      selectable: String,
+
+      /**
+       * The class to set on elements when selected.
+       *
+       * @attribute selectedClass
+       * @type {string}
+       */
+      selectedClass: {
+        type: String,
+        value: 'iron-selected'
+      },
+
+      /**
+       * The attribute to set on elements when selected.
+       *
+       * @attribute selectedAttribute
+       * @type {string}
+       */
+      selectedAttribute: {
+        type: String,
+        value: null
+      }
+
+    },
+
+    observers: [
+      '_updateSelected(attrForSelected, selected)'
+    ],
+
+    excludedLocalNames: {
+      'template': 1
+    },
+
+    created: function() {
+      this._bindFilterItem = this._filterItem.bind(this);
+      this._selection = new Polymer.IronSelection(this._applySelection.bind(this));
+    },
+
+    attached: function() {
+      this._observer = this._observeItems(this);
+      this._contentObserver = this._observeContent(this);
+    },
+
+    detached: function() {
+      if (this._observer) {
+        this._observer.disconnect();
+      }
+      if (this._contentObserver) {
+        this._contentObserver.disconnect();
+      }
+      this._removeListener(this.activateEvent);
+    },
+
+    /**
+     * Returns an array of selectable items.
+     *
+     * @property items
+     * @type Array
+     */
+    get items() {
+      var nodes = Polymer.dom(this).queryDistributedElements(this.selectable || '*');
+      return Array.prototype.filter.call(nodes, this._bindFilterItem);
+    },
+
+    /**
+     * Returns the index of the given item.
+     *
+     * @method indexOf
+     * @param {Object} item
+     * @returns Returns the index of the item
+     */
+    indexOf: function(item) {
+      return this.items.indexOf(item);
+    },
+
+    /**
+     * Selects the given value.
+     *
+     * @method select
+     * @param {string} value the value to select.
+     */
+    select: function(value) {
+      this.selected = value;
+    },
+
+    /**
+     * Selects the previous item.
+     *
+     * @method selectPrevious
+     */
+    selectPrevious: function() {
+      var length = this.items.length;
+      var index = (Number(this._valueToIndex(this.selected)) - 1 + length) % length;
+      this.selected = this._indexToValue(index);
+    },
+
+    /**
+     * Selects the next item.
+     *
+     * @method selectNext
+     */
+    selectNext: function() {
+      var index = (Number(this._valueToIndex(this.selected)) + 1) % this.items.length;
+      this.selected = this._indexToValue(index);
+    },
+
+    _addListener: function(eventName) {
+      this.listen(this, eventName, '_activateHandler');
+    },
+
+    _removeListener: function(eventName) {
+      // There is no unlisten yet...
+      // https://github.com/Polymer/polymer/issues/1639
+      //this.removeEventListener(eventName, this._bindActivateHandler);
+    },
+
+    _activateEventChanged: function(eventName, old) {
+      this._removeListener(old);
+      this._addListener(eventName);
+    },
+
+    _updateSelected: function() {
+      this._selectSelected(this.selected);
+    },
+
+    _selectSelected: function(selected) {
+      this._selection.select(this._valueToItem(this.selected));
+    },
+
+    _filterItem: function(node) {
+      return !this.excludedLocalNames[node.localName];
+    },
+
+    _valueToItem: function(value) {
+      return (value == null) ? null : this.items[this._valueToIndex(value)];
+    },
+
+    _valueToIndex: function(value) {
+      if (this.attrForSelected) {
+        for (var i = 0, item; item = this.items[i]; i++) {
+          if (this._valueForItem(item) == value) {
+            return i;
+          }
+        }
+      } else {
+        return Number(value);
+      }
+    },
+
+    _indexToValue: function(index) {
+      if (this.attrForSelected) {
+        var item = this.items[index];
+        if (item) {
+          return this._valueForItem(item);
+        }
+      } else {
+        return index;
+      }
+    },
+
+    _valueForItem: function(item) {
+      return item[this.attrForSelected] || item.getAttribute(this.attrForSelected);
+    },
+
+    _applySelection: function(item, isSelected) {
+      if (this.selectedClass) {
+        this.toggleClass(this.selectedClass, isSelected, item);
+      }
+      if (this.selectedAttribute) {
+        this.toggleAttribute(this.selectedAttribute, isSelected, item);
+      }
+      this._selectionChange();
+      this.fire('iron-' + (isSelected ? 'select' : 'deselect'), {item: item});
+    },
+
+    _selectionChange: function() {
+      this._setSelectedItem(this._selection.get());
+    },
+
+    // observe content changes under the given node.
+    _observeContent: function(node) {
+      var content = node.querySelector('content');
+      if (content && content.parentElement === node) {
+        return this._observeItems(node.domHost);
+      }
+    },
+
+    // observe items change under the given node.
+    _observeItems: function(node) {
+      var observer = new MutationObserver(function() {
+        if (this.selected != null) {
+          this._updateSelected();
+        }
+      }.bind(this));
+      observer.observe(node, {
+        childList: true,
+        subtree: true
+      });
+      return observer;
+    },
+
+    _activateHandler: function(e) {
+      // TODO: remove this when https://github.com/Polymer/polymer/issues/1639 is fixed so we
+      // can just remove the old event listener.
+      if (e.type !== this.activateEvent) {
+        return;
+      }
+      var t = e.target;
+      var items = this.items;
+      while (t && t != this) {
+        var i = items.indexOf(t);
+        if (i >= 0) {
+          var value = this._indexToValue(i);
+          this._itemActivate(value, t);
+          return;
+        }
+        t = t.parentNode;
+      }
+    },
+
+    _itemActivate: function(value, item) {
+      if (!this.fire('iron-activate',
+          {selected: value, item: item}, {cancelable: true}).defaultPrevented) {
+        this.select(value);
+      }
+    }
+
+  };
+
+</script>
+<script>
+  /** @polymerBehavior Polymer.IronMultiSelectableBehavior */
+  Polymer.IronMultiSelectableBehaviorImpl = {
+    properties: {
+
+      /**
+       * If true, multiple selections are allowed.
+       */
+      multi: {
+        type: Boolean,
+        value: false,
+        observer: 'multiChanged'
+      },
+
+      /**
+       * Gets or sets the selected elements. This is used instead of `selected` when `multi`
+       * is true.
+       */
+      selectedValues: {
+        type: Array,
+        notify: true
+      },
+
+      /**
+       * Returns an array of currently selected items.
+       */
+      selectedItems: {
+        type: Array,
+        readOnly: true,
+        notify: true
+      },
+
+    },
+
+    observers: [
+      '_updateSelected(attrForSelected, selectedValues)'
+    ],
+
+    /**
+     * Selects the given value. If the `multi` property is true, then the selected state of the
+     * `value` will be toggled; otherwise the `value` will be selected.
+     *
+     * @method select
+     * @param {string} value the value to select.
+     */
+    select: function(value) {
+      if (this.multi) {
+        if (this.selectedValues) {
+          this._toggleSelected(value);
+        } else {
+          this.selectedValues = [value];
+        }
+      } else {
+        this.selected = value;
+      }
+    },
+
+    multiChanged: function(multi) {
+      this._selection.multi = multi;
+    },
+
+    _updateSelected: function() {
+      if (this.multi) {
+        this._selectMulti(this.selectedValues);
+      } else {
+        this._selectSelected(this.selected);
+      }
+    },
+
+    _selectMulti: function(values) {
+      this._selection.clear();
+      if (values) {
+        for (var i = 0; i < values.length; i++) {
+          this._selection.setItemSelected(this._valueToItem(values[i]), true);
+        }
+      }
+    },
+
+    _selectionChange: function() {
+      var s = this._selection.get();
+      if (this.multi) {
+        this._setSelectedItems(s);
+      } else {
+        this._setSelectedItems([s]);
+        this._setSelectedItem(s);
+      }
+    },
+
+    _toggleSelected: function(value) {
+      var i = this.selectedValues.indexOf(value);
+      var unselected = i < 0;
+      if (unselected) {
+        this.selectedValues.push(value);
+      } else {
+        this.selectedValues.splice(i, 1);
+      }
+      this._selection.setItemSelected(this._valueToItem(value), unselected);
+    }
+  };
+
+  /** @polymerBehavior */
+  Polymer.IronMultiSelectableBehavior = [
+    Polymer.IronSelectableBehavior,
+    Polymer.IronMultiSelectableBehaviorImpl
+  ];
+
+</script>
+<script>
+  /**
+  `iron-selector` is an element which can be used to manage a list of elements
+  that can be selected.  Tapping on the item will make the item selected.  The `selected` indicates
+  which item is being selected.  The default is to use the index of the item.
+
+  Example:
+
+      <iron-selector selected="0">
+        <div>Item 1</div>
+        <div>Item 2</div>
+        <div>Item 3</div>
+      </iron-selector>
+
+  If you want to use the attribute value of an element for `selected` instead of the index,
+  set `attrForSelected` to the name of the attribute.  For example, if you want to select item by
+  `name`, set `attrForSelected` to `name`.
+
+  Example:
+
+      <iron-selector attr-for-selected="name" selected="foo">
+        <div name="foo">Foo</div>
+        <div name="bar">Bar</div>
+        <div name="zot">Zot</div>
+      </iron-selector>
+
+  `iron-selector` is not styled. Use the `iron-selected` CSS class to style the selected element.
+
+  Example:
+
+      <style>
+        .iron-selected {
+          background: #eee;
+        }
+      </style>
+
+      ...
+
+      <iron-selector selected="0">
+        <div>Item 1</div>
+        <div>Item 2</div>
+        <div>Item 3</div>
+      </iron-selector>
+
+  @demo demo/index.html
+  */
+
+  Polymer({
+
+    is: 'iron-selector',
+
+    behaviors: [
+      Polymer.IronMultiSelectableBehavior
+    ]
+
+  });
+
+</script>
+
+
 <script>
   /**
    * The `iron-iconset-svg` element allows users to define their own icon sets
@@ -12225,11 +12843,633 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
   });
 </script>
+<dom-module id="paper-drawer-panel" assetpath="bower_components/paper-drawer-panel/">
+  <style>
+/**
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+
+*/
+:host {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+iron-selector > #drawer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: white;
+  will-change: transform;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+
+  @apply(--paper-drawer-panel-drawer-container);
+}
+
+.transition > #drawer {
+  transition: -webkit-transform ease-in-out 0.3s, width ease-in-out 0.3s;
+  transition: transform ease-in-out 0.3s, width ease-in-out 0.3s;
+}
+
+.left-drawer > #drawer {
+  @apply(--paper-drawer-panel-left-drawer-container);
+}
+
+.right-drawer > #drawer {
+  left: auto;
+  right: 0;
+
+  @apply(--paper-drawer-panel-right-drawer-container);
+}
+
+iron-selector > #main {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+
+  @apply(--paper-drawer-panel-main-container);
+}
+
+.transition > #main {
+  transition: left ease-in-out 0.3s, padding ease-in-out 0.3s;
+}
+
+.right-drawer > #main {
+  left: 0;
+}
+
+.right-drawer.transition > #main {
+  transition: right ease-in-out 0.3s, padding ease-in-out 0.3s;
+}
+
+#main > ::content > [main] {
+  height: 100%;
+}
+
+#drawer > ::content > [drawer] {
+  height: 100%;
+}
+
+#scrim {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity ease-in-out 0.38s, visibility ease-in-out 0.38s;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.narrow-layout > #drawer.iron-selected {
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.right-drawer.narrow-layout > #drawer.iron-selected {
+  box-shadow: -2px 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.narrow-layout > #drawer > ::content > [drawer] {
+  border: 0;
+}
+
+.left-drawer.narrow-layout > #drawer:not(.iron-selected) {
+  -webkit-transform: translateX(-100%);
+  transform: translateX(-100%);
+}
+
+.right-drawer.narrow-layout > #drawer:not(.iron-selected) {
+  left: auto;
+  -webkit-transform: translateX(100%);
+  transform: translateX(100%);
+}
+
+.narrow-layout > #main {
+  left: 0 !important;
+  padding: 0;
+}
+
+.right-drawer.narrow-layout > #main {
+  left: 0;
+  right: 0;
+  padding: 0;
+}
+
+.narrow-layout > #main:not(.iron-selected) > #scrim,
+.dragging > #main > #scrim {
+  visibility: visible;
+  opacity: var(--paper-drawer-panel-scrim-opacity, 1);
+}
+
+.narrow-layout > #main > * {
+  margin: 0;
+  min-height: 100%;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
+  display: none;
+}
+</style>
+
+  <template>
+    <iron-media-query id="mq" on-query-matches-changed="_onQueryMatchesChanged" query="[[_computeMediaQuery(forceNarrow, responsiveWidth)]]">
+    </iron-media-query>
+
+    <iron-selector attr-for-selected="id" class$="[[_computeIronSelectorClass(narrow, transition, dragging, rightDrawer)]]" activate-event="" selected="[[selected]]">
+
+      <div id="main" style$="[[_computeMainStyle(narrow, rightDrawer, drawerWidth)]]">
+        <content select="[main]"></content>
+        <div id="scrim" on-tap="closeDrawer"></div>
+      </div>
+
+      <div id="drawer" style$="[[_computeDrawerStyle(drawerWidth)]]">
+        <content select="[drawer]"></content>
+      </div>
+
+    </iron-selector>
+  </template>
+
+</dom-module>
+
+<script>
+
+  (function() {
+
+    'use strict';
+
+   // this would be the only `paper-drawer-panel` in
+   // the whole app that can be in `dragging` state
+    var sharedPanel = null;
+
+    function classNames(obj) {
+      var classes = [];
+      for (var key in obj) {
+        if (obj.hasOwnProperty(key) && obj[key]) {
+          classes.push(key);
+        }
+      }
+
+      return classes.join(' ');
+    }
+
+    Polymer({
+
+      is: 'paper-drawer-panel',
+
+      /**
+       * Fired when the narrow layout changes.
+       *
+       * @event paper-responsive-change {{narrow: boolean}} detail -
+       *     narrow: true if the panel is in narrow layout.
+       */
+
+      /**
+       * Fired when the selected panel changes.
+       *
+       * Listening for this event is an alternative to observing changes in the `selected` attribute.
+       * This event is fired both when a panel is selected and deselected.
+       * The `isSelected` detail property contains the selection state.
+       *
+       * @event paper-select {{isSelected: boolean, item: Object}} detail -
+       *     isSelected: True for selection and false for deselection.
+       *     item: The panel that the event refers to.
+       */
+
+      properties: {
+
+        /**
+         * The panel to be selected when `paper-drawer-panel` changes to narrow
+         * layout.
+         */
+        defaultSelected: {
+          type: String,
+          value: 'main'
+        },
+
+        /**
+         * If true, swipe from the edge is disable.
+         */
+        disableEdgeSwipe: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * If true, swipe to open/close the drawer is disabled.
+         */
+        disableSwipe: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * Whether the user is dragging the drawer interactively.
+         */
+        dragging: {
+          type: Boolean,
+          value: false,
+          readOnly: true,
+          notify: true
+        },
+
+        /**
+         * Width of the drawer panel.
+         */
+        drawerWidth: {
+          type: String,
+          value: '256px'
+        },
+
+        /**
+         * How many pixels on the side of the screen are sensitive to edge
+         * swipes and peek.
+         */
+        edgeSwipeSensitivity: {
+          type: Number,
+          value: 30
+        },
+
+        /**
+         * If true, ignore `responsiveWidth` setting and force the narrow layout.
+         */
+        forceNarrow: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * Whether the browser has support for the transform CSS property.
+         */
+        hasTransform: {
+          type: Boolean,
+          value: function() {
+            return 'transform' in this.style;
+          }
+        },
+
+        /**
+         * Whether the browser has support for the will-change CSS property.
+         */
+        hasWillChange: {
+          type: Boolean,
+          value: function() {
+            return 'willChange' in this.style;
+          }
+        },
+
+        /**
+         * Returns true if the panel is in narrow layout.  This is useful if you
+         * need to show/hide elements based on the layout.
+         */
+        narrow: {
+          reflectToAttribute: true,
+          type: Boolean,
+          value: false,
+          readOnly: true,
+          notify: true
+        },
+
+        /**
+         * Whether the drawer is peeking out from the edge.
+         */
+        peeking: {
+          type: Boolean,
+          value: false,
+          readOnly: true,
+          notify: true
+        },
+
+        /**
+         * Max-width when the panel changes to narrow layout.
+         */
+        responsiveWidth: {
+          type: String,
+          value: '640px'
+        },
+
+        /**
+         * If true, position the drawer to the right.
+         */
+        rightDrawer: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * The panel that is being selected. `drawer` for the drawer panel and
+         * `main` for the main panel.
+         */
+        selected: {
+          reflectToAttribute: true,
+          notify: true,
+          type: String,
+          value: null
+        },
+
+        /**
+         * The attribute on elements that should toggle the drawer on tap, also elements will
+         * automatically be hidden in wide layout.
+         */
+        drawerToggleAttribute: {
+          type: String,
+          value: 'paper-drawer-toggle'
+        },
+
+        /**
+         * Whether the transition is enabled.
+         */
+        transition: {
+          type: Boolean,
+          value: false
+        },
+
+      },
+
+      listeners: {
+        tap: '_onTap',
+        track: '_onTrack',
+        down: '_downHandler',
+        up: '_upHandler'
+      },
+
+      observers: [
+        '_forceNarrowChanged(forceNarrow, defaultSelected)'
+      ],
+
+      /**
+       * Toggles the panel open and closed.
+       *
+       * @method togglePanel
+       */
+      togglePanel: function() {
+        if (this._isMainSelected()) {
+          this.openDrawer();
+        } else {
+          this.closeDrawer();
+        }
+      },
+
+      /**
+       * Opens the drawer.
+       *
+       * @method openDrawer
+       */
+      openDrawer: function() {
+        this.selected = 'drawer';
+      },
+
+      /**
+       * Closes the drawer.
+       *
+       * @method closeDrawer
+       */
+      closeDrawer: function() {
+        this.selected = 'main';
+      },
+
+      ready: function() {
+        // Avoid transition at the beginning e.g. page loads and enable
+        // transitions only after the element is rendered and ready.
+        this.transition = true;
+      },
+
+      _computeIronSelectorClass: function(narrow, transition, dragging, rightDrawer) {
+        return classNames({
+          dragging: dragging,
+          'narrow-layout': narrow,
+          'right-drawer': rightDrawer,
+          'left-drawer': !rightDrawer,
+          transition: transition
+        });
+      },
+
+      _computeDrawerStyle: function(drawerWidth) {
+        return 'width:' + drawerWidth + ';';
+      },
+
+      _computeMainStyle: function(narrow, rightDrawer, drawerWidth) {
+        var style = '';
+
+        style += 'left:' + ((narrow || rightDrawer) ? '0' : drawerWidth) + ';';
+
+        if (rightDrawer) {
+          style += 'right:' + (narrow ? '' : drawerWidth) + ';';
+        } else {
+          style += 'right:;';
+        }
+
+        return style;
+      },
+
+      _computeMediaQuery: function(forceNarrow, responsiveWidth) {
+        return forceNarrow ? '' : '(max-width: ' + responsiveWidth + ')';
+      },
+
+      _computeSwipeOverlayHidden: function(narrow, disableEdgeSwipe) {
+        return !narrow || disableEdgeSwipe;
+      },
+
+      _onTrack: function(e) {
+        if (sharedPanel && this !== sharedPanel) {
+          return;
+        }
+        switch (e.detail.state) {
+          case 'start':
+            this._trackStart(e);
+            break;
+          case 'track':
+            this._trackX(e);
+            break;
+          case 'end':
+            this._trackEnd(e);
+            break;
+        }
+
+      },
+
+      _responsiveChange: function(narrow) {
+        this._setNarrow(narrow);
+
+        if (this.narrow) {
+          this.selected = this.defaultSelected;
+        }
+
+        this.setScrollDirection(this._swipeAllowed() ? 'y' : 'all');
+        this.fire('paper-responsive-change', {narrow: this.narrow});
+      },
+
+      _onQueryMatchesChanged: function(e) {
+        this._responsiveChange(e.detail.value);
+      },
+
+      _forceNarrowChanged: function() {
+        // set the narrow mode only if we reached the `responsiveWidth`
+        this._responsiveChange(this.forceNarrow || this.$.mq.queryMatches);
+      },
+
+      _swipeAllowed: function() {
+        return this.narrow && !this.disableSwipe;
+      },
+
+      _isMainSelected: function() {
+        return this.selected === 'main';
+      },
+
+      _startEdgePeek: function() {
+        this.width = this.$.drawer.offsetWidth;
+        this._moveDrawer(this._translateXForDeltaX(this.rightDrawer ?
+            -this.edgeSwipeSensitivity : this.edgeSwipeSensitivity));
+        this._setPeeking(true);
+      },
+
+      _stopEdgePeek: function() {
+        if (this.peeking) {
+          this._setPeeking(false);
+          this._moveDrawer(null);
+        }
+      },
+
+      _downHandler: function(e) {
+        if (!this.dragging && this._isMainSelected() && this._isEdgeTouch(e) && !sharedPanel) {
+          this._startEdgePeek();
+          // grab this panel
+          sharedPanel = this;
+        }
+      },
+
+      _upHandler: function() {
+        this._stopEdgePeek();
+        // release the panel
+        sharedPanel = null;
+      },
+
+      _onTap: function(e) {
+        var targetElement = Polymer.dom(e).localTarget;
+        var isTargetToggleElement = targetElement &&
+          this.drawerToggleAttribute &&
+          targetElement.hasAttribute(this.drawerToggleAttribute);
+
+        if (isTargetToggleElement) {
+          this.togglePanel();
+        }
+      },
+
+      _isEdgeTouch: function(e) {
+        var x = e.detail.x;
+
+        return !this.disableEdgeSwipe && this._swipeAllowed() &&
+          (this.rightDrawer ?
+            x >= this.offsetWidth - this.edgeSwipeSensitivity :
+            x <= this.edgeSwipeSensitivity);
+      },
+
+      _trackStart: function(event) {
+        if (this._swipeAllowed()) {
+          sharedPanel = this;
+          this._setDragging(true);
+
+          if (this._isMainSelected()) {
+            this._setDragging(this.peeking || this._isEdgeTouch(event));
+          }
+
+          if (this.dragging) {
+            this.width = this.$.drawer.offsetWidth;
+            this.transition = false;
+          }
+        }
+      },
+
+      _translateXForDeltaX: function(deltaX) {
+        var isMain = this._isMainSelected();
+
+        if (this.rightDrawer) {
+          return Math.max(0, isMain ? this.width + deltaX : deltaX);
+        } else {
+          return Math.min(0, isMain ? deltaX - this.width : deltaX);
+        }
+      },
+
+      _trackX: function(e) {
+        if (this.dragging) {
+          var dx = e.detail.dx;
+
+          if (this.peeking) {
+            if (Math.abs(dx) <= this.edgeSwipeSensitivity) {
+              // Ignore trackx until we move past the edge peek.
+              return;
+            }
+            this._setPeeking(false);
+          }
+
+          this._moveDrawer(this._translateXForDeltaX(dx));
+        }
+      },
+
+      _trackEnd: function(e) {
+        if (this.dragging) {
+          var xDirection = e.detail.dx > 0;
+
+          this._setDragging(false);
+          this.transition = true;
+          sharedPanel = null;
+          this._moveDrawer(null);
+
+          if (this.rightDrawer) {
+            this[xDirection ? 'closeDrawer' : 'openDrawer']();
+          } else {
+            this[xDirection ? 'openDrawer' : 'closeDrawer']();
+          }
+        }
+      },
+
+      _transformForTranslateX: function(translateX) {
+        if (translateX === null) {
+          return '';
+        }
+
+        return this.hasWillChange ? 'translateX(' + translateX + 'px)' :
+            'translate3d(' + translateX + 'px, 0, 0)';
+      },
+
+      _moveDrawer: function(translateX) {
+        var s = this.$.drawer.style;
+
+        if (this.hasTransform) {
+          s.transform = this._transformForTranslateX(translateX);
+        } else {
+          s.webkitTransform = this._transformForTranslateX(translateX);
+        }
+      }
+
+    });
+
+  }());
+
+</script>
 <iron-iconset-svg name="icons" size="24">
     <svg>
         <defs>
             <g id="add"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></g>
             <g id="airplay"><defs><path id="a" d="M0 0h24v24H0V0z"></path></defs><defs><path id="c" d="M0 0h24v24H0V0z"></path></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"></use></clipPath><clipPath id="d" clip-path="url(#b)"><use xlink:href="#c" overflow="visible"></use></clipPath><path d="M6 22h12l-6-6zM21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4v-2H3V5h18v12h-4v2h4c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" clip-path="url(#d)"></path></g>
+            <g id="album"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"></path></g>
             <g id="check"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></g>
             <g id="close"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></g>
             <g id="add"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></g>
@@ -12241,17 +13481,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <g id="lock"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"></path></g>
             <g id="settings"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"></path></g>
             <g id="refresh"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"></path></g>
+            <g id="person"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></g>
             <g id="play-arrow"><path d="M8 5v14l11-7z"></path></g>
             <g id="folder-open"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"></path></g>
             <g id="mode-edit"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></g>
             <g id="more-vert"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path></g>
             <g id="playlist-add"><path d="M14 10H2v2h12v-2zm0-4H2v2h12V6zm4 8v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM2 16h8v-2H2v2z"></path></g>
+            <g id="remove"><path d="M19 13H5v-2h14v2z"></path></g>
             <g id="cast"><path d="M21 3H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11z"></path></g>
             <g id="cast-connected"><path d="M1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm18-7H5v1.63c3.96 1.28 7.09 4.41 8.37 8.37H19V7zM1 10v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11zm20-7H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path></g>
             <g id="today"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"></path></g>
             <g id="shuffle"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"></path></g>
             <g id="tablet-android"><path d="M18 0H6C4.34 0 3 1.34 3 3v18c0 1.66 1.34 3 3 3h12c1.66 0 3-1.34 3-3V3c0-1.66-1.34-3-3-3zm-4 22h-4v-1h4v1zm5.25-3H4.75V3h14.5v16z"></path></g>
             <g id="view-comfy"><path d="M3 9h4V5H3v4zm0 5h4v-4H3v4zm5 0h4v-4H8v4zm5 0h4v-4h-4v4zM8 9h4V5H8v4zm5-4v4h4V5h-4zm5 9h4v-4h-4v4zM3 19h4v-4H3v4zm5 0h4v-4H8v4zm5 0h4v-4h-4v4zm5 0h4v-4h-4v4zm0-14v4h4V5h-4z"></path></g>
+            <g id="videocam"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"></path></g>
         </defs>
     </svg>
 </iron-iconset-svg>

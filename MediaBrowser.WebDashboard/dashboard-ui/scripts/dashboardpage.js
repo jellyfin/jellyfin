@@ -1009,7 +1009,7 @@
     }
 };
 
-$(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('pagehide', "#dashboardPage", DashboardPage.onPageHide);
+$(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('pagebeforehide', "#dashboardPage", DashboardPage.onPageHide);
 
 (function ($, document, window) {
 

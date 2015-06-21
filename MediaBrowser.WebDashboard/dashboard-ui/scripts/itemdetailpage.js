@@ -1664,7 +1664,7 @@
             }
         });
 
-    }).on('pagehide', "#itemDetailPage", function () {
+    }).on('pagebeforehide', "#itemDetailPage", function () {
 
         $(LibraryBrowser).off('itemdeleting.detailpage');
 

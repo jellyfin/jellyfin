@@ -215,7 +215,7 @@
 
         $(ApiClient).on("websocketmessage", onWebSocketMessage).on("websocketopen", onWebSocketConnectionOpen);
 
-    }).on('pagehide', "#scheduledTasksPage", function () {
+    }).on('pagebeforehide', "#scheduledTasksPage", function () {
 
         var page = this;
 

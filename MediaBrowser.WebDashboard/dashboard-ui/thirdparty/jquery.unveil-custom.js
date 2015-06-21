@@ -20,7 +20,7 @@
         // Need to fix those before this can be set to 0
 
         if (window.AppInfo && AppInfo.isNativeApp && $.browser.safari) {
-            return 8000;
+            return 7500;
         }
 
         var screens = $.browser.mobile ? 2.5 : 1;
@@ -102,7 +102,7 @@
 
     function setImageIntoElement(elem, url) {
 
-        if (elem.tagName === "DIV") {
+        if (elem.tagName !== "IMG") {
 
             elem.style.backgroundImage = "url('" + url + "')";
 

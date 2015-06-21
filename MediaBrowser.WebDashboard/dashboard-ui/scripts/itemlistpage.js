@@ -270,7 +270,7 @@
 
         updateFilterControls(page);
 
-    }).on('pagehide', "#itemListPage", function () {
+    }).on('pagebeforehide', "#itemListPage", function () {
 
         currentItem = null;
 

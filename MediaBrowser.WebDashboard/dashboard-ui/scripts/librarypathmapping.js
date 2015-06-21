@@ -129,7 +129,7 @@
 
         });
 
-    }).on('pagehide', "#libraryPathMappingPage", function () {
+    }).on('pagebeforehide', "#libraryPathMappingPage", function () {
 
         currentConfig = null;
 

@@ -77,9 +77,9 @@
             Dashboard.getCurrentUser().done(function (user) {
 
                 if (MediaController.canPlay(item)) {
-                    $('.btnPlay', page).show();
+                    $('.btnPlay', page).visible(true);
                 } else {
-                    $('.btnPlay', page).hide();
+                    $('.btnPlay', page).visible(false);
                 }
 
                 if (SyncManager.isAvailable(item, user)) {
@@ -93,9 +93,9 @@
                 $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref, true));
 
                 if (LibraryBrowser.getMoreCommands(item, user).length) {
-                    $('.btnMoreCommands', page).show();
+                    $('.btnMoreCommands', page).visible(true);
                 } else {
-                    $('.btnMoreCommands', page).show();
+                    $('.btnMoreCommands', page).visible(false);
                 }
 
             });
@@ -593,7 +593,7 @@
 
         reload(page);
 
-    }).on('pagehide', "#itemByNameDetailPage", function () {
+    }).on('pagebeforehide', "#itemByNameDetailPage", function () {
 
         currentItem = null;
     });

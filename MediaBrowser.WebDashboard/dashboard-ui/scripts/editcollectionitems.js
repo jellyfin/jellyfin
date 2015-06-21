@@ -289,7 +289,7 @@
             $("#txtLookupName").focus().select();
         });
 
-    }).on('pagehide', "#editCollectionTitlesPage", function () {
+    }).on('pagebeforehide', "#editCollectionTitlesPage", function () {
 
         var page = this;
 

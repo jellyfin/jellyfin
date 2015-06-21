@@ -175,7 +175,7 @@
 
         reload(page);
 
-    }).on('pagehide', "#liveTvNewRecordingPage", function () {
+    }).on('pagebeforehide', "#liveTvNewRecordingPage", function () {
 
         currentProgram = null;
 

@@ -106,8 +106,8 @@
 
         var page = this;
 
-        $('#btnDelete', page).on('click', deleteRecording);
-        $('#btnPlay', page).on('click', play);
+        $('.btnDelete', page).on('click', deleteRecording);
+        $('.btnPlay', page).on('click', play);
 
         $('.btnSync', page).on('click', function () {
 
@@ -122,7 +122,7 @@
 
         reload(page);
 
-    }).on('pagehide', "#liveTvRecordingPage", function () {
+    }).on('pagebeforehide', "#liveTvRecordingPage", function () {
 
         currentItem = null;
     });

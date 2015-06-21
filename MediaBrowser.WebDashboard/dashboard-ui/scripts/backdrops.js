@@ -2,14 +2,14 @@
 
     function getElement() {
 
-        var elem = $('.backdropContainer');
+        //var elem = $('.backdropContainer');
 
-        if (!elem.length) {
+        //if (!elem.length) {
 
-            elem = $('<div class="backdropContainer"></div>').prependTo(document.body);
-        }
+        //    elem = $('<div class="backdropContainer"></div>').prependTo(document.body);
+        //}
 
-        return elem;
+        return $(document.documentElement).addClass('backdropContainer');
     }
 
     function getRandom(min, max) {
@@ -112,18 +112,12 @@
 
     function clearBackdrop() {
 
-        $('.backdropContainer').css('backgroundImage', '');
+        $('.backdropContainer').css('backgroundImage', '').removeClass('backdropContainer');
     }
 
     function isEnabledByDefault() {
 
         if (AppInfo.hasLowImageBandwidth) {
-
-            return false;
-        }
-
-        // It flickers too much in IE
-        if ($.browser.msie) {
 
             return false;
         }

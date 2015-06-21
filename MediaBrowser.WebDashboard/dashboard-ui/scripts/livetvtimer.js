@@ -121,7 +121,7 @@
 
         reload(page);
 
-    }).on('pagehide', "#liveTvTimerPage", function () {
+    }).on('pagebeforehide', "#liveTvTimerPage", function () {
 
         currentItem = null;
     });

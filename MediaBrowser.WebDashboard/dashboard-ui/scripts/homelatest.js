@@ -23,9 +23,16 @@
 
         var latestMediElem = $('.section0', page);
 
-        Sections.loadRecentlyAdded(latestMediElem, user, context);
-        Sections.loadLatestLiveTvRecordings($(".section1", page), userId);
-        Sections.loadLatestChannelItems($(".section2", page), userId);
+        Dashboard.showLoadingMsg();
+        var promises = [];
+
+        promises.push(Sections.loadRecentlyAdded(latestMediElem, user, context));
+        promises.push(Sections.loadLatestLiveTvRecordings($(".section1", page), userId));
+        promises.push(Sections.loadLatestChannelItems($(".section2", page), userId));
+
+        $.when(promises).done(function() {
+            Dashboard.hideLoadingMsg();
+        });
     }
 
     $(document).on('pagebeforeshowready', "#homeLatestPage", function () {

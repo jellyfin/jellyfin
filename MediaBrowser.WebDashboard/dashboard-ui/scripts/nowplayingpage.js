@@ -749,7 +749,7 @@
         showIntro();
         loadPlaylist(page);
 
-    }).on('pagehide', "#nowPlayingPage", function () {
+    }).on('pagebeforehide', "#nowPlayingPage", function () {
 
         releaseCurrentPlayer();
 

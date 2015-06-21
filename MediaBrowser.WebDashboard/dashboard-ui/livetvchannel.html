@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvChannelPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvchannel">
+    <div id="liveTvChannelPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvchannel,paperbuttonstyle">
         <div class="libraryViewNav">
             <a href="livetvsuggested.html"><i class="material-icons">info</i>${TabSuggestions}</a>
             <a href="livetvguide.html"><i class="material-icons">grid_on</i>${TabGuide}</a>
@@ -28,10 +28,10 @@
         </table>
         <div class="detailButtonsContainer">
             <span id="playButtonContainer" style="display: none;">
-                <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
+                <paper-button raised class="secondary btnPlay"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlay}</span></paper-button>
             </span>
             <span id="editButtonContainer" style="display: none;">
-                <button id="btnEdit" type="button" data-icon="edit" data-inline="true" data-mini="true">${ButtonEdit}</button>
+                <paper-button raised class="subdued btnEdit"><iron-icon icon="mode-edit"></iron-icon><span>${ButtonEdit}</span></paper-button>
             </span>
         </div>
         <div data-role="content">

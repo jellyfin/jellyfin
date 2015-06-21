@@ -15,7 +15,11 @@
 
             var style = "";
 
-            if (options.positionTo) {
+            var windowHeight = $(window).height();
+
+            // If the window height is under a certain amount, don't bother trying to position
+            // based on an element.
+            if (options.positionTo && windowHeight > 600) {
 
                 var pos = $(options.positionTo).offset();
 
@@ -27,7 +31,7 @@
                 pos.left -= 24;
 
                 // Account for popup size - we can't predict this yet so just estimate
-                pos.top -= 100;
+                pos.top -= (55 * options.items.length) / 2;
                 pos.left -= 80;
 
                 // Account for scroll position
@@ -53,7 +57,13 @@
                 html += '</h2>';
             }
 
-            html += '<paper-dialog-scrollable>';
+            // There seems to be a bug with this in safari causing it to immediately roll up to 0 height
+            var isScrollable = !$.browser.safari;
+
+            if (isScrollable) {
+                html += '<paper-dialog-scrollable>';
+            }
+
             for (var i = 0, length = options.items.length; i < length; i++) {
 
                 var option = options.items[i];
@@ -67,7 +77,7 @@
                 html += '</paper-button>';
             }
 
-            html += '</paper-dialog-scrollable>';
+            //html += '</paper-dialog-scrollable>';
 
             if (options.showCancel) {
                 html += '<div class="buttons">';
@@ -75,16 +85,18 @@
                 html += '</div>';
             }
 
-            html += '</paper-dialog>';
+            if (isScrollable) {
+                html += '</paper-dialog>';
+            }
 
-            $(html).appendTo(document.body);
+            $(document.body).append(html);
 
             setTimeout(function () {
                 var dlg = document.getElementById(id);
                 dlg.open();
 
                 // Has to be assigned a z-index after the call to .open() 
-                $(dlg).css('z-index', '999999').on('iron-overlay-closed', onClosed);
+                $(dlg).on('iron-overlay-closed', onClosed);
 
                 $('.btnOption', dlg).on('click', function () {
 

@@ -596,7 +596,7 @@
             return false;
         });
 
-    }).on('pagehide', "#editItemImagesPage", function () {
+    }).on('pagebeforehide', "#editItemImagesPage", function () {
 
         var page = this;
 
