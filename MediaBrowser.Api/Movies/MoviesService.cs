@@ -165,7 +165,7 @@ namespace MediaBrowser.Api.Movies
             return ToOptimizedResult(result);
         }
 
-        private async Task<ItemsResult> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
+        private async Task<ItemsResult> GetSimilarItemsResult(BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, ILibraryManager, int> getSimilarityScore)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
 
@@ -214,7 +214,7 @@ namespace MediaBrowser.Api.Movies
                 }
             }
 
-            var items = SimilarItemsHelper.GetSimilaritems(item, list, getSimilarityScore).ToList();
+            var items = SimilarItemsHelper.GetSimilaritems(item, _libraryManager, list, getSimilarityScore).ToList();
 
             IEnumerable<BaseItem> returnItems = items;
 
@@ -339,7 +339,7 @@ namespace MediaBrowser.Api.Movies
             foreach (var director in directors)
             {
                 var items = allMovies
-                    .Where(i => i.People.Any(p => string.Equals(p.Type, PersonType.Director, StringComparison.OrdinalIgnoreCase) && string.Equals(p.Name, director, StringComparison.OrdinalIgnoreCase)))
+                    .Where(i => _libraryManager.GetPeople(i).Any(p => string.Equals(p.Type, PersonType.Director, StringComparison.OrdinalIgnoreCase) && string.Equals(p.Name, director, StringComparison.OrdinalIgnoreCase)))
                     .Take(itemLimit)
                     .ToList();
 
@@ -363,7 +363,7 @@ namespace MediaBrowser.Api.Movies
             foreach (var name in names)
             {
                 var items = allMovies
-                    .Where(i => i.People.Any(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)))
+                    .Where(i => _libraryManager.GetPeople(i).Any(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)))
                     .Take(itemLimit)
                     .ToList();
 
@@ -387,7 +387,7 @@ namespace MediaBrowser.Api.Movies
             foreach (var item in baselineItems)
             {
                 var similar = SimilarItemsHelper
-                    .GetSimilaritems(item, allMovies, SimilarItemsHelper.GetSimiliarityScore)
+                    .GetSimilaritems(item, _libraryManager, allMovies, SimilarItemsHelper.GetSimiliarityScore)
                     .Take(itemLimit)
                     .ToList();
 
@@ -408,7 +408,7 @@ namespace MediaBrowser.Api.Movies
         {
             // Get the two leading actors for all movies
             return items
-                .SelectMany(i => i.People.Where(p => !string.Equals(PersonType.Director, p.Type, StringComparison.OrdinalIgnoreCase)).Take(2))
+                .SelectMany(i => _libraryManager.GetPeople(i).Where(p => !string.Equals(PersonType.Director, p.Type, StringComparison.OrdinalIgnoreCase)).Take(2))
                 .Select(i => i.Name)
                 .DistinctNames();
         }
@@ -416,7 +416,7 @@ namespace MediaBrowser.Api.Movies
         private IEnumerable<string> GetDirectors(IEnumerable<BaseItem> items)
         {
             return items
-                .Select(i => i.People.FirstOrDefault(p => string.Equals(PersonType.Director, p.Type, StringComparison.OrdinalIgnoreCase)))
+                .Select(i => _libraryManager.GetPeople(i).FirstOrDefault(p => string.Equals(PersonType.Director, p.Type, StringComparison.OrdinalIgnoreCase)))
                 .Where(i => i != null)
                 .Select(i => i.Name)
                 .DistinctNames();

@@ -21,13 +21,13 @@ namespace MediaBrowser.Providers.People
     public class TvdbPersonImageProvider : IRemoteImageProvider, IHasOrder
     {
         private readonly IServerConfigurationManager _config;
-        private readonly ILibraryManager _library;
+        private readonly ILibraryManager _libraryManager;
         private readonly IHttpClient _httpClient;
 
-        public TvdbPersonImageProvider(IServerConfigurationManager config, ILibraryManager library, IHttpClient httpClient)
+        public TvdbPersonImageProvider(IServerConfigurationManager config, ILibraryManager libraryManager, IHttpClient httpClient)
         {
             _config = config;
-            _library = library;
+            _libraryManager = libraryManager;
             _httpClient = httpClient;
         }
 
@@ -59,8 +59,8 @@ namespace MediaBrowser.Providers.People
             // Avoid implicitly captured closure
             var itemName = item.Name;
 
-            var seriesWithPerson = _library.RootFolder
-                .GetRecursiveChildren(i => i is Series && !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)) && i.People.Any(p => string.Equals(p.Name, itemName, StringComparison.OrdinalIgnoreCase)))
+            var seriesWithPerson = _libraryManager.RootFolder
+                .GetRecursiveChildren(i => i is Series && !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)) && _libraryManager.GetPeople(i).Any(p => string.Equals(p.Name, itemName, StringComparison.OrdinalIgnoreCase)))
                 .Cast<Series>()
                 .ToList();
 

@@ -58,7 +58,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             _profile = profile;
             _config = config;
 
-            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, Logger);
+            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, Logger, libraryManager);
         }
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)
@@ -410,7 +410,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             {
                 if (stubType.Value == StubType.People)
                 {
-                    var items = item.People.Select(i =>
+                    var items = _libraryManager.GetPeople(item).Select(i =>
                     {
                         try
                         {

@@ -74,7 +74,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             builder.Append("<Title>");
 
-            XmlSaverHelpers.AddCommonNodes(video, builder);
+            XmlSaverHelpers.AddCommonNodes(video, _libraryManager, builder);
 
             var musicVideo = item as MusicVideo;
 

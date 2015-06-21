@@ -1698,9 +1698,9 @@ namespace MediaBrowser.Controller.Entities
                     .Select(libraryManager.GetItemById)
                     .Select(i => i == null ? "-1" : i.Name)
                     .ToList();
-
+               
                 if (!(names.Any(
-                        v => item.People.Select(i => i.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
+                        v => libraryManager.GetPeople(item).Select(i => i.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
                 {
                     return false;
                 }
@@ -1713,7 +1713,7 @@ namespace MediaBrowser.Controller.Entities
 
                 if (personTypes.Length == 0)
                 {
-                    if (!(item.People.Any(p => string.Equals(p.Name, query.Person, StringComparison.OrdinalIgnoreCase))))
+                    if (!(libraryManager.GetPeople(item).Any(p => string.Equals(p.Name, query.Person, StringComparison.OrdinalIgnoreCase))))
                     {
                         return false;
                     }
@@ -1723,8 +1723,7 @@ namespace MediaBrowser.Controller.Entities
                     var types = personTypes;
 
                     var ok = new[] { item }.Any(i =>
-                            i.People != null &&
-                            i.People.Any(p =>
+                            libraryManager.GetPeople(i).Any(p =>
                                 string.Equals(p.Name, query.Person, StringComparison.OrdinalIgnoreCase) && (types.Contains(p.Type ?? string.Empty, StringComparer.OrdinalIgnoreCase) || types.Contains(p.Role ?? string.Empty, StringComparer.OrdinalIgnoreCase))));
 
                     if (!ok)
