@@ -171,6 +171,13 @@
     </Content>
     <Content Include="dashboard-ui\bower_components\iron-icon\test\index.html" />
     <Content Include="dashboard-ui\bower_components\iron-icon\test\iron-icon.html" />
+    <Content Include="dashboard-ui\bower_components\iron-media-query\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\iron-media-query\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-media-query\hero.svg" />
+    <Content Include="dashboard-ui\bower_components\iron-media-query\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-media-query\iron-media-query.html" />
+    <Content Include="dashboard-ui\bower_components\iron-media-query\test\basic.html" />
+    <Content Include="dashboard-ui\bower_components\iron-media-query\test\index.html" />
     <Content Include="dashboard-ui\bower_components\iron-meta\.gitignore" />
     <Content Include="dashboard-ui\bower_components\iron-meta\demo\index.html" />
     <Content Include="dashboard-ui\bower_components\iron-meta\hero.svg" />
@@ -382,6 +389,12 @@
     <Content Include="dashboard-ui\bower_components\paper-dialog\paper-dialog.html" />
     <Content Include="dashboard-ui\bower_components\paper-dialog\test\index.html" />
     <Content Include="dashboard-ui\bower_components\paper-dialog\test\paper-dialog.html" />
+    <Content Include="dashboard-ui\bower_components\paper-drawer-panel\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\paper-drawer-panel\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-drawer-panel\hero.svg" />
+    <Content Include="dashboard-ui\bower_components\paper-drawer-panel\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-drawer-panel\paper-drawer-panel.css" />
+    <Content Include="dashboard-ui\bower_components\paper-drawer-panel\paper-drawer-panel.html" />
     <Content Include="dashboard-ui\bower_components\paper-fab\.gitignore" />
     <Content Include="dashboard-ui\bower_components\paper-fab\demo\index.html" />
     <Content Include="dashboard-ui\bower_components\paper-fab\index.html" />
@@ -2734,6 +2747,9 @@
     <None Include="dashboard-ui\bower_components\iron-icon\.bower.json" />
     <None Include="dashboard-ui\bower_components\iron-icon\bower.json" />
     <None Include="dashboard-ui\bower_components\iron-icon\README.md" />
+    <None Include="dashboard-ui\bower_components\iron-media-query\.bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-media-query\bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-media-query\README.md" />
     <None Include="dashboard-ui\bower_components\iron-meta\.bower.json" />
     <None Include="dashboard-ui\bower_components\iron-meta\bower.json" />
     <None Include="dashboard-ui\bower_components\iron-meta\README.md" />
@@ -2765,6 +2781,9 @@
     <None Include="dashboard-ui\bower_components\paper-dialog\.bower.json" />
     <None Include="dashboard-ui\bower_components\paper-dialog\bower.json" />
     <None Include="dashboard-ui\bower_components\paper-dialog\README.md" />
+    <None Include="dashboard-ui\bower_components\paper-drawer-panel\.bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-drawer-panel\bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-drawer-panel\README.md" />
     <None Include="dashboard-ui\bower_components\paper-fab\.bower.json" />
     <None Include="dashboard-ui\bower_components\paper-fab\bower.json" />
     <None Include="dashboard-ui\bower_components\paper-fab\README.md" />
