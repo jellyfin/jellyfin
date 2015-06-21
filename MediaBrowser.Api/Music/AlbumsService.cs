@@ -69,10 +69,11 @@ namespace MediaBrowser.Api.Music
         /// </summary>
         /// <param name="item1">The item1.</param>
         /// <param name="item2">The item2.</param>
+        /// <param name="libraryManager">The library manager.</param>
         /// <returns>System.Int32.</returns>
-        private int GetAlbumSimilarityScore(BaseItem item1, BaseItem item2)
+        private int GetAlbumSimilarityScore(BaseItem item1, BaseItem item2, ILibraryManager libraryManager)
         {
-            var points = SimilarItemsHelper.GetSimiliarityScore(item1, item2);
+            var points = SimilarItemsHelper.GetSimiliarityScore(item1, item2, libraryManager);
 
             var album1 = (MusicAlbum)item1;
             var album2 = (MusicAlbum)item2;

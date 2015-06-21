@@ -40,8 +40,9 @@ namespace MediaBrowser.Dlna.Didl
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILogger _logger;
+        private readonly ILibraryManager _libraryManager;
 
-        public DidlBuilder(DeviceProfile profile, User user, IImageProcessor imageProcessor, string serverAddress, string accessToken, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, ILogger logger)
+        public DidlBuilder(DeviceProfile profile, User user, IImageProcessor imageProcessor, string serverAddress, string accessToken, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager, ILogger logger, ILibraryManager libraryManager)
         {
             _profile = profile;
             _imageProcessor = imageProcessor;
@@ -50,6 +51,7 @@ namespace MediaBrowser.Dlna.Didl
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
             _logger = logger;
+            _libraryManager = libraryManager;
             _accessToken = accessToken;
             _user = user;
         }
@@ -654,7 +656,9 @@ namespace MediaBrowser.Dlna.Didl
         {
             var types = new[] { PersonType.Director, PersonType.Writer, PersonType.Producer, PersonType.Composer, "Creator" };
 
-            foreach (var actor in item.People)
+            var people = _libraryManager.GetPeople(item);
+
+            foreach (var actor in people)
             {
                 var type = types.FirstOrDefault(i => string.Equals(i, actor.Type, StringComparison.OrdinalIgnoreCase) || string.Equals(i, actor.Role, StringComparison.OrdinalIgnoreCase))
                     ?? PersonType.Actor;

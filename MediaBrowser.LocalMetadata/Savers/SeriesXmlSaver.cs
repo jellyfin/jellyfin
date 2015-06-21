@@ -15,12 +15,14 @@ namespace MediaBrowser.LocalMetadata.Savers
     public class SeriesXmlSaver : IMetadataFileSaver
     {
         private readonly IServerConfigurationManager _config;
+        private readonly ILibraryManager _libraryManager;
 
-        public SeriesXmlSaver(IServerConfigurationManager config)
+        public SeriesXmlSaver(IServerConfigurationManager config, ILibraryManager libraryManager)
         {
             _config = config;
+            _libraryManager = libraryManager;
         }
-        
+
         public string Name
         {
             get
@@ -105,7 +107,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 builder.Append("<AnimeSeriesIndex>" + SecurityElement.Escape(series.AnimeSeriesIndex.Value.ToString(UsCulture)) + "</AnimeSeriesIndex>");
             }
 
-            XmlSaverHelpers.AddCommonNodes(series, builder);
+            XmlSaverHelpers.AddCommonNodes(series, _libraryManager, builder);
 
             builder.Append("</Series>");
 

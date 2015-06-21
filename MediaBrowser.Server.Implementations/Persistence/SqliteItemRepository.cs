@@ -143,6 +143,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "Name", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "OfficialRating", "Text");
 
+            _connection.AddColumn(_logger, "TypedBaseItems", "MediaType", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "Overview", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "ParentIndexNumber", "INT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "PremiereDate", "DATETIME");
+            _connection.AddColumn(_logger, "TypedBaseItems", "ProductionYear", "INT");
+
             PrepareStatements();
 
             _mediaStreamsRepository.Initialize();
@@ -176,10 +182,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "IndexNumber",
                 "IsLocked",
                 "Name",
-                "OfficialRating"
+                "OfficialRating",
+                "MediaType",
+                "Overview",
+                "ParentIndexNumber",
+                "PremiereDate",
+                "ProductionYear"
             };
             _saveItemCommand = _connection.CreateCommand();
-			_saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16)";
+            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21)";
             for (var i = 1; i <= saveColumns.Count; i++)
             {
                 _saveItemCommand.Parameters.Add(_saveItemCommand, "@" + i.ToString(CultureInfo.InvariantCulture));
@@ -293,6 +304,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _saveItemCommand.GetParameter(index++).Value = item.Name;
                     _saveItemCommand.GetParameter(index++).Value = item.OfficialRating;
+
+                    _saveItemCommand.GetParameter(index++).Value = item.MediaType;
+                    _saveItemCommand.GetParameter(index++).Value = item.Overview;
+                    _saveItemCommand.GetParameter(index++).Value = item.ParentIndexNumber;
+                    _saveItemCommand.GetParameter(index++).Value = item.PremiereDate;
+                    _saveItemCommand.GetParameter(index++).Value = item.ProductionYear;
                     
                     _saveItemCommand.Transaction = transaction;
 

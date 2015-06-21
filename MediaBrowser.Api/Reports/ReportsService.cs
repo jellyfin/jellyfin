@@ -779,7 +779,7 @@ namespace MediaBrowser.Api.Reports
 						.Select(p => p == null ? "-1" : p.Name)
 						.ToList();
 
-					if (!(names.Any(v => i.People.Select(p => p.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
+					if (!(names.Any(v => _libraryManager.GetPeople(i).Select(p => p.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
 					{
 						return false;
 					}
@@ -792,7 +792,7 @@ namespace MediaBrowser.Api.Reports
 
 					if (personTypes.Length == 0)
 					{
-						if (!(i.People.Any(p => string.Equals(p.Name, request.Person, StringComparison.OrdinalIgnoreCase))))
+                        if (!(_libraryManager.GetPeople(i).Any(p => string.Equals(p.Name, request.Person, StringComparison.OrdinalIgnoreCase))))
 						{
 							return false;
 						}
@@ -802,8 +802,7 @@ namespace MediaBrowser.Api.Reports
 						var types = personTypes;
 
 						var ok = new[] { i }.Any(item =>
-								item.People != null &&
-								item.People.Any(p =>
+                                _libraryManager.GetPeople(i).Any(p =>
 									p.Name.Equals(request.Person, StringComparison.OrdinalIgnoreCase) && (types.Contains(p.Type, StringComparer.OrdinalIgnoreCase) || types.Contains(p.Role, StringComparer.OrdinalIgnoreCase))));
 
 						if (!ok)

@@ -20,10 +20,12 @@ namespace MediaBrowser.LocalMetadata.Savers
         }
 
         private readonly IServerConfigurationManager _config;
+        private readonly ILibraryManager _libraryManager;
 
-        public GameSystemXmlSaver(IServerConfigurationManager config)
+        public GameSystemXmlSaver(IServerConfigurationManager config, ILibraryManager libraryManager)
         {
             _config = config;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -61,7 +63,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 builder.Append("<GameSystem>" + SecurityElement.Escape(gameSystem.GameSystemName) + "</GameSystem>");
             }
 
-            XmlSaverHelpers.AddCommonNodes(gameSystem, builder);
+            XmlSaverHelpers.AddCommonNodes(gameSystem, _libraryManager, builder);
 
             builder.Append("</Item>");
 

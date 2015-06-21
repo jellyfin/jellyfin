@@ -260,7 +260,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                         html = _localization.LocalizeDocument(html, localizationCulture, GetLocalizationToken);
 
-                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">");
+                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">").Replace("<body>", "<body><div class=\"pageContainer\">").Replace("</body>", "</div></body>");
                     }
 
                     if (enableMinification)

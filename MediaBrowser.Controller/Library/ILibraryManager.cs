@@ -412,5 +412,26 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable&lt;Folder&gt;.</returns>
         IEnumerable<Folder> GetCollectionFolders(BaseItem item);
+
+        /// <summary>
+        /// Gets the people.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>List&lt;PersonInfo&gt;.</returns>
+        List<PersonInfo> GetPeople(BaseItem item);
+
+        /// <summary>
+        /// Gets all people names.
+        /// </summary>
+        /// <returns>List&lt;System.String&gt;.</returns>
+        List<PersonInfo> GetAllPeople();
+
+        /// <summary>
+        /// Updates the people.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="people">The people.</param>
+        /// <returns>Task.</returns>
+        Task UpdatePeople(BaseItem item, List<PersonInfo> people);
     }
 }

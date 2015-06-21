@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Model.Entities;
@@ -230,7 +231,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="builder">The builder.</param>
-        public static void AddCommonNodes(BaseItem item, StringBuilder builder)
+        public static void AddCommonNodes(BaseItem item, ILibraryManager libraryManager, StringBuilder builder)
         {
             if (!string.IsNullOrEmpty(item.OfficialRating))
             {
@@ -627,11 +628,13 @@ namespace MediaBrowser.LocalMetadata.Savers
                 }
             }
 
-            if (item.People.Count > 0)
+            var people = libraryManager.GetPeople(item);
+
+            if (people.Count > 0)
             {
                 builder.Append("<Persons>");
 
-                foreach (var person in item.People)
+                foreach (var person in people)
                 {
                     builder.Append("<Person>");
                     builder.Append("<Name>" + SecurityElement.Escape(person.Name) + "</Name>");

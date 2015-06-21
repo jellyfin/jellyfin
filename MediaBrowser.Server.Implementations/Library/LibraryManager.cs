@@ -32,6 +32,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MoreLinq;
 using SortOrder = MediaBrowser.Model.Entities.SortOrder;
 
 namespace MediaBrowser.Server.Implementations.Library
@@ -2054,6 +2055,27 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 item.ExtraType = ExtraType.Clip;
             }
+        }
+
+
+        public List<PersonInfo> GetPeople(BaseItem item)
+        {
+            return item.People ?? new List<PersonInfo>();
+        }
+
+        public List<PersonInfo> GetAllPeople()
+        {
+            return RootFolder.GetRecursiveChildren()
+                .SelectMany(GetPeople)
+                .Where(i => !string.IsNullOrWhiteSpace(i.Name))
+                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        public Task UpdatePeople(BaseItem item, List<PersonInfo> people)
+        {
+            item.People = people;
+            return item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
@@ -12,6 +11,7 @@ using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MediaBrowser.Api
 {
@@ -344,9 +344,7 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.RootFolder
-                .GetRecursiveChildren()
-                .SelectMany(i => i.People)
+            return libraryManager.GetAllPeople()
                 .Select(i => i.Name)
                 .DistinctNames()
                 .FirstOrDefault(i =>
