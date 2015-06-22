@@ -178,6 +178,18 @@
     <Content Include="dashboard-ui\bower_components\iron-media-query\iron-media-query.html" />
     <Content Include="dashboard-ui\bower_components\iron-media-query\test\basic.html" />
     <Content Include="dashboard-ui\bower_components\iron-media-query\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-menu-behavior\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\iron-menu-behavior\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-menu-behavior\demo\simple-menu.html" />
+    <Content Include="dashboard-ui\bower_components\iron-menu-behavior\demo\simple-menubar.html" />
+    <Content Include="dashboard-ui\bower_components\iron-menu-behavior\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-menu-behavior\iron-menu-behavior.html" />
+    <Content Include="dashboard-ui\bower_components\iron-menu-behavior\iron-menubar-behavior.html" />
+    <Content Include="dashboard-ui\bower_components\iron-menu-behavior\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\iron-menu-behavior\test\iron-menu-behavior.html" />
+    <Content Include="dashboard-ui\bower_components\iron-menu-behavior\test\iron-menubar-behavior.html" />
+    <Content Include="dashboard-ui\bower_components\iron-menu-behavior\test\test-menu.html" />
+    <Content Include="dashboard-ui\bower_components\iron-menu-behavior\test\test-menubar.html" />
     <Content Include="dashboard-ui\bower_components\iron-meta\.gitignore" />
     <Content Include="dashboard-ui\bower_components\iron-meta\demo\index.html" />
     <Content Include="dashboard-ui\bower_components\iron-meta\hero.svg" />
@@ -421,6 +433,13 @@
     </Content>
     <Content Include="dashboard-ui\bower_components\paper-material\test\index.html" />
     <Content Include="dashboard-ui\bower_components\paper-material\test\paper-material.html" />
+    <Content Include="dashboard-ui\bower_components\paper-menu\.gitignore" />
+    <Content Include="dashboard-ui\bower_components\paper-menu\demo\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-menu\hero.svg" />
+    <Content Include="dashboard-ui\bower_components\paper-menu\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-menu\paper-menu.html" />
+    <Content Include="dashboard-ui\bower_components\paper-menu\test\index.html" />
+    <Content Include="dashboard-ui\bower_components\paper-menu\test\paper-menu.html" />
     <Content Include="dashboard-ui\bower_components\paper-ripple\.gitignore" />
     <Content Include="dashboard-ui\bower_components\paper-ripple\demo\index.html" />
     <Content Include="dashboard-ui\bower_components\paper-ripple\hero.svg" />
@@ -541,6 +560,9 @@
     <Content Include="dashboard-ui\css\images\splash.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\css\images\splash720.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\css\images\touchicon144.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -632,18 +654,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\paper-button-style.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\polymer\LICENSE.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\polymer\polymer-micro.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\polymer\polymer-mini.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\polymer\polymer.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\velocity.min.js">
@@ -2750,6 +2760,9 @@
     <None Include="dashboard-ui\bower_components\iron-media-query\.bower.json" />
     <None Include="dashboard-ui\bower_components\iron-media-query\bower.json" />
     <None Include="dashboard-ui\bower_components\iron-media-query\README.md" />
+    <None Include="dashboard-ui\bower_components\iron-menu-behavior\.bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-menu-behavior\bower.json" />
+    <None Include="dashboard-ui\bower_components\iron-menu-behavior\README.md" />
     <None Include="dashboard-ui\bower_components\iron-meta\.bower.json" />
     <None Include="dashboard-ui\bower_components\iron-meta\bower.json" />
     <None Include="dashboard-ui\bower_components\iron-meta\README.md" />
@@ -2793,6 +2806,9 @@
     <None Include="dashboard-ui\bower_components\paper-material\.bower.json" />
     <None Include="dashboard-ui\bower_components\paper-material\bower.json" />
     <None Include="dashboard-ui\bower_components\paper-material\README.md" />
+    <None Include="dashboard-ui\bower_components\paper-menu\.bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-menu\bower.json" />
+    <None Include="dashboard-ui\bower_components\paper-menu\README.md" />
     <None Include="dashboard-ui\bower_components\paper-ripple\.bower.json" />
     <None Include="dashboard-ui\bower_components\paper-ripple\bower.json" />
     <None Include="dashboard-ui\bower_components\paper-ripple\README.md" />
@@ -2931,9 +2947,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.woff2">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="dashboard-ui\thirdparty\polymer\bower.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
