@@ -2034,6 +2034,10 @@ var AppInfo = {};
             Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.icons.css');
             return {};
         });
+        define("livetvcss", [], function () {
+            Dashboard.importCss('css/livetv.css');
+            return {};
+        });
 
         if (Dashboard.isRunningInCordova() && $.browser.safari) {
             define("actionsheet", ["cordova/ios/actionsheet"]);
@@ -2050,7 +2054,10 @@ var AppInfo = {};
             var drawer = $('.mainDrawerPanel').removeClass('mainDrawerPanelPreInit')[0];
             drawer.forceNarrow = true;
             drawer.drawerWidth = screen.availWidth >= 330 ? "310px" : "270px";
-            drawer.transition = true;
+
+            if ($.browser.safari && !AppInfo.isNativeApp) {
+                drawer.disableEdgeSwipe = true;
+            }
 
             if (Dashboard.isConnectMode()) {
 

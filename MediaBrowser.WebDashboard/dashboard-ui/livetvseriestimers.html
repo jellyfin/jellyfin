@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvSeriesTimersPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvseriestimers">
+    <div id="liveTvSeriesTimersPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvseriestimers,livetvcss">
         <div class="libraryViewNav">
             <a href="livetvsuggested.html"><i class="material-icons">info</i>${TabSuggestions}</a>
             <a href="livetvguide.html"><i class="material-icons">grid_on</i>${TabGuide}</a>
@@ -17,7 +17,7 @@
             <div style="max-width: 600px; margin: 0 auto;">
 
                 <div style="text-align: right;">
-                    <button data-mini="true" data-icon="sort" data-inline="true" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonSort}</button>
+                    <button data-mini="true" data-inline="true" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonSort}</button>
                 </div>
 
                 <div id="items"></div>

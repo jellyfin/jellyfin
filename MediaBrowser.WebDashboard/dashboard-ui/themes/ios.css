@@ -49,10 +49,6 @@
     color: #539FFD !important;
 }
 
-.btn, .btn-large {
-    font-family: Helvetica Neue !important;
-}
-
 .pageTitle {
     font-family: Helvetica Neue;
 }
@@ -145,4 +141,8 @@ h1, h1 a {
 
 .bottomFab {
     bottom: 70px;
+}
+
+.sidebarLinkText {
+    font-weight: 400 !important;
 }

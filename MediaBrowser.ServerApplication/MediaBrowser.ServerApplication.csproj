@@ -99,7 +99,6 @@
     <Compile Include="BackgroundServiceInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="EntryPoints\ResourceEntryPoint.cs" />
     <Compile Include="Native\NativeFileSystem.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>

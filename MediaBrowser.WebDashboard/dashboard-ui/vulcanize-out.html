@@ -2462,7 +2462,8 @@ prevent = dy > dx;
 prevent = dx > dy;
 }
 if (prevent) {
-ev.preventDefault();
+//This breaks scrolling in safari
+//ev.preventDefault();
 }
 }
 },
@@ -13455,7 +13456,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
                     if (this.rightDrawer) {
                         this[xDirection ? 'closeDrawer' : 'openDrawer']();
                     } else {
-                        this[xDirection ? 'openDrawer' : 'closeDrawer']();
+                        this[xDirection || event.detail.dx > -80 ? 'openDrawer' : 'closeDrawer']();
                     }
                 }
             },

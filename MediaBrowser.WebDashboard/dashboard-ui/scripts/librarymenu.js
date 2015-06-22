@@ -40,7 +40,7 @@
         }
 
         if (!$.browser.mobile && !AppInfo.isNativeApp) {
-            html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton hide"><i class="material-icons">settings</i></a>';
+            html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton hide" onclick="LibraryMenu.onLinkClicked(this);return false;"><i class="material-icons">settings</i></a>';
             //html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton clearLink" style="display:none;"><paper-icon-button icon="settings"></paper-icon-button></a>';
         }
 
@@ -124,7 +124,7 @@
         if (AppInfo.isTouchPreferred) {
 
             if ('ontouchend' in document) {
-                $('.mainDrawerButton').on('touchend', openMainDrawer);
+                $('.mainDrawerButton').on('touchend click', openMainDrawer);
             } else {
                 $('.mainDrawerButton').on('click', openMainDrawer);
             }
@@ -277,18 +277,18 @@
             html += '</div>';
             html += '</div>';
 
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="index.html"><iron-icon icon="home" class="sidebarLinkIcon" style="color:#2196F3;"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonHome') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="index.html" onclick="LibraryMenu.onLinkClicked(this);return false;"><iron-icon icon="home" class="sidebarLinkIcon" style="color:#2196F3;"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonHome') + '</span></a>';
 
         } else {
             html += '<div style="margin-top:5px;"></div>';
 
-            html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '">';
+            html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '" onclick="LibraryMenu.onLinkClicked(this);return false;">';
             html += '<div class="lazy" data-src="css/images/mblogoicon.png" style="width:' + 28 + 'px;height:' + 28 + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.6em 0 1.5em;display:inline-block;"></div>';
             html += Globalize.translate('ButtonHome');
             html += '</a>';
         }
 
-        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="nowplaying.html"><iron-icon icon="tablet-android" class="sidebarLinkIcon" style="color:#673AB7;"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonRemote') + '</span></a>';
+        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="nowplaying.html" onclick="LibraryMenu.onLinkClicked(this);return false;"><iron-icon icon="tablet-android" class="sidebarLinkIcon" style="color:#673AB7;"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonRemote') + '</span></a>';
 
         $('.userheader', drawer).html(html).lazyChildren();
     }
@@ -328,33 +328,33 @@
         html += '</div>';
 
         html += '<a class="sidebarLink lnkMediaFolder lnkManageServer" data-itemid="dashboard" href="#"><iron-icon icon="dashboard" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonManageServer') + '</span></a>';
-        html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html"><iron-icon icon="mode-edit" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonMetadataManager') + '</span></a>';
+        html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" onclick="LibraryMenu.onLinkClicked(this);return false;" href="edititemmetadata.html"><iron-icon icon="mode-edit" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonMetadataManager') + '</span></a>';
 
         if (!$.browser.mobile && !AppInfo.isTouchPreferred) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" href="reports.html"><iron-icon icon="insert-chart" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonReports') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" onclick="LibraryMenu.onLinkClicked(this);return false;" href="reports.html"><iron-icon icon="insert-chart" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonReports') + '</span></a>';
         }
         html += '</div>';
 
         html += '<div class="userMenuOptions">';
         html += '<div class="sidebarDivider"></div>';
 
-        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="inbox" href="notificationlist.html"><iron-icon icon="inbox" class="sidebarLinkIcon"></iron-icon>';
+        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="inbox" onclick="LibraryMenu.onLinkClicked(this);return false;" href="notificationlist.html"><iron-icon icon="inbox" class="sidebarLinkIcon"></iron-icon>';
         html += Globalize.translate('ButtonInbox');
         html += '<div class="btnNotifications"><div class="btnNotificationsInner">0</div></div>';
         html += '</a>';
 
         if (user.localUser) {
-            html += '<a class="sidebarLink lnkMediaFolder lnkMySettings" data-itemid="mysync" href="mypreferencesdisplay.html?userId=' + user.localUser.Id + '"><iron-icon icon="settings" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSettings') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder lnkMySettings" onclick="LibraryMenu.onLinkClicked(this);return false;" data-itemid="mysync" href="mypreferencesdisplay.html?userId=' + user.localUser.Id + '"><iron-icon icon="settings" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSettings') + '</span></a>';
         }
 
-        html += '<a class="sidebarLink lnkMediaFolder lnkMySync" data-itemid="mysync" href="mysync.html"><iron-icon icon="refresh" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSync') + '</span></a>';
+        html += '<a class="sidebarLink lnkMediaFolder lnkMySync" data-itemid="mysync" onclick="LibraryMenu.onLinkClicked(this);return false;" href="mysync.html"><iron-icon icon="refresh" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSync') + '</span></a>';
 
         if (Dashboard.isConnectMode()) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" href="selectserver.html"><span class="fa fa-globe sidebarLinkIcon"></span><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="LibraryMenu.onLinkClicked(this);return false;" href="selectserver.html"><span class="fa fa-globe sidebarLinkIcon"></span><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
         }
 
         if (showUserAtTop()) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="logout" href="#" onclick="Dashboard.logout();"><iron-icon icon="lock" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSignOut') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="logout" onclick="LibraryMenu.onLinkClicked(this);return false;" href="#" onclick="Dashboard.logout();"><iron-icon icon="lock" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSignOut') + '</span></a>';
         }
 
         html += '</div>';
@@ -440,7 +440,7 @@
                     color = "#293AAE";
                 }
 
-                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder sidebarLink" href="' + getItemHref(i, i.CollectionType) + '"><iron-icon icon="' + icon + '" class="sidebarLinkIcon" style="color:' + color + '"></iron-icon><span class="sectionName">' + i.Name + '</span></a>';
+                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder sidebarLink" onclick="LibraryMenu.onLinkClicked(this);return false;" href="' + getItemHref(i, i.CollectionType) + '"><iron-icon icon="' + icon + '" class="sidebarLinkIcon" style="color:' + color + '"></iron-icon><span class="sectionName">' + i.Name + '</span></a>';
 
             }).join('');
 
@@ -479,6 +479,8 @@
 
     function onManageServerClicked() {
 
+        closeMainDrawer();
+
         requirejs(["scripts/registrationservices"], function () {
 
             RegistrationServices.validateFeature('manageserver').done(function () {
@@ -502,7 +504,16 @@
     window.LibraryMenu = {
         getTopParentId: getTopParentId,
 
-        setText: setLibraryMenuText
+        setText: setLibraryMenuText,
+
+        onLinkClicked: function (link) {
+
+            closeMainDrawer();
+
+            setTimeout(function () {
+                Dashboard.navigate(link.href);
+            }, 1000);
+        }
     };
 
     function updateCastIcon() {

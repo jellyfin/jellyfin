@@ -2,30 +2,24 @@
 
     function cancelJob(page, id) {
 
-        $('.jobMenu', page).on("popupafterclose.deleteuser", function () {
+        var msg = Globalize.translate('CancelSyncJobConfirmation');
 
-            $(this).off('popupafterclose.deleteuser');
+        Dashboard.confirm(msg, Globalize.translate('HeaderCancelSyncJob'), function (result) {
 
-            var msg = Globalize.translate('CancelSyncJobConfirmation');
+            if (result) {
+                Dashboard.showLoadingMsg();
 
-            Dashboard.confirm(msg, Globalize.translate('HeaderCancelSyncJob'), function (result) {
+                ApiClient.ajax({
 
-                if (result) {
-                    Dashboard.showLoadingMsg();
+                    url: ApiClient.getUrl('Sync/Jobs/' + id),
+                    type: 'DELETE'
 
-                    ApiClient.ajax({
+                }).done(function () {
 
-                        url: ApiClient.getUrl('Sync/Jobs/' + id),
-                        type: 'DELETE'
-
-                    }).done(function () {
-
-                        reloadData(page);
-                    });
-                }
-            });
-
-        }).popup('close');
+                    reloadData(page);
+                });
+            }
+        });
     }
 
     function getSyncJobHtml(page, job, cardBoxCssClass, syncJobPage) {
@@ -202,37 +196,46 @@
     function showJobMenu(elem) {
 
         var card = $(elem).parents('.card');
-        var page = $(elem).parents('.page');
-        var id = card.attr('data-id');
+        var jobId = card.attr('data-id');
         var status = card.attr('data-status');
 
-        $('.jobMenu', page).popup("close").remove();
-
-        var html = '<div data-role="popup" class="jobMenu tapHoldMenu" data-theme="a">';
-
-        html += '<ul data-role="listview" style="min-width: 180px;">';
-        html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
+        var menuItems = [];
 
         if (status == 'Cancelled') {
-            html += '<li data-icon="delete"><a href="#" class="btnCancelJob" data-id="' + id + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
+            menuItems.push({
+                name: Globalize.translate('ButtonDelete'),
+                id: 'delete',
+                ironIcon: 'delete'
+            });
         } else {
-            html += '<li data-icon="delete"><a href="#" class="btnCancelJob" data-id="' + id + '">' + Globalize.translate('ButtonCancel') + '</a></li>';
+            menuItems.push({
+                name: Globalize.translate('ButtonCancelSyncJob'),
+                id: 'cancel',
+                ironIcon: 'delete'
+            });
         }
 
-        html += '</ul>';
+        require(['actionsheet'], function () {
 
-        html += '</div>';
+            ActionSheetElement.show({
+                items: menuItems,
+                positionTo: elem,
+                callback: function (id) {
 
-        page.append(html);
+                    switch (id) {
 
-        var flyout = $('.jobMenu', page).popup({ positionTo: elem || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
+                        case 'delete':
+                            cancelJob(jobId);
+                            break;
+                        case 'cancel':
+                            cancelJob(jobId);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
 
-            $(this).off("popupafterclose").remove();
-
-        });
-
-        $('.btnCancelJob', flyout).on('click', function () {
-            cancelJob(page, this.getAttribute('data-id'));
         });
     }
 

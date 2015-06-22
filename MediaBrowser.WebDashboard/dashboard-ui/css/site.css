@@ -316,6 +316,11 @@ body {
     background-color: transparent !important;
 }
 
+/* Without this, no content will be displayed in mobile safari */
+.pageContainer {
+    overflow-x: visible !important;
+}
+
 .bodyWithPopupOpen {
     overflow-y: hidden !important;
 }
@@ -712,7 +717,7 @@ h1 .imageLink {
 
 .sidebarLinkIcon {
     font-size: 20px;
-    width: 72px!important;
+    width: 72px !important;
     text-align: center;
     vertical-align: middle;
     color: #7f7f7f;

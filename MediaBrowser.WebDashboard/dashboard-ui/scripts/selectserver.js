@@ -218,33 +218,35 @@
 
         var card = $(elem).parents('.card');
         var page = $(elem).parents('.page');
-        var id = card.attr('data-id');
+        var serverId = card.attr('data-id');
         var connectserverid = card.attr('data-connectserverid');
 
-        $('.serverMenu', page).popup("close").remove();
+        var menuItems = [];
 
-        var html = '<div data-role="popup" class="serverMenu" data-theme="a">';
-
-        html += '<ul data-role="listview" style="min-width: 180px;">';
-        html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
-
-        html += '<li><a href="#" class="btnDelete" data-connectserverid="' + connectserverid + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
-
-        html += '</ul>';
-
-        html += '</div>';
-
-        page.append(html);
-
-        var flyout = $('.serverMenu', page).popup({ positionTo: elem || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
-
-            $(this).off("popupafterclose").remove();
-
+        menuItems.push({
+            name: Globalize.translate('ButtonDelete'),
+            id: 'delete',
+            ironIcon: 'delete'
         });
 
-        $('.btnDelete', flyout).on('click', function () {
-            deleteServer(page, this.getAttribute('data-connectserverid'));
-            $('.serverMenu', page).popup("close").remove();
+        require(['actionsheet'], function () {
+
+            ActionSheetElement.show({
+                items: menuItems,
+                positionTo: elem,
+                callback: function (id) {
+
+                    switch (id) {
+
+                        case 'delete':
+                            deleteServer(page, connectserverid);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+
         });
     }
 

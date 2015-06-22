@@ -262,7 +262,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                         html = html.Replace("<html>", "<html lang=\"" + lang + "\">")
                             .Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div main><div class=\"pageContainer\">")
-                            .Replace("</body>", "</div></div></body>");
+                            .Replace("</body>", "</div></div></paper-drawer-panel></body>");
                     }
 
                     if (enableMinification)
@@ -666,7 +666,6 @@ namespace MediaBrowser.WebDashboard.Api
                                       "pluginupdates.css",
                                       "remotecontrol.css",
                                       "userimage.css",
-                                      "livetv.css",
                                       "nowplaying.css",
                                       "materialize.css"
                                   };

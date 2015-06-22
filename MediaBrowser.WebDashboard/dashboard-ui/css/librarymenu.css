@@ -41,10 +41,16 @@
     position: static !important;
     width: auto !important;
     height: auto !important;
+    touch-action: auto !important;
 }
 
 .mainDrawerPanelPreInit #drawer {
     display: none !important;
+}
+
+.mainDrawerPanelPreInit #main {
+    left: 0 !important;
+    position: static !important;
 }
 
 .mainDrawerPanel #drawer {
@@ -55,11 +61,20 @@
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
     overflow-x: hidden;
+    /* Need to reset this because it causes the entire panel to be draggable in safari */
+    box-sizing: initial !important;
 }
 
 .mainDrawerPanel #main {
     left: 0 !important;
     position: static !important;
+}
+
+.mainDrawerPanel #scrim {
+    /* Give it at least something to make it visible */
+    z-index: 1000;
+    /* It defaults to absolute, not visible after scrolling */
+    position: fixed;
 }
 
 .mainDrawer {
@@ -290,7 +305,7 @@
 }
 
 .drawerUserPanel {
-    background: url(images/splash.jpg);
+    background: url(images/splash720.jpg);
     background-size: cover;
     background-position: center center;
     margin-bottom: 1em;
@@ -300,7 +315,7 @@
 }
 
 .drawerUserPanelInner {
-    background-color: rgba(0, 0, 0, .75);
+    background-color: rgba(0, 0, 0, .70);
     position: absolute;
     top: 0;
     right: 0;
@@ -325,7 +340,7 @@
 
 .drawerUserPanelUserName {
     padding-top: 1.5em;
-    padding-left: .25em;
+    padding-left: .35em;
 }
 
 .libraryDocument .dashboardDrawerContent {

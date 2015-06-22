@@ -70,11 +70,11 @@
         color: #fff;
     }
 
-    paper-button.cancel {
+    .ui-page-theme-b paper-button.cancel {
         color: #444;
     }
 
-    paper-button[raised].cancel {
+   .ui-page-theme-b  paper-button[raised].cancel {
         background: #444;
         color: #fff;
     }
