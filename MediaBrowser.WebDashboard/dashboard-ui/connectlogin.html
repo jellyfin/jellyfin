@@ -3,7 +3,7 @@
 <head>
     <title>${TitleSignIn}</title>
 </head>
-<body class="serverlessPage">
+<body>
     <div id="connectLoginPage" data-role="page" class="page standalonePage connectLoginPage" data-theme="b" data-require="scripts/connectlogin,paperbuttonstyle">
 
         <div data-role="content">
@@ -23,9 +23,8 @@
                     <input type="password" id="txtManualPassword" required="required" />
                 </div>
 
-                <button type="submit" style="display:none" class="btnSubmitConnectLoginForm"></button>
                 <button type="submit" data-role="none" class="clearButton">
-                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSignIn}</span></paper-button>
+                    <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignIn}</span></paper-button>
                 </button>
                 <p class="forgotPassword">
                     <a href="http://emby.media/community/index.php?app=core&module=global&section=lostpass" target="_blank" class="clearLink">
@@ -41,7 +40,7 @@
                 <div class="newUsers" style="margin-top:2em;">
                     <h2 style="text-align: left;">${HeaderNewUsers}</h2>
                     <a href="http://emby.media/community/index.php?app=core&module=global&section=register" target="_blank" class="clearLink">
-                        <paper-button raised class="secondary block btnSignupForConnect"><iron-icon icon="add"></iron-icon><span>${ButtonSignUp}</span></paper-button>
+                        <paper-button raised class="submit block btnSignupForConnect"><iron-icon icon="add"></iron-icon><span>${ButtonSignUp}</span></paper-button>
                     </a>
                 </div>
             </form>
@@ -62,9 +61,8 @@
                 </div>
                 <br />
 
-                <button type="submit" style="display:none" class="btnSubmitManualServerForm"></button>
                 <button type="submit" data-role="none" class="clearButton">
-                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonConnect}</span></paper-button>
+                    <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonConnect}</span></paper-button>
                 </button>
                 <paper-button raised class="cancel block btnCancelManualServer"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
             </form>
@@ -95,7 +93,7 @@
                 <br />
 
                 <button type="submit" data-role="none" class="clearButton">
-                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSignUp}</span></paper-button>
+                    <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignUp}</span></paper-button>
                 </button>
                 <paper-button raised class="cancel block btnCancelSignup"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
             </form>
@@ -108,7 +106,7 @@
                     <p style="margin:2em 0;" class="embyIntroDownloadMessage"></p>
 
 
-                    <paper-button raised class="submit block btnWelcomeNext iconRight"><iron-icon icon="arrow-forward"></iron-icon><span>${ButtonNext}</span></paper-button>
+                    <paper-button raised class="accent block btnWelcomeNext iconRight"><iron-icon icon="arrow-forward"></iron-icon><span>${ButtonNext}</span></paper-button>
                 </div>
             </div>
         </div>

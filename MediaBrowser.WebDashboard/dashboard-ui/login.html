@@ -17,11 +17,8 @@
 
                 <label for="txtManualPassword" style="text-align: left;">${LabelPassword}</label>
                 <input type="password" name="txtManualPassword" id="txtManualPassword" placeholder="password" />
-                <button type="submit" data-icon="check" style="display:none;" class="btnSubmitLoginForm">
-                    ${ButtonSignIn}
-                </button>
                 <button type="submit" data-role="none" class="clearButton">
-                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSignIn}</span></paper-button>
+                    <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignIn}</span></paper-button>
                 </button>
 
                 <paper-button raised class="cancel block btnCancel" onclick="LoginPage.cancelLogin();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>

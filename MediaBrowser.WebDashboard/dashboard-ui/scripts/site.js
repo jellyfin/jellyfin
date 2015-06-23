@@ -495,7 +495,7 @@ var Dashboard = {
 
         if (!elem.length) {
 
-            elem = $('<div class="modalLoading"></div>').appendTo(document.body);
+            elem = $('<div class="modalLoading" style="display:none;"></div>').appendTo(document.body);
 
         }
 
@@ -929,7 +929,7 @@ var Dashboard = {
             name: Globalize.translate('TabMetadata'),
             href: "metadata.html",
             selected: page.hasClass('metadataConfigurationPage'),
-            icon: 'details'
+            icon: 'insert-drive-file'
         }, {
             name: Globalize.translate('TabPlayback'),
             href: "playbackconfiguration.html",
@@ -1944,10 +1944,12 @@ var AppInfo = {};
         require(['filesystem']);
 
         if (Dashboard.isRunningInCordova()) {
-            require(['cordova/connectsdk', 'scripts/registrationservices', 'cordova/volume', 'cordova/back']);
+            require(['cordova/connectsdk', 'scripts/registrationservices', 'cordova/back']);
 
             if ($.browser.android) {
                 require(['cordova/android/androidcredentials', 'cordova/android/immersive', 'cordova/android/mediasession']);
+            } else {
+                require(['cordova/volume']);
             }
 
             if ($.browser.safari) {
@@ -2036,6 +2038,10 @@ var AppInfo = {};
         });
         define("livetvcss", [], function () {
             Dashboard.importCss('css/livetv.css');
+            return {};
+        });
+        define("detailtablecss", [], function () {
+            Dashboard.importCss('css/detailtable.css');
             return {};
         });
 

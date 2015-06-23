@@ -572,14 +572,14 @@
                 ApiClient.stopActiveEncodings(playSessionId).done(function () {
 
                     self.startTimeTicksOffset = newPositionTicks;
-                    mediaRenderer.setCurrentSrc(url);
+                    mediaRenderer.setCurrentSrc(url, self.currentItem, self.currentMediaSource);
 
                 });
 
                 self.updateTextStreamUrls(newPositionTicks || 0);
             } else {
                 self.startTimeTicksOffset = newPositionTicks;
-                mediaRenderer.setCurrentSrc(url);
+                mediaRenderer.setCurrentSrc(url, self.currentItem, self.currentMediaSource);
             }
         }
 
@@ -1669,7 +1669,7 @@
             // Set volume first to avoid an audible change
             mediaRenderer.volume(initialVolume);
             mediaRenderer.setPoster(self.getPosterUrl(item));
-            mediaRenderer.setCurrentSrc(audioUrl);
+            mediaRenderer.setCurrentSrc(audioUrl, item, mediaSource);
 
             $(mediaRenderer).on("volumechange.mediaplayerevent", function () {
 

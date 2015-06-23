@@ -420,10 +420,10 @@
                                 Dashboard.navigate('itemdetails.html?id=' + albumid);
                                 break;
                             case 'artist':
-                                Dashboard.navigate('tembynamedetails.html?context=music&id=' + artistid);
+                                Dashboard.navigate('itembynamedetails.html?context=music&id=' + artistid);
                                 break;
                             case 'play':
-                                MediaController.MediaController(itemId);
+                                MediaController.play(itemId);
                                 break;
                             case 'playallfromhere':
                                 $(card).parents('.itemsContainer').trigger('playallfromhere', [index]);
@@ -1075,6 +1075,11 @@
         return false;
     }
 
+    function resetImages(page) {
+
+        $('.cardImage', page).remove();
+    }
+
     $(document).on('pageinitdepends', ".libraryPage", function () {
 
         var page = this;
@@ -1127,6 +1132,11 @@
         hideSelections(page);
 
         $('.viewTabButton:first', page).trigger('click');
+
+    }).on('pagebeforehide', ".libraryPage", function () {
+
+        var page = this;
+        resetImages(page);
     });
 
     function renderUserDataChanges(card, userData) {

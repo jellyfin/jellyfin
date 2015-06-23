@@ -71,7 +71,7 @@
 
         html += "</ul>";
 
-        $('#divScheduledTasks', page).html(html).trigger('create');
+        $('.divScheduledTasks', page).html(html).trigger('create');
     }
 
     function getTaskProgressHtml(task) {
@@ -157,7 +157,7 @@
 
             elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').hide().data("icon", "action").attr("title", Globalize.translate('ButtonStart'));
 
-            elem.removeClass('ui-icon-stdeleteop').addClass('ui-icon-action');
+            elem.removeClass('ui-icon-delete').addClass('ui-icon-action');
         }
     }
 
@@ -183,7 +183,7 @@
 
         var page = this;
 
-        $('#divScheduledTasks', page).on('click', '.btnStartTask', function () {
+        $('.divScheduledTasks', page).on('click', '.btnStartTask', function () {
 
             var button = this;
             var id = button.getAttribute('data-taskid');
@@ -221,8 +221,6 @@
 
         $(ApiClient).off("websocketmessage", onWebSocketMessage).off("websocketopen", onWebSocketConnectionOpen);
         stopInterval();
-
-        $('#divScheduledTasks', page).off('click', '.btnStartTask').off('click', '.btnStopTask');
     });
 
 })(jQuery, document, window);

@@ -69,7 +69,7 @@
             html += '<div class="cardImage" style="text-align:center;">';
 
             var icon = server.Id == 'new' ? 'plus-circle' : 'server';
-            html += '<i class="fa fa-' + icon + '" style="color:#fff;vertical-align:middle;font-size:100px;"></i>';
+            html += '<i class="fa fa-' + icon + '" style="color:#fff;vertical-align:middle;font-size:100px;margin-top:40px;"></i>';
         }
 
         html += "</div>";
@@ -306,7 +306,7 @@
         html += '<a class="cardContent" href="' + href + '">';
 
         html += '<div class="cardImage" style="text-align:center;">';
-        html += '<i class="fa fa-globe" style="color:#fff;vertical-align:middle;font-size:100px;"></i>';
+        html += '<i class="fa fa-globe" style="color:#fff;vertical-align:middle;font-size:100px;margin-top:40px;"></i>';
         html += "</div>";
 
         // cardContent
@@ -385,15 +385,6 @@
 
             servers = servers.slice(0);
 
-            if (AppInfo.isNativeApp) {
-                servers.push({
-                    Name: Globalize.translate('ButtonNewServer'),
-                    Id: 'new',
-                    showOptions: false,
-                    href: 'connectlogin.html?mode=manualserver'
-                });
-            }
-
             renderServers(page, servers);
 
             Dashboard.hideLoadingMsg();
@@ -414,6 +405,12 @@
             $(page).addClass('libraryPage').addClass('noSecondaryNavPage').removeClass('standalonePage');
         } else {
             $(page).removeClass('libraryPage').removeClass('noSecondaryNavPage').addClass('standalonePage');
+        }
+
+        if (AppInfo.isNativeApp) {
+            $('.addServer', page).show();
+        } else {
+            $('.addServer', page).hide();
         }
     }
 

@@ -19,15 +19,6 @@
 
     var channelsPromise;
 
-    function showLoadingMessage(page) {
-
-        Dashboard.showModalLoadingMsg();
-    }
-
-    function hideLoadingMessage(page) {
-        Dashboard.hideModalLoadingMsg();
-    }
-
     function normalizeDateToTimeslot(date) {
 
         var minutesOffset = date.getMinutes() - cellCurationMinutes;
@@ -51,7 +42,7 @@
 
     function reloadGuide(page) {
 
-        showLoadingMessage(page);
+        Dashboard.showModalLoadingMsg();
 
         channelQuery.userId = Dashboard.getCurrentUserId();
 
@@ -77,7 +68,7 @@
 
                 renderGuide(page, date, channelsResult.Items, programsResult.Items);
 
-                hideLoadingMessage(page);
+                Dashboard.hideModalLoadingMsg();
 
             });
 
@@ -407,13 +398,15 @@
 
     function reloadPage(page) {
 
-        showLoadingMessage(page);
-
         $('.guideRequiresUnlock', page).hide();
 
         RegistrationServices.validateFeature('livetv').done(function () {
+            Dashboard.showModalLoadingMsg();
+
             reloadPageAfterValidation(page, 1000);
         }).fail(function () {
+
+            Dashboard.showModalLoadingMsg();
 
             var limit = 5;
             $('.guideRequiresUnlock', page).show();

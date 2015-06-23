@@ -311,7 +311,8 @@ body {
     overflow-y: scroll !important;
     font-size: 13px;
     font-family: Roboto, Arial, Helvetica, sans-serif;
-    -webkit-overflow-scrolling: touch;
+    /*Can't use this with safari or it causes some content to disappear*/
+    /*-webkit-overflow-scrolling: touch;*/
     /* Remove the white default from jqm */
     background-color: transparent !important;
 }

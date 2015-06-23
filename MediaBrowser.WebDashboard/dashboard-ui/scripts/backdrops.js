@@ -99,13 +99,7 @@
 
     function setDefault(page) {
 
-        var backdropContainer = $('.backdropContainer');
-
-        if (backdropContainer.length) {
-            backdropContainer.css('backgroundImage', 'url(css/images/splash.jpg)');
-        } else {
-            $(document.body).prepend('<div class="backdropContainer" style="background-image:url(css/images/splash.jpg);top:0;"></div>');
-        }
+        getElement().css('backgroundImage', 'url(css/images/splash.jpg)');
 
         $(page).addClass('backdropPage staticBackdropPage');
     }

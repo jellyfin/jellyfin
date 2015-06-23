@@ -746,7 +746,7 @@
         html += '<div class="players"></div>';
 
         html += '<br/>';
-        html += '<p><a href="nowplaying.html" data-transition="slideup" class="clearLink"><paper-button raised class="block"><iron-icon icon="tablet-android"></iron-icon><span>' + Globalize.translate('ButtonRemoteControl') + '</span></paper-button></a></p>';
+        html += '<p><a href="nowplaying.html" class="clearLink"><paper-button raised class="block"><iron-icon icon="tablet-android"></iron-icon><span>' + Globalize.translate('ButtonRemoteControl') + '</span></paper-button></a></p>';
 
         html += '</div>';
 

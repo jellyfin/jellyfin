@@ -449,7 +449,6 @@ namespace MediaBrowser.WebDashboard.Api
 
             await AppendResource(memoryStream, "bower_components/webcomponentsjs/webcomponents-lite.min.js", newLineBytes).ConfigureAwait(false);
 
-            // jQuery + jQuery mobile
             await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
             await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.min.js", newLineBytes).ConfigureAwait(false);
 
@@ -657,7 +656,6 @@ namespace MediaBrowser.WebDashboard.Api
                                       "mediaplayer-video.css",
                                       "librarymenu.css",
                                       "librarybrowser.css",
-                                      "detailtable.css",
                                       "card.css",
                                       "tileitem.css",
                                       "metadataeditor.css",

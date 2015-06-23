@@ -54,7 +54,7 @@
 }
 
 .mainDrawerPanel #drawer {
-    z-index: 1000 !important;
+    z-index: 1099 !important;
     position: fixed !important;
     bottom: 0;
     height: auto !important;
@@ -72,7 +72,7 @@
 
 .mainDrawerPanel #scrim {
     /* Give it at least something to make it visible */
-    z-index: 1000;
+    z-index: 1098;
     /* It defaults to absolute, not visible after scrolling */
     position: fixed;
 }

@@ -13,6 +13,13 @@
             return;
         }
 
+        var isLocalPlayer = MediaController.getPlayerInfo().isLocalPlayer || false;
+
+        // Local players do their own notifications
+        if (isLocalPlayer) {
+            return;
+        }
+
         // dummy this up
         if (eventName == 'init') {
             eventName = 'positionchange';
@@ -28,9 +35,11 @@
         var artist = parts.length == 1 ? '' : parts[0];
         var title = parts[parts.length - 1];
         var album = state.NowPlayingItem.Album || '';
-        var duration = state.NowPlayingItem.RunTimeTicks ? (state.NowPlayingItem.RunTimeTicks / 10000000) : 0;
-        var position = playState.PositionTicks ? (playState.PositionTicks / 10000000) : 0;
         var itemId = state.NowPlayingItem.Id;
+
+        // Convert to ms
+        var duration = state.NowPlayingItem.RunTimeTicks ? (state.NowPlayingItem.RunTimeTicks / 10000) : 0;
+        var position = playState.PositionTicks ? (playState.PositionTicks / 10000) : 0;
 
         var isPaused = playState.IsPaused || false;
         var canSeek = playState.CanSeek || false;
@@ -74,8 +83,6 @@
                 return;
             }
         }
-
-        var isLocalPlayer = MediaController.getPlayerInfo().isLocalPlayer || false;
 
         MainActivity.updateMediaSession(eventName, isLocalPlayer, itemId, title, artist, album, parseInt(duration), parseInt(position), url, canSeek, isPaused);
         lastUpdateTime = new Date().getTime();

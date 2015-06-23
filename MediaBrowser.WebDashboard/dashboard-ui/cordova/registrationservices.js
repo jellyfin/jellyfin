@@ -86,6 +86,7 @@
 
     function getInAppPurchaseElement(info) {
 
+        require(['paperbuttonstyle']);
         cancelInAppPurchase();
 
         var html = '';
@@ -125,14 +126,20 @@
             if (info.price) {
                 unlockText = Globalize.translate('ButtonUnlockPrice', info.price);
             }
-            html += '<button class="btn btnActionAccent btnAppUnlock" data-role="none" type="button"><span>' + unlockText + '</span><i class="fa fa-check"></i></button>';
+            html += '<p>';
+            html += '<paper-button raised class="secondary block btnAppUnlock"><iron-icon icon="check"></iron-icon><span>' + unlockText + '</span></paper-button>';
+            html += '</p>';
         }
 
         if (info.enableSupporterUnlock) {
-            html += '<button class="btn btnSignInSupporter" data-role="none" type="button"><span>' + Globalize.translate('ButtonUnlockWithSupporter') + '</span><i class="fa fa-check"></i></button>';
+            html += '<p>';
+            html += '<paper-button raised class="submit block btnSignInSupporter"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonUnlockWithSupporter') + '</span></paper-button>';
+            html += '</p>';
         }
 
-        html += '<button class="btn btnCancel" data-role="none" type="button"><span>' + Globalize.translate('ButtonCancel') + '</span><i class="fa fa-close"></i></button>';
+        html += '<p>';
+        html += '<paper-button raised class="cancelDark block btnCancel"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonCancel') + '</span></paper-button>';
+        html += '</p>';
 
         html += '</div>';
 
