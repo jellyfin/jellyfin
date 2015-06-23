@@ -1458,5 +1458,6 @@
     "LabelEmail": "Email:",
     "LabelUsername": "Username:",
     "HeaderSignUp": "Sign Up",
-    "LabelPasswordConfirm": "Password (confirm):"
+    "LabelPasswordConfirm": "Password (confirm):",
+    "ButtonAddServer": "Add Server"
 }
