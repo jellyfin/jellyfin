@@ -196,6 +196,6 @@
 }
 
 .btnCloseSearch {
-    padding: 0 5px;
-    outline: 0;
+    padding-top: 0;
+    padding-bottom: 0;
 }

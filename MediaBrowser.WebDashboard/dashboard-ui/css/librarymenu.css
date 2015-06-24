@@ -12,10 +12,6 @@
     margin: .5em 0;
 }
 
-.headerBackButton {
-    padding-right: 5px !important;
-}
-
 .headerButton {
     height: 50px;
     line-height: 50px;
@@ -32,8 +28,7 @@
 }
 
 .viewMenuBar .material-icons, .viewMenuBar .fa, .viewMenuBar paper-icon-button {
-    color: #e8e8e8;
-    font-size: 24px;
+    color: #f0f0f0;
     vertical-align: middle;
 }
 
@@ -125,16 +120,8 @@
         border-width: 0 !important;
     }
 
-.mainDrawerButton {
-    padding-left: 10px !important;
-}
-
 .hideMainDrawer .mainDrawerButton {
     display: none;
-}
-
-.barMenuInner {
-    padding: 6px 10px;
 }
 
 .barsMenuButton:hover {
@@ -149,8 +136,9 @@
     display: inline-block;
     vertical-align: middle;
     padding-left: 0 !important;
-    margin-left: -8px;
     cursor: default;
+    position: relative;
+    top: 1px;
 }
 
 .logoLibraryMenuButtonText {

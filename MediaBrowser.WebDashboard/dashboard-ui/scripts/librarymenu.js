@@ -8,30 +8,28 @@
         var html = '<div class="viewMenuBar ui-bar-b">';
 
         if (AppInfo.enableBackButton) {
-            html += '<button type="button" data-role="none" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-chevron-left"></div></button>';
+            html += '<paper-icon-button icon="chevron-left" class="headerButton headerButtonLeft headerBackButton"></paper-icon-button>';
         }
 
-        html += '<button type="button" data-role="none" title="Menu" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft">';
-        html += '<div class="barMenuInner fa fa-bars">';
-        html += '</div>';
-        html += '</button>';
+        html += '<paper-icon-button icon="menu" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"></paper-icon-button>';
 
         html += '<div class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</div>';
 
         html += '<div class="viewMenuSecondary">';
 
-        html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight hide" type="button" data-role="none"><div class="headerSelectedPlayer"></div><i class="material-icons btnCastImageDefault">cast</i><i class="material-icons btnCastImageActive">cast_connected</i></button>';
+        html += '<span class="headerSelectedPlayer"></span>';
+        html += '<paper-icon-button icon="cast" class="btnCast headerButton headerButtonRight hide"></paper-icon-button>';
 
-        html += '<button onclick="Search.showSearchPanel();" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton hide"><i class="material-icons">search</i></button>';
+        html += '<paper-icon-button icon="search" class="headerButton headerButtonRight headerSearchButton hide" onclick="Search.showSearchPanel();"></paper-icon-button>';
         html += '<div class="viewMenuSearch hide">';
         html += '<form class="viewMenuSearchForm">';
         html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
         html += '<div class="searchInputIcon fa fa-search"></div>';
-        html += '<button data-role="none" type="button" data-iconpos="notext" class="imageButton btnCloseSearch"><i class="fa fa-close"></i></button>';
+        html += '<paper-icon-button icon="close" class="btnCloseSearch"></paper-icon-button>';
         html += '</form>';
         html += '</div>';
 
-        html += '<button onclick="VoiceInputManager.startListening();" type="button" data-role="none" class="headerButton headerButtonRight headerVoiceButton hide"><i class="material-icons">mic</i></button>';
+        html += '<paper-icon-button icon="mic" class="headerButton headerButtonRight headerVoiceButton hide" onclick="VoiceInputManager.startListening();"></paper-icon-button>';
 
         if (!showUserAtTop()) {
             html += '<button class="headerButton headerButtonRight headerUserButton" type="button" data-role="none" onclick="Dashboard.showUserFlyout(this);">';
@@ -40,8 +38,7 @@
         }
 
         if (!$.browser.mobile && !AppInfo.isNativeApp) {
-            html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton hide" onclick="return LibraryMenu.onLinkClicked(this);"><i class="material-icons">settings</i></a>';
-            //html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton clearLink" style="display:none;"><paper-icon-button icon="settings"></paper-icon-button></a>';
+            html += '<paper-icon-button icon="settings" class="headerButton headerButtonRight dashboardEntryHeaderButton hide" onclick="Dashboard.navigate(\'dashboard.html\');"></paper-icon-button>';
         }
 
         html += '</div>';
@@ -311,7 +308,13 @@
 
         html += Dashboard.getToolsMenuHtml(page);
 
+        html = html.split('href=').join('onclick="return LibraryMenu.onLinkClicked(this);" href=');
+
         $('.dashboardDrawerContent', drawer).html(html);
+    }
+
+    function replaceAll(string, find, replace) {
+        return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
     }
 
     function refreshBottomUserInfoInDrawer(user, drawer) {
@@ -352,7 +355,7 @@
         }
 
         if (showUserAtTop()) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="logout" onclick="return LibraryMenu.onLinkClicked(this);" href="#" onclick="Dashboard.logout();"><iron-icon icon="lock" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSignOut') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="logout" onclick="return LibraryMenu.onLogoutClicked(this);" href="#"><iron-icon icon="lock" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSignOut') + '</span></a>';
         }
 
         html += '</div>';
@@ -516,6 +519,20 @@
             }
 
             return false;
+        },
+
+        onLogoutClicked: function () {
+            // There doesn't seem to be a way to detect if the drawer is in the process of opening, so try to handle that here
+            if ((new Date().getTime() - lastOpenTime) > 200) {
+
+                closeMainDrawer();
+
+                setTimeout(function () {
+                    Dashboard.logout();
+                }, 300);
+            }
+
+            return false;
         }
     };
 
@@ -525,12 +542,16 @@
 
         if (info.isLocalPlayer) {
 
-            $('.btnCast').addClass('btnDefaultCast').removeClass('btnActiveCast');
+            $('.btnCast').removeClass('btnActiveCast').each(function () {
+                this.icon = 'cast';
+            });
             $('.headerSelectedPlayer').html('');
 
         } else {
 
-            $('.btnCast').removeClass('btnDefaultCast').addClass('btnActiveCast');
+            $('.btnCast').addClass('btnActiveCast').each(function () {
+                this.icon = 'cast-connected';
+            });
 
             $('.headerSelectedPlayer').html((info.deviceName || info.name));
         }

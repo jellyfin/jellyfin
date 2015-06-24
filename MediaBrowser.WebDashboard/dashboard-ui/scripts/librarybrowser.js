@@ -2291,6 +2291,7 @@
 
         getUserDataButtonHtml: function (method, itemId, btnCssClass, icon, tooltip) {
 
+            return '<paper-icon-button data-itemid="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></paper-icon-button>';
             btnCssClass += " imageButton";
 
             return '<button data-itemid="' + itemId + '" class="' + btnCssClass + '" type="button" onclick="LibraryBrowser.' + method + '(this);return false;" title="' + tooltip + '" data-role="none"><i class="fa ' + icon + '"></i></button>';
@@ -2311,9 +2312,9 @@
 
                 if ((item.MediaType || item.IsFolder) && type != "TvChannel" && type != "MusicArtist" && item.MediaType != "Audio") {
                     if (userData.Played) {
-                        html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRatingOn', 'fa-check', tooltipPlayed);
+                        html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRatingOn', 'check', tooltipPlayed);
                     } else {
-                        html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating', 'fa-check', tooltipPlayed);
+                        html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating', 'check', tooltipPlayed);
                     }
                 }
             }
@@ -2322,24 +2323,24 @@
             var tooltipDislike = Globalize.translate('TooltipDislike');
 
             if (typeof userData.Likes == "undefined") {
-                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'fa-thumbs-down', tooltipDislike);
-                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'fa-thumbs-up', tooltipLike);
+                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'thumb-down', tooltipDislike);
+                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'thumb-up', tooltipLike);
             }
             else if (userData.Likes) {
-                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'fa-thumbs-down', tooltipDislike);
-                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'fa-thumbs-up', tooltipLike);
+                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'thumb-down', tooltipDislike);
+                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'thumb-up', tooltipLike);
             }
             else {
-                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'fa-thumbs-down', tooltipDislike);
-                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'fa-thumbs-up', tooltipLike);
+                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'thumb-down', tooltipDislike);
+                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'thumb-up', tooltipLike);
             }
 
             var tooltipFavorite = Globalize.translate('TooltipFavorite');
             if (userData.IsFavorite) {
 
-                html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating btnUserItemRatingOn', 'fa-heart', tooltipFavorite);
+                html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating btnUserItemRatingOn', 'favorite', tooltipFavorite);
             } else {
-                html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating', 'fa-heart', tooltipFavorite);
+                html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating', 'favorite', tooltipFavorite);
             }
 
             return html;

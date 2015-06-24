@@ -29,17 +29,17 @@
         html += '<div class="nowPlayingText"></div>';
 
         // The onclicks are needed due to the return false above
-        html += '<a class="mediaButton remoteControlButton imageButton" href="nowplaying.html" onclick="Dashboard.navigate(this.href, false, this.getAttribute(\'data-transition\'));return false;" title="' + Globalize.translate('ButtonRemoteControl') + '"><i class="fa fa-tablet"></i></a>';
-        html += '<a class="mediaButton playlistButton imageButton" href="nowplaying.html?tab=Playlist" onclick="Dashboard.navigate(this.href, false, this.getAttribute(\'data-transition\'));return false;" title="' + Globalize.translate('ButtonPlaylist') + '"><i class="fa fa-list"></i></a>';
+        html += '<paper-icon-button icon="tablet-android" onclick="Dashboard.navigate(\'nowplaying.html\', false);" class="mediaButton remoteControlButton"></paper-icon-button>';
+        html += '<paper-icon-button icon="view-list" onclick="Dashboard.navigate(\'nowplaying.html?tab=Playlist\', false);" class="mediaButton playlistButton"></paper-icon-button>';
 
-        html += '<button class="mediaButton previousTrackButton imageButton" title="' + Globalize.translate('ButtonPreviousTrack') + '" type="button" data-role="none"><i class="fa fa-step-backward"></i></button>';
+        html += '<paper-icon-button icon="skip-previous" class="previousTrackButton mediaButton"></paper-icon-button>';
 
-        html += '<button class="mediaButton unpauseButton imageButton" title="' + Globalize.translate('ButtonPlay') + '" type="button" data-role="none"><i class="fa fa-play"></i></button>';
-        html += '<button class="mediaButton pauseButton imageButton" title="' + Globalize.translate('ButtonPause') + '" type="button" data-role="none"><i class="fa fa-pause"></i></button>';
+        html += '<paper-icon-button icon="play-arrow" class="mediaButton unpauseButton"></paper-icon-button>';
+        html += '<paper-icon-button icon="pause" class="mediaButton pauseButton"></paper-icon-button>';
 
-        html += '<button class="mediaButton stopButton imageButton" title="' + Globalize.translate('ButtonStop') + '" type="button" data-role="none"><i class="fa fa-stop"></i></button>';
+        html += '<paper-icon-button icon="stop" class="stopButton mediaButton"></paper-icon-button>';
 
-        html += '<button class="mediaButton nextTrackButton imageButton" title="' + Globalize.translate('ButtonNextTrack') + '" type="button" data-role="none"><i class="fa fa-step-forward"></i></button>';
+        html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton"></paper-icon-button>';
 
         html += '<div id="mediaElement"></div>';
 
@@ -48,8 +48,8 @@
         html += '</div>';
 
         html += '<div class="currentTime"></div>';
-        html += '<button class="mediaButton muteButton imageButton" title="' + Globalize.translate('ButtonMute') + '" type="button" data-role="none"><i class="fa fa-volume-up"></i></button>';
-        html += '<button class="mediaButton unmuteButton imageButton" title="' + Globalize.translate('ButtonUnmute') + '" type="button" data-role="none"><i class="fa fa-volume-off"></i></button>';
+        html += '<paper-icon-button icon="volume-up" class="muteButton mediaButton"></paper-icon-button>';
+        html += '<paper-icon-button icon="volume-off" class="unmuteButton mediaButton"></paper-icon-button>';
 
         html += '<div class="volumeSliderContainer sliderContainer">';
         html += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
@@ -334,7 +334,7 @@
         nowPlayingTextElement.html(nameHtml);
 
         var url;
-        var imgHeight = 50;
+        var imgHeight = 60;
 
         var nowPlayingItem = state.NowPlayingItem;
 

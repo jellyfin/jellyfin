@@ -994,32 +994,13 @@ progress {
 /* Detail Page*/
 
 .btnUserItemRating {
-    margin-right: .85em;
-    cursor: pointer;
     vertical-align: middle;
     color: #aaa;
-    font-size: 17px;
-    width: auto !important;
     display: inline-block !important;
-    background: none !important;
-    border: 0 !important;
-    outline: 0 !important;
 }
-
-    .btnUserItemRating div {
-        border: 0;
-    }
 
 .btnUserItemRatingOn {
     color: #cc3333 !important;
-}
-
-.btnUserItemRating:last-child {
-    margin-right: 0;
-}
-
-.btnUserItemRating:hover {
-    opacity: .5;
 }
 
 .imgUserItemRating {

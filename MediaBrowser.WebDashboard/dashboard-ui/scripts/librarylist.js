@@ -863,11 +863,11 @@
             .off('.latestgroupings')
             .on('click.latestgroupings', '.groupedCard', onGroupedCardClick)
             .off('.dotmenu')
-            .on('click.dotmenu', '.listviewMenuButton', onListViewMenuButtonClick)
-            .off('.cardHoverMenu')
-            .on('mouseenter.cardHoverMenu', '.card:not(.bannerCard)', onHoverIn)
-            .on('mouseleave.cardHoverMenu', '.card:not(.bannerCard)', onHoverOut)
-            .on("touchstart.cardHoverMenu", '.card:not(.bannerCard)', preventTouchHover);
+            .on('click.dotmenu', '.listviewMenuButton', onListViewMenuButtonClick);
+
+        if (!AppInfo.isTouchPreferred) {
+            this.off('.cardHoverMenu').on('mouseenter.cardHoverMenu', '.card:not(.bannerCard)', onHoverIn).on('mouseleave.cardHoverMenu', '.card:not(.bannerCard)', onHoverOut).on("touchstart.cardHoverMenu", '.card:not(.bannerCard)', preventTouchHover);
+        }
 
         this.off('.mediaDetails').on('click.mediaDetails', '.mediaItem', onCardClick);
 

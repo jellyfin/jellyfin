@@ -142,10 +142,8 @@
 
         html += '<div class="cardFooter">';
 
-        html += '<div class="cardText" style="text-align:right; float:right;font-size:20px;">';
-        html += '<button type="button" data-role="none" class="btnUserMenu imageButton">';
-        html += '<i class="material-icons">more_vert</i>';
-        html += '</button>';
+        html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
+        html += '<paper-icon-button icon="more-vert" class="btnUserMenu"></paper-icon-button>';
         html += "</div>";
 
         html += '<div class="cardText" style="padding-top:10px;padding-bottom:10px;">';

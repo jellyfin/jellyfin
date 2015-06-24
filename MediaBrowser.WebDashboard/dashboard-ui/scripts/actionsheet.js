@@ -19,7 +19,7 @@
 
             // If the window height is under a certain amount, don't bother trying to position
             // based on an element.
-            if (options.positionTo && windowHeight > 600) {
+            if (options.positionTo && windowHeight >= 540) {
 
                 var pos = $(options.positionTo).offset();
 
@@ -93,6 +93,13 @@
 
             setTimeout(function () {
                 var dlg = document.getElementById(id);
+
+                if (options.visibleBackground) {
+                    $(dlg).on('iron-overlay-opened', function(e) {
+                        $('iron-overlay-backdrop').addClass('visibleBackground');
+                    });
+                }
+
                 dlg.open();
 
                 // Has to be assigned a z-index after the call to .open() 
