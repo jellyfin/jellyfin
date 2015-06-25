@@ -1,14 +1,14 @@
-﻿(function ($, window, store) {
+﻿(function ($, window) {
 
     function setMirrorModeEnabled(enabled) {
 
         var val = enabled ? '1' : '0';
 
-        store.setItem('displaymirror--' + Dashboard.getCurrentUserId(), val);
+        appStorage.setItem('displaymirror--' + Dashboard.getCurrentUserId(), val);
 
     }
     function isMirrorModeEnabled() {
-        return (store.getItem('displaymirror--' + Dashboard.getCurrentUserId()) || '') != '0';
+        return (appStorage.getItem('displaymirror--' + Dashboard.getCurrentUserId()) || '') != '0';
     }
 
     var currentDisplayInfo;
@@ -891,4 +891,4 @@
         mirrorIfEnabled(info);
     });
 
-})(jQuery, window, window.appStorage);
+})(jQuery, window);

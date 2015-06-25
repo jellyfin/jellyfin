@@ -120,9 +120,12 @@
             return false;
         };
 
-        self.destroy = function () {
+        self.cleanup = function (destroyRenderer) {
 
-            AndroidVlcPlayer.destroyVlc();
+            if (destroyRenderer !== false) {
+                AndroidVlcPlayer.destroyVlc();
+            }
+
             playerState = {};
         };
 

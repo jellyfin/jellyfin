@@ -362,7 +362,8 @@ namespace MediaBrowser.Api
             var first = pathInfo.GetArgumentValue<string>(0);
 
             // backwards compatibility
-            if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(first, "mediabrowser", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(first, "emby", StringComparison.OrdinalIgnoreCase))
             {
                 index++;
             }

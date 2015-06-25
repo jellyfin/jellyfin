@@ -128,7 +128,7 @@
 
             var elem = $('.itemVideo');
 
-            return $(elem)
+            return elem
             	.one('.loadedmetadata')
             	.one('playing', onOneVideoPlaying)
 	            .on('timeupdate', onTimeUpdate)
@@ -146,11 +146,11 @@
 
             if (mediaElement) {
                 if (val != null) {
-                    mediaElement.currentTime = val;
+                    mediaElement.currentTime = val / 1000;
                     return;
                 }
 
-                return mediaElement.currentTime;
+                return (mediaElement.currentTime || 0) * 1000;
             }
         };
 
@@ -239,7 +239,7 @@
             return false;
         };
 
-        self.destroy = function () {
+        self.cleanup = function (destroyRenderer) {
 
             self.setCurrentSrc(null);
 

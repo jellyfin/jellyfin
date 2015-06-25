@@ -203,10 +203,13 @@
 
             updateLibraryNavLinks($.mobile.activePage);
         });
+
+        $('.mainDrawerPanel #drawer').addClass('verticalScrollingDrawer');
     }
     function onMainDrawerClosed() {
 
         $(document.body).removeClass('bodyWithPopupOpen');
+        $('.mainDrawerPanel #drawer').removeClass('verticalScrollingDrawer');
     }
     function closeMainDrawer() {
 

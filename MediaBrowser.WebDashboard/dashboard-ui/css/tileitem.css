@@ -78,12 +78,3 @@
         width: 30.5%;
     }
 }
-
-.posterItemText {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    text-wrap: none;
-    white-space: nowrap;
-    padding: 5px 4px 4px;
-    font-weight: 400;
-}

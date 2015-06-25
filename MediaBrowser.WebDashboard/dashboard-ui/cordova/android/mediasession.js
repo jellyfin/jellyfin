@@ -3,8 +3,11 @@
     // Reports media playback to the device for lock screen control
 
     var currentPlayer;
-    var lastPlayerState;
     var lastUpdateTime = 0;
+
+    function allowLocalPlayer() {
+        return false;
+    }
 
     function updatePlayerState(state, eventName) {
 
@@ -16,7 +19,7 @@
         var isLocalPlayer = MediaController.getPlayerInfo().isLocalPlayer || false;
 
         // Local players do their own notifications
-        if (isLocalPlayer) {
+        if (isLocalPlayer && !allowLocalPlayer()) {
             return;
         }
 
@@ -24,8 +27,6 @@
         if (eventName == 'init') {
             eventName = 'positionchange';
         }
-
-        lastPlayerState = state;
 
         var playState = state.PlayState || {};
 
@@ -134,6 +135,10 @@
     function bindToPlayer(player) {
 
         releaseCurrentPlayer();
+
+        if (player.isLocalPlayer && !allowLocalPlayer()) {
+            return;
+        }
 
         currentPlayer = player;
 

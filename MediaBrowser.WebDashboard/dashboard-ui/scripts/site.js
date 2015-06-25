@@ -589,39 +589,39 @@ var Dashboard = {
 
     confirmInternal: function (message, title, showCancel, callback) {
 
-        $('.confirmFlyout').popup("close").remove();
+        require(['paperbuttonstyle'], function () {
 
-        var html = '<div data-role="popup" class="confirmFlyout" style="max-width:500px;" data-theme="a">';
+            var id = 'paperdlg' + new Date().getTime();
 
-        html += '<div class="ui-bar-a" style="text-align:center;">';
-        html += '<h3 style="padding: 0 1em;">' + title + '</h3>';
-        html += '</div>';
+            var html = '<paper-dialog id="' + id + '" role="alertdialog" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop>';
+            html += '<h2>' + title + '</h2>';
+            html += '<div>' + message + '</div>';
+            html += '<div class="buttons">';
 
-        html += '<div style="padding: 1em;">';
-
-        html += '<div style="padding: 1em .25em;margin: 0;">';
-        html += message;
-        html += '</div>';
-
-        html += '<p><button type="button" data-icon="check" onclick="$(\'.confirmFlyout\')[0].confirm=true;$(\'.confirmFlyout\').popup(\'close\');" data-theme="b">' + Globalize.translate('ButtonOk') + '</button></p>';
-
-        if (showCancel) {
-            html += '<p><button type="button" data-icon="delete" onclick="$(\'.confirmFlyout\').popup(\'close\');" data-theme="a">' + Globalize.translate('ButtonCancel') + '</button></p>';
-        }
-
-        html += '</div>';
-
-        html += '</div>';
-
-        $(document.body).append(html);
-
-        $('.confirmFlyout').popup({ history: false }).trigger('create').popup("open").on("popupafterclose", function () {
-
-            if (callback) {
-                callback(this.confirm == true);
+            if (showCancel) {
+                html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonCancel') + '</paper-button>';
             }
 
-            $(this).off("popupafterclose").remove();
+            html += '<paper-button dialog-confirm autofocus>' + Globalize.translate('ButtonOk') + '</paper-button>';
+
+            html += '</div>';
+            html += '</paper-dialog>';
+
+            $(document.body).append(html);
+
+            // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
+            // element onload never fires
+            setTimeout(function () {
+
+                var dlg = document.getElementById(id);
+
+                dlg.open();
+
+                // Has to be assigned a z-index after the call to .open() 
+                $(dlg).on('iron-overlay-closed', function (e) {
+                    $(this).remove();
+                });
+            }, 300);
         });
     },
 
@@ -1914,6 +1914,8 @@ var AppInfo = {};
 
         $(document.body).append(footerHtml);
 
+        $(Dashboard).trigger('footercreated');
+
         $(window).on("beforeunload", function () {
 
             var apiClient = window.ApiClient;
@@ -2044,6 +2046,10 @@ var AppInfo = {};
             Dashboard.importCss('css/detailtable.css');
             return {};
         });
+        define("tileitemcss", [], function () {
+            Dashboard.importCss('css/tileitem.css');
+            return {};
+        });
 
         if (Dashboard.isRunningInCordova() && $.browser.safari) {
             define("actionsheet", ["cordova/ios/actionsheet"]);
@@ -2061,7 +2067,7 @@ var AppInfo = {};
             drawer.forceNarrow = true;
             drawer.drawerWidth = screen.availWidth >= 330 ? "310px" : "270px";
 
-            if ($.browser.safari && !AppInfo.isNativeApp) {
+            if ($.browser.safari) {
                 drawer.disableEdgeSwipe = true;
             }
 

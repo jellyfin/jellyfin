@@ -657,8 +657,6 @@ namespace MediaBrowser.WebDashboard.Api
                                       "librarymenu.css",
                                       "librarybrowser.css",
                                       "card.css",
-                                      "tileitem.css",
-                                      "metadataeditor.css",
                                       "notifications.css",
                                       "search.css",
                                       "pluginupdates.css",

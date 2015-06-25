@@ -13440,6 +13440,13 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
                         this._setPeeking(false);
                     }
 
+                    var dy = event.detail.dy;
+                    var absDy = Math.abs(dy);
+
+                    if (absDy >= 70) {
+                        // Ignore trackx until we move past the edge peek.
+                        return;
+                    }
                     this._moveDrawer(this._translateXForDeltaX(dx));
                 }
             },
@@ -13453,10 +13460,14 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
                     sharedPanel = null;
                     this._moveDrawer(null);
 
+                    var dx = event.detail.dx;
+                    var dy = event.detail.dy;
+                    var absDy = Math.abs(dy);
+
                     if (this.rightDrawer) {
                         this[xDirection ? 'closeDrawer' : 'openDrawer']();
                     } else {
-                        this[xDirection || event.detail.dx > -80 ? 'openDrawer' : 'closeDrawer']();
+                        this[xDirection || dx > -80 || absDy >= 70 ? 'openDrawer' : 'closeDrawer']();
                     }
                 }
             },

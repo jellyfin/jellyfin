@@ -94,12 +94,6 @@
             setTimeout(function () {
                 var dlg = document.getElementById(id);
 
-                if (options.visibleBackground) {
-                    $(dlg).on('iron-overlay-opened', function(e) {
-                        $('iron-overlay-backdrop').addClass('visibleBackground');
-                    });
-                }
-
                 dlg.open();
 
                 // Has to be assigned a z-index after the call to .open() 

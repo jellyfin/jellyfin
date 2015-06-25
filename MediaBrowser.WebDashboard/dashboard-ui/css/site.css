@@ -749,10 +749,6 @@ h1 .imageLink {
     padding-bottom: 160px;
 }
 
-.dashboardPanel .ui-panel-inner {
-    padding: 0;
-}
-
 .appLinks a {
     text-decoration: none !important;
 }

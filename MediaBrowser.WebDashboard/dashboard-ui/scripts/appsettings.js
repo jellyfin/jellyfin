@@ -1,7 +1,7 @@
-﻿(function (window, store) {
+﻿(function (window) {
 
     function update(key, val) {
-        store.setItem(key, val);
+        appStorage.setItem(key, val);
 
         Events.trigger(AppSettings, 'settingupdated', [key]);
     }
@@ -14,7 +14,7 @@
                 update('preferredVideoBitrate', val);
             }
 
-            return parseInt(store.getItem('preferredVideoBitrate') || '') || 1500000;
+            return parseInt(appStorage.getItem('preferredVideoBitrate') || '') || 1500000;
         },
         maxChromecastBitrate: function (val) {
 
@@ -22,7 +22,7 @@
                 update('chromecastBitrate', val);
             }
 
-            return parseInt(store.getItem('chromecastBitrate') || '') || 3000000;
+            return parseInt(appStorage.getItem('chromecastBitrate') || '') || 3000000;
         },
         enableChromecastAc3: function (val) {
 
@@ -30,7 +30,7 @@
                 update('enablechromecastac3', val.toString());
             }
 
-            return store.getItem('enablechromecastac3') == 'true';
+            return appStorage.getItem('enablechromecastac3') == 'true';
         },
         enableExternalPlayers: function (val) {
 
@@ -38,7 +38,7 @@
                 update('externalplayers', val.toString());
             }
 
-            return store.getItem('externalplayers') == 'true';
+            return appStorage.getItem('externalplayers') == 'true';
         },
         enableItemPreviews: function (val) {
 
@@ -46,7 +46,7 @@
                 update('enableItemPreviews', val.toString());
             }
 
-            return store.getItem('enableItemPreviews') == 'true';
+            return appStorage.getItem('enableItemPreviews') == 'true';
         },
         enableFullScreen: function (val) {
 
@@ -54,7 +54,7 @@
                 update('enableFullScreen', val.toString());
             }
 
-            return store.getItem('enableFullScreen') == 'true';
+            return appStorage.getItem('enableFullScreen') == 'true';
         },
         syncPath: function (val) {
 
@@ -62,10 +62,10 @@
                 update('syncPath', val.toString());
             }
 
-            return store.getItem('syncPath');
+            return appStorage.getItem('syncPath');
         }
 
     };
 
 
-})(window, window.appStorage);
+})(window);

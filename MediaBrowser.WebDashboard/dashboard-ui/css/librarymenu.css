@@ -53,11 +53,17 @@
     position: fixed !important;
     bottom: 0;
     height: auto !important;
+    /* Need to reset this because it causes the entire panel to be draggable in safari */
+    box-sizing: initial !important;
+}
+
+.verticalScrollingDrawer {
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
     overflow-x: hidden;
-    /* Need to reset this because it causes the entire panel to be draggable in safari */
-    box-sizing: initial !important;
+}
+
+.dragging .mainDrawerPanel #drawer {
 }
 
 .mainDrawerPanel #main {

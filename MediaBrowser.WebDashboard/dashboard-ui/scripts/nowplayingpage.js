@@ -366,10 +366,10 @@
             }
         });
 
-        $(page).on('swipedown', function () {
+        //$(page).on('swipedown', function () {
 
-            history.back();
-        });
+        //    history.back();
+        //});
 
         $(page).on('click', '.lnkPlayFromIndex', function () {
 
@@ -396,6 +396,7 @@
         player.beginPlayerUpdates();
 
         onStateChanged.call(player, e, state);
+        loadPlaylist($.mobile.activePage);
     }
 
     function onPlaybackStopped(e, state) {
@@ -405,6 +406,7 @@
         player.endPlayerUpdates();
 
         onStateChanged.call(player, e, {});
+        loadPlaylist($.mobile.activePage);
     }
 
     function onStateChanged(e, state) {
@@ -632,13 +634,13 @@
 
         var expected = '2';
 
-        if (appStorage.getItem('remotecontrolswipedown') != expected) {
-            Dashboard.alert({
-                message: Globalize.translate('MessageSwipeDownOnRemoteControl'),
-                title: Globalize.translate('HeaderAlert')
-            });
-            appStorage.setItem('remotecontrolswipedown', expected);
-        }
+        //if (appStorage.getItem('remotecontrolswipedown') != expected) {
+        //    Dashboard.alert({
+        //        message: Globalize.translate('MessageSwipeDownOnRemoteControl'),
+        //        title: Globalize.translate('HeaderAlert')
+        //    });
+        //    appStorage.setItem('remotecontrolswipedown', expected);
+        //}
 
     }
 

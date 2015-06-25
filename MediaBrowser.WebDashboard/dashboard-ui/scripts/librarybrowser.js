@@ -1,11 +1,11 @@
-﻿var LibraryBrowser = (function (window, document, $, screen, store) {
+﻿var LibraryBrowser = (function (window, document, $, screen) {
 
     var pageSizeKey = 'pagesize_v4';
 
     return {
         getDefaultPageSize: function (key, defaultValue) {
 
-            var saved = store.getItem(key || pageSizeKey);
+            var saved = appStorage.getItem(key || pageSizeKey);
 
             if (saved) {
                 return parseInt(saved);
@@ -29,7 +29,7 @@
 
         loadSavedQueryValues: function (key, query) {
 
-            var values = store.getItem(key + '_' + Dashboard.getCurrentUserId());
+            var values = appStorage.getItem(key + '_' + Dashboard.getCurrentUserId());
 
             if (values) {
 
@@ -53,7 +53,7 @@
             }
 
             try {
-                store.setItem(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
+                appStorage.setItem(key + '_' + Dashboard.getCurrentUserId(), JSON.stringify(values));
             } catch (e) {
 
             }
@@ -62,7 +62,7 @@
         saveViewSetting: function (key, value) {
 
             try {
-                store.setItem(key + '_' + Dashboard.getCurrentUserId() + '_view', value);
+                appStorage.setItem(key + '_' + Dashboard.getCurrentUserId() + '_view', value);
             } catch (e) {
 
             }
@@ -71,7 +71,7 @@
         getSavedViewSetting: function (key) {
 
             var deferred = $.Deferred();
-            var val = store.getItem(key + '_' + Dashboard.getCurrentUserId() + '_view');
+            var val = appStorage.getItem(key + '_' + Dashboard.getCurrentUserId() + '_view');
 
             deferred.resolveWith(null, [val]);
             return deferred.promise();
@@ -469,6 +469,7 @@
 
                 ActionSheetElement.show({
                     items: items,
+                    positionTo: positionTo,
                     callback: function (id) {
 
                         switch (id) {
@@ -2159,7 +2160,7 @@
 
             if (limit && options.updatePageSizeSetting !== false) {
                 try {
-                    store.setItem(options.pageSizeKey || pageSizeKey, limit);
+                    appStorage.setItem(options.pageSizeKey || pageSizeKey, limit);
                 } catch (e) {
 
                 }
@@ -3023,4 +3024,4 @@
         }
     };
 
-})(window, document, jQuery, screen, window.appStorage);
+})(window, document, jQuery, screen);

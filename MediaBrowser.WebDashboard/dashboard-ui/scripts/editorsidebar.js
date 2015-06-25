@@ -423,6 +423,10 @@
 
         });
 
+    }).on('pageinitdepends', ".metadataEditorPage", function () {
+
+        Dashboard.importCss('css/metadataeditor.css');
+
     }).on('pagebeforehide', ".metadataEditorPage", function () {
 
         var page = this;

@@ -1,4 +1,4 @@
-﻿(function (window, store) {
+﻿(function (window) {
 
     function getDeviceProfile(serverAddress, deviceId, item, startPositionTicks, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex) {
 
@@ -484,4 +484,4 @@
         showPlayerSelectionMenu: showPlayerSelectionMenu
     };
 
-})(window, window.appStorage);
+})(window);

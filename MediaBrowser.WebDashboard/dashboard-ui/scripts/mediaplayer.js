@@ -1,4 +1,4 @@
-(function (document, setTimeout, clearTimeout, screen, store, $, setInterval, window) {
+(function (document, setTimeout, clearTimeout, screen, $, setInterval, window) {
 
     function mediaPlayer() {
 
@@ -431,7 +431,7 @@
 
         self.getCurrentTicks = function (mediaRenderer) {
 
-            var playerTime = Math.floor(10000000 * (mediaRenderer || self.currentMediaRenderer).currentTime());
+            var playerTime = Math.floor(10000 * (mediaRenderer || self.currentMediaRenderer).currentTime());
 
             playerTime += self.startTimeTicksOffset;
 
@@ -510,7 +510,7 @@
 
             if (canClientSeek && params == null) {
 
-                mediaRenderer.currentTime(ticks / (1000 * 10000));
+                mediaRenderer.currentTime(ticks / 10000);
                 return;
             }
 
@@ -855,7 +855,7 @@
             }
 
             if (self.isPlaying()) {
-                self.stop();
+                self.stop(false);
             }
 
             if (item.MediaType !== 'Audio' && item.MediaType !== 'Video') {
@@ -1220,13 +1220,13 @@
         self.saveVolume = function (val) {
 
             if (val) {
-                store.setItem("volume", val);
+                appStorage.setItem("volume", val);
             }
 
         };
 
         self.getSavedVolume = function () {
-            return store.getItem("volume") || 0.5;
+            return appStorage.getItem("volume") || 0.5;
         };
 
         self.shuffle = function (id) {
@@ -1344,7 +1344,7 @@
 
         };
 
-        self.stop = function () {
+        self.stop = function (destroyRenderer) {
 
             var mediaRenderer = self.currentMediaRenderer;
 
@@ -1356,7 +1356,8 @@
 
                     $(this).off();
 
-                    this.destroy();
+                    this.cleanup(destroyRenderer);
+
                     self.currentMediaRenderer = null;
                     self.currentItem = null;
                     self.currentMediaSource = null;
@@ -1728,4 +1729,4 @@
     });
 
 
-})(document, setTimeout, clearTimeout, screen, window.appStorage, $, setInterval, window);
+})(document, setTimeout, clearTimeout, screen, $, setInterval, window);

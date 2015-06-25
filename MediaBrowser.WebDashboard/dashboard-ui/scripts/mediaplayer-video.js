@@ -494,13 +494,13 @@
             $('.videoSubtitlePopup').popup('close');
         };
 
-        $(function () {
+        $(Dashboard).on('footercreated', function () {
 
             var parent = $("#mediaPlayer");
+
             muteButton = $('.muteButton', parent);
             unmuteButton = $('.unmuteButton', parent);
             currentTimeElement = $('.currentTime', parent);
-
             positionSlider = $(".positionSlider", parent).on('slidestart', function (e) {
 
                 isPositionSliderActive = true;
