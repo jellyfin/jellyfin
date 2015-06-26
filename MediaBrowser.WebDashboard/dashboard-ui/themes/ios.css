@@ -1,8 +1,13 @@
-﻿html, body {
+﻿html {
     font-family: Helvetica Neue;
     /* Setting it here will help prevent white flashes */
     background-color: #1c1c1c;
 }
+
+html, body {
+    font-family: Helvetica Neue;
+}
+
 
 .viewMenuBar, .libraryViewNav {
     background-color: rgba(28,28,28,.97);

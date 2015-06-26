@@ -703,34 +703,40 @@
         $('.sendMessageForm').off('submit', NowPlayingPage.onMessageSubmit).on('submit', NowPlayingPage.onMessageSubmit);
         $('.typeTextForm').off('submit', NowPlayingPage.onSendStringSubmit).on('submit', NowPlayingPage.onSendStringSubmit);
 
-        $('iron-pages,neon-animatable', this).trigger('create');
+        $('.requiresJqmCreate', this).trigger('create');
 
         $(page).on('swipeleft', function () {
 
             var pages = this.querySelectorAll('neon-animated-pages')[0];
+            var tabs = this.querySelectorAll('paper-tabs')[0];
 
             var selected = parseInt(pages.selected || '0');
             if (selected < 2) {
                 pages.entryAnimation = 'slide-from-right-animation';
                 pages.exitAnimation = 'slide-left-animation';
-                pages.selectNext();
+                tabs.selectNext();
             }
         });
 
         $(page).on('swiperight', function () {
 
             var pages = this.querySelectorAll('neon-animated-pages')[0];
+            var tabs = this.querySelectorAll('paper-tabs')[0];
 
             var selected = parseInt(pages.selected || '0');
             if (selected > 0) {
                 pages.entryAnimation = 'slide-from-left-animation';
                 pages.exitAnimation = 'slide-right-animation';
-                pages.selectPrevious();
+                tabs.selectPrevious();
             }
         });
 
         $(MediaController).on('playerchange', function () {
             updateCastIcon(page);
+        });
+
+        $('paper-tabs').on('iron-select', function () {
+            page.querySelectorAll('neon-animated-pages')[0].selected = this.selected;
         });
 
     }).on('pagebeforeshowready', "#nowPlayingPage", function () {
@@ -755,7 +761,8 @@
         loadPlaylist(page);
 
         var tab = getParameterByName('tab');
-        this.querySelectorAll('#scope')[0].selected = tab == 'Playlist' ? 2 : 0;
+        var selected = tab == 'Playlist' ? 2 : 0;;
+        this.querySelectorAll('paper-tabs')[0].selected = selected;
 
         updateCastIcon(page);
 
