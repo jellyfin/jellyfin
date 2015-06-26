@@ -13,3 +13,7 @@
 .defaultBackground .cardImage {
     background-color: #383838;
 }
+
+.ui-page-theme-b .visualCardBox {
+    background: rgba(56,56,56,.85);
+}

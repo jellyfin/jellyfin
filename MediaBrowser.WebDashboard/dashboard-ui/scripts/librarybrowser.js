@@ -939,9 +939,10 @@
                 html += '<span class="listViewAsideText">';
                 html += textlines[verticalTextLines] || LibraryBrowser.getRatingHtml(item, false);
                 html += '</span>';
-                html += '<button type="button" data-role="none" class="listviewMenuButton imageButton listViewMoreButton" data-icon="none">';
-                html += '<i class="material-icons">more_vert</i>';
-                html += '</button>';
+                //html += '<button type="button" data-role="none" class="listviewMenuButton imageButton listViewMoreButton" data-icon="none">';
+                //html += '<i class="material-icons">more_vert</i>';
+                //html += '</button>';
+                html += '<paper-icon-button icon="more-vert" class="listviewMenuButton"></paper-icon-button>';
                 html += '<span class="listViewUserDataButtons">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);
                 html += '</span>';
@@ -1643,7 +1644,8 @@
 
             if (options.cardLayout) {
                 html += '<div class="cardButtonContainer">';
-                html += '<button class="listviewMenuButton imageButton btnCardOptions" type="button" data-role="none" style="margin: 4px 0 0;"><i class="material-icons">more_vert</i></button>';
+                //html += '<button class="listviewMenuButton imageButton btnCardOptions" type="button" data-role="none" style="margin: 4px 0 0;"><i class="material-icons">more_vert</i></button>';
+                html += '<paper-icon-button icon="more-vert" class="listviewMenuButton btnCardOptions"></paper-icon-button>';
                 html += "</div>";
             }
 

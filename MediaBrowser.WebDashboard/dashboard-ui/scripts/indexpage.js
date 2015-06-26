@@ -13,7 +13,7 @@
             case 2:
                 return 'latestmedia';
             case 3:
-                return '';
+                return 'latesttvrecordings';
             default:
                 return '';
         }

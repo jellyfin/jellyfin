@@ -1434,9 +1434,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         vertical-align: middle;
     }
 
-.listViewMoreButton {
+button.listviewMenuButton {
     padding-left: 20px !important;
     font-size: 20px;
+}
+
+paper-icon-button.listviewMenuButton {
+    margin-left: 20px !important;
 }
 
 .ui-li-has-icon > .ui-btn {

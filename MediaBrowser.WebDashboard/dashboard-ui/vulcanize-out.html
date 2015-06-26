@@ -10493,6 +10493,258 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
 
 <script>
+
+  /**
+   * `Polymer.IronMenuBehavior` implements accessible menu behavior.
+   *
+   * @demo demo/index.html
+   * @polymerBehavior Polymer.IronMenuBehavior
+   */
+  Polymer.IronMenuBehaviorImpl = {
+
+    properties: {
+
+      /**
+       * Returns the currently focused item.
+       *
+       * @attribute focusedItem
+       * @type Object
+       */
+      focusedItem: {
+        observer: '_focusedItemChanged',
+        readOnly: true,
+        type: Object
+      },
+
+      /**
+       * The attribute to use on menu items to look up the item title. Typing the first
+       * letter of an item when the menu is open focuses that item. If unset, `textContent`
+       * will be used.
+       *
+       * @attribute attrForItemTitle
+       * @type String
+       */
+      attrForItemTitle: {
+        type: String
+      }
+    },
+
+    hostAttributes: {
+      'role': 'menu',
+      'tabindex': '0'
+    },
+
+    observers: [
+      '_updateMultiselectable(multi)'
+    ],
+
+    listeners: {
+      'focus': '_onFocus',
+      'keydown': '_onKeydown'
+    },
+
+    keyBindings: {
+      'up': '_onUpKey',
+      'down': '_onDownKey',
+      'esc': '_onEscKey',
+      'enter': '_onEnterKey',
+      'shift+tab:keydown': '_onShiftTabDown'
+    },
+
+    _updateMultiselectable: function(multi) {
+      if (multi) {
+        this.setAttribute('aria-multiselectable', 'true');
+      } else {
+        this.removeAttribute('aria-multiselectable');
+      }
+    },
+
+    _onShiftTabDown: function() {
+      var oldTabIndex;
+
+      Polymer.IronMenuBehaviorImpl._shiftTabPressed = true;
+
+      oldTabIndex = this.getAttribute('tabindex');
+
+      this.setAttribute('tabindex', '-1');
+
+      this.async(function() {
+        this.setAttribute('tabindex', oldTabIndex);
+        Polymer.IronMenuBehaviorImpl._shiftTabPressed = false;
+      // Note: polymer/polymer#1305
+      }, 1);
+    },
+
+    _applySelection: function(item, isSelected) {
+      if (isSelected) {
+        item.setAttribute('aria-selected', 'true');
+      } else {
+        item.removeAttribute('aria-selected');
+      }
+
+      Polymer.IronSelectableBehavior._applySelection.apply(this, arguments);
+    },
+
+    _focusedItemChanged: function(focusedItem, old) {
+      old && old.setAttribute('tabindex', '-1');
+      if (focusedItem) {
+        focusedItem.setAttribute('tabindex', '0');
+        focusedItem.focus();
+      }
+    },
+
+    select: function(value) {
+      if (this._defaultFocusAsync) {
+        this.cancelAsync(this._defaultFocusAsync);
+        this._defaultFocusAsync = null;
+      }
+      var item = this._valueToItem(value);
+      this._setFocusedItem(item);
+      Polymer.IronMultiSelectableBehaviorImpl.select.apply(this, arguments);
+    },
+
+    _onFocus: function(event) {
+      if (Polymer.IronMenuBehaviorImpl._shiftTabPressed) {
+        return;
+      }
+      // do not focus the menu itself
+      this.blur();
+      // clear the cached focus item
+      this._setFocusedItem(null);
+      this._defaultFocusAsync = this.async(function() {
+        // focus the selected item when the menu receives focus, or the first item
+        // if no item is selected
+        var selectedItem = this.multi ? (this.selectedItems && this.selectedItems[0]) : this.selectedItem;
+        if (selectedItem) {
+          this._setFocusedItem(selectedItem);
+        } else {
+          this._setFocusedItem(this.items[0]);
+        }
+      // async 100ms to wait for `select` to get called from `_itemActivate`
+      }, 100);
+    },
+
+    _onUpKey: function() {
+      // up and down arrows moves the focus
+      this._focusPrevious();
+    },
+
+    _onDownKey: function() {
+      this._focusNext();
+    },
+
+    _onEscKey: function() {
+      // esc blurs the control
+      this.focusedItem.blur();
+    },
+
+    _onEnterKey: function(event) {
+      // enter activates the item unless it is disabled
+      this._activateFocused(event.detail.keyboardEvent);
+    },
+
+    _onKeydown: function(event) {
+      if (this.keyboardEventMatchesKeys(event, 'up down esc enter')) {
+        return;
+      }
+
+      // all other keys focus the menu item starting with that character
+      this._focusWithKeyboardEvent(event);
+    },
+
+    _focusWithKeyboardEvent: function(event) {
+      for (var i = 0, item; item = this.items[i]; i++) {
+        var attr = this.attrForItemTitle || 'textContent';
+        var title = item[attr] || item.getAttribute(attr);
+        if (title && title.trim().charAt(0).toLowerCase() === String.fromCharCode(event.keyCode).toLowerCase()) {
+          this._setFocusedItem(item);
+          break;
+        }
+      }
+    },
+
+    _activateFocused: function(event) {
+      if (!this.focusedItem.hasAttribute('disabled')) {
+        this._activateHandler(event);
+      }
+    },
+
+    _focusPrevious: function() {
+      var length = this.items.length;
+      var index = (Number(this.indexOf(this.focusedItem)) - 1 + length) % length;
+      this._setFocusedItem(this.items[index]);
+    },
+
+    _focusNext: function() {
+      var index = (Number(this.indexOf(this.focusedItem)) + 1) % this.items.length;
+      this._setFocusedItem(this.items[index]);
+    }
+
+  };
+
+  Polymer.IronMenuBehaviorImpl._shiftTabPressed = false;
+
+  /** @polymerBehavior Polymer.IronMenuBehavior */
+  Polymer.IronMenuBehavior = [
+    Polymer.IronMultiSelectableBehavior,
+    Polymer.IronA11yKeysBehavior,
+    Polymer.IronMenuBehaviorImpl
+  ];
+
+</script>
+<script>
+
+  /**
+   * `Polymer.IronMenubarBehavior` implements accessible menubar behavior.
+   *
+   * @polymerBehavior Polymer.IronMenubarBehavior
+   */
+  Polymer.IronMenubarBehaviorImpl = {
+
+    hostAttributes: {
+      'role': 'menubar'
+    },
+
+    keyBindings: {
+      'left': '_onLeftKey',
+      'right': '_onRightKey'
+    },
+
+    _onUpKey: function(event) {
+      this._activateFocused(event.detail.keyboardEvent);
+    },
+
+    _onDownKey: function(event) {
+      this._activateFocused(event.detail.keyboardEvent);
+    },
+
+    _onLeftKey: function() {
+      this._focusPrevious();
+    },
+
+    _onRightKey: function() {
+      this._focusNext();
+    },
+
+    _onKeydown: function(event) {
+      if (this.keyboardEventMatchesKeys(event, 'up down left right esc enter')) {
+        return;
+      }
+
+      // all other keys focus the menu item starting with that character
+      this._focusWithKeyboardEvent(event);
+    }
+
+  };
+
+  /** @polymerBehavior Polymer.IronMenubarBehavior */
+  Polymer.IronMenubarBehavior = [
+    Polymer.IronMenuBehavior,
+    Polymer.IronMenubarBehaviorImpl
+  ];
+
+</script>
+<script>
   /**
    * The `iron-iconset-svg` element allows users to define their own icon sets
    * that contain svg icons. The svg icon elements should be children of the
@@ -10671,6 +10923,10 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
   });
 </script>
+
+
+
+
 </head><body><div hidden="" by-vulcanize=""><dom-module id="paper-material" assetpath="bower_components/paper-material/">
   <style>
     :host {
@@ -13489,7 +13745,529 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
     }());
 
-</script><iron-iconset-svg name="icons" size="24">
+</script><iron-iconset-svg name="paper-tabs" size="24">
+<svg><defs>
+<g id="chevron-left"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path></g>
+<g id="chevron-right"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></g>
+</defs></svg>
+</iron-iconset-svg>
+<dom-module id="paper-tab" assetpath="bower_components/paper-tabs/">
+
+  <style>
+
+    :host {
+      @apply(--layout-inline);
+      @apply(--layout-center);
+      @apply(--layout-center-justified);
+      @apply(--layout-flex);
+
+      position: relative;
+      padding: 0 12px;
+      overflow: hidden;
+      cursor: pointer;
+
+      @apply(--paper-tab);
+    }
+
+    :host(:focus) {
+      outline: none;
+    }
+
+    :host([link]) {
+      padding: 0;
+    }
+
+    .tab-content {
+      height: 100%;
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+      transition: opacity 0.1s cubic-bezier(0.4, 0.0, 1, 1);
+
+      @apply(--paper-tab-content);
+    }
+
+    :host(:not(.iron-selected)) > .tab-content {
+      opacity: 0.8;
+    }
+
+    :host(:focus) .tab-content {
+      opacity: 1;
+      font-weight: 700;
+    }
+
+    #ink {
+      color: var(--paper-tab-ink, --paper-yellow-a100);
+      pointer-events: none;
+    }
+
+    .tab-content > ::content > a {
+      height: 100%;
+      /* flex */
+      -ms-flex: 1 1 0.000000001px;
+      -webkit-flex: 1;
+      flex: 1;
+      -webkit-flex-basis: 0.000000001px;
+      flex-basis: 0.000000001px;
+    }
+
+  </style>
+
+  <template>
+
+    <div class="tab-content flex-auto center-center horizontal layout">
+      <content></content>
+    </div>
+
+    <template is="dom-if" if="[[!noink]]">
+      <paper-ripple id="ink" initial-opacity="0.95" opacity-decay-velocity="0.98"></paper-ripple>
+    </template>
+
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'paper-tab',
+
+    behaviors: [
+      Polymer.IronControlState
+    ],
+
+    properties: {
+
+      /**
+       * If true, ink ripple effect is disabled.
+       *
+       * @attribute noink
+       */
+      noink: {
+        type: Boolean,
+        value: false
+      }
+
+    },
+
+    hostAttributes: {
+      role: 'tab'
+    },
+
+    listeners: {
+      down: '_onDown'
+    },
+
+    get _parentNoink () {
+      var parent = Polymer.dom(this).parentNode;
+      return !!parent && !!parent.noink;
+    },
+
+    _onDown: function(e) {
+      this.noink = !!this.noink || !!this._parentNoink;
+    }
+  });
+
+</script>
+<dom-module id="paper-tabs" assetpath="bower_components/paper-tabs/">
+
+  <style>
+
+    :host {
+      @apply(--layout);
+      @apply(--layout-center);
+
+      height: 48px;
+      font-size: 14px;
+      font-weight: 500;
+      overflow: hidden;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+
+      @apply(--paper-tabs);
+    }
+
+    #tabsContainer {
+      position: relative;
+      height: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    #tabsContent {
+      height: 100%;
+    }
+
+    #tabsContent.scrollable {
+      position: absolute;
+      white-space: nowrap;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .not-visible {
+      opacity: 0;
+    }
+
+    paper-icon-button {
+      width: 24px;
+      padding: 16px;
+    }
+
+    #selectionBar {
+      position: absolute;
+      height: 2px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: var(--paper-tabs-selection-bar-color, --paper-yellow-a100);
+      -webkit-transform-origin: left center;
+      transform-origin: left center;
+      -webkit-transform: scale(0);
+      transform: scale(0);
+      transition: -webkit-transform;
+      transition: transform;
+
+      @apply(--paper-tabs-selection-bar);
+    }
+
+    #selectionBar.align-bottom {
+      top: 0;
+      bottom: auto;
+    }
+
+    #selectionBar.expand {
+      transition-duration: 0.15s;
+      transition-timing-function: cubic-bezier(0.4, 0.0, 1, 1);
+    }
+
+    #selectionBar.contract {
+      transition-duration: 0.18s;
+      transition-timing-function: cubic-bezier(0.0, 0.0, 0.2, 1);
+    }
+
+    #tabsContent > ::content > *:not(#selectionBar) {
+      height: 100%;
+    }
+
+  </style>
+
+  <template>
+
+    <paper-icon-button icon="paper-tabs:chevron-left" class$="[[_computeScrollButtonClass(_leftHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onLeftScrollButtonDown"></paper-icon-button>
+
+    <div id="tabsContainer" class="flex" on-scroll="_scroll">
+
+      <div id="tabsContent" class$="[[_computeTabsContentClass(scrollable)]]">
+
+        <content select="*"></content>
+
+        <div id="selectionBar" class$="[[_computeSelectionBarClass(noBar, alignBottom)]]" on-transitionend="_onBarTransitionEnd"></div>
+
+      </div>
+
+    </div>
+
+    <paper-icon-button icon="paper-tabs:chevron-right" class$="[[_computeScrollButtonClass(_rightHidden, scrollable, hideScrollButtons)]]" on-up="_onScrollButtonUp" on-down="_onRightScrollButtonDown"></paper-icon-button>
+
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'paper-tabs',
+
+    behaviors: [
+      Polymer.IronResizableBehavior,
+      Polymer.IronMenubarBehavior
+    ],
+
+    properties: {
+
+      /**
+       * If true, ink ripple effect is disabled.
+       */
+      noink: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * If true, the bottom bar to indicate the selected tab will not be shown.
+       */
+      noBar: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * If true, the slide effect for the bottom bar is disabled.
+       */
+      noSlide: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * If true, tabs are scrollable and the tab width is based on the label width.
+       */
+      scrollable: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * If true, dragging on the tabs to scroll is disabled.
+       */
+      disableDrag: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * If true, scroll buttons (left/right arrow) will be hidden for scrollable tabs.
+       */
+      hideScrollButtons: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * If true, the tabs are aligned to bottom (the selection bar appears at the top).
+       */
+      alignBottom: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * Gets or sets the selected element. The default is to use the index of the item.
+       */
+      selected: {
+        type: String,
+        notify: true
+      },
+
+      selectable: {
+        type: String,
+        value: 'paper-tab'
+      },
+
+      _step: {
+        type: Number,
+        value: 10
+      },
+
+      _holdDelay: {
+        type: Number,
+        value: 1
+      },
+
+      _leftHidden: {
+        type: Boolean,
+        value: false
+      },
+
+      _rightHidden: {
+        type: Boolean,
+        value: false
+      },
+
+      _previousTab: {
+        type: Object
+      }
+    },
+
+    hostAttributes: {
+      role: 'tablist'
+    },
+
+    listeners: {
+      'iron-resize': '_onResize',
+      'iron-select': '_onIronSelect',
+      'iron-deselect': '_onIronDeselect'
+    },
+
+    _computeScrollButtonClass: function(hideThisButton, scrollable, hideScrollButtons) {
+      if (!scrollable || hideScrollButtons) {
+        return 'hidden';
+      }
+
+      if (hideThisButton) {
+        return 'not-visible';
+      }
+
+      return '';
+    },
+
+    _computeTabsContentClass: function(scrollable) {
+      return scrollable ? 'scrollable' : 'horizontal layout';
+    },
+
+    _computeSelectionBarClass: function(noBar, alignBottom) {
+      if (noBar) {
+        return 'hidden';
+      } else if (alignBottom) {
+        return 'align-bottom';
+      }
+    },
+
+    // TODO(cdata): Add `track` response back in when gesture lands.
+
+    _onResize: function() {
+      this.debounce('_onResize', function() {
+        this._scroll();
+        this._tabChanged(this.selectedItem);
+      }, 10);
+    },
+
+    _onIronSelect: function(event) {
+      this._tabChanged(event.detail.item, this._previousTab);
+      this._previousTab = event.detail.item;
+      this.cancelDebouncer('tab-changed');
+    },
+
+    _onIronDeselect: function(event) {
+      this.debounce('tab-changed', function() {
+        this._tabChanged(null, this._previousTab);
+      // See polymer/polymer#1305
+      }, 1);
+    },
+
+    get _tabContainerScrollSize () {
+      return Math.max(
+        0,
+        this.$.tabsContainer.scrollWidth -
+          this.$.tabsContainer.offsetWidth
+      );
+    },
+
+    _scroll: function() {
+      var scrollLeft;
+
+      if (!this.scrollable) {
+        return;
+      }
+
+      scrollLeft = this.$.tabsContainer.scrollLeft;
+
+      this._leftHidden = scrollLeft === 0;
+      this._rightHidden = scrollLeft === this._tabContainerScrollSize;
+    },
+
+    _onLeftScrollButtonDown: function() {
+      this._holdJob = setInterval(this._scrollToLeft.bind(this), this._holdDelay);
+    },
+
+    _onRightScrollButtonDown: function() {
+      this._holdJob = setInterval(this._scrollToRight.bind(this), this._holdDelay);
+    },
+
+    _onScrollButtonUp: function() {
+      clearInterval(this._holdJob);
+      this._holdJob = null;
+    },
+
+    _scrollToLeft: function() {
+      this.$.tabsContainer.scrollLeft -= this._step;
+    },
+
+    _scrollToRight: function() {
+      this.$.tabsContainer.scrollLeft += this._step;
+    },
+
+    _tabChanged: function(tab, old) {
+      if (!tab) {
+        this._positionBar(0, 0);
+        return;
+      }
+
+      var r = this.$.tabsContent.getBoundingClientRect();
+      var w = r.width;
+      var tabRect = tab.getBoundingClientRect();
+      var tabOffsetLeft = tabRect.left - r.left;
+
+      this._pos = {
+        width: this._calcPercent(tabRect.width, w),
+        left: this._calcPercent(tabOffsetLeft, w)
+      };
+
+      if (this.noSlide || old == null) {
+        // position bar directly without animation
+        this._positionBar(this._pos.width, this._pos.left);
+        return;
+      }
+
+      var oldRect = old.getBoundingClientRect();
+      var oldIndex = this.items.indexOf(old);
+      var index = this.items.indexOf(tab);
+      var m = 5;
+
+      // bar animation: expand
+      this.$.selectionBar.classList.add('expand');
+
+      if (oldIndex < index) {
+        this._positionBar(this._calcPercent(tabRect.left + tabRect.width - oldRect.left, w) - m,
+            this._left);
+      } else {
+        this._positionBar(this._calcPercent(oldRect.left + oldRect.width - tabRect.left, w) - m,
+            this._calcPercent(tabOffsetLeft, w) + m);
+      }
+
+      if (this.scrollable) {
+        this._scrollToSelectedIfNeeded(tabRect.width, tabOffsetLeft);
+      }
+    },
+
+    _scrollToSelectedIfNeeded: function(tabWidth, tabOffsetLeft) {
+      var l = tabOffsetLeft - this.$.tabsContainer.scrollLeft;
+      if (l < 0) {
+        this.$.tabsContainer.scrollLeft += l;
+      } else {
+        l += (tabWidth - this.$.tabsContainer.offsetWidth);
+        if (l > 0) {
+          this.$.tabsContainer.scrollLeft += l;
+        }
+      }
+    },
+
+    _calcPercent: function(w, w0) {
+      return 100 * w / w0;
+    },
+
+    _positionBar: function(width, left) {
+      this._width = width;
+      this._left = left;
+      this.transform(
+          'translate3d(' + left + '%, 0, 0) scaleX(' + (width / 100) + ')',
+          this.$.selectionBar);
+    },
+
+    _onBarTransitionEnd: function(e) {
+      var cl = this.$.selectionBar.classList;
+      // bar animation: expand -> contract
+      if (cl.contains('expand')) {
+        cl.remove('expand');
+        cl.add('contract');
+        this._positionBar(this._pos.width, this._pos.left);
+      // bar animation done
+      } else if (cl.contains('contract')) {
+        cl.remove('contract');
+      }
+    }
+
+  });
+
+</script>
+<iron-iconset-svg name="icons" size="24">
     <svg>
         <defs>
             <g id="add"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></g>

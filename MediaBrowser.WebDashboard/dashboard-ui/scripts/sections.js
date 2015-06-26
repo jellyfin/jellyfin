@@ -133,7 +133,7 @@
 
         var limit = AppInfo.hasLowImageBandwidth ?
          16 :
-         24;
+         20;
 
         var options = {
 

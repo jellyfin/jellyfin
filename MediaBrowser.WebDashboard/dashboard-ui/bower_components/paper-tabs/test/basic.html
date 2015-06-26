@@ -1,0 +1,157 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<html>
+  <head>
+
+    <title>paper-tabs-basic</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+    <link rel="import" href="../paper-tabs.html">
+    <link rel="import" href="../../test-fixture/test-fixture.html">
+
+  </head>
+  <body>
+
+    <test-fixture id="basic">
+      <template>
+        <paper-tabs>
+          <paper-tab>ITEM ONE</paper-tab>
+          <paper-tab>ITEM TWO</paper-tab>
+          <paper-tab>ITEM THREE</paper-tab>
+        </paper-tabs>
+      </template>
+    </test-fixture>
+
+    <script>
+
+      function checkSelectionBar(tabs, tab) {
+        var tabRect = tab.getBoundingClientRect();
+        var rect = Polymer.dom(tabs.root).querySelector('#selectionBar').getBoundingClientRect();
+        assert.equal(Math.round(tabRect.left), Math.round(rect.left));
+      }
+
+      suite('defaults', function() {
+
+        var tabs;
+
+        setup(function () {
+          tabs = fixture('basic');
+        });
+
+        test('to nothing selected', function() {
+          assert.equal(tabs.selected, undefined);
+        });
+
+        test('no tabs have iron-selected class', function() {
+          Array.prototype.forEach.call(tabs.querySelectorAll('paper-tab'), function(tab) {
+            assert.isFalse(tab.classList.contains('iron-selected'));
+          });
+        });
+
+        test('to false as noink', function() {
+          assert.equal(tabs.noink, false);
+        });
+
+        test('to false as noBar', function() {
+          assert.equal(tabs.noBar, false);
+        });
+
+        test('to false as noSlide', function() {
+          assert.equal(tabs.noSlide, false);
+        });
+
+        test('to false as scrollable', function() {
+          assert.equal(tabs.scrollable, false);
+        });
+
+        test('to false as disableDrag', function() {
+          assert.equal(tabs.disableDrag, false);
+        });
+
+        test('to false as hideScrollButtons', function() {
+          assert.equal(tabs.hideScrollButtons, false);
+        });
+
+        test('to false as alignBottom', function() {
+          assert.equal(tabs.alignBottom, false);
+        });
+
+        test('has role tablist', function() {
+          assert.equal(tabs.getAttribute('role'), 'tablist');
+        });
+
+      });
+
+      suite('set the selected attribute', function() {
+
+        var tabs, index = 0;
+
+        setup(function () {
+          tabs = fixture('basic');
+          tabs.selected = index;
+        });
+
+        test('selected value', function() {
+          assert.equal(tabs.selected, index);
+        });
+
+        test('selected tab has iron-selected class', function() {
+          var tab = tabs.querySelectorAll('paper-tab')[index];
+          assert.isTrue(tab.classList.contains('iron-selected'));
+        });
+
+        test('selected tab has selection bar position at the bottom of the tab', function(done) {
+          setTimeout(function() {
+            checkSelectionBar(tabs, tabs.querySelectorAll('paper-tab')[index]);
+            done();
+          }, 1000);
+        });
+
+      });
+
+      suite('select tab via click', function() {
+
+        var tabs, index = 1;
+
+        setup(function () {
+          tabs = fixture('basic');
+          var tab = tabs.querySelectorAll('paper-tab')[index];
+          tab.dispatchEvent(new CustomEvent('click', {bubbles: true}));
+        });
+
+        test('selected value', function() {
+          assert.equal(tabs.selected, index);
+        });
+
+        test('selected tab has iron-selected class', function() {
+          var tab = tabs.querySelectorAll('paper-tab')[index];
+          assert.isTrue(tab.classList.contains('iron-selected'));
+        });
+
+        test('selected tab has selection bar position at the bottom of the tab', function(done) {
+          setTimeout(function() {
+            checkSelectionBar(tabs, tabs.querySelectorAll('paper-tab')[index]);
+            done();
+          }, 1000);
+        });
+
+      });
+
+    </script>
+
+  </body>
+</html>
