@@ -1,16 +1,20 @@
-﻿.nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-    text-align: center;
-    font-size: 24px;
-    padding: 14px 0;
-    margin: 3px 1px;
-    width: 70px;
-    background: #383838;
-    border-radius: 5px;
+﻿.nowPlayingPage {
+    padding-top: 0 !important;
 }
 
+    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+        text-align: center;
+        font-size: 24px;
+        padding: 14px 0;
+        margin: 3px 1px;
+        width: 70px;
+        background: #383838;
+        border-radius: 5px;
+    }
+
 .nowPlayingPageImage img {
-    max-height: 220px;
-    max-width: 220px;
+    max-height: 360px;
+    max-width: 360px;
 }
 
 .nowPlayingTimeContainer {
@@ -85,15 +89,7 @@
 
     .nowPlayingPageImage img {
         max-height: 160px;
-        max-width: 220px;
-    }
-}
-
-@media all and (max-width: 600px) {
-
-    .nowPlayingPageImage img {
-        max-height: 160px;
-        max-width: 220px;
+        max-width: 200px;
     }
 }
 
@@ -149,6 +145,40 @@
     }
 
     .nowPlayingInfoButtons {
+        margin-left: 1em;
+    }
+}
+
+@media (orientation: landscape) and (min-width: 700px) {
+    .nowPlayingInfoButtons {
         margin-left: 3em;
+    }
+}
+
+@media (orientation: landscape) and (max-height: 400px) {
+    .nowPlayingPageTitle {
+        margin-top: -1em;
+        padding: 0 60px;
+    }
+}
+
+@media (orientation: portrait) and (max-height: 600px) {
+    .nowPlayingPageTitle {
+        margin-top: -1em;
+        padding: 0 60px;
+    }
+}
+
+.nowPlayingSelectedPlayer {
+    display: inline-block;
+    vertical-align: middle;
+    color: #eee;
+    margin-right: .25em;
+}
+
+@media all and (max-width: 600px) {
+
+    .nowPlayingSelectedPlayer {
+        display: none;
     }
 }

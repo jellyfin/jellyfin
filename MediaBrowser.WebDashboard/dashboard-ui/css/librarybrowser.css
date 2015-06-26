@@ -987,6 +987,11 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         display: inline-block;
     }
 
+    .playedIndicator .material-icons {
+        font-size: 16px;
+        line-height: 24px;
+    }
+
 .textIndicator {
     height: 22px;
     padding-top: 2px;

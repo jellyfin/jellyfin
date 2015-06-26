@@ -715,6 +715,27 @@
         return null;
     };
 
+    function updateCastIcon() {
+
+        var info = MediaController.getPlayerInfo();
+
+        if (info.isLocalPlayer) {
+
+            $('.nowPlayingCastIcon').each(function () {
+                this.icon = 'cast';
+            });
+            $('.headerSelectedPlayer').html('');
+
+        } else {
+
+            $('.nowPlayingCastIcon').each(function () {
+                this.icon = 'cast-connected';
+            });
+
+            $('.headerSelectedPlayer').html((info.deviceName || info.name));
+        }
+    }
+
     $(document).on('pageinitdepends', "#nowPlayingPage", function () {
 
         var page = this;
@@ -724,20 +745,44 @@
         $('.sendMessageForm').off('submit', NowPlayingPage.onMessageSubmit).on('submit', NowPlayingPage.onMessageSubmit);
         $('.typeTextForm').off('submit', NowPlayingPage.onSendStringSubmit).on('submit', NowPlayingPage.onSendStringSubmit);
 
+        $('iron-pages,neon-animatable', this).trigger('create');
+
+        $(page).on('swipeleft', function () {
+
+            var pages = this.querySelectorAll('neon-animated-pages')[0];
+
+            var selected = parseInt(pages.selected || '0');
+            if (selected < 2) {
+                pages.entryAnimation = 'slide-from-right-animation';
+                pages.exitAnimation = 'slide-left-animation';
+                pages.selectNext();
+            }
+        });
+
+        $(page).on('swiperight', function () {
+
+            var pages = this.querySelectorAll('neon-animated-pages')[0];
+
+            var selected = parseInt(pages.selected || '0');
+            if (selected > 0) {
+                pages.entryAnimation = 'slide-from-left-animation';
+                pages.exitAnimation = 'slide-right-animation';
+                pages.selectPrevious();
+            }
+        });
+
+        $(MediaController).on('playerchange', function () {
+            updateCastIcon(page);
+        });
+
     }).on('pagebeforeshowready', "#nowPlayingPage", function () {
 
+        $(document.body).addClass('hiddenViewMenuBar');
         var page = this;
 
         currentImgUrl = null;
 
-        var tab = getParameterByName('tab');
-        if (tab) {
-            $('.tabButton' + tab, page).trigger('click');
-        } else {
-            $('.tabButton:first', page).trigger('click');
-        }
-
-        $(function () {
+        Dashboard.ready(function () {
 
             $(MediaController).on('playerchange.nowplayingpage', function () {
 
@@ -751,6 +796,11 @@
         showIntro();
         loadPlaylist(page);
 
+        var tab = getParameterByName('tab');
+        this.querySelectorAll('#scope')[0].selected = tab == 'Playlist' ? 2 : 0;
+
+        updateCastIcon(page);
+
     }).on('pagebeforehide', "#nowPlayingPage", function () {
 
         releaseCurrentPlayer();
@@ -758,6 +808,7 @@
         $(MediaController).off('playerchange.nowplayingpage');
 
         lastPlayerState = null;
+        $(document.body).removeClass('hiddenViewMenuBar');
     });
 
     window.NowPlayingPage = {

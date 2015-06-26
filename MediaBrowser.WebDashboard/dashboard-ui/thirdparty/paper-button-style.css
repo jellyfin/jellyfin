@@ -249,3 +249,59 @@ paper-dialog + iron-overlay-backdrop {
 paper-dialog[role="alertdialog"] + iron-overlay-backdrop {
     background-color: #000 !important;
 }
+
+paper-tabs, paper-toolbar {
+    background-color: #111;
+    color: #fff;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+    paper-toolbar paper-tabs {
+        box-shadow: none;
+    }
+
+    paper-tabs[alignBottom] {
+        box-shadow: 0px -2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+paper-tab {
+    text-transform: uppercase;
+}
+
+paper-tabs:not([alignbottom]) #selectionBar {
+    background-color: #38c !important;
+}
+
+paper-tabs:not([alignbottom]) paper-ripple {
+    color: #38c !important;
+}
+
+paper-fab.subdued {
+    background: #484848;
+    color: #fff;
+}
+
+    paper-fab.subdued paper-material.keyboard-focus {
+        background: #686868 !important;
+    }
+
+.ui-page-theme-b paper-fab[disabled].subdued {
+    background: #222;
+}
+
+paper-fab.blue {
+    background: #03a9f4;
+}
+
+    paper-fab.blue paper-material.keyboard-focus {
+        background: #01579b !important;
+    }
+
+paper-fab.large {
+    width: 64px;
+    height: 64px;
+}
+
+paper-fab.square {
+    border-radius: 5px;
+}

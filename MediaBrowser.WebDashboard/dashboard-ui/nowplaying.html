@@ -4,150 +4,154 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="scripts/nowplayingpage">
+    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="scripts/nowplayingpage,paperbuttonstyle,jqmicons">
 
-        <div class="libraryViewNav">
-            <a href="#" class="ui-btn-active tabButton" data-tab="tabNowPlaying">${TabNowPlaying}</a>
-            <a href="#" class="tabButton" data-tab="tabNavigation">${TabControls}</a>
-            <a href="#" class="tabButton" data-tab="tabAdvanced">${TabAdvanced}</a>
-            <a href="#" class="tabButton tabButtonPlaylist" data-tab="tabPlaylist">${TabPlaylist}</a>
-        </div>
+        <div data-role="content" style="overflow:visible;">
 
-        <div data-role="content">
+            <paper-fab mini icon="arrow-back" class="subdued" onclick="history.back()" style="position:relative;top:5px;left:5px;"></paper-fab>
+            <div style="float:right;position:relative;top:5px;right:5px;">
+                <span class="nowPlayingSelectedPlayer"></span>
+                <paper-fab mini icon="cast" class="blue nowPlayingCastIcon" onclick="MediaController.showPlayerSelection();" style="vertical-align:middle;"></paper-fab>
+            </div>
 
-            <div style="text-align: center;">
-                <div class="tabNowPlaying tabContent" style="display:none;">
+            <template is="dom-bind" id="scope">
+                <neon-animated-pages selected="{{selected}}" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation">
+                    <neon-animatable>
+                        <div style="text-align:center;padding-bottom:100px;">
 
-                    <div class="nowPlayingPageTitle">
-                        <div class="itemName" style="line-height: normal;"></div>
-                    </div>
+                            <div class="nowPlayingPageTitle">
+                                <div class="itemName" style="line-height: normal;"></div>
+                            </div>
 
-                    <div class="nowPlayingInfoMetadata">
-                        <div class="nowPlayingPageImage" style="margin: 1em 0;"></div>
-                        
-                        <div class="nowPlayingTimeContainer">
-                            <div>
-                                <div class="positionSliderContainer sliderContainer" style="margin: 0 auto;">
-                                    <input type="range" style="display: none;" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" data-mini="true" data-theme="a" data-highlight="true" />
+                            <div class="nowPlayingInfoMetadata">
+                                <div class="nowPlayingPageImage" style="margin: 1em 0;"></div>
+
+                                <div class="nowPlayingTimeContainer">
+                                    <div>
+                                        <div class="positionSliderContainer sliderContainer" style="margin: 0 auto;">
+                                            <input type="range" style="display: none;" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" data-mini="true" data-theme="a" data-highlight="true" />
+                                        </div>
+                                    </div>
+                                    <div style="text-align:left;">
+                                        <div class="positionTime" style="float:left;"></div>
+                                        <div class="runtime" style="float: right;"></div>
+                                    </div>
                                 </div>
                             </div>
-                            <div style="text-align:left;">
-                                <div class="positionTime" style="float:left;"></div>
-                                <div class="runtime" style="float: right;"></div>
+
+                            <div class="nowPlayingInfoButtons">
+                                <div>
+                                    <paper-fab icon="skip-previous" class="btnPreviousTrack btnPlayStateCommand large subdued square" title="${ButtonPreviousTrack}"></paper-fab>
+                                    <paper-fab icon="pause" class="btnPause btnPlayStateCommand large subdued square" title="${ButtonPause}"></paper-fab>
+                                    <paper-fab icon="play-arrow" class="btnPlay btnPlayStateCommand large subdued square" title="${ButtonPlay}"></paper-fab>
+                                    <paper-fab icon="stop" class="btnPlayStateCommand btnStop large subdued square" title="${ButtonStop}"></paper-fab>
+                                    <paper-fab icon="skip-next" class="btnPlayStateCommand btnNextTrack large subdued square" title="${ButtonNextTrack}"></paper-fab>
+                                </div>
+                                <div>
+                                    <paper-fab icon="volume-up" class="btnCommand large subdued square" title="${ButtonVolumeUp}" data-command="VolumeUp"></paper-fab>
+                                    <paper-fab icon="volume-off" class="btnCommand large subdued square" title="${ButtonMute}" data-command="ToggleMute"></paper-fab>
+                                    <paper-fab icon="info" class="btnCommand videoButton large subdued square" title="${ButtonOsd}" data-command="ToggleOsdMenu"></paper-fab>
+                                    <paper-fab icon="fullscreen" class="btnToggleFullscreen videoButton btnPlayStateCommand large subdued square" title="${ButtonFullscreen}" data-command="ToggleFullscreen"></paper-fab>
+                                </div>
+                                <div>
+                                    <paper-fab icon="volume-down" class="btnCommand large subdued square" title="${ButtonVolumeDown}" data-command="VolumeDown"></paper-fab>
+                                    <paper-fab icon="audiotrack" class="btnAudioTracks videoButton btnPlayStateCommand large subdued square" title="${ButtonAudioTracks}" data-command="GoToSearch"></paper-fab>
+                                    <paper-fab icon="subtitles" class="btnSubtitles videoButton btnPlayStateCommand large subdued square" title="${ButtonSubtitles}" data-command="GoToSearch"></paper-fab>
+                                    <paper-fab icon="movie" class="btnChapters videoButton btnPlayStateCommand large subdued square" title="${ButtonScenes}" data-command="GoToSearch"></paper-fab>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="nowPlayingInfoButtons">
-                        <div>
-                            <button type="button" data-role="none" title="${ButtonPreviousTrack}" class="btnPreviousTrack btnPlayStateCommand imageButton"><i class="fa fa-step-backward"></i></button>
-                            <button type="button" data-role="none" title="${ButtonPause}" class="btnPause btnPlayStateCommand imageButton"><i class="fa fa-pause"></i></button>
-                            <button type="button" data-role="none" title="${ButtonPlay}" class="btnPlay btnPlayStateCommand imageButton"><i class="fa fa-play"></i></button>
-                            <button type="button" data-role="none" title="${ButtonStop}" class="btnStop btnPlayStateCommand imageButton"><i class="fa fa-stop"></i></button>
-                            <button type="button" data-role="none" title="${ButtonNextTrack}" class="btnNextTrack btnPlayStateCommand imageButton"><i class="fa fa-step-forward"></i></button>
+                    </neon-animatable>
+                    <neon-animatable>
+                        <div style="text-align:center;">
+                            <div>
+                                <button type="button" data-role="none" title="${ButtonArrowUp}" class="btnArrowUp btnCommand imageButton" data-command="MoveUp"><i class="fa fa-arrow-up"></i></button>
+                            </div>
+                            <div>
+                                <button type="button" data-role="none" title="${ButtonArrowLeft}" class="btnArrowLeft btnCommand imageButton" data-command="MoveLeft"><i class="fa fa-arrow-left"></i></button>
+                                <button type="button" data-role="none" title="${ButtonOk}" class="btnOk btnCommand imageButton" data-command="Select"><i class="fa fa-check"></i></button>
+                                <button type="button" data-role="none" title="${ButtonArrowRight}" class="btnArrowRight btnCommand imageButton" data-command="MoveRight"><i class="fa fa-arrow-right"></i></button>
+                            </div>
+                            <div>
+                                <button type="button" data-role="none" title="${ButtonArrowDown}" class="btnArrowDown btnCommand imageButton" data-command="MoveDown"><i class="fa fa-arrow-down"></i></button>
+                            </div>
+                            <div>
+                                <button data-icon="back" data-inline="true" data-iconpos="notext" title="${ButtonBack}" class="btnBack btnCommand" data-command="Back">${ButtonBack}</button>
+                                <button data-icon="info" data-inline="true" data-iconpos="notext" title="${ButtonInfo}" class="btnInfo btnCommand" data-command="ToggleContextMenu">${ButtonInfo}</button>
+                            </div>
+                            <br />
+                            <div>
+                                <button type="button" data-role="none" title="${ButtonHome}" class="btnGoHome btnCommand imageButton" data-command="GoHome"><i class="fa fa-home"></i></button>
+                                <!--<button data-inline="true" data-iconpos="right" title="${ButtonPageUp}" data-icon="plus" class="btnPageUp btnCommand ui-nodisc-icon" data-command="PageUp">${PageButtonAbbreviation}</button>
+                                <button data-inline="true" data-iconpos="right" title="${ButtonLetterUp}" data-icon="plus" class="btnLetterUp btnCommand ui-nodisc-icon" data-command="NextLetter">${LetterButtonAbbreviation}</button>-->
+                                <button type="button" data-role="none" title="${ButtonSearch}" class="btnShowSearch btnCommand imageButton" data-command="GoToSearch"><i class="fa fa-search"></i></button>
+                            </div>
+                            <div>
+                                <button type="button" data-role="none" title="${ButtonSettings}" class="bthShowSettings btnCommand imageButton" data-command="GoToSettings"><i class="fa fa-gear"></i></button>
+                                <!--<button data-inline="true" data-iconpos="right" title="${ButtonPageDown}" data-icon="minus" class="btnPageDown btnCommand ui-nodisc-icon" data-command="PageDown">${PageButtonAbbreviation}</button>
+                                <button data-inline="true" data-iconpos="right" title="${ButtonLetterDown}" data-icon="minus" class="btnLetterDown btnCommand ui-nodisc-icon" data-command="PreviousLetter">${LetterButtonAbbreviation}</button>-->
+                                <button type="button" data-role="none" title="${ButtonTakeScreenshot}" class="btnScreenshot btnCommand imageButton" data-command="TakeScreenshot"><i class="fa fa-video-camera"></i></button>
+                            </div>
                         </div>
-                        <div>
-                            <button type="button" data-role="none" title="${ButtonVolumeUp}" class="btnCommand imageButton" data-command="VolumeUp"><i class="fa fa-volume-up"></i></button>
-                            <button type="button" data-role="none" title="${ButtonMute}" class="btnCommand imageButton" data-command="ToggleMute"><i class="fa fa-volume-off"></i></button>
-                            <button type="button" data-role="none" title="${ButtonOsd}" class="btnCommand videoButton imageButton" data-command="ToggleOsdMenu"><i class="fa fa-info-circle"></i></button>
-                            <button type="button" data-role="none" title="${ButtonFullscreen}" class="btnToggleFullscreen videoButton btnPlayStateCommand imageButton" data-command="ToggleFullscreen"><i class="fa fa-expand"></i></button>
-                        </div>
-                        <div>
-                            <button type="button" data-role="none" title="${ButtonVolumeDown}" class="btnCommand imageButton" data-command="VolumeDown"><i class="fa fa-volume-down"></i></button>
-                            <button type="button" data-role="none" title="${ButtonAudioTracks}" class="btnAudioTracks videoButton btnPlayStateCommand imageButton" data-command="GoToSearch"><i class="fa fa-music"></i></button>
-                            <button type="button" data-role="none" title="${ButtonSubtitles}" class="btnSubtitles videoButton btnPlayStateCommand imageButton" data-command="GoToSearch"><i class="fa fa-text-width"></i></button>
-                            <button type="button" data-role="none" title="${ButtonScenes}" class="btnChapters videoButton btnPlayStateCommand imageButton" data-command="GoToSearch"><i class="fa fa-video-camera"></i></button>
-                        </div>
-                    </div>
+                        <div class="readOnlyContent" style="margin: 2em auto 0; padding: 0 1em 100px;">
 
-                </div>
+                            <div data-role="collapsible">
+                                <h2>${HeaderSendMessage}</h2>
+                                <div style="text-align: left;">
 
-                <div class="tabNavigation tabContent" style="display: none;">
-
-                    <div>
-                        <button type="button" data-role="none" title="${ButtonArrowUp}" class="btnArrowUp btnCommand imageButton" data-command="MoveUp"><i class="fa fa-arrow-up"></i></button>
-                    </div>
-                    <div>
-                        <button type="button" data-role="none" title="${ButtonArrowLeft}" class="btnArrowLeft btnCommand imageButton" data-command="MoveLeft"><i class="fa fa-arrow-left"></i></button>
-                        <button type="button" data-role="none" title="${ButtonOk}" class="btnOk btnCommand imageButton" data-command="Select"><i class="fa fa-check"></i></button>
-                        <button type="button" data-role="none" title="${ButtonArrowRight}" class="btnArrowRight btnCommand imageButton" data-command="MoveRight"><i class="fa fa-arrow-right"></i></button>
-                    </div>
-                    <div>
-                        <button type="button" data-role="none" title="${ButtonArrowDown}" class="btnArrowDown btnCommand imageButton" data-command="MoveDown"><i class="fa fa-arrow-down"></i></button>
-                    </div>
-                    <div>
-                        <button data-icon="back" data-inline="true" data-iconpos="notext" title="${ButtonBack}" class="btnBack btnCommand" data-command="Back">${ButtonBack}</button>
-                        <button data-icon="info" data-inline="true" data-iconpos="notext" title="${ButtonInfo}" class="btnInfo btnCommand" data-command="ToggleContextMenu">${ButtonInfo}</button>
-                    </div>
-                    <br />
-                    <div>
-                        <button type="button" data-role="none" title="${ButtonHome}" class="btnGoHome btnCommand imageButton" data-command="GoHome"><i class="fa fa-home"></i></button>
-                        <!--<button data-inline="true" data-iconpos="right" title="${ButtonPageUp}" data-icon="plus" class="btnPageUp btnCommand ui-nodisc-icon" data-command="PageUp">${PageButtonAbbreviation}</button>
-                        <button data-inline="true" data-iconpos="right" title="${ButtonLetterUp}" data-icon="plus" class="btnLetterUp btnCommand ui-nodisc-icon" data-command="NextLetter">${LetterButtonAbbreviation}</button>-->
-                        <button type="button" data-role="none" title="${ButtonSearch}" class="btnShowSearch btnCommand imageButton" data-command="GoToSearch"><i class="fa fa-search"></i></button>
-                    </div>
-                    <div>
-                        <button type="button" data-role="none" title="${ButtonSettings}" class="bthShowSettings btnCommand imageButton" data-command="GoToSettings"><i class="fa fa-gear"></i></button>
-                        <!--<button data-inline="true" data-iconpos="right" title="${ButtonPageDown}" data-icon="minus" class="btnPageDown btnCommand ui-nodisc-icon" data-command="PageDown">${PageButtonAbbreviation}</button>
-                        <button data-inline="true" data-iconpos="right" title="${ButtonLetterDown}" data-icon="minus" class="btnLetterDown btnCommand ui-nodisc-icon" data-command="PreviousLetter">${LetterButtonAbbreviation}</button>-->
-                        <button type="button" data-role="none" title="${ButtonTakeScreenshot}" class="btnScreenshot btnCommand imageButton" data-command="TakeScreenshot"><i class="fa fa-video-camera"></i></button>
-                    </div>
-                </div>
-                <div class="tabAdvanced tabContent" style="display: none;">
-
-                    <div class="readOnlyContent" style="margin: 0 auto; padding: 0 1em;">
-
-                        <div data-role="collapsible">
-                            <h2>${HeaderSendMessage}</h2>
-                            <div style="text-align: left;">
-
-                                <br />
-                                <form class="sendMessageForm">
-                                    <div>
-                                        <label for="txtMessageTitle">${LabelMessageTitle}</label>
-                                        <input class="sendMessageElement" type="text" id="txtMessageTitle" required="required" />
-                                    </div>
                                     <br />
-                                    <div>
-                                        <label for="txtMessageText">${LabelMessageText}</label>
-                                        <input class="sendMessageElement" type="text" id="txtMessageText" required="required" />
-                                    </div>
-                                    <p>
-                                        <button class="sendMessageElement" type="submit" data-icon="mail">${ButtonSend}</button>
-                                    </p>
-                                </form>
+                                    <form class="sendMessageForm">
+                                        <div>
+                                            <label for="txtMessageTitle">${LabelMessageTitle}</label>
+                                            <input class="sendMessageElement" type="text" id="txtMessageTitle" required="required" />
+                                        </div>
+                                        <br />
+                                        <div>
+                                            <label for="txtMessageText">${LabelMessageText}</label>
+                                            <input class="sendMessageElement" type="text" id="txtMessageText" required="required" />
+                                        </div>
+                                        <p>
+                                            <button class="sendMessageElement" type="submit" data-icon="mail">${ButtonSend}</button>
+                                        </p>
+                                    </form>
 
+                                </div>
+                            </div>
+                            <div data-role="collapsible">
+                                <h2>${HeaderTypeText}</h2>
+                                <div style="text-align: left;">
+
+                                    <br />
+                                    <form class="typeTextForm">
+                                        <div>
+                                            <label for="txtTypeText">${LabelTypeText}</label>
+                                            <input class="typeTextElement" type="text" id="txtTypeText" required="required" />
+                                        </div>
+                                        <p>
+                                            <button class="typeTextElement" type="submit" data-icon="arrow-r">${ButtonSend}</button>
+                                        </p>
+                                    </form>
+
+                                </div>
                             </div>
                         </div>
-                        <div data-role="collapsible">
-                            <h2>${HeaderTypeText}</h2>
-                            <div style="text-align: left;">
-
-                                <br />
-                                <form class="typeTextForm">
-                                    <div>
-                                        <label for="txtTypeText">${LabelTypeText}</label>
-                                        <input class="typeTextElement" type="text" id="txtTypeText" required="required" />
-                                    </div>
-                                    <p>
-                                        <button class="typeTextElement" type="submit" data-icon="arrow-r">${ButtonSend}</button>
-                                    </p>
-                                </form>
-
-                            </div>
+                    </neon-animatable>
+                    <neon-animatable>
+                        <div class="playlist itemsContainer" style="max-width:800px;margin: 1.5em auto 0;">
                         </div>
-                    </div>
+                    </neon-animatable>
+                </neon-animated-pages>
 
-                </div>
-                <div class="tabPlaylist tabContent" style="display: none;">
+                <paper-tabs selected="{{selected}}" style="position:fixed;bottom:0;left:0;right:0;" alignbottom>
 
-                    <div class="playlist itemsContainer" style="max-width:800px;margin: 0 auto;">
-                    </div>
+                    <paper-tab>${TabNowPlaying}</paper-tab>
+                    <paper-tab>${TabControls}</paper-tab>
+                    <paper-tab>${TabPlaylist}</paper-tab>
 
-                </div>
-            </div>
+                </paper-tabs>
+            </template>
+
         </div>
-
         <div data-role="popup" id="popupAudioTrackMenu">
             <div class="trackList"></div>
         </div>

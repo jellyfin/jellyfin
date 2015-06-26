@@ -548,7 +548,7 @@
             $('.btnCast').removeClass('btnActiveCast').each(function () {
                 this.icon = 'cast';
             });
-            $('.headerSelectedPlayer').html('');
+            $('.nowPlayingSelectedPlayer').html('');
 
         } else {
 
@@ -556,7 +556,7 @@
                 this.icon = 'cast-connected';
             });
 
-            $('.headerSelectedPlayer').html((info.deviceName || info.name));
+            $('.nowPlayingSelectedPlayer').html((info.deviceName || info.name));
         }
     }
 

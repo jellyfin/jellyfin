@@ -166,6 +166,10 @@
     border: 0;
 }
 
+.hiddenViewMenuBar .viewMenuBar {
+    display: none;
+}
+
 .libraryViewNav {
     height: 49px;
     overflow: hidden;

@@ -602,7 +602,7 @@ var Dashboard = {
                 html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonCancel') + '</paper-button>';
             }
 
-            html += '<paper-button dialog-confirm autofocus>' + Globalize.translate('ButtonOk') + '</paper-button>';
+            html += '<paper-button class="btnConfirm" dialog-confirm autofocus>' + Globalize.translate('ButtonOk') + '</paper-button>';
 
             html += '</div>';
             html += '</paper-dialog>';
@@ -615,12 +615,15 @@ var Dashboard = {
 
                 var dlg = document.getElementById(id);
 
-                dlg.open();
-
                 // Has to be assigned a z-index after the call to .open() 
                 $(dlg).on('iron-overlay-closed', function (e) {
+                    var confirmed = this.closingReason.confirmed;
                     $(this).remove();
+                    callback(confirmed);
                 });
+
+                dlg.open();
+
             }, 300);
         });
     },
@@ -1483,7 +1486,7 @@ var Dashboard = {
 
         if (AppInfo.forcedImageFormat && options.type != 'Logo') {
             options.format = AppInfo.forcedImageFormat;
-            options.backgroundColor = '#1f1f1f';
+            options.backgroundColor = '#1c1c1c';
         }
     },
 
@@ -1975,7 +1978,7 @@ var AppInfo = {};
             urlArgs: "v=" + window.dashboardVersion,
 
             paths: {
-                "velocity": "thirdparty/velocity.min"
+                "velocity": "bower_components/velocity/velocity.min"
             }
         });
 
@@ -2088,10 +2091,10 @@ var AppInfo = {};
             } else {
                 createConnectionManager(capabilities);
 
-                Dashboard.initPromiseDone = true;
-                deferred.resolve();
                 $(function () {
                     onDocumentReady();
+                    Dashboard.initPromiseDone = true;
+                    deferred.resolve();
                 });
             }
         });
