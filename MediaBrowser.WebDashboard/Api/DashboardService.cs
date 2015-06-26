@@ -318,6 +318,7 @@ namespace MediaBrowser.WebDashboard.Api
                 Directory.Delete(Path.Combine(path, "bower_components"), true);
                 // But we do need this
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "webcomponentsjs", "webcomponents-lite.min.js"), Path.Combine(path, "bower_components", "webcomponentsjs", "webcomponents-lite.min.js"));
+                CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "velocity", "velocity.min.js"), Path.Combine(path, "bower_components", "velocity", "velocity.min.js"));
             }
 
             MinifyCssDirectory(Path.Combine(path, "css"));

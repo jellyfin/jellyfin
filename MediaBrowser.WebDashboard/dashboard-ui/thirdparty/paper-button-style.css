@@ -307,11 +307,6 @@ paper-fab.blue {
         background: #01579b !important;
     }
 
-paper-fab.large {
-    width: 64px;
-    height: 64px;
-}
-
 paper-fab.square {
     border-radius: 5px;
 }

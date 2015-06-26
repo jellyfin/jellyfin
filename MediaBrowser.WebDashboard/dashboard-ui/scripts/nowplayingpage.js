@@ -104,125 +104,106 @@
         $('.chapterMenu', page).hide();
     }
 
-    function showAudioMenu(page, item, currentIndex) {
+    function showAudioMenu(page, button, item, currentIndex) {
 
         var streams = (item.MediaStreams || []).filter(function (i) {
 
             return i.Type == 'Audio';
         });
 
-        var elem = $('#popupAudioTrackMenu', page);
+        var menuItems = streams.map(function (s) {
 
-        var html = '<ul data-role="listview" data-inset="true" style="min-width: 210px;"><li data-role="list-divider">' + Globalize.translate('HeaderSelectAudio') + '</li>';
-
-        html += streams.map(function (s) {
-
-            var streamHtml = '<li><a data-index="' + s.Index + '" href="#" class="lnkTrackOption">';
-
-            streamHtml += '<h3>';
-
-            if (s.Index == currentIndex) {
-                streamHtml += '<img src="css/images/checkmarkgreen.png" style="width:18px;border-radius:3px;margin-right:.5em;vertical-align:top;" />';
-            }
-
-            streamHtml += (s.Codec || '').toUpperCase();
+            var name = (s.Codec || '').toUpperCase();
 
             if (s.Profile) {
-                streamHtml += ' ' + s.Profile;
+                name += ' ' + s.Profile;
             }
-
-            streamHtml += '</h3><p>';
-
-            var extras = [];
 
             if (s.Language) {
-                extras.push(s.Language);
+                name += ' · ' + s.Language;
             }
             if (s.Layout) {
-                extras.push(s.Layout);
+                name += ' · ' + s.Layout;
             }
             else if (s.Channels) {
-                extras.push(s.Channels + ' ch');
+                name += ' · ' + s.Channels + ' ch';
             }
 
-            if (s.BitRate) {
-                extras.push((parseInt(s.BitRate / 1000)) + ' kbps');
+            var menuItem = {
+                name: name,
+                id: s.Index
+            };
+
+            if (s.Index == currentIndex) {
+                menuItem.ironIcon = 'check';
             }
 
-            streamHtml += extras.join(' - ');
+            return menuItem;
+        });
 
-            streamHtml += '</p></a></li>';
+        require(['actionsheet'], function () {
 
-            return streamHtml;
+            ActionSheetElement.show({
+                items: menuItems,
+                positionTo: button,
+                callback: function (id) {
 
-        }).join('');
+                    currentPlayer.setAudioStreamIndex(parseInt(id));
+                }
+            });
 
-        html += '</ul>';
-
-        $('.trackList', elem).html(html).trigger('create');
-
-        elem.popup('open');
+        });
     }
 
-    function showSubtitleMenu(page, item, currentIndex) {
-
-        var currentStreamImage = '<img src="css/images/checkmarkgreen.png" style="width:18px;border-radius:3px;margin-right:.5em;vertical-align:top;" />';
+    function showSubtitleMenu(page, button, item, currentIndex) {
 
         var streams = (item.MediaStreams || []).filter(function (i) {
 
             return i.Type == 'Subtitle';
         });
 
-        var elem = $('#popupSubtitleTrackMenu', page);
+        var menuItems = streams.map(function (s) {
 
-        var html = '<ul data-role="listview" data-inset="true" style="min-width: 210px;"><li data-role="list-divider">' + Globalize.translate('HeaderSelectSubtitles') + '</li>';
-
-        html += '<li><a href="#" data-index="-1" class="lnkTrackOption"><h3>';
-
-        if (currentIndex == null) {
-            html += currentStreamImage;
-        }
-
-        html += 'Off';
-        html += '</h3></a></li>';
-
-        html += streams.map(function (s) {
-
-            var streamHtml = '<li><a data-index="' + s.Index + '" href="#" class="lnkTrackOption">';
-
-            streamHtml += '<h3>';
-
-            if (s.Index == currentIndex) {
-                streamHtml += currentStreamImage;
-            }
-
-            streamHtml += (s.Language || Globalize.translate('LabelUnknownLanguage'));
+            var name = (s.Language || Globalize.translate('LabelUnknownLanguage'));
 
             if (s.IsDefault && s.IsForced) {
-                streamHtml += ' ' + Globalize.translate('LabelDefaultForcedStream');
+                name += ' · ' + Globalize.translate('LabelDefaultForcedStream');
             }
             else if (s.IsDefault) {
-                streamHtml += ' ' + Globalize.translate('LabelDefaultStream');
+                name += ' · ' + Globalize.translate('LabelDefaultStream');
             }
             else if (s.IsForced) {
-                streamHtml += ' ' + Globalize.translate('LabelForcedStream');
+                name += ' · ' + Globalize.translate('LabelForcedStream');
             }
 
-            streamHtml += '</h3><p>';
+            if (s.Codec) {
+                name += ' · ' + s.Codec.toUpperCase();
+            }
 
-            streamHtml += (s.Codec || '').toUpperCase();
+            var menuItem = {
+                name: name,
+                id: s.Index
+            };
 
-            streamHtml += '</p></a></li>';
+            if (s.Index == currentIndex) {
+                menuItem.ironIcon = 'check';
+            }
 
-            return streamHtml;
+            return menuItem;
+        });
 
-        }).join('');
+        require(['actionsheet'], function () {
 
-        html += '</ul>';
+            ActionSheetElement.show({
+                items: menuItems,
+                positionTo: button,
+                callback: function (id) {
 
-        $('.trackList', elem).html(html).trigger('create');
+                    currentPlayer.setSubtitleStreamIndex(parseInt(id));
+                }
+            });
 
-        elem.popup('open');
+        });
     }
 
     function bindEvents(page) {
@@ -264,35 +245,12 @@
             }
         });
 
-        $('#popupAudioTrackMenu', page).on('click', '.lnkTrackOption', function () {
-
-            if (currentPlayer && lastPlayerState) {
-
-                var index = this.getAttribute('data-index');
-
-                currentPlayer.setAudioStreamIndex(parseInt(index));
-
-                $('#popupAudioTrackMenu', page).popup('close');
-            }
-        });
-
-        $('#popupSubtitleTrackMenu', page).on('click', '.lnkTrackOption', function () {
-
-            if (currentPlayer && lastPlayerState) {
-                var index = this.getAttribute('data-index');
-
-                currentPlayer.setSubtitleStreamIndex(parseInt(index));
-
-                $('#popupSubtitleTrackMenu', page).popup('close');
-            }
-        });
-
         $('.btnAudioTracks', page).on('click', function () {
 
             if (currentPlayer && lastPlayerState && lastPlayerState.PlayState) {
 
                 var currentIndex = lastPlayerState.PlayState.AudioStreamIndex;
-                showAudioMenu(page, lastPlayerState.NowPlayingItem, currentIndex);
+                showAudioMenu(page, this, lastPlayerState.NowPlayingItem, currentIndex);
             }
         });
 
@@ -301,7 +259,7 @@
             if (currentPlayer && lastPlayerState && lastPlayerState.PlayState) {
 
                 var currentIndex = lastPlayerState.PlayState.SubtitleStreamIndex;
-                showSubtitleMenu(page, lastPlayerState.NowPlayingItem, currentIndex);
+                showSubtitleMenu(page, this, lastPlayerState.NowPlayingItem, currentIndex);
             }
         });
 

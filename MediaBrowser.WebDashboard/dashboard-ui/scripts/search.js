@@ -224,19 +224,21 @@
 
     function hideSearchMenu() {
 
-        require(["jquery", "velocity"], function ($, Velocity) {
+        if ($('.viewMenuSearch').is(':visible')) {
+            require(["jquery", "velocity"], function ($, Velocity) {
 
-            $('.btnCloseSearch').hide();
-            var elem = $('.viewMenuSearch')
-                .css({ left: '0' })[0];
+                $('.btnCloseSearch').hide();
+                var elem = $('.viewMenuSearch')
+                    .css({ left: '0' })[0];
 
-            Velocity.animate(elem, { "left": "100%" },
-            {
-                complete: function () {
-                    $('.viewMenuSearch').visible(false);
-                }
+                Velocity.animate(elem, { "left": "100%" },
+                {
+                    complete: function () {
+                        $('.viewMenuSearch').visible(false);
+                    }
+                });
             });
-        });
+        }
     }
 
     $(document).on('pagebeforehide', ".libraryPage", function () {
