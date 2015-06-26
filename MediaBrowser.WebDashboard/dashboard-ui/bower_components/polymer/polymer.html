@@ -558,7 +558,8 @@ prevent = dy > dx;
 prevent = dx > dy;
 }
 if (prevent) {
-ev.preventDefault();
+    //This breaks scrolling in safari
+    //ev.preventDefault();
 }
 }
 },
