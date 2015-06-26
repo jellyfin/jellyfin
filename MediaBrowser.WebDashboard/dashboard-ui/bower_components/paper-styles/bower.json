@@ -1,6 +1,6 @@
 {
   "name": "paper-styles",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "Common (global) styles for Material Design elements.",
   "authors": [
     "The Polymer Authors"
@@ -21,7 +21,8 @@
     "/.*"
   ],
   "dependencies": {
-    "iron-flex-layout": "polymerelements/iron-flex-layout#^1.0.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
+    "font-roboto": "PolymerElements/font-roboto#^1.0.0",
     "polymer": "Polymer/polymer#^1.0.0"
   },
   "devDependencies": {

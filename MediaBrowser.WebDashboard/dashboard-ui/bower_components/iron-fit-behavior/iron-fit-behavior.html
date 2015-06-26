@@ -39,6 +39,7 @@ CSS properties               | Action
        * The element that will receive a `max-height`/`width`. By default it is the same as `this`,
        * but it can be set to a child element. This is useful, for example, for implementing a
        * scrolling region inside the element.
+       * @type {!Element}
        */
       sizingTarget: {
         type: Object,
@@ -63,6 +64,7 @@ CSS properties               | Action
         value: false
       },
 
+      /** @type {?Object} */
       _fitInfo: {
         type: Object
       }
@@ -87,6 +89,26 @@ CSS properties               | Action
         fitHeight = this.fitInto.getBoundingClientRect().height;
       }
       return fitHeight;
+    },
+
+    get _fitLeft() {
+      var fitLeft;
+      if (this.fitInto === window) {
+        fitLeft = 0;
+      } else {
+        fitLeft = this.fitInto.getBoundingClientRect().left;
+      }
+      return fitLeft;
+    },
+
+    get _fitTop() {
+      var fitTop;
+      if (this.fitInto === window) {
+        fitTop = 0;
+      } else {
+        fitTop = this.fitInto.getBoundingClientRect().top;
+      }
+      return fitTop;
     },
 
     attached: function() {
@@ -120,6 +142,10 @@ CSS properties               | Action
       var target = window.getComputedStyle(this);
       var sizer = window.getComputedStyle(this.sizingTarget);
       this._fitInfo = {
+        inlineStyle: {
+          top: this.style.top || '',
+          left: this.style.left || ''
+        },
         positionedBy: {
           vertically: target.top !== 'auto' ? 'top' : (target.bottom !== 'auto' ?
             'bottom' : null),
@@ -147,11 +173,11 @@ CSS properties               | Action
     resetFit: function() {
       if (!this._fitInfo || !this._fitInfo.sizedBy.height) {
         this.sizingTarget.style.maxHeight = '';
-        this.style.top = '';
+        this.style.top = this._fitInfo ? this._fitInfo.inlineStyle.top : '';
       }
       if (!this._fitInfo || !this._fitInfo.sizedBy.width) {
         this.sizingTarget.style.maxWidth = '';
-        this.style.left = '';
+        this.style.left = this._fitInfo ? this._fitInfo.inlineStyle.left : '';
       }
       if (this._fitInfo) {
         this.style.position = this._fitInfo.positionedBy.css;
@@ -214,12 +240,12 @@ CSS properties               | Action
         this.style.position = 'fixed';
       }
       if (!this._fitInfo.positionedBy.vertically) {
-        var top = (this._fitHeight - this.offsetHeight) / 2;
+        var top = (this._fitHeight - this.offsetHeight) / 2 + this._fitTop;
         top -= this._fitInfo.margin.top;
         this.style.top = top + 'px';
       }
       if (!this._fitInfo.positionedBy.horizontally) {
-        var left = (this._fitWidth - this.offsetWidth) / 2;
+        var left = (this._fitWidth - this.offsetWidth) / 2 + this._fitLeft;
         left -= this._fitInfo.margin.left;
         this.style.left = left + 'px';
       }

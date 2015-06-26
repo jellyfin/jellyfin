@@ -28,7 +28,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 :host > ::content > .no-padding {
   padding: 0;
-};
+}
 
 :host > ::content > *:first-child {
   margin-top: 24px;

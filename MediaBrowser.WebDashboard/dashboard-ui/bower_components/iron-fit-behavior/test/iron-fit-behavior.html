@@ -120,7 +120,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <test-fixture id="inline-positioned-xy">
       <template>
-        <test-fit auto-fit-on-attach class="sized-x sized-y" style="position:absolute;right:100px;bottom:100px;">
+        <test-fit auto-fit-on-attach class="sized-x sized-y" style="position:absolute;left:100px;top:100px;">
           Sized (x/y), positioned/positioned
         </test-fit>
       </template>
@@ -139,7 +139,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <test-fixture id="constrain-target">
       <template>
-        <div class="constrain" style="position: fixed; top: 0; left: 0; width: 50vw; height: 50vh; border: 1px solid black;">
+        <div class="constrain" style="position: fixed; top: 20px; left: 100px; width: 50vw; height: 50vh; border: 1px solid black;">
           <test-fit auto-fit-on-attach class="el">
             <div>
               Auto center/center to parent element
@@ -170,6 +170,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var rect = el.getBoundingClientRect();
           assert.equal(rect.top, 100, 'top is unset');
           assert.equal(rect.left, 100, 'left is unset');
+
         });
 
         test('inline positioned element is not re-positioned', function() {
@@ -178,15 +179,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           // need to measure document.body here because mocha sets a min-width on html,body, and
           // the element is positioned wrt to that by css
           var bodyRect = document.body.getBoundingClientRect();
-          assert.equal(rect.top, bodyRect.height - rect.height - 100, 'top is unset');
-          assert.equal(rect.left, bodyRect.width - rect.width - 100, 'left is unset');
+          assert.equal(rect.top, 100, 'top is unset');
+          assert.equal(rect.left, 100, 'left is unset');
+
+          el.refit();
+
+          rect = el.getBoundingClientRect();
+          assert.equal(rect.top, 100, 'top is unset after refit');
+          assert.equal(rect.left, 100, 'left is unset after refit');
+
         });
 
         test('position property is preserved after', function() {
           var el = fixture('absolute');
           assert.equal(getComputedStyle(el).position, 'absolute', 'position:absolute is preserved');
-        })
-
+        });
       });
 
       suite('fit to window', function() {
@@ -322,6 +329,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var crect = constrain.getBoundingClientRect();
           assert.isTrue(rect.height <= crect.height, 'width is less than or equal to fitInto width');
           assert.isTrue(rect.height <= crect.height, 'height is less than or equal to fitInto height');
+        });
+
+        test('element centers in another element', function() {
+          var constrain = fixture('constrain-target');
+          var el = Polymer.dom(constrain).querySelector('.el')
+          makeScrolling(el);
+          el.fitInto = constrain;
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          var crect = constrain.getBoundingClientRect();
+          assert.closeTo(rect.left - crect.left - (crect.right - rect.right), 0, 5, 'centered horizontally in fitInto');
+          assert.closeTo(rect.top - crect.top - (crect.bottom - rect.bottom), 0, 5, 'centered vertically in fitInto');
         });
 
       });

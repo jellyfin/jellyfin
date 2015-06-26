@@ -1,6 +1,6 @@
 {
   "name": "neon-animation",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "authors": [
     "The Polymer Authors"
   ],
@@ -11,12 +11,12 @@
     "web-animations"
   ],
   "main": [
+    "neon-animated-pages.html",
     "neon-animatable-behavior.html",
     "neon-animation-behavior.html",
     "neon-animation-runner-behavior.html",
     "neon-shared-element-animatable-behavior.html",
     "neon-shared-element-animation-behavior.html",
-    "neon-animated-pages.html",
     "neon-animatable.html",
     "neon-animations.html"
   ],

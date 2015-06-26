@@ -125,6 +125,12 @@ this.copyOwnProperty(n, api, prototype);
 }
 return prototype || api;
 },
+mixin: function (target, source) {
+for (var i in source) {
+target[i] = source[i];
+}
+return target;
+},
 copyOwnProperty: function (name, source, target) {
 var pd = Object.getOwnPropertyDescriptor(source, name);
 if (pd) {
@@ -500,7 +506,7 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.0.4';
+Polymer.version = '1.0.5';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();

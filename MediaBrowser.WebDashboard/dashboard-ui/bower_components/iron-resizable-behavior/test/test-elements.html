@@ -141,3 +141,53 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   });
 
 </script>
+<script>
+  Polymer.ObserveIronResizeBehavior = {
+    properties: {
+      ironResizeCount: {
+        type: Number,
+        value: 0
+      }
+    },
+
+    listeners: {
+      'iron-resize': '_incrementIronResizeCount'
+    },
+
+    _incrementIronResizeCount: function() {
+      this.ironResizeCount++;
+    }
+  };
+</script>
+<dom-module id="x-shadow-resizable">
+  <template>
+    <div></div>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'x-shadow-resizable',
+
+    behaviors: [
+      Polymer.IronResizableBehavior,
+      Polymer.ObserveIronResizeBehavior
+    ]
+  });
+</script>
+
+<dom-module id="x-light-resizable">
+  <template>
+    <x-shadow-resizable id="childResizable1"></x-shadow-resizable>
+    <x-shadow-resizable id="childResizable2"></x-shadow-resizable>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'x-light-resizable',
+
+    behaviors: [
+      Polymer.IronResizableBehavior,
+      Polymer.ObserveIronResizeBehavior
+    ]
+  });
+</script>

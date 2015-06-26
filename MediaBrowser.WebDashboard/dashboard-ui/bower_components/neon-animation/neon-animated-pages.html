@@ -160,14 +160,14 @@ animations to be run when switching to or switching out of the page.
         // on first load, ensure we run animations only after element is attached.
         if (!this.isAttached) {
           this.async(function () {
-            this.playAnimation(null, {
+            this.playAnimation(undefined, {
               fromPage: null,
               toPage: selectedPage
             });
           });
 
         } else {
-          this.playAnimation(null, {
+          this.playAnimation(undefined, {
             fromPage: oldPage,
             toPage: selectedPage
           });
@@ -178,6 +178,10 @@ animations to be run when switching to or switching out of the page.
       }
     },
 
+    /**
+     * @param {Object=} oldPage
+     * @param {Object=} selectedPage
+     */
     _completeSelectedChanged: function(oldPage, selectedPage) {
       if (selectedPage) {
         selectedPage.classList.remove('neon-animating');
@@ -191,7 +195,7 @@ animations to be run when switching to or switching out of the page.
           node.classList && node.classList.remove('neon-animating');
         }
       }
-      this.async(this.notifyResize);
+      this.async(this._notifyPageResize);
     },
 
     _onNeonAnimationFinish: function(event) {
@@ -200,6 +204,14 @@ animations to be run when switching to or switching out of the page.
         return;
       }
       this._completeSelectedChanged(event.detail.fromPage, event.detail.toPage);
+    },
+
+    _notifyPageResize: function() {
+      var selectedPage = this.selectedItem;
+      this.resizerShouldNotify = function(element) {
+        return element == selectedPage;
+      }
+      this.notifyResize();
     }
 
   })

@@ -29,9 +29,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
    **/
   Polymer.IronResizableBehavior = {
     properties: {
+      /**
+       * The closest ancestor element that implements `IronResizableBehavior`.
+       */
       _parentResizable: {
         type: Object,
         observer: '_parentResizableChanged'
+      },
+
+      /**
+       * True if this element is currently notifying its descedant elements of
+       * resize.
+       */
+      _notifyingDescendant: {
+        type: Boolean,
+        value: false
       }
     },
 
@@ -49,7 +61,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     attached: function() {
       this.fire('iron-request-resize-notifications', null, {
         node: this,
-        bubbles: true
+        bubbles: true,
+        cancelable: true
       });
 
       if (!this._parentResizable) {
@@ -78,16 +91,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       this._interestedResizables.forEach(function(resizable) {
-        // TODO(cdata): Currently behaviors cannot define "abstract" methods..
-        if (!this.resizerShouldNotify || this.resizerShouldNotify(resizable)) {
-          resizable.notifyResize();
+        if (this.resizerShouldNotify(resizable)) {
+          this._notifyDescendant(resizable);
         }
       }, this);
 
-      this.fire('iron-resize', null, {
-        node: this,
-        bubbles: false
-      });
+      this._fireResize();
     },
 
     /**
@@ -107,16 +116,40 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       if (index > -1) {
         this._interestedResizables.splice(index, 1);
+        this.unlisten(target, 'iron-resize', '_onDescendantIronResize');
       }
     },
 
-    // TODO(cdata): Currently behaviors cannot define "abstract" methods.
-    // resizerShouldNotify: function(el) { return true; },
+    /**
+     * This method can be overridden to filter nested elements that should or
+     * should not be notified by the current element. Return true if an element
+     * should be notified, or false if it should not be notified.
+     *
+     * @param {HTMLElement} element A candidate descendant element that
+     * implements `IronResizableBehavior`.
+     * @return {boolean} True if the `element` should be notified of resize.
+     */
+    resizerShouldNotify: function(element) { return true; },
 
-    _parentResizableChanged: function(parentResizable) {
-      if (parentResizable) {
-        window.removeEventListener('resize', this._boundNotifyResize);
+    _onDescendantIronResize: function(event) {
+      if (this._notifyingDescendant) {
+        event.stopPropagation();
+        return;
       }
+
+      // NOTE(cdata): In ShadowDOM, event retargetting makes echoing of the
+      // otherwise non-bubbling event "just work." We do it manually here for
+      // the case where Polymer is not using shadow roots for whatever reason:
+      if (!Polymer.Settings.useShadow) {
+        this._fireResize();
+      }
+    },
+
+    _fireResize: function() {
+      this.fire('iron-resize', null, {
+        node: this,
+        bubbles: false
+      });
     },
 
     _onIronRequestResizeNotifications: function(event) {
@@ -128,11 +161,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       if (this._interestedResizables.indexOf(target) === -1) {
         this._interestedResizables.push(target);
+        this.listen(target, 'iron-resize', '_onDescendantIronResize');
       }
 
       target.assignParentResizable(this);
+      this._notifyDescendant(target);
 
       event.stopPropagation();
+    },
+
+    _parentResizableChanged: function(parentResizable) {
+      if (parentResizable) {
+        window.removeEventListener('resize', this._boundNotifyResize);
+      }
+    },
+
+    _notifyDescendant: function(descendant) {
+      // NOTE(cdata): In IE10, attached is fired on children first, so it's
+      // important not to notify them if the parent is not attached yet (or
+      // else they will get redundantly notified when the parent attaches).
+      if (!this.isAttached) {
+        return;
+      }
+
+      this._notifyingDescendant = true;
+      descendant.notifyResize();
+      this._notifyingDescendant = false;
     }
   };
 </script>

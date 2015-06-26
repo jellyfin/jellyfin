@@ -535,8 +535,8 @@ node._ownerShadyRoot = root;
 return node._ownerShadyRoot;
 },
 _maybeDistribute: function (node, parent) {
-var fragContent = node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && node.querySelector(CONTENT);
-var wrappedContent = fragContent && fragContent.parentNode.nodeType !== Node.DOCUMENT_FRAGMENT_NODE;
+var fragContent = node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && !node.__noContent && Polymer.dom(node).querySelector(CONTENT);
+var wrappedContent = fragContent && Polymer.dom(fragContent).parentNode.nodeType !== Node.DOCUMENT_FRAGMENT_NODE;
 var hasContent = fragContent || node.localName === CONTENT;
 if (hasContent) {
 var root = this._ownerShadyRootForNode(parent);
@@ -598,7 +598,7 @@ if (this._contains(container, content)) {
 var dc$ = factory(content).getDistributedNodes();
 for (var j = 0; j < dc$.length; j++) {
 hostNeedsDist = true;
-var node = dc$[i];
+var node = dc$[j];
 var parent = node.parentNode;
 if (parent) {
 removeFromComposedParent(parent, node);
@@ -764,6 +764,9 @@ this.domApi._distributeParent();
 toggle: function () {
 this.node.classList.toggle.apply(this.node.classList, arguments);
 this.domApi._distributeParent();
+},
+contains: function () {
+return this.node.classList.contains.apply(this.node.classList, arguments);
 }
 };
 if (!Settings.useShadow) {
@@ -1050,9 +1053,6 @@ factory: factory
 Polymer.Base._addFeature({
 _prepShady: function () {
 this._useContent = this._useContent || Boolean(this._template);
-if (this._useContent) {
-this._template._hasInsertionPoint = this._template.content.querySelector('content');
-}
 },
 _poolContent: function () {
 if (this._useContent) {
@@ -1072,7 +1072,7 @@ this.shadyRoot = this.root;
 this.shadyRoot._distributionClean = false;
 this.shadyRoot._isShadyRoot = true;
 this.shadyRoot._dirtyRoots = [];
-this.shadyRoot._insertionPoints = this._template._hasInsertionPoint ? this.shadyRoot.querySelectorAll('content') : [];
+this.shadyRoot._insertionPoints = !this._notes || this._notes._hasContent ? this.shadyRoot.querySelectorAll('content') : [];
 saveLightChildrenIfNeeded(this.shadyRoot);
 this.shadyRoot.host = this;
 },

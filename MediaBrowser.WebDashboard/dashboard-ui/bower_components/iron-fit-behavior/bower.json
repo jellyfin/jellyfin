@@ -1,6 +1,6 @@
 {
   "name": "iron-fit-behavior",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "Fits an element inside another element",
   "private": true,
@@ -23,6 +23,7 @@
     "polymer": "Polymer/polymer#^1.0.0"
   },
   "devDependencies": {
+    "paper-styles": "polymerelements/paper-styles#^1.0.2",
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
     "test-fixture": "PolymerElements/test-fixture#^1.0.0",
     "web-component-tester": "*",

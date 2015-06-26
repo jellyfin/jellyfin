@@ -8,25 +8,24 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
+
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../neon-shared-element-animation-behavior.html">
 <link rel="import" href="../web-animations.html">
 
 <!--
-`<ripple-animation>` scales and transform an element such that it appears to ripple from either
-a shared element, or from a screen position, to full screen.
+`<reverse-ripple-animation>` scales and transform an element such that it appears to ripple down from this element, to either
+a shared element, or a screen position.
 
 If using as a shared element animation in `<neon-animated-pages>`, use this animation in an `exit`
 animation in the source page and in an `entry` animation in the destination page. Also, define the
-hero elements in the `sharedElements` property (not a configuration property, see
+reverse-ripple elements in the `sharedElements` property (not a configuration property, see
 `Polymer.NeonSharedElementAnimatableBehavior`).
-
 If using a screen position, define the `gesture` property.
-
 Configuration:
 ```
 {
-  name: 'ripple-animation`.
+  name: 'reverse-ripple-animation`.
   id: <shared-element-id>, /* set this or gesture */
   gesture: {x: <page-x>, y: <page-y>}, /* set this or id */
   timing: <animation-timing>,
@@ -37,56 +36,52 @@ Configuration:
 -->
 
 <script>
-
   Polymer({
-
-    is: 'ripple-animation',
+    is: 'reverse-ripple-animation',
 
     behaviors: [
       Polymer.NeonSharedElementAnimationBehavior
     ],
 
-    configure: function(config) {
-      var shared = this.findSharedElements(config);
+    configure: function(config, fromPage, toPage) {
+      var shared = this.findSharedElements(config, fromPage, toPage);
       if (!shared) {
         return null;
       }
 
       var translateX, translateY;
-      var toRect = shared.to.getBoundingClientRect();
+      var fromRect = shared.from.getBoundingClientRect();
       if (config.gesture) {
-        translateX = config.gesture.x - (toRect.left + (toRect.width / 2));
-        translateY = config.gesture.y - (toRect.top + (toRect.height / 2));
+        translateX = config.gesture.x - (fromRect.left + (fromRect.width / 2));
+        translateY = config.gesture.y - (fromRect.top + (fromRect.height / 2));
       } else {
-        var fromRect = shared.from.getBoundingClientRect();
-        translateX = (fromRect.left + (fromRect.width / 2)) - (toRect.left + (toRect.width / 2));
-        translateY = (fromRect.top + (fromRect.height / 2)) - (toRect.top + (toRect.height / 2));
+        var toRect = shared.to.getBoundingClientRect();
+        translateX = (toRect.left + (toRect.width / 2)) - (fromRect.left + (fromRect.width / 2));
+        translateY = (toRect.top + (toRect.height / 2)) - (fromRect.top + (fromRect.height / 2));
       }
       var translate = 'translate(' + translateX + 'px,' + translateY + 'px)';
 
-      var size = Math.max(toRect.width + Math.abs(translateX) * 2, toRect.height + Math.abs(translateY) * 2);
+      var size = Math.max(fromRect.width + Math.abs(translateX) * 2, fromRect.height + Math.abs(translateY) * 2);
       var diameter = Math.sqrt(2 * size * size);
-      var scaleX = diameter / toRect.width;
-      var scaleY = diameter / toRect.height;
+      var scaleX = diameter / fromRect.width;
+      var scaleY = diameter / fromRect.height;
       var scale = 'scale(' + scaleX + ',' + scaleY + ')';
 
-      this.setPrefixedProperty(shared.to, 'transformOrigin', '50% 50%');
-      shared.to.style.borderRadius = '50%';
-
-      this._effect = new KeyframeEffect(shared.to, [
-        {'transform': translate + ' scale(0)'},
-        {'transform': translate + ' ' + scale}
+      this.setPrefixedProperty(shared.from, 'transformOrigin', '50% 50%');
+      shared.from.style.borderRadius = '50%';
+      
+      this._effect = new KeyframeEffect(shared.from, [
+        {'transform': translate + ' ' + scale},
+        {'transform': translate + ' scale(0)'}
       ], this.timingFromConfig(config));
       return this._effect;
     },
 
     complete: function() {
       if (this.sharedElements) {
-        this.setPrefixedProperty(this.sharedElements.to, 'transformOrigin', '');
-        this.sharedElements.to.style.borderRadius = '';
+        this.setPrefixedProperty(this.sharedElements.from, 'transformOrigin', '');
+        this.sharedElements.from.style.borderRadius = '';
       }
     }
-
   });
-
 </script>

@@ -1,6 +1,6 @@
 {
   "name": "iron-icons",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A set of icons for use with iron-icon",
   "authors": [
     "The Polymer Authors"
@@ -14,7 +14,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git://github.com/PolymerElements/paper-icons"
+    "url": "git://github.com/PolymerElements/iron-icons"
   },
   "license": "http://polymer.github.io/LICENSE.txt",
   "homepage": "https://github.com/PolymerElements/paper-icons",
@@ -34,11 +34,11 @@
     "util",
     "update-icons.sh"
   ],
-  "_release": "1.0.2",
+  "_release": "1.0.3",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.2",
-    "commit": "7340b4e26a0235ffdf2477299ccecd0c5d3d99e8"
+    "tag": "v1.0.3",
+    "commit": "036325be99c33c052ac807a705aacad70be1127f"
   },
   "_source": "git://github.com/polymerelements/iron-icons.git",
   "_target": "^1.0.0",

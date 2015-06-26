@@ -40,6 +40,7 @@ Configuration:
 
     properties: {
 
+      /** @type {!Polymer.IronMeta} */
       _animationMeta: {
         type: Object,
         value: function() {
@@ -49,8 +50,17 @@ Configuration:
 
     },
 
+    /**
+     * @param {{
+     *   animation: string,
+     *   nodes: !Array<!Element>,
+     *   nodeDelay: (number|undefined),
+     *   timing: (Object|undefined)
+     *  }} config
+     */
     configure: function(config) {
-      var animationConstructor = this._animationMeta.byKey(config.animation);
+      var animationConstructor = /** @type {Function} */ (
+          this._animationMeta.byKey(config.animation));
       if (!animationConstructor) {
         console.warn(this.is + ':', 'constructor for', config.animation, 'not found!');
         return;

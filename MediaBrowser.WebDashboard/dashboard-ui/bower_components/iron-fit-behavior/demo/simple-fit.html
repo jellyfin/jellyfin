@@ -9,15 +9,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../iron-fit-behavior.html">
+<link rel="import" href="../../paper-styles/paper-styles.html">
 
 <dom-module id="simple-fit">
 
   <style>
     :host {
-      display: block;
-      background: black;
+      @apply(--layout);
+      
+      background-color: var(--paper-light-blue-500);
       color: white;
-      padding: 8px;
+      text-align: center;
+
+      align-items:center;
+      -webkit-align-items: center;
+
+      justify-content:center;
+      -webkit-justify-content:center;
     }
   </style>
 

@@ -33,6 +33,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <test-dialog>
           <p>Dialog</p>
           <div class="buttons">
+            <button extra>extra</button>
             <button dialog-dismiss>dismiss</button>
             <button dialog-confirm>confirm</button>
           </div>
@@ -161,6 +162,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               assert.equal(document.activeElement, Polymer.dom(dialog).querySelector('[autofocus]'), 'document.activeElement is the autofocused button');
               done();
             }, 10);
+          });
+        });
+
+        test('removing a child element on click does not cause an exception', function(done) {
+          var dialog = fixture('basic');
+          runAfterOpen(dialog, function() {
+            var button = Polymer.dom(dialog).querySelector('[extra]');
+            button.addEventListener('click', function(event) {
+              Polymer.dom(event.target.parentNode).removeChild(event.target);
+              // should not throw exception here
+              done();
+            });
+            button.click();
           });
         });
 

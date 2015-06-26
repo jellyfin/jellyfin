@@ -7,10 +7,9 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
-<!-- TODO(nevir): Should we upgrade Polymer/font-roboto to the final font? -->
-<!--<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">-->
 
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../font-roboto/roboto.html">
 
 <style is="custom-style">
 
@@ -19,9 +18,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     /* Shared Styles */
 
     /*
-    Unfortunately, we can't make use of these yet - sibling properties aren't
-    evaluated. See https://github.com/Polymer/polymer/issues/1399
-
+    Unfortunately, we can't use nested rules
+    See https://github.com/Polymer/polymer/issues/1399
+    */
     --paper-font-common-base: {
       font-family: 'Roboto', 'Noto', sans-serif;
       -webkit-font-smoothing: antialiased;
@@ -41,7 +40,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       overflow: hidden;
       text-overflow: ellipsis;
     };
-    */
 
     /* Material Font Styles */
 

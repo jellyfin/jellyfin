@@ -165,8 +165,8 @@ Or, in a Polymer element, you can include a meta in your template:
        * Retrieves meta data value by key.
        *
        * @method byKey
-       * @param {String} key The key of the meta-data to be returned.
-       * @returns *
+       * @param {string} key The key of the meta-data to be returned.
+       * @return {*}
        */
       byKey: function(key) {
         return this._metaData && this._metaData[key];
@@ -304,6 +304,8 @@ Or, in a Polymer element, you can include a meta in your template:
 
       /**
        * Retrieves meta data value by key.
+       * @param {string} key The key of the meta-data to be returned.
+       * @return {*}
        */
       byKey: function(key) {
         return this._metaData && this._metaData[key];

@@ -1,6 +1,6 @@
 {
   "name": "neon-animation",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "authors": [
     "The Polymer Authors"
   ],
@@ -11,12 +11,12 @@
     "web-animations"
   ],
   "main": [
+    "neon-animated-pages.html",
     "neon-animatable-behavior.html",
     "neon-animation-behavior.html",
     "neon-animation-runner-behavior.html",
     "neon-shared-element-animatable-behavior.html",
     "neon-shared-element-animation-behavior.html",
-    "neon-animated-pages.html",
     "neon-animatable.html",
     "neon-animations.html"
   ],
@@ -48,11 +48,11 @@
     "iron-icons": "PolymerElements/iron-icons#^1.0.0",
     "paper-icon-button": "PolymerElements/paper-icon-button#^1.0.0"
   },
-  "_release": "1.0.1",
+  "_release": "1.0.4",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.1",
-    "commit": "160f14c31b4692cc8073b67e8849e444b0695cde"
+    "tag": "v1.0.4",
+    "commit": "8016c4f082250af41a08d30c2b8eae295c24f874"
   },
   "_source": "git://github.com/PolymerElements/neon-animation.git",
   "_target": "^1.0.0",
