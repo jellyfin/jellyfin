@@ -652,6 +652,7 @@ namespace MediaBrowser.WebDashboard.Api
                                   {
                                       "site.css",
                                       "chromecast.css",
+                                      "nowplayingbar.css",
                                       "mediaplayer.css",
                                       "mediaplayer-video.css",
                                       "librarymenu.css",

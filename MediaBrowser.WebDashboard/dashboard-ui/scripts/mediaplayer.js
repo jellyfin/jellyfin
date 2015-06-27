@@ -599,13 +599,14 @@
                     var percent = ticks / self.currentDurationTicks;
                     percent *= 100;
 
-                    positionSlider.val(percent).slider('enable').slider('refresh');
+                    positionSlider.disabled = false;
+                    positionSlider.value = percent;
                 }
             } else {
 
                 if (positionSlider) {
 
-                    positionSlider.slider('disable').slider('refresh');
+                    positionSlider.disabled = true;
                 }
             }
 
@@ -1552,7 +1553,7 @@
 
             Logger.log('playback stopped');
 
-            $('body').removeClass('bodyWithPopupOpen');
+            $(document.body).removeClass('bodyWithPopupOpen');
 
             var mediaRenderer = this;
 

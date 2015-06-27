@@ -9,12 +9,9 @@
     var unmuteButton;
     var muteButton;
     var volumeSlider;
-    var volumeSliderContainer;
-    var isVolumeSliderActive;
     var unpauseButton;
     var pauseButton;
     var positionSlider;
-    var isPositionSliderActive;
 
     var lastPlayerState;
 
@@ -25,12 +22,17 @@
         // add return false because on iOS clicking the bar often ends up clicking the content underneath. 
         html += '<div class="nowPlayingBar" style="display:none;">';
 
+        html += '<div class="nowPlayingBarPositionContainer">';
+        html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="nowPlayingBarPositionSlider"></paper-slider>';
+        html += '</div>';
+
+        html += '<div class="nowPlayingBarInfoContainer">';
         html += '<div class="nowPlayingImage"></div>';
-        html += '<div class="nowPlayingText"></div>';
+        html += '<div class="nowPlayingBarText"></div>';
+        html += '</div>';
 
         // The onclicks are needed due to the return false above
-        html += '<paper-icon-button icon="tablet-android" onclick="Dashboard.navigate(\'nowplaying.html\', false);" class="mediaButton remoteControlButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="view-list" onclick="Dashboard.navigate(\'nowplaying.html?tab=Playlist\', false);" class="mediaButton playlistButton"></paper-icon-button>';
+        html += '<div class="nowPlayingBarCenter">';
 
         html += '<paper-icon-button icon="skip-previous" class="previousTrackButton mediaButton"></paper-icon-button>';
 
@@ -41,21 +43,24 @@
 
         html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton"></paper-icon-button>';
 
-        html += '<div id="mediaElement"></div>';
-
-        html += '<div class="positionSliderContainer sliderContainer">';
-        html += '<input type="range" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
+        html += '<div class="nowPlayingBarCurrentTime"></div>';
         html += '</div>';
 
-        html += '<div class="currentTime"></div>';
+        html += '<div class="nowPlayingBarRight">';
+
         html += '<paper-icon-button icon="volume-up" class="muteButton mediaButton"></paper-icon-button>';
         html += '<paper-icon-button icon="volume-off" class="unmuteButton mediaButton"></paper-icon-button>';
 
-        html += '<div class="volumeSliderContainer sliderContainer">';
-        html += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
-        html += '</div>';
+        html += '<paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider" style="width:100px;vertical-align:middle;"></paper-slider>';
 
         html += '<div class="nowPlayingBarUserDataButtons">';
+        html += '</div>';
+
+        html += '<paper-icon-button icon="play-arrow" class="mediaButton unpauseButton"></paper-icon-button>';
+        html += '<paper-icon-button icon="pause" class="mediaButton pauseButton"></paper-icon-button>';
+        html += '<paper-icon-button icon="tablet-android" onclick="Dashboard.navigate(\'nowplaying.html\', false);" class="mediaButton remoteControlButton"></paper-icon-button>';
+        html += '<paper-icon-button icon="queue-music" onclick="Dashboard.navigate(\'nowplaying.html?tab=Playlist\', false);" class="mediaButton playlistButton"></paper-icon-button>';
+
         html += '</div>';
 
         html += '</div>';
@@ -65,9 +70,9 @@
 
     function bindEvents(elem) {
 
-        currentTimeElement = $('.currentTime', elem);
+        currentTimeElement = $('.nowPlayingBarCurrentTime', elem);
         nowPlayingImageElement = $('.nowPlayingImage', elem);
-        nowPlayingTextElement = $('.nowPlayingText', elem);
+        nowPlayingTextElement = $('.nowPlayingBarText', elem);
         nowPlayingUserData = $('.nowPlayingBarUserDataButtons', elem);
 
         $(elem).on('swipeup', function () {
@@ -123,28 +128,15 @@
             }
         });
 
-        volumeSlider = $('.volumeSlider', elem).on('slidestart', function () {
-
-            isVolumeSliderActive = true;
-
-        }).on('slidestop', function () {
-
-            isVolumeSliderActive = false;
+        volumeSlider = $('.nowPlayingBarVolumeSlider', elem).on('change', function () {
 
             if (currentPlayer) {
                 currentPlayer.setVolume(this.value);
             }
-        });
 
-        volumeSliderContainer = $('.volumeSliderContainer', elem);
+        })[0];
 
-        positionSlider = $('.positionSlider', elem).on('slidestart', function () {
-
-            isPositionSliderActive = true;
-
-        }).on('slidestop', function () {
-
-            isPositionSliderActive = false;
+        positionSlider = $('.nowPlayingBarPositionSlider', elem).on('change', function () {
 
             if (currentPlayer && lastPlayerState) {
 
@@ -153,7 +145,24 @@
 
                 currentPlayer.seek(Math.floor(newPositionTicks));
             }
-        });
+
+        })[0];
+
+        positionSlider._setPinValue = function (value) {
+
+            var state = lastPlayerState;
+
+            if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
+                this.pinValue = '--:--';
+                return;
+            }
+
+            var ticks = state.NowPlayingItem.RunTimeTicks;
+            ticks /= 100;
+            ticks *= value;
+
+            this.pinValue = Dashboard.getDisplayTime(ticks);
+        };
     }
 
     function getNowPlayingBar() {
@@ -212,27 +221,21 @@
         updatePlayerVolumeState(state, playerInfo);
 
         var nowPlayingItem = state.NowPlayingItem || {};
-        if (!isPositionSliderActive) {
+        if (!positionSlider.dragging) {
 
             if (nowPlayingItem && nowPlayingItem.RunTimeTicks) {
 
                 var pct = playState.PositionTicks / nowPlayingItem.RunTimeTicks;
                 pct *= 100;
 
-                positionSlider.val(pct);
+                positionSlider.value = pct;
 
             } else {
 
-                positionSlider.val(0);
+                positionSlider.value = 0;
             }
 
-            if (playState.CanSeek) {
-                positionSlider.slider("enable");
-            } else {
-                positionSlider.slider("disable");
-            }
-
-            positionSlider.slider('refresh');
+            positionSlider.disabled = !playState.CanSeek;
         }
 
         var timeText = Dashboard.getDisplayTime(playState.PositionTicks);
@@ -262,12 +265,6 @@
         var showMuteButton = true;
         var showUnmuteButton = true;
         var showVolumeSlider = true;
-
-        //if (supportedCommands.indexOf('SetVolume') == -1) {
-        //    volumeSlider.prop('disabled', 'disabled');
-        //} else {
-        //    volumeSlider.prop('disabled', '');
-        //}
 
         if (supportedCommands.indexOf('Mute') == -1) {
             showMuteButton = false;
@@ -307,17 +304,11 @@
             hideButton(unmuteButton);
         }
 
-        if (showVolumeSlider) {
-            volumeSliderContainer.show();
-        } else {
-            volumeSliderContainer.hide();
-        }
+        $(volumeSlider).visible(showVolumeSlider);
 
-        if (!isVolumeSliderActive) {
-            volumeSlider.val(playState.VolumeLevel || 0);
+        if (!volumeSlider.dragging) {
+            volumeSlider.value = playState.VolumeLevel || 0;
         }
-
-        volumeSlider.slider('refresh');
     }
 
     var currentImgUrl;
@@ -338,7 +329,7 @@
         nowPlayingTextElement.html(nameHtml);
 
         var url;
-        var imgHeight = 60;
+        var imgHeight = 90;
 
         var nowPlayingItem = state.NowPlayingItem;
 
@@ -386,9 +377,6 @@
 
         var imgHtml = '<img src="' + url + '" />';
 
-        if (state.NowPlayingItem.Id) {
-            imgHtml = '<a href="' + LibraryBrowser.getHref(state.NowPlayingItem) + '">' + imgHtml + '</a>';
-        }
         nowPlayingImageElement.html(imgHtml);
 
         if (nowPlayingItem.Id) {

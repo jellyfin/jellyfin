@@ -1,47 +1,4 @@
-﻿/* Now playing bar */
-.nowPlayingBar {
-    padding: 8px 0;
-    border-top: 1px solid #444;
-    text-align: center;
-}
-
-.mediaButton {
-    vertical-align: top;
-}
-
-.mediaButton, .nowPlayingBarUserDataButtons .btnUserItemRating {
-    vertical-align: middle;
-    color: #e8e8e8;
-    margin: 0;
-    text-align: center;
-}
-
-    .mediaButton:not(paper-icon-button) {
-        padding: 16px 12px;
-    }
-
-paper-icon-button.mediaButton {
-    padding: 4px;
-}
-
-.mediaButton iron-icon {
-    height: 48px;
-    width: 48px;
-}
-
-.mediaButton.remoteControlButton iron-icon {
-    height: 30px;
-}
-
-.videoTopControls .mediaButton {
-    font-size: 27px;
-}
-
-.videoControls .mediaButton {
-    padding: 0 10px;
-}
-
-#mediaElement {
+﻿#mediaElement {
     display: inline-block;
     position: relative;
 }
@@ -79,21 +36,6 @@ paper-icon-button.mediaButton {
     }
 }
 
-.nowPlayingDoubleText {
-    top: -3px;
-}
-
-.nowPlayingImage {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-    .nowPlayingImage img {
-        height: 60px;
-        margin-right: .5em;
-        vertical-align: bottom;
-    }
-
 .mediaButton img {
     height: 24px;
 }
@@ -106,81 +48,8 @@ paper-icon-button.mediaButton {
     font-weight: normal;
 }
 
-.mediaSlider {
-    position: relative;
-    top: -10px;
-    width: 50px;
-    cursor: pointer;
-}
-
-.sliderContainer {
-    display: inline-block;
-}
-
-.positionSliderContainer {
-    width: 130px;
-}
-
-.nowPlayingBar .sliderContainer {
-    margin-top: 10px;
-    vertical-align: middle;
-}
-
-.volumeSliderContainer {
-    width: 90px;
-}
-
-.sliderContainer .ui-slider {
-    margin: 0 !important;
-}
-
-.sliderContainer .ui-slider-track {
-    margin: 0 15px !important;
-}
-
-.volumeSliderContainer .ui-slider-track {
-    margin-left: 5px !important;
-}
-
 .volumeButton {
     margin-right: .5em !important;
-}
-
-@media all and (max-width: 800px) {
-
-    .nowPlayingBar .mediaButton {
-        margin-top: 0;
-        margin-bottom: 0;
-    }
-
-        .nowPlayingBar .mediaButton:not(.unpauseButton):not(.pauseButton):not(.remoteControlButton) {
-            display: none;
-        }
-
-    .remoteControlButton, .nowPlayingBar .unpauseButton, .nowPlayingBar .pauseButton {
-        float: right;
-        padding-top: 0;
-    }
-
-    .remoteControlButton {
-        position: relative;
-        top: 4px;
-    }
-
-    .nowPlayingBar .currentTime, .nowPlayingBar .positionSliderContainer, .nowPlayingBar .volumeSliderContainer, #nowPlayingBar .muteButton, #nowPlayingBar .unmuteButton {
-        display: none !important;
-    }
-
-    .nowPlayingBar {
-        padding: 10px 5px 10px 10px;
-        text-align: left;
-    }
-}
-
-@media (min-width: 1440px) {
-    #nowPlayingBar .positionSliderContainer {
-        width: 300px;
-    }
 }
 
 .mediaPlayerAudioContainer {
@@ -194,16 +63,4 @@ paper-icon-button.mediaButton {
 .mediaPlayerAudioContainerInner {
     padding: 1em;
     background: #222;
-}
-
-.nowPlayingBarUserDataButtons {
-    display: inline-block;
-    margin-left: 2em;
-}
-
-@media all and (max-width: 1200px) {
-
-    .nowPlayingBarUserDataButtons {
-        display: none;
-    }
 }

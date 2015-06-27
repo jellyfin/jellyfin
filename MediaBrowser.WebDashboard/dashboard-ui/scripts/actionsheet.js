@@ -1,9 +1,5 @@
 ﻿(function () {
 
-    function onClosed() {
-        $(this).remove();
-        $(document.body).removeClass('bodyWithPopupOpen');
-    }
     function show(options) {
 
         require(['paperbuttonstyle'], function () {
@@ -65,6 +61,11 @@
                 html += '<paper-dialog-scrollable>';
             }
 
+            // If any items have an icon, give them all an icon just to make sure they're all lined up evenly
+            var renderIcon = options.items.filter(function (o) {
+                return o.ironIcon;
+            }).length;
+
             for (var i = 0, length = options.items.length; i < length; i++) {
 
                 var option = options.items[i];
@@ -73,6 +74,9 @@
 
                 if (option.ironIcon) {
                     html += '<iron-icon icon="' + option.ironIcon + '"></iron-icon>';
+                }
+                else if (renderIcon) {
+                    html += '<iron-icon></iron-icon>';
                 }
                 html += '<span>' + option.name + '</span>';
                 html += '</paper-button>';
@@ -98,7 +102,9 @@
                 dlg.open();
 
                 // Has to be assigned a z-index after the call to .open() 
-                $(dlg).on('iron-overlay-closed', onClosed);
+                $(dlg).on('iron-overlay-closed', function () {
+                    $(this).remove();
+                });
 
                 $('.btnOption', dlg).on('click', function () {
 

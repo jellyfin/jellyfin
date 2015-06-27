@@ -1844,88 +1844,12 @@ var AppInfo = {};
             initFastClick();
         }
 
-        var videoPlayerHtml = '<div id="mediaPlayer" data-theme="b" class="ui-bar-b" style="display: none;">';
-
-        videoPlayerHtml += '<div class="videoBackdrop">';
-        videoPlayerHtml += '<div id="videoPlayer">';
-
-        videoPlayerHtml += '<div id="videoElement">';
-        videoPlayerHtml += '<div id="play" class="status"></div>';
-        videoPlayerHtml += '<div id="pause" class="status"></div>';
-        videoPlayerHtml += '</div>';
-
-        videoPlayerHtml += '<div class="videoTopControls hiddenOnIdle">';
-        videoPlayerHtml += '<div class="videoTopControlsLogo"></div>';
-        videoPlayerHtml += '<div class="videoAdvancedControls">';
-
-        videoPlayerHtml += '<button class="mediaButton videoTrackControl previousTrackButton imageButton" title="Previous video" type="button" onclick="MediaPlayer.previousTrack();" data-role="none"><i class="fa fa-step-backward"></i></button>';
-        videoPlayerHtml += '<button class="mediaButton videoTrackControl nextTrackButton imageButton" title="Next video" type="button" onclick="MediaPlayer.nextTrack();" data-role="none"><i class="fa fa-step-forward"></i></button>';
-
-        // Embedding onclicks due to issues not firing in cordova safari
-        videoPlayerHtml += '<button class="mediaButton videoAudioButton imageButton" title="Audio tracks" type="button" data-role="none" onclick="MediaPlayer.showAudioTracksFlyout();"><i class="fa fa-music"></i></button>';
-        videoPlayerHtml += '<div data-role="popup" class="videoAudioPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
-
-        videoPlayerHtml += '<button class="mediaButton videoSubtitleButton imageButton" title="Subtitles" type="button" data-role="none" onclick="MediaPlayer.showSubtitleMenu();"><i class="fa fa-text-width"></i></button>';
-        videoPlayerHtml += '<div data-role="popup" class="videoSubtitlePopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
-
-        videoPlayerHtml += '<button class="mediaButton videoChaptersButton imageButton" title="Scenes" type="button" data-role="none" onclick="MediaPlayer.showChaptersFlyout();"><i class="fa fa-video-camera"></i></button>';
-        videoPlayerHtml += '<div data-role="popup" class="videoChaptersPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
-
-        videoPlayerHtml += '<button class="mediaButton videoQualityButton imageButton" title="Quality" type="button" data-role="none" onclick="MediaPlayer.showQualityFlyout();"><i class="fa fa-gear"></i></button>';
-        videoPlayerHtml += '<div data-role="popup" class="videoQualityPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
-
-        videoPlayerHtml += '<button class="mediaButton imageButton" title="Stop" type="button" onclick="MediaPlayer.stop();" data-role="none"><i class="fa fa-close"></i></button>';
-
-        videoPlayerHtml += '</div>'; // videoAdvancedControls
-        videoPlayerHtml += '</div>'; // videoTopControls
-
-        // Create controls
-        videoPlayerHtml += '<div class="videoControls hiddenOnIdle">';
-
-        videoPlayerHtml += '<div class="nowPlayingInfo hiddenOnIdle">';
-        videoPlayerHtml += '<div class="nowPlayingImage"></div>';
-        videoPlayerHtml += '<div class="nowPlayingTabs"></div>';
-        videoPlayerHtml += '</div>'; // nowPlayingInfo
-
-        videoPlayerHtml += '<button id="video-previousTrackButton" class="mediaButton previousTrackButton videoTrackControl imageButton" title="Previous Track" type="button" onclick="MediaPlayer.previousTrack();" data-role="none"><i class="fa fa-step-backward"></i></button>';
-        videoPlayerHtml += '<button id="video-playButton" class="mediaButton imageButton" title="Play" type="button" onclick="MediaPlayer.unpause();" data-role="none"><i class="fa fa-play"></i></button>';
-        videoPlayerHtml += '<button id="video-pauseButton" class="mediaButton imageButton" title="Pause" type="button" onclick="MediaPlayer.pause();" data-role="none"><i class="fa fa-pause"></i></button>';
-        videoPlayerHtml += '<button id="video-nextTrackButton" class="mediaButton nextTrackButton videoTrackControl imageButton" title="Next Track" type="button" onclick="MediaPlayer.nextTrack();" data-role="none"><i class="fa fa-step-forward"></i></button>';
-
-        videoPlayerHtml += '<div class="positionSliderContainer sliderContainer">';
-        videoPlayerHtml += '<input type="range" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
-        videoPlayerHtml += '</div>';
-
-        videoPlayerHtml += '<div class="currentTime">--:--</div>';
-
-        videoPlayerHtml += '<button id="video-muteButton" class="mediaButton muteButton imageButton" title="Mute" type="button" onclick="MediaPlayer.mute();" data-role="none"><i class="fa fa-volume-up"></i></button>';
-        videoPlayerHtml += '<button id="video-unmuteButton" class="mediaButton unmuteButton imageButton" title="Unmute" type="button" onclick="MediaPlayer.unMute();" data-role="none"><i class="fa fa-volume-off"></i></button>';
-
-        videoPlayerHtml += '<div class="volumeSliderContainer sliderContainer">';
-        videoPlayerHtml += '<input type="range" class="mediaSlider volumeSlider slider" step=".05" min="0" max="1" value="0" style="display:none;" data-mini="true" data-theme="a" data-highlight="true" />';
-        videoPlayerHtml += '</div>';
-
-        videoPlayerHtml += '<button onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton" class="mediaButton fullscreenButton imageButton" title="Fullscreen" type="button" data-role="none"><i class="fa fa-expand"></i></button>';
-
-        videoPlayerHtml += '</div>'; // videoControls
-
-        videoPlayerHtml += '</div>'; // videoPlayer
-        videoPlayerHtml += '</div>'; // videoBackdrop
-        videoPlayerHtml += '</div>'; // mediaPlayer
-
-        $(document.body).append(videoPlayerHtml);
-
-        var mediaPlayerElem = $('#mediaPlayer', document.body);
-        mediaPlayerElem.trigger('create');
-
         var footerHtml = '<div id="footer" class="footer" data-theme="b" class="ui-bar-b">';
 
         footerHtml += '<div id="footerNotifications"></div>';
         footerHtml += '</div>';
 
         $(document.body).append(footerHtml);
-
-        $(Dashboard).trigger('footercreated');
 
         $(window).on("beforeunload", function () {
 

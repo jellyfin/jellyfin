@@ -59,19 +59,13 @@
 .videoAdvancedControls {
     text-align: right;
     vertical-align: top;
+    padding-top: .5em;
 }
 
-#slider-tooltip {
-    z-index: 99999;
-    position: absolute;
-    top: -30px;
-    left: 0;
-    background-color: #eee;
-    border: 1px solid #333;
-    color: #333;
-    border-radius: 3px;
-    padding: 5px;
-}
+    .videoAdvancedControls iron-icon {
+        width: 32px;
+        height: 32px;
+    }
 
 .nowPlayingInfo {
     text-align: center;
@@ -158,7 +152,7 @@
 .videoTopControlsLogo {
     float: left;
     /* Matches .mediaButton */
-    padding-top: 16px;
+    padding: 10px 0;
 }
 
     .videoTopControlsLogo img {
@@ -184,27 +178,16 @@
     max-height: 100%;
 }
 
-/* Hack for safari because it doesn't allow clickable content over the video surface. */
-/*.itemVideo { (;top: 9%!important;height: 91% !important;); }
+    /* Hack for safari because it doesn't allow clickable content over the video surface. */
+    /*.itemVideo { (;top: 9%!important;height: 91% !important;); }
 .itemVideo { [;top: 9%!important;height: 91% !important;]; }*/
 
-#mediaPlayer .ui-slider-track, .nowPlayingBar .ui-slider-track, .nowPlayingPage .ui-slider-track {
-    border-color: #2ad !important;
-    height: 2px !important;
-}
-
-#videoPlayer .inactive {
-    display: none !important;
-}
+    #videoPlayer .inactive {
+        display: none !important;
+    }
 
 .idlePlayer video {
     cursor: none;
-}
-
-#mediaPlayer .sliderContainer {
-    position: relative;
-    top: 5px;
-    vertical-align: middle;
 }
 
 /****************************************/
@@ -213,13 +196,6 @@
     .videoControls .currentTime {
         margin-right: 0;
         min-width: 120px;
-    }
-}
-
-@media all and (max-width: 800px), all and (max-height: 460px) {
-
-    #mediaPlayer .sliderContainer {
-        margin-top: 8px;
     }
 }
 
@@ -237,12 +213,6 @@
 
     .videoTopControlsLogo {
         display: none !important;
-    }
-}
-
-@media all and (min-width: 800px) {
-    .videoControls .positionSliderContainer {
-        width: 300px;
     }
 }
 
