@@ -397,7 +397,7 @@
 
             $('.sliderValue', elem).html(tooltext);
 
-            console.log("slidin", pct, self.currentDurationTicks, time);
+            Logger.log("slidin", pct, self.currentDurationTicks, time);
 
         });
     }

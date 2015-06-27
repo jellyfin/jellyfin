@@ -60,7 +60,14 @@ var Dashboard = {
         $.mobile.loader.prototype.options.textOnly = true;
         $.mobile.loader.prototype.options.text = "";
 
+        $.mobile.hideUrlBar = false;
+        $.mobile.autoInitializePage = false;
         $.mobile.changePage.defaults.showLoadMsg = false;
+
+        // These are not needed. Nulling them out can help reduce dom querying when pages are loaded
+        $.mobile.nojs = null;
+        $.mobile.degradeInputsWithin = null;
+        $.mobile.keepNative = ":jqmData(role='none')";
     },
 
     isConnectMode: function () {
@@ -607,7 +614,7 @@ var Dashboard = {
             html += '</div>';
             html += '</paper-dialog>';
 
-            $(document.body).append(html);
+            $(document.body).append(html).addClass('bodyWithPopupOpen');
 
             // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
             // element onload never fires
@@ -619,6 +626,7 @@ var Dashboard = {
                 $(dlg).on('iron-overlay-closed', function (e) {
                     var confirmed = this.closingReason.confirmed;
                     $(this).remove();
+                    $(document.body).removeClass('bodyWithPopupOpen');
                     callback(confirmed);
                 });
 
@@ -1058,7 +1066,7 @@ var Dashboard = {
             case 'ToggleFullscreen':
                 break;
             default:
-                console.log('Unrecognized command: ' + cmd.Name);
+                Logger.log('Unrecognized command: ' + cmd.Name);
                 break;
         }
     },
@@ -1932,7 +1940,7 @@ var AppInfo = {};
                 });
 
                 if (!localActivePlayers.length) {
-                    console.log('Sending close web socket command');
+                    Logger.log('Sending close web socket command');
                     apiClient.closeWebSocket();
                 }
             }
@@ -2083,6 +2091,7 @@ var AppInfo = {};
                         $(function () {
                             onDocumentReady();
                             Dashboard.initPromiseDone = true;
+                            $.mobile.initializePage();
                             deferred.resolve();
                         });
                     });
@@ -2092,8 +2101,10 @@ var AppInfo = {};
                 createConnectionManager(capabilities);
 
                 $(function () {
+
                     onDocumentReady();
                     Dashboard.initPromiseDone = true;
+                    $.mobile.initializePage();
                     deferred.resolve();
                 });
             }
@@ -2234,7 +2245,7 @@ $(document).on('pagecreate', ".page", function () {
 
         if (!isConnectMode && this.id !== "loginPage" && !page.hasClass('forgotPasswordPage') && !page.hasClass('wizardPage')) {
 
-            console.log('Not logged into server. Redirecting to login.');
+            Logger.log('Not logged into server. Redirecting to login.');
             Dashboard.logout();
             return;
         }

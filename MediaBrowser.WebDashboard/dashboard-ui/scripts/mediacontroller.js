@@ -207,7 +207,7 @@
 
             if (bypass()) return;
 
-            console.log("keyCode", e.keyCode);
+            Logger.log("keyCode", e.keyCode);
 
             if (keyResult[e.keyCode]) {
                 e.preventDefault();
@@ -306,7 +306,7 @@
             currentPlayer = player;
             currentTargetInfo = targetInfo;
 
-            console.log('Active player: ' + JSON.stringify(currentTargetInfo));
+            Logger.log('Active player: ' + JSON.stringify(currentTargetInfo));
 
             triggerPlayerChange(player, targetInfo);
         };
@@ -335,7 +335,7 @@
                 currentPlayer = player;
                 currentTargetInfo = targetInfo;
 
-                console.log('Active player: ' + JSON.stringify(currentTargetInfo));
+                Logger.log('Active player: ' + JSON.stringify(currentTargetInfo));
 
                 triggerPlayerChange(player, targetInfo);
             });
@@ -581,7 +581,7 @@
 
             // Full list
             // https://github.com/MediaBrowser/MediaBrowser/blob/master/MediaBrowser.Model/Session/GeneralCommand.cs#L23
-            console.log('MediaController received command: ' + cmd.Name);
+            Logger.log('MediaController received command: ' + cmd.Name);
             switch (cmd.Name) {
 
                 case 'VolumeUp':

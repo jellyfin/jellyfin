@@ -13,23 +13,11 @@
     max-width: 360px;
 }
 
-.nowPlayingTimeContainer {
-    max-width: 280px;
-    margin: 1.5em auto;
-}
-
-.nowPlayingPage .positionSliderContainer {
-    width: 100%;
+.nowPlayingPageTimeContainer {
     min-width: 200px;
+    max-width: 280px;
+    margin: 0 auto 1em;
 }
-
-    .nowPlayingPage .positionSliderContainer .ui-slider-track {
-        margin: 0 0 !important;
-    }
-
-    .nowPlayingPage .positionSliderContainer .ui-slider {
-        height: 20px;
-    }
 
 .nowPlayingNavButtonContainer {
     width: 400px;
@@ -134,6 +122,13 @@
     }
 }
 
+@media all and (min-width: 800px) {
+
+    .nowPlayingPageTimeContainer {
+        max-width: 340px;
+    }
+}
+
 @media (orientation: landscape) {
     .nowPlayingInfoMetadata, .nowPlayingInfoButtons {
         display: inline-block;
@@ -153,14 +148,14 @@
 
 @media (orientation: landscape) and (max-height: 400px) {
     .nowPlayingPageTitle {
-        margin-top: -1em;
+        margin-top: -1.5em;
         padding: 0 60px;
     }
 }
 
 @media (orientation: portrait) and (max-height: 600px) {
     .nowPlayingPageTitle {
-        margin-top: -1em;
+        margin-top: -1.5em;
         padding: 0 60px;
     }
 }
@@ -172,9 +167,12 @@
     margin-right: .25em;
 }
 
-@media all and (max-width: 600px) {
+@media all and (max-width: 700px) {
 
     .nowPlayingSelectedPlayer {
         display: none;
     }
+}
+
+.nowPlayingPositionSlider .pin > #sliderKnob > #sliderKnobInner::after {
 }

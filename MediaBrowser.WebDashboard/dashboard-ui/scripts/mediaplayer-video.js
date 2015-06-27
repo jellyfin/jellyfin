@@ -530,7 +530,7 @@
 
                 tooltip.text(tooltext);
 
-                console.log("slidin", pct, self.currentDurationTicks, time);
+                Logger.log("slidin", pct, self.currentDurationTicks, time);
 
             }).on("slidestart", function (e) {
                 trackChange = true;

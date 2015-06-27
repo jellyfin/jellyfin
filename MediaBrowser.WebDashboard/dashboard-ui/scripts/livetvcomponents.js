@@ -85,7 +85,7 @@
                     airDate = parseISO8601Date(airDate, { toLocal: true }).toLocaleDateString();
                 }
                 catch (e) {
-                    console.log("Error parsing date: " + airDate);
+                    Logger.log("Error parsing date: " + airDate);
                 }
 
 

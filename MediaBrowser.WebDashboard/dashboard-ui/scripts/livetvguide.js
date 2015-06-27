@@ -53,7 +53,7 @@
         var date = currentDate;
 
         var nextDay = new Date(date.getTime() + msPerDay - 1);
-        console.log(nextDay);
+        Logger.log(nextDay);
         channelsPromise.done(function (channelsResult) {
 
             ApiClient.getLiveTvPrograms({

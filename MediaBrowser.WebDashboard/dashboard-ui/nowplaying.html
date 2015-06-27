@@ -18,18 +18,15 @@
                 <neon-animatable>
                     <div style="text-align:center;padding-bottom:100px;">
 
-                        <div class="nowPlayingPageTitle">
-                            <div class="itemName" style="line-height: normal;"></div>
+                        <div class="nowPlayingPageTitle" style="line-height: normal;">
                         </div>
 
                         <div class="nowPlayingInfoMetadata">
                             <div class="nowPlayingPageImage" style="margin: 1em 0;"></div>
 
-                            <div class="nowPlayingTimeContainer">
+                            <div class="nowPlayingPageTimeContainer">
                                 <div>
-                                    <div class="positionSliderContainer sliderContainer requiresJqmCreate" style="margin: 0 auto;">
-                                        <input type="range" style="display: none;" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" data-mini="true" data-theme="a" data-highlight="true" />
-                                    </div>
+                                    <paper-slider pin step=".1" min="0" max="100" value="0" class="noSwipe nowPlayingPositionSlider"></paper-slider>
                                 </div>
                                 <div style="text-align:left;">
                                     <div class="positionTime" style="float:left;"></div>

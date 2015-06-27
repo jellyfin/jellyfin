@@ -8,12 +8,12 @@
 
         }, function () {
 
-            console.log('plugin launch success');
+            Logger.log('plugin launch success');
             ExternalPlayer.onPlaybackStart();
 
         }, function () {
 
-            console.log('plugin launch error');
+            Logger.log('plugin launch error');
             ExternalPlayer.onPlaybackStart();
         });
     }

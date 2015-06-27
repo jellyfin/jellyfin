@@ -359,6 +359,9 @@
 
         $('.fldSelectedItemIds', panel).val(items.join(','));
 
+
+        require(['jqmicons']);
+
         if (items.length) {
             $('.fldSelectCollection', panel).show();
             populateCollections(panel);

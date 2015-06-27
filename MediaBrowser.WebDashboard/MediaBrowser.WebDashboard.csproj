@@ -87,6 +87,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="dashboard-ui\bower_components\velocity\velocity.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\bower_components\webcomponentsjs\CustomElements.js" />
     <Content Include="dashboard-ui\bower_components\webcomponentsjs\CustomElements.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

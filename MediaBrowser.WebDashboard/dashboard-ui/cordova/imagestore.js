@@ -72,25 +72,25 @@
             var deferred = DeferredBuilder.Deferred();
             var key = getCacheKey(originalUrl);
 
-            console.log('getImageUrl:' + originalUrl);
+            Logger.log('getImageUrl:' + originalUrl);
 
             getFileSystem().done(function (fileSystem) {
                 var path = fileSystem.root.toURL() + "/emby/cache/" + key;
 
                 resolveLocalFileSystemURL(path, function (fileEntry) {
                     var localUrl = normalizeReturnUrl(fileEntry.toURL());
-                    console.log('returning cached file: ' + localUrl);
+                    Logger.log('returning cached file: ' + localUrl);
                     deferred.resolveWith(null, [localUrl]);
 
                 }, function () {
 
-                    console.log('downloading: ' + originalUrl);
+                    Logger.log('downloading: ' + originalUrl);
                     var ft = new FileTransfer();
                     ft.download(originalUrl, path, function (entry) {
 
                         var localUrl = normalizeReturnUrl(entry.toURL());
 
-                        console.log(localUrl);
+                        Logger.log(localUrl);
                         deferred.resolveWith(null, [localUrl]);
                     });
                 });

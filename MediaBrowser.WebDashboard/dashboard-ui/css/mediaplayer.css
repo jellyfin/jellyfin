@@ -146,29 +146,6 @@ paper-icon-button.mediaButton {
     margin-right: .5em !important;
 }
 
-::-ms-thumb {
-    background-image: linear-gradient(#fefefe,#dddddd);
-    width: 15px;
-}
-
-::-ms-track {
-    padding: 0;
-    border: 0;
-    color: #777;
-}
-
-input[type="range"]::-ms-fill-lower {
-    background-color: #777;
-}
-
-input[type="range"]::-ms-fill-upper {
-    background-color: #777;
-}
-
-::-ms-tooltip {
-    display: none; /* display and visibility only */
-}
-
 @media all and (max-width: 800px) {
 
     .nowPlayingBar .mediaButton {

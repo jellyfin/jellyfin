@@ -27,14 +27,14 @@
 
         $(castPlayer).on("connect", function (e) {
 
-            console.log('cc: connect');
+            Logger.log('cc: connect');
             // Reset this so the next query doesn't make it appear like content is playing.
             self.lastPlayerData = {};
         });
 
         $(castPlayer).on("playbackstart", function (e, data) {
 
-            console.log('cc: playbackstart');
+            Logger.log('cc: playbackstart');
 
             var state = self.getPlayerStateInternal(data);
             $(self).trigger("playbackstart", [state]);
@@ -42,7 +42,7 @@
 
         $(castPlayer).on("playbackstop", function (e, data) {
 
-            console.log('cc: playbackstop');
+            Logger.log('cc: playbackstop');
             var state = self.getPlayerStateInternal(data);
 
             $(self).trigger("playbackstop", [state]);
@@ -53,7 +53,7 @@
 
         $(castPlayer).on("playbackprogress", function (e, data) {
 
-            console.log('cc: positionchange');
+            Logger.log('cc: positionchange');
             var state = self.getPlayerStateInternal(data);
 
             $(self).trigger("positionchange", [state]);
@@ -416,7 +416,7 @@
             data = data || self.lastPlayerData;
             self.lastPlayerData = data;
 
-            console.log(JSON.stringify(data));
+            Logger.log(JSON.stringify(data));
             return data;
         };
 
@@ -459,7 +459,7 @@
         }
 
         function handleSessionDisconnect() {
-            console.log("session disconnected");
+            Logger.log("session disconnected");
 
             cleanupSession();
             MediaController.removeActivePlayer(PlayerName);
@@ -469,7 +469,7 @@
 
             currentWebAppSession = webAppSession;
 
-            console.log('session.connect succeeded');
+            Logger.log('session.connect succeeded');
             webAppSession.setWebAppSessionListener();
 
             MediaController.setActivePlayer(PlayerName, convertDeviceToTarget(device));
@@ -530,15 +530,15 @@
 
         function tryLaunchWebSession(device) {
 
-            console.log('calling launchWebApp');
+            Logger.log('calling launchWebApp');
             device.getWebAppLauncher().launchWebApp(ApplicationID).success(function (session) {
 
-                console.log('launchWebApp success. calling onSessionConnected');
+                Logger.log('launchWebApp success. calling onSessionConnected');
                 setupWebAppSession(device, session, true);
 
             }).error(function (err1) {
 
-                console.log('launchWebApp error:' + JSON.stringify(err1));
+                Logger.log('launchWebApp error:' + JSON.stringify(err1));
 
             });
         }
@@ -547,22 +547,22 @@
 
             // First try to join existing session. If it fails, launch a new one
 
-            console.log('calling joinWebApp');
+            Logger.log('calling joinWebApp');
             device.getWebAppLauncher().joinWebApp(ApplicationID).success(function (session) {
 
-                console.log('joinWebApp success. calling onSessionConnected');
+                Logger.log('joinWebApp success. calling onSessionConnected');
                 setupWebAppSession(device, session, false);
 
             }).error(function (err) {
 
-                console.log('joinWebApp error: ' + JSON.stringify(err));
+                Logger.log('joinWebApp error: ' + JSON.stringify(err));
 
                 if (enableRetry) {
                     tryJoinWebSession(device, false);
                     return;
                 }
 
-                console.log('calling launchWebApp');
+                Logger.log('calling launchWebApp');
                 tryLaunchWebSession(device);
 
             });
@@ -581,7 +581,7 @@
 
             device.off("ready");
 
-            console.log('creating webAppSession');
+            Logger.log('creating webAppSession');
 
             launchWebApp(device);
         }
@@ -608,7 +608,7 @@
 
         self.tryPairWithDevice = function (device, deferred) {
 
-            console.log('Will attempt to connect to Chromecast');
+            Logger.log('Will attempt to connect to Chromecast');
 
             device.on("disconnect", function () {
                 device.off("ready");
@@ -616,18 +616,18 @@
             });
 
             if (device.isReady()) {
-                console.log('Device is already ready, calling onDeviceReady');
+                Logger.log('Device is already ready, calling onDeviceReady');
                 onDeviceReady(device);
             } else {
 
-                console.log('Binding device ready handler');
+                Logger.log('Binding device ready handler');
 
                 device.on("ready", function () {
-                    console.log('device.ready fired');
+                    Logger.log('device.ready fired');
                     onDeviceReady(device);
                 });
 
-                console.log('Calling device.connect');
+                Logger.log('Calling device.connect');
                 device.connect();
             }
         };
@@ -636,7 +636,7 @@
 
             if (newTarget.id != currentDeviceId) {
                 if (currentWebAppSession) {
-                    console.log('Disconnecting from chromecast');
+                    Logger.log('Disconnecting from chromecast');
                     //currentDevice.disconnect();
                     cleanupSession();
                     currentDevice = null;

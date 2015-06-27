@@ -416,7 +416,7 @@
         };
         reader.onabort = function () {
             Dashboard.hideLoadingMsg();
-            console.log('File read cancelled');
+            Logger.log('File read cancelled');
         };
 
         // Closure to capture the file information.

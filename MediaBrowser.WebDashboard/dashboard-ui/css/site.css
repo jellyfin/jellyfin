@@ -305,6 +305,9 @@ html {
     touch-action: manipulation;
     /* Prevent white flickering */
     background-color: #1f1f1f;
+    /* Normalize for different browsers */
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -315,11 +318,16 @@ body {
     /*-webkit-overflow-scrolling: touch;*/
     /* Remove the white default from jqm */
     background-color: transparent !important;
+    /* Normalize for different browsers */
+    margin: 0;
+    padding: 0;
 }
 
 /* Without this, no content will be displayed in mobile safari */
 .pageContainer {
     overflow-x: visible !important;
+    /* jqm often wants to assign a background color to this */
+    background-color: transparent !important;
 }
 
 .bodyWithPopupOpen {

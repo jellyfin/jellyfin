@@ -2,6 +2,7 @@
 
     function onClosed() {
         $(this).remove();
+        $(document.body).removeClass('bodyWithPopupOpen');
     }
     function show(options) {
 
@@ -77,7 +78,9 @@
                 html += '</paper-button>';
             }
 
-            //html += '</paper-dialog-scrollable>';
+            if (isScrollable) {
+                html += '</paper-dialog-scrollable>';
+            }
 
             if (options.showCancel) {
                 html += '<div class="buttons">';
@@ -85,9 +88,7 @@
                 html += '</div>';
             }
 
-            if (isScrollable) {
-                html += '</paper-dialog>';
-            }
+            html += '</paper-dialog>';
 
             $(document.body).append(html);
 

@@ -26,7 +26,7 @@
 
         if (data) {
 
-            console.log('Found backdrop id list in cache. Key: ' + key)
+            Logger.log('Found backdrop id list in cache. Key: ' + key)
             data = JSON.parse(data);
             deferred.resolveWith(null, [data]);
         } else {

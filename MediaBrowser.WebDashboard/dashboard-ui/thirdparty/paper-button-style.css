@@ -310,3 +310,7 @@ paper-fab.blue {
 paper-fab.square {
     border-radius: 5px;
 }
+
+paper-slider {
+    width: 100%;
+}

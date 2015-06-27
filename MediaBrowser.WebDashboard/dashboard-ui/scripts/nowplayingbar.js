@@ -23,7 +23,7 @@
         var html = '';
 
         // add return false because on iOS clicking the bar often ends up clicking the content underneath. 
-        html += '<div class="nowPlayingBar" style="display:none;" onclick="return false;">';
+        html += '<div class="nowPlayingBar" style="display:none;">';
 
         html += '<div class="nowPlayingImage"></div>';
         html += '<div class="nowPlayingText"></div>';
@@ -331,6 +331,10 @@
             nowPlayingTextElement.removeClass('nowPlayingDoubleText');
         }
 
+        if (state.NowPlayingItem.Id) {
+            nameHtml = '<a style="color:inherit;text-decoration:none;" href="' + LibraryBrowser.getHref(state.NowPlayingItem) + '">' + nameHtml + '</a>';
+        }
+
         nowPlayingTextElement.html(nameHtml);
 
         var url;
@@ -380,7 +384,12 @@
 
         currentImgUrl = url;
 
-        nowPlayingImageElement.html('<img src="' + url + '" />');
+        var imgHtml = '<img src="' + url + '" />';
+
+        if (state.NowPlayingItem.Id) {
+            imgHtml = '<a href="' + LibraryBrowser.getHref(state.NowPlayingItem) + '">' + imgHtml + '</a>';
+        }
+        nowPlayingImageElement.html(imgHtml);
 
         if (nowPlayingItem.Id) {
             ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).done(function (item) {
@@ -391,7 +400,7 @@
 
     function onPlaybackStart(e, state) {
 
-        console.log('nowplaying event: ' + e.type);
+        Logger.log('nowplaying event: ' + e.type);
 
         var player = this;
 
@@ -418,7 +427,7 @@
 
     function onPlaybackStopped(e, state) {
 
-        console.log('nowplaying event: ' + e.type);
+        Logger.log('nowplaying event: ' + e.type);
         var player = this;
 
         player.endPlayerUpdates();
@@ -428,7 +437,7 @@
 
     function onStateChanged(e, state) {
 
-        //console.log('nowplaying event: ' + e.type);
+        //Logger.log('nowplaying event: ' + e.type);
         var player = this;
 
         if (player.isDefaultPlayer && state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {

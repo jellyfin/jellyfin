@@ -16,7 +16,7 @@
                 
                 var json = appStorage.getItem(key) || '{}';
 
-                console.log('credentials initialized with: ' + json);
+                Logger.log('credentials initialized with: ' + json);
                 credentials = JSON.parse(json);
                 credentials.Servers = credentials.Servers || credentials.servers || [];
 

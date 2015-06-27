@@ -39,7 +39,7 @@
         function onError() {
 
             var errorCode = this.error ? this.error.code : '';
-            console.log('Media element error code: ' + errorCode);
+            Logger.log('Media element error code: ' + errorCode);
 
             $(self).trigger('error');
         }

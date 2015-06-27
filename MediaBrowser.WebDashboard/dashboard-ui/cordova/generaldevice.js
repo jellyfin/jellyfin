@@ -26,7 +26,7 @@
 
         $(castPlayer).on("playbackstart", function (e, data) {
 
-            console.log('cc: playbackstart');
+            Logger.log('cc: playbackstart');
 
             var state = self.getPlayerStateInternal(data);
             $(self).trigger("playbackstart", [state]);
@@ -34,7 +34,7 @@
 
         $(castPlayer).on("playbackstop", function (e, data) {
 
-            console.log('cc: playbackstop');
+            Logger.log('cc: playbackstop');
             var state = self.getPlayerStateInternal(data);
 
             $(self).trigger("playbackstop", [state]);
@@ -45,7 +45,7 @@
 
         $(castPlayer).on("playbackprogress", function (e, data) {
 
-            console.log('cc: positionchange');
+            Logger.log('cc: positionchange');
             var state = self.getPlayerStateInternal(data);
 
             $(self).trigger("positionchange", [state]);
@@ -193,12 +193,12 @@
                         }
                     ).success(function (launchSession, mediaControl) {
 
-                        console.log("Video launch successful");
+                        Logger.log("Video launch successful");
                         currentMediaControl = mediaControl && mediaControl.acquire();
 
                     }).error(function (err) {
 
-                        console.log("error: " + err.message);
+                        Logger.log("error: " + err.message);
                     });
 
             deferred.resolveWith(null, [streamInfo]);
@@ -557,12 +557,12 @@
             data = data || self.lastPlayerData;
             self.lastPlayerData = data;
 
-            console.log(JSON.stringify(data));
+            Logger.log(JSON.stringify(data));
             return data;
         };
 
         function handleSessionDisconnect() {
-            console.log("session disconnected");
+            Logger.log("session disconnected");
 
             cleanupSession();
             MediaController.removeActivePlayer(PlayerName);
@@ -578,7 +578,7 @@
                 cleanupSession();
             }
 
-            console.log('session.connect succeeded');
+            Logger.log('session.connect succeeded');
 
             MediaController.setActivePlayer(PlayerName, convertDeviceToTarget(device));
             currentDevice = device;
@@ -589,7 +589,7 @@
 
             device.off("ready");
 
-            console.log('creating webAppSession');
+            Logger.log('creating webAppSession');
 
             launchWebApp(device);
         }
@@ -616,7 +616,7 @@
 
         self.tryPairWithDevice = function (device, deferred) {
 
-            console.log('Will attempt to connect to Connect Device');
+            Logger.log('Will attempt to connect to Connect Device');
 
             device.on("disconnect", function () {
                 device.off("ready");
@@ -624,18 +624,18 @@
             });
 
             if (device.isReady()) {
-                console.log('Device is already ready, calling onDeviceReady');
+                Logger.log('Device is already ready, calling onDeviceReady');
                 onDeviceReady(device);
             } else {
 
-                console.log('Binding device ready handler');
+                Logger.log('Binding device ready handler');
 
                 device.on("ready", function () {
-                    console.log('device.ready fired');
+                    Logger.log('device.ready fired');
                     onDeviceReady(device);
                 });
 
-                console.log('Calling device.connect');
+                Logger.log('Calling device.connect');
                 device.connect();
             }
         };
@@ -645,7 +645,7 @@
             if (currentDevice) {
                 if (newTarget.id != currentDeviceId) {
                     if (currentDevice) {
-                        console.log('Disconnecting from connect device');
+                        Logger.log('Disconnecting from connect device');
                         //currentDevice.disconnect();
                         cleanupSession();
                         currentDevice = null;

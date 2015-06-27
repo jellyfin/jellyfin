@@ -101,7 +101,7 @@
         store.when(unlockAppProductId).updated(function (product) {
 
             if (product.loaded && product.valid && product.state == store.APPROVED) {
-                console.log('finishing previously created transaction');
+                Logger.log('finishing previously created transaction');
                 product.finish();
             }
             updateProductInfo(product);
@@ -112,7 +112,7 @@
         // go ask your boss about it! (just in case)
         store.ready(function () {
 
-            console.log("Store ready");
+            Logger.log("Store ready");
         });
 
         // After we've done our setup, we tell the store to do

@@ -1041,7 +1041,7 @@
 
             if (newItem) {
 
-                console.log('playing next track');
+                Logger.log('playing next track');
 
                 self.playInternal(newItem, 0, function () {
                     self.setPlaylistState(newIndex);
@@ -1179,7 +1179,7 @@
 
             if (self.currentMediaRenderer) {
 
-                console.log('MediaPlayer toggling mute');
+                Logger.log('MediaPlayer toggling mute');
 
                 if (self.volume()) {
                     self.mute();
@@ -1208,7 +1208,7 @@
 
             if (self.currentMediaRenderer) {
 
-                console.log('MediaPlayer setting volume to ' + val);
+                Logger.log('MediaPlayer setting volume to ' + val);
                 self.currentMediaRenderer.volume(val / 100);
 
                 self.onVolumeChanged(self.currentMediaRenderer);
@@ -1550,7 +1550,7 @@
 
         self.onPlaybackStopped = function () {
 
-            console.log('playback stopped');
+            Logger.log('playback stopped');
 
             $('body').removeClass('bodyWithPopupOpen');
 
@@ -1674,13 +1674,13 @@
 
             $(mediaRenderer).on("volumechange.mediaplayerevent", function () {
 
-                console.log('audio element event: volumechange');
+                Logger.log('audio element event: volumechange');
 
                 self.onVolumeChanged(this);
 
             }).one("playing.mediaplayerevent", function () {
 
-                console.log('audio element event: playing');
+                Logger.log('audio element event: playing');
 
                 // For some reason this is firing at the start, so don't bind until playback has begun
                 $(this).on("ended.playbackstopped", self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
@@ -1689,7 +1689,7 @@
 
             }).on("pause.mediaplayerevent", function () {
 
-                console.log('audio element event: pause');
+                Logger.log('audio element event: pause');
 
                 self.onPlaystateChange(this);
 
@@ -1698,7 +1698,7 @@
 
             }).on("playing.mediaplayerevent", function () {
 
-                console.log('audio element event: playing');
+                Logger.log('audio element event: playing');
 
                 self.onPlaystateChange(this);
 

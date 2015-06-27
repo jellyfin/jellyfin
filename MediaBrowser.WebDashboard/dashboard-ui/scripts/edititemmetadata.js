@@ -1362,7 +1362,7 @@
 
                 var page = $.mobile.activePage;
 
-                console.log('Item updated - reloading metadata');
+                Logger.log('Item updated - reloading metadata');
                 reload(page);
                 $('#refreshLoading', page).hide();
             }

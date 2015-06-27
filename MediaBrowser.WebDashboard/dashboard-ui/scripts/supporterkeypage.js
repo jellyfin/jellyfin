@@ -78,7 +78,7 @@
         };
 
         var url = "http://mb3admin.com/admin/service/supporter/linkKeys";
-        console.log(url);
+        Logger.log(url);
         $.post(url, info).done(function (res) {
             var result = JSON.parse(res);
             Dashboard.hideLoadingMsg();
@@ -87,7 +87,7 @@
             } else {
                 Dashboard.showError(result.ErrorMessage);
             }
-            console.log(result);
+            Logger.log(result);
 
         });
 
@@ -102,7 +102,7 @@
         var email = $('#txtEmail', form).val();
 
         var url = "http://mb3admin.com/admin/service/supporter/retrievekey?email=" + email;
-        console.log(url);
+        Logger.log(url);
         $.post(url).done(function (res) {
             var result = JSON.parse(res);
             Dashboard.hideLoadingMsg();
@@ -111,7 +111,7 @@
             } else {
                 Dashboard.showError(result.ErrorMessage);
             }
-            console.log(result);
+            Logger.log(result);
 
         });
 

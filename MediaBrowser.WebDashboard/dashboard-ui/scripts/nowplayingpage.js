@@ -2,7 +2,6 @@
 
     var currentPlayer;
     var lastPlayerState;
-    var isPositionSliderActive;
 
     function populateChapters(elem, chapters, itemId, runtimeTicks) {
 
@@ -307,27 +306,33 @@
             }
         });
 
-        $('.positionSlider', page).on('slidestart', function () {
+        $('.nowPlayingPositionSlider', page).on('change', function () {
 
-            isPositionSliderActive = true;
-
-        }).on('slidestop', function () {
-
-            isPositionSliderActive = false;
+            var value = this.value;
 
             if (currentPlayer && lastPlayerState) {
 
-                var newPercent = parseFloat(this.value);
+                var newPercent = parseFloat(value);
                 var newPositionTicks = (newPercent / 100) * lastPlayerState.NowPlayingItem.RunTimeTicks;
-
                 currentPlayer.seek(Math.floor(newPositionTicks));
             }
         });
 
-        //$(page).on('swipedown', function () {
+        $('.nowPlayingPositionSlider', page)[0]._setPinValue = function (value) {
 
-        //    history.back();
-        //});
+            var state = lastPlayerState;
+
+            if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
+                this.pinValue = '--:--';
+                return;
+            }
+
+            var ticks = state.NowPlayingItem.RunTimeTicks;
+            ticks /= 100;
+            ticks *= value;
+
+            this.pinValue = Dashboard.getDisplayTime(ticks);
+        };
 
         $(page).on('click', '.lnkPlayFromIndex', function () {
 
@@ -431,29 +436,23 @@
             hideButton(btnPlay);
         }
 
-        if (!isPositionSliderActive) {
+        var positionSlider = $('.nowPlayingPositionSlider', page)[0];
 
-            var positionSlider = $('.positionSlider', page);
+        if (!positionSlider.dragging) {
 
             if (item && item.RunTimeTicks) {
 
                 var pct = playState.PositionTicks / item.RunTimeTicks;
                 pct *= 100;
 
-                positionSlider.val(pct);
+                positionSlider.value = pct;
 
             } else {
 
-                positionSlider.val(0);
+                positionSlider.value = 0;
             }
 
-            if (playState.CanSeek) {
-                positionSlider.slider("enable");
-            } else {
-                positionSlider.slider("disable");
-            }
-
-            positionSlider.slider('refresh');
+            positionSlider.disabled = !playState.CanSeek;
         }
 
         if (playState.PositionTicks == null) {
@@ -481,8 +480,9 @@
     function updateNowPlayingInfo(page, state) {
 
         var item = state.NowPlayingItem;
+        var displayName = item ? MediaController.getNowPlayingNameHtml(item).replace('<br/>', ' - ') : '';
 
-        $('.itemName', page).html(item ? MediaController.getNowPlayingNameHtml(item).replace('<br/>', ' - ') : '');
+        $('.nowPlayingPageTitle', page).html(displayName).visible(displayName.length > 0);
 
         var url;
         var backdropUrl = null;
@@ -588,20 +588,6 @@
         updateSupportedCommands(page, supportedCommands);
     }
 
-    function showIntro() {
-
-        var expected = '2';
-
-        //if (appStorage.getItem('remotecontrolswipedown') != expected) {
-        //    Dashboard.alert({
-        //        message: Globalize.translate('MessageSwipeDownOnRemoteControl'),
-        //        title: Globalize.translate('HeaderAlert')
-        //    });
-        //    appStorage.setItem('remotecontrolswipedown', expected);
-        //}
-
-    }
-
     function loadPlaylist(page) {
 
         var html = '';
@@ -694,6 +680,20 @@
         }
     }
 
+    function allowSwipe(e) {
+
+        var target = $(e.target);
+
+        if (target.is('.noSwipe')) {
+            return false;
+        }
+        if (target.parents('.noSwipe').length) {
+            return false;
+        }
+
+        return true;
+    }
+
     $(document).on('pageinitdepends', "#nowPlayingPage", function () {
 
         var page = this;
@@ -705,29 +705,33 @@
 
         $('.requiresJqmCreate', this).trigger('create');
 
-        $(page).on('swipeleft', function () {
+        $(page).on('swipeleft', function (e) {
 
-            var pages = this.querySelectorAll('neon-animated-pages')[0];
-            var tabs = this.querySelectorAll('paper-tabs')[0];
+            if (allowSwipe(e)) {
+                var pages = this.querySelectorAll('neon-animated-pages')[0];
+                var tabs = this.querySelectorAll('paper-tabs')[0];
 
-            var selected = parseInt(pages.selected || '0');
-            if (selected < 2) {
-                pages.entryAnimation = 'slide-from-right-animation';
-                pages.exitAnimation = 'slide-left-animation';
-                tabs.selectNext();
+                var selected = parseInt(pages.selected || '0');
+                if (selected < 2) {
+                    pages.entryAnimation = 'slide-from-right-animation';
+                    pages.exitAnimation = 'slide-left-animation';
+                    tabs.selectNext();
+                }
             }
         });
 
-        $(page).on('swiperight', function () {
+        $(page).on('swiperight', function (e) {
 
-            var pages = this.querySelectorAll('neon-animated-pages')[0];
-            var tabs = this.querySelectorAll('paper-tabs')[0];
+            if (allowSwipe(e)) {
+                var pages = this.querySelectorAll('neon-animated-pages')[0];
+                var tabs = this.querySelectorAll('paper-tabs')[0];
 
-            var selected = parseInt(pages.selected || '0');
-            if (selected > 0) {
-                pages.entryAnimation = 'slide-from-left-animation';
-                pages.exitAnimation = 'slide-right-animation';
-                tabs.selectPrevious();
+                var selected = parseInt(pages.selected || '0');
+                if (selected > 0) {
+                    pages.entryAnimation = 'slide-from-left-animation';
+                    pages.exitAnimation = 'slide-right-animation';
+                    tabs.selectPrevious();
+                }
             }
         });
 
@@ -757,7 +761,6 @@
 
         });
 
-        showIntro();
         loadPlaylist(page);
 
         var tab = getParameterByName('tab');

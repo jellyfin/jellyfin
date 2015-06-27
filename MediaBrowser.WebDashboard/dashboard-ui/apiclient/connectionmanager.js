@@ -558,7 +558,7 @@
 
         self.logout = function () {
 
-            console.log('begin connectionManager loguot');
+            Logger.log('begin connectionManager loguot');
             var promises = [];
 
             for (var i = 0, length = apiClients.length; i < length; i++) {

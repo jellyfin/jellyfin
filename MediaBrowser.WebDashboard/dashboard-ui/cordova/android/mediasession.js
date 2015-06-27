@@ -96,7 +96,7 @@
 
     function onPlaybackStart(e, state) {
 
-        console.log('nowplaying event: ' + e.type);
+        Logger.log('nowplaying event: ' + e.type);
 
         var player = this;
 
@@ -107,7 +107,7 @@
 
     function onPlaybackStopped(e, state) {
 
-        console.log('nowplaying event: ' + e.type);
+        Logger.log('nowplaying event: ' + e.type);
         var player = this;
 
         player.endPlayerUpdates();
@@ -142,7 +142,7 @@
 
         currentPlayer = player;
 
-        console.log('binding remotecontrols to MediaPlayer');
+        Logger.log('binding remotecontrols to MediaPlayer');
 
         player.getPlayerState().done(function (state) {
 
@@ -161,7 +161,7 @@
 
     Dashboard.ready(function () {
 
-        console.log('binding remotecontrols to MediaController');
+        Logger.log('binding remotecontrols to MediaController');
 
         $(MediaController).on('playerchange', function () {
 

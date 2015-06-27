@@ -1,11 +1,11 @@
 ﻿(function () {
 
     function onSuccess() {
-        console.log('Immersive mode succeeded');
+        Logger.log('Immersive mode succeeded');
     }
 
     function onError() {
-        console.log('Immersive mode failed');
+        Logger.log('Immersive mode failed');
     }
 
     //// Is this plugin supported?
@@ -89,7 +89,7 @@
 
     Dashboard.ready(function () {
 
-        console.log('binding fullscreen to MediaController');
+        Logger.log('binding fullscreen to MediaController');
 
         $(MediaController).on('playerchange', function () {
 

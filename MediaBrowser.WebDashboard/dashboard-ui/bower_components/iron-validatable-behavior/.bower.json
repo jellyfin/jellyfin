@@ -1,0 +1,44 @@
+{
+  "name": "iron-validatable-behavior",
+  "version": "1.0.2",
+  "description": "Provides a behavior for an element that validates user input",
+  "authors": "The Polymer Authors",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "iron",
+    "behavior"
+  ],
+  "main": [
+    "iron-validatable-behavior.html"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/iron-validatable-behavior.git"
+  },
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/PolymerElements/iron-validatable-behavior",
+  "ignore": [],
+  "dependencies": {
+    "iron-meta": "PolymerElements/iron-meta#^1.0.0",
+    "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "devDependencies": {
+    "paper-styles": "PolymerElements/paper-styles#^1.0.4",
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-validator-behavior": "PolymerElements/iron-validator-behavior#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "web-component-tester": "*",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "_release": "1.0.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "1.0.2",
+    "commit": "a4fc340fdb268e274f312dadedd0633b025ac3a4"
+  },
+  "_source": "git://github.com/PolymerElements/iron-validatable-behavior.git",
+  "_target": "^1.0.0",
+  "_originalSource": "PolymerElements/iron-validatable-behavior"
+}
