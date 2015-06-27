@@ -175,6 +175,11 @@
 
         elem = $(getNowPlayingBarHtml()).insertBefore('#footerNotifications').trigger('create');
 
+        if ($.browser.safari && $.browser.mobile) {
+            // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
+            elem.addClass('noMediaProgress');
+        }
+
         bindEvents(elem);
 
         return elem;
@@ -190,7 +195,7 @@
 
     function updatePlayerState(state) {
 
-        if (state.NowPlayingItem && !$($.mobile.activePage).hasClass('nowPlayingPage')) {
+        if (state.NowPlayingItem) {
             showNowPlayingBar();
         } else {
             hideNowPlayingBar();
@@ -383,6 +388,8 @@
             ApiClient.getItem(Dashboard.getCurrentUserId(), nowPlayingItem.Id).done(function (item) {
                 nowPlayingUserData.html(LibraryBrowser.getUserDataIconsHtml(item, false));
             });
+        } else {
+            nowPlayingUserData.html('');
         }
     }
 

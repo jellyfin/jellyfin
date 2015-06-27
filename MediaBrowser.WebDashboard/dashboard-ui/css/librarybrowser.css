@@ -1383,11 +1383,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         text-decoration: none;
     }
 
-
-.itemsContainer:not(.fullWidthItemsContainer) .itemsListview {
-    max-width: 800px;
-}
-
 .itemsListview {
     margin: 0 auto !important;
 }

@@ -5,6 +5,10 @@
     /*box-shadow: 0 0 8px rgba(255,255,255,.4);*/
 }
 
+.hiddenNowPlayingBar .nowPlayingBar {
+    display: none!important;
+}
+
 .mediaButton, .nowPlayingBarUserDataButtons .btnUserItemRating {
     vertical-align: middle;
     color: #e8e8e8;
@@ -83,12 +87,13 @@
 @media (min-width: 800px) {
     .nowPlayingBarText {
         max-width: 300px;
+        margin-right: 30px;
     }
 }
 
-@media (min-width: 800px) {
+@media (min-width: 900px) {
     .nowPlayingBarText {
-        margin-right: 30px;
+        max-width: 400px;
     }
 }
 
@@ -106,8 +111,12 @@
     z-index: 1;
 }
 
+.noMediaProgress .nowPlayingBarPositionContainer {
+    display: none;
+}
+
 .nowPlayingBarPositionSlider paper-progress {
-    height: 4px !important;
+    height: 3px !important;
 }
 
 .nowPlayingBarPositionSlider #sliderBar {
@@ -120,7 +129,7 @@
 }
 
 .nowPlayingBarPositionSlider #sliderKnob {
-    top: -14px !important;
+    top: -15px !important;
 }
 
 .nowPlayingBarPositionSlider #progressContainer {
@@ -128,8 +137,8 @@
 }
 
 .nowPlayingBarPositionSlider #sliderKnobInner {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
 }
 
 .nowPlayingBarRight {

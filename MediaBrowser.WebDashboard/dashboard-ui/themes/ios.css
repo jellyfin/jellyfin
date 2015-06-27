@@ -151,3 +151,8 @@ h1, h1 a {
 .sidebarLinkText {
     font-weight: 400 !important;
 }
+
+#footer {
+    /* Eliminate transparency to prevent clicks from passing through to the elements underneath */
+    background-color: rgb(26,26,26);
+}

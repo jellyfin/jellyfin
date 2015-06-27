@@ -151,12 +151,22 @@
         margin-top: -1.5em;
         padding: 0 60px;
     }
+
+    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+        width: 60px;
+        height: 60px;
+    }
 }
 
 @media (orientation: portrait) and (max-height: 600px) {
     .nowPlayingPageTitle {
         margin-top: -1.5em;
         padding: 0 60px;
+    }
+
+    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+        width: 60px;
+        height: 60px;
     }
 }
 

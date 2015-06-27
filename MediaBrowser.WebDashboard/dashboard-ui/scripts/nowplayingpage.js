@@ -745,7 +745,7 @@
 
     }).on('pagebeforeshowready', "#nowPlayingPage", function () {
 
-        $(document.body).addClass('hiddenViewMenuBar');
+        $(document.body).addClass('hiddenViewMenuBar').addClass('hiddenNowPlayingBar');
         var page = this;
 
         currentImgUrl = null;
@@ -776,7 +776,7 @@
         $(MediaController).off('playerchange.nowplayingpage');
 
         lastPlayerState = null;
-        $(document.body).removeClass('hiddenViewMenuBar');
+        $(document.body).removeClass('hiddenViewMenuBar').removeClass('hiddenNowPlayingBar');
     });
 
     window.NowPlayingPage = {
