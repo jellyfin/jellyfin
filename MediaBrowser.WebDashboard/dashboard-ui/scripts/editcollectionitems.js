@@ -96,7 +96,7 @@
         }).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
-            $(document).scrollTop(0);
+            window.scrollTo(0, 0);
 
             var html = result.Items.map(getTitleHtml).join('');
 

@@ -167,17 +167,17 @@
 
     function getNowPlayingBar() {
 
-        var elem = $('.nowPlayingBar');
+        var elem = document.querySelector('.nowPlayingBar');
 
-        if (elem.length) {
+        if (elem) {
             return elem;
         }
 
-        elem = $(getNowPlayingBarHtml()).insertBefore('#footerNotifications').trigger('create');
+        elem = $(getNowPlayingBarHtml()).insertBefore('#footerNotifications')[0];
 
         if ($.browser.safari && $.browser.mobile) {
             // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
-            elem.addClass('noMediaProgress');
+            elem.classList.add('noMediaProgress');
         }
 
         bindEvents(elem);
@@ -408,7 +408,7 @@
 
         var nowPlayingBar = getNowPlayingBar();
 
-        nowPlayingBar.show();
+        $(nowPlayingBar).show();
     }
 
     function hideNowPlayingBar() {
@@ -417,7 +417,10 @@
         // in the event of a stop->play command
 
         // Don't call getNowPlayingBar here because we don't want to end up creating it just to hide it
-        $('.nowPlayingBar').hide();
+        var elem = document.getElementsByClassName('nowPlayingBar')[0];
+        if (elem) {
+            elem.style.display = 'none';
+        }
     }
 
     function onPlaybackStopped(e, state) {
@@ -446,7 +449,7 @@
 
         if (currentPlayer) {
 
-            $(currentPlayer).off('.nowplayingbar');
+            Events.off(currentPlayer, '.nowplayingbar');
             currentPlayer.endPlayerUpdates();
             currentPlayer = null;
 
@@ -492,7 +495,7 @@
 
     Dashboard.ready(function () {
 
-        $(MediaController).on('playerchange', function () {
+        Events.on(MediaController, 'playerchange', function () {
 
             bindToPlayer(MediaController.getCurrentPlayer());
         });

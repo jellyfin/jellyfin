@@ -1,23 +1,35 @@
 ﻿(function ($) {
 
+})(jQuery);
+
+/**
+ * jQuery Unveil
+ * A very lightweight jQuery plugin to lazy load images
+ * http://luis-almeida.github.com/unveil
+ *
+ * Licensed under the MIT license.
+ * Copyright 2013 Luís Almeida
+ * https://github.com/luis-almeida
+ */
+
+(function ($) {
+
     /**
-     * Copyright 2012, Digital Fusion
-     * Licensed under the MIT license.
-     * http://teamdf.com/jquery-plugins/license/
-     *
-     * @author Sam Sehnert
-     * @desc A small plugin that checks whether elements are within
-     *       the user visible viewport of a web browser.
-     *       only accounts for vertical position, not horizontal.
-     */
+    * Copyright 2012, Digital Fusion
+    * Licensed under the MIT license.
+    * http://teamdf.com/jquery-plugins/license/
+    *
+    * @author Sam Sehnert
+    * @desc A small plugin that checks whether elements are within
+    *       the user visible viewport of a web browser.
+    *       only accounts for vertical position, not horizontal.
+    */
     var $w = $(window);
-    $.fn.visibleInViewport = function (partial, hidden, direction, threshold) {
 
-        if (this.length < 1)
-            return;
+    function visibleInViewport(elem, partial, hidden, direction, threshold) {
 
-        var $t = this.length > 1 ? this.eq(0) : this,
-            t = $t.get(0),
+        var $t = $(elem),
+            t = elem,
             vpWidth = $w.width(),
             vpHeight = $w.height(),
             direction = (direction) ? direction : 'both',
@@ -63,21 +75,7 @@
             else if (direction === 'horizontal')
                 return !!clientSize && ((compareRight <= viewRight) && (compareLeft >= viewLeft));
         }
-    };
-
-})(jQuery);
-
-/**
- * jQuery Unveil
- * A very lightweight jQuery plugin to lazy load images
- * http://luis-almeida.github.com/unveil
- *
- * Licensed under the MIT license.
- * Copyright 2013 Luís Almeida
- * https://github.com/luis-almeida
- */
-
-(function ($) {
+    }
 
     var unveilId = 0;
 
@@ -100,7 +98,7 @@
     var threshold = getThreshold();
 
     function isVisible() {
-        return $(this).visibleInViewport(true, false, 'both', threshold);
+        return visibleInViewport(this, true, false, 'both', threshold);
     }
 
     function fillImage() {
@@ -112,16 +110,19 @@
         }
     }
 
-    $.fn.unveil = function () {
+    function unveilElements(elems) {
 
-        var $w = $(window),
-            images = this,
-            loaded;
+        if (!elems.length) {
+            return;
+        }
+
+        var images = $(elems),
+        loaded;
 
         unveilId++;
         var eventNamespace = 'unveil' + unveilId;
 
-        this.one("unveil", fillImage);
+        images.one("unveil", fillImage);
 
         function unveil() {
             var inview = images.filter(isVisible);
@@ -130,39 +131,54 @@
             images = images.not(loaded);
 
             if (!images.length) {
-                $w.off('scroll.' + eventNamespace);
-                $w.off('resize.' + eventNamespace);
+                Events.off(window, 'scroll.' + eventNamespace);
+                Events.off(window, 'resize.' + eventNamespace);
             }
         }
 
-        $w.on('scroll.' + eventNamespace, unveil);
-        $w.on('resize.' + eventNamespace, unveil);
+        Events.on(window, 'scroll.' + eventNamespace, unveil);
+        Events.on(window, 'resize.' + eventNamespace, unveil);
 
         unveil();
+    }
 
-        return this;
+    function fillImages(elems) {
 
-    };
+        for (var i = 0, length = elems.length; i < length; i++) {
+            var elem = elems[0];
+            var source = elem.getAttribute('data-src');
+            if (source) {
+                ImageStore.setImageInto(elem, source);
+                elem.setAttribute("data-src", '');
+            }
+        }
+    }
 
-    $.fn.fillImages = function () {
+    function lazyChildren(elem) {
 
-        return this.each(fillImage);
-    };
+        unveilElements(elem.getElementsByClassName('lazy'));
+    }
 
     $.fn.lazyChildren = function () {
 
-        var lazyItems = $(".lazy", this);
-
-        if (lazyItems.length) {
-            lazyItems.unveil();
+        if (this.length == 1) {
+            lazyChildren(this[0]);
+        } else {
+            unveilElements($('.lazy', this));
         }
-
         return this;
     };
 
-    $.fn.lazyImage = function (url) {
+    function lazyImage(elem, url) {
 
-        return this.attr('data-src', url).fillImages();
+        elem.setAttribute('data-src', url);
+        fillImages([elem]);
+    }
+
+    window.ImageLoader = {
+        fillImages: fillImages,
+        lazyImage: lazyImage,
+        lazyChildren: lazyChildren
     };
 
 })(window.jQuery || window.Zepto);

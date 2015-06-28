@@ -60,8 +60,9 @@
                 }
             }
 
-            elem = $(elem).html(html).lazyChildren();
-            elem.createCardMenus();
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
+            $(elem).createCardMenus();
         });
     }
 
@@ -100,7 +101,7 @@
 
             var section = sections[i];
 
-            elem = $('.section' + section.id, page);
+            elem = page.querySelector('.section' + section.id);
 
             promises.push(loadSection(elem, userId, section, sections.length == 1));
         }

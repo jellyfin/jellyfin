@@ -178,10 +178,11 @@
         loadRecentlyPlayed(page, parentId);
         loadFrequentlyPlayed(page, parentId);
 
+        var containers = page.querySelectorAll('.itemsContainer');
         if (enableScrollX()) {
-            $('.itemsContainer', page).addClass('hiddenScrollX');
+            $(containers).addClass('hiddenScrollX');
         } else {
-            $('.itemsContainer', page).removeClass('hiddenScrollX');
+            $(containers).removeClass('hiddenScrollX');
         }
     });
 

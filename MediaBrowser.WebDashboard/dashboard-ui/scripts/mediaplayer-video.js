@@ -1178,23 +1178,28 @@
             var index = self.currentPlaylistIndex(null);
             var length = self.playlist.length;
             var requiresNativeControls = !self.enableCustomVideoControls();
-            var controls = $(requiresNativeControls ? '.videoAdvancedControls' : '.videoControls');
 
             if (length < 2) {
                 $('.videoTrackControl').hide();
                 return;
             }
 
+            var controls = requiresNativeControls ? '.videoAdvancedControls' : '.videoControls';
+            controls = document.getElementsByClassName(controls)[0];
+
+            var previousTrackButton = controls.getElementsByClassName('previousTrackButton')[0];
+            var nextTrackButton = controls.getElementsByClassName('nextTrackButton')[0];
+
             if (index === 0) {
-                $('.previousTrackButton', controls).attr('disabled', 'disabled');
+                previousTrackButton.setAttribute('disabled', 'disabled');
             } else {
-                $('.previousTrackButton', controls).removeAttr('disabled');
+                previousTrackButton.removeAttribute('disabled');
             }
 
             if ((index + 1) >= length) {
-                $('.nextTrackButton', controls).attr('disabled', 'disabled');
+                nextTrackButton.setAttribute('disabled', 'disabled');
             } else {
-                $('.nextTrackButton', controls).removeAttr('disabled');
+                nextTrackButton.removeAttribute('disabled');
             }
 
             $('.videoTrackControl', controls).show();

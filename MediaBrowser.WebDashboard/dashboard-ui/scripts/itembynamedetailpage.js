@@ -448,7 +448,7 @@
                     updatePageSizeSetting: false
                 });
 
-                $('.listTopPaging', page).html(pagingHtml);
+                page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
                 $('.viewSettings', page).show();
             } else {
@@ -527,7 +527,12 @@
                 updatePageSizeSetting: false
             });
 
-            $('#items', page).html(html).trigger('create').lazyChildren();
+            var elem = page.querySelector('#items');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
+
+            // Do we still need this?
+            $(elem).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {
 

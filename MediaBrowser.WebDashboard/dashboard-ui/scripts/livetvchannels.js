@@ -39,7 +39,9 @@
 
         var html = getChannelsHtml(result.Items);
 
-        $('#items', page).html(html).lazyChildren();
+        var elem = page.querySelector('#items');
+        elem.innerHTML = html;
+        ImageLoader.lazyChildren(elem);
 
         $('.btnNextPage', page).on('click', function () {
             query.StartIndex += query.Limit;

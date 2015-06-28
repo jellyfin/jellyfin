@@ -374,7 +374,7 @@
 
     function onStateChanged(e, state) {
 
-        updatePlayerState($.mobile.activePage, state);
+        updatePlayerState($($.mobile.activePage)[0], state);
     }
 
     function showButton(button) {

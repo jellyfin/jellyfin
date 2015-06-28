@@ -151,12 +151,12 @@
 
         if (val) {
             updateSearchOverlay(getSearchOverlay(true).fadeIn('fast'), val);
-            $(document.body).addClass('bodyWithPopupOpen');
+            document.body.classList.add('bodyWithPopupOpen');
 
         } else {
 
             updateSearchOverlay(getSearchOverlay(false).fadeOut('fast'), val);
-            $(document.body).removeClass('bodyWithPopupOpen');
+            document.body.classList.remove('bodyWithPopupOpen');
         }
     }
 

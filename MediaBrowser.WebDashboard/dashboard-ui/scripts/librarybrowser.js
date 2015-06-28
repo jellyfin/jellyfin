@@ -336,10 +336,6 @@
             });
         },
 
-        closePlayMenu: function () {
-            $('.playFlyout').popup("close").remove();
-        },
-
         getMoreCommands: function (item, user) {
 
             var commands = [];
@@ -406,7 +402,7 @@
                     if (result) {
                         ApiClient.deleteItem(itemId);
 
-                        $(LibraryBrowser).trigger('itemdeleting', [itemId]);
+                        Events.trigger(LibraryBrowser, 'itemdeleting', [itemId]);
                     }
                 });
 
@@ -2208,7 +2204,7 @@
 
                 html += '</div>';
 
-                if (showControls && options.showLimit !== false) {
+                if (showControls && options.showLimit) {
 
                     require(['jqmicons']);
                     var id = "selectPageSize";
@@ -2353,16 +2349,14 @@
 
             var id = link.getAttribute('data-itemid');
 
-            var $link = $(link);
-
-            var markAsPlayed = !$link.hasClass('btnUserItemRatingOn');
+            var markAsPlayed = !link.classList.contains('btnUserItemRatingOn');
 
             if (markAsPlayed) {
                 ApiClient.markPlayed(Dashboard.getCurrentUserId(), id);
-                $link.addClass('btnUserItemRatingOn');
+                link.classList.add('btnUserItemRatingOn');
             } else {
                 ApiClient.markUnplayed(Dashboard.getCurrentUserId(), id);
-                $link.removeClass('btnUserItemRatingOn');
+                link.classList.remove('btnUserItemRatingOn');
             }
         },
 
@@ -2668,31 +2662,31 @@
 
             elem.html(html);
 
-            var page = $(elem).parents('.page');
+            var page = $(elem).parents('.page')[0];
 
-            var detailContentEffectedByImage = $('.detailContentEffectedByImage', page);
+            var detailContentEffectedByImage = page.querySelector('.detailContentEffectedByImage');
 
             if (shape == 'thumb') {
-                detailContentEffectedByImage.addClass('detailContentEffectedByThumbImage');
-                detailContentEffectedByImage.removeClass('detailContentEffectedBySquareImage');
-                detailContentEffectedByImage.removeClass('detailContentEffectedByPortraitImage');
+                detailContentEffectedByImage.classList.add('detailContentEffectedByThumbImage');
+                detailContentEffectedByImage.classList.remove('detailContentEffectedBySquareImage');
+                detailContentEffectedByImage.classList.remove('detailContentEffectedByPortraitImage');
 
                 elem.addClass('thumbDetailImageContainer');
                 elem.removeClass('portraitDetailImageContainer');
                 elem.removeClass('squareDetailImageContainer');
             }
             else if (shape == 'square') {
-                detailContentEffectedByImage.removeClass('detailContentEffectedByThumbImage');
-                detailContentEffectedByImage.addClass('detailContentEffectedBySquareImage');
-                detailContentEffectedByImage.removeClass('detailContentEffectedByPortraitImage');
+                detailContentEffectedByImage.classList.remove('detailContentEffectedByThumbImage');
+                detailContentEffectedByImage.classList.add('detailContentEffectedBySquareImage');
+                detailContentEffectedByImage.classList.remove('detailContentEffectedByPortraitImage');
 
                 elem.removeClass('thumbDetailImageContainer');
                 elem.removeClass('portraitDetailImageContainer');
                 elem.addClass('squareDetailImageContainer');
             } else {
-                detailContentEffectedByImage.removeClass('detailContentEffectedByThumbImage');
-                detailContentEffectedByImage.removeClass('detailContentEffectedBySquareImage');
-                detailContentEffectedByImage.addClass('detailContentEffectedByPortraitImage');
+                detailContentEffectedByImage.classList.remove('detailContentEffectedByThumbImage');
+                detailContentEffectedByImage.classList.remove('detailContentEffectedBySquareImage');
+                detailContentEffectedByImage.classList.add('detailContentEffectedByPortraitImage');
 
                 elem.removeClass('thumbDetailImageContainer');
                 elem.addClass('portraitDetailImageContainer');
@@ -2875,16 +2869,17 @@
 
             var overview = item.Overview || '';
 
-            elem.html(overview).trigger('create');
+            elem = elem[0];
+            elem.innerHTML = overview;
 
             $('a', elem).each(function () {
-                $(this).attr("target", "_blank");
+                this.setAttribute("target", "_blank");
             });
 
             if (overview) {
-                elem.removeClass('empty');
+                elem.classList.remove('empty');
             } else {
-                elem.addClass('empty');
+                elem.classList.add('empty');
             }
 
         },
@@ -3005,7 +3000,7 @@
                     tag: item.BackdropImageTags[0]
                 });
 
-                $('#itemBackdrop', page).removeClass('noBackdrop').lazyImage(imgUrl);
+                ImageLoader.lazyImage($('#itemBackdrop', page).removeClass('noBackdrop')[0], imgUrl);
             }
             else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
 
@@ -3016,7 +3011,7 @@
                     maxWidth: screenWidth
                 });
 
-                $('#itemBackdrop', page).removeClass('noBackdrop').lazyImage(imgUrl);
+                ImageLoader.lazyImage($('#itemBackdrop', page).removeClass('noBackdrop')[0], imgUrl);
 
             }
             else {

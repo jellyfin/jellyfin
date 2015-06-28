@@ -29,7 +29,7 @@
         ApiClient.getItems(userId, query).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
-            $(document).scrollTop(0);
+            window.scrollTo(0, 0);
 
             var html = '';
 
@@ -43,7 +43,7 @@
 
             });
 
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
             updateFilterControls(page);
             var trigger = false;
@@ -129,13 +129,13 @@
                 });
             }
 
-            var elem = $('.itemsContainer', page).html(html).lazyChildren();
+            var elem = page.querySelector('.itemsContainer');
+            elem.innerHTML = html + pagingHtml;
+            ImageLoader.lazyChildren(elem);
 
             if (trigger) {
-                $(elem).trigger('create');
+                Events.trigger(elem, 'create');
             }
-
-            $(pagingHtml).appendTo(elem).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

@@ -24,7 +24,9 @@
 
             });
 
-            $('.activeProgramItems', page).html(html).lazyChildren();
+            var elem = page.querySelector('.activeProgramItems');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
             Dashboard.hideLoadingMsg();
         });
     }
@@ -56,7 +58,9 @@
 
             });
 
-            $('.upcomingProgramItems', page).html(html).lazyChildren();
+            var elem = page.querySelector('.upcomingProgramItems');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
         });
 
         ApiClient.getLiveTvRecommendedPrograms({
@@ -78,7 +82,9 @@
                 lazy: true
             });
 
-            $('.upcomingTvMovieItems', page).html(html).lazyChildren();
+            var elem = page.querySelector('.upcomingTvMovieItems');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
         });
 
         ApiClient.getLiveTvRecommendedPrograms({
@@ -100,7 +106,9 @@
                 lazy: true
             });
 
-            $('.upcomingSportsItems', page).html(html).lazyChildren();
+            var elem = page.querySelector('.upcomingSportsItems');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
         });
     }
 

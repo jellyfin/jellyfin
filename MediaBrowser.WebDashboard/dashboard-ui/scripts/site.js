@@ -338,7 +338,7 @@ var Dashboard = {
         var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRestart') + '</span>';
 
         if (systemInfo.CanSelfRestart) {
-            html += '<button type="button" data-icon="refresh" onclick="$(this).buttonEnabled(false);Dashboard.restartServer();" data-theme="b" data-inline="true" data-mini="true">' + Globalize.translate('ButtonRestart') + '</button>';
+            html += '<button type="button" data-icon="refresh" onclick="this.disabled=\'disabled\';Dashboard.restartServer();" data-theme="b" data-inline="true" data-mini="true">' + Globalize.translate('ButtonRestart') + '</button>';
         }
 
         Dashboard.showFooterNotification({ id: "serverRestartWarning", html: html, forceShow: true, allowHide: false });
@@ -346,14 +346,17 @@ var Dashboard = {
 
     hideServerRestartWarning: function () {
 
-        $('#serverRestartWarning').remove();
+        var elem = document.getElementById('serverRestartWarning');
+        if (elem) {
+            elem.parentNode.removeChild(elem);
+        }
     },
 
     showDashboardRefreshNotification: function () {
 
         var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRefreshPage') + '</span>';
 
-        html += '<button type="button" data-icon="refresh" onclick="$(this).buttonEnabled(false);Dashboard.reloadPage();" data-theme="b" data-inline="true" data-mini="true">' + Globalize.translate('ButtonRefresh') + '</button>';
+        html += '<button type="button" data-icon="refresh" onclick="this.disabled=\'disabled\';Dashboard.reloadPage();" data-theme="b" data-inline="true" data-mini="true">' + Globalize.translate('ButtonRefresh') + '</button>';
 
         Dashboard.showFooterNotification({ id: "dashboardVersionWarning", html: html, forceShow: true, allowHide: false });
     },
@@ -376,7 +379,12 @@ var Dashboard = {
 
     hideDashboardVersionWarning: function () {
 
-        $('#dashboardVersionWarning').remove();
+        var elem = document.getElementById('dashboardVersionWarning');
+
+        if (elem) {
+
+            elem.parentNode.removeChild(elem);
+        }
     },
 
     showFooterNotification: function (options) {
@@ -614,7 +622,9 @@ var Dashboard = {
             html += '</div>';
             html += '</paper-dialog>';
 
-            $(document.body).append(html).addClass('bodyWithPopupOpen');
+            $(document.body).append(html);
+            
+            document.body.classList.add('bodyWithPopupOpen');
 
             // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
             // element onload never fires
@@ -625,8 +635,8 @@ var Dashboard = {
                 // Has to be assigned a z-index after the call to .open() 
                 $(dlg).on('iron-overlay-closed', function (e) {
                     var confirmed = this.closingReason.confirmed;
-                    $(this).remove();
-                    $(document.body).removeClass('bodyWithPopupOpen');
+                    this.parentNode.removeChild(this);
+                    document.body.classList.remove('bodyWithPopupOpen');
                     callback(confirmed);
                 });
 
@@ -798,7 +808,7 @@ var Dashboard = {
 
     ensureHeader: function (page) {
 
-        if (page.hasClass('standalonePage') && !page.hasClass('noHeaderPage')) {
+        if (page.classList.contains('standalonePage') && !page.classList.contains('noHeaderPage')) {
 
             Dashboard.renderHeader(page);
         }
@@ -806,16 +816,16 @@ var Dashboard = {
 
     renderHeader: function (page) {
 
-        var header = $('.header', page);
+        var header = page.querySelector('.header');
 
-        if (!header.length) {
+        if (!header) {
             var headerHtml = '';
 
             headerHtml += '<div class="header">';
 
             headerHtml += '<a class="logo" href="index.html" style="text-decoration:none;font-size: 22px;">';
 
-            if (page.hasClass('standalonePage')) {
+            if (page.classList.contains('standalonePage')) {
 
                 headerHtml += '<img class="imgLogoIcon" src="css/images/mblogoicon.png" />';
                 headerHtml += '<span class="logoLibraryMenuButtonText">EMBY</span>';
@@ -824,7 +834,7 @@ var Dashboard = {
             headerHtml += '</a>';
 
             headerHtml += '</div>';
-            page.prepend(headerHtml);
+            $(page).prepend(headerHtml);
         }
     },
 
@@ -885,9 +895,9 @@ var Dashboard = {
 
     ensureToolsMenu: function (page) {
 
-        var sidebar = $('.toolsSidebar', page);
+        var sidebar = page.querySelector('.toolsSidebar');
 
-        if (!sidebar.length) {
+        if (!sidebar) {
 
             var html = '<div class="content-secondary toolsSidebar">';
 
@@ -901,55 +911,55 @@ var Dashboard = {
             html += '</div>';
 
             $('.content-primary', page).before(html);
-            $(page).trigger('create');
+            Events.trigger(page, 'create');
         }
     },
 
     getToolsMenuLinks: function (page) {
 
-        var pageElem = page[0];
+        var pageElem = page;
 
-        var isServicesPage = page.hasClass('appServicesPage');
+        var isServicesPage = page.classList.contains('appServicesPage');
         var context = getParameterByName('context');
 
         return [{
             name: Globalize.translate('TabServer'),
             href: "dashboard.html",
-            selected: page.hasClass("dashboardHomePage"),
+            selected: page.classList.contains("dashboardHomePage"),
             icon: 'dashboard',
             color: '#38c'
         }, {
             name: Globalize.translate('TabDevices'),
             href: "devices.html",
-            selected: page.hasClass("devicesPage"),
+            selected: page.classList.contains("devicesPage"),
             icon: 'tablet',
             color: '#ECA403'
         }, {
             name: Globalize.translate('TabUsers'),
             href: "userprofiles.html",
-            selected: page.hasClass("userProfilesPage"),
+            selected: page.classList.contains("userProfilesPage"),
             icon: 'people',
             color: '#679C34'
         }, {
             name: Globalize.translate('TabLibrary'),
             divider: true,
             href: "library.html",
-            selected: page.hasClass("mediaLibraryPage"),
+            selected: page.classList.contains("mediaLibraryPage"),
             icon: 'video-library'
         }, {
             name: Globalize.translate('TabMetadata'),
             href: "metadata.html",
-            selected: page.hasClass('metadataConfigurationPage'),
+            selected: page.classList.contains('metadataConfigurationPage'),
             icon: 'insert-drive-file'
         }, {
             name: Globalize.translate('TabPlayback'),
             href: "playbackconfiguration.html",
-            selected: page.hasClass('playbackConfigurationPage'),
+            selected: page.classList.contains('playbackConfigurationPage'),
             icon: 'play-circle-filled'
         }, {
             name: Globalize.translate('TabSync'),
             href: "syncactivity.html",
-            selected: page.hasClass('syncConfigurationPage') || (isServicesPage && context == 'sync'),
+            selected: page.classList.contains('syncConfigurationPage') || (isServicesPage && context == 'sync'),
             icon: 'refresh'
         }, {
             divider: true,
@@ -957,31 +967,31 @@ var Dashboard = {
         }, {
             name: Globalize.translate('TabAutoOrganize'),
             href: "autoorganizelog.html",
-            selected: page.hasClass("organizePage"),
+            selected: page.classList.contains("organizePage"),
             icon: 'folder',
             color: '#01C0DD'
         }, {
             name: Globalize.translate('TabDLNA'),
             href: "dlnasettings.html",
-            selected: page.hasClass("dlnaPage"),
+            selected: page.classList.contains("dlnaPage"),
             icon: 'tv',
             color: '#E5342E'
         }, {
             name: Globalize.translate('TabLiveTV'),
             href: "livetvstatus.html",
-            selected: page.hasClass("liveTvSettingsPage") || (isServicesPage && context == 'livetv'),
+            selected: page.classList.contains("liveTvSettingsPage") || (isServicesPage && context == 'livetv'),
             icon: 'live-tv',
             color: '#293AAE'
         }, {
             name: Globalize.translate('TabNotifications'),
             href: "notificationsettings.html",
-            selected: page.hasClass("notificationConfigurationPage"),
+            selected: page.classList.contains("notificationConfigurationPage"),
             icon: 'notifications',
             color: 'brown'
         }, {
             name: Globalize.translate('TabPlugins'),
             href: "plugins.html",
-            selected: page.hasClass("pluginConfigurationPage"),
+            selected: page.classList.contains("pluginConfigurationPage"),
             icon: 'add-shopping-cart',
             color: '#9D22B1'
         }, {
@@ -990,13 +1000,13 @@ var Dashboard = {
         }, {
             name: Globalize.translate('TabAdvanced'),
             href: "advanced.html",
-            selected: page.hasClass("advancedConfigurationPage"),
+            selected: page.classList.contains("advancedConfigurationPage"),
             icon: 'settings',
             color: '#F16834'
         }, {
             name: Globalize.translate('TabScheduledTasks'),
             href: "scheduledtasks.html",
-            selected: page.hasClass("scheduledTasksConfigurationPage"),
+            selected: page.classList.contains("scheduledTasksConfigurationPage"),
             icon: 'schedule',
             color: '#38c'
         }, {
@@ -1295,21 +1305,23 @@ var Dashboard = {
 
     ensurePageTitle: function (page) {
 
-        if (!page.hasClass('type-interior')) {
+        if (!page.classList.contains('type-interior')) {
             return;
         }
 
-        if ($('.pageTitle', page).length) {
+        var pageElem = page;
+
+        if (pageElem.querySelector('.pageTitle')) {
             return;
         }
 
-        var parent = $('.content-primary', page);
+        var parent = pageElem.querySelector('.content-primary');
 
-        if (!parent.length) {
-            parent = $('.ui-content', page)[0];
+        if (!parent) {
+            parent = pageElem.getElementsByClassName('ui-content')[0];
         }
 
-        var helpUrl = page.attr('data-helpurl');
+        var helpUrl = pageElem.getAttribute('data-helpurl');
 
         var html = '<div>';
         html += '<h1 class="pageTitle" style="display:inline-block;">' + (document.title || '&nbsp;') + '</h1>';
@@ -1329,7 +1341,11 @@ var Dashboard = {
 
     setPageTitle: function (title) {
 
-        $('.pageTitle', $.mobile.activePage).html(title);
+        var elem = $($.mobile.activePage)[0].querySelector('.pageTitle');
+
+        if (elem) {
+            elem.innerHTML = title;
+        }
 
         if (title) {
             document.title = title;
@@ -1579,10 +1595,10 @@ var Dashboard = {
 
             if (dependencies && dependencies.length) {
                 require(dependencies, function () {
-                    $(page).trigger(name);
+                    Events.trigger(page, name);
                 });
             } else {
-                $(page).trigger(name);
+                Events.trigger(page, name);
             }
         });
     },
@@ -1787,44 +1803,44 @@ var AppInfo = {};
 
     function setDocumentClasses() {
 
-        var elem = $(document.documentElement);
+        var elem = document.documentElement;
 
         if (AppInfo.enableBottomTabs) {
-            elem.addClass('bottomSecondaryNav');
+            elem.classList.add('bottomSecondaryNav');
         }
 
         if (AppInfo.isTouchPreferred) {
-            elem.addClass('touch');
+            elem.classList.add('touch');
         } else {
-            elem.addClass('pointerInput');
+            elem.classList.add('pointerInput');
         }
 
         if (AppInfo.cardMargin) {
-            elem.addClass(AppInfo.cardMargin);
+            elem.classList.add(AppInfo.cardMargin);
         }
 
         if (!AppInfo.enableStudioTabs) {
-            elem.addClass('studioTabDisabled');
+            elem.classList.add('studioTabDisabled');
         }
 
         if (!AppInfo.enablePeopleTabs) {
-            elem.addClass('peopleTabDisabled');
+            elem.classList.add('peopleTabDisabled');
         }
 
         if (!AppInfo.enableTvEpisodesTab) {
-            elem.addClass('tvEpisodesTabDisabled');
+            elem.classList.add('tvEpisodesTabDisabled');
         }
 
         if (!AppInfo.enableMovieTrailersTab) {
-            elem.addClass('movieTrailersTabDisabled');
+            elem.classList.add('movieTrailersTabDisabled');
         }
 
         if (!AppInfo.enableSupporterMembership) {
-            elem.addClass('supporterMembershipDisabled');
+            elem.classList.add('supporterMembershipDisabled');
         }
 
         if (AppInfo.isNativeApp) {
-            elem.addClass('nativeApp');
+            elem.classList.add('nativeApp');
         }
     }
 
@@ -2101,9 +2117,9 @@ $(document).on('pagecreate', ".page", function () {
     }
 
     if (current == 'b' && !$.browser.mobile) {
-        $(document.body).addClass('darkScrollbars');
+        document.body.classList.add('darkScrollbars');
     } else {
-        $(document.body).removeClass('darkScrollbars');
+        document.body.classList.remove('darkScrollbars');
     }
 
 }).on('pageinit', ".page", function () {
@@ -2114,14 +2130,12 @@ $(document).on('pagecreate', ".page", function () {
     dependencies = dependencies ? dependencies.split(',') : null;
     Dashboard.firePageEvent(page, 'pageinitdepends', dependencies);
 
-    //$('.localnav a, .libraryViewNav a').attr('data-transition', 'none');
-
 }).on('pagebeforeshow', ".page", function () {
 
     var page = this;
     var dependencies = this.getAttribute('data-require');
 
-    Dashboard.ensurePageTitle($(page));
+    Dashboard.ensurePageTitle(page);
     dependencies = dependencies ? dependencies.split(',') : null;
     Dashboard.firePageEvent(page, 'pagebeforeshowready', dependencies);
 
@@ -2134,13 +2148,13 @@ $(document).on('pagecreate', ".page", function () {
 
 }).on('pageshowbeginready', ".page", function () {
 
-    var page = $(this);
+    var page = this;
 
     var apiClient = window.ApiClient;
 
     if (apiClient && apiClient.accessToken() && Dashboard.getCurrentUserId()) {
 
-        var isSettingsPage = page.hasClass('type-interior');
+        var isSettingsPage = page.classList.contains('type-interior');
 
         if (isSettingsPage) {
             Dashboard.ensureToolsMenu(page);
@@ -2167,7 +2181,7 @@ $(document).on('pagecreate', ".page", function () {
             }
         }
 
-        if (!isConnectMode && this.id !== "loginPage" && !page.hasClass('forgotPasswordPage') && !page.hasClass('wizardPage')) {
+        if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !page.classList.contains('wizardPage')) {
 
             Logger.log('Not logged into server. Redirecting to login.');
             Dashboard.logout();
@@ -2183,7 +2197,7 @@ $(document).on('pagecreate', ".page", function () {
         Dashboard.refreshSystemInfoFromServer();
     }
 
-    if (!page.hasClass('libraryPage')) {
+    if (!page.classList.contains('libraryPage')) {
         require(['jqmicons']);
     }
 });

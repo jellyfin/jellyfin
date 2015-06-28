@@ -28,7 +28,7 @@
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
-            $(document).scrollTop(0);
+            window.scrollTo(0, 0);
 
             var html = '';
 
@@ -73,10 +73,12 @@
                 });
             }
 
-            $('#items', page).html(html).lazyChildren();
+            var elem = page.querySelector('#items');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
 
             if (trigger) {
-                $('#items', page).trigger('create');
+                $(elem).trigger('create');
             }
 
             $('.btnNextPage', page).on('click', function () {

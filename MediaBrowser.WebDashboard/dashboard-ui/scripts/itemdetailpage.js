@@ -852,10 +852,12 @@
                 });
             }
 
-            var elem = $('.childrenItemsContainer', page).html(html).lazyChildren();
+            var elem = page.querySelector('.childrenItemsContainer');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
 
             if (trigger) {
-                elem.trigger('create');
+                $(elem).trigger('create');
             }
 
             if (item.Type == "BoxSet") {
@@ -873,19 +875,19 @@
         });
 
         if (item.Type == "Season") {
-            $('#childrenTitle', page).html(Globalize.translate('HeaderEpisodes'));
+            page.querySelector('#childrenTitle').innerHTML = Globalize.translate('HeaderEpisodes');
         }
         else if (item.Type == "Series") {
-            $('#childrenTitle', page).html(Globalize.translate('HeaderSeasons'));
+            page.querySelector('#childrenTitle').innerHTML = Globalize.translate('HeaderSeasons');
         }
         else if (item.Type == "MusicAlbum") {
-            $('#childrenTitle', page).html(Globalize.translate('HeaderTracks'));
+            page.querySelector('#childrenTitle').innerHTML = Globalize.translate('HeaderTracks');
         }
         else if (item.Type == "GameSystem") {
-            $('#childrenTitle', page).html(Globalize.translate('HeaderGames'));
+            page.querySelector('#childrenTitle').innerHTML = Globalize.translate('HeaderGames');
         }
         else {
-            $('#childrenTitle', page).html(Globalize.translate('HeaderItems'));
+            page.querySelector('#childrenTitle').innerHTML = Globalize.translate('HeaderItems');
         }
     }
 
@@ -961,7 +963,9 @@
 
         html += '</div>';
 
-        $('.collectionItems', page).append(html).lazyChildren();
+        var collectionItems = page.querySelector('.collectionItems');
+        $(collectionItems).append(html);
+        ImageLoader.lazyChildren(collectionItems);
     }
 
     function renderUserDataIcons(page, item) {
@@ -1062,7 +1066,8 @@
             html += '<p style="margin: 0;"><paper-button raised class="more moreCriticReviews">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
         }
 
-        $('#criticReviewsContent', page).html(html).trigger('create');
+        var criticReviewsContent = page.querySelector('#criticReviewsContent');
+        criticReviewsContent.innerHTML = html;
     }
 
     function renderThemeMedia(page, item) {
@@ -1220,7 +1225,9 @@
             html += '<p style="margin: 0;"><paper-button raised class="more moreScenes">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
         }
 
-        $('#scenesContent', page).html(html).trigger('create').lazyChildren();
+        var scenesContent = page.querySelector('#scenesContent');
+        scenesContent.innerHTML = html;
+        ImageLoader.lazyChildren(scenesContent);
     }
 
     function renderMediaSources(page, item) {
@@ -1235,7 +1242,8 @@
             html = '<br/>' + html;
         }
 
-        $('#mediaInfoContent', page).html(html).trigger('create');
+        var mediaInfoContent = page.querySelector('#mediaInfoContent');
+        mediaInfoContent.innerHTML = html;
     }
 
     function getMediaSourceHtml(item, version) {
@@ -1459,7 +1467,9 @@
 
         ApiClient.getSpecialFeatures(user.Id, item.Id).done(function (specials) {
 
-            $('#specialsContent', page).html(getVideosHtml(specials, user, limit, "moreSpecials")).lazyChildren().trigger('create');
+            var specialsContent = page.querySelector('#specialsContent');
+            specialsContent.innerHTML = getVideosHtml(specials, user, limit, "moreSpecials");
+            ImageLoader.lazyChildren(specialsContent);
 
         });
     }
@@ -1529,7 +1539,9 @@
             html += '<p style="margin: 0;padding-left:5px;"><paper-button raised class="more morePeople">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
         }
 
-        $('#castContent', page).html(html).lazyChildren().trigger('create');
+        var castContent = page.querySelector('#castContent');
+        castContent.innerHTML = html;
+        ImageLoader.lazyChildren(castContent);
     }
 
     function play(startPosition) {
@@ -1653,9 +1665,9 @@
 
         reload(page);
 
-        $(ApiClient).on('websocketmessage', onWebSocketMessage);
+        Events.on(ApiClient, 'websocketmessage', onWebSocketMessage);
 
-        $(LibraryBrowser).on('itemdeleting.detailpage', function (e, itemId) {
+        Events.on(LibraryBrowser, 'itemdeleting.detailpage', function (e, itemId) {
 
             if (currentItem && currentItem.Id == itemId) {
                 Dashboard.navigate('index.html');
@@ -1664,7 +1676,7 @@
 
     }).on('pagebeforehide', "#itemDetailPage", function () {
 
-        $(LibraryBrowser).off('itemdeleting.detailpage');
+        Events.off(LibraryBrowser, 'itemdeleting.detailpage');
 
         currentItem = null;
 
@@ -1672,7 +1684,7 @@
 
         $(page).off("click.moreScenes").off("click.morePeople").off("click.moreSpecials").off("click.moreCriticReviews");
 
-        $(ApiClient).off('websocketmessage', onWebSocketMessage);
+        Events.off(ApiClient, 'websocketmessage', onWebSocketMessage);
     });
 
     function itemDetailPage() {

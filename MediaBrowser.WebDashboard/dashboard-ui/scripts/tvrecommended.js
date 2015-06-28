@@ -176,9 +176,9 @@
         var page = this;
 
         if (enableScrollX()) {
-            $('#resumableItems', page).addClass('hiddenScrollX');
+            page.querySelector('#resumableItems').classList.add('hiddenScrollX');
         } else {
-            $('#resumableItems', page).removeClass('hiddenScrollX');
+            page.querySelector('#resumableItems').classList.remove('hiddenScrollX');
         }
 
         reload(page);

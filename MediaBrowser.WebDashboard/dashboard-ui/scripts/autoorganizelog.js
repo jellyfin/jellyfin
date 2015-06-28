@@ -293,7 +293,7 @@
             updatePageSizeSetting: false
         });
 
-        $('.listTopPaging', page).html(pagingHtml).trigger('create');
+        page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
         if (result.TotalRecordCount > query.Limit && result.TotalRecordCount > 50) {
             $('.listBottomPaging', page).html(pagingHtml).trigger('create');

@@ -122,9 +122,7 @@
 
         html += '</ul>';
 
-        var elem = $('.jobItems', page).html(html).trigger('create');
-
-        $(".lazy", elem).unveil(200);
+        var elem = $('.jobItems', page).html(html).trigger('create').lazyChildren();
 
         $('.btnJobItemMenu', elem).on('click', function () {
             showJobItemMenu(this);

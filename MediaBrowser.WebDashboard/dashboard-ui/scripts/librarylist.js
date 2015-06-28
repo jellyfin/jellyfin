@@ -138,12 +138,6 @@
         return html;
     }
 
-    function closeContextMenu() {
-
-        // Used by the tab menu, not the slide up
-        $('.tapHoldMenu').popup('close');
-    }
-
     function onTrailerButtonClick() {
 
         var id = this.getAttribute('data-itemid');
@@ -151,8 +145,6 @@
         ApiClient.getLocalTrailers(Dashboard.getCurrentUserId(), id).done(function (trailers) {
             MediaController.play({ items: trailers });
         });
-
-        closeContextMenu();
 
         return false;
     }
@@ -165,8 +157,6 @@
         var mediaType = this.getAttribute('data-mediatype');
         var resumePosition = parseInt(this.getAttribute('data-resumeposition'));
 
-        closeContextMenu();
-
         LibraryBrowser.showPlayMenu(this, id, type, isFolder, mediaType, resumePosition);
 
         return false;
@@ -175,8 +165,6 @@
     function onMoreButtonClick() {
 
         var card = $(this).parents('.card')[0];
-
-        closeContextMenu();
 
         showContextMenu(card, {
             showPlayOptions: false
@@ -195,11 +183,9 @@
 
     function showContextMenu(card, options) {
 
-        closeContextMenu();
-
         var displayContextItem = card;
 
-        if ($(card).hasClass('listviewMenuButton')) {
+        if (card.classList.contains('listviewMenuButton')) {
             card = $(card).parents('.listItem,.card')[0];
         }
 
@@ -365,7 +351,14 @@
                 });
             }
 
-            var href = card.getAttribute('data-href') || card.href || $('a', card).attr('href');
+            var href = card.getAttribute('data-href') || card.href;
+
+            if (!href) {
+                var link = card.getElementsByTagName('a');
+                if (link) {
+                    href = link.href;
+                }
+            }
 
             require(['actionsheet'], function () {
 
@@ -493,12 +486,12 @@
             GroupItems: false
         };
 
-        var target = $(e.target);
-        if (target.is('a') || target.is('button')) {
+        var target = e.target;
+        if (target.tagName == 'A' || target.tagName == 'BUTTON') {
             return;
         }
 
-        var buttonParents = target.parents('a:not(.card,.cardContent),button:not(.card,.cardContent)');
+        var buttonParents = $(target).parents('a:not(.card,.cardContent),button:not(.card,.cardContent)');
         if (buttonParents.length) {
             return;
         }
@@ -549,18 +542,18 @@
         var elem = $('.detailsMenu').popup().trigger('create').popup("open").on("popupafterclose", function () {
 
             $(this).off("popupafterclose").remove();
-        });
+        })[0];
 
         $('.detailsMenuLeftButton', elem).on('click', function () {
 
-            var overlay = $(this).parents('.detailsMenu');
-            setItemIntoOverlay(overlay, parseInt(overlay.attr('data-index')) - 1, context);
+            var overlay = $(this).parents('.detailsMenu')[0];
+            setItemIntoOverlay(overlay, parseInt(overlay.getAttribute('data-index') || '0') - 1, context);
         });
 
         $('.detailsMenuRightButton', elem).on('click', function () {
 
-            var overlay = $(this).parents('.detailsMenu');
-            setItemIntoOverlay(overlay, parseInt(overlay.attr('data-index')) + 1, context);
+            var overlay = $(this).parents('.detailsMenu')[0];
+            setItemIntoOverlay(overlay, parseInt(overlay.getAttribute('data-index') || '0') + 1, context);
         });
 
         return elem;
@@ -568,12 +561,12 @@
 
     function setItemIntoOverlay(elem, index) {
 
-        var ids = elem.attr('data-ids').split(',');
+        var ids = elem.getAttribute('data-ids').split(',');
         var itemId = ids[index];
         var userId = Dashboard.getCurrentUserId();
-        var context = elem.attr('data-context');
+        var context = elem.getAttribute('data-context');
 
-        elem.attr('data-index', index);
+        elem.setAttribute('data-index', index);
 
         if (index > 0) {
             $('.detailsMenuLeftButton', elem).show();
@@ -699,7 +692,7 @@
 
             $('.btnSync', elem).on('click', function () {
 
-                elem.popup('close');
+                $(elem).popup('close');
 
                 SyncManager.showMenu({
                     items: [item]
@@ -708,7 +701,7 @@
 
             $('.btnPlay', elem).on('click', function () {
 
-                elem.popup('close');
+                $(elem).popup('close');
 
                 MediaController.play({
                     items: [item]
@@ -717,7 +710,7 @@
 
             $('.btnResume', elem).on('click', function () {
 
-                elem.popup('close');
+                $(elem).popup('close');
 
                 MediaController.play({
                     items: [item],
@@ -738,8 +731,8 @@
 
     function onCardClick(e) {
 
-        var target = $(e.target);
-        if (target.is('.itemSelectionPanel') || $('.itemSelectionPanel', this).length) {
+        var targetElem = e.target;
+        if (targetElem.classList.contains('itemSelectionPanel') || this.querySelector('.itemSelectionPanel')) {
             return false;
         }
 
@@ -747,28 +740,29 @@
         var itemId = info.id;
         var context = info.context;
 
-        var card = $(this);
+        var card = this;
 
-        if (card.hasClass('itemWithAction')) {
+        if (card.classList.contains('itemWithAction')) {
             return;
         }
 
-        if (!card.hasClass('card')) {
-            card = $(card).parents('.card');
+        if (!card.classList.contains('card')) {
+            card = $(card).parents('.card')[0];
         }
 
-        if (card.hasClass('groupedCard')) {
+        if (card.classList.contains('groupedCard')) {
             return;
         }
 
-        if (card.attr('data-detailsmenu') != 'true') {
+        if (card.getAttribute('data-detailsmenu') != 'true') {
             return;
         }
 
-        if (target.is('a') || target.is('button')) {
+        if (targetElem.tagName == 'A' || targetElem.tagName == 'BUTTON') {
             return;
         }
 
+        var target = $(targetElem);
         if (target.parents('a').length || target.parents('button').length) {
             return;
         }
@@ -789,13 +783,13 @@
 
         function onShowTimerExpired(elem) {
 
-            elem = $('a', elem)[0];
+            elem = elem.querySelector('a');
 
             if ($('.itemSelectionPanel:visible', elem).length) {
                 return;
             }
 
-            var innerElem = $('.cardOverlayTarget', elem);
+            var innerElem = elem.querySelector('.cardOverlayTarget');
 
             var dataElement = elem;
             while (dataElement && !dataElement.getAttribute('data-itemid')) {
@@ -813,20 +807,20 @@
                 var item = response1[0];
                 var user = response2[0];
 
-                var card = $(elem);
+                var card = elem;
 
-                if (!card.hasClass('card')) {
-                    card = card.parents('.card');
+                while (!card.classList.contains('card')) {
+                    card = card.parentNode;
                 }
 
-                innerElem.html(getOverlayHtml(item, user, card[0], commands)).trigger('create');
+                innerElem.innerHTML = getOverlayHtml(item, user, card, commands);
 
                 $('.btnPlayItem', innerElem).on('click', onPlayItemButtonClick);
                 $('.btnPlayTrailer', innerElem).on('click', onTrailerButtonClick);
                 $('.btnMoreCommands', innerElem).on('click', onMoreButtonClick);
             });
 
-            innerElem.show().each(function () {
+            $(innerElem).show().each(function () {
 
                 this.style.height = 0;
 
@@ -912,9 +906,15 @@
 
     function hideSelections(page) {
 
-        $('.selectionCommands', page).hide();
+        var selectionCommands = page.querySelector('.selectionCommands');
+        if (selectionCommands) {
+            selectionCommands.style.display = 'none';
+        }
 
-        $('.itemSelectionPanel', page).hide();
+        var elems = page.getElementsByClassName('itemSelectionPanel');
+        for (var i = 0, length = elems.length; i < length; i++) {
+            elems[i].style.display = 'none';
+        }
     }
 
     function getSelectedItems(page) {
@@ -947,7 +947,9 @@
             items: selection
         });
 
-        $(SyncManager).off('jobsubmit.librarylist').on('jobsubmit.librarylist', function () {
+        Events.off(SyncManager, 'jobsubmit.librarylist');
+
+        Events.on(SyncManager, 'jobsubmit.librarylist', function () {
 
             hideSelections(page);
         });
@@ -1067,43 +1069,48 @@
             index = elemWithAttributes.getAttribute('data-index');
             itemsContainer = $(elem).parents('.itemsContainer');
 
-            closeContextMenu();
-
             itemsContainer.trigger('playallfromhere', [index]);
         }
 
         return false;
     }
 
-    function resetImages(page) {
-
-        $('.cardImage', page).remove();
-    }
-
     $(document).on('pageinitdepends', ".libraryPage", function () {
 
         var page = this;
 
-        $('.btnAddToPlaylist', page).on('click', function () {
-            addToPlaylist(page);
-        });
+        var btnAddToPlaylist = page.querySelector('.btnAddToPlaylist');
+        if (btnAddToPlaylist) {
+            Events.on(btnAddToPlaylist, 'click', function () {
+                addToPlaylist(page);
+            });
+        }
 
-        $('.btnMergeVersions', page).on('click', function () {
-            combineVersions(page);
-        });
+        var btnMergeVersions = page.querySelector('.btnMergeVersions');
+        if (btnMergeVersions) {
+            Events.on(btnMergeVersions, 'click', function () {
+                combineVersions(page);
+            });
+        }
 
-        $('.btnSyncItems', page).on('click', function () {
-            sync(page);
-        });
+        var btnSyncItems = page.querySelector('.btnSyncItems');
+        if (btnSyncItems) {
+            Events.on(btnSyncItems, 'click', function () {
+                sync(page);
+            });
+        }
 
-        $('.btnAddToCollection', page).on('click', function () {
-            addToCollection(page);
-        });
+        var btnAddToCollection = page.querySelector('.btnAddToCollection');
+        if (btnAddToCollection) {
+            Events.on(btnAddToCollection, 'click', function () {
+                addToCollection(page);
+            });
+        }
 
-        $('.viewTabButton', page).on('click', function () {
+        $(page.getElementsByClassName('viewTabButton')).on('click', function () {
 
             $('.viewTabButton', page).removeClass('ui-btn-active');
-            $(this).addClass('ui-btn-active');
+            this.classList.add('ui-btn-active');
 
             $('.viewTab', page).hide();
             $('.' + this.getAttribute('data-tab'), page).show();
@@ -1123,7 +1130,10 @@
 
         }).on('click', '.itemWithAction', onItemWithActionClick).on('click', '.listviewSubLink', onListviewSubLinkClick);
 
-        $('.itemsContainer', page).createCardMenus();
+        var itemsContainers = page.getElementsByClassName('itemsContainer');
+        for (var i = 0, length = itemsContainers.length; i < length; i++) {
+            $(itemsContainers[i]).createCardMenus();
+        }
 
     }).on('pagebeforeshowready', ".libraryPage", function () {
 
@@ -1131,12 +1141,11 @@
 
         hideSelections(page);
 
-        $('.viewTabButton:first', page).trigger('click');
+        var elem = page.querySelector('.viewTabButton');
+        if (elem) {
+            Events.trigger(elem, 'click');
+        }
 
-    }).on('pagebeforehide', ".libraryPage", function () {
-
-        var page = this;
-        resetImages(page);
     });
 
     function renderUserDataChanges(card, userData) {

@@ -20,8 +20,8 @@
 
                 var pos = $(options.positionTo).offset();
 
-                pos.top += $(options.positionTo).innerHeight() / 2;
-                pos.left += $(options.positionTo).innerWidth() / 2;
+                pos.top += options.positionTo.innerHeight / 2;
+                pos.left += options.positionTo.innerWidth / 2;
 
                 // Account for margins
                 pos.top -= 24;

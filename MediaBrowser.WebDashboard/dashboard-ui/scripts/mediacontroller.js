@@ -39,7 +39,7 @@
 
     function monitorPlayer(player) {
 
-        $(player).on('playbackstart.mediacontroller', function (e, state) {
+        Events.on(player, 'playbackstart.mediacontroller', function (e, state) {
 
             var info = {
                 QueueableMediaTypes: state.NowPlayingItem.MediaType,
@@ -51,7 +51,9 @@
 
             ApiClient.reportPlaybackStart(info);
 
-        }).on('playbackstop.mediacontroller', function (e, state) {
+        });
+
+        Events.on(player, 'playbackstop.mediacontroller', function (e, state) {
 
             var stopInfo = {
                 itemId: state.NowPlayingItem.Id,
@@ -190,7 +192,7 @@
 
             });
 
-            if ($('.radioSelectPlayerTarget:checked', elem).attr('data-mirror') == 'true') {
+            if ($('.radioSelectPlayerTarget:checked', elem)[0].getAttribute('data-mirror') == 'true') {
                 $('.fldMirrorMode', elem).show();
             } else {
                 $('.fldMirrorMode', elem).hide();

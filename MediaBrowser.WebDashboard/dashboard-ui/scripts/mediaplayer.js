@@ -557,11 +557,15 @@
 
             clearProgressInterval();
 
-            $(mediaRenderer).off('ended.playbackstopped').off('ended.playnext').one("play", function () {
+            Events.off(mediaRenderer, 'ended.playbackstopped').off('ended.playnext');
+            
+            $(mediaRenderer).one("play", function () {
 
                 self.updateCanClientSeek(this);
 
-                $(this).on('ended.playbackstopped', self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
+                Events.on(this, 'ended.playbackstopped', self.onPlaybackStopped);
+                
+                $(this).one('ended.playnext', self.playNextAfterEnded);
 
                 self.startProgressInterval();
                 sendProgressUpdate();
@@ -616,7 +620,7 @@
 
             var state = self.getPlayerStateInternal(self.currentMediaRenderer, self.currentItem, self.currentMediaSource);
 
-            $(self).trigger('positionchange', [state]);
+            Events.trigger(self, 'positionchange', [state]);
         };
 
         self.canQueueMediaType = function (mediaType) {
@@ -1353,9 +1357,11 @@
 
                 mediaRenderer.stop();
 
-                $(mediaRenderer).off("ended.playnext").one("ended", function () {
+                Events.off(mediaRenderer, "ended.playnext");
 
-                    $(this).off();
+                $(mediaRenderer).one("ended", function() {
+
+                    Events.off(this);
 
                     this.cleanup(destroyRenderer);
 
@@ -1363,7 +1369,9 @@
                     self.currentItem = null;
                     self.currentMediaSource = null;
 
-                }).trigger("ended");
+                });
+                
+                Events.trigger(mediaRenderer, "ended");
 
             } else {
                 self.currentMediaRenderer = null;
@@ -1531,7 +1539,7 @@
 
             var state = self.getPlayerStateInternal(mediaRenderer, item, mediaSource);
 
-            $(self).trigger('playbackstart', [state]);
+            Events.trigger(self, 'playbackstart', [state]);
 
             self.startProgressInterval();
         };
@@ -1542,7 +1550,7 @@
 
             var state = self.getPlayerStateInternal(mediaRenderer, self.currentItem, self.currentMediaSource);
 
-            $(self).trigger('volumechange', [state]);
+            Events.trigger(self, 'volumechange', [state]);
         };
 
         self.cleanup = function () {
@@ -1553,11 +1561,13 @@
 
             Logger.log('playback stopped');
 
-            $(document.body).removeClass('bodyWithPopupOpen');
+            document.body.classList.remove('bodyWithPopupOpen');
 
             var mediaRenderer = this;
 
-            $(mediaRenderer).off('.mediaplayerevent').off('ended.playbackstopped');
+            Events.off(mediaRenderer, '.mediaplayerevent');
+            
+            Events.off(mediaRenderer, 'ended.playbackstopped');
 
             self.cleanup(mediaRenderer);
 
@@ -1576,17 +1586,17 @@
 
             var state = self.getPlayerStateInternal(mediaRenderer, item, mediaSource);
 
-            $(self).trigger('playbackstop', [state]);
+            Events.trigger(self, 'playbackstop', [state]);
         };
 
         self.onPlaystateChange = function (mediaRenderer) {
 
             var state = self.getPlayerStateInternal(mediaRenderer, self.currentItem, self.currentMediaSource);
 
-            $(self).trigger('playstatechange', [state]);
+            Events.trigger(self, 'playstatechange', [state]);
         };
 
-        $(window).on("beforeunload", function () {
+        Events.on(window, "beforeunload", function () {
 
             // Try to report playback stopped before the browser closes
             if (self.currentItem && self.currentMediaRenderer && currentProgressInterval) {
@@ -1673,18 +1683,22 @@
             mediaRenderer.setPoster(self.getPosterUrl(item));
             mediaRenderer.setCurrentSrc(audioUrl, item, mediaSource);
 
-            $(mediaRenderer).on("volumechange.mediaplayerevent", function () {
+            Events.on(mediaRenderer, "volumechange.mediaplayerevent", function() {
 
                 Logger.log('audio element event: volumechange');
 
                 self.onVolumeChanged(this);
 
-            }).one("playing.mediaplayerevent", function () {
+            });
+
+            $(mediaRenderer).one("playing.mediaplayerevent", function () {
 
                 Logger.log('audio element event: playing');
 
                 // For some reason this is firing at the start, so don't bind until playback has begun
-                $(this).on("ended.playbackstopped", self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
+                Events.on(this, "ended.playbackstopped", self.onPlaybackStopped);
+                
+                $(this).one('ended.playnext', self.playNextAfterEnded);
 
                 self.onPlaybackStart(this, item, mediaSource);
 

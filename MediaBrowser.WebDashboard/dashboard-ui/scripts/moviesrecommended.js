@@ -242,10 +242,11 @@
         var page = this;
         var userId = Dashboard.getCurrentUserId();
 
+        var containers = page.querySelectorAll('.itemsContainer');
         if (enableScrollX()) {
-            $('.itemsContainer', page).addClass('hiddenScrollX');
+            $(containers).addClass('hiddenScrollX');
         } else {
-            $('.itemsContainer', page).removeClass('hiddenScrollX');
+            $(containers).removeClass('hiddenScrollX');
         }
 
         loadResume(page, userId, parentId);

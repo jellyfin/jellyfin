@@ -32,7 +32,7 @@
 
         var showLibraryTileNames = displayPreferences.CustomPrefs.enableLibraryTileNames != '0';
 
-        var elem = $('.section' + index, page);
+        var elem = page.querySelector('.section' + index);
 
         if (section == 'latestmedia') {
             return Sections.loadRecentlyAdded(elem, user);
@@ -77,16 +77,16 @@
         var i, length;
         var sectionCount = 4;
 
-        var elem = $('.sections', page);
+        var elem = page.querySelector('.sections');
 
-        if (!elem.html().length) {
+        if (!elem.innerHTML.length) {
             var html = '';
             for (i = 0, length = sectionCount; i < length; i++) {
 
                 html += '<div class="homePageSection section' + i + '"></div>';
             }
 
-            elem.html(html);
+            elem.innerHTML = html;
         }
 
         var promises = [];
@@ -166,7 +166,7 @@
 
         var page = this;
 
-        $('.btnTakeTour', page).on('click', function () {
+        Events.on(page.querySelector('.btnTakeTour'), 'click', function () {
             takeTour(page, Dashboard.getCurrentUserId());
         });
 

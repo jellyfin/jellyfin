@@ -260,7 +260,7 @@
 
     function renderItems(page, result) {
 
-        $(document).scrollTop(0);
+        window.scrollTo(0, 0);
         var html = '';
 
         if (SelectedReportView === "ReportData") {
@@ -274,7 +274,7 @@
                 showLimit: false
             });
 
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            page.querySelector('.listTopPaging').innerHTML = pagingHtml;
             $('.listTopPaging', page).show();
 
             $('.listBottomPaging', page).html(pagingHtml).trigger('create');

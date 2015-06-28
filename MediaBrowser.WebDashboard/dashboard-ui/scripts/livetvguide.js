@@ -76,22 +76,25 @@
                 startIndex: channelQuery.StartIndex,
                 limit: channelQuery.Limit,
                 totalRecordCount: channelsResult.TotalRecordCount,
-                updatePageSizeSetting: false
+                updatePageSizeSetting: false,
+                showLimit: true
             });
 
-            $('.channelPaging', page).html(channelPagingHtml).trigger('create');
+            var channelPaging = page.querySelector('.channelPaging');
+            channelPaging.innerHTML = channelPagingHtml;
+            $(channelPaging).trigger('create');
 
-            $('.btnNextPage', page).on('click', function () {
+            Events.on(page.querySelector('.btnNextPage'), 'click', function () {
                 channelQuery.StartIndex += channelQuery.Limit;
                 reloadChannels(page);
             });
 
-            $('.btnPreviousPage', page).on('click', function () {
+            Events.on(page.querySelector('.btnPreviousPage'), 'click', function () {
                 channelQuery.StartIndex -= channelQuery.Limit;
                 reloadChannels(page);
             });
 
-            $('.selectPageSize', page).on('change', function () {
+            Events.on(page.querySelector('#selectPageSize'), 'change', function () {
                 channelQuery.Limit = parseInt(this.value);
                 channelQuery.StartIndex = 0;
                 reloadChannels(page);
@@ -260,7 +263,10 @@
             html.push(getChannelProgramsHtml(page, date, channels[i], programs));
         }
 
-        $('.programGrid', page).html(html.join('')).scrollTop(0).scrollLeft(0)
+        var programGrid = page.querySelector('.programGrid');
+        programGrid.innerHTML = html.join('');
+
+        $(programGrid).scrollTop(0).scrollLeft(0)
             .createGuideHoverMenu('.programCellInner');
     }
 
@@ -297,7 +303,7 @@
             html += '</div>';
         }
 
-        $('.channelList', page).html(html);
+        page.querySelector('.channelList').innerHTML = html;
     }
 
     function renderGuide(page, date, channels, programs) {
@@ -306,7 +312,7 @@
 
         var startDate = date;
         var endDate = new Date(startDate.getTime() + msPerDay);
-        $('.timeslotHeaders', page).html(getTimeslotHeadersHtml(startDate, endDate));
+        page.querySelector('.timeslotHeaders').innerHTML = getTimeslotHeadersHtml(startDate, endDate);
         renderPrograms(page, date, channels, programs);
     }
 
@@ -316,9 +322,8 @@
 
         if (!headersScrolling) {
             gridScrolling = true;
-            var grid = $(elem);
 
-            $('.timeslotHeaders', page).scrollLeft(grid.scrollLeft());
+            $(page.querySelector('.timeslotHeaders')).scrollLeft($(elem).scrollLeft());
             gridScrolling = false;
         }
     }
@@ -327,8 +332,7 @@
 
         if (!gridScrolling) {
             headersScrolling = true;
-            elem = $(elem);
-            $('.programGrid', page).scrollLeft(elem.scrollLeft());
+            $(page.querySelector('.programGrid')).scrollLeft($(elem).scrollLeft());
             headersScrolling = false;
         }
     }
@@ -341,7 +345,7 @@
 
         var text = LibraryBrowser.getFutureDateText(date);
         text = '<span class="currentDay">' + text.replace(' ', ' </span>');
-        $('.currentDate', page).html(text);
+        page.querySelector('.currentDate').innerHTML = text;
     }
 
     var dateOptions = [];
@@ -418,8 +422,8 @@
 
     function selectDate(page) {
 
-        require(['actionsheet'], function() {
-            
+        require(['actionsheet'], function () {
+
             ActionSheetElement.show({
                 items: dateOptions,
                 showCancel: true,
@@ -439,18 +443,18 @@
 
         var page = this;
 
-        $('.programGrid', page).on('scroll', function () {
+        Events.on(page.querySelector('.programGrid'), 'scroll', function () {
 
             onProgramGridScroll(page, this);
         });
 
         if ($.browser.mobile) {
-            $('.tvGuide', page).addClass('mobileGuide');
+            page.querySelector('.tvGuide').classList.add('mobileGuide');
         } else {
 
-            $('.tvGuide', page).removeClass('mobileGuide');
+            page.querySelector('.tvGuide').classList.remove('mobileGuide');
 
-            $('.timeslotHeaders', page).on('scroll', function () {
+            Events.on(page.querySelector('.timeslotHeaders'), 'scroll', function () {
 
                 onTimeslotHeadersScroll(page, this);
             });
@@ -459,14 +463,10 @@
         if (AppInfo.enableHeadRoom) {
             requirejs(["thirdparty/headroom"], function () {
 
-                $('.tvGuideHeader', page).each(function () {
-
-                    // construct an instance of Headroom, passing the element
-                    var headroom = new Headroom(this);
-                    // initialise
-                    headroom.init();
-
-                });
+                // construct an instance of Headroom, passing the element
+                var headroom = new Headroom(page.querySelector('.tvGuideHeader'));
+                // initialise
+                headroom.init();
             });
         }
 

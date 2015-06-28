@@ -46,9 +46,9 @@
         html += '</div>';
 
         $(document.body).append(html);
-        $('.viewMenuBar').lazyChildren();
+        ImageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
 
-        $(document).trigger('headercreated');
+        Events.trigger(document, 'headercreated');
         bindMenuEvents();
     }
 
@@ -67,7 +67,7 @@
 
     function addUserToHeader(user) {
 
-        var header = $('.viewMenuBar');
+        var header = document.querySelector('.viewMenuBar');
 
         if (user.localUser) {
             $('.btnCast', header).visible(true);
@@ -112,7 +112,12 @@
             } else {
                 userButtonHtml += '<div class="fa fa-user"></div>';
             }
-            $('.headerUserButton', header).html(userButtonHtml).lazyChildren();
+
+            var headerUserButton = header.querySelector('.headerUserButton');
+            if (headerUserButton) {
+                headerUserButton.innerHTML = userButtonHtml;
+                ImageLoader.lazyChildren(headerUserButton);
+            }
         }
     }
 
@@ -146,11 +151,11 @@
 
     function updateViewMenuBarHeadroom(page, viewMenuBar) {
 
-        if ($(page).hasClass('libraryPage')) {
+        if (page.classList.contains('libraryPage')) {
             // Don't like this timeout at all but if headroom is activated during the page events it will jump and flicker on us
             setTimeout(reEnableHeadroom, 700);
         } else {
-            viewMenuBar.addClass('headroomDisabled');
+            viewMenuBar.classList.add('headroomDisabled');
         }
     }
 
@@ -169,17 +174,17 @@
 
     function openMainDrawer() {
 
-        var drawerPanel = $('.mainDrawerPanel')[0];
+        var drawerPanel = document.querySelector('.mainDrawerPanel');
         drawerPanel.openDrawer();
         lastOpenTime = new Date().getTime();
     }
     function onMainDrawerOpened() {
 
         if ($.browser.mobile) {
-            $(document.body).addClass('bodyWithPopupOpen');
+            document.body.classList.add('bodyWithPopupOpen');
         }
 
-        var drawer = $('.mainDrawerPanel .mainDrawer');
+        var drawer = document.querySelector('.mainDrawerPanel .mainDrawer');
 
         ConnectionManager.user(window.ApiClient).done(function (user) {
 
@@ -190,26 +195,28 @@
                 refreshLibraryInfoInDrawer(user, drawer);
                 refreshBottomUserInfoInDrawer(user, drawer);
 
-                $(document).trigger('libraryMenuCreated');
+                Events.trigger(document, 'libraryMenuCreated');
                 updateLibraryMenu(user.localUser);
             }
 
+            var pageElem = $($.mobile.activePage)[0];
+
             if (requiresDrawerRefresh || requiresDashboardDrawerRefresh) {
-                refreshDashboardInfoInDrawer($.mobile.activePage, user, drawer);
+                refreshDashboardInfoInDrawer(pageElem, user, drawer);
                 requiresDashboardDrawerRefresh = false;
             }
 
             requiresDrawerRefresh = false;
 
-            updateLibraryNavLinks($.mobile.activePage);
+            updateLibraryNavLinks(pageElem);
         });
 
-        $('.mainDrawerPanel #drawer').addClass('verticalScrollingDrawer');
+        document.querySelector('.mainDrawerPanel #drawer').classList.add('verticalScrollingDrawer');
     }
     function onMainDrawerClosed() {
 
-        $(document.body).removeClass('bodyWithPopupOpen');
-        $('.mainDrawerPanel #drawer').removeClass('verticalScrollingDrawer');
+        document.body.classList.remove('bodyWithPopupOpen');
+        document.querySelector('.mainDrawerPanel #drawer').classList.remove('verticalScrollingDrawer');
     }
     function closeMainDrawer() {
 
@@ -218,7 +225,7 @@
 
     function ensureDrawerStructure(drawer) {
 
-        if ($('.mainDrawerContent', drawer).length) {
+        if (drawer.querySelector('.mainDrawerContent')) {
             return;
         }
 
@@ -235,7 +242,7 @@
 
         html += '</div>';
 
-        $(drawer).html(html);
+        drawer.innerHTML = html;
     }
 
     function refreshUserInfoInDrawer(user, drawer) {
@@ -287,9 +294,11 @@
 
         html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="nowplaying.html" onclick="return LibraryMenu.onLinkClicked(this);"><iron-icon icon="tablet-android" class="sidebarLinkIcon" style="color:#673AB7;"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonRemote') + '</span></a>';
 
-        var elem = $('.userheader', drawer).html(html);
-        
-        $('.lazy', elem).fillImages();
+        var userHeader = drawer.querySelector('.userheader');
+
+        userHeader.innerHTML = html;
+
+        ImageLoader.fillImages(userHeader.getElementsByClassName('lazy'));
     }
 
     function refreshLibraryInfoInDrawer(user, drawer) {
@@ -301,7 +310,7 @@
         html += '<div class="libraryMenuOptions">';
         html += '</div>';
 
-        $('.libraryDrawerContent', drawer).html(html);
+        drawer.querySelector('.libraryDrawerContent').innerHTML = html;
     }
 
     function refreshDashboardInfoInDrawer(page, user, drawer) {
@@ -314,7 +323,7 @@
 
         html = html.split('href=').join('onclick="return LibraryMenu.onLinkClicked(this);" href=');
 
-        $('.dashboardDrawerContent', drawer).html(html);
+        drawer.querySelector('.dashboardDrawerContent').innerHTML = html;
     }
 
     function replaceAll(string, find, replace) {
@@ -364,9 +373,9 @@
 
         html += '</div>';
 
-        $('.userFooter', drawer).html(html);
+        drawer.querySelector('.userFooter').innerHTML = html;
 
-        $('.lnkManageServer', drawer).on('click', onManageServerClicked);
+        Events.on(drawer.querySelector('.lnkManageServer'), 'click', onManageServerClicked);
     }
 
     function updateLibraryMenu(user) {
@@ -449,14 +458,16 @@
 
             }).join('');
 
-            var elem = $('.libraryMenuOptions').html(html);
+            var libraryMenuOptions = document.querySelector('.libraryMenuOptions');
+            libraryMenuOptions.innerHTML = html;
+            var elem = libraryMenuOptions;
 
             $('.sidebarLink', elem).off('click.updateText').on('click.updateText', function () {
 
-                var section = $('.sectionName', this)[0];
+                var section = this.getElementsByClassName('sectionName')[0];
                 var text = section ? section.innerHTML : this.innerHTML;
 
-                $('.libraryMenuButtonText').html(text);
+                document.querySelector('.libraryMenuButtonText').innerHTML = text;
 
             });
         });
@@ -496,8 +507,7 @@
 
     function setLibraryMenuText(text) {
 
-        $('.libraryMenuButtonText').html('<span>' + text + '</span>');
-
+        document.querySelector('.libraryMenuButtonText').innerHTML = '<span>' + text + '</span>';
     }
 
     function getTopParentId() {
@@ -565,77 +575,80 @@
 
     function updateLibraryNavLinks(page) {
 
-        page = $(page);
+        var isLiveTvPage = page.classList.contains('liveTvPage');
+        var isChannelsPage = page.classList.contains('channelsPage');
+        var isEditorPage = page.classList.contains('metadataEditorPage');
+        var isReportsPage = page.classList.contains('reportsPage');
+        var isMySyncPage = page.classList.contains('mySyncPage');
 
-        var isLiveTvPage = page.hasClass('liveTvPage');
-        var isChannelsPage = page.hasClass('channelsPage');
-        var isEditorPage = page.hasClass('metadataEditorPage');
-        var isReportsPage = page.hasClass('reportsPage');
-        var isMySyncPage = page.hasClass('mySyncPage');
-
-        var id = isLiveTvPage || isChannelsPage || isEditorPage || isReportsPage || isMySyncPage || page.hasClass('allLibraryPage') ?
+        var id = isLiveTvPage || isChannelsPage || isEditorPage || isReportsPage || isMySyncPage || page.classList.contains('allLibraryPage') ?
             '' :
             getTopParentId() || '';
 
-        $('.lnkMediaFolder').each(function () {
+        var i, length;
+        var elems = document.getElementsByClassName('lnkMediaFolder');
 
-            var itemId = this.getAttribute('data-itemid');
+        for (i = 0, length = elems.length; i < length; i++) {
+
+            var lnkMediaFolder = elems[i];
+            var itemId = lnkMediaFolder.getAttribute('data-itemid');
 
             if (isChannelsPage && itemId == 'channels') {
-                $(this).addClass('selectedMediaFolder');
+                lnkMediaFolder.classList.add('selectedMediaFolder');
             }
             else if (isLiveTvPage && itemId == 'livetv') {
-                $(this).addClass('selectedMediaFolder');
+                lnkMediaFolder.classList.add('selectedMediaFolder');
             }
             else if (isEditorPage && itemId == 'editor') {
-                $(this).addClass('selectedMediaFolder');
+                lnkMediaFolder.classList.add('selectedMediaFolder');
             }
             else if (isReportsPage && itemId == 'reports') {
-                $(this).addClass('selectedMediaFolder');
+                lnkMediaFolder.classList.add('selectedMediaFolder');
             }
             else if (isMySyncPage && itemId == 'mysync') {
-                $(this).addClass('selectedMediaFolder');
+                lnkMediaFolder.classList.add('selectedMediaFolder');
             }
             else if (id && itemId == id) {
-                $(this).addClass('selectedMediaFolder');
+                lnkMediaFolder.classList.add('selectedMediaFolder');
             }
             else {
-                $(this).removeClass('selectedMediaFolder');
+                lnkMediaFolder.classList.remove('selectedMediaFolder');
             }
-
-        });
+        }
 
         var context = getParameterByName('context');
 
         if (context !== 'playlists') {
-            $('.scopedLibraryViewNav a', page).each(function () {
 
-                var src = this.href;
+            elems = page.querySelectorAll('.scopedLibraryViewNav a');
+
+            for (i = 0, length = elems.length; i < length; i++) {
+
+                var lnk = elems[i];
+                var src = lnk.href;
 
                 if (src.indexOf('#') != -1) {
-                    return;
+                    continue;
                 }
 
                 src = replaceQueryString(src, 'topParentId', id);
 
-                this.href = src;
-            });
+                lnk.href = src;
+            }
         }
     }
 
     function updateContextText(page) {
 
-        var jPage = $(page);
-
-        var name = jPage.attr('data-contextname');
+        var name = page.getAttribute('data-contextname');
 
         if (name) {
 
-            $('.libraryMenuButtonText').html('<span>' + name + '</span>');
+            document.querySelector('.libraryMenuButtonText').innerHTML = '<span>' + name + '</span>';
 
         }
-        else if (jPage.hasClass('allLibraryPage') || jPage.hasClass('type-interior')) {
-            $('.libraryMenuButtonText').html(Globalize.translate('ButtonHome'));
+        else if (page.classList.contains('allLibraryPage') || page.classList.contains('type-interior')) {
+            document.querySelector('.libraryMenuButtonText').innerHTML = Globalize.translate('ButtonHome');
         }
     }
 
@@ -654,20 +667,24 @@
 
     function buildViewMenuBar(page) {
 
-        if ($(page).hasClass('standalonePage')) {
+        if (page.classList.contains('standalonePage')) {
             $('.viewMenuBar').visible(false);
             return;
         }
 
+        var viewMenuBar = document.querySelector('.viewMenuBar');
+
         if (requiresViewMenuRefresh) {
-            $('.viewMenuBar').remove();
+            if (viewMenuBar) {
+                $(viewMenuBar).remove();
+                viewMenuBar = null;
+            }
         }
 
-        var viewMenuBar = $('.viewMenuBar').visible(true);
-        if (!$('.viewMenuBar').length) {
+        if (!viewMenuBar) {
 
             renderHeader();
-            updateViewMenuBarHeadroom(page, $('.viewMenuBar'));
+            updateViewMenuBarHeadroom(page, document.querySelector('.viewMenuBar'));
 
             updateCastIcon();
 
@@ -678,6 +695,7 @@
             ConnectionManager.user(window.ApiClient).done(addUserToHeader);
 
         } else {
+            $(viewMenuBar).visible(true);
             updateContextText(page);
             updateLibraryNavLinks(page);
             updateViewMenuBarHeadroom(page, viewMenuBar);
@@ -731,21 +749,21 @@
 
         buildViewMenuBar(page);
 
-        var jpage = $(page);
-
-        var isLibraryPage = jpage.hasClass('libraryPage');
+        var isLibraryPage = page.classList.contains('libraryPage');
         var darkDrawer = false;
 
         if (isLibraryPage) {
 
-            $(document.body).addClass('libraryDocument').removeClass('dashboardDocument').removeClass('hideMainDrawer');
+            document.body.classList.add('libraryDocument');
+            document.body.classList.remove('dashboardDocument');
+            document.body.classList.remove('hideMainDrawer');
 
             if (AppInfo.enableBottomTabs) {
-                $(page).addClass('noSecondaryNavPage');
+                page.classList.add('noSecondaryNavPage');
 
                 $(function () {
 
-                    $('.footer').addClass('footerOverBottomTabs');
+                    document.querySelector('.footer').classList.add('footerOverBottomTabs');
                 });
 
             } else {
@@ -760,16 +778,23 @@
                 darkDrawer = true;
             }
         }
-        else if (jpage.hasClass('type-interior')) {
-            $(document.body).addClass('dashboardDocument').removeClass('libraryDocument').removeClass('hideMainDrawer');
+        else if (page.classList.contains('type-interior')) {
+
+            document.body.classList.remove('libraryDocument');
+            document.body.classList.add('dashboardDocument');
+            document.body.classList.remove('hideMainDrawer');
+
         } else {
-            $(document.body).removeClass('dashboardDocument').removeClass('libraryDocument').addClass('hideMainDrawer');
+
+            document.body.classList.remove('libraryDocument');
+            document.body.classList.remove('dashboardDocument');
+            document.body.classList.add('hideMainDrawer');
         }
 
         if (darkDrawer) {
-            $('.mainDrawerPanel #drawer').addClass('darkDrawer');
+            document.querySelector('.mainDrawerPanel #drawer').classList.add('darkDrawer');
         } else {
-            $('.mainDrawerPanel #drawer').removeClass('darkDrawer');
+            document.querySelector('.mainDrawerPanel #drawer').classList.remove('darkDrawer');
         }
 
         if (AppInfo.enableBackButton) {
@@ -779,36 +804,36 @@
 
     function updateBackButton(page) {
 
-        var jPage = $(page);
-
-        var canGoBack = backStack.length > 0 && jPage.is('.itemDetailPage');
+        var canGoBack = backStack.length > 0 && page.classList.contains('itemDetailPage');
 
         $('.headerBackButton').visible(canGoBack);
 
-        jPage.off('swiperight', onPageSwipeLeft);
+        Events.off(page, 'swiperight', onPageSwipeLeft);
 
         if (canGoBack) {
-            jPage.on('swiperight', onPageSwipeLeft);
+            Events.on(page, 'swiperight', onPageSwipeLeft);
         }
     }
 
     function onPageSwipeLeft(e) {
 
-        var target = $(e.target);
+        var target = e.target;
 
-        if (!target.is('.hiddenScrollX') && !target.parents('.hiddenScrollX').length) {
+        if (!target.classList.contains('hiddenScrollX') && !$(target).parents('.hiddenScrollX').length) {
             history.back();
         }
     }
 
     function onPageShowDocumentReady(page) {
-        var elem = $('.libraryViewNav .ui-btn-active:visible', page);
 
-        if (elem.length) {
-            elem[0].scrollIntoView();
+        var elems = page.querySelectorAll('.libraryViewNav .ui-btn-active');
+        elems = $(elems).filter(':visible');
+
+        if (elems.length) {
+            elems[0].scrollIntoView();
 
             // Scroll back up so in case vertical scroll was messed with
-            $(document).scrollTop(0);
+            window.scrollTo(0, 0);
         }
     }
 
@@ -830,14 +855,16 @@
             });
             // initialise
             headroom.init();
-            $(elem).addClass('headroomEnabled');
+            elem.classList.add('headroomEnabled');
         });
     }
 
     function initializeApiClient(apiClient) {
 
         requiresLibraryMenuRefresh = true;
-        $(apiClient).off('websocketmessage.librarymenu', onWebSocketMessage).on('websocketmessage.librarymenu', onWebSocketMessage);
+        Events.off(apiClient, 'websocketmessage.librarymenu', onWebSocketMessage);
+
+        Events.on(apiClient, 'websocketmessage.librarymenu', onWebSocketMessage);
     }
 
     Dashboard.ready(function () {
@@ -846,20 +873,24 @@
             initializeApiClient(window.ApiClient);
         }
 
-        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+        Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
             initializeApiClient(apiClient);
 
-        }).on('localusersignedin localusersignedout', function () {
+        });
+
+        Events.on(ConnectionManager, 'localusersignedin localusersignedout', function () {
             requiresLibraryMenuRefresh = true;
             requiresViewMenuRefresh = true;
             requiresDrawerRefresh = true;
         });
 
-        $(MediaController).on('playerchange', function () {
+        Events.on(MediaController, 'playerchange', function () {
             updateCastIcon();
         });
 
-        $('.mainDrawerPanel').on('paper-drawer-panel-open', onMainDrawerOpened).on('paper-drawer-panel-close', onMainDrawerClosed);
+        var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
+        Events.on(mainDrawerPanel, 'paper-drawer-panel-open', onMainDrawerOpened);
+        Events.on(mainDrawerPanel, 'paper-drawer-panel-close', onMainDrawerClosed);
     });
 
 })(window, document, jQuery, window.devicePixelRatio);
@@ -875,7 +906,7 @@ $.fn.createHoverTouch = function () {
 
         timerId = setTimeout(function () {
 
-            $(elem).trigger('hovertouch');
+            Events.trigger(elem, 'hovertouch');
         }, 300);
     }
 
@@ -909,7 +940,7 @@ $.fn.createHoverTouch = function () {
         preventHover = true;
 
         if (preventHover) {
-            $(this).trigger('hovertouch');
+            Events.trigger(this, 'hovertouch');
             stopTimer(this);
             preventHover = false;
         }

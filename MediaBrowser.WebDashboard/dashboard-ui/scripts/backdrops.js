@@ -9,7 +9,17 @@
         //    elem = $('<div class="backdropContainer"></div>').prependTo(document.body);
         //}
 
-        return $(document.documentElement).addClass('backdropContainer');
+        var elem = document.documentElement;
+
+        elem.classList.add('backdropContainer');
+        return elem;
+    }
+
+    function clearBackdrop() {
+
+        var elem = document.documentElement;
+        elem.classList.remove('backdropContainer');
+        elem.style.backgroundImage = '';
     }
 
     function getRandom(min, max) {
@@ -61,7 +71,7 @@
 
     function setBackdropImage(elem, url) {
 
-        elem.lazyImage(url);
+        ImageLoader.lazyImage(elem, url);
     }
 
     function showBackdrop(type, parentId) {
@@ -101,12 +111,7 @@
 
         getElement().css('backgroundImage', 'url(css/images/splash.jpg)');
 
-        $(page).addClass('backdropPage staticBackdropPage');
-    }
-
-    function clearBackdrop() {
-
-        $('.backdropContainer').css('backgroundImage', '').removeClass('backdropContainer');
+        page.classList.add('backdropPage staticBackdropPage');
     }
 
     function isEnabledByDefault() {
@@ -151,7 +156,7 @@
         });
 
         if (images.length) {
-            $(page).addClass('backdropPage');
+            page.classList.add('backdropPage');
 
             var index = getRandom(0, images.length - 1);
             var item = images[index];
@@ -168,42 +173,40 @@
             setBackdropImage(getElement(), imgUrl);
 
         } else {
-            $(page).removeClass('backdropPage');
+            page.classList.remove('backdropPage');
         }
     }
 
     function setBackdropUrl(page, url) {
 
         if (url) {
-            $(page).addClass('backdropPage');
+            page.classList.add('backdropPage');
 
             setBackdropImage(getElement(), url);
 
         } else {
-            $(page).removeClass('backdropPage');
+            page.classList.remove('backdropPage');
             clearBackdrop();
         }
     }
 
-    $(document).on('pagebeforeshowready', ".page", function () {
+    Events.on(document, 'pagebeforeshowready', ".page", function () {
 
         var page = this;
 
-        var $page = $(page);
+        if (!page.classList.contains('staticBackdropPage')) {
 
-        if (!$page.hasClass('staticBackdropPage')) {
-
-            if ($page.hasClass('backdropPage')) {
+            if (page.classList.contains('backdropPage')) {
 
                 if (enabled()) {
                     var type = page.getAttribute('data-backdroptype');
 
-                    var parentId = $page.hasClass('globalBackdropPage') ? '' : LibraryMenu.getTopParentId();
+                    var parentId = page.classList.contains('globalBackdropPage') ? '' : LibraryMenu.getTopParentId();
 
                     showBackdrop(type, parentId);
 
                 } else {
-                    $page.removeClass('backdropPage');
+                    page.classList.remove('backdropPage');
                     clearBackdrop();
                 }
             } else {

@@ -13,10 +13,10 @@
             $('#txtSupporterKey', page).val(info.SupporterKey);
 
             if (info.SupporterKey && !info.IsMBSupporter) {
-                $('#txtSupporterKey', page).addClass("invalidEntry");
+                page.querySelector('#txtSupporterKey').classList.add('invalidEntry');
                 $('.notSupporter', page).show();
             } else {
-                $('#txtSupporterKey', page).removeClass("invalidEntry");
+                page.querySelector('#txtSupporterKey').classList.remove('invalidEntry');
                 $('.notSupporter', page).hide();
             }
 

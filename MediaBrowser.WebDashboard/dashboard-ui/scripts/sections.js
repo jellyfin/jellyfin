@@ -123,7 +123,7 @@
             html += getLibraryButtonsHtml(items);
             html += '</div>';
 
-            $(elem).html(html);
+            elem.innerHTML = html;
 
             handleLibraryLinkNavigations(elem);
         });
@@ -177,7 +177,9 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren().createCardMenus();
+            elem.innerHTML = html;
+            
+            $(elem).lazyChildren().createCardMenus();
         });
     }
 
@@ -212,7 +214,9 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren().createCardMenus();
+            elem.innerHTML = html;
+            
+            $(elem).lazyChildren().createCardMenus();
         });
     }
 
@@ -262,7 +266,9 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren().createCardMenus({ showDetailsMenu: false });
+            elem.innerHTML = html;
+            
+            $(elem).lazyChildren().createCardMenus({ showDetailsMenu: false });
 
             handleLibraryLinkNavigations(elem);
         });
@@ -315,7 +321,9 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren().createCardMenus();
+            elem.innerHTML = html;
+
+            $(elem).lazyChildren().createCardMenus();
         });
     }
 
@@ -350,7 +358,7 @@
 
             }).join('');
 
-            $(elem).html(channelsHtml);
+            elem.innerHTML = channelsHtml;
 
             for (var i = 0, length = channels.length; i < length; i++) {
 
@@ -402,7 +410,10 @@
             });
             html += '</div>';
 
-            $('#channel' + channel.Id + '', page).html(html).lazyChildren().trigger('create').createCardMenus();
+            var elem = page.querySelector('#channel' + channel.Id + '');
+            elem.innerHTML = html;
+            
+            $(elem).lazyChildren().trigger('create').createCardMenus();
         });
     }
 
@@ -441,7 +452,9 @@
                 showDetailsMenu: true
             });
 
-            elem.html(html).lazyChildren().trigger('create');
+            elem.innerHTML = html;
+
+            $(elem).lazyChildren().trigger('create');
 
         });
     }
