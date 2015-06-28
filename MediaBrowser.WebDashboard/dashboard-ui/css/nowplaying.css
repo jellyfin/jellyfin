@@ -193,3 +193,7 @@
         display: none;
     }
 }
+.nowPlayingPageUserDataButtons iron-icon {
+    width: 40px;
+    height: 40px;
+}

@@ -134,7 +134,7 @@ namespace MediaBrowser.Providers.MediaInfo
 
                 foreach (var person in data.People)
                 {
-                    audio.AddPerson(new PersonInfo
+                    PeopleHelper.AddPerson(audio.People, new PersonInfo
                     {
                         Name = person.Name,
                         Type = person.Type,

@@ -233,13 +233,19 @@ namespace MediaBrowser.Providers.Movies
             //actors come from cast
             if (movieData.casts != null && movieData.casts.cast != null)
             {
-                foreach (var actor in movieData.casts.cast.OrderBy(a => a.order)) movie.AddPerson(new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
+                foreach (var actor in movieData.casts.cast.OrderBy(a => a.order))
+                {
+                    PeopleHelper.AddPerson(movie.People, new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
+                }
             }
 
             //and the rest from crew
             if (movieData.casts != null && movieData.casts.crew != null)
             {
-                foreach (var person in movieData.casts.crew) movie.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
+                foreach (var person in movieData.casts.crew)
+                {
+                    PeopleHelper.AddPerson(movie.People, new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
+                }
             }
 
             if (movieData.keywords != null && movieData.keywords.keywords != null)

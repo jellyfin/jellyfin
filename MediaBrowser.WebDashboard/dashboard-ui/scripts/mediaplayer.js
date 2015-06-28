@@ -557,7 +557,8 @@
 
             clearProgressInterval();
 
-            Events.off(mediaRenderer, 'ended.playbackstopped').off('ended.playnext');
+            Events.off(mediaRenderer, 'ended.playbackstopped');
+            Events.off(mediaRenderer, 'ended.playnext');
             
             $(mediaRenderer).one("play", function () {
 

@@ -719,7 +719,7 @@ namespace MediaBrowser.Providers.TV
 
             if (!string.IsNullOrWhiteSpace(personInfo.Name))
             {
-                series.AddPerson(personInfo);
+                PeopleHelper.AddPerson(series.People, personInfo);
             }
         }
 

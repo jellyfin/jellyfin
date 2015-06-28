@@ -490,7 +490,7 @@ namespace MediaBrowser.Controller.Providers
                             {
                                 continue;
                             }
-                            item.AddPerson(p);
+                            PeopleHelper.AddPerson(item.People, p);
                         }
                         break;
                     }
@@ -502,7 +502,7 @@ namespace MediaBrowser.Controller.Providers
                             {
                                 continue;
                             }
-                            item.AddPerson(p);
+                            PeopleHelper.AddPerson(item.People, p);
                         }
                         break;
                     }
@@ -527,7 +527,7 @@ namespace MediaBrowser.Controller.Providers
                                 {
                                     continue;
                                 }
-                                item.AddPerson(p);
+                                PeopleHelper.AddPerson(item.People, p);
                             }
                         }
                         break;
@@ -541,7 +541,7 @@ namespace MediaBrowser.Controller.Providers
                             {
                                 continue;
                             }
-                            item.AddPerson(p);
+                            PeopleHelper.AddPerson(item.People, p);
                         }
                         break;
                     }
@@ -1154,7 +1154,7 @@ namespace MediaBrowser.Controller.Providers
                                         {
                                             continue;
                                         }
-                                        item.AddPerson(person);
+                                        PeopleHelper.AddPerson(item.People, person);
                                     }
                                 }
                                 break;

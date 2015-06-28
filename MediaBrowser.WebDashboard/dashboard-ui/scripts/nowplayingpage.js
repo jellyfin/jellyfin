@@ -52,7 +52,9 @@
             html += "</div>";
         }
 
-        elem.html(html).trigger('create').lazyChildren();
+        elem.innerHTML = html;
+        ImageLoader.lazyChildren(elem);
+        $(elem).trigger('create');
     }
 
     function selectCurrentChapter(elem, positionTicks) {
@@ -69,30 +71,31 @@
 
         var chapterElem = matches[matches.length - 1];
 
-        $(chapterElem).addClass('currentChapter');
+        chapterElem.classList.add('currentChapter');
 
         chapterElem.scrollIntoView();
 
-        elem[0].scrollLeft += 50;
+        elem.scrollLeft += 50;
     }
 
     function showChapterMenu(page, item, currentPositionTicks) {
 
         $('.chapterMenuOverlay', page).show();
 
-        var elem = $('.chapterMenu', page).show();
+        var elem = page.querySelector('.chapterMenu');
+        $(elem).show();
 
-        if (item.Id == elem.attr('data-itemid')) {
+        if (item.Id == elem.getAttribute('data-itemid')) {
 
             selectCurrentChapter(elem, currentPositionTicks);
             return;
         }
 
-        var innerElem = $('.chapterMenuInner', elem);
+        var innerElem = elem.querySelector('.chapterMenuInner');
 
         populateChapters(innerElem, item.Chapters, item.Id, item.RunTimeTicks);
 
-        elem.attr('data-itemid', item.Id);
+        elem.setAttribute('data-itemid', item.Id);
 
         selectCurrentChapter(elem, currentPositionTicks);
     }
@@ -349,7 +352,7 @@
             loadPlaylist(page);
         });
 
-        $(page).on('click', '.mediaItem', onListItemClick);
+        Events.on(page, 'click', '.mediaItem', onListItemClick);
     }
 
     function onPlaybackStart(e, state) {
@@ -533,6 +536,14 @@
         setImageUrl(page, url);
 
         Backdrops.setBackdropUrl(page, backdropUrl);
+
+        if (item) {
+            ApiClient.getItem(Dashboard.getCurrentUserId(), item.Id).done(function (fullItem) {
+                page.querySelector('.nowPlayingPageUserDataButtons').innerHTML = LibraryBrowser.getUserDataIconsHtml(fullItem, false);
+            });
+        } else {
+            page.querySelector('.nowPlayingPageUserDataButtons').innerHTML = '';
+        }
     }
 
     function setImageUrl(page, url) {
@@ -619,9 +630,10 @@
             smallIcon: true
         });
 
-        var itemsContainer = elem.querySelector('.playlist');
+        var itemsContainer = page.querySelector('.playlist');
         itemsContainer.innerHTML = html;
-        ImageLoader.lazyChildren(html).trigger('create');
+        ImageLoader.lazyChildren(itemsContainer);
+        $(itemsContainer).trigger('create');
     }
 
     function onListItemClick(e) {
