@@ -1237,7 +1237,6 @@ namespace MediaBrowser.Server.Implementations.Channels
                 item.Overview = info.Overview;
                 item.IndexNumber = info.IndexNumber;
                 item.ParentIndexNumber = info.ParentIndexNumber;
-                item.People = info.People;
                 item.PremiereDate = info.PremiereDate;
                 item.ProductionYear = info.ProductionYear;
                 item.ProviderIds = info.ProviderIds;
@@ -1277,6 +1276,8 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
                 await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
                 _libraryManager.RegisterItem(item);
+
+                await _libraryManager.UpdatePeople(item, info.People ?? new List<PersonInfo>()).ConfigureAwait(false);
             }
 
             return item;

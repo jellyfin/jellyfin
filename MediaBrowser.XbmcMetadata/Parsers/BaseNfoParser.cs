@@ -573,7 +573,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 continue;
                             }
-                            item.AddPerson(p);
+                            PeopleHelper.AddPerson(item.People, p);
                         }
                         break;
                     }
@@ -592,7 +592,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 {
                                     continue;
                                 }
-                                item.AddPerson(p);
+                                PeopleHelper.AddPerson(item.People, p);
                             }
                         }
                         break;
@@ -606,7 +606,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 continue;
                             }
-                            item.AddPerson(p);
+                            PeopleHelper.AddPerson(item.People, p);
                         }
                         break;
                     }
@@ -617,7 +617,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             var person = GetPersonFromXmlNode(subtree);
 
-                            item.AddPerson(person);
+                            PeopleHelper.AddPerson(item.People, person);
                         }
                         break;
                     }

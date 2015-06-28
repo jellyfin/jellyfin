@@ -603,7 +603,7 @@ namespace MediaBrowser.Providers.TV
                                             .Where(i => !string.IsNullOrWhiteSpace(i))
                                             .Select(str => new PersonInfo { Type = personType, Name = str.Trim() }))
             {
-                item.AddPerson(person);
+                PeopleHelper.AddPerson(item.People, person);
             }
         }
 
@@ -631,7 +631,7 @@ namespace MediaBrowser.Providers.TV
             {
                 if (!string.IsNullOrWhiteSpace(person.Name))
                 {
-                    item.AddPerson(person);
+                    PeopleHelper.AddPerson(item.People, person);
                 }
             }
         }
