@@ -91,7 +91,10 @@
             centerImage: true,
             textLines: getAdditionalTextLines
         });
-        $('.itemsContainer', elem).html(html).lazyChildren();
+
+        var itemsContainer = elem.querySelector('.itemsContainer');
+        itemsContainer.innerHTML = html;
+        ImageLoader.lazyChildren(html);
     }
 
     function requestSearchHintsForOverlay(elem, searchTerm) {

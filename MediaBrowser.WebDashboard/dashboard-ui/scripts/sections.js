@@ -178,8 +178,9 @@
             }
 
             elem.innerHTML = html;
-            
-            $(elem).lazyChildren().createCardMenus();
+            ImageLoader.lazyChildren(elem);
+
+            $(elem).createCardMenus();
         });
     }
 
@@ -215,8 +216,9 @@
             }
 
             elem.innerHTML = html;
-            
-            $(elem).lazyChildren().createCardMenus();
+            ImageLoader.lazyChildren(elem);
+
+            $(elem).createCardMenus();
         });
     }
 
@@ -267,8 +269,9 @@
             }
 
             elem.innerHTML = html;
-            
-            $(elem).lazyChildren().createCardMenus({ showDetailsMenu: false });
+            ImageLoader.lazyChildren(elem);
+
+            $(elem).createCardMenus({ showDetailsMenu: false });
 
             handleLibraryLinkNavigations(elem);
         });
@@ -323,7 +326,8 @@
 
             elem.innerHTML = html;
 
-            $(elem).lazyChildren().createCardMenus();
+            ImageLoader.lazyChildren(elem);
+            $(elem).createCardMenus();
         });
     }
 
@@ -412,8 +416,9 @@
 
             var elem = page.querySelector('#channel' + channel.Id + '');
             elem.innerHTML = html;
-            
-            $(elem).lazyChildren().trigger('create').createCardMenus();
+            ImageLoader.lazyChildren(elem);
+
+            $(elem).createCardMenus();
         });
     }
 
@@ -453,9 +458,7 @@
             });
 
             elem.innerHTML = html;
-
-            $(elem).lazyChildren().trigger('create');
-
+            ImageLoader.lazyChildren(elem);
         });
     }
 

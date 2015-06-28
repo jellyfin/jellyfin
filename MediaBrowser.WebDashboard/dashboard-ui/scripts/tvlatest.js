@@ -67,8 +67,9 @@
                 });
             }
 
-            $('#latestEpisodes', page).html(html).lazyChildren();
-
+            var elem = page.querySelector('#latestEpisodes');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
         });
     });
 

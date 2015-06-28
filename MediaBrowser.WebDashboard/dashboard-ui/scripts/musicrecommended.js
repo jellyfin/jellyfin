@@ -32,7 +32,8 @@
 
         ApiClient.getJSON(ApiClient.getUrl('Users/' + userId + '/Items/Latest', options)).done(function (items) {
 
-            $('#recentlyAddedSongs', page).html(LibraryBrowser.getPosterViewHtml({
+            var elem = page.querySelector('#recentlyAddedSongs');
+            elem.innerHTML = LibraryBrowser.getPosterViewHtml({
                 items: items,
                 showUnplayedIndicator: false,
                 showLatestItemsPopup: false,
@@ -42,7 +43,8 @@
                 lazy: true,
                 cardLayout: true
 
-            })).lazyChildren();
+            });
+            ImageLoader.lazyChildren(elem);
 
             Dashboard.hideLoadingMsg();
         });
@@ -66,13 +68,16 @@
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
+            var elem;
+
             if (result.Items.length) {
-                $('#recentlyPlayed', page).show();
+                elem = $('#recentlyPlayed', page).show()[0];
             } else {
-                $('#recentlyPlayed', page).hide();
+                elem = $('#recentlyPlayed', page).hide()[0];
             }
 
-            $('#recentlyPlayedSongs', page).html(LibraryBrowser.getPosterViewHtml({
+            var itemsContainer = elem.querySelector('.itemsContainer');
+            itemsContainer.innerHTML = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
                 shape: getSquareShape(),
@@ -82,7 +87,8 @@
                 lazy: true,
                 cardLayout: true
 
-            })).lazyChildren();
+            });
+            ImageLoader.lazyChildren(itemsContainer);
 
         });
 
@@ -106,13 +112,16 @@
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
 
+            var elem;
+
             if (result.Items.length) {
-                $('#topPlayed', page).show();
+                elem = $('#topPlayed', page).show()[0];
             } else {
-                $('#topPlayed', page).hide();
+                elem = $('#topPlayed', page).hide()[0];
             }
 
-            $('#topPlayedSongs', page).html(LibraryBrowser.getPosterViewHtml({
+            var itemsContainer = elem.querySelector('.itemsContainer');
+            itemsContainer.innerHTML = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 showUnplayedIndicator: false,
                 shape: getSquareShape(),
@@ -122,7 +131,8 @@
                 lazy: true,
                 cardLayout: true
 
-            })).lazyChildren();
+            });
+            ImageLoader.lazyChildren(itemsContainer);
 
         });
 
@@ -147,12 +157,13 @@
             var elem;
 
             if (result.Items.length) {
-                elem = $('#playlists', page).show();
+                elem = $('#playlists', page).show()[0];
             } else {
-                elem = $('#playlists', page).hide();
+                elem = $('#playlists', page).hide()[0];
             }
 
-            $('.itemsContainer', elem).html(LibraryBrowser.getPosterViewHtml({
+            var itemsContainer = elem.querySelector('.itemsContainer');
+            itemsContainer.innerHTML = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: getSquareShape(),
                 showTitle: true,
@@ -162,7 +173,8 @@
                 showItemCounts: true,
                 cardLayout: true
 
-            })).lazyChildren();
+            });
+            ImageLoader.lazyChildren(itemsContainer);
 
         });
     }

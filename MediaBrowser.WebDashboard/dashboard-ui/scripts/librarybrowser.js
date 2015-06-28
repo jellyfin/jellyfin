@@ -2660,40 +2660,51 @@
 
             html += "</div>";
 
-            elem.html(html);
+            elem.innerHTML = html;
+
+            function addClass(elems, name) {
+                for (var i = 0, length = elems.length; i < length; i++) {
+                    elems[i].classList.add(name);
+                }
+            }
+            function removeClass(elems, name) {
+                for (var i = 0, length = elems.length; i < length; i++) {
+                    elems[i].classList.remove(name);
+                }
+            }
 
             var page = $(elem).parents('.page')[0];
 
-            var detailContentEffectedByImage = page.querySelector('.detailContentEffectedByImage');
+            var detailContentEffectedByImage = page.querySelectorAll('.detailContentEffectedByImage');
 
             if (shape == 'thumb') {
-                detailContentEffectedByImage.classList.add('detailContentEffectedByThumbImage');
-                detailContentEffectedByImage.classList.remove('detailContentEffectedBySquareImage');
-                detailContentEffectedByImage.classList.remove('detailContentEffectedByPortraitImage');
+                addClass(detailContentEffectedByImage, 'detailContentEffectedByThumbImage');
+                removeClass(detailContentEffectedByImage, 'detailContentEffectedBySquareImage');
+                removeClass(detailContentEffectedByImage, 'detailContentEffectedByPortraitImage');
 
-                elem.addClass('thumbDetailImageContainer');
-                elem.removeClass('portraitDetailImageContainer');
-                elem.removeClass('squareDetailImageContainer');
+                elem.classList.add('thumbDetailImageContainer');
+                elem.classList.add('portraitDetailImageContainer');
+                elem.classList.add('squareDetailImageContainer');
             }
             else if (shape == 'square') {
-                detailContentEffectedByImage.classList.remove('detailContentEffectedByThumbImage');
-                detailContentEffectedByImage.classList.add('detailContentEffectedBySquareImage');
-                detailContentEffectedByImage.classList.remove('detailContentEffectedByPortraitImage');
+                removeClass(detailContentEffectedByImage, 'detailContentEffectedByThumbImage');
+                removeClass(detailContentEffectedByImage, 'detailContentEffectedByPortraitImage');
+                addClass(detailContentEffectedByImage, 'detailContentEffectedBySquareImage');
 
-                elem.removeClass('thumbDetailImageContainer');
-                elem.removeClass('portraitDetailImageContainer');
-                elem.addClass('squareDetailImageContainer');
+                elem.classList.add('thumbDetailImageContainer');
+                elem.classList.add('portraitDetailImageContainer');
+                elem.classList.add('squareDetailImageContainer');
             } else {
-                detailContentEffectedByImage.classList.remove('detailContentEffectedByThumbImage');
-                detailContentEffectedByImage.classList.remove('detailContentEffectedBySquareImage');
-                detailContentEffectedByImage.classList.add('detailContentEffectedByPortraitImage');
+                removeClass(detailContentEffectedByImage, 'detailContentEffectedByThumbImage');
+                removeClass(detailContentEffectedByImage, 'detailContentEffectedBySquareImage');
+                addClass(detailContentEffectedByImage, 'detailContentEffectedByPortraitImage');
 
-                elem.removeClass('thumbDetailImageContainer');
-                elem.addClass('portraitDetailImageContainer');
-                elem.removeClass('squareDetailImageContainer');
+                elem.classList.add('thumbDetailImageContainer');
+                elem.classList.add('portraitDetailImageContainer');
+                elem.classList.remove('squareDetailImageContainer');
             }
 
-            elem.lazyChildren();
+            ImageLoader.lazyChildren(elem);
         },
 
         getDisplayTime: function (date) {
@@ -2869,7 +2880,6 @@
 
             var overview = item.Overview || '';
 
-            elem = elem[0];
             elem.innerHTML = overview;
 
             $('a', elem).each(function () {

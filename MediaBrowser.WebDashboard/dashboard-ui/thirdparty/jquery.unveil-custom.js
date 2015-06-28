@@ -97,12 +97,11 @@
 
     var threshold = getThreshold();
 
-    function isVisible() {
-        return visibleInViewport(this, true, false, 'both', threshold);
+    function isVisible(elem) {
+        return visibleInViewport(elem, true, false, 'both', threshold);
     }
 
-    function fillImage() {
-        var elem = this;
+    function fillImage(elem) {
         var source = elem.getAttribute('data-src');
         if (source) {
             ImageStore.setImageInto(elem, source);
@@ -116,19 +115,25 @@
             return;
         }
 
-        var images = $(elems),
-        loaded;
+        var images = elems;
 
         unveilId++;
         var eventNamespace = 'unveil' + unveilId;
 
-        images.one("unveil", fillImage);
-
         function unveil() {
-            var inview = images.filter(isVisible);
 
-            loaded = inview.trigger("unveil");
-            images = images.not(loaded);
+            var remaining = [];
+
+            for (var i = 0, length = images.length; i < length; i++) {
+                var img = images[i];
+                if (isVisible(img)) {
+                    fillImage(img);
+                } else {
+                    remaining.push(img);
+                }
+            }
+
+            images = remaining;
 
             if (!images.length) {
                 Events.off(window, 'scroll.' + eventNamespace);

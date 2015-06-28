@@ -92,7 +92,9 @@
                 });
             }
 
-            $('#nextUpItems', page).html(html).lazyChildren();
+            var elem = page.querySelector('#nextUpItems');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
             Dashboard.hideLoadingMsg();
         });
     }
@@ -166,8 +168,9 @@
                 });
             }
 
-            $('#resumableItems', page).html(html).lazyChildren();
-
+            var elem = page.querySelector('#resumableItems');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
         });
     }
 

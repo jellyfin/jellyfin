@@ -50,7 +50,7 @@
         $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item));
 
         LibraryBrowser.renderGenres($('.itemGenres', page), item, context);
-        LibraryBrowser.renderOverview($('.itemOverview', page), item);
+        LibraryBrowser.renderOverview(page.querySelector('.itemOverview'), item);
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
         LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), item);

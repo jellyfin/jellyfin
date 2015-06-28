@@ -315,7 +315,7 @@
     function renderDetails(page, item, context) {
 
         //LibraryBrowser.renderDetailPageBackdrop(page, item);
-        LibraryBrowser.renderOverview($('.itemOverview', page), item);
+        LibraryBrowser.renderOverview(page.querySelector('.itemOverview'), item);
 
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks($('#itemLinks', page), item);

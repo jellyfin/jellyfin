@@ -619,7 +619,9 @@
             smallIcon: true
         });
 
-        $(".playlist", page).html(html).trigger('create').lazyChildren();
+        var itemsContainer = elem.querySelector('.playlist');
+        itemsContainer.innerHTML = html;
+        ImageLoader.lazyChildren(html).trigger('create');
     }
 
     function onListItemClick(e) {

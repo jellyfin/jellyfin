@@ -123,7 +123,7 @@
 
         var imageHref = user.Policy.IsAdministrator && item.MediaType != 'Photo' ? "edititemimages.html?id=" + item.Id : "";
 
-        LibraryBrowser.renderDetailImage($('.detailImageContainer', page), item, imageHref);
+        LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, imageHref);
     }
 
     function onWebSocketMessage(e, data) {
@@ -362,7 +362,7 @@
             $('#itemTagline', page).hide();
         }
 
-        LibraryBrowser.renderOverview($('.itemOverview', page), item);
+        LibraryBrowser.renderOverview(page.querySelector('.itemOverview'), item);
 
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item));
 
