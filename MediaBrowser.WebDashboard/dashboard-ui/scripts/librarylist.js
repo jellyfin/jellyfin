@@ -1147,7 +1147,7 @@
 
                 $('<div class="playedIndicator"></div>').insertAfter($('.cardOverlayTarget', card));
             }
-            $('.playedIndicator', card).html('<i class="fa fa-check"></i>');
+            $('.playedIndicator', card).html('<i class="material-icons">check</i>');
             $('.cardProgress', card).remove();
         }
         else if (userData.UnplayedItemCount) {

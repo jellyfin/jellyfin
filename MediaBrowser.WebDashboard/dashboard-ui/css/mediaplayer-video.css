@@ -36,7 +36,7 @@
 }
 
 .videoControls {
-    padding: .5em .5em;
+    padding: 0 .5em;
     background-color: rgba(0, 0, 0, .7);
     position: fixed;
     left: 0;
@@ -199,7 +199,7 @@
     }
 }
 
-@media all and (max-width: 1400px), all and (max-height: 800px) {
+@media all and (max-width: 1400px), all and (max-height: 900px) {
 
     #mediaPlayer .nowPlayingInfo {
         display: none !important;
@@ -216,15 +216,15 @@
     }
 }
 
-@media all and (min-width: 1300px) {
+@media all and (min-width: 1400px) {
     .nowPlayingInfo {
         padding-bottom: 0;
     }
 
     #videoPlayer .nowPlayingImage img {
         height: auto !important;
-        max-width: 400px;
-        max-height: 240px;
+        max-width: 360px;
+        max-height: 220px;
     }
 }
 

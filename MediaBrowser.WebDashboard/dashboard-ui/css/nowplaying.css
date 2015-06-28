@@ -148,8 +148,13 @@
 
 @media (orientation: landscape) and (max-height: 400px) {
     .nowPlayingPageTitle {
-        margin-top: -1.5em;
-        padding: 0 60px;
+        margin: 0 auto;
+        width: 50%;
+        position: absolute;
+        text-align: center;
+        left: 0;
+        right: 0;
+        top: -20px;
     }
 
     .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
@@ -160,8 +165,13 @@
 
 @media (orientation: portrait) and (max-height: 600px) {
     .nowPlayingPageTitle {
-        margin-top: -1.5em;
-        padding: 0 60px;
+        margin: 0 auto;
+        width: 50%;
+        position: absolute;
+        text-align: center;
+        left: 0;
+        right: 0;
+        top: -20px;
     }
 
     .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {

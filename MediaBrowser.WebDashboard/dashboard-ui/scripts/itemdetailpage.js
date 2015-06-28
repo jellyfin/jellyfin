@@ -223,12 +223,10 @@
         else if (context == 'home-latest') {
             elem = $('.homeTabs', page).show();
             $('a', elem).removeClass('ui-btn-active');
-            $('.lnkHomeLatest', page).addClass('ui-btn-active');
         }
         else if (context == 'photos' || context == 'photos-photos') {
             elem = $('.photoTabs', page).show();
             $('a', elem).removeClass('ui-btn-active');
-            $('.lnkHomeLatest', page).addClass('ui-btn-active');
 
             if (context == 'photos-photos') {
                 $('.lnkPhotos', page).addClass('ui-btn-active');

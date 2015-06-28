@@ -742,7 +742,7 @@ var Dashboard = {
                 url += "&width=" + (imgWidth * Math.max(window.devicePixelRatio || 1, 2));
             }
 
-            html += '<div class="lazy" data-src="' + url + '" style="width:' + imgWidth + 'px;height:' + imgWidth + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin-right:.8em;display:inline-block;"></div>';
+            html += '<div style="background-image:url(\'' + url + '\');width:' + imgWidth + 'px;height:' + imgWidth + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin-right:.8em;display:inline-block;"></div>';
         }
         html += user.name;
 

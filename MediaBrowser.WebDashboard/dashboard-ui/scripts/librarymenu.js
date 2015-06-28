@@ -213,8 +213,7 @@
     }
     function closeMainDrawer() {
 
-        var drawerPanel = $('.mainDrawerPanel')[0];
-        drawerPanel.closeDrawer();
+        document.getElementsByClassName('mainDrawerPanel')[0].closeDrawer();
     }
 
     function ensureDrawerStructure(drawer) {
@@ -281,14 +280,16 @@
             html += '<div style="margin-top:5px;"></div>';
 
             html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '" onclick="return LibraryMenu.onLinkClicked(this);">';
-            html += '<div class="lazy" data-src="css/images/mblogoicon.png" style="width:' + 28 + 'px;height:' + 28 + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.6em 0 1.5em;display:inline-block;"></div>';
+            html += '<div style="background-image:url(\'css/images/mblogoicon.png\');width:' + 28 + 'px;height:' + 28 + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.6em 0 1.5em;display:inline-block;"></div>';
             html += Globalize.translate('ButtonHome');
             html += '</a>';
         }
 
         html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="nowplaying.html" onclick="return LibraryMenu.onLinkClicked(this);"><iron-icon icon="tablet-android" class="sidebarLinkIcon" style="color:#673AB7;"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonRemote') + '</span></a>';
 
-        $('.userheader', drawer).html(html).lazyChildren();
+        var elem = $('.userheader', drawer).html(html);
+        
+        $('.lazy', elem).fillImages();
     }
 
     function refreshLibraryInfoInDrawer(user, drawer) {
@@ -514,11 +515,13 @@
             // There doesn't seem to be a way to detect if the drawer is in the process of opening, so try to handle that here
             if ((new Date().getTime() - lastOpenTime) > 200) {
 
-                closeMainDrawer();
-
                 setTimeout(function () {
-                    Dashboard.navigate(link.href);
-                }, 300);
+                    closeMainDrawer();
+
+                    setTimeout(function () {
+                        Dashboard.navigate(link.href);
+                    }, 350);
+                }, 50);
             }
 
             return false;
@@ -532,7 +535,7 @@
 
                 setTimeout(function () {
                     Dashboard.logout();
-                }, 300);
+                }, 350);
             }
 
             return false;

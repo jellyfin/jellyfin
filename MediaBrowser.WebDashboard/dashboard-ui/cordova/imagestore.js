@@ -2,7 +2,7 @@
 
     function setImageIntoElement(elem, url) {
 
-        if (elem.tagName === "DIV") {
+        if (elem.tagName !== "IMG") {
 
             elem.style.backgroundImage = "url('" + url + "')";
 
