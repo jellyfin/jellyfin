@@ -314,11 +314,6 @@ namespace MediaBrowser.Providers.TV
         {
             using (var streamReader = new StreamReader(xmlFile, Encoding.UTF8))
             {
-                if (!item.LockedFields.Contains(MetadataFields.Cast))
-                {
-                    item.People.Clear();
-                }
-
                 // Use XmlReader for best performance
                 using (var reader = XmlReader.Create(streamReader, new XmlReaderSettings
                 {
