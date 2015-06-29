@@ -172,6 +172,7 @@
 
     }).on('pagebeforeshowready', "#indexPage", function () {
 
+        var args = arguments;
         var page = this;
 
         if (window.ApiClient) {

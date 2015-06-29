@@ -804,7 +804,7 @@
 
     function updateBackButton(page) {
 
-        var canGoBack = backStack.length > 0 && page.classList.contains('itemDetailPage');
+        var canGoBack = backStack.length > 0 && !page.classList.contains('homePage');
 
         $('.headerBackButton').visible(canGoBack);
 

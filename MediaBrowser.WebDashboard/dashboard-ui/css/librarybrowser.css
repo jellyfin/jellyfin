@@ -1366,13 +1366,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (min-height: 1079px) and (min-width: 1400px) {
-
-    .type-home {
-        overflow-x: visible !important;
-    }
-}
-
 .channelHeader {
     padding: 1em;
     text-align: center;
