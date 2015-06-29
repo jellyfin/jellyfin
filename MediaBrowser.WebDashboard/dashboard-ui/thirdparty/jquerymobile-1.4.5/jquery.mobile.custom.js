@@ -5424,28 +5424,28 @@ $.fn.grid = function( options ) {
 		},
 
 		_parse: function( html, fileUrl ) {
-			// TODO consider allowing customization of this method. It's very JQM specific
-			var page, all = $( "<div></div>" );
+		    // TODO consider allowing customization of this method. It's very JQM specific
+		    var page, all = $("<div></div>");
 
-			//workaround to allow scripts to execute when included in page divs
-			all.get( 0 ).innerHTML = html;
+		    //workaround to allow scripts to execute when included in page divs
+		    all.get(0).innerHTML = html;
 
-			page = all.find( ":jqmData(role='page'), :jqmData(role='dialog')" ).first();
+		    page = all.find(":jqmData(role='page'), :jqmData(role='dialog')");
 
-			//if page elem couldn't be found, create one and insert the body element's contents
-			if ( !page.length ) {
-				page = $( "<div data-" + this._getNs() + "role='page'>" +
-					( html.split( /<\/?body[^>]*>/gmi )[1] || "" ) +
-					"</div>" );
-			}
+		    //if page elem couldn't be found, create one and insert the body element's contents
+		    if (!page.length) {
+		        page = $("<div data-" + this._getNs() + "role='page'>" +
+					(html.split(/<\/?body[^>]*>/gmi)[1] || "") +
+					"</div>");
+		    }
 
-			// TODO tagging a page with external to make sure that embedded pages aren't
-			// removed by the various page handling code is bad. Having page handling code
-			// in many places is bad. Solutions post 1.0
-			page.attr( "data-" + this._getNs() + "url", this._createDataUrl( fileUrl ) )
-				.attr( "data-" + this._getNs() + "external-page", true );
+		    // TODO tagging a page with external to make sure that embedded pages aren't
+		    // removed by the various page handling code is bad. Having page handling code
+		    // in many places is bad. Solutions post 1.0
+		    page.attr("data-" + this._getNs() + "url", this._createDataUrl(fileUrl))
+				.attr("data-" + this._getNs() + "external-page", true);
 
-			return page;
+		    return page;
 		},
 
 		_setLoadedTitle: function( page, html ) {
@@ -5524,7 +5524,8 @@ $.fn.grid = function( options ) {
 				}
 
 				content = this._parse( html, fileUrl );
-
+				var allPages = content;
+			    content = content.first();
 				this._setLoadedTitle( content, html );
 
 				// Add the content reference and xhr to our triggerData.
@@ -5551,7 +5552,7 @@ $.fn.grid = function( options ) {
 					this._getBase().rewrite( fileUrl, content );
 				}
 
-				this._include( content, settings );
+				this._include(allPages, settings);
 
 				// Remove loading message.
 				if ( settings.showLoadMsg ) {
