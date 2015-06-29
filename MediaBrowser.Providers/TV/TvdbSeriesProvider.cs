@@ -121,7 +121,7 @@ namespace MediaBrowser.Providers.TV
                 result.Item = new Series();
                 result.HasMetadata = true;
 
-                FetchSeriesData(result.Item, seriesId, cancellationToken);
+                FetchSeriesData(result, seriesId, cancellationToken);
                 await FindAnimeSeriesIndex(result.Item, itemId).ConfigureAwait(false);
             }
 
@@ -159,12 +159,14 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Fetches the series data.
         /// </summary>
-        /// <param name="series">The series.</param>
+        /// <param name="result">The result.</param>
         /// <param name="seriesId">The series id.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private void FetchSeriesData(Series series, string seriesId, CancellationToken cancellationToken)
+        private void FetchSeriesData(MetadataResult<Series> result, string seriesId, CancellationToken cancellationToken)
         {
+            var series = result.Item;
+
             series.SetProviderId(MetadataProviders.Tvdb, seriesId);
 
             var seriesDataPath = GetSeriesDataPath(_config.ApplicationPaths, seriesId);
@@ -178,7 +180,7 @@ namespace MediaBrowser.Providers.TV
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            FetchActors(series, actorsXmlPath);
+            FetchActors(result, actorsXmlPath);
         }
 
         /// <summary>
@@ -618,9 +620,9 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Fetches the actors.
         /// </summary>
-        /// <param name="series">The series.</param>
+        /// <param name="result">The result.</param>
         /// <param name="actorsXmlPath">The actors XML path.</param>
-        private void FetchActors(Series series, string actorsXmlPath)
+        private void FetchActors(MetadataResult<Series> result, string actorsXmlPath)
         {
             var settings = new XmlReaderSettings
             {
@@ -648,7 +650,7 @@ namespace MediaBrowser.Providers.TV
                                     {
                                         using (var subtree = reader.ReadSubtree())
                                         {
-                                            FetchDataFromActorNode(series, subtree);
+                                            FetchDataFromActorNode(result, subtree);
                                         }
                                         break;
                                     }
@@ -665,9 +667,9 @@ namespace MediaBrowser.Providers.TV
         /// <summary>
         /// Fetches the data from actor node.
         /// </summary>
-        /// <param name="series">The series.</param>
+        /// <param name="result">The result.</param>
         /// <param name="reader">The reader.</param>
-        private void FetchDataFromActorNode(Series series, XmlReader reader)
+        private void FetchDataFromActorNode(MetadataResult<Series> result, XmlReader reader)
         {
             reader.MoveToContent();
 
@@ -719,7 +721,7 @@ namespace MediaBrowser.Providers.TV
 
             if (!string.IsNullOrWhiteSpace(personInfo.Name))
             {
-                PeopleHelper.AddPerson(series.People, personInfo);
+                PeopleHelper.AddPerson(result.People, personInfo);
             }
         }
 

@@ -56,10 +56,12 @@ namespace MediaBrowser.Providers.TV
 
                 try
                 {
-                    var item = FetchEpisodeData(searchInfo, identity, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
+                    var metadataResult = FetchEpisodeData(searchInfo, identity, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
 
-                    if (item != null)
+                    if (metadataResult.HasMetadata)
                     {
+                        var item = metadataResult.Item;
+
                         list.Add(new RemoteSearchResult
                         {
                             IndexNumber = item.IndexNumber,
@@ -103,9 +105,7 @@ namespace MediaBrowser.Providers.TV
 
                 try
                 {
-                    result.Item = FetchEpisodeData(searchInfo, identity, seriesDataPath, searchInfo.SeriesProviderIds,
-                        cancellationToken);
-                    result.HasMetadata = result.Item != null;
+                    result = FetchEpisodeData(searchInfo, identity, seriesDataPath, searchInfo.SeriesProviderIds, cancellationToken);
                 }
                 catch (FileNotFoundException)
                 {
@@ -231,21 +231,23 @@ namespace MediaBrowser.Providers.TV
         /// <param name="seriesProviderIds">The series provider ids.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{System.Boolean}.</returns>
-        private Episode FetchEpisodeData(EpisodeInfo id, EpisodeIdentity identity, string seriesDataPath, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
+        private MetadataResult<Episode> FetchEpisodeData(EpisodeInfo id, EpisodeIdentity identity, string seriesDataPath, Dictionary<string, string> seriesProviderIds, CancellationToken cancellationToken)
         {
             var episodeNumber = identity.IndexNumber;
             var seasonOffset = TvdbSeriesProvider.GetSeriesOffset(seriesProviderIds) ?? 0;
             var seasonNumber = identity.SeasonIndex + seasonOffset;
             
             string file;
-            var success = false;
             var usingAbsoluteData = false;
 
-            var episode = new Episode
+            var result = new MetadataResult<Episode>()
             {
-                IndexNumber = id.IndexNumber,
-                ParentIndexNumber = id.ParentIndexNumber,
-                IndexNumberEnd = id.IndexNumberEnd
+                Item = new Episode
+                {
+                    IndexNumber = id.IndexNumber,
+                    ParentIndexNumber = id.ParentIndexNumber,
+                    IndexNumberEnd = id.IndexNumberEnd
+                }
             };
 
             try
@@ -253,9 +255,9 @@ namespace MediaBrowser.Providers.TV
                 if (seasonNumber != null)
                 {
                     file = Path.Combine(seriesDataPath, string.Format("episode-{0}-{1}.xml", seasonNumber.Value, episodeNumber));
-                    FetchMainEpisodeInfo(episode, file, cancellationToken);
+                    FetchMainEpisodeInfo(result, file, cancellationToken);
 
-                    success = true;
+                    result.HasMetadata = true;
                 }
             }
             catch (FileNotFoundException)
@@ -267,11 +269,12 @@ namespace MediaBrowser.Providers.TV
                 }
             }
 
-            if (!success)
+            if (!result.HasMetadata)
             {
                 file = Path.Combine(seriesDataPath, string.Format("episode-abs-{0}.xml", episodeNumber));
 
-                FetchMainEpisodeInfo(episode, file, cancellationToken);
+                FetchMainEpisodeInfo(result, file, cancellationToken);
+                result.HasMetadata = true;
                 usingAbsoluteData = true;
             }
 
@@ -291,7 +294,7 @@ namespace MediaBrowser.Providers.TV
 
                 try
                 {
-                    FetchAdditionalPartInfo(episode, file, cancellationToken);
+                    FetchAdditionalPartInfo(result, file, cancellationToken);
                 }
                 catch (FileNotFoundException)
                 {
@@ -305,13 +308,15 @@ namespace MediaBrowser.Providers.TV
                 episodeNumber++;
             }
 
-            return episode;
+            return result;
         }
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        private void FetchMainEpisodeInfo(Episode item, string xmlFile, CancellationToken cancellationToken)
+        private void FetchMainEpisodeInfo(MetadataResult<Episode> result, string xmlFile, CancellationToken cancellationToken)
         {
+            var item = result.Item;
+
             using (var streamReader = new StreamReader(xmlFile, Encoding.UTF8))
             {
                 // Use XmlReader for best performance
@@ -546,7 +551,7 @@ namespace MediaBrowser.Providers.TV
                                         {
                                             if (!item.LockedFields.Contains(MetadataFields.Cast))
                                             {
-                                                AddPeople(item, val, PersonType.Director);
+                                                AddPeople(result, val, PersonType.Director);
                                             }
                                         }
 
@@ -560,7 +565,7 @@ namespace MediaBrowser.Providers.TV
                                         {
                                             if (!item.LockedFields.Contains(MetadataFields.Cast))
                                             {
-                                                AddGuestStars(item, val);
+                                                AddGuestStars(result, val);
                                             }
                                         }
 
@@ -574,7 +579,7 @@ namespace MediaBrowser.Providers.TV
                                         {
                                             if (!item.LockedFields.Contains(MetadataFields.Cast))
                                             {
-                                                AddPeople(item, val, PersonType.Writer);
+                                                AddPeople(result, val, PersonType.Writer);
                                             }
                                         }
 
@@ -591,18 +596,19 @@ namespace MediaBrowser.Providers.TV
             }
         }
 
-        private void AddPeople(BaseItem item, string val, string personType)
+        private void AddPeople<T>(MetadataResult<T> result, string val, string personType)
         {
             // Sometimes tvdb actors have leading spaces
             foreach (var person in val.Split(new[] { '|', ',' }, StringSplitOptions.RemoveEmptyEntries)
                                             .Where(i => !string.IsNullOrWhiteSpace(i))
                                             .Select(str => new PersonInfo { Type = personType, Name = str.Trim() }))
             {
-                PeopleHelper.AddPerson(item.People, person);
+                PeopleHelper.AddPerson(result.People, person);
             }
         }
 
-        private void AddGuestStars(BaseItem item, string val)
+        private void AddGuestStars<T>(MetadataResult<T> result, string val)
+            where T : BaseItem
         {
             // Sometimes tvdb actors have leading spaces
             //Regex Info:
@@ -626,13 +632,15 @@ namespace MediaBrowser.Providers.TV
             {
                 if (!string.IsNullOrWhiteSpace(person.Name))
                 {
-                    PeopleHelper.AddPerson(item.People, person);
+                    PeopleHelper.AddPerson(result.People, person);
                 }
             }
         }
 
-        private void FetchAdditionalPartInfo(Episode item, string xmlFile, CancellationToken cancellationToken)
+        private void FetchAdditionalPartInfo(MetadataResult<Episode> result, string xmlFile, CancellationToken cancellationToken)
         {
+            var item = result.Item;
+
             using (var streamReader = new StreamReader(xmlFile, Encoding.UTF8))
             {
                 // Use XmlReader for best performance
@@ -688,7 +696,7 @@ namespace MediaBrowser.Providers.TV
                                         {
                                             if (!item.LockedFields.Contains(MetadataFields.Cast))
                                             {
-                                                AddPeople(item, val, PersonType.Director);
+                                                AddPeople(result, val, PersonType.Director);
                                             }
                                         }
 
@@ -702,7 +710,7 @@ namespace MediaBrowser.Providers.TV
                                         {
                                             if (!item.LockedFields.Contains(MetadataFields.Cast))
                                             {
-                                                AddGuestStars(item, val);
+                                                AddGuestStars(result, val);
                                             }
                                         }
 
@@ -716,7 +724,7 @@ namespace MediaBrowser.Providers.TV
                                         {
                                             if (!item.LockedFields.Contains(MetadataFields.Cast))
                                             {
-                                                AddPeople(item, val, PersonType.Writer);
+                                                AddPeople(result, val, PersonType.Writer);
                                             }
                                         }
 

@@ -23,7 +23,7 @@ namespace MediaBrowser.LocalMetadata.Providers
 
         protected override void Fetch(LocalMetadataResult<Series> result, string path, CancellationToken cancellationToken)
         {
-            new SeriesXmlParser(_logger).Fetch(result.Item, path, cancellationToken);
+            new SeriesXmlParser(_logger).Fetch(result, path, cancellationToken);
         }
 
         protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)

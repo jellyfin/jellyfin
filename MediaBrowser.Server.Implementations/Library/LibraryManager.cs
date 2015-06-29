@@ -2060,7 +2060,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public List<PersonInfo> GetPeople(BaseItem item)
         {
-            return item.People ?? new List<PersonInfo>();
+            return item.People ?? ItemRepository.GetPeople(item.Id);
         }
 
         public List<PersonInfo> GetAllPeople()
@@ -2072,10 +2072,15 @@ namespace MediaBrowser.Server.Implementations.Library
                 .ToList();
         }
 
-        public Task UpdatePeople(BaseItem item, List<PersonInfo> people)
+        public async Task UpdatePeople(BaseItem item, List<PersonInfo> people)
         {
-            item.People = people;
-            return item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None);
+            await ItemRepository.UpdatePeople(item.Id, people).ConfigureAwait(false);
+
+            if (item.People != null)
+            {
+                item.People = null;
+                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
+            }
         }
     }
 }

@@ -72,5 +72,14 @@ namespace MediaBrowser.Controller.Entities
         {
             return i => i.Studios.Contains(Name, StringComparer.OrdinalIgnoreCase);
         }
+
+        [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
 }
