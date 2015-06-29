@@ -16,8 +16,10 @@ namespace MediaBrowser.LocalMetadata.Parsers
         {
         }
 
-        protected override void FetchDataFromXmlNode(XmlReader reader, Playlist item)
+        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Playlist> result)
         {
+            var item = result.Item;
+
             switch (reader.Name)
             {
                 case "OwnerUserId":
@@ -59,7 +61,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     break;
 
                 default:
-                    base.FetchDataFromXmlNode(reader, item);
+                    base.FetchDataFromXmlNode(reader, result);
                     break;
             }
         }

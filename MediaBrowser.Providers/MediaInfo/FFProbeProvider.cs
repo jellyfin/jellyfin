@@ -51,6 +51,7 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
         private readonly IChapterManager _chapterManager;
+        private readonly ILibraryManager _libraryManager;
 
         public string Name
         {
@@ -92,7 +93,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return FetchAudioInfo(item, cancellationToken);
         }
 
-        public FFProbeProvider(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem, IServerConfigurationManager config, ISubtitleManager subtitleManager, IChapterManager chapterManager)
+        public FFProbeProvider(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem, IServerConfigurationManager config, ISubtitleManager subtitleManager, IChapterManager chapterManager, ILibraryManager libraryManager)
         {
             _logger = logger;
             _isoManager = isoManager;
@@ -107,6 +108,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _config = config;
             _subtitleManager = subtitleManager;
             _chapterManager = chapterManager;
+            _libraryManager = libraryManager;
         }
 
         private readonly Task<ItemUpdateType> _cachedTask = Task.FromResult(ItemUpdateType.None);
@@ -138,8 +140,8 @@ namespace MediaBrowser.Providers.MediaInfo
                 FetchShortcutInfo(item);
                 return Task.FromResult(ItemUpdateType.MetadataEdit);
             }
-            
-            var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem, _config, _subtitleManager, _chapterManager);
+
+            var prober = new FFProbeVideoInfo(_logger, _isoManager, _mediaEncoder, _itemRepo, _blurayExaminer, _localization, _appPaths, _json, _encodingManager, _fileSystem, _config, _subtitleManager, _chapterManager, _libraryManager);
 
             return prober.ProbeVideo(item, options, cancellationToken);
         }
@@ -157,7 +159,7 @@ namespace MediaBrowser.Providers.MediaInfo
                 return _cachedTask;
             }
 
-            var prober = new FFProbeAudioInfo(_mediaEncoder, _itemRepo, _appPaths, _json);
+            var prober = new FFProbeAudioInfo(_mediaEncoder, _itemRepo, _appPaths, _json, _libraryManager);
 
             return prober.Probe(item, cancellationToken);
         }

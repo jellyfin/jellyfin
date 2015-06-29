@@ -88,5 +88,14 @@ namespace MediaBrowser.Controller.Entities
             var val = GetYearValue();
             return i => i.ProductionYear.HasValue && val.HasValue && i.ProductionYear.Value == val.Value;
         }
+
+        [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
 }

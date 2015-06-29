@@ -114,6 +114,7 @@
 
             var elem = page.querySelector('.itemsContainer');
             elem.innerHTML = html;
+            $(elem).trigger('create');
             ImageLoader.lazyChildren(elem);
 
             $('.btnNextPage', page).on('click', function () {

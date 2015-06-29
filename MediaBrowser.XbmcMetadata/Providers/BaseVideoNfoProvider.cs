@@ -2,11 +2,9 @@
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.XbmcMetadata.Parsers;
 using MediaBrowser.XbmcMetadata.Savers;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -28,11 +26,15 @@ namespace MediaBrowser.XbmcMetadata.Providers
 
         protected override void Fetch(LocalMetadataResult<T> result, string path, CancellationToken cancellationToken)
         {
-            var chapters = new List<ChapterInfo>();
+            var tmpItem = new LocalMetadataResult<Video>
+            {
+                Item = result.Item
+            };
+            new MovieNfoParser(_logger, _config).Fetch(tmpItem, path, cancellationToken);
 
-            new MovieNfoParser(_logger, _config).Fetch(result.Item, result.UserDataLIst, chapters, path, cancellationToken);
-
-            result.Chapters = chapters;
+            result.Item = (T)tmpItem.Item;
+            result.People = tmpItem.People;
+            result.UserDataLIst = tmpItem.UserDataLIst;
         }
 
         protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)

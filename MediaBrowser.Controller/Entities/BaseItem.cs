@@ -35,7 +35,6 @@ namespace MediaBrowser.Controller.Entities
         {
             Genres = new List<string>();
             Studios = new List<string>();
-            People = new List<PersonInfo>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             LockedFields = new List<MetadataFields>();
             ImageInfos = new List<ItemImageInfo>();
@@ -776,6 +775,12 @@ namespace MediaBrowser.Controller.Entities
             get { return IsFolder || Parent != null; }
         }
 
+        [IgnoreDataMember]
+        public virtual bool SupportsPeople
+        {
+            get { return true; }
+        }
+
         /// <summary>
         /// Refreshes owned items such as trailers, theme videos, special features, etc.
         /// Returns true or false indicating if changes were found.
@@ -1239,7 +1244,6 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="System.ArgumentNullException"></exception>
         public void AddPerson(PersonInfo person)
         {
-            PeopleHelper.AddPerson(People, person);
         }
 
         /// <summary>

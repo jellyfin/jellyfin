@@ -9,23 +9,19 @@
             showOverlayTimeout = null;
         }
 
-        $('.cardOverlayTarget:visible', this).each(function () {
+        var elem = this.querySelector('.cardOverlayTarget');
 
-            var elem = this;
+        if ($(elem).is(':visible')) {
+            require(["jquery", "velocity"], function ($, Velocity) {
 
-            $(this).animate({ "height": "0" }, "fast", function () {
-
-                $(elem).hide();
-
+                Velocity.animate(elem, { "height": "0" },
+                {
+                    complete: function () {
+                        $(elem).hide();
+                    }
+                });
             });
-
-        });
-
-        $('.cardOverlayTarget:visible', this).stop().animate({ "height": "0" }, function () {
-
-            $(this).hide();
-
-        });
+        }
     }
 
     function getOverlayHtml(item, currentUser, card, commands) {
@@ -820,11 +816,13 @@
                 $('.btnMoreCommands', innerElem).on('click', onMoreButtonClick);
             });
 
-            $(innerElem).show().each(function () {
+            $(innerElem).show();
+            innerElem.style.height = '0';
 
-                this.style.height = 0;
+            require(["jquery", "velocity"], function ($, Velocity) {
 
-            }).animate({ "height": "100%" }, "fast");
+                Velocity.animate(innerElem, { "height": "100%" }, "fast");
+            });
         }
 
         function onHoverIn() {

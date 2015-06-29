@@ -59,5 +59,11 @@ namespace MediaBrowser.Controller.Entities
         /// Afters the metadata refresh.
         /// </summary>
         void AfterMetadataRefresh();
+
+        /// <summary>
+        /// Gets a value indicating whether [supports people].
+        /// </summary>
+        /// <value><c>true</c> if [supports people]; otherwise, <c>false</c>.</value>
+        bool SupportsPeople { get; }
     }
 }

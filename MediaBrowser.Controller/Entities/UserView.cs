@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Playlists;
+﻿using System.Runtime.Serialization;
+using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -92,6 +93,15 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return standaloneTypes.Contains(collectionFolder.CollectionType ?? string.Empty);
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get
+            {
+                return false;
+            }
         }
     }
 }

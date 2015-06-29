@@ -14,25 +14,20 @@ namespace MediaBrowser.Providers.People
 {
     public class PersonMetadataService : MetadataService<Person, PersonLookupInfo>
     {
-        public PersonMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
+        public PersonMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager, libraryManager)
         {
         }
 
-        /// <summary>
-        /// Merges the specified source.
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="target">The target.</param>
-        /// <param name="lockedFields">The locked fields.</param>
-        /// <param name="replaceData">if set to <c>true</c> [replace data].</param>
-        /// <param name="mergeMetadataSettings">if set to <c>true</c> [merge metadata settings].</param>
-        protected override void MergeData(Person source, Person target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Person> source, MetadataResult<Person> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
-            if (replaceData || string.IsNullOrEmpty(target.PlaceOfBirth))
+            var sourceItem = source.Item;
+            var targetItem = target.Item;
+
+            if (replaceData || string.IsNullOrEmpty(targetItem.PlaceOfBirth))
             {
-                target.PlaceOfBirth = source.PlaceOfBirth;
+                targetItem.PlaceOfBirth = sourceItem.PlaceOfBirth;
             }
         }
     }
