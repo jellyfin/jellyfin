@@ -94,7 +94,7 @@
 
         var itemsContainer = elem.querySelector('.itemsContainer');
         itemsContainer.innerHTML = html;
-        ImageLoader.lazyChildren(html);
+        ImageLoader.lazyChildren(itemsContainer);
     }
 
     function requestSearchHintsForOverlay(elem, searchTerm) {
@@ -134,17 +134,16 @@
 
     function getSearchOverlay(createIfNeeded) {
 
-        var elem = $('.searchResultsOverlay');
+        var elem = document.querySelector('.searchResultsOverlay');
 
-        if (createIfNeeded && !elem.length) {
+        if (createIfNeeded && !elem) {
 
             var html = '<div class="searchResultsOverlay ui-page-theme-b smoothScrollY">';
 
             html += '<div class="searchResultsContainer"><div class="itemsContainer"></div></div></div>';
 
-            elem = $(html).appendTo(document.body).hide().trigger('create');
-
-            elem.createCardMenus();
+            elem = $(html).appendTo(document.body).hide()[0];
+            $(elem).createCardMenus();
         }
 
         return elem;
@@ -152,14 +151,29 @@
 
     function onHeaderSearchChange(val) {
 
+        var elem;
+
         if (val) {
-            updateSearchOverlay(getSearchOverlay(true).fadeIn('fast'), val);
+
+            elem = getSearchOverlay(true);
+
+            $(elem).show();
+            elem.style.opacity = '1';
             document.body.classList.add('bodyWithPopupOpen');
 
-        } else {
+            updateSearchOverlay(elem, val);
 
-            updateSearchOverlay(getSearchOverlay(false).fadeOut('fast'), val);
-            document.body.classList.remove('bodyWithPopupOpen');
+        } else {
+            elem = getSearchOverlay(false);
+
+            if (elem) {
+                require(["jquery", "velocity"], function ($, Velocity) {
+
+                    $(elem).velocity("fadeOut");
+                    document.body.classList.remove('bodyWithPopupOpen');
+                });
+                updateSearchOverlay(elem, '');
+            }
         }
     }
 

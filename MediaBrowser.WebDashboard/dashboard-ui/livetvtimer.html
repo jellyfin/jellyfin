@@ -7,11 +7,11 @@
     <div id="liveTvTimerPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvtimer,livetvcss">
         <div class="libraryViewNav">
             <a href="livetvsuggested.html"><i class="material-icons">info</i>${TabSuggestions}</a>
-            <a href="livetvsuggested.html#liveTvGuidePage"><i class="material-icons">grid_on</i>${TabGuide}</a>
-            <a href="livetvsuggested.html#liveTvChannelsPage"><i class="material-icons">live_tv</i>${TabChannels}</a>
-            <a href="livetvsuggested.html#liveTvRecordingsPage"><i class="material-icons">slideshow</i>${TabRecordings}</a>
-            <a href="livetvsuggested.html#liveTvTimersPage" class="ui-btn-active"><i class="material-icons">schedule</i>${TabScheduled}</a>
-            <a href="livetvsuggested.html#liveTvSeriesTimersPage"><i class="material-icons">refresh</i>${TabSeries}</a>
+            <a href="livetvguide.html"><i class="material-icons">grid_on</i>${TabGuide}</a>
+            <a href="livetvchannels.html"><i class="material-icons">live_tv</i>${TabChannels}</a>
+            <a href="livetvrecordings.html"><i class="material-icons">slideshow</i>${TabRecordings}</a>
+            <a href="livetvtimers.html" class="ui-btn-active"><i class="material-icons">schedule</i>${TabScheduled}</a>
+            <a href="livetvseriestimers.html"><i class="material-icons">refresh</i>${TabSeries}</a>
         </div>
         <div data-role="content">
 
@@ -74,7 +74,7 @@
                         <button type="submit" data-theme="a" data-icon="check" data-mini="true">
                             ${ButtonSave}
                         </button>
-                        <button type="button" onclick="Dashboard.navigate('livetvsuggested.html#liveTvTimersPage');" data-icon="delete" data-mini="true">
+                        <button type="button" onclick="Dashboard.navigate('livetvtimers.html');" data-icon="delete" data-mini="true">
                             ${ButtonCancel}
                         </button>
                     </li>

@@ -545,7 +545,7 @@
             var id = item.Id || item.ItemId;
 
             if (item.CollectionType == 'livetv') {
-                return 'livetvsuggested.html#liveTvSuggestedPage';
+                return 'livetvsuggested.html';
             }
 
             if (item.CollectionType == 'channels') {

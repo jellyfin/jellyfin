@@ -93,7 +93,7 @@
                 html += "</div>";
             }
 
-            $('#latestReviews', page).html(html).trigger('create');
+            Events.trigger($('#latestReviews', page).html(html)[0], 'create');
         });
     }
 

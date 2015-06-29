@@ -440,7 +440,7 @@
 
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderLatestTvRecordings') + '</h1>';
-                html += '<a href="livetvsuggested.html#liveTvRecordingsPage?context=livetv" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
+                html += '<a href="livetvrecordings.html?context=livetv" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
                 html += '</div>';
             }
 

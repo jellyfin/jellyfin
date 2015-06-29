@@ -152,7 +152,7 @@
 
         }
         else if (message.type && message.type.indexOf('playback') == 0) {
-            $(this).trigger(message.type, [message.data]);
+            Events.trigger(this, message.type, [message.data]);
 
         }
     };
@@ -225,7 +225,7 @@
         this.session.addMediaListener(this.sessionMediaListener.bind(this));
         this.session.addUpdateListener(this.sessionUpdateListener.bind(this));
 
-        $(this).trigger('connect');
+        Events.trigger(this, 'connect');
 
         this.sendMessage({
             options: {},
@@ -480,7 +480,7 @@
             castPlayer.initializeCastPlayer();
 
             var state = self.getPlayerStateInternal(data);
-            $(self).trigger("playbackstart", [state]);
+            Events.trigger(self, "playbackstart", [state]);
         });
 
         $(castPlayer).on("playbackstop", function (e, data) {
@@ -488,7 +488,7 @@
             Logger.log('cc: playbackstop');
             var state = self.getPlayerStateInternal(data);
 
-            $(self).trigger("playbackstop", [state]);
+            Events.trigger(self, "playbackstop", [state]);
 
             // Reset this so the next query doesn't make it appear like content is playing.
             self.lastPlayerData = {};
@@ -499,7 +499,7 @@
             Logger.log('cc: positionchange');
             var state = self.getPlayerStateInternal(data);
 
-            $(self).trigger("positionchange", [state]);
+            Events.trigger(self, "positionchange", [state]);
         });
 
         self.play = function (options) {

@@ -116,7 +116,7 @@
             ImageLoader.lazyChildren(elem);
 
             if (trigger) {
-                $(elem).trigger('create');
+                Events.trigger(elem, 'create');
             }
 
             $('.btnNextPage', page).on('click', function () {
@@ -381,7 +381,7 @@
         LibraryBrowser.getSavedViewSetting(viewKey).done(function (val) {
 
             if (val) {
-                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+                Events.trigger($('#selectView', page).val(val).selectmenu('refresh')[0], 'change');
             } else {
                 reloadItems(page);
             }

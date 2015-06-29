@@ -90,7 +90,7 @@
                         </p>
                         <button type="submit" data-icon="check" data-theme="b">${ButtonUpload}</button>
                     </div>
-                    <a data-role="button" data-rel="back" data-icon="delete" onclick="$('#uploadImage').val('').trigger('change');">${ButtonCancel}</a>
+                    <a data-role="button" data-rel="back" data-icon="delete" onclick="Events.trigger($('#uploadImage').val('')[0], 'change');">${ButtonCancel}</a>
                 </div>
             </form>
         </div>

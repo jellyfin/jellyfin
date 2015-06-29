@@ -54,7 +54,7 @@
                 html += '</div>';
 
                 if (result.TotalRecordCount > result.Items.length) {
-                    var href = "index.html#favoritesPage?sectionid=" + section.id;
+                    var href = "homefavorites.html?sectionid=" + section.id;
 
                     html += '<a class="clearLink" href="' + href + '"><paper-button raised class="more">' + Globalize.translate('ButtonMoreItems') + '</paper-button></a>';
                 }

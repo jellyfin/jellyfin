@@ -14,7 +14,7 @@
 
                     Dashboard.alert(Globalize.translate('MessageRecordingDeleted'));
 
-                    Dashboard.navigate('livetvsuggested.html#liveTvRecordingsPage');
+                    Dashboard.navigate('livetvrecordings.html');
                 });
             }
 

@@ -248,12 +248,12 @@
     function showCommand(result) {
 
         if (result.category == 'tvguide') {
-            Dashboard.navigate('livetvsuggested.html#liveTvGuidePage');
+            Dashboard.navigate('livetvguide.html');
             return;
         }
 
         if (result.category == 'recordings') {
-            Dashboard.navigate('livetvsuggested.html#liveTvRecordingsPage');
+            Dashboard.navigate('livetvrecordings.html');
             return;
         }
     }

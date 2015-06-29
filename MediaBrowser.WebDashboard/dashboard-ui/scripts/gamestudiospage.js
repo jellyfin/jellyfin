@@ -33,7 +33,7 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false
-            })).trigger('create');
+            }));
 
             updateFilterControls(page);
 
