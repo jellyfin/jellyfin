@@ -692,350 +692,6 @@ li.ui-block-e {
 }
 
 
-.pop {
-	-webkit-transform-origin: 50% 50%;
-	-moz-transform-origin: 50% 50%;
-	transform-origin: 50% 50%;
-}
-
-.pop.in {
-	-webkit-transform: scale(1);
-	-webkit-animation-name: popin;
-	-webkit-animation-duration: 350ms;
-	-moz-transform: scale(1);
-	-moz-animation-name: popin;
-	-moz-animation-duration: 350ms;
-	transform: scale(1);
-	animation-name: popin;
-	animation-duration: 350ms;
-    opacity: 1;
-}
-
-.pop.out {
-	-webkit-animation-name: fadeout;
-	-webkit-animation-duration: 100ms;
-	-moz-animation-name: fadeout;
-	-moz-animation-duration: 100ms;
-	animation-name: fadeout;
-	animation-duration: 100ms;
-	opacity: 0;
-}
-
-.pop.in.reverse {
-	-webkit-animation-name: fadein;
-	-moz-animation-name: fadein;
-	animation-name: fadein;
-}
-
-.pop.out.reverse {
-	-webkit-transform: scale(.8);
-	-webkit-animation-name: popout;
-	-moz-transform: scale(.8);
-	-moz-animation-name: popout;
-	transform: scale(.8);
-	animation-name: popout;
-}
-
-@-webkit-keyframes popin {
-    from {
-        -webkit-transform: scale(.8);
-        opacity: 0;
-    }
-    to {
-        -webkit-transform: scale(1);
-        opacity: 1;
-    }
-}
-@-moz-keyframes popin {
-    from {
-        -moz-transform: scale(.8);
-        opacity: 0;
-    }
-    to {
-        -moz-transform: scale(1);
-        opacity: 1;
-    }
-}
-@keyframes popin {
-    from {
-        transform: scale(.8);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-@-webkit-keyframes popout {
-    from {
-        -webkit-transform: scale(1);
-        opacity: 1;
-    }
-    to {
-        -webkit-transform: scale(.8);
-        opacity: 0;
-    }
-}
-@-moz-keyframes popout {
-    from {
-        -moz-transform: scale(1);
-        opacity: 1;
-    }
-    to {
-        -moz-transform: scale(.8);
-        opacity: 0;
-    }
-}
-@keyframes popout {
-    from {
-        transform: scale(1);
-        opacity: 1;
-    }
-    to {
-        transform: scale(.8);
-        opacity: 0;
-    }
-}
-
-
-/* keyframes for slidein from sides */
-@-webkit-keyframes slideinfromright {
-    from { -webkit-transform: translate3d(100%,0,0); }
-    to { -webkit-transform: translate3d(0,0,0); }
-}
-@-moz-keyframes slideinfromright {
-    from { -moz-transform: translateX(100%); }
-    to { -moz-transform: translateX(0); }
-}
-@keyframes slideinfromright {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
-}
-
-@-webkit-keyframes slideinfromleft {
-    from { -webkit-transform: translate3d(-100%,0,0); }
-    to { -webkit-transform: translate3d(0,0,0); }
-}
-@-moz-keyframes slideinfromleft {
-    from { -moz-transform: translateX(-100%); }
-    to { -moz-transform: translateX(0); }
-}
-@keyframes slideinfromleft {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(0); }
-}
-/* keyframes for slideout to sides */
-@-webkit-keyframes slideouttoleft {
-    from { -webkit-transform: translate3d(0,0,0); }
-    to { -webkit-transform: translate3d(-100%,0,0); }
-}
-@-moz-keyframes slideouttoleft {
-    from { -moz-transform: translateX(0); }
-    to { -moz-transform: translateX(-100%); }
-}
-@keyframes slideouttoleft {
-    from { transform: translateX(0); }
-    to { transform: translateX(-100%); }
-}
-
-@-webkit-keyframes slideouttoright {
-    from { -webkit-transform: translate3d(0,0,0); }
-    to { -webkit-transform: translate3d(100%,0,0); }
-}
-@-moz-keyframes slideouttoright {
-    from { -moz-transform: translateX(0); }
-    to { -moz-transform: translateX(100%); }
-}
-@keyframes slideouttoright {
-    from { transform: translateX(0); }
-    to { transform: translateX(100%); }
-}
-
-
-.slide.out, .slide.in {
-	-webkit-animation-timing-function: ease-out;
-	-webkit-animation-duration: 350ms;
-	-moz-animation-timing-function: ease-out;
-	-moz-animation-duration: 350ms;
-	animation-timing-function: ease-out;
-	animation-duration: 350ms;
-}
-.slide.out {
-	-webkit-transform: translate3d(-100%,0,0);
-	-webkit-animation-name: slideouttoleft;
-	-moz-transform: translateX(-100%);
-	-moz-animation-name: slideouttoleft;
-	transform: translateX(-100%);
-	animation-name: slideouttoleft;
-}
-
-.slide.in {
-	-webkit-transform: translate3d(0,0,0);
-	-webkit-animation-name: slideinfromright;
-	-moz-transform: translateX(0);
-	-moz-animation-name: slideinfromright;
-	transform: translateX(0);
-	animation-name: slideinfromright;
-}
-
-.slide.out.reverse {
-	-webkit-transform: translate3d(100%,0,0);
-	-webkit-animation-name: slideouttoright;
-	-moz-transform: translateX(100%);
-	-moz-animation-name: slideouttoright;
-	transform: translateX(100%);
-	animation-name: slideouttoright;
-}
-
-.slide.in.reverse {
-	-webkit-transform: translate3d(0,0,0);
-	-webkit-animation-name: slideinfromleft;
-	-moz-transform: translateX(0);
-	-moz-animation-name: slideinfromleft;
-	transform: translateX(0);
-	animation-name: slideinfromleft;
-}
-
-/* slide down */
-.slidedown.out {
-	-webkit-animation-name: fadeout;
-	-webkit-animation-duration: 100ms;
-	-moz-animation-name: fadeout;
-	-moz-animation-duration: 100ms;
-	animation-name: fadeout;
-	animation-duration: 100ms;
-}
-
-.slidedown.in {
-	-webkit-transform: translateY(0);
-	-webkit-animation-name: slideinfromtop;
-	-webkit-animation-duration: 250ms;
-	-moz-transform: translateY(0);
-	-moz-animation-name: slideinfromtop;
-	-moz-animation-duration: 250ms;
-	transform: translateY(0);
-	animation-name: slideinfromtop;
-	animation-duration: 250ms;
-}
-
-.slidedown.in.reverse {
-	-webkit-animation-name: fadein;
-	-webkit-animation-duration: 150ms;
-	-moz-animation-name: fadein;
-	-moz-animation-duration: 150ms;
-	animation-name: fadein;
-	animation-duration: 150ms;
-}
-
-.slidedown.out.reverse {
-	-webkit-transform: translateY(-100%);
-	-webkit-animation-name: slideouttotop;
-	-webkit-animation-duration: 200ms;
-	-moz-transform: translateY(-100%);
-	-moz-animation-name: slideouttotop;
-	-moz-animation-duration: 200ms;
-	transform: translateY(-100%);
-	animation-name: slideouttotop;
-	animation-duration: 200ms;
-}
-
-@-webkit-keyframes slideinfromtop {
-    from { -webkit-transform: translateY(-100%); }
-    to { -webkit-transform: translateY(0); }
-}
-@-moz-keyframes slideinfromtop {
-    from { -moz-transform: translateY(-100%); }
-    to { -moz-transform: translateY(0); }
-}
-@keyframes slideinfromtop {
-    from { transform: translateY(-100%); }
-    to { transform: translateY(0); }
-}
-
-@-webkit-keyframes slideouttotop {
-    from { -webkit-transform: translateY(0); }
-    to { -webkit-transform: translateY(-100%); }
-}
-@-moz-keyframes slideouttotop {
-    from { -moz-transform: translateY(0); }
-    to { -moz-transform: translateY(-100%); }
-}
-@keyframes slideouttotop {
-    from { transform: translateY(0); }
-    to { transform: translateY(-100%); }
-}
-
-
-/* slide up */
-.slideup.out {
-	-webkit-animation-name: fadeout;
-	-webkit-animation-duration: 100ms;
-	-moz-animation-name: fadeout;
-	-moz-animation-duration: 100ms;
-	animation-name: fadeout;
-	animation-duration: 100ms;
-}
-
-.slideup.in {
-	-webkit-transform: translateY(0);
-	-webkit-animation-name: slideinfrombottom;
-	-webkit-animation-duration: 250ms;
-	-moz-transform: translateY(0);
-	-moz-animation-name: slideinfrombottom;
-	-moz-animation-duration: 250ms;
-	transform: translateY(0);
-	animation-name: slideinfrombottom;
-	animation-duration: 250ms;
-}
-
-.slideup.in.reverse {
-	-webkit-animation-name: fadein;
-	-webkit-animation-duration: 150ms;
-	-moz-animation-name: fadein;
-	-moz-animation-duration: 150ms;
-	animation-name: fadein;
-	animation-duration: 150ms;
-}
-
-.slideup.out.reverse {
-	-webkit-transform: translateY(100%);
-	-webkit-animation-name: slideouttobottom;
-	-webkit-animation-duration: 200ms;
-	-moz-transform: translateY(100%);
-	-moz-animation-name: slideouttobottom;
-	-moz-animation-duration: 200ms;
-	transform: translateY(100%);
-	animation-name: slideouttobottom;
-	animation-duration: 200ms;
-}
-
-@-webkit-keyframes slideinfrombottom {
-    from { -webkit-transform: translateY(100%); }
-    to { -webkit-transform: translateY(0); }
-}
-@-moz-keyframes slideinfrombottom {
-    from { -moz-transform: translateY(100%); }
-    to { -moz-transform: translateY(0); }
-}
-@keyframes slideinfrombottom {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
-}
-
-@-webkit-keyframes slideouttobottom {
-    from { -webkit-transform: translateY(0); }
-    to { -webkit-transform: translateY(100%); }
-}
-@-moz-keyframes slideouttobottom {
-    from { -moz-transform: translateY(0); }
-    to { -moz-transform: translateY(100%); }
-}
-@keyframes slideouttobottom {
-    from { transform: translateY(0); }
-    to { transform: translateY(100%); }
-}
-
 .ui-collapsible {
 	margin: 0 -1em;
 }
@@ -1267,38 +923,6 @@ fieldset.ui-controlgroup {
 }
 
 
-.ui-dialog {
-	 background: none !important; /* this is to ensure that dialog theming does not apply (by default at least) on the page div */
-}
-.ui-dialog-contain {
-	width: 92.5%;
-	max-width: 500px;
-	margin: 10% auto 1em auto;
-	padding: 0;
-	position: relative;
-	top: -1em;
-}
-.ui-dialog-contain > .ui-header, 
-.ui-dialog-contain > .ui-content, 
-.ui-dialog-contain > .ui-footer { 
-	display: block;
-	position: relative; 
-	width: auto;
-	margin: 0;
-}
-.ui-dialog-contain > .ui-header {
-	overflow: hidden;
-	z-index: 10; 
-	padding: 0;
-	border-top-width: 0;
-}
-.ui-dialog-contain > .ui-footer {
-	z-index: 10; 
-	padding: 0 1em; 
-	border-bottom-width: 0;
-}
-
-
 textarea.ui-input-text.ui-textinput-autogrow {
 	overflow: hidden;
 }
@@ -1396,135 +1020,6 @@ textarea.ui-input-text.ui-textinput-autogrow {
 	overflow: hidden;
 	clip: rect(1px,1px,1px,1px);
 }
-
-.ui-input-text,
-.ui-input-search {
-	margin: .5em 0;
-	border-width: 1px;
-	border-style: solid;
-}
-.ui-mini {
-	margin: .446em;
-}
-.ui-input-text input,
-.ui-input-search input,
-textarea.ui-input-text {
-	padding: .4em;
-	line-height: 1.4em;
-	display: block;
-	width: 100%;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-	outline: 0;
-}
-.ui-input-text input,
-.ui-input-search input {
-	margin: 0;
-	min-height: 2.2em;
-	text-align: left; /* Opera aligns type="date" right by default */
-	border: 0;
-	background: transparent none;
-	-webkit-appearance: none;
-	-webkit-border-radius: inherit;
-	border-radius: inherit;
-}
-textarea.ui-input-text {
-	overflow: auto;
-	resize: vertical;
-}
-.ui-mini .ui-input-text input,
-.ui-mini .ui-input-search input,
-.ui-input-text.ui-mini input,
-.ui-input-search.ui-mini input,
-.ui-mini textarea.ui-input-text,
-textarea.ui-mini {
-	font-size: 14px;
-}
-/* Same margin for mini textareas as other mini sized widgets (12.5/14 * 0.5em) */
-.ui-mini textarea.ui-input-text,
-textarea.ui-mini {
-	margin: .446em 0;
-}
-.ui-input-has-clear,
-.ui-input-search {
-	position: relative;
-}
-/* Padding on the div instead of input because of browser spinners etc. */
-.ui-input-has-clear {
-	padding-right: 2.375em;
-}
-.ui-mini.ui-input-has-clear {
-	padding-right: 2.923em;
-}
-.ui-input-has-clear input {
-	padding-right: 0;
-	/* Autofill on Chrome has bg color so we unset corners right as well. */
-	-webkit-border-top-right-radius: 0;
-	border-top-right-radius: 0;
-	-webkit-border-bottom-right-radius: 0;
-	border-bottom-right-radius: 0;
-}
-/* Search icon */
-.ui-input-search input {
-	padding-left: 1.75em;
-}
-.ui-input-search:after {
-	position: absolute;
-	left: .3125em;
-	top: 50%;
-	margin-top: -7px;
-	content: "";
-	background-position: center center;
-	background-repeat: no-repeat;
-	width: 14px;
-	height: 14px;
-	filter: Alpha(Opacity=50);
-	opacity: .5;
-}
-.ui-input-search.ui-input-has-clear .ui-btn.ui-input-clear,
-.ui-input-text.ui-input-has-clear .ui-btn.ui-input-clear {
-	position: absolute;
-	right: 0;
-	top: 50%;
-	margin: -14px .3125em 0;
-	border: 0;
-	background-color: transparent;
-}
-.ui-input-search .ui-input-clear-hidden,
-.ui-input-text .ui-input-clear-hidden {
-	display: none;
-}
-/* Resolves issue #5166: Added to support issue introduced in Firefox 15. We can likely remove this in the future. */
-.ui-input-text input::-moz-placeholder,
-.ui-input-search input::-moz-placeholder,
-textarea.ui-input-text::-moz-placeholder {
-	color: #aaa;
-}
-/* Same for IE10 */
-.ui-input-text input:-ms-input-placeholder,
-.ui-input-search input:-ms-input-placeholder,
-textarea.ui-input-text:-ms-input-placeholder {
-	color: #aaa;
-}
-
-/* Resolves issue #5131: Width of textinput depends on its type,
-for Android 4.1 */
-.ui-input-text input[type=number]::-webkit-outer-spin-button {
-	margin: 0;
-}
-/* Resolves issue #5756: Textinput in IE10 has a default clear button */
-.ui-input-text input::-ms-clear,
-.ui-input-search input::-ms-clear {
-	display: none;
-}
-.ui-input-text input:focus,
-.ui-input-search input:focus {
-	-webkit-box-shadow: none;
-	-moz-box-shadow: none;
-	box-shadow: none;
-}
-
 
 .ui-flipswitch {
 	display: inline-block;
@@ -1995,6 +1490,135 @@ html .ui-popup .ui-field-contain div.ui-slider-switch {
 .ui-slider-track .ui-btn.ui-slider-handle {
 	font-size: .9em;
 	line-height: 30px;
+}
+
+
+.ui-input-text,
+.ui-input-search {
+	margin: .5em 0;
+	border-width: 1px;
+	border-style: solid;
+}
+.ui-mini {
+	margin: .446em;
+}
+.ui-input-text input,
+.ui-input-search input,
+textarea.ui-input-text {
+	padding: .4em;
+	line-height: 1.4em;
+	display: block;
+	width: 100%;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	outline: 0;
+}
+.ui-input-text input,
+.ui-input-search input {
+	margin: 0;
+	min-height: 2.2em;
+	text-align: left; /* Opera aligns type="date" right by default */
+	border: 0;
+	background: transparent none;
+	-webkit-appearance: none;
+	-webkit-border-radius: inherit;
+	border-radius: inherit;
+}
+textarea.ui-input-text {
+	overflow: auto;
+	resize: vertical;
+}
+.ui-mini .ui-input-text input,
+.ui-mini .ui-input-search input,
+.ui-input-text.ui-mini input,
+.ui-input-search.ui-mini input,
+.ui-mini textarea.ui-input-text,
+textarea.ui-mini {
+	font-size: 14px;
+}
+/* Same margin for mini textareas as other mini sized widgets (12.5/14 * 0.5em) */
+.ui-mini textarea.ui-input-text,
+textarea.ui-mini {
+	margin: .446em 0;
+}
+.ui-input-has-clear,
+.ui-input-search {
+	position: relative;
+}
+/* Padding on the div instead of input because of browser spinners etc. */
+.ui-input-has-clear {
+	padding-right: 2.375em;
+}
+.ui-mini.ui-input-has-clear {
+	padding-right: 2.923em;
+}
+.ui-input-has-clear input {
+	padding-right: 0;
+	/* Autofill on Chrome has bg color so we unset corners right as well. */
+	-webkit-border-top-right-radius: 0;
+	border-top-right-radius: 0;
+	-webkit-border-bottom-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+/* Search icon */
+.ui-input-search input {
+	padding-left: 1.75em;
+}
+.ui-input-search:after {
+	position: absolute;
+	left: .3125em;
+	top: 50%;
+	margin-top: -7px;
+	content: "";
+	background-position: center center;
+	background-repeat: no-repeat;
+	width: 14px;
+	height: 14px;
+	filter: Alpha(Opacity=50);
+	opacity: .5;
+}
+.ui-input-search.ui-input-has-clear .ui-btn.ui-input-clear,
+.ui-input-text.ui-input-has-clear .ui-btn.ui-input-clear {
+	position: absolute;
+	right: 0;
+	top: 50%;
+	margin: -14px .3125em 0;
+	border: 0;
+	background-color: transparent;
+}
+.ui-input-search .ui-input-clear-hidden,
+.ui-input-text .ui-input-clear-hidden {
+	display: none;
+}
+/* Resolves issue #5166: Added to support issue introduced in Firefox 15. We can likely remove this in the future. */
+.ui-input-text input::-moz-placeholder,
+.ui-input-search input::-moz-placeholder,
+textarea.ui-input-text::-moz-placeholder {
+	color: #aaa;
+}
+/* Same for IE10 */
+.ui-input-text input:-ms-input-placeholder,
+.ui-input-search input:-ms-input-placeholder,
+textarea.ui-input-text:-ms-input-placeholder {
+	color: #aaa;
+}
+
+/* Resolves issue #5131: Width of textinput depends on its type,
+for Android 4.1 */
+.ui-input-text input[type=number]::-webkit-outer-spin-button {
+	margin: 0;
+}
+/* Resolves issue #5756: Textinput in IE10 has a default clear button */
+.ui-input-text input::-ms-clear,
+.ui-input-search input::-ms-clear {
+	display: none;
+}
+.ui-input-text input:focus,
+.ui-input-search input:focus {
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none;
 }
 
 
@@ -2984,103 +2608,6 @@ ol.ui-listview > li img:first-child + * ~ * {
 	text-align: left;
 	margin-bottom: 1.4em;
 	opacity: .5;
-}
-
-
-/*
- Styles for the table columntoggle mode
-*/
-
-.ui-table-columntoggle-btn {
-	float: right;
-	margin-bottom: .8em;
-}
-/* Remove top/bottom margins around the fieldcontain on check list */
-.ui-table-columntoggle-popup fieldset {
-	margin:0;
-}
-
-.ui-table-columntoggle {
-	clear: both;
-}
-
-/* Hide all prioritized columns by default */
-@media only all {
-	th.ui-table-priority-6,
-	td.ui-table-priority-6,
-	th.ui-table-priority-5,
-	td.ui-table-priority-5,
-	th.ui-table-priority-4,
-	td.ui-table-priority-4,
-	th.ui-table-priority-3,
-	td.ui-table-priority-3,
-	th.ui-table-priority-2,
-	td.ui-table-priority-2,
-	th.ui-table-priority-1,
-	td.ui-table-priority-1 {
-		display: none;
-	}
-}
-
-/* Preset breakpoints if ".ui-responsive" class added to table */
-
-/* Show priority 1 at 320px (20em x 16px) */
-@media screen and (min-width: 20em) {
-	.ui-table-columntoggle.ui-responsive th.ui-table-priority-1,
-	.ui-table-columntoggle.ui-responsive td.ui-table-priority-1 {
-		display: table-cell;
-	}
-}
-/* Show priority 2 at 480px (30em x 16px) */
-@media screen and (min-width: 30em) {
-	.ui-table-columntoggle.ui-responsive th.ui-table-priority-2,
-	.ui-table-columntoggle.ui-responsive td.ui-table-priority-2 {
-		display: table-cell;
-	}
-}
-/* Show priority 3 at 640px (40em x 16px) */
-@media screen and (min-width: 40em) {
-	.ui-table-columntoggle.ui-responsive th.ui-table-priority-3,
-	.ui-table-columntoggle.ui-responsive td.ui-table-priority-3 {
-		display: table-cell;
-	}
-}
-/* Show priority 4 at 800px (50em x 16px) */
-@media screen and (min-width: 50em) {
-	.ui-table-columntoggle.ui-responsive th.ui-table-priority-4,
-	.ui-table-columntoggle.ui-responsive td.ui-table-priority-4 {
-		display: table-cell;
-	}
-}
-/* Show priority 5 at 960px (60em x 16px) */
-@media screen and (min-width: 60em) {
-	.ui-table-columntoggle.ui-responsive th.ui-table-priority-5,
-	.ui-table-columntoggle.ui-responsive td.ui-table-priority-5 {
-		display: table-cell;
-	}
-}
-/* Show priority 6 at 1,120px (70em x 16px) */
-@media screen and (min-width: 70em) {
-	.ui-table-columntoggle.ui-responsive th.ui-table-priority-6,
-	.ui-table-columntoggle.ui-responsive td.ui-table-priority-6 {
-		display: table-cell;
-	}
-}
-
-/* Unchecked manually: Always hide */
-.ui-table-columntoggle th.ui-table-cell-hidden,
-.ui-table-columntoggle td.ui-table-cell-hidden,
-.ui-table-columntoggle.ui-responsive th.ui-table-cell-hidden,
-.ui-table-columntoggle.ui-responsive td.ui-table-cell-hidden {
-	display: none;
-}
-
-/* Checked manually: Always show */
-.ui-table-columntoggle th.ui-table-cell-visible,
-.ui-table-columntoggle td.ui-table-cell-visible,
-.ui-table-columntoggle.ui-responsive th.ui-table-cell-visible,
-.ui-table-columntoggle.ui-responsive td.ui-table-cell-visible {
-	display: table-cell;
 }
 
 
