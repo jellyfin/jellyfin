@@ -117,6 +117,8 @@
             $('.welcomeMessage', page).hide();
         } else {
 
+            Dashboard.hideLoadingMsg();
+
             var elem = $('.welcomeMessage', page).show();
 
             if (displayPreferences.CustomPrefs[homePageTourKey]) {
@@ -178,6 +180,8 @@
         if (window.ApiClient) {
             var userId = Dashboard.getCurrentUserId();
 
+            Dashboard.showLoadingMsg();
+
             getDisplayPreferences('home', userId).done(function (result) {
 
                 Dashboard.getCurrentUser().done(function (user) {
@@ -187,6 +191,7 @@
                         if (!AppInfo.isNativeApp) {
                             showWelcomeIfNeeded(page, result);
                         }
+                        Dashboard.hideLoadingMsg();
                     });
 
                 });

@@ -39,7 +39,7 @@
 
     function monitorPlayer(player) {
 
-        Events.on(player, 'playbackstart.mediacontroller', function (e, state) {
+        Events.on(player, 'playbackstart', function (e, state) {
 
             var info = {
                 QueueableMediaTypes: state.NowPlayingItem.MediaType,
@@ -53,7 +53,7 @@
 
         });
 
-        Events.on(player, 'playbackstop.mediacontroller', function (e, state) {
+        Events.on(player, 'playbackstop', function (e, state) {
 
             var stopInfo = {
                 itemId: state.NowPlayingItem.Id,
@@ -263,7 +263,7 @@
 
         var keys = new bindKeys(self);
 
-        $(window).on("keydown", keys.keyBinding).on("keypress keyup", keys.keyPrevent);
+        $(window).on("keydown", keys.keyBinding).on("keypress", keys.keyPrevent).on("keyup", keys.keyPrevent);
 
         self.registerPlayer = function (player) {
 
@@ -875,12 +875,14 @@
         });
     });
 
+    function onCastButtonClicked() {
+        
+        showPlayerSelection();
+    }
+
     $(document).on('headercreated', function () {
 
-        $('.btnCast').off('.mediacontroller').on('click.mediacontroller', function () {
-
-            showPlayerSelection();
-        });
+        $('.btnCast').off('click', onCastButtonClicked).on('click', onCastButtonClicked);
 
     }).on('pagebeforeshow', ".page", function () {
 

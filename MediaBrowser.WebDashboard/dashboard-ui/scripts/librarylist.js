@@ -350,9 +350,9 @@
             var href = card.getAttribute('data-href') || card.href;
 
             if (!href) {
-                var link = card.getElementsByTagName('a');
-                if (link) {
-                    href = link.href;
+                var links = card.getElementsByTagName('a');
+                if (links.length) {
+                    href = links[0].href;
                 }
             }
 
@@ -518,7 +518,7 @@
 
         $('.detailsMenu').remove();
 
-        var html = '<div data-role="popup" class="detailsMenu" data-transition="slidedown" style="border:0;padding:0;" data-ids="' + ids.join(',') + '" data-context="' + (context || '') + '">';
+        var html = '<div data-role="popup" class="detailsMenu" style="border:0;padding:0;" data-ids="' + ids.join(',') + '" data-context="' + (context || '') + '">';
 
         html += '<div style="padding:1em 1em;background:rgba(20,20,20,1);margin:0;text-align:center;" class="detailsMenuHeader">';
         html += '<button type="button" class="imageButton detailsMenuLeftButton" data-role="none"><i class="fa fa-arrow-left"></i></button>';
@@ -850,18 +850,28 @@
             preventHover = true;
         }
 
-        this.off('.cardMenu')
-            .on('contextmenu.cardMenu', '.card', onCardTapHold)
-            .off('.latestgroupings')
-            .on('click.latestgroupings', '.groupedCard', onGroupedCardClick)
-            .off('.dotmenu')
-            .on('click.dotmenu', '.listviewMenuButton', onListViewMenuButtonClick);
+        this.off('contextmenu', '.card', onCardTapHold);
+        this.on('contextmenu', '.card', onCardTapHold);
+
+        this.off('click', '.groupedCard', onGroupedCardClick);
+        this.on('click', '.groupedCard', onGroupedCardClick);
+
+        this.off('click', '.listviewMenuButton', onListViewMenuButtonClick);
+        this.on('click', '.listviewMenuButton', onListViewMenuButtonClick);
 
         if (!AppInfo.isTouchPreferred) {
-            this.off('.cardHoverMenu').on('mouseenter.cardHoverMenu', '.card:not(.bannerCard)', onHoverIn).on('mouseleave.cardHoverMenu', '.card:not(.bannerCard)', onHoverOut).on("touchstart.cardHoverMenu", '.card:not(.bannerCard)', preventTouchHover);
+            this.off('mouseenter', '.card:not(.bannerCard)', onHoverIn);
+            this.on('mouseenter', '.card:not(.bannerCard)', onHoverIn);
+
+            this.off('mouseleave', '.card:not(.bannerCard)', onHoverOut);
+            this.on('mouseleave', '.card:not(.bannerCard)', onHoverOut);
+
+            this.off("touchstart", '.card:not(.bannerCard)', preventTouchHover);
+            this.on("touchstart", '.card:not(.bannerCard)', preventTouchHover);
         }
 
-        this.off('.mediaDetails').on('click.mediaDetails', '.mediaItem', onCardClick);
+        this.off('click', '.mediaItem', onCardClick);
+        this.on('click', '.mediaItem', onCardClick);
 
         return this;
     };
@@ -927,6 +937,11 @@
             }).get();
     }
 
+    function onSyncJobListSubmit() {
+
+        hideSelections($($.mobile.activePage)[0]);
+    }
+
     function sync(page) {
 
         var selection = getSelectedItems(page);
@@ -945,12 +960,8 @@
             items: selection
         });
 
-        Events.off(SyncManager, 'jobsubmit.librarylist');
-
-        Events.on(SyncManager, 'jobsubmit.librarylist', function () {
-
-            hideSelections(page);
-        });
+        Events.off(SyncManager, 'jobsubmit', onSyncJobListSubmit);
+        Events.on(SyncManager, 'jobsubmit', onSyncJobListSubmit);
     }
 
     function combineVersions(page) {
@@ -1214,7 +1225,7 @@
     }
 
     function initializeApiClient(apiClient) {
-        $(apiClient).off('websocketmessage.librarylist', onWebSocketMessage).on('websocketmessage.librarylist', onWebSocketMessage);
+        $(apiClient).off('websocketmessage', onWebSocketMessage).on('websocketmessage', onWebSocketMessage);
     }
 
     Dashboard.ready(function () {

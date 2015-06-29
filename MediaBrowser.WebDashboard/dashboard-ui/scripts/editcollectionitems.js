@@ -285,17 +285,11 @@
 
         reload(page);
 
-        $("body").on("popupafteropen.collections", ".popupIdentify", function (e) {
-            $("#txtLookupName").focus().select();
-        });
-
     }).on('pagebeforehide', "#editCollectionTitlesPage", function () {
 
         var page = this;
 
         currentItem = null;
-
-        $("body").off("popupafteropen.collections");
     });
 
 })(jQuery, document, window, window.FileReader, escape);

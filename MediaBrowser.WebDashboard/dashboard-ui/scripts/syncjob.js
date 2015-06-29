@@ -403,14 +403,14 @@
         loadJob(page);
 
         startListening(page);
-        $(ApiClient).on("websocketmessage.syncJobPage", onWebSocketMessage);
+        $(ApiClient).on("websocketmessage", onWebSocketMessage);
 
     }).on('pagebeforehide', ".syncJobPage", function () {
 
         var page = this;
 
         stopListening();
-        $(ApiClient).off(".syncJobPage");
+        $(ApiClient).off("websocketmessage", onWebSocketMessage);
     });
 
 })();

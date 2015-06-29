@@ -311,7 +311,7 @@
         });
 
         startListening(page);
-        $(ApiClient).on("websocketmessage.syncactivity", onWebSocketMessage);
+        $(ApiClient).on("websocketmessage", onWebSocketMessage);
 
     }).on('pagebeforehide', ".syncActivityPage", function () {
 
@@ -323,7 +323,7 @@
         });
 
         stopListening();
-        $(ApiClient).off(".syncactivity");
+        $(ApiClient).off("websocketmessage", onWebSocketMessage);
     });
 
 })();

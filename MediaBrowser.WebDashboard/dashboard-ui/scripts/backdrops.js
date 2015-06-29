@@ -109,9 +109,10 @@
 
     function setDefault(page) {
 
-        getElement().css('backgroundImage', 'url(css/images/splash.jpg)');
+        getElement().style.backgroundImage = "url(css/images/splash.jpg)";
 
-        page.classList.add('backdropPage staticBackdropPage');
+        page.classList.add('backdropPage');
+        page.classList.add('staticBackdropPage');
     }
 
     function isEnabledByDefault() {

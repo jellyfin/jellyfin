@@ -125,11 +125,7 @@
 
         if (AppInfo.isTouchPreferred) {
 
-            if ('ontouchend' in document) {
-                $('.mainDrawerButton').on('touchend click', openMainDrawer);
-            } else {
-                $('.mainDrawerButton').on('click', openMainDrawer);
-            }
+            $('.mainDrawerButton').on('touchend', openMainDrawer).on('click', openMainDrawer);
 
         } else {
             $('.mainDrawerButton').createHoverTouch().on('hovertouch', openMainDrawer);
@@ -378,6 +374,13 @@
         Events.on(drawer.querySelector('.lnkManageServer'), 'click', onManageServerClicked);
     }
 
+    function onSidebarLinkClick() {
+        var section = this.getElementsByClassName('sectionName')[0];
+        var text = section ? section.innerHTML : this.innerHTML;
+
+        document.querySelector('.libraryMenuButtonText').innerHTML = text;
+    }
+
     function updateLibraryMenu(user) {
 
         if (!user) {
@@ -462,14 +465,7 @@
             libraryMenuOptions.innerHTML = html;
             var elem = libraryMenuOptions;
 
-            $('.sidebarLink', elem).off('click.updateText').on('click.updateText', function () {
-
-                var section = this.getElementsByClassName('sectionName')[0];
-                var text = section ? section.innerHTML : this.innerHTML;
-
-                document.querySelector('.libraryMenuButtonText').innerHTML = text;
-
-            });
+            $('.sidebarLink', elem).off('click', onSidebarLinkClick).on('click', onSidebarLinkClick);
         });
 
         if (user.Policy.IsAdministrator) {
@@ -811,7 +807,7 @@
         Events.off(page, 'swiperight', onPageSwipeLeft);
 
         if (canGoBack) {
-            Events.on(page, 'swiperight', onPageSwipeLeft);
+            //Events.on(page, 'swiperight', onPageSwipeLeft);
         }
     }
 
@@ -862,9 +858,9 @@
     function initializeApiClient(apiClient) {
 
         requiresLibraryMenuRefresh = true;
-        Events.off(apiClient, 'websocketmessage.librarymenu', onWebSocketMessage);
+        Events.off(apiClient, 'websocketmessage', onWebSocketMessage);
 
-        Events.on(apiClient, 'websocketmessage.librarymenu', onWebSocketMessage);
+        Events.on(apiClient, 'websocketmessage', onWebSocketMessage);
     }
 
     Dashboard.ready(function () {
@@ -878,7 +874,13 @@
 
         });
 
-        Events.on(ConnectionManager, 'localusersignedin localusersignedout', function () {
+        Events.on(ConnectionManager, 'localusersignedin', function () {
+            requiresLibraryMenuRefresh = true;
+            requiresViewMenuRefresh = true;
+            requiresDrawerRefresh = true;
+        });
+
+        Events.on(ConnectionManager, 'localusersignedout', function () {
             requiresLibraryMenuRefresh = true;
             requiresViewMenuRefresh = true;
             requiresDrawerRefresh = true;

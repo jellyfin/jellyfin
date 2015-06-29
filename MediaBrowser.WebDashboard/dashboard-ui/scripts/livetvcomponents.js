@@ -208,7 +208,7 @@
 
         if (currentPosterItem) {
 
-            $(currentPosterItem).off('click.overlay');
+            $(currentPosterItem).off('click');
             currentPosterItem = null;
         }
     }

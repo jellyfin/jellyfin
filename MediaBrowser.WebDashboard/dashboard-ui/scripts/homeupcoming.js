@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    $(document).on('pagebeforeshowready', "#tvUpcomingPage", function () {
+    $(document).on('pagebeforeshowready', "#homeUpcomingPage", function () {
 
         Dashboard.showLoadingMsg();
 

@@ -129,7 +129,7 @@
             var elem = $('.itemVideo');
 
             return elem
-            	.one('.loadedmetadata')
+            	.one('.loadedmetadata', onLoadedMetadata)
             	.one('playing', onOneVideoPlaying)
 	            .on('timeupdate', onTimeUpdate)
 	            .on('ended', onEnded)
@@ -220,7 +220,7 @@
             }
             else {
 
-                $(elem).one("loadedmetadata.mediaplayerevent", onLoadedMetadata);
+                $(elem).one("loadedmetadata", onLoadedMetadata);
             }
         };
 
@@ -247,7 +247,31 @@
 
             if (elem) {
 
-                $(elem).off();
+                if (elem.tagName == 'AUDIO') {
+
+                    Events.off(elem, 'timeupdate', onTimeUpdate);
+                    Events.off(elem, 'ended', onEnded);
+                    Events.off(elem, 'volumechange', onVolumeChange);
+                    Events.off(elem, 'playing', onOneAudioPlaying);
+                    Events.off(elem, 'play', onPlay);
+                    Events.off(elem, 'pause', onPause);
+                    Events.off(elem, 'playing', onPlaying);
+                    Events.off(elem, 'error', onError);
+
+                } else {
+
+                    Events.off(elem, 'loadedmetadata', onLoadedMetadata);
+                    Events.off(elem, 'playing', onOneVideoPlaying);
+                    Events.off(elem, 'timeupdate', onTimeUpdate);
+                    Events.off(elem, 'ended', onEnded);
+                    Events.off(elem, 'volumechange', onVolumeChange);
+                    Events.off(elem, 'play', onPlay);
+                    Events.off(elem, 'pause', onPause);
+                    Events.off(elem, 'playing', onPlaying);
+                    Events.off(elem, 'click', onClick);
+                    Events.off(elem, 'dblclick', onDblClick);
+                    Events.off(elem, 'error', onError);
+                }
 
                 if (elem.tagName.toLowerCase() != 'audio') {
                     $(elem).remove();

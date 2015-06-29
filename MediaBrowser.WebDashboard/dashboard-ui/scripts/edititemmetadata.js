@@ -809,9 +809,9 @@
 
     function getAlbumArtists(form) {
 
-        return $('#txtAlbumArtist', form).val().trim().split(';').filter(function(s){
+        return $('#txtAlbumArtist', form).val().trim().split(';').filter(function (s) {
 
-        	return s.length > 0;
+            return s.length > 0;
 
         }).map(function (a) {
 
@@ -823,9 +823,9 @@
 
     function getArtists(form) {
 
-        return $('#txtArtist', form).val().trim().split(';').filter(function(s){
+        return $('#txtArtist', form).val().trim().split(';').filter(function (s) {
 
-        	return s.length > 0;
+            return s.length > 0;
 
         }).map(function (a) {
 
@@ -1379,6 +1379,18 @@
         $(ApiClient).off("websocketmessage", onWebSocketMessageReceived);
     }
 
+    function onItemDeleted(e, itemId) {
+
+        if (currentItem && currentItem.Id == itemId) {
+
+            if (currentItem.ParentId) {
+                Dashboard.navigate('edititemmetadata.html?id=' + currentItem.ParentId);
+            } else {
+                Dashboard.navigate('edititemmetadata.html');
+            }
+        }
+    }
+
     $(document).on('pageinitdepends', "#editItemMetadataPage", function () {
 
         var page = this;
@@ -1450,22 +1462,12 @@
 
         reload(page);
 
-        $(LibraryBrowser).on('itemdeleting.editor', function (e, itemId) {
-
-            if (currentItem && currentItem.Id == itemId) {
-
-                if (currentItem.ParentId) {
-                    Dashboard.navigate('edititemmetadata.html?id=' + currentItem.ParentId);
-                } else {
-                    Dashboard.navigate('edititemmetadata.html');
-                }
-            }
-        });
+        $(LibraryBrowser).on('itemdeleting', onItemDeleted);
 
     }).on('pagebeforehide', "#editItemMetadataPage", function () {
 
         var page = this;
-        $(LibraryBrowser).off('itemdeleting.editor');
+        $(LibraryBrowser).off('itemdeleting', onItemDeleted);
 
         unbindItemChanged(page);
 

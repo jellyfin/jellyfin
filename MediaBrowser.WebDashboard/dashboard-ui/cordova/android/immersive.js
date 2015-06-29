@@ -65,15 +65,15 @@
             return;
         }
 
-        $(player).on('playbackstart.fullscreen', onPlaybackStart)
-            .on('playbackstop.fullscreen', onPlaybackStopped);
+        $(player).on('playbackstart', onPlaybackStart)
+            .on('playbackstop', onPlaybackStopped);
     }
 
     function releaseCurrentPlayer() {
 
         if (currentPlayer) {
 
-            $(currentPlayer).off('.fullscreen');
+            $(currentPlayer).off('playbackstart', onPlaybackStart).off('playbackstop', onPlaybackStopped);
         }
     }
 

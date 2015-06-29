@@ -449,7 +449,12 @@
 
         if (currentPlayer) {
 
-            Events.off(currentPlayer, '.nowplayingbar');
+            $(currentPlayer).off('playbackstart', onPlaybackStart)
+                .off('playbackstop', onPlaybackStopped)
+                .off('volumechange', onVolumeChanged)
+                .off('playstatechange', onStateChanged)
+                .off('positionchange', onStateChanged);
+
             currentPlayer.endPlayerUpdates();
             currentPlayer = null;
 
@@ -486,11 +491,11 @@
             onStateChanged.call(player, { type: 'init' }, state);
         });
 
-        $(player).on('playbackstart.nowplayingbar', onPlaybackStart)
-            .on('playbackstop.nowplayingbar', onPlaybackStopped)
-            .on('volumechange.nowplayingbar', onVolumeChanged)
-            .on('playstatechange.nowplayingbar', onStateChanged)
-            .on('positionchange.nowplayingbar', onStateChanged);
+        $(player).on('playbackstart', onPlaybackStart)
+            .on('playbackstop', onPlaybackStopped)
+            .on('volumechange', onVolumeChanged)
+            .on('playstatechange', onStateChanged)
+            .on('positionchange', onStateChanged);
     }
 
     Dashboard.ready(function () {

@@ -227,14 +227,19 @@
 
     function hideSearchMenu() {
 
-        if ($('.viewMenuSearch').is(':visible')) {
+        var viewMenuSearch = document.querySelector('.viewMenuSearch');
+
+        if (!viewMenuSearch) {
+            return;
+        }
+
+        if (!viewMenuSearch.classList.contains('hide')) {
             require(["jquery", "velocity"], function ($, Velocity) {
 
                 $('.btnCloseSearch').hide();
-                var elem = $('.viewMenuSearch')
-                    .css({ left: '0' })[0];
+                viewMenuSearch.style.left = '0';
 
-                Velocity.animate(elem, { "left": "100%" },
+                Velocity.animate(viewMenuSearch, { "left": "100%" },
                 {
                     complete: function () {
                         $('.viewMenuSearch').visible(false);

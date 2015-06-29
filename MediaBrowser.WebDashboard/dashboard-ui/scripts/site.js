@@ -33,7 +33,7 @@ var Dashboard = {
         //$.mobile.listview.prototype.options.dividerTheme = "b";
 
         //$.mobile.popup.prototype.options.theme = "c";
-        $.mobile.popup.prototype.options.transition = "pop";
+        $.mobile.popup.prototype.options.transition = "none";
 
         //$.mobile.keepNative = "textarea";
 
@@ -623,7 +623,7 @@ var Dashboard = {
             html += '</paper-dialog>';
 
             $(document.body).append(html);
-            
+
             document.body.classList.add('bodyWithPopupOpen');
 
             // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
@@ -1734,9 +1734,9 @@ var AppInfo = {};
         apiClient.getDefaultImageQuality = Dashboard.getDefaultImageQuality;
         apiClient.normalizeImageOptions = Dashboard.normalizeImageOptions;
 
-        $(apiClient).off('.dashboard')
-            .on("websocketmessage.dashboard", Dashboard.onWebSocketMessageReceived)
-            .on('requestfail.dashboard', Dashboard.onRequestFail);
+        $(apiClient).off("websocketmessage", Dashboard.onWebSocketMessageReceived).off('requestfail', Dashboard.onRequestFail);
+
+        $(apiClient).on("websocketmessage", Dashboard.onWebSocketMessageReceived).on('requestfail', Dashboard.onRequestFail);
     }
 
     //localStorage.clear();
@@ -2014,11 +2014,12 @@ var AppInfo = {};
 
         $(document).on('WebComponentsReady', function () {
 
-            var drawer = $('.mainDrawerPanel').removeClass('mainDrawerPanelPreInit')[0];
+            var drawer = document.querySelector('.mainDrawerPanel');
+            drawer.classList.remove('mainDrawerPanelPreInit');
             drawer.forceNarrow = true;
             drawer.drawerWidth = screen.availWidth >= 330 ? "310px" : "270px";
 
-            if ($.browser.safari) {
+            if ($.browser.safari && !AppInfo.isNativeApp) {
                 drawer.disableEdgeSwipe = true;
             }
 

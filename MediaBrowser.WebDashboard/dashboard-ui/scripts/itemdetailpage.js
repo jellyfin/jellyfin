@@ -129,7 +129,7 @@
     function onWebSocketMessage(e, data) {
 
         var msg = data;
-        var page = $.mobile.activePage;
+        var page = $($.mobile.activePage)[0];
 
         if (msg.MessageType === "UserDataChanged") {
 
@@ -375,7 +375,7 @@
         LibraryBrowser.renderGenres($('.itemGenres', page), item, context);
         LibraryBrowser.renderStudios($('.itemStudios', page), item, context);
         renderUserDataIcons(page, item);
-        LibraryBrowser.renderLinks($('.itemExternalLinks', page), item);
+        LibraryBrowser.renderLinks(page.querySelector('.itemExternalLinks'), item);
 
         $('.criticRatingScore', page).html((item.CriticRating || '0') + '%');
 
@@ -1585,6 +1585,12 @@
         });
     }
 
+    function onItemDeleted(e, itemId) {
+        if (currentItem && currentItem.Id == itemId) {
+            Dashboard.navigate('index.html');
+        }
+    }
+
     $(document).on('pageinitdepends', "#itemDetailPage", function () {
 
         var page = this;
@@ -1637,52 +1643,45 @@
 
         });
 
-    }).on('pagebeforeshowready', "#itemDetailPage", function () {
-
-        var page = this;
-
-        $(page).on("click.moreScenes", ".moreScenes", function () {
+        $(page).on("click", ".moreScenes", function () {
 
             Dashboard.getCurrentUser().done(function (user) {
                 renderScenes(page, currentItem, user);
             });
 
-        }).on("click.morePeople", ".morePeople", function () {
+        }).on("click", ".morePeople", function () {
 
             renderCast(page, currentItem, getContext(currentItem));
 
-        }).on("click.moreSpecials", ".moreSpecials", function () {
+        }).on("click", ".moreSpecials", function () {
 
             Dashboard.getCurrentUser().done(function (user) {
                 renderSpecials(page, currentItem, user);
             });
 
-        }).on("click.moreCriticReviews", ".moreCriticReviews", function () {
+        }).on("click", ".moreCriticReviews", function () {
 
             renderCriticReviews(page, currentItem);
 
         });
 
+    }).on('pagebeforeshowready', "#itemDetailPage", function () {
+
+        var page = this;
+
         reload(page);
 
         Events.on(ApiClient, 'websocketmessage', onWebSocketMessage);
 
-        Events.on(LibraryBrowser, 'itemdeleting.detailpage', function (e, itemId) {
-
-            if (currentItem && currentItem.Id == itemId) {
-                Dashboard.navigate('index.html');
-            }
-        });
+        Events.on(LibraryBrowser, 'itemdeleting', onItemDeleted);
 
     }).on('pagebeforehide', "#itemDetailPage", function () {
 
-        Events.off(LibraryBrowser, 'itemdeleting.detailpage');
+        Events.off(LibraryBrowser, 'itemdeleting', onItemDeleted);
 
         currentItem = null;
 
         var page = this;
-
-        $(page).off("click.moreScenes").off("click.morePeople").off("click.moreSpecials").off("click.moreCriticReviews");
 
         Events.off(ApiClient, 'websocketmessage', onWebSocketMessage);
     });

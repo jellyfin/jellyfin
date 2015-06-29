@@ -545,7 +545,7 @@
             var id = item.Id || item.ItemId;
 
             if (item.CollectionType == 'livetv') {
-                return 'livetvsuggested.html';
+                return 'livetvsuggested.html#liveTvSuggestedPage';
             }
 
             if (item.CollectionType == 'channels') {
@@ -2138,7 +2138,9 @@
 
                 html = Globalize.translate('ValueLinks', html);
 
-                $(linksElem).html(html).trigger('create');
+                linksElem.innerHTML = html;
+                $(linksElem).trigger('create');
+                $(linksElem).show();
 
             } else {
                 $(linksElem).hide();
@@ -2683,23 +2685,23 @@
                 removeClass(detailContentEffectedByImage, 'detailContentEffectedByPortraitImage');
 
                 elem.classList.add('thumbDetailImageContainer');
-                elem.classList.add('portraitDetailImageContainer');
-                elem.classList.add('squareDetailImageContainer');
+                elem.classList.remove('portraitDetailImageContainer');
+                elem.classList.remove('squareDetailImageContainer');
             }
             else if (shape == 'square') {
                 removeClass(detailContentEffectedByImage, 'detailContentEffectedByThumbImage');
                 removeClass(detailContentEffectedByImage, 'detailContentEffectedByPortraitImage');
                 addClass(detailContentEffectedByImage, 'detailContentEffectedBySquareImage');
 
-                elem.classList.add('thumbDetailImageContainer');
-                elem.classList.add('portraitDetailImageContainer');
+                elem.classList.remove('thumbDetailImageContainer');
+                elem.classList.remove('portraitDetailImageContainer');
                 elem.classList.add('squareDetailImageContainer');
             } else {
                 removeClass(detailContentEffectedByImage, 'detailContentEffectedByThumbImage');
                 removeClass(detailContentEffectedByImage, 'detailContentEffectedBySquareImage');
                 addClass(detailContentEffectedByImage, 'detailContentEffectedByPortraitImage');
 
-                elem.classList.add('thumbDetailImageContainer');
+                elem.classList.remove('thumbDetailImageContainer');
                 elem.classList.add('portraitDetailImageContainer');
                 elem.classList.remove('squareDetailImageContainer');
             }

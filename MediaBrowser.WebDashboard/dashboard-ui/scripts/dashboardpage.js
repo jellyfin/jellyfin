@@ -1022,23 +1022,19 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
             showOverlayTimeout = null;
         }
 
-        $('.cardOverlayTarget:visible', this).each(function () {
+        var elem = this.querySelector('.cardOverlayTarget');
 
-            var elem = this;
+        if ($(elem).is(':visible')) {
+            require(["jquery", "velocity"], function ($, Velocity) {
 
-            $(this).animate({ "height": "0" }, "fast", function () {
-
-                $(elem).hide();
-
+                Velocity.animate(elem, { "height": "0" },
+                {
+                    complete: function () {
+                        $(elem).hide();
+                    }
+                });
             });
-
-        });
-
-        $('.cardOverlayTarget:visible', this).stop().animate({ "height": "0" }, function () {
-
-            $(this).hide();
-
-        });
+        }
     }
 
     $.fn.createSessionItemMenus = function () {
@@ -1082,8 +1078,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
             return this;
         }
 
-        return this.off('.sessionItemMenu').on('mouseenter.sessionItemMenu', '.playingSession', onHoverIn)
-            .on('mouseleave.sessionItemMenu', '.playingSession', onHoverOut);
+        return this.off('mouseenter', '.playingSession', onHoverIn).off('mouseleave', '.playingSession', onHoverOut).on('mouseenter', '.playingSession', onHoverIn).on('mouseleave', '.playingSession', onHoverOut);
     };
 
 })(jQuery, document, window);
@@ -1225,7 +1220,8 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
         elem.each(function () {
 
             reloadData(this);
-        });
+
+        }).addClass('activityLogListWidget');
 
         var apiClient = ApiClient;
 
@@ -1233,21 +1229,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
             return;
         }
 
-        $(apiClient).on('websocketmessage.activityloglistener', function (e, data) {
-
-            var msg = data;
-
-            if (msg.MessageType === "ActivityLogEntry") {
-                elem.each(function () {
-
-                    reloadData(this);
-                });
-            }
-
-        }).on('websocketopen.activityloglistener', function (e, data) {
-
-            startListening(apiClient);
-        });
+        $(apiClient).on('websocketmessage', onSocketMessage).on('websocketopen', onSocketOpen);
     }
 
     function startListening(apiClient) {
@@ -1266,22 +1248,41 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
 
     }
 
+    function onSocketOpen() {
+        
+        var apiClient = ApiClient;
+        if (apiClient) {
+            startListening(apiClient);
+        }
+    }
+
+    function onSocketMessage(e, data) {
+
+        var msg = data;
+
+        if (msg.MessageType === "ActivityLogEntry") {
+            $('.activityLogListWidget').each(function () {
+
+                reloadData(this);
+            });
+        }
+    }
+
     function destroyList(elem) {
 
         var apiClient = ApiClient;
 
         if (apiClient) {
-            $(apiClient).off('websocketopen.activityloglistener').off('websocketmessage.activityloglistener');
+            $(apiClient).off('websocketopen', onSocketOpen).off('websocketmessage', onSocketOpen);
 
             stopListening(apiClient);
         }
-
-        return this;
     }
 
     $.fn.activityLogList = function (action) {
 
         if (action == 'destroy') {
+            this.removeClass('activityLogListWidget');
             destroyList(this);
         } else {
             createList(this);
@@ -1310,7 +1311,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
             result.CustomPrefs[welcomeTourKey] = welcomeDismissValue;
             ApiClient.updateDisplayPreferences('dashboard', result, userId, 'dashboard');
 
-            $(page).off('.checktour');
+            $(page).off('pageshowready', onPageShowReadyCheckTour);
         });
     }
 
@@ -1367,6 +1368,16 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
         });
     }
 
+    function onPageShowReadyCheckTour() {
+        var page = this;
+
+        var apiClient = ApiClient;
+
+        if (apiClient && !AppInfo.isNativeApp) {
+            showWelcomeIfNeeded(page, apiClient);
+        }
+    }
+
     $(document).on('pageinitdepends', "#dashboardPage", function () {
 
         var page = this;
@@ -1375,17 +1386,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
             takeTour(page, Dashboard.getCurrentUserId());
         });
 
-    }).on('pageshowready.checktour', "#dashboardPage", function () {
-
-        var page = this;
-
-        var apiClient = ApiClient;
-
-        if (apiClient && !AppInfo.isNativeApp) {
-            showWelcomeIfNeeded(page, apiClient);
-        }
-
-    });
+    }).on('pageshowready', "#dashboardPage", onPageShowReadyCheckTour);
 
 })(jQuery, document, window);
 

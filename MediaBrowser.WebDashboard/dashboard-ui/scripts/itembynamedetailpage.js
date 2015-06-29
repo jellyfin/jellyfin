@@ -318,7 +318,7 @@
         LibraryBrowser.renderOverview(page.querySelector('.itemOverview'), item);
 
         renderUserDataIcons(page, item);
-        LibraryBrowser.renderLinks($('#itemLinks', page), item);
+        LibraryBrowser.renderLinks(page.querySelector('#itemLinks'), item);
 
         LibraryBrowser.renderGenres($('.itemGenres', page), item, context);
 

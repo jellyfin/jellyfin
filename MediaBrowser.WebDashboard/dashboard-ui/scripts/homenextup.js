@@ -18,12 +18,16 @@
 
         if (LibraryMenu.getTopParentId()) {
 
+            $('.scopedLibraryViewNav', page).show();
+            $('.globalNav', page).hide();
             $('.scopedContent', page).show();
             context = 'tv';
 
             loadResume(page);
 
         } else {
+            $('.scopedLibraryViewNav', page).hide();
+            $('.globalNav', page).show();
             $('.scopedContent', page).hide();
         }
 
@@ -170,7 +174,7 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#tvRecommendedPage", function () {
+    $(document).on('pagebeforeshowready', "#homeNextUpPage", function () {
 
         var page = this;
 

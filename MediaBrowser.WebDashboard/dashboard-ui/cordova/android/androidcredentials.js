@@ -89,7 +89,7 @@
 
         ApiClientBridge.sendRequest(JSON.stringify(javaRequest), request.dataType, id);
 
-        Events.on(AndroidAjax, 'response' + id, function (e, isSuccess, status, response) {
+        Events.on(AndroidAjax, 'response' + id, function (e, isSuccess, response) {
 
             Events.off(AndroidAjax, 'response' + id);
 
@@ -116,7 +116,10 @@
 
         var error = {};
 
-        error.status = response.StatusCode;
+        if (response.StatusCode) {
+            error.status = response.StatusCode;
+        }
+
         error.ResponseHeaders = response.ResponseHeaders || {};
 
         error.getResponseHeader = function (name) {
@@ -133,13 +136,13 @@
 
     window.AndroidAjax = {
 
-        onResponse: function (id, status, response) {
+        onResponse: function (id, response) {
 
-            Events.trigger(AndroidAjax, 'response' + id, [true, status, response]);
+            Events.trigger(AndroidAjax, 'response' + id, [true, response]);
         },
-        onError: function (id, status, response) {
+        onError: function (id, response) {
 
-            Events.trigger(AndroidAjax, 'response' + id, [false, status, response]);
+            Events.trigger(AndroidAjax, 'response' + id, [false, response]);
         }
     };
 

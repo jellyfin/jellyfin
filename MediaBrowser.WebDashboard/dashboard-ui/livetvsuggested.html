@@ -8,11 +8,11 @@
 
         <div class="libraryViewNav">
             <a href="#" class="ui-btn-active"><i class="material-icons">info</i>${TabSuggestions}</a>
-            <a href="livetvguide.html"><i class="material-icons">grid_on</i>${TabGuide}</a>
-            <a href="livetvchannels.html"><i class="material-icons">live_tv</i>${TabChannels}</a>
-            <a href="livetvrecordings.html"><i class="material-icons">slideshow</i>${TabRecordings}</a>
-            <a href="livetvtimers.html"><i class="material-icons">schedule</i>${TabScheduled}</a>
-            <a href="livetvseriestimers.html"><i class="material-icons">refresh</i>${TabSeries}</a>
+            <a href="#liveTvGuidePage"><i class="material-icons">grid_on</i>${TabGuide}</a>
+            <a href="#liveTvChannelsPage"><i class="material-icons">live_tv</i>${TabChannels}</a>
+            <a href="#liveTvRecordingsPage"><i class="material-icons">slideshow</i>${TabRecordings}</a>
+            <a href="#liveTvTimersPage"><i class="material-icons">schedule</i>${TabScheduled}</a>
+            <a href="#liveTvSeriesTimersPage"><i class="material-icons">refresh</i>${TabSeries}</a>
         </div>
         <div data-role="content">
             <div class="ehsContent">
@@ -44,6 +44,188 @@
                 </div>
             </div>
         </div>
+    </div>
+    <div id="liveTvGuidePage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/registrationservices,scripts/livetvcomponents,scripts/livetvguide,paperbuttonstyle,livetvcss">
+        <div class="libraryViewNav">
+            <a href="#liveTvSuggestedPage"><i class="material-icons">info</i>${TabSuggestions}</a>
+            <a href="#" class="ui-btn-active"><i class="material-icons">grid_on</i>${TabGuide}</a>
+            <a href="#liveTvChannelsPage"><i class="material-icons">live_tv</i>${TabChannels}</a>
+            <a href="#liveTvRecordingsPage"><i class="material-icons">slideshow</i>${TabRecordings}</a>
+            <a href="#liveTvTimersPage"><i class="material-icons">schedule</i>${TabScheduled}</a>
+            <a href="#liveTvSeriesTimersPage"><i class="material-icons">refresh</i>${TabSeries}</a>
+        </div>
+        <div data-role="content" style="padding-top: 5px;padding-left:0!important;padding-right:0!important;">
+
+            <div class="tvGuide">
+                <div class="tvGuideHeader">
+                    <div class="channelTimeslotHeader">
+                        <div class="timeslotHeaderInner">
+                            <a class="btnSelectDate" href="#" style="display:block;padding-left:5px;color:#fff;text-decoration:none;font-weight:normal!important;padding:4px 10px 4px 0;"><i class="fa fa-calendar" style="margin-right:3px;"></i><span class="currentDate"></span></a>
+                        </div>
+                    </div>
+                    <div class="timeslotHeaders hiddenScrollX"></div>
+                </div>
+
+                <div class="programContainer">
+
+                    <div class="channelList"></div>
+                    <div class="programGrid hiddenScrollX"></div>
+                </div>
+                <div class="channelPaging"></div>
+            </div>
+            <div class="guideRequiresUnlock readOnlyContent" style="margin:1em auto;text-align:center;display:none;padding:1em;">
+                <p class="unlockText"></p>
+                <paper-button raised class="secondary block btnUnlockGuide"><iron-icon icon="check"></iron-icon><span>${ButtonUnlockGuide}</span></paper-button>
+            </div>
+        </div>
+    </div>
+    <div id="liveTvChannelsPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvchannels,livetvcss">
+        <div class="libraryViewNav">
+            <a href="#liveTvSuggestedPage"><i class="material-icons">info</i>${TabSuggestions}</a>
+            <a href="#liveTvGuidePage"><i class="material-icons">grid_on</i>${TabGuide}</a>
+            <a href="#" class="ui-btn-active"><i class="material-icons">live_tv</i>${TabChannels}</a>
+            <a href="#liveTvRecordingsPage"><i class="material-icons">slideshow</i>${TabRecordings}</a>
+            <a href="#liveTvTimersPage"><i class="material-icons">schedule</i>${TabScheduled}</a>
+            <a href="#liveTvSeriesTimersPage"><i class="material-icons">refresh</i>${TabSeries}</a>
+        </div>
+        <div data-role="content">
+            <div class="viewSettings">
+                <div class="listTopPaging">
+                </div>
+            </div>
+            <div id="items" class="itemsContainer"></div>
+
+        </div>
+
+        <div data-role="panel" class="viewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
+            <form>
+
+                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
+                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
+                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
+                </div>
+
+                <div class="tabView viewTab">
+
+                    <div>
+                        <label for="selectPageSize">${LabelPageSize}</label>
+                        <select id="selectPageSize"></select>
+                    </div>
+
+                </div>
+                <div class="tabFilter viewTab">
+                    <fieldset data-role="controlgroup">
+                        <legend>${HeaderFilters}</legend>
+                        <input class="chkStandardFilter" type="checkbox" id="chkFavorite" data-filter="IsFavorite" data-mini="true">
+                        <label for="chkFavorite">${OptionFavorite}</label>
+
+                        <input class="chkStandardFilter" type="checkbox" id="chkLikes" data-filter="Likes" data-mini="true">
+                        <label for="chkLikes">${OptionLikes}</label>
+
+                        <input class="chkStandardFilter" type="checkbox" id="chkDislikes" data-filter="Dislikes" data-mini="true">
+                        <label for="chkDislikes">${OptionDislikes}</label>
+                    </fieldset>
+
+                </div>
+            </form>
+        </div>
+
+    </div>
+    <div id="liveTvRecordingsPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvrecordings,paperbuttonstyle,livetvcss">
+
+        <div class="libraryViewNav">
+            <a href="#liveTvSuggestedPage"><i class="material-icons">info</i>${TabSuggestions}</a>
+            <a href="#liveTvGuidePage"><i class="material-icons">grid_on</i>${TabGuide}</a>
+            <a href="#liveTvChannelsPage"><i class="material-icons">live_tv</i>${TabChannels}</a>
+            <a href="#" class="ui-btn-active"><i class="material-icons">slideshow</i>${TabRecordings}</a>
+            <a href="#liveTvTimersPage"><i class="material-icons">schedule</i>${TabScheduled}</a>
+            <a href="#liveTvSeriesTimersPage"><i class="material-icons">refresh</i>${TabSeries}</a>
+        </div>
+        <div data-role="content">
+            <div class="ehsContent">
+                <div id="activeRecordings" style="display: none;">
+                    <h1 class="listHeader">${HeaderActiveRecordings}</h1>
+                    <div class="recordingItems itemsContainer"></div>
+                    <br />
+                </div>
+                <div id="latestRecordings" style="display: none;">
+                    <div>
+                        <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestRecordings}</h1>
+                        <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
+                    </div>
+                    <div class="recordingItems itemsContainer"></div>
+                    <br />
+                </div>
+                <div id="recordingGroups" style="display: none;">
+                    <h1 class="listHeader"><a href="livetvrecordinglist.html">${HeaderAllRecordings}<img src="css/images/rightarrow.png" class="headerArrowImage" /></a></h1>
+                    <div id="recordingGroupItems"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="liveTvTimersPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvtimers,livetvcss">
+        <div class="libraryViewNav">
+            <a href="#liveTvSuggestedPage"><i class="material-icons">info</i>${TabSuggestions}</a>
+            <a href="#liveTvGuidePage"><i class="material-icons">grid_on</i>${TabGuide}</a>
+            <a href="#liveTvChannelsPage"><i class="material-icons">live_tv</i>${TabChannels}</a>
+            <a href="#liveTvRecordingsPage"><i class="material-icons">slideshow</i>${TabRecordings}</a>
+            <a href="#" class="ui-btn-active"><i class="material-icons">schedule</i>${TabScheduled}</a>
+            <a href="#liveTvSeriesTimersPage"><i class="material-icons">refresh</i>${TabSeries}</a>
+        </div>
+        <div data-role="content">
+            <div style="max-width: 600px; margin: 0 auto;">
+                <div id="items"></div>
+            </div>
+        </div>
+    </div>
+    <div id="liveTvSeriesTimersPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvseriestimers,livetvcss">
+        <div class="libraryViewNav">
+            <a href="#liveTvSuggestedPage"><i class="material-icons">info</i>${TabSuggestions}</a>
+            <a href="#liveTvGuidePage"><i class="material-icons">grid_on</i>${TabGuide}</a>
+            <a href="#liveTvChannelsPage"><i class="material-icons">live_tv</i>${TabChannels}</a>
+            <a href="#liveTvRecordingsPage"><i class="material-icons">slideshow</i>${TabRecordings}</a>
+            <a href="#liveTvTimersPage"><i class="material-icons">schedule</i>${TabScheduled}</a>
+            <a href="#" class="ui-btn-active"><i class="material-icons">refresh</i>${TabSeries}</a>
+        </div>
+        <div data-role="content">
+            <div style="max-width: 600px; margin: 0 auto;">
+
+                <div style="text-align: right;">
+                    <button data-mini="true" data-inline="true" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonSort}</button>
+                </div>
+
+                <div id="items"></div>
+            </div>
+        </div>
+        <div data-role="panel" id="sortPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
+
+            <form>
+                <fieldset data-role="controlgroup">
+                    <legend>
+                        ${HeaderSortBy}
+                    </legend>
+
+                    <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
+                    <label for="radioSortName">${OptionNameSort}</label>
+
+                    <input class="radioSortBy" type="radio" name="radioSortBy" id="radioPriority" value="off" data-sortby="Priority" data-mini="true">
+                    <label for="radioPriority">${OptionPriority}</label>
+                </fieldset>
+
+                <fieldset data-role="controlgroup">
+                    <legend>
+                        ${HeaderSortOrder}
+                    </legend>
+
+                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
+                    <label for="radioAscending">${OptionAscending}</label>
+
+                    <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
+                    <label for="radioDescending">${OptionDescending}</label>
+                </fieldset>
+            </form>
+        </div>
+
     </div>
 </body>
 </html>

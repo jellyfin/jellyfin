@@ -72,13 +72,16 @@ $.fn.taskButton = function (options) {
         });
     }
 
-    function onButtonClick(instance, id) {
+    function onButtonClick() {
+
+        var button = this;
+        var id = button.getAttribute('data-taskid');
 
         var key = 'scheduledTaskButton' + options.taskKey;
         var expectedValue = '4';
 
         if (appStorage.getItem(key) == expectedValue) {
-            onScheduledTaskMessageConfirmed(instance, id);
+            onScheduledTaskMessageConfirmed(button, id);
         } else {
 
             var msg = Globalize.translate('ConfirmMessageScheduledTaskButton');
@@ -91,10 +94,25 @@ $.fn.taskButton = function (options) {
                 if (result) {
 
                     appStorage.setItem(key, expectedValue);
-                    onScheduledTaskMessageConfirmed(instance, id);
+                    onScheduledTaskMessageConfirmed(button, id);
                 }
             });
 
+        }
+    }
+
+    function onSocketOpen() {
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
+        }
+    }
+
+    function onSocketMessage(e, msg) {
+        if (msg.MessageType == "ScheduledTasksInfo") {
+
+            var tasks = msg.Data;
+
+            updateTasks(self, tasks);
         }
     }
 
@@ -106,8 +124,8 @@ $.fn.taskButton = function (options) {
 
     if (options.mode == 'off') {
 
-        this.off(".taskbutton");
-        $(ApiClient).off(".taskbutton");
+        this.off('click', onButtonClick);
+        $(ApiClient).off("websocketmessage", onSocketMessage).off('websocketopen', onSocketOpen);
 
         if (ApiClient.isWebSocketOpen()) {
             ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
@@ -115,13 +133,7 @@ $.fn.taskButton = function (options) {
 
     } else if (this.length) {
 
-        this.on('click.taskbutton', function () {
-
-            var button = this;
-            var id = button.getAttribute('data-taskid');
-
-            onButtonClick(self, id);
-        });
+        this.on('click', onButtonClick);
 
         pollTasks(self);
 
@@ -129,21 +141,7 @@ $.fn.taskButton = function (options) {
             ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
         }
 
-        $(ApiClient).on("websocketmessage.taskbutton", function (e, msg) {
-
-            if (msg.MessageType == "ScheduledTasksInfo") {
-
-                var tasks = msg.Data;
-
-                updateTasks(self, tasks);
-            }
-
-        }).on('websocketopen.taskbutton', function () {
-
-            if (ApiClient.isWebSocketOpen()) {
-                ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
-            }
-        });
+        $(ApiClient).on("websocketmessage", onSocketMessage).on('websocketopen', onSocketOpen);
     }
 
     return this;

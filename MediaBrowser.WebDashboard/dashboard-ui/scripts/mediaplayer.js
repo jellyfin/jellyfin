@@ -557,16 +557,16 @@
 
             clearProgressInterval();
 
-            Events.off(mediaRenderer, 'ended.playbackstopped');
-            Events.off(mediaRenderer, 'ended.playnext');
+            Events.off(mediaRenderer, 'ended', self.onPlaybackStopped);
+            Events.off(mediaRenderer, 'ended', self.playNextAfterEnded);
             
             $(mediaRenderer).one("play", function () {
 
                 self.updateCanClientSeek(this);
 
-                Events.on(this, 'ended.playbackstopped', self.onPlaybackStopped);
+                Events.on(this, 'ended', self.onPlaybackStopped);
                 
-                $(this).one('ended.playnext', self.playNextAfterEnded);
+                $(this).one('ended', self.playNextAfterEnded);
 
                 self.startProgressInterval();
                 sendProgressUpdate();
@@ -1358,11 +1358,11 @@
 
                 mediaRenderer.stop();
 
-                Events.off(mediaRenderer, "ended.playnext");
+                Events.off(mediaRenderer, 'ended', self.playNextAfterEnded);
 
                 $(mediaRenderer).one("ended", function() {
 
-                    Events.off(this);
+                    $(this).off('.mediaplayerevent');
 
                     this.cleanup(destroyRenderer);
 
@@ -1568,7 +1568,7 @@
 
             Events.off(mediaRenderer, '.mediaplayerevent');
             
-            Events.off(mediaRenderer, 'ended.playbackstopped');
+            Events.off(mediaRenderer, 'ended', self.onPlaybackStopped);
 
             self.cleanup(mediaRenderer);
 
@@ -1697,9 +1697,9 @@
                 Logger.log('audio element event: playing');
 
                 // For some reason this is firing at the start, so don't bind until playback has begun
-                Events.on(this, "ended.playbackstopped", self.onPlaybackStopped);
-                
-                $(this).one('ended.playnext', self.playNextAfterEnded);
+                Events.on(this, 'ended', self.onPlaybackStopped);
+
+                $(this).one('ended', self.playNextAfterEnded);
 
                 self.onPlaybackStart(this, item, mediaSource);
 

@@ -94,7 +94,11 @@
 
         if (currentPlayer) {
 
-            $(currentPlayer).off('.cordovaremote');
+            $(currentPlayer).off('playbackstart', onPlaybackStart)
+                .off('playbackstop', onPlaybackStopped)
+                .off('playstatechange', onStateChanged)
+                .off('positionchange', onStateChanged);
+
             currentPlayer.endPlayerUpdates();
             currentPlayer = null;
 
@@ -151,10 +155,10 @@
             onStateChanged.call(player, { type: 'init' }, state);
         });
 
-        $(player).on('playbackstart.cordovaremote', onPlaybackStart)
-            .on('playbackstop.cordovaremote', onPlaybackStopped)
-            .on('playstatechange.cordovaremote', onStateChanged)
-            .on('positionchange.cordovaremote', onStateChanged);
+        $(player).on('playbackstart', onPlaybackStart)
+            .on('playbackstop', onPlaybackStopped)
+            .on('playstatechange', onStateChanged)
+            .on('positionchange', onStateChanged);
     }
 
     Dashboard.ready(function () {

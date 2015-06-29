@@ -678,10 +678,9 @@
             html += '</div>'; // videoBackdrop
             html += '</div>'; // mediaPlayer
 
-            $(document.body).append(html);
-
-            var mediaPlayerElem = $('#mediaPlayer', document.body);
-            mediaPlayerElem.trigger('create');
+            var div = document.createElement('div');
+            div.innerHTML = html;
+            document.body.appendChild(div);
         }
 
         Dashboard.ready(function () {
@@ -858,49 +857,73 @@
             return html;
         }
 
-        function bindEventsForPlayback() {
+        function onPopState() {
+            // Stop playback on browser back button nav
+            self.stop();
+            return;
+        }
+
+        function onBodyMouseMove() {
+            idleHandler();
+        }
+
+        function onFullScreenChange() {
+            if (self.isFullScreen()) {
+                enterFullScreen();
+                idleState = true;
+
+            } else {
+                exitFullScreenToWindow();
+            }
+        }
+
+        function bindEventsForPlayback(mediaRenderer) {
 
             var hideElementsOnIdle = true;
 
             if (hideElementsOnIdle) {
-                $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer mousedown.videoplayer', idleHandler).on('mousemove.videoplayer keydown.videoplayer scroll.videoplayer mousedown.videoplayer', idleHandler).trigger('mousemove');
+
+                var itemVideo = document.querySelector('.itemVideo');
+                if (itemVideo) {
+                    Events.on(itemVideo, 'mousemove', idleHandler);
+                    Events.on(itemVideo, 'keydown', idleHandler);
+                    Events.on(itemVideo, 'scroll', idleHandler);
+                    Events.on(itemVideo, 'mousedown', idleHandler);
+                    idleHandler();
+                }
             }
 
-            $(document).on('webkitfullscreenchange.videoplayer mozfullscreenchange.videoplayer msfullscreenchange.videoplayer fullscreenchange.videoplayer', function (e) {
+            $(document).on('webkitfullscreenchange', onFullScreenChange);
+            $(document).on('mozfullscreenchange', onFullScreenChange);
+            $(document).on('msfullscreenchange', onFullScreenChange);
+            $(document).on('fullscreenchange', onFullScreenChange);
 
-                if (self.isFullScreen()) {
-                    enterFullScreen();
-                    idleState = true;
-
-                } else {
-                    exitFullScreenToWindow();
-                }
-            });
-
-            // Stop playback on browser back button nav
-            $(window).one("popstate.videoplayer", function () {
-                self.stop();
-                return;
-            });
+            $(window).one("popstate", onPopState);
 
             if (hideElementsOnIdle) {
-                $(document.body).on("mousemove.videoplayer", function () {
-
-                    idleHandler(this);
-                });
+                $(document.body).on("mousemove", onBodyMouseMove);
             }
         }
 
-        function unbindEventsForPlayback() {
+        function unbindEventsForPlayback(mediaRenderer) {
 
-            $(document).off('.videoplayer');
+            $(document).off('webkitfullscreenchange', onFullScreenChange);
+            $(document).off('mozfullscreenchange', onFullScreenChange);
+            $(document).off('msfullscreenchange', onFullScreenChange);
+            $(document).off('fullscreenchange', onFullScreenChange);
 
             // Stop playback on browser back button nav
-            $(window).off("popstate.videoplayer");
+            $(window).off("popstate", onPopState);
 
-            $(document.body).off("mousemove.videoplayer");
+            $(document.body).off("mousemove", onBodyMouseMove);
 
-            $('.itemVideo').off('mousemove.videoplayer keydown.videoplayer scroll.videoplayer mousedown.videoplayer');
+            var itemVideo = document.querySelector('.itemVideo');
+            if (itemVideo) {
+                Events.off(itemVideo, 'mousemove', idleHandler);
+                Events.off(itemVideo, 'keydown', idleHandler);
+                Events.off(itemVideo, 'scroll', idleHandler);
+                Events.off(itemVideo, 'mousedown', idleHandler);
+            }
         }
 
         self.canAutoPlayVideo = function () {
@@ -926,7 +949,7 @@
 
             currentTimeElement.html('--:--');
 
-            unbindEventsForPlayback();
+            unbindEventsForPlayback(mediaRenderer);
         };
 
         self.playVideo = function (item, mediaSource, startPosition) {
@@ -1087,9 +1110,8 @@
 
             }).one("playing.mediaplayerevent", function () {
 
-
                 // For some reason this is firing at the start, so don't bind until playback has begun
-                $(this).on("ended.playbackstopped", self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
+                $(this).on("ended", self.onPlaybackStopped).one('ended', self.playNextAfterEnded);
 
                 self.onPlaybackStart(this, item, mediaSource);
 
@@ -1160,7 +1182,7 @@
                 }
             });
 
-            bindEventsForPlayback();
+            bindEventsForPlayback(mediaRenderer);
 
             mediaPlayerContainer.trigger('create');
 
@@ -1185,7 +1207,7 @@
             }
 
             var controls = requiresNativeControls ? '.videoAdvancedControls' : '.videoControls';
-            controls = document.getElementsByClassName(controls)[0];
+            controls = document.querySelector(controls);
 
             var previousTrackButton = controls.getElementsByClassName('previousTrackButton')[0];
             var nextTrackButton = controls.getElementsByClassName('nextTrackButton')[0];

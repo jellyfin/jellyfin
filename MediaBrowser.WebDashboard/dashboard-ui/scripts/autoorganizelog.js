@@ -379,7 +379,7 @@
             mode: 'off'
         });
 
-        $(ApiClient).off(".autoorganizelog");
+        $(ApiClient).off("websocketmessage.autoorganizelog", onWebSocketMessage);
     });
 
 })(jQuery, document, window);

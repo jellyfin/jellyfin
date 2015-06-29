@@ -565,7 +565,12 @@
 
         if (currentPlayer) {
 
-            $(currentPlayer).off('.nowplayingpage');
+            $(currentPlayer).off('playbackstart', onPlaybackStart)
+                .off('playbackstop', onPlaybackStopped)
+                .off('volumechange', onStateChanged)
+                .off('playstatechange', onStateChanged)
+                .off('positionchange', onStateChanged);
+
             currentPlayer.endPlayerUpdates();
             currentPlayer = null;
         }
@@ -586,11 +591,11 @@
             onStateChanged.call(player, { type: 'init' }, state);
         });
 
-        $(player).on('playbackstart.nowplayingpage', onPlaybackStart)
-            .on('playbackstop.nowplayingpage', onPlaybackStopped)
-            .on('volumechange.nowplayingpage', onStateChanged)
-            .on('playstatechange.nowplayingpage', onStateChanged)
-            .on('positionchange.nowplayingpage', onStateChanged);
+        $(player).on('playbackstart', onPlaybackStart)
+            .on('playbackstop', onPlaybackStopped)
+            .on('volumechange', onStateChanged)
+            .on('playstatechange', onStateChanged)
+            .on('positionchange', onStateChanged);
 
         var playerInfo = MediaController.getPlayerInfo();
 
@@ -708,6 +713,10 @@
         return true;
     }
 
+    function onPlayerChange() {
+        bindToPlayer($($.mobile.activePage)[0], MediaController.getCurrentPlayer());
+    }
+
     $(document).on('pageinitdepends', "#nowPlayingPage", function () {
 
         var page = this;
@@ -766,10 +775,7 @@
 
         Dashboard.ready(function () {
 
-            $(MediaController).on('playerchange.nowplayingpage', function () {
-
-                bindToPlayer(page, MediaController.getCurrentPlayer());
-            });
+            $(MediaController).on('playerchange', onPlayerChange);
 
             bindToPlayer(page, MediaController.getCurrentPlayer());
 
@@ -787,7 +793,7 @@
 
         releaseCurrentPlayer();
 
-        $(MediaController).off('playerchange.nowplayingpage');
+        $(MediaController).off('playerchange', onPlayerChange);
 
         lastPlayerState = null;
         $(document.body).removeClass('hiddenViewMenuBar').removeClass('hiddenNowPlayingBar');
