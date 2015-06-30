@@ -66,5 +66,14 @@ namespace MediaBrowser.Controller.Entities
         {
             return i => !(i is Game) && !(i is IHasMusicGenres) && i.Genres.Contains(Name, StringComparer.OrdinalIgnoreCase);
         }
+
+        [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
 }

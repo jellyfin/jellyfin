@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Extensions;
+﻿using System.Text;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -16,6 +17,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using WebMarkupMin.Core.Minifiers;
 
 namespace MediaBrowser.WebDashboard.Api
 {
@@ -270,6 +272,12 @@ namespace MediaBrowser.WebDashboard.Api
             return Path.GetExtension(path).EndsWith("html", StringComparison.OrdinalIgnoreCase);
         }
 
+        private void CopyFile(string src, string dst)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(dst));
+            File.Copy(src, dst, true);
+        }
+
         public async Task<object> Get(GetDashboardPackage request)
         {
             var path = Path.Combine(_serverConfigurationManager.ApplicationPaths.ProgramDataPath,
@@ -297,12 +305,29 @@ namespace MediaBrowser.WebDashboard.Api
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
                 // Overwrite certain files with cordova specific versions
-                var cordovaVersion = Path.Combine(path, "thirdparty", "cordova", "registrationservices.js");
+                var cordovaVersion = Path.Combine(path, "cordova", "registrationservices.js");
                 File.Copy(cordovaVersion, Path.Combine(path, "scripts", "registrationservices.js"), true);
                 File.Delete(cordovaVersion);
 
+                // Delete things that are unneeded in an attempt to keep the output as trim as possible
                 Directory.Delete(Path.Combine(path, "css", "images", "tour"), true);
+                Directory.Delete(Path.Combine(path, "apiclient", "alt"), true);
+
+                File.Delete(Path.Combine(path, "thirdparty", "jquerymobile-1.4.5", "jquery.mobile-1.4.5.min.map"));
+
+                Directory.Delete(Path.Combine(path, "bower_components"), true);
+                // But we do need this
+                CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "webcomponentsjs", "webcomponents-lite.min.js"), Path.Combine(path, "bower_components", "webcomponentsjs", "webcomponents-lite.min.js"));
+                CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "velocity", "velocity.min.js"), Path.Combine(path, "bower_components", "velocity", "velocity.min.js"));
+                CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "css"), Path.Combine(path, "bower_components", "swipebox", "src", "css"));
+                CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "js"), Path.Combine(path, "bower_components", "swipebox", "src", "js"));
+                CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "img"), Path.Combine(path, "bower_components", "swipebox", "src", "img"));
             }
+
+            MinifyCssDirectory(Path.Combine(path, "css"));
+            MinifyJsDirectory(Path.Combine(path, "scripts"));
+            MinifyJsDirectory(Path.Combine(path, "apiclient"));
+            MinifyJsDirectory(Path.Combine(path, "voice"));
 
             await DumpHtml(creator.DashboardUIPath, path, mode, culture, appVersion);
             await DumpJs(creator.DashboardUIPath, path, mode, culture, appVersion);
@@ -311,6 +336,60 @@ namespace MediaBrowser.WebDashboard.Api
             await DumpFile("css/all.css", Path.Combine(path, "css", "all.css"), mode, culture, appVersion).ConfigureAwait(false);
 
             return "";
+        }
+
+        private void MinifyCssDirectory(string path)
+        {
+            foreach (var file in Directory.GetFiles(path, "*.css", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    var text = File.ReadAllText(file, Encoding.UTF8);
+
+                    var result = new KristensenCssMinifier().Minify(text, false, Encoding.UTF8);
+
+                    if (result.Errors.Count > 0)
+                    {
+                        Logger.Error("Error minifying css: " + result.Errors[0].Message);
+                    }
+                    else
+                    {
+                        text = result.MinifiedContent;
+                        File.WriteAllText(file, text, Encoding.UTF8);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error minifying css", ex);
+                }
+            }
+        }
+
+        private void MinifyJsDirectory(string path)
+        {
+            foreach (var file in Directory.GetFiles(path, "*.js", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    var text = File.ReadAllText(file, Encoding.UTF8);
+
+                    var result = new CrockfordJsMinifier().Minify(text, false, Encoding.UTF8);
+
+                    if (result.Errors.Count > 0)
+                    {
+                        Logger.Error("Error minifying javascript: " + result.Errors[0].Message);
+                    }
+                    else
+                    {
+                        text = result.MinifiedContent;
+                        File.WriteAllText(file, text, Encoding.UTF8);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error minifying css", ex);
+                }
+            }
         }
 
         private async Task DumpHtml(string source, string destination, string mode, string culture, string appVersion)

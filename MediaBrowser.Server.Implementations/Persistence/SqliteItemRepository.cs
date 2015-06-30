@@ -65,6 +65,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _saveChildrenCommand;
         private IDbCommand _deleteItemCommand;
 
+        private IDbCommand _deletePeopleCommand;
+        private IDbCommand _savePersonCommand;
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
@@ -121,6 +123,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                                 "create table if not exists ChildrenIds (ParentId GUID, ItemId GUID, PRIMARY KEY (ParentId, ItemId))",
                                 "create index if not exists idx_ChildrenIds on ChildrenIds(ParentId,ItemId)",
 
+                                "create table if not exists People (ItemId GUID, Name TEXT NOT NULL, Role TEXT, PersonType TEXT, SortOrder int, ListOrder int)",
+
                                 //pragmas
                                 "pragma temp_store = memory",
 
@@ -142,6 +146,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "IsLocked", "BIT");
             _connection.AddColumn(_logger, "TypedBaseItems", "Name", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "OfficialRating", "Text");
+
+            _connection.AddColumn(_logger, "TypedBaseItems", "MediaType", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "Overview", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "ParentIndexNumber", "INT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "PremiereDate", "DATETIME");
+            _connection.AddColumn(_logger, "TypedBaseItems", "ProductionYear", "INT");
 
             PrepareStatements();
 
@@ -176,10 +186,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "IndexNumber",
                 "IsLocked",
                 "Name",
-                "OfficialRating"
+                "OfficialRating",
+                "MediaType",
+                "Overview",
+                "ParentIndexNumber",
+                "PremiereDate",
+                "ProductionYear"
             };
             _saveItemCommand = _connection.CreateCommand();
-			_saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16)";
+            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21)";
             for (var i = 1; i <= saveColumns.Count; i++)
             {
                 _saveItemCommand.Parameters.Add(_saveItemCommand, "@" + i.ToString(CultureInfo.InvariantCulture));
@@ -197,6 +212,19 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _saveChildrenCommand.CommandText = "replace into ChildrenIds (ParentId, ItemId) values (@ParentId, @ItemId)";
             _saveChildrenCommand.Parameters.Add(_saveChildrenCommand, "@ParentId");
             _saveChildrenCommand.Parameters.Add(_saveChildrenCommand, "@ItemId");
+
+            _deletePeopleCommand = _connection.CreateCommand();
+            _deletePeopleCommand.CommandText = "delete from People where ItemId=@Id";
+            _deletePeopleCommand.Parameters.Add(_deletePeopleCommand, "@Id");
+
+            _savePersonCommand = _connection.CreateCommand();
+            _savePersonCommand.CommandText = "insert into People (ItemId, Name, Role, PersonType, SortOrder, ListOrder) values (@ItemId, @Name, @Role, @PersonType, @SortOrder, @ListOrder)";
+            _savePersonCommand.Parameters.Add(_savePersonCommand, "@ItemId");
+            _savePersonCommand.Parameters.Add(_savePersonCommand, "@Name");
+            _savePersonCommand.Parameters.Add(_savePersonCommand, "@Role");
+            _savePersonCommand.Parameters.Add(_savePersonCommand, "@PersonType");
+            _savePersonCommand.Parameters.Add(_savePersonCommand, "@SortOrder");
+            _savePersonCommand.Parameters.Add(_savePersonCommand, "@ListOrder");
         }
 
         /// <summary>
@@ -293,6 +321,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _saveItemCommand.GetParameter(index++).Value = item.Name;
                     _saveItemCommand.GetParameter(index++).Value = item.OfficialRating;
+
+                    _saveItemCommand.GetParameter(index++).Value = item.MediaType;
+                    _saveItemCommand.GetParameter(index++).Value = item.Overview;
+                    _saveItemCommand.GetParameter(index++).Value = item.ParentIndexNumber;
+                    _saveItemCommand.GetParameter(index++).Value = item.PremiereDate;
+                    _saveItemCommand.GetParameter(index++).Value = item.ProductionYear;
                     
                     _saveItemCommand.Transaction = transaction;
 
@@ -1073,6 +1107,142 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             CheckDisposed();
             return _mediaStreamsRepository.SaveMediaStreams(id, streams, cancellationToken);
+        }
+
+
+        public List<PersonInfo> GetPeople(Guid itemId)
+        {
+            if (itemId == Guid.Empty)
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
+            CheckDisposed();
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "select ItemId, Name, Role, PersonType, SortOrder from People where ItemId=@ItemId order by ListOrder";
+
+                cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = itemId;
+
+                var list = new List<PersonInfo>();
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(GetPerson(reader));
+                    }
+                }
+
+                return list;
+            }
+        }
+
+        public async Task UpdatePeople(Guid itemId, List<PersonInfo> people)
+        {
+            if (itemId == Guid.Empty)
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
+            if (people == null)
+            {
+                throw new ArgumentNullException("people");
+            }
+
+            CheckDisposed();
+
+            var cancellationToken = CancellationToken.None;
+
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            IDbTransaction transaction = null;
+
+            try
+            {
+                transaction = _connection.BeginTransaction();
+
+                // First delete 
+                _deletePeopleCommand.GetParameter(0).Value = itemId;
+                _deletePeopleCommand.Transaction = transaction;
+
+                _deletePeopleCommand.ExecuteNonQuery();
+
+                var listIndex = 0;
+
+                foreach (var person in people)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    _savePersonCommand.GetParameter(0).Value = itemId;
+                    _savePersonCommand.GetParameter(1).Value = person.Name;
+                    _savePersonCommand.GetParameter(2).Value = person.Role;
+                    _savePersonCommand.GetParameter(3).Value = person.Type;
+                    _savePersonCommand.GetParameter(4).Value = person.SortOrder;
+                    _savePersonCommand.GetParameter(5).Value = listIndex;
+
+                    _savePersonCommand.Transaction = transaction;
+
+                    _savePersonCommand.ExecuteNonQuery();
+                    listIndex++;
+                }
+
+                transaction.Commit();
+            }
+            catch (OperationCanceledException)
+            {
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            catch (Exception e)
+            {
+                _logger.ErrorException("Failed to save people:", e);
+
+                if (transaction != null)
+                {
+                    transaction.Rollback();
+                }
+
+                throw;
+            }
+            finally
+            {
+                if (transaction != null)
+                {
+                    transaction.Dispose();
+                }
+
+                _writeLock.Release();
+            }
+        }
+
+        private PersonInfo GetPerson(IDataReader reader)
+        {
+            var item = new PersonInfo();
+
+            item.Name = reader.GetString(1);
+
+            if (!reader.IsDBNull(2))
+            {
+                item.Role = reader.GetString(2);
+            }
+
+            if (!reader.IsDBNull(3))
+            {
+                item.Type = reader.GetString(3);
+            }
+
+            if (!reader.IsDBNull(4))
+            {
+                item.SortOrder = reader.GetInt32(4);
+            }
+
+            return item;
         }
     }
 }

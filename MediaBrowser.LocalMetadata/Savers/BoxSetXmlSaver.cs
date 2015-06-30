@@ -20,10 +20,12 @@ namespace MediaBrowser.LocalMetadata.Savers
         }
 
         private readonly IServerConfigurationManager _config;
+        private readonly ILibraryManager _libraryManager;
 
-        public BoxSetXmlSaver(IServerConfigurationManager config)
+        public BoxSetXmlSaver(IServerConfigurationManager config, ILibraryManager libraryManager)
         {
             _config = config;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -54,7 +56,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             builder.Append("<Item>");
 
-            XmlSaverHelpers.AddCommonNodes((BoxSet)item, builder);
+            XmlSaverHelpers.AddCommonNodes((BoxSet)item, _libraryManager, builder);
 
             builder.Append("</Item>");
 

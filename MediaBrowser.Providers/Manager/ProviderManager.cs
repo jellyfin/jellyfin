@@ -150,6 +150,11 @@ namespace MediaBrowser.Providers.Manager
 
         public Task SaveImage(IHasImages item, string source, string mimeType, ImageType type, int? imageIndex, string internalCacheKey, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(source))
+            {
+                throw new ArgumentNullException("source");
+            }
+
             var fileStream = _fileSystem.GetFileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
 
             return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, internalCacheKey, cancellationToken);

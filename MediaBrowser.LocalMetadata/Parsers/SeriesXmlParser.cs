@@ -26,9 +26,11 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// Fetches the data from XML node.
         /// </summary>
         /// <param name="reader">The reader.</param>
-        /// <param name="item">The item.</param>
-        protected override void FetchDataFromXmlNode(XmlReader reader, Series item)
+        /// <param name="result">The result.</param>
+        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Series> result)
         {
+            var item = result.Item;
+
             switch (reader.Name)
             {
                 case "Series":
@@ -42,7 +44,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             if (subTree.NodeType == XmlNodeType.Element)
                             {
-                                FetchDataFromXmlNode(subTree, item);
+                                FetchDataFromXmlNode(subTree, result);
                             }
                         }
 
@@ -110,7 +112,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     }
 
                 default:
-                    base.FetchDataFromXmlNode(reader, item);
+                    base.FetchDataFromXmlNode(reader, result);
                     break;
             }
         }

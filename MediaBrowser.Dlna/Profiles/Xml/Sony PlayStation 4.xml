@@ -1,21 +1,21 @@
 <?xml version="1.0"?>
 <Profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <Name>Sony Bravia (2012)</Name>
+  <Name>Sony PlayStation 4</Name>
   <Identification>
-    <FriendlyName>KDL-\d{2}[A-Z]X\d5(\d|G).*</FriendlyName>
-    <Manufacturer>Sony</Manufacturer>
+    <FriendlyName>PLAYSTATION 4</FriendlyName>
     <Headers>
-      <HttpHeaderInfo name="X-AV-Client-Info" value=".*KDL-\d{2}[A-Z]X\d5(\d|G).*" match="Regex" />
+      <HttpHeaderInfo name="User-Agent" value="PLAYSTATION 4" match="Substring" />
+      <HttpHeaderInfo name="X-AV-Client-Info" value="PLAYSTATION 4" match="Substring" />
     </Headers>
   </Identification>
   <FriendlyName>Emby</FriendlyName>
-  <Manufacturer>Microsoft Corporation</Manufacturer>
-  <ManufacturerUrl>http://www.microsoft.com/</ManufacturerUrl>
-  <ModelName>Windows Media Player Sharing</ModelName>
+  <Manufacturer>Emby</Manufacturer>
+  <ManufacturerUrl>http://emby.media/</ManufacturerUrl>
+  <ModelName>Emby</ModelName>
   <ModelDescription>Emby</ModelDescription>
-  <ModelNumber>3.0</ModelNumber>
-  <ModelUrl>http://www.microsoft.com/</ModelUrl>
-  <EnableAlbumArtInDidl>true</EnableAlbumArtInDidl>
+  <ModelNumber>Emby</ModelNumber>
+  <ModelUrl>http://emby.media/</ModelUrl>
+  <EnableAlbumArtInDidl>false</EnableAlbumArtInDidl>
   <EnableSingleAlbumArtLimit>true</EnableSingleAlbumArtLimit>
   <SupportedMediaTypes>Audio,Photo,Video</SupportedMediaTypes>
   <AlbumArtPn>JPEG_TN</AlbumArtPn>
@@ -36,23 +36,18 @@
   <EnableMSMediaReceiverRegistrar>false</EnableMSMediaReceiverRegistrar>
   <IgnoreTranscodeByteRangeRequests>false</IgnoreTranscodeByteRangeRequests>
   <EnableDlnaProtocol>true</EnableDlnaProtocol>
-  <XmlRootAttributes>
-    <XmlAttribute name="xmlns:av" value="urn:schemas-sony-com:av" />
-  </XmlRootAttributes>
+  <XmlRootAttributes />
   <DirectPlayProfiles>
-    <DirectPlayProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" />
-    <DirectPlayProfile container="ts" audioCodec="mp3,mp2" videoCodec="mpeg2video" type="Video" />
-    <DirectPlayProfile container="mp4" audioCodec="ac3,aac,mp3,mp2" videoCodec="h264,mpeg4" type="Video" />
-    <DirectPlayProfile container="avi" audioCodec="ac3,mp3" videoCodec="mpeg4" type="Video" />
-    <DirectPlayProfile container="mpeg" audioCodec="mp3,mp2" videoCodec="mpeg2video,mpeg1video" type="Video" />
-    <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" videoCodec="wmv2,wmv3,vc1" type="Video" />
-    <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
-    <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" type="Audio" />
-    <DirectPlayProfile container="jpeg" type="Photo" />
+    <DirectPlayProfile container="avi" audioCodec="mp2,mp3" videoCodec="mpeg4" type="Video" />
+    <DirectPlayProfile container="ts" audioCodec="ac3,mp2,mp3,aac" videoCodec="mpeg1video,mpeg2video,h264" type="Video" />
+    <DirectPlayProfile container="mpeg" audioCodec="mp2" videoCodec="mpeg1video,mpeg2video" type="Video" />
+    <DirectPlayProfile container="mp4,mkv" audioCodec="aac,ac3" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="aac,mp3,wav" type="Audio" />
+    <DirectPlayProfile container="jpeg,png,gif,bmp,tiff" type="Photo" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="true" transcodeSeekInfo="Auto" context="Streaming" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
     <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
   </TranscodingProfiles>
   <ContainerProfiles>
@@ -64,43 +59,40 @@
     </ContainerProfile>
   </ContainerProfiles>
   <CodecProfiles>
-    <CodecProfile type="Video">
+    <CodecProfile type="Video" codec="h264">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="Width" value="1920" isRequired="true" />
         <ProfileCondition condition="LessThanEqual" property="Height" value="1080" isRequired="true" />
-        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="VideoFramerate" value="30" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoBitrate" value="15360000" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="VideoLevel" value="41" isRequired="false" />
       </Conditions>
     </CodecProfile>
     <CodecProfile type="VideoAudio" codec="ac3">
       <Conditions>
-        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="true" />
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="6" isRequired="false" />
+        <ProfileCondition condition="LessThanEqual" property="AudioBitrate" value="640000" isRequired="false" />
       </Conditions>
     </CodecProfile>
-    <CodecProfile type="VideoAudio" codec="mp3,mp2">
+    <CodecProfile type="VideoAudio" codec="wmapro">
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
       </Conditions>
     </CodecProfile>
+    <CodecProfile type="VideoAudio" codec="aac">
+      <Conditions>
+        <ProfileCondition condition="NotEquals" property="AudioProfile" value="he-aac" isRequired="false" />
+      </Conditions>
+    </CodecProfile>
   </CodecProfiles>
   <ResponseProfiles>
-    <ResponseProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" orgPn="AVC_TS_HD_24_AC3_T,AVC_TS_HD_50_AC3_T,AVC_TS_HD_60_AC3_T,AVC_TS_HD_EU_T" mimeType="video/vnd.dlna.mpeg-tts">
-      <Conditions>
-        <ProfileCondition condition="Equals" property="PacketLength" value="192" isRequired="true" />
-        <ProfileCondition condition="Equals" property="VideoTimestamp" value="Valid" isRequired="true" />
-      </Conditions>
-    </ResponseProfile>
-    <ResponseProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" orgPn="AVC_TS_HD_24_AC3_ISO,AVC_TS_HD_50_AC3_ISO,AVC_TS_HD_60_AC3_ISO,AVC_TS_HD_EU_ISO" mimeType="video/mpeg">
-      <Conditions>
-        <ProfileCondition condition="Equals" property="PacketLength" value="188" isRequired="true" />
-      </Conditions>
-    </ResponseProfile>
-    <ResponseProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" orgPn="AVC_TS_HD_24_AC3,AVC_TS_HD_50_AC3,AVC_TS_HD_60_AC3,AVC_TS_HD_EU" mimeType="video/vnd.dlna.mpeg-tts">
+    <ResponseProfile container="mp4,mov" audioCodec="aac" type="Video" mimeType="video/mp4">
       <Conditions />
     </ResponseProfile>
-    <ResponseProfile container="ts" videoCodec="mpeg2video" type="Video" orgPn="MPEG_TS_SD_EU,MPEG_TS_SD_NA,MPEG_TS_SD_KO" mimeType="video/vnd.dlna.mpeg-tts">
+    <ResponseProfile container="avi" type="Video" orgPn="AVI" mimeType="video/divx">
       <Conditions />
     </ResponseProfile>
-    <ResponseProfile container="mpeg" videoCodec="mpeg1video,mpeg2video" type="Video" orgPn="MPEG_PS_NTSC,MPEG_PS_PAL" mimeType="video/mpeg">
+    <ResponseProfile container="wav" type="Audio" mimeType="audio/wav">
       <Conditions />
     </ResponseProfile>
   </ResponseProfiles>

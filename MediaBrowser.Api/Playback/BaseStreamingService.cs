@@ -772,6 +772,11 @@ namespace MediaBrowser.Api.Playback
                 ? null
                 : audioStream.Channels;
 
+            if (inputChannels <= 0)
+            {
+                inputChannels = null;
+            }
+
             var codec = outputAudioCodec ?? string.Empty;
 
             if (codec.IndexOf("wma", StringComparison.OrdinalIgnoreCase) != -1)

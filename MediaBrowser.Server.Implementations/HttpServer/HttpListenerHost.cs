@@ -1,6 +1,7 @@
 ﻿using Funq;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Server.Implementations.HttpServer.SocketSharp;
@@ -43,6 +44,8 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         public string CertificatePath { get; private set; }
 
+        private readonly IServerConfigurationManager _config;
+
         /// <summary>
         /// Gets the local end points.
         /// </summary>
@@ -62,13 +65,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         }
 
         public HttpListenerHost(IApplicationHost applicationHost,
-            ILogManager logManager,
+            ILogManager logManager, 
+            IServerConfigurationManager config,
             string serviceName,
-            string defaultRedirectPath,
-            params Assembly[] assembliesWithServices)
+            string defaultRedirectPath, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
         {
             DefaultRedirectPath = defaultRedirectPath;
+            _config = config;
 
             _logger = logManager.GetLogger("HttpServer");
 
@@ -115,7 +119,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                 }
             });
 
-            HostContext.GlobalResponseFilters.Add(new ResponseFilter(_logger).FilterResponse);
+            HostContext.GlobalResponseFilters.Add(new ResponseFilter(_logger, () => _config.Configuration.DenyIFrameEmbedding).FilterResponse);
         }
 
         public override void OnAfterInit()

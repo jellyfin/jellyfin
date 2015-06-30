@@ -23,10 +23,12 @@ namespace MediaBrowser.LocalMetadata.Savers
         }
 
         private readonly IServerConfigurationManager _config;
+        private readonly ILibraryManager _libraryManager;
 
-        public PersonXmlSaver(IServerConfigurationManager config)
+        public PersonXmlSaver(IServerConfigurationManager config, ILibraryManager libraryManager)
         {
             _config = config;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -59,7 +61,7 @@ namespace MediaBrowser.LocalMetadata.Savers
 
             builder.Append("<Item>");
 
-            XmlSaverHelpers.AddCommonNodes(person, builder);
+            XmlSaverHelpers.AddCommonNodes(person, _libraryManager, builder);
 
             if (!string.IsNullOrEmpty(person.PlaceOfBirth))
             {

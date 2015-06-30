@@ -5,10 +5,11 @@ using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Subtitles;
-using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
+using MediaBrowser.Model.Serialization;
 using OpenSubtitlesHandler;
 using System;
 using System.Collections.Generic;
@@ -38,17 +39,23 @@ namespace MediaBrowser.Providers.Subtitles
         // And the user may restart the server
         private const int MaxDownloadsPerDay = 150;
 
-        public OpenSubtitleDownloader(ILogManager logManager, IHttpClient httpClient, IServerConfigurationManager config, IEncryptionManager encryption)
+        private readonly IJsonSerializer _json;
+
+        public OpenSubtitleDownloader(ILogManager logManager, IHttpClient httpClient, IServerConfigurationManager config, IEncryptionManager encryption, IJsonSerializer json)
         {
             _logger = logManager.GetLogger(GetType().Name);
             _httpClient = httpClient;
             _config = config;
             _encryption = encryption;
+            _json = json;
 
             _config.NamedConfigurationUpdating += _config_NamedConfigurationUpdating;
 
             // Reset the count every 24 hours
             _dailyTimer = new Timer(state => _dailyDownloadCount = 0, null, TimeSpan.FromHours(24), TimeSpan.FromHours(24));
+
+            Utilities.HttpClient = httpClient;
+            OpenSubtitles.SetUserAgent("mediabrowser.tv");
         }
 
         private const string PasswordHashPrefix = "h:";
@@ -195,6 +202,26 @@ namespace MediaBrowser.Providers.Subtitles
             _lastLogin = DateTime.UtcNow;
         }
 
+        public async Task<IEnumerable<NameIdPair>> GetSupportedLanguages(CancellationToken cancellationToken)
+        {
+            await Login(cancellationToken).ConfigureAwait(false);
+            
+            var result = OpenSubtitles.GetSubLanguages("en");
+            if (!(result is MethodResponseGetSubLanguages))
+            {
+                _logger.Error("Invalid response type");
+                return new List<NameIdPair>();
+            }
+
+            var results = ((MethodResponseGetSubLanguages)result).Languages;
+
+            return results.Select(i => new NameIdPair
+            {
+                Name = i.LanguageName,
+                Id = i.SubLanguageID
+            });
+        }
+
         public async Task<IEnumerable<RemoteSubtitleInfo>> Search(SubtitleSearchRequest request, CancellationToken cancellationToken)
         {
             var imdbIdText = request.GetProviderId(MetadataProviders.Imdb);
@@ -229,9 +256,6 @@ namespace MediaBrowser.Providers.Subtitles
                 return new List<RemoteSubtitleInfo>();
             }
 
-            Utilities.HttpClient = _httpClient;
-            OpenSubtitles.SetUserAgent("mediabrowser.tv");
-
             await Login(cancellationToken).ConfigureAwait(false);
 
             var subLanguageId = request.Language;
@@ -260,7 +284,7 @@ namespace MediaBrowser.Providers.Subtitles
             var result = await OpenSubtitles.SearchSubtitlesAsync(parms.ToArray(), cancellationToken).ConfigureAwait(false);
             if (!(result is MethodResponseSubtitleSearch))
             {
-                _logger.Debug("Invalid response type");
+                _logger.Error("Invalid response type");
                 return new List<RemoteSubtitleInfo>();
             }
 

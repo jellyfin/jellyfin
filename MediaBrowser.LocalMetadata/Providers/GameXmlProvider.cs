@@ -20,7 +20,7 @@ namespace MediaBrowser.LocalMetadata.Providers
 
         protected override void Fetch(LocalMetadataResult<Game> result, string path, CancellationToken cancellationToken)
         {
-            new GameXmlParser(_logger).Fetch(result.Item, path, cancellationToken);
+            new GameXmlParser(_logger).Fetch(result, path, cancellationToken);
         }
 
         protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)

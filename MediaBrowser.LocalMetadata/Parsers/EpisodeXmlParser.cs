@@ -1,13 +1,13 @@
-﻿using System;
+﻿using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Logging;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Xml;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
@@ -17,7 +17,6 @@ namespace MediaBrowser.LocalMetadata.Parsers
     public class EpisodeXmlParser : BaseItemXmlParser<Episode>
     {
         private List<LocalImageInfo> _imagesFound;
-        private List<ChapterInfo> _chaptersFound;
 
         public EpisodeXmlParser(ILogger logger)
             : base(logger)
@@ -26,14 +25,12 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
         private string _xmlPath;
 
-        public void Fetch(Episode item, 
+        public void Fetch(MetadataResult<Episode> item, 
             List<LocalImageInfo> images,
-            List<ChapterInfo> chapters, 
             string metadataFile, 
             CancellationToken cancellationToken)
         {
             _imagesFound = images;
-            _chaptersFound = chapters;
             _xmlPath = metadataFile;
 
             Fetch(item, metadataFile, cancellationToken);
@@ -45,16 +42,13 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// Fetches the data from XML node.
         /// </summary>
         /// <param name="reader">The reader.</param>
-        /// <param name="item">The item.</param>
-        protected override void FetchDataFromXmlNode(XmlReader reader, Episode item)
+        /// <param name="result">The result.</param>
+        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Episode> result)
         {
+            var item = result.Item;
+
             switch (reader.Name)
             {
-                case "Chapters":
-
-                    _chaptersFound.AddRange(FetchChaptersFromXmlNode(item, reader.ReadSubtree()));
-                    break;
-
                 case "Episode":
 
                     //MB generated metadata is within an "Episode" node
@@ -67,7 +61,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                         {
                             if (subTree.NodeType == XmlNodeType.Element)
                             {
-                                FetchDataFromXmlNode(subTree, item);
+                                FetchDataFromXmlNode(subTree, result);
                             }
                         }
 
@@ -263,7 +257,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
 
                 default:
-                    base.FetchDataFromXmlNode(reader, item);
+                    base.FetchDataFromXmlNode(reader, result);
                     break;
             }
         }

@@ -22,7 +22,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         }
 
         private readonly Task _cachedTask = Task.FromResult(true);
-        public Task FetchAsync(Game item, string metadataFile, CancellationToken cancellationToken)
+        public Task FetchAsync(MetadataResult<Game> item, string metadataFile, CancellationToken cancellationToken)
         {
             Fetch(item, metadataFile, cancellationToken);
 
@@ -35,9 +35,11 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// Fetches the data from XML node.
         /// </summary>
         /// <param name="reader">The reader.</param>
-        /// <param name="item">The item.</param>
-        protected override void FetchDataFromXmlNode(XmlReader reader, Game item)
+        /// <param name="result">The result.</param>
+        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Game> result)
         {
+            var item = result.Item;
+
             switch (reader.Name)
             {
                 case "GameSystem":
@@ -97,7 +99,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
 
 
                 default:
-                    base.FetchDataFromXmlNode(reader, item);
+                    base.FetchDataFromXmlNode(reader, result);
                     break;
             }
         }

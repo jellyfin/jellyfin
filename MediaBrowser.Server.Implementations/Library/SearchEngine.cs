@@ -257,7 +257,7 @@ namespace MediaBrowser.Server.Implementations.Library
             if (query.IncludePeople)
             {
                 // Find persons
-                var persons = items.SelectMany(i => i.People)
+                var persons = items.SelectMany(i => _libraryManager.GetPeople(i))
                     .Select(i => i.Name)
                     .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Distinct(StringComparer.OrdinalIgnoreCase)

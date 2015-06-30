@@ -24,9 +24,6 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private readonly string _postUrl;
 
-        private Timer _pingTimer;
-        private DateTime _lastPingTime;
-
         public HttpSessionController(IHttpClient httpClient,
             IJsonSerializer json,
             SessionInfo session,
@@ -37,10 +34,6 @@ namespace MediaBrowser.Server.Implementations.Session
             Session = session;
             _postUrl = postUrl;
             _sessionManager = sessionManager;
-
-            _pingTimer = new Timer(PingTimerCallback, null, Timeout.Infinite, Timeout.Infinite);
-
-            ResetPingTimer();
         }
 
         public void OnActivity()
@@ -59,61 +52,13 @@ namespace MediaBrowser.Server.Implementations.Session
         {
             get
             {
-                return (DateTime.UtcNow - Session.LastActivityDate).TotalMinutes <= 20;
+                return (DateTime.UtcNow - Session.LastActivityDate).TotalMinutes <= 10;
             }
         }
 
         public bool SupportsMediaControl
         {
             get { return true; }
-        }
-
-        private async void PingTimerCallback(object state)
-        {
-            try
-            {
-                await SendMessage("Ping", CancellationToken.None).ConfigureAwait(false);
-
-                _lastPingTime = DateTime.UtcNow;
-            }
-            catch
-            {
-                var lastActivityDate = new[] { _lastPingTime, Session.LastActivityDate }
-                    .Max();
-
-                var timeSinceLastPing = DateTime.UtcNow - lastActivityDate;
-
-                // We don't want to stop the session due to one single request failure
-                // At the same time, we don't want the timeout to be too long because it will
-                // be sitting in active sessions available for remote control, when it's not
-                if (timeSinceLastPing >= TimeSpan.FromMinutes(5))
-                {
-                    ReportSessionEnded();
-                }
-            }
-        }
-
-        private void ReportSessionEnded()
-        {
-            try
-            {
-                _sessionManager.ReportSessionEnded(Session.Id);
-            }
-            catch (Exception ex)
-            {
-            }
-        }
-
-        private void ResetPingTimer()
-        {
-            if (_pingTimer != null)
-            {
-                _lastPingTime = DateTime.UtcNow;
-
-                var period = TimeSpan.FromSeconds(60);
-
-                _pingTimer.Change(period, period);
-            }
         }
 
         private Task SendMessage(string name, CancellationToken cancellationToken)
@@ -133,8 +78,6 @@ namespace MediaBrowser.Server.Implementations.Session
                 CancellationToken = cancellationToken
 
             }).ConfigureAwait(false);
-
-            ResetPingTimer();
         }
 
         public Task SendSessionEndedNotification(SessionInfoDto sessionInfo, CancellationToken cancellationToken)
@@ -237,16 +180,6 @@ namespace MediaBrowser.Server.Implementations.Session
 
         public void Dispose()
         {
-            DisposePingTimer();
-        }
-
-        private void DisposePingTimer()
-        {
-            if (_pingTimer != null)
-            {
-                _pingTimer.Dispose();
-                _pingTimer = null;
-            }
         }
     }
 }

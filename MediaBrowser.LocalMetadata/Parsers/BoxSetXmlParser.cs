@@ -14,7 +14,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
         {
         }
 
-        protected override void FetchDataFromXmlNode(XmlReader reader, BoxSet item)
+        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<BoxSet> item)
         {
             switch (reader.Name)
             {
@@ -32,7 +32,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
             }
         }
 
-        private void FetchFromCollectionItemsNode(XmlReader reader, BoxSet item)
+        private void FetchFromCollectionItemsNode(XmlReader reader, MetadataResult<BoxSet> item)
         {
             reader.MoveToContent();
 
@@ -66,7 +66,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                 }
             }
 
-            item.LinkedChildren = list;
+            item.Item.LinkedChildren = list;
         }
     }
 }

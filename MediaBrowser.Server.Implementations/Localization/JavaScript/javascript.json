@@ -38,7 +38,9 @@
     "HeaderSupportTheTeam": "Support the Emby Team",
     "TextEnjoyBonusFeatures": "Enjoy Bonus Features",
     "TitleLiveTV": "Live TV",
+    "ButtonCancelSyncJob":  "Cancel sync job",
     "TitleSync": "Sync",
+    "HeaderSelectDate": "Select Date",
     "ButtonDonate": "Donate",
     "LabelRecurringDonationCanBeCancelledHelp": "Recurring donations can be cancelled at any time from within your PayPal account.",
     "HeaderMyMedia": "My Media",
@@ -795,6 +797,7 @@
     "HeaderMedia": "Media",
     "ButtonInbox": "Inbox",
     "HeaderAdvanced": "Advanced",
+    "HeaderGroupVersions": "Group Versions",
     "HeaderSaySomethingLike": "Say Something Like...",
     "ButtonTryAgain": "Try Again",
     "HeaderYouSaid": "You Said...",
@@ -804,5 +807,9 @@
     "ButtonManageServer": "Manage Server",
     "ButtonPreferences": "Preferences",
     "ButtonViewArtist": "View artist",
-    "ButtonViewAlbum": "View album"
+    "ButtonViewAlbum": "View album",
+    "ErrorMessagePasswordNotMatchConfirm": "The password and password confirmation must match.",
+    "ErrorMessageUsernameInUse": "The username is already in use. Please choose a new name and try again.",
+    "ErrorMessageEmailInUse": "The email address is already in use. Please enter a new email address and try again, or use the forgot password feature.",
+    "MessageThankYouForConnectSignUp": "Thank you for signing up for Emby Connect. An email will be sent to your address with instructions on how to confirm your new account. Please confirm the account and then return here to sign in."
 }

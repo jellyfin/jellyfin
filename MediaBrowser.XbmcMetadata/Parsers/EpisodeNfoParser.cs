@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
@@ -14,26 +13,16 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 {
     public class EpisodeNfoParser : BaseNfoParser<Episode>
     {
-        private List<LocalImageInfo> _imagesFound;
-        private List<ChapterInfo> _chaptersFound;
-        private string _xmlPath;
-
         public EpisodeNfoParser(ILogger logger, IConfigurationManager config) : base(logger, config)
         {
         }
 
-        public void Fetch(Episode item,
-            List<UserItemData> userDataList,
+        public void Fetch(LocalMetadataResult<Episode> item,
             List<LocalImageInfo> images,
-            List<ChapterInfo> chapters, 
             string metadataFile, 
             CancellationToken cancellationToken)
         {
-            _imagesFound = images;
-            _chaptersFound = chapters;
-            _xmlPath = metadataFile;
-
-            Fetch(item, userDataList, metadataFile, cancellationToken);
+            Fetch(item, metadataFile, cancellationToken);
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");
@@ -42,17 +31,13 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// Fetches the data from XML node.
         /// </summary>
         /// <param name="reader">The reader.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="userDataList">The user data list.</param>
-        protected override void FetchDataFromXmlNode(XmlReader reader, Episode item, List<UserItemData> userDataList)
+        /// <param name="itemResult">The item result.</param>
+        protected override void FetchDataFromXmlNode(XmlReader reader, LocalMetadataResult<Episode> itemResult)
         {
+            var item = itemResult.Item;
+
             switch (reader.Name)
             {
-                //case "Chapters":
-
-                //    _chaptersFound.AddRange(FetchChaptersFromXmlNode(item, reader.ReadSubtree()));
-                //    break;
-
                 case "season":
                     {
                         var number = reader.ReadElementContentAsString();
@@ -206,7 +191,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
 
                 default:
-                    base.FetchDataFromXmlNode(reader, item, userDataList);
+                    base.FetchDataFromXmlNode(reader, itemResult);
                     break;
             }
         }
