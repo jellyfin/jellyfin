@@ -483,7 +483,10 @@
     }).on('pagebeforeshowready', "#liveTvGuidePage", function () {
 
         var page = this;
-        reloadPage(page);
+
+        if (NavHelper.needsRefresh(page)) {
+            reloadPage(page);
+        }
     });
 
 })(jQuery, document);

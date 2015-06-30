@@ -116,8 +116,9 @@
 
         var page = this;
 
-        reload(page);
-
+        if (NavHelper.needsRefresh(page)) {
+            reload(page);
+        }
     });
 
 })(jQuery, document);

@@ -515,17 +515,21 @@
             var href = LibraryBrowser.getHrefInternal(item, context);
 
             if (context) {
-                href += href.indexOf('?') == -1 ? "?context=" : "&context=";
-                href += context;
+                if (context != 'livetv') {
+                    href += href.indexOf('?') == -1 ? "?context=" : "&context=";
+                    href += context;
+                }
             }
 
-            if (topParentId == null && context != 'playlists') {
-                topParentId = LibraryMenu.getTopParentId();
-            }
+            if (context != 'livetv') {
+                if (topParentId == null && context != 'playlists') {
+                    topParentId = LibraryMenu.getTopParentId();
+                }
 
-            if (topParentId) {
-                href += href.indexOf('?') == -1 ? "?topParentId=" : "&topParentId=";
-                href += topParentId;
+                if (topParentId) {
+                    href += href.indexOf('?') == -1 ? "?topParentId=" : "&topParentId=";
+                    href += topParentId;
+                }
             }
 
             return href;
@@ -936,7 +940,6 @@
                 html += textlines[verticalTextLines] || LibraryBrowser.getRatingHtml(item, false);
                 html += '</span>';
                 //html += '<button type="button" data-role="none" class="listviewMenuButton imageButton listViewMoreButton" data-icon="none">';
-                //html += '<i class="material-icons">more_vert</i>';
                 //html += '</button>';
                 html += '<paper-icon-button icon="more-vert" class="listviewMenuButton"></paper-icon-button>';
                 html += '<span class="listViewUserDataButtons">';
@@ -1640,7 +1643,6 @@
 
             if (options.cardLayout) {
                 html += '<div class="cardButtonContainer">';
-                //html += '<button class="listviewMenuButton imageButton btnCardOptions" type="button" data-role="none" style="margin: 4px 0 0;"><i class="material-icons">more_vert</i></button>';
                 html += '<paper-icon-button icon="more-vert" class="listviewMenuButton btnCardOptions"></paper-icon-button>';
                 html += "</div>";
             }
@@ -1937,7 +1939,7 @@
 
                 if (item.Type != 'TvChannel') {
                     if (item.UserData.PlayedPercentage && item.UserData.PlayedPercentage >= 100 || (item.UserData && item.UserData.Played)) {
-                        return '<div class="playedIndicator"><i class="fa fa-check"></i></div>';
+                        return '<div class="playedIndicator"><iron-icon icon="check"></iron-icon></div>';
                     }
                 }
             }

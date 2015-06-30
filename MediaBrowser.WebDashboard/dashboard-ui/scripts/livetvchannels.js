@@ -116,21 +116,12 @@
         // Can't use pagebeforeshow here or the loading popup won't center correctly
         var page = this;
 
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
+        if (NavHelper.needsRefresh(page)) {
+            query.UserId = Dashboard.getCurrentUserId();
+            LibraryBrowser.loadSavedQueryValues('movies', query);
+            reloadItems(page);
+            updateFilterControls(this);
         }
-
-        query.UserId = Dashboard.getCurrentUserId();
-
-        LibraryBrowser.loadSavedQueryValues('movies', query);
-
-        reloadItems(page);
-        
-        updateFilterControls(this);
         
     });
 

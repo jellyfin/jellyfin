@@ -129,7 +129,7 @@
         html += '<div class="' + imageClass + '" style="background-image:url(\'' + imgUrl + '\');">';
 
         if (user.ConnectUserId && addConnectIndicator) {
-            html += '<div class="playedIndicator" title="' + Globalize.translate('TooltipLinkedToEmbyConnect') + '"><i class="material-icons">cloud</i></div>';
+            html += '<div class="playedIndicator" title="' + Globalize.translate('TooltipLinkedToEmbyConnect') + '"><iron-icon icon="cloud"></iron-icon></div>';
         }
 
         html += "</div>";
