@@ -2288,18 +2288,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="dashboard-ui\bower_components\material-design-icons\iconfont\MaterialIcons-Regular.eot">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="dashboard-ui\bower_components\material-design-icons\iconfont\MaterialIcons-Regular.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="dashboard-ui\bower_components\material-design-icons\iconfont\MaterialIcons-Regular.woff">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="dashboard-ui\bower_components\material-design-icons\iconfont\MaterialIcons-Regular.woff2">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="dashboard-ui\bower_components\webcomponentsjs\.bower.json" />
     <None Include="dashboard-ui\bower_components\webcomponentsjs\bower.json" />
     <None Include="dashboard-ui\bower_components\webcomponentsjs\build.log" />
@@ -2402,6 +2390,18 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile-1.4.5.min.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
