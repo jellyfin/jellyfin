@@ -1,0 +1,23 @@
+{
+    "images": [
+        {
+            "filename": "ic_question_answer.png",
+            "idiom": "universal",
+            "scale": "1x"
+        },
+        {
+            "filename": "ic_question_answer_2x.png",
+            "idiom": "universal",
+            "scale": "2x"
+        },
+        {
+            "filename": "ic_question_answer_3x.png",
+            "idiom": "universal",
+            "scale": "3x"
+        }
+    ],
+    "info": {
+        "author": "xcode",
+        "version": 1
+    }
+}

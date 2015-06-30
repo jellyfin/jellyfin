@@ -1,0 +1,238 @@
+.icon-communication-grey600 {
+  background-image: url('sprite-communication-grey600.png');
+}
+
+.icon-communication-grey600-ic_invert_colors_on_grey600_24dp {
+  background-position: -5px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_business_grey600_24dp {
+  background-position: -39px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_call_grey600_24dp {
+  background-position: -5px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_call_made_grey600_24dp {
+  background-position: -39px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_call_merge_grey600_24dp {
+  background-position: -73px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_call_missed_grey600_24dp {
+  background-position: -73px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_call_received_grey600_24dp {
+  background-position: -5px -73px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_call_split_grey600_24dp {
+  background-position: -39px -73px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_chat_grey600_24dp {
+  background-position: -73px -73px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_clear_all_grey600_24dp {
+  background-position: -107px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_comment_grey600_24dp {
+  background-position: -107px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_contacts_grey600_24dp {
+  background-position: -107px -73px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_dialer_sip_grey600_24dp {
+  background-position: -5px -107px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_dialpad_grey600_24dp {
+  background-position: -39px -107px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_dnd_on_grey600_24dp {
+  background-position: -73px -107px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_email_grey600_24dp {
+  background-position: -107px -107px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_forum_grey600_24dp {
+  background-position: -141px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_import_export_grey600_24dp {
+  background-position: -141px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_invert_colors_off_grey600_24dp {
+  background-position: -141px -73px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_call_end_grey600_24dp {
+  background-position: -141px -107px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_live_help_grey600_24dp {
+  background-position: -5px -141px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_location_off_grey600_24dp {
+  background-position: -39px -141px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_location_on_grey600_24dp {
+  background-position: -73px -141px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_message_grey600_24dp {
+  background-position: -107px -141px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_messenger_grey600_24dp {
+  background-position: -141px -141px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_no_sim_grey600_24dp {
+  background-position: -175px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_phone_grey600_24dp {
+  background-position: -175px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_portable_wifi_off_grey600_24dp {
+  background-position: -175px -73px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_quick_contacts_dialer_grey600_24dp {
+  background-position: -175px -107px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_quick_contacts_mail_grey600_24dp {
+  background-position: -175px -141px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_ring_volume_grey600_24dp {
+  background-position: -5px -175px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_stay_current_landscape_grey600_24dp {
+  background-position: -39px -175px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_stay_current_portrait_grey600_24dp {
+  background-position: -73px -175px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_stay_primary_landscape_grey600_24dp {
+  background-position: -107px -175px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_stay_primary_portrait_grey600_24dp {
+  background-position: -141px -175px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_swap_calls_grey600_24dp {
+  background-position: -175px -175px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_textsms_grey600_24dp {
+  background-position: -209px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_voicemail_grey600_24dp {
+  background-position: -209px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-communication-grey600-ic_vpn_key_grey600_24dp {
+  background-position: -209px -73px;
+  width: 24px;
+  height: 24px;
+}
+

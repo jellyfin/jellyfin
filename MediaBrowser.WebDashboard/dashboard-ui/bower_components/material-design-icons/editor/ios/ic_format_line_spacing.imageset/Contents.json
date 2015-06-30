@@ -1,0 +1,23 @@
+{
+    "images": [
+        {
+            "filename": "ic_format_line_spacing.png",
+            "idiom": "universal",
+            "scale": "1x"
+        },
+        {
+            "filename": "ic_format_line_spacing_2x.png",
+            "idiom": "universal",
+            "scale": "2x"
+        },
+        {
+            "filename": "ic_format_line_spacing_3x.png",
+            "idiom": "universal",
+            "scale": "3x"
+        }
+    ],
+    "info": {
+        "author": "xcode",
+        "version": 1
+    }
+}

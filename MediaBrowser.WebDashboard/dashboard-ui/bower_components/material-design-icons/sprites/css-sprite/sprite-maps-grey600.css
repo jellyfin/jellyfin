@@ -1,0 +1,334 @@
+.icon-maps-grey600 {
+  background-image: url('sprite-maps-grey600.png');
+}
+
+.icon-maps-grey600-ic_local_laundry_service_grey600_24dp {
+  background-position: -5px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_beenhere_grey600_24dp {
+  background-position: -39px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_directions_bus_grey600_24dp {
+  background-position: -5px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_directions_car_grey600_24dp {
+  background-position: -39px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_directions_ferry_grey600_24dp {
+  background-position: -73px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_directions_grey600_24dp {
+  background-position: -73px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_directions_subway_grey600_24dp {
+  background-position: -5px -73px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_directions_train_grey600_24dp {
+  background-position: -39px -73px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_directions_transit_grey600_24dp {
+  background-position: -73px -73px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_directions_walk_grey600_24dp {
+  background-position: -107px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_flight_grey600_24dp {
+  background-position: -107px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_hotel_grey600_24dp {
+  background-position: -107px -73px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_layers_clear_grey600_24dp {
+  background-position: -5px -107px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_layers_grey600_24dp {
+  background-position: -39px -107px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_airport_grey600_24dp {
+  background-position: -73px -107px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_atm_grey600_24dp {
+  background-position: -107px -107px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_attraction_grey600_24dp {
+  background-position: -141px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_bar_grey600_24dp {
+  background-position: -141px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_cafe_grey600_24dp {
+  background-position: -141px -73px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_car_wash_grey600_24dp {
+  background-position: -141px -107px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_convenience_store_grey600_24dp {
+  background-position: -5px -141px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_drink_grey600_24dp {
+  background-position: -39px -141px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_florist_grey600_24dp {
+  background-position: -73px -141px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_gas_station_grey600_24dp {
+  background-position: -107px -141px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_grocery_store_grey600_24dp {
+  background-position: -141px -141px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_hospital_grey600_24dp {
+  background-position: -175px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_hotel_grey600_24dp {
+  background-position: -175px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_directions_bike_grey600_24dp {
+  background-position: -175px -73px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_library_grey600_24dp {
+  background-position: -175px -107px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_mall_grey600_24dp {
+  background-position: -175px -141px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_movies_grey600_24dp {
+  background-position: -5px -175px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_offer_grey600_24dp {
+  background-position: -39px -175px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_parking_grey600_24dp {
+  background-position: -73px -175px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_pharmacy_grey600_24dp {
+  background-position: -107px -175px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_phone_grey600_24dp {
+  background-position: -141px -175px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_pizza_grey600_24dp {
+  background-position: -175px -175px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_play_grey600_24dp {
+  background-position: -209px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_post_office_grey600_24dp {
+  background-position: -209px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_print_shop_grey600_24dp {
+  background-position: -209px -73px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_restaurant_grey600_24dp {
+  background-position: -209px -107px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_see_grey600_24dp {
+  background-position: -209px -141px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_shipping_grey600_24dp {
+  background-position: -209px -175px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_local_taxi_grey600_24dp {
+  background-position: -5px -209px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_location_history_grey600_24dp {
+  background-position: -39px -209px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_map_grey600_24dp {
+  background-position: -73px -209px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_my_location_grey600_24dp {
+  background-position: -107px -209px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_navigation_grey600_24dp {
+  background-position: -141px -209px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_pin_drop_grey600_24dp {
+  background-position: -175px -209px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_place_grey600_24dp {
+  background-position: -209px -209px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_rate_review_grey600_24dp {
+  background-position: -243px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_restaurant_menu_grey600_24dp {
+  background-position: -243px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_satellite_grey600_24dp {
+  background-position: -243px -73px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_store_mall_directory_grey600_24dp {
+  background-position: -243px -107px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_terrain_grey600_24dp {
+  background-position: -243px -141px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-maps-grey600-ic_traffic_grey600_24dp {
+  background-position: -243px -175px;
+  width: 24px;
+  height: 24px;
+}
+

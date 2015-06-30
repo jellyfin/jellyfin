@@ -1,14 +1,12 @@
 ﻿(function ($, document) {
 
-    $(document).on('pagebeforeshowready', "#tvUpcomingPage", function () {
+    function loadUpcoming(page) {
 
         Dashboard.showLoadingMsg();
 
-        var page = this;
-
         var limit = AppInfo.hasLowImageBandwidth ?
-         24 :
-         40;
+           24 :
+           40;
 
         var query = {
 
@@ -59,6 +57,14 @@
             Dashboard.hideLoadingMsg();
 
         });
+    }
+    $(document).on('pagebeforeshowready', "#tvUpcomingPage", function () {
+
+        var page = this;
+
+        if (NavHelper.needsRefresh(page)) {
+            loadUpcoming(page);
+        }
     });
 
 

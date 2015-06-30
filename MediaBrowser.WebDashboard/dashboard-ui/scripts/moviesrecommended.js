@@ -249,11 +249,13 @@
             $(containers).removeClass('hiddenScrollX');
         }
 
-        loadResume(page, userId, parentId);
-        loadLatest(page, userId, parentId);
+        if (NavHelper.needsRefresh(page)) {
+            loadResume(page, userId, parentId);
+            loadLatest(page, userId, parentId);
 
-        if (AppInfo.enableMovieHomeSuggestions) {
-            loadSuggestions(page, userId, parentId);
+            if (AppInfo.enableMovieHomeSuggestions) {
+                loadSuggestions(page, userId, parentId);
+            }
         }
 
     });

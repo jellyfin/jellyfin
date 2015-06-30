@@ -822,14 +822,16 @@
 
     function onPageShowDocumentReady(page) {
 
-        var elems = page.querySelectorAll('.libraryViewNav .ui-btn-active');
-        elems = $(elems).filter(':visible');
+        if (!NavHelper.isBack()) {
+            var elems = page.querySelectorAll('.libraryViewNav .ui-btn-active');
+            elems = $(elems).filter(':visible');
 
-        if (elems.length) {
-            elems[0].scrollIntoView();
+            if (elems.length) {
+                elems[0].scrollIntoView();
 
-            // Scroll back up so in case vertical scroll was messed with
-            window.scrollTo(0, 0);
+                // Scroll back up so in case vertical scroll was messed with
+                window.scrollTo(0, 0);
+            }
         }
     }
 
@@ -949,3 +951,47 @@ $.fn.createHoverTouch = function () {
     });
 
 };
+
+(function () {
+
+    var backUrl;
+
+    $(document).on('pagebeforeshow', ".page", function () {
+        
+        if (getWindowUrl() != backUrl) {
+            backUrl = null;
+        }
+    });
+
+    $(window).on("popstate", function () {
+        backUrl = getWindowUrl();
+    });
+
+    function isBack() {
+
+        return backUrl == getWindowUrl();
+    }
+
+    function needsRefresh(elem) {
+
+        var last = elem.getAttribute('data-lastrefresh') || '0';
+
+        if (isBack()) {
+            return false;
+        }
+
+        var now = new Date().getTime();
+        if ((now - parseInt(last)) < 60000) {
+            return false;
+        }
+
+        elem.setAttribute('data-lastrefresh', now);
+        return true;
+    }
+
+    window.NavHelper = {
+        needsRefresh: needsRefresh,
+        isBack: isBack
+    };
+
+})();

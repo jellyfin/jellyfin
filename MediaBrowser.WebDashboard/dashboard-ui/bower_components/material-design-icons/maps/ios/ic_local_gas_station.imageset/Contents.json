@@ -1,0 +1,23 @@
+{
+    "images": [
+        {
+            "filename": "ic_local_gas_station.png",
+            "idiom": "universal",
+            "scale": "1x"
+        },
+        {
+            "filename": "ic_local_gas_station_2x.png",
+            "idiom": "universal",
+            "scale": "2x"
+        },
+        {
+            "filename": "ic_local_gas_station_3x.png",
+            "idiom": "universal",
+            "scale": "3x"
+        }
+    ],
+    "info": {
+        "author": "xcode",
+        "version": 1
+    }
+}

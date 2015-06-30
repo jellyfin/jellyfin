@@ -1,0 +1,16 @@
+.icon-alert-grey600 {
+  background-image: url('sprite-alert-grey600.png');
+}
+
+.icon-alert-grey600-ic_error_grey600_24dp {
+  background-position: -5px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-alert-grey600-ic_warning_grey600_24dp {
+  background-position: -39px -5px;
+  width: 24px;
+  height: 24px;
+}
+

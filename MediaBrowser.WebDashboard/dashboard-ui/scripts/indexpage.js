@@ -174,30 +174,30 @@
 
     }).on('pagebeforeshowready', "#indexPage", function () {
 
-        var args = arguments;
         var page = this;
 
-        if (window.ApiClient) {
-            var userId = Dashboard.getCurrentUserId();
+        if (NavHelper.needsRefresh(page)) {
+            if (window.ApiClient) {
+                var userId = Dashboard.getCurrentUserId();
 
-            Dashboard.showLoadingMsg();
+                Dashboard.showLoadingMsg();
 
-            getDisplayPreferences('home', userId).done(function (result) {
+                getDisplayPreferences('home', userId).done(function (result) {
 
-                Dashboard.getCurrentUser().done(function (user) {
+                    Dashboard.getCurrentUser().done(function (user) {
 
-                    loadSections(page, user, result).done(function () {
+                        loadSections(page, user, result).done(function () {
 
-                        if (!AppInfo.isNativeApp) {
-                            showWelcomeIfNeeded(page, result);
-                        }
-                        Dashboard.hideLoadingMsg();
+                            if (!AppInfo.isNativeApp) {
+                                showWelcomeIfNeeded(page, result);
+                            }
+                            Dashboard.hideLoadingMsg();
+                        });
+
                     });
-
                 });
-            });
+            }
         }
-
     });
 
     function getDisplayPreferencesAppName() {

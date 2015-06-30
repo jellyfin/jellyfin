@@ -1,10 +1,7 @@
 ﻿(function ($, document) {
 
-    $(document).on('pagebeforeshowready', "#homeUpcomingPage", function () {
-
+    function loadUpcoming(page) {
         Dashboard.showLoadingMsg();
-
-        var page = this;
 
         var limit = AppInfo.hasLowImageBandwidth ?
          24 :
@@ -59,6 +56,15 @@
             Dashboard.hideLoadingMsg();
 
         });
+    }
+
+    $(document).on('pagebeforeshowready', "#homeUpcomingPage", function () {
+
+        var page = this;
+
+        if (NavHelper.needsRefresh(page)) {
+            loadUpcoming(page);
+        }
     });
 
 

@@ -4,7 +4,8 @@
     var data = {};
 
     function getQuery() {
-        var key = getWindowUrl();
+
+        var key = getSavedQueryKey();
         var pageData = data[key];
 
         if (!pageData) {
@@ -15,16 +16,20 @@
                     IncludeItemTypes: "Series",
                     Recursive: true,
                     Fields: "DateCreated,ItemCounts",
-                    StartIndex: 0
+                    StartIndex: 0,
+                    Limit: LibraryBrowser.getDefaultPageSize()
                 }
             };
+
+            pageData.query.ParentId = LibraryMenu.getTopParentId();
+            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
         }
         return pageData.query;
     }
 
     function getSavedQueryKey() {
 
-        return 'tvstudios' + (getQuery().ParentId || '');
+        return getWindowUrl();
     }
 
     function reloadItems(page) {
@@ -130,20 +135,6 @@
         });
 
     }).on('pagebeforeshowready', "#tvStudiosPage", function () {
-
-        var query = getQuery();
-
-        query.ParentId = LibraryMenu.getTopParentId();
-
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
-        }
-
-        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
 
         reloadItems(this);
 

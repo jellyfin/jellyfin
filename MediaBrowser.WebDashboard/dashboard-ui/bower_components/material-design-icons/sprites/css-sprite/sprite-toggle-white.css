@@ -1,0 +1,46 @@
+.icon-toggle-white {
+  background-image: url('sprite-toggle-white.png');
+}
+
+.icon-toggle-white-ic_check_box_outline_blank_white_24dp {
+  background-position: -5px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-toggle-white-ic_check_box_white_24dp {
+  background-position: -39px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-toggle-white-ic_radio_button_off_white_24dp {
+  background-position: -5px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-toggle-white-ic_radio_button_on_white_24dp {
+  background-position: -39px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-toggle-white-ic_star_half_white_24dp {
+  background-position: -73px -5px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-toggle-white-ic_star_outline_white_24dp {
+  background-position: -73px -39px;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-toggle-white-ic_star_white_24dp {
+  background-position: -5px -73px;
+  width: 24px;
+  height: 24px;
+}
+

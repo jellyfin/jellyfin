@@ -1,0 +1,23 @@
+{
+    "images": [
+        {
+            "filename": "ic_signal_cellular_connected_no_internet_0_bar.png",
+            "idiom": "universal",
+            "scale": "1x"
+        },
+        {
+            "filename": "ic_signal_cellular_connected_no_internet_0_bar_2x.png",
+            "idiom": "universal",
+            "scale": "2x"
+        },
+        {
+            "filename": "ic_signal_cellular_connected_no_internet_0_bar_3x.png",
+            "idiom": "universal",
+            "scale": "3x"
+        }
+    ],
+    "info": {
+        "author": "xcode",
+        "version": 1
+    }
+}

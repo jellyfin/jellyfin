@@ -5,13 +5,11 @@
         return 'Thumb';
     }
 
-    $(document).on('pagebeforeshowready', "#tvNextUpPage", function () {
+    function loadLatest(page) {
 
         var userId = Dashboard.getCurrentUserId();
 
         var parentId = LibraryMenu.getTopParentId();
-
-        var page = this;
 
         var limit = 30;
 
@@ -71,6 +69,14 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
         });
+    }
+
+    $(document).on('pagebeforeshowready', "#tvNextUpPage", function () {
+
+        var page = this;
+        if (NavHelper.needsRefresh(page)) {
+            loadLatest(page);
+        }
     });
 
 

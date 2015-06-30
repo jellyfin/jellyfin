@@ -867,15 +867,6 @@ var Dashboard = {
 
                 if (icon) {
                     menuHtml += '<iron-icon icon="' + icon + '" class="sidebarLinkIcon"' + style + '></iron-icon>';
-                    //if (icon.indexOf('fa') == 0) {
-                    //    menuHtml += '<span class="fa ' + icon + ' sidebarLinkIcon"' + style + '></span>';
-                    //}
-                    //else if (icon.indexOf('fa') == 0) {
-                    //    menuHtml += '<span class="fa ' + icon + ' sidebarLinkIcon"' + style + '></span>';
-                    //}
-                    //else {
-                    //    menuHtml += '<i class="material-icons sidebarLinkIcon"' + style + '>' + icon + '</i>';
-                    //}
                 }
 
                 menuHtml += '<span class="sidebarLinkText">';
@@ -1568,10 +1559,10 @@ var Dashboard = {
 
         var deferred = DeferredBuilder.Deferred();
 
-        Dashboard.importCss('thirdparty/swipebox-master/css/swipebox.min.css');
+        Dashboard.importCss('bower_components/swipebox/src/css/swipebox.min.css');
 
         require([
-            'thirdparty/swipebox-master/js/jquery.swipebox.min'
+            'bower_components/swipebox/src/js/jquery.swipebox.min'
         ], function () {
 
             deferred.resolve();

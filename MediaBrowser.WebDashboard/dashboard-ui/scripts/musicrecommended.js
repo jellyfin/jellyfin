@@ -185,16 +185,18 @@
 
         var page = this;
 
-        loadLatest(page, parentId);
-        loadPlaylists(page, parentId);
-        loadRecentlyPlayed(page, parentId);
-        loadFrequentlyPlayed(page, parentId);
-
         var containers = page.querySelectorAll('.itemsContainer');
         if (enableScrollX()) {
             $(containers).addClass('hiddenScrollX');
         } else {
             $(containers).removeClass('hiddenScrollX');
+        }
+
+        if (NavHelper.needsRefresh(page)) {
+            loadLatest(page, parentId);
+            loadPlaylists(page, parentId);
+            loadRecentlyPlayed(page, parentId);
+            loadFrequentlyPlayed(page, parentId);
         }
     });
 

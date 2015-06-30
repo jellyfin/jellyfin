@@ -180,7 +180,9 @@
             page.querySelector('#resumableItems').classList.remove('hiddenScrollX');
         }
 
-        reload(page);
+        if (NavHelper.needsRefresh(page)) {
+            reload(page);
+        }
     });
 
 
