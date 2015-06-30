@@ -40,7 +40,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="metadataFile">The metadata file.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public void Fetch(T item, string metadataFile, CancellationToken cancellationToken)
+        public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
         {
             if (item == null)
             {
@@ -72,7 +72,7 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="settings">The settings.</param>
         /// <param name="encoding">The encoding.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private void Fetch(T item, string metadataFile, XmlReaderSettings settings, Encoding encoding, CancellationToken cancellationToken)
+        private void Fetch(MetadataResult<T> item, string metadataFile, XmlReaderSettings settings, Encoding encoding, CancellationToken cancellationToken)
         {
             using (var streamReader = new StreamReader(metadataFile, encoding))
             {
@@ -101,9 +101,11 @@ namespace MediaBrowser.Controller.Providers
         /// Fetches metadata from one Xml Element
         /// </summary>
         /// <param name="reader">The reader.</param>
-        /// <param name="item">The item.</param>
-        protected virtual void FetchDataFromXmlNode(XmlReader reader, T item)
+        /// <param name="itemResult">The item result.</param>
+        protected virtual void FetchDataFromXmlNode(XmlReader reader, MetadataResult<T> itemResult)
         {
+            var item = itemResult.Item;
+
             switch (reader.Name)
             {
                 // DateCreated
@@ -490,7 +492,7 @@ namespace MediaBrowser.Controller.Providers
                             {
                                 continue;
                             }
-                            item.AddPerson(p);
+                            PeopleHelper.AddPerson(itemResult.People, p);
                         }
                         break;
                     }
@@ -502,7 +504,7 @@ namespace MediaBrowser.Controller.Providers
                             {
                                 continue;
                             }
-                            item.AddPerson(p);
+                            PeopleHelper.AddPerson(itemResult.People, p);
                         }
                         break;
                     }
@@ -516,7 +518,7 @@ namespace MediaBrowser.Controller.Providers
                         {
                             // This is one of the mis-named "Actors" full nodes created by MB2
                             // Create a reader and pass it to the persons node processor
-                            FetchDataFromPersonsNode(new XmlTextReader(new StringReader("<Persons>" + actors + "</Persons>")), item);
+                            FetchDataFromPersonsNode(new XmlTextReader(new StringReader("<Persons>" + actors + "</Persons>")), itemResult);
                         }
                         else
                         {
@@ -527,7 +529,7 @@ namespace MediaBrowser.Controller.Providers
                                 {
                                     continue;
                                 }
-                                item.AddPerson(p);
+                                PeopleHelper.AddPerson(itemResult.People, p);
                             }
                         }
                         break;
@@ -541,7 +543,7 @@ namespace MediaBrowser.Controller.Providers
                             {
                                 continue;
                             }
-                            item.AddPerson(p);
+                            PeopleHelper.AddPerson(itemResult.People, p);
                         }
                         break;
                     }
@@ -833,7 +835,7 @@ namespace MediaBrowser.Controller.Providers
                     {
                         using (var subtree = reader.ReadSubtree())
                         {
-                            FetchDataFromPersonsNode(subtree, item);
+                            FetchDataFromPersonsNode(subtree, itemResult);
                         }
                         break;
                     }
@@ -1133,7 +1135,7 @@ namespace MediaBrowser.Controller.Providers
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <param name="item">The item.</param>
-        private void FetchDataFromPersonsNode(XmlReader reader, T item)
+        private void FetchDataFromPersonsNode(XmlReader reader, MetadataResult<T> item)
         {
             reader.MoveToContent();
 
@@ -1154,7 +1156,7 @@ namespace MediaBrowser.Controller.Providers
                                         {
                                             continue;
                                         }
-                                        item.AddPerson(person);
+                                        PeopleHelper.AddPerson(item.People, person);
                                     }
                                 }
                                 break;

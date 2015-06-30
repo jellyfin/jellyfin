@@ -58,7 +58,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             _profile = profile;
             _config = config;
 
-            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, Logger);
+            _didlBuilder = new DidlBuilder(profile, user, imageProcessor, serverAddress, accessToken, userDataManager, localization, mediaSourceManager, Logger, libraryManager);
         }
 
         protected override IEnumerable<KeyValuePair<string, string>> GetResult(string methodName, Headers methodParams)
@@ -410,7 +410,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             {
                 if (stubType.Value == StubType.People)
                 {
-                    var items = item.People.Select(i =>
+                    var items = _libraryManager.GetPeople(item).Select(i =>
                     {
                         try
                         {
@@ -488,7 +488,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private async Task<QueryResult<ServerItem>> GetItemsFromPerson(Person person, User user, int? startIndex, int? limit)
         {
-            var items = user.RootFolder.GetRecursiveChildren(user, i => i is Movie || i is Series && i.ContainsPerson(person.Name))
+            var items = user.RootFolder.GetRecursiveChildren(user, i => i is Movie || i is Series && PeopleHelper.ContainsPerson(_libraryManager.GetPeople(i), person.Name))
                 .ToList();
 
             var trailerResult = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
@@ -503,7 +503,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 .ToList();
 
             var trailersToAdd = trailerResult.Items
-                .Where(i => i.ContainsPerson(person.Name))
+                .Where(i => PeopleHelper.ContainsPerson(_libraryManager.GetPeople(i), person.Name))
                 .Where(i =>
                 {
                     // Try to filter out dupes using imdb id
@@ -569,7 +569,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private bool EnablePeopleDisplay(BaseItem item)
         {
-            if (item.People.Count > 0)
+            if (_libraryManager.GetPeople(item).Count > 0)
             {
                 return item is Movie;
             }

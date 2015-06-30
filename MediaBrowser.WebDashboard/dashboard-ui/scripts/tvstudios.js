@@ -1,29 +1,47 @@
 ﻿(function ($, document) {
 
     // The base query options
-    var query = {
+    var data = {};
 
-        SortBy: "SortName",
-        SortOrder: "Ascending",
-        IncludeItemTypes: "Series",
-        Recursive: true,
-        Fields: "DateCreated,ItemCounts",
-        StartIndex: 0
-    };
+    function getQuery() {
+
+        var key = getSavedQueryKey();
+        var pageData = data[key];
+
+        if (!pageData) {
+            pageData = data[key] = {
+                query: {
+                    SortBy: "SortName",
+                    SortOrder: "Ascending",
+                    IncludeItemTypes: "Series",
+                    Recursive: true,
+                    Fields: "DateCreated,ItemCounts",
+                    StartIndex: 0,
+                    Limit: LibraryBrowser.getDefaultPageSize()
+                }
+            };
+
+            pageData.query.ParentId = LibraryMenu.getTopParentId();
+            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+        }
+        return pageData.query;
+    }
 
     function getSavedQueryKey() {
 
-        return 'tvstudios' + (query.ParentId || '');
+        return getWindowUrl();
     }
 
     function reloadItems(page) {
+
+        var query = getQuery();
 
         Dashboard.showLoadingMsg();
 
         ApiClient.getStudios(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
-            $(document).scrollTop(0);
+            window.scrollTo(0, 0);
 
             var html = '';
 
@@ -33,7 +51,7 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false
-            })).trigger('create');
+            }));
 
             updateFilterControls(page);
 
@@ -46,10 +64,12 @@
                 showItemCounts: true,
                 centerText: true,
                 lazy: true
-                
+
             });
 
-            $('#items', page).html(html).lazyChildren();
+            var elem = page.querySelector('#items');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -69,6 +89,8 @@
 
     function updateFilterControls(page) {
 
+        var query = getQuery();
+
         $('.chkStandardFilter', page).each(function () {
 
             var filters = "," + (query.Filters || "");
@@ -87,6 +109,8 @@
 
         $('.chkStandardFilter', this).on('change', function () {
 
+            var query = getQuery();
+
             var filterName = this.getAttribute('data-filter');
             var filters = query.Filters || "";
 
@@ -103,24 +127,14 @@
         });
 
         $('#selectPageSize', page).on('change', function () {
+            var query = getQuery();
+
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#tvStudiosPage", function () {
-
-        query.ParentId = LibraryMenu.getTopParentId();
-
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
-        }
-
-        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
+    }).on('pagebeforeshowready', "#tvStudiosPage", function () {
 
         reloadItems(this);
 

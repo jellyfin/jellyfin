@@ -69,7 +69,7 @@
             html += '<div class="cardImage" style="text-align:center;">';
 
             var icon = server.Id == 'new' ? 'plus-circle' : 'server';
-            html += '<i class="fa fa-' + icon + '" style="color:#fff;vertical-align:middle;font-size:100px;"></i>';
+            html += '<i class="fa fa-' + icon + '" style="color:#fff;vertical-align:middle;font-size:100px;margin-top:40px;"></i>';
         }
 
         html += "</div>";
@@ -83,8 +83,8 @@
         html += '<div class="cardFooter outerCardFooter">';
 
         if (server.showOptions !== false) {
-            html += '<div class="cardText" style="text-align:right; float:right;">';
-            html += '<button class="listviewMenuButton imageButton btnCardOptions btnServerMenu" type="button" data-role="none" style="margin: 4px 0 0;"><i class="material-icons">more_vert</i></button>';
+            html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
+            html += '<paper-icon-button icon="more-vert" class="btnServerMenu"></paper-icon-button>';
             html += "</div>";
         }
 
@@ -218,33 +218,35 @@
 
         var card = $(elem).parents('.card');
         var page = $(elem).parents('.page');
-        var id = card.attr('data-id');
+        var serverId = card.attr('data-id');
         var connectserverid = card.attr('data-connectserverid');
 
-        $('.serverMenu', page).popup("close").remove();
+        var menuItems = [];
 
-        var html = '<div data-role="popup" class="serverMenu" data-theme="a">';
-
-        html += '<ul data-role="listview" style="min-width: 180px;">';
-        html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
-
-        html += '<li><a href="#" class="btnDelete" data-connectserverid="' + connectserverid + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
-
-        html += '</ul>';
-
-        html += '</div>';
-
-        page.append(html);
-
-        var flyout = $('.serverMenu', page).popup({ positionTo: elem || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
-
-            $(this).off("popupafterclose").remove();
-
+        menuItems.push({
+            name: Globalize.translate('ButtonDelete'),
+            id: 'delete',
+            ironIcon: 'delete'
         });
 
-        $('.btnDelete', flyout).on('click', function () {
-            deleteServer(page, this.getAttribute('data-connectserverid'));
-            $('.serverMenu', page).popup("close").remove();
+        require(['actionsheet'], function () {
+
+            ActionSheetElement.show({
+                items: menuItems,
+                positionTo: elem,
+                callback: function (id) {
+
+                    switch (id) {
+
+                        case 'delete':
+                            deleteServer(page, connectserverid);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+
         });
     }
 
@@ -304,7 +306,7 @@
         html += '<a class="cardContent" href="' + href + '">';
 
         html += '<div class="cardImage" style="text-align:center;">';
-        html += '<i class="fa fa-globe" style="color:#fff;vertical-align:middle;font-size:100px;"></i>';
+        html += '<i class="fa fa-globe" style="color:#fff;vertical-align:middle;font-size:100px;margin-top:40px;"></i>';
         html += "</div>";
 
         // cardContent
@@ -315,8 +317,8 @@
 
         html += '<div class="cardFooter outerCardFooter">';
 
-        html += '<div class="cardText" style="text-align:right; float:right;">';
-        html += '<button class="listviewMenuButton imageButton btnCardOptions btnInviteMenu" type="button" data-role="none" style="margin: 4px 0 0;"><i class="material-icons">more_vert</i></button>';
+        html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
+        html += '<paper-icon-button icon="more-vert" class="btnInviteMenu"></paper-icon-button>';
         html += "</div>";
 
         html += '<div class="cardText">';
@@ -383,15 +385,6 @@
 
             servers = servers.slice(0);
 
-            if (AppInfo.isNativeApp) {
-                servers.push({
-                    Name: Globalize.translate('ButtonNewServer'),
-                    Id: 'new',
-                    showOptions: false,
-                    href: 'connectlogin.html?mode=manualserver'
-                });
-            }
-
             renderServers(page, servers);
 
             Dashboard.hideLoadingMsg();
@@ -412,6 +405,12 @@
             $(page).addClass('libraryPage').addClass('noSecondaryNavPage').removeClass('standalonePage');
         } else {
             $(page).removeClass('libraryPage').removeClass('noSecondaryNavPage').addClass('standalonePage');
+        }
+
+        if (AppInfo.isNativeApp) {
+            $('.addServer', page).show();
+        } else {
+            $('.addServer', page).hide();
         }
     }
 

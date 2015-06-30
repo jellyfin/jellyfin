@@ -25,7 +25,7 @@
         ApiClient.getGenres(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
-            $(document).scrollTop(0);
+            window.scrollTo(0, 0);
 
             var html = '';
 
@@ -35,7 +35,7 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false
-            })).trigger('create');
+            }));
 
             updateFilterControls(page);
 
@@ -85,7 +85,9 @@
                 });
             }
 
-            $('#items', page).html(html).lazyChildren();
+            var elem = page.querySelector('#items');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -169,7 +171,7 @@
             LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
         });
 
-    }).on('pageshowready', "#tvGenresPage", function () {
+    }).on('pagebeforeshowready', "#tvGenresPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
         var page = this;
@@ -188,7 +190,7 @@
         LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
 
             if (val) {
-                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+                Events.trigger($('#selectView', page).val(val).selectmenu('refresh')[0], 'change');
             } else {
                 reloadItems(page);
             }

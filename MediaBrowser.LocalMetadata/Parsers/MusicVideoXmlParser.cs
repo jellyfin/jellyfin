@@ -6,7 +6,7 @@ using System.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {
-    public class MusicVideoXmlParser : BaseItemXmlParser<MusicVideo>
+    public class MusicVideoXmlParser : BaseVideoXmlParser<MusicVideo>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseItemXmlParser{T}" /> class.
@@ -21,9 +21,11 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// Fetches the data from XML node.
         /// </summary>
         /// <param name="reader">The reader.</param>
-        /// <param name="item">The item.</param>
-        protected override void FetchDataFromXmlNode(XmlReader reader, MusicVideo item)
+        /// <param name="result">The result.</param>
+        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<MusicVideo> result)
         {
+            var item = result.Item;
+
             switch (reader.Name)
             {
                 case "Artist":
@@ -44,7 +46,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     break;
 
                 default:
-                    base.FetchDataFromXmlNode(reader, item);
+                    base.FetchDataFromXmlNode(reader, result);
                     break;
             }
         }

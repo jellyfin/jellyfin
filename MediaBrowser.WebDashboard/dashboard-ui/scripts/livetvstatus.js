@@ -190,7 +190,7 @@
             taskKey: 'RefreshGuide'
         });
 
-    }).on('pagehide', "#liveTvStatusPage", function () {
+    }).on('pagebeforehide', "#liveTvStatusPage", function () {
 
         var page = this;
 

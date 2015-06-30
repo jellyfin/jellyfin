@@ -94,7 +94,8 @@ namespace MediaBrowser.Server.Implementations.Intros
                     Type = ItemWithTrailerType.ItemWithTrailer,
                     User = user,
                     WatchingItem = item,
-                    Random = random
+                    Random = random,
+                    LibraryManager = _libraryManager
                 }));
             }
 
@@ -134,7 +135,8 @@ namespace MediaBrowser.Server.Implementations.Intros
                     Type = ItemWithTrailerType.ChannelTrailer,
                     User = user,
                     WatchingItem = item,
-                    Random = random
+                    Random = random,
+                    LibraryManager = _libraryManager
                 }));
             }
 
@@ -239,7 +241,7 @@ namespace MediaBrowser.Server.Implementations.Intros
             return true;
         }
 
-        internal static int GetSimiliarityScore(BaseItem item1, BaseItem item2, Random random)
+        internal static int GetSimiliarityScore(BaseItem item1, BaseItem item2, Random random, ILibraryManager libraryManager)
         {
             var points = 0;
 
@@ -260,11 +262,11 @@ namespace MediaBrowser.Server.Implementations.Intros
             // Find common studios
             points += item1.Studios.Where(i => item2.Studios.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 5);
 
-            var item2PeopleNames = item2.People.Select(i => i.Name)
+            var item2PeopleNames = libraryManager.GetPeople(item2).Select(i => i.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-            points += item1.People.Where(i => item2PeopleNames.ContainsKey(i.Name)).Sum(i =>
+            points += libraryManager.GetPeople(item1).Where(i => item2PeopleNames.ContainsKey(i.Name)).Sum(i =>
             {
                 if (string.Equals(i.Type, PersonType.Director, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Role, PersonType.Director, StringComparison.OrdinalIgnoreCase))
                 {
@@ -340,6 +342,7 @@ namespace MediaBrowser.Server.Implementations.Intros
             internal User User;
             internal BaseItem WatchingItem;
             internal Random Random;
+            internal ILibraryManager LibraryManager;
 
             private bool? _isPlayed;
             public bool IsPlayed
@@ -361,7 +364,7 @@ namespace MediaBrowser.Server.Implementations.Intros
                 {
                     if (!_score.HasValue)
                     {
-                        _score = GetSimiliarityScore(WatchingItem, Item, Random);
+                        _score = GetSimiliarityScore(WatchingItem, Item, Random, LibraryManager);
                     }
                     return _score.Value;
                 }

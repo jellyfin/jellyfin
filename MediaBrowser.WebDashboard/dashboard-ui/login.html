@@ -4,7 +4,7 @@
     <title>${TitleSignIn}</title>
 </head>
 <body>
-    <div id="loginPage" data-role="page" class="page standalonePage" data-theme="b" data-require="scripts/loginpage">
+    <div id="loginPage" data-role="page" class="page standalonePage" data-theme="b" data-require="scripts/loginpage,paperbuttonstyle">
 
         <div data-role="content">
 
@@ -17,17 +17,11 @@
 
                 <label for="txtManualPassword" style="text-align: left;">${LabelPassword}</label>
                 <input type="password" name="txtManualPassword" id="txtManualPassword" placeholder="password" />
-                <p>
-                    <button type="submit" data-icon="check">
-                        ${ButtonSignIn}
-                    </button>
-                </p>
+                <button type="submit" data-role="none" class="clearButton">
+                    <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignIn}</span></paper-button>
+                </button>
 
-                <p>
-                    <button type="button" data-icon="delete" onclick="LoginPage.cancelLogin();" class="btnCancel">
-                        ${ButtonCancel}
-                    </button>
-                </p>
+                <paper-button raised class="cancel block btnCancel" onclick="LoginPage.cancelLogin();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                 <br />
                 <br />
             </form>
@@ -39,23 +33,20 @@
                 <br />
 
                 <div class="readOnlyContent" style="margin: 2em auto 0;">
-                    <a href="#" onclick="LoginPage.showManualForm($.mobile.activePage, true);" data-role="button" data-icon="lock">${ButtonManualLogin}</a>
+                    <paper-button raised class="cancel block" onclick="LoginPage.showManualForm(jQuery.mobile.activePage, true);"><iron-icon icon="lock"></iron-icon><span>${ButtonManualLogin}</span></paper-button>
                 </div>
             </div>
 
             <div class="readOnlyContent" style="margin: 0 auto 1em;">
-                <a href="forgotpassword.html" data-role="button" data-icon="info">
-                    ${ButtonForgotPassword}
-                </a>
-
-                <p class="disclaimer" style="text-align: center; margin-top: 2em;"></p>
+                <paper-button raised class="cancel block btnForgotPassword" onclick="LoginPage.cancelLogin();"><iron-icon icon="info"></iron-icon><span>${ButtonForgotPassword}</span></paper-button>
 
                 <div class="connectButtons" style="display:none;">
-                    <br />
-                    <a href="selectserver.html" data-role="button" data-icon="action">
-                        ${ButtonChangeServer}
+                    <a href="selectserver.html" class="clearLink">
+                        <paper-button raised class="cancel block"><iron-icon icon="settings"></iron-icon><span>${ButtonChangeServer}</span></paper-button>
                     </a>
                 </div>
+
+                <p class="disclaimer" style="text-align: center; margin-top: 2em;"></p>
             </div>
 
         </div>

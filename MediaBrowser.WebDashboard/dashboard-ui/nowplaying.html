@@ -4,85 +4,97 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="scripts/nowplayingpage">
+    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="scripts/nowplayingpage,paperbuttonstyle,jqmicons">
 
-        <div class="libraryViewNav">
-            <a href="#" class="ui-btn-active tabButton" data-tab="tabNowPlaying">${TabNowPlaying}</a>
-            <a href="#" class="tabButton" data-tab="tabNavigation">${TabControls}</a>
-            <a href="#" class="tabButton" data-tab="tabAdvanced">${TabAdvanced}</a>
-            <a href="#" class="tabButton tabButtonPlaylist" data-tab="tabPlaylist">${TabPlaylist}</a>
-        </div>
+        <div data-role="content" style="overflow:visible;">
 
-        <div data-role="content" style="padding: 1em 0;">
+            <paper-fab mini icon="arrow-back" class="white" onclick="history.back()" style="position:relative;top:5px;left:5px;"></paper-fab>
+            <div style="float:right;position:relative;top:5px;right:5px;">
+                <span class="nowPlayingSelectedPlayer"></span>
+                <paper-fab mini icon="cast" class="blue nowPlayingCastIcon" onclick="MediaController.showPlayerSelection();" style="vertical-align:middle;"></paper-fab>
+            </div>
 
-            <div style="text-align: center;">
-                <div class="tabNowPlaying tabContent" style="display:none;">
-                    <div class="itemName" style="line-height: normal;"></div>
-                    <div class="nowPlayingPageImage" style="margin: 1em 0;"></div>
-                    <div>
-                        <div class="positionTime" style="display: inline-block; vertical-align: top; padding-top: 1px;"></div>
-                        <div class="positionSliderContainer sliderContainer" style="margin: 0 auto;">
-                            <input type="range" style="display: none;" class="mediaSlider positionSlider slider" step=".001" min="0" max="100" value="0" data-mini="true" data-theme="a" data-highlight="true" />
+            <neon-animated-pages selected="{{selected}}" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation">
+                <neon-animatable>
+                    <div style="text-align:center;">
+
+                        <div class="nowPlayingPageTitle" style="line-height: normal;">
                         </div>
-                        <div class="runtime" style="display: inline-block; vertical-align: top; padding-top: 1px;"></div>
-                    </div>
 
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="previous-track" data-inline="true" data-iconpos="notext" title="${ButtonPreviousTrack}" class="btnPreviousTrack btnPlayStateCommand">${ButtonPreviousTrack}</button>
-                        <button data-icon="pause" data-inline="true" data-iconpos="notext" title="${ButtonPause}" class="btnPause btnPlayStateCommand">${ButtonPause}</button>
-                        <button data-icon="play" data-inline="true" data-iconpos="notext" title="${ButtonPlay}" class="btnPlay btnPlayStateCommand">${ButtonPlay}</button>
-                        <button data-icon="stop" data-inline="true" data-iconpos="notext" title="${ButtonStop}" class="btnStop btnPlayStateCommand">${ButtonStop}</button>
-                        <button data-icon="next-track" data-inline="true" data-iconpos="notext" title="${ButtonNextTrack}" class="btnNextTrack btnPlayStateCommand">${ButtonNextTrack}</button>
-                    </div>
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="volume-up" data-inline="true" data-iconpos="notext" title="${ButtonVolumeUp}" class="btnCommand" data-command="VolumeUp">${ButtonVolumeUp}</button>
-                        <button data-icon="volume-off" data-inline="true" data-iconpos="notext" title="${ButtonMute}" class="btnCommand" data-command="ToggleMute">${ButtonMute}</button>
-                        <button data-icon="grid" data-inline="true" data-iconpos="notext" title="${ButtonOsd}" class="btnCommand videoButton" data-command="ToggleOsdMenu">${ButtonOsd}</button>
-                        <button data-icon="expand" data-inline="true" data-iconpos="notext" title="${ButtonFullscreen}" class="btnToggleFullscreen videoButton btnPlayStateCommand" data-command="ToggleFullscreen">${ButtonFullscreen}</button>
-                    </div>
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="volume-down" data-inline="true" data-iconpos="notext" title="${ButtonVolumeDown}" class="btnCommand" data-command="VolumeDown">${ButtonVolumeDown}</button>
-                        <button data-icon="audiocd" data-inline="true" data-iconpos="notext" title="${ButtonAudioTracks}" class="btnAudioTracks videoButton btnPlayStateCommand" data-command="GoToSearch">${ButtonAudioTracks}</button>
-                        <button data-icon="subtitles" data-inline="true" data-iconpos="notext" title="${ButtonSubtitles}" class="btnSubtitles videoButton btnPlayStateCommand" data-command="GoToSearch">${ButtonSubtitles}</button>
-                        <button data-icon="video" data-inline="true" data-iconpos="notext" title="${ButtonScenes}" class="btnChapters videoButton btnPlayStateCommand" data-command="GoToSearch">${ButtonScenes}</button>
-                    </div>
+                        <div class="nowPlayingInfoMetadata">
+                            <div class="nowPlayingPageImage" style="margin: 1em 0;"></div>
 
-                </div>
+                            <div class="nowPlayingPageTimeContainer">
+                                <div>
+                                    <paper-slider pin step=".1" min="0" max="100" value="0" class="noSwipe nowPlayingPositionSlider"></paper-slider>
+                                </div>
+                                <div style="text-align:left;">
+                                    <div class="positionTime" style="float:left;"></div>
+                                    <div class="runtime" style="float: right;"></div>
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="tabNavigation tabContent" style="display: none;">
+                        <div class="nowPlayingInfoButtons">
+                            <div>
+                                <paper-fab icon="skip-previous" class="btnPreviousTrack btnPlayStateCommand subdued" title="${ButtonPreviousTrack}"></paper-fab>
+                                <paper-fab icon="pause" class="btnPause btnPlayStateCommand subdued" title="${ButtonPause}"></paper-fab>
+                                <paper-fab icon="play-arrow" class="btnPlay btnPlayStateCommand subdued" title="${ButtonPlay}"></paper-fab>
+                                <paper-fab icon="stop" class="btnPlayStateCommand btnStop subdued" title="${ButtonStop}"></paper-fab>
+                                <paper-fab icon="skip-next" class="btnPlayStateCommand btnNextTrack subdued" title="${ButtonNextTrack}"></paper-fab>
+                            </div>
+                            <div class="buttonsRow2">
+                                <paper-fab icon="volume-up" class="btnCommand subdued volumeButton" title="${ButtonVolumeUp}" data-command="VolumeUp"></paper-fab>
+                                <paper-fab icon="volume-off" class="btnCommand subdued volumeButton" title="${ButtonMute}" data-command="ToggleMute"></paper-fab>
+                                <paper-fab icon="info" class="btnCommand videoButton subdued" title="${ButtonOsd}" data-command="ToggleOsdMenu"></paper-fab>
+                                <paper-fab icon="fullscreen" class="btnToggleFullscreen videoButton btnPlayStateCommand subdued" title="${ButtonFullscreen}" data-command="ToggleFullscreen"></paper-fab>
+                            </div>
+                            <div class="buttonsRow3">
+                                <paper-fab icon="volume-down" class="btnCommand subdued volumeButton" title="${ButtonVolumeDown}" data-command="VolumeDown"></paper-fab>
+                                <paper-fab icon="audiotrack" class="btnAudioTracks videoButton btnPlayStateCommand subdued" title="${ButtonAudioTracks}" data-command="GoToSearch"></paper-fab>
+                                <paper-fab icon="subtitles" class="btnSubtitles videoButton btnPlayStateCommand subdued" title="${ButtonSubtitles}" data-command="GoToSearch"></paper-fab>
+                                <paper-fab icon="movie" class="btnChapters videoButton btnPlayStateCommand subdued" title="${ButtonScenes}" data-command="GoToSearch"></paper-fab>
+                            </div>
+                            <div class="nowPlayingPageUserDataButtons" style="margin-top:1em;">
 
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="arrow-u" data-inline="true" data-iconpos="notext" title="${ButtonArrowUp}" class="btnArrowUp btnCommand" data-command="MoveUp">${ButtonArrowUp}</button>
+                            </div>
+                        </div>
                     </div>
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="arrow-l" data-inline="true" data-iconpos="notext" title="${ButtonArrowLeft}" class="btnArrowLeft btnCommand" data-command="MoveLeft">${ButtonArrowLeft}</button>
-                        <button data-icon="check" data-inline="true" data-iconpos="notext" title="${ButtonOk}" class="btnOk btnCommand" data-command="Select">${ButtonOk}</button>
-                        <button data-icon="arrow-r" data-inline="true" data-iconpos="notext" title="${ButtonArrowRight}" class="btnArrowRight btnCommand" data-command="MoveRight">${ButtonArrowRight}</button>
-                    </div>
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="arrow-d" data-inline="true" data-iconpos="notext" title="${ButtonArrowDown}" class="btnArrowDown btnCommand" data-command="MoveDown">${ButtonArrowDown}</button>
-                    </div>
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="back" data-inline="true" data-iconpos="notext" title="${ButtonBack}" class="btnBack btnCommand" data-command="Back">${ButtonBack}</button>
-                        <button data-icon="info" data-inline="true" data-iconpos="notext" title="${ButtonInfo}" class="btnInfo btnCommand" data-command="ToggleContextMenu">${ButtonInfo}</button>
-                    </div>
-                    <br />
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="home" data-inline="true" data-iconpos="notext" title="${ButtonHome}" class="btnGoHome btnCommand" data-command="GoHome">${ButtonHome}</button>
-                        <button data-inline="true" data-iconpos="right" title="${ButtonPageUp}" data-icon="plus" class="btnPageUp btnCommand ui-nodisc-icon" data-command="PageUp">${PageButtonAbbreviation}</button>
-                        <button data-inline="true" data-iconpos="right" title="${ButtonLetterUp}" data-icon="plus" class="btnLetterUp btnCommand ui-nodisc-icon" data-command="NextLetter">${LetterButtonAbbreviation}</button>
-                        <button data-icon="search" data-inline="true" data-iconpos="notext" title="${ButtonSearch}" class="btnShowSearch btnCommand" data-command="GoToSearch">${ButtonSearch}</button>
-                    </div>
-                    <div data-role="controlgroup" data-type="horizontal">
-                        <button data-icon="gear" data-inline="true" data-iconpos="notext" title="${ButtonSettings}" class="bthShowSettings btnCommand" data-command="GoToSettings">${ButtonSettings}</button>
-                        <button data-inline="true" data-iconpos="right" title="${ButtonPageDown}" data-icon="minus" class="btnPageDown btnCommand ui-nodisc-icon" data-command="PageDown">${PageButtonAbbreviation}</button>
-                        <button data-inline="true" data-iconpos="right" title="${ButtonLetterDown}" data-icon="minus" class="btnLetterDown btnCommand ui-nodisc-icon" data-command="PreviousLetter">${LetterButtonAbbreviation}</button>
-                        <button data-icon="camera" data-inline="true" data-iconpos="notext" title="${ButtonTakeScreenshot}" class="btnScreenshot btnCommand" data-command="TakeScreenshot">${ButtonTakeScreenshot}</button>
-                    </div>
-                </div>
-                <div class="tabAdvanced tabContent" style="display: none;">
+                </neon-animatable>
+                <neon-animatable>
+                    <div style="text-align:center;">
+                        <div>
+                            <paper-fab icon="keyboard-arrow-up" class="btnArrowUp btnCommand subdued" title="${ButtonArrowUp}" data-command="MoveUp"></paper-fab>
+                        </div>
+                        <div>
+                            <paper-fab icon="keyboard-arrow-left" class="btnArrowLeft btnCommand subdued" title="${ButtonArrowLeft}" data-command="MoveLeft"></paper-fab>
 
-                    <div class="readOnlyContent" style="margin: 0 auto; padding: 0 1em;">
+                            <paper-fab icon="check" class="btnOk btnCommand subdued" title="${ButtonOk}" data-command="Select"></paper-fab>
+                            <paper-fab icon="keyboard-arrow-right" class="btnArrowRight btnCommand subdued" title="${ButtonArrowRight}" data-command="MoveRight"></paper-fab>
+                        </div>
+                        <div>
+                            <paper-fab icon="keyboard-arrow-down" class="btnArrowDown btnCommand subdued" title="${ButtonArrowDown}" data-command="MoveDown"></paper-fab>
+                        </div>
+                        <div>
+                            <paper-fab icon="arrow-back" class="btnBack btnCommand subdued" title="${ButtonBack}" data-command="Back"></paper-fab>
+                            <paper-fab icon="info" class="btnInfo btnCommand subdued" title="${ButtonInfo}" data-command="ToggleContextMenu"></paper-fab>
+                        </div>
+                        <br />
+                        <div>
+                            <paper-fab icon="home" class="btnGoHome btnCommand subdued" title="${ButtonHome}" data-command="GoHome"></paper-fab>
+
+                            <!--<button data-inline="true" data-iconpos="right" title="${ButtonPageUp}" data-icon="plus" class="btnPageUp btnCommand ui-nodisc-icon" data-command="PageUp">${PageButtonAbbreviation}</button>
+                            <button data-inline="true" data-iconpos="right" title="${ButtonLetterUp}" data-icon="plus" class="btnLetterUp btnCommand ui-nodisc-icon" data-command="NextLetter">${LetterButtonAbbreviation}</button>-->
+                            <paper-fab icon="search" class="btnShowSearch btnCommand subdued" title="${ButtonSearch}" data-command="GoToSearch"></paper-fab>
+                        </div>
+                        <div>
+                            <paper-fab icon="settings" class="bthShowSettings btnCommand subdued" title="${ButtonSettings}" data-command="GoToSettings"></paper-fab>
+                            <!--<button data-inline="true" data-iconpos="right" title="${ButtonPageDown}" data-icon="minus" class="btnPageDown btnCommand ui-nodisc-icon" data-command="PageDown">${PageButtonAbbreviation}</button>
+                            <button data-inline="true" data-iconpos="right" title="${ButtonLetterDown}" data-icon="minus" class="btnLetterDown btnCommand ui-nodisc-icon" data-command="PreviousLetter">${LetterButtonAbbreviation}</button>-->
+                            <paper-fab icon="videocam" class="btnScreenshot btnCommand subdued" title="${ButtonTakeScreenshot}" data-command="TakeScreenshot"></paper-fab>
+                        </div>
+                    </div>
+                    <div class="readOnlyContent requiresJqmCreate" style="margin: 2em auto 0; padding: 0 1em 100px;">
 
                         <div data-role="collapsible">
                             <h2>${HeaderSendMessage}</h2>
@@ -124,23 +136,21 @@
                             </div>
                         </div>
                     </div>
-
-                </div>
-                <div class="tabPlaylist tabContent" style="display: none;">
-
-                    <div class="playlist itemsContainer" style="max-width:800px;margin: 0 auto;">
+                </neon-animatable>
+                <neon-animatable>
+                    <div class="playlist itemsContainer" style="max-width:800px;margin: 1.5em auto 0;">
                     </div>
+                </neon-animatable>
+            </neon-animated-pages>
 
-                </div>
-            </div>
-        </div>
+            <paper-tabs selected="{{selected}}" style="position:fixed;bottom:0;left:0;right:0;" alignbottom>
 
-        <div data-role="popup" id="popupAudioTrackMenu" data-transition="flip">
-            <div class="trackList"></div>
-        </div>
+                <paper-tab>${TabNowPlaying}</paper-tab>
+                <paper-tab>${TabControls}</paper-tab>
+                <paper-tab>${TabPlaylist}</paper-tab>
 
-        <div data-role="popup" id="popupSubtitleTrackMenu" data-transition="flip">
-            <div class="trackList"></div>
+            </paper-tabs>
+
         </div>
 
         <div class="chapterMenuOverlay" style="display: none;"></div>

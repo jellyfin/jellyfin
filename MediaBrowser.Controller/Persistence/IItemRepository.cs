@@ -147,6 +147,21 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="query">The query.</param>
         /// <returns>List&lt;Guid&gt;.</returns>
         List<Guid> GetItemIdsList(InternalItemsQuery query);
+
+        /// <summary>
+        /// Gets the people.
+        /// </summary>
+        /// <param name="itemId">The item identifier.</param>
+        /// <returns>List&lt;PersonInfo&gt;.</returns>
+        List<PersonInfo> GetPeople(Guid itemId);
+
+        /// <summary>
+        /// Updates the people.
+        /// </summary>
+        /// <param name="itemId">The item identifier.</param>
+        /// <param name="people">The people.</param>
+        /// <returns>Task.</returns>
+        Task UpdatePeople(Guid itemId, List<PersonInfo> people);
     }
 }
 

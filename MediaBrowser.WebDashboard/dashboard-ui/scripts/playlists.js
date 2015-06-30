@@ -20,11 +20,11 @@
 
     function showLoadingMessage(page) {
 
-        $('.popupLoading', page).popup('open');
+        Dashboard.showLoadingMsg();
     }
 
     function hideLoadingMessage(page) {
-        $('.popupLoading', page).popup('close');
+        Dashboard.hideLoadingMsg();
     }
 
     function reloadItems(page) {
@@ -40,7 +40,7 @@
             var user = response2[0];
 
             // Scroll back up so they can see the results from the beginning
-            $(document).scrollTop(0);
+            window.scrollTo(0, 0);
 
             var html = '';
 
@@ -86,10 +86,12 @@
                 $('.noItemsMessage', page).show();
             }
 
-            $('.itemsContainer', page).html(html).lazyChildren();
+            var elem = page.querySelector('.itemsContainer');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
 
             if (trigger) {
-                $('.itemsContainer', page).trigger('create');
+                $(elem).trigger('create');
             }
 
             $('.btnNextPage', page).on('click', function () {
@@ -183,7 +185,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#playlistsPage", function () {
+    }).on('pagebeforeshowready', "#playlistsPage", function () {
 
         var page = this;
 

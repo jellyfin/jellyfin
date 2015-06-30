@@ -1,0 +1,139 @@
+<!doctype html>
+<!--
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+
+  <title>iron-input tests</title>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+  <link rel="import" href="../iron-input.html">
+  <link rel="import" href="letters-only.html">
+
+</head>
+<body>
+
+  <test-fixture id="basic">
+    <template>
+      <input is="iron-input">
+    </template>
+  </test-fixture>
+
+  <test-fixture id="has-value">
+    <template>
+      <input is="iron-input" value="foobar">
+    </template>
+  </test-fixture>
+
+  <test-fixture id="has-bind-value">
+    <template>
+      <input is="iron-input" bind-value="foobar">
+    </template>
+  </test-fixture>
+
+  <test-fixture id="prevent-invalid-input">
+    <template>
+      <input is="iron-input" prevent-invalid-input pattern="[0-9]">
+    </template>
+  </test-fixture>
+
+  <test-fixture id="prevent-invalid-input-has-value">
+    <template>
+      <input is="iron-input" prevent-invalid-input pattern="[0-9]*" value="foobar">
+    </template>
+  </test-fixture>
+
+  <test-fixture id="prevent-invalid-input-has-bind-value">
+    <template>
+      <input is="iron-input" prevent-invalid-input pattern="[0-9]*" bind-value="foobar">
+    </template>
+  </test-fixture>
+
+  <test-fixture id="has-validator">
+    <template>
+      <letters-only></letters-only>
+      <input is="iron-input" validator="letters-only" pattern="[0-9]*">
+    </template>
+  </test-fixture>
+
+  <template is="dom-bind" id="bind-to-object">
+    <input is="iron-input" id="input" bind-value="{{foo}}">
+  </template>
+
+  <script>
+
+    suite('basic', function() {
+
+      test('setting bindValue sets value', function() {
+        var input = fixture('basic');
+        input.bindValue = 'foobar';
+        assert.equal(input.value, input.bindValue, 'value equals to bindValue');
+      });
+
+      test('changing the input triggers an event', function(done) {
+        var input = fixture('basic');
+
+        input.addEventListener('bind-value-changed', function(value) {
+          assert.equal(input.value, input.bindValue, 'value equals to bindValue');
+          done();
+        });
+
+        input.value = "foo";
+        input._onInput();
+      });
+
+      test('default value sets bindValue', function() {
+        var input = fixture('has-value');
+        assert.equal(input.bindValue, input.value, 'bindValue equals value');
+      });
+
+      test('default bindValue sets value', function() {
+        var input = fixture('has-bind-value');
+        assert.equal(input.value, input.bindValue, 'value equals to bindValue');
+      });
+
+      test('set bindValue to undefined', function() {
+        var scope = document.getElementById('bind-to-object');
+        scope.foo = undefined;
+        assert.ok(!scope.$.input.bindValue, 'bindValue is falsy');
+        assert.ok(!scope.$.input.value, 'value is falsy');
+      });
+
+      test('validator used instead of constraints api if provided', function() {
+        var input = fixture('has-validator')[1];
+        input.value = '123';
+        input.validate();
+        assert.isTrue(input.invalid, 'input is invalid');
+      });
+
+      test('prevent invalid input works in _onInput', function() {
+        var input = fixture('prevent-invalid-input');
+        input.value = '123';
+        input._onInput();
+        assert.equal(input.bindValue, '123');
+
+        input.value = '123foo';
+        input._onInput();
+        assert.equal(input.bindValue, '123');
+      });
+    });
+
+  </script>
+
+</body>
+</html>

@@ -312,7 +312,7 @@ function replaceQueryString(url, param, value) {
     var re = new RegExp("([?|&])" + param + "=.*?(&|$)", "i");
     if (url.match(re))
         return url.replace(re, '$1' + param + "=" + value + '$2');
-    else {
+    else if (value) {
 
         if (url.indexOf('?') == -1) {
             return url + '?' + param + "=" + value;
@@ -320,6 +320,8 @@ function replaceQueryString(url, param, value) {
 
         return url + '&' + param + "=" + value;
     }
+
+    return url;
 }
 
 function parseISO8601Date(s, options) {
@@ -567,7 +569,7 @@ function ticks_to_human(str) {
                             $this.unbind(touchMoveEvent, moveHandler);
                             if (start && stop) {
                                 if (stop.time - start.time < 1000 &&
-                                        Math.abs(start.coords[1] - stop.coords[1]) > 30 &&
+                                        Math.abs(start.coords[1] - stop.coords[1]) > 100 &&
                                         Math.abs(start.coords[0] - stop.coords[0]) < 75) {
                                     start.origin
                                             .trigger("swipeupdown")
@@ -591,3 +593,12 @@ function ticks_to_human(str) {
     });
 
 })();
+
+// This only exists because the polymer elements get distorted when using regular jquery show/hide
+$.fn.visible = function(visible) {
+
+    if (visible) {
+        return this.removeClass('hide');
+    }
+    return this.addClass('hide');
+};

@@ -4,11 +4,11 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="channelsLatestPage" data-role="page" class="page libraryPage channelsPage" data-contextname="${HeaderChannels}" data-require="scripts/channelslatest">
+    <div id="channelsLatestPage" data-role="page" class="page libraryPage channelsPage" data-contextname="${HeaderChannels}" data-require="scripts/sections,scripts/channelslatest,paperbuttonstyle">
 
         <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="#" class="ui-btn-active latestChannelItemsTab">${TabLatest}</a>
-            <a href="channels.html">${TabChannels}</a>
+            <a href="#" class="ui-btn-active latestChannelItemsTab"><i class="material-icons">new_releases</i>${TabLatest}</a>
+            <a href="channels.html"><i class="material-icons">live_tv</i>${TabChannels}</a>
         </div>
 
         <div data-role="content">

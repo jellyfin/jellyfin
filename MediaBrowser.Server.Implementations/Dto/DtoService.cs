@@ -636,7 +636,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             // Ordering by person type to ensure actors and artists are at the front.
             // This is taking advantage of the fact that they both begin with A
             // This should be improved in the future
-            var people = item.People.OrderBy(i => i.SortOrder ?? int.MaxValue)
+            var people = _libraryManager.GetPeople(item).OrderBy(i => i.SortOrder ?? int.MaxValue)
                 .ThenBy(i =>
                 {
                     if (i.IsType(PersonType.Actor))

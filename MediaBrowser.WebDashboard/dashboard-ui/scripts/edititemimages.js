@@ -416,7 +416,7 @@
         };
         reader.onabort = function () {
             Dashboard.hideLoadingMsg();
-            console.log('File read cancelled');
+            Logger.log('File read cancelled');
         };
 
         // Closure to capture the file information.
@@ -596,7 +596,7 @@
             return false;
         });
 
-    }).on('pagehide', "#editItemImagesPage", function () {
+    }).on('pagebeforehide', "#editItemImagesPage", function () {
 
         var page = this;
 

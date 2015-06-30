@@ -67,19 +67,22 @@
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <input type="checkbox" id="chkEnableRealtimeMonitor" name="chkEnableRealtimeMonitor" />
-                            <label for="chkEnableRealtimeMonitor">${LabelEnableRealtimeMonitor}</label>
+                            <label for="selectEnableRealtimeMonitor">${LabelEnableRealtimeMonitor}</label>
+                            <select id="selectEnableRealtimeMonitor" data-mini="true">
+                                <option value="Auto">${OptionAuto}</option>
+                                <option value="Enabled">${OptionYes}</option>
+                                <option value="Disabled">${OptionNo}</option>
+                            </select>
                             <div class="fieldDescription">
                                 ${LabelEnableRealtimeMonitorHelp}
                             </div>
                         </li>
                         <li>
-                            <button type="submit" data-theme="b" data-icon="check">
-                                ${ButtonSave}
+                            <button type="submit" data-role="none" class="clearButton">
+                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                             </button>
-                            <button type="button" onclick="Dashboard.navigate('dashboard.html');" data-icon="delete">
-                                ${ButtonCancel}
-                            </button>
+
+                            <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                         </li>
                     </ul>
 

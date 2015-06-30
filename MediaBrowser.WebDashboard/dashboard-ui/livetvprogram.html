@@ -4,14 +4,14 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvProgramPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvprogram">
+    <div id="liveTvProgramPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvprogram,livetvcss">
         <div class="libraryViewNav">
-            <a href="livetvsuggested.html">${TabSuggestions}</a>
-            <a href="livetvguide.html">${TabGuide}</a>
-            <a href="livetvchannels.html" class="ui-btn-active">${TabChannels}</a>
-            <a href="livetvrecordings.html">${TabRecordings}</a>
-            <a href="livetvtimers.html">${TabScheduled}</a>
-            <a href="livetvseriestimers.html">${TabSeries}</a>
+            <a href="livetvsuggested.html"><i class="material-icons">info</i>${TabSuggestions}</a>
+            <a href="livetvguide.html"><i class="material-icons">grid_on</i>${TabGuide}</a>
+            <a href="livetvchannels.html" class="ui-btn-active"><i class="material-icons">live_tv</i>${TabChannels}</a>
+            <a href="livetvrecordings.html"><i class="material-icons">slideshow</i>${TabRecordings}</a>
+            <a href="livetvtimers.html"><i class="material-icons">schedule</i>${TabScheduled}</a>
+            <a href="livetvseriestimers.html"><i class="material-icons">refresh</i>${TabSeries}</a>
         </div>
         <div style="padding: 1em 0;">
             <div>
@@ -39,13 +39,13 @@
         </div>
         <div class="detailButtonsContainer">
             <span id="playButtonContainer" style="display: none;">
-                <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
+                <paper-button raised class="secondary btnPlay"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlay}</span></paper-button>
             </span>
             <span id="cancelRecordingButtonContainer" style="display: none;">
-                <button id="btnCancelRecording" type="button" data-icon="delete" data-inline="true" data-mini="true">${ButtonCancelRecording}</button>
+                <paper-button raised class="subdued btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></paper-button>
             </span>
             <span id="recordButtonContainer" style="display: none;">
-                <button id="btnRecord" type="button" data-icon="video" data-inline="true" data-mini="true">${ButtonRecord}</button>
+                <paper-button raised class="subdued btnRecord"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
             </span>
         </div>
         <div data-role="content">

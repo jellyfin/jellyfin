@@ -58,5 +58,14 @@ namespace MediaBrowser.Controller.Entities
 
             return id;
         }
+
+        [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
 }

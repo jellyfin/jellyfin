@@ -1,0 +1,51 @@
+{
+  "name": "velocity",
+  "version": "1.2.2",
+  "homepage": "http://velocityjs.org",
+  "authors": [
+    {
+      "name": "Julian Shapiro",
+      "homepage": "http://julian.com/"
+    }
+  ],
+  "description": "Accelerated JavaScript animation.",
+  "main": [
+    "./velocity.js",
+    "./velocity.ui.js"
+  ],
+  "keywords": [
+    "animation",
+    "jquery",
+    "animate",
+    "lightweight",
+    "smooth",
+    "ui",
+    "velocity.js",
+    "velocityjs",
+    "javascript"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "*.json",
+    "!/bower.json",
+    "LICENSE",
+    "*.md"
+  ],
+  "dependencies": {
+    "jquery": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/julianshapiro/velocity.git"
+  },
+  "_release": "1.2.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "1.2.2",
+    "commit": "6b227928631aab5694255df3c219736c4c02449d"
+  },
+  "_source": "git://github.com/julianshapiro/velocity.git",
+  "_target": "~1.2.2",
+  "_originalSource": "velocity",
+  "_direct": true
+}

@@ -1,8 +1,10 @@
 ﻿using ImageMagickSharp;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Model.Drawing;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Emby.Drawing.ImageMagick
 {
@@ -12,13 +14,15 @@ namespace Emby.Drawing.ImageMagick
         private const int OffsetFromTopRightCorner = 38;
 
         private readonly IApplicationPaths _appPaths;
+        private readonly IHttpClient _iHttpClient;
 
-        public PlayedIndicatorDrawer(IApplicationPaths appPaths)
+        public PlayedIndicatorDrawer(IApplicationPaths appPaths, IHttpClient iHttpClient)
         {
             _appPaths = appPaths;
+            _iHttpClient = iHttpClient;
         }
 
-        public void DrawPlayedIndicator(MagickWand wand, ImageSize imageSize)
+        public async Task DrawPlayedIndicator(MagickWand wand, ImageSize imageSize)
         {
             var x = imageSize.Width - OffsetFromTopRightCorner;
 
@@ -34,7 +38,7 @@ namespace Emby.Drawing.ImageMagick
                     pixel.Opacity = 0;
                     pixel.Color = "white";
                     draw.FillColor = pixel;
-                    draw.Font = ExtractFont("webdings.ttf", _appPaths);
+                    draw.Font = await DownloadFont("webdings.ttf", "https://github.com/MediaBrowser/Emby.Resources/raw/master/fonts/webdings.ttf", _appPaths, _iHttpClient).ConfigureAwait(false);
                     draw.FontSize = FontSize;
                     draw.FontStyle = FontStyleType.NormalStyle;
                     draw.TextAlignment = TextAlignType.CenterAlign;
@@ -77,7 +81,37 @@ namespace Emby.Drawing.ImageMagick
             }
             catch (IOException)
             {
-                
+
+            }
+
+            return tempPath;
+        }
+
+        internal static async Task<string> DownloadFont(string name, string url, IApplicationPaths paths, IHttpClient httpClient)
+        {
+            var filePath = Path.Combine(paths.ProgramDataPath, "fonts", name);
+
+            if (File.Exists(filePath))
+            {
+                return filePath;
+            }
+
+            var tempPath = await httpClient.GetTempFile(new HttpRequestOptions
+            {
+                Url = url,
+                Progress = new Progress<double>()
+
+            }).ConfigureAwait(false);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
+            try
+            {
+                File.Copy(tempPath, filePath, false);
+            }
+            catch (IOException)
+            {
+
             }
 
             return tempPath;

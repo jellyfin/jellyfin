@@ -73,7 +73,7 @@
             }
 
             // Scroll back up so they can see the results from the beginning
-            $(document).scrollTop(0);
+            window.scrollTo(0, 0);
 
             var html = '';
 
@@ -81,8 +81,9 @@
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
-                viewButton: true,
-                showLimit: false
+                showLimit: false,
+                updatePageSizeSetting: false
+
             })).trigger('create');
 
             updateFilterControls(page);
@@ -111,7 +112,10 @@
                 $('.noItemsMessage', page).show();
             }
 
-            $('.itemsContainer', page).html(html).trigger('create').lazyChildren();
+            var elem = page.querySelector('.itemsContainer');
+            elem.innerHTML = html;
+            $(elem).trigger('create');
+            ImageLoader.lazyChildren(elem);
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -171,19 +175,11 @@
         }).checkboxradio('refresh');
 
         $('#selectView', page).val(view).selectmenu('refresh');
-
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
     $(document).on('pageinitdepends', "#playlistEditorPage", function () {
 
         var page = this;
-
-        $('#selectPageSize', page).on('change', function () {
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
 
         $('.btnPlay', page).on('click', function () {
             var userdata = currentItem.UserData || {};
@@ -194,7 +190,7 @@
                 mediaType = "Audio";
             }
 
-            LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, currentItem.IsFolder, mediaType, userdata.PlaybackPositionTicks);
+            LibraryBrowser.showPlayMenu(null, currentItem.Id, currentItem.Type, currentItem.IsFolder, mediaType, userdata.PlaybackPositionTicks);
         });
 
         $('.itemsContainer', page).on('needsrefresh', function () {
@@ -215,7 +211,7 @@
 
         });
 
-    }).on('pageshowready', "#playlistEditorPage", function () {
+    }).on('pagebeforeshowready', "#playlistEditorPage", function () {
 
         var page = this;
 

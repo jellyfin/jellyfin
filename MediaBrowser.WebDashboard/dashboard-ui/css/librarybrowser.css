@@ -13,34 +13,22 @@
 }
 
 .backdropPage.ui-page-theme-a {
-    background-color: rgba(240, 240,240, .86) !important;
+    background-color: rgba(240, 240,240, .94) !important;
 }
-
-    .backdropPage.ui-page-theme-a:not(.lightBackdropPage) {
-        background-color: rgba(240, 240,240, .94) !important;
-    }
 
 .ui-page-theme-b {
     background-color: #1f1f1f;
 }
 
 .backdropPage.ui-page-theme-b {
-    background-color: rgba(20, 20,20, .86) !important;
+    background-color: rgba(20, 20,20, .92) !important;
 }
 
-    .backdropPage.ui-page-theme-b:not(.lightBackdropPage) {
-        background-color: rgba(20, 20,20, .94) !important;
-    }
-
 .backdropContainer {
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
+    background-attachment: fixed;
 }
 
 .libraryPage .header {
@@ -64,22 +52,25 @@
 }
 
 .listHeader {
-    margin-top: 1em;
-    margin-bottom: .25em;
+    margin: .25em 0;
     padding-left: 2px;
 }
 
-.firstListHeader {
-    margin-top: 1em;
-}
+    .listHeader + paper-button {
+        margin-left: 2em;
+    }
 
 .ehsContent {
     margin: 0 auto;
 }
 
-.homePageSection + .homePageSection {
-    margin-top: .25em;
+.homePageSection {
+    margin-top: 20px;
 }
+
+    .homePageSection + .homePageSection {
+        margin-top: 30px;
+    }
 
 .sectionHeaderButton {
     vertical-align: middle;
@@ -104,10 +95,6 @@
     .hiddenSectionOnNonMobile {
         display: none;
     }
-}
-
-.firstListHeader + .sectionHeaderButton {
-    top: 3px;
 }
 
 @media all and (min-width: 500px) {
@@ -380,7 +367,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 620px;
+    height: 640px;
     position: relative;
 }
 
@@ -432,7 +419,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .lnkNextItem {
-    right: 0;
+    right: 10px;
 }
 
 .detailImageContainer {
@@ -622,8 +609,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .darkScrollbars ::-webkit-scrollbar {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
 }
 
 .darkScrollbars ::-webkit-scrollbar-button:start:decrement,
@@ -729,7 +716,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .libraryPanelHeader span {
         color: #fff;
         vertical-align: middle;
-        font-weight: 300;
+        font-weight: 400;
     }
 
 .detailImageProgressContainer {
@@ -987,18 +974,28 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     text-align: center;
     vertical-align: middle;
     width: 24px;
-    height: 19px;
-    padding-top: 3px;
+    height: 24px;
     border-radius: 50%;
     color: #fff;
     background: rgb(82, 181, 75);
     background: rgba(82, 181, 75, .8);
-    line-height: 16px;
+    line-height: 19px;
 }
 
-    .playedIndicator div:after {
-        background-color: transparent !important;
+    .playedIndicator .fa {
+        margin-top: 5px;
+        display: inline-block;
     }
+
+    .playedIndicator .material-icons {
+        font-size: 16px;
+        line-height: 24px;
+    }
+
+.textIndicator {
+    height: 22px;
+    padding-top: 2px;
+}
 
 .mediaSourceIndicator {
     display: block;
@@ -1025,16 +1022,17 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     text-align: center;
     vertical-align: middle;
     width: 24px;
-    height: 19px;
-    padding-top: 3px;
+    height: 24px;
     border-radius: 50%;
     color: #fff;
     background: rgb(204, 0, 0);
     background: rgba(204, 0, 0, .8);
+    line-height: 19px;
 }
 
-    .unidentifiedIndicator div:after {
-        background-color: transparent !important;
+    .unidentifiedIndicator .fa {
+        margin-top: 5px;
+        display: inline-block;
     }
 
 .itemProgress {
@@ -1141,9 +1139,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .alphabetPicker {
     position: fixed;
-    right: 2px;
+    right: 0;
     bottom: 5px;
-    width: 27px;
     z-index: 999;
     text-align: center;
     font-size: 13px;
@@ -1151,16 +1148,20 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     line-height: 1;
 }
 
-    .alphabetPicker a {
-        display: block;
-        text-decoration: none;
-        padding: 1px 0;
-        font-weight: 500;
-    }
+.bottomSecondaryNav .alphabetPicker {
+    bottom: 55px;
+}
 
-        .alphabetPicker a:not(.selectedCharacter) {
-            color: #bbb !important;
-        }
+.alphabetPicker a {
+    display: block;
+    text-decoration: none;
+    padding: 1px 5px 1px 10px;
+    font-weight: 500;
+}
+
+    .alphabetPicker a:not(.selectedCharacter) {
+        color: #bbb !important;
+    }
 
 
 .selectedCharacter {
@@ -1200,28 +1201,53 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         margin-right: auto;
     }
 
-@media all and (min-height: 500px) {
+@media all and (min-height: 520px) {
 
     .alphabetPicker {
         display: block;
     }
 
     .itemsContainerWithAlphaPicker {
-        margin-right: 25px;
+        margin-right: 15px;
     }
 }
 
-@media all and (min-width: 600px) {
+@media all and (min-width: 1200px) {
 
     .itemsContainerWithAlphaPicker {
-        margin-right: 10px;
+        margin-right: 0;
     }
 }
 
-@media all and (min-height: 800px) {
+@media all and (min-height: 600px) {
 
     .alphabetPicker a {
-        padding: 5px 0;
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+}
+
+@media all and (min-height: 650px) {
+
+    .alphabetPicker a {
+        padding-top: 3px;
+        padding-bottom: 3px;
+    }
+}
+
+@media all and (min-height: 700px) {
+
+    .alphabetPicker a {
+        padding-top: 4px;
+        padding-bottom: 4px;
+    }
+}
+
+@media all and (min-height: 750px) {
+
+    .alphabetPicker a {
+        padding-top: 5px;
+        padding-bottom: 5px;
     }
 }
 
@@ -1340,13 +1366,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (min-height: 1079px) and (min-width: 1400px) {
-
-    .type-home {
-        overflow-x: visible !important;
-    }
-}
-
 .channelHeader {
     padding: 1em;
     text-align: center;
@@ -1356,11 +1375,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .channelHeader a {
         text-decoration: none;
     }
-
-
-.itemsContainer:not(.fullWidthItemsContainer) .itemsListview {
-    max-width: 800px;
-}
 
 .itemsListview {
     margin: 0 auto !important;
@@ -1413,9 +1427,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         vertical-align: middle;
     }
 
-.listViewMoreButton {
+button.listviewMenuButton {
     padding-left: 20px !important;
     font-size: 20px;
+}
+
+paper-icon-button.listviewMenuButton {
+    margin-left: 20px !important;
 }
 
 .ui-li-has-icon > .ui-btn {
@@ -1547,10 +1565,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-.latestChannelItemsDisabled .latestChannelItemsTab {
-    display: none !important;
-}
-
 .studioTabDisabled .tvStudiosTab, .studioTabDisabled .movieStudiosTab {
     display: none !important;
 }
@@ -1560,14 +1574,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .tvEpisodesTabDisabled .tvEpisodesTab {
-    display: none !important;
-}
-
-.musicSongsTabDisabled .musicSongsTab {
-    display: none !important;
-}
-
-.musicArtistsTabDisabled .musicArtistsTab {
     display: none !important;
 }
 

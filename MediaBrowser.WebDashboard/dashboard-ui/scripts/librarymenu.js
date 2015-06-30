@@ -1,37 +1,35 @@
 ﻿(function (window, document, $, devicePixelRatio) {
 
+    var backStack = [];
+    var addNextToBackStack = true;
+
     function renderHeader() {
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        html += '<button type="button" data-role="none" class="headerButton headerButtonLeft headerBackButton"><div class="fa fa-arrow-left"></div></button>';
+        if (AppInfo.enableBackButton) {
+            html += '<paper-icon-button icon="chevron-left" class="headerButton headerButtonLeft headerBackButton"></paper-icon-button>';
+        }
 
-        html += '<button type="button" data-role="none" title="Menu" class="headerButton dashboardMenuButton barsMenuButton headerButtonLeft">';
-        html += '<div class="barMenuInner fa fa-bars">';
-        html += '</div>';
-        html += '</button>';
+        html += '<paper-icon-button icon="menu" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"></paper-icon-button>';
 
-        html += '<button type="button" data-role="none" title="Menu" class="headerButton libraryMenuButton barsMenuButton headerButtonLeft">';
-        html += '<div class="barMenuInner fa fa-bars">';
-        html += '</div>';
-        html += '</button>';
-
-        html += '<div class="libraryMenuButtonText headerButton"><span>EMBY</span></div>';
+        html += '<div class="libraryMenuButtonText headerButton">' + Globalize.translate('ButtonHome') + '</div>';
 
         html += '<div class="viewMenuSecondary">';
 
-        html += '<button id="btnCast" class="btnCast btnDefaultCast headerButton headerButtonRight" type="button" data-role="none" style="display:none;"><div class="headerSelectedPlayer"></div><i class="material-icons btnCastImageDefault">cast</i><i class="material-icons btnCastImageActive">cast_connected</i></button>';
+        html += '<span class="headerSelectedPlayer"></span>';
+        html += '<paper-icon-button icon="cast" class="btnCast headerButton headerButtonRight hide"></paper-icon-button>';
 
-        html += '<button onclick="Search.showSearchPanel();" type="button" data-role="none" class="headerButton headerButtonRight headerSearchButton" style="display:none;"><i class="material-icons">search</i></button>';
+        html += '<paper-icon-button icon="search" class="headerButton headerButtonRight headerSearchButton hide" onclick="Search.showSearchPanel();"></paper-icon-button>';
         html += '<div class="viewMenuSearch hide">';
         html += '<form class="viewMenuSearchForm">';
         html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
         html += '<div class="searchInputIcon fa fa-search"></div>';
-        html += '<button data-role="none" type="button" data-iconpos="notext" class="imageButton btnCloseSearch"><i class="fa fa-close"></i></button>';
+        html += '<paper-icon-button icon="close" class="btnCloseSearch"></paper-icon-button>';
         html += '</form>';
         html += '</div>';
 
-        html += '<button onclick="VoiceInputManager.startListening();" type="button" data-role="none" class="headerButton headerButtonRight headerVoiceButton" style="display:none;"><i class="material-icons">mic</i></button>';
+        html += '<paper-icon-button icon="mic" class="headerButton headerButtonRight headerVoiceButton hide" onclick="VoiceInputManager.startListening();"></paper-icon-button>';
 
         if (!showUserAtTop()) {
             html += '<button class="headerButton headerButtonRight headerUserButton" type="button" data-role="none" onclick="Dashboard.showUserFlyout(this);">';
@@ -40,7 +38,7 @@
         }
 
         if (!$.browser.mobile && !AppInfo.isNativeApp) {
-            html += '<a href="dashboard.html" class="headerButton headerButtonRight dashboardEntryHeaderButton" style="display:none;"><i class="material-icons">settings</i></a>';
+            html += '<paper-icon-button icon="settings" class="headerButton headerButtonRight dashboardEntryHeaderButton hide" onclick="Dashboard.navigate(\'dashboard.html\');"></paper-icon-button>';
         }
 
         html += '</div>';
@@ -48,49 +46,53 @@
         html += '</div>';
 
         $(document.body).append(html);
-        $('.viewMenuBar').lazyChildren();
+        ImageLoader.lazyChildren(document.querySelector('.viewMenuBar'));
 
-        $(document).trigger('headercreated');
+        Events.trigger(document, 'headercreated');
         bindMenuEvents();
     }
 
     function onBackClick() {
+
         if (Dashboard.exitOnBack()) {
             Dashboard.exit();
         }
         else {
+            addNextToBackStack = false;
+
+            backStack.length = Math.max(0, backStack.length - 1);
             history.back();
         }
     }
 
     function addUserToHeader(user) {
 
-        var header = $('.viewMenuBar');
+        var header = document.querySelector('.viewMenuBar');
 
         if (user.localUser) {
-            $('.btnCast', header).show();
-            $('.headerSearchButton', header).show();
+            $('.btnCast', header).visible(true);
+            $('.headerSearchButton', header).visible(true);
 
             requirejs(['voice/voice'], function () {
 
                 if (VoiceInputManager.isSupported()) {
-                    $('.headerVoiceButton', header).show();
+                    $('.headerVoiceButton', header).visible(true);
                 } else {
-                    $('.headerVoiceButton', header).hide();
+                    $('.headerVoiceButton', header).visible(false);
                 }
 
             });
 
         } else {
-            $('.btnCast', header).hide();
-            $('.headerVoiceButton', header).hide();
-            $('.headerSearchButton', header).hide();
+            $('.btnCast', header).visible(false);
+            $('.headerVoiceButton', header).visible(false);
+            $('.headerSearchButton', header).visible(false);
         }
 
         if (user.canManageServer) {
-            $('.dashboardEntryHeaderButton', header).show();
+            $('.dashboardEntryHeaderButton', header).visible(true);
         } else {
-            $('.dashboardEntryHeaderButton', header).hide();
+            $('.dashboardEntryHeaderButton', header).visible(false);
         }
 
         var userButtonHtml = '';
@@ -110,7 +112,12 @@
             } else {
                 userButtonHtml += '<div class="fa fa-user"></div>';
             }
-            $('.headerUserButton', header).html(userButtonHtml).lazyChildren();
+
+            var headerUserButton = header.querySelector('.headerUserButton');
+            if (headerUserButton) {
+                headerUserButton.innerHTML = userButtonHtml;
+                ImageLoader.lazyChildren(headerUserButton);
+            }
         }
     }
 
@@ -118,12 +125,10 @@
 
         if (AppInfo.isTouchPreferred) {
 
-            $('.libraryMenuButton').on('click', showLibraryMenu);
-            $('.dashboardMenuButton').on('click', showDashboardMenu);
+            $('.mainDrawerButton').on('touchend', openMainDrawer).on('click', openMainDrawer);
 
         } else {
-            $('.libraryMenuButton').createHoverTouch().on('hovertouch', showLibraryMenu);
-            $('.dashboardMenuButton').createHoverTouch().on('hovertouch', showDashboardMenu);
+            $('.mainDrawerButton').createHoverTouch().on('hovertouch', openMainDrawer);
         }
 
         $('.headerBackButton').on('click', onBackClick);
@@ -131,23 +136,6 @@
         // Have to wait for document ready here because otherwise 
         // we may see the jQM redirect back and forth problem
         $(initViewMenuBarHeadroom);
-
-        //$('.headerButtonViewMenu').off('click', onViewButtonClick).on('click', onViewButtonClick);
-
-        if (AppInfo.isNativeApp) {
-            $(document).off('swiperight.drawer').on('swiperight.drawer', '.libraryPage', onSwipeRight);
-        }
-    }
-
-    function onSwipeRight(event) {
-
-        if (event.swipestop && event.swipestop.coords) {
-            var x = event.swipestop.coords[0];
-
-            if (x < 50) {
-                showLibraryMenu();
-            }
-        }
     }
 
     function initViewMenuBarHeadroom() {
@@ -159,11 +147,16 @@
 
     function updateViewMenuBarHeadroom(page, viewMenuBar) {
 
-        if ($(page).hasClass('libraryPage')) {
-            viewMenuBar.removeClass('headroomDisabled');
+        if (page.classList.contains('libraryPage')) {
+            // Don't like this timeout at all but if headroom is activated during the page events it will jump and flicker on us
+            setTimeout(reEnableHeadroom, 700);
         } else {
-            viewMenuBar.addClass('headroomDisabled');
+            viewMenuBar.classList.add('headroomDisabled');
         }
+    }
+
+    function reEnableHeadroom() {
+        $('.headroomDisabled').removeClass('headroomDisabled');
     }
 
     function getItemHref(item, context) {
@@ -171,12 +164,171 @@
         return LibraryBrowser.getHref(item, context);
     }
 
-    function getViewsHtml() {
+    var requiresDrawerRefresh = true;
+    var requiresDashboardDrawerRefresh = true;
+    var lastOpenTime = new Date().getTime();
+
+    function openMainDrawer() {
+
+        var drawerPanel = document.querySelector('.mainDrawerPanel');
+        drawerPanel.openDrawer();
+        lastOpenTime = new Date().getTime();
+    }
+    function onMainDrawerOpened() {
+
+        if ($.browser.mobile) {
+            document.body.classList.add('bodyWithPopupOpen');
+        }
+
+        var drawer = document.querySelector('.mainDrawerPanel .mainDrawer');
+
+        ConnectionManager.user(window.ApiClient).done(function (user) {
+
+            if (requiresDrawerRefresh) {
+                ensureDrawerStructure(drawer);
+
+                refreshUserInfoInDrawer(user, drawer);
+                refreshLibraryInfoInDrawer(user, drawer);
+                refreshBottomUserInfoInDrawer(user, drawer);
+
+                Events.trigger(document, 'libraryMenuCreated');
+                updateLibraryMenu(user.localUser);
+            }
+
+            var pageElem = $($.mobile.activePage)[0];
+
+            if (requiresDrawerRefresh || requiresDashboardDrawerRefresh) {
+                refreshDashboardInfoInDrawer(pageElem, user, drawer);
+                requiresDashboardDrawerRefresh = false;
+            }
+
+            requiresDrawerRefresh = false;
+
+            updateLibraryNavLinks(pageElem);
+        });
+
+        document.querySelector('.mainDrawerPanel #drawer').classList.add('verticalScrollingDrawer');
+    }
+    function onMainDrawerClosed() {
+
+        document.body.classList.remove('bodyWithPopupOpen');
+        document.querySelector('.mainDrawerPanel #drawer').classList.remove('verticalScrollingDrawer');
+    }
+    function closeMainDrawer() {
+
+        document.getElementsByClassName('mainDrawerPanel')[0].closeDrawer();
+    }
+
+    function ensureDrawerStructure(drawer) {
+
+        if (drawer.querySelector('.mainDrawerContent')) {
+            return;
+        }
+
+        var html = '<div class="mainDrawerContent">';
+
+        html += '<div class="userheader">';
+        html += '</div>';
+        html += '<div class="libraryDrawerContent">';
+        html += '</div>';
+        html += '<div class="dashboardDrawerContent">';
+        html += '</div>';
+        html += '<div class="userFooter">';
+        html += '</div>';
+
+        html += '</div>';
+
+        drawer.innerHTML = html;
+    }
+
+    function refreshUserInfoInDrawer(user, drawer) {
 
         var html = '';
 
+        var userAtTop = showUserAtTop();
+
+        var homeHref = window.ApiClient ? 'index.html' : 'selectserver.html';
+
+        var hasUserImage = user.imageUrl && AppInfo.enableUserImage;
+
+        if (userAtTop) {
+
+            html += '<div class="drawerUserPanel">';
+            html += '<div class="drawerUserPanelInner">';
+            html += '<div class="drawerUserPanelContent">';
+
+            var imgWidth = 60;
+
+            if (hasUserImage) {
+                var url = user.imageUrl;
+                if (user.supportsImageParams) {
+                    url += "&width=" + (imgWidth * Math.max(devicePixelRatio || 1, 2));
+                    html += '<div class="lazy drawerUserPanelUserImage" data-src="' + url + '" style="width:' + imgWidth + 'px;height:' + imgWidth + 'px;"></div>';
+                }
+            } else {
+                html += '<div class="fa fa-user drawerUserPanelUserImage" style="font-size:' + imgWidth + 'px;"></div>';
+            }
+
+            html += '<div class="drawerUserPanelUserName">';
+            html += user.name;
+            html += '</div>';
+
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
+
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="index.html" onclick="return LibraryMenu.onLinkClicked(this);"><iron-icon icon="home" class="sidebarLinkIcon" style="color:#2196F3;"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonHome') + '</span></a>';
+
+        } else {
+            html += '<div style="margin-top:5px;"></div>';
+
+            html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '" onclick="return LibraryMenu.onLinkClicked(this);">';
+            html += '<div style="background-image:url(\'css/images/mblogoicon.png\');width:' + 28 + 'px;height:' + 28 + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.6em 0 1.5em;display:inline-block;"></div>';
+            html += Globalize.translate('ButtonHome');
+            html += '</a>';
+        }
+
+        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="nowplaying.html" onclick="return LibraryMenu.onLinkClicked(this);"><iron-icon icon="tablet-android" class="sidebarLinkIcon" style="color:#673AB7;"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonRemote') + '</span></a>';
+
+        var userHeader = drawer.querySelector('.userheader');
+
+        userHeader.innerHTML = html;
+
+        ImageLoader.fillImages(userHeader.getElementsByClassName('lazy'));
+    }
+
+    function refreshLibraryInfoInDrawer(user, drawer) {
+
+        var html = '';
+
+        html += '<div class="sidebarDivider"></div>';
+
         html += '<div class="libraryMenuOptions">';
         html += '</div>';
+
+        drawer.querySelector('.libraryDrawerContent').innerHTML = html;
+    }
+
+    function refreshDashboardInfoInDrawer(page, user, drawer) {
+
+        var html = '';
+
+        html += '<div class="sidebarDivider"></div>';
+
+        html += Dashboard.getToolsMenuHtml(page);
+
+        html = html.split('href=').join('onclick="return LibraryMenu.onLinkClicked(this);" href=');
+
+        drawer.querySelector('.dashboardDrawerContent').innerHTML = html;
+    }
+
+    function replaceAll(string, find, replace) {
+        return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+    }
+
+    function refreshBottomUserInfoInDrawer(user, drawer) {
+
+        var html = '';
 
         html += '<div class="adminMenuOptions">';
         html += '<div class="sidebarDivider"></div>';
@@ -185,89 +337,63 @@
         html += Globalize.translate('HeaderAdmin');
         html += '</div>';
 
-        html += '<a class="sidebarLink lnkMediaFolder lnkManageServer" data-itemid="dashboard" href="#"><span class="fa fa-server sidebarLinkIcon"></span>' + Globalize.translate('ButtonManageServer') + '</a>';
-        html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" href="edititemmetadata.html"><span class="fa fa-edit sidebarLinkIcon"></span>' + Globalize.translate('ButtonMetadataManager') + '</a>';
+        html += '<a class="sidebarLink lnkMediaFolder lnkManageServer" data-itemid="dashboard" href="#"><iron-icon icon="dashboard" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonManageServer') + '</span></a>';
+        html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" onclick="return LibraryMenu.onLinkClicked(this);" href="edititemmetadata.html"><iron-icon icon="mode-edit" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonMetadataManager') + '</span></a>';
 
         if (!$.browser.mobile && !AppInfo.isTouchPreferred) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" href="reports.html"><span class="fa fa-bar-chart sidebarLinkIcon"></span>' + Globalize.translate('ButtonReports') + '</a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" onclick="return LibraryMenu.onLinkClicked(this);" href="reports.html"><iron-icon icon="insert-chart" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonReports') + '</span></a>';
         }
         html += '</div>';
 
         html += '<div class="userMenuOptions">';
         html += '<div class="sidebarDivider"></div>';
 
-        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="inbox" href="notificationlist.html"><span class="fa fa-inbox sidebarLinkIcon"></span>';
+        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="inbox" onclick="return LibraryMenu.onLinkClicked(this);" href="notificationlist.html"><iron-icon icon="inbox" class="sidebarLinkIcon"></iron-icon>';
         html += Globalize.translate('ButtonInbox');
         html += '<div class="btnNotifications"><div class="btnNotificationsInner">0</div></div>';
         html += '</a>';
 
-        html += '<a class="sidebarLink lnkMediaFolder syncViewMenu" data-itemid="mysync" href="mysync.html"><span class="fa fa-refresh sidebarLinkIcon" ></span>' + Globalize.translate('ButtonSync') + '</a>';
+        if (user.localUser && showUserAtTop()) {
+            html += '<a class="sidebarLink lnkMediaFolder lnkMySettings" onclick="return LibraryMenu.onLinkClicked(this);" data-itemid="mysync" href="mypreferencesdisplay.html?userId=' + user.localUser.Id + '"><iron-icon icon="settings" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSettings') + '</span></a>';
+        }
+
+        html += '<a class="sidebarLink lnkMediaFolder lnkMySync" data-itemid="mysync" onclick="return LibraryMenu.onLinkClicked(this);" href="mysync.html"><iron-icon icon="refresh" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSync') + '</span></a>';
 
         if (Dashboard.isConnectMode()) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" href="selectserver.html"><span class="fa fa-globe sidebarLinkIcon"></span>' + Globalize.translate('ButtonSelectServer') + '</a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="return LibraryMenu.onLinkClicked(this);" href="selectserver.html"><span class="fa fa-globe sidebarLinkIcon"></span><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
         }
 
         if (showUserAtTop()) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="logout" href="#" onclick="Dashboard.logout();"><span class="fa fa-lock sidebarLinkIcon"></span>' + Globalize.translate('ButtonSignOut') + '</a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="logout" onclick="return LibraryMenu.onLogoutClicked(this);" href="#"><iron-icon icon="lock" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSignOut') + '</span></a>';
         }
 
         html += '</div>';
 
+        drawer.querySelector('.userFooter').innerHTML = html;
 
-        return html;
+        Events.on(drawer.querySelector('.lnkManageServer'), 'click', onManageServerClicked);
     }
 
-    function showLibraryMenu() {
+    function onSidebarLinkClick() {
+        var section = this.getElementsByClassName('sectionName')[0];
+        var text = section ? section.innerHTML : this.innerHTML;
 
-        var page = $.mobile.activePage;
-        var panel;
-
-        ConnectionManager.user(window.ApiClient).done(function (user) {
-
-            panel = getLibraryMenu(user);
-            updateLibraryNavLinks(page);
-
-            panel = $(panel).panel('toggle').off('mouseleave.librarymenu');
-
-            if (!AppInfo.isTouchPreferred) {
-                panel.on('mouseleave.librarymenu', function () {
-
-                    $(this).panel("close");
-
-                });
-            }
-        });
+        document.querySelector('.libraryMenuButtonText').innerHTML = text;
     }
 
-    function showDashboardMenu() {
+    function updateLibraryMenu(user) {
 
-        var page = $.mobile.activePage;
-        var panel = getDashboardMenu(page);
+        if (!user) {
 
-        panel = $(panel).panel('toggle').off('mouseleave.librarymenu');
-
-        if (!AppInfo.isTouchPreferred) {
-            panel.on('mouseleave.librarymenu', function () {
-
-                $(this).panel("close");
-
-            });
-        }
-    }
-
-    function updateLibraryMenu(panel) {
-
-        var apiClient = window.ApiClient;
-
-        if (!apiClient) {
-
-            $('.adminMenuOptions').hide();
-            $('.syncViewMenu').hide();
-            $('.userMenuOptions').hide();
+            $('.adminMenuOptions').visible(false);
+            $('.lnkMySync').visible(false);
+            $('.userMenuOptions').visible(false);
             return;
         }
 
         var userId = Dashboard.getCurrentUserId();
+
+        var apiClient = window.ApiClient;
 
         apiClient.getUserViews(userId).done(function (result) {
 
@@ -280,8 +406,8 @@
 
             html += items.map(function (i) {
 
-                var iconCssClass = 'fa';
-
+                var icon = 'folder';
+                var color = 'inherit';
                 var itemId = i.Id;
 
                 if (i.CollectionType == "channels") {
@@ -295,153 +421,76 @@
                 }
 
                 if (i.CollectionType == "photos") {
-                    iconCssClass += ' fa-photo';
+                    icon = 'photo-library';
+                    color = "#009688";
                 }
                 else if (i.CollectionType == "music" || i.CollectionType == "musicvideos") {
-                    iconCssClass += ' fa-music';
+                    icon = 'library-music';
+                    color = '#FB8521';
                 }
                 else if (i.CollectionType == "books") {
-                    iconCssClass += ' fa-book';
+                    icon = 'library-books';
+                    color = "#1AA1E1";
                 }
                 else if (i.CollectionType == "playlists") {
-                    iconCssClass += ' fa-list';
+                    icon = 'view-list';
+                    color = "#795548";
                 }
                 else if (i.CollectionType == "games") {
-                    iconCssClass += ' fa-gamepad';
+                    icon = 'games';
+                    color = "#F44336";
                 }
                 else if (i.CollectionType == "movies") {
-                    iconCssClass += ' fa-film';
+                    icon = 'video-library';
+                    color = '#CE5043';
                 }
                 else if (i.CollectionType == "channels" || i.Type == 'Channel') {
-                    iconCssClass += ' fa-globe';
+                    icon = 'videocam';
+                    color = '#E91E63';
                 }
-                else if (i.CollectionType == "tvshows" || i.CollectionType == "livetv") {
-                    iconCssClass += ' fa-video-camera';
+                else if (i.CollectionType == "tvshows") {
+                    icon = 'tv';
+                    color = "#4CAF50";
                 }
-                else {
-                    iconCssClass += ' fa-folder-open-o';
+                else if (i.CollectionType == "livetv") {
+                    icon = 'live-tv';
+                    color = "#293AAE";
                 }
 
-                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder sidebarLink" href="' + getItemHref(i, i.CollectionType) + '"><span class="' + iconCssClass + ' sidebarLinkIcon"></span><span class="sectionName">' + i.Name + '</span></a>';
+                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder sidebarLink" onclick="return LibraryMenu.onLinkClicked(this);" href="' + getItemHref(i, i.CollectionType) + '"><iron-icon icon="' + icon + '" class="sidebarLinkIcon" style="color:' + color + '"></iron-icon><span class="sectionName">' + i.Name + '</span></a>';
 
             }).join('');
 
-            var elem = $('.libraryMenuOptions').html(html);
+            var libraryMenuOptions = document.querySelector('.libraryMenuOptions');
+            libraryMenuOptions.innerHTML = html;
+            var elem = libraryMenuOptions;
 
-            $('.sidebarLink', elem).on('click', function () {
-
-                var section = $('.sectionName', this)[0];
-                var text = section ? section.innerHTML : this.innerHTML;
-
-                $('.libraryMenuButtonText').html(text);
-
-            });
+            $('.sidebarLink', elem).off('click', onSidebarLinkClick).on('click', onSidebarLinkClick);
         });
 
-        Dashboard.getCurrentUser().done(function (user) {
+        if (user.Policy.IsAdministrator) {
+            $('.adminMenuOptions').visible(true);
+        } else {
+            $('.adminMenuOptions').visible(false);
+        }
 
-            if (user.Policy.IsAdministrator) {
-                $('.adminMenuOptions').show();
-            } else {
-                $('.adminMenuOptions').hide();
-            }
-
-            if (user.Policy.EnableSync) {
-                $('.syncViewMenu').show();
-            } else {
-                $('.syncViewMenu').hide();
-            }
-        });
+        if (user.Policy.EnableSync) {
+            $('.lnkMySync').visible(true);
+        } else {
+            $('.lnkMySync').visible(false);
+        }
     }
 
     function showUserAtTop() {
-
-        return $.browser.mobile || AppInfo.isNativeApp;
+        return AppInfo.isNativeApp;
     }
 
     var requiresLibraryMenuRefresh = false;
     var requiresViewMenuRefresh = false;
 
-    function getLibraryMenu(user) {
-
-        var panel = $('#libraryPanel');
-
-        if (!panel.length) {
-
-            var html = '';
-
-            html += '<div data-role="panel" id="libraryPanel" class="libraryPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="b">';
-
-            html += '<div class="sidebarLinks librarySidebarLinks">';
-
-            var userAtTop = showUserAtTop();
-
-            var homeHref = window.ApiClient ? 'index.html' : 'selectserver.html';
-
-            var userHref = user.localUser && user.localUser.Policy.EnableUserPreferenceAccess ?
-                'mypreferencesdisplay.html?userId=' + user.localUser.Id :
-                (user.localUser ? ('mypreferenceswebclient.html?userId=' + user.localUser.Id) : '#');
-
-            var hasUserImage = user.imageUrl && AppInfo.enableUserImage;
-            if (userAtTop) {
-                var paddingLeft = hasUserImage ? 'padding-left:.7em;' : '';
-                html += '<a style="margin-top:0;' + paddingLeft + 'display:block;color:#fff;text-decoration:none;font-size:16px;font-weight:400!important;background: #111;" href="' + userHref + '">';
-
-                var imgWidth = 44;
-
-                if (hasUserImage) {
-                    var url = user.imageUrl;
-
-                    if (user.supportsImageParams) {
-                        url += "&width=" + (imgWidth * Math.max(devicePixelRatio || 1, 2));
-                    }
-
-                    html += '<div class="lazy" data-src="' + url + '" style="width:' + imgWidth + 'px;height:' + imgWidth + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin-right:.8em;display:inline-block;"></div>';
-                } else {
-                    html += '<span class="fa fa-user sidebarLinkIcon"></span>';
-                }
-
-                html += user.name;
-                html += '</a>';
-
-                html += '<div class="sidebarDivider" style="margin-top:0;"></div>';
-
-                html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '"><span class="fa fa-home sidebarLinkIcon"></span><span>' + Globalize.translate('ButtonHome') + '</span></a>';
-            } else {
-                html += '<div style="margin-top:5px;"></div>';
-
-                html += '<a class="lnkMediaFolder sidebarLink" href="' + homeHref + '">';
-                html += '<div class="lazy" data-src="css/images/mblogoicon.png" style="width:' + 28 + 'px;height:' + 28 + 'px;background-size:contain;background-repeat:no-repeat;background-position:center center;border-radius:1000px;vertical-align:middle;margin:0 1.4em 0 1.3em;display:inline-block;"></div>';
-                html += Globalize.translate('ButtonHome');
-                html += '</a>';
-            }
-
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="remote" href="nowplaying.html"><span class="fa fa-tablet sidebarLinkIcon"></span>' + Globalize.translate('ButtonRemote') + '</a>';
-
-            html += '<div class="sidebarDivider"></div>';
-
-            html += getViewsHtml();
-            html += '</div>';
-
-            html += '</div>';
-
-            $(document.body).append(html).trigger('libraryMenuCreated');
-
-            panel = $('#libraryPanel').panel({}).lazyChildren().trigger('create');
-
-            $('.lnkManageServer', panel).on('click', onManageServerClicked);
-
-            updateLibraryMenu();
-        }
-        else if (requiresLibraryMenuRefresh) {
-            updateLibraryMenu();
-            requiresLibraryMenuRefresh = false;
-        }
-
-        return panel;
-    }
-
     function onManageServerClicked() {
+
+        closeMainDrawer();
 
         requirejs(["scripts/registrationservices"], function () {
 
@@ -452,33 +501,9 @@
         });
     }
 
-    function getDashboardMenu(page) {
-
-        var panel = $('#dashboardPanel', page);
-
-        if (!panel.length) {
-
-            var html = '';
-
-            html += '<div data-role="panel" id="dashboardPanel" class="dashboardPanel" data-position="left" data-display="overlay" data-position-fixed="true" data-theme="b">';
-
-            html += '<div style="margin: 0 -1em;">';
-
-            html += '</div>';
-
-            html += '</div>';
-
-            $(document.body).append(html);
-            panel = $('#dashboardPanel').panel({}).trigger('create');
-        }
-
-        return panel;
-    }
-
     function setLibraryMenuText(text) {
 
-        $('.libraryMenuButtonText').html('<span>' + text + '</span>');
-
+        document.querySelector('.libraryMenuButtonText').innerHTML = '<span>' + text + '</span>';
     }
 
     function getTopParentId() {
@@ -487,11 +512,40 @@
     }
 
     window.LibraryMenu = {
-        showLibraryMenu: showLibraryMenu,
-
         getTopParentId: getTopParentId,
 
-        setText: setLibraryMenuText
+        setText: setLibraryMenuText,
+
+        onLinkClicked: function (link) {
+
+            // There doesn't seem to be a way to detect if the drawer is in the process of opening, so try to handle that here
+            if ((new Date().getTime() - lastOpenTime) > 200) {
+
+                setTimeout(function () {
+                    closeMainDrawer();
+
+                    setTimeout(function () {
+                        Dashboard.navigate(link.href);
+                    }, 350);
+                }, 50);
+            }
+
+            return false;
+        },
+
+        onLogoutClicked: function () {
+            // There doesn't seem to be a way to detect if the drawer is in the process of opening, so try to handle that here
+            if ((new Date().getTime() - lastOpenTime) > 200) {
+
+                closeMainDrawer();
+
+                setTimeout(function () {
+                    Dashboard.logout();
+                }, 350);
+            }
+
+            return false;
+        }
     };
 
     function updateCastIcon() {
@@ -500,90 +554,97 @@
 
         if (info.isLocalPlayer) {
 
-            $('.btnCast').addClass('btnDefaultCast').removeClass('btnActiveCast');
-            $('.headerSelectedPlayer').html('');
+            $('.btnCast').removeClass('btnActiveCast').each(function () {
+                this.icon = 'cast';
+            });
+            $('.nowPlayingSelectedPlayer').html('');
 
         } else {
 
-            $('.btnCast').removeClass('btnDefaultCast').addClass('btnActiveCast');
+            $('.btnCast').addClass('btnActiveCast').each(function () {
+                this.icon = 'cast-connected';
+            });
 
-            $('.headerSelectedPlayer').html((info.deviceName || info.name));
+            $('.nowPlayingSelectedPlayer').html((info.deviceName || info.name));
         }
     }
 
     function updateLibraryNavLinks(page) {
 
-        page = $(page);
+        var isLiveTvPage = page.classList.contains('liveTvPage');
+        var isChannelsPage = page.classList.contains('channelsPage');
+        var isEditorPage = page.classList.contains('metadataEditorPage');
+        var isReportsPage = page.classList.contains('reportsPage');
+        var isMySyncPage = page.classList.contains('mySyncPage');
 
-        var isLiveTvPage = page.hasClass('liveTvPage');
-        var isChannelsPage = page.hasClass('channelsPage');
-        var isEditorPage = page.hasClass('metadataEditorPage');
-        var isReportsPage = page.hasClass('reportsPage');
-        var isMySyncPage = page.hasClass('mySyncPage');
-
-        var id = isLiveTvPage || isChannelsPage || isEditorPage || isReportsPage || isMySyncPage || page.hasClass('allLibraryPage') ?
+        var id = isLiveTvPage || isChannelsPage || isEditorPage || isReportsPage || isMySyncPage || page.classList.contains('allLibraryPage') ?
             '' :
             getTopParentId() || '';
 
-        $('.lnkMediaFolder').each(function () {
+        var i, length;
+        var elems = document.getElementsByClassName('lnkMediaFolder');
 
-            var itemId = this.getAttribute('data-itemid');
+        for (i = 0, length = elems.length; i < length; i++) {
+
+            var lnkMediaFolder = elems[i];
+            var itemId = lnkMediaFolder.getAttribute('data-itemid');
 
             if (isChannelsPage && itemId == 'channels') {
-                $(this).addClass('selectedMediaFolder');
+                lnkMediaFolder.classList.add('selectedMediaFolder');
             }
             else if (isLiveTvPage && itemId == 'livetv') {
-                $(this).addClass('selectedMediaFolder');
+                lnkMediaFolder.classList.add('selectedMediaFolder');
             }
             else if (isEditorPage && itemId == 'editor') {
-                $(this).addClass('selectedMediaFolder');
+                lnkMediaFolder.classList.add('selectedMediaFolder');
             }
             else if (isReportsPage && itemId == 'reports') {
-                $(this).addClass('selectedMediaFolder');
+                lnkMediaFolder.classList.add('selectedMediaFolder');
             }
             else if (isMySyncPage && itemId == 'mysync') {
-                $(this).addClass('selectedMediaFolder');
+                lnkMediaFolder.classList.add('selectedMediaFolder');
             }
             else if (id && itemId == id) {
-                $(this).addClass('selectedMediaFolder');
+                lnkMediaFolder.classList.add('selectedMediaFolder');
             }
             else {
-                $(this).removeClass('selectedMediaFolder');
+                lnkMediaFolder.classList.remove('selectedMediaFolder');
             }
-
-        });
+        }
 
         var context = getParameterByName('context');
 
         if (context !== 'playlists') {
-            $('.scopedLibraryViewNav a', page).each(function () {
 
-                var src = this.href;
+            elems = page.querySelectorAll('.scopedLibraryViewNav a');
+
+            for (i = 0, length = elems.length; i < length; i++) {
+
+                var lnk = elems[i];
+                var src = lnk.href;
 
                 if (src.indexOf('#') != -1) {
-                    return;
+                    continue;
                 }
 
                 src = replaceQueryString(src, 'topParentId', id);
 
-                this.href = src;
-            });
+                lnk.href = src;
+            }
         }
     }
 
     function updateContextText(page) {
 
-        var jPage = $(page);
-
-        var name = jPage.attr('data-contextname');
+        var name = page.getAttribute('data-contextname');
 
         if (name) {
 
-            $('.libraryMenuButtonText').html('<span>' + name + '</span>');
+            document.querySelector('.libraryMenuButtonText').innerHTML = '<span>' + name + '</span>';
 
         }
-        else if (jPage.hasClass('allLibraryPage') || jPage.hasClass('type-interior')) {
-            $('.libraryMenuButtonText').html('<span class="logoLibraryMenuButtonText">EMBY</span>');
+        else if (page.classList.contains('allLibraryPage') || page.classList.contains('type-interior')) {
+            document.querySelector('.libraryMenuButtonText').innerHTML = Globalize.translate('ButtonHome');
         }
     }
 
@@ -602,20 +663,24 @@
 
     function buildViewMenuBar(page) {
 
-        if ($(page).hasClass('standalonePage')) {
-            $('.viewMenuBar').hide();
+        if (page.classList.contains('standalonePage')) {
+            $('.viewMenuBar').visible(false);
             return;
         }
 
+        var viewMenuBar = document.querySelector('.viewMenuBar');
+
         if (requiresViewMenuRefresh) {
-            $('.viewMenuBar').remove();
+            if (viewMenuBar) {
+                $(viewMenuBar).remove();
+                viewMenuBar = null;
+            }
         }
 
-        var viewMenuBar = $('.viewMenuBar').show();
-        if (!$('.viewMenuBar').length) {
+        if (!viewMenuBar) {
 
             renderHeader();
-            updateViewMenuBarHeadroom(page, $('.viewMenuBar'));
+            updateViewMenuBarHeadroom(page, document.querySelector('.viewMenuBar'));
 
             updateCastIcon();
 
@@ -626,6 +691,7 @@
             ConnectionManager.user(window.ApiClient).done(addUserToHeader);
 
         } else {
+            $(viewMenuBar).visible(true);
             updateContextText(page);
             updateLibraryNavLinks(page);
             updateViewMenuBarHeadroom(page, viewMenuBar);
@@ -633,69 +699,50 @@
         }
     }
 
-    // The first time we create the view menu bar, wait until doc ready + login validated
-    // Otherwise we run into the jQM redirect back and forth problem
-    var updateViewMenuBarBeforePageShow = false;
-
-    $(document).on('pageinit', ".page", function () {
+    $(document).on('pagebeforeshowready', ".page", function () {
 
         var page = this;
 
-        $(function () {
-            onPageInitDocumentReady(page);
-        });
+        requiresDashboardDrawerRefresh = true;
 
-    }).on('pagebeforeshowready', ".page", function () {
-
-        var page = this;
-
-        if (updateViewMenuBarBeforePageShow) {
-            onPageBeforeShowDocumentReady(page);
-        }
-
-    }).one('pageshowready', ".page", function () {
-
-        var page = this;
-
-        $(function () {
-            onPageBeforeShowDocumentReady(page);
-            updateViewMenuBarBeforePageShow = true;
-        });
+        onPageBeforeShowDocumentReady(page);
 
     }).on('pageshowready', ".page", function () {
 
         var page = this;
 
         onPageShowDocumentReady(page);
+
+    }).on('pagebeforehide', ".page", function () {
+
+        if (addNextToBackStack) {
+            var text = $('.libraryMenuButtonText').text() || document.title;
+
+            backStack.push(text);
+        }
+
+        addNextToBackStack = true;
+
+        $('.headroomEnabled').addClass('headroomDisabled');
     });
-
-    function onPageInitDocumentReady(page) {
-        $('.libraryViewNav', page).wrapInner('<div class="libraryViewNavInner"></div>');
-
-        $('.libraryViewNav a', page).each(function () {
-
-            this.innerHTML = '<span class="libraryViewNavLinkContent">' + this.innerHTML + '</span>';
-        });
-    }
 
     function onPageBeforeShowDocumentReady(page) {
 
         buildViewMenuBar(page);
 
-        var jpage = $(page);
-
-        var isLibraryPage = jpage.hasClass('libraryPage');
+        var isLibraryPage = page.classList.contains('libraryPage');
+        var darkDrawer = false;
 
         if (isLibraryPage) {
-            $(document.body).addClass('libraryDocument').removeClass('dashboardDocument');
+
+            document.body.classList.add('libraryDocument');
+            document.body.classList.remove('dashboardDocument');
+            document.body.classList.remove('hideMainDrawer');
 
             if (AppInfo.enableBottomTabs) {
-                $(page).addClass('noSecondaryNavPage');
+                page.classList.add('noSecondaryNavPage');
 
-                $(function () {
-
-                    $('.footer').addClass('footerOverBottomTabs');
-                });
+                document.querySelector('.footer').classList.add('footerOverBottomTabs');
 
             } else {
 
@@ -704,22 +751,69 @@
                     initHeadRoom(this);
                 });
             }
+
+            if (!AppInfo.isNativeApp) {
+                darkDrawer = true;
+            }
         }
-        else if (jpage.hasClass('type-interior')) {
-            $(document.body).addClass('dashboardDocument').removeClass('libraryDocument');
+        else if (page.classList.contains('type-interior')) {
+
+            document.body.classList.remove('libraryDocument');
+            document.body.classList.add('dashboardDocument');
+            document.body.classList.remove('hideMainDrawer');
+
         } else {
-            $(document.body).removeClass('dashboardDocument').removeClass('libraryDocument');
+
+            document.body.classList.remove('libraryDocument');
+            document.body.classList.remove('dashboardDocument');
+            document.body.classList.add('hideMainDrawer');
+        }
+
+        if (darkDrawer) {
+            document.querySelector('.mainDrawerPanel #drawer').classList.add('darkDrawer');
+        } else {
+            document.querySelector('.mainDrawerPanel #drawer').classList.remove('darkDrawer');
+        }
+
+        if (AppInfo.enableBackButton) {
+            updateBackButton(page);
+        }
+    }
+
+    function updateBackButton(page) {
+
+        var canGoBack = backStack.length > 0 && !page.classList.contains('homePage');
+
+        $('.headerBackButton').visible(canGoBack);
+
+        Events.off(page, 'swiperight', onPageSwipeLeft);
+
+        if (canGoBack) {
+            //Events.on(page, 'swiperight', onPageSwipeLeft);
+        }
+    }
+
+    function onPageSwipeLeft(e) {
+
+        var target = e.target;
+
+        if (!target.classList.contains('hiddenScrollX') && !$(target).parents('.hiddenScrollX').length) {
+            history.back();
         }
     }
 
     function onPageShowDocumentReady(page) {
-        var elem = $('.libraryViewNavInner .ui-btn-active:visible', page);
 
-        if (elem.length) {
-            elem[0].scrollIntoView();
+        if (!NavHelper.isBack()) {
+            var elems = page.querySelectorAll('.libraryViewNav .ui-btn-active');
+            elems = $(elems).filter(':visible');
 
-            // Scroll back up so in case vertical scroll was messed with
-            $(document).scrollTop(0);
+            if (elems.length) {
+                elems[0].scrollIntoView();
+
+                // Scroll back up so in case vertical scroll was messed with
+                window.scrollTo(0, 0);
+            }
         }
     }
 
@@ -732,16 +826,25 @@
         requirejs(["thirdparty/headroom"], function () {
 
             // construct an instance of Headroom, passing the element
-            var headroom = new Headroom(elem);
+            var headroom = new Headroom(elem, {
+                // or scroll tolerance per direction
+                tolerance: {
+                    down: 40,
+                    up: 0
+                }
+            });
             // initialise
             headroom.init();
+            elem.classList.add('headroomEnabled');
         });
     }
 
     function initializeApiClient(apiClient) {
 
         requiresLibraryMenuRefresh = true;
-        $(apiClient).off('websocketmessage.librarymenu', onWebSocketMessage).on('websocketmessage.librarymenu', onWebSocketMessage);
+        Events.off(apiClient, 'websocketmessage', onWebSocketMessage);
+
+        Events.on(apiClient, 'websocketmessage', onWebSocketMessage);
     }
 
     Dashboard.ready(function () {
@@ -750,21 +853,30 @@
             initializeApiClient(window.ApiClient);
         }
 
-        $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
+        Events.on(ConnectionManager, 'apiclientcreated', function (e, apiClient) {
             initializeApiClient(apiClient);
 
-        }).on('localusersignedin localusersignedout', function () {
+        });
+
+        Events.on(ConnectionManager, 'localusersignedin', function () {
             requiresLibraryMenuRefresh = true;
             requiresViewMenuRefresh = true;
+            requiresDrawerRefresh = true;
         });
-    });
 
-    $(function () {
+        Events.on(ConnectionManager, 'localusersignedout', function () {
+            requiresLibraryMenuRefresh = true;
+            requiresViewMenuRefresh = true;
+            requiresDrawerRefresh = true;
+        });
 
-        $(MediaController).on('playerchange', function () {
+        Events.on(MediaController, 'playerchange', function () {
             updateCastIcon();
         });
 
+        var mainDrawerPanel = document.querySelector('.mainDrawerPanel');
+        Events.on(mainDrawerPanel, 'paper-drawer-panel-open', onMainDrawerOpened);
+        Events.on(mainDrawerPanel, 'paper-drawer-panel-close', onMainDrawerClosed);
     });
 
 })(window, document, jQuery, window.devicePixelRatio);
@@ -780,7 +892,7 @@ $.fn.createHoverTouch = function () {
 
         timerId = setTimeout(function () {
 
-            $(elem).trigger('hovertouch');
+            Events.trigger(elem, 'hovertouch');
         }, 300);
     }
 
@@ -814,10 +926,36 @@ $.fn.createHoverTouch = function () {
         preventHover = true;
 
         if (preventHover) {
-            $(this).trigger('hovertouch');
+            Events.trigger(this, 'hovertouch');
             stopTimer(this);
             preventHover = false;
         }
     });
 
 };
+
+(function () {
+
+    var backUrl;
+
+    $(document).on('pagebeforeshow', ".page", function () {
+        
+        if (getWindowUrl() != backUrl) {
+            backUrl = null;
+        }
+    });
+
+    $(window).on("popstate", function () {
+        backUrl = getWindowUrl();
+    });
+
+    function isBack() {
+
+        return backUrl == getWindowUrl();
+    }
+
+    window.NavHelper = {
+        isBack: isBack
+    };
+
+})();

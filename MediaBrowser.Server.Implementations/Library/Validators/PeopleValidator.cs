@@ -72,39 +72,6 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             return options.DownloadOtherPeopleMetadata;
         }
 
-        private IEnumerable<PersonInfo> GetPeopleToValidate(BaseItem item, PeopleMetadataOptions options)
-        {
-            return item.People.Where(i =>
-            {
-                if (i.IsType(PersonType.Actor))
-                {
-                    return options.DownloadActorMetadata;
-                }
-                if (i.IsType(PersonType.Director))
-                {
-                    return options.DownloadDirectorMetadata;
-                }
-                if (i.IsType(PersonType.Composer))
-                {
-                    return options.DownloadComposerMetadata;
-                }
-                if (i.IsType(PersonType.Writer))
-                {
-                    return options.DownloadWriterMetadata;
-                }
-                if (i.IsType(PersonType.Producer))
-                {
-                    return options.DownloadProducerMetadata;
-                }
-                if (i.IsType(PersonType.GuestStar))
-                {
-                    return options.DownloadGuestStarMetadata;
-                }
-
-                return options.DownloadOtherPeopleMetadata;
-            });
-        }
-
         /// <summary>
         /// Validates the people.
         /// </summary>
@@ -119,10 +86,7 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             var peopleOptions = _config.Configuration.PeopleMetadataOptions;
 
-            var people = _libraryManager.RootFolder.GetRecursiveChildren()
-                .SelectMany(i => i.People)
-                .Where(i => !string.IsNullOrWhiteSpace(i.Name))
-                .ToList();
+            var people = _libraryManager.GetAllPeople();
 
             var dict = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 

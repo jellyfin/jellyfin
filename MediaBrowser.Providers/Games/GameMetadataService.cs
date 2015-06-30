@@ -12,30 +12,25 @@ namespace MediaBrowser.Providers.Games
 {
     public class GameMetadataService : MetadataService<Game, GameInfo>
     {
-        public GameMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
+        public GameMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager, libraryManager)
         {
         }
 
-        /// <summary>
-        /// Merges the specified source.
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="target">The target.</param>
-        /// <param name="lockedFields">The locked fields.</param>
-        /// <param name="replaceData">if set to <c>true</c> [replace data].</param>
-        /// <param name="mergeMetadataSettings">if set to <c>true</c> [merge metadata settings].</param>
-        protected override void MergeData(Game source, Game target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        protected override void MergeData(MetadataResult<Game> source, MetadataResult<Game> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
         {
             ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
 
-            if (replaceData || string.IsNullOrEmpty(target.GameSystem))
+            var sourceItem = source.Item;
+            var targetItem = target.Item;
+
+            if (replaceData || string.IsNullOrEmpty(targetItem.GameSystem))
             {
-                target.GameSystem = source.GameSystem;
+                targetItem.GameSystem = sourceItem.GameSystem;
             }
 
-            if (replaceData || !target.PlayersSupported.HasValue)
+            if (replaceData || !targetItem.PlayersSupported.HasValue)
             {
-                target.PlayersSupported = source.PlayersSupported;
+                targetItem.PlayersSupported = sourceItem.PlayersSupported;
             }
         }
     }

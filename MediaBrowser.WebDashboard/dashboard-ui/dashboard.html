@@ -4,7 +4,7 @@
     <title>${TitleServer}</title>
 </head>
 <body>
-    <div id="dashboardPage" data-role="page" class="page type-interior dashboardHomePage" data-require="scripts/dashboardpage">
+    <div id="dashboardPage" data-role="page" class="page type-interior dashboardHomePage" data-require="scripts/dashboardpage,paperbuttonstyle">
 
         <div data-role="content">
             <div class="content-primary">
@@ -49,8 +49,8 @@
                                 <p class="externalUrl"></p>
 
                                 <div style="margin-top: 1em;">
-                                    <button class="btnRestartContainer hide" id="btnRestartServer" type="button" data-icon="refresh" data-mini="true" data-inline="true" onclick="DashboardPage.restart();">${ButtonRestart}</button>
-                                    <button id="btnShutdown" type="button" data-icon="delete" data-mini="true" data-inline="true" onclick="DashboardPage.shutdown();">${ButtonShutdown}</button>
+                                    <paper-button raised class="subdued btnRestartContainer hide" onclick="DashboardPage.restart();"><iron-icon icon="refresh"></iron-icon><span>${ButtonRestart}</span></paper-button>
+                                    <paper-button id="btnShutdown" raised class="subdued" onclick="DashboardPage.shutdown();"><iron-icon icon="close"></iron-icon><span>${ButtonShutdown}</span></paper-button>
                                 </div>
                             </div>
                         </div>
@@ -131,7 +131,7 @@
                         </div>
                     </div>
                 </div>
-                
+
             </div>
         </div>
     </div>

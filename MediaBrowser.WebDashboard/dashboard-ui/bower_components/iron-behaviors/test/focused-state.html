@@ -1,0 +1,120 @@
+<!doctype html>
+<!--
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <title>focused-state</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+  <link rel="import" href="test-elements.html">
+</head>
+<body>
+
+  <test-fixture id="TrivialFocusedState">
+    <template>
+      <test-control tabindex="-1"></test-control>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="NestedFocusedState">
+    <template>
+      <nested-focusable></nested-focusable>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('focused-state', function() {
+      var focusTarget;
+
+      setup(function() {
+        focusTarget = fixture('TrivialFocusedState');
+      });
+
+      suite('when is focused', function() {
+        test('receives a focused attribute', function() {
+          expect(focusTarget.hasAttribute('focused')).to.be.eql(false);
+          MockInteractions.focus(focusTarget);
+          expect(focusTarget.hasAttribute('focused')).to.be.eql(true);
+        });
+
+        test('focused property is true', function() {
+          expect(focusTarget.focused).to.not.be.eql(true);
+          MockInteractions.focus(focusTarget);
+          expect(focusTarget.focused).to.be.eql(true);
+        });
+      });
+
+      suite('when is blurred', function() {
+        test('loses the focused attribute', function() {
+          MockInteractions.focus(focusTarget);
+          expect(focusTarget.hasAttribute('focused')).to.be.eql(true);
+          MockInteractions.blur(focusTarget);
+          expect(focusTarget.hasAttribute('focused')).to.be.eql(false);
+        });
+
+        test('focused property is false', function() {
+          MockInteractions.focus(focusTarget);
+          expect(focusTarget.focused).to.be.eql(true);
+          MockInteractions.blur(focusTarget);
+          expect(focusTarget.focused).to.be.eql(false);
+        });
+      });
+
+      suite('when the focused state is disabled', function() {
+        setup(function() {
+          focusTarget.disabled = true;
+        });
+
+        test('will not be focusable', function() {
+          expect(focusTarget.getAttribute('tabindex')).to.be.eql('-1');
+        });
+      });
+    });
+
+    suite('nested focusable', function() {
+      var focusable;
+
+      setup(function() {
+        focusable = fixture('NestedFocusedState');
+      });
+
+      test('focus/blur events fired on host element', function(done) {
+        var nFocusEvents = 0;
+        var nBlurEvents = 0;
+        focusable.addEventListener('focus', function() {
+          nFocusEvents += 1;
+          // setTimeout to wait for potentially more, erroneous events
+          setTimeout(function() {
+            assert.equal(nFocusEvents, 1, 'one focus event fired');
+            MockInteractions.blur(focusable.$.input);
+          });
+        });
+        focusable.addEventListener('blur', function() {
+          nBlurEvents += 1;
+          // setTimeout to wait for potentially more, erroneous events
+          setTimeout(function() {
+            assert.equal(nBlurEvents, 1, 'one blur event fired');
+            done();
+          });
+        });
+        MockInteractions.focus(focusable.$.input);
+      });
+
+    });
+
+  </script>
+
+</body>
+</html>

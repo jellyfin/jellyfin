@@ -2,20 +2,16 @@
 
     function getView() {
 
-        if (AppInfo.hasLowImageBandwidth) {
-            return 'ThumbCard';
-        }
-
         return 'Thumb';
     }
 
-    $(document).on('pageshowready', "#tvNextUpPage", function () {
+    function loadLatest(page) {
+
+        Dashboard.showLoadingMsg();
 
         var userId = Dashboard.getCurrentUserId();
 
         var parentId = LibraryMenu.getTopParentId();
-
-        var page = this;
 
         var limit = 30;
 
@@ -71,9 +67,21 @@
                 });
             }
 
-            $('#latestEpisodes', page).html(html).lazyChildren();
+            var elem = page.querySelector('#latestEpisodes');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
 
+            Dashboard.hideLoadingMsg();
+            LibraryBrowser.setLastRefreshed(page);
         });
+    }
+
+    $(document).on('pagebeforeshowready', "#tvNextUpPage", function () {
+
+        var page = this;
+        if (LibraryBrowser.needsRefresh(page)) {
+            loadLatest(page);
+        }
     });
 
 

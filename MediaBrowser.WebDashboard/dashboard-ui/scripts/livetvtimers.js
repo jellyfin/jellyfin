@@ -104,14 +104,17 @@
 
             renderTimers(page, result.Items);
 
+            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
-    $(document).on('pageshowready', "#liveTvTimersPage", function () {
+    $(document).on('pagebeforeshowready', "#liveTvTimersPage", function () {
 
         var page = this;
 
-        reload(page);
+        if (LibraryBrowser.needsRefresh(page)) {
+            reload(page);
+        }
     });
 
 })(jQuery, document);

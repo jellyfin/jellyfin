@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Connect;
@@ -22,14 +22,16 @@ namespace MediaBrowser.Server.Implementations.Connect
         private readonly IConnectManager _connectManager;
 
         private readonly INetworkManager _networkManager;
+        private readonly IApplicationHost _appHost;
 
-        public ConnectEntryPoint(IHttpClient httpClient, IApplicationPaths appPaths, ILogger logger, INetworkManager networkManager, IConnectManager connectManager)
+        public ConnectEntryPoint(IHttpClient httpClient, IApplicationPaths appPaths, ILogger logger, INetworkManager networkManager, IConnectManager connectManager, IApplicationHost appHost)
         {
             _httpClient = httpClient;
             _appPaths = appPaths;
             _logger = logger;
             _networkManager = networkManager;
             _connectManager = connectManager;
+            _appHost = appHost;
         }
 
         public void Run()
@@ -49,7 +51,8 @@ namespace MediaBrowser.Server.Implementations.Connect
                 {
                     using (var stream = await _httpClient.Get(new HttpRequestOptions
                     {
-                        Url = ipLookupUrl
+                        Url = ipLookupUrl,
+                        UserAgent = "Emby Server/" + _appHost.ApplicationVersion
 
                     }).ConfigureAwait(false))
                     {

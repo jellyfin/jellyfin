@@ -15,24 +15,8 @@ namespace MediaBrowser.Providers.Music
 {
     public class ArtistMetadataService : MetadataService<MusicArtist, ArtistInfo>
     {
-        private readonly ILibraryManager _libraryManager;
-
-        public ArtistMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager)
+        public ArtistMetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager) : base(serverConfigurationManager, logger, providerManager, providerRepo, fileSystem, userDataManager, libraryManager)
         {
-            _libraryManager = libraryManager;
-        }
-
-        /// <summary>
-        /// Merges the specified source.
-        /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="target">The target.</param>
-        /// <param name="lockedFields">The locked fields.</param>
-        /// <param name="replaceData">if set to <c>true</c> [replace data].</param>
-        /// <param name="mergeMetadataSettings">if set to <c>true</c> [merge metadata settings].</param>
-        protected override void MergeData(MusicArtist source, MusicArtist target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
-        {
-            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
 
         protected override async Task<ItemUpdateType> BeforeSave(MusicArtist item, bool isFullRefresh, ItemUpdateType currentUpdateType)
@@ -46,7 +30,7 @@ namespace MediaBrowser.Providers.Music
                     var itemFilter = item.GetItemFilter();
 
                     var taggedItems = item.IsAccessedByName ?
-                        _libraryManager.RootFolder.GetRecursiveChildren(i => !i.IsFolder && itemFilter(i)).ToList() :
+                        LibraryManager.RootFolder.GetRecursiveChildren(i => !i.IsFolder && itemFilter(i)).ToList() :
                         item.GetRecursiveChildren(i => i is IHasArtist && !i.IsFolder).ToList();
 
                     if (!item.LockedFields.Contains(MetadataFields.Genres))
@@ -66,6 +50,11 @@ namespace MediaBrowser.Providers.Music
             }
             
             return updateType;
+        }
+
+        protected override void MergeData(MetadataResult<MusicArtist> source, MetadataResult<MusicArtist> target, List<MetadataFields> lockedFields, bool replaceData, bool mergeMetadataSettings)
+        {
+            ProviderUtils.MergeBaseItemData(source, target, lockedFields, replaceData, mergeMetadataSettings);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿(function (window, store) {
+﻿(function (window) {
 
     function getDeviceProfile(serverAddress, deviceId, item, startPositionTicks, maxBitrate, mediaSourceId, audioStreamIndex, subtitleStreamIndex) {
 
@@ -397,7 +397,7 @@
 
             $('.sliderValue', elem).html(tooltext);
 
-            console.log("slidin", pct, self.currentDurationTicks, time);
+            Logger.log("slidin", pct, self.currentDurationTicks, time);
 
         });
     }
@@ -484,4 +484,4 @@
         showPlayerSelectionMenu: showPlayerSelectionMenu
     };
 
-})(window, window.appStorage);
+})(window);

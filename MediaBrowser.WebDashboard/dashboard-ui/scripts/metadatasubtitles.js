@@ -32,7 +32,7 @@
 
         html += '</div>';
 
-        $('.downloadLanguages', page).html(html).trigger("create");
+        $('.downloadLanguages', page).html(html).trigger('create');
 
         var langs = config.DownloadLanguages || [];
 

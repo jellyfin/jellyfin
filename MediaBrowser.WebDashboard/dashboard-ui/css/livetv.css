@@ -111,7 +111,7 @@
     border-bottom: 2px solid #0B487D;
 }
 
-.tvProgram:hover, .tvProgram:hover .tvProgramInfo {
+.pointerInput .tvProgram:hover, .pointerInput .tvProgram:hover .tvProgramInfo {
     background-color: #444;
 }
 
@@ -198,10 +198,6 @@
     font-size: 16px;
 }
 
-.channelTimeslotHeader .accentButton {
-    font-size: 15px;
-}
-
 .channelTimeslotHeader .timeslotHeaderInner {
     padding-top: .4em;
 }
@@ -230,19 +226,19 @@
     padding: .35em .5em .5em;
     display: block;
     text-decoration: none;
-    font-weight: 300 !important;
+    font-weight: 400 !important;
     color: #fff !important;
     position: relative;
 }
 
-.channelHeaderCell:hover {
+.pointerInput .channelHeaderCell:hover {
     background-color: #444;
 }
 
 .channelList {
     float: left;
     font-size: 16px;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .programGrid {
@@ -273,7 +269,7 @@
     overflow: hidden;
 }
 
-    .programCellInner:hover {
+    .pointerInput .programCellInner:hover {
         background-color: #444;
     }
 
@@ -342,7 +338,7 @@
         width: 6500px;
     }
 
-    .channelList, .channelTimeslotHeader .accentButton {
+    .channelList {
         font-size: 14px;
     }
 

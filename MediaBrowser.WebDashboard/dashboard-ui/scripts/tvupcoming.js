@@ -1,12 +1,12 @@
 ﻿(function ($, document) {
 
-    $(document).on('pageshowready', "#tvUpcomingPage", function () {
+    function loadUpcoming(page) {
 
-        var page = this;
+        Dashboard.showLoadingMsg();
 
         var limit = AppInfo.hasLowImageBandwidth ?
-         24 :
-         40;
+           24 :
+           40;
 
         var query = {
 
@@ -23,13 +23,8 @@
 
         if (query.ParentId) {
 
-            $('.scopedLibraryViewNav', page).show();
-            $('.globalNav', page).hide();
             context = 'tv';
 
-        } else {
-            $('.scopedLibraryViewNav', page).hide();
-            $('.globalNav', page).show();
         }
 
         ApiClient.getJSON(ApiClient.getUrl("Shows/Upcoming", query)).done(function (result) {
@@ -37,12 +32,13 @@
             var items = result.Items;
 
             if (items.length) {
-                $('.noItemsMessage', page).hide();
+                page.querySelector('.noItemsMessage').style.display = 'none';
             } else {
-                $('.noItemsMessage', page).show();
+                page.querySelector('.noItemsMessage').style.display = 'block';
             }
 
-            $('#upcomingItems', page).html(LibraryBrowser.getPosterViewHtml({
+            var elem = page.querySelector('#upcomingItems');
+            elem.innerHTML = LibraryBrowser.getPosterViewHtml({
                 items: items,
                 showLocationTypeIndicator: false,
                 shape: "backdrop",
@@ -54,8 +50,23 @@
                 lazy: true,
                 showDetailsMenu: true
 
-            })).lazyChildren();
+            });
+
+            ImageLoader.lazyChildren(elem);
+
+            Dashboard.hideLoadingMsg();
+
+            LibraryBrowser.setLastRefreshed(page);
+
         });
+    }
+    $(document).on('pagebeforeshowready', "#tvUpcomingPage", function () {
+
+        var page = this;
+
+        if (LibraryBrowser.needsRefresh(page)) {
+            loadUpcoming(page);
+        }
     });
 
 

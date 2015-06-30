@@ -32,6 +32,7 @@
 
             if (item.Type == "UserRootFolder") {
                 $('.editPageInnerContent', page).hide();
+                Dashboard.hideLoadingMsg();
                 return;
             } else {
                 $('.editPageInnerContent', page).show();
@@ -808,9 +809,9 @@
 
     function getAlbumArtists(form) {
 
-        return $('#txtAlbumArtist', form).val().trim().split(';').filter(function(s){
+        return $('#txtAlbumArtist', form).val().trim().split(';').filter(function (s) {
 
-        	return s.length > 0;
+            return s.length > 0;
 
         }).map(function (a) {
 
@@ -822,9 +823,9 @@
 
     function getArtists(form) {
 
-        return $('#txtArtist', form).val().trim().split(';').filter(function(s){
+        return $('#txtArtist', form).val().trim().split(';').filter(function (s) {
 
-        	return s.length > 0;
+            return s.length > 0;
 
         }).map(function (a) {
 
@@ -1361,7 +1362,7 @@
 
                 var page = $.mobile.activePage;
 
-                console.log('Item updated - reloading metadata');
+                Logger.log('Item updated - reloading metadata');
                 reload(page);
                 $('#refreshLoading', page).hide();
             }
@@ -1378,7 +1379,19 @@
         $(ApiClient).off("websocketmessage", onWebSocketMessageReceived);
     }
 
-    $(document).on('pageinit', "#editItemMetadataPage", function () {
+    function onItemDeleted(e, itemId) {
+
+        if (currentItem && currentItem.Id == itemId) {
+
+            if (currentItem.ParentId) {
+                Dashboard.navigate('edititemmetadata.html?id=' + currentItem.ParentId);
+            } else {
+                Dashboard.navigate('edititemmetadata.html');
+            }
+        }
+    }
+
+    $(document).on('pageinitdepends', "#editItemMetadataPage", function () {
 
         var page = this;
 
@@ -1427,7 +1440,7 @@
 
                 //$.mobile.urlHistory.ignoreNextHashChange = true;
                 window.location.hash = 'editItemMetadataPage?id=' + data.id;
-
+                alert(window.location.href);
                 reload(page);
             }
         });
@@ -1437,28 +1450,24 @@
             editPerson(page, {});
         });
 
-    }).on('pagebeforeshow', "#editItemMetadataPage", function () {
+        $('.editItemMetadataForm').off('submit', EditItemMetadataPage.onSubmit).on('submit', EditItemMetadataPage.onSubmit);
+        $('.popupIdentifyForm').off('submit', EditItemMetadataPage.onIdentificationFormSubmitted).on('submit', EditItemMetadataPage.onIdentificationFormSubmitted);
+        $('.popupEditPersonForm').off('submit', EditItemMetadataPage.onPersonInfoFormSubmit).on('submit', EditItemMetadataPage.onPersonInfoFormSubmit);
+        $('.popupAdvancedRefreshForm').off('submit', EditItemMetadataPage.onRefreshFormSubmit).on('submit', EditItemMetadataPage.onRefreshFormSubmit);
+        $('.identifyOptionsForm').off('submit', EditItemMetadataPage.onIdentificationOptionsSubmit).on('submit', EditItemMetadataPage.onIdentificationOptionsSubmit);
+
+    }).on('pageshowready', "#editItemMetadataPage", function () {
 
         var page = this;
 
         reload(page);
 
-        $(LibraryBrowser).on('itemdeleting.editor', function (e, itemId) {
+        $(LibraryBrowser).on('itemdeleting', onItemDeleted);
 
-            if (currentItem && currentItem.Id == itemId) {
-
-                if (currentItem.ParentId) {
-                    Dashboard.navigate('edititemmetadata.html?id=' + currentItem.ParentId);
-                } else {
-                    Dashboard.navigate('edititemmetadata.html');
-                }
-            }
-        });
-
-    }).on('pagehide', "#editItemMetadataPage", function () {
+    }).on('pagebeforehide', "#editItemMetadataPage", function () {
 
         var page = this;
-        $(LibraryBrowser).off('itemdeleting.editor');
+        $(LibraryBrowser).off('itemdeleting', onItemDeleted);
 
         unbindItemChanged(page);
 

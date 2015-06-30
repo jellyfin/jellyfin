@@ -1,0 +1,132 @@
+<!doctype html>
+<!--
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<html>
+<head>
+
+  <title>iron-icons</title>
+
+  <!-- polyfill WebComponents, if needed -->
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <!-- styles for the demo -->
+  <link href="../../paper-styles/demo-pages.html" rel="import">
+
+  <!-- load layout classes -->
+  <link rel="import" href="../../iron-flex-layout/classes/iron-flex-layout.html">
+
+  <!-- load default iconset -->
+  <link rel="import" href="../iron-icons.html">
+
+  <!-- load the rest -->
+  <link rel="import" href="../av-icons.html">
+  <link rel="import" href="../communication-icons.html">
+  <link rel="import" href="../device-icons.html">
+  <link rel="import" href="../editor-icons.html">
+  <link rel="import" href="../hardware-icons.html">
+  <link rel="import" href="../image-icons.html">
+  <link rel="import" href="../maps-icons.html">
+  <link rel="import" href="../notification-icons.html">
+  <link rel="import" href="../social-icons.html">
+
+  <style is="custom-style">
+    
+    h2 {
+      text-transform: capitalize;
+    }
+
+    iron-icon {
+      transition: all 0.2s;
+      -webkit-transition: all 0.2s;
+    }
+
+    iron-icon:hover {
+      fill: var(--google-yellow-700);
+    }
+
+    .set {
+      margin: auto;
+      padding: 1em 0;
+      border-bottom: 1px solid silver;
+    }
+
+    .set:last-of-type {
+      border-bottom: none;
+    }
+
+    .set:nth-of-type(4n-3) {
+      color: var(--paper-grey-700);
+    }
+
+    .set:nth-of-type(4n-2) {
+      color: var(--google-yellow-300);
+    }
+
+    .set:nth-of-type(4n-1) {
+      color: var(--google-green-500);
+    }
+
+    .set:nth-of-type(4n) {
+      color: var( --google-blue-500);
+    }
+
+    .container {
+      min-width: 10em;
+      padding: 1em 0.5em;
+      text-align: center;
+    }
+
+    .container > div {
+      margin-top: 0.5em;
+      color: black;
+      font-size: 10px;
+    }
+
+  </style>
+
+</head>
+<body>
+
+  
+  <template is="dom-bind">
+
+   <iron-meta type="iconset" list="{{iconsets}}"></iron-meta>
+
+    <template is="dom-repeat" items="{{iconsets}}">
+
+      <h2>{{item.name}}</h2>
+
+      <div class="set horizontal wrap layout">
+
+        <template is="dom-repeat" items="{{getIconNames(item)}}">
+
+          <span class="container vertical center layout flex-1">
+            <iron-icon icon="{{item}}"></iron-icon>
+            <div>{{item}}</div>
+          </span>
+
+        </template>
+
+      </div>
+
+    </template>
+
+  </template>
+
+  <script>
+
+    document.querySelector('[is=dom-bind]').getIconNames = function(iconset) {
+      return iconset.getIconNames();
+    };
+
+  </script>
+
+</body>
+</html>

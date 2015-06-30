@@ -61,52 +61,6 @@
         cursor: pointer;
     }
 
-.btn-floating {
-    -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
-    text-transform: uppercase;
-    border: none;
-    outline: 0;
-    -webkit-tap-highlight-color: transparent;
-    margin-bottom: 15px;
-    display: inline-block;
-    position: relative;
-    z-index: 1;
-    width: 37px;
-    height: 37px;
-    line-height: 37px;
-    padding: 0;
-    background-color: #2196F3;
-    -webkit-border-radius: 50%;
-    -moz-border-radius: 50%;
-    border-radius: 50%;
-    background-clip: padding-box;
-    -webkit-transition: 0.3s;
-    -moz-transition: 0.3s;
-    -o-transition: 0.3s;
-    -ms-transition: 0.3s;
-    transition: 0.3s;
-    cursor: pointer;
-}
-
-    .btn-floating i {
-        width: inherit;
-        display: inline-block;
-        text-align: center;
-        color: #FFF;
-        font-size: 1.6rem;
-        line-height: 37px;
-    }
-
-    .btn-floating.btn-floating-large {
-        width: 55.5px;
-        height: 55.5px;
-    }
-
-        .btn-floating.btn-floating-large i {
-            line-height: 55.5px;
-        }
-
 .btn-flat {
     box-shadow: none;
     background-color: transparent;
@@ -169,23 +123,6 @@
     font-size: 15px;
     font-family: Roboto !important;
 }
-
-.btnSmall {
-    font-size: 13px;
-}
-
-.btnCancel {
-    background-color: #444;
-}
-
-.ui-page-theme-a .btnCancel {
-    background-color: #e8e8e8;
-    color: #333 !important;
-}
-
-    .ui-page-theme-a .btnCancel i {
-        color: #666 !important;
-    }
 
 .btn-inline {
     display: inline-block;

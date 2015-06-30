@@ -2,22 +2,6 @@
 
     var currentItem;
 
-    function getExternalPlayUrl(item) {
-
-        var providerIds = item.ProviderIds || {};
-        if (item.GameSystem == "Nintendo" && item.MediaType == "Game" && providerIds.NesBox && providerIds.NesBoxRom) {
-
-            return "http://nesbox.com/game/" + providerIds.NesBox + '/rom/' + providerIds.NesBoxRom;
-        }
-
-        if (item.GameSystem == "Super Nintendo" && item.MediaType == "Game" && providerIds.NesBox && providerIds.NesBoxRom) {
-
-            return "http://snesbox.com/game/" + providerIds.NesBox + '/rom/' + providerIds.NesBoxRom;
-        }
-
-        return null;
-    }
-
     function reload(page) {
 
         var id = getParameterByName('id');
@@ -49,20 +33,11 @@
             renderDetails(page, item, context);
             LibraryBrowser.renderDetailPageBackdrop(page, item);
 
-            var externalPlayUrl = getExternalPlayUrl(item);
-            $('.btnPlayExternal', page).attr('href', externalPlayUrl || '#');
-
-            if (externalPlayUrl) {
-                $('.btnPlayExternal', page).removeClass('hide');
-                $('.btnPlay', page).addClass('hide');
-            }
-            else if (MediaController.canPlay(item)) {
+            if (MediaController.canPlay(item)) {
                 $('.btnPlay', page).removeClass('hide');
-                $('.btnPlayExternal', page).addClass('hide');
             }
             else {
                 $('.btnPlay', page).addClass('hide');
-                $('.btnPlayExternal', page).addClass('hide');
             }
 
             if (item.LocalTrailerCount && item.PlayAccess == 'Full') {
@@ -96,11 +71,7 @@
                 $('.splitVersionContainer', page).hide();
             }
 
-            if (LibraryBrowser.getMoreCommands(item, user).length) {
-                $('.btnMoreCommands', page).show();
-            } else {
-                $('.btnMoreCommands', page).show();
-            }
+            $('.btnMoreCommands', page).visible(LibraryBrowser.getMoreCommands(item, user).length > 0);
 
             if (user.Policy.IsAdministrator) {
                 $('.chapterSettingsButton', page).show();
@@ -152,13 +123,13 @@
 
         var imageHref = user.Policy.IsAdministrator && item.MediaType != 'Photo' ? "edititemimages.html?id=" + item.Id : "";
 
-        LibraryBrowser.renderDetailImage($('.detailImageContainer', page), item, imageHref);
+        LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, imageHref);
     }
 
     function onWebSocketMessage(e, data) {
 
         var msg = data;
-        var page = $.mobile.activePage;
+        var page = $($.mobile.activePage)[0];
 
         if (msg.MessageType === "UserDataChanged") {
 
@@ -252,12 +223,10 @@
         else if (context == 'home-latest') {
             elem = $('.homeTabs', page).show();
             $('a', elem).removeClass('ui-btn-active');
-            $('.lnkHomeLatest', page).addClass('ui-btn-active');
         }
         else if (context == 'photos' || context == 'photos-photos') {
             elem = $('.photoTabs', page).show();
             $('a', elem).removeClass('ui-btn-active');
-            $('.lnkHomeLatest', page).addClass('ui-btn-active');
 
             if (context == 'photos-photos') {
                 $('.lnkPhotos', page).addClass('ui-btn-active');
@@ -393,7 +362,7 @@
             $('#itemTagline', page).hide();
         }
 
-        LibraryBrowser.renderOverview($('.itemOverview', page), item);
+        LibraryBrowser.renderOverview(page.querySelector('.itemOverview'), item);
 
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item));
 
@@ -406,7 +375,7 @@
         LibraryBrowser.renderGenres($('.itemGenres', page), item, context);
         LibraryBrowser.renderStudios($('.itemStudios', page), item, context);
         renderUserDataIcons(page, item);
-        LibraryBrowser.renderLinks($('.itemExternalLinks', page), item);
+        LibraryBrowser.renderLinks(page.querySelector('.itemExternalLinks'), item);
 
         $('.criticRatingScore', page).html((item.CriticRating || '0') + '%');
 
@@ -883,10 +852,12 @@
                 });
             }
 
-            var elem = $('.childrenItemsContainer', page).html(html).lazyChildren();
+            var elem = page.querySelector('.childrenItemsContainer');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
 
             if (trigger) {
-                elem.trigger('create');
+                $(elem).trigger('create');
             }
 
             if (item.Type == "BoxSet") {
@@ -904,19 +875,19 @@
         });
 
         if (item.Type == "Season") {
-            $('#childrenTitle', page).html(Globalize.translate('HeaderEpisodes'));
+            page.querySelector('#childrenTitle').innerHTML = Globalize.translate('HeaderEpisodes');
         }
         else if (item.Type == "Series") {
-            $('#childrenTitle', page).html(Globalize.translate('HeaderSeasons'));
+            page.querySelector('#childrenTitle').innerHTML = Globalize.translate('HeaderSeasons');
         }
         else if (item.Type == "MusicAlbum") {
-            $('#childrenTitle', page).html(Globalize.translate('HeaderTracks'));
+            page.querySelector('#childrenTitle').innerHTML = Globalize.translate('HeaderTracks');
         }
         else if (item.Type == "GameSystem") {
-            $('#childrenTitle', page).html(Globalize.translate('HeaderGames'));
+            page.querySelector('#childrenTitle').innerHTML = Globalize.translate('HeaderGames');
         }
         else {
-            $('#childrenTitle', page).html(Globalize.translate('HeaderItems'));
+            page.querySelector('#childrenTitle').innerHTML = Globalize.translate('HeaderItems');
         }
     }
 
@@ -992,7 +963,9 @@
 
         html += '</div>';
 
-        $('.collectionItems', page).append(html).lazyChildren();
+        var collectionItems = page.querySelector('.collectionItems');
+        $(collectionItems).append(html);
+        ImageLoader.lazyChildren(collectionItems);
     }
 
     function renderUserDataIcons(page, item) {
@@ -1090,10 +1063,11 @@
         }
 
         if (limit && result.TotalRecordCount > limit) {
-            html += '<p style="margin: 0;padding-left: .5em;"><button class="moreCriticReviews" data-inline="true" data-mini="true">' + Globalize.translate('ButtonMoreItems') + '</button></p>';
+            html += '<p style="margin: 0;"><paper-button raised class="more moreCriticReviews">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
         }
 
-        $('#criticReviewsContent', page).html(html).trigger('create');
+        var criticReviewsContent = page.querySelector('#criticReviewsContent');
+        criticReviewsContent.innerHTML = html;
     }
 
     function renderThemeMedia(page, item) {
@@ -1248,10 +1222,12 @@
         }
 
         if (limit && chapters.length > limit) {
-            html += '<p style="margin: 0;padding-left: .5em;"><button class="moreScenes" data-inline="true" data-mini="true">' + Globalize.translate('ButtonMoreItems') + '</button></p>';
+            html += '<p style="margin: 0;"><paper-button raised class="more moreScenes">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
         }
 
-        $('#scenesContent', page).html(html).trigger('create').lazyChildren();
+        var scenesContent = page.querySelector('#scenesContent');
+        scenesContent.innerHTML = html;
+        ImageLoader.lazyChildren(scenesContent);
     }
 
     function renderMediaSources(page, item) {
@@ -1266,7 +1242,8 @@
             html = '<br/>' + html;
         }
 
-        $('#mediaInfoContent', page).html(html).trigger('create');
+        var mediaInfoContent = page.querySelector('#mediaInfoContent');
+        mediaInfoContent.innerHTML = html;
     }
 
     function getMediaSourceHtml(item, version) {
@@ -1480,7 +1457,7 @@
         }
 
         if (limit && items.length > limit) {
-            html += '<p style="margin: 0;padding-left: .5em;"><button class="' + moreButtonClass + '" data-inline="true" data-mini="true">' + Globalize.translate('ButtonMoreItems') + '</button></p>';
+            html += '<p style="margin: 0;padding-left:5px;"><paper-button raised class="more ' + moreButtonClass + '">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
         }
 
         return html;
@@ -1490,7 +1467,9 @@
 
         ApiClient.getSpecialFeatures(user.Id, item.Id).done(function (specials) {
 
-            $('#specialsContent', page).html(getVideosHtml(specials, user, limit, "moreSpecials")).lazyChildren().trigger('create');
+            var specialsContent = page.querySelector('#specialsContent');
+            specialsContent.innerHTML = getVideosHtml(specials, user, limit, "moreSpecials");
+            ImageLoader.lazyChildren(specialsContent);
 
         });
     }
@@ -1557,10 +1536,12 @@
         }
 
         if (limit && casts.length > limit) {
-            html += '<p style="margin: 0;padding-left: .5em;"><button class="morePeople" data-inline="true" data-mini="true">' + Globalize.translate('ButtonMoreItems') + '</button></p>';
+            html += '<p style="margin: 0;padding-left:5px;"><paper-button raised class="more morePeople">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
         }
 
-        $('#castContent', page).html(html).lazyChildren().trigger('create');
+        var castContent = page.querySelector('#castContent');
+        castContent.innerHTML = html;
+        ImageLoader.lazyChildren(castContent);
     }
 
     function play(startPosition) {
@@ -1604,7 +1585,13 @@
         });
     }
 
-    $(document).on('pageinit', "#itemDetailPage", function () {
+    function onItemDeleted(e, itemId) {
+        if (currentItem && currentItem.Id == itemId) {
+            Dashboard.navigate('index.html');
+        }
+    }
+
+    $(document).on('pageinitdepends', "#itemDetailPage", function () {
 
         var page = this;
 
@@ -1622,11 +1609,6 @@
 
         $('.btnPlayTrailer', page).on('click', function () {
             playTrailer(page);
-        });
-
-        $('.btnPlayExternal', page).on('click', function () {
-
-            ApiClient.markPlayed(Dashboard.getCurrentUserId(), currentItem.Id, new Date());
         });
 
         $('.btnSplitVersions', page).on('click', function () {
@@ -1661,54 +1643,47 @@
 
         });
 
-    }).on('pageshow', "#itemDetailPage", function () {
-
-        var page = this;
-
-        $(page).on("click.moreScenes", ".moreScenes", function () {
+        $(page).on("click", ".moreScenes", function () {
 
             Dashboard.getCurrentUser().done(function (user) {
                 renderScenes(page, currentItem, user);
             });
 
-        }).on("click.morePeople", ".morePeople", function () {
+        }).on("click", ".morePeople", function () {
 
             renderCast(page, currentItem, getContext(currentItem));
 
-        }).on("click.moreSpecials", ".moreSpecials", function () {
+        }).on("click", ".moreSpecials", function () {
 
             Dashboard.getCurrentUser().done(function (user) {
                 renderSpecials(page, currentItem, user);
             });
 
-        }).on("click.moreCriticReviews", ".moreCriticReviews", function () {
+        }).on("click", ".moreCriticReviews", function () {
 
             renderCriticReviews(page, currentItem);
 
         });
 
+    }).on('pagebeforeshowready', "#itemDetailPage", function () {
+
+        var page = this;
+
         reload(page);
 
-        $(ApiClient).on('websocketmessage', onWebSocketMessage);
+        Events.on(ApiClient, 'websocketmessage', onWebSocketMessage);
 
-        $(LibraryBrowser).on('itemdeleting.detailpage', function (e, itemId) {
+        Events.on(LibraryBrowser, 'itemdeleting', onItemDeleted);
 
-            if (currentItem && currentItem.Id == itemId) {
-                Dashboard.navigate('index.html');
-            }
-        });
+    }).on('pagebeforehide', "#itemDetailPage", function () {
 
-    }).on('pagehide', "#itemDetailPage", function () {
-
-        $(LibraryBrowser).off('itemdeleting.detailpage');
+        Events.off(LibraryBrowser, 'itemdeleting', onItemDeleted);
 
         currentItem = null;
 
         var page = this;
 
-        $(page).off("click.moreScenes").off("click.morePeople").off("click.moreSpecials").off("click.moreCriticReviews");
-
-        $(ApiClient).off('websocketmessage', onWebSocketMessage);
+        Events.off(ApiClient, 'websocketmessage', onWebSocketMessage);
     });
 
     function itemDetailPage() {
@@ -1719,6 +1694,5 @@
     }
 
     window.ItemDetailPage = new itemDetailPage();
-
 
 })(jQuery, document, LibraryBrowser, window);

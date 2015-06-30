@@ -1,0 +1,48 @@
+{
+  "name": "paper-behaviors",
+  "version": "1.0.2",
+  "description": "Common behaviors across the paper elements",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "main": [
+    "paper-button-behavior.html",
+    "paper-radio-button-behavior.html"
+  ],
+  "keywords": [
+    "web-components",
+    "web-component",
+    "polymer",
+    "paper",
+    "behavior"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/paper-behaviors"
+  },
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/PolymerElements/paper-behaviors",
+  "dependencies": {
+    "iron-behaviors": "PolymerElements/iron-behaviors#^1.0.0",
+    "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "iron-test-helpers": "polymerelements/iron-test-helpers#^1.0.0",
+    "paper-material": "PolymerElements/paper-material#^1.0.0",
+    "paper-ripple": "PolymerElements/paper-ripple#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "web-component-tester": "*",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "_release": "1.0.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.0.2",
+    "commit": "4dd226a2cc5b780a73d0058cd9998b6e0af1cb2c"
+  },
+  "_source": "git://github.com/polymerelements/paper-behaviors.git",
+  "_target": "^1.0.0",
+  "_originalSource": "polymerelements/paper-behaviors"
+}

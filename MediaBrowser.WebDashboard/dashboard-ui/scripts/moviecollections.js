@@ -33,13 +33,9 @@
             var user = response2[0];
 
             // Scroll back up so they can see the results from the beginning
-            $(document).scrollTop(0);
+            window.scrollTo(0, 0);
 
             var html = '';
-
-            var addiontalButtonsHtml = user.Policy.IsAdministrator ?
-                ('<button class="btnNewCollection" data-mini="true" data-icon="plus" data-inline="true" data-iconpos="notext">' + Globalize.translate('ButtonNew') + '</button>') :
-                '';
 
             $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
@@ -47,7 +43,6 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false,
-                additionalButtonsHtml: addiontalButtonsHtml
             })).trigger('create');
 
             updateFilterControls(page);
@@ -116,10 +111,12 @@
                 $('.noItemsMessage', page).show();
             }
 
-            $('.itemsContainer', page).html(html).lazyChildren();
+            var elem = page.querySelector('.itemsContainer');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
 
             if (trigger) {
-                $('.itemsContainer', page).trigger('create');
+                $(elem).trigger('create');
             }
 
             $('.btnNextPage', page).on('click', function () {
@@ -167,8 +164,6 @@
         $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
         $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
         $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
-
-        $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
 
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
@@ -228,20 +223,6 @@
             reloadItems(page);
         });
 
-        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
-
-            query.NameStartsWithOrGreater = character;
-            query.StartIndex = 0;
-
-            reloadItems(page);
-
-        }).on('alphaclear', function (e) {
-
-            query.NameStartsWithOrGreater = '';
-
-            reloadItems(page);
-        });
-
         $('#selectView', this).on('change', function () {
 
             view = this.value;
@@ -257,7 +238,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#boxsetsPage", function () {
+    }).on('pagebeforeshowready', "#boxsetsPage", function () {
 
         var page = this;
 
@@ -379,6 +360,9 @@
         var panel = getNewCollectionPanel(true).panel('toggle');
 
         $('.fldSelectedItemIds', panel).val(items.join(','));
+
+
+        require(['jqmicons']);
 
         if (items.length) {
             $('.fldSelectCollection', panel).show();

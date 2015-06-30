@@ -28,7 +28,7 @@
         ApiClient.getJSON(ApiClient.getUrl('Trailers', query)).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
-            $(document).scrollTop(0);
+            window.scrollTo(0, 0);
 
             if (result.Items.length) {
                 $('.noItemsMessage', page).hide();
@@ -46,7 +46,7 @@
                 showLimit: false
             });
 
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
             updateFilterControls(page);
 
@@ -58,9 +58,9 @@
                 showDetailsMenu: true
             });
 
-            var elem = $('.itemsContainer', page).html(html).lazyChildren();
-
-            $(pagingHtml).appendTo(elem).trigger('create');
+            var elem = page.querySelector('.itemsContainer');
+            elem.innerHTML = html + pagingHtml;
+            ImageLoader.lazyChildren(elem);
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -212,7 +212,7 @@
 
         $('.popupTrailerReelForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pageshowready', "#movieTrailersPage", function () {
+    }).on('pagebeforeshowready', "#movieTrailersPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

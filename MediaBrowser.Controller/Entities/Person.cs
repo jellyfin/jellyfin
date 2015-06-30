@@ -76,7 +76,16 @@ namespace MediaBrowser.Controller.Entities
 
         public Func<BaseItem, bool> GetItemFilter()
         {
-            return i => i.People.Any(p => string.Equals(p.Name, Name, StringComparison.OrdinalIgnoreCase));
+            return i => LibraryManager.GetPeople(i).Any(p => string.Equals(p.Name, Name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get
+            {
+                return false;
+            }
         }
     }
 

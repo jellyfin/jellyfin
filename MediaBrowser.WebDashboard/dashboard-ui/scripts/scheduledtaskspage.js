@@ -29,7 +29,7 @@
 
         var html = "";
 
-        html += '<ul data-role="listview" data-inset="true" data-auto-enhanced="false" data-split-icon="Play">';
+        html += '<ul data-role="listview" data-inset="true" data-auto-enhanced="false" data-split-icon="action">';
 
         var currentCategory;
 
@@ -53,15 +53,15 @@
 
             if (task.State == "Idle") {
 
-                html += "<a id='btnTask" + task.Id + "' class='btnStartTask' href='#' data-taskid='" + task.Id + "' data-icon='play'>" + Globalize.translate('ButtonStart') + "</a>";
+                html += "<a id='btnTask" + task.Id + "' class='btnStartTask' href='#' data-taskid='" + task.Id + "' data-icon='action'>" + Globalize.translate('ButtonStart') + "</a>";
             }
             else if (task.State == "Running") {
 
-                html += "<a id='btnTask" + task.Id + "' class='btnStopTask' href='#' data-taskid='" + task.Id + "' data-icon='stop'>" + Globalize.translate('ButtonStop') + "</a>";
+                html += "<a id='btnTask" + task.Id + "' class='btnStopTask' href='#' data-taskid='" + task.Id + "' data-icon='delete'>" + Globalize.translate('ButtonStop') + "</a>";
 
             } else {
 
-                html += "<a id='btnTask" + task.Id + "' class='btnStartTask' href='#' data-taskid='" + task.Id + "' data-icon='play' style='display:none;'>" + Globalize.translate('ButtonStart') + "</a>";
+                html += "<a id='btnTask" + task.Id + "' class='btnStartTask' href='#' data-taskid='" + task.Id + "' data-icon='action' style='display:none;'>" + Globalize.translate('ButtonStart') + "</a>";
             }
 
             html += "</a>";
@@ -71,7 +71,7 @@
 
         html += "</ul>";
 
-        $('#divScheduledTasks', page).html(html).trigger('create');
+        $('.divScheduledTasks', page).html(html).trigger('create');
     }
 
     function getTaskProgressHtml(task) {
@@ -143,21 +143,21 @@
 
         if (state == "Idle") {
 
-            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').show().data("icon", "play").attr("title", Globalize.translate('ButtonStart'));
+            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').show().data("icon", "action").attr("title", Globalize.translate('ButtonStart'));
 
-            elem.removeClass('ui-icon-stop').addClass('ui-icon-play');
+            elem.removeClass('ui-icon-delete').addClass('ui-icon-action');
         }
         else if (state == "Running") {
 
-            elem = btnTask.addClass('btnStopTask').removeClass('btnStartTask').show().data("icon", "stop").attr("title", Globalize.translate('ButtonStop'));
+            elem = btnTask.addClass('btnStopTask').removeClass('btnStartTask').show().data("icon", "delete").attr("title", Globalize.translate('ButtonStop'));
 
-            elem.removeClass('ui-icon-play').addClass('ui-icon-stop');
+            elem.removeClass('ui-icon-action').addClass('ui-icon-delete');
 
         } else {
 
-            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').hide().data("icon", "play").attr("title", Globalize.translate('ButtonStart'));
+            elem = btnTask.addClass('btnStartTask').removeClass('btnStopTask').hide().data("icon", "action").attr("title", Globalize.translate('ButtonStart'));
 
-            elem.removeClass('ui-icon-stop').addClass('ui-icon-play');
+            elem.removeClass('ui-icon-delete').addClass('ui-icon-action');
         }
     }
 
@@ -183,7 +183,7 @@
 
         var page = this;
 
-        $('#divScheduledTasks', page).on('click', '.btnStartTask', function () {
+        $('.divScheduledTasks', page).on('click', '.btnStartTask', function () {
 
             var button = this;
             var id = button.getAttribute('data-taskid');
@@ -215,14 +215,12 @@
 
         $(ApiClient).on("websocketmessage", onWebSocketMessage).on("websocketopen", onWebSocketConnectionOpen);
 
-    }).on('pagehide', "#scheduledTasksPage", function () {
+    }).on('pagebeforehide', "#scheduledTasksPage", function () {
 
         var page = this;
 
         $(ApiClient).off("websocketmessage", onWebSocketMessage).off("websocketopen", onWebSocketConnectionOpen);
         stopInterval();
-
-        $('#divScheduledTasks', page).off('click', '.btnStartTask').off('click', '.btnStopTask');
     });
 
 })(jQuery, document, window);

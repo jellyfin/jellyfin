@@ -18,11 +18,13 @@ namespace MediaBrowser.LocalMetadata.Savers
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
         private readonly IServerConfigurationManager _config;
+        private readonly ILibraryManager _libraryManager;
 
-        public EpisodeXmlSaver(IItemRepository itemRepository, IServerConfigurationManager config)
+        public EpisodeXmlSaver(IItemRepository itemRepository, IServerConfigurationManager config, ILibraryManager libraryManager)
         {
             _itemRepository = itemRepository;
             _config = config;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -116,7 +118,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 builder.Append("<FirstAired>" + SecurityElement.Escape(episode.PremiereDate.Value.ToLocalTime().ToString("yyyy-MM-dd")) + "</FirstAired>");
             }
 
-            XmlSaverHelpers.AddCommonNodes(episode, builder);
+            XmlSaverHelpers.AddCommonNodes(episode, _libraryManager, builder);
             XmlSaverHelpers.AddMediaInfo(episode, builder, _itemRepository);
 
             builder.Append("</Item>");

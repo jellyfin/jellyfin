@@ -5,7 +5,8 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="displayPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage" data-contextname="${HeaderPreferences}" data-require="scripts/mypreferencesdisplay,scripts/mypreferencescommon">
+    <div id="displayPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage" data-contextname="${HeaderSettings}" data-require="scripts/mypreferencesdisplay,scripts/mypreferencescommon,paperbuttonstyle,jqmicons">
+
         <div class="libraryViewNav">
             <a href="#" class="ui-btn-active lnkDisplayPreferences">${TabDisplay}</a>
             <a href="#" class="lnkLanguagePreferences">${TabPlayback}</a>
@@ -136,16 +137,13 @@
 
                 </div>
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button type="submit" data-theme="a" data-icon="check">
-                            ${ButtonOk}
-                        </button>
-                        <button type="button" onclick="history.back();" data-icon="delete">
-                            ${ButtonCancel}
-                        </button>
-                    </li>
-                </ul>
+                <div>
+                    <button type="submit" data-role="none" class="clearButton">
+                        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                    </button>
+
+                    <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                </div>
             </form>
         </div>
     </div>

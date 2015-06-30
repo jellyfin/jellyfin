@@ -1,0 +1,66 @@
+<!doctype html>
+<!--
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<html>
+  <head>
+
+    <title>iron-selector</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../iron-selector.html">
+
+    <style>
+
+      iron-selector > * {
+        padding: 8px;
+      }
+
+      .iron-selected {
+        background-color: #ddd;
+      }
+
+    </style>
+
+  </head>
+  <body>
+
+    <h3>Basic</h3>
+
+    <iron-selector selected="0">
+      <div>Item 0</div>
+      <div>Item 1</div>
+      <div>Item 2</div>
+      <div>Item 3</div>
+      <div>Item 4</div>
+    </iron-selector>
+
+    <h3>Multi-select</h3>
+
+    <iron-selector multi selected-values='[0,2]'>
+      <div>Item 0</div>
+      <div>Item 1</div>
+      <div>Item 2</div>
+      <div>Item 3</div>
+      <div>Item 4</div>
+    </iron-selector>
+
+    <h3>Example</h3>
+
+    <iron-selector selected="foo" attr-for-selected="name">
+      <div name="foo">Foo</div>
+      <div name="bar">Bar</div>
+      <div name="zot">Zot</div>
+    </iron-selector>
+
+  </body>
+</html>

@@ -1,0 +1,308 @@
+/*! Swipebox v1.3.0 | Constantin Saguin csag.co | MIT License | github.com/brutaldesign/swipebox */
+
+// Gradient mixin
+@mixin css-gradient($from: #dfdfdf, $to: #f8f8f8) {
+	background-color: $from;
+	background-image: -webkit-gradient(linear, left top, left bottom, from($from), to($to));
+	background-image: -webkit-linear-gradient(top, $from, $to);
+	background-image: -moz-linear-gradient(top, $from, $to);
+	background-image: -o-linear-gradient(top, $from, $to);
+	background-image: linear-gradient(to bottom, $from, $to);
+}
+
+// Bar mixin
+@mixin bar($color) {
+	background-color:$color;
+	@include css-gradient( $color, darken($color, 20%) ); 
+}
+
+html.swipebox-html.swipebox-touch {
+	overflow: hidden!important;
+}
+
+#swipebox-overlay img {
+	border: none!important;
+}
+
+#swipebox-overlay {
+	width: 100%;
+	height: 100%;
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 99999!important;
+	overflow: hidden;
+	user-select: none;
+}
+
+#swipebox-container{
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+#swipebox-slider {
+	transition : transform 0.4s ease;
+	height: 100%;
+	left: 0;
+	top: 0;
+	width: 100%;
+	white-space: nowrap;
+	position: absolute;
+	display: none;
+	cursor: pointer;
+	
+	.slide {
+		height: 100%;
+		width: 100%;
+		line-height: 1px;
+		text-align: center;
+		display: inline-block;
+		
+		&:before {
+			content: "";
+			display: inline-block;
+			height: 50%;
+			width: 1px;
+			margin-right: -1px;
+		}
+
+		img,
+        .swipebox-video-container,
+        .swipebox-inline-container {
+			display: inline-block;
+			max-height: 100%;
+			max-width: 100%;
+			margin: 0;
+			padding: 0;
+			width: auto;
+			height: auto;
+			vertical-align: middle;
+		}
+
+		.swipebox-video-container {
+			background:none;
+			max-width: 1140px;
+			max-height: 100%;
+			width: 100%;
+			padding:5%;
+			box-sizing: border-box;
+			.swipebox-video{
+				width: 100%;
+				height: 0;
+				padding-bottom: 56.25%;
+				overflow: hidden;
+				position: relative; 
+				iframe{
+					width: 100%!important; 
+					height: 100%!important;
+					position: absolute;
+					top: 0; left: 0;
+				}
+			}
+		}
+	}
+	
+	.slide-loading {
+		background: url(../img/loader.gif) no-repeat center center;
+	}
+
+}
+
+#swipebox-bottom-bar,
+#swipebox-top-bar{
+	transition : 0.5s;
+	position: absolute;
+	left: 0;
+	z-index: 999;
+	height: 50px;
+	width: 100%;
+}
+
+#swipebox-bottom-bar {
+	bottom: -50px;
+
+	&.visible-bars {
+		transform: translate3d(0,-50px,0);
+	}
+}
+
+#swipebox-top-bar {
+	top: -50px;
+	
+	&.visible-bars {
+		transform: translate3d(0,50px,0);
+	}
+}
+
+#swipebox-title{
+	display:block;
+	width: 100%;
+	text-align: center;
+}
+
+#swipebox-prev, 
+#swipebox-next, 
+#swipebox-close {
+	background-image: url(../img/icons.png);
+	background-repeat: no-repeat;
+	border: none!important;
+	text-decoration: none!important;
+	cursor: pointer;
+	//position: absolute;
+	width: 50px;
+	height: 50px;
+	top: 0;
+}
+
+#swipebox-arrows{
+	display: block;
+	margin: 0 auto;
+	width: 100%;
+	height: 50px;
+}
+
+#swipebox-prev{
+	background-position: -32px 13px;
+	float: left;
+}
+
+#swipebox-next{
+	background-position: -78px 13px;
+	float: right;
+}
+
+#swipebox-close{
+	top: 0;
+	right: 0;
+	position: absolute;
+	z-index: 9999;
+	background-position: 15px 12px;
+}
+
+.swipebox-no-close-button #swipebox-close{
+	display: none;
+}
+
+#swipebox-prev,
+#swipebox-next{
+	&.disabled{
+		opacity: 0.3;
+	}
+}
+
+.swipebox-no-touch{
+	#swipebox-overlay.rightSpring #swipebox-slider {
+		animation : rightSpring 0.3s;
+	}
+
+	#swipebox-overlay.leftSpring  #swipebox-slider{
+		animation : leftSpring 0.3s;
+	}
+}
+
+.swipebox-touch{
+	#swipebox-container {
+		&:before,
+		&:after{
+			backface-visibility:hidden;
+			transition : all .3s ease;
+			content : ' ';
+			position: absolute;
+			z-index: 999;
+			top: 0;
+			height: 100%;
+			width: 20px;
+			opacity: 0;
+		}
+
+		&:before{
+			left: 0;
+			box-shadow: inset 10px 0px 10px -8px #656565;
+		}
+
+		&:after{
+			right: 0;
+			box-shadow: inset -10px 0px 10px -8px #656565;
+		}
+	}
+
+	#swipebox-overlay.leftSpringTouch #swipebox-container{
+		&:before{
+			opacity: 1;
+		}
+	}
+
+		
+	#swipebox-overlay.rightSpringTouch #swipebox-container{
+		&:after{
+			opacity: 1;
+		}
+	}
+}
+
+@keyframes rightSpring {
+	0% {
+		left:0;
+	}
+
+	50% {
+		left:-30px;
+	}
+
+	100% {
+		left:0;
+	}
+}
+
+@keyframes leftSpring {
+	0% {
+		left:0;
+	}
+
+	50% {
+		left:30px;
+	}
+
+	100% {
+		left:0;
+	}
+}
+
+@media screen and (min-width: 800px) {
+
+	#swipebox-close{
+		right: 10px;
+	}
+
+	#swipebox-arrows{
+		width: 92%;
+		max-width: 800px;
+	}
+}
+
+/* Skin 
+--------------------------*/
+#swipebox-overlay {
+	background: #0d0d0d;
+}
+
+#swipebox-bottom-bar,
+#swipebox-top-bar {
+	text-shadow: 1px 1px 1px black;
+	background: #000;
+	//@include bar(#0d0d0d);
+	opacity: 0.95;
+}
+
+#swipebox-bottom-bar {
+	//border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#swipebox-top-bar {
+	//border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	color: white!important;
+	font-size: 15px;
+	line-height: 43px;
+	font-family: Helvetica, Arial, sans-serif;
+}

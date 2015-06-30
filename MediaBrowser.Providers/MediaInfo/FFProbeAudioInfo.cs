@@ -8,6 +8,7 @@ using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -22,15 +23,17 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IItemRepository _itemRepo;
         private readonly IApplicationPaths _appPaths;
         private readonly IJsonSerializer _json;
+        private readonly ILibraryManager _libraryManager;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public FFProbeAudioInfo(IMediaEncoder mediaEncoder, IItemRepository itemRepo, IApplicationPaths appPaths, IJsonSerializer json)
+        public FFProbeAudioInfo(IMediaEncoder mediaEncoder, IItemRepository itemRepo, IApplicationPaths appPaths, IJsonSerializer json, ILibraryManager libraryManager)
         {
             _mediaEncoder = mediaEncoder;
             _itemRepo = itemRepo;
             _appPaths = appPaths;
             _json = json;
+            _libraryManager = libraryManager;
         }
 
         public async Task<ItemUpdateType> Probe<T>(T item, CancellationToken cancellationToken)
@@ -96,7 +99,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="mediaInfo">The media information.</param>
         /// <returns>Task.</returns>
-        protected Task Fetch(Audio audio, CancellationToken cancellationToken, Model.MediaInfo.MediaInfo mediaInfo)
+        protected async Task Fetch(Audio audio, CancellationToken cancellationToken, Model.MediaInfo.MediaInfo mediaInfo)
         {
             var mediaStreams = mediaInfo.MediaStreams;
 
@@ -110,9 +113,9 @@ namespace MediaBrowser.Providers.MediaInfo
             var extension = (Path.GetExtension(audio.Path) ?? string.Empty).TrimStart('.');
             audio.Container = extension;
 
-            FetchDataFromTags(audio, mediaInfo);
+            await FetchDataFromTags(audio, mediaInfo).ConfigureAwait(false);
 
-            return _itemRepo.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken);
+            await _itemRepo.SaveMediaStreams(audio.Id, mediaStreams, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -120,7 +123,7 @@ namespace MediaBrowser.Providers.MediaInfo
         /// </summary>
         /// <param name="audio">The audio.</param>
         /// <param name="data">The data.</param>
-        private void FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo data)
+        private async Task FetchDataFromTags(Audio audio, Model.MediaInfo.MediaInfo data)
         {
             // Only set Name if title was found in the dictionary
             if (!string.IsNullOrEmpty(data.Title))
@@ -130,17 +133,19 @@ namespace MediaBrowser.Providers.MediaInfo
 
             if (!audio.LockedFields.Contains(MetadataFields.Cast))
             {
-                audio.People.Clear();
+                var people = new List<PersonInfo>();
 
                 foreach (var person in data.People)
                 {
-                    audio.AddPerson(new PersonInfo
+                    PeopleHelper.AddPerson(people, new PersonInfo
                     {
                         Name = person.Name,
                         Type = person.Type,
                         Role = person.Role
                     });
                 }
+
+                await _libraryManager.UpdatePeople(audio, people).ConfigureAwait(false);
             }
 
             audio.Album = data.Album;

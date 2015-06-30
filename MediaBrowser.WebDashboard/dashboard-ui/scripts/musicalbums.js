@@ -27,7 +27,7 @@
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
-            $(document).scrollTop(0);
+            window.scrollTo(0, 0);
 
             var html = '';
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
@@ -39,7 +39,7 @@
                 addSelectionButton: true
             });
 
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
             updateFilterControls(page);
             var trigger = false;
@@ -88,13 +88,13 @@
                 });
             }
 
-            var elem = $('#items', page).html(html).lazyChildren();
+            var elem = page.querySelector('#items');
+            elem.innerHTML = html + pagingHtml;
+            ImageLoader.lazyChildren(elem);
 
             if (trigger) {
-                elem.trigger('create');
+                $(elem).trigger('create');
             }
-
-            $(pagingHtml).appendTo(elem).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -242,7 +242,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#musicAlbumsPage", function () {
+    }).on('pagebeforeshowready', "#musicAlbumsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

@@ -118,6 +118,11 @@ namespace MediaBrowser.Controller.LiveTv
             return System.IO.Path.Combine(basePath, "livetv", Id.ToString("N"));
         }
 
+        public override bool CanDelete()
+        {
+            return true;
+        }
+
         public override bool IsAuthorizedToDelete(User user)
         {
             return user.Policy.EnableLiveTvManagement;

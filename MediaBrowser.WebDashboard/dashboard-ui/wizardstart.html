@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="wizardStartPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardstartpage">
+    <div id="wizardStartPage" data-role="page" class="page standalonePage wizardPage" data-require="scripts/wizardstartpage,paperbuttonstyle">
 
         <div data-role="content">
 
@@ -15,7 +15,7 @@
                         <h2 style="float:left;">
                             <img src="css/images/mblogoicon.png" />${WelcomeToProject}
                         </h2>
-                        <a class="accentButton accentButton-g" href="https://github.com/MediaBrowser/Wiki/wiki/Quick%20start" target="_blank" style="float:right;margin-top:20px;"><i class="fa fa-info"></i>${ButtonQuickStartGuide}</a>
+                        <a href="https://github.com/MediaBrowser/Wiki/wiki/Quick%20start" target="_blank" class="clearLink" style="float:right;margin-top:20px;"><paper-button raised class="secondary mini"><i class="fa fa-info-circle"></i>${ButtonQuickStartGuide}</paper-button></a>
                     </div>
 
                     <br style="clear:both;" />

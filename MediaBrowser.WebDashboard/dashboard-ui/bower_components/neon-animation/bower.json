@@ -1,0 +1,51 @@
+{
+  "name": "neon-animation",
+  "version": "1.0.4",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "keywords": [
+    "web-components",
+    "web-component",
+    "polymer",
+    "web-animations"
+  ],
+  "main": [
+    "neon-animated-pages.html",
+    "neon-animatable-behavior.html",
+    "neon-animation-behavior.html",
+    "neon-animation-runner-behavior.html",
+    "neon-shared-element-animatable-behavior.html",
+    "neon-shared-element-animation-behavior.html",
+    "neon-animatable.html",
+    "neon-animations.html"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/neon-animation"
+  },
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/PolymerElements/neon-animation",
+  "ignore": [],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0",
+    "iron-meta": "PolymerElements/iron-meta#^1.0.0",
+    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^1.0.0",
+    "iron-selector": "PolymerElements/iron-selector#^1.0.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.0.0",
+    "web-animations-js": "web-animations/web-animations-js#^2.0.0"
+  },
+  "devDependencies": {
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
+    "paper-toolbar": "PolymerElements/paper-toolbar#^1.0.0",
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "web-component-tester": "*",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
+    "paper-item": "PolymerElements/paper-item#^1.0.0",
+    "iron-icon": "PolymerElements/iron-icon#^1.0.0",
+    "iron-icons": "PolymerElements/iron-icons#^1.0.0",
+    "paper-icon-button": "PolymerElements/paper-icon-button#^1.0.0"
+  }
+}

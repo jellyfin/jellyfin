@@ -236,8 +236,7 @@
         ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
             Dashboard.alert(Globalize.translate('SettingsSaved'));
 
-            loadForm(page, user, false);
-
+            loadForm(page, user);
         });
     }
 

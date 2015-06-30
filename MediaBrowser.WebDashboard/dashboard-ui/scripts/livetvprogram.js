@@ -45,12 +45,12 @@
             $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item));
 
             LibraryBrowser.renderGenres($('.itemGenres', page), item, context);
-            LibraryBrowser.renderOverview($('.itemOverview', page), item);
+            LibraryBrowser.renderOverview(page.querySelector('.itemOverview'), item);
             $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
             LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), item);
 
-            $(page).trigger('displayingitem', [{
+            Events.trigger(page, 'displayingitem', [{
 
                 item: item,
                 context: 'livetv'
@@ -98,7 +98,7 @@
 
         var page = this;
 
-        $('#btnRecord', page).on('click', function() {
+        $('.btnRecord', page).on('click', function() {
 
             var id = getParameterByName('id');
             
@@ -106,28 +106,28 @@
 
         });
 
-        $('#btnPlay', page).on('click', function () {
+        $('.btnPlay', page).on('click', function () {
 
             ApiClient.getLiveTvChannel(currentItem.ChannelId, Dashboard.getCurrentUserId()).done(function (channel) {
                 
                 var userdata = channel.UserData || {};
 
-                LibraryBrowser.showPlayMenu(this, channel.Id, channel.Type, false, channel.MediaType, userdata.PlaybackPositionTicks);
+                LibraryBrowser.showPlayMenu(null, channel.Id, channel.Type, false, channel.MediaType, userdata.PlaybackPositionTicks);
             });
         });
 
-        $('#btnCancelRecording', page).on('click', function () {
+        $('.btnCancelRecording', page).on('click', function () {
 
             deleteTimer(page, currentItem.TimerId);
         });
 
-    }).on('pageshowready', "#liveTvProgramPage", function () {
+    }).on('pagebeforeshowready', "#liveTvProgramPage", function () {
 
         var page = this;
 
         reload(page);
 
-    }).on('pagehide', "#liveTvProgramPage", function () {
+    }).on('pagebeforehide', "#liveTvProgramPage", function () {
 
         currentItem = null;
     });

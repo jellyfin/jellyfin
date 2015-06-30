@@ -69,7 +69,6 @@
   <ItemGroup>
     <EmbeddedResource Include="ImageMagick\fonts\MontserratLight.otf" />
     <EmbeddedResource Include="ImageMagick\fonts\robotoregular.ttf" />
-    <EmbeddedResource Include="ImageMagick\fonts\webdings.ttf" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaBrowser.Common\MediaBrowser.Common.csproj">

@@ -4,14 +4,14 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="indexPage" data-role="page" class="page type-home libraryPage allLibraryPage backdropPage" data-backdroptype="movie,series,game,book">
+
+    <div id="indexPage" data-role="page" class="page homePage libraryPage allLibraryPage backdropPage" data-backdroptype="movie,series,game,book" data-require="scripts/sections,scripts/indexpage,paperbuttonstyle">
 
         <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="#" class="ui-btn-active">${TabHome}</a>
-            <a href="homelatest.html">${TabLatest}</a>
-            <a href="tvrecommended.html">${TabNextUp}</a>
-            <a href="favorites.html">${TabFavorites}</a>
-            <a href="tvupcoming.html">${TabUpcoming}</a>
+            <a href="#" class="ui-btn-active"><i class="material-icons">home</i>${TabHome}</a>
+            <a href="homenextup.html"><i class="material-icons">navigate_next</i>${TabNextUp}</a>
+            <a href="homefavorites.html"><i class="material-icons">favorite</i>${TabFavorites}</a>
+            <a href="homeupcoming.html"><i class="material-icons">schedule</i>${TabUpcoming}</a>
         </div>
 
         <div data-role="content">

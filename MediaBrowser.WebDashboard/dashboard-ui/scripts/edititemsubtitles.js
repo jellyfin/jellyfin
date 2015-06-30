@@ -289,7 +289,7 @@
 
             if (msg.Data.ItemsUpdated.indexOf(currentItem.Id) != -1) {
 
-                console.log('Item updated - reloading subtitles');
+                Logger.log('Item updated - reloading subtitles');
                 reload($.mobile.activePage);
             }
         }
@@ -326,7 +326,7 @@
 
         $('.subtitleSearchForm').off('submit', onSearchSubmit).on('submit', onSearchSubmit);
 
-    }).on('pagebeforeshowready', "#editItemSubtitlesPage", function () {
+    }).on('pageshowready', "#editItemSubtitlesPage", function () {
 
         var page = this;
 
@@ -343,7 +343,7 @@
 
         $(ApiClient).on("websocketmessage", onWebSocketMessageReceived);
 
-    }).on('pagehide', "#editItemSubtitlesPage", function () {
+    }).on('pagebeforehide', "#editItemSubtitlesPage", function () {
 
         var page = this;
 

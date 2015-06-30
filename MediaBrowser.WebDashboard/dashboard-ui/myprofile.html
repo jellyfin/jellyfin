@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="userImagePage" data-role="page" class="page libraryPage userPreferencesPage userPasswordPage" data-contextname="${HeaderPreferences}" data-require="scripts/myprofile,scripts/mypreferencescommon">
+    <div id="userImagePage" data-role="page" class="page libraryPage userPreferencesPage userPasswordPage" data-contextname="${HeaderSettings}" data-require="scripts/myprofile,scripts/mypreferencescommon,paperbuttonstyle,jqmicons">
 
         <div class="libraryViewNav">
             <a href="#" class="lnkDisplayPreferences">${TabDisplay}</a>
@@ -80,13 +80,11 @@
                         </div>
                         <br />
                         <div>
-                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                                ${ButtonSave}
+                            <button type="submit" data-role="none" class="clearButton">
+                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                             </button>
                             <div id="btnResetPassword" style="display: none;">
-                                <button type="button" data-icon="lock" onclick="UpdatePasswordPage.resetPassword();" data-mini="true">
-                                    ${ButtonResetPassword}
-                                </button>
+                                <paper-button raised class="cancel block" onclick="UpdatePasswordPage.resetPassword();"><iron-icon icon="lock"></iron-icon><span>${ButtonResetPassword}</span></paper-button>
                             </div>
                         </div>
                     </div>
@@ -113,12 +111,10 @@
                         </div>
                         <br />
                         <div>
-                            <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                                ${ButtonSave}
+                            <button type="submit" data-role="none" class="clearButton">
+                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                             </button>
-                            <button id="btnResetEasyPassword" style="display:none;" type="button" data-icon="lock" onclick="UpdatePasswordPage.resetEasyPassword();" data-mini="true">
-                                ${ButtonResetEasyPassword}
-                            </button>
+                            <paper-button id="btnResetEasyPassword" style="display:none;" raised class="cancel block" onclick="UpdatePasswordPage.resetEasyPassword();"><iron-icon icon="lock"></iron-icon><span>${ButtonResetEasyPassword}</span></paper-button>
                         </div>
                     </div>
                 </div>

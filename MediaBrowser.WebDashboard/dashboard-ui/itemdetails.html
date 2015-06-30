@@ -4,15 +4,14 @@
     <title></title>
 </head>
 <body>
-    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage" data-theme="b">
+    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage" data-theme="b" data-require="scripts/itemdetailpage,paperbuttonstyle,tileitemcss">
 
         <div class="itemTabs homeTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="index.html" class="lnkHomeHome">${TabHome}</a>
-                <a href="homelatest.html" class="lnkHomeLatest">${TabLatest}</a>
-                <a href="tvrecommended.html" class="lnkHomeNextUp">${TabNextUp}</a>
-                <a href="favorites.html" class="lnkHomeFavorites">${TabFavorites}</a>
-                <a href="tvupcoming.html" class="lnkHomeUpcoming">${TabUpcoming}</a>
+                <a href="index.html" class="lnkHomeHome"><i class="material-icons">home</i>${TabHome}</a>
+                <a href="homenextup.html" class="lnkHomeNextUp"><i class="material-icons">navigate_next</i>${TabNextUp}</a>
+                <a href="homefavorites.html" class="lnkHomeFavorites"><i class="material-icons">favorite</i>${TabFavorites}</a>
+                <a href="homeupcoming.html" class="lnkHomeUpcoming"><i class="material-icons">schedule</i>${TabUpcoming}</a>
             </div>
         </div>
 
@@ -31,65 +30,65 @@
 
         <div id="movieTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="moviesrecommended.html">${TabSuggestions}</a>
-                <a href="movies.html" class="lnkMovies">${TabMovies}</a>
-                <a href="movietrailers.html" class="lnkMovieTrailers movieTrailersTab">${TabTrailers}</a>
-                <a href="collections.html?context=movies" class="lnkCollections">${TabCollections}</a>
-                <a href="moviegenres.html">${TabGenres}</a>
-                <a href="moviepeople.html" class="moviePeopleTab">${TabPeople}</a>
-                <a href="moviestudios.html" class="movieStudiosTab">${TabStudios}</a>
+                <a href="moviesrecommended.html"><i class="material-icons">info</i>${TabSuggestions}</a>
+                <a href="movies.html" class="lnkMovies"><i class="material-icons">local_movies</i>${TabMovies}</a>
+                <a href="movietrailers.html" class="movieTrailersTab lnkMovieTrailers"><i class="material-icons">movie</i>${TabTrailers}</a>
+                <a href="collections.html?context=movies" class="lnkCollections"><i class="material-icons">video_library</i>${TabCollections}</a>
+                <a href="moviegenres.html"><i class="material-icons">video_library</i>${TabGenres}</a>
+                <a href="moviepeople.html" class="moviePeopleTab"><i class="material-icons">people</i>${TabPeople}</a>
+                <a href="moviestudios.html" class="movieStudiosTab"><i class="material-icons">account_box</i>${TabStudios}</a>
             </div>
         </div>
         <div class="itemTabs photoTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="photos.html" class="ui-btn-active lnkPhotoAlbums">${TabAlbums}</a>
-                <a href="photos.html?context=photos-photos" class="lnkPhotos">${TabPhotos}</a>
-                <a href="photos.html?context=photos-videos" class="lnkVideos">${TabVideos}</a>
+                <a href="photos.html" class="ui-btn-active lnkPhotoAlbums"><i class="material-icons">photo_album</i>${TabAlbums}</a>
+                <a href="photos.html?context=photos-photos" class="lnkPhotos"><i class="material-icons">photo</i>${TabPhotos}</a>
+                <a href="photos.html?context=photos-videos" class="lnkVideos"><i class="material-icons">videocam</i>${TabVideos}</a>
             </div>
         </div>
         <div id="tvShowsTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="tvrecommended.html">${TabSuggestions}</a>
-                <a href="tvlatest.html">${TabLatest}</a>
-                <a href="tvupcoming.html">${TabUpcoming}</a>
-                <a href="tvshows.html" class="ui-btn-active">${TabShows}</a>
-                <a href="episodes.html" class="tvEpisodesTab">${TabEpisodes}</a>
-                <a href="tvgenres.html">${TabGenres}</a>
-                <a href="tvpeople.html" class="tvPeopleTab">${TabPeople}</a>
-                <a href="tvstudios.html" class="tvStudiosTab">${TabNetworks}</a>
+                <a href="tvrecommended.html"><i class="material-icons">info</i>${TabSuggestions}</a>
+                <a href="tvlatest.html"><i class="material-icons">new_releases</i>${TabLatest}</a>
+                <a href="tvupcoming.html"><i class="material-icons">schedule</i>${TabUpcoming}</a>
+                <a href="tvshows.html" class="ui-btn-active"><i class="material-icons">live_tv</i>${TabShows}</a>
+                <a href="episodes.html" class="tvEpisodesTab"><i class="material-icons">slideshow</i>${TabEpisodes}</a>
+                <a href="tvgenres.html"><i class="material-icons">video_library</i>${TabGenres}</a>
+                <a href="tvpeople.html" class="tvPeopleTab"><i class="material-icons">people</i>${TabPeople}</a>
+                <a href="tvstudios.html" class="tvStudiosTab"><i class="material-icons">account_box</i>${TabNetworks}</a>
             </div>
         </div>
         <div id="songTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="musicrecommended.html">${TabSuggestions}</a>
-                <a href="songs.html" class="ui-btn-active musicSongsTab">${TabSongs}</a>
-                <a href="musicalbums.html">${TabAlbums}</a>
-                <a href="musicalbumartists.html">${TabAlbumArtists}</a>
-                <a href="musicartists.html" class="musicArtistsTab">${TabArtists}</a>
-                <a href="musicgenres.html">${TabGenres}</a>
-                <a href="musicvideos.html">${TabMusicVideos}</a>
+                <a href="musicrecommended.html"><i class="material-icons">info</i>${TabSuggestions}</a>
+                <a href="musicalbums.html"><i class="material-icons">album</i>${TabAlbums}</a>
+                <a href="musicalbumartists.html"><i class="material-icons">music_note</i>${TabAlbumArtists}</a>
+                <a href="musicartists.html" class="musicArtistsTab"><i class="material-icons">music_note</i>${TabArtists}</a>
+                <a href="songs.html" class="ui-btn-active musicSongsTab"><i class="material-icons">music_note</i>${TabSongs}</a>
+                <a href="musicgenres.html"><i class="material-icons">library_music</i>${TabGenres}</a>
+                <a href="musicvideos.html"><i class="material-icons">video_library</i>${TabMusicVideos}</a>
             </div>
         </div>
         <div id="albumTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="musicrecommended.html">${TabSuggestions}</a>
-                <a href="songs.html" class="musicSongsTab">${TabSongs}</a>
-                <a href="musicalbums.html" class="ui-btn-active">${TabAlbums}</a>
-                <a href="musicalbumartists.html">${TabAlbumArtists}</a>
-                <a href="musicartists.html" class="musicArtistsTab">${TabArtists}</a>
-                <a href="musicgenres.html">${TabGenres}</a>
-                <a href="musicvideos.html">${TabMusicVideos}</a>
+                <a href="musicrecommended.html"><i class="material-icons">info</i>${TabSuggestions}</a>
+                <a href="musicalbums.html" class="ui-btn-active"><i class="material-icons">album</i>${TabAlbums}</a>
+                <a href="musicalbumartists.html"><i class="material-icons">music_note</i>${TabAlbumArtists}</a>
+                <a href="musicartists.html" class="musicArtistsTab"><i class="material-icons">music_note</i>${TabArtists}</a>
+                <a href="songs.html" class="musicSongsTab"><i class="material-icons">music_note</i>${TabSongs}</a>
+                <a href="musicgenres.html"><i class="material-icons">library_music</i>${TabGenres}</a>
+                <a href="musicvideos.html"><i class="material-icons">video_library</i>${TabMusicVideos}</a>
             </div>
         </div>
         <div id="musicVideoTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="musicrecommended.html">${TabSuggestions}</a>
-                <a href="songs.html" class="musicSongsTab">${TabSongs}</a>
+                <a href="musicrecommended.html"><i class="material-icons">info</i>${TabSuggestions}</a>
                 <a href="musicalbums.html">${TabAlbums}</a>
-                <a href="musicalbumartists.html">${TabAlbumArtists}</a>
-                <a href="musicartists.html" class="musicArtistsTab">${TabArtists}</a>
-                <a href="musicgenres.html">${TabGenres}</a>
-                <a href="musicvideos.html" class="ui-btn-active">${TabMusicVideos}</a>
+                <a href="musicalbumartists.html"><i class="material-icons">music_note</i>${TabAlbumArtists}</a>
+                <a href="musicartists.html" class="musicArtistsTab"><i class="material-icons">music_note</i>${TabArtists}</a>
+                <a href="songs.html" class="musicSongsTab"><i class="material-icons">music_note</i>${TabSongs}</a>
+                <a href="musicgenres.html"><i class="material-icons">library_music</i>${TabGenres}</a>
+                <a href="musicvideos.html" class="ui-btn-active"><i class="material-icons">video_library</i>${TabMusicVideos}</a>
             </div>
         </div>
         <div id="gameTabs" class="itemTabs" style="display: none;">
@@ -112,8 +111,8 @@
         </div>
         <div class="itemTabs channelTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="channelslatest.html" class="latestChannelItemsTab">${TabLatest}</a>
-                <a href="channels.html" class="ui-btn-active">${TabChannels}</a>
+                <a href="channelslatest.html" class="latestChannelItemsTab"><i class="material-icons">new_releases</i>${TabLatest}</a>
+                <a href="channels.html" class="ui-btn-active"><i class="material-icons">live_tv</i>${TabChannels}</a>
             </div>
         </div>
 
@@ -141,19 +140,18 @@
                             <span class="offlineIndicator" style="margin: 0 .5em; display: none;">
                                 <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">${LabelOffline}</span>
                             </span>
-                            <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
-                            <button class="btnPlayTrailer hide" type="button" data-icon="video" data-inline="true" data-mini="true">${ButtonPlayTrailer}</button>
-                            <a class="btnPlayExternalTrailer hide" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlayTrailer}</a>
-                            <a class="btnPlayExternal hide" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlay}</a>
-                            <a class="btnSync hide" data-role="button" data-icon="refresh" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
-                            <button class="btnMoreCommands hide jqmButtonNoText" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true" data-iconpos="notext">${ButtonMore}</button>
+                            <paper-button raised class="secondary btnPlay hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlay}</span></paper-button>
+                            <paper-button raised class="alt btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button>
+                            <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="alt btnPlayExternalTrailer"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button></a>
+                            <paper-button raised class="submit btnSync hide"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
+                            <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
                         </div>
                     </div>
                 </div>
 
             </div>
-            <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide" data-role="button" title="${ButtonPrevious}" data-icon="carat-l" data-mini="true" data-inline="true" data-iconpos="notext">${ButtonPrevious}</a>
-            <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide" data-role="button" title="${ButtonNext}" data-icon="carat-r" data-mini="true" data-inline="true" data-iconpos="notext">${ButtonNext}</a>
+            <a href="#" id="lnkPreviousItem" class="lnkPreviousItem lnkSibling hide clearLink"><paper-button raised class="subdued notext"><iron-icon icon="arrow-back"></iron-icon></paper-button></a>
+            <a href="#" id="lnkNextItem" class="lnkNextItem lnkSibling hide clearLink"><paper-button raised class="subdued notext"><iron-icon icon="arrow-forward"></iron-icon></paper-button></a>
         </div>
         <div data-role="content">
             <div class="detailPageContent">
@@ -168,12 +166,11 @@
                             <span class="offlineIndicator" style="margin: 0 .5em; display: none;">
                                 <span style="background: #cc3333; padding: 5px 1em; border-radius: 5px;">${LabelOffline}</span>
                             </span>
-                            <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
-                            <button class="btnPlayTrailer hide" type="button" data-icon="video" data-inline="true" data-mini="true">${ButtonPlayTrailer}</button>
-                            <a class="btnPlayExternalTrailer hide" data-role="button" data-icon="video" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlayTrailer}</a>
-                            <a class="btnPlayExternal hide" data-role="button" data-icon="play" data-inline="true" data-mini="true" href="#" target="_blank">${ButtonPlay}</a>
-                            <a class="btnSync hide" data-role="button" data-icon="refresh" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
-                            <button class="btnMoreCommands hide jqmButtonNoText" type="button" data-icon="ellipsis-v" data-inline="true" data-mini="true" data-iconpos="notext">${ButtonMore}</button>
+                            <paper-button raised class="secondary btnPlay hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlay}</span></paper-button>
+                            <paper-button raised class="alt btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button>
+                            <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="alt btnPlayExternalTrailer"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button></a>
+                            <paper-button raised class="submit btnSync hide"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
+                            <paper-button raised class="subdued btnMoreCommands forceHide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
                         </div>
                         <p id="artist"></p>
                         <p class="itemGenres"></p>
@@ -201,22 +198,6 @@
                         ${HeaderCastCrew}
                     </div>
                     <div id="castContent" class="detailSectionContent"></div>
-                </div>
-                <div class="detailSection detailsSection">
-                    <div class="detailSectionHeader">
-                        ${HeaderDetails}
-                    </div>
-                    <div class="detailSectionContent" style="padding:0 1em;">
-                        <div class="tabDetails">
-                            <p id="players"></p>
-                            <p id="itemBudget"></p>
-                            <p id="itemRevenue"></p>
-                            <p class="itemExternalLinks"></p>
-                            <p class="itemStudios"></p>
-                            <p class="itemKeywords"></p>
-                            <p class="itemTags"></p>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="detailSection photoInfo hide">
@@ -262,10 +243,27 @@
                         <div id="criticReviewsContent" class="detailSectionContent"></div>
                     </div>
                 </div>
+                <div class="detailSection detailsSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderDetails}
+                    </div>
+                    <div class="detailSectionContent" style="padding:0 1em;">
+                        <div class="tabDetails">
+                            <p id="players"></p>
+                            <p id="itemBudget"></p>
+                            <p id="itemRevenue"></p>
+                            <p class="itemExternalLinks"></p>
+                            <p class="itemStudios"></p>
+                            <p class="itemKeywords"></p>
+                            <p class="itemTags"></p>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="scenesCollapsible" style="display: none;" class="detailSection">
                     <div class="detailSectionHeader">
                         ${HeaderScenes}
-                        <a class="detailSectionHeaderButton chapterSettingsButton" href="metadataadvanced.html" data-role="button" data-icon="gear" data-iconpos="notext" data-inline="true" title="${ButtonSettings}" style="display:none;">${ButtonSettings}</a>
+                        <a class="detailSectionHeaderButton chapterSettingsButton clearLink" style="margin-top:-3px;display:inline-block;" href="metadataadvanced.html" title="${ButtonSettings}" style="display:none;"><paper-icon-button icon="settings"></paper-icon-button></a>
                     </div>
                     <div id="scenesContent" class="detailSectionContent smallItemsContainer"></div>
                 </div>

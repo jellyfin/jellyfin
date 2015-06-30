@@ -698,6 +698,10 @@ namespace MediaBrowser.Server.Implementations.Sync
                 syncedItem.OriginalFileName = Path.ChangeExtension(syncedItem.OriginalFileName, Path.GetExtension(mediaSource.Path));
                 syncedItem.Item.MediaSources.Add(mediaSource);
             }
+            if (string.IsNullOrWhiteSpace(syncedItem.OriginalFileName))
+            {
+                syncedItem.OriginalFileName = libraryItem.Name;
+            }
 
             return syncedItem;
         }

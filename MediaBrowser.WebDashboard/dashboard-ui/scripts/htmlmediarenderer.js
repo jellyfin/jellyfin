@@ -1,5 +1,7 @@
 ﻿(function () {
 
+    var supportsTextTracks;
+
     function htmlMediaRenderer(type) {
 
         var mediaElement;
@@ -44,7 +46,7 @@
         function onError() {
 
             var errorCode = this.error ? this.error.code : '';
-            console.log('Media element error code: ' + errorCode);
+            Logger.log('Media element error code: ' + errorCode);
 
             $(self).trigger('error');
         }
@@ -126,8 +128,8 @@
 
             var elem = $('.itemVideo');
 
-            return $(elem)
-            	.one('.loadedmetadata')
+            return elem
+            	.one('.loadedmetadata', onLoadedMetadata)
             	.one('playing', onOneVideoPlaying)
 	            .on('timeupdate', onTimeUpdate)
 	            .on('ended', onEnded)
@@ -135,6 +137,8 @@
 	            .on('play', onPlay)
 	            .on('pause', onPause)
 	            .on('playing', onPlaying)
+	            .on('click', onClick)
+	            .on('dblclick', onDblClick)
 	            .on('error', onError)[0];
         }
 
@@ -142,11 +146,11 @@
 
             if (mediaElement) {
                 if (val != null) {
-                    mediaElement.currentTime = val;
+                    mediaElement.currentTime = val / 1000;
                     return;
                 }
 
-                return mediaElement.currentTime;
+                return (mediaElement.currentTime || 0) * 1000;
             }
         };
 
@@ -216,7 +220,7 @@
             }
             else {
 
-                $(elem).one("loadedmetadata.mediaplayerevent", onLoadedMetadata);
+                $(elem).one("loadedmetadata", onLoadedMetadata);
             }
         };
 
@@ -235,7 +239,7 @@
             return false;
         };
 
-        self.destroy = function () {
+        self.cleanup = function (destroyRenderer) {
 
             self.setCurrentSrc(null);
 
@@ -243,7 +247,31 @@
 
             if (elem) {
 
-                $(elem).off();
+                if (elem.tagName == 'AUDIO') {
+
+                    Events.off(elem, 'timeupdate', onTimeUpdate);
+                    Events.off(elem, 'ended', onEnded);
+                    Events.off(elem, 'volumechange', onVolumeChange);
+                    Events.off(elem, 'playing', onOneAudioPlaying);
+                    Events.off(elem, 'play', onPlay);
+                    Events.off(elem, 'pause', onPause);
+                    Events.off(elem, 'playing', onPlaying);
+                    Events.off(elem, 'error', onError);
+
+                } else {
+
+                    Events.off(elem, 'loadedmetadata', onLoadedMetadata);
+                    Events.off(elem, 'playing', onOneVideoPlaying);
+                    Events.off(elem, 'timeupdate', onTimeUpdate);
+                    Events.off(elem, 'ended', onEnded);
+                    Events.off(elem, 'volumechange', onVolumeChange);
+                    Events.off(elem, 'play', onPlay);
+                    Events.off(elem, 'pause', onPause);
+                    Events.off(elem, 'playing', onPlaying);
+                    Events.off(elem, 'click', onClick);
+                    Events.off(elem, 'dblclick', onDblClick);
+                    Events.off(elem, 'error', onError);
+                }
 
                 if (elem.tagName.toLowerCase() != 'audio') {
                     $(elem).remove();
@@ -257,6 +285,86 @@
             if (elem) {
                 elem.poster = url;
             }
+        };
+
+        self.supportsTextTracks = function () {
+
+            if (supportsTextTracks == null) {
+                supportsTextTracks = document.createElement('video').textTracks != null;
+            }
+
+            // For now, until ready
+            return supportsTextTracks;
+        };
+
+        self.setCurrentTrackElement = function (trackIndex) {
+
+            Logger.log('Setting new text track index to: ' + trackIndex);
+
+            var allTracks = mediaElement.textTracks; // get list of tracks
+
+            var modes = ['disabled', 'showing', 'hidden'];
+
+            for (var i = 0; i < allTracks.length; i++) {
+
+                var mode;
+
+                if (trackIndex == i) {
+                    mode = 1; // show this track
+                } else {
+                    mode = 0; // hide all other tracks
+                }
+
+                Logger.log('Setting track ' + i + ' mode to: ' + mode);
+
+                // Safari uses integers for the mode property
+                // http://www.jwplayer.com/html5/scripting/
+                var useNumericMode = false;
+
+                if (!isNaN(allTracks[i].mode)) {
+                    useNumericMode = true;
+                }
+
+                if (useNumericMode) {
+                    allTracks[i].mode = mode;
+                } else {
+                    allTracks[i].mode = modes[mode];
+                }
+            }
+        };
+
+        self.updateTextStreamUrls = function (startPositionTicks) {
+
+            if (!self.supportsTextTracks()) {
+                return;
+            }
+
+            var allTracks = mediaElement.textTracks; // get list of tracks
+
+            for (var i = 0; i < allTracks.length; i++) {
+
+                var track = allTracks[i];
+
+                // This throws an error in IE, but is fine in chrome
+                // In IE it's not necessary anyway because changing the src seems to be enough
+                try {
+                    while (track.cues.length) {
+                        track.removeCue(track.cues[0]);
+                    }
+                } catch (e) {
+                    Logger.log('Error removing cue from textTrack');
+                }
+            }
+
+            $('track', mediaElement).each(function () {
+
+                var currentSrc = this.src;
+
+                currentSrc = replaceQueryString(currentSrc, 'startPositionTicks', startPositionTicks);
+
+                this.src = currentSrc;
+
+            });
         };
 
         if (type == 'audio') {

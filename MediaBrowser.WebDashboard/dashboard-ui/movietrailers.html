@@ -7,13 +7,13 @@
     <div id="movieTrailersPage" data-role="page" class="page libraryPage" data-require="scripts/movietrailers">
 
         <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="moviesrecommended.html">${TabSuggestions}</a>
-            <a href="movies.html">${TabMovies}</a>
-            <a href="#" class="ui-btn-active">${TabTrailers}</a>
-            <a href="collections.html?context=movies">${TabCollections}</a>
-            <a href="moviegenres.html">${TabGenres}</a>
-            <a href="moviepeople.html" class="moviePeopleTab">${TabPeople}</a>
-            <a href="moviestudios.html" class="movieStudiosTab">${TabStudios}</a>
+            <a href="moviesrecommended.html"><i class="material-icons">info</i>${TabSuggestions}</a>
+            <a href="movies.html"><i class="material-icons">local_movies</i>${TabMovies}</a>
+            <a href="#" class="ui-btn-active"><i class="material-icons">movie</i>${TabTrailers}</a>
+            <a href="collections.html?context=movies"><i class="material-icons">video_library</i>${TabCollections}</a>
+            <a href="moviegenres.html"><i class="material-icons">video_library</i>${TabGenres}</a>
+            <a href="moviepeople.html" class="moviePeopleTab"><i class="material-icons">people</i>${TabPeople}</a>
+            <a href="moviestudios.html" class="movieStudiosTab"><i class="material-icons">account_box</i>${TabStudios}</a>
         </div>
 
         <div class="alphabetPicker">
@@ -25,7 +25,7 @@
                 <button class="btnTrailerReel" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonTrailerReel}</button>
             </div>
             <div id="items" class="itemsContainer paddedItemsContainer"></div>
-            <p class="noItemsMessage" style="display:none;">${MessageNoTrailersFound}</p>
+            <p class="noItemsMessage" style="display:none;text-align:center;">${MessageNoTrailersFound}</p>
         </div>
 
         <div data-role="panel" class="viewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">

@@ -1,4 +1,4 @@
-﻿(function (document, $) {
+﻿(function (document) {
 
     var currentOwnerId;
     var currentThemeIds = [];
@@ -59,7 +59,7 @@
         return MediaController.getCurrentPlayer();
     }
 
-    $(document).on('thememediadownload', ".libraryPage", function (e, themeMediaResult) {
+    Events.on(document, 'thememediadownload', ".libraryPage", function (e, themeMediaResult) {
 
         if (!enabled()) {
             return;
@@ -72,4 +72,4 @@
         }
     });
 
-})(document, jQuery);
+})(document);

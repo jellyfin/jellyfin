@@ -1,0 +1,42 @@
+{
+  "name": "iron-fit-behavior",
+  "version": "1.0.3",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "description": "Fits an element inside another element",
+  "private": true,
+  "main": [
+    "iron-fit-behavior.html"
+  ],
+  "keywords": [
+    "web-components",
+    "polymer",
+    "behavior"
+  ],
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/iron-fit-behavior.git"
+  },
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "devDependencies": {
+    "paper-styles": "polymerelements/paper-styles#^1.0.2",
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "web-component-tester": "*",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "homepage": "https://github.com/PolymerElements/iron-fit-behavior",
+  "_release": "1.0.3",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.0.3",
+    "commit": "df9fd83577ea6ebd98f5cad8333daa73dd0f34ba"
+  },
+  "_source": "git://github.com/PolymerElements/iron-fit-behavior.git",
+  "_target": "^1.0.0",
+  "_originalSource": "PolymerElements/iron-fit-behavior"
+}

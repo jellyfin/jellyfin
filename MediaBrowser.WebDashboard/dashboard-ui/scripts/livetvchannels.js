@@ -18,11 +18,11 @@
 
     function showLoadingMessage(page) {
 
-        $('.popupLoading', page).popup('open');
+        Dashboard.showLoadingMsg();
     }
 
     function hideLoadingMessage(page) {
-        $('.popupLoading', page).popup('close');
+        Dashboard.hideLoadingMsg();
     }
 
     function renderChannels(page, result) {
@@ -39,7 +39,9 @@
 
         var html = getChannelsHtml(result.Items);
 
-        $('#items', page).html(html).lazyChildren();
+        var elem = page.querySelector('#items');
+        elem.innerHTML = html;
+        ImageLoader.lazyChildren(elem);
 
         $('.btnNextPage', page).on('click', function () {
             query.StartIndex += query.Limit;
@@ -63,6 +65,8 @@
             renderChannels(page, result);
 
             hideLoadingMessage(page);
+
+            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -109,26 +113,18 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#liveTvChannelsPage", function () {
+    }).on('pagebeforeshowready', "#liveTvChannelsPage", function () {
 
         // Can't use pagebeforeshow here or the loading popup won't center correctly
         var page = this;
 
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
+        if (LibraryBrowser.needsRefresh(page)) {
+            query.UserId = Dashboard.getCurrentUserId();
+            LibraryBrowser.loadSavedQueryValues('movies', query);
+            query.Limit = query.Limit || LibraryBrowser.getDefaultPageSize();
+            reloadItems(page);
+            updateFilterControls(this);
         }
-
-        query.UserId = Dashboard.getCurrentUserId();
-
-        LibraryBrowser.loadSavedQueryValues('movies', query);
-
-        reloadItems(page);
-        
-        updateFilterControls(this);
         
     });
 

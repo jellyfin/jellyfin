@@ -16,9 +16,11 @@ namespace MediaBrowser.LocalMetadata.Parsers
         /// Fetches the data from XML node.
         /// </summary>
         /// <param name="reader">The reader.</param>
-        /// <param name="item">The item.</param>
-        protected override void FetchDataFromXmlNode(XmlReader reader, Season item)
+        /// <param name="result">The result.</param>
+        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Season> result)
         {
+            var item = result.Item;
+
             switch (reader.Name)
             {
                 case "SeasonNumber":
@@ -38,7 +40,7 @@ namespace MediaBrowser.LocalMetadata.Parsers
                     }
 
                 default:
-                    base.FetchDataFromXmlNode(reader, item);
+                    base.FetchDataFromXmlNode(reader, result);
                     break;
             }
         }

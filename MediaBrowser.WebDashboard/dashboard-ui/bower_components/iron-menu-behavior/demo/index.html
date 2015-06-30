@@ -1,0 +1,100 @@
+<!doctype html>
+<!--
+  @license
+  Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+  This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+  The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+  The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+  Code distributed by Google as part of the polymer project is also
+  subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+  <title>iron-menu-behavior demo</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="simple-menu.html">
+  <link rel="import" href="simple-menubar.html">
+
+  <link rel="stylesheet" href="../../paper-styles/demo.css">
+
+  <style>
+
+    .list {
+      display: inline-block;
+      border: 1px solid #ccc;
+      padding: 8px 0;
+    }
+
+    .list li {
+      display: block;
+      padding: 8px;
+    }
+
+    .list li[disabled] {
+      color: #ccc;
+    }
+
+  </style>
+</head>
+<body>
+
+  <section>
+
+    <div>Simple menu</div>
+
+    <simple-menu class="list">
+      <li>item 0</li>
+      <li>item 1</li>
+      <li disabled>item 2</li>
+      <li>item 3</li>
+    </simple-menu>
+
+  </section>
+
+  <section>
+
+    <div>Multi-select menu</div>
+
+    <simple-menu class="list" multi>
+      <li>item 0</li>
+      <li>item 1</li>
+      <li>item 2</li>
+      <li>item 3</li>
+      <li>item 4</li>
+    </simple-menu>
+
+  </section>
+
+  <section>
+
+    <div>Simple menubar</div>
+
+    <simple-menubar class="list">
+      <li>item 0</li>
+      <li>item 1</li>
+      <li disabled>item 2</li>
+      <li>item 3</li>
+    </simple-menubar>
+
+  </section>
+
+  <section>
+    <div>Multi-select menubar</div>
+
+    <simple-menubar class="list" multi>
+      <li>item 0</li>
+      <li>item 1</li>
+      <li>item 2</li>
+      <li>item 3</li>
+      <li>item 4</li>
+    </simple-menubar>
+  </section>
+</body>
+</html>

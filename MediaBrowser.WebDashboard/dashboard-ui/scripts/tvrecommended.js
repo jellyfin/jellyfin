@@ -2,41 +2,29 @@
 
     function getView() {
 
-        if (AppInfo.hasLowImageBandwidth) {
-            return 'ThumbCard';
-        }
-
         return 'Thumb';
     }
 
     function getResumeView() {
-
-        if (AppInfo.hasLowImageBandwidth) {
-            return 'PosterCard';
-        }
 
         return 'Poster';
     }
 
     function reload(page) {
 
+        Dashboard.showLoadingMsg();
+
         var context = '';
 
         if (LibraryMenu.getTopParentId()) {
 
-            $('.scopedLibraryViewNav', page).show();
-            $('.globalNav', page).hide();
             $('.scopedContent', page).show();
             context = 'tv';
-            $('.nextUpHeader', page).removeClass('firstListHeader');
 
             loadResume(page);
 
         } else {
-            $('.scopedLibraryViewNav', page).hide();
-            $('.globalNav', page).show();
             $('.scopedContent', page).hide();
-            $('.nextUpHeader', page).addClass('firstListHeader');
         }
 
         loadNextUp(page, context || 'home-nextup');
@@ -100,8 +88,12 @@
                 });
             }
 
-            $('#nextUpItems', page).html(html).lazyChildren();
+            var elem = page.querySelector('#nextUpItems');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
+            Dashboard.hideLoadingMsg();
 
+            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -119,9 +111,7 @@
 
         var screenWidth = $(window).width();
 
-        var limit = AppInfo.hasLowImageBandwidth ?
-         4 :
-         6;
+        var limit = 6;
 
         var options = {
 
@@ -144,7 +134,6 @@
                 $('#resumableSection', page).show();
             } else {
                 $('#resumableSection', page).hide();
-                $('.nextUpHeader', page).addClass('firstListHeader');
             }
 
             var view = getResumeView();
@@ -177,22 +166,25 @@
                 });
             }
 
-            $('#resumableItems', page).html(html).lazyChildren();
-
+            var elem = page.querySelector('#resumableItems');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
         });
     }
 
-    $(document).on('pageshowready', "#tvRecommendedPage", function () {
+    $(document).on('pagebeforeshowready', "#tvRecommendedPage", function () {
 
         var page = this;
 
         if (enableScrollX()) {
-            $('#resumableItems', page).addClass('hiddenScrollX');
+            page.querySelector('#resumableItems').classList.add('hiddenScrollX');
         } else {
-            $('#resumableItems', page).removeClass('hiddenScrollX');
+            page.querySelector('#resumableItems').classList.remove('hiddenScrollX');
         }
 
-        reload(page);
+        if (LibraryBrowser.needsRefresh(page)) {
+            reload(page);
+        }
     });
 
 

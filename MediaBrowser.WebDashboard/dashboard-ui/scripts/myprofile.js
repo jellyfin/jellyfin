@@ -11,7 +11,7 @@
         ApiClient.getUser(userId).done(function (user) {
 
             $('.username', page).html(user.Name);
-            $('#uploadUserImage', page).val('').trigger('change');
+            Events.trigger($('#uploadUserImage', page).val('')[0], 'change');
 
             Dashboard.setPageTitle(user.Name);
 

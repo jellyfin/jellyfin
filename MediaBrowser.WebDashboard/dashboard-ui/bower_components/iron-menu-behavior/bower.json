@@ -1,0 +1,32 @@
+{
+  "name": "iron-menu-behavior",
+  "version": "1.0.1",
+  "description": "Provides accessible menu behavior",
+  "authors": "The Polymer Authors",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "behavior",
+    "menu"
+  ],
+  "main": "iron-menu-behavior.html",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/iron-menu-behavior"
+  },
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/PolymerElements/iron-menu-behavior",
+  "ignore": [],
+  "dependencies": {
+    "iron-selector": "PolymerElements/iron-selector#^1.0.0",
+    "polymer": "Polymer/polymer#^1.0.0",
+    "iron-a11y-keys-behavior": "polymerelements/iron-a11y-keys-behavior#^1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#^1.0.0",
+    "web-component-tester": "*",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  }
+}

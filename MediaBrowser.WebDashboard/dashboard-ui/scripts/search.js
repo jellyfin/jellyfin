@@ -91,20 +91,26 @@
             centerImage: true,
             textLines: getAdditionalTextLines
         });
-        $('.itemsContainer', elem).html(html).lazyChildren();
+
+        var itemsContainer = elem.querySelector('.itemsContainer');
+        itemsContainer.innerHTML = html;
+        ImageLoader.lazyChildren(itemsContainer);
     }
 
     function requestSearchHintsForOverlay(elem, searchTerm) {
 
         var currentTimeout = searchHintTimeout;
+        Dashboard.showLoadingMsg();
 
         ApiClient.getSearchHints({ userId: Dashboard.getCurrentUserId(), searchTerm: searchTerm, limit: 30 }).done(function (result) {
 
-            if (currentTimeout != searchHintTimeout) {
-                return;
+            if (currentTimeout == searchHintTimeout) {
+                renderSearchResultsInOverlay(elem, result.SearchHints);
             }
 
-            renderSearchResultsInOverlay(elem, result.SearchHints);
+            Dashboard.hideLoadingMsg();
+        }).fail(function () {
+            Dashboard.hideLoadingMsg();
         });
     }
 
@@ -128,17 +134,16 @@
 
     function getSearchOverlay(createIfNeeded) {
 
-        var elem = $('.searchResultsOverlay');
+        var elem = document.querySelector('.searchResultsOverlay');
 
-        if (createIfNeeded && !elem.length) {
+        if (createIfNeeded && !elem) {
 
             var html = '<div class="searchResultsOverlay ui-page-theme-b smoothScrollY">';
 
             html += '<div class="searchResultsContainer"><div class="itemsContainer"></div></div></div>';
 
-            elem = $(html).appendTo(document.body).hide().trigger('create');
-
-            elem.createCardMenus();
+            elem = $(html).appendTo(document.body).hide()[0];
+            $(elem).createCardMenus();
         }
 
         return elem;
@@ -146,14 +151,29 @@
 
     function onHeaderSearchChange(val) {
 
+        var elem;
+
         if (val) {
-            updateSearchOverlay(getSearchOverlay(true).fadeIn('fast'), val);
-            $(document.body).addClass('bodyWithPopupOpen');
+
+            elem = getSearchOverlay(true);
+
+            $(elem).show();
+            elem.style.opacity = '1';
+            document.body.classList.add('bodyWithPopupOpen');
+
+            updateSearchOverlay(elem, val);
 
         } else {
+            elem = getSearchOverlay(false);
 
-            updateSearchOverlay(getSearchOverlay(false).fadeOut('fast'), val);
-            $(document.body).removeClass('bodyWithPopupOpen');
+            if (elem) {
+                require(["jquery", "velocity"], function ($, Velocity) {
+
+                    $(elem).velocity("fadeOut");
+                    document.body.classList.remove('bodyWithPopupOpen');
+                });
+                updateSearchOverlay(elem, '');
+            }
         }
     }
 
@@ -212,6 +232,7 @@
             Velocity.animate(elem, { "left": "0px" },
             {
                 complete: function () {
+                    $('.headerSearchInput').focus();
                     $('.btnCloseSearch').show();
                 }
             });
@@ -220,22 +241,29 @@
 
     function hideSearchMenu() {
 
-        require(["jquery", "velocity"], function ($, Velocity) {
+        var viewMenuSearch = document.querySelector('.viewMenuSearch');
 
-            $('.btnCloseSearch').hide();
-            var elem = $('.viewMenuSearch')
-                .css({ left: '0' })[0];
+        if (!viewMenuSearch) {
+            return;
+        }
 
-            Velocity.animate(elem, { "left": "100%" },
-            {
-                complete: function () {
-                    $('.viewMenuSearch').addClass('hide');
-                }
+        if (!viewMenuSearch.classList.contains('hide')) {
+            require(["jquery", "velocity"], function ($, Velocity) {
+
+                $('.btnCloseSearch').hide();
+                viewMenuSearch.style.left = '0';
+
+                Velocity.animate(viewMenuSearch, { "left": "100%" },
+                {
+                    complete: function () {
+                        $('.viewMenuSearch').visible(false);
+                    }
+                });
             });
-        });
+        }
     }
 
-    $(document).on('pagehide', ".libraryPage", function () {
+    $(document).on('pagebeforehide', ".libraryPage", function () {
 
         $('#txtSearch', this).val('');
         $('#searchHints', this).empty();

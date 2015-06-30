@@ -7,8 +7,8 @@
     <div id="channelItemsPage" data-role="page" class="page libraryPage channelsPage" data-contextname="${HeaderChannels}" data-require="scripts/channelitems">
 
         <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="channelslatest.html" class="latestChannelItemsTab">${TabLatest}</a>
-            <a href="channels.html" class="ui-btn-active">${TabChannels}</a>
+            <a href="channelslatest.html" class="latestChannelItemsTab"><i class="material-icons">new_releases</i>${TabLatest}</a>
+            <a href="channels.html" class="ui-btn-active"><i class="material-icons">live_tv</i>${TabChannels}</a>
         </div>
 
         <div class="channelHeader"></div>
@@ -16,17 +16,12 @@
         <div data-role="content">
             <div class="viewSettings">
 
-                <h2 class="categoryTitle" style="margin: 0 1em 0 0; display: inline-block; vertical-align: middle; font-weight:300;"></h2>
+                <h1 class="categoryTitle" style="margin: 0 1em 0 0; display: inline-block; vertical-align: middle;"></h1>
 
                 <div class="listTopPaging">
                 </div>
             </div>
             <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
-        </div>
-        <div data-role="popup" id="popupDialog" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width: 250px;" data-history="false">
-            <div style="padding: .5em 1.5em;">
-                <p style="color: #eee;">${MessageLoadingChannels}</p>
-            </div>
         </div>
 
         <div data-role="panel" class="viewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
