@@ -482,7 +482,7 @@
     }
 
     function showUserAtTop() {
-        return $.browser.mobile || AppInfo.isNativeApp;
+        return AppInfo.isNativeApp;
     }
 
     var requiresLibraryMenuRefresh = false;
@@ -770,7 +770,7 @@
                 });
             }
 
-            if (!$.browser.mobile) {
+            if (!AppInfo.isNativeApp) {
                 darkDrawer = true;
             }
         }

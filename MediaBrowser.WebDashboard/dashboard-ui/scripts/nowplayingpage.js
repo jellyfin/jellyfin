@@ -476,6 +476,20 @@
             $('.videoButton', page).css('visibility', 'hidden');
         }
 
+        if (playerInfo.isLocalPlayer && AppInfo.hasPhysicalVolumeButtons) {
+            $('.volumeButton', page).css('visibility', 'hidden');
+        } else {
+            $('.volumeButton', page).css('visibility', 'visible');
+        }
+
+        if (playerInfo.isLocalPlayer && AppInfo.hasPhysicalVolumeButtons && item && item.MediaType == 'Audio') {
+            $('.buttonsRow2', page).hide();
+            $('.buttonsRow3', page).hide();
+        } else {
+            $('.buttonsRow2', page).show();
+            $('.buttonsRow3', page).show();
+        }
+
         updateNowPlayingInfo(page, state);
     }
 

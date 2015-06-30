@@ -177,7 +177,8 @@
             html += getSyncJobHtml(page, job, cardBoxCssClass, syncJobPage);
         }
 
-        var elem = $('.syncActivity', page).html(html).trigger('create').lazyChildren();
+        var elem = $('.syncActivity', page).html(html).lazyChildren();
+        Events.trigger(elem[0], 'create');
 
         $('.btnJobMenu', elem).on('click', function () {
             showJobMenu(this);

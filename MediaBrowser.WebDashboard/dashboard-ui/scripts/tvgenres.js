@@ -35,7 +35,7 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false
-            })).trigger('create');
+            }));
 
             updateFilterControls(page);
 
@@ -190,7 +190,7 @@
         LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
 
             if (val) {
-                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+                Events.trigger($('#selectView', page).val(val).selectmenu('refresh')[0], 'change');
             } else {
                 reloadItems(page);
             }

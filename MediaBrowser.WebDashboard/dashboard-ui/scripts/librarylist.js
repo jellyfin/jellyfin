@@ -115,16 +115,16 @@
 
             var resumePosition = (item.UserData || {}).PlaybackPositionTicks || 0;
 
-            html += '<button type="button" class="btnPlayItem" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '" data-mini="true" data-inline="true" data-icon="play" data-iconpos="notext" title="' + Globalize.translate('ButtonPlay') + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonPlay') + '</button>';
+            html += '<paper-icon-button icon="play-circle-filled" class="btnPlayItem" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"></paper-icon-button>';
             buttonCount++;
         }
 
         if (commands.indexOf('trailer') != -1) {
-            html += '<button type="button" data-mini="true" data-inline="true" data-icon="video" data-iconpos="notext" class="btnPlayTrailer" data-itemid="' + item.Id + '" title="' + Globalize.translate('ButtonPlayTrailer') + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonPlayTrailer') + '</button>';
+            html += '<paper-icon-button icon="videocam" class="btnPlayTrailer" data-itemid="' + item.Id + '"></paper-icon-button>';
             buttonCount++;
         }
 
-        html += '<button type="button" class="btnMoreCommands" data-mini="true" data-inline="true" data-icon="ellipsis-v" data-iconpos="notext" title="' + Globalize.translate('ButtonMore') + '" style="' + buttonMargin + '">' + Globalize.translate('ButtonMore') + '</button>';
+        html += '<paper-icon-button icon="more-vert" class="btnMoreCommands"></paper-icon-button>';
         buttonCount++;
 
         html += '</div>';

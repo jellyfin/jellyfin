@@ -1,22 +1,35 @@
 ﻿(function ($, document) {
 
     // The base query options
-    var query = {
+    var data = {};
 
-        SortBy: "SortName",
-        SortOrder: "Ascending",
-        IncludeItemTypes: "Series",
-        Recursive: true,
-        Fields: "DateCreated,ItemCounts",
-        StartIndex: 0
-    };
+    function getQuery() {
+        var key = getWindowUrl();
+        var pageData = data[key];
+
+        if (!pageData) {
+            pageData = data[key] = {
+                query: {
+                    SortBy: "SortName",
+                    SortOrder: "Ascending",
+                    IncludeItemTypes: "Series",
+                    Recursive: true,
+                    Fields: "DateCreated,ItemCounts",
+                    StartIndex: 0
+                }
+            };
+        }
+        return pageData.query;
+    }
 
     function getSavedQueryKey() {
 
-        return 'tvstudios' + (query.ParentId || '');
+        return 'tvstudios' + (getQuery().ParentId || '');
     }
 
     function reloadItems(page) {
+
+        var query = getQuery();
 
         Dashboard.showLoadingMsg();
 
@@ -33,7 +46,7 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false
-            })).trigger('create');
+            }));
 
             updateFilterControls(page);
 
@@ -46,7 +59,7 @@
                 showItemCounts: true,
                 centerText: true,
                 lazy: true
-                
+
             });
 
             var elem = page.querySelector('#items');
@@ -71,6 +84,8 @@
 
     function updateFilterControls(page) {
 
+        var query = getQuery();
+
         $('.chkStandardFilter', page).each(function () {
 
             var filters = "," + (query.Filters || "");
@@ -89,6 +104,8 @@
 
         $('.chkStandardFilter', this).on('change', function () {
 
+            var query = getQuery();
+
             var filterName = this.getAttribute('data-filter');
             var filters = query.Filters || "";
 
@@ -105,12 +122,16 @@
         });
 
         $('#selectPageSize', page).on('change', function () {
+            var query = getQuery();
+
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
             reloadItems(page);
         });
 
     }).on('pagebeforeshowready', "#tvStudiosPage", function () {
+
+        var query = getQuery();
 
         query.ParentId = LibraryMenu.getTopParentId();
 

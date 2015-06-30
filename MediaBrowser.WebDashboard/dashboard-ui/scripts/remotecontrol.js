@@ -296,7 +296,7 @@
 
     function firePlaybackEvent(name, session) {
 
-        $(player).trigger(name, [getPlayerState(session)]);
+        Events.trigger(player, name, [getPlayerState(session)]);
     }
 
     function onWebSocketConnectionChange() {

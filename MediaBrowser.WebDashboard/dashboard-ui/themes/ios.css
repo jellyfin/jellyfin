@@ -145,7 +145,7 @@ h1, h1 a {
 }
 
 .bottomFab {
-    bottom: 70px;
+    bottom: 70px !important;
 }
 
 .sidebarLinkText {

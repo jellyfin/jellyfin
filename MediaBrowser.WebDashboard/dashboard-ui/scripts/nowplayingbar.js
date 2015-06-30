@@ -175,7 +175,7 @@
 
         elem = $(getNowPlayingBarHtml()).insertBefore('#footerNotifications')[0];
 
-        if ($.browser.safari && $.browser.mobile) {
+        if (($.browser.safari || !AppInfo.isNativeApp) && $.browser.mobile) {
             // Not handled well here. The wrong elements receive events, bar doesn't update quickly enough, etc.
             elem.classList.add('noMediaProgress');
         }

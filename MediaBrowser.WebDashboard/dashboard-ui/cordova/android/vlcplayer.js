@@ -5,35 +5,35 @@
         var self = this;
 
         function onEnded() {
-            $(self).trigger('ended');
+            Events.trigger(self, 'ended');
         }
 
         function onTimeUpdate() {
-            $(self).trigger('timeupdate');
+            Events.trigger(self, 'timeupdate');
         }
 
         function onVolumeChange() {
-            $(self).trigger('volumechange');
+            Events.trigger(self, 'volumechange');
         }
 
         function onPlaying() {
-            $(self).trigger('playing');
+            Events.trigger(self, 'playing');
         }
 
         function onPlay() {
-            $(self).trigger('play');
+            Events.trigger(self, 'play');
         }
 
         function onPause() {
-            $(self).trigger('pause');
+            Events.trigger(self, 'pause');
         }
 
         function onClick() {
-            $(self).trigger('click');
+            Events.trigger(self, 'click');
         }
 
         function onDblClick() {
-            $(self).trigger('dblclick');
+            Events.trigger(self, 'dblclick');
         }
 
         function onError() {
@@ -41,7 +41,7 @@
             var errorCode = this.error ? this.error.code : '';
             Logger.log('Media element error code: ' + errorCode);
 
-            $(self).trigger('error');
+            Events.trigger(self, 'error');
         }
 
         var playerState = {};

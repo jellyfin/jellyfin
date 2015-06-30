@@ -50,7 +50,7 @@
 
             LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), item);
 
-            $(page).trigger('displayingitem', [{
+            Events.trigger(page, 'displayingitem', [{
 
                 item: item,
                 context: 'livetv'

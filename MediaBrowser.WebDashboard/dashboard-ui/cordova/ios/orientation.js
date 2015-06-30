@@ -7,7 +7,7 @@
         // Try to make it react quicker to the orientation change
         doc.scrollTop(doc.scrollTop() + 1);
 
-        $('.libraryViewNav').filter(':visible').hide().show();
+        $('paper-tabs').filter(':visible').hide().show();
     }
 
     function onOrientationChange() {

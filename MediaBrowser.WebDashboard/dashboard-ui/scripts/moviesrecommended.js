@@ -67,7 +67,7 @@
                 });
             }
 
-            $('#recentlyAddedItems', page).html(html).lazyChildren().trigger('create');
+            $('#recentlyAddedItems', page).html(html).lazyChildren();
         });
     }
 
@@ -128,7 +128,7 @@
                 });
             }
 
-            $('#resumableItems', page).html(html).lazyChildren().trigger('create');
+            $('#resumableItems', page).html(html).lazyChildren();
 
         });
     }
