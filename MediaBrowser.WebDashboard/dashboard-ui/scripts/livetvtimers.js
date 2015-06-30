@@ -104,6 +104,7 @@
 
             renderTimers(page, result.Items);
 
+            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -111,7 +112,9 @@
 
         var page = this;
 
-        reload(page);
+        if (LibraryBrowser.needsRefresh(page)) {
+            reload(page);
+        }
     });
 
 })(jQuery, document);

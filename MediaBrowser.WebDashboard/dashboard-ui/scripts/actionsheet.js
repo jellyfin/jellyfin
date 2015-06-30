@@ -66,11 +66,12 @@
                 return o.ironIcon;
             }).length;
 
+            html += '<paper-menu>';
             for (var i = 0, length = options.items.length; i < length; i++) {
 
                 var option = options.items[i];
 
-                html += '<paper-button class="block menuButton ripple btnOption" data-id="' + option.id + '" style="margin:0;">';
+                html += '<paper-menu-item class="actionSheetMenuItem" data-id="' + option.id + '" style="display:block;">';
 
                 if (option.ironIcon) {
                     html += '<iron-icon icon="' + option.ironIcon + '"></iron-icon>';
@@ -79,8 +80,9 @@
                     html += '<iron-icon></iron-icon>';
                 }
                 html += '<span>' + option.name + '</span>';
-                html += '</paper-button>';
+                html += '</paper-menu-item>';
             }
+            html += '</paper-menu>';
 
             if (isScrollable) {
                 html += '</paper-dialog-scrollable>';
@@ -106,7 +108,7 @@
                     $(this).remove();
                 });
 
-                $('.btnOption', dlg).on('click', function () {
+                $('.actionSheetMenuItem', dlg).on('click', function () {
 
                     var selectedId = this.getAttribute('data-id');
 

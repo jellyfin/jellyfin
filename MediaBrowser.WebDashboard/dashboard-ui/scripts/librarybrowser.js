@@ -3,7 +3,7 @@
     var pageSizeKey = 'pagesize_v4';
 
     return {
-        getDefaultPageSize: function(key, defaultValue) {
+        getDefaultPageSize: function (key, defaultValue) {
 
             var saved = appStorage.getItem(key || pageSizeKey);
 
@@ -21,13 +21,13 @@
             return isChrome ? 200 : 100;
         },
 
-        getDefaultItemsView: function(view, mobileView) {
+        getDefaultItemsView: function (view, mobileView) {
 
             return $.browser.mobile ? mobileView : view;
 
         },
 
-        loadSavedQueryValues: function(key, query) {
+        loadSavedQueryValues: function (key, query) {
 
             var values = appStorage.getItem(key + '_' + Dashboard.getCurrentUserId());
 
@@ -41,7 +41,7 @@
             return query;
         },
 
-        saveQueryValues: function(key, query) {
+        saveQueryValues: function (key, query) {
 
             var values = {};
 
@@ -59,7 +59,7 @@
             }
         },
 
-        saveViewSetting: function(key, value) {
+        saveViewSetting: function (key, value) {
 
             try {
                 appStorage.setItem(key + '_' + Dashboard.getCurrentUserId() + '_view', value);
@@ -68,7 +68,7 @@
             }
         },
 
-        getSavedViewSetting: function(key) {
+        getSavedViewSetting: function (key) {
 
             var deferred = $.Deferred();
             var val = appStorage.getItem(key + '_' + Dashboard.getCurrentUserId() + '_view');
@@ -77,25 +77,39 @@
             return deferred.promise();
         },
 
-        needsRefresh: function(elem) {
+        needsRefresh: function (elem) {
 
-            var last = elem.getAttribute('data-lastrefresh') || '0';
+            var last = parseInt(elem.getAttribute('data-lastrefresh') || '0');
+
+            if (!last) {
+                return true;
+            }
 
             if (NavHelper.isBack()) {
                 return false;
             }
 
             var now = new Date().getTime();
-            if ((now - parseInt(last)) < 90000) {
+            var cacheDuration = 300000;
+            if (!AppInfo.isNativeApp && ($.browser.ipad || $.browser.iphone || $.browser.android)) {
+                cacheDuration = 10000;
+            }
+
+            else if (!$.browser.mobile) {
+                cacheDuration = 60000;
+            }
+
+            if ((now - last) < cacheDuration) {
                 return false;
             }
 
             return true;
         },
 
-        setLastRefreshed: function(elem) {
-            
+        setLastRefreshed: function (elem) {
+
             elem.setAttribute('data-lastrefresh', new Date().getTime());
+            elem.classList.add('hasrefreshtime');
         },
 
         getDateParamValue: function (date) {
@@ -535,13 +549,6 @@
 
             var href = LibraryBrowser.getHrefInternal(item, context);
 
-            if (context) {
-                if (context != 'livetv') {
-                    href += href.indexOf('?') == -1 ? "?context=" : "&context=";
-                    href += context;
-                }
-            }
-
             if (context != 'livetv') {
                 if (topParentId == null && context != 'playlists') {
                     topParentId = LibraryMenu.getTopParentId();
@@ -565,6 +572,8 @@
             if (item.url) {
                 return item.url;
             }
+
+            var contextSuffix = context ? ('&context=' + context) : '';
 
             // Handle search hints
             var id = item.Id || item.ItemId;
@@ -632,48 +641,48 @@
                 return "livetvprogram.html?id=" + id;
             }
             if (item.Type == "Series") {
-                return "itemdetails.html?id=" + id;
+                return "itemdetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "Season") {
-                return "itemdetails.html?id=" + id;
+                return "itemdetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "BoxSet") {
-                return "itemdetails.html?id=" + id;
+                return "itemdetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "MusicAlbum") {
-                return "itemdetails.html?id=" + id;
+                return "itemdetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "GameSystem") {
-                return "itemdetails.html?id=" + id;
+                return "itemdetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "Genre") {
-                return "itembynamedetails.html?id=" + id;
+                return "itembynamedetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "MusicGenre") {
-                return "itembynamedetails.html?id=" + id;
+                return "itembynamedetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "GameGenre") {
-                return "itembynamedetails.html?id=" + id;
+                return "itembynamedetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "Studio") {
-                return "itembynamedetails.html?id=" + id;
+                return "itembynamedetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "Person") {
-                return "itembynamedetails.html?id=" + id;
+                return "itembynamedetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "Recording") {
-                return "livetvrecording.html?id=" + id;
+                return "livetvrecording.html?id=" + id + contextSuffix;
             }
 
             if (item.Type == "MusicArtist") {
-                return "itembynamedetails.html?id=" + id;
+                return "itembynamedetails.html?id=" + id + contextSuffix;
             }
 
             if (item.IsFolder) {
                 return id ? "itemlist.html?parentId=" + id : "#";
             }
 
-            return "itemdetails.html?id=" + id;
+            return "itemdetails.html?id=" + id + contextSuffix;
         },
 
         getImageUrl: function (item, type, index, options) {

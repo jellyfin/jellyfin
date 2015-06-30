@@ -1,12 +1,12 @@
 ﻿(function (globalScope, angular) {
 
-    globalScope.AjaxApi = {
+    globalScope.HttpClient = {
 
         param: function(params) {
             return serialize(params);
         },
 
-        ajax: function(options) {
+        send: function(options) {
             var request = getAngularRequest(options),
                 defer = globalScope.DeferredBuilder.Deferred();
 
@@ -91,7 +91,7 @@
       for (var key in jParams) {
         if (!paramMap[key]) {
           // This parameter hasn't been implemented in the paramMap object
-          Logger.log('ERROR: ajax option property "' + key + '" not implemented by AjaxApi.');
+          Logger.log('ERROR: ajax option property "' + key + '" not implemented by HttpClient.');
           continue;
         }
 

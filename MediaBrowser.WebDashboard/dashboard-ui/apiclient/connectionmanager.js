@@ -85,7 +85,7 @@
 
             logger.log('tryConnect url: ' + url);
 
-            return AjaxApi.ajax({
+            return HttpClient.send({
 
                 type: "GET",
                 url: url,
@@ -378,7 +378,7 @@
 
             var url = "https://connect.mediabrowser.tv/service/user?id=" + userId;
 
-            return AjaxApi.ajax({
+            return HttpClient.send({
                 type: "GET",
                 url: url,
                 dataType: "json",
@@ -403,7 +403,7 @@
 
             url += "/Connect/Exchange?format=json&ConnectUserId=" + credentials.ConnectUserId;
 
-            return AjaxApi.ajax({
+            return HttpClient.send({
                 type: "GET",
                 url: url,
                 dataType: "json",
@@ -429,7 +429,7 @@
 
             var url = MediaBrowser.ServerInfo.getServerAddress(server, connectionMode);
 
-            AjaxApi.ajax({
+            HttpClient.send({
 
                 type: "GET",
                 url: url + "/system/info",
@@ -444,7 +444,7 @@
 
                 if (server.UserId) {
 
-                    AjaxApi.ajax({
+                    HttpClient.send({
 
                         type: "GET",
                         url: url + "/users/" + server.UserId,
@@ -634,7 +634,7 @@
 
             var url = "https://connect.mediabrowser.tv/service/servers?userId=" + credentials.ConnectUserId;
 
-            AjaxApi.ajax({
+            HttpClient.send({
                 type: "GET",
                 url: url,
                 dataType: "json",
@@ -1083,7 +1083,7 @@
 
                 var md5 = self.getConnectPasswordHash(password);
 
-                AjaxApi.ajax({
+                HttpClient.send({
                     type: "POST",
                     url: "https://connect.mediabrowser.tv/service/user/authenticate",
                     data: {
@@ -1146,7 +1146,7 @@
 
                 var md5 = self.getConnectPasswordHash(password);
 
-                AjaxApi.ajax({
+                HttpClient.send({
                     type: "POST",
                     url: "https://connect.mediabrowser.tv/service/register",
                     data: {
@@ -1218,7 +1218,7 @@
 
             var url = "https://connect.mediabrowser.tv/service/servers?userId=" + self.connectUserId() + "&status=Waiting";
 
-            return AjaxApi.ajax({
+            return HttpClient.send({
                 type: "GET",
                 url: url,
                 dataType: "json",
@@ -1265,7 +1265,7 @@
 
                 var url = "https://connect.mediabrowser.tv/service/serverAuthorizations?serverId=" + serverId + "&userId=" + self.connectUserId();
 
-                return AjaxApi.ajax({
+                return HttpClient.send({
                     type: "DELETE",
                     url: url,
                     headers: {
@@ -1300,7 +1300,7 @@
 
             var url = "https://connect.mediabrowser.tv/service/serverAuthorizations?serverId=" + serverId + "&userId=" + self.connectUserId();
 
-            return AjaxApi.ajax({
+            return HttpClient.send({
                 type: "DELETE",
                 url: url,
                 headers: {
@@ -1327,7 +1327,7 @@
 
             var url = "https://connect.mediabrowser.tv/service/ServerAuthorizations/accept?serverId=" + serverId + "&userId=" + self.connectUserId();
 
-            return AjaxApi.ajax({
+            return HttpClient.send({
                 type: "GET",
                 url: url,
                 headers: {

@@ -115,7 +115,7 @@
 
             var resumePosition = (item.UserData || {}).PlaybackPositionTicks || 0;
 
-            html += '<paper-icon-button icon="play-circle-filled" class="btnPlayItem" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"></paper-icon-button>';
+            html += '<paper-icon-button icon="play-circle-outline" class="btnPlayItem" data-itemid="' + item.Id + '" data-itemtype="' + item.Type + '" data-isfolder="' + item.IsFolder + '" data-mediatype="' + item.MediaType + '" data-resumeposition="' + resumePosition + '"></paper-icon-button>';
             buttonCount++;
         }
 
@@ -1228,6 +1228,10 @@
         $(apiClient).off('websocketmessage', onWebSocketMessage).on('websocketmessage', onWebSocketMessage);
     }
 
+    function clearRefreshTimes() {
+        $('.hasrefreshtime').removeClass('hasrefreshtime').removeAttr('data-lastrefresh');
+    }
+
     Dashboard.ready(function () {
 
         if (window.ApiClient) {
@@ -1237,6 +1241,9 @@
         $(ConnectionManager).on('apiclientcreated', function (e, apiClient) {
             initializeApiClient(apiClient);
         });
+
+        Events.on(ConnectionManager, 'localusersignedin', clearRefreshTimes);
+        Events.on(ConnectionManager, 'localusersignedout', clearRefreshTimes);
     });
 
 })(jQuery, document, window);

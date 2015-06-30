@@ -1,28 +1,4 @@
-﻿@font-face {
-    font-family: 'Material Icons';
-    font-style: normal;
-    font-weight: 400;
-    src: url(../thirdparty/materialicons/MaterialIcons-Regular.eot); /* For IE6-8 */
-    src: local('Material Icons'), local('MaterialIcons-Regular'), url(../thirdparty/materialicons/MaterialIcons-Regular.woff2) format('woff2'), url(../thirdparty/materialicons/MaterialIcons-Regular.woff) format('woff'), url(../thirdparty/materialicons/MaterialIcons-Regular.ttf) format('truetype');
-}
-
-.material-icons {
-    font-family: 'Material Icons';
-    font-weight: normal;
-    font-style: normal;
-    display: inline-block;
-    text-transform: none;
-    /* Support for all WebKit browsers. */
-    -webkit-font-smoothing: antialiased;
-    /* Support for Safari and Chrome. */
-    text-rendering: optimizeLegibility;
-    /* Support for Firefox. */
-    -moz-osx-font-smoothing: grayscale;
-    /* Support for IE. */
-    font-feature-settings: 'liga';
-}
-
-/* cyrillic-ext */
+﻿/* cyrillic-ext */
 @font-face {
     font-family: 'Roboto';
     font-style: normal;

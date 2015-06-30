@@ -1,12 +1,12 @@
 ﻿(function (globalScope) {
 
-    globalScope.AjaxApi = {
+    globalScope.HttpClient = {
 
         param: function (params) {
             return jQuery.param(params);
         },
 
-        ajax: function (request) {
+        send: function (request) {
 
             request.timeout = request.timeout || 30000;
 

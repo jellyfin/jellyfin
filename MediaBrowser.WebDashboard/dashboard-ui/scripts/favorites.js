@@ -108,6 +108,8 @@
 
         $.when(promises).done(function () {
             Dashboard.hideLoadingMsg();
+
+            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -117,7 +119,9 @@
 
         var userId = Dashboard.getCurrentUserId();
 
-        loadSections(page, userId);
+        if (LibraryBrowser.needsRefresh(page)) {
+            loadSections(page, userId);
+        }
     });
 
 })(jQuery, document);

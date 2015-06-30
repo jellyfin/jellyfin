@@ -122,10 +122,6 @@
             return false;
         }
 
-        if ($.browser.android && AppInfo.isNativeApp) {
-            return screen.availWidth >= 1200;
-        }
-
         if ($.browser.mobile) {
             return false;
         }

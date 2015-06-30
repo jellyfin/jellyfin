@@ -37,8 +37,8 @@
         return id.toString();
     }
     function initAjax() {
-        baseAjaxMethod = AjaxApi.ajax;
-        AjaxApi.ajax = sendRequest;
+        baseAjaxMethod = HttpClient.send;
+        HttpClient.send = sendRequest;
     }
 
     function sendRequest(request) {

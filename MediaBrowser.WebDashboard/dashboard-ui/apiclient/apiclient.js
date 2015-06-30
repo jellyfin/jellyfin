@@ -115,7 +115,7 @@
             name = name.split('&').join('-');
             name = name.split('?').join('-');
 
-            var val = AjaxApi.param({ name: name });
+            var val = HttpClient.param({ name: name });
             return val.substring(val.indexOf('=') + 1).replace("'", '%27');
         };
 
@@ -175,7 +175,7 @@
 
             if (self.enableAutomaticNetworking === false || request.type != "GET") {
                 logger.log('Requesting url without automatic networking: ' + request.url);
-                return AjaxApi.ajax(request).fail(onRequestFail);
+                return HttpClient.send(request).fail(onRequestFail);
             }
 
             var deferred = DeferredBuilder.Deferred();
@@ -218,7 +218,7 @@
 
             var timeout = connectionMode == MediaBrowser.ConnectionMode.Local ? 5000 : 15000;
 
-            AjaxApi.ajax({
+            HttpClient.send({
 
                 type: "GET",
                 url: url + "/system/info/public",
@@ -282,7 +282,7 @@
 
             request.timeout = 15000;
 
-            AjaxApi.ajax(request).done(function (response) {
+            HttpClient.send(request).done(function (response) {
 
                 deferred.resolve(response, 0);
 
@@ -356,7 +356,7 @@
             url += name;
 
             if (params) {
-                url += "?" + AjaxApi.param(params);
+                url += "?" + HttpClient.param(params);
             }
 
             return url;

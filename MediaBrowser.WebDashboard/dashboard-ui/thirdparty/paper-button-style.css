@@ -314,3 +314,40 @@ paper-fab.square {
 paper-slider {
     width: 100%;
 }
+
+paper-menu-item {
+    padding: .35em .5em;
+}
+
+paper-menu-item iron-icon {
+    margin-right: 1.5em;
+}
+.actionSheetMenuItem {
+    cursor: pointer;
+}
+.actionSheetMenuItem:hover {
+    background: #eee;
+}
+
+.scrollablePaperTabs paper-icon-button {
+    display: none !important;
+}
+
+/*.scrollablePaperTabs #tabsContainer {
+    text-align: center;
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -ms-overflow-style: none;
+    overflow: -moz-scrollbars-none;
+}
+
+.scrollablePaperTabs #tabsContainer::-webkit-scrollbar {
+    height: 0 !important;
+    display: none;
+}
+
+.scrollablePaperTabs #tabsContent {
+    position: static !important;
+}*/

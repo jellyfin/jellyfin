@@ -121,6 +121,7 @@
         if (LibraryBrowser.needsRefresh(page)) {
             query.UserId = Dashboard.getCurrentUserId();
             LibraryBrowser.loadSavedQueryValues('movies', query);
+            query.Limit = query.Limit || LibraryBrowser.getDefaultPageSize();
             reloadItems(page);
             updateFilterControls(this);
         }

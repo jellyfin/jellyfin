@@ -319,8 +319,9 @@ namespace MediaBrowser.WebDashboard.Api
                 // But we do need this
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "webcomponentsjs", "webcomponents-lite.min.js"), Path.Combine(path, "bower_components", "webcomponentsjs", "webcomponents-lite.min.js"));
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "velocity", "velocity.min.js"), Path.Combine(path, "bower_components", "velocity", "velocity.min.js"));
-                CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "css", "swipebox.min.css"), Path.Combine(path, "bower_components", "swipebox", "src", "css", "swipebox.min.css"));
-                CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "js", "jquery.swipebox.min.js"), Path.Combine(path, "bower_components", "swipebox", "src", "js", "jquery.swipebox.min.js"));
+                CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "css"), Path.Combine(path, "bower_components", "swipebox", "src", "css"));
+                CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "js"), Path.Combine(path, "bower_components", "swipebox", "src", "js"));
+                CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "img"), Path.Combine(path, "bower_components", "swipebox", "src", "img"));
             }
 
             MinifyCssDirectory(Path.Combine(path, "css"));
