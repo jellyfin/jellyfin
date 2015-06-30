@@ -159,7 +159,17 @@ namespace MediaBrowser.Api.Reports
                     break;
 
                 case HeaderMetadata.UserPrimaryImageTag:
-                    option.Column = (i, r) => i.UserPrimaryImageTag;
+                    //option.Column = (i, r) => i.UserPrimaryImageTag;
+                    option.Column = (i, r) =>
+                    {
+                        if (!string.IsNullOrEmpty(i.UserId))
+                        {
+                            MediaBrowser.Controller.Entities.User user = _userManager.GetUserById(i.UserId);
+                            if (user != null)
+                                return user.PrimaryImagePath;
+                        }
+                        return string.Empty;
+                    };
                     option.Header.SortField = "";
                     break;
                 case HeaderMetadata.Severity:

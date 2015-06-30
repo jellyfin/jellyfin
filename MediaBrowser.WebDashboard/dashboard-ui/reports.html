@@ -50,7 +50,7 @@
                         <a href="#" id="tabFilter" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
                     </div>
 
-                    <div class="tabView viewTab">
+                    <div class="tabView viewTab" id="tabViewBox">
                         <div id="selectReportGroupingBox">
                             <label for="selectViewGrouping">${OptionReportGrouping}</label>
                             <select id="selectReportGroup"></select>
@@ -89,7 +89,7 @@
                         </div>
                     </div>
 
-                    <div class="tabFilter viewTab" id="tabFilterBox" style="display: none;">
+                    <div class="tabFilter viewTab" id="tabFilterBox">
                         <fieldset data-role="controlgroup">
                             <legend>
                                 ${HeaderFilters}
@@ -183,6 +183,9 @@
 
                                 <input class="chkFeatureFilter" type="checkbox" name="chkTrailer" id="chkTrailer">
                                 <label for="chkTrailer">${OptionHasTrailer}</label>
+
+                                <input class="chkFeatureFilter" type="checkbox" name="chkMissingTrailer" id="chkMissingTrailer">
+                                <label for="chkMissingTrailer">${OptionNoTrailer}</label>
 
                                 <input class="chkFeatureFilter" type="checkbox" name="chkSpecialFeature" id="chkSpecialFeature">
                                 <label for="chkSpecialFeature">${OptionHasSpecialFeatures}</label>

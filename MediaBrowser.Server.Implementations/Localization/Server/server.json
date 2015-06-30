@@ -1459,5 +1459,10 @@
     "LabelUsername": "Username:",
     "HeaderSignUp": "Sign Up",
     "LabelPasswordConfirm": "Password (confirm):",
-    "ButtonAddServer": "Add Server"
+    "ButtonAddServer": "Add Server",
+    "HeaderOverview": "Overview",
+    "HeaderShortOverview": "Short Overview",
+    "HeaderType": "Type",
+    "HeaderSeverity": "Severity",
+    "OptionReportActivities": "Activities Log"
 }
