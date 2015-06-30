@@ -65,6 +65,8 @@
             renderChannels(page, result);
 
             hideLoadingMessage(page);
+
+            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -116,7 +118,7 @@
         // Can't use pagebeforeshow here or the loading popup won't center correctly
         var page = this;
 
-        if (NavHelper.needsRefresh(page)) {
+        if (LibraryBrowser.needsRefresh(page)) {
             query.UserId = Dashboard.getCurrentUserId();
             LibraryBrowser.loadSavedQueryValues('movies', query);
             reloadItems(page);

@@ -92,6 +92,8 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
             Dashboard.hideLoadingMsg();
+
+            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -180,7 +182,7 @@
             page.querySelector('#resumableItems').classList.remove('hiddenScrollX');
         }
 
-        if (NavHelper.needsRefresh(page)) {
+        if (LibraryBrowser.needsRefresh(page)) {
             reload(page);
         }
     });

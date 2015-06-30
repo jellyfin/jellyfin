@@ -176,7 +176,7 @@
 
         var page = this;
 
-        if (NavHelper.needsRefresh(page)) {
+        if (LibraryBrowser.needsRefresh(page)) {
             if (window.ApiClient) {
                 var userId = Dashboard.getCurrentUserId();
 
@@ -192,6 +192,8 @@
                                 showWelcomeIfNeeded(page, result);
                             }
                             Dashboard.hideLoadingMsg();
+
+                            LibraryBrowser.setLastRefreshed(page);
                         });
 
                     });

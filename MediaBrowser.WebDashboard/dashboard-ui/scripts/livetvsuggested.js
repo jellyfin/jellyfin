@@ -28,6 +28,8 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
             Dashboard.hideLoadingMsg();
+
+            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -116,7 +118,7 @@
 
         var page = this;
 
-        if (NavHelper.needsRefresh(page)) {
+        if (LibraryBrowser.needsRefresh(page)) {
             reload(page);
         }
     });

@@ -70,6 +70,8 @@
 
                 Dashboard.hideModalLoadingMsg();
 
+                LibraryBrowser.setLastRefreshed(page);
+
             });
 
             var channelPagingHtml = LibraryBrowser.getQueryPagingHtml({
@@ -484,7 +486,7 @@
 
         var page = this;
 
-        if (NavHelper.needsRefresh(page)) {
+        if (LibraryBrowser.needsRefresh(page)) {
             reloadPage(page);
         }
     });

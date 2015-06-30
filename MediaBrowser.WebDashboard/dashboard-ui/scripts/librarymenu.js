@@ -699,28 +699,13 @@
         }
     }
 
-    // The first time we create the view menu bar, wait until doc ready + login validated
-    // Otherwise we run into the jQM redirect back and forth problem
-    var updateViewMenuBarBeforePageShow = false;
-
     $(document).on('pagebeforeshowready', ".page", function () {
 
         var page = this;
 
         requiresDashboardDrawerRefresh = true;
 
-        if (updateViewMenuBarBeforePageShow) {
-            onPageBeforeShowDocumentReady(page);
-        }
-
-    }).one('pageshowready', ".page", function () {
-
-        var page = this;
-
-        $(function () {
-            onPageBeforeShowDocumentReady(page);
-            updateViewMenuBarBeforePageShow = true;
-        });
+        onPageBeforeShowDocumentReady(page);
 
     }).on('pageshowready', ".page", function () {
 
@@ -757,10 +742,7 @@
             if (AppInfo.enableBottomTabs) {
                 page.classList.add('noSecondaryNavPage');
 
-                $(function () {
-
-                    document.querySelector('.footer').classList.add('footerOverBottomTabs');
-                });
+                document.querySelector('.footer').classList.add('footerOverBottomTabs');
 
             } else {
 
@@ -972,25 +954,7 @@ $.fn.createHoverTouch = function () {
         return backUrl == getWindowUrl();
     }
 
-    function needsRefresh(elem) {
-
-        var last = elem.getAttribute('data-lastrefresh') || '0';
-
-        if (isBack()) {
-            return false;
-        }
-
-        var now = new Date().getTime();
-        if ((now - parseInt(last)) < 60000) {
-            return false;
-        }
-
-        elem.setAttribute('data-lastrefresh', now);
-        return true;
-    }
-
     window.NavHelper = {
-        needsRefresh: needsRefresh,
         isBack: isBack
     };
 

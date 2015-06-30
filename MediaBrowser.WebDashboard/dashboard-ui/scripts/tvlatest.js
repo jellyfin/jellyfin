@@ -7,6 +7,8 @@
 
     function loadLatest(page) {
 
+        Dashboard.showLoadingMsg();
+
         var userId = Dashboard.getCurrentUserId();
 
         var parentId = LibraryMenu.getTopParentId();
@@ -68,13 +70,16 @@
             var elem = page.querySelector('#latestEpisodes');
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
+
+            Dashboard.hideLoadingMsg();
+            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
     $(document).on('pagebeforeshowready', "#tvNextUpPage", function () {
 
         var page = this;
-        if (NavHelper.needsRefresh(page)) {
+        if (LibraryBrowser.needsRefresh(page)) {
             loadLatest(page);
         }
     });

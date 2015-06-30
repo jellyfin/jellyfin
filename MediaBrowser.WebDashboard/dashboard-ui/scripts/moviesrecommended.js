@@ -249,7 +249,7 @@
             $(containers).removeClass('hiddenScrollX');
         }
 
-        if (NavHelper.needsRefresh(page)) {
+        if (LibraryBrowser.needsRefresh(page)) {
             loadResume(page, userId, parentId);
             loadLatest(page, userId, parentId);
 

@@ -56,13 +56,15 @@
 
             Dashboard.hideLoadingMsg();
 
+            LibraryBrowser.setLastRefreshed(page);
+
         });
     }
     $(document).on('pagebeforeshowready', "#tvUpcomingPage", function () {
 
         var page = this;
 
-        if (NavHelper.needsRefresh(page)) {
+        if (LibraryBrowser.needsRefresh(page)) {
             loadUpcoming(page);
         }
     });

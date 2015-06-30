@@ -2016,6 +2016,10 @@ var AppInfo = {};
 
             if (Dashboard.isConnectMode()) {
 
+                if (AppInfo.isNativeApp && $.browser.android) {
+                    require(['cordova/android/logging']);
+                }
+
                 require(['appstorage'], function () {
 
                     capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));

@@ -47,6 +47,8 @@
             ImageLoader.lazyChildren(elem);
 
             Dashboard.hideLoadingMsg();
+
+            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -192,7 +194,7 @@
             $(containers).removeClass('hiddenScrollX');
         }
 
-        if (NavHelper.needsRefresh(page)) {
+        if (LibraryBrowser.needsRefresh(page)) {
             loadLatest(page, parentId);
             loadPlaylists(page, parentId);
             loadRecentlyPlayed(page, parentId);

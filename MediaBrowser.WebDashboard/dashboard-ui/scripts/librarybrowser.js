@@ -3,7 +3,7 @@
     var pageSizeKey = 'pagesize_v4';
 
     return {
-        getDefaultPageSize: function (key, defaultValue) {
+        getDefaultPageSize: function(key, defaultValue) {
 
             var saved = appStorage.getItem(key || pageSizeKey);
 
@@ -21,13 +21,13 @@
             return isChrome ? 200 : 100;
         },
 
-        getDefaultItemsView: function (view, mobileView) {
+        getDefaultItemsView: function(view, mobileView) {
 
             return $.browser.mobile ? mobileView : view;
 
         },
 
-        loadSavedQueryValues: function (key, query) {
+        loadSavedQueryValues: function(key, query) {
 
             var values = appStorage.getItem(key + '_' + Dashboard.getCurrentUserId());
 
@@ -41,7 +41,7 @@
             return query;
         },
 
-        saveQueryValues: function (key, query) {
+        saveQueryValues: function(key, query) {
 
             var values = {};
 
@@ -59,7 +59,7 @@
             }
         },
 
-        saveViewSetting: function (key, value) {
+        saveViewSetting: function(key, value) {
 
             try {
                 appStorage.setItem(key + '_' + Dashboard.getCurrentUserId() + '_view', value);
@@ -68,13 +68,34 @@
             }
         },
 
-        getSavedViewSetting: function (key) {
+        getSavedViewSetting: function(key) {
 
             var deferred = $.Deferred();
             var val = appStorage.getItem(key + '_' + Dashboard.getCurrentUserId() + '_view');
 
             deferred.resolveWith(null, [val]);
             return deferred.promise();
+        },
+
+        needsRefresh: function(elem) {
+
+            var last = elem.getAttribute('data-lastrefresh') || '0';
+
+            if (NavHelper.isBack()) {
+                return false;
+            }
+
+            var now = new Date().getTime();
+            if ((now - parseInt(last)) < 90000) {
+                return false;
+            }
+
+            return true;
+        },
+
+        setLastRefreshed: function(elem) {
+            
+            elem.setAttribute('data-lastrefresh', new Date().getTime());
         },
 
         getDateParamValue: function (date) {

@@ -55,6 +55,7 @@
 
             Dashboard.hideLoadingMsg();
 
+            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -62,7 +63,7 @@
 
         var page = this;
 
-        if (NavHelper.needsRefresh(page)) {
+        if (LibraryBrowser.needsRefresh(page)) {
             loadUpcoming(page);
         }
     });
