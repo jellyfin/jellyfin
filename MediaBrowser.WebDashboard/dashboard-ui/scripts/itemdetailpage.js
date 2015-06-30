@@ -52,6 +52,12 @@
                 $('.btnSync', page).addClass('hide');
             }
 
+            if (user.Policy.EnablePublicSharing) {
+                $('.btnShare', page).removeClass('hide');
+            } else {
+                $('.btnShare', page).addClass('hide');
+            }
+
             if (!item.LocalTrailerCount && item.RemoteTrailers.length && item.PlayAccess == 'Full') {
 
                 $('.btnPlayExternalTrailer', page).removeClass('hide').attr('href', item.RemoteTrailers[0].Url);
@@ -1620,6 +1626,13 @@
 
             SyncManager.showMenu({
                 items: [currentItem]
+            });
+        });
+
+        $('.btnShare', page).on('click', function () {
+
+            require(['sharingmanager'], function () {
+                SharingManager.showMenu(Dashboard.getCurrentUserId(), currentItem.Id);
             });
         });
 

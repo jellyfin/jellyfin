@@ -2000,6 +2000,9 @@ var AppInfo = {};
             define("actionsheet", ["scripts/actionsheet"]);
         }
 
+        define("sharingmanager", ["scripts/sharingmanager"]);
+        define("sharingwidget", ["scripts/sharingwidget"]);
+
         //requirejs(['http://viblast.com/player/free-version/qy2fdwajo1/viblast.js']);
 
         $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));

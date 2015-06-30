@@ -787,13 +787,9 @@
 
         currentImgUrl = null;
 
-        Dashboard.ready(function () {
+        $(MediaController).on('playerchange', onPlayerChange);
 
-            $(MediaController).on('playerchange', onPlayerChange);
-
-            bindToPlayer(page, MediaController.getCurrentPlayer());
-
-        });
+        bindToPlayer(page, MediaController.getCurrentPlayer());
 
         loadPlaylist(page);
 

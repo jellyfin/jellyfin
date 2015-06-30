@@ -180,6 +180,8 @@
             elem.classList.add('noMediaProgress');
         }
 
+        $.mobile.loadPage('nowplaying.html');
+
         bindEvents(elem);
 
         return elem;

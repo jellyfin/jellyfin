@@ -25,7 +25,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value>The public HTTPS port.</value>
         public int PublicHttpsPort { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the HTTP server port number.
         /// </summary>
@@ -49,7 +49,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [enable user specific user views]; otherwise, <c>false</c>.</value>
         public bool EnableUserSpecificUserViews { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the value pointing to the file system where the ssl certiifcate is located..
         /// </summary>
@@ -103,7 +103,7 @@ namespace MediaBrowser.Model.Configuration
         /// </summary>
         /// <value><c>true</c> if [enable library metadata sub folder]; otherwise, <c>false</c>.</value>
         public bool EnableLibraryMetadataSubFolder { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the preferred metadata language.
         /// </summary>
@@ -211,6 +211,8 @@ namespace MediaBrowser.Model.Configuration
 
         public AutoOnOff EnableLibraryMonitor { get; set; }
 
+        public int SharingExpirationDays { get; set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
         /// </summary>
@@ -231,6 +233,7 @@ namespace MediaBrowser.Model.Configuration
 
             EnableUPnP = true;
 
+            SharingExpirationDays = 30;
             MinResumePct = 5;
             MaxResumePct = 90;
 

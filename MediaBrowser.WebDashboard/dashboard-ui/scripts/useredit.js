@@ -48,6 +48,7 @@
 
         $('#chkEnableSync', page).checked(user.Policy.EnableSync).checkboxradio("refresh");
         $('#chkEnableSyncTranscoding', page).checked(user.Policy.EnableSyncTranscoding).checkboxradio("refresh");
+        $('#chkEnableSharing', page).checked(user.Policy.EnablePublicSharing).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -151,6 +152,7 @@
 
         user.Policy.EnableSync = $('#chkEnableSync', page).checked();
         user.Policy.EnableSyncTranscoding = $('#chkEnableSyncTranscoding', page).checked();
+        user.Policy.EnablePublicSharing = $('#chkEnableSharing', page).checked();
 
         ApiClient.updateUser(user).done(function () {
 
