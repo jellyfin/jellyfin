@@ -164,19 +164,11 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#indexPage", function () {
+    function loadHomeTab(page) {
 
-        var page = this;
+        var tabContent = page.querySelector('.homeTabContent');
 
-        Events.on(page.querySelector('.btnTakeTour'), 'click', function () {
-            takeTour(page, Dashboard.getCurrentUserId());
-        });
-
-    }).on('pagebeforeshowready', "#indexPage", function () {
-
-        var page = this;
-
-        if (LibraryBrowser.needsRefresh(page)) {
+        if (LibraryBrowser.needsRefresh(tabContent)) {
             if (window.ApiClient) {
                 var userId = Dashboard.getCurrentUserId();
 
@@ -186,19 +178,75 @@
 
                     Dashboard.getCurrentUser().done(function (user) {
 
-                        loadSections(page, user, result).done(function () {
+                        loadSections(tabContent, user, result).done(function () {
 
                             if (!AppInfo.isNativeApp) {
                                 showWelcomeIfNeeded(page, result);
                             }
                             Dashboard.hideLoadingMsg();
 
-                            LibraryBrowser.setLastRefreshed(page);
+                            LibraryBrowser.setLastRefreshed(tabContent);
                         });
 
                     });
                 });
             }
+        }
+    }
+
+    function loadTab(page, index) {
+
+        switch (index) {
+
+            case 0:
+                loadHomeTab(page);
+                break;
+            default:
+                break;
+        }
+    }
+
+    $(document).on('pageinitdepends', "#indexPage", function () {
+
+        var page = this;
+
+        Events.on(page.querySelector('.btnTakeTour'), 'click', function () {
+            takeTour(page, Dashboard.getCurrentUserId());
+        });
+
+        var tabs = page.querySelector('paper-tabs');
+        LibraryBrowser.configurePaperLibraryTabs(page, page.querySelectorAll('paper-tabs')[0], page.querySelectorAll('neon-animated-pages')[0]);
+
+        $(tabs).on('iron-select', function () {
+            var selected = this.selected;
+            if (LibraryBrowser.navigateOnLibraryTabSelect()) {
+
+                if (selected) {
+                    Dashboard.navigate('index.html?tab=' + selected);
+                } else {
+                    Dashboard.navigate('index.html');
+                }
+
+            } else {
+                page.querySelector('neon-animated-pages').selected = selected;
+            }
+        });
+
+        $(page.querySelector('neon-animated-pages')).on('iron-select', function () {
+            loadTab(page, parseInt(this.selected));
+        });
+
+    }).on('pagebeforeshowready', "#indexPage", function () {
+
+        var page = this;
+
+        var tabs = page.querySelector('paper-tabs');
+        var selected = tabs.selected;
+
+        if (selected == null) {
+            selected = parseInt(getParameterByName('tab') || '0');
+            tabs.selected = selected;
+            page.querySelector('neon-animated-pages').selected = selected;
         }
     });
 

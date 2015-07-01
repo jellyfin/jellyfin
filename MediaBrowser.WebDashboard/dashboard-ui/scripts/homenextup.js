@@ -5,33 +5,11 @@
         return 'Thumb';
     }
 
-    function getResumeView() {
-
-        return 'Poster';
-    }
-
     function reload(page) {
 
         Dashboard.showLoadingMsg();
 
-        var context = '';
-
-        if (LibraryMenu.getTopParentId()) {
-
-            $('.scopedLibraryViewNav', page).show();
-            $('.globalNav', page).hide();
-            $('.scopedContent', page).show();
-            context = 'tv';
-
-            loadResume(page);
-
-        } else {
-            $('.scopedLibraryViewNav', page).hide();
-            $('.globalNav', page).show();
-            $('.scopedContent', page).hide();
-        }
-
-        loadNextUp(page, context || 'home-nextup');
+        loadNextUp(page, 'home-nextup');
     }
 
     function loadNextUp(page, context) {
@@ -55,11 +33,10 @@
         ApiClient.getNextUpEpisodes(query).done(function (result) {
 
             if (result.Items.length) {
-                $('.noNextUpItems', page).hide();
+                page.querySelector('.noNextUpItems').classList.add('hide');
             } else {
-                $('.noNextUpItems', page).show();
+                page.querySelector('.noNextUpItems').classList.remove('hide');
             }
-
             var view = getView();
             var html = '';
 
@@ -101,95 +78,20 @@
         });
     }
 
-    function enableScrollX() {
-        return $.browser.mobile && AppInfo.enableAppLayouts;
-    }
-
-    function getThumbShape() {
-        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
-    }
-
-    function loadResume(page) {
-
-        var parentId = LibraryMenu.getTopParentId();
-
-        var screenWidth = $(window).width();
-
-        var limit = 6;
-
-        var options = {
-
-            SortBy: "DatePlayed",
-            SortOrder: "Descending",
-            IncludeItemTypes: "Episode",
-            Filters: "IsResumable",
-            Limit: limit,
-            Recursive: true,
-            Fields: "PrimaryImageAspectRatio,SeriesInfo,UserData,SyncInfo",
-            ExcludeLocationTypes: "Virtual",
-            ParentId: parentId,
-            ImageTypeLimit: 1,
-            EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
-        };
-
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
-
-            if (result.Items.length) {
-                $('#resumableSection', page).show();
-            } else {
-                $('#resumableSection', page).hide();
-            }
-
-            var view = getResumeView();
-            var html = '';
-
-            if (view == 'PosterCard') {
-
-                html += LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: getThumbShape(),
-                    showTitle: true,
-                    showParentTitle: true,
-                    lazy: true,
-                    cardLayout: true,
-                    context: 'tv',
-                    showDetailsMenu: true
-                });
-
-            } else if (view == 'Poster') {
-
-                html += LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: getThumbShape(),
-                    showTitle: true,
-                    showParentTitle: true,
-                    overlayText: screenWidth >= 800 && !AppInfo.hasLowImageBandwidth,
-                    lazy: true,
-                    context: 'tv',
-                    showDetailsMenu: true
-                });
-            }
-
-            var elem = page.querySelector('#resumableItems');
-            elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
-        });
-    }
-
-    $(document).on('pagebeforeshowready', "#homeNextUpPage", function () {
+    $(document).on('pageinitdepends', "#indexPage", function () {
 
         var page = this;
+        var tabContent = page.querySelector('.homeNextUpTabContent');
 
-        if (enableScrollX()) {
-            page.querySelector('#resumableItems').classList.add('hiddenScrollX');
-        } else {
-            page.querySelector('#resumableItems').classList.remove('hiddenScrollX');
-        }
+        $(page.querySelector('neon-animated-pages')).on('iron-select', function () {
+            
+            if (parseInt(this.selected) == 1) {
+                if (LibraryBrowser.needsRefresh(tabContent)) {
 
-        if (LibraryBrowser.needsRefresh(page)) {
-            reload(page);
-        }
+                    reload(tabContent);
+                }
+            }
+        });
     });
-
 
 })(jQuery, document);

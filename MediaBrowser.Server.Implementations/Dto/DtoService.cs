@@ -684,7 +684,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
 
                 }).Where(i => i != null)
-                .DistinctBy(i => i.Name)
+                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < people.Count; i++)

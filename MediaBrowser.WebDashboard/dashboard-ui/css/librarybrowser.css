@@ -12,16 +12,33 @@
     margin-left: .5em;
 }
 
-.backdropPage.ui-page-theme-a {
+.pageWithAbsoluteTabs {
+    background-color: transparent !important;
+}
+
+.backdropPage.ui-page-theme-a:not(.pageWithAbsoluteTabs) {
     background-color: rgba(240, 240,240, .94) !important;
 }
 
-.ui-page-theme-b {
-    background-color: #1f1f1f;
+.backdropPage.ui-page-theme-b:not(.pageWithAbsoluteTabs), .backdropPage.pageWithAbsoluteTabs .pageBackground {
+    background-color: rgba(20, 20,20, .92) !important;
 }
 
-.backdropPage.ui-page-theme-b {
-    background-color: rgba(20, 20,20, .92) !important;
+.pageWithAbsoluteTabs .pageBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+.pageWithAbsoluteTabs neon-animatable {
+    z-index: 2;
+}
+
+.ui-page-theme-b:not(.pageWithAbsoluteTabs), .pageWithAbsoluteTabs .pageBackground {
+    background-color: #1f1f1f;
 }
 
 .backdropContainer {

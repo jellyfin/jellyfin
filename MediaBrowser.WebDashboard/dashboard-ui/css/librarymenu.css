@@ -253,12 +253,12 @@
     background-color: #212121;
 }
 
-.libraryViewNav .ui-btn-active {
+.libraryViewNav:not(.paperLibraryViewNav) .ui-btn-active {
     border-bottom-color: #38c;
     color: #fff !important;
 }
 
-.libraryViewNav a {
+.libraryViewNav:not(.paperLibraryViewNav) a {
     display: inline-block;
     padding: 14px 13px 11px;
     color: rgba(255,255,255,.8) !important;
@@ -269,9 +269,35 @@
     border-bottom: 5px solid transparent;
 }
 
-    .libraryViewNav a:not(.ui-btn-active):hover {
-        color: #2ad !important;
-    }
+.paperLibraryViewNav a {
+    color: #ddd !important;
+    text-decoration: none;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 48px;
+}
+
+.paperLibraryViewNav .iron-selected a {
+    color: inherit !important;
+    text-decoration: none;
+    text-align: center;
+}
+
+.basicPaperLibraryTabs .libraryViewNav .tab-content {
+    border-bottom: 6px solid transparent;
+}
+
+.basicPaperLibraryTabs .libraryViewNav .iron-selected .tab-content {
+    border-bottom: 6px solid #38c;
+}
+
+.basicPaperLibraryTabs .libraryViewNav paper-tabs {
+    display: none;
+}
+
+.libraryViewNav:not(.paperLibraryViewNav) a:not(.ui-btn-active):hover {
+    color: #2ad !important;
+}
 
 @media all and (max-width: 500px) {
 

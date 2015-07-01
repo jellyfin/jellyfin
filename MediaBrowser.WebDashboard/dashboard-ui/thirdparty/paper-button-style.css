@@ -266,6 +266,7 @@ paper-tabs, paper-toolbar {
 
 paper-tab {
     text-transform: uppercase;
+    font-weight: 400;
 }
 
 paper-tabs:not([alignbottom]) #selectionBar {

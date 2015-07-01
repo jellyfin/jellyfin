@@ -112,6 +112,87 @@
             elem.classList.add('hasrefreshtime');
         },
 
+        configureSwipeTabs: function (ownerpage, tabs, pages) {
+
+            var pageCount = pages.querySelectorAll('neon-animatable').length;
+
+            function allowSwipe(e) {
+
+                var target = e.target;
+
+                if (target.classList.contains('noSwipe')) {
+                    return false;
+                }
+                if ($(target).parents('.noSwipe').length) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            $(ownerpage).on('swipeleft', function (e) {
+
+                if (allowSwipe(e)) {
+                    var selected = parseInt(pages.selected || '0');
+                    if (selected < (pageCount - 1)) {
+                        pages.entryAnimation = 'slide-from-right-animation';
+                        pages.exitAnimation = 'slide-left-animation';
+                        tabs.selectNext();
+                    }
+                }
+            });
+
+            $(ownerpage).on('swiperight', function (e) {
+
+                if (allowSwipe(e)) {
+                    var selected = parseInt(pages.selected || '0');
+                    if (selected > 0) {
+                        pages.entryAnimation = 'slide-from-left-animation';
+                        pages.exitAnimation = 'slide-right-animation';
+                        tabs.selectPrevious();
+                    }
+                }
+            });
+        },
+
+        enableFullPaperTabs: function () {
+            return AppInfo.isNativeApp;
+        },
+
+        navigateOnLibraryTabSelect: function () {
+            return !LibraryBrowser.enableFullPaperTabs();
+        },
+
+        configurePaperLibraryTabs: function (ownerpage, tabs, pages) {
+
+            tabs.hideScrollButtons = true;
+
+            if (LibraryBrowser.enableFullPaperTabs()) {
+
+                $(tabs).show();
+
+                LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pages);
+
+                $('.libraryViewNav', ownerpage).addClass('paperLibraryViewNav');
+
+            } else {
+
+                tabs.noSlide = true;
+                tabs.noink = true;
+                tabs.noBar = true;
+                tabs.scrollable = true;
+
+                var legacyTabs = $('.legacyTabs', ownerpage).show();
+                document.body.classList.add('basicPaperLibraryTabs');
+
+                $(pages).on('iron-select', function (e) {
+
+                    var selected = this.selected;
+                    $('a', legacyTabs).removeClass('ui-btn-active')[selected].classList.add('ui-btn-active');
+                });
+            }
+        },
+
         getDateParamValue: function (date) {
 
             function formatDigit(i) {

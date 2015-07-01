@@ -295,6 +295,9 @@
 
                 // http://api.jquery.com/jQuery.ajax/
                 if (enableReconnection && !isUserErrorCode) {
+
+                    logger.log("Attempting reconnection");
+
                     tryReconnect().done(function () {
 
                         logger.log("Reconnect succeesed");
@@ -308,6 +311,8 @@
 
                     });
                 } else {
+
+                    logger.log("Reporting request failure");
 
                     onRetryRequestFail(request);
                     deferred.reject();

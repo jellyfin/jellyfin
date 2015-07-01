@@ -54,7 +54,7 @@
                 html += '</div>';
 
                 if (result.TotalRecordCount > result.Items.length) {
-                    var href = "homefavorites.html?sectionid=" + section.id;
+                    var href = "index.html?tab=2&sectionid=" + section.id;
 
                     html += '<a class="clearLink" href="' + href + '"><paper-button raised class="more">' + Globalize.translate('ButtonMoreItems') + '</paper-button></a>';
                 }
@@ -113,15 +113,20 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#favoritesPage", function () {
+    $(document).on('pageinitdepends', "#indexPage", function () {
 
         var page = this;
+        var tabContent = page.querySelector('.homeFavoritesTabContent');
 
-        var userId = Dashboard.getCurrentUserId();
+        $(page.querySelector('neon-animated-pages')).on('iron-select', function () {
 
-        if (LibraryBrowser.needsRefresh(page)) {
-            loadSections(page, userId);
-        }
+            if (parseInt(this.selected) == 2) {
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    loadSections(tabContent, Dashboard.getCurrentUserId());
+                }
+            }
+        });
+
     });
 
 })(jQuery, document);

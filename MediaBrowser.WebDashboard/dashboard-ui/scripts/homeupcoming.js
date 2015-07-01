@@ -59,14 +59,19 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#homeUpcomingPage", function () {
+    $(document).on('pageinitdepends', "#indexPage", function () {
 
         var page = this;
+        var tabContent = page.querySelector('.homeUpcomingTabContent');
 
-        if (LibraryBrowser.needsRefresh(page)) {
-            loadUpcoming(page);
-        }
+        $(page.querySelector('neon-animated-pages')).on('iron-select', function () {
+
+            if (parseInt(this.selected) == 3) {
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    loadUpcoming(tabContent);
+                }
+            }
+        });
     });
-
 
 })(jQuery, document);

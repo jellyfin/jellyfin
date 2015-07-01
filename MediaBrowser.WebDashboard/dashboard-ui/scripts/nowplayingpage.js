@@ -713,20 +713,6 @@
         }
     }
 
-    function allowSwipe(e) {
-
-        var target = $(e.target);
-
-        if (target.is('.noSwipe')) {
-            return false;
-        }
-        if (target.parents('.noSwipe').length) {
-            return false;
-        }
-
-        return true;
-    }
-
     function onPlayerChange() {
         bindToPlayer($($.mobile.activePage)[0], MediaController.getCurrentPlayer());
     }
@@ -742,42 +728,14 @@
 
         $('.requiresJqmCreate', this).trigger('create');
 
-        $(page).on('swipeleft', function (e) {
-
-            if (allowSwipe(e)) {
-                var pages = this.querySelectorAll('neon-animated-pages')[0];
-                var tabs = this.querySelectorAll('paper-tabs')[0];
-
-                var selected = parseInt(pages.selected || '0');
-                if (selected < 2) {
-                    pages.entryAnimation = 'slide-from-right-animation';
-                    pages.exitAnimation = 'slide-left-animation';
-                    tabs.selectNext();
-                }
-            }
-        });
-
-        $(page).on('swiperight', function (e) {
-
-            if (allowSwipe(e)) {
-                var pages = this.querySelectorAll('neon-animated-pages')[0];
-                var tabs = this.querySelectorAll('paper-tabs')[0];
-
-                var selected = parseInt(pages.selected || '0');
-                if (selected > 0) {
-                    pages.entryAnimation = 'slide-from-left-animation';
-                    pages.exitAnimation = 'slide-right-animation';
-                    tabs.selectPrevious();
-                }
-            }
-        });
+        LibraryBrowser.configureSwipeTabs(page, page.querySelectorAll('paper-tabs')[0], page.querySelectorAll('neon-animated-pages')[0]);
 
         $(MediaController).on('playerchange', function () {
             updateCastIcon(page);
         });
 
         $('paper-tabs').on('iron-select', function () {
-            page.querySelectorAll('neon-animated-pages')[0].selected = this.selected;
+            page.querySelector('neon-animated-pages').selected = this.selected;
         });
 
     }).on('pagebeforeshowready', "#nowPlayingPage", function () {
