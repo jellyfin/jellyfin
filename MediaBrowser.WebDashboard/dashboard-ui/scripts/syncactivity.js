@@ -181,7 +181,7 @@
         Events.trigger(elem[0], 'create');
 
         $('.btnJobMenu', elem).on('click', function () {
-            showJobMenu(this);
+            showJobMenu(page, this);
         });
 
         if (!jobs.length) {
@@ -190,7 +190,7 @@
         }
     }
 
-    function showJobMenu(elem) {
+    function showJobMenu(page, elem) {
 
         var card = $(elem).parents('.card');
         var jobId = card.attr('data-id');
@@ -222,10 +222,10 @@
                     switch (id) {
 
                         case 'delete':
-                            cancelJob(jobId);
+                            cancelJob(page, jobId);
                             break;
                         case 'cancel':
-                            cancelJob(jobId);
+                            cancelJob(page, jobId);
                             break;
                         default:
                             break;

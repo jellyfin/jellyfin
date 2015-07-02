@@ -474,9 +474,9 @@
             Logger.log('session.connect succeeded');
             webAppSession.setWebAppSessionListener();
 
-            MediaController.setActivePlayer(PlayerName, convertDeviceToTarget(device));
             currentDevice = device;
             currentDeviceId = device.getId();
+            MediaController.setActivePlayer(PlayerName, convertDeviceToTarget(device));
 
             $(castPlayer).trigger('connect');
 
@@ -538,7 +538,8 @@
 
                 Logger.log('launchWebApp success. calling onSessionConnected');
                 if ($.browser.android) {
-                    tryJoinWebSession(device, true, false);
+                    //tryJoinWebSession(device, true, false);
+                    setupWebAppSession(device, session, true);
                 } else {
                     setupWebAppSession(device, session, true);
                 }
@@ -646,6 +647,8 @@
             if (newTarget.id != currentDeviceId) {
                 if (currentWebAppSession) {
                     Logger.log('Disconnecting from chromecast');
+                    Logger.log('New target info: ' + JSON.stringify(newTarget));
+                    Logger.log('currentDeviceId: ' + currentDeviceId);
                     //currentDevice.disconnect();
                     cleanupSession();
                     currentDevice = null;

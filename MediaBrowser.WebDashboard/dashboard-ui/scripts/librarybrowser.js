@@ -175,6 +175,7 @@
                 tabs.alignBottom = true;
                 tabs.classList.add('bottomTabs');
             }
+            tabs.noink = true;
 
             if (LibraryBrowser.enableFullPaperTabs()) {
 

@@ -500,8 +500,8 @@ h1 a:hover {
 }
 
 .paperLibraryViewNav.headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-203.5%);
-    transform: translateY(-203.5%);
+    -webkit-transform: translateY(-204%);
+    transform: translateY(-204%);
 }
 
 .largePanel {

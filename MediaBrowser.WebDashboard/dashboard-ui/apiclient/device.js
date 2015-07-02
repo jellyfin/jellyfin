@@ -6,6 +6,8 @@
 
     globalScope.MediaBrowser.generateDeviceId = function (keyName, seed) {
 
+        keyName = keyName || 'randomId';
+
         var keys = [];
 
         keys.push(navigator.userAgent);
