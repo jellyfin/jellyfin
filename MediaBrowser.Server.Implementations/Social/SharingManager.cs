@@ -55,17 +55,14 @@ namespace MediaBrowser.Server.Implementations.Social
                 Id = Guid.NewGuid().ToString("N"),
                 ExpirationDate = DateTime.UtcNow.AddDays(_config.Configuration.SharingExpirationDays),
                 ItemId = itemId,
-                UserId = userId,
-                Overview = item.Overview,
-                Name = GetTitle(item)
+                UserId = userId
             };
 
-            info.ImageUrl = externalUrl + "/Social/Shares/Public/" + info.Id + "/Image";
-            info.ImageUrl = externalUrl + "/web/shared.html?id=" + info.Id;
-
+            AddShareInfo(info);
+            
             await _repository.CreateShare(info).ConfigureAwait(false);
 
-            return GetShareInfo(info.Id);
+            return info;
         }
 
         private string GetTitle(BaseItem item)
@@ -77,7 +74,25 @@ namespace MediaBrowser.Server.Implementations.Social
         {
             var info = _repository.GetShareInfo(id);
 
+            AddShareInfo(info);
+
             return info;
+        }
+
+        private void AddShareInfo(SocialShareInfo info)
+        {
+            var externalUrl = _appHost.GetSystemInfo().WanAddress;
+
+            info.ImageUrl = externalUrl + "/Social/Shares/Public/" + info.Id + "/Image";
+            info.Url = externalUrl + "/web/shared.html?id=" + info.Id;
+
+            var item = _libraryManager.GetItemById(info.ItemId);
+
+            if (item != null)
+            {
+                info.Overview = item.Overview;
+                info.Name = GetTitle(item);
+            }
         }
 
         public Task DeleteShare(string id)

@@ -1,3 +1,4 @@
+using System.Runtime.Serialization;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.LiveTv;
@@ -413,7 +414,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var stream = reader.GetMemoryStream(1))
             {
-                return _jsonSerializer.DeserializeFromStream(stream, type) as BaseItem;
+                try
+                {
+                    return _jsonSerializer.DeserializeFromStream(stream, type) as BaseItem;
+                }
+                catch (SerializationException ex)
+                {
+                    _logger.ErrorException("Error deserializing item", ex);
+                    return null;
+                }
             }
         }
 
@@ -696,7 +705,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     while (reader.Read())
                     {
-                        list.Add(GetItem(reader));
+                        var item = GetItem(reader);
+                        if (item != null)
+                        {
+                            list.Add(item);
+                        }
                     }
 
                     if (reader.NextResult() && reader.Read())
@@ -986,6 +999,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _deleteChildrenCommand.Transaction = transaction;
                 _deleteChildrenCommand.ExecuteNonQuery();
 
+                // Delete people
+                _deletePeopleCommand.GetParameter(0).Value = id;
+                _deletePeopleCommand.Transaction = transaction;
+                _deletePeopleCommand.ExecuteNonQuery();
+                
                 // Delete the item
                 _deleteItemCommand.GetParameter(0).Value = id;
                 _deleteItemCommand.Transaction = transaction;
