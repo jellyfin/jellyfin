@@ -381,7 +381,7 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<meta property=\"og:url\" content=\"http://emby.media\" />");
             sb.Append("<meta property=\"og:description\" content=\"Energize your media.\" />");
             sb.Append("<meta property=\"og:type\" content=\"article\" />");
-            //sb.Append("<meta property=\"fb:app_id\" content=\"[FB_APP_ID]\" />");
+            sb.Append("<meta property=\"fb:app_id\" content=\"1618309211750238\" />");
 
             // http://developer.apple.com/library/ios/#DOCUMENTATION/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
             sb.Append("<link rel=\"apple-touch-icon\" href=\"css/images/touchicon.png\" />");
