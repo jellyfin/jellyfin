@@ -664,34 +664,6 @@
         return false;
     }
 
-    function getBackdropUrl(item) {
-
-        var screenWidth = screen.availWidth;
-
-        if (item.BackdropImageTags && item.BackdropImageTags.length) {
-
-            return ApiClient.getScaledImageUrl(item.Id, {
-                type: "Backdrop",
-                index: 0,
-                maxWidth: screenWidth,
-                tag: item.BackdropImageTags[0]
-            });
-
-        }
-        else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
-
-            return ApiClient.getScaledImageUrl(item.ParentBackdropItemId, {
-                type: 'Backdrop',
-                index: 0,
-                maxWidth: screenWidth,
-                tag: item.ParentBackdropImageTags[0]
-            });
-
-        }
-
-        return null;
-    };
-
     function updateCastIcon() {
 
         var info = MediaController.getPlayerInfo();
@@ -728,7 +700,10 @@
 
         $('.requiresJqmCreate', this).trigger('create');
 
-        LibraryBrowser.configureSwipeTabs(page, page.querySelectorAll('paper-tabs')[0], page.querySelectorAll('neon-animated-pages')[0]);
+        var tabs = page.querySelectorAll('paper-tabs')[0];
+        tabs.alignBottom = true;
+
+        LibraryBrowser.configureSwipeTabs(page, tabs, page.querySelectorAll('neon-animated-pages')[0]);
 
         $(MediaController).on('playerchange', function () {
             updateCastIcon(page);

@@ -210,10 +210,6 @@
 
         var page = this;
 
-        Events.on(page.querySelector('.btnTakeTour'), 'click', function () {
-            takeTour(page, Dashboard.getCurrentUserId());
-        });
-
         var tabs = page.querySelector('paper-tabs');
         LibraryBrowser.configurePaperLibraryTabs(page, page.querySelectorAll('paper-tabs')[0], page.querySelectorAll('neon-animated-pages')[0]);
 
@@ -232,22 +228,25 @@
             }
         });
 
-        $(page.querySelector('neon-animated-pages')).on('iron-select', function () {
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
             loadTab(page, parseInt(this.selected));
         });
 
-    }).on('pagebeforeshowready', "#indexPage", function () {
+        $(page.querySelector('neon-animated-pages')).on('iron-select', function () {
 
-        var page = this;
+            // When transition animations are used, add a content loading delay to allow the animations to finish
+            // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
+            var delay = LibraryBrowser.enableFullPaperTabs() ? 500 : 0;
+            var pages = this;
+            setTimeout(function () {
+                $(pages).trigger('tabchange');
+            }, delay);
+        });
 
-        var tabs = page.querySelector('paper-tabs');
-        var selected = tabs.selected;
+        Events.on(page.querySelector('.btnTakeTour'), 'click', function () {
+            takeTour(page, Dashboard.getCurrentUserId());
+        });
 
-        if (selected == null) {
-            selected = parseInt(getParameterByName('tab') || '0');
-            tabs.selected = selected;
-            page.querySelector('neon-animated-pages').selected = selected;
-        }
     });
 
     function getDisplayPreferencesAppName() {

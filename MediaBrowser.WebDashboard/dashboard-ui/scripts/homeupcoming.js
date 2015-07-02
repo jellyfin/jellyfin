@@ -64,7 +64,7 @@
         var page = this;
         var tabContent = page.querySelector('.homeUpcomingTabContent');
 
-        $(page.querySelector('neon-animated-pages')).on('iron-select', function () {
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
 
             if (parseInt(this.selected) == 3) {
                 if (LibraryBrowser.needsRefresh(tabContent)) {

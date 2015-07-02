@@ -323,6 +323,14 @@
                 });
             }
 
+            if (user.Policy.EnablePublicSharing) {
+                items.push({
+                    name: Globalize.translate('ButtonShare'),
+                    id: 'share',
+                    ironIcon: 'share'
+                });
+            }
+
             if (commands.indexOf('sync') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonSync'),
@@ -444,6 +452,11 @@
                                 break;
                             case 'externalplayer':
                                 LibraryBrowser.playInExternalPlayer(itemId);
+                                break;
+                            case 'share':
+                                require(['sharingmanager'], function () {
+                                    SharingManager.showMenu(Dashboard.getCurrentUserId(), itemId);
+                                });
                                 break;
                             case 'removefromplaylist':
                                 $(card).parents('.itemsContainer').trigger('removefromplaylist', [playlistItemId]);

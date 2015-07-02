@@ -118,7 +118,7 @@
         var page = this;
         var tabContent = page.querySelector('.homeFavoritesTabContent');
 
-        $(page.querySelector('neon-animated-pages')).on('iron-select', function () {
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
 
             if (parseInt(this.selected) == 2) {
                 if (LibraryBrowser.needsRefresh(tabContent)) {

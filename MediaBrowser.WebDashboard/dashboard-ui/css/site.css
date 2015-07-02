@@ -494,9 +494,14 @@ h1 a:hover {
     transform: translateY(-100%);
 }
 
-.libraryViewNav.headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-200%);
-    transform: translateY(-200%);
+.libraryViewNav:not(.paperLibraryViewNav).headroom--unpinned:not(.headroomDisabled) {
+    -webkit-transform: translateY(-203.5%);
+    transform: translateY(-203.5%);
+}
+
+.paperLibraryViewNav.headroom--unpinned:not(.headroomDisabled) {
+    -webkit-transform: translateY(-203.5%);
+    transform: translateY(-203.5%);
 }
 
 .largePanel {

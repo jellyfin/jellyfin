@@ -595,7 +595,7 @@ var Dashboard = {
 
                 callback(index == 1);
 
-            }, title || Globalize.translate('HeaderAlert'), buttonLabels.join(','));
+            }, title || Globalize.translate('HeaderConfirm'), buttonLabels.join(','));
 
         } else {
             Dashboard.confirmInternal(message, title, true, callback);
@@ -1974,7 +1974,6 @@ var AppInfo = {};
 
         define("connectservice", ["apiclient/connectservice"]);
         define("paperbuttonstyle", [], function () {
-            Dashboard.importCss('thirdparty/paper-button-style.css');
             return {};
         });
         define("jqmicons", [], function () {
@@ -2001,7 +2000,12 @@ var AppInfo = {};
         }
 
         define("sharingmanager", ["scripts/sharingmanager"]);
-        define("sharingwidget", ["scripts/sharingwidget"]);
+
+        if (Dashboard.isRunningInCordova()) {
+            define("sharingwidget", ["cordova/sharingwidget"]);
+        } else {
+            define("sharingwidget", ["scripts/sharingwidget"]);
+        }
 
         //requirejs(['http://viblast.com/player/free-version/qy2fdwajo1/viblast.js']);
 
@@ -2181,7 +2185,7 @@ $(document).on('pagecreate', ".page", function () {
             }
         }
 
-        if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !page.classList.contains('wizardPage')) {
+        if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !page.classList.contains('wizardPage') && this.id !== 'publicSharedItemPage') {
 
             Logger.log('Not logged into server. Redirecting to login.');
             Dashboard.logout();

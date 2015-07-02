@@ -90,12 +90,16 @@
             }
 
             var now = new Date().getTime();
-            var cacheDuration = 300000;
-            if (!AppInfo.isNativeApp && ($.browser.ipad || $.browser.iphone || $.browser.android)) {
+            var cacheDuration;
+
+            if (AppInfo.isNativeApp) {
+                cacheDuration = 300000;
+            }
+            else if ($.browser.ipad || $.browser.iphone || $.browser.android) {
                 cacheDuration = 10000;
             }
 
-            else if (!$.browser.mobile) {
+            else {
                 cacheDuration = 60000;
             }
 
@@ -167,13 +171,33 @@
 
             tabs.hideScrollButtons = true;
 
+            if (AppInfo.enableBottomTabs) {
+                tabs.alignBottom = true;
+                tabs.classList.add('bottomTabs');
+            }
+
             if (LibraryBrowser.enableFullPaperTabs()) {
 
                 $(tabs).show();
 
-                LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pages);
+                if ($.browser.safari) {
 
-                $('.libraryViewNav', ownerpage).addClass('paperLibraryViewNav');
+                    // Not very iOS-like I suppose
+                    tabs.noSlide = true;
+                    tabs.noink = true;
+                    tabs.noBar = true;
+                }
+                else {
+                    // Safari doesn't handle the horizontal swiping very well
+
+                    // Not very iOS-like I suppose
+                    pages.entryAnimation = 'slide-from-right-animation';
+                    pages.exitAnimation = 'slide-left-animation';
+
+                    LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pages);
+                }
+
+                $('.libraryViewNav', ownerpage).addClass('paperLibraryViewNav').removeClass('libraryViewNavWithMinHeight');
 
             } else {
 
@@ -190,7 +214,32 @@
                     var selected = this.selected;
                     $('a', legacyTabs).removeClass('ui-btn-active')[selected].classList.add('ui-btn-active');
                 });
+
+                $('.libraryViewNav', ownerpage).removeClass('libraryViewNavWithMinHeight');
             }
+
+            $(ownerpage).on('pagebeforeshowready', LibraryBrowser.onTabbedPageBeforeShowReady);
+        },
+
+        onTabbedPageBeforeShowReady: function () {
+            var page = this;
+
+            var tabs = page.querySelector('paper-tabs');
+            var selected = tabs.selected;
+
+            if (selected == null) {
+                selected = parseInt(getParameterByName('tab') || '0');
+                tabs.selected = selected;
+                page.querySelector('neon-animated-pages').selected = selected;
+
+            } else if (!LibraryBrowser.enableFullPaperTabs()) {
+                Events.trigger(page.querySelector('neon-animated-pages'), 'tabchange');
+            }
+        },
+
+        canShare: function (item, user) {
+
+            return user.Policy.EnablePublicSharing;
         },
 
         getDateParamValue: function (date) {

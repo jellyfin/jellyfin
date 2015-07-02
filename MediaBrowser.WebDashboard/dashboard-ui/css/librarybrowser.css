@@ -56,9 +56,18 @@
     padding-top: 10px;
 }
 
+.pageWithAbsoluteTabs .pageTabContent {
+    padding-top: 10px;
+}
+
 @media all and (max-width: 1200px) {
 
     .libraryPage > .ui-content {
+        padding-left: .5em !important;
+        padding-right: .5em !important;
+    }
+
+    .pageWithAbsoluteTabs .pageTabContent {
         padding-left: .5em !important;
         padding-right: .5em !important;
     }

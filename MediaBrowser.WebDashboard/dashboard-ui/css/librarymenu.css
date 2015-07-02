@@ -171,7 +171,6 @@
 }
 
 .libraryViewNav {
-    height: 49px;
     overflow: hidden;
     position: fixed;
     right: 0;
@@ -189,29 +188,31 @@
     -webkit-overflow-scrolling: touch;
 }
 
-    .libraryViewNav .material-icons {
-        display: none;
-    }
+.libraryViewNavWithMinHeight {
+    min-height: 48px;
+}
+
+.viewMenuBar, .libraryViewNav {
+    background-color: #111;
+}
+
+.paperLibraryViewNav {
+    background-color: transparent !important;
+}
+
+.libraryViewNav .material-icons {
+    display: none;
+}
 
 .bottomSecondaryNav .libraryViewNav {
     top: initial;
     bottom: 0;
-    border-top: 1px solid #444;
-    height: 51px;
 }
 
-.viewMenuBar {
-    background-color: #111;
+.libraryViewNav::-webkit-scrollbar {
+    height: 0 !important;
+    display: none;
 }
-
-.libraryViewNav {
-    background-color: #111;
-}
-
-    .libraryViewNav::-webkit-scrollbar {
-        height: 0 !important;
-        display: none;
-    }
 
 .viewMenuLink {
     text-decoration: none;
@@ -253,12 +254,7 @@
     background-color: #212121;
 }
 
-.libraryViewNav:not(.paperLibraryViewNav) .ui-btn-active {
-    border-bottom-color: #38c;
-    color: #fff !important;
-}
-
-.libraryViewNav:not(.paperLibraryViewNav) a {
+.libraryViewNav a {
     display: inline-block;
     padding: 14px 13px 11px;
     color: rgba(255,255,255,.8) !important;
@@ -266,37 +262,26 @@
     margin: 0 0;
     position: relative;
     font-weight: normal;
-    border-bottom: 5px solid transparent;
+    border-bottom: 4px solid transparent;
 }
 
-.paperLibraryViewNav a {
-    color: #ddd !important;
-    text-decoration: none;
-    text-align: center;
-    vertical-align: middle;
-    line-height: 48px;
+.libraryViewNav .ui-btn-active {
+    border-bottom-color: #38c;
+    color: #fff !important;
 }
 
-.paperLibraryViewNav .iron-selected a {
+.libraryViewNav .iron-selected a {
     color: inherit !important;
     text-decoration: none;
     text-align: center;
-}
-
-.basicPaperLibraryTabs .libraryViewNav .tab-content {
-    border-bottom: 6px solid transparent;
-}
-
-.basicPaperLibraryTabs .libraryViewNav .iron-selected .tab-content {
-    border-bottom: 6px solid #38c;
 }
 
 .basicPaperLibraryTabs .libraryViewNav paper-tabs {
     display: none;
 }
 
-.libraryViewNav:not(.paperLibraryViewNav) a:not(.ui-btn-active):hover {
-    color: #2ad !important;
+.libraryViewNav a:not(.ui-btn-active):hover {
+    color: #2ad;
 }
 
 @media all and (max-width: 500px) {

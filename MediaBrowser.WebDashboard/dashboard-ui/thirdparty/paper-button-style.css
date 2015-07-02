@@ -250,17 +250,13 @@ paper-dialog[role="alertdialog"] + iron-overlay-backdrop {
     background-color: #000 !important;
 }
 
-paper-tabs, paper-toolbar {
+paper-tabs {
     background-color: #111;
     color: #fff;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
 }
 
-    paper-toolbar paper-tabs {
-        box-shadow: none;
-    }
-
-    paper-tabs[alignBottom] {
+    paper-tabs.bottomTabs {
         box-shadow: 0px -2px 6px rgba(0, 0, 0, 0.15);
     }
 
@@ -269,11 +265,11 @@ paper-tab {
     font-weight: 400;
 }
 
-paper-tabs:not([alignbottom]) #selectionBar {
+paper-tabs #selectionBar {
     background-color: #38c !important;
 }
 
-paper-tabs:not([alignbottom]) paper-ripple {
+paper-tabs paper-ripple {
     color: #38c !important;
 }
 
@@ -320,15 +316,17 @@ paper-menu-item {
     padding: .35em .5em;
 }
 
-paper-menu-item iron-icon {
-    margin-right: 1.5em;
-}
+    paper-menu-item iron-icon {
+        margin-right: 1.5em;
+    }
+
 .actionSheetMenuItem {
     cursor: pointer;
 }
-.actionSheetMenuItem:hover {
-    background: #eee;
-}
+
+    .actionSheetMenuItem:hover {
+        background: #eee;
+    }
 
 .scrollablePaperTabs paper-icon-button {
     display: none !important;

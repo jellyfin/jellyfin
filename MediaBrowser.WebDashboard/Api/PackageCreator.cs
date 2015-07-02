@@ -375,6 +375,14 @@ namespace MediaBrowser.WebDashboard.Api
 
             sb.Append("<meta name=\"robots\" content=\"noindex, nofollow, noarchive\" />");
 
+            // Open graph tags
+            sb.Append("<meta property=\"og:title\" content=\"Emby\" />");
+            sb.Append("<meta property=\"og:site_name\" content=\"Emby\"/>");
+            sb.Append("<meta property=\"og:url\" content=\"http://emby.media\" />");
+            sb.Append("<meta property=\"og:description\" content=\"Energize your media.\" />");
+            sb.Append("<meta property=\"og:type\" content=\"article\" />");
+            //sb.Append("<meta property=\"fb:app_id\" content=\"[FB_APP_ID]\" />");
+
             // http://developer.apple.com/library/ios/#DOCUMENTATION/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
             sb.Append("<link rel=\"apple-touch-icon\" href=\"css/images/touchicon.png\" />");
             sb.Append("<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\"css/images/touchicon72.png\" />");
@@ -649,28 +657,29 @@ namespace MediaBrowser.WebDashboard.Api
     
             var files = new[]
                                   {
-                                      "site.css",
-                                      "chromecast.css",
-                                      "nowplayingbar.css",
-                                      "mediaplayer.css",
-                                      "mediaplayer-video.css",
-                                      "librarymenu.css",
-                                      "librarybrowser.css",
-                                      "card.css",
-                                      "notifications.css",
-                                      "search.css",
-                                      "pluginupdates.css",
-                                      "remotecontrol.css",
-                                      "userimage.css",
-                                      "nowplaying.css",
-                                      "materialize.css"
+                                      "css/site.css",
+                                      "css/chromecast.css",
+                                      "css/nowplayingbar.css",
+                                      "css/mediaplayer.css",
+                                      "css/mediaplayer-video.css",
+                                      "css/librarymenu.css",
+                                      "css/librarybrowser.css",
+                                      "css/card.css",
+                                      "css/notifications.css",
+                                      "css/search.css",
+                                      "css/pluginupdates.css",
+                                      "css/remotecontrol.css",
+                                      "css/userimage.css",
+                                      "css/nowplaying.css",
+                                      "css/materialize.css",
+                                      "thirdparty/paper-button-style.css"
                                   };
 
             var builder = new StringBuilder();
 
             foreach (var file in files)
             {
-                var path = GetDashboardResourcePath("css/" + file);
+                var path = GetDashboardResourcePath(file);
 
                 using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
                 {

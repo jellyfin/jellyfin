@@ -52,7 +52,7 @@
                 $('.btnSync', page).addClass('hide');
             }
 
-            if (user.Policy.EnablePublicSharing) {
+            if (LibraryBrowser.canShare(item, user)) {
                 $('.btnShare', page).removeClass('hide');
             } else {
                 $('.btnShare', page).addClass('hide');

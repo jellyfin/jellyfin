@@ -9,7 +9,7 @@ html, body {
 }
 
 
-.viewMenuBar, .libraryViewNav {
+.viewMenuBar, .libraryViewNav, paper-tabs {
     background-color: rgba(28,28,28,.97);
 }
 
@@ -25,7 +25,29 @@ html, body {
     font-weight: 400;
     text-transform: none;
     color: #ccc !important;
-    padding-top: 16px;
+    padding: 12px 13px 8px;
+}
+
+.libraryViewNav .tab-content {
+    display: block !important;
+}
+
+.libraryViewNav paper-tab {
+    height: auto !important;
+}
+
+.libraryViewNav .material-icons {
+    display: block;
+    margin-top: -6px;
+    font-size: 15px;
+}
+
+.libraryViewNav paper-tab .material-icons {
+    margin-top: 0;
+}
+
+.libraryViewNav #selectionBar {
+    background-color: transparent !important;
 }
 
 @media all and (max-width: 600px) {
@@ -36,13 +58,19 @@ html, body {
     }
 }
 
-.libraryViewNav .ui-btn-active {
-    border-bottom-color: transparent;
+.libraryViewNav a {
+    border-bottom: 0;
+}
+
+.libraryViewNav .ui-btn-active, .libraryViewNav .iron-selected {
     color: #539FFD !important;
 }
 
 .libraryViewNav {
-    border-top: 1px solid #333;
+    border-top: 1px solid #333 !important;
+}
+
+.libraryViewNav, paper-tabs {
     font-size: 12px;
 }
 
@@ -92,6 +120,10 @@ h1, h1 a {
     font-weight: 400;
 }
 
+paper-tab {
+    text-transform: none !important;
+}
+
 .visualCardBox {
     background: none !important;
     -moz-box-shadow: none;
@@ -116,12 +148,6 @@ h1, h1 a {
     text-align: center;
     font-size: 16px;
     margin: 0 auto !important;
-}
-
-.libraryViewNav .material-icons {
-    display: block;
-    margin-top: -6px;
-    font-size: 15px;
 }
 
 .btnActiveCast i {
