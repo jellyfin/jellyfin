@@ -313,16 +313,17 @@ namespace MediaBrowser.Api.Playback.Hls
             {
                 var segmentPath = GetSegmentPath(state, playlist, i);
 
-                double length;
-                if (SegmentLengths.TryGetValue(Path.GetFileName(segmentPath), out length))
-                {
-                    Logger.Debug("Found segment length of {0} for index {1}", length, i);
-                    startSeconds += length;
-                }
-                else
-                {
-                    startSeconds += state.SegmentLength;
-                }
+                //double length;
+                //if (SegmentLengths.TryGetValue(Path.GetFileName(segmentPath), out length))
+                //{
+                //    Logger.Debug("Found segment length of {0} for index {1}", length, i);
+                //    startSeconds += length;
+                //}
+                //else
+                //{
+                //    startSeconds += state.SegmentLength;
+                //}
+                startSeconds += state.SegmentLength;
             }
 
             var position = TimeSpan.FromSeconds(startSeconds).Ticks;
@@ -441,7 +442,7 @@ namespace MediaBrowser.Api.Playback.Hls
             CancellationToken cancellationToken)
         {
             // If all transcoding has completed, just return immediately
-            if (transcodingJob != null && transcodingJob.HasExited)
+            if (transcodingJob != null && transcodingJob.HasExited && File.Exists(segmentPath))
             {
                 return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
             }
@@ -463,7 +464,11 @@ namespace MediaBrowser.Api.Playback.Hls
                                 // If it appears in the playlist, it's done
                                 if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
                                 {
-                                    return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
+                                    if (File.Exists(segmentPath))
+                                    {
+                                        return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
+                                    }
+                                    break;
                                 }
                             }
                         }
@@ -564,10 +569,10 @@ namespace MediaBrowser.Api.Playback.Hls
 
             builder.AppendLine("#EXTM3U");
 
+            var isLiveStream = (state.RunTimeTicks ?? 0) == 0;
+
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
-
-            var isLiveStream = (state.RunTimeTicks ?? 0) == 0;
 
             // Main stream
             var playlistUrl = isLiveStream ? "live.m3u8" : "main.m3u8";
@@ -798,7 +803,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 var audioTranscodeParams = new List<string>();
 
                 audioTranscodeParams.Add("-acodec " + codec);
-                
+
                 if (state.OutputAudioBitrate.HasValue)
                 {
                     audioTranscodeParams.Add("-ab " + state.OutputAudioBitrate.Value.ToString(UsCulture));
