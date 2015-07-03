@@ -8,10 +8,10 @@
     <div id="displayPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage" data-contextname="${HeaderSettings}" data-require="scripts/mypreferencesdisplay,scripts/mypreferencescommon,paperbuttonstyle,jqmicons">
 
         <div class="libraryViewNav">
-            <a href="#" class="ui-btn-active lnkDisplayPreferences">${TabDisplay}</a>
+            <a href="#" class="ui-btn-active lnkDisplayPreferences">${TabGeneral}</a>
+            <a href="#" class="lnkHomeScreenPreferences">${TabHomeScreen}</a>
             <a href="#" class="lnkLanguagePreferences">${TabPlayback}</a>
             <a href="#" class="lnkMyProfile">${TabProfile}</a>
-            <a href="#" class="lnkWebClientPreferences">${TabAppSettings}</a>
         </div>
 
         <div data-role="content">
@@ -20,90 +20,76 @@
 
                 <div class="detailSection">
                     <div class="detailSectionHeader">
-                        ${HeaderMyViews}
+                        ${HeaderNavigation}
                     </div>
                     <div class="detailSectionContent">
+                        <br />
                         <div>
-                            <p>${LabelSelectFolderGroups}</p>
-                            <div class="folderGroupList"></div>
-                            <div class="fieldDescription">${LabelSelectFolderGroupsHelp}</div>
+                            <label for="selectThemeSong">${LabelEnableThemeSongs}</label>
+                            <select id="selectThemeSong" data-mini="true">
+                                <option value="">${OptionAuto}</option>
+                                <option value="1">${OptionYes}</option>
+                                <option value="0">${OptionNo}</option>
+                            </select>
+                            <div class="fieldDescription">${LabelEnableThemeSongsHelp}</div>
                         </div>
                         <br />
+                        <div class="fldEnableBackdrops" style="display:none;">
+                            <label for="selectBackdrop">${LabelEnableBackdrops}</label>
+                            <select id="selectBackdrop" data-mini="true">
+                                <option value="">${OptionAuto}</option>
+                                <option value="1">${OptionYes}</option>
+                                <option value="0">${OptionNo}</option>
+                            </select>
+                            <div class="fieldDescription">${LabelEnableBackdropsHelp}</div>
+                        </div>
 
+                        <br />
                         <div>
-                            <div data-role="controlgroup">
-                                <label for="chkDisplayCollectionView">${LabelDisplayCollectionsView}</label>
-                                <input id="chkDisplayCollectionView" type="checkbox" />
-                            </div>
-                            <div class="fieldDescription">${LabelDisplayCollectionsViewHelp}</div>
+                            <label for="selectEnableItemPreviews">${LabelEnableItemPreviews}</label>
+                            <select id="selectEnableItemPreviews" data-mini="true">
+                                <option value="true">${OptionYes}</option>
+                                <option value="false">${OptionNo}</option>
+                            </select>
+                            <div>${LabelEnableItemPreviewsHelp}</div>
                         </div>
 
-                        <br />
-                        <div data-role="controlgroup">
-                            <label for="chkDisplayFolderView">${LabelDisplayFoldersView}</label>
-                            <input id="chkDisplayFolderView" type="checkbox" />
-                        </div>
-
-                        <br />
-                        <div data-role="collapsible">
-                            <h2>${HeaderChannels}</h2>
+                        <div class="fldFullscreen">
+                            <br />
                             <div>
-                                <p>${LabelGroupChannelsIntoViews}</p>
-                                <div class="channelGroupList"></div>
-                                <div class="fieldDescription">${LabelGroupChannelsIntoViewsHelp}</div>
+                                <div data-role="controlgroup">
+                                    <label for="chkEnableFullScreen">${LabelEnableFullScreen}</label>
+                                    <input type="checkbox" id="chkEnableFullScreen" />
+                                </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
-                <div class="detailSection viewStylesSection" style="display:none;">
+                <div class="detailSection syncSettingsSection">
                     <div class="detailSectionHeader">
-                        ${HeaderViewStyles}
+                        ${HeaderSync}
                     </div>
                     <div class="detailSectionContent">
-                        <p>${LabelSelectViewStyles}</p>
-                        <div class="viewStylesList">
-
-                        </div>
-                        <div class="fieldDescription">${LabelSelectViewStylesHelp}</div>
-                    </div>
-                </div>
-
-                <div class="detailSection">
-                    <div class="detailSectionHeader">
-                        ${HeaderViewOrder}
-                    </div>
-                    <div class="detailSectionContent">
-                        <p>${LabelSelectUserViewOrder}</p>
-                        <div class="viewOrderList">
-
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="detailSection">
-                    <div class="detailSectionHeader">
-                        ${HeaderLatestItems}
-                    </div>
-                    <div class="detailSectionContent">
-                        <p>${LabelSelectLastestItemsFolders}</p>
-                        <div class="latestItemsList">
-
-                        </div>
-
                         <br />
-                        <div data-role="controlgroup">
-                            <label for="chkHidePlayedFromLatest">${OptionHideWatchedContentFromLatestMedia}</label>
-                            <input id="chkHidePlayedFromLatest" type="checkbox" />
+                        <div>
+                            <br />
+                            <div>
+                                <label for="txtSyncPath">${LabelSyncPath}</label>
+                                <div style="display: inline-block; width: 85%;">
+                                    <input type="text" id="txtSyncPath" readonly />
+                                </div>
+                                <button class="btnSelectSyncPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true"></button>
+                            </div>
                         </div>
-                    </div>
 
+                    </div>
                 </div>
 
-                <div class="detailSection">
+                <div class="detailSection requiresUserPreferences">
                     <div class="detailSectionHeader">
-                        ${HeaderOtherDisplaySettings}
+                        ${HeaderDisplay}<span style="color:#52B54B;margin-left:.5em;">*</span>
                     </div>
                     <div class="detailSectionContent">
                         <br />
@@ -144,6 +130,9 @@
 
                     <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                 </div>
+                <p>
+                    <span style="color:#52B54B;margin-left:.5em;margin-right:.5em;">*</span><span>${LegendTheseSettingsShared}</span>
+                </p>
             </form>
         </div>
     </div>

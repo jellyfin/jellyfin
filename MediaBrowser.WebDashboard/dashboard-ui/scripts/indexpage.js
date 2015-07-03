@@ -107,7 +107,7 @@
         getDisplayPreferences('home', userId).done(function (result) {
 
             result.CustomPrefs[homePageTourKey] = homePageDismissValue;
-            ApiClient.updateDisplayPreferences('home', result, userId, getDisplayPreferencesAppName());
+            ApiClient.updateDisplayPreferences('home', result, userId, AppSettings.displayPreferencesKey());
         });
     }
 
@@ -249,18 +249,9 @@
 
     });
 
-    function getDisplayPreferencesAppName() {
-
-        if (AppInfo.isNativeApp) {
-            return 'Emby Mobile';
-        }
-
-        return 'webclient';
-    }
-
     function getDisplayPreferences(key, userId) {
 
-        return ApiClient.getDisplayPreferences(key, userId, getDisplayPreferencesAppName()).done(function (result) {
+        return ApiClient.getDisplayPreferences(key, userId, AppSettings.displayPreferencesKey()).done(function (result) {
 
         });
     }
