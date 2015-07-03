@@ -61,15 +61,15 @@
 
         function onOneVideoPlaying() {
 
-            var requiresNativeControls = !MediaPlayer.enableCustomVideoControls();
+            var requiresNativeControls = !self.enableCustomVideoControls();
 
             if (requiresNativeControls) {
                 $(this).attr('controls', 'controls');
             }
 
-            var currentSrc = (this.currentSrc || '').toLowerCase();
+            var src = (self.currentSrc() || '').toLowerCase();
 
-            var parts = currentSrc.split('#');
+            var parts = src.split('#');
 
             if (parts.length > 1) {
 
@@ -80,7 +80,7 @@
                     var startPositionInSeekParam = parseFloat(parts[1]);
 
                     // Appending #t=xxx to the query string doesn't seem to work with HLS
-                    if (startPositionInSeekParam && currentSrc.indexOf('.m3u8') != -1) {
+                    if (startPositionInSeekParam && src.indexOf('.m3u8') != -1) {
                         var element = this;
                         setTimeout(function () {
                             element.currentTime = startPositionInSeekParam;
@@ -124,11 +124,35 @@
 	            .on('error', onError)[0];
         }
 
+        function enableViblast() {
+
+            return MediaPlayer.canPlayHls() && !MediaPlayer.canPlayNativeHls();
+        }
+
         function createVideoElement() {
 
-            var elem = $('.itemVideo');
+            var html = '';
 
-            return elem
+            var requiresNativeControls = !self.enableCustomVideoControls();
+
+            // Can't autoplay in these browsers so we need to use the full controls
+            if (requiresNativeControls && AppInfo.isNativeApp && $.browser.android) {
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" webkit-playsinline>';
+            }
+            else if (requiresNativeControls) {
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" controls="controls" webkit-playsinline>';
+            }
+            else {
+
+                // Chrome 35 won't play with preload none
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" webkit-playsinline>';
+            }
+
+            html += '</video>';
+
+            var elem = $('#videoElement', '#mediaPlayer').prepend(html);
+
+            return $('.itemVideo', elem)
             	.one('.loadedmetadata', onLoadedMetadata)
             	.one('playing', onOneVideoPlaying)
 	            .on('timeupdate', onTimeUpdate)
@@ -166,6 +190,10 @@
         self.stop = function () {
             if (mediaElement) {
                 mediaElement.pause();
+
+                if (mediaElement.tagName == 'VIDEO' && enableViblast()) {
+                    viblast(mediaElement).stop();
+                }
             }
         };
 
@@ -192,15 +220,18 @@
             }
         };
 
+        var currentSrc;
         self.setCurrentSrc = function (val) {
 
             var elem = mediaElement;
 
             if (!elem) {
+                currentSrc = null;
                 return;
             }
 
             if (!val) {
+                currentSrc = null;
                 elem.src = null;
                 elem.src = "";
 
@@ -213,20 +244,50 @@
                 return;
             }
 
-            elem.src = val;
-
             if (elem.tagName.toLowerCase() == 'audio') {
+
+                elem.src = val;
                 elem.play();
+
             }
             else {
 
-                $(elem).one("loadedmetadata", onLoadedMetadata);
+                if (enableViblast()) {
+
+                    viblast(elem).setup({
+                        key: 'N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=',
+                        stream: val
+                    });
+
+                } else {
+                    elem.src = val;
+                    $(elem).one("loadedmetadata", onLoadedMetadata);
+                }
+            }
+            alert(val);
+            currentSrc = val;
+        };
+
+        self.setTracks = function (tracks) {
+
+            var html = tracks.map(function (t) {
+
+                var defaultAttribute = t.isDefault ? ' default' : '';
+
+                return '<track kind="subtitles" src="' + t.url + '" srclang="' + t.language + '"' + defaultAttribute + '></track>';
+
+            }).join('');
+
+            if (html) {
+                mediaElement.innerHTML = html;
             }
         };
 
         self.currentSrc = function () {
             if (mediaElement) {
-                return mediaElement.currentSrc;
+                // We have to use this cached value because viblast will muck with the url
+                return currentSrc;
+                //return mediaElement.currentSrc;
             }
         };
 
@@ -358,13 +419,45 @@
 
             $('track', mediaElement).each(function () {
 
-                var currentSrc = this.src;
-
-                currentSrc = replaceQueryString(currentSrc, 'startPositionTicks', startPositionTicks);
-
-                this.src = currentSrc;
+                this.src = replaceQueryString(this.src, 'startPositionTicks', startPositionTicks);
 
             });
+        };
+
+        self.enableCustomVideoControls = function () {
+
+            return self.canAutoPlayVideo() && !$.browser.mobile;
+        };
+
+        self.canAutoPlayVideo = function () {
+
+            if (AppInfo.isNativeApp) {
+                return true;
+            }
+
+            if ($.browser.mobile) {
+                return false;
+            }
+
+            return true;
+        };
+
+        self.init = function () {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            if (type == 'video' && enableViblast()) {
+
+                requirejs(['https://viblast.com/player/free-version/sdqsdx86/viblast.js'], function () {
+
+                    deferred.resolve();
+                });
+
+            } else {
+                deferred.resolve();
+            }
+
+            return deferred.promise();
         };
 
         if (type == 'audio') {

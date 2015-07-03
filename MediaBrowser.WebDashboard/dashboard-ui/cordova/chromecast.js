@@ -25,13 +25,6 @@
 
         var castPlayer = {};
 
-        $(castPlayer).on("connect", function (e) {
-
-            Logger.log('cc: connect');
-            // Reset this so the next query doesn't make it appear like content is playing.
-            self.lastPlayerData = {};
-        });
-
         $(castPlayer).on("playbackstart", function (e, data) {
 
             Logger.log('cc: playbackstart');
@@ -461,10 +454,12 @@
         }
 
         function handleSessionDisconnect() {
+
             Logger.log("session disconnected");
 
-            cleanupSession();
-            MediaController.removeActivePlayer(PlayerName);
+            // We can't trust this because we might receive events of other devices disconnecting
+            //cleanupSession();
+            //MediaController.removeActivePlayer(PlayerName);
         }
 
         function onWebAppSessionConnect(webAppSession, device) {
@@ -476,9 +471,8 @@
 
             currentDevice = device;
             currentDeviceId = device.getId();
+            self.lastPlayerData = {};
             MediaController.setActivePlayer(PlayerName, convertDeviceToTarget(device));
-
-            $(castPlayer).trigger('connect');
 
             sendIdentifyMessage();
         }
@@ -528,6 +522,7 @@
                 session.release();
             }
 
+            self.lastPlayerData = {};
             currentWebAppSession = null;
         }
 
@@ -592,6 +587,7 @@
             device.off("ready");
 
             Logger.log('creating webAppSession');
+            self.lastPlayerData = {};
 
             launchWebApp(device);
         }
@@ -653,6 +649,7 @@
                     cleanupSession();
                     currentDevice = null;
                     currentDeviceId = null;
+                    self.lastPlayerData = {};
                 }
             }
         });

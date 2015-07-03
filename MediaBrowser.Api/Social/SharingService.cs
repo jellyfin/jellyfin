@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Dlna;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Social;
@@ -53,17 +54,26 @@ namespace MediaBrowser.Api.Social
         public string Id { get; set; }
     }
 
+    [Route("/Social/Shares/Public/{Id}/Item", "GET", Summary = "Gets a share")]
+    public class GetSharedLibraryItem
+    {
+        [ApiMember(Name = "Id", Description = "The id of the item", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string Id { get; set; }
+    }
+
     public class SharingService : BaseApiService
     {
         private readonly ISharingManager _sharingManager;
         private readonly ILibraryManager _libraryManager;
         private readonly IDlnaManager _dlnaManager;
+        private readonly IDtoService _dtoService;
 
-        public SharingService(ISharingManager sharingManager, IDlnaManager dlnaManager, ILibraryManager libraryManager)
+        public SharingService(ISharingManager sharingManager, IDlnaManager dlnaManager, ILibraryManager libraryManager, IDtoService dtoService)
         {
             _sharingManager = sharingManager;
             _dlnaManager = dlnaManager;
             _libraryManager = libraryManager;
+            _dtoService = dtoService;
         }
 
         public object Get(GetSocialShareInfo request)
@@ -73,11 +83,27 @@ namespace MediaBrowser.Api.Social
             return ToOptimizedResult(info);
         }
 
+        public object Get(GetSharedLibraryItem request)
+        {
+            var info = _sharingManager.GetShareInfo(request.Id);
+
+            if (info.ExpirationDate <= DateTime.UtcNow)
+            {
+                throw new ResourceNotFoundException();
+            }
+
+            var item = _libraryManager.GetItemById(info.ItemId);
+
+            var dto = _dtoService.GetBaseItemDto(item, new DtoOptions());
+
+            return ToOptimizedResult(dto);
+        }
+
         public object Get(GetPublicSocialShareInfo request)
         {
             var info = _sharingManager.GetShareInfo(request.Id);
 
-            if (info.ExpirationDate >= DateTime.UtcNow)
+            if (info.ExpirationDate <= DateTime.UtcNow)
             {
                 throw new ResourceNotFoundException();
             }
@@ -106,7 +132,7 @@ namespace MediaBrowser.Api.Social
             {
                 throw new ResourceNotFoundException();
             }
-            if (share.ExpirationDate >= DateTime.UtcNow)
+            if (share.ExpirationDate <= DateTime.UtcNow)
             {
                 throw new ResourceNotFoundException();
             }

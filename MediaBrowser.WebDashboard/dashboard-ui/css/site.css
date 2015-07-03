@@ -311,7 +311,7 @@ html {
 }
 
 body {
-    overflow-y: scroll !important;
+    overflow-y: auto !important;
     /* This is needed to prevent a horizontal scrollbar while neon-animated-pages are animating. */
     overflow-x: hidden;
     font-size: 13px;

@@ -2815,7 +2815,7 @@
                 html += "</a>";
             }
 
-            var progressHtml = item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
+            var progressHtml = item.IsFolder || !item.UserData ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
 
             if (progressHtml) {
                 html += '<div class="detailImageProgressContainer">';
@@ -3059,7 +3059,7 @@
 
         },
 
-        renderStudios: function (elem, item, context) {
+        renderStudios: function (elem, item, context, isStatic) {
 
             if (item.Studios && item.Studios.length && item.Type != "Series") {
 
@@ -3071,7 +3071,11 @@
                         html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                     }
 
-                    html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&id=' + item.Studios[i].Id + '">' + item.Studios[i].Name + '</a>';
+                    if (isStatic) {
+                        html += item.Studios[i].Name;
+                    } else {
+                        html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&id=' + item.Studios[i].Id + '">' + item.Studios[i].Name + '</a>';
+                    }
                 }
 
                 var translationKey = item.Studios.length > 1 ? "ValueStudios" : "ValueStudio";
@@ -3086,7 +3090,7 @@
             }
         },
 
-        renderGenres: function (elem, item, context, limit) {
+        renderGenres: function (elem, item, context, limit, isStatic) {
 
             var html = '';
 
@@ -3108,7 +3112,11 @@
                     param = "gamegenre";
                 }
 
-                html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&' + param + '=' + ApiClient.encodeName(genres[i]) + '">' + genres[i] + '</a>';
+                if (isStatic) {
+                    html += genres[i];
+                } else {
+                    html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&' + param + '=' + ApiClient.encodeName(genres[i]) + '">' + genres[i] + '</a>';
+                }
             }
 
             elem.html(html).trigger('create');

@@ -1,0 +1,122 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Emby</title>
+</head>
+<body>
+    <div id="publicSharedItemPage" data-role="page" class="page standalonePage noSecondaryNavPage" data-theme="b" data-require="scripts/shared,scripts/itemdetailpage,paperbuttonstyle,tileitemcss">
+
+        <style>
+            #publicSharedItemPage .header {
+                position: absolute;
+                top: 0;
+                left: 0;
+                padding: 1.5em 1em 1.5em 1em;
+                z-index: 1;
+                background: rgba(0, 0, 0, .6);
+                border-bottom-right-radius: 10px;
+            }
+        </style>
+        <div class="header"><a class="logo" href="http://emby.media" style="text-decoration:none;font-size: 22px;" target="_blank"><img class="imgLogoIcon" src="css/images/mblogoicon.png"><span class="logoLibraryMenuButtonText">EMBY</span></a></div>
+
+        <div id="itemBackdrop" class="itemBackdrop noBackdrop">
+            <div class="itemBackdropContent">
+
+                <div class="detailPageContent primaryDetailPageContent backdropDetailPageContent">
+
+                    <div class="detailImageContainer">
+                    </div>
+
+                    <div class="detailContentEffectedByImage">
+                        <p><span class="parentName"></span><span class="itemName inlineItemName"></span><span class="itemMiscInfo" style="display: inline;"></span></p>
+                        <p style="margin:1.1em 0">
+                            <span class="itemCommunityRating"></span>
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div data-role="content">
+            <div class="detailPageContent">
+
+                <div class="detailSection" style="margin-bottom:1.5em;">
+                    <div class="detailSectionContent detailContentEffectedByImage lastDetailContentEffectedByImage">
+
+                        <p id="artist"></p>
+                        <p class="itemGenres"></p>
+                        <p class="itemOverview smoothScrollY"></p>
+                        <p id="seriesAirTime"></p>
+                    </div>
+                </div>
+                <br />
+                <br />
+                <br />
+                <div id="castCollapsible" style="display: none;" class="detailSection">
+                    <div id="peopleHeader" class="detailSectionHeader">
+                        ${HeaderCastCrew}
+                    </div>
+                    <div id="castContent" class="detailSectionContent"></div>
+                </div>
+
+                <div class="detailSection photoInfo hide">
+                    <div class="detailSectionHeader">
+                        ${HeaderPhotoInfo}
+                    </div>
+                    <div class="detailSectionContent" style="padding:1em;">
+                        <div class="photoInfoContent"></div>
+                    </div>
+                </div>
+                <div id="criticReviewsCollapsible" style="display: none;" class="detailSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderAwardsAndReviews}
+                    </div>
+                    <div style="padding: 0 .5em;">
+                        <p id="awardSummary"></p>
+                        <div id="criticRatingSummary" class="criticReview criticRatingSummary" style="display: none;">
+                            <p style="margin: 0 0 .5em -40px; font-weight: bold;">TOMATOMETER®</p>
+                            <div class="reviewScore">
+                                <img src="css/images/fresh.png">
+                            </div>
+                            <div class="criticRatingScore"></div>
+                            <div class="criticRatingSummaryText"></div>
+                        </div>
+                        <div id="criticReviewsContent" class="detailSectionContent"></div>
+                    </div>
+                </div>
+                <div class="detailSection detailsSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderDetails}
+                    </div>
+                    <div class="detailSectionContent" style="padding:0 1em;">
+                        <div class="tabDetails">
+                            <p id="players"></p>
+                            <p id="itemBudget"></p>
+                            <p id="itemRevenue"></p>
+                            <p class="itemExternalLinks"></p>
+                            <p class="itemStudios"></p>
+                            <p class="itemKeywords"></p>
+                            <p class="itemTags"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="scenesCollapsible" style="display: none;" class="detailSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderScenes}
+                    </div>
+                    <div id="scenesContent" class="detailSectionContent smallItemsContainer"></div>
+                </div>
+
+                <div class="detailSection audioVideoMediaInfo hide">
+                    <h2 class="detailSectionHeader">${HeaderMediaInfo}</h2>
+                    <div class="detailSectionContent" style="padding: 0 .7em;">
+                        <div id="mediaInfoContent" class="mediaInfoContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

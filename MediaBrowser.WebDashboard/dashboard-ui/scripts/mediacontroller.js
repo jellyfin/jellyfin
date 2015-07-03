@@ -70,11 +70,8 @@
             }
 
             ApiClient.reportPlaybackStopped(stopInfo);
-
         });
     }
-
-
 
     function getTargetsHtml(targets) {
 
@@ -876,7 +873,7 @@
     });
 
     function onCastButtonClicked() {
-        
+
         showPlayerSelection();
     }
 

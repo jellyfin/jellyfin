@@ -357,7 +357,7 @@
         renderCriticReviews(page, item, 1);
     }
 
-    function renderDetails(page, item, context) {
+    function renderDetails(page, item, context, isStatic) {
 
         renderSimilarItems(page, item, context);
         renderSiblingLinks(page, item, context);
@@ -378,8 +378,8 @@
 
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
-        LibraryBrowser.renderGenres($('.itemGenres', page), item, context);
-        LibraryBrowser.renderStudios($('.itemStudios', page), item, context);
+        LibraryBrowser.renderGenres($('.itemGenres', page), item, context, null, isStatic);
+        LibraryBrowser.renderStudios($('.itemStudios', page), item, context, isStatic);
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks(page.querySelector('.itemExternalLinks'), item);
 
@@ -1164,7 +1164,7 @@
         });
     }
 
-    function renderScenes(page, item, user, limit) {
+    function renderScenes(page, item, user, limit, isStatic) {
         var html = '';
 
         var chapters = item.Chapters || [];
@@ -1180,7 +1180,7 @@
             var chapter = chapters[i];
             var chapterName = chapter.Name || "Chapter " + i;
 
-            var onclick = item.PlayAccess == 'Full' ? ' onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');"' : '';
+            var onclick = item.PlayAccess == 'Full' && !isStatic ? ' onclick="ItemDetailPage.play(' + chapter.StartPositionTicks + ');"' : '';
 
             html += '<a class="card detailPage169Card" href="#play-Chapter-' + i + '"' + onclick + '>';
 
@@ -1480,7 +1480,7 @@
         });
     }
 
-    function renderCast(page, item, context, limit) {
+    function renderCast(page, item, context, limit, isStatic) {
 
         var html = '';
 
@@ -1493,8 +1493,8 @@
             }
 
             var cast = casts[i];
-
-            html += '<a class="tileItem smallPosterTileItem" href="itembynamedetails.html?context=' + context + '&id=' + cast.Id + '">';
+            var href = isStatic ? '#' : 'itembynamedetails.html?context=' + context + '&id=' + cast.Id + '';
+            html += '<a class="tileItem smallPosterTileItem" href="' + href + '">';
 
             var imgUrl;
 
@@ -1704,6 +1704,12 @@
         var self = this;
 
         self.play = play;
+        self.setInitialCollapsibleState = setInitialCollapsibleState;
+        self.renderDetails = renderDetails;
+        self.renderCriticReviews = renderCriticReviews;
+        self.renderCast = renderCast;
+        self.renderScenes = renderScenes;
+        self.renderMediaSources = renderMediaSources;
     }
 
     window.ItemDetailPage = new itemDetailPage();

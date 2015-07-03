@@ -211,6 +211,9 @@
 
         function tryReconnectInternal(deferred, connectionMode, currentRetryCount) {
 
+            var previousConnectionMode = self.serverInfo().LastConnectionMode;
+            var previousServerAddress = MediaBrowser.ServerInfo.getServerAddress(self.serverInfo(), previousConnectionMode);
+
             connectionMode = switchConnectionMode(connectionMode);
             var url = MediaBrowser.ServerInfo.getServerAddress(self.serverInfo(), connectionMode);
 
@@ -228,7 +231,7 @@
 
             }).done(function () {
 
-                logger.log("Reconnect succeeeded to " + url);
+                logger.log("Reconnect succeeded to " + url);
 
                 self.serverInfo().LastConnectionMode = connectionMode;
                 self.serverAddress(url);
@@ -262,25 +265,11 @@
             return deferred.promise();
         }
 
-        function replaceServerAddress(url, oldBaseUrl, newBaseUrl) {
-
-            return url.replace(oldBaseUrl, newBaseUrl);
-        }
-
         self.ajaxWithFailover = function (request, deferred, enableReconnection, replaceUrl) {
-
-            if (replaceUrl) {
-
-                var currentServerInfo = self.serverInfo();
-
-                var baseUrl = MediaBrowser.ServerInfo.getServerAddress(currentServerInfo, currentServerInfo.LastConnectionMode);
-
-                request.url = replaceServerAddress(request.url, baseUrl);
-            }
 
             logger.log("Requesting " + request.url);
 
-            request.timeout = 15000;
+            request.timeout = 30000;
 
             HttpClient.send(request).done(function (response) {
 
@@ -301,6 +290,8 @@
                     tryReconnect().done(function () {
 
                         logger.log("Reconnect succeesed");
+                        request.url = request.url.replace("dddd", MediaBrowser.ServerInfo.getServerAddress(self.serverInfo(), self.serverInfo().LastConnectionMode));
+
                         self.ajaxWithFailover(request, deferred, false, true);
 
                     }).fail(function () {

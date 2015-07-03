@@ -500,7 +500,20 @@
                 return true;
             }
 
-            //return $.browser.chrome || $.browser.msie;
+            if ($.browser.chrome) {
+                
+                // viblast can help us here
+                //return true;
+                return window.MediaSource != null;
+            }
+
+            if ($.browser.msie) {
+
+                // viblast can help us here
+                //return true;
+                return window.MediaSource != null;
+            }
+
             return false;
         };
 
@@ -721,7 +734,7 @@
 
             var firstItem = items[0];
 
-            if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !self.canAutoPlayVideo()) {
+            if (options.startPositionTicks || firstItem.MediaType !== 'Video') {
 
                 self.playInternal(firstItem, options.startPositionTicks, function () {
                     self.setPlaylistState(0, items);
@@ -795,7 +808,6 @@
                         playMethod = 'DirectStream';
                     } else {
 
-                        startTimeTicksOffset = startPosition || 0;
                         mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
 
                         if (mediaSource.TranscodingSubProtocol == 'hls') {
@@ -804,6 +816,7 @@
                             contentType = 'application/x-mpegURL';
                         } else {
 
+                            startTimeTicksOffset = startPosition || 0;
                             contentType = 'video/' + mediaSource.TranscodingContainer;
                         }
                     }
@@ -836,12 +849,18 @@
                         playMethod = 'DirectStream';
                     } else {
 
-                        contentType = 'audio/' + mediaSource.TranscodingContainer;
-
                         mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
-                    }
 
-                    startTimeTicksOffset = startPosition || 0;
+                        if (mediaSource.TranscodingSubProtocol == 'hls') {
+
+                            mediaUrl += seekParam;
+                            contentType = 'application/x-mpegURL';
+                        } else {
+
+                            startTimeTicksOffset = startPosition || 0;
+                            contentType = 'audio/' + mediaSource.TranscodingContainer;
+                        }
+                    }
                 }
             }
 
@@ -1570,12 +1589,14 @@
             
             Events.off(mediaRenderer, 'ended', self.onPlaybackStopped);
 
+            var item = self.currentItem;
+            var mediaSource = self.currentMediaSource;
+
+            var state = self.getPlayerStateInternal(mediaRenderer, item, mediaSource);
+
             self.cleanup(mediaRenderer);
 
             clearProgressInterval();
-
-            var item = self.currentItem;
-            var mediaSource = self.currentMediaSource;
 
             if (item.MediaType == "Video") {
 
@@ -1584,8 +1605,6 @@
                 }
                 self.resetEnhancements();
             }
-
-            var state = self.getPlayerStateInternal(mediaRenderer, item, mediaSource);
 
             Events.trigger(self, 'playbackstop', [state]);
         };

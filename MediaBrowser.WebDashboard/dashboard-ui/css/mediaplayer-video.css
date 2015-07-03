@@ -18,6 +18,7 @@
     right: 0;
     bottom: 0;
     background-color: #222;
+    color: #fff;
 }
 
 .itemVideo {
@@ -69,7 +70,7 @@
 
 .nowPlayingInfo {
     text-align: center;
-    padding: 1em 1em 2em 1em;
+    padding: 1.5em 1em 2em 1em;
 }
 
 #videoPlayer .nowPlayingImage img {

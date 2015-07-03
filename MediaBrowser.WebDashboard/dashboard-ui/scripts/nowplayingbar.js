@@ -59,7 +59,7 @@
         html += '<paper-icon-button icon="play-arrow" class="mediaButton unpauseButton"></paper-icon-button>';
         html += '<paper-icon-button icon="pause" class="mediaButton pauseButton"></paper-icon-button>';
         html += '<paper-icon-button icon="tablet-android" onclick="Dashboard.navigate(\'nowplaying.html\', false);" class="mediaButton remoteControlButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="queue-music" onclick="Dashboard.navigate(\'nowplaying.html?tab=Playlist\', false);" class="mediaButton playlistButton"></paper-icon-button>';
+        html += '<paper-icon-button icon="queue-music" class="mediaButton playlistButton"></paper-icon-button>';
 
         html += '</div>';
 
@@ -126,6 +126,13 @@
             if (currentPlayer) {
                 currentPlayer.previousTrack();
             }
+        });
+
+        $('.playlistButton', elem).on('click', function () {
+
+            $.mobile.changePage('nowplaying.html', {
+                dataUrl: 'nowplaying.html#playlist'
+            });
         });
 
         volumeSlider = $('.nowPlayingBarVolumeSlider', elem).on('change', function () {

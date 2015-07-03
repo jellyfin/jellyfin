@@ -240,7 +240,11 @@ var Dashboard = {
             document.createStyleSheet(url);
         }
         else {
-            $('<link rel="stylesheet" type="text/css" href="' + url + '" />').appendTo('head');
+            var link = document.createElement('link');
+            link.setAttribute('rel', 'stylesheet');
+            link.setAttribute('type', 'text/css');
+            link.setAttribute('href', url);
+            document.head.appendChild(link);
         }
     },
 
@@ -637,7 +641,10 @@ var Dashboard = {
                     var confirmed = this.closingReason.confirmed;
                     this.parentNode.removeChild(this);
                     document.body.classList.remove('bodyWithPopupOpen');
-                    callback(confirmed);
+
+                    if (callback) {
+                        callback(confirmed);
+                    }
                 });
 
                 dlg.open();
@@ -2006,8 +2013,6 @@ var AppInfo = {};
         } else {
             define("sharingwidget", ["scripts/sharingwidget"]);
         }
-
-        //requirejs(['http://viblast.com/player/free-version/qy2fdwajo1/viblast.js']);
 
         $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
 

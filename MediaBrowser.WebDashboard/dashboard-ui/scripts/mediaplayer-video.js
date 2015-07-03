@@ -518,7 +518,7 @@
                     var personHtml = '<div class="tileItem smallPosterTileItem" style="width:300px;">';
 
                     var imgUrl;
-                    var height = 160;
+                    var height = 150;
 
                     if (cast.PrimaryImageTag) {
 
@@ -612,7 +612,7 @@
 
         function ensureVideoPlayerElements() {
 
-            var html = '<div id="mediaPlayer" data-theme="b" class="ui-bar-b" style="display: none;">';
+            var html = '<div id="mediaPlayer" style="display: none;">';
 
             html += '<div class="videoBackdrop">';
             html += '<div id="videoPlayer">';
@@ -631,10 +631,8 @@
 
             // Embedding onclicks due to issues not firing in cordova safari
             html += '<paper-icon-button icon="audiotrack" class="mediaButton videoAudioButton" onclick="MediaPlayer.showAudioTracksFlyout();"></paper-icon-button>';
-            html += '<div data-role="popup" class="videoAudioPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
             html += '<paper-icon-button icon="subtitles" class="mediaButton videoSubtitleButton" onclick="MediaPlayer.showSubtitleMenu();"></paper-icon-button>';
-            html += '<div data-role="popup" class="videoSubtitlePopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
             html += '<paper-icon-button icon="videocam" class="mediaButton videoChaptersButton" onclick="MediaPlayer.showChaptersFlyout();"></paper-icon-button>';
             html += '<div data-role="popup" class="videoChaptersPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
@@ -681,6 +679,7 @@
             var div = document.createElement('div');
             div.innerHTML = html;
             document.body.appendChild(div);
+            $(div).trigger('create');
         }
 
         Dashboard.ready(function () {
@@ -926,24 +925,6 @@
             }
         }
 
-        self.canAutoPlayVideo = function () {
-
-            if (AppInfo.isNativeApp) {
-                return true;
-            }
-
-            if ($.browser.mobile) {
-                return false;
-            }
-
-            return true;
-        };
-
-        self.enableCustomVideoControls = function () {
-
-            return self.canAutoPlayVideo() && !$.browser.mobile;
-        };
-
         // Replace audio version
         self.cleanup = function (mediaRenderer) {
 
@@ -1002,45 +983,7 @@
                 videoUrl += '&EnableAutoStreamCopy=false';
             }
 
-            var posterCode = self.getPosterUrl(item);
-            posterCode = posterCode ? (' poster="' + posterCode + '"') : '';
-            //======================================================================================>
-
             // Create video player
-            var html = '';
-
-            var requiresNativeControls = !self.enableCustomVideoControls();
-
-            // Can't autoplay in these browsers so we need to use the full controls
-            if (requiresNativeControls && AppInfo.isNativeApp && $.browser.android) {
-                html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" ' + posterCode + ' webkit-playsinline>';
-            }
-            else if (requiresNativeControls) {
-                html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" controls="controls"' + posterCode + ' webkit-playsinline>';
-            }
-            else {
-
-                // Chrome 35 won't play with preload none
-                html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" crossorigin="anonymous" autoplay' + posterCode + '>';
-            }
-
-            html += '<source type="' + contentType + '" src="' + videoUrl + '" />';
-
-            var textStreams = subtitleStreams.filter(function (s) {
-                return s.DeliveryMethod == 'External';
-            });
-
-            for (var i = 0, length = textStreams.length; i < length; i++) {
-
-                var textStream = textStreams[i];
-                var textStreamUrl = !textStream.IsExternalUrl ? ApiClient.getUrl(textStream.DeliveryUrl) : textStream.DeliveryUrl;
-                var defaultAttribute = textStream.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';
-
-                html += '<track kind="subtitles" src="' + textStreamUrl + '" srclang="' + (textStream.Language || 'und') + '"' + defaultAttribute + '></track>';
-            }
-
-            html += '</video>';
-
             var mediaPlayerContainer = $("#mediaPlayer").show();
             var videoControls = $('.videoControls', mediaPlayerContainer);
 
@@ -1049,7 +992,7 @@
             $('#video-pauseButton', videoControls).show();
             $('.videoTrackControl').hide();
 
-            var videoElement = $('#videoElement', mediaPlayerContainer).prepend(html);
+            var videoElement = $('#videoElement', mediaPlayerContainer);
 
             $('.videoQualityButton', videoControls).show();
 
@@ -1073,6 +1016,11 @@
                 $('.videoChaptersButton').hide();
             }
 
+            var mediaRenderer = new VideoRenderer('video');
+            mediaRenderer.setPoster(self.getPosterUrl(item));
+
+            var requiresNativeControls = !mediaRenderer.enableCustomVideoControls();
+
             if (requiresNativeControls) {
                 $('#video-fullscreenButton', videoControls).hide();
             } else {
@@ -1094,8 +1042,6 @@
             } else {
                 videoControls.removeClass('hide');
             }
-
-            var mediaRenderer = new VideoRenderer('video');
 
             initialVolume = self.getSavedVolume();
 
@@ -1184,8 +1130,6 @@
 
             bindEventsForPlayback(mediaRenderer);
 
-            mediaPlayerContainer.trigger('create');
-
             self.currentSubtitleStreamIndex = mediaSource.DefaultSubtitleStreamIndex;
 
             $(document.body).addClass('bodyWithPopupOpen');
@@ -1194,12 +1138,47 @@
             self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
 
             self.updateNowPlayingInfo(item);
+
+            mediaRenderer.init().done(function() {
+                
+                mediaRenderer.setCurrentSrc(videoUrl, item, mediaSource);
+
+                var textStreams = subtitleStreams.filter(function (s) {
+                    return s.DeliveryMethod == 'External';
+                });
+
+                var tracks = [];
+
+                for (var i = 0, length = textStreams.length; i < length; i++) {
+
+                    var textStream = textStreams[i];
+                    var textStreamUrl = !textStream.IsExternalUrl ? ApiClient.getUrl(textStream.DeliveryUrl) : textStream.DeliveryUrl;
+
+                    tracks.push({
+                        url: textStreamUrl,
+                        language: (textStream.Language || 'und'),
+                        isDefault: textStream.Index == mediaSource.DefaultSubtitleStreamIndex
+                    });
+                }
+
+                mediaRenderer.setTracks(tracks);
+
+                // IE wont autoplay without this
+                if (videoUrl.indexOf('.m3u8') == -1) {
+                    mediaRenderer.unpause();
+                }
+            });
         };
 
         self.updatePlaylistUi = function () {
             var index = self.currentPlaylistIndex(null);
             var length = self.playlist.length;
-            var requiresNativeControls = !self.enableCustomVideoControls();
+
+            var requiresNativeControls = false;
+
+            if (self.currentMediaRenderer && !self.currentMediaRenderer.enableCustomVideoControls) {
+                requiresNativeControls = self.currentMediaRenderer.enableCustomVideoControls();
+            }
 
             if (length < 2) {
                 $('.videoTrackControl').hide();

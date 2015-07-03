@@ -726,8 +726,8 @@
 
         loadPlaylist(page);
 
-        var tab = getParameterByName('tab');
-        var selected = tab == 'Playlist' ? 2 : 0;;
+        var tab = window.location.hash;
+        var selected = tab == '#playlist' ? 2 : 0;;
         this.querySelectorAll('paper-tabs')[0].selected = selected;
 
         updateCastIcon(page);
