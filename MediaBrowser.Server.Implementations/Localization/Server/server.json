@@ -1462,5 +1462,9 @@
     "LabelUsername": "Username:",
     "HeaderSignUp": "Sign Up",
     "LabelPasswordConfirm": "Password (confirm):",
-    "ButtonAddServer": "Add Server"
+    "ButtonAddServer": "Add Server",
+    "TabHomeScreen": "Home Screen",
+    "HeaderDisplay": "Display",
+    "HeaderNavigation": "Navigation",
+    "LegendTheseSettingsShared": "These settings are shared on all devices"
 }
