@@ -264,7 +264,7 @@
                     $(elem).one("loadedmetadata", onLoadedMetadata);
                 }
             }
-            alert(val);
+
             currentSrc = val;
         };
 
