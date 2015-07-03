@@ -489,14 +489,13 @@
          */
         self.getItem = function (userId, itemId) {
 
-            if (!userId) {
-                throw new Error("null userId");
-            }
             if (!itemId) {
                 throw new Error("null itemId");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Items/" + itemId);
+            var url = userId ? 
+                self.getUrl("Users/" + userId + "/Items/" + itemId) :
+                self.getUrl("Items/" + itemId);
 
             return self.ajax({
                 type: "GET",

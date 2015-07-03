@@ -1672,7 +1672,7 @@
 
         function getAudioRenderer() {
 
-            return new AudioRenderer('audio');
+            return new AudioRenderer();
         }
 
         function onTimeUpdate() {

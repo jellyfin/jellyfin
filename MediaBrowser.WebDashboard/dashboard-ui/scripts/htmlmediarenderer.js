@@ -1,8 +1,9 @@
 ﻿(function () {
 
     var supportsTextTracks;
+    var isViblastStarted;
 
-    function htmlMediaRenderer(type) {
+    function htmlMediaRenderer(options) {
 
         var mediaElement;
         var self = this;
@@ -135,17 +136,19 @@
 
             var requiresNativeControls = !self.enableCustomVideoControls();
 
+            var poster = options.poster ? (' poster="' + options.poster + '"') : '';
+
             // Can't autoplay in these browsers so we need to use the full controls
             if (requiresNativeControls && AppInfo.isNativeApp && $.browser.android) {
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" webkit-playsinline>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous"' + poster + ' webkit-playsinline>';
             }
             else if (requiresNativeControls) {
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" controls="controls" webkit-playsinline>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous"' + poster + ' controls="controls" webkit-playsinline>';
             }
             else {
 
                 // Chrome 35 won't play with preload none
-                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" webkit-playsinline>';
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous"' + poster + ' webkit-playsinline>';
             }
 
             html += '</video>';
@@ -191,8 +194,12 @@
             if (mediaElement) {
                 mediaElement.pause();
 
-                if (mediaElement.tagName == 'VIDEO' && enableViblast()) {
-                    viblast(mediaElement).stop();
+                if (isViblastStarted) {
+                    requirejs(['https://viblast.com/player/free-version/sdqsdx86/viblast.js'], function () {
+
+                        viblast(mediaElement).stop();
+                        isViblastStarted = false;
+                    });
                 }
             }
         };
@@ -258,6 +265,8 @@
                         key: 'N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=',
                         stream: val
                     });
+
+                    isViblastStarted = true;
 
                 } else {
                     elem.src = val;
@@ -446,7 +455,7 @@
 
             var deferred = DeferredBuilder.Deferred();
 
-            if (type == 'video' && enableViblast()) {
+            if (options.type == 'video' && enableViblast()) {
 
                 requirejs(['https://viblast.com/player/free-version/sdqsdx86/viblast.js'], function () {
 
@@ -460,7 +469,7 @@
             return deferred.promise();
         };
 
-        if (type == 'audio') {
+        if (options.type == 'audio') {
             mediaElement = createAudioElement();
         }
         else {
@@ -469,11 +478,21 @@
     }
 
     if (!window.AudioRenderer) {
-        window.AudioRenderer = htmlMediaRenderer;
+        window.AudioRenderer = function (options) {
+            options = options || {};
+            options.type = 'audio';
+
+            return new htmlMediaRenderer(options);
+        };
     }
 
     if (!window.VideoRenderer) {
-        window.VideoRenderer = htmlMediaRenderer;
+        window.VideoRenderer = function (options) {
+            options = options || {};
+            options.type = 'video';
+
+            return new htmlMediaRenderer(options);
+        };
     }
 
 })();

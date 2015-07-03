@@ -1016,8 +1016,9 @@
                 $('.videoChaptersButton').hide();
             }
 
-            var mediaRenderer = new VideoRenderer('video');
-            mediaRenderer.setPoster(self.getPosterUrl(item));
+            var mediaRenderer = new VideoRenderer({
+                poster: self.getPosterUrl(item)
+            });
 
             var requiresNativeControls = !mediaRenderer.enableCustomVideoControls();
 
@@ -1140,7 +1141,7 @@
             self.updateNowPlayingInfo(item);
 
             mediaRenderer.init().done(function() {
-                
+
                 mediaRenderer.setCurrentSrc(videoUrl, item, mediaSource);
 
                 var textStreams = subtitleStreams.filter(function (s) {
