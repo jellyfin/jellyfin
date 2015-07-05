@@ -362,7 +362,7 @@
         player.beginPlayerUpdates();
 
         onStateChanged.call(player, e, state);
-        loadPlaylist($.mobile.activePage);
+        loadPlaylist($($.mobile.activePage)[0]);
     }
 
     function onPlaybackStopped(e, state) {
@@ -372,7 +372,7 @@
         player.endPlayerUpdates();
 
         onStateChanged.call(player, e, {});
-        loadPlaylist($.mobile.activePage);
+        loadPlaylist($($.mobile.activePage)[0]);
     }
 
     function onStateChanged(e, state) {

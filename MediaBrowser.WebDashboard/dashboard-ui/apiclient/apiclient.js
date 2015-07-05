@@ -265,7 +265,7 @@
             return deferred.promise();
         }
 
-        self.ajaxWithFailover = function (request, deferred, enableReconnection, replaceUrl) {
+        self.ajaxWithFailover = function (request, deferred, enableReconnection) {
 
             logger.log("Requesting " + request.url);
 
@@ -287,12 +287,14 @@
 
                     logger.log("Attempting reconnection");
 
+                    var previousServerAddress = self.serverAddress();
+
                     tryReconnect().done(function () {
 
                         logger.log("Reconnect succeesed");
-                        request.url = request.url.replace("dddd", MediaBrowser.ServerInfo.getServerAddress(self.serverInfo(), self.serverInfo().LastConnectionMode));
+                        request.url = request.url.replace(previousServerAddress, self.serverAddress());
 
-                        self.ajaxWithFailover(request, deferred, false, true);
+                        self.ajaxWithFailover(request, deferred, false);
 
                     }).fail(function () {
 

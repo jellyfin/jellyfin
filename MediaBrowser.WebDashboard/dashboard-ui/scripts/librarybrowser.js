@@ -86,6 +86,7 @@
             }
 
             if (NavHelper.isBack()) {
+                Logger.log('Not refreshing data because IsBack=true');
                 return false;
             }
 
@@ -104,6 +105,7 @@
             }
 
             if ((now - last) < cacheDuration) {
+                Logger.log('Not refreshing data due to age');
                 return false;
             }
 
@@ -160,6 +162,7 @@
         },
 
         enableFullPaperTabs: function () {
+            //return true;
             return AppInfo.isNativeApp;
         },
 
@@ -229,11 +232,20 @@
             var selected = tabs.selected;
 
             if (selected == null) {
-                selected = parseInt(getParameterByName('tab') || '0');
-                tabs.selected = selected;
-                page.querySelector('neon-animated-pages').selected = selected;
 
-            } else if (!LibraryBrowser.enableFullPaperTabs()) {
+                Logger.log('selected tab is null, checking query string');
+
+                selected = parseInt(getParameterByName('tab') || '0');
+
+                Logger.log('selected tab will be ' + selected);
+
+                tabs.selected = selected;
+
+                if (!LibraryBrowser.enableFullPaperTabs()) {
+                    page.querySelector('neon-animated-pages').selected = selected;
+                }
+
+            } else {
                 Events.trigger(page.querySelector('neon-animated-pages'), 'tabchange');
             }
         },

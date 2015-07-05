@@ -1,6 +1,6 @@
 ﻿(function () {
 
-    function vlcRenderer(type) {
+    function vlcRenderer(options) {
 
         var self = this;
 
@@ -95,11 +95,11 @@
                 return;
             }
 
-            if (type == 'audio') {
+            if (options.type == 'audio') {
 
                 AndroidVlcPlayer.playAudioVlc(val, JSON.stringify(item), JSON.stringify(mediaSource), posterUrl);
             } else {
-                AndroidVlcPlayer.playVideoVlc(val);
+                AndroidVlcPlayer.playVideoVlc(val, JSON.stringify(item), JSON.stringify(mediaSource), posterUrl);
             }
 
             playerState.currentSrc = val;
@@ -127,6 +127,11 @@
             }
 
             playerState = {};
+        };
+
+        self.enableCustomVideoControls = function () {
+
+            return false;
         };
 
         var posterUrl;
@@ -163,9 +168,29 @@
             }
         };
 
+        self.init = function () {
+
+            var deferred = DeferredBuilder.Deferred();
+            deferred.resolve();
+            return deferred.promise();
+        };
+
         window.AudioRenderer.Current = self;
+        window.VideoRenderer.Current = self;
     }
 
-    window.AudioRenderer = vlcRenderer;
+    window.AudioRenderer = function (options) {
+        options = options || {};
+        options.type = 'audio';
+
+        return new vlcRenderer(options);
+    };
+
+    window.VideoRenderer = function (options) {
+        options = options || {};
+        options.type = 'video';
+
+        return new vlcRenderer(options);
+    };
 
 })();

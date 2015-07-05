@@ -262,7 +262,7 @@
     margin: 0 0;
     position: relative;
     font-weight: normal;
-    border-bottom: 4px solid transparent;
+    border-bottom: 3px solid transparent;
 }
 
 .libraryViewNav .ui-btn-active {

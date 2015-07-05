@@ -125,7 +125,13 @@
 	            .on('error', onError)[0];
         }
 
-        function enableViblast() {
+        function enableViblast(src) {
+
+            if (src) {
+                if (src.indexOf('.m3u8') == -1) {
+                    return false;
+                }
+            }
 
             return MediaPlayer.canPlayHls() && !MediaPlayer.canPlayNativeHls();
         }
@@ -259,7 +265,7 @@
             }
             else {
 
-                if (enableViblast()) {
+                if (enableViblast(val)) {
 
                     viblast(elem).setup({
                         key: 'N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=',

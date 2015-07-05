@@ -937,7 +937,9 @@
 
             if (item.MediaType === "Video") {
 
-                self.playVideo(item, self.currentMediaSource, startPosition);
+                requirejs(['videorenderer'], function () {
+                    self.playVideo(item, self.currentMediaSource, startPosition);
+                });
 
             } else if (item.MediaType === "Audio") {
 

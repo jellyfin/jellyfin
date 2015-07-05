@@ -1971,8 +1971,7 @@ var AppInfo = {};
 
         if (Dashboard.isRunningInCordova() && $.browser.android) {
             define("audiorenderer", ["cordova/android/vlcplayer"]);
-            //define("audiorenderer", ["scripts/htmlmediarenderer"]);
-            define("videorenderer", ["scripts/htmlmediarenderer"]);
+            define("videorenderer", ["cordova/android/vlcplayer"]);
         }
         else {
             define("audiorenderer", ["scripts/htmlmediarenderer"]);

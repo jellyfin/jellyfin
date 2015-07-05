@@ -311,7 +311,7 @@ html {
 }
 
 body {
-    overflow-y: auto !important;
+    overflow-y: scroll !important;
     /* This is needed to prevent a horizontal scrollbar while neon-animated-pages are animating. */
     overflow-x: hidden;
     font-size: 13px;
@@ -495,13 +495,13 @@ h1 a:hover {
 }
 
 .libraryViewNav:not(.paperLibraryViewNav).headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-203.5%);
-    transform: translateY(-203.5%);
+    -webkit-transform: translateY(-208%);
+    transform: translateY(-208%);
 }
 
 .paperLibraryViewNav.headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-204%);
-    transform: translateY(-204%);
+    -webkit-transform: translateY(-205%);
+    transform: translateY(-205%);
 }
 
 .largePanel {
