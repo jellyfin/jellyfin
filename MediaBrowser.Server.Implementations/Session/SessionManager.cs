@@ -967,7 +967,13 @@ namespace MediaBrowser.Server.Implementations.Session
 
         private IEnumerable<BaseItem> TranslateItemForPlayback(string id, User user)
         {
-            var item = _libraryManager.GetItemById(new Guid(id));
+            var item = _libraryManager.GetItemById(id);
+
+            if (item == null)
+            {
+                _logger.Error("A non-existant item Id {0} was passed into TranslateItemForPlayback", id);
+                return new List<BaseItem>();
+            }
 
             var byName = item as IItemByName;
 
@@ -1010,6 +1016,12 @@ namespace MediaBrowser.Server.Implementations.Session
         private IEnumerable<BaseItem> TranslateItemForInstantMix(string id, User user)
         {
             var item = _libraryManager.GetItemById(id);
+
+            if (item == null)
+            {
+                _logger.Error("A non-existant item Id {0} was passed into TranslateItemForInstantMix", id);
+                return new List<BaseItem>();
+            }
 
             return _musicManager.GetInstantMixFromItem(item, user);
         }
