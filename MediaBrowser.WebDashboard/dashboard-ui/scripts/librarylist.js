@@ -494,7 +494,7 @@
         var mediaType = card.getAttribute('data-mediatype');
         var resumePosition = parseInt(card.getAttribute('data-resumeposition'));
 
-        if (type == 'MusicAlbum' || type == 'MusicArtist') {
+        if (type == 'MusicAlbum' || type == 'MusicArtist' || type == 'MusicGenre') {
             isFolder = true;
         }
 

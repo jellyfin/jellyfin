@@ -467,7 +467,7 @@
 
             if (options.type == 'video' && enableViblast()) {
 
-                requirejs(['https://viblast.com/player/free-version/sdqsdx86/viblast.js'], function () {
+                requirejs(['thirdparty/viblast.js'], function () {
 
                     deferred.resolve();
                 });

@@ -504,14 +504,14 @@
                 
                 // viblast can help us here
                 //return true;
-                return window.MediaSource != null;
+                //return window.MediaSource != null;
             }
 
             if ($.browser.msie) {
 
                 // viblast can help us here
                 //return true;
-                return window.MediaSource != null;
+                //return window.MediaSource != null;
             }
 
             return false;
