@@ -31,7 +31,13 @@
 
             setInitialCollapsibleState(page, item, context, user);
             renderDetails(page, item, context);
-            LibraryBrowser.renderDetailPageBackdrop(page, item);
+
+            if (item.Type == 'MusicAlbum1' || item.Type == 'Season1') {
+                Backdrops.setBackdrops(page, [item]);
+                $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
+            } else {
+                LibraryBrowser.renderDetailPageBackdrop(page, item);
+            }
 
             if (MediaController.canPlay(item)) {
                 $('.btnPlay', page).removeClass('hide');
@@ -368,7 +374,7 @@
             $('#itemTagline', page).hide();
         }
 
-        LibraryBrowser.renderOverview(page.querySelector('.itemOverview'), item);
+        LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), item);
 
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item));
 

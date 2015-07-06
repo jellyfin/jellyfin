@@ -3067,21 +3067,24 @@
             return miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;');
         },
 
-        renderOverview: function (elem, item) {
+        renderOverview: function (elems, item) {
 
-            var overview = item.Overview || '';
+            $(elems).each(function () {
+                var elem = this;
+                var overview = item.Overview || '';
 
-            elem.innerHTML = overview;
+                elem.innerHTML = overview;
 
-            $('a', elem).each(function () {
-                this.setAttribute("target", "_blank");
+                $('a', elem).each(function () {
+                    this.setAttribute("target", "_blank");
+                });
+
+                if (overview) {
+                    elem.classList.remove('empty');
+                } else {
+                    elem.classList.add('empty');
+                }
             });
-
-            if (overview) {
-                elem.classList.remove('empty');
-            } else {
-                elem.classList.add('empty');
-            }
 
         },
 

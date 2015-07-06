@@ -15,7 +15,7 @@
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(program));
 
         LibraryBrowser.renderGenres($('.itemGenres', page), program, context);
-        LibraryBrowser.renderOverview(page.querySelector('.itemOverview'), program);
+        LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), program);
 
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(program));
 

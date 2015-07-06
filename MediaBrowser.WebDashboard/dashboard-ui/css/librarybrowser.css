@@ -24,6 +24,10 @@
     background-color: rgba(20, 20,20, .92) !important;
 }
 
+.backdropPage.lightBackdropPage.ui-page-theme-b:not(.pageWithAbsoluteTabs), .backdropPage.lightBackdropPage.pageWithAbsoluteTabs .pageBackground {
+    background-color: rgba(20, 20,20, .88) !important;
+}
+
 .pageWithAbsoluteTabs .pageBackground {
     position: fixed;
     top: 0;

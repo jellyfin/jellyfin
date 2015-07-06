@@ -141,15 +141,26 @@
 
     function setBackdrops(page, items) {
 
-        var images = items.filter(function (i) {
+        var images = items.map(function (i) {
 
-            return i.BackdropImageTags.length > 0;
+            if (i.BackdropImageTags.length > 0) {
+                return {
+                    id: i.Id,
+                    tag: i.BackdropImageTags[0]
+                };
+            }
 
-        }).map(function (i) {
-            return {
-                id: i.Id,
-                tag: i.BackdropImageTags[0]
-            };
+            if (i.ParentBackdropItemId && i.ParentBackdropImageTags && i.ParentBackdropImageTags.length) {
+
+                return {
+                    id: i.ParentBackdropItemId,
+                    tag: i.ParentBackdropImageTags[0]
+                };
+            }
+            return null;
+
+        }).filter(function (i) {
+            return i != null;
         });
 
         if (images.length) {
