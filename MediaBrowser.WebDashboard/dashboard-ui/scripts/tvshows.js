@@ -2,27 +2,44 @@
 
     var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
-    // The base query options
-    var query = {
+    var data = {};
 
-        SortBy: "SortName",
-        SortOrder: "Ascending",
-        IncludeItemTypes: "Series",
-        Recursive: true,
-        Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
-        StartIndex: 0,
-        ImageTypeLimit: 1,
-        EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
-    };
+    function getQuery() {
+
+        var key = getSavedQueryKey();
+        var pageData = data[key];
+
+        if (!pageData) {
+            pageData = data[key] = {
+                query: {
+                    SortBy: "SortName",
+                    SortOrder: "Ascending",
+                    IncludeItemTypes: "Series",
+                    Recursive: true,
+                    Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
+                    ImageTypeLimit: 1,
+                    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+                    StartIndex: 0,
+                    Limit: LibraryBrowser.getDefaultPageSize()
+                }
+            };
+
+            pageData.query.ParentId = LibraryMenu.getTopParentId();
+            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+        }
+        return pageData.query;
+    }
 
     function getSavedQueryKey() {
 
-        return 'tvshows' + (query.ParentId || '');
+        return getWindowUrl();
     }
 
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
+
+        var query = getQuery();
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
@@ -131,6 +148,7 @@
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
+            LibraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
         });
     }
@@ -140,19 +158,19 @@
         // Reset form values using the last used query
         $('.radioSortBy', page).each(function () {
 
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
+            this.checked = (getQuery().SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
 
         }).checkboxradio('refresh');
 
         $('.radioSortOrder', page).each(function () {
 
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
+            this.checked = (getQuery().SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
 
         }).checkboxradio('refresh');
 
         $('.chkStatus', page).each(function () {
 
-            var filters = "," + (query.SeriesStatus || "");
+            var filters = "," + (getQuery().SeriesStatus || "");
             var filterName = this.getAttribute('data-filter');
 
             this.checked = filters.indexOf(',' + filterName) != -1;
@@ -161,7 +179,7 @@
 
         $('.chkStandardFilter', page).each(function () {
 
-            var filters = "," + (query.Filters || "");
+            var filters = "," + (getQuery().Filters || "");
             var filterName = this.getAttribute('data-filter');
 
             this.checked = filters.indexOf(',' + filterName) != -1;
@@ -170,12 +188,14 @@
 
         $('.chkAirDays', page).each(function () {
 
-            var filters = "," + (query.AirDays || "");
+            var filters = "," + (getQuery().AirDays || "");
             var filterName = this.getAttribute('data-filter');
 
             this.checked = filters.indexOf(',' + filterName) != -1;
 
         }).checkboxradio('refresh');
+
+        var query = getQuery();
 
         $('#selectView', page).val(view).selectmenu('refresh');
 
@@ -195,6 +215,8 @@
 
             filtersLoaded = true;
 
+            var query = getQuery();
+
             QueryFilters.loadFilters(page, Dashboard.getCurrentUserId(), query, function () {
 
                 reloadItems(page);
@@ -212,12 +234,14 @@
         });
 
         $('.radioSortBy', this).on('click', function () {
+            var query = getQuery();
             query.SortBy = this.getAttribute('data-sortby');
             query.StartIndex = 0;
             reloadItems(page);
         });
 
         $('.radioSortOrder', this).on('click', function () {
+            var query = getQuery();
             query.SortOrder = this.getAttribute('data-sortorder');
             query.StartIndex = 0;
             reloadItems(page);
@@ -225,6 +249,7 @@
 
         $('.chkStandardFilter', this).on('change', function () {
 
+            var query = getQuery();
             var filterName = this.getAttribute('data-filter');
             var filters = query.Filters || "";
 
@@ -241,6 +266,7 @@
 
         $('.chkStatus', this).on('change', function () {
 
+            var query = getQuery();
             var filterName = this.getAttribute('data-filter');
             var filters = query.SeriesStatus || "";
 
@@ -257,6 +283,7 @@
 
         $('.chkAirDays', this).on('change', function () {
 
+            var query = getQuery();
             var filterName = this.getAttribute('data-filter');
             var filters = query.AirDays || "";
 
@@ -273,6 +300,7 @@
 
         $('#selectView', this).on('change', function () {
 
+            var query = getQuery();
             view = this.value;
 
             if (view == "Timeline") {
@@ -290,6 +318,7 @@
 
         $('#chkTrailer', this).on('change', function () {
 
+            var query = getQuery();
             query.StartIndex = 0;
             query.HasTrailer = this.checked ? true : null;
 
@@ -298,6 +327,7 @@
 
         $('#chkThemeSong', this).on('change', function () {
 
+            var query = getQuery();
             query.StartIndex = 0;
             query.HasThemeSong = this.checked ? true : null;
 
@@ -306,6 +336,7 @@
 
         $('#chkSpecialFeature', this).on('change', function () {
 
+            var query = getQuery();
             query.StartIndex = 0;
             query.HasSpecialFeature = this.checked ? true : null;
 
@@ -314,6 +345,7 @@
 
         $('#chkThemeVideo', this).on('change', function () {
 
+            var query = getQuery();
             query.StartIndex = 0;
             query.HasThemeVideo = this.checked ? true : null;
 
@@ -322,6 +354,7 @@
 
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {
 
+            var query = getQuery();
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
@@ -329,6 +362,7 @@
 
         }).on('alphaclear', function (e) {
 
+            var query = getQuery();
             query.NameStartsWithOrGreater = '';
 
             reloadItems(page);
@@ -355,6 +389,7 @@
         });
 
         $('#selectPageSize', page).on('change', function () {
+            var query = getQuery();
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
             reloadItems(page);
@@ -362,30 +397,24 @@
 
     }).on('pagebeforeshowready', "#tvShowsPage", function () {
 
-        query.ParentId = LibraryMenu.getTopParentId();
+        var query = getQuery();
 
         var page = this;
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
-        }
 
         var viewKey = getSavedQueryKey();
 
-        LibraryBrowser.loadSavedQueryValues(viewKey, query);
         QueryFilters.onPageShow(page, query);
 
-        LibraryBrowser.getSavedViewSetting(viewKey).done(function (val) {
+        if (LibraryBrowser.needsRefresh(page)) {
+            LibraryBrowser.getSavedViewSetting(viewKey).done(function (val) {
 
-            if (val) {
-                Events.trigger($('#selectView', page).val(val).selectmenu('refresh')[0], 'change');
-            } else {
-                reloadItems(page);
-            }
-        });
+                if (val) {
+                    Events.trigger($('#selectView', page).val(val).selectmenu('refresh')[0], 'change');
+                } else {
+                    reloadItems(page);
+                }
+            });
+        }
 
         updateFilterControls(this);
     });

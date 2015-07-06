@@ -88,7 +88,7 @@
             }
         };
 
-        self.setCurrentSrc = function (val, item, mediaSource) {
+        self.setCurrentSrc = function (val, tracks, item, mediaSource) {
 
             if (!val) {
                 self.destroy();

@@ -1142,8 +1142,6 @@
 
             mediaRenderer.init().done(function() {
 
-                mediaRenderer.setCurrentSrc(videoUrl, item, mediaSource);
-
                 var textStreams = subtitleStreams.filter(function (s) {
                     return s.DeliveryMethod == 'External';
                 });
@@ -1162,7 +1160,7 @@
                     });
                 }
 
-                mediaRenderer.setTracks(tracks);
+                mediaRenderer.setCurrentSrc(videoUrl, tracks, item, mediaSource);
 
                 // IE wont autoplay without this
                 if (videoUrl.indexOf('.m3u8') == -1) {

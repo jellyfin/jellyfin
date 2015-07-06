@@ -895,6 +895,12 @@
         else {
             page.querySelector('#childrenTitle').innerHTML = Globalize.translate('HeaderItems');
         }
+
+        if (item.Type == "MusicAlbum") {
+            $('.childrenSectionHeader', page).hide();
+        } else {
+            $('.childrenSectionHeader', page).show();
+        }
     }
 
     function renderCollectionItems(page, types, items, user) {
@@ -1497,6 +1503,7 @@
             html += '<a class="tileItem smallPosterTileItem" href="' + href + '">';
 
             var imgUrl;
+            var lazy = true;
 
             if (cast.PrimaryImageTag) {
 
@@ -1510,11 +1517,14 @@
             } else {
 
                 imgUrl = "css/images/items/list/person.png";
+                lazy = false;
             }
 
-            html += '<div class="tileImage lazy" data-src="' + imgUrl + '"></div>';
-
-
+            if (lazy) {
+                html += '<div class="tileImage lazy" data-src="' + imgUrl + '"></div>';
+            } else {
+                html += '<div class="tileImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
+            }
 
             html += '<div class="tileContent">';
 

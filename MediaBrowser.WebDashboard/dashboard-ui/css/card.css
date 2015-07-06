@@ -52,12 +52,42 @@
 }
 
 .mediumCardMargin .cardBox {
-    margin: 4px;
+    margin: 6px;
 }
 
 .defaultBackground .cardImage {
     background-color: #333;
 }
+
+.cardOverlayPlayButton {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    color: #333;
+}
+
+    .cardOverlayPlayButton iron-icon {
+        width: 20px;
+        height: 20px;
+        background-color: rgba(215,215,215,.9);
+        border-radius: 500px;
+        padding: 6px;
+    }
+
+.cardOverlayMoreButton {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    color: #333;
+}
+
+    .cardOverlayMoreButton iron-icon {
+        width: 20px;
+        height: 20px;
+        background-color: rgba(215,215,215,.9);
+        border-radius: 500px;
+        padding: 6px;
+    }
 
 @media all and (max-width: 800px) {
 
@@ -73,7 +103,7 @@
 }
 
 .bottomPaddedCard .cardBox {
-    margin-bottom: 12px;
+    margin-bottom: 24px;
 }
 
 .visualCardBox {
@@ -231,7 +261,12 @@
     padding: 0 6px 4px 5px;
 }
 
-.cardBox:not(.visualCardBox) .outerCardFooter .cardText:last-child {
+.outerCardFooter .cardText + .cardText {
+    opacity: .8;
+}
+
+.outerCardFooter .cardText:first-child {
+    padding-top: 7px;
 }
 
 @media all and (max-width: 600px) {
@@ -361,6 +396,10 @@
     .bannerCard {
         width: 50%;
     }
+
+    .squareCard {
+        width: 25%;
+    }
 }
 
 @media all and (min-width: 770px) {
@@ -370,10 +409,6 @@
 }
 
 @media all and (min-width: 800px) {
-
-    .squareCard {
-        width: 25%;
-    }
 
     .portraitCard {
         width: 20%;
@@ -385,11 +420,15 @@
 }
 
 
-@media all and (min-width: 1000px) {
+@media all and (min-width: 900px) {
 
     .squareCard {
         width: 20%;
     }
+}
+
+@media all and (min-width: 1000px) {
+
 
     .smallBackdropCard {
         width: 20%;

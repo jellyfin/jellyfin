@@ -130,7 +130,7 @@
     }
 }
 
-@media all and (min-width: 600px) {
+@media all and (min-width: 1200px) {
 
     .paddedItemsContainer {
         padding: 0 .8em;

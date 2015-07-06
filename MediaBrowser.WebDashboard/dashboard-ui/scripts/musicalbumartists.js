@@ -2,7 +2,7 @@
 
     var pageSizeKey = 'people';
 
-    var view = LibraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard');
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
     // The base query options
     var query = {
@@ -62,8 +62,9 @@
                     context: 'music',
                     showTitle: true,
                     coverImage: true,
+                    lazy: true,
                     centerText: true,
-                    lazy: true
+                    overlayPlayButton: true
                 });
             }
             else if (view == "PosterCard") {

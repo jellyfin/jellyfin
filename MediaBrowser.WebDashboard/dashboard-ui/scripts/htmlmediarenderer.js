@@ -234,7 +234,7 @@
         };
 
         var currentSrc;
-        self.setCurrentSrc = function (val) {
+        self.setCurrentSrc = function (val, tracks, item, mediaSource) {
 
             var elem = mediaElement;
 
@@ -267,6 +267,8 @@
 
                 if (enableViblast(val)) {
 
+                    setTracks(elem, tracks || []);
+
                     viblast(elem).setup({
                         key: 'N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=',
                         stream: val
@@ -276,6 +278,9 @@
 
                 } else {
                     elem.src = val;
+
+                    setTracks(elem, tracks || []);
+
                     $(elem).one("loadedmetadata", onLoadedMetadata);
                 }
             }
@@ -283,8 +288,7 @@
             currentSrc = val;
         };
 
-        self.setTracks = function (tracks) {
-
+        function setTracks(elem, tracks) {
             var html = tracks.map(function (t) {
 
                 var defaultAttribute = t.isDefault ? ' default' : '';
@@ -294,9 +298,9 @@
             }).join('');
 
             if (html) {
-                mediaElement.innerHTML = html;
+                elem.innerHTML = html;
             }
-        };
+        }
 
         self.currentSrc = function () {
             if (mediaElement) {

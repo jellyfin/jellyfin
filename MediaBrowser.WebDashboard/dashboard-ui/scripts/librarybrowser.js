@@ -94,7 +94,7 @@
             var cacheDuration;
 
             if (AppInfo.isNativeApp) {
-                cacheDuration = 300000;
+                cacheDuration = 600000;
             }
             else if ($.browser.ipad || $.browser.iphone || $.browser.android) {
                 cacheDuration = 10000;
@@ -1140,9 +1140,16 @@
 
             atts.push('data-itemid="' + item.Id + '"');
             atts.push('data-commands="' + itemCommands.join(',') + '"');
-            atts.push('data-context="' + (options.context || '') + '"');
+
+            if (options.context) {
+                atts.push('data-context="' + (options.context || '') + '"');
+            }
+
             atts.push('data-itemtype="' + item.Type + '"');
-            atts.push('data-mediatype="' + (item.MediaType || '') + '"');
+
+            if (item.MediaType) {
+                atts.push('data-mediatype="' + (item.MediaType || '') + '"');
+            }
 
             if (item.UserData.PlaybackPositionTicks) {
                 atts.push('data-positionticks="' + (item.UserData.PlaybackPositionTicks || 0) + '"');
@@ -1791,6 +1798,13 @@
 
             // cardContent
             html += '</a>';
+
+            if (options.overlayPlayButton) {
+                html += '<paper-icon-button icon="play-arrow" class="cardOverlayPlayButton" onclick="return false;"></paper-icon-button>';
+            }
+            if (options.overlayMoreButton) {
+                html += '<paper-icon-button icon="more-vert" class="cardOverlayMoreButton" onclick="return false;"></paper-icon-button>';
+            }
 
             // cardScalable
             html += '</div>';
@@ -2486,7 +2500,7 @@
             if (includePlayed !== false) {
                 var tooltipPlayed = Globalize.translate('TooltipPlayed');
 
-                if ((item.MediaType || item.IsFolder) && type != "TvChannel" && type != "MusicArtist" && item.MediaType != "Audio") {
+                if (item.MediaType == 'Video' || item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.Type == 'Playlist') {
                     if (userData.Played) {
                         html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRatingOn', 'check', tooltipPlayed);
                     } else {

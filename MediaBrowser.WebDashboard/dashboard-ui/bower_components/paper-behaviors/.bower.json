@@ -42,7 +42,7 @@
     "tag": "v1.0.2",
     "commit": "4dd226a2cc5b780a73d0058cd9998b6e0af1cb2c"
   },
-  "_source": "git://github.com/polymerelements/paper-behaviors.git",
+  "_source": "git://github.com/PolymerElements/paper-behaviors.git",
   "_target": "^1.0.0",
-  "_originalSource": "polymerelements/paper-behaviors"
+  "_originalSource": "PolymerElements/paper-behaviors"
 }

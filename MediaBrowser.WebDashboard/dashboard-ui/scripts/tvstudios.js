@@ -83,6 +83,7 @@
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
+            LibraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
         });
     }
@@ -136,9 +137,13 @@
 
     }).on('pagebeforeshowready', "#tvStudiosPage", function () {
 
-        reloadItems(this);
+        var page = this;
 
-        updateFilterControls(this);
+        if (LibraryBrowser.needsRefresh(page)) {
+            reloadItems(page);
+        }
+
+        updateFilterControls(page);
     });
 
 })(jQuery, document);
