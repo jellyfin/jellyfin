@@ -8,7 +8,6 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.XbmcMetadata.Configuration;
 using MediaBrowser.XbmcMetadata.Savers;
 using System;
-using System.Linq;
 
 namespace MediaBrowser.XbmcMetadata
 {
@@ -50,7 +49,11 @@ namespace MediaBrowser.XbmcMetadata
                         return;
                     }
 
-                    var items = _libraryManager.RootFolder.GetRecursiveChildren(person.GetItemFilter());
+                    var items = _libraryManager.GetItems(new InternalItemsQuery
+                    {
+                        Person = person.Name
+
+                    }).Items;
 
                     foreach (var item in items)
                     {

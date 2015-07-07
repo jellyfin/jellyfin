@@ -59,9 +59,13 @@ namespace MediaBrowser.Providers.People
             // Avoid implicitly captured closure
             var itemName = item.Name;
 
-            var seriesWithPerson = _libraryManager.RootFolder
-                .GetRecursiveChildren(i => i is Series && !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)) && _libraryManager.GetPeople(i).Any(p => string.Equals(p.Name, itemName, StringComparison.OrdinalIgnoreCase)))
-                .Cast<Series>()
+            var seriesWithPerson = _libraryManager.GetItems(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Series).Name },
+                Person = itemName
+
+            }).Items.Cast<Series>()
+                .Where(i => !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb)))
                 .ToList();
 
             var infos = seriesWithPerson.Select(i => GetImageFromSeriesData(i, item.Name, cancellationToken))

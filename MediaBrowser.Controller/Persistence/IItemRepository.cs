@@ -162,6 +162,13 @@ namespace MediaBrowser.Controller.Persistence
         /// <param name="people">The people.</param>
         /// <returns>Task.</returns>
         Task UpdatePeople(Guid itemId, List<PersonInfo> people);
+
+        /// <summary>
+        /// Gets the people names.
+        /// </summary>
+        /// <param name="itemId">The item identifier.</param>
+        /// <returns>List&lt;System.String&gt;.</returns>
+        List<string> GetPeopleNames(Guid itemId);
     }
 }
 
