@@ -1,6 +1,7 @@
 using System.Runtime.Serialization;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
@@ -739,9 +740,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 cmd.CommandText = "select guid from TypedBaseItems";
 
-                var whereClauses = GetWhereClauses(query, cmd, false);
-
-                whereClauses = GetWhereClauses(query, cmd, true);
+                var whereClauses = GetWhereClauses(query, cmd, true);
 
                 var whereText = whereClauses.Count == 0 ?
                     string.Empty :
@@ -914,6 +913,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(query.Person))
+            {
+                whereClauses.Add("Guid in (select ItemId from People where Name=@PersonName)");
+                cmd.Parameters.Add(cmd, "@PersonName", DbType.String).Value = query.Person;
+            }
+
             if (addPaging)
             {
                 if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
@@ -938,6 +943,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {typeof(LiveTvChannel).Name, new []{typeof(LiveTvChannel).FullName}},
                 {typeof(LiveTvVideoRecording).Name, new []{typeof(LiveTvVideoRecording).FullName}},
                 {typeof(LiveTvAudioRecording).Name, new []{typeof(LiveTvAudioRecording).FullName}},
+                {typeof(Series).Name, new []{typeof(Series).FullName}},
                 {"Recording", new []{typeof(LiveTvAudioRecording).FullName, typeof(LiveTvVideoRecording).FullName}}
             };
 
@@ -1127,6 +1133,34 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return _mediaStreamsRepository.SaveMediaStreams(id, streams, cancellationToken);
         }
 
+        public List<string> GetPeopleNames(Guid itemId)
+        {
+            if (itemId == Guid.Empty)
+            {
+                throw new ArgumentNullException("itemId");
+            }
+
+            CheckDisposed();
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "select Distinct Name from People where ItemId=@ItemId order by ListOrder";
+
+                cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = itemId;
+
+                var list = new List<string>();
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(reader.GetString(0));
+                    }
+                }
+
+                return list;
+            }
+        }
 
         public List<PersonInfo> GetPeople(Guid itemId)
         {

@@ -153,6 +153,15 @@
                 //});
             }
 
+            var directPlayVideoContainers = AppInfo.directPlayVideoContainers;
+
+            if (directPlayVideoContainers && directPlayVideoContainers.length) {
+                profile.DirectPlayProfiles.push({
+                    Container: directPlayVideoContainers.join(','),
+                    Type: 'Video'
+                });
+            }
+
             profile.DirectPlayProfiles.push({
                 Container: 'mp3',
                 Type: 'Audio'
@@ -300,23 +309,27 @@
                 }]
             });
 
-            profile.CodecProfiles.push({
-                Type: 'VideoAudio',
-                Codec: 'aac',
-                Container: 'mkv,mov',
-                Conditions: [
-                    {
-                        Condition: 'NotEquals',
-                        Property: 'AudioProfile',
-                        Value: 'HE-AAC'
-                    },
-                    {
-                        Condition: 'NotEquals',
-                        Property: 'AudioProfile',
-                        Value: 'LC'
-                    }
-                ]
-            });
+            var isVlc = AppInfo.isNativeApp && $.browser.android;
+
+            if (!isVlc) {
+                profile.CodecProfiles.push({
+                    Type: 'VideoAudio',
+                    Codec: 'aac',
+                    Container: 'mkv,mov',
+                    Conditions: [
+                        {
+                            Condition: 'NotEquals',
+                            Property: 'AudioProfile',
+                            Value: 'HE-AAC'
+                        },
+                        {
+                            Condition: 'NotEquals',
+                            Property: 'AudioProfile',
+                            Value: 'LC'
+                        }
+                    ]
+                });
+            }
 
             profile.CodecProfiles.push({
                 Type: 'VideoAudio',
@@ -330,49 +343,69 @@
                 ]
             });
 
-            profile.CodecProfiles.push({
-                Type: 'Video',
-                Codec: 'h264',
-                Conditions: [
-                {
-                    Condition: 'NotEquals',
-                    Property: 'IsAnamorphic',
-                    Value: 'true',
-                    IsRequired: false
-                },
-                {
-                    Condition: 'EqualsAny',
-                    Property: 'VideoProfile',
-                    Value: 'high|main|baseline|constrained baseline'
-                },
-                {
-                    Condition: 'LessThanEqual',
-                    Property: 'VideoLevel',
-                    Value: '41'
-                },
-                {
-                    Condition: 'LessThanEqual',
-                    Property: 'Height',
-                    Value: maxHeight
-                }]
-            });
+            if (isVlc) {
+                profile.CodecProfiles.push({
+                    Type: 'Video',
+                    Codec: 'h264',
+                    Conditions: [
+                    {
+                        Condition: 'EqualsAny',
+                        Property: 'VideoProfile',
+                        Value: 'high|main|baseline|constrained baseline'
+                    },
+                    {
+                        Condition: 'LessThanEqual',
+                        Property: 'VideoLevel',
+                        Value: '41'
+                    }]
+                });
+            } else {
+                profile.CodecProfiles.push({
+                    Type: 'Video',
+                    Codec: 'h264',
+                    Conditions: [
+                    {
+                        Condition: 'NotEquals',
+                        Property: 'IsAnamorphic',
+                        Value: 'true',
+                        IsRequired: false
+                    },
+                    {
+                        Condition: 'EqualsAny',
+                        Property: 'VideoProfile',
+                        Value: 'high|main|baseline|constrained baseline'
+                    },
+                    {
+                        Condition: 'LessThanEqual',
+                        Property: 'VideoLevel',
+                        Value: '41'
+                    },
+                    {
+                        Condition: 'LessThanEqual',
+                        Property: 'Height',
+                        Value: maxHeight
+                    }]
+                });
+            }
 
-            profile.CodecProfiles.push({
-                Type: 'Video',
-                Codec: 'vpx',
-                Conditions: [
-                {
-                    Condition: 'NotEquals',
-                    Property: 'IsAnamorphic',
-                    Value: 'true',
-                    IsRequired: false
-                },
-                {
-                    Condition: 'LessThanEqual',
-                    Property: 'Height',
-                    Value: maxHeight
-                }]
-            });
+            if (!isVlc) {
+                profile.CodecProfiles.push({
+                    Type: 'Video',
+                    Codec: 'vpx',
+                    Conditions: [
+                    {
+                        Condition: 'NotEquals',
+                        Property: 'IsAnamorphic',
+                        Value: 'true',
+                        IsRequired: false
+                    },
+                    {
+                        Condition: 'LessThanEqual',
+                        Property: 'Height',
+                        Value: maxHeight
+                    }]
+                });
+            }
 
             // Subtitle profiles
             // External vtt or burn in
@@ -483,6 +516,10 @@
             //    }
             //}
 
+            if ($.browser.android && AppInfo.isNativeApp) {
+                return true;
+            }
+
             var media = document.createElement('video');
 
             // safari
@@ -501,7 +538,7 @@
             }
 
             if ($.browser.chrome) {
-                
+
                 // viblast can help us here
                 //return true;
                 //return window.MediaSource != null;
@@ -572,13 +609,13 @@
 
             Events.off(mediaRenderer, 'ended', self.onPlaybackStopped);
             Events.off(mediaRenderer, 'ended', self.playNextAfterEnded);
-            
+
             $(mediaRenderer).one("play", function () {
 
                 self.updateCanClientSeek(this);
 
                 Events.on(this, 'ended', self.onPlaybackStopped);
-                
+
                 $(this).one('ended', self.playNextAfterEnded);
 
                 self.startProgressInterval();
@@ -1381,7 +1418,7 @@
 
                 Events.off(mediaRenderer, 'ended', self.playNextAfterEnded);
 
-                $(mediaRenderer).one("ended", function() {
+                $(mediaRenderer).one("ended", function () {
 
                     $(this).off('.mediaplayerevent');
 
@@ -1392,7 +1429,7 @@
                     self.currentMediaSource = null;
 
                 });
-                
+
                 Events.trigger(mediaRenderer, "ended");
 
             } else {
@@ -1588,7 +1625,7 @@
             var mediaRenderer = this;
 
             Events.off(mediaRenderer, '.mediaplayerevent');
-            
+
             Events.off(mediaRenderer, 'ended', self.onPlaybackStopped);
 
             var item = self.currentItem;
@@ -1654,7 +1691,7 @@
         self.canPlayWebm = function () {
 
             if (self._canPlayWebm == null) {
-                self._canPlayWebm = document.createElement('video').canPlayType('video/webm').replace(/no/, '');
+                self._canPlayWebm = ($.browser.android && AppInfo.isNativeApp) || document.createElement('video').canPlayType('video/webm').replace(/no/, '');
             }
             return self._canPlayWebm;
         };
@@ -1705,7 +1742,7 @@
             mediaRenderer.setPoster(self.getPosterUrl(item));
             mediaRenderer.setCurrentSrc(audioUrl, item, mediaSource);
 
-            Events.on(mediaRenderer, "volumechange.mediaplayerevent", function() {
+            Events.on(mediaRenderer, "volumechange.mediaplayerevent", function () {
 
                 Logger.log('audio element event: volumechange');
 

@@ -3,7 +3,7 @@
 }
 
     .libraryPage:not(.noSecondaryNavPage) {
-        padding-top: 96px !important;
+        padding-top: 95px !important;
     }
 
 .pageWithAbsoluteTabs:not(.noSecondaryNavPage) {
@@ -266,7 +266,7 @@
     margin: 0 0;
     position: relative;
     font-weight: normal;
-    border-bottom: 3px solid transparent;
+    border-bottom: 2px solid transparent;
 }
 
 .libraryViewNav .ui-btn-active {

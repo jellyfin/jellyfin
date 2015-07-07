@@ -495,8 +495,8 @@ h1 a:hover {
 }
 
 .libraryViewNav:not(.paperLibraryViewNav).headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-208%);
-    transform: translateY(-208%);
+    -webkit-transform: translateY(-210%);
+    transform: translateY(-210%);
 }
 
 .paperLibraryViewNav.headroom--unpinned:not(.headroomDisabled) {
@@ -931,7 +931,7 @@ h1 .imageLink {
 }
 
 .footerOverBottomTabs {
-    bottom: 51px !important;
+    bottom: 49px !important;
 }
 
 .footerNotification {

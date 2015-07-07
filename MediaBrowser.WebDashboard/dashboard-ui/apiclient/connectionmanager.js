@@ -41,7 +41,7 @@
 
         var self = this;
         var apiClients = [];
-        var defaultTimeout = 15000;
+        var defaultTimeout = 20000;
 
         function mergeServers(list1, list2) {
 
@@ -907,7 +907,7 @@
             if (mode == MediaBrowser.ConnectionMode.Local) {
 
                 enableRetry = true;
-                timeout = 5000;
+                timeout = 7000;
             }
 
             else if (mode == MediaBrowser.ConnectionMode.Manual) {

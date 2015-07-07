@@ -47,12 +47,19 @@
     margin: 2px;
 }
 
+@media all and (max-width: 800px) {
+
+    .cardBox {
+        margin: 1px;
+    }
+}
+
 .largeCardMargin .cardBox {
     margin: 8px;
 }
 
 .mediumCardMargin .cardBox {
-    margin: 6px;
+    margin: 5px;
 }
 
 .defaultBackground .cardImage {
@@ -69,7 +76,7 @@
     .cardOverlayPlayButton iron-icon {
         width: 20px;
         height: 20px;
-        background-color: rgba(215,215,215,.9);
+        background-color: rgba(210,210,210,.9);
         border-radius: 500px;
         padding: 6px;
     }
@@ -84,17 +91,10 @@
     .cardOverlayMoreButton iron-icon {
         width: 20px;
         height: 20px;
-        background-color: rgba(215,215,215,.9);
+        background-color: rgba(210,210,210,.9);
         border-radius: 500px;
         padding: 6px;
     }
-
-@media all and (max-width: 800px) {
-
-    .cardBox {
-        margin: 1px;
-    }
-}
 
 .grayscale {
     -webkit-filter: grayscale(100%);

@@ -25,7 +25,9 @@
 
             if (options.callback) {
 
-                if (index >= 1) {
+                // Results are 1-based
+                if (index >= 1 && options.items.length >= index) {
+                    
                     options.callback(options.items[index - 1].id);
                 }
             }

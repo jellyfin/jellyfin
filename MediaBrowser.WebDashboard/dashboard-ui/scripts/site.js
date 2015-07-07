@@ -1721,8 +1721,10 @@ var AppInfo = {};
 
         if (isCordova && isAndroid) {
             AppInfo.directPlayAudioContainers = ['aac', 'mp3', 'ogg', 'flac', 'wma', 'm4a', 'oga'];
+            AppInfo.directPlayVideoContainers = ['mkv', 'mp4', 'mov', 'm4v', 'avi', 'flv', 'wmv', 'webm'];
         } else {
             AppInfo.directPlayAudioContainers = [];
+            AppInfo.directPlayVideoContainers = [];
         }
     }
 
@@ -2061,7 +2063,9 @@ var AppInfo = {};
 
     function initCordovaWithDeviceId(deferred, deviceId) {
 
-        require(['cordova/imagestore']);
+        if ($.browser.android) {
+            require(['cordova/imagestore']);
+        }
 
         var capablities = Dashboard.capabilities();
 

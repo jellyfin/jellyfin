@@ -1440,7 +1440,6 @@
 
                 //$.mobile.urlHistory.ignoreNextHashChange = true;
                 window.location.hash = 'editItemMetadataPage?id=' + data.id;
-                alert(window.location.href);
                 reload(page);
             }
         });

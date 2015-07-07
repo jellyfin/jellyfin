@@ -211,15 +211,12 @@
 
         function tryReconnectInternal(deferred, connectionMode, currentRetryCount) {
 
-            var previousConnectionMode = self.serverInfo().LastConnectionMode;
-            var previousServerAddress = MediaBrowser.ServerInfo.getServerAddress(self.serverInfo(), previousConnectionMode);
-
             connectionMode = switchConnectionMode(connectionMode);
             var url = MediaBrowser.ServerInfo.getServerAddress(self.serverInfo(), connectionMode);
 
             logger.log("Attempting reconnection to " + url);
 
-            var timeout = connectionMode == MediaBrowser.ConnectionMode.Local ? 5000 : 15000;
+            var timeout = connectionMode == MediaBrowser.ConnectionMode.Local ? 7000 : 15000;
 
             HttpClient.send({
 

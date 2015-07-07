@@ -410,18 +410,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
             {
                 if (stubType.Value == StubType.People)
                 {
-                    var items = _libraryManager.GetPeople(item).Select(i =>
-                    {
-                        try
-                        {
-                            return _libraryManager.GetPerson(i.Name);
-                        }
-                        catch
-                        {
-                            return null;
-                        }
-
-                    }).Where(i => i != null).ToArray();
+                    var items = _libraryManager.GetPeopleItems(item).ToArray();
 
                     var result = new QueryResult<ServerItem>
                     {

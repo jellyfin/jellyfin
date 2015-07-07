@@ -64,7 +64,7 @@
 
         } else {
 
-            elem.empty();
+            elem.innerHTML = '';
 
             var deferred = DeferredBuilder.Deferred();
             deferred.resolve();

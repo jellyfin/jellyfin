@@ -421,6 +421,13 @@ namespace MediaBrowser.Controller.Library
         List<PersonInfo> GetPeople(BaseItem item);
 
         /// <summary>
+        /// Gets the people items.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>List&lt;Person&gt;.</returns>
+        List<Person> GetPeopleItems(BaseItem item);
+        
+        /// <summary>
         /// Gets all people names.
         /// </summary>
         /// <returns>List&lt;System.String&gt;.</returns>
@@ -433,5 +440,12 @@ namespace MediaBrowser.Controller.Library
         /// <param name="people">The people.</param>
         /// <returns>Task.</returns>
         Task UpdatePeople(BaseItem item, List<PersonInfo> people);
+
+        /// <summary>
+        /// Gets the item ids.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>List&lt;Guid&gt;.</returns>
+        List<Guid> GetItemIds(InternalItemsQuery query);
     }
 }

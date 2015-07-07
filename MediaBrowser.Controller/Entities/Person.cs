@@ -70,7 +70,12 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
         {
-            return inputItems.Where(GetItemFilter());
+            var itemsWithPerson = LibraryManager.GetItemIds(new InternalItemsQuery
+            {
+                Person = Name
+            });
+
+            return inputItems.Where(i => itemsWithPerson.Contains(i.Id));
         }
 
 

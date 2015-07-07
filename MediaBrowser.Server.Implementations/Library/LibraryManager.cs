@@ -1223,6 +1223,11 @@ namespace MediaBrowser.Server.Implementations.Library
             };
         }
 
+        public List<Guid> GetItemIds(InternalItemsQuery query)
+        {
+            return ItemRepository.GetItemIdsList(query);
+        }
+
         /// <summary>
         /// Gets the intros.
         /// </summary>
@@ -2057,10 +2062,26 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
-
         public List<PersonInfo> GetPeople(BaseItem item)
         {
             return item.People ?? ItemRepository.GetPeople(item.Id);
+        }
+
+        public List<Person> GetPeopleItems(BaseItem item)
+        {
+            return ItemRepository.GetPeopleNames(item.Id).Select(i =>
+            {
+                try
+                {
+                    return GetPerson(i);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting person", ex);
+                    return null;
+                }
+
+            }).Where(i => i != null).ToList();
         }
 
         public List<PersonInfo> GetAllPeople()

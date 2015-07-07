@@ -26,7 +26,7 @@
         var elapsedTime = playState.PositionTicks ? (playState.PositionTicks / 10000000) : 0;
 
         var url = '';
-        var imgHeight = 100;
+        var imgHeight = 600;
 
         var nowPlayingItem = state.NowPlayingItem;
 
