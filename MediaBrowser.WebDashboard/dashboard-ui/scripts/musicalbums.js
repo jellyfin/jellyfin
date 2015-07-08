@@ -2,19 +2,6 @@
 
     var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
-    // The base query options
-    var query = {
-
-        SortBy: "AlbumArtist,SortName",
-        SortOrder: "Ascending",
-        IncludeItemTypes: "MusicAlbum",
-        Recursive: true,
-        Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
-        StartIndex: 0,
-        ImageTypeLimit: 1,
-        EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
-    };
-
     var data = {};
 
     function getQuery() {
@@ -295,12 +282,11 @@
 
         var page = this;
 
-        var viewKey = getSavedQueryKey();
-        LibraryBrowser.loadSavedQueryValues(viewKey, query);
+        var query = getQuery();
         QueryFilters.onPageShow(page, query);
 
         if (LibraryBrowser.needsRefresh(page)) {
-            LibraryBrowser.getSavedViewSetting(viewKey).done(function (val) {
+            LibraryBrowser.getSavedViewSetting(getSavedQueryKey()).done(function (val) {
 
                 if (val) {
                     $('#selectView', page).val(val).selectmenu('refresh').trigger('change');

@@ -151,11 +151,7 @@
 
             if (items.length) {
                 html += '<div>';
-                html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
-
-                if (user.Policy.EnableUserPreferenceAccess && !AppInfo.isNativeApp) {
-                    html += '<a href="mypreferencesdisplay.html" class="clearLink" style="margin-left:2em;"><paper-button raised class="submit mini"><iron-icon icon="mode-edit"></iron-icon><span>' + Globalize.translate('ButtonEdit') + '</span></paper-button></a>';
-                }
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
 
                 html += '</div>';
 
@@ -239,11 +235,7 @@
                 var cssClass = index !== 0 ? 'listHeader' : 'listHeader';
 
                 html += '<div>';
-                html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderMyMedia') + '</h1>';
-
-                if (user.Policy.EnableUserPreferenceAccess && !AppInfo.isNativeApp) {
-                    html += '<a href="mypreferencesdisplay.html" class="clearLink" style="margin-left:2em;"><paper-button raised class="submit mini"><iron-icon icon="mode-edit"></iron-icon><span>' + Globalize.translate('ButtonEdit') + '</span></paper-button></a>';
-                }
+                html += '<h1 class="' + cssClass + '">' + Globalize.translate('HeaderMyMedia') + '</h1>';
 
                 html += '</div>';
 

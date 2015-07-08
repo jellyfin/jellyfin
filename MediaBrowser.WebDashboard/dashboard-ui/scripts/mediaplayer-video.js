@@ -626,8 +626,8 @@
             html += '<div class="videoTopControlsLogo"></div>';
             html += '<div class="videoAdvancedControls">';
 
-            html += '<paper-icon-button icon="skip-previous" class="previousTrackButton mediaButton videoTrackControl" onclick="MediaPlayer.previousTrack();"></paper-icon-button>';
-            html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton videoTrackControl" onclick="MediaPlayer.nextTrack();"></paper-icon-button>';
+            html += '<paper-icon-button icon="skip-previous" class="previousTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.previousTrack();"></paper-icon-button>';
+            html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.nextTrack();"></paper-icon-button>';
 
             // Embedding onclicks due to issues not firing in cordova safari
             html += '<paper-icon-button icon="audiotrack" class="mediaButton videoAudioButton" onclick="MediaPlayer.showAudioTracksFlyout();"></paper-icon-button>';
@@ -652,12 +652,12 @@
             html += '<div class="nowPlayingTabs"></div>';
             html += '</div>'; // nowPlayingInfo
 
-            html += '<paper-icon-button icon="skip-previous" class="previousTrackButton mediaButton videoTrackControl" onclick="MediaPlayer.previousTrack();"></paper-icon-button>';
+            html += '<paper-icon-button icon="skip-previous" class="previousTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.previousTrack();"></paper-icon-button>';
 
             html += '<paper-icon-button id="video-playButton" icon="play-arrow" class="mediaButton unpauseButton" onclick="MediaPlayer.unpause();"></paper-icon-button>';
             html += '<paper-icon-button id="video-pauseButton" icon="pause" class="mediaButton pauseButton" onclick="MediaPlayer.pause();"></paper-icon-button>';
 
-            html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton videoTrackControl" onclick="MediaPlayer.nextTrack();"></paper-icon-button>';
+            html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.nextTrack();"></paper-icon-button>';
 
             html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="videoPositionSlider" style="width:300px;vertical-align:middle;margin-left:-1em;"></paper-slider>';
 
@@ -933,8 +933,11 @@
             unbindEventsForPlayback(mediaRenderer);
         };
 
-        self.playVideo = function (item, mediaSource, startPosition) {
+        self.playVideo = function (item, mediaSource, startPosition, callback) {
 
+            //ApiClient.detectBitrate().done(function (b) {
+            //    alert(b);
+            //});
             requirejs(['videorenderer'], function () {
 
                 var streamInfo = self.createStreamInfo('Video', item, mediaSource, startPosition);
@@ -953,11 +956,11 @@
                         Dashboard.hideLoadingMsg();
 
                     }).done(function () {
-                        self.playVideoInternal(item, mediaSource, startPosition, streamInfo);
+                        self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
                     });
 
                 } else {
-                    self.playVideoInternal(item, mediaSource, startPosition, streamInfo);
+                    self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
                 }
             });
         };
@@ -966,7 +969,7 @@
             return true;
         }
 
-        self.playVideoInternal = function (item, mediaSource, startPosition, streamInfo) {
+        self.playVideoInternal = function (item, mediaSource, startPosition, streamInfo, callback) {
 
             var videoUrl = streamInfo.url;
             var contentType = streamInfo.mimeType;
@@ -990,7 +993,7 @@
             //show stop button
             $('#video-playButton', videoControls).hide();
             $('#video-pauseButton', videoControls).show();
-            $('.videoTrackControl').hide();
+            $('.videoTrackControl').visible(false);
 
             var videoElement = $('#videoElement', mediaPlayerContainer);
 
@@ -1140,7 +1143,7 @@
 
             self.updateNowPlayingInfo(item);
 
-            mediaRenderer.init().done(function() {
+            mediaRenderer.init().done(function () {
 
                 var textStreams = subtitleStreams.filter(function (s) {
                     return s.DeliveryMethod == 'External';
@@ -1166,6 +1169,10 @@
                 if (videoUrl.indexOf('.m3u8') == -1) {
                     mediaRenderer.unpause();
                 }
+
+                if (callback) {
+                    callback();
+                }
             });
         };
 
@@ -1180,7 +1187,7 @@
             }
 
             if (length < 2) {
-                $('.videoTrackControl').hide();
+                $('.videoTrackControl').visible(false);
                 return;
             }
 
@@ -1202,7 +1209,8 @@
                 nextTrackButton.removeAttribute('disabled');
             }
 
-            $('.videoTrackControl', controls).show();
+            $(previousTrackButton).visible(true);
+            $(nextTrackButton).visible(true);
         };
     }
 

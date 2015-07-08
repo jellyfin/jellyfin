@@ -545,6 +545,10 @@
             }
 
             return false;
+        },
+
+        onHardwareMenuButtonClick: function () {
+            openMainDrawer();
         }
     };
 
@@ -939,7 +943,7 @@ $.fn.createHoverTouch = function () {
     var backUrl;
 
     $(document).on('pagebeforeshow', ".page", function () {
-        
+
         if (getWindowUrl() != backUrl) {
             backUrl = null;
         }

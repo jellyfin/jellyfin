@@ -32,51 +32,6 @@
     //// Hide system UI and keep it hidden (Android 4.4+ only)
     //AndroidFullScreen.immersiveMode(onSuccess, onError);
 
-    var currentPlayer;
-
-    function onPlaybackStart(e, state) {
-
-        var player = this;
-
-        if (player.isLocalPlayer && state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
-            AndroidFullScreen.immersiveMode(onSuccess, onError);
-        }
-    }
-
-    function onPlaybackStopped(e, state) {
-
-        var player = this;
-
-        if (player.isLocalPlayer && state.NowPlayingItem && state.NowPlayingItem.MediaType == 'Video') {
-
-            if (!AppSettings.enableFullScreen()) {
-                AndroidFullScreen.showSystemUI(onSuccess, onError);
-            }
-        }
-    }
-
-    function bindToPlayer(player) {
-
-        releaseCurrentPlayer();
-
-        currentPlayer = player;
-
-        if (!player.isLocalPlayer) {
-            return;
-        }
-
-        $(player).on('playbackstart', onPlaybackStart)
-            .on('playbackstop', onPlaybackStopped);
-    }
-
-    function releaseCurrentPlayer() {
-
-        if (currentPlayer) {
-
-            $(currentPlayer).off('playbackstart', onPlaybackStart).off('playbackstop', onPlaybackStopped);
-        }
-    }
-
     function updateFromSetting(leaveFullScreen) {
 
         if (AppSettings.enableFullScreen()) {
@@ -90,13 +45,6 @@
     Dashboard.ready(function () {
 
         Logger.log('binding fullscreen to MediaController');
-
-        $(MediaController).on('playerchange', function () {
-
-            bindToPlayer(MediaController.getCurrentPlayer());
-        });
-
-        bindToPlayer(MediaController.getCurrentPlayer());
 
         updateFromSetting(false);
 

@@ -482,6 +482,63 @@
             });
         };
 
+        self.getDownloadSpeed = function (byteSize) {
+
+            var url = self.getUrl('Playback/BitrateTest', {
+
+                Size: byteSize
+            });
+
+            var now = new Date().getTime();
+
+            var deferred = DeferredBuilder.Deferred();
+
+            self.get(url).done(function () {
+
+                var responseTime = new Date().getTime() - now;
+                responseTime /= 1000;
+                var bytesPerSecond = byteSize / responseTime;
+
+                deferred.resolveWith(null, [bytesPerSecond]);
+
+            }).fail(function () {
+
+                deferred.reject();
+            });
+
+            return deferred.promise();
+        };
+
+        self.detectBitrate = function () {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            // First try a small amount so that we don't hang up their mobile connection
+            self.getDownloadSpeed(1000000).done(function (bitrate) {
+
+                if (bitrate < 3000000) {
+                    deferred.resolveWith(null, [Math.round(bitrate * .8)]);
+                } else {
+
+                    // If that produced a fairly high speed, try again with a larger size to get a more accurate result
+                    self.getDownloadSpeed(2000000).done(function (bitrate) {
+
+                        deferred.resolveWith(null, [Math.round(bitrate * .8)]);
+
+                    }).fail(function () {
+
+                        deferred.reject();
+                    });
+                }
+
+            }).fail(function () {
+
+                deferred.reject();
+            });
+
+            return deferred.promise();
+        };
+
         /**
          * Gets an item from the server
          * Omit itemId to get the root folder.
@@ -492,7 +549,7 @@
                 throw new Error("null itemId");
             }
 
-            var url = userId ? 
+            var url = userId ?
                 self.getUrl("Users/" + userId + "/Items/" + itemId) :
                 self.getUrl("Items/" + itemId);
 

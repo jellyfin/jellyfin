@@ -57,7 +57,7 @@
                 // Use the embedded server for iOS8, and also if we don't know the iOS version, just to be safe
                 //if ($.browser.iOSVersion == 8 || !$.browser.iOSVersion)
                 {
-                    //return url.replace('file://', '');
+                    return url.replace('file://', '');
                 }
             }
             return url;

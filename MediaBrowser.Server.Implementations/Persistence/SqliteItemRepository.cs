@@ -135,8 +135,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _connection.RunQueries(queries, _logger);
 
-			_connection.AddColumn(_logger, "TypedBaseItems", "Path", "Text");
-			_connection.AddColumn(_logger, "TypedBaseItems", "StartDate", "DATETIME");
+            _connection.AddColumn(_logger, "TypedBaseItems", "Path", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "StartDate", "DATETIME");
             _connection.AddColumn(_logger, "TypedBaseItems", "EndDate", "DATETIME");
             _connection.AddColumn(_logger, "TypedBaseItems", "ChannelId", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsMovie", "BIT");
@@ -286,9 +286,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.GetType().FullName;
                     _saveItemCommand.GetParameter(index++).Value = _jsonSerializer.SerializeToBytes(item);
 
-					_saveItemCommand.GetParameter(index++).Value = item.Path;
+                    _saveItemCommand.GetParameter(index++).Value = item.Path;
 
-					var hasStartDate = item as IHasStartDate;
+                    var hasStartDate = item as IHasStartDate;
                     if (hasStartDate != null)
                     {
                         _saveItemCommand.GetParameter(index++).Value = hasStartDate.StartDate;
@@ -329,7 +329,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.ParentIndexNumber;
                     _saveItemCommand.GetParameter(index++).Value = item.PremiereDate;
                     _saveItemCommand.GetParameter(index++).Value = item.ProductionYear;
-                    
+
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -1009,7 +1009,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _deletePeopleCommand.GetParameter(0).Value = id;
                 _deletePeopleCommand.Transaction = transaction;
                 _deletePeopleCommand.ExecuteNonQuery();
-                
+
                 // Delete the item
                 _deleteItemCommand.GetParameter(0).Value = id;
                 _deleteItemCommand.Transaction = transaction;
@@ -1133,20 +1133,27 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return _mediaStreamsRepository.SaveMediaStreams(id, streams, cancellationToken);
         }
 
-        public List<string> GetPeopleNames(Guid itemId)
+        public List<string> GetPeopleNames(InternalPeopleQuery query)
         {
-            if (itemId == Guid.Empty)
+            if (query == null)
             {
-                throw new ArgumentNullException("itemId");
+                throw new ArgumentNullException("query");
             }
 
             CheckDisposed();
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select Distinct Name from People where ItemId=@ItemId order by ListOrder";
+                cmd.CommandText = "select Distinct Name from People";
 
-                cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = itemId;
+                var whereClauses = GetPeopleWhereClauses(query, cmd);
+
+                if (whereClauses.Count > 0)
+                {
+                    cmd.CommandText += "  where " + string.Join(" AND ", whereClauses.ToArray());
+                }
+
+                cmd.CommandText += " order by ListOrder";
 
                 var list = new List<string>();
 
@@ -1162,20 +1169,27 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
-        public List<PersonInfo> GetPeople(Guid itemId)
+        public List<PersonInfo> GetPeople(InternalPeopleQuery query)
         {
-            if (itemId == Guid.Empty)
+            if (query == null)
             {
-                throw new ArgumentNullException("itemId");
+                throw new ArgumentNullException("query");
             }
 
             CheckDisposed();
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select ItemId, Name, Role, PersonType, SortOrder from People where ItemId=@ItemId order by ListOrder";
+                cmd.CommandText = "select ItemId, Name, Role, PersonType, SortOrder from People";
 
-                cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = itemId;
+                var whereClauses = GetPeopleWhereClauses(query, cmd);
+
+                if (whereClauses.Count > 0)
+                {
+                    cmd.CommandText += "  where " + string.Join(" AND ", whereClauses.ToArray());
+                }
+
+                cmd.CommandText += " order by ListOrder";
 
                 var list = new List<PersonInfo>();
 
@@ -1189,6 +1203,51 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 return list;
             }
+        }
+
+        private List<string> GetPeopleWhereClauses(InternalPeopleQuery query, IDbCommand cmd)
+        {
+            var whereClauses = new List<string>();
+
+            if (query.ItemId != Guid.Empty)
+            {
+                whereClauses.Add("ItemId=@ItemId");
+                cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = query.ItemId;
+            }
+            if (query.AppearsInItemId != Guid.Empty)
+            {
+                whereClauses.Add("Name in (Select Name from People where ItemId=@AppearsInItemId)");
+                cmd.Parameters.Add(cmd, "@AppearsInItemId", DbType.Guid).Value = query.AppearsInItemId;
+            }
+            if (query.PersonTypes.Count == 1)
+            {
+                whereClauses.Add("PersonType=@PersonType");
+                cmd.Parameters.Add(cmd, "@PersonType", DbType.String).Value = query.PersonTypes[0];
+            }
+            if (query.PersonTypes.Count > 1)
+            {
+                var val = string.Join(",", query.PersonTypes.Select(i => "'" + i + "'").ToArray());
+
+                whereClauses.Add("PersonType in (" + val + ")");
+            }
+            if (query.ExcludePersonTypes.Count == 1)
+            {
+                whereClauses.Add("PersonType<>@PersonType");
+                cmd.Parameters.Add(cmd, "@PersonType", DbType.String).Value = query.ExcludePersonTypes[0];
+            }
+            if (query.ExcludePersonTypes.Count > 1)
+            {
+                var val = string.Join(",", query.ExcludePersonTypes.Select(i => "'" + i + "'").ToArray());
+
+                whereClauses.Add("PersonType not in (" + val + ")");
+            }
+            if (query.MaxListOrder.HasValue)
+            {
+                whereClauses.Add("ListOrder<=@MaxListOrder");
+                cmd.Parameters.Add(cmd, "@MaxListOrder", DbType.Int32).Value = query.MaxListOrder.Value;
+            }
+
+            return whereClauses;
         }
 
         public async Task UpdatePeople(Guid itemId, List<PersonInfo> people)
@@ -1277,6 +1336,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var item = new PersonInfo();
 
+            item.ItemId = reader.GetGuid(0);
             item.Name = reader.GetString(1);
 
             if (!reader.IsDBNull(2))

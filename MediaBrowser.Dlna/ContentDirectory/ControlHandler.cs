@@ -410,7 +410,11 @@ namespace MediaBrowser.Dlna.ContentDirectory
             {
                 if (stubType.Value == StubType.People)
                 {
-                    var items = _libraryManager.GetPeopleItems(item).ToArray();
+                    var items = _libraryManager.GetPeopleItems(new InternalPeopleQuery
+                    {
+                        ItemId = item.Id
+
+                    }).ToArray();
 
                     var result = new QueryResult<ServerItem>
                     {
@@ -432,7 +436,7 @@ namespace MediaBrowser.Dlna.ContentDirectory
                 var person = item as Person;
                 if (person != null)
                 {
-                    return await GetItemsFromPerson(person, user, startIndex, limit).ConfigureAwait(false);
+                    return GetItemsFromPerson(person, user, startIndex, limit);
                 }
 
                 return ApplyPaging(new QueryResult<ServerItem>(), startIndex, limit);
@@ -475,37 +479,18 @@ namespace MediaBrowser.Dlna.ContentDirectory
             };
         }
 
-        private async Task<QueryResult<ServerItem>> GetItemsFromPerson(Person person, User user, int? startIndex, int? limit)
+        private QueryResult<ServerItem> GetItemsFromPerson(Person person, User user, int? startIndex, int? limit)
         {
-            var items = user.RootFolder.GetRecursiveChildren(user, i => i is Movie || i is Series && PeopleHelper.ContainsPerson(_libraryManager.GetPeople(i), person.Name))
-                .ToList();
-
-            var trailerResult = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
+            var itemsWithPerson = _libraryManager.GetItems(new InternalItemsQuery
             {
-                ContentTypes = new[] { ChannelMediaContentType.MovieExtra },
-                ExtraTypes = new[] { ExtraType.Trailer },
-                UserId = user.Id.ToString("N")
+                Person = person.Name
 
-            }, CancellationToken.None).ConfigureAwait(false);
+            }).Items;
 
-            var currentIds = items.Select(i => i.GetProviderId(MetadataProviders.Imdb))
+            var items = itemsWithPerson
+                .Where(i => i is Movie || i is Series || i is IChannelItem)
+                .Where(i => i.IsVisibleStandalone(user))
                 .ToList();
-
-            var trailersToAdd = trailerResult.Items
-                .Where(i => PeopleHelper.ContainsPerson(_libraryManager.GetPeople(i), person.Name))
-                .Where(i =>
-                {
-                    // Try to filter out dupes using imdb id
-                    var imdb = i.GetProviderId(MetadataProviders.Imdb);
-                    if (!string.IsNullOrWhiteSpace(imdb) &&
-                        currentIds.Contains(imdb, StringComparer.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                    return true;
-                });
-
-            items.AddRange(trailersToAdd);
 
             items = _libraryManager.Sort(items, user, new[] { ItemSortBy.SortName }, SortOrder.Ascending)
                 .Skip(startIndex ?? 0)
@@ -558,7 +543,11 @@ namespace MediaBrowser.Dlna.ContentDirectory
 
         private bool EnablePeopleDisplay(BaseItem item)
         {
-            if (_libraryManager.GetPeople(item).Count > 0)
+            if (_libraryManager.GetPeopleNames(new InternalPeopleQuery
+            {
+                ItemId = item.Id
+
+            }).Count > 0)
             {
                 return item is Movie;
             }

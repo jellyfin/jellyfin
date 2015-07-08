@@ -151,9 +151,9 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Gets the people.
         /// </summary>
-        /// <param name="itemId">The item identifier.</param>
+        /// <param name="query">The query.</param>
         /// <returns>List&lt;PersonInfo&gt;.</returns>
-        List<PersonInfo> GetPeople(Guid itemId);
+        List<PersonInfo> GetPeople(InternalPeopleQuery query);
 
         /// <summary>
         /// Updates the people.
@@ -166,9 +166,9 @@ namespace MediaBrowser.Controller.Persistence
         /// <summary>
         /// Gets the people names.
         /// </summary>
-        /// <param name="itemId">The item identifier.</param>
+        /// <param name="query">The query.</param>
         /// <returns>List&lt;System.String&gt;.</returns>
-        List<string> GetPeopleNames(Guid itemId);
+        List<string> GetPeopleNames(InternalPeopleQuery query);
     }
 }
 

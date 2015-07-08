@@ -2063,9 +2063,7 @@ var AppInfo = {};
 
     function initCordovaWithDeviceId(deferred, deviceId) {
 
-        if ($.browser.android) {
-            require(['cordova/imagestore']);
-        }
+        require(['cordova/imagestore']);
 
         var capablities = Dashboard.capabilities();
 

@@ -95,11 +95,22 @@
                 return;
             }
 
+            var tIndex = val.indexOf('#t=');
+            var startPosMs = 0;
+
+            if (tIndex != -1) {
+                startPosMs = val.substring(tIndex + 3);
+                startPosMs = parseFloat(startPosMs) * 1000;
+            }
+
             if (options.type == 'audio') {
 
                 AndroidVlcPlayer.playAudioVlc(val, JSON.stringify(item), JSON.stringify(mediaSource), posterUrl);
             } else {
-                AndroidVlcPlayer.playVideoVlc(val, JSON.stringify(item), JSON.stringify(mediaSource), posterUrl);
+
+                var playbackStartInfo = {};
+
+                AndroidVlcPlayer.playVideoVlc(val, startPosMs, item.Name, JSON.stringify(mediaSource), JSON.stringify(playbackStartInfo));
             }
 
             playerState.currentSrc = val;
@@ -173,6 +184,17 @@
             var deferred = DeferredBuilder.Deferred();
             deferred.resolve();
             return deferred.promise();
+        };
+
+        self.onActivityClosed = function (wasStopped, hasError, endPositionMs) {
+
+            playerState.currentTime = endPositionMs;
+
+            if (wasStopped) {
+                MediaPlayer.stop(false);
+            }
+
+            self.report('playbackstop', playerState.duration, endPositionMs, false, 100);
         };
 
         window.AudioRenderer.Current = self;

@@ -975,16 +975,12 @@
             if (item.MediaType === "Video") {
 
                 requirejs(['videorenderer'], function () {
-                    self.playVideo(item, self.currentMediaSource, startPosition);
+                    self.playVideo(item, self.currentMediaSource, startPosition, callback);
                 });
 
             } else if (item.MediaType === "Audio") {
 
-                playAudio(item, self.currentMediaSource, startPosition);
-            }
-
-            if (callback) {
-                callback();
+                playAudio(item, self.currentMediaSource, startPosition, callback);
             }
         }
 
@@ -1720,10 +1716,14 @@
             self.setCurrentTime(currentTicks);
         }
 
-        function playAudio(item, mediaSource, startPositionTicks) {
+        function playAudio(item, mediaSource, startPositionTicks, callback) {
 
             requirejs(['audiorenderer'], function () {
                 playAudioInternal(item, mediaSource, startPositionTicks);
+
+                if (callback) {
+                    callback();
+                }
             });
         }
 

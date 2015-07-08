@@ -2062,14 +2062,22 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
-        public List<PersonInfo> GetPeople(BaseItem item)
+        public List<PersonInfo> GetPeople(InternalPeopleQuery query)
         {
-            return item.People ?? ItemRepository.GetPeople(item.Id);
+            return ItemRepository.GetPeople(query);
         }
 
-        public List<Person> GetPeopleItems(BaseItem item)
+        public List<PersonInfo> GetPeople(BaseItem item)
         {
-            return ItemRepository.GetPeopleNames(item.Id).Select(i =>
+            return item.People ?? GetPeople(new InternalPeopleQuery
+            {
+                ItemId = item.Id
+            });
+        }
+
+        public List<Person> GetPeopleItems(InternalPeopleQuery query)
+        {
+            return ItemRepository.GetPeopleNames(query).Select(i =>
             {
                 try
                 {
@@ -2084,11 +2092,14 @@ namespace MediaBrowser.Server.Implementations.Library
             }).Where(i => i != null).ToList();
         }
 
+        public List<string> GetPeopleNames(InternalPeopleQuery query)
+        {
+            return ItemRepository.GetPeopleNames(query);
+        }
+
         public List<PersonInfo> GetAllPeople()
         {
-            return RootFolder.GetRecursiveChildren()
-                .SelectMany(GetPeople)
-                .Where(i => !string.IsNullOrWhiteSpace(i.Name))
+            return GetPeople(new InternalPeopleQuery())
                 .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
         }

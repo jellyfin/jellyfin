@@ -344,9 +344,7 @@ namespace MediaBrowser.Api
                 return name;
             }
 
-            return libraryManager.GetAllPeople()
-                .Select(i => i.Name)
-                .DistinctNames()
+            return libraryManager.GetPeopleNames(new InternalPeopleQuery())
                 .FirstOrDefault(i =>
                 {
                     i = _dashReplaceChars.Aggregate(i, (current, c) => current.Replace(c, SlugChar));
