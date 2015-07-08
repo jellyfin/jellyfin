@@ -124,6 +124,15 @@ namespace MediaBrowser.WebDashboard.Api
 
             var fullPath = Path.Combine(rootPath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
 
+            try
+            {
+                fullPath = Path.GetFullPath(fullPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in Path.GetFullPath", ex);
+            }
+
             // Don't allow file system access outside of the source folder
             if (!_fileSystem.ContainsSubPath(rootPath, fullPath))
             {
@@ -654,7 +663,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.min.css", newLineBytes).ConfigureAwait(false);
             await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.structure.min.css", newLineBytes).ConfigureAwait(false);
-    
+
             var files = new[]
                                   {
                                       "css/site.css",

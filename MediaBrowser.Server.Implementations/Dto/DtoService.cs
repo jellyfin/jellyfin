@@ -132,13 +132,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 if (options.Fields.Contains(ItemFields.ItemCounts))
                 {
-                    var itemFilter = byName.GetItemFilter();
-
-                    var libraryItems = user != null ?
-                       user.RootFolder.GetRecursiveChildren(user, itemFilter) :
-                       _libraryManager.RootFolder.GetRecursiveChildren(itemFilter);
-
-                    SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
+                    SetItemByNameInfo(item, dto, GetTaggedItems(byName, user), user);
                 }
 
                 FillSyncInfo(dto, item, options, user, syncProgress);
@@ -148,6 +142,33 @@ namespace MediaBrowser.Server.Implementations.Dto
             FillSyncInfo(dto, item, options, user, syncProgress);
 
             return dto;
+        }
+
+        private List<BaseItem> GetTaggedItems(IItemByName byName, User user)
+        {
+            var person = byName as Person;
+
+            if (person != null)
+            {
+                var items = _libraryManager.GetItems(new InternalItemsQuery
+                {
+                    Person = byName.Name
+
+                }).Items;
+
+                if (user != null)
+                {
+                    return items.Where(i => i.IsVisibleStandalone(user)).ToList();
+                }
+
+                return items.ToList();
+            }
+
+            var itemFilter = byName.GetItemFilter();
+
+            return user != null ?
+               user.RootFolder.GetRecursiveChildren(user, itemFilter).ToList() :
+               _libraryManager.RootFolder.GetRecursiveChildren(itemFilter).ToList();
         }
 
         private SyncedItemProgress[] GetSyncedItemProgress(DtoOptions options)

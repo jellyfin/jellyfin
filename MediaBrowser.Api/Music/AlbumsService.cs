@@ -6,6 +6,7 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using ServiceStack;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MediaBrowser.Api.Music
@@ -68,12 +69,13 @@ namespace MediaBrowser.Api.Music
         /// Gets the album similarity score.
         /// </summary>
         /// <param name="item1">The item1.</param>
+        /// <param name="item1People">The item1 people.</param>
+        /// <param name="allPeople">All people.</param>
         /// <param name="item2">The item2.</param>
-        /// <param name="libraryManager">The library manager.</param>
         /// <returns>System.Int32.</returns>
-        private int GetAlbumSimilarityScore(BaseItem item1, BaseItem item2, ILibraryManager libraryManager)
+        private int GetAlbumSimilarityScore(BaseItem item1, List<PersonInfo> item1People, List<PersonInfo> allPeople, BaseItem item2)
         {
-            var points = SimilarItemsHelper.GetSimiliarityScore(item1, item2, libraryManager);
+            var points = SimilarItemsHelper.GetSimiliarityScore(item1, item1People, allPeople, item2);
 
             var album1 = (MusicAlbum)item1;
             var album2 = (MusicAlbum)item2;

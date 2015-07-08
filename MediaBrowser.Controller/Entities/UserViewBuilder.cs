@@ -1698,7 +1698,7 @@ namespace MediaBrowser.Controller.Entities
                     .Select(libraryManager.GetItemById)
                     .Select(i => i == null ? "-1" : i.Name)
                     .ToList();
-               
+
                 if (!(names.Any(v => libraryManager.GetPeople(item).Select(i => i.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
                 {
                     return false;

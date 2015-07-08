@@ -166,6 +166,7 @@
     <Compile Include="Entities\ImageSourceInfo.cs" />
     <Compile Include="Entities\IMetadataContainer.cs" />
     <Compile Include="Entities\InternalItemsQuery.cs" />
+    <Compile Include="Entities\InternalPeopleQuery.cs" />
     <Compile Include="Entities\ISupportsBoxSetGrouping.cs" />
     <Compile Include="Entities\ISupportsPlaceHolders.cs" />
     <Compile Include="Entities\ItemImageInfo.cs" />

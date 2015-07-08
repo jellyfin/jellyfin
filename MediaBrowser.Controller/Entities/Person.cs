@@ -99,6 +99,8 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class PersonInfo
     {
+        public Guid ItemId { get; set; }
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>

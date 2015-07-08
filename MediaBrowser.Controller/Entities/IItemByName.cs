@@ -6,7 +6,7 @@ namespace MediaBrowser.Controller.Entities
     /// <summary>
     /// Marker interface
     /// </summary>
-    public interface IItemByName
+    public interface IItemByName : IHasMetadata
     {
         /// <summary>
         /// Gets the tagged items.

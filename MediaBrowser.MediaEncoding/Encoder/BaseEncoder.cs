@@ -834,7 +834,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 var heightParam = request.Height.Value.ToString(UsCulture);
 
-                filters.Add(string.Format("scale=trunc(oh*a*2)/2:{0}", heightParam));
+                filters.Add(string.Format("scale=trunc(oh*a/2)*2:{0}", heightParam));
             }
 
             // If a max width was requested
@@ -850,7 +850,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             {
                 var maxHeightParam = request.MaxHeight.Value.ToString(UsCulture);
 
-                filters.Add(string.Format("scale=trunc(oh*a*2)/2:min(ih\\,{0})", maxHeightParam));
+                filters.Add(string.Format("scale=trunc(oh*a/2)*2:min(ih\\,{0})", maxHeightParam));
             }
 
             var output = string.Empty;
