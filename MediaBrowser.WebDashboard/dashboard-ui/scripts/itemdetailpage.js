@@ -32,7 +32,7 @@
             setInitialCollapsibleState(page, item, context, user);
             renderDetails(page, item, context);
 
-            if (item.Type == 'MusicAlbum1' || item.Type == 'Season1') {
+            if (item.Type == 'MusicAlbum' || item.Type == 'Season1') {
                 Backdrops.setBackdrops(page, [item]);
                 $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
             } else {

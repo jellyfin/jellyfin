@@ -1,18 +1,12 @@
 ﻿(function (window, document, $, devicePixelRatio) {
 
-    var backStack = [];
-    var addNextToBackStack = true;
-
     function renderHeader() {
 
         var html = '<div class="viewMenuBar ui-bar-b">';
 
-        if (AppInfo.enableBackButton) {
+        var backIcon = $.browser.safari ? 'chevron-left' : 'arrow-back';
 
-            var icon = $.browser.safari ? 'chevron-left' : 'arrow-back';
-
-            html += '<paper-icon-button icon="' + icon + '" class="headerButton headerButtonLeft headerBackButton"></paper-icon-button>';
-        }
+        html += '<paper-icon-button icon="' + backIcon + '" class="headerButton headerButtonLeft headerBackButton hide"></paper-icon-button>';
 
         html += '<paper-icon-button icon="menu" class="headerButton mainDrawerButton barsMenuButton headerButtonLeft"></paper-icon-button>';
 
@@ -61,9 +55,6 @@
             Dashboard.exit();
         }
         else {
-            addNextToBackStack = false;
-
-            backStack.length = Math.max(0, backStack.length - 1);
             history.back();
         }
     }
@@ -74,28 +65,32 @@
 
         if (user.localUser) {
             $('.btnCast', header).visible(true);
-            $('.headerSearchButton', header).visible(true);
+            document.querySelector('.headerSearchButton').classList.remove('hide');
 
             requirejs(['voice/voice'], function () {
 
                 if (VoiceInputManager.isSupported()) {
-                    $('.headerVoiceButton', header).visible(true);
+                    document.querySelector('.headerVoiceButton').classList.remove('hide');
                 } else {
-                    $('.headerVoiceButton', header).visible(false);
+                    document.querySelector('.headerVoiceButton').classList.add('hide');
                 }
 
             });
 
         } else {
             $('.btnCast', header).visible(false);
-            $('.headerVoiceButton', header).visible(false);
-            $('.headerSearchButton', header).visible(false);
+            document.querySelector('.headerVoiceButton').classList.add('hide');
+            document.querySelector('.headerSearchButton').classList.add('hide');
         }
 
-        if (user.canManageServer) {
-            $('.dashboardEntryHeaderButton', header).visible(true);
-        } else {
-            $('.dashboardEntryHeaderButton', header).visible(false);
+        var dashboardEntryHeaderButton = document.querySelector('.dashboardEntryHeaderButton');
+
+        if (dashboardEntryHeaderButton) {
+            if (user.canManageServer) {
+                dashboardEntryHeaderButton.classList.remove('hide');
+            } else {
+                dashboardEntryHeaderButton.classList.add('hide');
+            }
         }
 
         var userButtonHtml = '';
@@ -136,14 +131,6 @@
 
         $('.headerBackButton').on('click', onBackClick);
 
-        // Have to wait for document ready here because otherwise 
-        // we may see the jQM redirect back and forth problem
-        $(initViewMenuBarHeadroom);
-    }
-
-    function initViewMenuBarHeadroom() {
-
-        // grab an element
         var viewMenuBar = document.getElementsByClassName("viewMenuBar")[0];
         initHeadRoom(viewMenuBar);
     }
@@ -159,7 +146,11 @@
     }
 
     function reEnableHeadroom() {
-        $('.headroomDisabled').removeClass('headroomDisabled');
+
+        var headroomDisabled = document.querySelectorAll('.headroomDisabled');
+        for (var i = 0, length = headroomDisabled.length; i < length; i++) {
+            headroomDisabled[i].classList.remove('headroomDisabled');
+        }
     }
 
     function getItemHref(item, context) {
@@ -685,16 +676,18 @@
 
     function buildViewMenuBar(page) {
 
+        var viewMenuBar = document.querySelector('.viewMenuBar');
+
         if (page.classList.contains('standalonePage')) {
-            $('.viewMenuBar').visible(false);
+            if (viewMenuBar) {
+                viewMenuBar.classList.add('hide');
+            }
             return;
         }
 
-        var viewMenuBar = document.querySelector('.viewMenuBar');
-
         if (requiresViewMenuRefresh) {
             if (viewMenuBar) {
-                $(viewMenuBar).remove();
+                viewMenuBar.parentNode.removeChild(viewMenuBar);
                 viewMenuBar = null;
             }
         }
@@ -713,7 +706,7 @@
             ConnectionManager.user(window.ApiClient).done(addUserToHeader);
 
         } else {
-            $(viewMenuBar).visible(true);
+            viewMenuBar.classList.remove('hide');
             updateContextText(page);
             updateLibraryNavLinks(page);
             updateViewMenuBarHeadroom(page, viewMenuBar);
@@ -737,15 +730,10 @@
 
     }).on('pagebeforehide', ".page", function () {
 
-        if (addNextToBackStack) {
-            var text = $('.libraryMenuButtonText').text() || document.title;
-
-            backStack.push(text);
+        var headroomEnabled = document.querySelectorAll('.headroomEnabled');
+        for (var i = 0, length = headroomEnabled.length; i < length; i++) {
+            headroomEnabled[i].classList.add('headroomDisabled');
         }
-
-        addNextToBackStack = true;
-
-        $('.headroomEnabled').addClass('headroomDisabled');
     });
 
     function onPageBeforeShowDocumentReady(page) {
@@ -754,6 +742,18 @@
 
         var isLibraryPage = page.classList.contains('libraryPage');
         var darkDrawer = false;
+
+        var titleKey = getParameterByName('titlekey');
+
+        if (titleKey) {
+            document.querySelector('.libraryMenuButtonText').innerHTML = Globalize.translate(titleKey);
+        }
+
+        if (page.getAttribute('data-menubutton') == 'false') {
+            document.querySelector('.mainDrawerButton').classList.add('hide');
+        } else {
+            document.querySelector('.mainDrawerButton').classList.remove('hide');
+        }
 
         if (isLibraryPage) {
 
@@ -797,18 +797,28 @@
             document.querySelector('.mainDrawerPanel #drawer').classList.remove('darkDrawer');
         }
 
-        if (AppInfo.enableBackButton) {
-            updateBackButton(page);
-        }
+        updateBackButton(page);
     }
 
     function updateBackButton(page) {
 
-        var canGoBack = backStack.length > 0 && !page.classList.contains('homePage');
+        var canGoBack = !page.classList.contains('homePage');
 
-        $('.headerBackButton').visible(canGoBack);
+        var backButton = document.querySelector('.headerBackButton');
 
-        Events.off(page, 'swiperight', onPageSwipeLeft);
+        var showBackButton = AppInfo.enableBackButton;
+
+        if (!showBackButton) {
+            showBackButton = page.getAttribute('data-backbutton') == 'true';
+        }
+
+        if (canGoBack && showBackButton) {
+            backButton.classList.remove('hide');
+        } else {
+            backButton.classList.add('hide');
+        }
+
+        //Events.off(page, 'swiperight', onPageSwipeLeft);
 
         if (canGoBack) {
             //Events.on(page, 'swiperight', onPageSwipeLeft);

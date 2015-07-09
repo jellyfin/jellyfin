@@ -111,10 +111,11 @@ namespace MediaBrowser.Providers.TV
             {
                 Name = seasonName,
                 IndexNumber = seasonNumber,
-                Parent = series,
                 Id = (series.Id + (seasonNumber ?? -1).ToString(_usCulture) + seasonName).GetMBId(typeof(Season))
             };
 
+            season.SetParent(series);
+            
             await series.AddChild(season, cancellationToken).ConfigureAwait(false);
 
             await season.RefreshMetadata(new MetadataRefreshOptions(), cancellationToken).ConfigureAwait(false);

@@ -464,12 +464,20 @@ namespace MediaBrowser.Controller.Entities
             return sortable;
         }
 
+        public Guid ParentId { get; set; }
+
         /// <summary>
         /// Gets or sets the parent.
         /// </summary>
         /// <value>The parent.</value>
         [IgnoreDataMember]
         public Folder Parent { get; set; }
+
+        public void SetParent(Folder parent)
+        {
+            Parent = parent;
+            ParentId = parent == null ? Guid.Empty : parent.Id;
+        }
 
         [IgnoreDataMember]
         public IEnumerable<Folder> Parents

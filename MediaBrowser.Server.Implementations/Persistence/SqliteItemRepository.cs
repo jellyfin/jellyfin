@@ -1,4 +1,3 @@
-using System.Runtime.Serialization;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -14,6 +13,7 @@ using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -154,6 +154,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "ParentIndexNumber", "INT");
             _connection.AddColumn(_logger, "TypedBaseItems", "PremiereDate", "DATETIME");
             _connection.AddColumn(_logger, "TypedBaseItems", "ProductionYear", "INT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "ParentId", "GUID");
 
             PrepareStatements();
 
@@ -193,10 +194,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "Overview",
                 "ParentIndexNumber",
                 "PremiereDate",
-                "ProductionYear"
+                "ProductionYear",
+                "ParentId"
             };
             _saveItemCommand = _connection.CreateCommand();
-            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21)";
+            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22)";
             for (var i = 1; i <= saveColumns.Count; i++)
             {
                 _saveItemCommand.Parameters.Add(_saveItemCommand, "@" + i.ToString(CultureInfo.InvariantCulture));
@@ -329,6 +331,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.ParentIndexNumber;
                     _saveItemCommand.GetParameter(index++).Value = item.PremiereDate;
                     _saveItemCommand.GetParameter(index++).Value = item.ProductionYear;
+
+                    if (item.ParentId == Guid.Empty)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = item.ParentId;
+                    }
 
                     _saveItemCommand.Transaction = transaction;
 

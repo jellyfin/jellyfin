@@ -2364,16 +2364,18 @@
 
             html += '<div class="listPaging">';
 
-            html += '<span style="margin-right: 10px;vertical-align:middle;">';
+            if (showControls) {
+                html += '<span style="vertical-align:middle;">';
 
-            var startAtDisplay = totalRecordCount ? startIndex + 1 : 0;
-            html += startAtDisplay + '-' + recordsEnd + ' of ' + totalRecordCount;
+                var startAtDisplay = totalRecordCount ? startIndex + 1 : 0;
+                html += startAtDisplay + '-' + recordsEnd + ' of ' + totalRecordCount;
 
-            html += '</span>';
+                html += '</span>';
+            }
 
             if (showControls || options.viewButton || options.addSelectionButton || options.additionalButtonsHtml) {
 
-                html += '<div data-role="controlgroup" data-type="horizontal" style="display:inline-block;">';
+                html += '<div style="display:inline-block;margin-left:10px;">';
 
                 if (showControls) {
 

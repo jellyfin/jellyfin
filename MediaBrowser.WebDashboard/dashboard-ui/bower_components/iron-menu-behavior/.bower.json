@@ -35,7 +35,7 @@
     "tag": "v1.0.1",
     "commit": "3809f0eb7461c8ca63640aaa238775b3a25aa578"
   },
-  "_source": "git://github.com/polymerelements/iron-menu-behavior.git",
+  "_source": "git://github.com/PolymerElements/iron-menu-behavior.git",
   "_target": "^1.0.0",
-  "_originalSource": "polymerelements/iron-menu-behavior"
+  "_originalSource": "PolymerElements/iron-menu-behavior"
 }

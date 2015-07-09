@@ -34,7 +34,7 @@ namespace MediaBrowser.Server.Implementations.Library
             // If the resolver didn't specify this
             if (parent != null)
             {
-                item.Parent = parent;
+                item.SetParent(parent);
             }
 
             item.Id = libraryManager.GetNewItemId(item.Path, item.GetType());
@@ -68,7 +68,7 @@ namespace MediaBrowser.Server.Implementations.Library
             // If the resolver didn't specify this
             if (args.Parent != null)
             {
-                item.Parent = args.Parent;
+                item.SetParent(args.Parent);
             }
 
             item.Id = libraryManager.GetNewItemId(item.Path, item.GetType());

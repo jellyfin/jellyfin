@@ -3,11 +3,11 @@
     function getSections() {
 
         return [
-            { name: Globalize.translate('HeaderFavoriteMovies'), types: "Movie", id: "favoriteMovies", shape: 'backdrop', preferThumb: true, showTitle: false },
-            { name: Globalize.translate('HeaderFavoriteShows'), types: "Series", id: "favoriteShows", shape: 'backdrop', preferThumb: true, showTitle: false },
-            { name: Globalize.translate('HeaderFavoriteEpisodes'), types: "Episode", id: "favoriteEpisode", shape: 'backdrop', preferThumb: false, showTitle: true, showParentTitle: true },
-            { name: Globalize.translate('HeaderFavoriteGames'), types: "Game", id: "favoriteGames", shape: 'autohome', preferThumb: false, showTitle: true },
-            { name: Globalize.translate('HeaderFavoriteAlbums'), types: "MusicAlbum", id: "favoriteAlbums", shape: 'square', preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true, centerText: true, overlayPlayButton: true }
+            { name: 'HeaderFavoriteMovies', types: "Movie", id: "favoriteMovies", shape: 'backdrop', preferThumb: true, showTitle: false },
+            { name: 'HeaderFavoriteShows', types: "Series", id: "favoriteShows", shape: 'backdrop', preferThumb: true, showTitle: false },
+            { name: 'HeaderFavoriteEpisodes', types: "Episode", id: "favoriteEpisode", shape: 'backdrop', preferThumb: false, showTitle: true, showParentTitle: true },
+            { name: 'HeaderFavoriteGames', types: "Game", id: "favoriteGames", shape: 'autohome', preferThumb: false, showTitle: true },
+            { name: 'HeaderFavoriteAlbums', types: "MusicAlbum", id: "favoriteAlbums", shape: 'square', preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true, centerText: true, overlayPlayButton: true }
         ];
     }
 
@@ -37,7 +37,7 @@
             var html = '';
 
             if (result.Items.length) {
-                html += '<h1 class="listHeader">' + section.name + '</h1>';
+                html += '<h1 class="listHeader">' + Globalize.translate(section.name) + '</h1>';
                 html += '<div>';
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
@@ -56,7 +56,7 @@
                 html += '</div>';
 
                 if (result.TotalRecordCount > result.Items.length) {
-                    var href = "index.html?tab=2&sectionid=" + section.id;
+                    var href = "secondaryitems.html?type=" + section.types + "&filters=IsFavorite&titlekey=" + section.name;
 
                     html += '<a class="clearLink" href="' + href + '"><paper-button raised class="more">' + Globalize.translate('ButtonMoreItems') + '</paper-button></a>';
                 }

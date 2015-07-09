@@ -288,7 +288,7 @@
     color: #2ad;
 }
 
-@media all and (max-width: 500px) {
+@media all and (max-width: 440px) {
 
     .libraryMenuButtonText {
         display: none;

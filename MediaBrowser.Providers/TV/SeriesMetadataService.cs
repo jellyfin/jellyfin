@@ -7,6 +7,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Providers.Manager;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,7 +31,14 @@ namespace MediaBrowser.Providers.TV
             {
                 var provider = new DummySeasonProvider(ServerConfigurationManager, Logger, _localization, LibraryManager);
 
-                await provider.Run(item, CancellationToken.None).ConfigureAwait(false);
+                try
+                {
+                    await provider.Run(item, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error in DummySeasonProvider", ex);
+                }
             }
         }
 

@@ -406,9 +406,10 @@ namespace MediaBrowser.Providers.TV
                 Name = name,
                 IndexNumber = episodeNumber,
                 ParentIndexNumber = seasonNumber,
-                Parent = season,
                 Id = (series.Id + seasonNumber.ToString(_usCulture) + name).GetMBId(typeof(Episode))
             };
+
+            episode.SetParent(season);
 
             await season.AddChild(episode, cancellationToken).ConfigureAwait(false);
 
