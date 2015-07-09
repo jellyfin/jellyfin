@@ -481,6 +481,10 @@
             clearProgressInterval();
 
             var intervalTime = ApiClient.isWebSocketOpen() ? 1200 : 5000;
+            // Ease up with safari because it doesn't perform as well
+            if ($.browser.safari) {
+                intervalTime = Math.max(intervalTime, 5000);
+            }
             self.lastProgressReport = 0;
 
             currentProgressInterval = setInterval(function () {
@@ -1705,11 +1709,6 @@
             return true;
         };
 
-        function getAudioRenderer() {
-
-            return new AudioRenderer();
-        }
-
         function onTimeUpdate() {
 
             var currentTicks = self.getCurrentTicks(this);
@@ -1735,11 +1734,12 @@
 
             var initialVolume = self.getSavedVolume();
 
-            var mediaRenderer = getAudioRenderer();
+            var mediaRenderer = new AudioRenderer({
+                poster: self.getPosterUrl(item)
+            });
 
             // Set volume first to avoid an audible change
             mediaRenderer.volume(initialVolume);
-            mediaRenderer.setPoster(self.getPosterUrl(item));
             mediaRenderer.setCurrentSrc(audioUrl, item, mediaSource);
 
             Events.on(mediaRenderer, "volumechange.mediaplayerevent", function () {

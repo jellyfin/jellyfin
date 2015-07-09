@@ -202,7 +202,9 @@
         button.addClass('hide');
     }
 
-    function updatePlayerState(state) {
+    var lastUpdateTime = 0;
+
+    function updatePlayerState(event, state) {
 
         if (state.NowPlayingItem) {
             showNowPlayingBar();
@@ -210,6 +212,19 @@
             hideNowPlayingBar();
             return;
         }
+
+        if (event.type == 'positionchange') {
+            // Try to avoid hammering the document with changes
+            var now = new Date().getTime();
+            if ((now - lastUpdateTime) < 700) {
+
+                console.log('skipping UI update');
+                return;
+            }
+            lastUpdateTime = now;
+        }
+
+        console.log(new Date().getTime());
 
         lastPlayerState = state;
 
@@ -343,7 +358,7 @@
         nowPlayingTextElement.html(nameHtml);
 
         var url;
-        var imgHeight = 90;
+        var imgHeight = 80;
 
         var nowPlayingItem = state.NowPlayingItem;
 
@@ -451,7 +466,7 @@
             return;
         }
 
-        updatePlayerState(state);
+        updatePlayerState(e, state);
     }
 
     function releaseCurrentPlayer() {

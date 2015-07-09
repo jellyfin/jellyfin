@@ -66,6 +66,7 @@ Configuration:
         return;
       }
 
+      this._animations = [];
       var nodes = config.nodes;
       var effects = [];
       var nodeDelay = config.nodeDelay || 50;
@@ -81,12 +82,19 @@ Configuration:
         var animation = new animationConstructor();
         var effect = animation.configure(config);
 
+        this._animations.push(animation);
         effects.push(effect);
       }
       config.timing.delay = oldDelay;
 
       this._effect = new GroupEffect(effects);
       return this._effect;
+    },
+
+    complete: function() {
+      for (var animation, index = 0; animation = this._animations[index]; index++) {
+        animation.complete(animation.config);
+      }
     }
 
   });

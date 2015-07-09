@@ -138,6 +138,30 @@
             }]);
         }
 
+        self.setRequestHeaders = function(headers) {
+
+            var currentServerInfo = self.serverInfo();
+
+            if (clientName) {
+
+                var auth = 'MediaBrowser Client="' + clientName + '", Device="' + deviceName + '", DeviceId="' + deviceId + '", Version="' + applicationVersion + '"';
+
+                var userId = currentServerInfo.UserId;
+
+                if (userId) {
+                    auth += ', UserId="' + userId + '"';
+                }
+
+                headers.Authorization = auth;
+            }
+
+            var accessToken = currentServerInfo.AccessToken;
+
+            if (accessToken) {
+                headers['X-MediaBrowser-Token'] = accessToken;
+            }
+        };
+
         /**
          * Wraps around jQuery ajax methods to add additional info to the request.
          */
@@ -149,28 +173,8 @@
 
             if (includeAuthorization !== false) {
 
-                var currentServerInfo = self.serverInfo();
-
-                if (clientName) {
-
-                    var auth = 'MediaBrowser Client="' + clientName + '", Device="' + deviceName + '", DeviceId="' + deviceId + '", Version="' + applicationVersion + '"';
-
-                    var userId = currentServerInfo.UserId;
-
-                    if (userId) {
-                        auth += ', UserId="' + userId + '"';
-                    }
-
-                    request.headers = {
-                        Authorization: auth
-                    };
-                }
-
-                var accessToken = currentServerInfo.AccessToken;
-
-                if (accessToken) {
-                    request.headers['X-MediaBrowser-Token'] = accessToken;
-                }
+                request.headers = {};
+                self.setRequestHeaders(request.headers);
             }
 
             if (self.enableAutomaticNetworking === false || request.type != "GET") {
@@ -521,7 +525,7 @@
                 } else {
 
                     // If that produced a fairly high speed, try again with a larger size to get a more accurate result
-                    self.getDownloadSpeed(2000000).done(function (bitrate) {
+                    self.getDownloadSpeed(3000000).done(function (bitrate) {
 
                         deferred.resolveWith(null, [Math.round(bitrate * .8)]);
 

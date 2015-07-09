@@ -88,7 +88,44 @@
             }
         };
 
-        self.setCurrentSrc = function (val, tracks, item, mediaSource) {
+        function getPlaybackStartInfoForVideoActivity(videoUrl, mediaSource, item) {
+
+            var state = {
+                PlayState: {}
+            };
+
+            var audioStreamIndex = getParameterByName('AudioStreamIndex', videoUrl);
+
+            if (audioStreamIndex) {
+                state.PlayState.AudioStreamIndex = parseInt(audioStreamIndex);
+            }
+            state.PlayState.SubtitleStreamIndex = self.currentSubtitleStreamIndex;
+
+            state.PlayState.PlayMethod = getParameterByName('static', videoUrl) == 'true' ?
+                'DirectStream' :
+                'Transcode';
+
+            state.PlayState.LiveStreamId = getParameterByName('LiveStreamId', videoUrl);
+            state.PlayState.PlaySessionId = getParameterByName('PlaySessionId', videoUrl);
+
+            state.PlayState.MediaSourceId = mediaSource.Id;
+
+            state.NowPlayingItem = {
+                RunTimeTicks: mediaSource.RunTimeTicks
+            };
+
+            state.PlayState.CanSeek = mediaSource.RunTimeTicks && mediaSource.RunTimeTicks > 0;
+
+            var playbackStartInfo = {
+                QueueableMediaTypes: item.MediaType,
+                ItemId: item.Id,
+                NowPlayingItem: state.NowPlayingItem
+            };
+
+            return $.extend(playbackStartInfo, state.PlayState);
+        }
+
+        self.setCurrentSrc = function (val, item, mediaSource, tracks) {
 
             if (!val) {
                 self.destroy();
@@ -105,15 +142,22 @@
 
             if (options.type == 'audio') {
 
-                AndroidVlcPlayer.playAudioVlc(val, JSON.stringify(item), JSON.stringify(mediaSource), posterUrl);
+                AndroidVlcPlayer.playAudioVlc(val, JSON.stringify(item), JSON.stringify(mediaSource), options.poster);
             } else {
 
-                var playbackStartInfo = {};
+                var playbackStartInfo = getPlaybackStartInfoForVideoActivity(val, mediaSource, item);
 
-                AndroidVlcPlayer.playVideoVlc(val, startPosMs, item.Name, JSON.stringify(mediaSource), JSON.stringify(playbackStartInfo));
+                var serverUrl = ApiClient.serverAddress();
+                var requestHeaders = {};
+                ApiClient.setRequestHeaders(requestHeaders);
+
+                AndroidVlcPlayer.playVideoVlc(val, startPosMs, item.Name, JSON.stringify(mediaSource), JSON.stringify(playbackStartInfo), serverUrl, JSON.stringify(requestHeaders));
+
+                playerState.currentSrc = val;
+                self.report('playing', null, startPosMs, false, 100);
+
+                playerState.currentSrc = val;
             }
-
-            playerState.currentSrc = val;
         };
 
         self.currentSrc = function () {
@@ -143,11 +187,6 @@
         self.enableCustomVideoControls = function () {
 
             return false;
-        };
-
-        var posterUrl;
-        self.setPoster = function (url) {
-            posterUrl = url;
         };
 
         self.report = function (eventName, duration, position, isPaused, volume) {

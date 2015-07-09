@@ -234,7 +234,7 @@
         };
 
         var currentSrc;
-        self.setCurrentSrc = function (val, tracks, item, mediaSource) {
+        self.setCurrentSrc = function (val, item, mediaSource, tracks) {
 
             var elem = mediaElement;
 
@@ -356,14 +356,6 @@
                 if (elem.tagName.toLowerCase() != 'audio') {
                     $(elem).remove();
                 }
-            }
-        };
-
-        self.setPoster = function (url) {
-            var elem = mediaElement;
-
-            if (elem) {
-                elem.poster = url;
             }
         };
 

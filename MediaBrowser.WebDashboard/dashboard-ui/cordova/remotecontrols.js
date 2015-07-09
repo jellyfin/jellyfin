@@ -64,7 +64,19 @@
         }
     }
 
+    var lastUpdateTime = 0;
+
     function onStateChanged(e, state) {
+
+        if (e.type == 'positionchange') {
+            // Try to avoid hammering the document with changes
+            var now = new Date().getTime();
+            if ((now - lastUpdateTime) < 700) {
+
+                return;
+            }
+            lastUpdateTime = now;
+        }
 
         updatePlayerState(state);
     }

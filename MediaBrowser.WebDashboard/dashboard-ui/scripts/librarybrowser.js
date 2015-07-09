@@ -101,7 +101,7 @@
             }
 
             else {
-                cacheDuration = 60000;
+                cacheDuration = 180000;
             }
 
             if ((now - last) < cacheDuration) {

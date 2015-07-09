@@ -46,7 +46,7 @@
     }
 
     .nowPlayingBar, .nowPlayingImage img {
-        height: 90px;
+        height: 80px;
     }
 
 .nowPlayingBarText {
@@ -95,12 +95,12 @@
 .nowPlayingBarCenter {
     vertical-align: middle;
     text-align: center;
-    margin-top: 17px;
+    margin-top: 12px;
 }
 
 .nowPlayingBarPositionContainer {
     position: absolute;
-    left: 90px;
+    left: 80px;
     top: 0;
     right: 0;
     z-index: 1;
@@ -138,7 +138,7 @@
 
 .nowPlayingBarRight {
     position: absolute;
-    bottom: 17px;
+    bottom: 12px;
     right: 10px;
     vertical-align: middle;
 }
@@ -151,7 +151,7 @@
     vertical-align: middle;
     font-weight: normal;
     position: absolute;
-    bottom: 36px;
+    bottom: 31px;
     text-align: center;
     display: inline-block;
     margin: 0 auto;
@@ -187,7 +187,7 @@
     }
 
     .nowPlayingBarRight {
-        bottom: 22px;
+        bottom: 18px;
     }
 }
 

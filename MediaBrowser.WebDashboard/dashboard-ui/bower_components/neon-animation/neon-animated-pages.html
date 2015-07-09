@@ -9,7 +9,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="../iron-selector/iron-selectable.html">
-<link rel="import" href="../paper-styles/paper-styles.html">
 <link rel="import" href="neon-animation-runner-behavior.html">
 <link rel="import" href="animations/opaque-animation.html">
 
@@ -33,7 +32,11 @@ animations to be run when switching to or switching out of the page.
     }
 
     :host > ::content > * {
-      @apply(--layout-fit);
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
       height: 100%;
     }
 
