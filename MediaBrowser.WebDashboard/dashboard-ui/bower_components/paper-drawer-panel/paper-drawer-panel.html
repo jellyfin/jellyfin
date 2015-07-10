@@ -368,6 +368,7 @@ To change the drawer container when it's in the right side:
        */
       openDrawer: function() {
         this.selected = 'drawer';
+        this.fire('paper-drawer-panel-open');
       },
 
       /**
@@ -376,7 +377,8 @@ To change the drawer container when it's in the right side:
        * @method closeDrawer
        */
       closeDrawer: function() {
-        this.selected = 'main';
+          this.selected = 'main';
+          this.fire('paper-drawer-panel-close');
       },
 
       ready: function() {
@@ -554,6 +556,13 @@ To change the drawer container when it's in the right side:
             this._setPeeking(false);
           }
 
+          var dy = event.detail.dy;
+          var absDy = Math.abs(dy);
+          if (absDy >= 70) {
+              // Ignore trackx until we move past the edge peek.
+              return;
+          }
+
           this._moveDrawer(this._translateXForDeltaX(dx));
         }
       },
@@ -567,10 +576,13 @@ To change the drawer container when it's in the right side:
           sharedPanel = null;
           this._moveDrawer(null);
 
+          var dx = event.detail.dx;
+          var dy = event.detail.dy;
+          var absDy = Math.abs(dy);
           if (this.rightDrawer) {
-            this[xDirection ? 'closeDrawer' : 'openDrawer']();
+              this[xDirection ? 'closeDrawer' : 'openDrawer']();
           } else {
-            this[xDirection ? 'openDrawer' : 'closeDrawer']();
+              this[xDirection || dx > -80 || absDy >= 70 ? 'openDrawer' : 'closeDrawer']();
           }
         }
       },
