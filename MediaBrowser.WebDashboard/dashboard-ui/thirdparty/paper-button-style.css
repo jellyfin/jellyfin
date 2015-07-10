@@ -130,19 +130,10 @@ paper-button:not(.iconRight) iron-icon, paper-button:not(.iconRight) .fa {
     margin-right: .5em;
 }
 
-paper-button:not(.iconRight) .material-icons {
-    margin-right: .25em;
-}
-
-paper-button.iconRight iron-icon, paper-button.iconRight .fa, paper-button.iconRight .material-icons {
+paper-button.iconRight iron-icon, paper-button.iconRight .fa {
     position: absolute;
     right: 5px;
     top: 5px;
-}
-
-paper-button .material-icons {
-    font-size: 150%;
-    vertical-align: middle;
 }
 
 paper-button .fa {

@@ -1108,6 +1108,8 @@ namespace MediaBrowser.Server.Implementations.Library
                     progress.Report(innerPercent);
                 });
 
+                _logger.Debug("Running post-scan task {0}", task.GetType().Name);
+
                 try
                 {
                     await task.Run(innerProgress, cancellationToken).ConfigureAwait(false);

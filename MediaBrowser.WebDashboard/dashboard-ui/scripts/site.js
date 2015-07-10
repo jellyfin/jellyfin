@@ -1853,7 +1853,6 @@ var AppInfo = {};
             }
             else if ($.browser.safari) {
                 Dashboard.importCss('themes/ios.css');
-                Dashboard.importCss('thirdparty/materialicons/style.css');
             }
         }
 

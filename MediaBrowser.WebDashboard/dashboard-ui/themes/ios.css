@@ -36,14 +36,11 @@ html, body {
     height: auto !important;
 }
 
-.libraryViewNav .material-icons {
+.libraryViewNav iron-icon {
+    width: 22px;
+    height: 22px;
     display: block;
-    margin-top: -6px;
-    font-size: 15px;
-}
-
-.libraryViewNav paper-tab .material-icons {
-    margin-top: 0;
+    margin: -4px auto 6px;
 }
 
 .libraryViewNav #selectionBar {

@@ -31,7 +31,7 @@
     display: inline-block;
 }
 
-.viewMenuBar .material-icons, .viewMenuBar .fa, .viewMenuBar paper-icon-button {
+.viewMenuBar .fa, .viewMenuBar paper-icon-button {
     color: #fff;
     vertical-align: middle;
 }
@@ -204,7 +204,7 @@
     background-color: transparent !important;
 }
 
-.libraryViewNav .material-icons {
+.libraryViewNav iron-icon {
     display: none;
 }
 
