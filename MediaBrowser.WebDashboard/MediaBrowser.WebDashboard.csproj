@@ -286,9 +286,6 @@
     <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile.custom.theme.min.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\materialicons\style.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="dashboard-ui\thirdparty\paper-button-style.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -2437,18 +2434,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile-1.4.5.min.map">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.eot">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.woff">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="dashboard-ui\thirdparty\materialicons\MaterialIcons-Regular.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="dashboard-ui\thirdparty\social-share-kit-1.0.4\dist\fonts\social-share-kit.eot">
