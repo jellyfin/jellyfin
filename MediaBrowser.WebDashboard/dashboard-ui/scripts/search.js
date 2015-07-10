@@ -61,7 +61,6 @@
         self.showSearchPanel = function () {
 
             showSearchMenu();
-            $('.headerSearchInput').focus();
         };
     }
     window.Search = new search();
@@ -179,96 +178,34 @@
 
     function bindSearchEvents() {
 
-        $('.headerSearchInput').on("keyup", function (e) {
+        require(['searchmenu'], function () {
+            Events.on(SearchMenu, 'closed', closeSearchResults);
+            Events.on(SearchMenu, 'change', function (e, value) {
 
-            // Down key
-            if (e.keyCode == 40) {
-
-                //var first = $('.card', panel)[0];
-
-                //if (first) {
-                //    first.focus();
-                //}
-
-                return false;
-
-            } else {
-
-                onHeaderSearchChange(this.value);
-            }
-
-        }).on("search", function (e) {
-
-            if (!this.value) {
-
-                onHeaderSearchChange('');
-            }
-
-        });
-
-        $('.btnCloseSearch').on('click', closeSearchOverlay);
-
-        $('.viewMenuSearchForm').on('submit', function () {
-
-            return false;
+                onHeaderSearchChange(value);
+            });
         });
     }
 
-    function closeSearchOverlay() {
-        $('.headerSearchInput').val('');
+    function closeSearchResults() {
+
         onHeaderSearchChange('');
         hideSearchMenu();
     }
 
     function showSearchMenu() {
-
-        require(["jquery", "velocity"], function ($, Velocity) {
-
-            $('.btnCloseSearch').hide();
-            var elem = $('.viewMenuSearch')
-                .css({ left: '100%' })
-                .removeClass('hide')[0];
-
-            Velocity.animate(elem, { "left": "0px" },
-            {
-                complete: function () {
-                    $('.headerSearchInput').focus();
-                    $('.btnCloseSearch').show();
-                }
-            });
+        require(['searchmenu'], function () {
+            SearchMenu.show();
         });
     }
 
     function hideSearchMenu() {
-
-        var viewMenuSearch = document.querySelector('.viewMenuSearch');
-
-        if (!viewMenuSearch) {
-            return;
-        }
-
-        if (!viewMenuSearch.classList.contains('hide')) {
-            require(["jquery", "velocity"], function ($, Velocity) {
-
-                $('.btnCloseSearch').hide();
-                viewMenuSearch.style.left = '0';
-
-                Velocity.animate(viewMenuSearch, { "left": "100%" },
-                {
-                    complete: function () {
-                        $('.viewMenuSearch').visible(false);
-                    }
-                });
-            });
-        }
+        require(['searchmenu'], function () {
+            SearchMenu.hide();
+        });
     }
 
-    $(document).on('pagebeforehide', ".libraryPage", function () {
-
-        $('#txtSearch', this).val('');
-        $('#searchHints', this).empty();
-
-    }).on('pagecontainerbeforehide', closeSearchOverlay);
+    $(document).on('pagecontainerbeforehide', closeSearchResults);
 
     $(document).on('headercreated', function () {
 

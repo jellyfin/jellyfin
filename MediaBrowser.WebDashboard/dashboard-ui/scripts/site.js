@@ -2014,6 +2014,12 @@ var AppInfo = {};
             define("sharingwidget", ["scripts/sharingwidget"]);
         }
 
+        if (Dashboard.isRunningInCordova() && $.browser.safari) {
+            define("searchmenu", ["cordova/searchmenu"]);
+        } else {
+            define("searchmenu", ["scripts/searchmenu"]);
+        }
+
         $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
 
         $(document).on('WebComponentsReady', function () {
