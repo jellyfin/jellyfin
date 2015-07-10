@@ -327,10 +327,14 @@
 
         $('a', elem).on('click', function () {
 
-            var card = $(this).parents('.card');
-            var textElem = $('.cardText', card);
+            var card = this;
 
-            var text = textElem.html();
+            if (!this.classList.contains('card')) {
+                card = $(this).parents('.card')[0];
+            }
+
+            var textElem = $('.cardText', card);
+            var text = textElem.text();
 
             LibraryMenu.setTitle(text);
         });

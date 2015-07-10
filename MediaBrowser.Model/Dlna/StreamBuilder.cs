@@ -148,6 +148,7 @@ namespace MediaBrowser.Model.Dlna
                     {
                         if (!conditionProcessor.IsAudioConditionSatisfied(c, audioChannels, audioBitrate))
                         {
+                            LogConditionFailure(options.Profile, "AudioCodecProfile", c, item);
                             all = false;
                             break;
                         }
@@ -274,13 +275,20 @@ namespace MediaBrowser.Model.Dlna
                 {
                     playMethods.Add(PlayMethod.DirectStream);
                 }
-                
+
                 // The profile describes what the device supports
                 // If device requirements are satisfied then allow both direct stream and direct play
-                if (item.SupportsDirectPlay && IsAudioEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options)))
+                if (item.SupportsDirectPlay &&
+                    IsAudioEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options)))
                 {
                     playMethods.Add(PlayMethod.DirectPlay);
                 }
+            }
+            else
+            {
+                _logger.Debug("Profile: {0}, No direct play profiles found for Path: {1}",
+                    options.Profile.Name ?? "Unknown Profile",
+                    item.Path ?? "Unknown path"); 
             }
 
             return playMethods;
@@ -774,8 +782,13 @@ namespace MediaBrowser.Model.Dlna
 
         private bool IsAudioEligibleForDirectPlay(MediaSourceInfo item, int? maxBitrate)
         {
-            // Honor the max bitrate setting
-            return !maxBitrate.HasValue || (item.Bitrate.HasValue && item.Bitrate.Value <= maxBitrate.Value);
+            if (!maxBitrate.HasValue || (item.Bitrate.HasValue && item.Bitrate.Value <= maxBitrate.Value))
+            {
+                return true;
+            }
+
+            _logger.Debug("Audio Bitrate exceeds DirectPlay limit");
+            return false;
         }
 
         private void ValidateInput(VideoOptions options)

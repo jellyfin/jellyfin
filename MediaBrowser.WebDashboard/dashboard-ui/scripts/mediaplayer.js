@@ -509,18 +509,7 @@
 
         self.canPlayNativeHls = function () {
 
-            // Don't use HLS on android 4.x, regardless of what the browser reports
-            //if ($.browser.android) {
-            //    var agent = navigator.userAgent.toLowerCase();
-
-            //    for (var i = 0; i <= 4; i++) {
-            //        if (agent.indexOf('android 4.' + i) != -1) {
-            //            return false;
-            //        }
-            //    }
-            //}
-
-            if ($.browser.android && AppInfo.isNativeApp) {
+            if (AppInfo.isNativeApp) {
                 return true;
             }
 
@@ -541,21 +530,9 @@
                 return true;
             }
 
-            if ($.browser.chrome) {
-
-                // viblast can help us here
-                //return true;
-                return window.MediaSource != null;
-            }
-
-            if ($.browser.msie) {
-
-                // viblast can help us here
-                //return true;
-                return window.MediaSource != null;
-            }
-
-            return false;
+            // viblast can help us here
+            //return true;
+            return window.MediaSource != null;
         };
 
         self.changeStream = function (ticks, params) {
