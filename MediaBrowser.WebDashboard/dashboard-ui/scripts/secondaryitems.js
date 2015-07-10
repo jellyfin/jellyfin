@@ -72,7 +72,6 @@
                     items: result.Items,
                     shape: "backdrop",
                     preferThumb: true,
-                    context: 'tv',
                     lazy: true,
                     overlayText: true
                 });
@@ -84,7 +83,6 @@
                     items: result.Items,
                     shape: "backdrop",
                     preferThumb: true,
-                    context: 'tv',
                     lazy: true,
                     cardLayout: true,
                     showTitle: true,
@@ -97,7 +95,6 @@
                     items: result.Items,
                     shape: "banner",
                     preferBanner: true,
-                    context: 'tv',
                     lazy: true
                 });
             }
@@ -105,33 +102,38 @@
 
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    context: 'tv',
                     sortBy: query.SortBy
                 });
                 trigger = true;
             }
-            else if (view == "PosterCard") {
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "portrait",
-                    context: 'tv',
-                    showTitle: true,
-                    showYear: true,
-                    lazy: true,
-                    cardLayout: true
-                });
-            }
             else {
 
-                // Poster
-                html = LibraryBrowser.getPosterViewHtml({
+                var posterOptions = {
                     items: result.Items,
-                    shape: "portrait",
-                    context: 'tv',
+                    shape: "auto",
                     centerText: true,
                     lazy: true,
                     overlayText: true
-                });
+                };
+
+                if (query.IncludeItemTypes == "MusicAlbum") {
+                    posterOptions.overlayText = false;
+                    posterOptions.showParentTitle = true;
+                    posterOptions.overlayPlayButton = true;
+                }
+                else if (query.IncludeItemTypes == "MusicArtist") {
+                    posterOptions.overlayText = false;
+                    posterOptions.overlayPlayButton = true;
+                }
+                else if (query.IncludeItemTypes == "Episode") {
+                    posterOptions.overlayText = false;
+                    posterOptions.showParentTitle = true;
+                    posterOptions.overlayPlayButton = true;
+                    posterOptions.centerText = false;
+                }
+
+                // Poster
+                html = LibraryBrowser.getPosterViewHtml(posterOptions);
             }
 
             var elem = page.querySelector('#items');

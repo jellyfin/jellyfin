@@ -135,9 +135,7 @@
                 name = item.ParentIndexNumber + "." + name;
             }
 
-            $('#itemName', page).html(name);
-
-            Dashboard.setPageTitle(name);
+            LibraryMenu.setTitle(name);
 
             $(page).trigger('displayingitem', [{
 
@@ -146,16 +144,6 @@
 
             LibraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
-        });
-
-        Dashboard.getCurrentUser().done(function (user) {
-
-            if (user.Policy.IsAdministrator && query.ParentId && !AppInfo.isNativeApp) {
-                $('#editButtonContainer', page).show();
-            } else {
-                $('#editButtonContainer', page).hide();
-            }
-
         });
     }
 
@@ -245,11 +233,6 @@
             reloadItems(page);
 
             LibraryBrowser.saveViewSetting(getParameterByName('parentId'), view);
-        });
-
-        $('#btnEdit', page).on('click', function () {
-
-            Dashboard.navigate("edititemmetadata.html?id=" + currentItem.Id);
         });
 
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {

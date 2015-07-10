@@ -256,10 +256,15 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (query.IncludePeople)
             {
+                var itemIds = items.Select(i => i.Id).ToList();
+
                 // Find persons
-                var persons = items.SelectMany(i => _libraryManager.GetPeople(i))
+                var persons = _libraryManager.GetPeople(new InternalPeopleQuery
+                {
+                    NameContains = searchTerm
+                })
+                    .Where(i => itemIds.Contains(i.ItemId))
                     .Select(i => i.Name)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 

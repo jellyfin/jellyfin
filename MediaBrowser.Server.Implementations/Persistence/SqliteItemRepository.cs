@@ -1257,6 +1257,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add("ListOrder<=@MaxListOrder");
                 cmd.Parameters.Add(cmd, "@MaxListOrder", DbType.Int32).Value = query.MaxListOrder.Value;
             }
+            if (!string.IsNullOrWhiteSpace(query.NameContains))
+            {
+                whereClauses.Add("Name like @NameContains");
+                cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%"+query.NameContains+"%";
+            }
 
             return whereClauses;
         }

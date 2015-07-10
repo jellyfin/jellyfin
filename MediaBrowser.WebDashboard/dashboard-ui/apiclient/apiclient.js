@@ -98,6 +98,14 @@
             return deviceId;
         };
 
+        self.appName = function () {
+            return clientName;
+        };
+
+        self.appVersion = function () {
+            return applicationVersion;
+        };
+
         self.clearAuthenticationInfo = function () {
             self.setAuthenticationInfo(null, null);
         };
@@ -138,7 +146,7 @@
             }]);
         }
 
-        self.setRequestHeaders = function(headers) {
+        self.setRequestHeaders = function (headers) {
 
             var currentServerInfo = self.serverInfo();
 
@@ -173,7 +181,7 @@
 
             if (includeAuthorization !== false) {
 
-                request.headers = {};
+                request.headers = request.headers || {};
                 self.setRequestHeaders(request.headers);
             }
 
@@ -500,8 +508,8 @@
             self.get(url).done(function () {
 
                 var responseTime = new Date().getTime() - now;
-                responseTime /= 1000;
                 var bytesPerSecond = byteSize / responseTime;
+                bytesPerSecond *= 1000;
 
                 deferred.resolveWith(null, [bytesPerSecond]);
 

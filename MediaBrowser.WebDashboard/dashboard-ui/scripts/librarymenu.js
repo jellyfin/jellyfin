@@ -372,7 +372,7 @@
         var section = this.getElementsByClassName('sectionName')[0];
         var text = section ? section.innerHTML : this.innerHTML;
 
-        document.querySelector('.libraryMenuButtonText').innerHTML = text;
+        LibraryMenu.setTitle(text);
     }
 
     function updateLibraryMenu(user) {
@@ -495,11 +495,6 @@
         });
     }
 
-    function setLibraryMenuText(text) {
-
-        document.querySelector('.libraryMenuButtonText').innerHTML = '<span>' + text + '</span>';
-    }
-
     function getTopParentId() {
 
         return getParameterByName('topParentId') || null;
@@ -507,8 +502,6 @@
 
     window.LibraryMenu = {
         getTopParentId: getTopParentId,
-
-        setText: setLibraryMenuText,
 
         onLinkClicked: function (event, link) {
 
@@ -558,6 +551,10 @@
             // There doesn't seem to be a way to detect if the drawer is in the process of opening, so try to handle that here
             Dashboard.navigate('dashboard.html');
             return false;
+        },
+
+        setTitle: function (title) {
+            document.querySelector('.libraryMenuButtonText').innerHTML = title;
         }
     };
 
@@ -647,20 +644,6 @@
         }
     }
 
-    function updateContextText(page) {
-
-        var name = page.getAttribute('data-contextname');
-
-        if (name) {
-
-            document.querySelector('.libraryMenuButtonText').innerHTML = '<span>' + name + '</span>';
-
-        }
-        else if (page.classList.contains('allLibraryPage') || page.classList.contains('type-interior')) {
-            document.querySelector('.libraryMenuButtonText').innerHTML = Globalize.translate('ButtonHome');
-        }
-    }
-
     function onWebSocketMessage(e, data) {
 
         var msg = data;
@@ -700,14 +683,12 @@
             updateCastIcon();
 
             updateLibraryNavLinks(page);
-            updateContextText(page);
             requiresViewMenuRefresh = false;
 
             ConnectionManager.user(window.ApiClient).done(addUserToHeader);
 
         } else {
             viewMenuBar.classList.remove('hide');
-            updateContextText(page);
             updateLibraryNavLinks(page);
             updateViewMenuBarHeadroom(page, viewMenuBar);
             requiresViewMenuRefresh = false;
@@ -743,10 +724,16 @@
         var isLibraryPage = page.classList.contains('libraryPage');
         var darkDrawer = false;
 
+        var title = page.getAttribute('data-title') || page.getAttribute('data-contextname');
+
+        if (title) {
+            LibraryMenu.setTitle(title);
+        }
+
         var titleKey = getParameterByName('titlekey');
 
         if (titleKey) {
-            document.querySelector('.libraryMenuButtonText').innerHTML = Globalize.translate(titleKey);
+            LibraryMenu.setTitle(Globalize.translate(titleKey));
         }
 
         if (page.getAttribute('data-menubutton') == 'false') {

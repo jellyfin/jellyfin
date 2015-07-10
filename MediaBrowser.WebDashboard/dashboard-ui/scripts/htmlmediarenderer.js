@@ -60,6 +60,42 @@
             }
         }
 
+        var viblastKey = 'N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=';
+
+        function requireViblast(callback) {
+            require(['thirdparty/viblast/viblast.js'], function () {
+
+                if (htmlMediaRenderer.customViblastKey) {
+                    callback();
+                } else {
+                    downloadViblastKey(callback);
+                }
+            });
+        }
+
+        function downloadViblastKey(callback) {
+
+            var headers = {};
+            headers['X-Emby-Token'] = 'EMBY_SERVER';
+
+            HttpClient.send({
+                type: 'GET',
+                url: 'https://mb3admin.com/admin/service/registration/getViBlastKey',
+                headers: headers
+
+            }).done(function (key) {
+
+                htmlMediaRenderer.customViblastKey = key;
+                callback();
+            }).fail(function () {
+                callback();
+            });
+        }
+
+        function getViblastKey() {
+            return htmlMediaRenderer.customViblastKey || viblastKey;
+        }
+
         function onOneVideoPlaying() {
 
             var requiresNativeControls = !self.enableCustomVideoControls();
@@ -85,7 +121,7 @@
                         var element = this;
                         setTimeout(function () {
                             element.currentTime = startPositionInSeekParam;
-                        }, 3000);
+                        }, 2500);
                     }
                 }
             }
@@ -175,12 +211,18 @@
 	            .on('error', onError)[0];
         }
 
+        // Save this for when playback stops, because querying the time at that point might return 0
+        var _currentTime;
         self.currentTime = function (val) {
 
             if (mediaElement) {
                 if (val != null) {
                     mediaElement.currentTime = val / 1000;
                     return;
+                }
+
+                if (_currentTime) {
+                    return _currentTime * 1000;
                 }
 
                 return (mediaElement.currentTime || 0) * 1000;
@@ -201,11 +243,10 @@
                 mediaElement.pause();
 
                 if (isViblastStarted) {
-                    requirejs(['thirdparty/viblast.js'], function () {
+                    _currentTime = mediaElement.currentTime;
 
-                        viblast(mediaElement).stop();
-                        isViblastStarted = false;
-                    });
+                    viblast(mediaElement).stop();
+                    isViblastStarted = false;
                 }
             }
         };
@@ -270,7 +311,7 @@
                     setTracks(elem, tracks || []);
 
                     viblast(elem).setup({
-                        key: 'N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=',
+                        key: getViblastKey(),
                         stream: val
                     });
 
@@ -322,6 +363,7 @@
         self.cleanup = function (destroyRenderer) {
 
             self.setCurrentSrc(null);
+            _currentTime = null;
 
             var elem = mediaElement;
 
@@ -459,7 +501,7 @@
 
             if (options.type == 'video' && enableViblast()) {
 
-                requirejs(['thirdparty/viblast.js'], function () {
+                requireViblast(function () {
 
                     deferred.resolve();
                 });

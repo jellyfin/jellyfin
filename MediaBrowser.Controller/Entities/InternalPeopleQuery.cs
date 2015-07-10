@@ -10,6 +10,7 @@ namespace MediaBrowser.Controller.Entities
         public List<string> ExcludePersonTypes { get; set; }
         public int? MaxListOrder { get; set; }
         public Guid AppearsInItemId { get; set; }
+        public string NameContains { get; set; }
 
         public InternalPeopleQuery()
         {

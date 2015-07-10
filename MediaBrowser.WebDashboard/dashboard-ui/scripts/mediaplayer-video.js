@@ -1102,14 +1102,6 @@
                     errorMsg += '</p>';
                 }
 
-                if ($.browser.msie && !$.browser.mobile && !self.canPlayWebm()) {
-                    errorMsg += '<p>';
-                    errorMsg += '<a href="https://tools.google.com/dlpage/webmmf/" target="_blank">';
-                    errorMsg += Globalize.translate('MessageInternetExplorerWebm');
-                    errorMsg += '</a>';
-                    errorMsg += '</p>';
-                }
-
                 Dashboard.alert({
                     title: Globalize.translate('HeaderVideoError'),
                     message: errorMsg

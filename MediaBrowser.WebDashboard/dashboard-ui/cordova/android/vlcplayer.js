@@ -4,6 +4,8 @@
 
         var self = this;
 
+        self.enableProgressReporting = options.type == 'audio';
+
         function onEnded() {
             Events.trigger(self, 'ended');
         }
@@ -148,10 +150,19 @@
                 var playbackStartInfo = getPlaybackStartInfoForVideoActivity(val, mediaSource, item);
 
                 var serverUrl = ApiClient.serverAddress();
-                var requestHeaders = {};
-                ApiClient.setRequestHeaders(requestHeaders);
 
-                AndroidVlcPlayer.playVideoVlc(val, startPosMs, item.Name, JSON.stringify(mediaSource), JSON.stringify(playbackStartInfo), serverUrl, JSON.stringify(requestHeaders));
+                AndroidVlcPlayer.playVideoVlc(val,
+                    startPosMs,
+                    item.Name,
+                    JSON.stringify(mediaSource),
+                    JSON.stringify(playbackStartInfo),
+                    serverUrl,
+                    ApiClient.appName(),
+                    ApiClient.appVersion(),
+                    ApiClient.deviceId(),
+                    ApiClient.deviceName(),
+                    ApiClient.getCurrentUserId(),
+                    ApiClient.accessToken());
 
                 playerState.currentSrc = val;
                 self.report('playing', null, startPosMs, false, 100);

@@ -332,7 +332,7 @@
 
             var text = textElem.html();
 
-            LibraryMenu.setText(text);
+            LibraryMenu.setTitle(text);
         });
     }
 

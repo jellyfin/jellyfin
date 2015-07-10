@@ -1,7 +1,7 @@
 {
   "name": "webcomponentsjs",
   "main": "webcomponents.js",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "homepage": "http://webcomponents.org",
   "authors": [
     "The Polymer Authors"

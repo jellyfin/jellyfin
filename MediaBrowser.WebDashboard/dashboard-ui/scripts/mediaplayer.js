@@ -545,14 +545,14 @@
 
                 // viblast can help us here
                 //return true;
-                //return window.MediaSource != null;
+                return window.MediaSource != null;
             }
 
             if ($.browser.msie) {
 
                 // viblast can help us here
                 //return true;
-                //return window.MediaSource != null;
+                return window.MediaSource != null;
             }
 
             return false;
@@ -742,6 +742,8 @@
 
         self.play = function (options) {
 
+            Dashboard.showLoadingMsg();
+
             Dashboard.getCurrentUser().done(function (user) {
 
                 if (options.items) {
@@ -774,6 +776,11 @@
         self.playWithIntros = function (items, options, user) {
 
             var firstItem = items[0];
+
+            if (firstItem.MediaType === "Video") {
+
+                Dashboard.showModalLoadingMsg();
+            }
 
             if (options.startPositionTicks || firstItem.MediaType !== 'Video') {
 
@@ -929,6 +936,7 @@
             }
 
             if (item.IsPlaceHolder) {
+                Dashboard.hideModalLoadingMsg();
                 MediaController.showPlaybackInfoErrorMessage('PlaceHolder');
                 return;
             }
@@ -1666,7 +1674,13 @@
 
         function sendProgressUpdate() {
 
-            var state = self.getPlayerStateInternal(self.currentMediaRenderer, self.currentItem, self.currentMediaSource);
+            var mediaRenderer = self.currentMediaRenderer;
+
+            if (mediaRenderer.enableProgressReporting === false) {
+                return;
+            }
+
+            var state = self.getPlayerStateInternal(mediaRenderer, self.currentItem, self.currentMediaSource);
 
             var info = {
                 QueueableMediaTypes: state.NowPlayingItem.MediaType,

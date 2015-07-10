@@ -4,14 +4,9 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="playlistEditorPage" data-role="page" class="page libraryPage" data-require="scripts/playlistedit">
-
-        <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="playlists.html" class="ui-btn-active"><i class="material-icons">menu</i>${TabPlaylists}</a>
-        </div>
+    <div id="playlistEditorPage" data-role="page" class="page libraryPage noSecondaryNavPage" data-require="scripts/playlistedit" data-backbutton="true">
 
         <div data-role="content">
-            <h2 style="text-align:center;" class="playlistName"></h2>
             <div class="viewSettings">
                 <div class="listTopPaging"></div>
                 <paper-button raised class="secondary btnPlay hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlay}</span></paper-button>
