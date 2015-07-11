@@ -753,10 +753,9 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
+            // Look for supported embedded subs that we can just mux into the output
             foreach (SubtitleProfile profile in subtitleProfiles)
             {
-                bool requiresConversion = !StringHelper.EqualsIgnoreCase(subtitleStream.Codec, profile.Format);
-
                 if (!profile.SupportsLanguage(subtitleStream.Language))
                 {
                     continue;
@@ -764,11 +763,6 @@ namespace MediaBrowser.Model.Dlna
 
                 if (profile.Method == SubtitleDeliveryMethod.Embed && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
                 {
-                    if (!requiresConversion)
-                    {
-                        return profile;
-                    }
-
                     return profile;
                 }
             }

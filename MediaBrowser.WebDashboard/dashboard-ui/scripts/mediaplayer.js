@@ -415,6 +415,13 @@
                     Format: 'vtt',
                     Method: 'External'
                 });
+
+                if (isVlc) {
+                    profile.SubtitleProfiles.push({
+                        Format: 'vtt',
+                        Method: 'External'
+                    });
+                }
             }
 
             profile.ResponseProfiles = [];

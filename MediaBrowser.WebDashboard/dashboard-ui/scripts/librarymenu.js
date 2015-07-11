@@ -760,10 +760,6 @@
                     initHeadRoom(this);
                 });
             }
-
-            if (!AppInfo.isNativeApp) {
-                darkDrawer = true;
-            }
         }
         else if (page.classList.contains('type-interior')) {
 
@@ -776,6 +772,10 @@
             document.body.classList.remove('libraryDocument');
             document.body.classList.remove('dashboardDocument');
             document.body.classList.add('hideMainDrawer');
+        }
+
+        if (!AppInfo.isNativeApp) {
+            darkDrawer = true;
         }
 
         if (darkDrawer) {

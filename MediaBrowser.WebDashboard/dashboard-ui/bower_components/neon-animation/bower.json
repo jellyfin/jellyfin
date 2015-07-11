@@ -34,7 +34,7 @@
     "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior#^1.0.0",
     "iron-selector": "PolymerElements/iron-selector#^1.0.0",
     "paper-styles": "PolymerElements/paper-styles#^1.0.0",
-    "web-animations-js": "web-animations/web-animations-js#2.1.0"
+    "web-animations-js": "web-animations/web-animations-js#2.1.2"
   },
   "devDependencies": {
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
