@@ -2484,9 +2484,6 @@
         getUserDataButtonHtml: function (method, itemId, btnCssClass, icon, tooltip) {
 
             return '<paper-icon-button data-itemid="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></paper-icon-button>';
-            btnCssClass += " imageButton";
-
-            return '<button data-itemid="' + itemId + '" class="' + btnCssClass + '" type="button" onclick="LibraryBrowser.' + method + '(this);return false;" title="' + tooltip + '" data-role="none"><i class="fa ' + icon + '"></i></button>';
 
         },
 

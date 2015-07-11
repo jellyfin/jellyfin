@@ -736,10 +736,14 @@
             LibraryMenu.setTitle(Globalize.translate(titleKey));
         }
 
-        if (page.getAttribute('data-menubutton') == 'false') {
-            document.querySelector('.mainDrawerButton').classList.add('hide');
-        } else {
-            document.querySelector('.mainDrawerButton').classList.remove('hide');
+        var mainDrawerButton = document.querySelector('.mainDrawerButton');
+
+        if (mainDrawerButton) {
+            if (page.getAttribute('data-menubutton') == 'false') {
+                mainDrawerButton.classList.add('hide');
+            } else {
+                mainDrawerButton.classList.remove('hide');
+            }
         }
 
         if (isLibraryPage) {
@@ -778,10 +782,13 @@
             darkDrawer = true;
         }
 
-        if (darkDrawer) {
-            document.querySelector('.mainDrawerPanel #drawer').classList.add('darkDrawer');
-        } else {
-            document.querySelector('.mainDrawerPanel #drawer').classList.remove('darkDrawer');
+        var drawer = document.querySelector('.mainDrawerPanel #drawer');
+        if (drawer) {
+            if (darkDrawer) {
+                drawer.classList.add('darkDrawer');
+            } else {
+                drawer.classList.remove('darkDrawer');
+            }
         }
 
         updateBackButton(page);
@@ -799,10 +806,12 @@
             showBackButton = page.getAttribute('data-backbutton') == 'true';
         }
 
-        if (canGoBack && showBackButton) {
-            backButton.classList.remove('hide');
-        } else {
-            backButton.classList.add('hide');
+        if (backButton) {
+            if (canGoBack && showBackButton) {
+                backButton.classList.remove('hide');
+            } else {
+                backButton.classList.add('hide');
+            }
         }
 
         //Events.off(page, 'swiperight', onPageSwipeLeft);
