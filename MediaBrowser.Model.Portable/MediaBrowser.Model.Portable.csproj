@@ -1076,6 +1076,9 @@
     <Compile Include="..\MediaBrowser.Model\Session\UserDataChangeInfo.cs">
       <Link>Session\UserDataChangeInfo.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\Social\SocialShareInfo.cs">
+      <Link>Social\SocialShareInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\Sync\CompleteSyncJobInfo.cs">
       <Link>Sync\CompleteSyncJobInfo.cs</Link>
     </Compile>

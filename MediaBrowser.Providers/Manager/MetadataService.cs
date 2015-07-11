@@ -24,8 +24,9 @@ namespace MediaBrowser.Providers.Manager
         protected readonly IProviderRepository ProviderRepo;
         protected readonly IFileSystem FileSystem;
         protected readonly IUserDataManager UserDataManager;
+        protected readonly ILibraryManager LibraryManager;
 
-        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager)
+        protected MetadataService(IServerConfigurationManager serverConfigurationManager, ILogger logger, IProviderManager providerManager, IProviderRepository providerRepo, IFileSystem fileSystem, IUserDataManager userDataManager, ILibraryManager libraryManager)
         {
             ServerConfigurationManager = serverConfigurationManager;
             Logger = logger;
@@ -33,6 +34,7 @@ namespace MediaBrowser.Providers.Manager
             ProviderRepo = providerRepo;
             FileSystem = fileSystem;
             UserDataManager = userDataManager;
+            LibraryManager = libraryManager;
         }
 
         /// <summary>
@@ -118,6 +120,11 @@ namespace MediaBrowser.Providers.Manager
                 refreshResult.AddStatus(ProviderRefreshStatus.Failure, ex.Message);
             }
 
+            var metadataResult = new MetadataResult<TItemType>
+            {
+                Item = itemOfType
+            };
+
             // Next run metadata providers
             if (refreshOptions.MetadataRefreshMode != MetadataRefreshMode.None)
             {
@@ -136,7 +143,7 @@ namespace MediaBrowser.Providers.Manager
                 {
                     var id = await CreateInitialLookupInfo(itemOfType, cancellationToken).ConfigureAwait(false);
 
-                    var result = await RefreshWithProviders(itemOfType, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
+                    var result = await RefreshWithProviders(metadataResult, id, refreshOptions, providers, itemImageProvider, cancellationToken).ConfigureAwait(false);
 
                     updateType = updateType | result.UpdateType;
                     refreshResult.AddStatus(result.Status, result.ErrorMessage);
@@ -174,7 +181,7 @@ namespace MediaBrowser.Providers.Manager
                 }
 
                 // Save to database
-                await SaveItem(itemOfType, updateType, cancellationToken);
+                await SaveItem(metadataResult, updateType, cancellationToken).ConfigureAwait(false);
             }
 
             if (updateType > ItemUpdateType.None || refreshResult.IsDirty)
@@ -321,9 +328,14 @@ namespace MediaBrowser.Providers.Manager
             return providers;
         }
 
-        protected Task SaveItem(TItemType item, ItemUpdateType reason, CancellationToken cancellationToken)
+        protected async Task SaveItem(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
         {
-            return item.UpdateToRepository(reason, cancellationToken);
+            await result.Item.UpdateToRepository(reason, cancellationToken).ConfigureAwait(false);
+
+            if (result.Item.SupportsPeople)
+            {
+                await LibraryManager.UpdatePeople(result.Item as BaseItem, result.People);
+            }
         }
 
         public bool CanRefresh(IHasMetadata item)
@@ -331,7 +343,7 @@ namespace MediaBrowser.Providers.Manager
             return item is TItemType;
         }
 
-        protected virtual async Task<RefreshResult> RefreshWithProviders(TItemType item,
+        protected virtual async Task<RefreshResult> RefreshWithProviders(MetadataResult<TItemType> metadata,
             TIdType id,
             MetadataRefreshOptions options,
             List<IMetadataProvider> providers,
@@ -344,6 +356,8 @@ namespace MediaBrowser.Providers.Manager
                 Providers = providers.Select(i => i.GetType().FullName.GetMD5()).ToList()
             };
 
+            var item = metadata.Item;
+
             var customProviders = providers.OfType<ICustomMetadataProvider<TItemType>>().ToList();
             var logName = item.LocationType == LocationType.Remote ? item.Name ?? item.Path : item.Path ?? item.Name;
 
@@ -352,10 +366,15 @@ namespace MediaBrowser.Providers.Manager
                 await RunCustomProvider(provider, item, logName, options, refreshResult, cancellationToken).ConfigureAwait(false);
             }
 
-            var temp = CreateNew();
-            temp.Path = item.Path;
+            var temp = new MetadataResult<TItemType>
+            {
+                Item = CreateNew()
+            };
+            temp.Item.Path = item.Path;
             var successfulProviderCount = 0;
             var failedProviderCount = 0;
+
+            var userDataList = new List<UserItemData>();
 
             // If replacing all metadata, run internet providers first
             if (options.ReplaceAllMetadata)
@@ -371,7 +390,6 @@ namespace MediaBrowser.Providers.Manager
             }
 
             var hasLocalMetadata = false;
-            var userDataList = new List<UserItemData>();
 
             foreach (var provider in providers.OfType<ILocalMetadataProvider<TItemType>>().ToList())
             {
@@ -393,7 +411,7 @@ namespace MediaBrowser.Providers.Manager
 
                         userDataList = localItem.UserDataLIst;
 
-                        MergeData(localItem.Item, temp, new List<MetadataFields>(), !options.ReplaceAllMetadata, true);
+                        MergeData(localItem, temp, new List<MetadataFields>(), !options.ReplaceAllMetadata, true);
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;
 
                         // Only one local provider allowed per item
@@ -452,10 +470,10 @@ namespace MediaBrowser.Providers.Manager
                     if (!hasLocalMetadata)
                     {
                         // TODO: If the new metadata from above has some blank data, this can cause old data to get filled into those empty fields
-                        MergeData(item, temp, new List<MetadataFields>(), false, true);
+                        MergeData(metadata, temp, new List<MetadataFields>(), false, true);
                     }
 
-                    MergeData(temp, item, item.LockedFields, true, true);
+                    MergeData(temp, metadata, item.LockedFields, true, true);
                 }
             }
 
@@ -526,7 +544,7 @@ namespace MediaBrowser.Providers.Manager
             return new TItemType();
         }
 
-        private async Task<RefreshResult> ExecuteRemoteProviders(TItemType temp, string logName, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
+        private async Task<RefreshResult> ExecuteRemoteProviders(MetadataResult<TItemType> temp, string logName, TIdType id, IEnumerable<IRemoteMetadataProvider<TItemType, TIdType>> providers, CancellationToken cancellationToken)
         {
             var refreshResult = new RefreshResult();
 
@@ -537,7 +555,7 @@ namespace MediaBrowser.Providers.Manager
 
                 if (id != null)
                 {
-                    MergeNewData(temp, id);
+                    MergeNewData(temp.Item, id);
                 }
 
                 try
@@ -548,7 +566,7 @@ namespace MediaBrowser.Providers.Manager
                     {
                         NormalizeRemoteResult(result.Item);
 
-                        MergeData(result.Item, temp, new List<MetadataFields>(), false, false);
+                        MergeData(result, temp, new List<MetadataFields>(), false, false);
 
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataDownload;
 
@@ -624,8 +642,8 @@ namespace MediaBrowser.Providers.Manager
             }
         }
 
-        protected abstract void MergeData(TItemType source,
-            TItemType target,
+        protected abstract void MergeData(MetadataResult<TItemType> source,
+            MetadataResult<TItemType> target,
             List<MetadataFields> lockedFields,
             bool replaceData,
             bool mergeMetadataSettings);

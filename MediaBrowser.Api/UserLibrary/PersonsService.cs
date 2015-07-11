@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using ServiceStack;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -151,18 +150,16 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="itemsList">The items list.</param>
         /// <param name="personTypes">The person types.</param>
         /// <returns>IEnumerable{PersonInfo}.</returns>
-        private IEnumerable<PersonInfo> GetAllPeople(IEnumerable<BaseItem> itemsList, string[] personTypes)
+        private IEnumerable<PersonInfo> GetAllPeople(IEnumerable<BaseItem> itemsList, IEnumerable<string> personTypes)
         {
-            var people = itemsList.SelectMany(i => i.People.OrderBy(p => p.SortOrder ?? int.MaxValue).ThenBy(p => p.Type));
+            var allIds = itemsList.Select(i => i.Id).ToList();
 
-            if (personTypes.Length > 0)
+            var allPeople = LibraryManager.GetPeople(new InternalPeopleQuery
             {
-                people = people.Where(p =>
-                            personTypes.Contains(p.Type ?? string.Empty, StringComparer.OrdinalIgnoreCase) ||
-                            personTypes.Contains(p.Role ?? string.Empty, StringComparer.OrdinalIgnoreCase));
-            }
+                PersonTypes = personTypes.ToList()
+            });
 
-            return people;
+            return allPeople.Where(i => allIds.Contains(i.ItemId)).OrderBy(p => p.SortOrder ?? int.MaxValue).ThenBy(p => p.Type);
         }
     }
 }

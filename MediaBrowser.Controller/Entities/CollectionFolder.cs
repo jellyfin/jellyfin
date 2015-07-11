@@ -194,5 +194,14 @@ namespace MediaBrowser.Controller.Entities
                 .Where(i => i.Path != null && PhysicalLocations.Contains(i.Path, StringComparer.OrdinalIgnoreCase))
                 .SelectMany(c => c.Children);
         }
+
+        [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
 }

@@ -41,16 +41,16 @@
   </XmlRootAttributes>
   <DirectPlayProfiles>
     <DirectPlayProfile container="ts" audioCodec="ac3,aac,mp3" videoCodec="h264" type="Video" />
-    <DirectPlayProfile container="ts" audioCodec="mp3,mp2" videoCodec="mpeg2video" type="Video" />
-    <DirectPlayProfile container="mp4" audioCodec="ac3,aac,mp3,mp2" videoCodec="h264,mpeg4" type="Video" />
-    <DirectPlayProfile container="mpeg" audioCodec="mp3,mp2" videoCodec="mpeg2video,mpeg1video" type="Video" />
+    <DirectPlayProfile container="ts" audioCodec="mp3" videoCodec="mpeg2video" type="Video" />
+    <DirectPlayProfile container="mp4" audioCodec="ac3,aac,mp3" videoCodec="h264,mpeg4" type="Video" />
+    <DirectPlayProfile container="mpeg" audioCodec="mp3" videoCodec="mpeg2video,mpeg1video" type="Video" />
     <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" videoCodec="wmv2,wmv3,vc1" type="Video" />
     <DirectPlayProfile container="mp3" audioCodec="mp3" type="Audio" />
     <DirectPlayProfile container="asf" audioCodec="wmav2,wmapro,wmavoice" type="Audio" />
   </DirectPlayProfiles>
   <TranscodingProfiles>
     <TranscodingProfile container="mp3" type="Audio" audioCodec="mp3" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
-    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="aac" estimateContentLength="false" enableMpegtsM2TsMode="true" transcodeSeekInfo="Auto" context="Streaming" />
+    <TranscodingProfile container="ts" type="Video" videoCodec="h264" audioCodec="ac3" estimateContentLength="false" enableMpegtsM2TsMode="true" transcodeSeekInfo="Auto" context="Streaming" />
     <TranscodingProfile container="jpeg" type="Photo" estimateContentLength="false" enableMpegtsM2TsMode="false" transcodeSeekInfo="Auto" context="Streaming" />
   </TranscodingProfiles>
   <ContainerProfiles>
@@ -95,6 +95,11 @@
       <Conditions>
         <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
         <ProfileCondition condition="NotEquals" property="AudioProfile" value="he-aac" isRequired="true" />
+      </Conditions>
+    </CodecProfile>
+    <CodecProfile type="VideoAudio" codec="mp3,mp2">
+      <Conditions>
+        <ProfileCondition condition="LessThanEqual" property="AudioChannels" value="2" isRequired="true" />
       </Conditions>
     </CodecProfile>
   </CodecProfiles>

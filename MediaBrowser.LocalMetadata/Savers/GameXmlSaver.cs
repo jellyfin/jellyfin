@@ -25,12 +25,14 @@ namespace MediaBrowser.LocalMetadata.Savers
         }
 
         private readonly IServerConfigurationManager _config;
+        private readonly ILibraryManager _libraryManager;
 
-        public GameXmlSaver(IServerConfigurationManager config)
+        public GameXmlSaver(IServerConfigurationManager config, ILibraryManager libraryManager)
         {
             _config = config;
+            _libraryManager = libraryManager;
         }
-        
+
         /// <summary>
         /// Determines whether [is enabled for] [the specified item].
         /// </summary>
@@ -87,7 +89,7 @@ namespace MediaBrowser.LocalMetadata.Savers
                 builder.Append("<NesBoxRom>" + SecurityElement.Escape(val) + "</NesBoxRom>");
             }
 
-            XmlSaverHelpers.AddCommonNodes(game, builder);
+            XmlSaverHelpers.AddCommonNodes(game, _libraryManager, builder);
 
             builder.Append("</Item>");
 

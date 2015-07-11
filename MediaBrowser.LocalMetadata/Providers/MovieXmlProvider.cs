@@ -2,9 +2,7 @@
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.LocalMetadata.Parsers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
@@ -22,11 +20,7 @@ namespace MediaBrowser.LocalMetadata.Providers
 
         protected override void Fetch(LocalMetadataResult<Movie> result, string path, CancellationToken cancellationToken)
         {
-            var chapters = new List<ChapterInfo>();
-
-            new MovieXmlParser(_logger).Fetch(result.Item, chapters, path, cancellationToken);
-
-            result.Chapters = chapters;
+            new MovieXmlParser(_logger).Fetch(result, path, cancellationToken);
         }
 
         protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)

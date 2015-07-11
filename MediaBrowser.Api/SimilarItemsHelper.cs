@@ -68,7 +68,7 @@ namespace MediaBrowser.Api
         /// <param name="includeInSearch">The include in search.</param>
         /// <param name="getSimilarityScore">The get similarity score.</param>
         /// <returns>ItemsResult.</returns>
-        internal static ItemsResult GetSimilarItemsResult(DtoOptions dtoOptions, IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, ILogger logger, BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, BaseItem, int> getSimilarityScore)
+        internal static ItemsResult GetSimilarItemsResult(DtoOptions dtoOptions, IUserManager userManager, IItemRepository itemRepository, ILibraryManager libraryManager, IUserDataManager userDataRepository, IDtoService dtoService, ILogger logger, BaseGetSimilarItemsFromItem request, Func<BaseItem, bool> includeInSearch, Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
         {
             var user = !string.IsNullOrWhiteSpace(request.UserId) ? userManager.GetUserById(request.UserId) : null;
 
@@ -82,7 +82,7 @@ namespace MediaBrowser.Api
                                  ? libraryManager.RootFolder.GetRecursiveChildren(filter)
                                  : user.RootFolder.GetRecursiveChildren(user, filter);
 
-            var items = GetSimilaritems(item, inputItems, getSimilarityScore)
+            var items = GetSimilaritems(item, libraryManager, inputItems, getSimilarityScore)
                 .ToList();
 
             IEnumerable<BaseItem> returnItems = items;
@@ -106,15 +106,21 @@ namespace MediaBrowser.Api
         /// Gets the similaritems.
         /// </summary>
         /// <param name="item">The item.</param>
+        /// <param name="libraryManager">The library manager.</param>
         /// <param name="inputItems">The input items.</param>
         /// <param name="getSimilarityScore">The get similarity score.</param>
         /// <returns>IEnumerable{BaseItem}.</returns>
-        internal static IEnumerable<BaseItem> GetSimilaritems(BaseItem item, IEnumerable<BaseItem> inputItems, Func<BaseItem, BaseItem, int> getSimilarityScore)
+        internal static IEnumerable<BaseItem> GetSimilaritems(BaseItem item, ILibraryManager libraryManager, IEnumerable<BaseItem> inputItems, Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
         {
             var itemId = item.Id;
             inputItems = inputItems.Where(i => i.Id != itemId);
+            var itemPeople = libraryManager.GetPeople(item);
+            var allPeople = libraryManager.GetPeople(new InternalPeopleQuery
+            {
+                AppearsInItemId = item.Id
+            });
 
-            return inputItems.Select(i => new Tuple<BaseItem, int>(i, getSimilarityScore(item, i)))
+            return inputItems.Select(i => new Tuple<BaseItem, int>(i, getSimilarityScore(item, itemPeople, allPeople, i)))
                 .Where(i => i.Item2 > 2)
                 .OrderByDescending(i => i.Item2)
                 .Select(i => i.Item1);
@@ -146,9 +152,11 @@ namespace MediaBrowser.Api
         /// Gets the similiarity score.
         /// </summary>
         /// <param name="item1">The item1.</param>
+        /// <param name="item1People">The item1 people.</param>
+        /// <param name="allPeople">All people.</param>
         /// <param name="item2">The item2.</param>
         /// <returns>System.Int32.</returns>
-        internal static int GetSimiliarityScore(BaseItem item1, BaseItem item2)
+        internal static int GetSimiliarityScore(BaseItem item1, List<PersonInfo> item1People, List<PersonInfo> allPeople, BaseItem item2)
         {
             var points = 0;
 
@@ -169,11 +177,13 @@ namespace MediaBrowser.Api
             // Find common studios
             points += item1.Studios.Where(i => item2.Studios.Contains(i, StringComparer.OrdinalIgnoreCase)).Sum(i => 3);
 
-            var item2PeopleNames = item2.People.Select(i => i.Name)
+            var item2PeopleNames = allPeople.Where(i => i.ItemId == item2.Id)
+                .Select(i => i.Name)
+                .Where(i => !string.IsNullOrWhiteSpace(i))
                 .DistinctNames()
                 .ToDictionary(i => i, StringComparer.OrdinalIgnoreCase);
 
-            points += item1.People.Where(i => item2PeopleNames.ContainsKey(i.Name)).Sum(i =>
+            points += item1People.Where(i => item2PeopleNames.ContainsKey(i.Name)).Sum(i =>
             {
                 if (string.Equals(i.Type, PersonType.Director, StringComparison.OrdinalIgnoreCase) || string.Equals(i.Role, PersonType.Director, StringComparison.OrdinalIgnoreCase))
                 {

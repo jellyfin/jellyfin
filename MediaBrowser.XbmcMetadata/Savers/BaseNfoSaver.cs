@@ -472,7 +472,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 }
             }
 
-            var directors = item.People
+            var people = libraryManager.GetPeople(item);
+
+            var directors = people
                 .Where(i => IsPersonType(i, PersonType.Director))
                 .Select(i => i.Name)
                 .ToList();
@@ -482,7 +484,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
                 writer.WriteElementString("director", person);
             }
 
-            var writers = item.People
+            var writers = people
                 .Where(i => IsPersonType(i, PersonType.Writer))
                 .Select(i => i.Name)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -820,7 +822,7 @@ namespace MediaBrowser.XbmcMetadata.Savers
 
             AddUserData(item, writer, userManager, userDataRepo, options);
 
-            AddActors(item, writer, libraryManager, fileSystem, config);
+            AddActors(people, writer, libraryManager, fileSystem, config);
 
             var folder = item as BoxSet;
             if (folder != null)
@@ -948,9 +950,9 @@ namespace MediaBrowser.XbmcMetadata.Savers
             writer.WriteEndElement();
         }
 
-        private static void AddActors(BaseItem item, XmlWriter writer, ILibraryManager libraryManager, IFileSystem fileSystem, IServerConfigurationManager config)
+        private static void AddActors(List<PersonInfo> people, XmlWriter writer, ILibraryManager libraryManager, IFileSystem fileSystem, IServerConfigurationManager config)
         {
-            var actors = item.People
+            var actors = people
                 .Where(i => !IsPersonType(i, PersonType.Director) && !IsPersonType(i, PersonType.Writer))
                 .ToList();
 

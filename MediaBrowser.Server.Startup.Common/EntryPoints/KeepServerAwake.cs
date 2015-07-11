@@ -27,7 +27,7 @@ namespace MediaBrowser.Server.Startup.Common.EntryPoints
             _timer = new Timer(obj =>
             {
                 var now = DateTime.UtcNow;
-                if (_sessionManager.Sessions.Any(i => (now - i.LastActivityDate).TotalMinutes < 5))
+                if (_sessionManager.Sessions.Any(i => (now - i.LastActivityDate).TotalMinutes < 15))
                 {
                     KeepAlive();
                 }

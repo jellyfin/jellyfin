@@ -1,31 +1,18 @@
 ﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System.Collections.Generic;
-using System.Threading;
 using System.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
 {
     class MovieNfoParser : BaseNfoParser<Video>
     {
-        private List<ChapterInfo> _chaptersFound;
-
         public MovieNfoParser(ILogger logger, IConfigurationManager config) : base(logger, config)
         {
-        }
-
-        public void Fetch(Video item,
-            List<UserItemData> userDataList,
-            List<ChapterInfo> chapters, 
-            string metadataFile, 
-            CancellationToken cancellationToken)
-        {
-            _chaptersFound = chapters;
-
-            Fetch(item, userDataList, metadataFile, cancellationToken);
         }
 
         protected override bool SupportsUrlAfterClosingXmlTag
@@ -40,10 +27,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// Fetches the data from XML node.
         /// </summary>
         /// <param name="reader">The reader.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="userDataList">The user data list.</param>
-        protected override void FetchDataFromXmlNode(XmlReader reader, Video item, List<UserItemData> userDataList)
+        /// <param name="itemResult">The item result.</param>
+        protected override void FetchDataFromXmlNode(XmlReader reader, LocalMetadataResult<Video> itemResult)
         {
+            var item = itemResult.Item;
+
             switch (reader.Name)
             {
                 case "id":
@@ -93,13 +81,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         break;
                     }
 
-                //case "chapter":
-
-                //    _chaptersFound.AddRange(FetchChaptersFromXmlNode(item, reader.ReadSubtree()));
-                //    break;
-
                 default:
-                    base.FetchDataFromXmlNode(reader, item, userDataList);
+                    base.FetchDataFromXmlNode(reader, itemResult);
                     break;
             }
         }

@@ -21,10 +21,12 @@ namespace MediaBrowser.LocalMetadata.Savers
         }
 
         private readonly IServerConfigurationManager _config;
+        private readonly ILibraryManager _libraryManager;
 
-        public PlaylistXmlSaver(IServerConfigurationManager config)
+        public PlaylistXmlSaver(IServerConfigurationManager config, ILibraryManager libraryManager)
         {
             _config = config;
+            _libraryManager = libraryManager;
         }
 
         /// <summary>
@@ -61,8 +63,8 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 builder.Append("<PlaylistMediaType>" + SecurityElement.Escape(playlist.PlaylistMediaType) + "</PlaylistMediaType>");
             }
-            
-            XmlSaverHelpers.AddCommonNodes(playlist, builder);
+
+            XmlSaverHelpers.AddCommonNodes(playlist, _libraryManager, builder);
 
             builder.Append("</Item>");
 

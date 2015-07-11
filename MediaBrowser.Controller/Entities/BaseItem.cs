@@ -35,7 +35,6 @@ namespace MediaBrowser.Controller.Entities
         {
             Genres = new List<string>();
             Studios = new List<string>();
-            People = new List<PersonInfo>();
             ProviderIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             LockedFields = new List<MetadataFields>();
             ImageInfos = new List<ItemImageInfo>();
@@ -413,15 +412,6 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
-        public bool ContainsPerson(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentNullException("name");
-            }
-            return People.Any(i => string.Equals(i.Name, name, StringComparison.OrdinalIgnoreCase));
-        }
-
         public string GetInternalMetadataPath()
         {
             var basePath = ConfigurationManager.ApplicationPaths.InternalMetadataPath;
@@ -474,12 +464,20 @@ namespace MediaBrowser.Controller.Entities
             return sortable;
         }
 
+        public Guid ParentId { get; set; }
+
         /// <summary>
         /// Gets or sets the parent.
         /// </summary>
         /// <value>The parent.</value>
         [IgnoreDataMember]
         public Folder Parent { get; set; }
+
+        public void SetParent(Folder parent)
+        {
+            Parent = parent;
+            ParentId = parent == null ? Guid.Empty : parent.Id;
+        }
 
         [IgnoreDataMember]
         public IEnumerable<Folder> Parents
@@ -783,6 +781,12 @@ namespace MediaBrowser.Controller.Entities
         protected virtual bool SupportsOwnedItems
         {
             get { return IsFolder || Parent != null; }
+        }
+
+        [IgnoreDataMember]
+        public virtual bool SupportsPeople
+        {
+            get { return true; }
         }
 
         /// <summary>
@@ -1248,83 +1252,6 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="System.ArgumentNullException"></exception>
         public void AddPerson(PersonInfo person)
         {
-            if (person == null)
-            {
-                throw new ArgumentNullException("person");
-            }
-
-            if (string.IsNullOrWhiteSpace(person.Name))
-            {
-                throw new ArgumentNullException();
-            }
-
-            // Normalize
-            if (string.Equals(person.Role, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))
-            {
-                person.Type = PersonType.GuestStar;
-            }
-            else if (string.Equals(person.Role, PersonType.Director, StringComparison.OrdinalIgnoreCase))
-            {
-                person.Type = PersonType.Director;
-            }
-            else if (string.Equals(person.Role, PersonType.Producer, StringComparison.OrdinalIgnoreCase))
-            {
-                person.Type = PersonType.Producer;
-            }
-            else if (string.Equals(person.Role, PersonType.Writer, StringComparison.OrdinalIgnoreCase))
-            {
-                person.Type = PersonType.Writer;
-            }
-
-            // If the type is GuestStar and there's already an Actor entry, then update it to avoid dupes
-            if (string.Equals(person.Type, PersonType.GuestStar, StringComparison.OrdinalIgnoreCase))
-            {
-                var existing = People.FirstOrDefault(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && p.Type.Equals(PersonType.Actor, StringComparison.OrdinalIgnoreCase));
-
-                if (existing != null)
-                {
-                    existing.Type = PersonType.GuestStar;
-                    existing.SortOrder = person.SortOrder ?? existing.SortOrder;
-                    return;
-                }
-            }
-
-            if (string.Equals(person.Type, PersonType.Actor, StringComparison.OrdinalIgnoreCase))
-            {
-                // If the actor already exists without a role and we have one, fill it in
-                var existing = People.FirstOrDefault(p => p.Name.Equals(person.Name, StringComparison.OrdinalIgnoreCase) && (p.Type.Equals(PersonType.Actor, StringComparison.OrdinalIgnoreCase) || p.Type.Equals(PersonType.GuestStar, StringComparison.OrdinalIgnoreCase)));
-                if (existing == null)
-                {
-                    // Wasn't there - add it
-                    People.Add(person);
-                }
-                else
-                {
-                    // Was there, if no role and we have one - fill it in
-                    if (string.IsNullOrWhiteSpace(existing.Role) && !string.IsNullOrWhiteSpace(person.Role))
-                    {
-                        existing.Role = person.Role;
-                    }
-
-                    existing.SortOrder = person.SortOrder ?? existing.SortOrder;
-                }
-            }
-            else
-            {
-                var existing = People.FirstOrDefault(p =>
-                            string.Equals(p.Name, person.Name, StringComparison.OrdinalIgnoreCase) &&
-                            string.Equals(p.Type, person.Type, StringComparison.OrdinalIgnoreCase));
-
-                // Check for dupes based on the combination of Name and Type
-                if (existing == null)
-                {
-                    People.Add(person);
-                }
-                else
-                {
-                    existing.SortOrder = person.SortOrder ?? existing.SortOrder;
-                }
-            }
         }
 
         /// <summary>

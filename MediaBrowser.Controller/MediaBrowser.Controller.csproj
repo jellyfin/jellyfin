@@ -166,6 +166,7 @@
     <Compile Include="Entities\ImageSourceInfo.cs" />
     <Compile Include="Entities\IMetadataContainer.cs" />
     <Compile Include="Entities\InternalItemsQuery.cs" />
+    <Compile Include="Entities\InternalPeopleQuery.cs" />
     <Compile Include="Entities\ISupportsBoxSetGrouping.cs" />
     <Compile Include="Entities\ISupportsPlaceHolders.cs" />
     <Compile Include="Entities\ItemImageInfo.cs" />
@@ -173,6 +174,7 @@
     <Compile Include="Entities\LinkedChild.cs" />
     <Compile Include="Entities\MusicVideo.cs" />
     <Compile Include="Entities\IHasAwards.cs" />
+    <Compile Include="Entities\PeopleHelper.cs" />
     <Compile Include="Entities\Photo.cs" />
     <Compile Include="Entities\PhotoAlbum.cs" />
     <Compile Include="Entities\Share.cs" />
@@ -328,6 +330,7 @@
     <Compile Include="Security\IAuthenticationRepository.cs" />
     <Compile Include="Security\IEncryptionManager.cs" />
     <Compile Include="Session\AuthenticationRequest.cs" />
+    <Compile Include="Social\ISharingManager.cs" />
     <Compile Include="Subtitles\ISubtitleManager.cs" />
     <Compile Include="Subtitles\ISubtitleProvider.cs" />
     <Compile Include="Providers\ItemIdentifier.cs" />

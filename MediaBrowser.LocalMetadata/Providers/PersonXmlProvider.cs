@@ -19,7 +19,7 @@ namespace MediaBrowser.LocalMetadata.Providers
 
         protected override void Fetch(LocalMetadataResult<Person> result, string path, CancellationToken cancellationToken)
         {
-            new BaseItemXmlParser<Person>(_logger).Fetch(result.Item, path, cancellationToken);
+            new BaseItemXmlParser<Person>(_logger).Fetch(result, path, cancellationToken);
         }
 
         protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)

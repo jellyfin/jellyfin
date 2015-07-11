@@ -28,7 +28,7 @@ namespace MediaBrowser.Providers.Omdb
             Current = this;
         }
 
-        public async Task Fetch(BaseItem item, string imdbId, CancellationToken cancellationToken)
+        public async Task Fetch(BaseItem item, string imdbId, string language, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(imdbId))
             {
@@ -51,7 +51,11 @@ namespace MediaBrowser.Providers.Omdb
             {
                 var result = _jsonSerializer.DeserializeFromStream<RootObject>(stream);
 
-                item.Name = result.Title;
+                // Only take the name if the user's language is set to english, since Omdb has no localization
+                if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
+                {
+                    item.Name = result.Title;
+                }
 
                 int year;
 

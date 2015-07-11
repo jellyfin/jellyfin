@@ -218,6 +218,11 @@ namespace MediaBrowser.Api
 
             await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
 
+            if (request.People != null)
+            {
+                await _libraryManager.UpdatePeople(item, request.People.Select(x => new PersonInfo { Name = x.Name, Role = x.Role, Type = x.Type }).ToList());
+            }
+
             if (isLockedChanged && item.IsFolder)
             {
                 var folder = (Folder)item;
@@ -301,11 +306,6 @@ namespace MediaBrowser.Api
             if (request.Studios != null)
             {
                 item.Studios = request.Studios.Select(x => x.Name).ToList();
-            }
-
-            if (request.People != null)
-            {
-                item.People = request.People.Select(x => new PersonInfo { Name = x.Name, Role = x.Role, Type = x.Type }).ToList();
             }
 
             if (request.DateCreated.HasValue)

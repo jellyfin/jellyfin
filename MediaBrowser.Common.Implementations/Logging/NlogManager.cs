@@ -85,6 +85,13 @@ namespace MediaBrowser.Common.Implementations.Logging
                 {
                     rule.EnableLoggingForLevel(level);
                 }
+                foreach (var lev in rule.Levels.ToArray())
+                {
+                    if (lev < level)
+                    {
+                        rule.DisableLoggingForLevel(lev);
+                    }
+                }
             }
         }
 

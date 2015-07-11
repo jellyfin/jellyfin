@@ -107,7 +107,7 @@ namespace MediaBrowser.Api.Reports
 			foreach (var item in t)
 			{
 				this.GetGroups(result, ReportHelper.GetServerLocalizedString("Option" + item), topItem,
-						items.SelectMany(x => x.People)
+						items.SelectMany(x => _libraryManager.GetPeople(x))
 								.Where(n => n.Type == item)
 								.GroupBy(x => x.Name)
 								.OrderByDescending(x => x.Count())

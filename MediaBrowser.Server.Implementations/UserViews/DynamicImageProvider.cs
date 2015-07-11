@@ -41,8 +41,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
 
             return new List<ImageType>
             {
-                ImageType.Primary,
-                ImageType.Thumb
+                ImageType.Primary
             };
         }
 
