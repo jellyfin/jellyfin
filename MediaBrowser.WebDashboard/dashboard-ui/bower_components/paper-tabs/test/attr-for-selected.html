@@ -1,0 +1,82 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<html>
+  <head>
+
+    <title>paper-tabs-attr-for-selected</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+    <link rel="import" href="../paper-tabs.html">
+    <link rel="import" href="../../test-fixture/test-fixture.html">
+
+  </head>
+  <body>
+
+    <test-fixture id="basic">
+      <template>
+        <paper-tabs attr-for-selected="name" selected="bar">
+          <paper-tab name="foo">ITEM FOO</paper-tab>
+          <paper-tab name="bar">ITEM BAR</paper-tab>
+          <paper-tab name="zot">ITEM ZOT</paper-tab>
+        </paper-tabs>
+      </template>
+    </test-fixture>
+
+    <script>
+
+      suite('set the selected attribute', function() {
+
+        var tabs;
+
+        setup(function () {
+          tabs = fixture('basic');
+        });
+
+        test('selected value', function() {
+          assert.equal(tabs.selected, 'bar');
+        });
+
+        test('selected tab has iron-selected class', function() {
+          assert.isTrue(tabs.querySelector('[name=bar]').classList.contains('iron-selected'));
+        });
+
+      });
+
+      suite('select tab via click', function() {
+
+        var tabs, tab;
+
+        setup(function () {
+          tabs = fixture('basic');
+          tab = tabs.querySelector('[name=zot]');
+          tab.dispatchEvent(new CustomEvent('click', {bubbles: true}));
+        });
+
+        test('selected value', function() {
+          assert.equal(tabs.selected, 'zot');
+        });
+
+        test('selected tab has iron-selected class', function() {
+          assert.isTrue(tab.classList.contains('iron-selected'));
+        });
+
+      });
+
+    </script>
+
+  </body>
+</html>

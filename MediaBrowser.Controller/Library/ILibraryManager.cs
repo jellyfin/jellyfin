@@ -412,5 +412,54 @@ namespace MediaBrowser.Controller.Library
         /// <param name="item">The item.</param>
         /// <returns>IEnumerable&lt;Folder&gt;.</returns>
         IEnumerable<Folder> GetCollectionFolders(BaseItem item);
+
+        /// <summary>
+        /// Gets the people.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns>List&lt;PersonInfo&gt;.</returns>
+        List<PersonInfo> GetPeople(BaseItem item);
+
+        /// <summary>
+        /// Gets the people.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>List&lt;PersonInfo&gt;.</returns>
+        List<PersonInfo> GetPeople(InternalPeopleQuery query);
+        
+        /// <summary>
+        /// Gets the people items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>List&lt;Person&gt;.</returns>
+        List<Person> GetPeopleItems(InternalPeopleQuery query);
+        
+        /// <summary>
+        /// Gets all people names.
+        /// </summary>
+        /// <returns>List&lt;System.String&gt;.</returns>
+        List<PersonInfo> GetAllPeople();
+
+        /// <summary>
+        /// Updates the people.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="people">The people.</param>
+        /// <returns>Task.</returns>
+        Task UpdatePeople(BaseItem item, List<PersonInfo> people);
+
+        /// <summary>
+        /// Gets the item ids.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>List&lt;Guid&gt;.</returns>
+        List<Guid> GetItemIds(InternalItemsQuery query);
+
+        /// <summary>
+        /// Gets the people names.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>List&lt;System.String&gt;.</returns>
+        List<string> GetPeopleNames(InternalPeopleQuery query);
     }
 }

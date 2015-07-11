@@ -4,14 +4,15 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvRecordingsPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvrecordings">
+    <div id="liveTvRecordingsPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvrecordings,paperbuttonstyle,livetvcss">
+
         <div class="libraryViewNav">
-            <a href="livetvsuggested.html">${TabSuggestions}</a>
-            <a href="livetvguide.html">${TabGuide}</a>
-            <a href="livetvchannels.html">${TabChannels}</a>
-            <a href="livetvrecordings.html" class="ui-btn-active">${TabRecordings}</a>
-            <a href="livetvtimers.html">${TabScheduled}</a>
-            <a href="livetvseriestimers.html">${TabSeries}</a>
+            <a href="livetvsuggested.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+            <a href="livetvguide.html"><iron-icon icon="grid-on"></iron-icon>${TabGuide}</a>
+            <a href="livetvchannels.html"><iron-icon icon="live-tv"></iron-icon>${TabChannels}</a>
+            <a href="livetvrecordings.html" class="ui-btn-active"><iron-icon icon="slideshow"></iron-icon>${TabRecordings}</a>
+            <a href="livetvtimers.html"><iron-icon icon="schedule"></iron-icon>${TabScheduled}</a>
+            <a href="livetvseriestimers.html"><iron-icon icon="refresh"></iron-icon>${TabSeries}</a>
         </div>
         <div data-role="content">
             <div class="ehsContent">
@@ -23,7 +24,7 @@
                 <div id="latestRecordings" style="display: none;">
                     <div>
                         <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestRecordings}</h1>
-                        <a href="#" class="accentButton categorySyncButton" data-category="Latest"><i class="fa fa-refresh"></i>${ButtonSync}</a>
+                        <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
                     </div>
                     <div class="recordingItems itemsContainer"></div>
                     <br />

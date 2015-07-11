@@ -1,0 +1,59 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<html>
+<head>
+  <title>iron-a11y-announcer</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+  <link rel="import" href="../iron-a11y-announcer.html">
+</head>
+<body>
+
+  <test-fixture id="Announcer">
+    <template>
+      <iron-a11y-announcer></iron-a11y-announcer>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('<iron-a11y-announcer>', function() {
+      var announcer;
+
+      setup(function() {
+        announcer = fixture('Announcer');
+      });
+
+      test('announces when there is an iron-announce event', function() {
+        var event = new CustomEvent('iron-announce', {
+          bubbles: true,
+          detail: {
+            text: 'foo'
+          }
+        });
+
+        sinon.spy(announcer, 'announce');
+
+        document.body.dispatchEvent(event);
+
+        expect(announcer.announce.callCount).to.be.equal(1);
+      });
+    });
+  </script>
+
+</body>
+</html>
+

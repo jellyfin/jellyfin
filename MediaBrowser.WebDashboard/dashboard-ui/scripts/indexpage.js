@@ -13,7 +13,7 @@
             case 2:
                 return 'latestmedia';
             case 3:
-                return '';
+                return 'latesttvrecordings';
             default:
                 return '';
         }
@@ -32,7 +32,7 @@
 
         var showLibraryTileNames = displayPreferences.CustomPrefs.enableLibraryTileNames != '0';
 
-        var elem = $('.section' + index, page);
+        var elem = page.querySelector('.section' + index);
 
         if (section == 'latestmedia') {
             return Sections.loadRecentlyAdded(elem, user);
@@ -64,7 +64,7 @@
 
         } else {
 
-            elem.empty();
+            elem.innerHTML = '';
 
             var deferred = DeferredBuilder.Deferred();
             deferred.resolve();
@@ -77,16 +77,16 @@
         var i, length;
         var sectionCount = 4;
 
-        var elem = $('.sections', page);
+        var elem = page.querySelector('.sections');
 
-        if (!elem.html().length) {
+        if (!elem.innerHTML.length) {
             var html = '';
             for (i = 0, length = sectionCount; i < length; i++) {
 
                 html += '<div class="homePageSection section' + i + '"></div>';
             }
 
-            elem.html(html);
+            elem.innerHTML = html;
         }
 
         var promises = [];
@@ -107,7 +107,7 @@
         getDisplayPreferences('home', userId).done(function (result) {
 
             result.CustomPrefs[homePageTourKey] = homePageDismissValue;
-            ApiClient.updateDisplayPreferences('home', result, userId, getDisplayPreferencesAppName());
+            ApiClient.updateDisplayPreferences('home', result, userId, AppSettings.displayPreferencesKey());
         });
     }
 
@@ -116,6 +116,8 @@
         if (displayPreferences.CustomPrefs[homePageTourKey] == homePageDismissValue) {
             $('.welcomeMessage', page).hide();
         } else {
+
+            Dashboard.hideLoadingMsg();
 
             var elem = $('.welcomeMessage', page).show();
 
@@ -162,50 +164,94 @@
         });
     }
 
+    function loadHomeTab(page) {
+
+        var tabContent = page.querySelector('.homeTabContent');
+
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            if (window.ApiClient) {
+                var userId = Dashboard.getCurrentUserId();
+
+                Dashboard.showLoadingMsg();
+
+                getDisplayPreferences('home', userId).done(function (result) {
+
+                    Dashboard.getCurrentUser().done(function (user) {
+
+                        loadSections(tabContent, user, result).done(function () {
+
+                            if (!AppInfo.isNativeApp) {
+                                showWelcomeIfNeeded(page, result);
+                            }
+                            Dashboard.hideLoadingMsg();
+
+                            LibraryBrowser.setLastRefreshed(tabContent);
+                        });
+
+                    });
+                });
+            }
+        }
+    }
+
+    function loadTab(page, index) {
+
+        switch (index) {
+
+            case 0:
+                loadHomeTab(page);
+                break;
+            default:
+                break;
+        }
+    }
+
     $(document).on('pageinitdepends', "#indexPage", function () {
 
         var page = this;
 
-        $('.btnTakeTour', page).on('click', function () {
+        var tabs = page.querySelector('paper-tabs');
+        LibraryBrowser.configurePaperLibraryTabs(page, page.querySelectorAll('paper-tabs')[0], page.querySelectorAll('neon-animated-pages')[0]);
+
+        $(tabs).on('iron-select', function () {
+            var selected = this.selected;
+            if (LibraryBrowser.navigateOnLibraryTabSelect()) {
+
+                if (selected) {
+                    Dashboard.navigate('index.html?tab=' + selected);
+                } else {
+                    Dashboard.navigate('index.html');
+                }
+
+            } else {
+                page.querySelector('neon-animated-pages').selected = selected;
+            }
+        });
+
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+            loadTab(page, parseInt(this.selected));
+        });
+
+        $(page.querySelector('neon-animated-pages')).on('iron-select', function () {
+
+            // When transition animations are used, add a content loading delay to allow the animations to finish
+            // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
+            var delay = LibraryBrowser.enableFullPaperTabs() ? 500 : 0;
+            var pages = this;
+            setTimeout(function () {
+                $(pages).trigger('tabchange');
+            }, delay);
+        });
+
+        Events.on(page.querySelector('.btnTakeTour'), 'click', function () {
             takeTour(page, Dashboard.getCurrentUserId());
         });
 
-    }).on('pageshowready', "#indexPage", function () {
-
-        var page = this;
-
-        if (window.ApiClient) {
-            var userId = Dashboard.getCurrentUserId();
-
-            getDisplayPreferences('home', userId).done(function (result) {
-
-                Dashboard.getCurrentUser().done(function (user) {
-
-                    loadSections(page, user, result).done(function () {
-
-                        if (!AppInfo.isNativeApp) {
-                            showWelcomeIfNeeded(page, result);
-                        }
-                    });
-
-                });
-            });
-        }
-
     });
-
-    function getDisplayPreferencesAppName() {
-
-        if (AppInfo.isNativeApp) {
-            return 'Emby Mobile';
-        }
-
-        return 'webclient';
-    }
 
     function getDisplayPreferences(key, userId) {
 
-        return ApiClient.getDisplayPreferences(key, userId, getDisplayPreferencesAppName()).done(function (result) {
+        return ApiClient.getDisplayPreferences(key, userId, AppSettings.displayPreferencesKey()).done(function (result) {
 
         });
     }

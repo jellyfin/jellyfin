@@ -4,14 +4,14 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvChannelPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvchannel">
+    <div id="liveTvChannelPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvchannel,paperbuttonstyle,livetvcss">
         <div class="libraryViewNav">
-            <a href="livetvsuggested.html">${TabSuggestions}</a>
-            <a href="livetvguide.html">${TabGuide}</a>
-            <a href="livetvchannels.html" class="ui-btn-active">${TabChannels}</a>
-            <a href="livetvrecordings.html">${TabRecordings}</a>
-            <a href="livetvtimers.html">${TabScheduled}</a>
-            <a href="livetvseriestimers.html">${TabSeries}</a>
+            <a href="livetvsuggested.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+            <a href="livetvguide.html"><iron-icon icon="grid-on"></iron-icon>${TabGuide}</a>
+            <a href="livetvchannels.html" class="ui-btn-active"><iron-icon icon="live-tv"></iron-icon>${TabChannels}</a>
+            <a href="livetvrecordings.html"><iron-icon icon="slideshow"></iron-icon>${TabRecordings}</a>
+            <a href="livetvtimers.html"><iron-icon icon="schedule"></iron-icon>${TabScheduled}</a>
+            <a href="livetvseriestimers.html"><iron-icon icon="refresh"></iron-icon>${TabSeries}</a>
         </div>
         <table class="detailPageContent primaryDetailPageContent">
             <tr>
@@ -28,10 +28,10 @@
         </table>
         <div class="detailButtonsContainer">
             <span id="playButtonContainer" style="display: none;">
-                <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
+                <paper-button raised class="secondary btnPlay"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlay}</span></paper-button>
             </span>
             <span id="editButtonContainer" style="display: none;">
-                <button id="btnEdit" type="button" data-icon="edit" data-inline="true" data-mini="true">${ButtonEdit}</button>
+                <paper-button raised class="subdued btnEdit"><iron-icon icon="mode-edit"></iron-icon><span>${ButtonEdit}</span></paper-button>
             </span>
         </div>
         <div data-role="content">

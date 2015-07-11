@@ -61,7 +61,10 @@ namespace MediaBrowser.WebDashboard.Api
                 // jQuery ajax doesn't seem to handle if-modified-since correctly
                 if (IsFormat(path, "html"))
                 {
-                    resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
+                    if (IsCoreHtml(path))
+                    {
+                        resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
+                    }
                 }
                 else if (IsFormat(path, "js"))
                 {
@@ -120,6 +123,15 @@ namespace MediaBrowser.WebDashboard.Api
             var rootPath = DashboardUIPath;
 
             var fullPath = Path.Combine(rootPath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
+
+            try
+            {
+                fullPath = Path.GetFullPath(fullPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in Path.GetFullPath", ex);
+            }
 
             // Don't allow file system access outside of the source folder
             if (!_fileSystem.ContainsSubPath(rootPath, fullPath))
@@ -210,6 +222,22 @@ namespace MediaBrowser.WebDashboard.Api
             }
         }
 
+        private bool IsCoreHtml(string path)
+        {
+            if (path.IndexOf("vulcanize", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return false;
+            }
+
+            path = GetDashboardResourcePath(path);
+            var parent = Path.GetDirectoryName(path);
+
+            var basePath = DashboardUIPath;
+
+            return string.Equals(basePath, parent, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(Path.Combine(basePath, "voice"), parent, StringComparison.OrdinalIgnoreCase);
+        }
+
         /// <summary>
         /// Modifies the HTML by adding common meta tags, css and js.
         /// </summary>
@@ -241,7 +269,9 @@ namespace MediaBrowser.WebDashboard.Api
 
                         html = _localization.LocalizeDocument(html, localizationCulture, GetLocalizationToken);
 
-                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">");
+                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">")
+                            .Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div main><div class=\"pageContainer\">")
+                            .Replace("</body>", "</div></div></paper-drawer-panel></body>");
                     }
 
                     if (enableMinification)
@@ -274,10 +304,17 @@ namespace MediaBrowser.WebDashboard.Api
 
                 var version = GetType().Assembly.GetName().Version;
 
-                var imports = "<link rel=\"import\" href=\"thirdparty/polymer/polymer.html\">";
-                imports = "";
+                var imports = new string[]
+                {
+                    "vulcanize-out.html"
+                };
+                var importsHtml = string.Join("", imports.Select(i => "<link rel=\"import\" href=\"" + i + "\">").ToArray());
 
-                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetCommonJavascript(mode, version) + imports);
+                // It would be better to make polymer completely dynamic and loaded on demand, but seeing issues with that
+                // In chrome it is causing the body to be hidden while loading, which leads to width-check methods to return 0 for everything
+                //imports = "";
+
+                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetCommonJavascript(mode, version) + importsHtml);
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
@@ -333,19 +370,27 @@ namespace MediaBrowser.WebDashboard.Api
 
             if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
             {
-                sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'\">");
+                //sb.Append("<meta http-equiv=\"Content-Security-Policy\" content=\"default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'\">");
             }
 
             sb.Append("<meta http-equiv=\"X-UA-Compatibility\" content=\"IE=Edge\">");
             sb.Append("<meta name=\"format-detection\" content=\"telephone=no\">");
             sb.Append("<meta name=\"msapplication-tap-highlight\" content=\"no\">");
-            sb.Append("<meta name=\"viewport\" content=\"user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, target-densitydpi=device-dpi\">");
+            sb.Append("<meta name=\"viewport\" content=\"user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width\">");
             sb.Append("<meta name=\"apple-mobile-web-app-capable\" content=\"yes\">");
             sb.Append("<meta name=\"mobile-web-app-capable\" content=\"yes\">");
             sb.Append("<meta name=\"application-name\" content=\"Emby\">");
             //sb.Append("<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\">");
 
             sb.Append("<meta name=\"robots\" content=\"noindex, nofollow, noarchive\" />");
+
+            // Open graph tags
+            sb.Append("<meta property=\"og:title\" content=\"Emby\" />");
+            sb.Append("<meta property=\"og:site_name\" content=\"Emby\"/>");
+            sb.Append("<meta property=\"og:url\" content=\"http://emby.media\" />");
+            sb.Append("<meta property=\"og:description\" content=\"Energize your media.\" />");
+            sb.Append("<meta property=\"og:type\" content=\"article\" />");
+            sb.Append("<meta property=\"fb:app_id\" content=\"1618309211750238\" />");
 
             // http://developer.apple.com/library/ios/#DOCUMENTATION/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
             sb.Append("<link rel=\"apple-touch-icon\" href=\"css/images/touchicon.png\" />");
@@ -354,7 +399,7 @@ namespace MediaBrowser.WebDashboard.Api
             sb.Append("<link rel=\"apple-touch-startup-image\" href=\"css/images/iossplash.png\" />");
             sb.Append("<link rel=\"shortcut icon\" href=\"css/images/favicon.ico\" />");
             sb.Append("<meta name=\"msapplication-TileImage\" content=\"css/images/touchicon144.png\">");
-            sb.Append("<meta name=\"msapplication-TileColor\" content=\"#23456B\">");
+            sb.Append("<meta name=\"msapplication-TileColor\" content=\"#333333\">");
 
             return sb.ToString();
         }
@@ -371,9 +416,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.css",
                                 "thirdparty/fontawesome/css/font-awesome.min.css" + versionString,
-                                "thirdparty/materialicons/style.css" + versionString,
                                 "css/all.css" + versionString
                             };
 
@@ -396,7 +439,6 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new List<string>
             {
-                //"thirdparty/webcomponentsjs/webcomponents-lite.min.js",
                 "scripts/all.js" + versionString
             };
 
@@ -421,9 +463,10 @@ namespace MediaBrowser.WebDashboard.Api
             var memoryStream = new MemoryStream();
             var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
 
-            // jQuery + jQuery mobile
+            await AppendResource(memoryStream, "bower_components/webcomponentsjs/webcomponents-lite.min.js", newLineBytes).ConfigureAwait(false);
+
             await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile-1.4.5.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.min.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/browser.js", newLineBytes).ConfigureAwait(false);
 
@@ -458,19 +501,19 @@ namespace MediaBrowser.WebDashboard.Api
 
             var apiClientFiles = new[]
             {
-                "thirdparty/apiclient/logger.js",
-                "thirdparty/apiclient/md5.js",
-                "thirdparty/apiclient/sha1.js",
-                "thirdparty/apiclient/store.js",
-                "thirdparty/apiclient/device.js",
-                "thirdparty/apiclient/credentials.js",
-                "thirdparty/apiclient/ajax.js",
-                "thirdparty/apiclient/events.js",
-                "thirdparty/apiclient/deferred.js",
-                "thirdparty/apiclient/apiclient.js"
+                "apiclient/logger.js",
+                "apiclient/md5.js",
+                "apiclient/sha1.js",
+                "apiclient/store.js",
+                "apiclient/device.js",
+                "apiclient/credentials.js",
+                "apiclient/ajax.js",
+                "apiclient/events.js",
+                "apiclient/deferred.js",
+                "apiclient/apiclient.js"
             }.ToList();
 
-            apiClientFiles.Add("thirdparty/apiclient/connectionmanager.js");
+            apiClientFiles.Add("apiclient/connectionmanager.js");
 
             foreach (var file in apiClientFiles)
             {
@@ -615,34 +658,37 @@ namespace MediaBrowser.WebDashboard.Api
         /// <returns>Task{Stream}.</returns>
         private async Task<Stream> GetAllCss(bool enableMinification)
         {
+            var memoryStream = new MemoryStream();
+            var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
+
+            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.min.css", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.structure.min.css", newLineBytes).ConfigureAwait(false);
+
             var files = new[]
                                   {
-                                      "site.css",
-                                      "chromecast.css",
-                                      "mediaplayer.css",
-                                      "mediaplayer-video.css",
-                                      "librarymenu.css",
-                                      "librarybrowser.css",
-                                      "detailtable.css",
-                                      "card.css",
-                                      "tileitem.css",
-                                      "metadataeditor.css",
-                                      "notifications.css",
-                                      "search.css",
-                                      "pluginupdates.css",
-                                      "remotecontrol.css",
-                                      "userimage.css",
-                                      "livetv.css",
-                                      "nowplaying.css",
-                                      "icons.css",
-                                      "materialize.css"
+                                      "css/site.css",
+                                      "css/chromecast.css",
+                                      "css/nowplayingbar.css",
+                                      "css/mediaplayer.css",
+                                      "css/mediaplayer-video.css",
+                                      "css/librarymenu.css",
+                                      "css/librarybrowser.css",
+                                      "css/card.css",
+                                      "css/notifications.css",
+                                      "css/search.css",
+                                      "css/pluginupdates.css",
+                                      "css/remotecontrol.css",
+                                      "css/userimage.css",
+                                      "css/nowplaying.css",
+                                      "css/materialize.css",
+                                      "thirdparty/paper-button-style.css"
                                   };
 
             var builder = new StringBuilder();
 
             foreach (var file in files)
             {
-                var path = GetDashboardResourcePath("css/" + file);
+                var path = GetDashboardResourcePath(file);
 
                 using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
                 {
@@ -678,7 +724,8 @@ namespace MediaBrowser.WebDashboard.Api
                 }
             }
 
-            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(css));
+            var bytes = Encoding.UTF8.GetBytes(css);
+            memoryStream.Write(bytes, 0, bytes.Length);
 
             memoryStream.Position = 0;
             return memoryStream;

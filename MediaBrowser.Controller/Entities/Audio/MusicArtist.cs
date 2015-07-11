@@ -216,5 +216,14 @@ namespace MediaBrowser.Controller.Entities.Audio
                 return hasArtist != null && hasArtist.HasAnyArtist(Name);
             };
         }
+
+        [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
 }

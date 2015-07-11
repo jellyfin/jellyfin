@@ -33,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
             if (_denyIframeEmbedding())
             {
-                res.AddHeader("X-Frame-Options", "DENY");
+                res.AddHeader("X-Frame-Options", "SAMEORIGIN");
             }
 
             var exception = dto as Exception;

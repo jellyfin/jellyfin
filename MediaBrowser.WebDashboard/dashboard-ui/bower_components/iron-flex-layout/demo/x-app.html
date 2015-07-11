@@ -1,0 +1,118 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+
+<link rel="import" href="../iron-flex-layout.html">
+
+<dom-module id="x-app">
+
+  <style>
+
+    :host {
+      @apply(--layout-horizontal);
+      @apply(--paper-font-body2);
+    }
+
+    [nav] {
+      @apply(--layout-vertical);
+
+      width: 200px;
+      background-color: var(--paper-grey-300);
+    }
+
+    [item] {
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+
+      height: 60px;
+      padding-left: 16px;
+      border-bottom: 1px solid var(--paper-grey-400);
+    }
+
+    [main] {
+      @apply(--layout-flex);
+      @apply(--layout-vertical);
+    }
+
+    [header] {
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+
+      @apply(--paper-font-subhead);
+
+      height: 60px;
+      background-color: var(--google-blue-700);
+      padding: 0 16px;
+      color: white;
+    }
+
+    [tool] {
+      @apply(--layout-inline);
+    }
+
+    [content] {
+      @apply(--layout-flex);
+
+      overflow: auto;
+      padding: 0 10px;
+    }
+
+    [card] {
+      @apply(--layout-vertical);
+      @apply(--layout-center-center);
+
+      @apply(--shadow-elevation-2dp);
+
+      height: 300px;
+      max-width: 800px;
+      margin: 16px auto;
+      font-weight: bold;
+      background-color: var(--paper-grey-200);
+    }
+
+  </style>
+
+  <template>
+
+    <div nav>
+      <div content>
+        <div item>ITEM 1</div>
+        <div item>ITEM 2</div>
+        <div item>ITEM 3</div>
+        <div item>ITEM 4</div>
+        <div item>ITEM 5</div>
+      </div>
+    </div>
+
+    <div main>
+      <div header>
+        <div tool>Foo</div>
+        <div class="flex"></div>
+        <div tool>Bar</div>
+      </div>
+      <div content>
+        <div card>CARD 1</div>
+        <div card>CARD 2</div>
+        <div card>CARD 3</div>
+        <div card>CARD 4</div>
+        <div card>CARD 5</div>
+      </div>
+    </div>
+
+  </template>
+
+</dom-module>
+<script>
+
+  Polymer({
+    is: 'x-app'
+  });
+
+</script>
+

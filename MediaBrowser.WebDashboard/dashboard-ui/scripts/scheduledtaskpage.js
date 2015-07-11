@@ -147,7 +147,7 @@
 
         var page = $.mobile.activePage;
 
-        $('#selectTriggerType', page).val('DailyTrigger').trigger('change').selectmenu('refresh');
+        Events.trigger($('#selectTriggerType', page).val('DailyTrigger').selectmenu('refresh')[0], 'change');
 
         $('#popupAddTrigger', page).on("popupafteropen", function () {
             $('#addTriggerForm input:first', this).focus();

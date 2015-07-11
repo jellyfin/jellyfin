@@ -296,7 +296,7 @@
 
     function firePlaybackEvent(name, session) {
 
-        $(player).trigger(name, [getPlayerState(session)]);
+        Events.trigger(player, name, [getPlayerState(session)]);
     }
 
     function onWebSocketConnectionChange() {
@@ -327,7 +327,7 @@
         }
         else if (msg.MessageType === "SessionEnded") {
 
-            console.log("Server reports another session ended");
+            Logger.log("Server reports another session ended");
 
             if (MediaController.getPlayerInfo().id == msg.Data.Id) {
                 MediaController.setDefaultPlayerActive();

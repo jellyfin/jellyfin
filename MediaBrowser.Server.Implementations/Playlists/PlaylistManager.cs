@@ -113,7 +113,6 @@ namespace MediaBrowser.Server.Implementations.Playlists
                 var playlist = new Playlist
                 {
                     Name = name,
-                    Parent = parentFolder,
                     Path = path
                 };
 

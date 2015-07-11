@@ -35,7 +35,7 @@
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(programInfo));
 
         LibraryBrowser.renderGenres($('.itemGenres', page), programInfo, context);
-        LibraryBrowser.renderOverview($('.itemOverview', page), programInfo);
+        LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), programInfo);
 
         if (programInfo.ImageTags && programInfo.ImageTags.Primary) {
 
@@ -121,7 +121,7 @@
 
         reload(page);
 
-    }).on('pagehide', "#liveTvTimerPage", function () {
+    }).on('pagebeforehide', "#liveTvTimerPage", function () {
 
         currentItem = null;
     });

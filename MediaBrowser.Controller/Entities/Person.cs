@@ -70,13 +70,27 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
         {
-            return inputItems.Where(GetItemFilter());
+            var itemsWithPerson = LibraryManager.GetItemIds(new InternalItemsQuery
+            {
+                Person = Name
+            });
+
+            return inputItems.Where(i => itemsWithPerson.Contains(i.Id));
         }
 
 
         public Func<BaseItem, bool> GetItemFilter()
         {
-            return i => i.People.Any(p => string.Equals(p.Name, Name, StringComparison.OrdinalIgnoreCase));
+            return i => LibraryManager.GetPeople(i).Any(p => string.Equals(p.Name, Name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get
+            {
+                return false;
+            }
         }
     }
 
@@ -85,6 +99,8 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class PersonInfo
     {
+        public Guid ItemId { get; set; }
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>

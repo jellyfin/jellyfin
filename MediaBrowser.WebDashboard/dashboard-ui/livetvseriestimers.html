@@ -4,20 +4,20 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvSeriesTimersPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvseriestimers">
+    <div id="liveTvSeriesTimersPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvseriestimers,livetvcss">
         <div class="libraryViewNav">
-            <a href="livetvsuggested.html">${TabSuggestions}</a>
-            <a href="livetvguide.html">${TabGuide}</a>
-            <a href="livetvchannels.html">${TabChannels}</a>
-            <a href="livetvrecordings.html">${TabRecordings}</a>
-            <a href="livetvtimers.html">${TabScheduled}</a>
-            <a href="livetvseriestimers.html" class="ui-btn-active">${TabSeries}</a>
+            <a href="livetvsuggested.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+            <a href="livetvguide.html"><iron-icon icon="grid-on"></iron-icon>${TabGuide}</a>
+            <a href="livetvchannels.html"><iron-icon icon="live-tv"></iron-icon>${TabChannels}</a>
+            <a href="livetvrecordings.html"><iron-icon icon="slideshow"></iron-icon>${TabRecordings}</a>
+            <a href="livetvtimers.html"><iron-icon icon="schedule"></iron-icon>${TabScheduled}</a>
+            <a href="#" class="ui-btn-active"><iron-icon icon="refresh"></iron-icon>${TabSeries}</a>
         </div>
         <div data-role="content">
             <div style="max-width: 600px; margin: 0 auto;">
 
                 <div style="text-align: right;">
-                    <button data-mini="true" data-icon="sort" data-inline="true" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonSort}</button>
+                    <button data-mini="true" data-inline="true" onclick="$('#sortPanel', $(this).parents('.page')).panel( 'toggle' );">${ButtonSort}</button>
                 </div>
 
                 <div id="items"></div>

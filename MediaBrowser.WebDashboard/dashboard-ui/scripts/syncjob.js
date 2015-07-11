@@ -2,6 +2,8 @@
 
     function renderJob(page, job, dialogOptions) {
 
+        require(['paperbuttonstyle']);
+
         var html = '';
 
         html += '<div>';
@@ -12,7 +14,9 @@
 
         html += '<br/>';
         html += '<br/>';
-        html += '<button type="submit" data-icon="check">' + Globalize.translate('ButtonSave') + '</button>';
+        html += '<button type="submit" data-role="none" class="clearButton">';
+        html += '<paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>' + Globalize.translate('ButtonSave') + '</span></paper-button>';
+        html += '</button>';
 
         $('.syncJobForm', page).html(html).trigger('create');
         SyncManager.renderForm({
@@ -118,9 +122,7 @@
 
         html += '</ul>';
 
-        var elem = $('.jobItems', page).html(html).trigger('create');
-
-        $(".lazy", elem).unveil(200);
+        var elem = $('.jobItems', page).html(html).trigger('create').lazyChildren();
 
         $('.btnJobItemMenu', elem).on('click', function () {
             showJobItemMenu(this);
@@ -131,65 +133,79 @@
 
         var page = $(elem).parents('.page');
         var listItem = $(elem).parents('li');
-        var id = listItem.attr('data-itemid');
+        var jobItemId = listItem.attr('data-itemid');
         var status = listItem.attr('data-status');
         var remove = listItem.attr('data-remove').toLowerCase() == 'true';
 
-        $('.jobMenu', page).popup("close").remove();
-
-        var html = '<div data-role="popup" class="jobMenu tapHoldMenu" data-theme="a">';
-
-        html += '<ul data-role="listview" style="min-width: 180px;">';
-        html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
+        var menuItems = [];
 
         if (status == 'Failed') {
-            html += '<li data-icon="check"><a href="#" class="btnRetryJobItem" data-id="' + id + '">' + Globalize.translate('ButtonQueueForRetry') + '</a></li>';
+            menuItems.push({
+                name: Globalize.translate('ButtonQueueForRetry'),
+                id: 'retry',
+                ironIcon: 'check'
+            });
         }
         else if (status == 'Cancelled') {
-            html += '<li data-icon="check"><a href="#" class="btnRetryJobItem" data-id="' + id + '">' + Globalize.translate('ButtonReenable') + '</a></li>';
+            menuItems.push({
+                name: Globalize.translate('ButtonReenable'),
+                id: 'retry',
+                ironIcon: 'check'
+            });
         }
         else if (status == 'Queued' || status == 'Transferring' || status == 'Converting' || status == 'ReadyToTransfer') {
-            html += '<li data-icon="delete"><a href="#" class="btnCancelJobItem" data-id="' + id + '">' + Globalize.translate('ButtonCancelItem') + '</a></li>';
+            menuItems.push({
+                name: Globalize.translate('ButtonCancelItem'),
+                id: 'cancel',
+                ironIcon: 'delete'
+            });
         }
         else if (status == 'Synced' && remove) {
-            html += '<li data-icon="check"><a href="#" class="btnUnmarkForRemoval" data-id="' + id + '">' + Globalize.translate('ButtonUnmarkForRemoval') + '</a></li>';
+            menuItems.push({
+                name: Globalize.translate('ButtonUnmarkForRemoval'),
+                id: 'unmarkforremoval',
+                ironIcon: 'check'
+            });
         }
         else if (status == 'Synced') {
-            html += '<li data-icon="check"><a href="#" class="btnMarkForRemoval" data-id="' + id + '">' + Globalize.translate('ButtonMarkForRemoval') + '</a></li>';
+            menuItems.push({
+                name: Globalize.translate('ButtonMarkForRemoval'),
+                id: 'markforremoval',
+                ironIcon: 'delete'
+            });
         }
 
-        html += '</ul>';
+        require(['actionsheet'], function () {
 
-        html += '</div>';
+            ActionSheetElement.show({
+                items: menuItems,
+                positionTo: elem,
+                callback: function (id) {
 
-        page.append(html);
+                    switch (id) {
 
-        var flyout = $('.jobMenu', page).popup({ positionTo: elem || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
+                        case 'cancel':
+                            cancelJobItem(page, jobItemId);
+                            break;
+                        case 'retry':
+                            retryJobItem(page, jobItemId);
+                            break;
+                        case 'markforremoval':
+                            markForRemoval(page, jobItemId);
+                            break;
+                        case 'unmarkforremoval':
+                            unMarkForRemoval(page, jobItemId);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
 
-            $(this).off("popupafterclose").remove();
-
-        });
-
-        $('.btnCancelJobItem', flyout).on('click', function () {
-            cancelJobItem(page, this.getAttribute('data-id'));
-        });
-
-        $('.btnRetryJobItem', flyout).on('click', function () {
-            retryJobItem(page, this.getAttribute('data-id'));
-        });
-
-        $('.btnUnmarkForRemoval', flyout).on('click', function () {
-            unMarkForRemoval(page, this.getAttribute('data-id'));
-        });
-
-        $('.btnMarkForRemoval', flyout).on('click', function () {
-            markForRemoval(page, this.getAttribute('data-id'));
         });
     }
 
     function cancelJobItem(page, jobItemId) {
-
-        $('.jobMenu', page).popup('close');
 
         // Need a timeout because jquery mobile will not show a popup while another is in the act of closing
 
@@ -209,8 +225,6 @@
 
     function markForRemoval(page, jobItemId) {
 
-        $('.jobMenu', page).popup('close');
-
         ApiClient.ajax({
 
             type: "POST",
@@ -224,8 +238,6 @@
 
     function unMarkForRemoval(page, jobItemId) {
 
-        $('.jobMenu', page).popup('close');
-
         ApiClient.ajax({
 
             type: "POST",
@@ -238,8 +250,6 @@
     }
 
     function retryJobItem(page, jobItemId) {
-
-        $('.jobMenu', page).popup('close');
 
         ApiClient.ajax({
 
@@ -393,14 +403,14 @@
         loadJob(page);
 
         startListening(page);
-        $(ApiClient).on("websocketmessage.syncJobPage", onWebSocketMessage);
+        $(ApiClient).on("websocketmessage", onWebSocketMessage);
 
-    }).on('pagehide', ".syncJobPage", function () {
+    }).on('pagebeforehide', ".syncJobPage", function () {
 
         var page = this;
 
         stopListening();
-        $(ApiClient).off(".syncJobPage");
+        $(ApiClient).off("websocketmessage", onWebSocketMessage);
     });
 
 })();

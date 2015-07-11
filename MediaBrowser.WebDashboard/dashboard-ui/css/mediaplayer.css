@@ -1,28 +1,4 @@
-﻿/* Now playing bar */
-.nowPlayingBar {
-    padding: 16px 0 16px 0;
-    border-top: 1px solid #444;
-    text-align: center;
-}
-
-.mediaButton {
-    vertical-align: top;
-}
-
-.mediaButton, .nowPlayingBarUserDataButtons .btnUserItemRating {
-    vertical-align: middle;
-    font-size: 30px;
-    color: #e8e8e8;
-    margin: 0 10px;
-    min-width: 30px;
-    text-align: center;
-}
-
-.videoTopControls .mediaButton {
-    font-size: 26px;
-}
-
-#mediaElement {
+﻿#mediaElement {
     display: inline-block;
     position: relative;
 }
@@ -60,21 +36,6 @@
     }
 }
 
-.nowPlayingDoubleText {
-    top: -3px;
-}
-
-.nowPlayingImage {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-    .nowPlayingImage img {
-        height: 50px;
-        margin-right: .5em;
-        vertical-align: bottom;
-    }
-
 .mediaButton img {
     height: 24px;
 }
@@ -87,102 +48,8 @@
     font-weight: normal;
 }
 
-.mediaSlider {
-    position: relative;
-    top: -10px;
-    width: 50px;
-    cursor: pointer;
-}
-
-.sliderContainer {
-    display: inline-block;
-}
-
-.positionSliderContainer {
-    width: 130px;
-}
-
-.nowPlayingBar .sliderContainer {
-    margin-top: 10px;
-    vertical-align: middle;
-}
-
-.volumeSliderContainer {
-    width: 90px;
-}
-
-.sliderContainer .ui-slider {
-    margin: 0 !important;
-}
-
-.sliderContainer .ui-slider-track {
-    margin: 0 15px !important;
-}
-
-.volumeSliderContainer .ui-slider-track {
-    margin-left: 5px !important;
-}
-
 .volumeButton {
     margin-right: .5em !important;
-}
-
-::-ms-thumb {
-    background-image: linear-gradient(#fefefe,#dddddd);
-    width: 15px;
-}
-
-::-ms-track {
-    padding: 0;
-    border: 0;
-    color: #777;
-}
-
-input[type="range"]::-ms-fill-lower {
-    background-color: #777;
-}
-
-input[type="range"]::-ms-fill-upper {
-    background-color: #777;
-}
-
-::-ms-tooltip {
-    display: none; /* display and visibility only */
-}
-
-@media all and (max-width: 800px) {
-
-    .nowPlayingBar .mediaButton {
-        margin-top: 0;
-        margin-bottom: 0;
-    }
-
-        .nowPlayingBar .mediaButton:not(.unpauseButton):not(.pauseButton):not(.remoteControlButton) {
-            display: none;
-        }
-
-    .remoteControlButton {
-        float: right;
-    }
-
-    .nowPlayingBar .unpauseButton, .nowPlayingBar .pauseButton {
-        float: right;
-    }
-
-    .nowPlayingBar .currentTime, .nowPlayingBar .positionSliderContainer, .nowPlayingBar .volumeSliderContainer, #nowPlayingBar .muteButton, #nowPlayingBar .unmuteButton {
-        display: none !important;
-    }
-
-    .nowPlayingBar {
-        padding: 10px 5px 10px 10px;
-        text-align: left;
-    }
-}
-
-@media (min-width: 1440px) {
-    #nowPlayingBar .positionSliderContainer {
-        width: 300px;
-    }
 }
 
 .mediaPlayerAudioContainer {
@@ -196,16 +63,4 @@ input[type="range"]::-ms-fill-upper {
 .mediaPlayerAudioContainerInner {
     padding: 1em;
     background: #222;
-}
-
-.nowPlayingBarUserDataButtons {
-    display: inline-block;
-    margin-left: 2em;
-}
-
-@media all and (max-width: 1200px) {
-
-    .nowPlayingBarUserDataButtons {
-        display: none;
-    }
 }

@@ -2,10 +2,10 @@
 
     function reloadItems(page) {
 
-        Sections.loadLatestChannelItems($(".items", page), Dashboard.getCurrentUserId());
+        Sections.loadLatestChannelItems(page.querySelector('.items'), Dashboard.getCurrentUserId());
     }
 
-    $(document).on('pageshowready', "#channelsLatestPage", function () {
+    $(document).on('pagebeforeshowready', "#channelsLatestPage", function () {
 
         reloadItems(this);
 

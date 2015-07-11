@@ -1,0 +1,223 @@
+<!--
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
+<link rel="import" href="../iron-selector/iron-selectable.html">
+<link rel="import" href="neon-animation-runner-behavior.html">
+<link rel="import" href="animations/opaque-animation.html">
+
+<!--
+`neon-animated-pages` manages a set of pages and runs an animation when switching between them. Its
+children pages should implement `Polymer.NeonAnimatableBehavior` and define `entry` and `exit`
+animations to be run when switching to or switching out of the page.
+
+@group Neon Elements
+@element neon-animated-pages
+@demo demo/index.html
+-->
+
+<dom-module id="neon-animated-pages">
+
+  <style>
+
+    :host {
+      display: block;
+      position: relative;
+    }
+
+    :host > ::content > * {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      height: 100%;
+    }
+
+    :host > ::content > :not(.iron-selected):not(.neon-animating) {
+      display: none !important;
+    }
+
+    :host > ::content > .neon-animating {
+      pointer-events: none;
+    }
+
+  </style>
+
+  <template>
+    <content id="content"></content>
+  </template>
+
+</dom-module>
+
+<script>
+(function() {
+
+  Polymer({
+
+    is: 'neon-animated-pages',
+
+    behaviors: [
+      Polymer.IronResizableBehavior,
+      Polymer.IronSelectableBehavior,
+      Polymer.NeonAnimationRunnerBehavior
+    ],
+
+    properties: {
+
+      activateEvent: {
+        type: String,
+        value: ''
+      },
+
+      // if true, the initial page selection will also be animated according to its animation config.
+      animateInitialSelection: {
+        type: Boolean,
+        value: false
+      }
+
+    },
+
+    observers: [
+      '_selectedChanged(selected)'
+    ],
+
+    listeners: {
+      'neon-animation-finish': '_onNeonAnimationFinish'
+    },
+
+    _selectedChanged: function(selected) {
+
+      var selectedPage = this.selectedItem;
+      var oldPage = this._valueToItem(this._prevSelected) || false;
+      this._prevSelected = selected;
+
+      // on initial load and if animateInitialSelection is negated, simply display selectedPage.
+      if (!oldPage && !this.animateInitialSelection) {
+        this._completeSelectedChanged();
+        return;
+      }
+
+      // insert safari fix.
+      this.animationConfig = [{
+        name: 'opaque-animation',
+        node: selectedPage
+      }];
+
+      // configure selectedPage animations.
+      if (this.entryAnimation) {
+        this.animationConfig.push({
+          name: this.entryAnimation,
+          node: selectedPage
+        });
+      } else {
+        if (selectedPage.getAnimationConfig) {
+          this.animationConfig.push({
+            animatable: selectedPage,
+            type: 'entry'
+          });
+        }
+      }
+
+      // configure oldPage animations iff exists.
+      if (oldPage) {
+
+        // cancel the currently running animation if one is ongoing.
+        if (oldPage.classList.contains('neon-animating')) {
+          this._squelchNextFinishEvent = true;
+          this.cancelAnimation();
+          this._completeSelectedChanged();
+        }
+
+        // configure the animation.
+        if (this.exitAnimation) {
+          this.animationConfig.push({
+            name: this.exitAnimation,
+            node: oldPage
+          });
+        } else {
+          if (oldPage.getAnimationConfig) {
+            this.animationConfig.push({
+              animatable: oldPage,
+              type: 'exit'
+            });
+          }
+        }
+
+        // display the oldPage during the transition.
+        oldPage.classList.add('neon-animating');
+      }
+
+      // display the selectedPage during the transition.
+      selectedPage.classList.add('neon-animating');
+
+      // actually run the animations.
+      if (this.animationConfig.length > 1) {
+
+        // on first load, ensure we run animations only after element is attached.
+        if (!this.isAttached) {
+          this.async(function () {
+            this.playAnimation(undefined, {
+              fromPage: null,
+              toPage: selectedPage
+            });
+          });
+
+        } else {
+          this.playAnimation(undefined, {
+            fromPage: oldPage,
+            toPage: selectedPage
+          });
+        }
+
+      } else {
+        this._completeSelectedChanged(oldPage, selectedPage);
+      }
+    },
+
+    /**
+     * @param {Object=} oldPage
+     * @param {Object=} selectedPage
+     */
+    _completeSelectedChanged: function(oldPage, selectedPage) {
+      if (selectedPage) {
+        selectedPage.classList.remove('neon-animating');
+      }
+      if (oldPage) {
+        oldPage.classList.remove('neon-animating');
+      }
+      if (!selectedPage || !oldPage) {
+        var nodes = Polymer.dom(this.$.content).getDistributedNodes();
+        for (var node, index = 0; node = nodes[index]; index++) {
+          node.classList && node.classList.remove('neon-animating');
+        }
+      }
+      this.async(this._notifyPageResize);
+    },
+
+    _onNeonAnimationFinish: function(event) {
+      if (this._squelchNextFinishEvent) {
+        this._squelchNextFinishEvent = false;
+        return;
+      }
+      this._completeSelectedChanged(event.detail.fromPage, event.detail.toPage);
+    },
+
+    _notifyPageResize: function() {
+      var selectedPage = this.selectedItem;
+      this.resizerShouldNotify = function(element) {
+        return element == selectedPage;
+      }
+      this.notifyResize();
+    }
+
+  })
+
+})();
+</script>

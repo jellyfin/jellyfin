@@ -53,14 +53,14 @@
     white-space: nowrap;
 }
 
-.detailTableButtonsCell button {
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
-    .detailTableButtonsCell button + button {
-        margin-left: .5em;
+    .detailTableButtonsCell button {
+        margin-top: 0;
+        margin-bottom: 0;
     }
+
+        .detailTableButtonsCell button + button {
+            margin-left: .5em;
+        }
 
 @media all and (min-width: 600px) {
     .tabletColumn {
@@ -79,7 +79,6 @@
     background-color: #eeeeee; /* non-RGBA fallback  */
     background-color: rgba(0,0,0,.1);
 }
-
 
 .stripedTable tbody tr:nth-child(odd) td,
 .stripedTable tbody tr:nth-child(odd) th {

@@ -295,5 +295,14 @@ namespace MediaBrowser.Controller.Entities
 
             return config.GroupedFolders.Select(i => new Guid(i)).Contains(id);
         }
+
+        [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get
+            {
+                return false;
+            }
+        }
     }
 }

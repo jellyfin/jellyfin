@@ -25,10 +25,9 @@ namespace MediaBrowser.LocalMetadata.Providers
             var images = new List<LocalImageInfo>();
             var chapters = new List<ChapterInfo>();
 
-            new EpisodeXmlParser(_logger).Fetch(result.Item, images, chapters, path, cancellationToken);
+            new EpisodeXmlParser(_logger).Fetch(result, images, path, cancellationToken);
 
             result.Images = images;
-            result.Chapters = chapters;
         }
 
         protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)

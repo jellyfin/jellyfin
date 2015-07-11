@@ -227,6 +227,8 @@
     <Compile Include="Logging\PatternsLogger.cs" />
     <Compile Include="MediaEncoder\EncodingManager.cs" />
     <Compile Include="Persistence\BaseSqliteRepository.cs" />
+    <Compile Include="Social\SharingManager.cs" />
+    <Compile Include="Social\SharingRepository.cs" />
     <Compile Include="Sorting\StartDateComparer.cs" />
     <Compile Include="Sync\SyncHelper.cs" />
     <Compile Include="Sync\SyncJobOptions.cs" />

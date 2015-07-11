@@ -51,38 +51,6 @@
     padding: 2px 5px;
 }
 
-.circle {
-    background-color: rgba(0,0,0,0);
-    border: 5px solid rgba(0,183,229,0.9);
-    opacity: .9;
-    border-right: 5px solid rgba(0,0,0,0);
-    border-left: 5px solid rgba(0,0,0,0);
-    border-radius: 30px;
-    box-shadow: 0 0 20px #2187e7;
-    width: 30px;
-    height: 30px;
-    margin: 0 auto;
-    -moz-animation: spinPulse 1s infinite ease-in-out;
-    -webkit-animation: spinPulse 1s infinite linear;
-}
-
-.circle1 {
-    background-color: rgba(0,0,0,0);
-    border: 5px solid rgba(0,183,229,0.9);
-    opacity: .9;
-    border-left: 5px solid rgba(0,0,0,0);
-    border-right: 5px solid rgba(0,0,0,0);
-    border-radius: 30px;
-    box-shadow: 0 0 15px #2187e7;
-    width: 15px;
-    height: 15px;
-    margin: 0 auto;
-    position: relative;
-    top: -32px;
-    -moz-animation: spinoffPulse 1s infinite linear;
-    -webkit-animation: spinoffPulse 1s infinite linear;
-}
-
 @-moz-keyframes spinPulse {
     0% {
         -moz-transform: rotate(160deg);
@@ -148,7 +116,7 @@
     padding: 4px 0 3px 0;
     text-indent: 50px;
     font-size: 16px;
-    font-family: Roboto;
+    font-family: inherit;
     outline: none;
     vertical-align: middle;
     width: 85%;
@@ -228,6 +196,6 @@
 }
 
 .btnCloseSearch {
-    padding: 0 5px;
-    outline: 0;
+    padding-top: 0;
+    padding-bottom: 0;
 }

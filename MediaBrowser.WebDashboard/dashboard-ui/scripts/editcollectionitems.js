@@ -96,7 +96,7 @@
         }).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
-            $(document).scrollTop(0);
+            window.scrollTo(0, 0);
 
             var html = result.Items.map(getTitleHtml).join('');
 
@@ -285,17 +285,11 @@
 
         reload(page);
 
-        $("body").on("popupafteropen.collections", ".popupIdentify", function (e) {
-            $("#txtLookupName").focus().select();
-        });
-
-    }).on('pagehide', "#editCollectionTitlesPage", function () {
+    }).on('pagebeforehide', "#editCollectionTitlesPage", function () {
 
         var page = this;
 
         currentItem = null;
-
-        $("body").off("popupafteropen.collections");
     });
 
 })(jQuery, document, window, window.FileReader, escape);

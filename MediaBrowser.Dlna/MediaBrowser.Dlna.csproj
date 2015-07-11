@@ -82,6 +82,7 @@
     <Compile Include="Profiles\DirectTvProfile.cs" />
     <Compile Include="Profiles\DishHopperJoeyProfile.cs" />
     <Compile Include="Profiles\PopcornHourProfile.cs" />
+    <Compile Include="Profiles\SonyPs4Profile.cs" />
     <Compile Include="Profiles\VlcProfile.cs" />
     <Compile Include="Ssdp\DeviceDiscoveryInfo.cs" />
     <Compile Include="Ssdp\Extensions.cs" />
@@ -209,6 +210,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Profiles\Xml\BubbleUPnp.xml" />
     <EmbeddedResource Include="Profiles\Xml\Vlc.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 4.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

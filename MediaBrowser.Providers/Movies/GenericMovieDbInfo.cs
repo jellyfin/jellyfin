@@ -34,8 +34,6 @@ namespace MediaBrowser.Providers.Movies
 
         public async Task<MetadataResult<T>> GetMetadata(ItemLookupInfo itemId, CancellationToken cancellationToken)
         {
-            var result = new MetadataResult<T>();
-
             var tmdbId = itemId.GetProviderId(MetadataProviders.Tmdb);
             var imdbId = itemId.GetProviderId(MetadataProviders.Imdb);
 
@@ -56,12 +54,10 @@ namespace MediaBrowser.Providers.Movies
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                result.Item = await FetchMovieData(tmdbId, imdbId, itemId.MetadataLanguage, itemId.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
-
-                result.HasMetadata = result.Item != null;
+                return await FetchMovieData(tmdbId, imdbId, itemId.MetadataLanguage, itemId.MetadataCountryCode, cancellationToken).ConfigureAwait(false);
             }
 
-            return result;
+            return new MetadataResult<T>();
         }
 
         /// <summary>
@@ -73,8 +69,13 @@ namespace MediaBrowser.Providers.Movies
         /// <param name="preferredCountryCode">The preferred country code.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{`0}.</returns>
-        private async Task<T> FetchMovieData(string tmdbId, string imdbId, string language, string preferredCountryCode, CancellationToken cancellationToken)
+        private async Task<MetadataResult<T>> FetchMovieData(string tmdbId, string imdbId, string language, string preferredCountryCode, CancellationToken cancellationToken)
         {
+            var item = new MetadataResult<T>
+            {
+                Item = new T()
+            };
+
             string dataFilePath = null;
             MovieDbProvider.CompleteMovieData movieInfo = null;
 
@@ -82,7 +83,7 @@ namespace MediaBrowser.Providers.Movies
             if (string.IsNullOrEmpty(tmdbId))
             {
                 movieInfo = await MovieDbProvider.Current.FetchMainResult(imdbId, false, language, cancellationToken).ConfigureAwait(false);
-                if (movieInfo == null) return null;
+                if (movieInfo == null) return item;
 
                 tmdbId = movieInfo.id.ToString(_usCulture);
 
@@ -96,9 +97,8 @@ namespace MediaBrowser.Providers.Movies
             dataFilePath = dataFilePath ?? MovieDbProvider.Current.GetDataFilePath(tmdbId, language);
             movieInfo = movieInfo ?? _jsonSerializer.DeserializeFromFile<MovieDbProvider.CompleteMovieData>(dataFilePath);
 
-            var item = new T();
-
             ProcessMainInfo(item, preferredCountryCode, movieInfo);
+            item.HasMetadata = true;
 
             return item;
         }
@@ -106,11 +106,13 @@ namespace MediaBrowser.Providers.Movies
         /// <summary>
         /// Processes the main info.
         /// </summary>
-        /// <param name="movie">The movie.</param>
+        /// <param name="resultItem">The result item.</param>
         /// <param name="preferredCountryCode">The preferred country code.</param>
         /// <param name="movieData">The movie data.</param>
-        private void ProcessMainInfo(T movie, string preferredCountryCode, MovieDbProvider.CompleteMovieData movieData)
+        private void ProcessMainInfo(MetadataResult<T> resultItem, string preferredCountryCode, MovieDbProvider.CompleteMovieData movieData)
         {
+            var movie = resultItem.Item;
+
             movie.Name = movieData.GetTitle() ?? movie.Name;
 
             var hasOriginalTitle = movie as IHasOriginalTitle;
@@ -233,13 +235,19 @@ namespace MediaBrowser.Providers.Movies
             //actors come from cast
             if (movieData.casts != null && movieData.casts.cast != null)
             {
-                foreach (var actor in movieData.casts.cast.OrderBy(a => a.order)) movie.AddPerson(new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
+                foreach (var actor in movieData.casts.cast.OrderBy(a => a.order))
+                {
+                    PeopleHelper.AddPerson(resultItem.People, new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
+                }
             }
 
             //and the rest from crew
             if (movieData.casts != null && movieData.casts.crew != null)
             {
-                foreach (var person in movieData.casts.crew) movie.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
+                foreach (var person in movieData.casts.crew)
+                {
+                    PeopleHelper.AddPerson(resultItem.People, new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
+                }
             }
 
             if (movieData.keywords != null && movieData.keywords.keywords != null)

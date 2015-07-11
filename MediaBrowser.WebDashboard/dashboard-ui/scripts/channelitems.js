@@ -31,11 +31,11 @@
 
     function showLoadingMessage(page) {
 
-        $('#popupDialog', page).popup('open');
+        Dashboard.showModalLoadingMsg();
     }
 
     function hideLoadingMessage(page) {
-        $('#popupDialog', page).popup('close');
+        Dashboard.hideModalLoadingMsg();
     }
 
     function reloadFeatures(page) {
@@ -124,7 +124,7 @@
         ApiClient.getJSON(ApiClient.getUrl("Channels/" + channelId + "/Items", query)).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
-            $(document).scrollTop(0);
+            window.scrollTo(0, 0);
 
             var html = '';
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
@@ -136,7 +136,7 @@
                 updatePageSizeSetting: false
             });
 
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
             updateFilterControls(page);
 
@@ -152,9 +152,9 @@
                 centerText: true
             });
 
-            var elem = $('#items', page).html(html).lazyChildren();
-
-            $(pagingHtml).appendTo(elem).trigger('create');
+            var elem = page.querySelector('#items');
+            elem.innerHTML = html + pagingHtml;
+            ImageLoader.lazyChildren(elem);
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -256,7 +256,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#channelItemsPage", function () {
+    }).on('pagebeforeshowready', "#channelItemsPage", function () {
 
         var page = this;
         var limit = LibraryBrowser.getDefaultPageSize();

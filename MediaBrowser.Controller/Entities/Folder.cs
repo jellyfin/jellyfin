@@ -134,7 +134,7 @@ namespace MediaBrowser.Controller.Entities
         /// <exception cref="System.InvalidOperationException">Unable to add  + item.Name</exception>
         public async Task AddChild(BaseItem item, CancellationToken cancellationToken)
         {
-            item.Parent = this;
+            item.SetParent(this);
 
             if (item.Id == Guid.Empty)
             {
@@ -230,7 +230,7 @@ namespace MediaBrowser.Controller.Entities
         {
             RemoveChildrenInternal(new[] { item });
 
-            item.Parent = null;
+            item.SetParent(null);
 
             return ItemRepository.SaveChildren(Id, ActualChildren.Select(i => i.Id).ToList(), cancellationToken);
         }
@@ -783,11 +783,11 @@ namespace MediaBrowser.Controller.Entities
                     return LibraryManager.GetOrAddByReferenceItem(item);
                 }
 
-                item.Parent = this;
+                item.SetParent(this);
             }
             else
             {
-                child.Parent = this;
+                child.SetParent(this);
                 LibraryManager.RegisterItem(child);
                 item = child;
             }

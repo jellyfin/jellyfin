@@ -73,7 +73,7 @@
         var list = DashboardPage.sessionsList;
 
         if (list) {
-            console.log('refreshSessionsLocally');
+            Logger.log('refreshSessionsLocally');
             DashboardPage.renderActiveConnections($.mobile.activePage, list);
         }
     },
@@ -93,11 +93,7 @@
                 $('#ports', page).html(Globalize.translate('LabelRunningOnPort', '<b>' + systemInfo.HttpServerPortNumber + '</b>'));
             }
 
-            if (systemInfo.CanSelfRestart) {
-                $('.btnRestartContainer', page).removeClass('hide');
-            } else {
-                $('.btnRestartContainer', page).addClass('hide');
-            }
+            $('.btnRestartContainer', page).visible(systemInfo.CanSelfRestart);
 
             DashboardPage.renderUrls(page, systemInfo);
             DashboardPage.renderPendingInstallations(page, systemInfo);
@@ -142,7 +138,13 @@
 
             var pagingHtml = '';
             pagingHtml += '<div>';
-            pagingHtml += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, [], false);
+            pagingHtml += LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                showLimit: false,
+                updatePageSizeSetting: false
+            });
             pagingHtml += '</div>';
 
             html = html.join('') + pagingHtml;
@@ -773,7 +775,7 @@
 
                 html += "<span style='color:#009F00;margin-left:5px;margin-right:5px;'>" + progress + "%</span>";
 
-                html += '<button type="button" data-icon="stop" data-iconpos="notext" data-inline="true" data-mini="true" onclick="DashboardPage.stopTask(\'' + task.Id + '\');">' + Globalize.translate('ButtonStop') + '</button>';
+                html += '<button type="button" data-icon="delete" data-iconpos="notext" data-inline="true" data-mini="true" onclick="DashboardPage.stopTask(\'' + task.Id + '\');">' + Globalize.translate('ButtonStop') + '</button>';
             }
             else if (task.State == "Cancelling") {
                 html += '<span style="color:#cc0000;">' + Globalize.translate('LabelStopping') + '</span>';
@@ -1007,7 +1009,7 @@
     }
 };
 
-$(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('pagehide', "#dashboardPage", DashboardPage.onPageHide);
+$(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('pagebeforehide', "#dashboardPage", DashboardPage.onPageHide);
 
 (function ($, document, window) {
 
@@ -1020,23 +1022,19 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
             showOverlayTimeout = null;
         }
 
-        $('.cardOverlayTarget:visible', this).each(function () {
+        var elem = this.querySelector('.cardOverlayTarget');
 
-            var elem = this;
+        if ($(elem).is(':visible')) {
+            require(["jquery", "velocity"], function ($, Velocity) {
 
-            $(this).animate({ "height": "0" }, "fast", function () {
-
-                $(elem).hide();
-
+                Velocity.animate(elem, { "height": "0" },
+                {
+                    complete: function () {
+                        $(elem).hide();
+                    }
+                });
             });
-
-        });
-
-        $('.cardOverlayTarget:visible', this).stop().animate({ "height": "0" }, function () {
-
-            $(this).hide();
-
-        });
+        }
     }
 
     $.fn.createSessionItemMenus = function () {
@@ -1080,8 +1078,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
             return this;
         }
 
-        return this.off('.sessionItemMenu').on('mouseenter.sessionItemMenu', '.playingSession', onHoverIn)
-            .on('mouseleave.sessionItemMenu', '.playingSession', onHoverOut);
+        return this.off('mouseenter', '.playingSession', onHoverIn).off('mouseleave', '.playingSession', onHoverOut).on('mouseenter', '.playingSession', onHoverIn).on('mouseleave', '.playingSession', onHoverOut);
     };
 
 })(jQuery, document, window);
@@ -1159,7 +1156,13 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
 
             var query = { StartIndex: startIndex, Limit: limit };
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, limit, false);
+            html += LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                showLimit: false,
+                updatePageSizeSetting: false
+            });
         }
 
         $(elem).html(html).trigger('create');
@@ -1217,7 +1220,8 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
         elem.each(function () {
 
             reloadData(this);
-        });
+
+        }).addClass('activityLogListWidget');
 
         var apiClient = ApiClient;
 
@@ -1225,21 +1229,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
             return;
         }
 
-        $(apiClient).on('websocketmessage.activityloglistener', function (e, data) {
-
-            var msg = data;
-
-            if (msg.MessageType === "ActivityLogEntry") {
-                elem.each(function () {
-
-                    reloadData(this);
-                });
-            }
-
-        }).on('websocketopen.activityloglistener', function (e, data) {
-
-            startListening(apiClient);
-        });
+        $(apiClient).on('websocketmessage', onSocketMessage).on('websocketopen', onSocketOpen);
     }
 
     function startListening(apiClient) {
@@ -1258,22 +1248,41 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
 
     }
 
+    function onSocketOpen() {
+        
+        var apiClient = ApiClient;
+        if (apiClient) {
+            startListening(apiClient);
+        }
+    }
+
+    function onSocketMessage(e, data) {
+
+        var msg = data;
+
+        if (msg.MessageType === "ActivityLogEntry") {
+            $('.activityLogListWidget').each(function () {
+
+                reloadData(this);
+            });
+        }
+    }
+
     function destroyList(elem) {
 
         var apiClient = ApiClient;
 
         if (apiClient) {
-            $(apiClient).off('websocketopen.activityloglistener').off('websocketmessage.activityloglistener');
+            $(apiClient).off('websocketopen', onSocketOpen).off('websocketmessage', onSocketOpen);
 
             stopListening(apiClient);
         }
-
-        return this;
     }
 
     $.fn.activityLogList = function (action) {
 
         if (action == 'destroy') {
+            this.removeClass('activityLogListWidget');
             destroyList(this);
         } else {
             createList(this);
@@ -1302,7 +1311,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
             result.CustomPrefs[welcomeTourKey] = welcomeDismissValue;
             ApiClient.updateDisplayPreferences('dashboard', result, userId, 'dashboard');
 
-            $(page).off('.checktour');
+            $(page).off('pageshowready', onPageShowReadyCheckTour);
         });
     }
 
@@ -1359,6 +1368,16 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
         });
     }
 
+    function onPageShowReadyCheckTour() {
+        var page = this;
+
+        var apiClient = ApiClient;
+
+        if (apiClient && !AppInfo.isNativeApp) {
+            showWelcomeIfNeeded(page, apiClient);
+        }
+    }
+
     $(document).on('pageinitdepends', "#dashboardPage", function () {
 
         var page = this;
@@ -1367,17 +1386,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
             takeTour(page, Dashboard.getCurrentUserId());
         });
 
-    }).on('pageshowready.checktour', "#dashboardPage", function () {
-
-        var page = this;
-
-        var apiClient = ApiClient;
-
-        if (apiClient && !AppInfo.isNativeApp) {
-            showWelcomeIfNeeded(page, apiClient);
-        }
-
-    });
+    }).on('pageshowready', "#dashboardPage", onPageShowReadyCheckTour);
 
 })(jQuery, document, window);
 

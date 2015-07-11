@@ -5,22 +5,15 @@
 </head>
 <body>
     <div id="tvUpcomingPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="series" data-require="scripts/tvupcoming">
-        <div class="libraryViewNav globalNav" style="display: none;">
-            <a href="index.html">${TabHome}</a>
-            <a href="homelatest.html">${TabLatest}</a>
-            <a href="tvrecommended.html">${TabNextUp}</a>
-            <a href="favorites.html">${TabFavorites}</a>
-            <a href="#" class="ui-btn-active">${TabUpcoming}</a>
-        </div>
-        <div class="libraryViewNav scopedLibraryViewNav" style="display: none;">
-            <a href="tvrecommended.html">${TabSuggestions}</a>
-            <a href="tvlatest.html">${TabLatest}</a>
-            <a href="tvupcoming.html" class="ui-btn-active">${TabUpcoming}</a>
-            <a href="tvshows.html">${TabShows}</a>
-            <a href="episodes.html" class="tvEpisodesTab">${TabEpisodes}</a>
-            <a href="tvgenres.html">${TabGenres}</a>
-            <a href="tvpeople.html" class="tvPeopleTab">${TabPeople}</a>
-            <a href="tvstudios.html" class="tvStudiosTab">${TabNetworks}</a>
+        <div class="libraryViewNav scopedLibraryViewNav">
+            <a href="tvrecommended.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+            <a href="tvlatest.html"><iron-icon icon="new-releases"></iron-icon>${TabLatest}</a>
+            <a href="tvupcoming.html" class="ui-btn-active"><iron-icon icon="schedule"></iron-icon>${TabUpcoming}</a>
+            <a href="tvshows.html"><iron-icon icon="live-tv"></iron-icon>${TabShows}</a>
+            <a href="episodes.html" class="tvEpisodesTab"><iron-icon icon="slideshow"></iron-icon>${TabEpisodes}</a>
+            <a href="tvgenres.html"><iron-icon icon="video-library"></iron-icon>${TabGenres}</a>
+            <a href="tvpeople.html" class="tvPeopleTab"><iron-icon icon="people"></iron-icon>${TabPeople}</a>
+            <a href="tvstudios.html" class="tvStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabNetworks}</a>
         </div>
         <div data-role="content">
             <div class="ehsContent">

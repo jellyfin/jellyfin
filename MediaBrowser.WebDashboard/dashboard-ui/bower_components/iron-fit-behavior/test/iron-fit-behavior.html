@@ -1,0 +1,351 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+
+    <title>iron-fit-behavior tests</title>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents.js"></script>
+
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+    <link rel="import" href="../../test-fixture/test-fixture.html">
+    <link rel="import" href="test-fit.html">
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      .absolute {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      .scrolling {
+        overflow: auto;
+      }
+
+      .sized-x {
+        width: 200px;
+      }
+
+      .sized-y {
+        height: 200px;
+      }
+
+      .positioned-left {
+        position: absolute;
+        left: 100px;
+      }
+
+      .positioned-right {
+        position: absolute;
+        right: 100px;
+      }
+
+      .positioned-top {
+        position: absolute;
+        top: 100px;
+      }
+
+      .positioned-bottom {
+        position: absolute;
+        bottom: 100px;
+      }
+
+      .with-max-width {
+        max-width: 500px;
+      }
+
+      .with-max-height {
+        max-height: 500px;
+      }
+
+      .with-margin {
+        margin: 20px;
+      }
+
+    </style>
+
+  </head>
+  <body>
+
+    <test-fixture id="absolute">
+      <template>
+        <test-fit auto-fit-on-attach class="absolute">
+          Absolutely positioned
+        </test-fit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="sized-xy">
+      <template>
+        <test-fit auto-fit-on-attach class="sized-x sized-y">
+          Sized (x/y), auto center/center
+        </test-fit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="sized-x">
+      <template>
+        <test-fit auto-fit-on-attach class="sized-x">
+          Sized (x), auto center/center
+        </test-fit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="positioned-xy">
+      <template>
+        <test-fit auto-fit-on-attach class="sized-x positioned-left positioned-top">
+          Sized (x/y), positioned/positioned
+        </test-fit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="inline-positioned-xy">
+      <template>
+        <test-fit auto-fit-on-attach class="sized-x sized-y" style="position:absolute;left:100px;top:100px;">
+          Sized (x/y), positioned/positioned
+        </test-fit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="sectioned">
+      <template>
+        <test-fit auto-fit-on-attach class="sized-x">
+          <div>
+            Sized (x), auto center/center with scrolling section
+          </div>
+          <div class="internal"></div>
+        </test-fit>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="constrain-target">
+      <template>
+        <div class="constrain" style="position: fixed; top: 20px; left: 100px; width: 50vw; height: 50vh; border: 1px solid black;">
+          <test-fit auto-fit-on-attach class="el">
+            <div>
+              Auto center/center to parent element
+            </div>
+          </test-fit>
+        </div>
+      </template>
+    </test-fixture>
+
+    <template id="ipsum">
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    </template>
+
+    <script>
+
+      function makeScrolling(el) {
+        el.classList.add('scrolling');
+        var template = document.getElementById('ipsum');
+        for (var i = 0; i < 20; i++) {
+          el.appendChild(template.content.cloneNode(true));
+        }
+      }
+
+      suite('manual positioning', function() {
+
+        test('css positioned element is not re-positioned', function() {
+          var el = fixture('positioned-xy');
+          var rect = el.getBoundingClientRect();
+          assert.equal(rect.top, 100, 'top is unset');
+          assert.equal(rect.left, 100, 'left is unset');
+
+        });
+
+        test('inline positioned element is not re-positioned', function() {
+          var el = fixture('inline-positioned-xy');
+          var rect = el.getBoundingClientRect();
+          // need to measure document.body here because mocha sets a min-width on html,body, and
+          // the element is positioned wrt to that by css
+          var bodyRect = document.body.getBoundingClientRect();
+          assert.equal(rect.top, 100, 'top is unset');
+          assert.equal(rect.left, 100, 'left is unset');
+
+          el.refit();
+
+          rect = el.getBoundingClientRect();
+          assert.equal(rect.top, 100, 'top is unset after refit');
+          assert.equal(rect.left, 100, 'left is unset after refit');
+
+        });
+
+        test('position property is preserved after', function() {
+          var el = fixture('absolute');
+          assert.equal(getComputedStyle(el).position, 'absolute', 'position:absolute is preserved');
+        });
+      });
+
+      suite('fit to window', function() {
+
+        test('sized element is centered in viewport', function() {
+          var el = fixture('sized-xy');
+          var rect = el.getBoundingClientRect();
+          assert.closeTo(rect.left - (window.innerWidth - rect.right), 0, 5, 'centered horizontally');
+          assert.closeTo(rect.top - (window.innerHeight - rect.bottom), 0, 5, 'centered vertically');
+        });
+
+        test('sized element with margin is centered in viewport', function() {
+          var el = fixture('sized-xy');
+          el.classList.add('with-margin');
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          assert.closeTo(rect.left - (window.innerWidth - rect.right), 0, 5, 'centered horizontally');
+          assert.closeTo(rect.top - (window.innerHeight - rect.bottom), 0, 5, 'centered vertically');
+        });
+
+        test('scrolling element is centered in viewport', function() {
+          var el = fixture('sized-x');
+          makeScrolling(el);
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          assert.closeTo(rect.left - (window.innerWidth - rect.right), 0, 5, 'centered horizontally');
+          assert.closeTo(rect.top - (window.innerHeight - rect.bottom), 0, 5, 'centered vertically');
+        });
+
+        test('scrolling element is constrained to viewport height', function() {
+          var el = fixture('sized-x');
+          makeScrolling(el);
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight, 'height is less than or equal to viewport height');
+        });
+
+        test('scrolling element with max-height is centered in viewport', function() {
+          var el = fixture('sized-x');
+          el.classList.add('with-max-height');
+          makeScrolling(el);
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          assert.closeTo(rect.left - (window.innerWidth - rect.right), 0, 5, 'centered horizontally');
+          assert.closeTo(rect.top - (window.innerHeight - rect.bottom), 0, 5, 'centered vertically');
+        });
+
+        test('scrolling element with max-height respects max-height', function() {
+          var el = fixture('sized-x');
+          el.classList.add('with-max-height');
+          makeScrolling(el);
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          assert.isTrue(rect.height <= 500, 'height is less than or equal to max-height');
+        });
+
+        test('css positioned, scrolling element is constrained to viewport height (top,left)', function() {
+          var el = fixture('positioned-xy');
+          makeScrolling(el);
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight - 100, 'height is less than or equal to viewport height');
+        });
+
+        test('css positioned, scrolling element is constrained to viewport height (bottom, right)', function() {
+          var el = fixture('sized-x');
+          el.classList.add('positioned-bottom');
+          el.classList.add('positioned-right');
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight - 100, 'height is less than or equal to viewport height');
+        });
+
+        test('sized, scrolling element with margin is centered in viewport', function() {
+          var el = fixture('sized-x');
+          el.classList.add('with-margin');
+          makeScrolling(el);
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          assert.closeTo(rect.left - (window.innerWidth - rect.right), 0, 5, 'centered horizontally');
+          assert.closeTo(rect.top - (window.innerHeight - rect.bottom), 0, 5, 'centered vertically');
+        });
+
+        test('sized, scrolling element is constrained to viewport height', function() {
+          var el = fixture('sized-x');
+          el.classList.add('with-margin');
+          makeScrolling(el);
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight - 20 * 2, 'height is less than or equal to viewport height');
+        });
+
+        test('css positioned, scrolling element with margin is constrained to viewport height (top, left)', function() {
+          var el = fixture('positioned-xy');
+          el.classList.add('with-margin');
+          makeScrolling(el);
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight - 100 - 20 * 2, 'height is less than or equal to viewport height');
+        });
+
+        test('css positioned, scrolling element with margin is constrained to viewport height (bottom, right)', function() {
+          var el = fixture('sized-x');
+          el.classList.add('positioned-bottom');
+          el.classList.add('positioned-right');
+          el.classList.add('with-margin')
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight - 100 - 20 * 2, 'height is less than or equal to viewport height');
+        });
+
+        test('scrolling sizingTarget is constrained to viewport height', function() {
+          el = fixture('sectioned');
+          var internal = Polymer.dom(el).querySelector('.internal');
+          el.sizingTarget = internal;
+          makeScrolling(internal);
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          assert.isTrue(rect.height <= window.innerHeight, 'height is less than or equal to viewport height');
+        });
+
+      });
+
+      suite('fit to element', function() {
+
+        test('element fits in another element', function() {
+          var constrain = fixture('constrain-target');
+          var el = Polymer.dom(constrain).querySelector('.el')
+          makeScrolling(el);
+          el.fitInto = constrain;
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          var crect = constrain.getBoundingClientRect();
+          assert.isTrue(rect.height <= crect.height, 'width is less than or equal to fitInto width');
+          assert.isTrue(rect.height <= crect.height, 'height is less than or equal to fitInto height');
+        });
+
+        test('element centers in another element', function() {
+          var constrain = fixture('constrain-target');
+          var el = Polymer.dom(constrain).querySelector('.el')
+          makeScrolling(el);
+          el.fitInto = constrain;
+          el.refit();
+          var rect = el.getBoundingClientRect();
+          var crect = constrain.getBoundingClientRect();
+          assert.closeTo(rect.left - crect.left - (crect.right - rect.right), 0, 5, 'centered horizontally in fitInto');
+          assert.closeTo(rect.top - crect.top - (crect.bottom - rect.bottom), 0, 5, 'centered vertically in fitInto');
+        });
+
+      });
+
+    </script>
+
+  </body>
+</html>

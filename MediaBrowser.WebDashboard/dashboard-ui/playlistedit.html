@@ -4,42 +4,17 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="playlistEditorPage" data-role="page" class="page libraryPage" data-require="scripts/playlistedit">
-
-        <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="playlists.html" class="ui-btn-active">${TabPlaylists}</a>
-        </div>
+    <div id="playlistEditorPage" data-role="page" class="page libraryPage noSecondaryNavPage" data-require="scripts/playlistedit" data-backbutton="true">
 
         <div data-role="content">
-            <h2 style="text-align:center;" class="playlistName"></h2>
             <div class="viewSettings">
-                <div class="listTopPaging">
-                    &nbsp;
-                </div>
-                <button class="btnPlay hide" type="button" data-icon="play" data-inline="true" data-mini="true" style="margin-left:1em;">${ButtonPlay}</button>
+                <div class="listTopPaging"></div>
+                <paper-button raised class="secondary btnPlay hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlay}</span></paper-button>
             </div>
-            <div id="items" class="itemsContainer"></div>
+            <div id="items" class="itemsContainer" style="max-width:1000px;margin: 0 auto;"></div>
             <div class="noItemsMessage" style="display: none; text-align: center;">
                 <p>${MessageNoPlaylistItemsAvailable}</p>
             </div>
-        </div>
-
-        <div data-role="panel" class="viewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
-
-                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
-                </div>
-
-                <div class="tabView viewTab">
-
-                    <div>
-                        <label for="selectPageSize">${LabelPageSize}</label>
-                        <select id="selectPageSize"></select>
-                    </div>
-
-                </div>
-            </form>
         </div>
     </div>
 </body>

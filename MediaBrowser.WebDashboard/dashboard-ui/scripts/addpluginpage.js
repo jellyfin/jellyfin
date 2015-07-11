@@ -17,6 +17,7 @@
     }
 
     function populateVersions(packageInfo, page, installedPlugin) {
+
         var html = '';
 
         for (var i = 0, length = packageInfo.versions.length; i < length; i++) {
@@ -92,7 +93,7 @@
                 html += "</div>";
             }
 
-            $('#latestReviews', page).html(html).trigger('create');
+            Events.trigger($('#latestReviews', page).html(html)[0], 'create');
         });
     }
 
@@ -109,12 +110,12 @@
         $('.pluginName', page).html(pkg.name);
 
         if (pkg.targetSystem == 'Server') {
-            $("#btnInstallDiv", page).show();
+            $("#btnInstallDiv", page).visible(true);
             $("#nonServerMsg", page).hide();
-            $("#pSelectVersion", page).show();
+            $("#pSelectVersion", page).visible(true);
         } else {
-            $("#btnInstallDiv", page).hide();
-            $("#pSelectVersion", page).hide();
+            $("#btnInstallDiv", page).visible(false);
+            $("#pSelectVersion", page).visible(false);
 
             var msg = Globalize.translate('MessageInstallPluginFromApp');
             $("#nonServerMsg", page).html(msg).show();

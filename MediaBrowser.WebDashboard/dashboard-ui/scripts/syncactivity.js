@@ -2,30 +2,24 @@
 
     function cancelJob(page, id) {
 
-        $('.jobMenu', page).on("popupafterclose.deleteuser", function () {
+        var msg = Globalize.translate('CancelSyncJobConfirmation');
 
-            $(this).off('popupafterclose.deleteuser');
+        Dashboard.confirm(msg, Globalize.translate('HeaderCancelSyncJob'), function (result) {
 
-            var msg = Globalize.translate('CancelSyncJobConfirmation');
+            if (result) {
+                Dashboard.showLoadingMsg();
 
-            Dashboard.confirm(msg, Globalize.translate('HeaderCancelSyncJob'), function (result) {
+                ApiClient.ajax({
 
-                if (result) {
-                    Dashboard.showLoadingMsg();
+                    url: ApiClient.getUrl('Sync/Jobs/' + id),
+                    type: 'DELETE'
 
-                    ApiClient.ajax({
+                }).done(function () {
 
-                        url: ApiClient.getUrl('Sync/Jobs/' + id),
-                        type: 'DELETE'
-
-                    }).done(function () {
-
-                        reloadData(page);
-                    });
-                }
-            });
-
-        }).popup('close');
+                    reloadData(page);
+                });
+            }
+        });
     }
 
     function getSyncJobHtml(page, job, cardBoxCssClass, syncJobPage) {
@@ -123,10 +117,8 @@
             textLines.push('&nbsp;');
         }
 
-        html += '<div class="cardText" style="text-align:right; position:absolute; bottom:5px; right: 5px;font-size:20px;">';
-        html += '<button type="button" data-role="none" class="btnJobMenu imageButton">';
-        html += '<i class="material-icons">more_vert</i>';
-        html += '</button>';
+        html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
+        html += '<paper-icon-button icon="more-vert" class="btnJobMenu"></paper-icon-button>';
         html += "</div>";
 
         for (var i = 0, length = textLines.length; i < length; i++) {
@@ -185,12 +177,11 @@
             html += getSyncJobHtml(page, job, cardBoxCssClass, syncJobPage);
         }
 
-        var elem = $('.syncActivity', page).html(html).trigger('create');
-
-        $(".lazy", elem).unveil(200);
+        var elem = $('.syncActivity', page).html(html).lazyChildren();
+        Events.trigger(elem[0], 'create');
 
         $('.btnJobMenu', elem).on('click', function () {
-            showJobMenu(this);
+            showJobMenu(page, this);
         });
 
         if (!jobs.length) {
@@ -199,40 +190,49 @@
         }
     }
 
-    function showJobMenu(elem) {
+    function showJobMenu(page, elem) {
 
         var card = $(elem).parents('.card');
-        var page = $(elem).parents('.page');
-        var id = card.attr('data-id');
+        var jobId = card.attr('data-id');
         var status = card.attr('data-status');
 
-        $('.jobMenu', page).popup("close").remove();
-
-        var html = '<div data-role="popup" class="jobMenu tapHoldMenu" data-theme="a">';
-
-        html += '<ul data-role="listview" style="min-width: 180px;">';
-        html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
+        var menuItems = [];
 
         if (status == 'Cancelled') {
-            html += '<li data-icon="delete"><a href="#" class="btnCancelJob" data-id="' + id + '">' + Globalize.translate('ButtonDelete') + '</a></li>';
+            menuItems.push({
+                name: Globalize.translate('ButtonDelete'),
+                id: 'delete',
+                ironIcon: 'delete'
+            });
         } else {
-            html += '<li data-icon="delete"><a href="#" class="btnCancelJob" data-id="' + id + '">' + Globalize.translate('ButtonCancel') + '</a></li>';
+            menuItems.push({
+                name: Globalize.translate('ButtonCancelSyncJob'),
+                id: 'cancel',
+                ironIcon: 'delete'
+            });
         }
 
-        html += '</ul>';
+        require(['actionsheet'], function () {
 
-        html += '</div>';
+            ActionSheetElement.show({
+                items: menuItems,
+                positionTo: elem,
+                callback: function (id) {
 
-        page.append(html);
+                    switch (id) {
 
-        var flyout = $('.jobMenu', page).popup({ positionTo: elem || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
+                        case 'delete':
+                            cancelJob(page, jobId);
+                            break;
+                        case 'cancel':
+                            cancelJob(page, jobId);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
 
-            $(this).off("popupafterclose").remove();
-
-        });
-
-        $('.btnCancelJob', flyout).on('click', function () {
-            cancelJob(page, this.getAttribute('data-id'));
         });
     }
 
@@ -312,9 +312,9 @@
         });
 
         startListening(page);
-        $(ApiClient).on("websocketmessage.syncactivity", onWebSocketMessage);
+        $(ApiClient).on("websocketmessage", onWebSocketMessage);
 
-    }).on('pagehide', ".syncActivityPage", function () {
+    }).on('pagebeforehide', ".syncActivityPage", function () {
 
         var page = this;
 
@@ -324,7 +324,7 @@
         });
 
         stopListening();
-        $(ApiClient).off(".syncactivity");
+        $(ApiClient).off("websocketmessage", onWebSocketMessage);
     });
 
 })();

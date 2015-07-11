@@ -27,7 +27,7 @@
 
         var mediaType = currentItem.MediaType;
 
-        LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, false, mediaType, userdata.PlaybackPositionTicks);
+        LibraryBrowser.showPlayMenu(null, currentItem.Id, currentItem.Type, false, mediaType, userdata.PlaybackPositionTicks);
     }
 
     function renderRecording(page, item) {
@@ -50,7 +50,7 @@
         $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item));
 
         LibraryBrowser.renderGenres($('.itemGenres', page), item, context);
-        LibraryBrowser.renderOverview($('.itemOverview', page), item);
+        LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), item);
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
         LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), item);
@@ -106,8 +106,8 @@
 
         var page = this;
 
-        $('#btnDelete', page).on('click', deleteRecording);
-        $('#btnPlay', page).on('click', play);
+        $('.btnDelete', page).on('click', deleteRecording);
+        $('.btnPlay', page).on('click', play);
 
         $('.btnSync', page).on('click', function () {
 
@@ -122,7 +122,7 @@
 
         reload(page);
 
-    }).on('pagehide', "#liveTvRecordingPage", function () {
+    }).on('pagebeforehide', "#liveTvRecordingPage", function () {
 
         currentItem = null;
     });

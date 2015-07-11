@@ -61,7 +61,6 @@
         self.showSearchPanel = function () {
 
             showSearchMenu();
-            $('.headerSearchInput').focus();
         };
     }
     window.Search = new search();
@@ -91,20 +90,26 @@
             centerImage: true,
             textLines: getAdditionalTextLines
         });
-        $('.itemsContainer', elem).html(html).lazyChildren();
+
+        var itemsContainer = elem.querySelector('.itemsContainer');
+        itemsContainer.innerHTML = html;
+        ImageLoader.lazyChildren(itemsContainer);
     }
 
     function requestSearchHintsForOverlay(elem, searchTerm) {
 
         var currentTimeout = searchHintTimeout;
+        Dashboard.showLoadingMsg();
 
         ApiClient.getSearchHints({ userId: Dashboard.getCurrentUserId(), searchTerm: searchTerm, limit: 30 }).done(function (result) {
 
-            if (currentTimeout != searchHintTimeout) {
-                return;
+            if (currentTimeout == searchHintTimeout) {
+                renderSearchResultsInOverlay(elem, result.SearchHints);
             }
 
-            renderSearchResultsInOverlay(elem, result.SearchHints);
+            Dashboard.hideLoadingMsg();
+        }).fail(function () {
+            Dashboard.hideLoadingMsg();
         });
     }
 
@@ -128,17 +133,16 @@
 
     function getSearchOverlay(createIfNeeded) {
 
-        var elem = $('.searchResultsOverlay');
+        var elem = document.querySelector('.searchResultsOverlay');
 
-        if (createIfNeeded && !elem.length) {
+        if (createIfNeeded && !elem) {
 
             var html = '<div class="searchResultsOverlay ui-page-theme-b smoothScrollY">';
 
             html += '<div class="searchResultsContainer"><div class="itemsContainer"></div></div></div>';
 
-            elem = $(html).appendTo(document.body).hide().trigger('create');
-
-            elem.createCardMenus();
+            elem = $(html).appendTo(document.body).hide()[0];
+            $(elem).createCardMenus();
         }
 
         return elem;
@@ -146,101 +150,62 @@
 
     function onHeaderSearchChange(val) {
 
+        var elem;
+
         if (val) {
-            updateSearchOverlay(getSearchOverlay(true).fadeIn('fast'), val);
-            $(document.body).addClass('bodyWithPopupOpen');
+
+            elem = getSearchOverlay(true);
+
+            $(elem).show();
+            elem.style.opacity = '1';
+            document.body.classList.add('bodyWithPopupOpen');
+
+            updateSearchOverlay(elem, val);
 
         } else {
+            elem = getSearchOverlay(false);
 
-            updateSearchOverlay(getSearchOverlay(false).fadeOut('fast'), val);
-            $(document.body).removeClass('bodyWithPopupOpen');
+            if (elem) {
+                require(["jquery", "velocity"], function ($, Velocity) {
+
+                    $(elem).velocity("fadeOut");
+                    document.body.classList.remove('bodyWithPopupOpen');
+                });
+                updateSearchOverlay(elem, '');
+            }
         }
     }
 
     function bindSearchEvents() {
 
-        $('.headerSearchInput').on("keyup", function (e) {
+        require(['searchmenu'], function () {
+            Events.on(SearchMenu, 'closed', closeSearchResults);
+            Events.on(SearchMenu, 'change', function (e, value) {
 
-            // Down key
-            if (e.keyCode == 40) {
-
-                //var first = $('.card', panel)[0];
-
-                //if (first) {
-                //    first.focus();
-                //}
-
-                return false;
-
-            } else {
-
-                onHeaderSearchChange(this.value);
-            }
-
-        }).on("search", function (e) {
-
-            if (!this.value) {
-
-                onHeaderSearchChange('');
-            }
-
-        });
-
-        $('.btnCloseSearch').on('click', closeSearchOverlay);
-
-        $('.viewMenuSearchForm').on('submit', function () {
-
-            return false;
+                onHeaderSearchChange(value);
+            });
         });
     }
 
-    function closeSearchOverlay() {
-        $('.headerSearchInput').val('');
+    function closeSearchResults() {
+
         onHeaderSearchChange('');
         hideSearchMenu();
     }
 
     function showSearchMenu() {
-
-        require(["jquery", "velocity"], function ($, Velocity) {
-
-            $('.btnCloseSearch').hide();
-            var elem = $('.viewMenuSearch')
-                .css({ left: '100%' })
-                .removeClass('hide')[0];
-
-            Velocity.animate(elem, { "left": "0px" },
-            {
-                complete: function () {
-                    $('.btnCloseSearch').show();
-                }
-            });
+        require(['searchmenu'], function () {
+            SearchMenu.show();
         });
     }
 
     function hideSearchMenu() {
-
-        require(["jquery", "velocity"], function ($, Velocity) {
-
-            $('.btnCloseSearch').hide();
-            var elem = $('.viewMenuSearch')
-                .css({ left: '0' })[0];
-
-            Velocity.animate(elem, { "left": "100%" },
-            {
-                complete: function () {
-                    $('.viewMenuSearch').addClass('hide');
-                }
-            });
+        require(['searchmenu'], function () {
+            SearchMenu.hide();
         });
     }
 
-    $(document).on('pagehide', ".libraryPage", function () {
-
-        $('#txtSearch', this).val('');
-        $('#searchHints', this).empty();
-
-    }).on('pagecontainerbeforehide', closeSearchOverlay);
+    $(document).on('pagecontainerbeforehide', closeSearchResults);
 
     $(document).on('headercreated', function () {
 

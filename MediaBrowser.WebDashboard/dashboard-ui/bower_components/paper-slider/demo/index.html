@@ -1,0 +1,117 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<!doctype html>
+<html>
+<head>
+  <title>paper-slider demo</title>
+
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+  <link rel="stylesheet" href="../../paper-styles/paper-styles.html">
+  <link rel="import" href="../../paper-styles/demo-pages.html">
+  <link rel="import" href="../paper-slider.html">
+
+  <style is="custom-style">
+    body {
+      padding: 40px;
+    }
+    
+    paper-slider {
+      width: 100%;
+    }
+
+    paper-slider.blue {
+      --paper-slider-knob-color: var(--paper-light-blue-500);
+      --paper-slider-active-color: var(--paper-light-blue-500);
+    }
+
+    paper-slider.red {
+      --paper-slider-knob-color: var(--paper-red-500);
+      --paper-slider-active-color: var(--paper-red-500);
+    }
+
+    paper-slider.green {
+      --paper-slider-knob-color: var(--paper-green-500);
+      --paper-slider-active-color: var(--paper-green-500);
+    }
+
+    paper-slider.orange {
+      --paper-slider-knob-color: var(--paper-orange-500);
+      --paper-slider-active-color: var(--paper-orange-500);
+      --paper-slider-pin-color: var(--paper-orange-500);
+    }
+
+    #ratingsLabel {
+      padding-left: 12px;
+      color: #a0a0a0;
+    }
+
+  </style>
+
+</head>
+<body unresolved>
+  <div class="vertical center-justified layout">
+    <h4>Default</h4>
+    <div class="vertical-section">
+      <div>Oxygen</div>
+      <paper-slider value="21"></paper-slider><br><br>
+      <div>Argon</div>
+      <paper-slider value="1"></paper-slider><br><br>
+      <div>Hydrogen</div>
+      <paper-slider value="0"></paper-slider><br><br>
+      <div>Nitrogen</div>
+      <paper-slider value="78"></paper-slider><br><br>
+      <div>Sprinkles</div>
+      <paper-slider disabled value="33"></paper-slider>
+    </div>
+
+    <h4>Editable</h4>
+    <div class="vertical-section">
+      <div class="center horizontal layout">
+        <div>R</div>
+        <paper-slider class="red" value="23" max="255" editable></paper-slider>
+      </div>
+      <div class="center horizontal layout">
+        <div>G</div>
+        <paper-slider class="green" value="183" max="255" editable></paper-slider>
+      </div>
+      <div class="center horizontal layout">
+        <div>B</div>
+        <paper-slider class="blue" value="211" max="255" editable></paper-slider>
+      </div>
+      <div class="center horizontal layout">
+      <div>&alpha;</div>
+      <paper-slider max="1.0" step="0.01" editable></paper-slider>
+      </div>
+    </div>
+
+    <h4>Labelled pins</h4>
+    <div class="vertical-section">
+      <div>Brightness</div><br>
+      <paper-slider pin value="20" class="orange"></paper-slider>
+      <div>Ratings: <span id="ratingsLabel"></span></div><br>
+      <paper-slider id="ratings" pin snaps max="10" step="1" value="5" class="orange"></paper-slider>
+    </div>
+  </div>
+
+  <script>
+
+    var ratings = document.querySelector('#ratings');
+    ratings.addEventListener('value-change', function() {
+      document.querySelector('#ratingsLabel').textContent = ratings.value;
+    });
+
+  </script>
+
+</body>
+</html>

@@ -6,20 +6,20 @@
 <body>
     <div id="songsPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="musicartist" data-require="scripts/songs,scripts/queryfilters">
         <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="musicrecommended.html">${TabSuggestions}</a>
-            <a href="musicalbums.html">${TabAlbums}</a>
-            <a href="musicalbumartists.html">${TabAlbumArtists}</a>
-            <a href="musicartists.html" class="musicArtistsTab">${TabArtists}</a>
-            <a href="#" class="ui-btn-active">${TabSongs}</a>
-            <a href="musicgenres.html">${TabGenres}</a>
-            <a href="musicvideos.html">${TabMusicVideos}</a>
+            <a href="musicrecommended.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+            <a href="musicalbums.html"><iron-icon icon="album"></iron-icon>${TabAlbums}</a>
+            <a href="musicalbumartists.html"><iron-icon icon="music-note"></iron-icon>${TabAlbumArtists}</a>
+            <a href="musicartists.html" class="musicArtistsTab"><iron-icon icon="music-note"></iron-icon>${TabArtists}</a>
+            <a href="#" class="ui-btn-active"><iron-icon icon="music-note"></iron-icon>${TabSongs}</a>
+            <a href="musicgenres.html"><iron-icon icon="library-music"></iron-icon>${TabGenres}</a>
+            <a href="musicvideos.html"><iron-icon icon="video-library"></iron-icon>${TabMusicVideos}</a>
         </div>
         <div data-role="content">
             <div class="viewSettings">
                 <div class="listTopPaging">
                 </div>
             </div>
-            <div id="items" class="itemsContainer" style="max-width:1100px;margin: 0 auto;"></div>
+            <div id="items" class="itemsContainer" style="max-width:1000px;margin: 0 auto;"></div>
         </div>
 
         <div data-role="panel" class="viewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">

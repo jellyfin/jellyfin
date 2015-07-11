@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -20,10 +21,11 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// Fetches the data from XML node.
         /// </summary>
         /// <param name="reader">The reader.</param>
-        /// <param name="item">The item.</param>
-        /// <param name="userDataList">The user data list.</param>
-        protected override void FetchDataFromXmlNode(XmlReader reader, Series item, List<UserItemData> userDataList)
+        /// <param name="itemResult">The item result.</param>
+        protected override void FetchDataFromXmlNode(XmlReader reader, LocalMetadataResult<Series> itemResult)
         {
+            var item = itemResult.Item;
+
             switch (reader.Name)
             {
                 case "id":
@@ -88,7 +90,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     }
 
                 default:
-                    base.FetchDataFromXmlNode(reader, item, userDataList);
+                    base.FetchDataFromXmlNode(reader, itemResult);
                     break;
             }
         }

@@ -47,6 +47,13 @@
     margin: 2px;
 }
 
+@media all and (max-width: 800px) {
+
+    .cardBox {
+        margin: 1px;
+    }
+}
+
 .largeCardMargin .cardBox {
     margin: 8px;
 }
@@ -55,12 +62,39 @@
     margin: 5px;
 }
 
-@media all and (max-width: 800px) {
-
-    .cardBox {
-        margin: 1px;
-    }
+.defaultBackground .cardImage {
+    background-color: #333;
 }
+
+.cardOverlayPlayButton {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    color: #333;
+}
+
+    .cardOverlayPlayButton iron-icon {
+        width: 20px;
+        height: 20px;
+        background-color: rgba(210,210,210,.9);
+        border-radius: 500px;
+        padding: 6px;
+    }
+
+.cardOverlayMoreButton {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    color: #333;
+}
+
+    .cardOverlayMoreButton iron-icon {
+        width: 20px;
+        height: 20px;
+        background-color: rgba(210,210,210,.9);
+        border-radius: 500px;
+        padding: 6px;
+    }
 
 .grayscale {
     -webkit-filter: grayscale(100%);
@@ -69,7 +103,7 @@
 }
 
 .bottomPaddedCard .cardBox {
-    margin-bottom: 12px;
+    margin-bottom: 24px;
 }
 
 .visualCardBox {
@@ -119,6 +153,8 @@
     bottom: 0;
     left: 0;
     right: 0;
+    /* Needed to keep the cardOverlayTarget from showing outside the bounds while it animates */
+    overflow: hidden;
 }
 
     .cardContent:not(.noHoverEffect):hover .cardImage {
@@ -225,7 +261,12 @@
     padding: 0 6px 4px 5px;
 }
 
-.cardBox:not(.visualCardBox) .outerCardFooter .cardText:last-child {
+.outerCardFooter .cardText + .cardText {
+    opacity: .8;
+}
+
+.outerCardFooter .cardText:first-child {
+    padding-top: 7px;
 }
 
 @media all and (max-width: 600px) {
@@ -261,15 +302,15 @@
     position: relative;
 }
 
-.cardImage .fa {
-    color: rgb(255, 255, 255);
-    position: absolute;
-    left: 0;
-    right: 0;
-    font-size: 50px;
-    margin: auto;
-    top: 25%;
-}
+    .iconCardImage .fa {
+        color: rgb(255, 255, 255);
+        position: absolute;
+        left: 0;
+        right: 0;
+        font-size: 50px;
+        margin: auto;
+        top: 25%;
+    }
 
 .bannerCard {
     width: 100%;
@@ -355,6 +396,10 @@
     .bannerCard {
         width: 50%;
     }
+
+    .squareCard {
+        width: 25%;
+    }
 }
 
 @media all and (min-width: 770px) {
@@ -364,10 +409,6 @@
 }
 
 @media all and (min-width: 800px) {
-
-    .squareCard {
-        width: 25%;
-    }
 
     .portraitCard {
         width: 20%;
@@ -379,11 +420,15 @@
 }
 
 
-@media all and (min-width: 1000px) {
+@media all and (min-width: 900px) {
 
     .squareCard {
         width: 20%;
     }
+}
+
+@media all and (min-width: 1000px) {
+
 
     .smallBackdropCard {
         width: 20%;

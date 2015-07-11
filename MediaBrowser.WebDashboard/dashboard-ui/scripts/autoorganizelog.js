@@ -285,8 +285,15 @@
             deleteOriginalFile(page, id);
         });
 
-        var pagingHtml = LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, false, [], false);
-        $('.listTopPaging', page).html(pagingHtml).trigger('create');
+        var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+            startIndex: query.StartIndex,
+            limit: query.Limit,
+            totalRecordCount: result.TotalRecordCount,
+            showLimit: false,
+            updatePageSizeSetting: false
+        });
+
+        page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
         if (result.TotalRecordCount > query.Limit && result.TotalRecordCount > 50) {
             $('.listBottomPaging', page).html(pagingHtml).trigger('create');
@@ -361,7 +368,7 @@
 
         $(ApiClient).on("websocketmessage.autoorganizelog", onWebSocketMessage);
 
-    }).on('pagehide', "#libraryFileOrganizerLogPage", function () {
+    }).on('pagebeforehide', "#libraryFileOrganizerLogPage", function () {
 
         var page = this;
 
@@ -372,7 +379,7 @@
             mode: 'off'
         });
 
-        $(ApiClient).off(".autoorganizelog");
+        $(ApiClient).off("websocketmessage.autoorganizelog", onWebSocketMessage);
     });
 
 })(jQuery, document, window);

@@ -1,0 +1,81 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+  <title>paper-menu demo</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../paper-item/paper-item.html">
+  <link rel="import" href="../paper-menu.html">
+  <link rel="import" href="../../paper-styles/paper-styles.html">
+  <link rel="import" href="../../paper-styles/demo-pages.html">
+
+  <style>
+    .horizontal-section {
+      padding: 0 !important;
+    }
+
+    .avatar {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="horizontal center-justified layout">
+    <div>
+      <h4>Standard</h4>
+      <div class="horizontal-section">
+        <paper-menu class="list">
+          <paper-item>Inbox</paper-item>
+          <paper-item>Starred</paper-item>
+          <paper-item>Sent mail</paper-item>
+          <paper-item>Drafts</paper-item>
+        </paper-menu>
+      </div>
+    </div>
+
+    <div>
+      <h4>Pre-selected</h4>
+      <div class="horizontal-section">
+        <paper-menu  class="list" selected="0">
+          <paper-item>Inbox</paper-item>
+          <paper-item disabled>Starred</paper-item>
+          <paper-item>Sent mail</paper-item>
+          <paper-item>Drafts</paper-item>
+        </paper-menu>
+      </div>
+    </div>
+
+    <div>
+      <h4>Multi-select</h4>
+      <div class="horizontal-section">
+        <paper-menu class="list" multi>
+          <paper-item>Bold</paper-item>
+          <paper-item>Italic</paper-item>
+          <paper-item>Underline</paper-item>
+          <paper-item>Strikethrough</paper-item>
+        </paper-menu>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

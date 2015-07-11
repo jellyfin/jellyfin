@@ -39,28 +39,30 @@
 
         var page = this;
 
-        var picker = $('.alphabetPicker', page);
+        var picker = page.querySelector('.alphabetPicker');
 
-        if (!picker.length) {
+        if (!picker) {
             return;
         }
 
         $('.itemsContainer', page).addClass('itemsContainerWithAlphaPicker');
 
-        picker.html(getPickerHtml()).trigger('create').on('click', 'a', function () {
+        picker.innerHTML = getPickerHtml();
 
-            var elem = $(this);
+        Events.on(picker, 'click', 'a', function () {
 
-            var isSelected = elem.hasClass('selectedCharacter');
+            var elem = this;
+
+            var isSelected = elem.classList.contains('selectedCharacter');
 
             $('.selectedCharacter', picker).removeClass('selectedCharacter');
 
             if (!isSelected) {
 
-                elem.addClass('selectedCharacter');
-                picker.trigger('alphaselect', [this.innerHTML]);
+                elem.classList.add('selectedCharacter');
+                Events.trigger(picker, 'alphaselect', [this.innerHTML]);
             } else {
-                picker.trigger('alphaclear');
+                Events.trigger(picker, 'alphaclear');
             }
         });
     });
@@ -79,10 +81,10 @@
 
             if (this.innerHTML.toLowerCase() == val) {
 
-                $(this).addClass('selectedCharacter');
+                this.classList.add('selectedCharacter');
 
             } else {
-                $(this).removeClass('selectedCharacter');
+                this.classList.remove('selectedCharacter');
             }
 
         });

@@ -123,7 +123,7 @@
             html += getLibraryButtonsHtml(items);
             html += '</div>';
 
-            $(elem).html(html);
+            elem.innerHTML = html;
 
             handleLibraryLinkNavigations(elem);
         });
@@ -133,7 +133,7 @@
 
         var limit = AppInfo.hasLowImageBandwidth ?
          16 :
-         24;
+         20;
 
         var options = {
 
@@ -151,11 +151,7 @@
 
             if (items.length) {
                 html += '<div>';
-                html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
-
-                if (user.Policy.EnableUserPreferenceAccess && !AppInfo.isNativeApp) {
-                    html += '<a href="mypreferencesdisplay.html" class="accentButton"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</a>';
-                }
+                html += '<h1 class="listHeader">' + Globalize.translate('HeaderLatestMedia') + '</h1>';
 
                 html += '</div>';
 
@@ -177,7 +173,10 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren().createCardMenus();
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
+
+            $(elem).createCardMenus();
         });
     }
 
@@ -212,7 +211,10 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren().createCardMenus();
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
+
+            $(elem).createCardMenus();
         });
     }
 
@@ -230,14 +232,10 @@
 
             if (items.length) {
 
-                var cssClass = index !== 0 ? 'listHeader' : 'listHeader firstListHeader';
+                var cssClass = index !== 0 ? 'listHeader' : 'listHeader';
 
                 html += '<div>';
-                html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderMyMedia') + '</h1>';
-
-                if (user.Policy.EnableUserPreferenceAccess && !AppInfo.isNativeApp) {
-                    html += '<a href="mypreferencesdisplay.html" class="accentButton"><i class="fa fa-pencil"></i>' + Globalize.translate('ButtonEdit') + '</a>';
-                }
+                html += '<h1 class="' + cssClass + '">' + Globalize.translate('HeaderMyMedia') + '</h1>';
 
                 html += '</div>';
 
@@ -248,7 +246,8 @@
                     showTitle: showTitles,
                     centerText: true,
                     lazy: true,
-                    autoThumb: true
+                    autoThumb: true,
+                    transition: false
                 });
                 html += '</div>';
             }
@@ -261,7 +260,10 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren().createCardMenus({ showDetailsMenu: false });
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
+
+            $(elem).createCardMenus({ showDetailsMenu: false });
 
             handleLibraryLinkNavigations(elem);
         });
@@ -295,7 +297,7 @@
             if (result.Items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderResume') + '</h1>';
                 if (enableScrollX()) {
-                    html += '<div class="hiddenScrollX itemsContainer">';
+                    html += '<div class="hiddenScrollX itemsContainer noSwipe">';
                 } else {
                     html += '<div class="itemsContainer">';
                 }
@@ -314,22 +316,27 @@
                 html += '</div>';
             }
 
-            $(elem).html(html).lazyChildren().createCardMenus();
+            elem.innerHTML = html;
+
+            ImageLoader.lazyChildren(elem);
+            $(elem).createCardMenus();
         });
     }
 
     function handleLibraryLinkNavigations(elem) {
 
-        $('a.posterItem', elem).on('click', function () {
+        $('a', elem).on('click', function () {
 
-            var textElem = $('.posterItemText span', this);
+            var card = this;
 
-            if (!textElem.length) {
-                textElem = $('.posterItemText', this);
+            if (!this.classList.contains('card')) {
+                card = $(this).parents('.card')[0];
             }
-            var text = textElem.html();
 
-            LibraryMenu.setText(text);
+            var textElem = $('.cardText', card);
+            var text = textElem.text();
+
+            LibraryMenu.setTitle(text);
         });
     }
 
@@ -351,7 +358,7 @@
 
             }).join('');
 
-            $(elem).html(channelsHtml);
+            elem.innerHTML = channelsHtml;
 
             for (var i = 0, length = channels.length; i < length; i++) {
 
@@ -382,12 +389,12 @@
 
             if (result.Items.length) {
 
-                var cssClass = index !== 0 ? 'listHeader' : 'listHeader firstListHeader';
+                var cssClass = index !== 0 ? 'listHeader' : 'listHeader';
 
                 html += '<div>';
                 var text = Globalize.translate('HeaderLatestFromChannel').replace('{0}', channel.Name);
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + text + '</h1>';
-                html += '<a href="channelitems.html?context=channels&id=' + channel.Id + '" data-role="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" class="sectionHeaderButton"></a>';
+                html += '<a href="channelitems.html?context=channels&id=' + channel.Id + '" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
                 html += '</div>';
             }
             html += '<div class="itemsContainer">';
@@ -403,7 +410,11 @@
             });
             html += '</div>';
 
-            $('#channel' + channel.Id + '', page).html(html).lazyChildren().trigger('create').createCardMenus();
+            var elem = page.querySelector('#channel' + channel.Id + '');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
+
+            $(elem).createCardMenus();
         });
     }
 
@@ -421,11 +432,11 @@
 
             if (result.Items.length) {
 
-                var cssClass = index !== 0 ? 'listHeader' : 'listHeader firstListHeader';
+                var cssClass = index !== 0 ? 'listHeader' : 'listHeader';
 
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderLatestTvRecordings') + '</h1>';
-                html += '<a href="livetvrecordings.html?context=livetv" data-role="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" class="sectionHeaderButton"></a>';
+                html += '<a href="livetvrecordings.html?context=livetv" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
                 html += '</div>';
             }
 
@@ -442,8 +453,8 @@
                 showDetailsMenu: true
             });
 
-            elem.html(html).lazyChildren().trigger('create');
-
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
         });
     }
 

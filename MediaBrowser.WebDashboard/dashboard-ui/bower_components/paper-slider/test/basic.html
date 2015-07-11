@@ -1,0 +1,186 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>paper-slider test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="../paper-slider.html">
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+</head>
+<body>
+
+
+  <test-fixture id="trivialProgress">
+    <template>
+      <paper-slider></paper-slider>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('<paper-slider>', function() {
+      var slider;
+
+      setup(function() {
+        slider = fixture('trivialProgress');
+      });
+
+      test('check default', function() {
+        assert.equal(slider.min, 0);
+        assert.equal(slider.max, 100);
+        assert.equal(slider.value, 0);
+      });
+
+      test('set value', function(done) {
+        slider.value = 50;
+        flush(function() {
+          assert.equal(slider.value, 50);
+          // test clamp value
+          slider.value = 60.1;
+          flush(function() {
+            assert.equal(slider.value, 60);
+            done();
+          });
+        });
+      });
+
+      test('set max', function(done) {
+        slider.max = 10;
+        slider.value = 11;
+        flush(function() {
+          assert.equal(slider.value, slider.max);
+          done();
+        });
+      });
+
+      test('ratio', function(done) {
+        slider.max = 10;
+        slider.value = 5;
+        flush(function() {
+          assert.equal(slider.ratio, 0.5);
+          done();
+        });
+      });
+
+      test('snaps', function(done) {
+        slider.snaps = true;
+        slider.step = 10;
+        slider.max = 100;
+        slider.value = 25;
+        flush(function() {
+          assert.equal(slider.value, 30);
+
+          slider.value = 51.1;
+
+          flush(function() {
+            assert.equal(slider.value, 50);
+            slider.snaps = false;
+            slider.step = 1;
+            done();
+          });
+        });
+      });
+
+      test('secondary progress', function(done) {
+        slider.max = 10;
+        slider.secondaryProgress = 50;
+        flush(function() {
+          assert.equal(slider.secondaryProgress, slider.max);
+          done();
+        });
+      });
+
+      test('increment', function(done) {
+        slider.min = 0;
+        slider.max = 10;
+        slider.step = 2;
+        slider.value = 0;
+        slider.increment();
+
+        flush(function() {
+          assert.equal(slider.value, slider.step);
+            slider.step = 1;
+            done();
+        });
+      });
+
+      test('decrement', function(done) {
+        slider.min = 0;
+        slider.max = 10;
+        slider.step = 2;
+        slider.value = 8;
+        slider.decrement();
+
+        flush(function() {
+          assert.equal(slider.value, 6);
+            slider.step = 1;
+            done();
+        });
+      });
+
+      test('editable', function(done) {
+        slider.min = 0;
+        slider.max = 10;
+        slider.step = 1;
+        slider.editable = true;
+
+        flush(function() {
+          slider.value = 2;
+          assert.equal(slider.$$('#input').value, slider.value);
+          done();
+        });
+      });
+
+      test('decimal values', function(done) {
+        slider.min = 0;
+        slider.max = 1;
+        slider.value = slider.min;
+        slider.step = 0.1;
+
+        slider.increment();
+
+        flush(function() {
+          assert.equal(slider.value, slider.step);
+          assert.equal(slider.$.sliderBar.value, slider.step);
+          done();
+        });
+      });
+
+      test('snap to the correct value on tapping', function(done) {
+        var cursor = MockInteractions.topLeftOfNode(slider.$.sliderBar);
+        cursor.x += slider.$.sliderBar.getBoundingClientRect().width * 0.9;
+
+        slider.min = 0;
+        slider.max = 2;
+        slider.step = 1;
+        slider.value = 0;
+
+        MockInteractions.down(slider.$.sliderBar, cursor);
+
+        flush(function() {
+          assert.equal(slider.value, slider.max);
+            slider.step = 1;
+            done();
+        });
+      });
+
+    });
+
+  </script>
+
+</body>
+</html>

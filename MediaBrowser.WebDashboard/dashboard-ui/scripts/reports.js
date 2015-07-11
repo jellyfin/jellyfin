@@ -127,29 +127,29 @@
                 break;
             case "StatusImage":
                 if (rRow.HasLockData) {
-                    html += '<img src="css/images/editor/lock.png" />';
+                    html += '<img src="css/images/editor/lock.png" style="height:16px;"/>';
                 }
                 if (rRow.IsUnidentified) {
                     html += '<div class="libraryReportIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';
                 }
 
                 if (!rRow.HasLocalTrailer && rRow.RowType === "Movie") {
-                    html += '<img src="css/images/editor/missingtrailer.png" title="Missing local trailer." />';
+                    html += '<img src="css/images/editor/missingtrailer.png" title="Missing local trailer." style="height:16px;" />';
                 }
 
                 if (!rRow.HasImageTagsPrimary) {
-                    html += '<a href="edititemimages.html?id=' + rRow.Id + '"><img src="css/images/editor/missingprimaryimage.png" title="Missing primary image." /></a>';
+                    html += '<a href="edititemimages.html?id=' + rRow.Id + '"><img src="css/images/editor/missingprimaryimage.png" title="Missing primary image." style="height:16px;" /></a>';
                 }
 
                 if (!rRow.HasImageTagsBackdrop) {
                     if (rRow.RowType !== "Episode" && rRow.RowType !== "Season" && rRow.MediaType !== "Audio" && rRow.RowType !== "TvChannel" && rRow.RowType !== "MusicAlbum") {
-                        html += '<a href="edititemimages.html?id=' + rRow.Id + '"><img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." /></a>';
+                        html += '<a href="edititemimages.html?id=' + rRow.Id + '"><img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." style="height:16px;" /></a>';
                     }
                 }
 
                 if (!rRow.HasImageTagsLogo) {
                     if (rRow.RowType === "Movie" || rRow.RowType === "Trailer" || rRow.RowType === "Series" || rRow.RowType === "MusicArtist" || rRow.RowType === "BoxSet") {
-                        html += '<a href="edititemimages.html?id=' + rRow.Id + '"><img src="css/images/editor/missinglogo.png" title="Missing logo image." /></a>';
+                        html += '<a href="edititemimages.html?id=' + rRow.Id + '"><img src="css/images/editor/missinglogo.png" title="Missing logo image." style="height:16px;" /></a>';
                     }
                 }
                 break;
@@ -260,7 +260,7 @@
 
     function renderItems(page, result) {
 
-        $(document).scrollTop(0);
+        window.scrollTo(0, 0);
         var html = '';
 
         if (SelectedReportView === "ReportData") {
@@ -274,7 +274,7 @@
                 showLimit: false
             });
 
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            page.querySelector('.listTopPaging').innerHTML = pagingHtml;
             $('.listTopPaging', page).show();
 
             $('.listBottomPaging', page).html(pagingHtml).trigger('create');

@@ -285,7 +285,7 @@
 
         reload(page);
 
-    }).on('pagehide', "#liveTvSeriesTimerPage", function () {
+    }).on('pagebeforehide', "#liveTvSeriesTimerPage", function () {
 
         currentItem = null;
     });

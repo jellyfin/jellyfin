@@ -232,6 +232,20 @@
             }
         });
 
+        $('.btnCancelSignup', page).on('click', function () {
+
+            history.back();
+        });
+
+        $('.btnCancelManualServer', page).on('click', function () {
+
+            history.back();
+        });
+
+        $('.btnWelcomeNext', page).on('click', function () {
+            Dashboard.navigate('connectlogin.html?mode=connect');
+        });
+
     }).on('pagebeforeshowready', "#connectLoginPage", function () {
 
         var page = this;
@@ -253,7 +267,6 @@
     }).on('pageshowready', "#connectLoginPage", function () {
 
         var page = this;
-
         loadPage(page);
     });
 
@@ -273,7 +286,6 @@
             handleConnectionResult(page, result);
 
         }).fail(function () {
-
             handleConnectionResult(page, {
                 State: MediaBrowser.ConnectionState.Unavailable
             });

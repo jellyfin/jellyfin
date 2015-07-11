@@ -77,9 +77,9 @@
             Dashboard.getCurrentUser().done(function (user) {
 
                 if (MediaController.canPlay(item)) {
-                    $('.btnPlay', page).show();
+                    $('.btnPlay', page).visible(true);
                 } else {
-                    $('.btnPlay', page).hide();
+                    $('.btnPlay', page).visible(false);
                 }
 
                 if (SyncManager.isAvailable(item, user)) {
@@ -93,9 +93,9 @@
                 $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref, true));
 
                 if (LibraryBrowser.getMoreCommands(item, user).length) {
-                    $('.btnMoreCommands', page).show();
+                    $('.btnMoreCommands', page).visible(true);
                 } else {
-                    $('.btnMoreCommands', page).show();
+                    $('.btnMoreCommands', page).visible(false);
                 }
 
             });
@@ -315,10 +315,10 @@
     function renderDetails(page, item, context) {
 
         //LibraryBrowser.renderDetailPageBackdrop(page, item);
-        LibraryBrowser.renderOverview($('.itemOverview', page), item);
+        LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), item);
 
         renderUserDataIcons(page, item);
-        LibraryBrowser.renderLinks($('#itemLinks', page), item);
+        LibraryBrowser.renderLinks(page.querySelector('#itemLinks'), item);
 
         LibraryBrowser.renderGenres($('.itemGenres', page), item, context);
 
@@ -439,7 +439,17 @@
             var html = '';
 
             if (result.TotalRecordCount > query.Limit) {
-                $('.listTopPaging', page).html(LibraryBrowser.getPagingHtml(query, result.TotalRecordCount, true)).trigger('create');
+
+                var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+                    startIndex: query.StartIndex,
+                    limit: query.Limit,
+                    totalRecordCount: result.TotalRecordCount,
+                    showLimit: false,
+                    updatePageSizeSetting: false
+                });
+
+                page.querySelector('.listTopPaging').innerHTML = pagingHtml;
+
                 $('.viewSettings', page).show();
             } else {
                 $('.listTopPaging', page).html('');
@@ -509,9 +519,20 @@
                 });
             }
 
-            html += LibraryBrowser.getPagingHtml(query, result.TotalRecordCount);
+            html += LibraryBrowser.getQueryPagingHtml({
+                startIndex: query.StartIndex,
+                limit: query.Limit,
+                totalRecordCount: result.TotalRecordCount,
+                showLimit: false,
+                updatePageSizeSetting: false
+            });
 
-            $('#items', page).html(html).trigger('create').lazyChildren();
+            var elem = page.querySelector('#items');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
+
+            // Do we still need this?
+            $(elem).trigger('create');
 
             $('.btnNextPage', page).on('click', function () {
 
@@ -571,13 +592,13 @@
             });
         });
 
-    }).on('pageshowready', "#itemByNameDetailPage", function () {
+    }).on('pagebeforeshowready', "#itemByNameDetailPage", function () {
 
         var page = this;
 
         reload(page);
 
-    }).on('pagehide', "#itemByNameDetailPage", function () {
+    }).on('pagebeforehide', "#itemByNameDetailPage", function () {
 
         currentItem = null;
     });

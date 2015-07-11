@@ -1,0 +1,151 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
+
+<!--
+`paper-dialog-scrollable` implements a scrolling area used in a Material Design dialog. It shows
+a divider at the top and/or bottom indicating more content, depending on scroll position. Use this
+together with elements implementing `Polymer.PaperDialogBehavior`.
+
+    <paper-dialog-impl>
+      <h2>Header</h2>
+      <paper-dialog-scrollable>
+        Lorem ipsum...
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button>OK</paper-button>
+      </div>
+    </paper-dialog-impl>
+
+It shows a top divider after scrolling if it is not the first child in its parent container,
+indicating there is more content above. It shows a bottom divider if it is scrollable and it is not
+the last child in its parent container, indicating there is more content below. The bottom divider
+is hidden if it is scrolled to the bottom.
+
+@group Paper Elements
+@element paper-dialog-scrollable
+@demo demo/index.html
+@hero hero.svg
+-->
+
+<dom-module id="paper-dialog-scrollable">
+
+  <style>
+
+    :host {
+      display: block;
+      position: relative;
+    }
+
+    :host(.is-scrolled:not(:first-child))::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--divider-color);
+    }
+
+    :host(.can-scroll:not(.scrolled-to-bottom):not(:last-child))::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--divider-color);
+    }
+
+    .scrollable {
+      padding: 0 24px;
+
+      @apply(--layout-scroll);
+
+      @apply(--paper-dialog-scrollable);
+    }
+  </style>
+
+  <template>
+    <div id="scrollable" class="scrollable">
+      <content></content>
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+
+(function() {
+
+  Polymer({
+
+    is: 'paper-dialog-scrollable',
+
+    properties: {
+
+      /**
+       * The dialog element that implements `Polymer.PaperDialogBehavior` containing this element.
+       * @type {?Node}
+       */
+      dialogElement: {
+        type: Object,
+        value: function() {
+          return this.parentNode;
+        }
+      }
+
+    },
+
+    listeners: {
+      'scrollable.scroll': '_onScroll',
+      'iron-resize': '_onIronResize'
+    },
+
+    /**
+     * Returns the scrolling element.
+     */
+    get scrollTarget() {
+      return this.$.scrollable;
+    },
+
+    attached: function() {
+      this.classList.add('no-padding');
+      // Set itself to the overlay sizing target
+      this.dialogElement.sizingTarget = this.scrollTarget;
+      // If the host is sized, fit the scrollable area to the container. Otherwise let it be
+      // its natural size.
+      requestAnimationFrame(function() {
+        if (this.offsetHeight > 0) {
+          this.$.scrollable.classList.add('fit');
+        }
+        this._scroll();
+      }.bind(this));
+    },
+
+    _scroll: function() {
+      this.toggleClass('is-scrolled', this.scrollTarget.scrollTop > 0);
+      this.toggleClass('can-scroll', this.scrollTarget.offsetHeight < this.scrollTarget.scrollHeight);
+      this.toggleClass('scrolled-to-bottom',
+        this.scrollTarget.scrollTop + this.scrollTarget.offsetHeight >= this.scrollTarget.scrollHeight);
+    },
+
+    _onScroll: function() {
+      this._scroll();
+    }
+
+  })
+
+})();
+
+</script>

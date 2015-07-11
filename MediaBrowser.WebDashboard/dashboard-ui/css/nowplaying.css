@@ -1,35 +1,23 @@
-﻿.nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
-    text-align: center;
-    font-size: 24px;
-    padding: 14px 0;
-    margin: 3px 1px;
-    width: 70px;
-    background: #383838;
-    border-radius: 5px;
+﻿.nowPlayingPage {
+    padding-top: 0 !important;
 }
+
+    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+        margin: 2px 1px;
+        width: 70px;
+        height: 70px;
+    }
 
 .nowPlayingPageImage img {
-    max-height: 220px;
-    max-width: 220px;
+    max-height: 360px;
+    max-width: 360px;
 }
 
-.nowPlayingTimeContainer {
-    max-width: 280px;
-    margin: 1.5em auto;
-}
-
-.nowPlayingPage .positionSliderContainer {
-    width: 100%;
+.nowPlayingPageTimeContainer {
     min-width: 200px;
+    max-width: 280px;
+    margin: 0 auto 1em;
 }
-
-    .nowPlayingPage .positionSliderContainer .ui-slider-track {
-        margin: 0 0 !important;
-    }
-
-    .nowPlayingPage .positionSliderContainer .ui-slider {
-        height: 20px;
-    }
 
 .nowPlayingNavButtonContainer {
     width: 400px;
@@ -85,15 +73,7 @@
 
     .nowPlayingPageImage img {
         max-height: 160px;
-        max-width: 220px;
-    }
-}
-
-@media all and (max-width: 600px) {
-
-    .nowPlayingPageImage img {
-        max-height: 160px;
-        max-width: 220px;
+        max-width: 200px;
     }
 }
 
@@ -142,6 +122,13 @@
     }
 }
 
+@media all and (min-width: 800px) {
+
+    .nowPlayingPageTimeContainer {
+        max-width: 340px;
+    }
+}
+
 @media (orientation: landscape) {
     .nowPlayingInfoMetadata, .nowPlayingInfoButtons {
         display: inline-block;
@@ -149,6 +136,64 @@
     }
 
     .nowPlayingInfoButtons {
+        margin-left: 1em;
+    }
+}
+
+@media (orientation: landscape) and (min-width: 700px) {
+    .nowPlayingInfoButtons {
         margin-left: 3em;
     }
+}
+
+@media (orientation: landscape) and (max-height: 400px) {
+    .nowPlayingPageTitle {
+        margin: 0 auto;
+        width: 50%;
+        position: absolute;
+        text-align: center;
+        left: 0;
+        right: 0;
+        top: -20px;
+    }
+
+    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+@media (orientation: portrait) and (max-height: 600px) {
+    .nowPlayingPageTitle {
+        margin: 0 auto;
+        width: 50%;
+        position: absolute;
+        text-align: center;
+        left: 0;
+        right: 0;
+        top: -20px;
+    }
+
+    .nowPlayingPage .btnCommand, .nowPlayingPage .btnPlayStateCommand {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+.nowPlayingSelectedPlayer {
+    display: inline-block;
+    vertical-align: middle;
+    color: #eee;
+    margin-right: .25em;
+}
+
+@media all and (max-width: 700px) {
+
+    .nowPlayingSelectedPlayer {
+        display: none;
+    }
+}
+.nowPlayingPageUserDataButtons iron-icon {
+    width: 40px;
+    height: 40px;
 }

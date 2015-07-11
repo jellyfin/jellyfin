@@ -1,0 +1,71 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>paper-fab a11y tests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+  <link rel="import" href="../../core-icons/core-icons.html">
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+  <link rel="import" href="../paper-fab.html">
+
+</head>
+<body>
+
+  <test-fixture id="A11yFabs">
+    <template>
+      <paper-fab id="fab1" icon="add"></paper-fab>
+      <paper-fab id="fab2" icon="add" disabled></paper-fab>
+      <paper-fab id="fab3" icon="add" aria-label="custom"></paper-fab>
+    </template>
+  </test-fixture>
+
+  <script>
+
+    var f1;
+    var f2;
+    var f3;
+
+    setup(function() {
+      var fabs = fixture('A11yFabs');
+
+      f1 = fabs[0];
+      f2 = fabs[1];
+      f3 = fabs[2];
+    });
+
+    test('aria role is a button', function() {
+      assert.strictEqual(f1.getAttribute('role'), 'button');
+    });
+
+    test('aria-disabled is set', function() {
+      assert.ok(f2.hasAttribute('aria-disabled'));
+      f2.removeAttribute('disabled');
+      assert.strictEqual(f2.getAttribute('aria-disabled'), 'false');
+    });
+
+    test('aria-label is set');
+
+    test('user-defined aria-label is preserved', function() {
+      assert.strictEqual(f3.getAttribute('aria-label'), 'custom');
+      f3.icon = 'arrow-forward';
+      assert.strictEqual(f3.getAttribute('aria-label'), 'custom');
+    });
+
+  </script>
+
+</body>
+</html>

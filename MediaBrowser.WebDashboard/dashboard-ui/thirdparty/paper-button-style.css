@@ -1,0 +1,343 @@
+﻿paper-button {
+    font-weight: 500;
+    vertical-align: middle;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+    paper-button.block {
+        display: block;
+    }
+
+    paper-button.blue {
+        color: #03a9f4;
+    }
+
+        paper-button.blue:hover {
+            background: #e1f5f3;
+        }
+
+    paper-button.menuButton {
+        color: #212121;
+        text-align: left;
+    }
+
+        paper-button.menuButton:hover {
+            background: #e1f5f3;
+        }
+
+    paper-button.ripple::shadow paper-ripple {
+        color: #ff3bee;
+    }
+
+    paper-button.ripple paper-ripple {
+        color: #ff3bee;
+    }
+
+    paper-button.submit {
+        color: #4285f4;
+    }
+
+    paper-button[raised].submit {
+        background: #4285f4;
+        color: #fff;
+    }
+
+    paper-button.more {
+        color: #EC407A;
+    }
+
+    paper-button[raised].more {
+        background: #EC407A;
+        color: #fff;
+    }
+
+    paper-button.secondary {
+        color: #52B54B;
+    }
+
+    paper-button[raised].secondary {
+        background: #52B54B;
+        color: #fff;
+    }
+
+    paper-button.accent {
+        color: #52B54B;
+    }
+
+    paper-button[raised].accent {
+        background: #52B54B;
+        color: #fff;
+    }
+
+    paper-button.alt {
+        color: #F57F17;
+    }
+
+    paper-button[raised].alt {
+        background: #F57F17;
+        color: #fff;
+    }
+
+.ui-page-theme-b paper-button.cancel {
+    color: #444;
+}
+
+.ui-page-theme-b paper-button[raised].cancel {
+    background: #444;
+    color: #fff;
+}
+
+paper-button.cancelDark {
+    color: #444;
+}
+
+paper-button[raised].cancelDark {
+    background: #444;
+    color: #fff;
+}
+
+.ui-page-theme-b paper-button.subdued:not([disabled]) {
+    color: #484848;
+}
+
+.ui-page-theme-b paper-button[raised].subdued:not([disabled]) {
+    background: #484848;
+    color: #fff;
+}
+
+.ui-page-theme-b paper-button[raised][disabled].subdued {
+    background: #111;
+}
+
+paper-button.hover:hover {
+    background: #eee;
+}
+
+paper-button.ripple::shadow paper-ripple {
+    color: var(--paper-pink-a200);
+}
+
+paper-button.ripple paper-ripple {
+    color: var(--paper-pink-a200);
+}
+
+paper-button span {
+    vertical-align: middle;
+}
+
+paper-button:not(.iconRight) iron-icon, paper-button:not(.iconRight) .fa {
+    margin-right: .5em;
+}
+
+paper-button.iconRight iron-icon, paper-button.iconRight .fa {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
+paper-button .fa {
+    vertical-align: middle;
+}
+
+.clearButton {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    outline: none;
+    color: inherit;
+    width: 100%;
+    vertical-align: middle;
+}
+
+.clearLink {
+    text-decoration: none;
+    font-weight: inherit !important;
+    vertical-align: middle;
+    color: inherit !important;
+}
+
+paper-button.mini {
+    min-width: initial;
+}
+
+    paper-button.mini .content {
+        padding: 0.3em 0.7em;
+    }
+
+    paper-button.mini.noIcon .content {
+        padding: 0.5em 0.7em;
+    }
+
+
+paper-toast {
+    z-index: 9999999;
+}
+
+paper-button.notext {
+    min-width: 2.8em;
+}
+
+    paper-button.notext .content {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    paper-button.notext iron-icon {
+        margin-right: 0;
+    }
+
+#docspinner {
+    display: block;
+    margin-top: -14px;
+    margin-left: -14px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 9999999;
+}
+
+/*paper-toast {
+    background-color: #eee;
+    color: #000;
+}*/
+
+.bottomFab {
+    bottom: 30px;
+}
+
+paper-dialog {
+    border-radius: 4px;
+    z-index: 999999 !important;
+}
+
+iron-overlay-backdrop {
+    z-index: 999998 !important;
+}
+
+/* These values default to 24px and create huge white padding around the dialog content. */
+.scrollable.paper-dialog-scrollable {
+    padding: 0 12px;
+}
+
+paper-dialog > *:last-child:not(.buttons) {
+    margin-bottom: 12px;
+}
+
+paper-dialog > *:first-child:not(h2) {
+    margin-top: 12px;
+}
+
+paper-icon-button paper-ripple {
+    color: inherit !important;
+}
+
+paper-dialog + iron-overlay-backdrop {
+    background-color: transparent !important;
+}
+
+paper-dialog[role="alertdialog"] + iron-overlay-backdrop {
+    background-color: #000 !important;
+}
+
+paper-tabs {
+    background-color: #111;
+    color: #fff;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+    paper-tabs.bottomTabs {
+        box-shadow: 0px -2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+paper-tab {
+    text-transform: uppercase;
+    font-weight: 400;
+}
+
+paper-tabs #selectionBar {
+    background-color: #38c !important;
+}
+
+paper-tabs paper-ripple {
+    color: #38c !important;
+}
+
+paper-fab.subdued {
+    background: #484848;
+    color: #fff;
+}
+
+    paper-fab.subdued paper-material.keyboard-focus {
+        background: #686868 !important;
+    }
+
+.ui-page-theme-b paper-fab[disabled].subdued {
+    background: #222;
+}
+
+paper-fab.white {
+    background: #fff;
+    color: #000;
+}
+
+    paper-fab.white paper-material.keyboard-focus {
+        background: #01579b !important;
+        color: #fff;
+    }
+
+paper-fab.blue {
+    background: #03a9f4;
+}
+
+    paper-fab.blue paper-material.keyboard-focus {
+        background: #01579b !important;
+    }
+
+paper-fab.square {
+    border-radius: 5px;
+}
+
+paper-slider {
+    width: 100%;
+}
+
+paper-menu-item {
+    padding: .35em .5em;
+}
+
+    paper-menu-item iron-icon {
+        margin-right: 1.5em;
+    }
+
+.actionSheetMenuItem {
+    cursor: pointer;
+}
+
+    .actionSheetMenuItem:hover {
+        background: #eee;
+    }
+
+.scrollablePaperTabs paper-icon-button {
+    display: none !important;
+}
+
+/*.scrollablePaperTabs #tabsContainer {
+    text-align: center;
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -ms-overflow-style: none;
+    overflow: -moz-scrollbars-none;
+}
+
+.scrollablePaperTabs #tabsContainer::-webkit-scrollbar {
+    height: 0 !important;
+    display: none;
+}
+
+.scrollablePaperTabs #tabsContent {
+    position: static !important;
+}*/

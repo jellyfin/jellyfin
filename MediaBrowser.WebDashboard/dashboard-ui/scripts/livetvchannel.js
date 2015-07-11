@@ -166,23 +166,23 @@
 
         var page = this;
 
-        $('#btnPlay', page).on('click', function () {
+        $('.btnPlay', page).on('click', function () {
             var userdata = currentItem.UserData || {};
-            LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, false, currentItem.MediaType, userdata.PlaybackPositionTicks);
+            LibraryBrowser.showPlayMenu(null, currentItem.Id, currentItem.Type, false, currentItem.MediaType, userdata.PlaybackPositionTicks);
         });
 
-        $('#btnEdit', page).on('click', function () {
+        $('.btnEdit', page).on('click', function () {
 
             Dashboard.navigate("edititemmetadata.html?channelid=" + currentItem.Id);
         });
 
-    }).on('pageshowready', "#liveTvChannelPage", function () {
+    }).on('pagebeforeshowready', "#liveTvChannelPage", function () {
 
         var page = this;
 
         reload(page);
 
-    }).on('pagehide', "#liveTvChannelPage", function () {
+    }).on('pagebeforehide', "#liveTvChannelPage", function () {
 
         currentItem = null;
         programs = null;

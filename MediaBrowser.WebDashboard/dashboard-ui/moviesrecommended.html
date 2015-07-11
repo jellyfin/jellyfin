@@ -4,16 +4,16 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="moviesRecommendedPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="movie" data-require="scripts/moviesrecommended">
+    <div id="moviesRecommendedPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="movie" data-require="scripts/moviesrecommended,paperbuttonstyle">
 
         <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="#" class="ui-btn-active">${TabSuggestions}</a>
-            <a href="movies.html">${TabMovies}</a>
-            <a href="movietrailers.html" class="movieTrailersTab">${TabTrailers}</a>
-            <a href="collections.html?context=movies">${TabCollections}</a>
-            <a href="moviegenres.html">${TabGenres}</a>
-            <a href="moviepeople.html" class="moviePeopleTab">${TabPeople}</a>
-            <a href="moviestudios.html" class="movieStudiosTab">${TabStudios}</a>
+            <a href="#" class="ui-btn-active"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+            <a href="movies.html"><iron-icon icon="local-movies"></iron-icon>${TabMovies}</a>
+            <a href="movietrailers.html" class="movieTrailersTab"><iron-icon icon="movie"></iron-icon>${TabTrailers}</a>
+            <a href="collections.html?context=movies"><iron-icon icon="video-library"></iron-icon>${TabCollections}</a>
+            <a href="moviegenres.html"><iron-icon icon="video-library"></iron-icon>${TabGenres}</a>
+            <a href="moviepeople.html" class="moviePeopleTab"><iron-icon icon="people"></iron-icon>${TabPeople}</a>
+            <a href="moviestudios.html" class="movieStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabStudios}</a>
         </div>
         <div data-role="content">
 
@@ -21,7 +21,7 @@
                 <div id="resumableSection" style="display: none;" class="homePageSection">
                     <div>
                         <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
-                        <a href="#" class="accentButton categorySyncButton" data-category="Resume"><i class="fa fa-refresh"></i>${ButtonSync}</a>
+                        <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
                     </div>
 
                     <div id="resumableItems" class="itemsContainer">
@@ -31,7 +31,7 @@
                 <div class="homePageSection">
                     <div>
                         <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestMovies}</h1>
-                        <a href="#" class="accentButton categorySyncButton" data-category="Latest"><i class="fa fa-refresh"></i>${ButtonSync}</a>
+                        <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
                     </div>
 
                     <div id="recentlyAddedItems" class="itemsContainer">

@@ -341,6 +341,12 @@ namespace MediaBrowser.Server.Implementations.Sync
         private async Task<SyncedFileInfo> SendFile(IServerSyncProvider provider, string inputPath, string[] pathParts, SyncTarget target, SyncOptions options, IProgress<double> progress, CancellationToken cancellationToken)
         {
             _logger.Debug("Sending {0} to {1}. Remote path: {2}", inputPath, provider.Name, string.Join("/", pathParts));
+            var supportsDirectCopy = provider as ISupportsDirectCopy;
+            if (supportsDirectCopy != null)
+            {
+                return await supportsDirectCopy.SendFile(inputPath, pathParts, target, progress, cancellationToken).ConfigureAwait(false);
+            }
+
             using (var fileStream = _fileSystem.GetFileStream(inputPath, FileMode.Open, FileAccess.Read, FileShare.Read, true))
             {
                 Stream stream = fileStream;

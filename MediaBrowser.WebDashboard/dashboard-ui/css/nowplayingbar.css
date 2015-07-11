@@ -1,0 +1,243 @@
+﻿/* Now playing bar */
+.nowPlayingBar {
+    border-top: 1px solid #444;
+    text-align: center;
+    /*box-shadow: 0 0 8px rgba(255,255,255,.4);*/
+}
+
+.hiddenNowPlayingBar .nowPlayingBar {
+    display: none!important;
+}
+
+.mediaButton, .nowPlayingBarUserDataButtons .btnUserItemRating {
+    vertical-align: middle;
+    color: #e8e8e8;
+    margin: 0;
+    text-align: center;
+}
+.mediaButton iron-icon {
+    height: 40px;
+    width: 40px;
+}
+
+.mediaButton.remoteControlButton iron-icon, .mediaButton.muteButton iron-icon, .mediaButton.unmuteButton iron-icon {
+    height: 26px;
+}
+
+.nowPlayingDoubleText {
+    top: -3px;
+}
+
+.nowPlayingBarInfoContainer {
+    vertical-align: middle;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+
+.nowPlayingImage {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 1em;
+}
+
+    .nowPlayingImage img {
+        vertical-align: bottom;
+    }
+
+    .nowPlayingBar, .nowPlayingImage img {
+        height: 80px;
+    }
+
+.nowPlayingBarText {
+    display: inline-block;
+    font-weight: normal;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    text-align: left;
+    font-size: 15px;
+    max-width: 130px;
+}
+
+@media (min-width: 500px) {
+    .nowPlayingBarText {
+        max-width: 180px;
+    }
+}
+
+@media (min-width: 600px) {
+    .nowPlayingBarText {
+        max-width: 200px;
+    }
+}
+
+@media (min-width: 700px) {
+    .nowPlayingBarText {
+        max-width: 240px;
+    }
+}
+
+@media (min-width: 800px) {
+    .nowPlayingBarText {
+        max-width: 300px;
+        margin-right: 30px;
+    }
+}
+
+@media (min-width: 900px) {
+    .nowPlayingBarText {
+        max-width: 400px;
+    }
+}
+
+.nowPlayingBarCenter {
+    vertical-align: middle;
+    text-align: center;
+    margin-top: 12px;
+}
+
+.nowPlayingBarPositionContainer {
+    position: absolute;
+    left: 80px;
+    top: 0;
+    right: 0;
+    z-index: 1;
+}
+
+.noMediaProgress .nowPlayingBarPositionContainer {
+    display: none;
+}
+
+.nowPlayingBarPositionSlider paper-progress {
+    height: 3px !important;
+}
+
+.nowPlayingBarPositionSlider #sliderBar {
+    top: 0;
+}
+
+.nowPlayingBarPositionSlider #sliderContainer {
+    width: 100%;
+    margin-left: -15px;
+}
+
+.nowPlayingBarPositionSlider #sliderKnob {
+    top: -15px !important;
+}
+
+.nowPlayingBarPositionSlider #progressContainer {
+    background-color: transparent !important;
+}
+
+.nowPlayingBarPositionSlider #sliderKnobInner {
+    width: 16px;
+    height: 16px;
+}
+
+.nowPlayingBarRight {
+    position: absolute;
+    bottom: 12px;
+    right: 10px;
+    vertical-align: middle;
+}
+
+.mediaButton img {
+    height: 24px;
+}
+
+.nowPlayingBarCurrentTime {
+    vertical-align: middle;
+    font-weight: normal;
+    position: absolute;
+    bottom: 31px;
+    text-align: center;
+    display: inline-block;
+    margin: 0 auto;
+    padding-left: 50px;
+}
+
+.nowPlayingBarVolumeSlider {
+    margin-left: -1em;
+}
+
+.nowPlayingBarUserDataButtons {
+    display: inline-block;
+    margin-left: 2em;
+    margin-right: 2em;
+}
+
+
+@media all and (max-width: 1300px) {
+
+    .nowPlayingBarUserDataButtons {
+        display: none;
+    }
+}
+
+@media all and (max-width: 1000px) {
+
+    .nowPlayingBarVolumeSlider, .nowPlayingBar .muteButton, .nowPlayingBar .unmuteButton {
+        display: none !important;
+    }
+
+    .nowPlayingBar .playlistButton {
+        display: none !important;
+    }
+
+    .nowPlayingBarRight {
+        bottom: 18px;
+    }
+}
+
+@media all and (max-width: 800px) {
+
+    .nowPlayingBarCurrentTime {
+        padding-left: 0;
+        bottom: 30px;
+        right: 130px;
+    }
+
+    .nowPlayingBarCenter > *:not(.nowPlayingBarCurrentTime) {
+        display: none !important;
+    }
+
+    .nowPlayingBarRight {
+        bottom: 10px;
+    }
+
+    .nowPlayingBar, .nowPlayingImage img {
+        height: 70px;
+    }
+
+    .nowPlayingBarPositionContainer {
+        left: 70px;
+    }
+
+    .nowPlayingBarPositionSlider paper-progress {
+        height: 3px !important;
+    }
+
+    .nowPlayingBarPositionSlider #sliderKnob {
+        top: -15px !important;
+    }
+}
+
+@media all and (min-width: 800px) {
+
+    .nowPlayingBarRight .pauseButton {
+        display: none;
+    }
+
+    .nowPlayingBarRight .unpauseButton {
+        display: none;
+    }
+}
+
+@media all and (max-width: 600px) {
+
+    .nowPlayingBarCurrentTime {
+        display: none;
+    }
+}

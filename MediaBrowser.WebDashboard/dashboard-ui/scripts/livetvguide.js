@@ -19,15 +19,6 @@
 
     var channelsPromise;
 
-    function showLoadingMessage(page) {
-
-        $('.popupLoading', page).popup('open');
-    }
-
-    function hideLoadingMessage(page) {
-        $('.popupLoading', page).popup('close');
-    }
-
     function normalizeDateToTimeslot(date) {
 
         var minutesOffset = date.getMinutes() - cellCurationMinutes;
@@ -51,7 +42,7 @@
 
     function reloadGuide(page) {
 
-        showLoadingMessage(page);
+        Dashboard.showModalLoadingMsg();
 
         channelQuery.userId = Dashboard.getCurrentUserId();
 
@@ -62,7 +53,7 @@
         var date = currentDate;
 
         var nextDay = new Date(date.getTime() + msPerDay - 1);
-        console.log(nextDay);
+        Logger.log(nextDay);
         channelsPromise.done(function (channelsResult) {
 
             ApiClient.getLiveTvPrograms({
@@ -77,24 +68,35 @@
 
                 renderGuide(page, date, channelsResult.Items, programsResult.Items);
 
-                hideLoadingMessage(page);
+                Dashboard.hideModalLoadingMsg();
+
+                LibraryBrowser.setLastRefreshed(page);
 
             });
 
-            var channelPagingHtml = LibraryBrowser.getPagingHtml(channelQuery, channelsResult.TotalRecordCount, false, [10, 20, 30, 50, 100]);
-            $('.channelPaging', page).html(channelPagingHtml).trigger('create');
+            var channelPagingHtml = LibraryBrowser.getQueryPagingHtml({
+                startIndex: channelQuery.StartIndex,
+                limit: channelQuery.Limit,
+                totalRecordCount: channelsResult.TotalRecordCount,
+                updatePageSizeSetting: false,
+                showLimit: true
+            });
 
-            $('.btnNextPage', page).on('click', function () {
+            var channelPaging = page.querySelector('.channelPaging');
+            channelPaging.innerHTML = channelPagingHtml;
+            $(channelPaging).trigger('create');
+
+            Events.on(page.querySelector('.btnNextPage'), 'click', function () {
                 channelQuery.StartIndex += channelQuery.Limit;
                 reloadChannels(page);
             });
 
-            $('.btnPreviousPage', page).on('click', function () {
+            Events.on(page.querySelector('.btnPreviousPage'), 'click', function () {
                 channelQuery.StartIndex -= channelQuery.Limit;
                 reloadChannels(page);
             });
 
-            $('.selectPageSize', page).on('change', function () {
+            Events.on(page.querySelector('#selectPageSize'), 'change', function () {
                 channelQuery.Limit = parseInt(this.value);
                 channelQuery.StartIndex = 0;
                 reloadChannels(page);
@@ -263,7 +265,10 @@
             html.push(getChannelProgramsHtml(page, date, channels[i], programs));
         }
 
-        $('.programGrid', page).html(html.join('')).scrollTop(0).scrollLeft(0)
+        var programGrid = page.querySelector('.programGrid');
+        programGrid.innerHTML = html.join('');
+
+        $(programGrid).scrollTop(0).scrollLeft(0)
             .createGuideHoverMenu('.programCellInner');
     }
 
@@ -300,7 +305,7 @@
             html += '</div>';
         }
 
-        $('.channelList', page).html(html);
+        page.querySelector('.channelList').innerHTML = html;
     }
 
     function renderGuide(page, date, channels, programs) {
@@ -309,7 +314,7 @@
 
         var startDate = date;
         var endDate = new Date(startDate.getTime() + msPerDay);
-        $('.timeslotHeaders', page).html(getTimeslotHeadersHtml(startDate, endDate));
+        page.querySelector('.timeslotHeaders').innerHTML = getTimeslotHeadersHtml(startDate, endDate);
         renderPrograms(page, date, channels, programs);
     }
 
@@ -319,9 +324,8 @@
 
         if (!headersScrolling) {
             gridScrolling = true;
-            var grid = $(elem);
 
-            $('.timeslotHeaders', page).scrollLeft(grid.scrollLeft());
+            $(page.querySelector('.timeslotHeaders')).scrollLeft($(elem).scrollLeft());
             gridScrolling = false;
         }
     }
@@ -330,8 +334,7 @@
 
         if (!gridScrolling) {
             headersScrolling = true;
-            elem = $(elem);
-            $('.programGrid', page).scrollLeft(elem.scrollLeft());
+            $(page.querySelector('.programGrid')).scrollLeft($(elem).scrollLeft());
             headersScrolling = false;
         }
     }
@@ -344,8 +347,10 @@
 
         var text = LibraryBrowser.getFutureDateText(date);
         text = '<span class="currentDay">' + text.replace(' ', ' </span>');
-        $('.currentDate', page).html(text);
+        page.querySelector('.currentDate').innerHTML = text;
     }
+
+    var dateOptions = [];
 
     function setDateRange(page, guideInfo) {
 
@@ -364,28 +369,24 @@
 
         start = new Date(Math.max(today, start));
 
-        var html = '';
+        dateOptions = [];
 
         while (start <= end) {
 
-
-            html += '<option value="' + start.getTime() + '">' + LibraryBrowser.getFutureDateText(start) + '</option>';
+            dateOptions.push({
+                name: LibraryBrowser.getFutureDateText(start),
+                id: start.getTime(),
+                ironIcon: 'today'
+            });
 
             start.setDate(start.getDate() + 1);
             start.setHours(0, 0, 0, 0);
         }
 
-        var elem = $('#selectDate', page).html(html).selectmenu('refresh');
-
-        if (currentDate) {
-            elem.val(currentDate.getTime()).selectmenu('refresh');
-        }
-
-        var val = elem.val();
         var date = new Date();
 
-        if (val) {
-            date.setTime(parseInt(val));
+        if (currentDate) {
+            date.setTime(currentDate.getTime());
         }
 
         changeDate(page, date);
@@ -403,13 +404,15 @@
 
     function reloadPage(page) {
 
-        showLoadingMessage(page);
-
         $('.guideRequiresUnlock', page).hide();
 
         RegistrationServices.validateFeature('livetv').done(function () {
+            Dashboard.showModalLoadingMsg();
+
             reloadPageAfterValidation(page, 1000);
         }).fail(function () {
+
+            Dashboard.showModalLoadingMsg();
 
             var limit = 5;
             $('.guideRequiresUnlock', page).show();
@@ -419,35 +422,41 @@
         });
     }
 
+    function selectDate(page) {
+
+        require(['actionsheet'], function () {
+
+            ActionSheetElement.show({
+                items: dateOptions,
+                showCancel: true,
+                title: Globalize.translate('HeaderSelectDate'),
+                callback: function (id) {
+
+                    var date = new Date();
+                    date.setTime(parseInt(id));
+                    changeDate(page, date);
+                }
+            });
+
+        });
+    }
+
     $(document).on('pageinitdepends', "#liveTvGuidePage", function () {
 
         var page = this;
 
-        $('.programGrid', page).on('scroll', function () {
+        Events.on(page.querySelector('.programGrid'), 'scroll', function () {
 
             onProgramGridScroll(page, this);
         });
 
-        $('#selectDate', page).on('change', function () {
-
-            var date = new Date();
-            date.setTime(parseInt(this.value));
-
-            $('#popupConfig', page).popup('close');
-
-            setTimeout(function () {
-
-                changeDate(page, date);
-            }, 300);
-        });
-
         if ($.browser.mobile) {
-            $('.tvGuide', page).addClass('mobileGuide');
+            page.querySelector('.tvGuide').classList.add('mobileGuide');
         } else {
 
-            $('.tvGuide', page).removeClass('mobileGuide');
+            page.querySelector('.tvGuide').classList.remove('mobileGuide');
 
-            $('.timeslotHeaders', page).on('scroll', function () {
+            Events.on(page.querySelector('.timeslotHeaders'), 'scroll', function () {
 
                 onTimeslotHeadersScroll(page, this);
             });
@@ -456,14 +465,10 @@
         if (AppInfo.enableHeadRoom) {
             requirejs(["thirdparty/headroom"], function () {
 
-                $('.tvGuideHeader', page).each(function () {
-
-                    // construct an instance of Headroom, passing the element
-                    var headroom = new Headroom(this);
-                    // initialise
-                    headroom.init();
-
-                });
+                // construct an instance of Headroom, passing the element
+                var headroom = new Headroom(page.querySelector('.tvGuideHeader'));
+                // initialise
+                headroom.init();
             });
         }
 
@@ -472,10 +477,18 @@
             reloadPage(page);
         });
 
-    }).on('pageshowready', "#liveTvGuidePage", function () {
+        $('.btnSelectDate', page).on('click', function () {
+
+            selectDate(page);
+        });
+
+    }).on('pagebeforeshowready', "#liveTvGuidePage", function () {
 
         var page = this;
-        reloadPage(page);
+
+        if (LibraryBrowser.needsRefresh(page)) {
+            reloadPage(page);
+        }
     });
 
 })(jQuery, document);

@@ -4,32 +4,25 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="tvRecommendedPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="series" data-require="scripts/tvrecommended">
+    <div id="tvRecommendedPage" data-role="page" class="page libraryPage backdropPage" data-backdroptype="series" data-require="scripts/tvrecommended,paperbuttonstyle">
 
-        <div class="libraryViewNav globalNav" style="display: none;">
-            <a href="index.html">${TabHome}</a>
-            <a href="homelatest.html">${TabLatest}</a>
-            <a href="#" class="ui-btn-active">${TabNextUp}</a>
-            <a href="favorites.html">${TabFavorites}</a>
-            <a href="tvupcoming.html">${TabUpcoming}</a>
-        </div>
-        <div class="libraryViewNav scopedLibraryViewNav" style="display: none;">
-            <a href="tvrecommended.html" class="ui-btn-active">${TabSuggestions}</a>
-            <a href="tvlatest.html">${TabLatest}</a>
-            <a href="tvupcoming.html">${TabUpcoming}</a>
-            <a href="tvshows.html">${TabShows}</a>
-            <a href="episodes.html" class="tvEpisodesTab">${TabEpisodes}</a>
-            <a href="tvgenres.html">${TabGenres}</a>
-            <a href="tvpeople.html" class="tvPeopleTab">${TabPeople}</a>
-            <a href="tvstudios.html" class="tvStudiosTab">${TabNetworks}</a>
+        <div class="libraryViewNav scopedLibraryViewNav">
+            <a href="tvrecommended.html" class="ui-btn-active"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+            <a href="tvlatest.html"><iron-icon icon="new-releases"></iron-icon>${TabLatest}</a>
+            <a href="tvupcoming.html"><iron-icon icon="schedule"></iron-icon>${TabUpcoming}</a>
+            <a href="tvshows.html"><iron-icon icon="live-tv"></iron-icon>${TabShows}</a>
+            <a href="episodes.html" class="tvEpisodesTab"><iron-icon icon="slideshow"></iron-icon>${TabEpisodes}</a>
+            <a href="tvgenres.html"><iron-icon icon="video-library"></iron-icon>${TabGenres}</a>
+            <a href="tvpeople.html" class="tvPeopleTab"><iron-icon icon="people"></iron-icon>${TabPeople}</a>
+            <a href="tvstudios.html" class="tvStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabNetworks}</a>
         </div>
         <div data-role="content">
             <div class="ehsContent">
 
                 <div id="resumableSection" style="display: none;" class="scopedContent homePageSection">
                     <div>
-                        <h1 class="listHeader firstListHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
-                        <a href="#" class="accentButton categorySyncButton" data-category="Resume"><i class="fa fa-refresh"></i>${ButtonSync}</a>
+                        <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderResume}</h1>
+                        <paper-button raised class="submit mini categorySyncButton" data-category="Resume"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
                     </div>
 
                     <div id="resumableItems" class="itemsContainer">
@@ -39,7 +32,7 @@
                 <div class="homePageSection">
                     <div>
                         <h1 class="listHeader nextUpHeader" style="display:inline-block;vertical-align:middle;">${HeaderNextUp}</h1>
-                        <a href="#" class="accentButton categorySyncButton" data-category="NextUp"><i class="fa fa-refresh"></i>${ButtonSync}</a>
+                        <paper-button raised class="submit mini categorySyncButton" data-category="NextUp"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
                     </div>
                     <div id="nextUpItems" class="itemsContainer">
                     </div>

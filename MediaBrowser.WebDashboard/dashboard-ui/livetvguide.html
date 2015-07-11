@@ -4,14 +4,14 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvGuidePage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/registrationservices,scripts/livetvcomponents,scripts/livetvguide">
+    <div id="liveTvGuidePage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/registrationservices,scripts/livetvcomponents,scripts/livetvguide,paperbuttonstyle,livetvcss">
         <div class="libraryViewNav">
-            <a href="livetvsuggested.html">${TabSuggestions}</a>
-            <a href="livetvguide.html" class="ui-btn-active">${TabGuide}</a>
-            <a href="livetvchannels.html">${TabChannels}</a>
-            <a href="livetvrecordings.html">${TabRecordings}</a>
-            <a href="livetvtimers.html">${TabScheduled}</a>
-            <a href="livetvseriestimers.html">${TabSeries}</a>
+            <a href="livetvsuggested.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+            <a href="livetvguide.html" class="ui-btn-active"><iron-icon icon="grid-on"></iron-icon>${TabGuide}</a>
+            <a href="livetvchannels.html"><iron-icon icon="live-tv"></iron-icon>${TabChannels}</a>
+            <a href="livetvrecordings.html"><iron-icon icon="slideshow"></iron-icon>${TabRecordings}</a>
+            <a href="livetvtimers.html"><iron-icon icon="schedule"></iron-icon>${TabScheduled}</a>
+            <a href="livetvseriestimers.html"><iron-icon icon="refresh"></iron-icon>${TabSeries}</a>
         </div>
         <div data-role="content" style="padding-top: 5px;padding-left:0!important;padding-right:0!important;">
 
@@ -19,7 +19,7 @@
                 <div class="tvGuideHeader">
                     <div class="channelTimeslotHeader">
                         <div class="timeslotHeaderInner">
-                            <a href="#popupConfig" data-rel="popup" class="accentButton" style="display:block;padding-left:5px;"><i class="fa fa-calendar"></i><span class="currentDate"></span></a>
+                            <a class="btnSelectDate" href="#" style="display:block;padding-left:5px;color:#fff;text-decoration:none;font-weight:normal!important;padding:4px 10px 4px 0;"><i class="fa fa-calendar" style="margin-right:3px;"></i><span class="currentDate"></span></a>
                         </div>
                     </div>
                     <div class="timeslotHeaders hiddenScrollX"></div>
@@ -34,27 +34,7 @@
             </div>
             <div class="guideRequiresUnlock readOnlyContent" style="margin:1em auto;text-align:center;display:none;padding:1em;">
                 <p class="unlockText"></p>
-                <button class="btn btnActionAccent btnUnlockGuide" data-role="none" type="button">
-                    <span>
-                        ${ButtonUnlockGuide}
-                    </span>
-                    <i class="fa fa-check"></i>
-                </button>
-            </div>
-            <div data-role="popup" id="popupConfig" data-theme="b">
-                <div class="ui-bar-a" style="text-align: center; padding: 0 20px; position: relative;">
-
-                    <h3 class="identificationHeader" style="margin:.5em 0;">${HeaderSelectDate}</h3>
-                </div>
-                <div data-role="content">
-                    <select id="selectDate" data-mini="true" data-inline="true"></select>
-                    <a href="#" data-rel="back" data-role="button" data-mini="true" data-icon="delete">${ButtonCancel}</a>
-                </div>
-            </div>
-            <div data-role="popup" class="popupLoading" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width: 250px;" data-history="false">
-                <div style="padding: .5em 1.5em;">
-                    <p style="color: #eee;">${MessageLoadingChannels}</p>
-                </div>
+                <paper-button raised class="secondary block btnUnlockGuide"><iron-icon icon="check"></iron-icon><span>${ButtonUnlockGuide}</span></paper-button>
             </div>
         </div>
     </div>

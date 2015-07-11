@@ -27,7 +27,7 @@
         ApiClient.getPeople(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
-            $(document).scrollTop(0);
+            window.scrollTo(0, 0);
 
             var html = '';
             var pagingHtml = LibraryBrowser.getQueryPagingHtml({
@@ -38,7 +38,7 @@
                 showLimit: false
             });
 
-            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
             updateFilterControls(page);
 
@@ -52,9 +52,9 @@
                 lazy: true
             });
 
-            var elem = $('#items', page).html(html).lazyChildren();
-
-            $(pagingHtml).appendTo(elem).trigger('create');
+            var elem = page.querySelector('#items');
+            elem.innerHTML = html + pagingHtml;
+            ImageLoader.lazyChildren(elem);
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
@@ -147,7 +147,7 @@
             reloadItems(page);
         });
 
-    }).on('pageshowready', "#tvPeoplePage", function () {
+    }).on('pagebeforeshowready', "#tvPeoplePage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

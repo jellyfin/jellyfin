@@ -89,6 +89,7 @@
 
             renderRecordings($('#latestRecordings', page), result.Items);
 
+            LibraryBrowser.setLastRefreshed(page);
         });
 
         ApiClient.getLiveTvRecordingGroups({
@@ -102,11 +103,13 @@
         });
     }
 
-    $(document).on('pageshowready', "#liveTvRecordingsPage", function () {
+    $(document).on('pagebeforeshowready', "#liveTvRecordingsPage", function () {
 
         var page = this;
 
-        reload(page);
+        if (LibraryBrowser.needsRefresh(page)) {
+            reload(page);
+        }
 
     });
 

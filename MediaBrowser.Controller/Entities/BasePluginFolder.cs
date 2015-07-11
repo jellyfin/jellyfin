@@ -1,4 +1,6 @@
 ﻿
+using System.Runtime.Serialization;
+
 namespace MediaBrowser.Controller.Entities
 {
     /// <summary>
@@ -20,6 +22,15 @@ namespace MediaBrowser.Controller.Entities
         public override bool IsSaveLocalMetadataEnabled()
         {
             return true;
+        }
+
+        [IgnoreDataMember]
+        public override bool SupportsPeople
+        {
+            get
+            {
+                return false;
+            }
         }
     }
 }

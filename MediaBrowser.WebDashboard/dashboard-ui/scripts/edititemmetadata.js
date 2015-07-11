@@ -809,9 +809,9 @@
 
     function getAlbumArtists(form) {
 
-        return $('#txtAlbumArtist', form).val().trim().split(';').filter(function(s){
+        return $('#txtAlbumArtist', form).val().trim().split(';').filter(function (s) {
 
-        	return s.length > 0;
+            return s.length > 0;
 
         }).map(function (a) {
 
@@ -823,9 +823,9 @@
 
     function getArtists(form) {
 
-        return $('#txtArtist', form).val().trim().split(';').filter(function(s){
+        return $('#txtArtist', form).val().trim().split(';').filter(function (s) {
 
-        	return s.length > 0;
+            return s.length > 0;
 
         }).map(function (a) {
 
@@ -1362,7 +1362,7 @@
 
                 var page = $.mobile.activePage;
 
-                console.log('Item updated - reloading metadata');
+                Logger.log('Item updated - reloading metadata');
                 reload(page);
                 $('#refreshLoading', page).hide();
             }
@@ -1377,6 +1377,18 @@
     function unbindItemChanged(page) {
 
         $(ApiClient).off("websocketmessage", onWebSocketMessageReceived);
+    }
+
+    function onItemDeleted(e, itemId) {
+
+        if (currentItem && currentItem.Id == itemId) {
+
+            if (currentItem.ParentId) {
+                Dashboard.navigate('edititemmetadata.html?id=' + currentItem.ParentId);
+            } else {
+                Dashboard.navigate('edititemmetadata.html');
+            }
+        }
     }
 
     $(document).on('pageinitdepends', "#editItemMetadataPage", function () {
@@ -1428,7 +1440,6 @@
 
                 //$.mobile.urlHistory.ignoreNextHashChange = true;
                 window.location.hash = 'editItemMetadataPage?id=' + data.id;
-
                 reload(page);
             }
         });
@@ -1450,22 +1461,12 @@
 
         reload(page);
 
-        $(LibraryBrowser).on('itemdeleting.editor', function (e, itemId) {
+        $(LibraryBrowser).on('itemdeleting', onItemDeleted);
 
-            if (currentItem && currentItem.Id == itemId) {
-
-                if (currentItem.ParentId) {
-                    Dashboard.navigate('edititemmetadata.html?id=' + currentItem.ParentId);
-                } else {
-                    Dashboard.navigate('edititemmetadata.html');
-                }
-            }
-        });
-
-    }).on('pagehide', "#editItemMetadataPage", function () {
+    }).on('pagebeforehide', "#editItemMetadataPage", function () {
 
         var page = this;
-        $(LibraryBrowser).off('itemdeleting.editor');
+        $(LibraryBrowser).off('itemdeleting', onItemDeleted);
 
         unbindItemChanged(page);
 

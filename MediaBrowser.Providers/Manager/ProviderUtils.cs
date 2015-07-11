@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
@@ -8,12 +9,16 @@ namespace MediaBrowser.Providers.Manager
 {
     public static class ProviderUtils
     {
-        public static void MergeBaseItemData(BaseItem source, 
-            BaseItem target, 
+        public static void MergeBaseItemData<T>(MetadataResult<T> sourceResult,
+            MetadataResult<T> targetResult, 
             List<MetadataFields> lockedFields, 
             bool replaceData, 
             bool mergeMetadataSettings)
+            where T : BaseItem
         {
+            var source = sourceResult.Item;
+            var target = targetResult.Item;
+
             if (source == null)
             {
                 throw new ArgumentNullException("source");
@@ -100,9 +105,9 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataFields.Cast))
             {
-                if (replaceData || target.People.Count == 0)
+                if (replaceData || targetResult.People.Count == 0)
                 {
-                    target.People = source.People;
+                    targetResult.People = sourceResult.People;
                 }
             }
 

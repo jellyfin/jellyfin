@@ -150,6 +150,11 @@ namespace MediaBrowser.Providers.Manager
 
         public Task SaveImage(IHasImages item, string source, string mimeType, ImageType type, int? imageIndex, string internalCacheKey, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(source))
+            {
+                throw new ArgumentNullException("source");
+            }
+
             var fileStream = _fileSystem.GetFileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true);
 
             return new ImageSaver(ConfigurationManager, _libraryMonitor, _fileSystem, _logger).SaveImage(item, fileStream, mimeType, type, imageIndex, internalCacheKey, cancellationToken);
@@ -480,11 +485,10 @@ namespace MediaBrowser.Providers.Manager
             // Give it a dummy path just so that it looks like a file system item
             var dummy = new T()
             {
-                Path = Path.Combine(_appPaths.InternalMetadataPath, "dummy"),
-
-                // Dummy this up to fool the local trailer check
-                Parent = new Folder()
+                Path = Path.Combine(_appPaths.InternalMetadataPath, "dummy")
             };
+
+            dummy.SetParent(new Folder());
 
             var options = GetMetadataOptions(dummy);
 
@@ -722,11 +726,10 @@ namespace MediaBrowser.Providers.Manager
             // Give it a dummy path just so that it looks like a file system item
             var dummy = new TItemType
             {
-                Path = Path.Combine(_appPaths.InternalMetadataPath, "dummy"),
-
-                // Dummy this up to fool the local trailer check
-                Parent = new Folder()
+                Path = Path.Combine(_appPaths.InternalMetadataPath, "dummy")
             };
+
+            dummy.SetParent(new Folder());
 
             var options = GetMetadataOptions(dummy);
 

@@ -97,6 +97,7 @@
 
             renderTimers(page, result.Items);
 
+            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -116,11 +117,13 @@
         }).checkboxradio('refresh');
     }
 
-    $(document).on('pageshowready', "#liveTvSeriesTimersPage", function () {
+    $(document).on('pagebeforeshowready', "#liveTvSeriesTimersPage", function () {
 
         var page = this;
 
-        reload(page);
+        if (LibraryBrowser.needsRefresh(page)) {
+            reload(page);
+        }
 
     }).on('pageinit', "#liveTvSeriesTimersPage", function () {
 

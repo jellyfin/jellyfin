@@ -23,10 +23,7 @@
 
         LoginPage.getApiClient().done(function (apiClient) {
 
-            // Show all users on localhost
-            var promise1 = apiClient.getPublicUsers();
-
-            promise1.done(function (users) {
+            apiClient.getPublicUsers().done(function (users) {
 
                 var showManualForm = !users.length;
 
@@ -109,6 +106,8 @@
             } else {
                 newUrl = "index.html";
             }
+
+            Dashboard.hideLoadingMsg();
 
             Dashboard.onServerChanged(user.Id, result.AccessToken, apiClient);
             Dashboard.navigate(newUrl);
@@ -220,5 +219,9 @@ $(document).on('pageinitdepends', "#loginPage", function () {
     var page = this;
 
     $('.manualLoginForm', page).off('submit', LoginPage.onManualSubmit).on('submit', LoginPage.onManualSubmit);
+
+    $('.btnForgotPassword', page).on('click', function () {
+        Dashboard.navigate('forgotpassword.html');
+    });
 
 }).on('pageshowready', "#loginPage", LoginPage.onPageShow);

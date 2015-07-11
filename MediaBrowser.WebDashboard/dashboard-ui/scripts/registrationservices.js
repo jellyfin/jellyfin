@@ -84,29 +84,29 @@
 
     addRecurringFields: function (page, period) {
 
-        var formSelector = '.supporterForm';
+        var form = page.querySelector('.supporterForm');
 
         // Add recurring fields to form
         $("<input type='hidden' name='a3' class='pprecurring' />")
             .attr('value', $('#donateAmt', page).val())
-            .appendTo(formSelector, page);
+            .appendTo(form);
 
         $("<input type='hidden' name='p3' value='1' class='pprecurring' />")
-            .appendTo(formSelector, page);
+            .appendTo(form);
 
         $("<input type='hidden' name='t3' value='" + period + "' class='pprecurring' />")
-            .appendTo(formSelector, page);
+            .appendTo(form);
 
         $("<input type='hidden' name='src' value='1' class='pprecurring' />")
-            .appendTo(formSelector, page);
+            .appendTo(form);
 
         $("<input type='hidden' name='sra' value='1' class='pprecurring' />")
-            .appendTo(formSelector, page);
+            .appendTo(form);
 
         //change command for subscriptions
         $('#ppCmd', page).val('_xclick-subscriptions');
 
-        $(formSelector, page).trigger('create');
+        Events.trigger(form, 'create');
 
     },
 

@@ -4,14 +4,14 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvRecordingPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvrecording">
+    <div id="liveTvRecordingPage" data-role="page" class="page libraryPage liveTvPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvrecording,paperbuttonstyle,livetvcss">
         <div class="libraryViewNav">
-            <a href="livetvsuggested.html">${TabSuggestions}</a>
-            <a href="livetvguide.html">${TabGuide}</a>
-            <a href="livetvchannels.html">${TabChannels}</a>
-            <a href="livetvrecordings.html" class="ui-btn-active">${TabRecordings}</a>
-            <a href="livetvtimers.html">${TabScheduled}</a>
-            <a href="livetvseriestimers.html">${TabSeries}</a>
+            <a href="livetvsuggested.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+            <a href="livetvguide.html"><iron-icon icon="grid-on"></iron-icon>${TabGuide}</a>
+            <a href="livetvchannels.html"><iron-icon icon="live-tv"></iron-icon>${TabChannels}</a>
+            <a href="livetvrecordings.html" class="ui-btn-active"><iron-icon icon="slideshow"></iron-icon>${TabRecordings}</a>
+            <a href="livetvtimers.html"><iron-icon icon="schedule"></iron-icon>${TabScheduled}</a>
+            <a href="livetvseriestimers.html"><iron-icon icon="refresh"></iron-icon>${TabSeries}</a>
         </div>
         <div style="padding: 1em 0;">
             <div>
@@ -39,11 +39,11 @@
         </div>
         <div class="detailButtonsContainer">
             <span id="playButtonContainer" style="display: none;">
-                <button id="btnPlay" type="button" data-icon="play" data-inline="true" data-mini="true">${ButtonPlay}</button>
+                <paper-button raised class="secondary btnPlay"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlay}</span></paper-button>
             </span>
-            <a class="btnSync hide" data-role="button" data-icon="refresh" data-inline="true" data-mini="true" href="#">${ButtonSync}</a>
+            <paper-button raised class="submit btnSync"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
             <span id="deleteButtonContainer" style="display: none;">
-                <button id="btnDelete" type="button" data-icon="delete" data-inline="true" data-mini="true">${ButtonDelete}</button>
+                <paper-button raised class="subdued btnDelete"><iron-icon icon="delete"></iron-icon><span>${ButtonDelete}</span></paper-button>
             </span>
         </div>
         <div data-role="content">

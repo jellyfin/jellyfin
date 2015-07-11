@@ -46,10 +46,11 @@ namespace MediaBrowser.Providers.MediaInfo
         private readonly IServerConfigurationManager _config;
         private readonly ISubtitleManager _subtitleManager;
         private readonly IChapterManager _chapterManager;
+        private readonly ILibraryManager _libraryManager;
 
         private readonly CultureInfo _usCulture = new CultureInfo("en-US");
 
-        public FFProbeVideoInfo(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem, IServerConfigurationManager config, ISubtitleManager subtitleManager, IChapterManager chapterManager)
+        public FFProbeVideoInfo(ILogger logger, IIsoManager isoManager, IMediaEncoder mediaEncoder, IItemRepository itemRepo, IBlurayExaminer blurayExaminer, ILocalizationManager localization, IApplicationPaths appPaths, IJsonSerializer json, IEncodingManager encodingManager, IFileSystem fileSystem, IServerConfigurationManager config, ISubtitleManager subtitleManager, IChapterManager chapterManager, ILibraryManager libraryManager)
         {
             _logger = logger;
             _isoManager = isoManager;
@@ -64,6 +65,7 @@ namespace MediaBrowser.Providers.MediaInfo
             _config = config;
             _subtitleManager = subtitleManager;
             _chapterManager = chapterManager;
+            _libraryManager = libraryManager;
         }
 
         public async Task<ItemUpdateType> ProbeVideo<T>(T item,
@@ -219,6 +221,7 @@ namespace MediaBrowser.Providers.MediaInfo
             await AddExternalSubtitles(video, mediaStreams, options, cancellationToken).ConfigureAwait(false);
 
             FetchEmbeddedInfo(video, mediaInfo, options);
+            await FetchPeople(video, mediaInfo, options).ConfigureAwait(false);
 
             video.IsHD = mediaStreams.Any(i => i.Type == MediaStreamType.Video && i.Width.HasValue && i.Width.Value >= 1270);
 
@@ -370,24 +373,6 @@ namespace MediaBrowser.Providers.MediaInfo
                 }
             }
 
-            if (!video.LockedFields.Contains(MetadataFields.Cast))
-            {
-                if (video.People.Count == 0 || isFullRefresh)
-                {
-                    video.People.Clear();
-
-                    foreach (var person in data.People)
-                    {
-                        video.AddPerson(new PersonInfo
-                        {
-                            Name = person.Name,
-                            Type = person.Type,
-                            Role = person.Role
-                        });
-                    }
-                }
-            }
-
             if (!video.LockedFields.Contains(MetadataFields.Genres))
             {
                 if (video.Genres.Count == 0 || isFullRefresh)
@@ -454,6 +439,31 @@ namespace MediaBrowser.Providers.MediaInfo
                 if (string.IsNullOrWhiteSpace(video.Overview) || isFullRefresh)
                 {
                     video.Overview = data.Overview;
+                }
+            }
+        }
+
+        private async Task FetchPeople(Video video, Model.MediaInfo.MediaInfo data, MetadataRefreshOptions options)
+        {
+            var isFullRefresh = options.MetadataRefreshMode == MetadataRefreshMode.FullRefresh;
+
+            if (!video.LockedFields.Contains(MetadataFields.Cast))
+            {
+                if (isFullRefresh || _libraryManager.GetPeople(video).Count == 0)
+                {
+                    var people = new List<PersonInfo>();
+
+                    foreach (var person in data.People)
+                    {
+                        PeopleHelper.AddPerson(people, new PersonInfo
+                        {
+                            Name = person.Name,
+                            Type = person.Type,
+                            Role = person.Role
+                        });
+                    }
+
+                    await _libraryManager.UpdatePeople(video, people);
                 }
             }
         }

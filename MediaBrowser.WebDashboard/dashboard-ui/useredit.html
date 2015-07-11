@@ -76,7 +76,6 @@
                         <div class="fieldDescription">${OptionAllowMediaPlaybackTranscodingHelp}</div>
                         <br />
                     </div>
-                    <br />
                     <div>
                         <fieldset data-role="controlgroup">
                             <legend>${HeaderRemoteControl}</legend>
@@ -88,7 +87,15 @@
                         <div class="fieldDescription">${OptionAllowRemoteSharedDevicesHelp}</div>
                         <br />
                     </div>
-                    <br />
+                    <div>
+                        <fieldset data-role="controlgroup">
+                            <legend>${HeaderSharing}</legend>
+                            <input type="checkbox" id="chkEnableSharing" />
+                            <label for="chkEnableSharing">${OptionAllowLinkSharing}</label>
+                        </fieldset>
+                        <div class="fieldDescription">${OptionAllowLinkSharingHelp}</div>
+                        <br />
+                    </div>
                     <div>
                         <fieldset data-role="controlgroup">
                             <legend>${HeaderSync}</legend>
@@ -122,9 +129,11 @@
                     <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
-                            <button type="submit" data-theme="b" data-icon="check">
-                                ${ButtonSave}
+                            <button type="submit" data-role="none" class="clearButton">
+                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                             </button>
+
+                            <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                         </li>
                     </ul>
                 </form>

@@ -15,7 +15,7 @@
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(program));
 
         LibraryBrowser.renderGenres($('.itemGenres', page), program, context);
-        LibraryBrowser.renderOverview($('.itemOverview', page), program);
+        LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), program);
 
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(program));
 
@@ -175,7 +175,7 @@
 
         reload(page);
 
-    }).on('pagehide', "#liveTvNewRecordingPage", function () {
+    }).on('pagebeforehide', "#liveTvNewRecordingPage", function () {
 
         currentProgram = null;
 

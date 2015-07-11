@@ -1,4 +1,4 @@
-(function (document, setTimeout, clearTimeout, screen, store, $, setInterval, window) {
+(function (document, setTimeout, clearTimeout, screen, $, setInterval, window) {
 
     function mediaPlayer() {
 
@@ -153,6 +153,15 @@
                 //});
             }
 
+            var directPlayVideoContainers = AppInfo.directPlayVideoContainers;
+
+            if (directPlayVideoContainers && directPlayVideoContainers.length) {
+                profile.DirectPlayProfiles.push({
+                    Container: directPlayVideoContainers.join(','),
+                    Type: 'Video'
+                });
+            }
+
             profile.DirectPlayProfiles.push({
                 Container: 'mp3',
                 Type: 'Audio'
@@ -300,23 +309,27 @@
                 }]
             });
 
-            profile.CodecProfiles.push({
-                Type: 'VideoAudio',
-                Codec: 'aac',
-                Container: 'mkv,mov',
-                Conditions: [
-                    {
-                        Condition: 'NotEquals',
-                        Property: 'AudioProfile',
-                        Value: 'HE-AAC'
-                    },
-                    {
-                        Condition: 'NotEquals',
-                        Property: 'AudioProfile',
-                        Value: 'LC'
-                    }
-                ]
-            });
+            var isVlc = AppInfo.isNativeApp && $.browser.android;
+
+            if (!isVlc) {
+                profile.CodecProfiles.push({
+                    Type: 'VideoAudio',
+                    Codec: 'aac',
+                    Container: 'mkv,mov',
+                    Conditions: [
+                        {
+                            Condition: 'NotEquals',
+                            Property: 'AudioProfile',
+                            Value: 'HE-AAC'
+                        },
+                        {
+                            Condition: 'NotEquals',
+                            Property: 'AudioProfile',
+                            Value: 'LC'
+                        }
+                    ]
+                });
+            }
 
             profile.CodecProfiles.push({
                 Type: 'VideoAudio',
@@ -330,49 +343,69 @@
                 ]
             });
 
-            profile.CodecProfiles.push({
-                Type: 'Video',
-                Codec: 'h264',
-                Conditions: [
-                {
-                    Condition: 'NotEquals',
-                    Property: 'IsAnamorphic',
-                    Value: 'true',
-                    IsRequired: false
-                },
-                {
-                    Condition: 'EqualsAny',
-                    Property: 'VideoProfile',
-                    Value: 'high|main|baseline|constrained baseline'
-                },
-                {
-                    Condition: 'LessThanEqual',
-                    Property: 'VideoLevel',
-                    Value: '41'
-                },
-                {
-                    Condition: 'LessThanEqual',
-                    Property: 'Height',
-                    Value: maxHeight
-                }]
-            });
+            if (isVlc) {
+                profile.CodecProfiles.push({
+                    Type: 'Video',
+                    Codec: 'h264',
+                    Conditions: [
+                    {
+                        Condition: 'EqualsAny',
+                        Property: 'VideoProfile',
+                        Value: 'high|main|baseline|constrained baseline'
+                    },
+                    {
+                        Condition: 'LessThanEqual',
+                        Property: 'VideoLevel',
+                        Value: '41'
+                    }]
+                });
+            } else {
+                profile.CodecProfiles.push({
+                    Type: 'Video',
+                    Codec: 'h264',
+                    Conditions: [
+                    {
+                        Condition: 'NotEquals',
+                        Property: 'IsAnamorphic',
+                        Value: 'true',
+                        IsRequired: false
+                    },
+                    {
+                        Condition: 'EqualsAny',
+                        Property: 'VideoProfile',
+                        Value: 'high|main|baseline|constrained baseline'
+                    },
+                    {
+                        Condition: 'LessThanEqual',
+                        Property: 'VideoLevel',
+                        Value: '41'
+                    },
+                    {
+                        Condition: 'LessThanEqual',
+                        Property: 'Height',
+                        Value: maxHeight
+                    }]
+                });
+            }
 
-            profile.CodecProfiles.push({
-                Type: 'Video',
-                Codec: 'vpx',
-                Conditions: [
-                {
-                    Condition: 'NotEquals',
-                    Property: 'IsAnamorphic',
-                    Value: 'true',
-                    IsRequired: false
-                },
-                {
-                    Condition: 'LessThanEqual',
-                    Property: 'Height',
-                    Value: maxHeight
-                }]
-            });
+            if (!isVlc) {
+                profile.CodecProfiles.push({
+                    Type: 'Video',
+                    Codec: 'vpx',
+                    Conditions: [
+                    {
+                        Condition: 'NotEquals',
+                        Property: 'IsAnamorphic',
+                        Value: 'true',
+                        IsRequired: false
+                    },
+                    {
+                        Condition: 'LessThanEqual',
+                        Property: 'Height',
+                        Value: maxHeight
+                    }]
+                });
+            }
 
             // Subtitle profiles
             // External vtt or burn in
@@ -382,6 +415,13 @@
                     Format: 'vtt',
                     Method: 'External'
                 });
+
+                if (isVlc) {
+                    profile.SubtitleProfiles.push({
+                        Format: 'vtt',
+                        Method: 'External'
+                    });
+                }
             }
 
             profile.ResponseProfiles = [];
@@ -431,7 +471,7 @@
 
         self.getCurrentTicks = function (mediaRenderer) {
 
-            var playerTime = Math.floor(10000000 * (mediaRenderer || self.currentMediaRenderer).currentTime());
+            var playerTime = Math.floor(10000 * (mediaRenderer || self.currentMediaRenderer).currentTime());
 
             playerTime += self.startTimeTicksOffset;
 
@@ -448,6 +488,10 @@
             clearProgressInterval();
 
             var intervalTime = ApiClient.isWebSocketOpen() ? 1200 : 5000;
+            // Ease up with safari because it doesn't perform as well
+            if ($.browser.safari) {
+                intervalTime = Math.max(intervalTime, 5000);
+            }
             self.lastProgressReport = 0;
 
             currentProgressInterval = setInterval(function () {
@@ -472,16 +516,9 @@
 
         self.canPlayNativeHls = function () {
 
-            // Don't use HLS on android 4.x, regardless of what the browser reports
-            //if ($.browser.android) {
-            //    var agent = navigator.userAgent.toLowerCase();
-
-            //    for (var i = 0; i <= 4; i++) {
-            //        if (agent.indexOf('android 4.' + i) != -1) {
-            //            return false;
-            //        }
-            //    }
-            //}
+            if (AppInfo.isNativeApp) {
+                return true;
+            }
 
             var media = document.createElement('video');
 
@@ -500,8 +537,9 @@
                 return true;
             }
 
-            //return $.browser.chrome || $.browser.msie;
-            return false;
+            // viblast can help us here
+            //return true;
+            return window.MediaSource != null;
         };
 
         self.changeStream = function (ticks, params) {
@@ -510,7 +548,7 @@
 
             if (canClientSeek && params == null) {
 
-                mediaRenderer.currentTime(ticks / (1000 * 10000));
+                mediaRenderer.currentTime(ticks / 10000);
                 return;
             }
 
@@ -557,11 +595,16 @@
 
             clearProgressInterval();
 
-            $(mediaRenderer).off('ended.playbackstopped').off('ended.playnext').one("play", function () {
+            Events.off(mediaRenderer, 'ended', self.onPlaybackStopped);
+            Events.off(mediaRenderer, 'ended', self.playNextAfterEnded);
+
+            $(mediaRenderer).one("play", function () {
 
                 self.updateCanClientSeek(this);
 
-                $(this).on('ended.playbackstopped', self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
+                Events.on(this, 'ended', self.onPlaybackStopped);
+
+                $(this).one('ended', self.playNextAfterEnded);
 
                 self.startProgressInterval();
                 sendProgressUpdate();
@@ -572,14 +615,14 @@
                 ApiClient.stopActiveEncodings(playSessionId).done(function () {
 
                     self.startTimeTicksOffset = newPositionTicks;
-                    mediaRenderer.setCurrentSrc(url);
+                    mediaRenderer.setCurrentSrc(url, self.currentItem, self.currentMediaSource);
 
                 });
 
                 self.updateTextStreamUrls(newPositionTicks || 0);
             } else {
                 self.startTimeTicksOffset = newPositionTicks;
-                mediaRenderer.setCurrentSrc(url);
+                mediaRenderer.setCurrentSrc(url, self.currentItem, self.currentMediaSource);
             }
         }
 
@@ -599,13 +642,14 @@
                     var percent = ticks / self.currentDurationTicks;
                     percent *= 100;
 
-                    positionSlider.val(percent).slider('enable').slider('refresh');
+                    positionSlider.disabled = false;
+                    positionSlider.value = percent;
                 }
             } else {
 
                 if (positionSlider) {
 
-                    positionSlider.slider('disable').slider('refresh');
+                    positionSlider.disabled = true;
                 }
             }
 
@@ -615,7 +659,7 @@
 
             var state = self.getPlayerStateInternal(self.currentMediaRenderer, self.currentItem, self.currentMediaSource);
 
-            $(self).trigger('positionchange', [state]);
+            Events.trigger(self, 'positionchange', [state]);
         };
 
         self.canQueueMediaType = function (mediaType) {
@@ -682,6 +726,8 @@
 
         self.play = function (options) {
 
+            Dashboard.showLoadingMsg();
+
             Dashboard.getCurrentUser().done(function (user) {
 
                 if (options.items) {
@@ -715,7 +761,12 @@
 
             var firstItem = items[0];
 
-            if (options.startPositionTicks || firstItem.MediaType !== 'Video' || !self.canAutoPlayVideo()) {
+            if (firstItem.MediaType === "Video") {
+
+                Dashboard.showModalLoadingMsg();
+            }
+
+            if (options.startPositionTicks || firstItem.MediaType !== 'Video') {
 
                 self.playInternal(firstItem, options.startPositionTicks, function () {
                     self.setPlaylistState(0, items);
@@ -789,7 +840,6 @@
                         playMethod = 'DirectStream';
                     } else {
 
-                        startTimeTicksOffset = startPosition || 0;
                         mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
 
                         if (mediaSource.TranscodingSubProtocol == 'hls') {
@@ -798,6 +848,7 @@
                             contentType = 'application/x-mpegURL';
                         } else {
 
+                            startTimeTicksOffset = startPosition || 0;
                             contentType = 'video/' + mediaSource.TranscodingContainer;
                         }
                     }
@@ -830,12 +881,18 @@
                         playMethod = 'DirectStream';
                     } else {
 
-                        contentType = 'audio/' + mediaSource.TranscodingContainer;
-
                         mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
-                    }
 
-                    startTimeTicksOffset = startPosition || 0;
+                        if (mediaSource.TranscodingSubProtocol == 'hls') {
+
+                            mediaUrl += seekParam;
+                            contentType = 'application/x-mpegURL';
+                        } else {
+
+                            startTimeTicksOffset = startPosition || 0;
+                            contentType = 'audio/' + mediaSource.TranscodingContainer;
+                        }
+                    }
                 }
             }
 
@@ -855,7 +912,7 @@
             }
 
             if (self.isPlaying()) {
-                self.stop();
+                self.stop(false);
             }
 
             if (item.MediaType !== 'Audio' && item.MediaType !== 'Video') {
@@ -863,6 +920,7 @@
             }
 
             if (item.IsPlaceHolder) {
+                Dashboard.hideModalLoadingMsg();
                 MediaController.showPlaybackInfoErrorMessage('PlaceHolder');
                 return;
             }
@@ -912,15 +970,13 @@
 
             if (item.MediaType === "Video") {
 
-                self.playVideo(item, self.currentMediaSource, startPosition);
+                requirejs(['videorenderer'], function () {
+                    self.playVideo(item, self.currentMediaSource, startPosition, callback);
+                });
 
             } else if (item.MediaType === "Audio") {
 
-                playAudio(item, self.currentMediaSource, startPosition);
-            }
-
-            if (callback) {
-                callback();
+                playAudio(item, self.currentMediaSource, startPosition, callback);
             }
         }
 
@@ -1041,7 +1097,7 @@
 
             if (newItem) {
 
-                console.log('playing next track');
+                Logger.log('playing next track');
 
                 self.playInternal(newItem, 0, function () {
                     self.setPlaylistState(newIndex);
@@ -1179,7 +1235,7 @@
 
             if (self.currentMediaRenderer) {
 
-                console.log('MediaPlayer toggling mute');
+                Logger.log('MediaPlayer toggling mute');
 
                 if (self.volume()) {
                     self.mute();
@@ -1208,7 +1264,7 @@
 
             if (self.currentMediaRenderer) {
 
-                console.log('MediaPlayer setting volume to ' + val);
+                Logger.log('MediaPlayer setting volume to ' + val);
                 self.currentMediaRenderer.volume(val / 100);
 
                 self.onVolumeChanged(self.currentMediaRenderer);
@@ -1220,13 +1276,13 @@
         self.saveVolume = function (val) {
 
             if (val) {
-                store.setItem("volume", val);
+                appStorage.setItem("volume", val);
             }
 
         };
 
         self.getSavedVolume = function () {
-            return store.getItem("volume") || 0.5;
+            return appStorage.getItem("volume") || 0.5;
         };
 
         self.shuffle = function (id) {
@@ -1344,7 +1400,7 @@
 
         };
 
-        self.stop = function () {
+        self.stop = function (destroyRenderer) {
 
             var mediaRenderer = self.currentMediaRenderer;
 
@@ -1352,16 +1408,21 @@
 
                 mediaRenderer.stop();
 
-                $(mediaRenderer).off("ended.playnext").one("ended", function () {
+                Events.off(mediaRenderer, 'ended', self.playNextAfterEnded);
 
-                    $(this).off();
+                $(mediaRenderer).one("ended", function () {
 
-                    this.destroy();
+                    $(this).off('.mediaplayerevent');
+
+                    this.cleanup(destroyRenderer);
+
                     self.currentMediaRenderer = null;
                     self.currentItem = null;
                     self.currentMediaSource = null;
 
-                }).trigger("ended");
+                });
+
+                Events.trigger(mediaRenderer, "ended");
 
             } else {
                 self.currentMediaRenderer = null;
@@ -1529,7 +1590,7 @@
 
             var state = self.getPlayerStateInternal(mediaRenderer, item, mediaSource);
 
-            $(self).trigger('playbackstart', [state]);
+            Events.trigger(self, 'playbackstart', [state]);
 
             self.startProgressInterval();
         };
@@ -1540,7 +1601,7 @@
 
             var state = self.getPlayerStateInternal(mediaRenderer, self.currentItem, self.currentMediaSource);
 
-            $(self).trigger('volumechange', [state]);
+            Events.trigger(self, 'volumechange', [state]);
         };
 
         self.cleanup = function () {
@@ -1549,20 +1610,24 @@
 
         self.onPlaybackStopped = function () {
 
-            console.log('playback stopped');
+            Logger.log('playback stopped');
 
-            $('body').removeClass('bodyWithPopupOpen');
+            document.body.classList.remove('bodyWithPopupOpen');
 
             var mediaRenderer = this;
 
-            $(mediaRenderer).off('.mediaplayerevent').off('ended.playbackstopped');
+            Events.off(mediaRenderer, '.mediaplayerevent');
+
+            Events.off(mediaRenderer, 'ended', self.onPlaybackStopped);
+
+            var item = self.currentItem;
+            var mediaSource = self.currentMediaSource;
+
+            var state = self.getPlayerStateInternal(mediaRenderer, item, mediaSource);
 
             self.cleanup(mediaRenderer);
 
             clearProgressInterval();
-
-            var item = self.currentItem;
-            var mediaSource = self.currentMediaSource;
 
             if (item.MediaType == "Video") {
 
@@ -1572,19 +1637,17 @@
                 self.resetEnhancements();
             }
 
-            var state = self.getPlayerStateInternal(mediaRenderer, item, mediaSource);
-
-            $(self).trigger('playbackstop', [state]);
+            Events.trigger(self, 'playbackstop', [state]);
         };
 
         self.onPlaystateChange = function (mediaRenderer) {
 
             var state = self.getPlayerStateInternal(mediaRenderer, self.currentItem, self.currentMediaSource);
 
-            $(self).trigger('playstatechange', [state]);
+            Events.trigger(self, 'playstatechange', [state]);
         };
 
-        $(window).on("beforeunload", function () {
+        Events.on(window, "beforeunload", function () {
 
             // Try to report playback stopped before the browser closes
             if (self.currentItem && self.currentMediaRenderer && currentProgressInterval) {
@@ -1595,7 +1658,13 @@
 
         function sendProgressUpdate() {
 
-            var state = self.getPlayerStateInternal(self.currentMediaRenderer, self.currentItem, self.currentMediaSource);
+            var mediaRenderer = self.currentMediaRenderer;
+
+            if (mediaRenderer.enableProgressReporting === false) {
+                return;
+            }
+
+            var state = self.getPlayerStateInternal(mediaRenderer, self.currentItem, self.currentMediaSource);
 
             var info = {
                 QueueableMediaTypes: state.NowPlayingItem.MediaType,
@@ -1620,7 +1689,7 @@
         self.canPlayWebm = function () {
 
             if (self._canPlayWebm == null) {
-                self._canPlayWebm = document.createElement('video').canPlayType('video/webm').replace(/no/, '');
+                self._canPlayWebm = ($.browser.android && AppInfo.isNativeApp) || document.createElement('video').canPlayType('video/webm').replace(/no/, '');
             }
             return self._canPlayWebm;
         };
@@ -1638,21 +1707,20 @@
             return true;
         };
 
-        function getAudioRenderer() {
-
-            return new AudioRenderer('audio');
-        }
-
         function onTimeUpdate() {
 
             var currentTicks = self.getCurrentTicks(this);
             self.setCurrentTime(currentTicks);
         }
 
-        function playAudio(item, mediaSource, startPositionTicks) {
+        function playAudio(item, mediaSource, startPositionTicks, callback) {
 
             requirejs(['audiorenderer'], function () {
                 playAudioInternal(item, mediaSource, startPositionTicks);
+
+                if (callback) {
+                    callback();
+                }
             });
         }
 
@@ -1664,31 +1732,36 @@
 
             var initialVolume = self.getSavedVolume();
 
-            var mediaRenderer = getAudioRenderer();
+            var mediaRenderer = new AudioRenderer({
+                poster: self.getPosterUrl(item)
+            });
 
             // Set volume first to avoid an audible change
             mediaRenderer.volume(initialVolume);
-            mediaRenderer.setPoster(self.getPosterUrl(item));
-            mediaRenderer.setCurrentSrc(audioUrl);
+            mediaRenderer.setCurrentSrc(audioUrl, item, mediaSource);
 
-            $(mediaRenderer).on("volumechange.mediaplayerevent", function () {
+            Events.on(mediaRenderer, "volumechange.mediaplayerevent", function () {
 
-                console.log('audio element event: volumechange');
+                Logger.log('audio element event: volumechange');
 
                 self.onVolumeChanged(this);
 
-            }).one("playing.mediaplayerevent", function () {
+            });
 
-                console.log('audio element event: playing');
+            $(mediaRenderer).one("playing.mediaplayerevent", function () {
+
+                Logger.log('audio element event: playing');
 
                 // For some reason this is firing at the start, so don't bind until playback has begun
-                $(this).on("ended.playbackstopped", self.onPlaybackStopped).one('ended.playnext', self.playNextAfterEnded);
+                Events.on(this, 'ended', self.onPlaybackStopped);
+
+                $(this).one('ended', self.playNextAfterEnded);
 
                 self.onPlaybackStart(this, item, mediaSource);
 
             }).on("pause.mediaplayerevent", function () {
 
-                console.log('audio element event: pause');
+                Logger.log('audio element event: pause');
 
                 self.onPlaystateChange(this);
 
@@ -1697,7 +1770,7 @@
 
             }).on("playing.mediaplayerevent", function () {
 
-                console.log('audio element event: playing');
+                Logger.log('audio element event: playing');
 
                 self.onPlaystateChange(this);
 
@@ -1728,4 +1801,4 @@
     });
 
 
-})(document, setTimeout, clearTimeout, screen, window.appStorage, $, setInterval, window);
+})(document, setTimeout, clearTimeout, screen, $, setInterval, window);
