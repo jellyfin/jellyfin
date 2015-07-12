@@ -135,41 +135,44 @@
             });
         });
 
-        volumeSlider = $('.nowPlayingBarVolumeSlider', elem).on('change', function () {
+        // Unfortunately this is necessary because the polymer elements might not be ready immediately and there doesn't seem to be an event-driven way to find out when
+        setTimeout(function() {
+            volumeSlider = $('.nowPlayingBarVolumeSlider', elem).on('change', function () {
 
-            if (currentPlayer) {
-                currentPlayer.setVolume(this.value);
-            }
+                if (currentPlayer) {
+                    currentPlayer.setVolume(this.value);
+                }
 
-        })[0];
+            })[0];
 
-        positionSlider = $('.nowPlayingBarPositionSlider', elem).on('change', function () {
+            positionSlider = $('.nowPlayingBarPositionSlider', elem).on('change', function () {
 
-            if (currentPlayer && lastPlayerState) {
+                if (currentPlayer && lastPlayerState) {
 
-                var newPercent = parseFloat(this.value);
-                var newPositionTicks = (newPercent / 100) * lastPlayerState.NowPlayingItem.RunTimeTicks;
+                    var newPercent = parseFloat(this.value);
+                    var newPositionTicks = (newPercent / 100) * lastPlayerState.NowPlayingItem.RunTimeTicks;
 
-                currentPlayer.seek(Math.floor(newPositionTicks));
-            }
+                    currentPlayer.seek(Math.floor(newPositionTicks));
+                }
 
-        })[0];
+            })[0];
 
-        positionSlider._setPinValue = function (value) {
+            positionSlider._setPinValue = function (value) {
 
-            var state = lastPlayerState;
+                var state = lastPlayerState;
 
-            if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
-                this.pinValue = '--:--';
-                return;
-            }
+                if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
+                    this.pinValue = '--:--';
+                    return;
+                }
 
-            var ticks = state.NowPlayingItem.RunTimeTicks;
-            ticks /= 100;
-            ticks *= value;
+                var ticks = state.NowPlayingItem.RunTimeTicks;
+                ticks /= 100;
+                ticks *= value;
 
-            this.pinValue = Dashboard.getDisplayTime(ticks);
-        };
+                this.pinValue = Dashboard.getDisplayTime(ticks);
+            };
+        }, 300);
     }
 
     function getNowPlayingBar() {
@@ -187,9 +190,8 @@
             elem.classList.add('noMediaProgress');
         }
 
-        $.mobile.loadPage('nowplaying.html');
-
         bindEvents(elem);
+        $.mobile.loadPage('nowplaying.html');
 
         return elem;
     }
@@ -218,13 +220,10 @@
             var now = new Date().getTime();
             if ((now - lastUpdateTime) < 700) {
 
-                console.log('skipping UI update');
                 return;
             }
             lastUpdateTime = now;
         }
-
-        console.log(new Date().getTime());
 
         lastPlayerState = state;
 
@@ -250,21 +249,25 @@
         updatePlayerVolumeState(state, playerInfo);
 
         var nowPlayingItem = state.NowPlayingItem || {};
-        if (!positionSlider.dragging) {
 
-            if (nowPlayingItem && nowPlayingItem.RunTimeTicks) {
+        // See bindEvents for why this is necessary
+        if (positionSlider) {
+            if (!positionSlider.dragging) {
 
-                var pct = playState.PositionTicks / nowPlayingItem.RunTimeTicks;
-                pct *= 100;
+                if (nowPlayingItem.RunTimeTicks) {
 
-                positionSlider.value = pct;
+                    var pct = playState.PositionTicks / nowPlayingItem.RunTimeTicks;
+                    pct *= 100;
 
-            } else {
+                    positionSlider.value = pct;
 
-                positionSlider.value = 0;
+                } else {
+
+                    positionSlider.value = 0;
+                }
+
+                positionSlider.disabled = !playState.CanSeek;
             }
-
-            positionSlider.disabled = !playState.CanSeek;
         }
 
         var timeText = Dashboard.getDisplayTime(playState.PositionTicks);
@@ -333,10 +336,13 @@
             hideButton(unmuteButton);
         }
 
-        $(volumeSlider).visible(showVolumeSlider);
+        // See bindEvents for why this is necessary
+        if (volumeSlider) {
+            $(volumeSlider).visible(showVolumeSlider);
 
-        if (!volumeSlider.dragging) {
-            volumeSlider.value = playState.VolumeLevel || 0;
+            if (!volumeSlider.dragging) {
+                volumeSlider.value = playState.VolumeLevel || 0;
+            }
         }
     }
 
