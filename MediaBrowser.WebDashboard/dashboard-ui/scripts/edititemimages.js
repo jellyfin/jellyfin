@@ -508,7 +508,7 @@
             browsableImageStartIndex = 0;
             browsableImageType = type;
 
-            $('.lnkBrowseImages').trigger('click');
+            $('.lnkBrowseImages', $.mobile.activePage).trigger('click');
         };
     }
 
