@@ -315,7 +315,7 @@ namespace MediaBrowser.WebDashboard.Api
                 // In chrome it is causing the body to be hidden while loading, which leads to width-check methods to return 0 for everything
                 //imports = "";
 
-                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetCommonJavascript(mode, version) + importsHtml);
+                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetInitialJavascript(mode, version) + importsHtml + GetCommonJavascript(mode, version));
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
@@ -432,6 +432,35 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="mode">The mode.</param>
         /// <param name="version">The version.</param>
         /// <returns>System.String.</returns>
+        private string GetInitialJavascript(string mode, Version version)
+        {
+            var builder = new StringBuilder();
+
+            var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + version : string.Empty;
+
+            var files = new List<string>
+            {
+                "bower_components/webcomponentsjs/webcomponents-lite.js" + versionString
+            };
+
+            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
+            {
+                files.Insert(0, "cordova.js");
+            }
+
+            var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
+
+            builder.Append(string.Join(string.Empty, tags));
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// Gets the common javascript.
+        /// </summary>
+        /// <param name="mode">The mode.</param>
+        /// <param name="version">The version.</param>
+        /// <returns>System.String.</returns>
         private string GetCommonJavascript(string mode, Version version)
         {
             var builder = new StringBuilder();
@@ -440,7 +469,6 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new List<string>
             {
-                "bower_components/webcomponentsjs/webcomponents-lite.js" + versionString,
                 "scripts/all.js" + versionString
             };
 

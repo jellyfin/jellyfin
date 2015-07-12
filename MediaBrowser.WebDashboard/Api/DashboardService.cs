@@ -200,9 +200,11 @@ namespace MediaBrowser.WebDashboard.Api
 
             var isHtml = IsHtml(path);
 
-            if (isHtml && !_serverConfigurationManager.Configuration.IsStartupWizardCompleted)
+            // Bounce them to the startup wizard if it hasn't been completed yet
+            if (isHtml && !_serverConfigurationManager.Configuration.IsStartupWizardCompleted && path.IndexOf("wizard", StringComparison.OrdinalIgnoreCase) == -1)
             {
-                if (path.IndexOf("wizard", StringComparison.OrdinalIgnoreCase) == -1)
+                // But don't redirect if an html import is being requested.
+                if (path.IndexOf("vulcanize", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
                 {
                     Request.Response.Redirect("wizardstart.html");
                     return null;
@@ -317,8 +319,9 @@ namespace MediaBrowser.WebDashboard.Api
 
                 Directory.Delete(Path.Combine(path, "bower_components"), true);
                 Directory.Delete(Path.Combine(path, "thirdparty", "viblast"), true);
-                
+
                 // But we do need this
+                CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "webcomponentsjs", "webcomponents-lite.js"), Path.Combine(path, "bower_components", "webcomponentsjs", "webcomponents-lite.js"));
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "webcomponentsjs", "webcomponents-lite.min.js"), Path.Combine(path, "bower_components", "webcomponentsjs", "webcomponents-lite.min.js"));
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "velocity", "velocity.min.js"), Path.Combine(path, "bower_components", "velocity", "velocity.min.js"));
                 CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "css"), Path.Combine(path, "bower_components", "swipebox", "src", "css"));
