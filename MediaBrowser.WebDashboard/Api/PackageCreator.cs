@@ -68,14 +68,14 @@ namespace MediaBrowser.WebDashboard.Api
                 }
                 else if (IsFormat(path, "js"))
                 {
-                    if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1)
+                    if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
                     {
                         resourceStream = await ModifyJs(resourceStream, enableMinification).ConfigureAwait(false);
                     }
                 }
                 else if (IsFormat(path, "css"))
                 {
-                    if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1)
+                    if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
                     {
                         resourceStream = await ModifyCss(resourceStream, enableMinification).ConfigureAwait(false);
                     }
@@ -269,10 +269,11 @@ namespace MediaBrowser.WebDashboard.Api
 
                         html = _localization.LocalizeDocument(html, localizationCulture, GetLocalizationToken);
 
-                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">")
-                            .Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div main><div class=\"pageContainer\">")
-                            .Replace("</body>", "</div></div></paper-drawer-panel></body>");
+                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">");
                     }
+
+                    html = html.Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div main><div class=\"pageContainer\">")
+                        .Replace("</body>", "</div></div></paper-drawer-panel></body>");
 
                     if (enableMinification)
                     {
@@ -439,6 +440,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new List<string>
             {
+                "bower_components/webcomponentsjs/webcomponents-lite.js" + versionString,
                 "scripts/all.js" + versionString
             };
 
@@ -463,14 +465,13 @@ namespace MediaBrowser.WebDashboard.Api
             var memoryStream = new MemoryStream();
             var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
 
-            await AppendResource(memoryStream, "bower_components/webcomponentsjs/webcomponents-lite.min.js", newLineBytes).ConfigureAwait(false);
-
             await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
+
+            await AppendResource(memoryStream, "thirdparty/require.js", newLineBytes).ConfigureAwait(false);
+
             await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.min.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/browser.js", newLineBytes).ConfigureAwait(false);
-
-            await AppendResource(memoryStream, "thirdparty/require.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
 
