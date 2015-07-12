@@ -114,17 +114,6 @@ var Dashboard = {
             return;
         }
         Dashboard.hideLoadingMsg();
-
-        if (!Dashboard.suppressAjaxErrors && data.type != 'GET' && !AppInfo.isNativeApp) {
-
-            setTimeout(function () {
-
-                var msg = data.errorCode || Dashboard.defaultErrorMessage;
-
-                Dashboard.showError(msg);
-
-            }, 500);
-        }
     },
 
     getCurrentUser: function () {
