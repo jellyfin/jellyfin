@@ -4,20 +4,52 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="photosPage" data-role="page" class="page libraryPage" data-require="scripts/photos,scripts/queryfilters">
+    <div id="photosPage" data-role="page" class="page libraryPage pageWithAbsoluteTabs" data-require="scripts/photos">
 
-        <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="photos.html" class="ui-btn-active lnkPhotoAlbums"><iron-icon icon="photo-album"></iron-icon>${TabAlbums}</a>
-            <a href="photos.html?context=photos-photos" class="lnkPhotos"><iron-icon icon="photo"></iron-icon>${TabPhotos}</a>
-            <a href="photos.html?context=photos-videos" class="lnkVideos"><iron-icon icon="videocam"></iron-icon>${TabVideos}</a>
+        <div class="libraryViewNav scopedLibraryViewNav libraryViewNavWithMinHeight">
+            <paper-tabs style="display:none;">
+                <paper-tab><iron-icon icon="photo-album"></iron-icon>${TabAlbums}</paper-tab>
+                <paper-tab><iron-icon icon="photo"></iron-icon>${TabPhotos}</paper-tab>
+                <paper-tab><iron-icon icon="videocam"></iron-icon>${TabVideos}</paper-tab>
+            </paper-tabs>
+            <div class="legacyTabs" style="display:none;">
+                <a href="photos.html" class="ui-btn-active lnkPhotoAlbums"><iron-icon icon="photo-album"></iron-icon>${TabAlbums}</a>
+                <a href="photos.html?tab=1" class="lnkPhotos"><iron-icon icon="photo"></iron-icon>${TabPhotos}</a>
+                <a href="photos.html?tab=2" class="lnkVideos"><iron-icon icon="videocam"></iron-icon>${TabVideos}</a>
+            </div>
         </div>
 
-        <div data-role="content">
-            <div class="viewSettings">
-                <div class="listTopPaging">
+        <neon-animated-pages>
+            <neon-animatable>
+                <div class="pageTabContent albumTabContent">
+                    <div class="viewSettings">
+                        <div class="listTopPaging">
+                        </div>
+                    </div>
+                    <div class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
                 </div>
+            </neon-animatable>
+            <div class="pageTabContent photoTabContent">
+                <div class="viewSettings">
+                    <div class="listTopPaging">
+                    </div>
+                </div>
+                <div class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
             </div>
-            <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
+            <neon-animatable>
+            </neon-animatable>
+            <neon-animatable>
+                <div class="pageTabContent videoTabContent">
+                    <div class="viewSettings">
+                        <div class="listTopPaging">
+                        </div>
+                    </div>
+                    <div class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
+                </div>
+            </neon-animatable>
+        </neon-animated-pages>
+
+        <div data-role="content">
         </div>
     </div>
 </body>

@@ -120,6 +120,12 @@
 
         configureSwipeTabs: function (ownerpage, tabs, pages) {
 
+            if (!$.browser.safari) {
+                // Safari doesn't handle the horizontal swiping very well
+                pages.entryAnimation = 'slide-from-right-animation';
+                pages.exitAnimation = 'slide-left-animation';
+            }
+
             var pageCount = pages.querySelectorAll('neon-animatable').length;
 
             function allowSwipe(e) {
@@ -162,7 +168,6 @@
         },
 
         enableFullPaperTabs: function () {
-            //return true;
             return AppInfo.isNativeApp;
         },
 
@@ -192,12 +197,6 @@
                     tabs.noBar = true;
                 }
                 else {
-                    // Safari doesn't handle the horizontal swiping very well
-
-                    // Not very iOS-like I suppose
-                    pages.entryAnimation = 'slide-from-right-animation';
-                    pages.exitAnimation = 'slide-left-animation';
-
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pages);
                 }
 
@@ -223,6 +222,17 @@
             }
 
             $(ownerpage).on('pagebeforeshowready', LibraryBrowser.onTabbedPageBeforeShowReady);
+
+            $(pages).on('iron-select', function () {
+
+                // When transition animations are used, add a content loading delay to allow the animations to finish
+                // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
+                var delay = LibraryBrowser.enableFullPaperTabs() ? 500 : 0;
+                var pgs = this;
+                setTimeout(function () {
+                    $(pgs).trigger('tabchange');
+                }, delay);
+            });
         },
 
         onTabbedPageBeforeShowReady: function () {
@@ -1412,26 +1422,7 @@
 
                 primaryImageAspectRatio = LibraryBrowser.getAveragePrimaryImageAspectRatio([item]);
 
-                if (options.showPremiereDateIndex) {
-
-                    if (item.PremiereDate) {
-                        try {
-
-                            dateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.PremiereDate, { toLocal: true }), true);
-
-                        } catch (err) {
-                        }
-                    }
-
-                    var newIndexValue = dateText || Globalize.translate('HeaderUnknownDate');
-
-                    if (newIndexValue != currentIndexValue) {
-
-                        html += '<h2 class="timelineHeader detailSectionHeader" style="text-align:center;">' + newIndexValue + '</h2>';
-                        currentIndexValue = newIndexValue;
-                    }
-                }
-                else if (options.showStartDateIndex) {
+                if (options.showStartDateIndex) {
 
                     if (item.StartDate) {
                         try {
@@ -1675,7 +1666,10 @@
 
             var mediaSourceCount = item.MediaSourceCount || 1;
 
-            var href = options.linkItem === false ? '#' : LibraryBrowser.getHref(item, options.context);
+            var href = options.linkItem === false ? '#' :
+                (options.useSecondaryItemsPage && item.IsFolder) ?
+                    ('secondaryitems.html?parentid=' + item.Id) :
+                    LibraryBrowser.getHref(item, options.context);
 
             if (item.UserData) {
                 cssClass += ' ' + LibraryBrowser.getUserDataCssClass(item.UserData.Key);

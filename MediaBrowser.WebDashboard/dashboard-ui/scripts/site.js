@@ -1709,8 +1709,8 @@ var AppInfo = {};
         AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
 
         if (isCordova && isAndroid) {
-            AppInfo.directPlayAudioContainers = ['aac', 'mp3', 'ogg', 'flac', 'wma', 'm4a', 'oga'];
-            AppInfo.directPlayVideoContainers = ['mkv', 'mp4', 'mov', 'm4v', 'avi', 'flv', 'wmv', 'webm'];
+            AppInfo.directPlayAudioContainers = "flac,aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape".split(',');
+            AppInfo.directPlayVideoContainers = "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm".split(',');
         } else {
             AppInfo.directPlayAudioContainers = [];
             AppInfo.directPlayVideoContainers = [];

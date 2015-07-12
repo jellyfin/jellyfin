@@ -211,10 +211,11 @@
         var page = this;
 
         var tabs = page.querySelector('paper-tabs');
-        LibraryBrowser.configurePaperLibraryTabs(page, page.querySelectorAll('paper-tabs')[0], page.querySelectorAll('neon-animated-pages')[0]);
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, page.querySelector('neon-animated-pages'));
 
         $(tabs).on('iron-select', function () {
             var selected = this.selected;
+
             if (LibraryBrowser.navigateOnLibraryTabSelect()) {
 
                 if (selected) {
@@ -230,17 +231,6 @@
 
         $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
             loadTab(page, parseInt(this.selected));
-        });
-
-        $(page.querySelector('neon-animated-pages')).on('iron-select', function () {
-
-            // When transition animations are used, add a content loading delay to allow the animations to finish
-            // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
-            var delay = LibraryBrowser.enableFullPaperTabs() ? 500 : 0;
-            var pages = this;
-            setTimeout(function () {
-                $(pages).trigger('tabchange');
-            }, delay);
         });
 
         Events.on(page.querySelector('.btnTakeTour'), 'click', function () {
