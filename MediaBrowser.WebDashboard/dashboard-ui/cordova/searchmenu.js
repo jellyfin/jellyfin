@@ -19,6 +19,12 @@
             Events.trigger(self, 'change', [data.text || '']);
 
         }, true);
+
+        document.addEventListener('searchClosed', function (data) {
+
+            Events.trigger(self, 'closed');
+
+        }, true);
     }
 
     window.SearchMenu = new searchMenu();

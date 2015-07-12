@@ -116,7 +116,9 @@
     <Content Include="dashboard-ui\bower_components\webcomponentsjs\ShadowDOM.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\bower_components\webcomponentsjs\webcomponents-lite.js" />
+    <Content Include="dashboard-ui\bower_components\webcomponentsjs\webcomponents-lite.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\bower_components\webcomponentsjs\webcomponents-lite.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -1,11 +1,10 @@
 ﻿html {
-    font-family: Helvetica Neue;
     /* Setting it here will help prevent white flashes */
     background-color: #1c1c1c;
 }
 
-html, body {
-    font-family: Helvetica Neue;
+html, body, .ui-btn, .pageTitle {
+    font-family: San Francisco, Helvetica Neue;
 }
 
 
@@ -48,7 +47,7 @@ html, body {
 }
 
 @media all and (max-width: 600px) {
-
+    
     .libraryViewNav a {
         padding-left: 10px;
         padding-right: 10px;
@@ -77,18 +76,6 @@ html, body {
 
 .barsMenuButton .fa {
     color: #539FFD !important;
-}
-
-.pageTitle {
-    font-family: Helvetica Neue;
-}
-
-.ui-btn {
-    font-family: Helvetica Neue;
-}
-
-.ui-loader h1 {
-    font-family: Helvetica Neue;
 }
 
 h1, h1 a {
@@ -129,9 +116,9 @@ paper-tab {
     box-shadow: none;
 }
 
-    .visualCardBox .outerCardFooter {
-        padding: 0;
-    }
+.visualCardBox .outerCardFooter {
+    padding: 0;
+}
 
 
 .viewMenuSearch {
@@ -156,12 +143,12 @@ paper-tab {
 }
 
 @media (min-width: 600px) {
-
+    
     /* This needs a little extra space to account for the longer date format */
     .channelHeaderCell, .channelTimeslotHeader {
         width: 209px;
     }
-
+    
     .programGrid, .timeslotHeaders {
         margin-left: 210px;
     }
