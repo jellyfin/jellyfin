@@ -273,14 +273,17 @@
 
         self.getPlayerInfo = function () {
 
+            var player = currentPlayer || {};
+            var target = currentTargetInfo || {};
+
             return {
 
-                name: currentPlayer.name,
-                isLocalPlayer: currentPlayer.isLocalPlayer,
-                id: currentTargetInfo.id,
-                deviceName: currentTargetInfo.deviceName,
-                playableMediaTypes: currentTargetInfo.playableMediaTypes,
-                supportedCommands: currentTargetInfo.supportedCommands
+                name: player.name,
+                isLocalPlayer: player.isLocalPlayer,
+                id: target.id,
+                deviceName: target.deviceName,
+                playableMediaTypes: target.playableMediaTypes,
+                supportedCommands: target.supportedCommands
             };
         };
 
