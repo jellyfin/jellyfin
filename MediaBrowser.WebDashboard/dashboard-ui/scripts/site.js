@@ -647,7 +647,7 @@ var Dashboard = {
         var apiClient = ApiClient;
 
         if (apiClient && apiClient.accessToken()) {
-            if (apiClient.enableFooterNotifications) {
+            if (AppInfo.enableFooterNotifications) {
                 apiClient.getSystemInfo().done(function (info) {
 
                     Dashboard.updateSystemInfo(info);
@@ -1246,7 +1246,7 @@ var Dashboard = {
 
         var newItems = data.ItemsAdded;
 
-        if (!newItems.length) {
+        if (!newItems.length || AppInfo.isNativeApp) {
             return;
         }
 
@@ -1778,7 +1778,7 @@ var AppInfo = {};
 
     function initFastClick() {
 
-        require(["thirdparty/fastclick"], function (FastClick) {
+        require(["bower_components/fastclick/lib/fastclick"], function (FastClick) {
 
             FastClick.attach(document.body);
 
@@ -1843,6 +1843,10 @@ var AppInfo = {};
             else if ($.browser.safari) {
                 Dashboard.importCss('themes/ios.css');
             }
+        }
+
+        if ($.browser.msie && ($.browser.version || 11) <= 10) {
+            Dashboard.importCss('thirdparty/paper-ie10.css');
         }
 
         if ($.browser.safari && $.browser.mobile) {
@@ -1989,8 +1993,8 @@ var AppInfo = {};
             return {};
         });
 
-        if (Dashboard.isRunningInCordova() && $.browser.safari) {
-            define("actionsheet", ["cordova/ios/actionsheet"]);
+        if (Dashboard.isRunningInCordova()) {
+            define("actionsheet", ["cordova/actionsheet"]);
         } else {
             define("actionsheet", ["scripts/actionsheet"]);
         }
@@ -2011,48 +2015,45 @@ var AppInfo = {};
 
         $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
 
-        $(document).on('WebComponentsReady', function () {
+        var drawer = document.querySelector('.mainDrawerPanel');
+        drawer.classList.remove('mainDrawerPanelPreInit');
+        drawer.forceNarrow = true;
+        drawer.drawerWidth = screen.availWidth >= 330 ? "310px" : "270px";
 
-            var drawer = document.querySelector('.mainDrawerPanel');
-            drawer.classList.remove('mainDrawerPanelPreInit');
-            drawer.forceNarrow = true;
-            drawer.drawerWidth = screen.availWidth >= 330 ? "310px" : "270px";
+        if ($.browser.safari && !AppInfo.isNativeApp) {
+            drawer.disableEdgeSwipe = true;
+        }
 
-            if ($.browser.safari && !AppInfo.isNativeApp) {
-                drawer.disableEdgeSwipe = true;
+        if (Dashboard.isConnectMode()) {
+
+            if (AppInfo.isNativeApp && $.browser.android) {
+                require(['cordova/android/logging']);
             }
 
-            if (Dashboard.isConnectMode()) {
+            require(['appstorage'], function () {
 
-                if (AppInfo.isNativeApp && $.browser.android) {
-                    require(['cordova/android/logging']);
-                }
-
-                require(['appstorage'], function () {
-
-                    capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
-                    createConnectionManager(capabilities).done(function () {
-                        $(function () {
-                            onDocumentReady();
-                            Dashboard.initPromiseDone = true;
-                            $.mobile.initializePage();
-                            deferred.resolve();
-                        });
+                capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
+                createConnectionManager(capabilities).done(function () {
+                    $(function () {
+                        onDocumentReady();
+                        Dashboard.initPromiseDone = true;
+                        $.mobile.initializePage();
+                        deferred.resolve();
                     });
                 });
+            });
 
-            } else {
-                createConnectionManager(capabilities);
+        } else {
+            createConnectionManager(capabilities);
 
-                $(function () {
+            $(function () {
 
-                    onDocumentReady();
-                    Dashboard.initPromiseDone = true;
-                    $.mobile.initializePage();
-                    deferred.resolve();
-                });
-            }
-        });
+                onDocumentReady();
+                Dashboard.initPromiseDone = true;
+                $.mobile.initializePage();
+                deferred.resolve();
+            });
+        }
     }
 
     function initCordovaWithDeviceId(deferred, deviceId) {
@@ -2086,11 +2087,13 @@ var AppInfo = {};
     setAppInfo();
     setDocumentClasses();
 
-    if (Dashboard.isRunningInCordova()) {
-        initCordova(initDeferred);
-    } else {
-        init(initDeferred, Dashboard.capabilities());
-    }
+    $(document).on('WebComponentsReady', function () {
+        if (Dashboard.isRunningInCordova()) {
+            initCordova(initDeferred);
+        } else {
+            init(initDeferred, Dashboard.capabilities());
+        }
+    });
 
 })();
 

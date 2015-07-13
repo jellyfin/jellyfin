@@ -17,7 +17,7 @@ progress, such as the buffer level during a streaming playback progress bar.
 Example:
 
 ```html
-<paper-progress value="10" secondaryProgress="30"></paper-progress>
+<paper-progress value="10" secondary-progress="30"></paper-progress>
 ```
 
 Styling progress bar:

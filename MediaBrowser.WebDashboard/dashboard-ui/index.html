@@ -22,18 +22,18 @@
             </div>
         </div>
 
-        <div class="ui-bar-b readOnlyContent welcomeMessage" style="display: none; padding: 2em; border-radius: 10px; margin: 2em auto; font-weight: normal;">
-            <h1 style="margin-top: 0;" class="tourHeader"></h1>
-            <p>
-                <button class="btnTakeTour" type="button" data-icon="arrow-r" data-iconpos="right"><span class="tourButtonText"></span></button>
-            </p>
-        </div>
-
         <div class="pageBackground"></div>
         <div class="ehsContent">
             <neon-animated-pages>
                 <neon-animatable>
                     <div class="pageTabContent homeTabContent">
+                        <div class="ui-bar-b readOnlyContent welcomeMessage" style="display: none; padding: 2em; border-radius: 10px; margin: 2em auto; font-weight: normal;">
+                            <h1 style="margin-top: 0;" class="tourHeader"></h1>
+                            <p>
+                                <paper-button raised class="submit block btnTakeTour"><iron-icon icon="check"></iron-icon><span class="tourButtonText"></span></paper-button>
+                            </p>
+                        </div>
+
                         <div class="sections"></div>
                     </div>
                 </neon-animatable>

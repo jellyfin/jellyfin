@@ -128,15 +128,29 @@
 
             var pageCount = pages.querySelectorAll('neon-animatable').length;
 
+            function allowSwipeOn(elem) {
+
+                if (elem.tagName == 'PAPER-SLIDER') {
+                    return false;
+                }
+
+                if (elem.classList) {
+                    return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX');
+                }
+
+                return true;
+            }
+
             function allowSwipe(e) {
 
                 var target = e.target;
 
-                if (target.classList.contains('noSwipe')) {
-                    return false;
-                }
-                if ($(target).parents('.noSwipe').length) {
-                    return false;
+                var parent = target.parentNode;
+                while (parent != null) {
+                    if (!allowSwipeOn(parent)) {
+                        return false;
+                    }
+                    parent = parent.parentNode;
                 }
 
                 return true;

@@ -12,6 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-behaviors/iron-control-state.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../iron-validatable-behavior/iron-validatable-behavior.html">
+<link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
 
 <!--
 `iron-autogrow-textarea` is an element containing a textarea that grows in height as more
@@ -56,6 +57,7 @@ this element's `bind-value` instead for imperative updates.
       border: none;
       resize: none;
       background: inherit;
+      color: inherit;
       /* see comments in template */
       width: 100%;
       height: 100%;
@@ -78,7 +80,6 @@ this element's `bind-value` instead for imperative updates.
         autocomplete$="[[autocomplete]]"
         autofocus$="[[autofocus]]"
         inputmode$="[[inputmode]]"
-        name$="[[name]]"
         placeholder$="[[placeholder]]"
         readonly$="[[readonly]]"
         required$="[[required]]"
@@ -95,6 +96,7 @@ this element's `bind-value` instead for imperative updates.
     is: 'iron-autogrow-textarea',
 
     behaviors: [
+      Polymer.IronFormElementBehavior,
       Polymer.IronValidatableBehavior,
       Polymer.IronControlState
     ],
@@ -167,6 +169,15 @@ this element's `bind-value` instead for imperative updates.
       },
 
       /**
+       * The value for this input, same as `bindValue`
+       */
+      value: {
+        notify: true,
+        type: String,
+        computed: '_computeValue(bindValue)'
+      },
+
+      /**
        * Bound to the textarea's `placeholder` attribute.
        */
       placeholder: {
@@ -202,9 +213,34 @@ this element's `bind-value` instead for imperative updates.
 
     /**
      * Returns the underlying textarea.
+     * @type HTMLTextAreaElement
      */
     get textarea() {
       return this.$.textarea;
+    },
+
+    /**
+     * Returns true if `value` is valid. The validator provided in `validator`
+     * will be used first, if it exists; otherwise, the `textarea`'s validity
+     * is used.
+     * @return {boolean} True if the value is valid.
+     */
+    validate: function() {
+      // Empty, non-required input is valid.
+      if (!this.required && this.value == '') {
+        this.invalid = false;
+        return true;
+      }
+
+      var valid;
+      if (this.hasValidator()) {
+        valid = Polymer.IronValidatableBehavior.validate.call(this, this.value);
+      } else {
+        valid = this.$.textarea.validity.valid;
+        this.invalid = !valid;
+      }
+      this.fire('iron-input-validate');
+      return valid;
     },
 
     _update: function() {
@@ -261,6 +297,10 @@ this element's `bind-value` instead for imperative updates.
 
     _updateCached: function() {
       this.$.mirror.innerHTML = this._constrain(this.tokens);
+    },
+
+    _computeValue: function() {
+      return this.bindValue;
     }
   })
 </script>

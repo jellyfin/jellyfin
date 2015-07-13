@@ -362,8 +362,8 @@ namespace MediaBrowser.Model.Dlna
             MediaStream videoStream = item.VideoStream;
 
             // TODO: This doesn't accout for situation of device being able to handle media bitrate, but wifi connection not fast enough
-            bool isEligibleForDirectPlay = IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options), subtitleStream, options);
-            bool isEligibleForDirectStream = IsEligibleForDirectPlay(item, options.GetMaxBitrate(), subtitleStream, options);
+            bool isEligibleForDirectPlay = IsEligibleForDirectPlay(item, GetBitrateForDirectPlayCheck(item, options), subtitleStream, options, PlayMethod.DirectPlay);
+            bool isEligibleForDirectStream = IsEligibleForDirectPlay(item, options.GetMaxBitrate(), subtitleStream, options, PlayMethod.DirectStream);
 
             _logger.Debug("Profile: {0}, Path: {1}, isEligibleForDirectPlay: {2}, isEligibleForDirectStream: {3}",
                 options.Profile.Name ?? "Unknown Profile",
@@ -706,7 +706,8 @@ namespace MediaBrowser.Model.Dlna
         private bool IsEligibleForDirectPlay(MediaSourceInfo item,
             int? maxBitrate,
             MediaStream subtitleStream,
-            VideoOptions options)
+            VideoOptions options,
+            PlayMethod playMethod)
         {
             if (subtitleStream != null)
             {
@@ -714,6 +715,7 @@ namespace MediaBrowser.Model.Dlna
 
                 if (subtitleProfile.Method != SubtitleDeliveryMethod.External && subtitleProfile.Method != SubtitleDeliveryMethod.Embed)
                 {
+                    _logger.Debug("Not eligible for {0} due to unsupported subtitles", playMethod);
                     return false;
                 }
             }
@@ -781,7 +783,7 @@ namespace MediaBrowser.Model.Dlna
                 return true;
             }
 
-            _logger.Debug("Audio Bitrate exceeds DirectPlay limit");
+            _logger.Debug("Bitrate exceeds DirectPlay limit");
             return false;
         }
 

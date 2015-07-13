@@ -36,6 +36,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </template>
     </test-fixture>
 
+    <test-fixture id="HiddenTabs">
+      <template>
+        <paper-tabs hidden>
+          <paper-tab>ITEM ONE</paper-tab>
+          <paper-tab>ITEM TWO</paper-tab>
+        </paper-tabs>
+      </template>
+    </test-fixture>
+
     <script>
 
       function checkSelectionBar(tabs, tab) {
@@ -93,7 +102,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('has role tablist', function() {
           assert.equal(tabs.getAttribute('role'), 'tablist');
         });
+      });
 
+      suite('hidden tabs', function() {
+        var tabs;
+
+        setup(function() {
+          tabs = fixture('HiddenTabs');
+        });
+
+        test('choose the correct bar position once made visible', function() {
+          tabs.removeAttribute('hidden');
+          tabs.selected = 0;
+          expect(tabs._width).to.be.greaterThan(0);
+          expect(tabs._left).to.be.equal(0);
+        });
       });
 
       suite('set the selected attribute', function() {

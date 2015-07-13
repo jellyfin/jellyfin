@@ -1466,5 +1466,6 @@
     "TabHomeScreen": "Home Screen",
     "HeaderDisplay": "Display",
     "HeaderNavigation": "Navigation",
-    "LegendTheseSettingsShared": "These settings are shared on all devices"
+    "LegendTheseSettingsShared": "These settings are shared on all devices",
+    "OptionEnableAutomaticServerUpdates": "Enable automatic server updates"
 }

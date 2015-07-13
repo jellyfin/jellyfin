@@ -9,7 +9,7 @@
     }
 
     function getPosterShape() {
-        return enableScrollX() ? 'overflowportrait' : 'portrait';
+        return enableScrollX() ? 'overflowPortrait' : 'portrait';
     }
 
     function getSquareShape() {

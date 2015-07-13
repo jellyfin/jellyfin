@@ -1,7 +1,7 @@
 {
   "name": "paper-icon-button",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "A material design icon button",
   "main": "paper-icon-button.html",
@@ -15,6 +15,10 @@
     "icon",
     "control"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/paper-icon-button.git"
+  },
   "dependencies": {
     "iron-flex-layout": "polymerelements/iron-flex-layout#^1.0.0",
     "iron-icon": "polymerelements/iron-icon#^1.0.0",

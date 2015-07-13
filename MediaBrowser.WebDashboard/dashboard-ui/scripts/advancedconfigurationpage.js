@@ -15,6 +15,14 @@
         } else {
             $('#fldRunAtStartup', page).hide();
         }
+
+        if (systemInfo.CanSelfUpdate) {
+            $('.fldAutomaticUpdates', page).show();
+        } else {
+            $('.fldAutomaticUpdates', page).hide();
+        }
+
+        $('#chkEnableAutomaticServerUpdates', page).checked(config.EnableAutoUpdate).checkboxradio("refresh");
         $('#chkEnableAutomaticRestart', page).checked(config.EnableAutomaticRestart).checkboxradio("refresh");
 
         if (systemInfo.CanSelfRestart) {
@@ -47,6 +55,7 @@
             config.RunAtStartup = $('#chkRunAtStartup', form).checked();
             config.SystemUpdateLevel = $('#selectAutomaticUpdateLevel', form).val();
             config.EnableAutomaticRestart = $('#chkEnableAutomaticRestart', form).checked();
+            config.EnableAutoUpdate = $('#chkEnableAutomaticServerUpdates', form).checked();
 
             config.EnableDashboardResourceMinification = $('#chkEnableMinification', form).checked();
             config.EnableDashboardResponseCaching = $('#chkEnableDashboardResponseCache', form).checked();

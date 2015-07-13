@@ -65,7 +65,11 @@ Custom property | Description | Default
 `--paper-input-container-input-color` | Input foreground color | `--primary-text-color`
 `--paper-input-container` | Mixin applied to the container | `{}`
 `--paper-input-container-label` | Mixin applied to the label | `{}`
+`--paper-input-container-label-focus` | Mixin applied to the label when the input is focused | `{}`
 `--paper-input-container-input` | Mixin applied to the input | `{}`
+`--paper-input-container-underline` | Mixin applied to the underline | `{}`
+`--paper-input-container-underline-focus` | Mixin applied to the underline when the input is focued | `{}`
+`--paper-input-container-underline-disabled` | Mixin applied to the underline when the input is disabled | `{}`
 
 This element is `display:block` by default, but you can set the `inline` attribute to make it
 `display:inline-block`.
@@ -107,6 +111,8 @@ This element is `display:block` by default, but you can set the `inline` attribu
       transform: scale3d(0,1,1);
 
       background: var(--paper-input-container-focus-color, --default-primary-color);
+
+      @apply(--paper-input-container-underline-focus);
     }
 
     .underline.is-highlighted .focused-line {
@@ -132,12 +138,16 @@ This element is `display:block` by default, but you can set the `inline` attribu
     .unfocused-line {
       height: 1px;
       background: var(--paper-input-container-color, --secondary-text-color);
+
+      @apply(--paper-input-container-underline);
     }
 
     :host([disabled]) .unfocused-line {
       border-bottom: 1px dashed;
       border-color: var(--paper-input-container-color, --secondary-text-color);
       background: transparent;
+
+      @apply(--paper-input-container-underline-disabled);
     }
 
     .input-content {
@@ -172,6 +182,8 @@ This element is `display:block` by default, but you can set the `inline` attribu
     .input-content.label-is-highlighted ::content label,
     .input-content.label-is-highlighted ::content .paper-input-label {
       color: var(--paper-input-container-focus-color, --default-primary-color);
+
+      @apply(--paper-input-container-label-focus);
     }
 
     .input-content.is-invalid ::content label,

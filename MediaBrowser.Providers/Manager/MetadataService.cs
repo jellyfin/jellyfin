@@ -330,12 +330,11 @@ namespace MediaBrowser.Providers.Manager
 
         protected async Task SaveItem(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
         {
-            await result.Item.UpdateToRepository(reason, cancellationToken).ConfigureAwait(false);
-
             if (result.Item.SupportsPeople)
             {
                 await LibraryManager.UpdatePeople(result.Item as BaseItem, result.People);
             }
+            await result.Item.UpdateToRepository(reason, cancellationToken).ConfigureAwait(false);
         }
 
         public bool CanRefresh(IHasMetadata item)

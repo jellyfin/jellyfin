@@ -1347,9 +1347,17 @@
 
     function refreshWithOptions(page, options) {
 
-        $('#refreshLoading', page).show();
+        Dashboard.showLoadingMsg();
 
         ApiClient.refreshItem(currentItem.Id, options);
+
+        if (!ApiClient.isWebSocketOpen()) {
+
+            // For now this is a hack
+            setTimeout(function () {
+                Dashboard.hideLoadingMsg();
+            }, 5000);
+        }
     }
 
     function onWebSocketMessageReceived(e, data) {
@@ -1364,7 +1372,6 @@
 
                 Logger.log('Item updated - reloading metadata');
                 reload(page);
-                $('#refreshLoading', page).hide();
             }
         }
     }
