@@ -443,11 +443,6 @@ namespace MediaBrowser.WebDashboard.Api
                 "bower_components/webcomponentsjs/webcomponents-lite.js" + versionString
             };
 
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
-            {
-                files.Insert(0, "cordova.js");
-            }
-
             var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
 
             builder.Append(string.Join(string.Empty, tags));
@@ -493,9 +488,9 @@ namespace MediaBrowser.WebDashboard.Api
             var memoryStream = new MemoryStream();
             var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
 
-            await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "bower_components/jquery/dist/jquery.min.js", newLineBytes).ConfigureAwait(false);
 
-            await AppendResource(memoryStream, "thirdparty/require.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "bower_components/requirejs/require.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.min.js", newLineBytes).ConfigureAwait(false);
 
