@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Querying;
+using System;
 
 namespace MediaBrowser.Server.Implementations.Sorting
 {
@@ -17,6 +18,11 @@ namespace MediaBrowser.Server.Implementations.Sorting
         /// <returns>System.Int32.</returns>
         public int Compare(BaseItem x, BaseItem y)
         {
+            if (!x.EnableAlphaNumericSorting || !y.EnableAlphaNumericSorting)
+            {
+                return string.Compare(x.SortName, y.SortName, StringComparison.CurrentCultureIgnoreCase);
+            }
+
             return AlphanumComparator.CompareValues(x.SortName, y.SortName);
         }
 

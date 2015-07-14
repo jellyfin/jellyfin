@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Entities;
+﻿using System.Collections.Generic;
+using MediaBrowser.Model.Entities;
 using System;
 
 namespace MediaBrowser.Controller.Entities
@@ -42,6 +43,7 @@ namespace MediaBrowser.Controller.Entities
 
         public string Person { get; set; }
         public string[] PersonIds { get; set; }
+        public string[] ItemIds { get; set; }
         public string AdjacentTo { get; set; }
         public string[] PersonTypes { get; set; }
 
@@ -82,9 +84,16 @@ namespace MediaBrowser.Controller.Entities
         public bool? IsMovie { get; set; }
         public bool? IsSports { get; set; }
         public bool? IsKids { get; set; }
-     
+
+        public int? MinPlayers { get; set; }
+        public int? MaxPlayers { get; set; }
+        public double? MinCriticRating { get; set; }
+        public double? MinCommunityRating { get; set; }
+       
         public string[] ChannelIds { get; set; }
-        
+
+        internal List<Guid> ItemIdsFromPersonFilters { get; set; }
+
         public InternalItemsQuery()
         {
             Tags = new string[] { };
@@ -102,6 +111,7 @@ namespace MediaBrowser.Controller.Entities
             PersonTypes = new string[] { };
             PersonIds = new string[] { };
             ChannelIds = new string[] { };
+            ItemIds = new string[] { };
         }
     }
 }

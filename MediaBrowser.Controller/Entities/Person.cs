@@ -55,6 +55,15 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
+        [IgnoreDataMember]
+        public override bool EnableAlphaNumericSorting
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>

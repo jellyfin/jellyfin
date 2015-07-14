@@ -1116,6 +1116,11 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
+            if (request.ItemIds.Length > 0)
+            {
+                return false;
+            }
+
             if (request.Studios.Length > 0)
             {
                 return false;
@@ -1142,6 +1147,26 @@ namespace MediaBrowser.Controller.Entities
             }
 
             if (request.OfficialRatings.Length > 0)
+            {
+                return false;
+            }
+
+            if (request.MinPlayers.HasValue)
+            {
+                return false;
+            }
+
+            if (request.MaxPlayers.HasValue)
+            {
+                return false;
+            }
+
+            if (request.MinCommunityRating.HasValue)
+            {
+                return false;
+            }
+
+            if (request.MinCriticRating.HasValue)
             {
                 return false;
             }
@@ -1304,6 +1329,41 @@ namespace MediaBrowser.Controller.Entities
 
         public static bool Filter(BaseItem item, User user, InternalItemsQuery query, IUserDataManager userDataManager, ILibraryManager libraryManager)
         {
+            if (query.ItemIdsFromPersonFilters == null)
+            {
+                if (query.PersonIds.Length > 0)
+                {
+                    var names = query.PersonIds
+                        .Select(libraryManager.GetItemById)
+                        .Select(i => i == null ? null : i.Name)
+                        .Where(i => !string.IsNullOrWhiteSpace(i))
+                        .ToList();
+
+                    var itemIdList = new List<Guid>();
+                    foreach (var name in names)
+                    {
+                        itemIdList.AddRange(libraryManager.GetItemIds(new InternalItemsQuery
+                        {
+                            Person = name
+                        }));
+                    }
+                    query.ItemIdsFromPersonFilters = itemIdList;
+                }
+
+                // Apply person filter
+                else if (!string.IsNullOrWhiteSpace(query.Person))
+                {
+                    var itemIdList = new List<Guid>();
+
+                    itemIdList.AddRange(libraryManager.GetItemIds(new InternalItemsQuery
+                    {
+                        Person = query.Person,
+                        PersonTypes = query.PersonTypes
+                    }));
+                    query.ItemIdsFromPersonFilters = itemIdList;
+                }
+            }
+
             if (query.MediaTypes.Length > 0 && !query.MediaTypes.Contains(item.MediaType ?? string.Empty, StringComparer.OrdinalIgnoreCase))
             {
                 return false;
@@ -1691,44 +1751,20 @@ namespace MediaBrowser.Controller.Entities
                 return false;
             }
 
-            // Apply person filter
-            if (query.PersonIds.Length > 0)
+            if (query.ItemIds.Length > 0)
             {
-                var names = query.PersonIds
-                    .Select(libraryManager.GetItemById)
-                    .Select(i => i == null ? "-1" : i.Name)
-                    .ToList();
-
-                if (!(names.Any(v => libraryManager.GetPeople(item).Select(i => i.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
+                if (!query.ItemIds.Contains(item.Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
             }
 
             // Apply person filter
-            if (!string.IsNullOrWhiteSpace(query.Person))
+            if (query.ItemIdsFromPersonFilters != null)
             {
-                var personTypes = query.PersonTypes;
-
-                if (personTypes.Length == 0)
+                if (!query.ItemIdsFromPersonFilters.Contains(item.Id))
                 {
-                    if (!(libraryManager.GetPeople(item).Any(p => string.Equals(p.Name, query.Person, StringComparison.OrdinalIgnoreCase))))
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    var types = personTypes;
-
-                    var ok = new[] { item }.Any(i =>
-                            libraryManager.GetPeople(i).Any(p =>
-                                string.Equals(p.Name, query.Person, StringComparison.OrdinalIgnoreCase) && (types.Contains(p.Type ?? string.Empty, StringComparer.OrdinalIgnoreCase) || types.Contains(p.Role ?? string.Empty, StringComparer.OrdinalIgnoreCase))));
-
-                    if (!ok)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
 
@@ -1742,6 +1778,81 @@ namespace MediaBrowser.Controller.Entities
                     return false;
                 }
                 if (!(tags.Any(v => hasTags.Tags.Contains(v, StringComparer.OrdinalIgnoreCase))))
+                {
+                    return false;
+                }
+            }
+
+            if (query.MinPlayers.HasValue)
+            {
+                var filterValue = query.MinPlayers.Value;
+
+                var game = item as Game;
+
+                if (game != null)
+                {
+                    var players = game.PlayersSupported ?? 1;
+
+                    var ok = players >= filterValue;
+
+                    if (!ok)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            if (query.MaxPlayers.HasValue)
+            {
+                var filterValue = query.MaxPlayers.Value;
+
+                var game = item as Game;
+
+                if (game != null)
+                {
+                    var players = game.PlayersSupported ?? 1;
+
+                    var ok = players <= filterValue;
+
+                    if (!ok)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            if (query.MinCommunityRating.HasValue)
+            {
+                var val = query.MinCommunityRating.Value;
+
+                if (!(item.CommunityRating.HasValue && item.CommunityRating >= val))
+                {
+                    return false;
+                }
+            }
+
+            if (query.MinCriticRating.HasValue)
+            {
+                var val = query.MinCriticRating.Value;
+
+                var hasCriticRating = item as IHasCriticRating;
+
+                if (hasCriticRating != null)
+                {
+                    if (!(hasCriticRating.CriticRating.HasValue && hasCriticRating.CriticRating >= val))
+                    {
+                        return false;
+                    }
+                }
+                else
                 {
                     return false;
                 }
