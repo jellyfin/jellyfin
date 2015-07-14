@@ -29,9 +29,7 @@
         html += '<paper-icon-button icon="mic" class="headerButton headerButtonRight headerVoiceButton hide" onclick="VoiceInputManager.startListening();"></paper-icon-button>';
 
         if (!showUserAtTop()) {
-            html += '<button class="headerButton headerButtonRight headerUserButton" type="button" data-role="none" onclick="Dashboard.showUserFlyout(this);">';
-            html += '<div class="fa fa-user"></div>';
-            html += '</button>';
+            html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton" onclick="return Dashboard.showUserFlyout(this);"></paper-icon-button>';
         }
 
         if (!$.browser.mobile && !AppInfo.isNativeApp) {
@@ -93,9 +91,7 @@
             }
         }
 
-        var userButtonHtml = '';
         if (user.name) {
-
             if (user.imageUrl && AppInfo.enableUserImage) {
 
                 var userButtonHeight = 26;
@@ -106,15 +102,12 @@
                     url += "&height=" + (userButtonHeight * Math.max(devicePixelRatio || 1, 2));
                 }
 
-                userButtonHtml += '<div class="lazy headerUserImage" data-src="' + url + '" style="width:' + userButtonHeight + 'px;height:' + userButtonHeight + 'px;"></div>';
-            } else {
-                userButtonHtml += '<div class="fa fa-user"></div>';
-            }
-
-            var headerUserButton = header.querySelector('.headerUserButton');
-            if (headerUserButton) {
-                headerUserButton.innerHTML = userButtonHtml;
-                ImageLoader.lazyChildren(headerUserButton);
+                var headerUserButton = header.querySelector('.headerUserButton');
+                if (headerUserButton) {
+                    headerUserButton.icon = null;
+                    headerUserButton.src = url;
+                    headerUserButton.classList.add('headerUserButtonRound');
+                }
             }
         }
     }
@@ -567,7 +560,7 @@
             $('.btnCast').removeClass('btnActiveCast').each(function () {
                 this.icon = 'cast';
             });
-            $('.nowPlayingSelectedPlayer').html('');
+            $('.headerSelectedPlayer').html('');
 
         } else {
 
@@ -575,7 +568,7 @@
                 this.icon = 'cast-connected';
             });
 
-            $('.nowPlayingSelectedPlayer').html((info.deviceName || info.name));
+            $('.headerSelectedPlayer').html((info.deviceName || info.name));
         }
     }
 

@@ -1138,7 +1138,7 @@
                 html += '</span>';
                 //html += '<button type="button" data-role="none" class="listviewMenuButton imageButton listViewMoreButton" data-icon="none">';
                 //html += '</button>';
-                html += '<paper-icon-button icon="more-vert" class="listviewMenuButton"></paper-icon-button>';
+                html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="listviewMenuButton"></paper-icon-button>';
                 html += '<span class="listViewUserDataButtons">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);
                 html += '</span>';
@@ -1811,7 +1811,7 @@
                 html += '<paper-icon-button icon="play-arrow" class="cardOverlayPlayButton" onclick="return false;"></paper-icon-button>';
             }
             if (options.overlayMoreButton) {
-                html += '<paper-icon-button icon="more-vert" class="cardOverlayMoreButton" onclick="return false;"></paper-icon-button>';
+                html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="cardOverlayMoreButton" onclick="return false;"></paper-icon-button>';
             }
 
             // cardScalable
@@ -1838,7 +1838,7 @@
 
             if (options.cardLayout) {
                 html += '<div class="cardButtonContainer">';
-                html += '<paper-icon-button icon="more-vert" class="listviewMenuButton btnCardOptions"></paper-icon-button>';
+                html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="listviewMenuButton btnCardOptions"></paper-icon-button>';
                 html += "</div>";
             }
 
@@ -2400,7 +2400,7 @@
                 if (options.viewButton) {
 
                     //html += '<paper-button raised class="subdued notext"><iron-icon icon="view-comfy"></iron-icon></paper-button>';
-                    html += '<paper-button raised class="subdued notext" onclick="require([\'jqmicons\']);jQuery(\'.viewPanel\', jQuery(this).parents(\'.page\')).panel(\'toggle\');"><iron-icon icon="more-vert"></iron-icon></paper-button>';
+                    html += '<paper-button raised class="subdued notext" onclick="require([\'jqmicons\']);jQuery(\'.viewPanel\', jQuery(this).parents(\'.page\')).panel(\'toggle\');"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></paper-button>';
                 }
 
                 html += '</div>';

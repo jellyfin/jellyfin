@@ -47,7 +47,7 @@ html, body, .ui-btn, .pageTitle {
 }
 
 @media all and (max-width: 600px) {
-    
+
     .libraryViewNav a {
         padding-left: 10px;
         padding-right: 10px;
@@ -58,9 +58,9 @@ html, body, .ui-btn, .pageTitle {
     border-bottom: 0;
 }
 
-.libraryViewNav .ui-btn-active, .libraryViewNav .iron-selected {
-    color: #539FFD !important;
-}
+    .libraryViewNav .ui-btn-active, .libraryViewNav .iron-selected, .barsMenuButton .fa, .btnActiveCast, .libraryViewNav a:not(.ui-btn-active):hover {
+        color: #EA3150 !important;
+    }
 
 .libraryViewNav {
     border-top: 1px solid #333 !important;
@@ -72,10 +72,6 @@ html, body, .ui-btn, .pageTitle {
 
 .viewMenuBar {
     border-bottom: 1px solid #333;
-}
-
-.barsMenuButton .fa {
-    color: #539FFD !important;
 }
 
 h1, h1 a {
@@ -116,9 +112,9 @@ paper-tab {
     box-shadow: none;
 }
 
-.visualCardBox .outerCardFooter {
-    padding: 0;
-}
+    .visualCardBox .outerCardFooter {
+        padding: 0;
+    }
 
 
 .viewMenuSearch {
@@ -134,21 +130,13 @@ paper-tab {
     margin: 0 auto !important;
 }
 
-.btnActiveCast i {
-    color: #539FFD !important;
-}
-
-.libraryViewNav a:not(.ui-btn-active):hover {
-    color: #539FFD !important;
-}
-
 @media (min-width: 600px) {
-    
+
     /* This needs a little extra space to account for the longer date format */
     .channelHeaderCell, .channelTimeslotHeader {
         width: 209px;
     }
-    
+
     .programGrid, .timeslotHeaders {
         margin-left: 210px;
     }

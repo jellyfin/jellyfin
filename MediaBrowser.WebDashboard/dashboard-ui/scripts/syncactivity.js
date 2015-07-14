@@ -118,7 +118,7 @@
         }
 
         html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
-        html += '<paper-icon-button icon="more-vert" class="btnJobMenu"></paper-icon-button>';
+        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnJobMenu"></paper-icon-button>';
         html += "</div>";
 
         for (var i = 0, length = textLines.length; i < length; i++) {

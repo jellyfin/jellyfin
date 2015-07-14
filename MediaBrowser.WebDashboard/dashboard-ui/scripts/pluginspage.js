@@ -85,7 +85,7 @@
         html += '<div class="cardFooter">';
 
         html += '<div class="cardText" style="text-align:right; float:right;padding-top:5px;">';
-        html += '<paper-icon-button icon="more-vert" class="btnCardMenu"></paper-icon-button>';
+        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnCardMenu"></paper-icon-button>';
         html += "</div>";
 
         html += "<div class='cardText'>";

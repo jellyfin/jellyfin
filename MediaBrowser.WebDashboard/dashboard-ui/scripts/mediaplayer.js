@@ -411,12 +411,29 @@
             // External vtt or burn in
             profile.SubtitleProfiles = [];
             if (self.supportsTextTracks()) {
-                profile.SubtitleProfiles.push({
-                    Format: 'vtt',
-                    Method: 'External'
-                });
 
                 if (isVlc) {
+                    profile.SubtitleProfiles.push({
+                        Format: 'srt',
+                        Method: 'External'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'srt',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'ass',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'ssa',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'pgs',
+                        Method: 'Embed'
+                    });
+                } else {
                     profile.SubtitleProfiles.push({
                         Format: 'vtt',
                         Method: 'External'
@@ -823,7 +840,12 @@
                 contentType = 'video/' + mediaSource.Container;
 
                 if (mediaSource.enableDirectPlay) {
-                    mediaUrl = FileSystemBridge.translateFilePath(mediaSource.Path);
+                    mediaUrl = mediaSource.Path;
+
+                    if (mediaSource.Protocol == 'File') {
+                        mediaUrl = FileSystemBridge.translateFilePath(mediaUrl);
+                    }
+
                     playMethod = 'DirectPlay';
 
                 } else {
@@ -860,7 +882,11 @@
 
                 if (mediaSource.enableDirectPlay) {
 
-                    mediaUrl = FileSystemBridge.translateFilePath(mediaSource.Path);
+                    mediaUrl = mediaSource.Path;
+
+                    if (mediaSource.Protocol == 'File') {
+                        mediaUrl = FileSystemBridge.translateFilePath(mediaUrl);
+                    }
                     playMethod = 'DirectPlay';
 
                 } else {

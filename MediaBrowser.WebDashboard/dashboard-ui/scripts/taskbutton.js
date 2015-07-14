@@ -34,7 +34,7 @@ $.fn.taskButton = function (options) {
             return;
         }
 
-        button.buttonEnabled(task.State == 'Idle').attr('data-taskid', task.Id);
+        $(button).buttonEnabled(task.State == 'Idle').attr('data-taskid', task.Id);
 
         var progress = (task.CurrentProgressPercentage || 0).toFixed(1);
 
@@ -102,9 +102,7 @@ $.fn.taskButton = function (options) {
     }
 
     function onSocketOpen() {
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
-        }
+        startInterval();
     }
 
     function onSocketMessage(e, msg) {
@@ -117,6 +115,33 @@ $.fn.taskButton = function (options) {
     }
 
     var self = this;
+    var pollInterval;
+
+    function onPollIntervalFired() {
+
+        if (!ApiClient.isWebSocketOpen()) {
+            pollTasks(self);
+        }
+    }
+
+    function startInterval() {
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
+        }
+        if (pollInterval) {
+            clearInterval(pollInterval);
+        }
+        pollInterval = setInterval(onPollIntervalFired, 1500);
+    }
+
+    function stopInterval() {
+        if (ApiClient.isWebSocketOpen()) {
+            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
+        }
+        if (pollInterval) {
+            clearInterval(pollInterval);
+        }
+    }
 
     if (options.panel) {
         $(options.panel).hide();
@@ -126,10 +151,7 @@ $.fn.taskButton = function (options) {
 
         this.off('click', onButtonClick);
         $(ApiClient).off("websocketmessage", onSocketMessage).off('websocketopen', onSocketOpen);
-
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
-        }
+        stopInterval();
 
     } else if (this.length) {
 
@@ -137,9 +159,7 @@ $.fn.taskButton = function (options) {
 
         pollTasks(self);
 
-        if (ApiClient.isWebSocketOpen()) {
-            ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
-        }
+        startInterval();
 
         $(ApiClient).on("websocketmessage", onSocketMessage).on('websocketopen', onSocketOpen);
     }

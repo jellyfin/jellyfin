@@ -461,6 +461,14 @@
         updateFilterControls(page);
 
         filtersLoaded = false;
+
+        Dashboard.getCurrentUser().done(function (user) {
+            if (user.Policy.IsAdministrator) {
+                $('.btnMergeVersions', page).show();
+            } else {
+                $('.btnMergeVersions', page).hide();
+            }
+        });
     });
 
 })(jQuery, document);

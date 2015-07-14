@@ -1715,6 +1715,12 @@ var AppInfo = {};
             AppInfo.directPlayAudioContainers = [];
             AppInfo.directPlayVideoContainers = [];
         }
+
+        if (isCordova && isIOS) {
+            AppInfo.moreIcon = 'more-horiz';
+        } else {
+            AppInfo.moreIcon = 'more-vert';
+        }
     }
 
     function initializeApiClient(apiClient) {
@@ -1780,7 +1786,9 @@ var AppInfo = {};
 
         require(["bower_components/fastclick/lib/fastclick"], function (FastClick) {
 
-            FastClick.attach(document.body);
+            FastClick.attach(document.body, {
+                tapDelay: 0
+            });
 
             // Have to work around this issue of fast click breaking the panel dismiss
             $(document.body).on('touchstart', '.ui-panel-dismiss', function () {
@@ -1845,7 +1853,7 @@ var AppInfo = {};
             }
         }
 
-        if ($.browser.msie && ($.browser.version || 11) <= 10) {
+        if ($.browser.msie && $.browser.tv && ($.browser.version || 11) <= 10) {
             Dashboard.importCss('thirdparty/paper-ie10.css');
         }
 
