@@ -22,37 +22,29 @@
                     <a href="#" data-role="button" class="ui-btn-active">${TabImages}</a>
                 </div>
 
-                <div style="margin: -25px 0 1em;">
+                <div style="margin: 0 0 1em;">
 
-                    <div style="display: inline-block;">
-                        <a class="lnkBrowseImages lnkBrowseAllImages hide" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-icon="cloud" data-mini="true">${ButtonBrowseImages}</a>
-                    </div>
-                    <div style="display: inline-block;">
-                        <a href="#popupUpload" data-rel="popup" data-position-to="window" data-role="button" data-inline="true" data-icon="plus" data-mini="true">${ButtonUpload}</a>
-                    </div>
+                    <paper-button raised class="subdued btnBrowseAllImages"><iron-icon icon="cloud"></iron-icon><span>${ButtonBrowseImages}</span></paper-button>
+                    <paper-button raised class="subdued btnOpenUploadMenu"><iron-icon icon="add"></iron-icon><span>${ButtonUpload}</span></paper-button>
                 </div>
 
                 <div id="imagesContainer" style="display: none;">
-                    <div data-role="collapsible" data-mini="true" data-collapsed="false" class="imageEditorCollapsible" data-content-theme="false">
-                        <h3>${HeaderImages}</h3>
-                        <div id="images">
-                        </div>
+                    <h1>${HeaderImages}</h1>
+                    <div id="images">
                     </div>
+                    <br />
                 </div>
 
                 <div id="backdropsContainer" style="display: none;">
-                    <div data-role="collapsible" data-mini="true" data-collapsed="false" class="imageEditorCollapsible" data-content-theme="false">
-                        <h3>${HeaderBackdrops}</h3>
-                        <div id="backdrops">
-                        </div>
+                    <h1>${HeaderBackdrops}</h1>
+                    <div id="backdrops">
                     </div>
+                    <br />
                 </div>
 
                 <div id="screenshotsContainer" style="display: none;">
-                    <div data-role="collapsible" data-mini="true" data-collapsed="false" class="imageEditorCollapsible" data-content-theme="false">
-                        <h3>${Screenshots}</h3>
-                        <div id="screenshots">
-                        </div>
+                    <h1>${Screenshots}</h1>
+                    <div id="screenshots">
                     </div>
                 </div>
 

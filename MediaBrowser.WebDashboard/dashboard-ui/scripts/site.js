@@ -617,8 +617,6 @@ var Dashboard = {
 
             $(document.body).append(html);
 
-            document.body.classList.add('bodyWithPopupOpen');
-
             // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
             // element onload never fires
             setTimeout(function () {
@@ -629,7 +627,6 @@ var Dashboard = {
                 $(dlg).on('iron-overlay-closed', function (e) {
                     var confirmed = this.closingReason.confirmed;
                     this.parentNode.removeChild(this);
-                    document.body.classList.remove('bodyWithPopupOpen');
 
                     if (callback) {
                         callback(confirmed);

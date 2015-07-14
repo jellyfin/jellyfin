@@ -288,7 +288,9 @@
 
             html += '<div class="editorTile imageEditorTile">';
 
-            html += '<div style="height:144px;vertical-align:top;background-repeat:no-repeat;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { height: 144 }) + '\');"></div>';
+            var height = 150;
+
+            html += '<div style="height:' + height + 'px;vertical-align:top;background-repeat:no-repeat;background-position:center center;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { height: height }) + '\');"></div>';
 
             html += '<div>';
 
@@ -303,22 +305,22 @@
             if (image.ImageType == "Backdrop" || image.ImageType == "Screenshot") {
 
                 if (i > 0) {
-                    html += '<button type="button" data-icon="arrow-l" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i - 1) + ');" style="margin-bottom:0;">' + Globalize.translate('ButtonMoveLeft') + '</button>';
+                    html += '<paper-icon-button icon="chevron-left" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i - 1) + ');" title="' + Globalize.translate('ButtonMoveLeft') + '"></paper-icon-button>';
                 } else {
-                    html += '<button type="button" data-icon="arrow-l" data-mini="true" data-inline="true" data-iconpos="notext" style="margin-bottom:0;" disabled>' + Globalize.translate('ButtonMoveLeft') + '</button>';
+                    html += '<paper-icon-button icon="chevron-left" disabled title="' + Globalize.translate('ButtonMoveLeft') + '"></paper-icon-button>';
                 }
 
                 if (i < length - 1) {
-                    html += '<button type="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i + 1) + ');" style="margin-bottom:0;">' + Globalize.translate('ButtonMoveRight') + '</button>';
+                    html += '<paper-icon-button icon="chevron-right" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i + 1) + ');" title="' + Globalize.translate('ButtonMoveRight') + '"></paper-icon-button>';
                 } else {
-                    html += '<button type="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" style="margin-bottom:0;" disabled>' + Globalize.translate('ButtonMoveRight') + '</button>';
+                    html += '<paper-icon-button icon="chevron-right" disabled title="' + Globalize.translate('ButtonMoveRight') + '"></paper-icon-button>';
                 }
             }
 
-            html += '<button type="button" data-icon="delete" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');" style="margin-bottom:0;">' + Globalize.translate('Delete') + '</button>';
+            html += '<paper-icon-button icon="delete" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');" title="' + Globalize.translate('Delete') + '"></paper-icon-button>';
 
             if (imageProviders.length) {
-                html += '<button type="button" data-icon="cloud" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');" style="margin-bottom:0;">' + Globalize.translate('ButtonBrowseOnlineImages') + '</button>';
+                html += '<paper-icon-button icon="cloud" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');" title="' + Globalize.translate('ButtonBrowseOnlineImages') + '"></paper-icon-button>';
             }
 
             html += '</p>';
@@ -508,7 +510,11 @@
             browsableImageStartIndex = 0;
             browsableImageType = type;
 
-            $('.lnkBrowseImages', $.mobile.activePage).trigger('click');
+            var page = $.mobile.activePage;
+
+            selectedProvider = null;
+            $('.popupDownload', page).popup('open');
+            reloadBrowsableImages(page);
         };
     }
 
@@ -531,15 +537,6 @@
 
                 reload(page);
             }
-        });
-
-        $('.lnkBrowseImages', page).on('click', function () {
-
-            selectedProvider = null;
-
-            $('.popupDownload', page).popup('open');
-
-            reloadBrowsableImages(page);
         });
 
         $('#selectBrowsableImageType', page).on('change', function () {
@@ -568,6 +565,18 @@
 
         $('.uploadItemImageForm').off('submit', onSubmit).on('submit', onSubmit);
 
+        $('.btnOpenUploadMenu', page).on('click', function() {
+
+            $('#popupUpload', page).popup('open');
+        });
+
+        $('.btnBrowseAllImages', page).on('click', function () {
+
+            selectedProvider = null;
+            browsableImageType = 'Primary';
+            $('.popupDownload', page).popup('open');
+            reloadBrowsableImages(page);
+        });
 
     }).on('pageshowready', "#editItemImagesPage", function () {
 

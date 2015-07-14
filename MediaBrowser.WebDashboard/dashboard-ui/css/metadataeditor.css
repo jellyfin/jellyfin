@@ -193,15 +193,9 @@
 
 .editorTile {
     display: inline-block;
-    margin: 5px;
-    padding: 8px;
-    border: 1px solid #444;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#333),to(#2d2d2d));
-    background-image: -webkit-linear-gradient(#333,#2d2d2d);
-    background-image: -moz-linear-gradient(#333,#2d2d2d);
-    background-image: -ms-linear-gradient(#333,#2d2d2d);
-    background-image: -o-linear-gradient(#333,#2d2d2d);
-    background-image: linear-gradient(#333,#2d2d2d);
+    margin: 0 2em 2em 0;
+    text-align: center;
+    vertical-align: middle;
 }
 
 .imageEditorTile {
