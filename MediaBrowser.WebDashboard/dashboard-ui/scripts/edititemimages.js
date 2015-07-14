@@ -8,15 +8,6 @@
     var browsableImageType = 'Primary';
     var selectedProvider;
 
-    function updateTabs(page, item) {
-
-        var query = MetadataEditor.getEditQueryString(item);
-
-        $('#btnEditMetadata', page).attr('href', 'edititemmetadata.html?' + query);
-        $('#btnEditSubtitles', page).attr('href', 'edititemsubtitles.html?' + query);
-        $('#btnEditCollectionTitles', page).attr('href', 'editcollectionitems.html?' + query);
-    }
-
     function getBaseRemoteOptions() {
 
         var options = {};
@@ -244,20 +235,6 @@
             currentItem = item;
 
             LibraryBrowser.renderName(item, $('.itemName', page), true);
-
-            updateTabs(page, item);
-
-            if (item.Type == "BoxSet") {
-                $('#btnEditCollectionTitles', page).show();
-            } else {
-                $('#btnEditCollectionTitles', page).hide();
-            }
-
-            if (item.MediaType == "Video" && item.LocationType == "FileSystem" && item.Type !== 'TvChannel') {
-                $('#btnEditSubtitles', page).show();
-            } else {
-                $('#btnEditSubtitles', page).hide();
-            }
 
             ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).done(function (providers) {
 
@@ -520,24 +497,9 @@
 
     window.EditItemImagesPage = new editItemImages();
 
-    $(document).on('pageinitdepends', "#editItemImagesPage", function () {
+    $(document).on('pageinitdepends', "#editItemMetadataPage", function () {
 
         var page = this;
-
-        $('.libraryTree', page).on('itemclicked', function (event, data) {
-
-            if (data.id != currentItem.Id) {
-
-                MetadataEditor.currentItemId = data.id;
-                MetadataEditor.currentItemType = data.itemType;
-                //Dashboard.navigate('edititemmetadata.html?id=' + data.id);
-
-                //$.mobile.urlHistory.ignoreNextHashChange = true;
-                window.location.hash = 'editItemImagesPage?id=' + data.id;
-
-                reload(page);
-            }
-        });
 
         $('#selectBrowsableImageType', page).on('change', function () {
 
@@ -578,12 +540,6 @@
             reloadBrowsableImages(page);
         });
 
-    }).on('pageshowready', "#editItemImagesPage", function () {
-
-        var page = this;
-
-        reload(page);
-
         $('#uploadImage', page).on("change", function () {
             setFiles(page, this.files);
         });
@@ -605,15 +561,14 @@
             return false;
         });
 
-    }).on('pagebeforehide', "#editItemImagesPage", function () {
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
 
-        var page = this;
+            if (parseInt(this.selected) == 3) {
+                var tabContent = page.querySelector('.imageEditorTab');
 
-        currentItem = null;
-
-        $('#uploadImage', page).off("change");
-
-        $("#imageDropZone", page).off('dragover').off('drop');
+                reload(tabContent);
+            }
+        });
     });
 
 })(jQuery, document, window, window.FileReader, escape);

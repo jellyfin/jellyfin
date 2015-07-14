@@ -132,11 +132,12 @@
     $(document).on('pageinitdepends', "#indexPage", function () {
 
         var page = this;
-        var tabContent = page.querySelector('.homeUpcomingTabContent');
 
         $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
 
             if (parseInt(this.selected) == 3) {
+                var tabContent = page.querySelector('.homeUpcomingTabContent');
+
                 if (LibraryBrowser.needsRefresh(tabContent)) {
                     loadUpcoming(tabContent);
                 }

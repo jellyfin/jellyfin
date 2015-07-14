@@ -1,4 +1,8 @@
-﻿.editPageContent {
+﻿.editorTab {
+    padding-bottom: 200px;
+}
+
+.editPageContent {
     padding: 0;
 }
 
@@ -193,7 +197,7 @@
 
 .editorTile {
     display: inline-block;
-    margin: 0 2em 2em 0;
+    margin: 1em 2em 2em 0;
     text-align: center;
     vertical-align: middle;
 }

@@ -88,7 +88,7 @@
                     $('.btnSync', page).addClass('hide');
                 }
 
-                var editImagesHref = user.Policy.IsAdministrator ? 'edititemimages.html' + editQuery : null;
+                var editImagesHref = user.Policy.IsAdministrator ? 'edititemmetadata.html' + (editQuery + "&tab=3") : null;
 
                 $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref, true));
 

@@ -211,7 +211,9 @@
         var page = this;
 
         var tabs = page.querySelector('paper-tabs');
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, page.querySelector('neon-animated-pages'));
+        var pages = page.querySelector('neon-animated-pages');
+
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages);
 
         $(tabs).on('iron-select', function () {
             var selected = this.selected;
@@ -229,7 +231,7 @@
             }
         });
 
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+        $(pages).on('tabchange', function () {
             loadTab(page, parseInt(this.selected));
         });
 
