@@ -1467,5 +1467,6 @@
     "HeaderDisplay": "Display",
     "HeaderNavigation": "Navigation",
     "LegendTheseSettingsShared": "These settings are shared on all devices",
-    "OptionEnableAutomaticServerUpdates": "Enable automatic server updates"
+    "OptionEnableAutomaticServerUpdates": "Enable automatic server updates",
+    "OptionOtherTrailers": "Include trailers from older movies"
 }
