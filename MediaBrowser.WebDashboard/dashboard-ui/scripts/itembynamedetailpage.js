@@ -418,7 +418,10 @@
 
             query.StartIndex = index;
             query.Limit = limit;
-            query.Fields = fields;
+
+            if (fields) {
+                query.Fields += "," + fields;
+            }
 
             return ApiClient.getItems(Dashboard.getCurrentUserId(), query);
 
@@ -460,12 +463,12 @@
 
             if (query.IncludeItemTypes == "Audio") {
 
-                html = LibraryBrowser.getListViewHtml({
+                html = "<div style='max-width:1000px;margin:auto;'>" + LibraryBrowser.getListViewHtml({
                     items: result.Items,
                     playFromHere: true,
                     defaultAction: 'playallfromhere',
                     smallIcon: true
-                });
+                }) + "</div>";
             }
             else if (query.IncludeItemTypes == "Movie" || query.IncludeItemTypes == "Trailer") {
 
@@ -513,10 +516,10 @@
             }
             else {
 
-                html = LibraryBrowser.getListViewHtml({
+                html = "<div style='max-width:1000px;margin:auto;'>" + LibraryBrowser.getListViewHtml({
                     items: result.Items,
                     smallIcon: true
-                });
+                }) + "</div>";
             }
 
             html += LibraryBrowser.getQueryPagingHtml({

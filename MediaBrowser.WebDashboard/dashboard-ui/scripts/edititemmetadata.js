@@ -1086,7 +1086,7 @@
             $('.identifyOptionsForm', page).hide();
             $('.btnIdentifyBack', page).hide();
 
-            $('.popupIdentify', page).popup('open');
+            $('.popupIdentifyItem', page).popup('open');
         });
     }
 
@@ -1280,7 +1280,7 @@
 
             Dashboard.hideLoadingMsg();
 
-            $('.popupIdentify', page).popup('close');
+            $('.popupIdentifyItem', page).popup('close');
 
             reload(page);
         });

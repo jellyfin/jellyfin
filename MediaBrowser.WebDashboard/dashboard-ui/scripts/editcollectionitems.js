@@ -223,7 +223,7 @@
     function onSearchFormSubmit() {
         var page = $(this).parents('.page');
 
-        showSearchResults(page, $('#txtLookupName', page).val());
+        showSearchResults(page, $('#txtLookupName', this).val());
         return false;
     }
 
