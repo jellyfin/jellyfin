@@ -317,7 +317,6 @@ namespace MediaBrowser.WebDashboard.Api
 
                 File.Delete(Path.Combine(path, "thirdparty", "jquerymobile-1.4.5", "jquery.mobile-1.4.5.min.map"));
 
-                Directory.Delete(Path.Combine(path, "bower_components"), true);
                 Directory.Delete(Path.Combine(path, "thirdparty", "viblast"), true);
 
                 // But we do need this
@@ -332,7 +331,7 @@ namespace MediaBrowser.WebDashboard.Api
                 CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "js"), Path.Combine(path, "bower_components", "swipebox", "src", "js"));
                 CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "img"), Path.Combine(path, "bower_components", "swipebox", "src", "img"));
             }
-
+            
             MinifyCssDirectory(Path.Combine(path, "css"));
             MinifyJsDirectory(Path.Combine(path, "scripts"));
             MinifyJsDirectory(Path.Combine(path, "apiclient"));
