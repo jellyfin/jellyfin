@@ -22,8 +22,9 @@
                 var duration = this.duration;
 
                 if (duration) {
-                    if (time >= duration) {
-                        MediaPlayer.nextTrack();
+                    if (time >= (duration - 1)) {
+
+                        onEnded();
                         return;
                     }
                 }

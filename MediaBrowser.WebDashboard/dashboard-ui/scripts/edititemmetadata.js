@@ -1375,14 +1375,56 @@
         }
     }
 
+    function showMoreMenu(page) {
+        
+        Dashboard.getCurrentUser().done(function (user) {
+
+            var moreCommands = LibraryBrowser.getMoreCommands(currentItem, user);
+
+            var menuItems = [];
+
+            menuItems.push({
+                name: Globalize.translate('ButtonAdvancedRefresh'),
+                id: 'refresh',
+                ironIcon: 'refresh'
+            });
+
+            if (moreCommands.indexOf('delete') != -1) {
+                menuItems.push({
+                    name: Globalize.translate('ButtonDelete'),
+                    id: 'delete',
+                    ironIcon: 'delete'
+                });
+            }
+
+            require(['actionsheet'], function () {
+
+                ActionSheetElement.show({
+                    items: menuItems,
+                    callback: function (id) {
+
+                        switch (id) {
+
+                            case 'refresh':
+                                performAdvancedRefresh(page);
+                                break;
+                            case 'delete':
+                                LibraryBrowser.deleteItem(currentItem.Id);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                });
+
+            });
+
+        });
+    }
+
     $(document).on('pageinitdepends', "#editItemMetadataPage", function () {
 
         var page = this;
-
-        $('.btnRefreshAdvanced', this).on('click', function () {
-
-            performAdvancedRefresh(page);
-        });
 
         $('.btnSimpleRefresh', this).on('click', function () {
 
@@ -1408,10 +1450,6 @@
                 $('.popupIdentifyForm', page).show();
                 $(this).hide();
             }
-        });
-
-        $('#btnDelete', this).on('click', function () {
-            LibraryBrowser.deleteItem(currentItem.Id);
         });
 
         $('.libraryTree', page).on('itemclicked', function (event, data) {
@@ -1458,14 +1496,29 @@
             loadTab(page, parseInt(this.selected));
         });
 
+        page.querySelector('.btnMore iron-icon').icon = AppInfo.moreIcon;
+
+        $('.btnMore', page).on('click', function () {
+            showMoreMenu(page);
+        });
+
     }).on('pageshowready', "#editItemMetadataPage", function () {
 
         var page = this;
 
         $(LibraryBrowser).on('itemdeleting', onItemDeleted);
 
-        page.querySelector('paper-tabs').selected = parseInt(getParameterByName('tab') || '0');
-        page.querySelector('paper-tabs').selected = 0;
+        var selected = parseInt(getParameterByName('tab') || '0');
+
+        if (selected) {
+
+            page.querySelector('paper-tabs').selected = 0;
+
+            // Looks like a bug in paper-tabs. It won't set the tab if we try to do it too quickly
+            setTimeout(function () {
+                page.querySelectorAll('paper-tab')[selected].click();
+            }, 700);
+        }
 
     }).on('pagebeforehide', "#editItemMetadataPage", function () {
 

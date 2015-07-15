@@ -67,7 +67,7 @@ var Dashboard = {
         // These are not needed. Nulling them out can help reduce dom querying when pages are loaded
         $.mobile.nojs = null;
         $.mobile.degradeInputsWithin = null;
-        $.mobile.keepNative = ":jqmData(role='none')";
+        $.mobile.keepNative = ":jqmData(role='none'),.paper-input";
     },
 
     isConnectMode: function () {
@@ -464,22 +464,22 @@ var Dashboard = {
 
     showLoadingMsg: function () {
 
+        console.log('showLoadingMsg');
+
         require(['paperbuttonstyle'], function () {
-            var elem = document.getElementById('docspinner');
+            var elem = document.querySelector('.docspinner');
 
             if (elem) {
 
                 // This is just an attempt to prevent the fade-in animation from running repeating and causing flickering
-                if (!elem.active) {
-                    elem.active = true;
-                }
+                elem.active = true;
 
             } else {
+
                 elem = document.createElement("paper-spinner");
-                elem.id = 'docspinner';
+                elem.classList.add('docspinner');
 
                 document.body.appendChild(elem);
-
                 elem.active = true;
             }
         });
@@ -487,14 +487,21 @@ var Dashboard = {
 
     hideLoadingMsg: function () {
 
-        var elem = document.getElementById('docspinner');
+        console.log('hideLoadingMsg');
 
-        if (elem) {
+        require(['paperbuttonstyle'], function () {
 
-            setTimeout(function () {
+            var elem = document.querySelector('.docspinner');
+
+            if (elem) {
+
                 elem.active = false;
-            }, 100);
-        }
+
+                setTimeout(function () {
+                    elem.active = false;
+                }, 100);
+            }
+        });
     },
 
     getModalLoadingMsg: function () {
@@ -2023,7 +2030,7 @@ var AppInfo = {};
         var drawer = document.querySelector('.mainDrawerPanel');
         drawer.classList.remove('mainDrawerPanelPreInit');
         drawer.forceNarrow = true;
-        drawer.drawerWidth = screen.availWidth >= 330 ? "310px" : "270px";
+        drawer.drawerWidth = screen.availWidth >= 350 ? "310px" : screen.availWidth >= 310 ? "290px" : "270px";
 
         if ($.browser.safari && !AppInfo.isNativeApp) {
             drawer.disableEdgeSwipe = true;
@@ -2128,7 +2135,7 @@ $(document).on('pagecreate', ".page", function () {
         current = newTheme;
     }
 
-    if (current == 'b' && !$.browser.mobile) {
+    if (current != 'a' && !$.browser.mobile) {
         document.body.classList.add('darkScrollbars');
     } else {
         document.body.classList.remove('darkScrollbars');

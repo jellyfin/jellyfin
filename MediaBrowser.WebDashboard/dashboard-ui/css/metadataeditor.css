@@ -197,18 +197,32 @@
 
 .editorTile {
     display: inline-block;
-    margin: 1em 2em 2em 0;
+    margin: .5em;
     text-align: center;
     vertical-align: middle;
 }
 
 .imageEditorTile {
     width: 256px;
-    padding-bottom: 0;
+    background-color: #282828;
+    padding: 0;
+}
+
+.editorTile h3 {
+    text-transform: uppercase;
+    background: #444;
+    padding: .5em 0;
+    text-align: center;
+    margin-top: 0;
+    color: #ddd;
 }
 
 .editorTile p {
     margin: .5em 0;
+}
+
+.editorTileInner {
+    padding: 1em;
 }
 
 .editorTile .ui-field-contain {

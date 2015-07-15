@@ -6,7 +6,7 @@
 <body>
     <div id="editItemMetadataPage" data-role="page" class="page libraryPage metadataEditorPage noSecondaryNavPage" data-contextname="${HeaderMetadataManager}" data-require="scripts/editorsidebar,scripts/edititemmetadata,jqmicons,scripts/edititemsubtitles,scripts/editcollectionitems,scripts/edititemimages">
         <div>
-            <div class="editPageSidebar smoothScrollY">
+            <div class="editPageSidebar" style="overflow:auto;">
                 <div class="libraryTree">
                     <ul></ul>
                 </div>
@@ -28,7 +28,7 @@
                             <form class="editItemMetadataForm editMetadataForm">
                                 <div class="metadataFormFields">
 
-                                    <div style="text-align: center;margin:2em 0 .5em;">
+                                    <div style="margin:2em 0 .5em;">
 
                                         <paper-button raised class="submit">
                                             <button class="btnSave clearButton" type="submit" data-role="none" style="display:inline-block;">
@@ -36,8 +36,9 @@
                                             </button>
                                         </paper-button>
 
-                                        <paper-button raised class="subdued btnRefresh btnRefreshAdvanced"><iron-icon icon="refresh"></iron-icon><span>${ButtonRefresh}</span></paper-button>
-                                        <paper-button id="btnIdentify" raised class="subdued"><iron-icon icon="info"></iron-icon><span>${ButtonIdentify}</span></paper-button>
+                                        <paper-button raised class="subdued btnRefresh btnSimpleRefresh" style="background-color:#673AB7;"><iron-icon icon="refresh"></iron-icon><span>${ButtonRefresh}</span></paper-button>
+                                        <paper-button id="btnIdentify" raised style="background-color:#009688;"><iron-icon icon="info"></iron-icon><span>${ButtonIdentify}</span></paper-button>
+                                        <paper-button raised class="subdued notext btnMore"><iron-icon icon="more-vert"></iron-icon></paper-button>
                                     </div>
 
                                     <div style="padding: 10px 0;">
@@ -425,7 +426,7 @@
                     </neon-animatable>
                     <neon-animatable>
                         <div class="editorTab imageEditorTab">
-                            <div style="text-align: center;margin:2em 0 .5em;">
+                            <div style="margin:2em 0 .5em;">
 
                                 <paper-button raised class="subdued btnBrowseAllImages"><iron-icon icon="cloud"></iron-icon><span>${ButtonBrowseImages}</span></paper-button>
                                 <paper-button raised class="subdued btnOpenUploadMenu"><iron-icon icon="add"></iron-icon><span>${ButtonUpload}</span></paper-button>
@@ -737,6 +738,6 @@
                 </div>
             </div>
         </div>
-        </div>
+    </div>
 </body>
 </html>

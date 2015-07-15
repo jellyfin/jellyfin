@@ -265,15 +265,15 @@
 
             html += '<div class="editorTile imageEditorTile">';
 
+            if (image.ImageType !== "Backdrop" && image.ImageType !== "Screenshot") {
+                html += '<h3>' + image.ImageType + '</h3>';
+            }
+
             var height = 150;
 
             html += '<div style="height:' + height + 'px;vertical-align:top;background-repeat:no-repeat;background-position:center center;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { height: height }) + '\');"></div>';
 
-            html += '<div>';
-
-            if (image.ImageType !== "Backdrop" && image.ImageType !== "Screenshot") {
-                html += '<p>' + image.ImageType + '</p>';
-            }
+            html += '<div class="editorTileInner">';
 
             html += '<p>' + image.Width + ' X ' + image.Height + '</p>';
 
@@ -294,11 +294,11 @@
                 }
             }
 
-            html += '<paper-icon-button icon="delete" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');" title="' + Globalize.translate('Delete') + '"></paper-icon-button>';
-
             if (imageProviders.length) {
                 html += '<paper-icon-button icon="cloud" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');" title="' + Globalize.translate('ButtonBrowseOnlineImages') + '"></paper-icon-button>';
             }
+
+            html += '<paper-icon-button icon="delete" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');" title="' + Globalize.translate('Delete') + '"></paper-icon-button>';
 
             html += '</p>';
 

@@ -1,4 +1,4 @@
-﻿#docspinner {
+﻿.docspinner {
     /* It often doesn't disappear so just forget it */
     display: none !important;
 }

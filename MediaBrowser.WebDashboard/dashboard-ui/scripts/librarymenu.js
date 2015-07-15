@@ -732,7 +732,7 @@
         var mainDrawerButton = document.querySelector('.mainDrawerButton');
 
         if (mainDrawerButton) {
-            if (page.getAttribute('data-menubutton') == 'false') {
+            if (page.getAttribute('data-menubutton') == 'false' && $.browser.mobile) {
                 mainDrawerButton.classList.add('hide');
             } else {
                 mainDrawerButton.classList.remove('hide');
@@ -789,7 +789,7 @@
 
     function updateBackButton(page) {
 
-        var canGoBack = !page.classList.contains('homePage');
+        var canGoBack = !page.classList.contains('homePage') && history.length > 0;
 
         var backButton = document.querySelector('.headerBackButton');
 

@@ -59,7 +59,7 @@ html, body, .ui-btn, .pageTitle {
 }
 
     .libraryViewNav .ui-btn-active, .libraryViewNav .iron-selected, .barsMenuButton .fa, .btnActiveCast, .libraryViewNav a:not(.ui-btn-active):hover {
-        color: #EA3150 !important;
+        color: #E91E63 !important;
     }
 
 .libraryViewNav {

@@ -167,39 +167,43 @@
         var name = card.attr('data-name');
         var configHref = $('.cardContent', card).attr('href');
 
-        $('.cardMenu', page).popup("close").remove();
-
-        var html = '<div data-role="popup" class="cardMenu tapHoldMenu" data-theme="a">';
-
-        html += '<ul data-role="listview" style="min-width: 180px;">';
-        html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
+        var menuItems = [];
 
         if (configHref) {
-            html += '<li><a href="' + configHref + '">' + Globalize.translate('ButtonSettings') + '</a></li>';
+            menuItems.push({
+                name: Globalize.translate('ButtonSettings'),
+                id: 'open',
+                ironIcon: 'mode-edit'
+            });
         }
 
-        html += '<li><a href="#" class="btnDeletePlugin">' + Globalize.translate('ButtonUninstall') + '</a></li>';
-
-        html += '</ul>';
-
-        html += '</div>';
-
-        $(page).append(html);
-
-        var flyout = $('.cardMenu', page).popup({ positionTo: elem || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
-
-            $(this).off("popupafterclose").remove();
-
+        menuItems.push({
+            name: Globalize.translate('ButtonUninstall'),
+            id: 'delete',
+            ironIcon: 'delete'
         });
 
-        $('.btnDeletePlugin', flyout).on('click', function () {
+        require(['actionsheet'], function () {
 
-            $('.cardMenu', page).popup('close');
+            ActionSheetElement.show({
+                items: menuItems,
+                positionTo: card,
+                callback: function (resultId) {
 
-            // jqm won't show a popup while another is in the act of closing
-            setTimeout(function () {
-                deletePlugin(page, id, name);
-            }, 300);
+                    switch (resultId) {
+
+                        case 'open':
+                            Dashboard.navigate(configHref);
+                            break;
+                        case 'delete':
+                            deletePlugin(page, id, name);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+
         });
     }
 
