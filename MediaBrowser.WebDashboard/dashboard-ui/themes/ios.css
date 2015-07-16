@@ -1,15 +1,14 @@
 ﻿html {
-    font-family: Helvetica Neue;
     /* Setting it here will help prevent white flashes */
     background-color: #1c1c1c;
 }
 
-html, body {
-    font-family: Helvetica Neue;
+html, body, .ui-btn, .pageTitle {
+    font-family: San Francisco, Helvetica Neue;
 }
 
 
-.viewMenuBar, .libraryViewNav {
+.viewMenuBar, .libraryViewNav, paper-tabs {
     background-color: rgba(28,28,28,.97);
 }
 
@@ -25,7 +24,26 @@ html, body {
     font-weight: 400;
     text-transform: none;
     color: #ccc !important;
-    padding-top: 16px;
+    padding: 12px 13px 8px;
+}
+
+.libraryViewNav .tab-content {
+    display: block !important;
+}
+
+.libraryViewNav paper-tab {
+    height: auto !important;
+}
+
+.libraryViewNav iron-icon {
+    width: 22px;
+    height: 22px;
+    display: block;
+    margin: -4px auto 6px;
+}
+
+.libraryViewNav #selectionBar {
+    background-color: transparent !important;
 }
 
 @media all and (max-width: 600px) {
@@ -36,34 +54,24 @@ html, body {
     }
 }
 
-.libraryViewNav .ui-btn-active {
-    border-bottom-color: transparent;
-    color: #539FFD !important;
+.libraryViewNav a {
+    border-bottom: 0;
 }
 
+    .libraryViewNav .ui-btn-active, .libraryViewNav .iron-selected, .barsMenuButton .fa, .btnActiveCast, .libraryViewNav a:not(.ui-btn-active):hover {
+        color: #E91E63 !important;
+    }
+
 .libraryViewNav {
-    border-top: 1px solid #333;
+    border-top: 1px solid #333 !important;
+}
+
+.libraryViewNav, paper-tabs {
     font-size: 12px;
 }
 
 .viewMenuBar {
     border-bottom: 1px solid #333;
-}
-
-.barsMenuButton .fa {
-    color: #539FFD !important;
-}
-
-.pageTitle {
-    font-family: Helvetica Neue;
-}
-
-.ui-btn {
-    font-family: Helvetica Neue;
-}
-
-.ui-loader h1 {
-    font-family: Helvetica Neue;
 }
 
 h1, h1 a {
@@ -92,6 +100,10 @@ h1, h1 a {
     font-weight: 400;
 }
 
+paper-tab {
+    text-transform: none !important;
+}
+
 .visualCardBox {
     background: none !important;
     -moz-box-shadow: none;
@@ -116,20 +128,6 @@ h1, h1 a {
     text-align: center;
     font-size: 16px;
     margin: 0 auto !important;
-}
-
-.libraryViewNav .material-icons {
-    display: block;
-    margin-top: -6px;
-    font-size: 15px;
-}
-
-.btnActiveCast i {
-    color: #539FFD !important;
-}
-
-.libraryViewNav a:not(.ui-btn-active):hover {
-    color: #539FFD !important;
 }
 
 @media (min-width: 600px) {

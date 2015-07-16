@@ -2,25 +2,41 @@
 
     var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
-    // The base query options
-    var query = {
+    var data = {};
+    function getQuery(tab) {
 
-        SortBy: "SortName",
-        SortOrder: "Ascending",
-        Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
-        StartIndex: 0,
-        ImageTypeLimit: 1,
-        EnableImageTypes: "Primary"
-    };
+        var key = getSavedQueryKey(tab);
+        var pageData = data[key];
 
-    function getSavedQueryKey() {
-
-        return 'photos' + (query.ParentId || '');
+        if (!pageData) {
+            pageData = data[key] = {
+                query: {
+                    SortBy: "SortName",
+                    SortOrder: "Ascending",
+                    Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
+                    ImageTypeLimit: 1,
+                    EnableImageTypes: "Primary",
+                    StartIndex: 0,
+                    Limit: LibraryBrowser.getDefaultPageSize()
+                }
+            };
+            setQueryPerTab(tab, pageData.query);
+            pageData.query.ParentId = LibraryMenu.getTopParentId();
+            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+        }
+        return pageData.query;
     }
 
-    function reloadItems(page) {
+    function getSavedQueryKey(tab) {
+
+        return getWindowUrl() + "&tab=" + tab;
+    }
+
+    function reloadItems(page, tabIndex) {
 
         Dashboard.showLoadingMsg();
+
+        var query = getQuery(tabIndex);
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), query).done(function (result) {
 
@@ -38,112 +54,52 @@
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
-            updateFilterControls(page);
-
             if (view == "Poster") {
                 // Poster
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    shape: "auto",
+                    shape: "square",
                     context: getParameterByName('context') || 'photos',
-                    showTitle: query.MediaTypes != 'Photo',
                     overlayText: true,
-                    lazy: true
-                });
-            }
-            else if (view == "PosterCard") {
-
-                // Poster
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "auto",
-                    context: getParameterByName('context') || 'photos',
-                    showTitle: true,
                     lazy: true,
-                    cardLayout: true,
-                    showPremiereDate: true
+                    coverImage: true,
+                    useSecondaryItemsPage: true
                 });
             }
 
-            var elem = page.querySelector('#items');
+            var elem = page.querySelector('.itemsContainer');
             elem.innerHTML = html + pagingHtml;
             ImageLoader.lazyChildren(elem);
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page);
+                reloadItems(page, tabIndex);
             });
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
+                reloadItems(page, tabIndex);
             });
 
-            LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
+            LibraryBrowser.saveQueryValues(getSavedQueryKey(tabIndex), query);
 
             Dashboard.hideLoadingMsg();
         });
     }
 
-    function updateFilterControls(page) {
+    function setQueryPerTab(tab, query) {
 
-        // Reset form values using the last used query
-        $('.radioSortBy', page).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', page).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.chkStandardFilter', page).each(function () {
-
-            var filters = "," + (query.Filters || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        }).checkboxradio('refresh');
-    }
-
-    var filtersLoaded;
-    function reloadFiltersIfNeeded(page) {
-
-        if (!filtersLoaded) {
-
-            filtersLoaded = true;
-
-            QueryFilters.loadFilters(page, Dashboard.getCurrentUserId(), query, function () {
-
-                reloadItems(page);
-            });
-        }
-    }
-
-    function setQueryPerContext(page) {
-
-        var context = getParameterByName('context');
-
-        $('.libraryViewNav a', page).removeClass('ui-btn-active');
-
-        if (context == 'photos-photos') {
+        if (tab == 1) {
             query.Recursive = true;
             query.MediaTypes = 'Photo';
-            $('.lnkPhotos', page).addClass('ui-btn-active');
         }
-        else if (context == 'photos-videos') {
+        else if (tab == 2) {
             query.Recursive = true;
             query.MediaTypes = 'Video';
-            $('.lnkVideos', page).addClass('ui-btn-active');
         }
-        else {
+        else if (tab == 0) {
             query.Recursive = false;
             query.MediaTypes = null;
-            $('.lnkPhotoAlbums', page).addClass('ui-btn-active');
         }
 
         query.ParentId = getParameterByName('parentId') || LibraryMenu.getTopParentId();
@@ -208,12 +164,39 @@
 
     function onListItemClick(e) {
 
-        var page = $(this).parents('.page');
+        var page = $(this).parents('.page')[0];
         var info = LibraryBrowser.getListItemInfo(this);
 
         if (info.mediaType == 'Photo') {
+            var tab = page.querySelector('neon-animated-pages').selected;
+            var query = getQuery(tab);
+
             Photos.startSlideshow(page, query, info.id);
             return false;
+        }
+    }
+
+    function loadTab(page, index) {
+
+        switch (index) {
+
+            case 0:
+                {
+                    reloadItems(page.querySelector('.albumTabContent'), 0);
+                }
+                break;
+            case 1:
+                {
+                    reloadItems(page.querySelector('.photoTabContent'), 1);
+                }
+                break;
+            case 2:
+                {
+                    reloadItems(page.querySelector('.videoTabContent'), 2);
+                }
+                break;
+            default:
+                break;
         }
     }
 
@@ -221,96 +204,30 @@
 
         var page = this;
 
-        $('.viewPanel', page).on('panelopen', function () {
+        var tabs = page.querySelector('paper-tabs');
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, page.querySelector('neon-animated-pages'));
 
-            reloadFiltersIfNeeded(page);
+        $(tabs).on('iron-select', function () {
+            var selected = this.selected;
+            if (LibraryBrowser.navigateOnLibraryTabSelect()) {
+
+                if (selected) {
+                    Dashboard.navigate('photos.html?tab=' + selected + '&topParentId=' + LibraryMenu.getTopParentId());
+                } else {
+                    Dashboard.navigate('photos.html?topParentId=' + LibraryMenu.getTopParentId());
+                }
+
+            } else {
+                page.querySelector('neon-animated-pages').selected = selected;
+            }
         });
 
-        $('.radioSortBy', this).on('click', function () {
-            query.SortBy = this.getAttribute('data-sortby');
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
-
-        $('.radioSortOrder', this).on('click', function () {
-            query.SortOrder = this.getAttribute('data-sortorder');
-            query.StartIndex = 0;
-            reloadItems(page);
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+            loadTab(page, parseInt(this.selected));
         });
 
         $(page).on('click', '.mediaItem', onListItemClick);
 
-        $('.chkStandardFilter', this).on('change', function () {
-
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.Filters || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.Filters = filters;
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
-
-        $('#radioBasicFilters', this).on('change', function () {
-
-            if (this.checked) {
-                $('.basicFilters', page).show();
-                $('.advancedFilters', page).hide();
-            } else {
-                $('.basicFilters', page).hide();
-            }
-        });
-
-        $('#radioAdvancedFilters', this).on('change', function () {
-
-            if (this.checked) {
-                $('.advancedFilters', page).show();
-                $('.basicFilters', page).hide();
-            } else {
-                $('.advancedFilters', page).hide();
-            }
-        });
-
-        $('#selectPageSize', page).on('change', function () {
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
-
-    }).on('pagebeforeshowready', "#photosPage", function () {
-
-        var page = this;
-
-        setQueryPerContext(page);
-
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
-        }
-
-        var viewKey = getSavedQueryKey();
-
-        LibraryBrowser.loadSavedQueryValues(viewKey, query);
-        QueryFilters.onPageShow(page, query);
-
-        LibraryBrowser.getSavedViewSetting(viewKey).done(function (val) {
-
-            if (val) {
-                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
-            } else {
-                reloadItems(page);
-            }
-        });
-
-        updateFilterControls(this);
     });
 
     window.Photos = {

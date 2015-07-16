@@ -35,7 +35,7 @@
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(programInfo));
 
         LibraryBrowser.renderGenres($('.itemGenres', page), programInfo, context);
-        LibraryBrowser.renderOverview(page.querySelector('.itemOverview'), programInfo);
+        LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), programInfo);
 
         if (programInfo.ImageTags && programInfo.ImageTags.Primary) {
 

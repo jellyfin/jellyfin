@@ -63,8 +63,15 @@
             }
 
             return appStorage.getItem('syncPath');
-        }
+        },
 
+        displayPreferencesKey: function() {
+            if (AppInfo.isNativeApp) {
+                return 'Emby Mobile';
+            }
+
+            return 'webclient';
+        }
     };
 
 

@@ -235,6 +235,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        public virtual bool EnableAlphaNumericSorting
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         /// <summary>
         /// This is just a helper for convenience
         /// </summary>
@@ -439,6 +448,11 @@ namespace MediaBrowser.Controller.Entities
         {
             if (Name == null) return null; //some items may not have name filled in properly
 
+            if (!EnableAlphaNumericSorting)
+            {
+                return Name.TrimStart();
+            }
+
             var sortable = Name.Trim().ToLower();
             sortable = ConfigurationManager.Configuration.SortRemoveCharacters.Aggregate(sortable, (current, search) => current.Replace(search.ToLower(), string.Empty));
 
@@ -464,12 +478,37 @@ namespace MediaBrowser.Controller.Entities
             return sortable;
         }
 
+        public Guid ParentId { get; set; }
+
+        private Folder _parent;
         /// <summary>
         /// Gets or sets the parent.
         /// </summary>
         /// <value>The parent.</value>
-        [IgnoreDataMember]
-        public Folder Parent { get; set; }
+        public Folder Parent
+        {
+            get
+            {
+                if (_parent != null)
+                {
+                    return _parent;
+                }
+
+                if (ParentId != Guid.Empty)
+                {
+                    return LibraryManager.GetItemById(ParentId) as Folder;
+                }
+
+                return null;
+            }
+            set { _parent = value; }
+        }
+
+        public void SetParent(Folder parent)
+        {
+            Parent = parent;
+            ParentId = parent == null ? Guid.Empty : parent.Id;
+        }
 
         [IgnoreDataMember]
         public IEnumerable<Folder> Parents

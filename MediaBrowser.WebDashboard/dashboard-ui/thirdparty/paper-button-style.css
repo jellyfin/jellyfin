@@ -130,19 +130,10 @@ paper-button:not(.iconRight) iron-icon, paper-button:not(.iconRight) .fa {
     margin-right: .5em;
 }
 
-paper-button:not(.iconRight) .material-icons {
-    margin-right: .25em;
-}
-
-paper-button.iconRight iron-icon, paper-button.iconRight .fa, paper-button.iconRight .material-icons {
+paper-button.iconRight iron-icon, paper-button.iconRight .fa {
     position: absolute;
     right: 5px;
     top: 5px;
-}
-
-paper-button .material-icons {
-    font-size: 150%;
-    vertical-align: middle;
 }
 
 paper-button .fa {
@@ -197,7 +188,7 @@ paper-button.notext {
         margin-right: 0;
     }
 
-#docspinner {
+.docspinner {
     display: block;
     margin-top: -14px;
     margin-left: -14px;
@@ -250,29 +241,26 @@ paper-dialog[role="alertdialog"] + iron-overlay-backdrop {
     background-color: #000 !important;
 }
 
-paper-tabs, paper-toolbar {
+paper-tabs {
     background-color: #111;
     color: #fff;
     box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
 }
 
-    paper-toolbar paper-tabs {
-        box-shadow: none;
-    }
-
-    paper-tabs[alignBottom] {
+    paper-tabs.bottomTabs {
         box-shadow: 0px -2px 6px rgba(0, 0, 0, 0.15);
     }
 
 paper-tab {
     text-transform: uppercase;
+    font-weight: 400;
 }
 
-paper-tabs:not([alignbottom]) #selectionBar {
+paper-tabs #selectionBar {
     background-color: #38c !important;
 }
 
-paper-tabs:not([alignbottom]) paper-ripple {
+paper-tabs paper-ripple {
     color: #38c !important;
 }
 
@@ -319,15 +307,17 @@ paper-menu-item {
     padding: .35em .5em;
 }
 
-paper-menu-item iron-icon {
-    margin-right: 1.5em;
-}
+    paper-menu-item iron-icon {
+        margin-right: 1.5em;
+    }
+
 .actionSheetMenuItem {
     cursor: pointer;
 }
-.actionSheetMenuItem:hover {
-    background: #eee;
-}
+
+    .actionSheetMenuItem:hover {
+        background: #eee;
+    }
 
 .scrollablePaperTabs paper-icon-button {
     display: none !important;

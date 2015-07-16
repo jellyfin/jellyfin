@@ -19,35 +19,50 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
+    <link rel="stylesheet" href="../../paper-styles/paper-styles.html">
+    <link rel="import" href="../../paper-styles/demo-pages.html">
     <link rel="import" href="simple-form.html">
     <link rel="import" href="simple-element.html">
-
   </head>
+  <style>
+    input {
+      margin-bottom: 24px;
+      width: 200px;
+    }
+  </style>
   <body>
 
-    <form is="simple-form" id="form">
-      Element the form is tracking: <input is="simple-element" type="text" name="one" value="one">
-      <br>
-      Element the form isn't tracking: <input type="text" name="two" value="two">
-      <br>
-      Another one the form is tracking: <input is="simple-element" type="text" name="three" value="three">
+    <div class="vertical-section-container centered">
+      <div class="vertical-section">
+        <form is="simple-form" id="form">
+          Element with iron-form-element-behavior <input is="simple-element" type="text" name="one" value="one">
+          <br>
+          Element without iron-form-element-behavior <input type="text" name="two" value="two">
+          <br>
+          Element with iron-form-element-behavior <input is="simple-element" type="text" name="three" value="three">
+        </form>
 
-    </form>
+        <h4>Elements tracked by the form: <button onclick="update()">Update</button> </h4>
 
-    <h4>Elements tracked by the form: </h4>
-    <ul id="output">
-    </ul>
+        <ul id="output">
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      function update() {
+        var output = document.getElementById('output');
+        var elements = document.getElementById('form').formElements;
+        document.getElementById('output').innerHTML = '';
+        for (var i = 0; i < elements.length; i++) {
+          var li = document.createElement('li');
+          var text = document.createTextNode(elements[i].value);
+          li.appendChild(text);
+          output.appendChild(li);
+        }
+      }
+    </script>
   </body>
-  <script>
-    var output = document.getElementById('output');
-    var elements = document.getElementById('form').formElements;
 
-    for (var i = 0; i < elements.length; i++) {
-      var li = document.createElement('li');
-      var text = document.createTextNode(elements[i].value);
-      li.appendChild(text);
-      output.appendChild(li);
-    }
-  </script>
 
 </html>

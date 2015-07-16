@@ -416,6 +416,7 @@ var MOUSE_EVENTS = [
 'mouseup',
 'click'
 ];
+var IS_TOUCH_ONLY = navigator.userAgent.match(/iP(?:[oa]d|hone)|Android/);
 var mouseCanceller = function (mouseEvent) {
 mouseEvent[HANDLED_OBJ] = { skip: true };
 if (mouseEvent.type === 'click') {
@@ -440,6 +441,9 @@ document.removeEventListener(en, mouseCanceller, true);
 }
 }
 function ignoreMouse() {
+if (IS_TOUCH_ONLY) {
+return;
+}
 if (!POINTERSTATE.mouse.mouseIgnoreJob) {
 setupTeardownMouseCanceller(true);
 }
@@ -487,6 +491,12 @@ node = next;
 }
 }
 return node;
+},
+findOriginalTarget: function (ev) {
+if (ev.path) {
+return ev.path[0];
+}
+return ev.target;
 },
 handleNative: function (ev) {
 var handled;
@@ -558,8 +568,8 @@ prevent = dy > dx;
 prevent = dx > dy;
 }
 if (prevent) {
-    //This breaks scrolling in safari
-    //ev.preventDefault();
+//This breaks scrolling in safari
+//ev.preventDefault();
 }
 }
 },
@@ -573,12 +583,18 @@ node[GESTURE_KEY] = gobj = {};
 }
 for (var i = 0, dep, gd; i < deps.length; i++) {
 dep = deps[i];
+if (IS_TOUCH_ONLY && MOUSE_EVENTS.indexOf(dep) > -1) {
+continue;
+}
 gd = gobj[dep];
 if (!gd) {
-gobj[dep] = gd = {};
+gobj[dep] = gd = { _count: 0 };
+}
+if (gd._count === 0) {
 node.addEventListener(dep, this.handleNative);
 }
 gd[name] = (gd[name] || 0) + 1;
+gd._count = (gd._count || 0) + 1;
 }
 node.addEventListener(evType, handler);
 if (recognizer.touchAction) {
@@ -596,9 +612,10 @@ dep = deps[i];
 gd = gobj[dep];
 if (gd && gd[name]) {
 gd[name] = (gd[name] || 1) - 1;
-if (gd[name] === 0) {
-node.removeEventListener(dep, this.handleNative);
+gd._count = (gd._count || 1) - 1;
 }
+if (gd._count === 0) {
+node.removeEventListener(dep, this.handleNative);
 }
 }
 }
@@ -660,7 +677,7 @@ emits: [
 'up'
 ],
 mousedown: function (e) {
-var t = e.currentTarget;
+var t = Gestures.findOriginalTarget(e);
 var self = this;
 var upfn = function upfn(e) {
 self.fire('up', t, e);
@@ -670,10 +687,10 @@ document.addEventListener('mouseup', upfn);
 this.fire('down', t, e);
 },
 touchstart: function (e) {
-this.fire('down', e.currentTarget, e.changedTouches[0]);
+this.fire('down', Gestures.findOriginalTarget(e), e.changedTouches[0]);
 },
 touchend: function (e) {
-this.fire('up', e.currentTarget, e.changedTouches[0]);
+this.fire('up', Gestures.findOriginalTarget(e), e.changedTouches[0]);
 },
 fire: function (type, target, event) {
 var self = this;
@@ -729,7 +746,7 @@ var dy = Math.abs(this.info.y - y);
 return dx >= TRACK_DISTANCE || dy >= TRACK_DISTANCE;
 },
 mousedown: function (e) {
-var t = e.currentTarget;
+var t = Gestures.findOriginalTarget(e);
 var self = this;
 var movefn = function movefn(e) {
 var x = e.clientX, y = e.clientY;
@@ -763,7 +780,7 @@ this.info.x = ct.clientX;
 this.info.y = ct.clientY;
 },
 touchmove: function (e) {
-var t = e.currentTarget;
+var t = Gestures.findOriginalTarget(e);
 var ct = e.changedTouches[0];
 var x = ct.clientX, y = ct.clientY;
 if (this.hasMovedEnough(x, y)) {
@@ -777,7 +794,7 @@ this.info.started = true;
 }
 },
 touchend: function (e) {
-var t = e.currentTarget;
+var t = Gestures.findOriginalTarget(e);
 var ct = e.changedTouches[0];
 if (this.info.started) {
 Gestures.prevent('tap');
@@ -853,9 +870,10 @@ this.forward(e.changedTouches[0]);
 forward: function (e) {
 var dx = Math.abs(e.clientX - this.info.x);
 var dy = Math.abs(e.clientY - this.info.y);
+var t = Gestures.findOriginalTarget(e);
 if (isNaN(dx) || isNaN(dy) || dx <= TAP_DISTANCE && dy <= TAP_DISTANCE) {
 if (!this.info.prevent) {
-Gestures.fire(e.target, 'tap', {
+Gestures.fire(t, 'tap', {
 x: e.clientX,
 y: e.clientY,
 sourceEvent: e
@@ -1102,15 +1120,15 @@ Polymer.Bind = {
 prepareModel: function (model) {
 model._propertyEffects = {};
 model._bindListeners = [];
-var api = this._modelApi;
-for (var n in api) {
-model[n] = api[n];
-}
+Polymer.Base.mixin(model, this._modelApi);
 },
 _modelApi: {
 _notifyChange: function (property) {
 var eventName = Polymer.CaseMap.camelToDashCase(property) + '-changed';
-this.fire(eventName, { value: this[property] }, { bubbles: false });
+Polymer.Base.fire(eventName, { value: this[property] }, {
+bubbles: false,
+node: this
+});
 },
 _propertySetter: function (property, value, effects, fromAbove) {
 var old = this.__data__[property];
@@ -1201,8 +1219,11 @@ return this.__data__[property];
 var setter = function (value) {
 this._propertySetter(property, value, effects);
 };
-if (model.getPropertyInfo && model.getPropertyInfo(property).readOnly) {
+var info = model.getPropertyInfo && model.getPropertyInfo(property);
+if (info && info.readOnly) {
+if (!info.computed) {
 model['_set' + this.upper(property)] = setter;
+}
 } else {
 defun.set = setter;
 }
@@ -1660,6 +1681,7 @@ this._pathEffector(path, value);
 if (!fromAbove) {
 this._notifyPath(path, value);
 }
+return true;
 }
 },
 _getPathParts: function (path) {
@@ -2001,7 +2023,7 @@ var VAR_START = '--';
 var MEDIA_START = '@media';
 var AT_START = '@';
 var rx = {
-comments: /\/\*[^*]*\*+([^/*][^*]*\*+)*\//gim,
+comments: /\/\*[^*]*\*+([^\/*][^*]*\*+)*\//gim,
 port: /@import[^;]*;/gim,
 customProp: /(?:^|[\s;])--[^;{]*?:[^{};]*?(?:[;\n]|$)/gim,
 mixinProp: /(?:^|[\s;])--[^;{]*?:[^{;]*?{[^}]*?}(?:[;\n]|$)?/gim,
@@ -2673,10 +2695,10 @@ props[i] = v;
 }
 },
 rx: {
-VAR_ASSIGN: /(?:^|[;\n]\s*)(--[\w-]*?):\s*?(?:([^;{]*?)|{([^}]*)})(?:(?=[;\n])|$)/gim,
-MIXIN_MATCH: /(?:^|\W+)@apply[\s]*\(([^)]*)\)/im,
-VAR_MATCH: /(^|\W+)var\([\s]*([^,)]*)[\s]*,?[\s]*((?:[^,)]*)|(?:[^;]*\([^;)]*\)))[\s]*?\)/gim,
-VAR_CAPTURE: /\([\s]*(--[^,\s)]*)(?:,[\s]*(--[^,\s)]*))?(?:\)|,)/gim,
+VAR_ASSIGN: /(?:^|[;\n]\s*)(--[\w-]*?):\s*(?:([^;{]*)|{([^}]*)})(?:(?=[;\n])|$)/gi,
+MIXIN_MATCH: /(?:^|\W+)@apply[\s]*\(([^)]*)\)/i,
+VAR_MATCH: /(^|\W+)var\([\s]*([^,)]*)[\s]*,?[\s]*((?:[^,)]*)|(?:[^;]*\([^;)]*\)))[\s]*?\)/gi,
+VAR_CAPTURE: /\([\s]*(--[^,\s)]*)(?:,[\s]*(--[^,\s)]*))?(?:\)|,)/gi,
 IS_VAR: /^--/,
 BRACKETED: /\{[^}]*\}/g,
 HOST_PREFIX: '(?:^|[^.#[:])',
@@ -3015,7 +3037,7 @@ styleTransformer.documentRule(rule);
 });
 }());
 Polymer.Templatizer = {
-properties: { _hideTemplateChildren: { observer: '_showHideChildren' } },
+properties: { __hideTemplateChildren__: { observer: '_showHideChildren' } },
 _templatizerStatic: {
 count: 0,
 callbacks: {},
@@ -3044,6 +3066,7 @@ this._prepParentProperties(archetype, template);
 archetype._notifyPath = this._notifyPathImpl;
 archetype._scopeElementClass = this._scopeElementClassImpl;
 archetype.listen = this._listenImpl;
+archetype._showHideChildren = this._showHideChildrenImpl;
 var _constructor = this._constructorImpl;
 var ctor = function TemplateInstance(model, host) {
 _constructor.call(this, model, host);
@@ -3056,7 +3079,15 @@ this.ctor = ctor;
 _getRootDataHost: function () {
 return this.dataHost && this.dataHost._rootDataHost || this.dataHost;
 },
-_showHideChildren: function (hidden) {
+_showHideChildrenImpl: function (hide) {
+var c = this._children;
+for (var i = 0; i < c.length; i++) {
+var n = c[i];
+if (n.style) {
+n.style.display = hide ? 'none' : '';
+n.__hideTemplateChildren__ = hide;
+}
+}
 },
 _debounceTemplate: function (fn) {
 this._templatizerStatic.callbacks[this._templatizerId] = fn.bind(this);
@@ -3157,6 +3188,8 @@ template._propertySetter(n, val);
 }
 });
 },
+_showHideChildren: function (hidden) {
+},
 _forwardInstancePath: function (inst, path, value) {
 },
 _forwardInstanceProp: function (inst, prop, value) {
@@ -3195,6 +3228,9 @@ children.push(n);
 n._templateInstance = this;
 }
 this._children = children;
+if (host.__hideTemplateChildren__) {
+this._showHideChildren(true);
+}
 this._tryReady();
 },
 _listenImpl: function (node, eventName, methodName) {
@@ -3221,6 +3257,20 @@ model[prop] = this['_parent_' + prop];
 }
 }
 return new this.ctor(model, this);
+},
+modelForElement: function (el) {
+var model;
+while (el) {
+if (model = el._templateInstance) {
+if (model.dataHost != this) {
+el = model.dataHost;
+} else {
+return model;
+}
+} else {
+el = el.parentNode;
+}
+}
 }
 };
 Polymer({
@@ -3267,7 +3317,7 @@ this._removeFromMap(this.store[key]);
 delete this.store[key];
 },
 _removeFromMap: function (item) {
-if (typeof item == 'object') {
+if (item && typeof item == 'object') {
 this.omap.delete(item);
 } else {
 delete this.pmap[item];
@@ -3279,7 +3329,7 @@ this.removeKey(key);
 return key;
 },
 getKey: function (item) {
-if (typeof item == 'object') {
+if (item && typeof item == 'object') {
 return this.omap.get(item);
 } else {
 return this.pmap[item];
@@ -3648,14 +3698,7 @@ return row;
 _showHideChildren: function (hidden) {
 if (this.rows) {
 for (var i = 0; i < this.rows.length; i++) {
-var c$ = this.rows[i]._children;
-for (var j = 0; j < c$.length; j++) {
-var c = c$[j];
-if (c.style) {
-c.style.display = hidden ? 'none' : '';
-}
-c._hideTemplateChildren = hidden;
-}
+this.rows[i]._showHideChildren(hidden);
 }
 }
 },
@@ -3702,20 +3745,6 @@ row.notifyPath(path, value, true);
 } else {
 row.__setProperty(this.as, value, true);
 }
-}
-}
-},
-modelForElement: function (el) {
-var model;
-while (el) {
-if (model = el._templateInstance) {
-if (model.dataHost != this) {
-el = model.dataHost;
-} else {
-return model;
-}
-} else {
-el = el.parentNode;
 }
 }
 },
@@ -3873,7 +3902,7 @@ this._instance = null;
 },
 _wrapTextNodes: function (root) {
 for (var n = root.firstChild; n; n = n.nextSibling) {
-if (n.nodeType === Node.TEXT_NODE) {
+if (n.nodeType === Node.TEXT_NODE && n.textContent.trim()) {
 var s = document.createElement('span');
 root.insertBefore(s, n);
 s.appendChild(n);
@@ -3882,14 +3911,9 @@ n = s;
 }
 },
 _showHideChildren: function () {
-var hidden = this._hideTemplateChildren || !this.if;
+var hidden = this.__hideTemplateChildren__ || !this.if;
 if (this._instance) {
-var c$ = this._instance._children;
-for (var i = 0; i < c$.length; i++) {
-var c = c$[i];
-c.style.display = hidden ? 'none' : '';
-c._hideTemplateChildren = hidden;
-}
+this._instance._showHideChildren(hidden);
 }
 },
 _forwardParentProp: function (prop, value) {

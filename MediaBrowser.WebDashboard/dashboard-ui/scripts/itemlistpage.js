@@ -2,23 +2,47 @@
 
     var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
-    // The base query options
-    var query = {
-
-        SortBy: "SortName",
-        SortOrder: "Ascending",
-        Fields: "DateCreated,PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
-        StartIndex: 0,
-        ImageTypeLimit: 1,
-        EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
-    };
-
     var currentItem;
+
+    var data = {};
+
+    function getQuery() {
+
+        var key = getSavedQueryKey();
+        var pageData = data[key];
+
+        if (!pageData) {
+            pageData = data[key] = {
+                query: {
+                    SortBy: "SortName",
+                    SortOrder: "Ascending",
+                    Fields: "DateCreated,PrimaryImageAspectRatio,MediaSourceCount,SyncInfo",
+                    ImageTypeLimit: 1,
+                    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+                    StartIndex: 0,
+                    Limit: LibraryBrowser.getDefaultPageSize()
+                }
+            };
+
+            pageData.query.Filters = "";
+            pageData.query.NameStartsWithOrGreater = '';
+
+            pageData.query.ParentId = getParameterByName('parentId');
+            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+        }
+        return pageData.query;
+    }
+
+    function getSavedQueryKey() {
+
+        return getWindowUrl();
+    }
 
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
+        var query = getQuery();
         var userId = Dashboard.getCurrentUserId();
 
         var parentItemPromise = query.ParentId ?
@@ -111,31 +135,21 @@
                 name = item.ParentIndexNumber + "." + name;
             }
 
-            $('#itemName', page).html(name);
-
-            Dashboard.setPageTitle(name);
+            LibraryMenu.setTitle(name);
 
             $(page).trigger('displayingitem', [{
 
                 item: item
             }]);
 
+            LibraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
-        });
-
-        Dashboard.getCurrentUser().done(function (user) {
-
-            if (user.Policy.IsAdministrator && query.ParentId && !AppInfo.isNativeApp) {
-                $('#editButtonContainer', page).show();
-            } else {
-                $('#editButtonContainer', page).hide();
-            }
-
         });
     }
 
     function updateFilterControls(page) {
 
+        var query = getQuery();
         // Reset form values using the last used query
         $('.radioSortBy', page).each(function () {
 
@@ -166,6 +180,7 @@
 
     function onListItemClick(e) {
 
+        var query = getQuery();
         var page = $(this).parents('.page');
         var info = LibraryBrowser.getListItemInfo(this);
 
@@ -180,12 +195,14 @@
         var page = this;
 
         $('.radioSortBy', this).on('click', function () {
+            var query = getQuery();
             query.StartIndex = 0;
             query.SortBy = this.getAttribute('data-sortby');
             reloadItems(page);
         });
 
         $('.radioSortOrder', this).on('click', function () {
+            var query = getQuery();
             query.StartIndex = 0;
             query.SortOrder = this.getAttribute('data-sortorder');
             reloadItems(page);
@@ -193,6 +210,7 @@
 
         $('.chkStandardFilter', this).on('change', function () {
 
+            var query = getQuery();
             var filterName = this.getAttribute('data-filter');
             var filters = query.Filters || "";
 
@@ -217,13 +235,9 @@
             LibraryBrowser.saveViewSetting(getParameterByName('parentId'), view);
         });
 
-        $('#btnEdit', page).on('click', function () {
-
-            Dashboard.navigate("edititemmetadata.html?id=" + currentItem.Id);
-        });
-
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {
 
+            var query = getQuery();
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
@@ -231,12 +245,14 @@
 
         }).on('alphaclear', function (e) {
 
+            var query = getQuery();
             query.NameStartsWithOrGreater = '';
 
             reloadItems(page);
         });
 
         $('#selectPageSize', page).on('change', function () {
+            var query = getQuery();
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
             reloadItems(page);
@@ -248,25 +264,16 @@
 
         var page = this;
 
-        query.Limit = LibraryBrowser.getDefaultPageSize();
-        query.ParentId = getParameterByName('parentId');
-        query.Filters = "";
-        query.SortBy = "SortName";
-        query.SortOrder = "Ascending";
-        query.StartIndex = 0;
-        query.NameStartsWithOrGreater = '';
+        if (LibraryBrowser.needsRefresh(page)) {
+            LibraryBrowser.getSavedViewSetting(getSavedQueryKey()).done(function (val) {
 
-        var key = getParameterByName('parentId');
-        LibraryBrowser.loadSavedQueryValues(key, query);
-
-        LibraryBrowser.getSavedViewSetting(key).done(function (val) {
-
-            if (val) {
-                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
-            } else {
-                reloadItems(page);
-            }
-        });
+                if (val) {
+                    $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+                } else {
+                    reloadItems(page);
+                }
+            });
+        }
 
         updateFilterControls(page);
 

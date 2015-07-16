@@ -426,6 +426,8 @@ var getInnerHTML = Polymer.domInnerHTML.getInnerHTML;
 var nativeInsertBefore = Element.prototype.insertBefore;
 var nativeRemoveChild = Element.prototype.removeChild;
 var nativeAppendChild = Element.prototype.appendChild;
+var nativeCloneNode = Element.prototype.cloneNode;
+var nativeImportNode = Document.prototype.importNode;
 var dirtyRoots = [];
 var DomApi = function (node) {
 this.node = node;
@@ -554,8 +556,8 @@ return parentNeedsDist || hasContent && !wrappedContent;
 },
 _tryRemoveUndistributedNode: function (node) {
 if (this.node.shadyRoot) {
-if (node.parentNode) {
-nativeRemoveChild.call(node.parentNode, node);
+if (node._composedParent) {
+nativeRemoveChild.call(node._composedParent, node);
 }
 return true;
 }
@@ -564,7 +566,7 @@ _updateInsertionPoints: function (host) {
 host.shadyRoot._insertionPoints = factory(host.shadyRoot).querySelectorAll(CONTENT);
 },
 _nodeIsInLogicalTree: function (node) {
-return Boolean(node._lightParent || node._isShadyRoot || this._ownerShadyRootForNode(node) || node.shadyRoot);
+return Boolean(node._lightParent !== undefined || node._isShadyRoot || this._ownerShadyRootForNode(node) || node.shadyRoot);
 },
 _parentNeedsDistribution: function (parent) {
 return parent && parent.shadyRoot && hasInsertionPoint(parent.shadyRoot);
@@ -737,6 +739,31 @@ _distributeParent: function () {
 if (this._parentNeedsDistribution(this.parentNode)) {
 this._lazyDistribute(this.parentNode);
 }
+},
+cloneNode: function (deep) {
+var n = nativeCloneNode.call(this.node, false);
+if (deep) {
+var c$ = this.childNodes;
+var d = factory(n);
+for (var i = 0, nc; i < c$.length; i++) {
+nc = factory(c$[i]).cloneNode(true);
+d.appendChild(nc);
+}
+}
+return n;
+},
+importNode: function (externalNode, deep) {
+var doc = this.node instanceof HTMLDocument ? this.node : this.node.ownerDocument;
+var n = nativeImportNode.call(doc, externalNode, false);
+if (deep) {
+var c$ = factory(externalNode).childNodes;
+var d = factory(n);
+for (var i = 0, nc; i < c$.length; i++) {
+nc = factory(doc).importNode(c$[i], true);
+d.appendChild(nc);
+}
+}
+return n;
 }
 };
 Object.defineProperty(DomApi.prototype, 'classList', {
@@ -885,8 +912,9 @@ if (this.node.nodeType !== Node.TEXT_NODE) {
 this._clear();
 var d = document.createElement('div');
 d.innerHTML = text;
-for (var e = d.firstChild; e; e = e.nextSibling) {
-this.appendChild(e);
+var c$ = Array.prototype.slice.call(d.childNodes);
+for (var i = 0; i < c$.length; i++) {
+this.appendChild(c$[i]);
 }
 }
 },
@@ -908,6 +936,13 @@ return n;
 }
 n = n.parentNode;
 }
+};
+DomApi.prototype.cloneNode = function (deep) {
+return this.node.cloneNode(deep);
+};
+DomApi.prototype.importNode = function (externalNode, deep) {
+var doc = this.node instanceof HTMLDocument ? this.node : this.node.ownerDocument;
+return doc.importNode(externalNode, deep);
 };
 DomApi.prototype.getDestinationInsertionPoints = function () {
 var n$ = this.node.getDestinationInsertionPoints();

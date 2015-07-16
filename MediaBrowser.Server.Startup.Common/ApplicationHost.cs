@@ -38,6 +38,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Security;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Controller.Social;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Controller.Subtitles;
 using MediaBrowser.Controller.Sync;
@@ -84,6 +85,7 @@ using MediaBrowser.Server.Implementations.Playlists;
 using MediaBrowser.Server.Implementations.Security;
 using MediaBrowser.Server.Implementations.ServerManager;
 using MediaBrowser.Server.Implementations.Session;
+using MediaBrowser.Server.Implementations.Social;
 using MediaBrowser.Server.Implementations.Sync;
 using MediaBrowser.Server.Implementations.Themes;
 using MediaBrowser.Server.Implementations.TV;
@@ -522,6 +524,10 @@ namespace MediaBrowser.Server.Startup.Common
                 MediaEncoder, ChapterManager);
             RegisterSingleInstance(EncodingManager);
 
+            var sharingRepo = new SharingRepository(LogManager, ApplicationPaths);
+            await sharingRepo.Initialize().ConfigureAwait(false);
+            RegisterSingleInstance<ISharingManager>(new SharingManager(sharingRepo, ServerConfigurationManager, LibraryManager, this));
+            
             RegisterSingleInstance<ISsdpHandler>(new SsdpHandler(LogManager.GetLogger("SsdpHandler"), ServerConfigurationManager, this));
 
             var activityLogRepo = await GetActivityLogRepository().ConfigureAwait(false);

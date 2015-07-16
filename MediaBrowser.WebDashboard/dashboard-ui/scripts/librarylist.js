@@ -124,7 +124,7 @@
             buttonCount++;
         }
 
-        html += '<paper-icon-button icon="more-vert" class="btnMoreCommands"></paper-icon-button>';
+        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnMoreCommands"></paper-icon-button>';
         buttonCount++;
 
         html += '</div>';
@@ -181,7 +181,7 @@
 
         var displayContextItem = card;
 
-        if (card.classList.contains('listviewMenuButton')) {
+        if (!card.classList.contains('card') && !card.classList.contains('listItem')) {
             card = $(card).parents('.listItem,.card')[0];
         }
 
@@ -323,6 +323,14 @@
                 });
             }
 
+            if (user.Policy.EnablePublicSharing) {
+                items.push({
+                    name: Globalize.translate('ButtonShare'),
+                    id: 'share',
+                    ironIcon: 'share'
+                });
+            }
+
             if (commands.indexOf('sync') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonSync'),
@@ -445,6 +453,11 @@
                             case 'externalplayer':
                                 LibraryBrowser.playInExternalPlayer(itemId);
                                 break;
+                            case 'share':
+                                require(['sharingmanager'], function () {
+                                    SharingManager.showMenu(Dashboard.getCurrentUserId(), itemId);
+                                });
+                                break;
                             case 'removefromplaylist':
                                 $(card).parents('.itemsContainer').trigger('removefromplaylist', [playlistItemId]);
                                 break;
@@ -466,6 +479,46 @@
         return false;
     }
 
+    function onListViewPlayButtonClick(e) {
+
+        var playButton = this;
+        var card = this;
+
+        if (!card.classList.contains('card') && !card.classList.contains('listItem')) {
+            card = $(card).parents('.listItem,.card')[0];
+        }
+
+        var id = card.getAttribute('data-itemid');
+        var type = card.getAttribute('data-itemtype');
+        var isFolder = card.getAttribute('data-isfolder') == 'true';
+        var mediaType = card.getAttribute('data-mediatype');
+        var resumePosition = parseInt(card.getAttribute('data-resumeposition'));
+
+        if (type == 'MusicAlbum' || type == 'MusicArtist' || type == 'MusicGenre' || type == 'Playlist') {
+            isFolder = true;
+        }
+
+        LibraryBrowser.showPlayMenu(playButton, id, type, isFolder, mediaType, resumePosition);
+
+        e.preventDefault();
+        return false;
+    }
+
+    function isClickable(target) {
+
+        while (target != null) {
+            var tagName = target.tagName || '';
+            if (tagName == 'A' || tagName.indexOf('BUTTON') != -1 || tagName.indexOf('INPUT') != -1) {
+                return true;
+            }
+
+            return false;
+            //target = target.parentNode;
+        }
+
+        return false;
+    }
+
     function onGroupedCardClick(e) {
 
         var card = this;
@@ -483,7 +536,7 @@
         };
 
         var target = e.target;
-        if (target.tagName == 'A' || target.tagName == 'BUTTON') {
+        if (isClickable(target)) {
             return;
         }
 
@@ -727,9 +780,13 @@
 
     function onCardClick(e) {
 
+        if (isClickable(targetElem)) {
+            return;
+        }
+
         var targetElem = e.target;
         if (targetElem.classList.contains('itemSelectionPanel') || this.querySelector('.itemSelectionPanel')) {
-            return false;
+            return;
         }
 
         var info = LibraryBrowser.getListItemInfo(this);
@@ -751,10 +808,6 @@
         }
 
         if (card.getAttribute('data-detailsmenu') != 'true') {
-            return;
-        }
-
-        if (targetElem.tagName == 'A' || targetElem.tagName == 'BUTTON') {
             return;
         }
 
@@ -825,7 +878,7 @@
             });
         }
 
-        function onHoverIn() {
+        function onHoverIn(e) {
 
             if (preventHover === true) {
                 preventHover = false;
@@ -838,6 +891,10 @@
             }
 
             var elem = this;
+
+            while (!elem.classList.contains('card')) {
+                elem = elem.parentNode;
+            }
 
             showOverlayTimeout = setTimeout(function () {
 
@@ -859,15 +916,21 @@
         this.off('click', '.listviewMenuButton', onListViewMenuButtonClick);
         this.on('click', '.listviewMenuButton', onListViewMenuButtonClick);
 
+        this.off('click', '.cardOverlayMoreButton', onListViewMenuButtonClick);
+        this.on('click', '.cardOverlayMoreButton', onListViewMenuButtonClick);
+
+        this.off('click', '.cardOverlayPlayButton', onListViewPlayButtonClick);
+        this.on('click', '.cardOverlayPlayButton', onListViewPlayButtonClick);
+
         if (!AppInfo.isTouchPreferred) {
-            this.off('mouseenter', '.card:not(.bannerCard)', onHoverIn);
-            this.on('mouseenter', '.card:not(.bannerCard)', onHoverIn);
+            this.off('mouseenter', '.card:not(.bannerCard) .cardContent', onHoverIn);
+            this.on('mouseenter', '.card:not(.bannerCard) .cardContent', onHoverIn);
 
-            this.off('mouseleave', '.card:not(.bannerCard)', onHoverOut);
-            this.on('mouseleave', '.card:not(.bannerCard)', onHoverOut);
+            this.off('mouseleave', '.card:not(.bannerCard) .cardContent', onHoverOut);
+            this.on('mouseleave', '.card:not(.bannerCard) .cardContent', onHoverOut);
 
-            this.off("touchstart", '.card:not(.bannerCard)', preventTouchHover);
-            this.on("touchstart", '.card:not(.bannerCard)', preventTouchHover);
+            this.off("touchstart", '.card:not(.bannerCard) .cardContent', preventTouchHover);
+            this.on("touchstart", '.card:not(.bannerCard) .cardContent', preventTouchHover);
         }
 
         this.off('click', '.mediaItem', onCardClick);

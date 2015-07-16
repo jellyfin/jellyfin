@@ -340,7 +340,7 @@ namespace MediaBrowser.Api
                 // We can really reduce the timeout for apps that are using the newer api
                 if (!string.IsNullOrWhiteSpace(job.PlaySessionId))
                 {
-                    timerDuration = 120000;
+                    timerDuration = 300000;
                 }
             }
 

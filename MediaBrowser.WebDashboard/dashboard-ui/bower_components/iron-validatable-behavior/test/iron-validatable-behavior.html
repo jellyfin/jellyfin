@@ -45,6 +45,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.isFalse(node.hasAttribute('aria-invalid'), 'aria-invalid is unset');
       });
 
+      test('validate() is true if a validator isn\'t set', function() {
+        var node = fixture('basic');
+        var valid = node.validate();
+        assert.isTrue(valid);
+      });
+
     });
 
   </script>

@@ -53,7 +53,7 @@
             var user = response2[0];
             var item = response3[0];
 
-            $('.playlistName', page).html(item.Name);
+            LibraryMenu.setTitle(item.Name);
 
             _childrenItemsFunction = getItemsFunction(query);
 

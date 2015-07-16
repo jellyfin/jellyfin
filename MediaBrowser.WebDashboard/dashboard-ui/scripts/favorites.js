@@ -1,13 +1,29 @@
 ﻿(function ($, document) {
 
+    function enableScrollX() {
+        return $.browser.mobile && AppInfo.enableAppLayouts;
+    }
+
+    function getThumbShape() {
+        return enableScrollX() ? 'overflowBackdrop' : 'backdrop';
+    }
+
+    function getPosterShape() {
+        return enableScrollX() ? 'overflowPortrait' : 'portrait';
+    }
+
+    function getSquareShape() {
+        return enableScrollX() ? 'overflowSquare' : 'square';
+    }
+
     function getSections() {
 
         return [
-            { name: Globalize.translate('HeaderFavoriteMovies'), types: "Movie", id: "favoriteMovies", shape: 'backdrop', preferThumb: true, showTitle: false },
-            { name: Globalize.translate('HeaderFavoriteShows'), types: "Series", id: "favoriteShows", shape: 'backdrop', preferThumb: true, showTitle: false },
-            { name: Globalize.translate('HeaderFavoriteEpisodes'), types: "Episode", id: "favoriteEpisode", shape: 'backdrop', preferThumb: false, showTitle: true, showParentTitle: true },
-            { name: Globalize.translate('HeaderFavoriteGames'), types: "Game", id: "favoriteGames", shape: 'autohome', preferThumb: false, showTitle: true },
-            { name: Globalize.translate('HeaderFavoriteAlbums'), types: "MusicAlbum", id: "favoriteAlbums", shape: 'square', preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true }
+            { name: 'HeaderFavoriteMovies', types: "Movie", id: "favoriteMovies", shape: getPosterShape(), showTitle: false },
+            { name: 'HeaderFavoriteShows', types: "Series", id: "favoriteShows", shape: getPosterShape(), showTitle: false },
+            { name: 'HeaderFavoriteEpisodes', types: "Episode", id: "favoriteEpisode", shape: getThumbShape(), preferThumb: false, showTitle: true, showParentTitle: true },
+            { name: 'HeaderFavoriteGames', types: "Game", id: "favoriteGames", shape: getSquareShape(), preferThumb: false, showTitle: true },
+            { name: 'HeaderFavoriteAlbums', types: "MusicAlbum", id: "favoriteAlbums", shape: getSquareShape(), preferThumb: false, showTitle: true, overlayText: false, showParentTitle: true, centerText: true, overlayPlayButton: true }
         ];
     }
 
@@ -17,7 +33,7 @@
 
         var options = {
 
-            SortBy: isSingleSection ? "SortName" : "Random",
+            SortBy: "SortName",
             SortOrder: "Ascending",
             IncludeItemTypes: section.types,
             Filters: "IsFavorite",
@@ -37,8 +53,24 @@
             var html = '';
 
             if (result.Items.length) {
-                html += '<h1 class="listHeader">' + section.name + '</h1>';
+
                 html += '<div>';
+                html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + Globalize.translate(section.name) + '</h1>';
+
+                if (result.TotalRecordCount > result.Items.length) {
+                    var href = "secondaryitems.html?type=" + section.types + "&filters=IsFavorite&titlekey=" + section.name;
+
+                    html += '<a class="clearLink" href="' + href + '" style="margin-left:2em;"><paper-button raised class="more mini">' + Globalize.translate('ButtonMoreItems') + '</paper-button></a>';
+                }
+
+                html += '</div>';
+
+                if (enableScrollX()) {
+                    html += '<div class="itemsContainer hiddenScrollX">';
+                } else {
+                    html += '<div class="itemsContainer">';
+                }
+
                 html += LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     preferThumb: section.preferThumb,
@@ -48,16 +80,12 @@
                     showTitle: section.showTitle,
                     showParentTitle: section.showParentTitle,
                     lazy: true,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    centerText: section.centerText,
+                    overlayPlayButton: section.overlayPlayButton
                 });
 
                 html += '</div>';
-
-                if (result.TotalRecordCount > result.Items.length) {
-                    var href = "homefavorites.html?sectionid=" + section.id;
-
-                    html += '<a class="clearLink" href="' + href + '"><paper-button raised class="more">' + Globalize.translate('ButtonMoreItems') + '</paper-button></a>';
-                }
             }
 
             elem.innerHTML = html;
@@ -113,15 +141,20 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#favoritesPage", function () {
+    $(document).on('pageinitdepends', "#indexPage", function () {
 
         var page = this;
+        var tabContent = page.querySelector('.homeFavoritesTabContent');
 
-        var userId = Dashboard.getCurrentUserId();
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
 
-        if (LibraryBrowser.needsRefresh(page)) {
-            loadSections(page, userId);
-        }
+            if (parseInt(this.selected) == 2) {
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    loadSections(tabContent, Dashboard.getCurrentUserId());
+                }
+            }
+        });
+
     });
 
 })(jQuery, document);

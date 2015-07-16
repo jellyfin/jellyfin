@@ -1,8 +1,10 @@
 ﻿(function () {
 
-    function vlcRenderer(type) {
+    function vlcRenderer(options) {
 
         var self = this;
+
+        self.enableProgressReporting = options.type == 'audio';
 
         function onEnded() {
             Events.trigger(self, 'ended');
@@ -88,21 +90,103 @@
             }
         };
 
-        self.setCurrentSrc = function (val, item, mediaSource) {
+        function getPlaybackStartInfoForVideoActivity(videoUrl, mediaSource, item) {
+
+            var state = {
+                PlayState: {}
+            };
+
+            var audioStreamIndex = getParameterByName('AudioStreamIndex', videoUrl);
+
+            if (audioStreamIndex) {
+                state.PlayState.AudioStreamIndex = parseInt(audioStreamIndex);
+            }
+            state.PlayState.SubtitleStreamIndex = self.currentSubtitleStreamIndex;
+
+            state.PlayState.PlayMethod = getParameterByName('static', videoUrl) == 'true' ?
+                'DirectStream' :
+                'Transcode';
+
+            state.PlayState.LiveStreamId = getParameterByName('LiveStreamId', videoUrl);
+            state.PlayState.PlaySessionId = getParameterByName('PlaySessionId', videoUrl);
+
+            state.PlayState.MediaSourceId = mediaSource.Id;
+
+            state.NowPlayingItem = {
+                RunTimeTicks: mediaSource.RunTimeTicks
+            };
+
+            state.PlayState.CanSeek = mediaSource.RunTimeTicks && mediaSource.RunTimeTicks > 0;
+
+            var playbackStartInfo = {
+                QueueableMediaTypes: item.MediaType,
+                ItemId: item.Id,
+                NowPlayingItem: state.NowPlayingItem
+            };
+
+            return $.extend(playbackStartInfo, state.PlayState);
+        }
+
+        self.setCurrentSrc = function (val, item, mediaSource, tracks) {
 
             if (!val) {
                 self.destroy();
                 return;
             }
 
-            if (type == 'audio') {
+            var tIndex = val.indexOf('#t=');
+            var startPosMs = 0;
 
-                AndroidVlcPlayer.playAudioVlc(val, JSON.stringify(item), JSON.stringify(mediaSource), posterUrl);
-            } else {
-                AndroidVlcPlayer.playVideoVlc(val);
+            if (tIndex != -1) {
+                startPosMs = val.substring(tIndex + 3);
+                startPosMs = parseFloat(startPosMs) * 1000;
             }
 
-            playerState.currentSrc = val;
+            if (options.type == 'audio') {
+
+                AndroidVlcPlayer.playAudioVlc(val, JSON.stringify(item), JSON.stringify(mediaSource), options.poster);
+            } else {
+
+                var playbackStartInfo = getPlaybackStartInfoForVideoActivity(val, mediaSource, item);
+
+                var serverUrl = ApiClient.serverAddress();
+
+                var videoStream = mediaSource.MediaStreams.filter(function (stream) {
+                    return stream.Type == "Video";
+                })[0];
+                var videoWidth = videoStream ? videoStream.Width : null;
+                var videoHeight = videoStream ? videoStream.Height : null;
+
+                var videoQualityOptions = MediaPlayer.getVideoQualityOptions(videoWidth, videoHeight).map(function (o) {
+                    return {
+                        Name: o.name,
+                        Value: o.bitrate + "-" + o.maxHeight
+                    };
+                });
+
+                var deviceProfile = MediaPlayer.getDeviceProfile();
+
+                AndroidVlcPlayer.playVideoVlc(val,
+                    startPosMs,
+                    item.Name,
+                    JSON.stringify(mediaSource),
+                    JSON.stringify(playbackStartInfo),
+                    ApiClient.serverInfo().Id,
+                    serverUrl,
+                    ApiClient.appName(),
+                    ApiClient.appVersion(),
+                    ApiClient.deviceId(),
+                    ApiClient.deviceName(),
+                    ApiClient.getCurrentUserId(),
+                    ApiClient.accessToken(),
+                    JSON.stringify(deviceProfile),
+                    JSON.stringify(videoQualityOptions));
+
+                playerState.currentSrc = val;
+                self.report('playing', null, startPosMs, false, 100);
+
+                playerState.currentSrc = val;
+            }
         };
 
         self.currentSrc = function () {
@@ -129,9 +213,9 @@
             playerState = {};
         };
 
-        var posterUrl;
-        self.setPoster = function (url) {
-            posterUrl = url;
+        self.enableCustomVideoControls = function () {
+
+            return false;
         };
 
         self.report = function (eventName, duration, position, isPaused, volume) {
@@ -163,9 +247,44 @@
             }
         };
 
+        self.init = function () {
+
+            var deferred = DeferredBuilder.Deferred();
+            deferred.resolve();
+            return deferred.promise();
+        };
+
+        self.onActivityClosed = function (wasStopped, hasError, endPositionMs, currentSrc) {
+
+            playerState.currentTime = endPositionMs;
+
+            if (currentSrc) {
+                playerState.currentSrc = currentSrc;
+            }
+
+            if (wasStopped) {
+                MediaPlayer.stop(false);
+            }
+
+            self.report('playbackstop', playerState.duration, endPositionMs, false, 100);
+        };
+
         window.AudioRenderer.Current = self;
+        window.VideoRenderer.Current = self;
     }
 
-    window.AudioRenderer = vlcRenderer;
+    window.AudioRenderer = function (options) {
+        options = options || {};
+        options.type = 'audio';
+
+        return new vlcRenderer(options);
+    };
+
+    window.VideoRenderer = function (options) {
+        options = options || {};
+        options.type = 'video';
+
+        return new vlcRenderer(options);
+    };
 
 })();

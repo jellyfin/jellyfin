@@ -49,4 +49,18 @@ namespace MediaBrowser.Controller.Sync
         /// <returns>Task&lt;QueryResult&lt;FileMetadata&gt;&gt;.</returns>
         Task<QueryResult<FileMetadata>> GetFiles(FileQuery query, SyncTarget target, CancellationToken cancellationToken);
     }
+
+    public interface ISupportsDirectCopy
+    {
+        /// <summary>
+        /// Sends the file.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="pathParts">The path parts.</param>
+        /// <param name="target">The target.</param>
+        /// <param name="progress">The progress.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;SyncedFileInfo&gt;.</returns>
+        Task<SyncedFileInfo> SendFile(string path, string[] pathParts, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken);
+    }
 }

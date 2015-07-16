@@ -4,11 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="playlistsPage" data-role="page" class="page libraryPage" data-require="scripts/playlists">
-
-        <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="#" class="ui-btn-active"><i class="material-icons">menu</i>${TabPlaylists}</a>
-        </div>
+    <div id="playlistsPage" data-role="page" class="page libraryPage noSecondaryNavPage" data-require="scripts/playlists" data-title="${HeaderPlaylists}">
 
         <div data-role="content">
             <div class="viewSettings">
@@ -38,7 +34,7 @@
                         <label for="selectView">${LabelView}</label>
                         <select id="selectView">
                             <option value="List">${OptionList}</option>
-                            <option value="PosterCard">${OptionPosterCard}</option>
+                            <option value="Poster">${OptionPoster}</option>
                         </select>
                     </div>
                     <br />

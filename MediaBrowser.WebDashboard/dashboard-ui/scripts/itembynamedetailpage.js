@@ -88,7 +88,7 @@
                     $('.btnSync', page).addClass('hide');
                 }
 
-                var editImagesHref = user.Policy.IsAdministrator ? 'edititemimages.html' + editQuery : null;
+                var editImagesHref = user.Policy.IsAdministrator ? 'edititemmetadata.html' + (editQuery + "&tab=3") : null;
 
                 $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref, true));
 
@@ -315,7 +315,7 @@
     function renderDetails(page, item, context) {
 
         //LibraryBrowser.renderDetailPageBackdrop(page, item);
-        LibraryBrowser.renderOverview(page.querySelector('.itemOverview'), item);
+        LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), item);
 
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks(page.querySelector('#itemLinks'), item);
@@ -418,7 +418,10 @@
 
             query.StartIndex = index;
             query.Limit = limit;
-            query.Fields = fields;
+
+            if (fields) {
+                query.Fields += "," + fields;
+            }
 
             return ApiClient.getItems(Dashboard.getCurrentUserId(), query);
 
@@ -460,12 +463,12 @@
 
             if (query.IncludeItemTypes == "Audio") {
 
-                html = LibraryBrowser.getListViewHtml({
+                html = "<div style='max-width:1000px;margin:auto;'>" + LibraryBrowser.getListViewHtml({
                     items: result.Items,
                     playFromHere: true,
                     defaultAction: 'playallfromhere',
                     smallIcon: true
-                });
+                }) + "</div>";
             }
             else if (query.IncludeItemTypes == "Movie" || query.IncludeItemTypes == "Trailer") {
 
@@ -513,10 +516,10 @@
             }
             else {
 
-                html = LibraryBrowser.getListViewHtml({
+                html = "<div style='max-width:1000px;margin:auto;'>" + LibraryBrowser.getListViewHtml({
                     items: result.Items,
                     smallIcon: true
-                });
+                }) + "</div>";
             }
 
             html += LibraryBrowser.getQueryPagingHtml({
@@ -591,6 +594,11 @@
                 items: [currentItem]
             });
         });
+
+        var btnMore = page.querySelectorAll('.btnMoreCommands iron-icon');
+        for (var i = 0, length = btnMore.length; i < length; i++) {
+            btnMore[i].icon = AppInfo.moreIcon;
+        }
 
     }).on('pagebeforeshowready', "#itemByNameDetailPage", function () {
 

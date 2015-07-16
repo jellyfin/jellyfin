@@ -9,7 +9,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-autogrow-textarea/iron-autogrow-textarea.html">
-<link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
 <link rel="import" href="paper-input-behavior.html">
 <link rel="import" href="paper-input-container.html">
 <link rel="import" href="paper-input-error.html">
@@ -48,7 +47,8 @@ style this element.
         placeholder$="[[placeholder]]"
         readonly$="[[readonly]]"
         required$="[[required]]"
-        maxlength$="[[maxlength]]"></iron-autogrow-textarea>
+        maxlength$="[[maxlength]]"
+        autocapitalize$="[[autocapitalize]]"></iron-autogrow-textarea>
 
       <template is="dom-if" if="[[errorMessage]]">
         <paper-input-error>[[errorMessage]]</paper-input-error>
@@ -73,8 +73,7 @@ style this element.
     is: 'paper-textarea',
 
     behaviors: [
-      Polymer.PaperInputBehavior,
-      Polymer.IronFormElementBehavior
+      Polymer.PaperInputBehavior
     ],
 
     properties: {

@@ -312,6 +312,8 @@ html {
 
 body {
     overflow-y: scroll !important;
+    /* This is needed to prevent a horizontal scrollbar while neon-animated-pages are animating. */
+    overflow-x: hidden;
     font-size: 13px;
     font-family: Roboto, Arial, Helvetica, sans-serif;
     /*Can't use this with safari or it causes some content to disappear*/
@@ -328,6 +330,11 @@ body {
     overflow-x: visible !important;
     /* jqm often wants to assign a background color to this */
     background-color: transparent !important;
+}
+
+/* Undo this from jqm which may cause the page to have it's own scrollbar */
+.ui-mobile .ui-page-active {
+    overflow-x: visible;
 }
 
 .bodyWithPopupOpen {
@@ -487,9 +494,14 @@ h1 a:hover {
     transform: translateY(-100%);
 }
 
-.libraryViewNav.headroom--unpinned:not(.headroomDisabled) {
-    -webkit-transform: translateY(-200%);
-    transform: translateY(-200%);
+.libraryViewNav:not(.paperLibraryViewNav).headroom--unpinned:not(.headroomDisabled) {
+    -webkit-transform: translateY(-210%);
+    transform: translateY(-210%);
+}
+
+.paperLibraryViewNav.headroom--unpinned:not(.headroomDisabled) {
+    -webkit-transform: translateY(-205%);
+    transform: translateY(-205%);
 }
 
 .largePanel {
@@ -752,7 +764,7 @@ h1 .imageLink {
     margin-bottom: 30px !important;
 }
 
-.page > .ui-content {
+.page > .ui-content, .pageWithAbsoluteTabs .pageTabContent {
     /* Need this so that the audio player doesn't cover content, but also for unveil lazy loading. */
     padding-bottom: 160px;
 }
@@ -919,7 +931,7 @@ h1 .imageLink {
 }
 
 .footerOverBottomTabs {
-    bottom: 51px !important;
+    bottom: 49px !important;
 }
 
 .footerNotification {

@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard');
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
     // The base query options
     var query = {
@@ -76,6 +76,19 @@
                         coverImage: true,
                         showItemCounts: true,
                         cardLayout: true
+                    });
+                }
+                else if (view == "Poster") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "square",
+                        context: 'playlists',
+                        showTitle: true,
+                        lazy: true,
+                        coverImage: true,
+                        showItemCounts: true,
+                        centerText: true,
+                        overlayPlayButton: true
                     });
                 }
 

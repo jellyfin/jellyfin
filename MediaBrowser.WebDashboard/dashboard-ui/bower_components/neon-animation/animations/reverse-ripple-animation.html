@@ -43,8 +43,8 @@ Configuration:
       Polymer.NeonSharedElementAnimationBehavior
     ],
 
-    configure: function(config, fromPage, toPage) {
-      var shared = this.findSharedElements(config, fromPage, toPage);
+    configure: function(config) {
+      var shared = this.findSharedElements(config);
       if (!shared) {
         return null;
       }
@@ -69,7 +69,7 @@ Configuration:
 
       this.setPrefixedProperty(shared.from, 'transformOrigin', '50% 50%');
       shared.from.style.borderRadius = '50%';
-      
+
       this._effect = new KeyframeEffect(shared.from, [
         {'transform': translate + ' ' + scale},
         {'transform': translate + ' scale(0)'}

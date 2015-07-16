@@ -47,8 +47,9 @@
                     preferThumb: true,
                     context: 'music',
                     showItemCounts: true,
+                    lazy: true,
                     centerText: true,
-                    lazy: true
+                    overlayPlayButton: true
                 });
             }
             else if (view == "ThumbCard") {

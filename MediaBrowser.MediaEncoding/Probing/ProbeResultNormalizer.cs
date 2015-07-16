@@ -439,7 +439,7 @@ namespace MediaBrowser.MediaEncoding.Probing
 
             if (!string.IsNullOrWhiteSpace(artists))
             {
-                audio.Artists = artists.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+                audio.Artists = SplitArtists(artists, new[] { '/' }, false)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
             }
@@ -452,7 +452,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
                 else
                 {
-                    audio.Artists = SplitArtists(artist)
+                    audio.Artists = SplitArtists(artist, _nameDelimiters, true)
                         .Distinct(StringComparer.OrdinalIgnoreCase)
                         .ToList();
                 }
@@ -474,7 +474,7 @@ namespace MediaBrowser.MediaEncoding.Probing
             }
             else
             {
-                audio.AlbumArtists = SplitArtists(albumArtist)
+                audio.AlbumArtists = SplitArtists(albumArtist, _nameDelimiters, true)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
@@ -552,10 +552,13 @@ namespace MediaBrowser.MediaEncoding.Probing
 
         private const string ArtistReplaceValue = " | ";
 
-        private IEnumerable<string> SplitArtists(string val)
+        private IEnumerable<string> SplitArtists(string val, char[] delimiters, bool splitFeaturing)
         {
-            val = val.Replace(" featuring ", ArtistReplaceValue, StringComparison.OrdinalIgnoreCase)
-                .Replace(" feat. ", ArtistReplaceValue, StringComparison.OrdinalIgnoreCase);
+            if (splitFeaturing)
+            {
+                val = val.Replace(" featuring ", ArtistReplaceValue, StringComparison.OrdinalIgnoreCase)
+                    .Replace(" feat. ", ArtistReplaceValue, StringComparison.OrdinalIgnoreCase);
+            }
 
             var artistsFound = new List<string>();
 
@@ -570,11 +573,7 @@ namespace MediaBrowser.MediaEncoding.Probing
                 }
             }
 
-            // Only use the comma as a delimeter if there are no slashes or pipes. 
-            // We want to be careful not to split names that have commas in them
-            var delimeter = _nameDelimiters;
-
-            var artists = val.Split(delimeter, StringSplitOptions.RemoveEmptyEntries)
+            var artists = val.Split(delimiters, StringSplitOptions.RemoveEmptyEntries)
                 .Where(i => !string.IsNullOrWhiteSpace(i))
                 .Select(i => i.Trim());
 

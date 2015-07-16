@@ -85,9 +85,9 @@
         // If less than 200, this happens on the home page
         // Need to fix those before this can be set to 0
 
-        if (window.AppInfo && AppInfo.isNativeApp && $.browser.safari) {
-            return 7000;
-        }
+        //if (window.AppInfo && AppInfo.isNativeApp && $.browser.safari) {
+        //    return 7000;
+        //}
 
         var screens = $.browser.mobile ? 2.5 : 1;
 

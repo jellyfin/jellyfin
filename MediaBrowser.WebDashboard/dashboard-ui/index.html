@@ -5,27 +5,70 @@
 </head>
 <body>
 
-    <div id="indexPage" data-role="page" class="page homePage libraryPage allLibraryPage backdropPage" data-backdroptype="movie,series,game,book" data-require="scripts/sections,scripts/indexpage,paperbuttonstyle">
+    <div id="indexPage" data-role="page" class="page homePage libraryPage allLibraryPage backdropPage pageWithAbsoluteTabs" data-title="${ButtonHome}" data-backdroptype="movie,series,game,book" data-require="scripts/sections,scripts/indexpage,scripts/homenextup,scripts/favorites,scripts/homeupcoming,paperbuttonstyle">
 
-        <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="#" class="ui-btn-active"><i class="material-icons">home</i>${TabHome}</a>
-            <a href="homenextup.html"><i class="material-icons">navigate_next</i>${TabNextUp}</a>
-            <a href="homefavorites.html"><i class="material-icons">favorite</i>${TabFavorites}</a>
-            <a href="homeupcoming.html"><i class="material-icons">schedule</i>${TabUpcoming}</a>
+        <div class="libraryViewNav libraryViewNavWithMinHeight">
+            <paper-tabs style="display:none;">
+                <paper-tab><iron-icon icon="home"></iron-icon>${TabHome}</paper-tab>
+                <paper-tab><iron-icon icon="navigate-next"></iron-icon>${TabNextUp}</paper-tab>
+                <paper-tab><iron-icon icon="favorite"></iron-icon>${TabFavorites}</paper-tab>
+                <paper-tab><iron-icon icon="schedule"></iron-icon>${TabUpcoming}</paper-tab>
+            </paper-tabs>
+            <div class="legacyTabs" style="display:none;">
+                <a href="index.html" class="ui-btn-active"><iron-icon icon="home"></iron-icon>${TabHome}</a>
+                <a href="index.html?tab=1"><iron-icon icon="navigate-next"></iron-icon>${TabNextUp}</a>
+                <a href="index.html?tab=2"><iron-icon icon="favorite"></iron-icon>${TabFavorites}</a>
+                <a href="index.html?tab=3"><iron-icon icon="schedule"></iron-icon>${TabUpcoming}</a>
+            </div>
+        </div>
+
+        <div class="pageBackground"></div>
+        <div class="ehsContent">
+            <neon-animated-pages>
+                <neon-animatable>
+                    <div class="pageTabContent homeTabContent">
+                        <div class="ui-bar-b readOnlyContent welcomeMessage" style="display: none; padding: 2em; border-radius: 10px; margin: 2em auto; font-weight: normal;">
+                            <h1 style="margin-top: 0;" class="tourHeader"></h1>
+                            <p>
+                                <paper-button raised class="submit block btnTakeTour"><iron-icon icon="check"></iron-icon><span class="tourButtonText"></span></paper-button>
+                            </p>
+                        </div>
+
+                        <div class="sections"></div>
+                    </div>
+                </neon-animatable>
+                <neon-animatable>
+                    <div class="pageTabContent homeNextUpTabContent">
+                        <div class="homePageSection">
+                            <div>
+                                <h1 class="listHeader nextUpHeader" style="display:inline-block;vertical-align:middle;">${HeaderNextUp}</h1>
+                                <paper-button raised class="submit mini categorySyncButton" data-category="NextUp"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
+                            </div>
+                            <div id="nextUpItems" class="itemsContainer">
+                            </div>
+                        </div>
+                        <p class="noNextUpItems" style="display: none;">${NoNextUpItemsMessage}</p>
+                    </div>
+                </neon-animatable>
+                <neon-animatable>
+                    <div class="pageTabContent homeFavoritesTabContent">
+                        <div class="sections"></div>
+                    </div>
+                </neon-animatable>
+                <neon-animatable>
+                    <div class="pageTabContent homeUpcomingTabContent">
+                        <div id="upcomingItems">
+                        </div>
+                        <div class="noItemsMessage" style="display: none;">
+                            <p>${MessageNothingHere}</p>
+                            <p><a href="metadata.html">${MessagePleaseEnsureInternetMetadata}</a></p>
+                        </div>
+                    </div>
+                </neon-animatable>
+            </neon-animated-pages>
         </div>
 
         <div data-role="content">
-
-            <div class="ui-bar-b readOnlyContent welcomeMessage" style="display: none; padding: 2em; border-radius: 10px; margin: 2em auto; font-weight: normal;">
-                <h1 style="margin-top: 0;" class="tourHeader"></h1>
-                <p>
-                    <button class="btnTakeTour" type="button" data-icon="arrow-r" data-iconpos="right"><span class="tourButtonText"></span></button>
-                </p>
-            </div>
-
-            <div class="ehsContent homeEhsContent">
-                <div class="sections"></div>
-            </div>
 
         </div>
     </div>

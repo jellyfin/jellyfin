@@ -59,7 +59,7 @@
         html += '<paper-icon-button icon="play-arrow" class="mediaButton unpauseButton"></paper-icon-button>';
         html += '<paper-icon-button icon="pause" class="mediaButton pauseButton"></paper-icon-button>';
         html += '<paper-icon-button icon="tablet-android" onclick="Dashboard.navigate(\'nowplaying.html\', false);" class="mediaButton remoteControlButton"></paper-icon-button>';
-        html += '<paper-icon-button icon="queue-music" onclick="Dashboard.navigate(\'nowplaying.html?tab=Playlist\', false);" class="mediaButton playlistButton"></paper-icon-button>';
+        html += '<paper-icon-button icon="queue-music" class="mediaButton playlistButton"></paper-icon-button>';
 
         html += '</div>';
 
@@ -128,41 +128,51 @@
             }
         });
 
-        volumeSlider = $('.nowPlayingBarVolumeSlider', elem).on('change', function () {
+        $('.playlistButton', elem).on('click', function () {
 
-            if (currentPlayer) {
-                currentPlayer.setVolume(this.value);
-            }
+            $.mobile.changePage('nowplaying.html', {
+                dataUrl: 'nowplaying.html#playlist'
+            });
+        });
 
-        })[0];
+        // Unfortunately this is necessary because the polymer elements might not be ready immediately and there doesn't seem to be an event-driven way to find out when
+        setTimeout(function() {
+            volumeSlider = $('.nowPlayingBarVolumeSlider', elem).on('change', function () {
 
-        positionSlider = $('.nowPlayingBarPositionSlider', elem).on('change', function () {
+                if (currentPlayer) {
+                    currentPlayer.setVolume(this.value);
+                }
 
-            if (currentPlayer && lastPlayerState) {
+            })[0];
 
-                var newPercent = parseFloat(this.value);
-                var newPositionTicks = (newPercent / 100) * lastPlayerState.NowPlayingItem.RunTimeTicks;
+            positionSlider = $('.nowPlayingBarPositionSlider', elem).on('change', function () {
 
-                currentPlayer.seek(Math.floor(newPositionTicks));
-            }
+                if (currentPlayer && lastPlayerState) {
 
-        })[0];
+                    var newPercent = parseFloat(this.value);
+                    var newPositionTicks = (newPercent / 100) * lastPlayerState.NowPlayingItem.RunTimeTicks;
 
-        positionSlider._setPinValue = function (value) {
+                    currentPlayer.seek(Math.floor(newPositionTicks));
+                }
 
-            var state = lastPlayerState;
+            })[0];
 
-            if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
-                this.pinValue = '--:--';
-                return;
-            }
+            positionSlider._setPinValue = function (value) {
 
-            var ticks = state.NowPlayingItem.RunTimeTicks;
-            ticks /= 100;
-            ticks *= value;
+                var state = lastPlayerState;
 
-            this.pinValue = Dashboard.getDisplayTime(ticks);
-        };
+                if (!state || !state.NowPlayingItem || !state.NowPlayingItem.RunTimeTicks) {
+                    this.pinValue = '--:--';
+                    return;
+                }
+
+                var ticks = state.NowPlayingItem.RunTimeTicks;
+                ticks /= 100;
+                ticks *= value;
+
+                this.pinValue = Dashboard.getDisplayTime(ticks);
+            };
+        }, 300);
     }
 
     function getNowPlayingBar() {
@@ -181,6 +191,7 @@
         }
 
         bindEvents(elem);
+        $.mobile.loadPage('nowplaying.html');
 
         return elem;
     }
@@ -193,13 +204,25 @@
         button.addClass('hide');
     }
 
-    function updatePlayerState(state) {
+    var lastUpdateTime = 0;
+
+    function updatePlayerState(event, state) {
 
         if (state.NowPlayingItem) {
             showNowPlayingBar();
         } else {
             hideNowPlayingBar();
             return;
+        }
+
+        if (event.type == 'positionchange') {
+            // Try to avoid hammering the document with changes
+            var now = new Date().getTime();
+            if ((now - lastUpdateTime) < 700) {
+
+                return;
+            }
+            lastUpdateTime = now;
         }
 
         lastPlayerState = state;
@@ -226,21 +249,25 @@
         updatePlayerVolumeState(state, playerInfo);
 
         var nowPlayingItem = state.NowPlayingItem || {};
-        if (!positionSlider.dragging) {
 
-            if (nowPlayingItem && nowPlayingItem.RunTimeTicks) {
+        // See bindEvents for why this is necessary
+        if (positionSlider) {
+            if (!positionSlider.dragging) {
 
-                var pct = playState.PositionTicks / nowPlayingItem.RunTimeTicks;
-                pct *= 100;
+                if (nowPlayingItem.RunTimeTicks) {
 
-                positionSlider.value = pct;
+                    var pct = playState.PositionTicks / nowPlayingItem.RunTimeTicks;
+                    pct *= 100;
 
-            } else {
+                    positionSlider.value = pct;
 
-                positionSlider.value = 0;
+                } else {
+
+                    positionSlider.value = 0;
+                }
+
+                positionSlider.disabled = !playState.CanSeek;
             }
-
-            positionSlider.disabled = !playState.CanSeek;
         }
 
         var timeText = Dashboard.getDisplayTime(playState.PositionTicks);
@@ -309,10 +336,13 @@
             hideButton(unmuteButton);
         }
 
-        $(volumeSlider).visible(showVolumeSlider);
+        // See bindEvents for why this is necessary
+        if (volumeSlider) {
+            $(volumeSlider).visible(showVolumeSlider);
 
-        if (!volumeSlider.dragging) {
-            volumeSlider.value = playState.VolumeLevel || 0;
+            if (!volumeSlider.dragging) {
+                volumeSlider.value = playState.VolumeLevel || 0;
+            }
         }
     }
 
@@ -334,7 +364,7 @@
         nowPlayingTextElement.html(nameHtml);
 
         var url;
-        var imgHeight = 90;
+        var imgHeight = 80;
 
         var nowPlayingItem = state.NowPlayingItem;
 
@@ -442,7 +472,7 @@
             return;
         }
 
-        updatePlayerState(state);
+        updatePlayerState(e, state);
     }
 
     function releaseCurrentPlayer() {

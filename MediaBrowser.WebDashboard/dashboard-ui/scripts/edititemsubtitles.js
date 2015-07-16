@@ -2,14 +2,6 @@
 
     var currentItem;
 
-    function updateTabs(page, item) {
-
-        var query = MetadataEditor.getEditQueryString(item);
-
-        $('#btnEditMetadata', page).attr('href', 'edititemmetadata.html?' + query);
-        $('#btnEditImages', page).attr('href', 'edititemimages.html?' + query);
-    }
-
     function showLocalSubtitles(page, index) {
 
         Dashboard.showLoadingMsg();
@@ -273,26 +265,10 @@
 
             LibraryBrowser.renderName(item, $('.itemName', page), true);
 
-            updateTabs(page, item);
-
             fillSubtitleList(page, item);
 
             Dashboard.hideLoadingMsg();
         });
-    }
-
-    function onWebSocketMessageReceived(e, data) {
-
-        var msg = data;
-
-        if (msg.MessageType === "LibraryChanged") {
-
-            if (msg.Data.ItemsUpdated.indexOf(currentItem.Id) != -1) {
-
-                Logger.log('Item updated - reloading subtitles');
-                reload($.mobile.activePage);
-            }
-        }
     }
 
     function onSearchSubmit() {
@@ -305,51 +281,30 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#editItemSubtitlesPage", function () {
+    $(document).on('pageinitdepends', "#editItemMetadataPage", function () {
 
         var page = this;
-
-        $('.libraryTree', page).on('itemclicked', function (event, data) {
-
-            if (data.id != currentItem.Id) {
-
-                MetadataEditor.currentItemId = data.id;
-                MetadataEditor.currentItemType = data.itemType;
-                //Dashboard.navigate('edititemmetadata.html?id=' + data.id);
-
-                //$.mobile.urlHistory.ignoreNextHashChange = true;
-                window.location.hash = 'editItemSubtitlesPage?id=' + data.id;
-
-                reload(page);
-            }
-        });
 
         $('.subtitleSearchForm').off('submit', onSearchSubmit).on('submit', onSearchSubmit);
 
-    }).on('pageshowready', "#editItemSubtitlesPage", function () {
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
 
-        var page = this;
+            if (parseInt(this.selected) == 1) {
+                var tabContent = page.querySelector('.subtitleTabContent');
 
-        $('.subtitleResults', page).empty();
+                $('.subtitleResults', tabContent).empty();
 
-        Dashboard.showLoadingMsg();
+                Dashboard.showLoadingMsg();
 
-        reload(page);
+                reload(tabContent);
 
-        ApiClient.getCultures().done(function (languages) {
+                ApiClient.getCultures().done(function (languages) {
 
-            fillLanguages(page, languages);
+                    fillLanguages(tabContent, languages);
+                });
+            }
         });
 
-        $(ApiClient).on("websocketmessage", onWebSocketMessageReceived);
-
-    }).on('pagebeforehide', "#editItemSubtitlesPage", function () {
-
-        var page = this;
-
-        currentItem = null;
-
-        $(ApiClient).off("websocketmessage", onWebSocketMessageReceived);
     });
 
 })(jQuery, window, document);

@@ -1,0 +1,192 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Emby</title>
+</head>
+<body>
+    <div id="homeScreenPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage" data-contextname="${HeaderSettings}" data-require="scripts/mypreferenceshome,scripts/mypreferencescommon,paperbuttonstyle,jqmicons">
+
+        <div class="libraryViewNav">
+            <a href="#" class="lnkDisplayPreferences">${TabGeneral}</a>
+            <a href="#" class="ui-btn-active lnkHomeScreenPreferences">${TabHomeScreen}</a>
+            <a href="#" class="lnkLanguagePreferences">${TabPlayback}</a>
+            <a href="#" class="lnkMyProfile">${TabProfile}</a>
+        </div>
+
+        <div data-role="content">
+            <br />
+            <form class="homeScreenPreferencesForm userProfileSettingsForm" style="margin: 0 auto;">
+
+                <div class="detailSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderHomePage}
+                    </div>
+
+                    <div class="detailSectionContent">
+                        <br />
+                        <div>
+                            <label for="selectHomeSection1">${LabelHomePageSection1}</label>
+                            <select id="selectHomeSection1" data-mini="true">
+                                <option value="">${OptionAuto}</option>
+                                <option value="latestmedia">${OptionLatestMedia}</option>
+                                <option value="latestchannelmedia">${OptionLatestChannelMedia}</option>
+                                <option value="latesttvrecordings">${OptionLatestTvRecordings}</option>
+                                <option value="librarytiles">${OptionMyMedia}</option>
+                                <option value="smalllibrarytiles">${OptionMyMediaSmall}</option>
+                                <option value="librarybuttons">${OptionMyMediaButtons}</option>
+                                <option value="resume">${OptionResumablemedia}</option>
+                            </select>
+                        </div>
+                        <br />
+                        <div>
+                            <label for="selectHomeSection2">${LabelHomePageSection2}</label>
+                            <select id="selectHomeSection2" data-mini="true">
+                                <option value="">${OptionAuto}</option>
+                                <option value="latestmedia">${OptionLatestMedia}</option>
+                                <option value="latestchannelmedia">${OptionLatestChannelMedia}</option>
+                                <option value="latesttvrecordings">${OptionLatestTvRecordings}</option>
+                                <option value="librarytiles">${OptionMyMedia}</option>
+                                <option value="smalllibrarytiles">${OptionMyMediaSmall}</option>
+                                <option value="librarybuttons">${OptionMyMediaButtons}</option>
+                                <option value="resume">${OptionResumablemedia}</option>
+                                <option value="none">${OptionNone}</option>
+                            </select>
+                        </div>
+                        <br />
+                        <div>
+                            <label for="selectHomeSection3">${LabelHomePageSection3}</label>
+                            <select id="selectHomeSection3" data-mini="true">
+                                <option value="">${OptionAuto}</option>
+                                <option value="latestmedia">${OptionLatestMedia}</option>
+                                <option value="latestchannelmedia">${OptionLatestChannelMedia}</option>
+                                <option value="latesttvrecordings">${OptionLatestTvRecordings}</option>
+                                <option value="librarytiles">${OptionMyMedia}</option>
+                                <option value="smalllibrarytiles">${OptionMyMediaSmall}</option>
+                                <option value="librarybuttons">${OptionMyMediaButtons}</option>
+                                <option value="resume">${OptionResumablemedia}</option>
+                                <option value="none">${OptionNone}</option>
+                            </select>
+                        </div>
+                        <br />
+                        <div>
+                            <label for="selectHomeSection4">${LabelHomePageSection4}</label>
+                            <select id="selectHomeSection4" data-mini="true">
+                                <option value="">${OptionAuto}</option>
+                                <option value="latestmedia">${OptionLatestMedia}</option>
+                                <option value="latestchannelmedia">${OptionLatestChannelMedia}</option>
+                                <option value="latesttvrecordings">${OptionLatestTvRecordings}</option>
+                                <option value="librarytiles">${OptionMyMedia}</option>
+                                <option value="smalllibrarytiles">${OptionMyMediaSmall}</option>
+                                <option value="librarybuttons">${OptionMyMediaButtons}</option>
+                                <option value="resume">${OptionResumablemedia}</option>
+                                <option value="none">${OptionNone}</option>
+                            </select>
+                        </div>
+                        <br />
+                        <div>
+                            <label for="chkEnableLibraryTileNames">${LabelShowLibraryTileNames}</label>
+                            <input type="checkbox" id="chkEnableLibraryTileNames" data-mini="true">
+                            <div class="fieldDescription">${LabelShowLibraryTileNamesHelp}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detailSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderMyViews}<span style="color:#52B54B;margin-left:.5em;">*</span>
+                    </div>
+                    <div class="detailSectionContent">
+                        <div>
+                            <p>${LabelSelectFolderGroups}</p>
+                            <div class="folderGroupList"></div>
+                            <div class="fieldDescription">${LabelSelectFolderGroupsHelp}</div>
+                        </div>
+                        <br />
+
+                        <div>
+                            <div data-role="controlgroup">
+                                <label for="chkDisplayCollectionView">${LabelDisplayCollectionsView}</label>
+                                <input id="chkDisplayCollectionView" type="checkbox" />
+                            </div>
+                            <div class="fieldDescription">${LabelDisplayCollectionsViewHelp}</div>
+                        </div>
+
+                        <br />
+                        <div data-role="controlgroup">
+                            <label for="chkDisplayFolderView">${LabelDisplayFoldersView}</label>
+                            <input id="chkDisplayFolderView" type="checkbox" />
+                        </div>
+
+                        <br />
+                        <div data-role="collapsible">
+                            <h2>${HeaderChannels}</h2>
+                            <div>
+                                <p>${LabelGroupChannelsIntoViews}</p>
+                                <div class="channelGroupList"></div>
+                                <div class="fieldDescription">${LabelGroupChannelsIntoViewsHelp}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detailSection viewStylesSection" style="display:none;">
+                    <div class="detailSectionHeader">
+                        ${HeaderViewStyles}<span style="color:#52B54B;margin-left:.5em;">*</span>
+                    </div>
+                    <div class="detailSectionContent">
+                        <p>${LabelSelectViewStyles}</p>
+                        <div class="viewStylesList">
+
+                        </div>
+                        <div class="fieldDescription">${LabelSelectViewStylesHelp}</div>
+                    </div>
+                </div>
+
+                <div class="detailSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderViewOrder}<span style="color:#52B54B;margin-left:.5em;">*</span>
+                    </div>
+                    <div class="detailSectionContent">
+                        <p>${LabelSelectUserViewOrder}</p>
+                        <div class="viewOrderList">
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="detailSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderLatestItems}<span style="color:#52B54B;margin-left:.5em;">*</span>
+                    </div>
+                    <div class="detailSectionContent">
+                        <p>${LabelSelectLastestItemsFolders}</p>
+                        <div class="latestItemsList">
+
+                        </div>
+
+                        <br />
+                        <div data-role="controlgroup">
+                            <label for="chkHidePlayedFromLatest">${OptionHideWatchedContentFromLatestMedia}</label>
+                            <input id="chkHidePlayedFromLatest" type="checkbox" />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div>
+                    <button type="submit" data-role="none" class="clearButton">
+                        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                    </button>
+
+                    <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                </div>
+                <p>
+                    <span style="color:#52B54B;margin-left:.5em;margin-right:.5em;">*</span><span>${LegendTheseSettingsShared}</span>
+                </p>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

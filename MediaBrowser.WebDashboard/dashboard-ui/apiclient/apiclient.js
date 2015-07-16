@@ -98,6 +98,14 @@
             return deviceId;
         };
 
+        self.appName = function () {
+            return clientName;
+        };
+
+        self.appVersion = function () {
+            return applicationVersion;
+        };
+
         self.clearAuthenticationInfo = function () {
             self.setAuthenticationInfo(null, null);
         };
@@ -138,6 +146,30 @@
             }]);
         }
 
+        self.setRequestHeaders = function (headers) {
+
+            var currentServerInfo = self.serverInfo();
+
+            if (clientName) {
+
+                var auth = 'MediaBrowser Client="' + clientName + '", Device="' + deviceName + '", DeviceId="' + deviceId + '", Version="' + applicationVersion + '"';
+
+                var userId = currentServerInfo.UserId;
+
+                if (userId) {
+                    auth += ', UserId="' + userId + '"';
+                }
+
+                headers.Authorization = auth;
+            }
+
+            var accessToken = currentServerInfo.AccessToken;
+
+            if (accessToken) {
+                headers['X-MediaBrowser-Token'] = accessToken;
+            }
+        };
+
         /**
          * Wraps around jQuery ajax methods to add additional info to the request.
          */
@@ -149,28 +181,8 @@
 
             if (includeAuthorization !== false) {
 
-                var currentServerInfo = self.serverInfo();
-
-                if (clientName) {
-
-                    var auth = 'MediaBrowser Client="' + clientName + '", Device="' + deviceName + '", DeviceId="' + deviceId + '", Version="' + applicationVersion + '"';
-
-                    var userId = currentServerInfo.UserId;
-
-                    if (userId) {
-                        auth += ', UserId="' + userId + '"';
-                    }
-
-                    request.headers = {
-                        Authorization: auth
-                    };
-                }
-
-                var accessToken = currentServerInfo.AccessToken;
-
-                if (accessToken) {
-                    request.headers['X-MediaBrowser-Token'] = accessToken;
-                }
+                request.headers = request.headers || {};
+                self.setRequestHeaders(request.headers);
             }
 
             if (self.enableAutomaticNetworking === false || request.type != "GET") {
@@ -216,7 +228,7 @@
 
             logger.log("Attempting reconnection to " + url);
 
-            var timeout = connectionMode == MediaBrowser.ConnectionMode.Local ? 5000 : 15000;
+            var timeout = connectionMode == MediaBrowser.ConnectionMode.Local ? 7000 : 15000;
 
             HttpClient.send({
 
@@ -228,7 +240,7 @@
 
             }).done(function () {
 
-                logger.log("Reconnect succeeeded to " + url);
+                logger.log("Reconnect succeeded to " + url);
 
                 self.serverInfo().LastConnectionMode = connectionMode;
                 self.serverAddress(url);
@@ -262,25 +274,11 @@
             return deferred.promise();
         }
 
-        function replaceServerAddress(url, oldBaseUrl, newBaseUrl) {
-
-            return url.replace(oldBaseUrl, newBaseUrl);
-        }
-
-        self.ajaxWithFailover = function (request, deferred, enableReconnection, replaceUrl) {
-
-            if (replaceUrl) {
-
-                var currentServerInfo = self.serverInfo();
-
-                var baseUrl = MediaBrowser.ServerInfo.getServerAddress(currentServerInfo, currentServerInfo.LastConnectionMode);
-
-                request.url = replaceServerAddress(request.url, baseUrl);
-            }
+        self.ajaxWithFailover = function (request, deferred, enableReconnection) {
 
             logger.log("Requesting " + request.url);
 
-            request.timeout = 15000;
+            request.timeout = 30000;
 
             HttpClient.send(request).done(function (response) {
 
@@ -295,10 +293,17 @@
 
                 // http://api.jquery.com/jQuery.ajax/
                 if (enableReconnection && !isUserErrorCode) {
+
+                    logger.log("Attempting reconnection");
+
+                    var previousServerAddress = self.serverAddress();
+
                     tryReconnect().done(function () {
 
                         logger.log("Reconnect succeesed");
-                        self.ajaxWithFailover(request, deferred, false, true);
+                        request.url = request.url.replace(previousServerAddress, self.serverAddress());
+
+                        self.ajaxWithFailover(request, deferred, false);
 
                     }).fail(function () {
 
@@ -308,6 +313,8 @@
 
                     });
                 } else {
+
+                    logger.log("Reporting request failure");
 
                     onRetryRequestFail(request);
                     deferred.reject();
@@ -487,20 +494,76 @@
             });
         };
 
+        self.getDownloadSpeed = function (byteSize) {
+
+            var url = self.getUrl('Playback/BitrateTest', {
+
+                Size: byteSize
+            });
+
+            var now = new Date().getTime();
+
+            var deferred = DeferredBuilder.Deferred();
+
+            self.get(url).done(function () {
+
+                var responseTime = new Date().getTime() - now;
+                var bytesPerSecond = byteSize / responseTime;
+                bytesPerSecond *= 1000;
+
+                deferred.resolveWith(null, [bytesPerSecond]);
+
+            }).fail(function () {
+
+                deferred.reject();
+            });
+
+            return deferred.promise();
+        };
+
+        self.detectBitrate = function () {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            // First try a small amount so that we don't hang up their mobile connection
+            self.getDownloadSpeed(1000000).done(function (bitrate) {
+
+                if (bitrate < 3000000) {
+                    deferred.resolveWith(null, [Math.round(bitrate * .8)]);
+                } else {
+
+                    // If that produced a fairly high speed, try again with a larger size to get a more accurate result
+                    self.getDownloadSpeed(3000000).done(function (bitrate) {
+
+                        deferred.resolveWith(null, [Math.round(bitrate * .8)]);
+
+                    }).fail(function () {
+
+                        deferred.reject();
+                    });
+                }
+
+            }).fail(function () {
+
+                deferred.reject();
+            });
+
+            return deferred.promise();
+        };
+
         /**
          * Gets an item from the server
          * Omit itemId to get the root folder.
          */
         self.getItem = function (userId, itemId) {
 
-            if (!userId) {
-                throw new Error("null userId");
-            }
             if (!itemId) {
                 throw new Error("null itemId");
             }
 
-            var url = self.getUrl("Users/" + userId + "/Items/" + itemId);
+            var url = userId ?
+                self.getUrl("Users/" + userId + "/Items/" + itemId) :
+                self.getUrl("Items/" + itemId);
 
             return self.ajax({
                 type: "GET",

@@ -2,29 +2,45 @@
 
     var pageSizeKey = 'people';
 
-    var view = LibraryBrowser.getDefaultItemsView('PosterCard', 'PosterCard');
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
-    // The base query options
-    var query = {
+    var data = {};
 
-        SortBy: "SortName",
-        SortOrder: "Ascending",
-        Recursive: true,
-        Fields: "PrimaryImageAspectRatio,SortName,DateCreated,SyncInfo,ItemCounts",
-        StartIndex: 0,
-        ImageTypeLimit: 1,
-        EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
-    };
+    function getQuery() {
+
+        var key = getSavedQueryKey();
+        var pageData = data[key];
+
+        if (!pageData) {
+            pageData = data[key] = {
+                query: {
+                    SortBy: "SortName",
+                    SortOrder: "Ascending",
+                    Recursive: true,
+                    Fields: "PrimaryImageAspectRatio,SortName,DateCreated,SyncInfo,ItemCounts",
+                    StartIndex: 0,
+                    ImageTypeLimit: 1,
+                    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+                    Limit: LibraryBrowser.getDefaultPageSize()
+                }
+            };
+
+            pageData.query.ParentId = LibraryMenu.getTopParentId();
+            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+        }
+        return pageData.query;
+    }
 
     function getSavedQueryKey() {
 
-        return 'musicartists' + (query.ParentId || '');
+        return getWindowUrl();
     }
 
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
+        var query = getQuery();
         ApiClient.getArtists(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
@@ -63,8 +79,9 @@
                     context: 'music',
                     showTitle: true,
                     coverImage: true,
+                    lazy: true,
                     centerText: true,
-                    lazy: true
+                    overlayPlayButton: true
                 });
             }
             else if (view == "PosterCard") {
@@ -100,13 +117,14 @@
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
-
+            LibraryBrowser.setLastRefreshed(page);
             Dashboard.hideLoadingMsg();
         });
     }
 
     function updateFilterControls(page) {
 
+        var query = getQuery();
         $('.chkStandardFilter', page).each(function () {
 
             var filters = "," + (query.Filters || "");
@@ -125,6 +143,7 @@
     var filtersLoaded;
     function reloadFiltersIfNeeded(page) {
 
+        var query = getQuery();
         if (!filtersLoaded) {
 
             filtersLoaded = true;
@@ -147,6 +166,7 @@
 
         $('.chkStandardFilter', this).on('change', function () {
 
+            var query = getQuery();
             var filterName = this.getAttribute('data-filter');
             var filters = query.Filters || "";
 
@@ -164,6 +184,7 @@
 
         $('.alphabetPicker', this).on('alphaselect', function (e, character) {
 
+            var query = getQuery();
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
@@ -171,6 +192,7 @@
 
         }).on('alphaclear', function (e) {
 
+            var query = getQuery();
             query.NameStartsWithOrGreater = '';
 
             reloadItems(page);
@@ -186,6 +208,7 @@
         });
 
         $('#selectPageSize', page).on('change', function () {
+            var query = getQuery();
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
             reloadItems(page);
@@ -195,29 +218,20 @@
 
         var page = this;
 
-        query.ParentId = LibraryMenu.getTopParentId();
+        var query = getQuery();
 
-        var limit = LibraryBrowser.getDefaultPageSize(pageSizeKey, 100);
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
-        }
-
-        var viewkey = getSavedQueryKey();
-
-        LibraryBrowser.loadSavedQueryValues(viewkey, query);
         QueryFilters.onPageShow(page, query);
 
-        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
+        if (LibraryBrowser.needsRefresh(page)) {
+            LibraryBrowser.getSavedViewSetting(getSavedQueryKey()).done(function (val) {
 
-            if (val) {
-                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
-            } else {
-                reloadItems(page);
-            }
-        });
+                if (val) {
+                    $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+                } else {
+                    reloadItems(page);
+                }
+            });
+        }
 
         updateFilterControls(this);
     });

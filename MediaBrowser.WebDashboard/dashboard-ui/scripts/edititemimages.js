@@ -8,15 +8,6 @@
     var browsableImageType = 'Primary';
     var selectedProvider;
 
-    function updateTabs(page, item) {
-
-        var query = MetadataEditor.getEditQueryString(item);
-
-        $('#btnEditMetadata', page).attr('href', 'edititemmetadata.html?' + query);
-        $('#btnEditSubtitles', page).attr('href', 'edititemsubtitles.html?' + query);
-        $('#btnEditCollectionTitles', page).attr('href', 'editcollectionitems.html?' + query);
-    }
-
     function getBaseRemoteOptions() {
 
         var options = {};
@@ -245,20 +236,6 @@
 
             LibraryBrowser.renderName(item, $('.itemName', page), true);
 
-            updateTabs(page, item);
-
-            if (item.Type == "BoxSet") {
-                $('#btnEditCollectionTitles', page).show();
-            } else {
-                $('#btnEditCollectionTitles', page).hide();
-            }
-
-            if (item.MediaType == "Video" && item.LocationType == "FileSystem" && item.Type !== 'TvChannel') {
-                $('#btnEditSubtitles', page).show();
-            } else {
-                $('#btnEditSubtitles', page).hide();
-            }
-
             ApiClient.getRemoteImageProviders(getBaseRemoteOptions()).done(function (providers) {
 
                 if (providers.length) {
@@ -288,13 +265,15 @@
 
             html += '<div class="editorTile imageEditorTile">';
 
-            html += '<div style="height:144px;vertical-align:top;background-repeat:no-repeat;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { height: 144 }) + '\');"></div>';
-
-            html += '<div>';
-
             if (image.ImageType !== "Backdrop" && image.ImageType !== "Screenshot") {
-                html += '<p>' + image.ImageType + '</p>';
+                html += '<h3>' + image.ImageType + '</h3>';
             }
+
+            var height = 150;
+
+            html += '<div style="height:' + height + 'px;vertical-align:top;background-repeat:no-repeat;background-position:center center;background-size:contain;background-image:url(\'' + LibraryBrowser.getImageUrl(currentItem, image.ImageType, image.ImageIndex, { height: height }) + '\');"></div>';
+
+            html += '<div class="editorTileInner">';
 
             html += '<p>' + image.Width + ' X ' + image.Height + '</p>';
 
@@ -303,23 +282,23 @@
             if (image.ImageType == "Backdrop" || image.ImageType == "Screenshot") {
 
                 if (i > 0) {
-                    html += '<button type="button" data-icon="arrow-l" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i - 1) + ');" style="margin-bottom:0;">' + Globalize.translate('ButtonMoveLeft') + '</button>';
+                    html += '<paper-icon-button icon="chevron-left" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i - 1) + ');" title="' + Globalize.translate('ButtonMoveLeft') + '"></paper-icon-button>';
                 } else {
-                    html += '<button type="button" data-icon="arrow-l" data-mini="true" data-inline="true" data-iconpos="notext" style="margin-bottom:0;" disabled>' + Globalize.translate('ButtonMoveLeft') + '</button>';
+                    html += '<paper-icon-button icon="chevron-left" disabled title="' + Globalize.translate('ButtonMoveLeft') + '"></paper-icon-button>';
                 }
 
                 if (i < length - 1) {
-                    html += '<button type="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i + 1) + ');" style="margin-bottom:0;">' + Globalize.translate('ButtonMoveRight') + '</button>';
+                    html += '<paper-icon-button icon="chevron-right" onclick="EditItemImagesPage.moveImage(\'' + image.ImageType + '\', ' + image.ImageIndex + ', ' + (i + 1) + ');" title="' + Globalize.translate('ButtonMoveRight') + '"></paper-icon-button>';
                 } else {
-                    html += '<button type="button" data-icon="arrow-r" data-mini="true" data-inline="true" data-iconpos="notext" style="margin-bottom:0;" disabled>' + Globalize.translate('ButtonMoveRight') + '</button>';
+                    html += '<paper-icon-button icon="chevron-right" disabled title="' + Globalize.translate('ButtonMoveRight') + '"></paper-icon-button>';
                 }
             }
 
-            html += '<button type="button" data-icon="delete" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');" style="margin-bottom:0;">' + Globalize.translate('Delete') + '</button>';
-
             if (imageProviders.length) {
-                html += '<button type="button" data-icon="cloud" data-mini="true" data-inline="true" data-iconpos="notext" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');" style="margin-bottom:0;">' + Globalize.translate('ButtonBrowseOnlineImages') + '</button>';
+                html += '<paper-icon-button icon="cloud" onclick="EditItemImagesPage.showDownloadMenu(\'' + image.ImageType + '\');" title="' + Globalize.translate('ButtonBrowseOnlineImages') + '"></paper-icon-button>';
             }
+
+            html += '<paper-icon-button icon="delete" onclick="EditItemImagesPage.deleteImage(\'' + image.ImageType + '\', ' + (image.ImageIndex != null ? image.ImageIndex : "null") + ');" title="' + Globalize.translate('Delete') + '"></paper-icon-button>';
 
             html += '</p>';
 
@@ -508,39 +487,19 @@
             browsableImageStartIndex = 0;
             browsableImageType = type;
 
-            $('.lnkBrowseImages').trigger('click');
+            var page = $.mobile.activePage;
+
+            selectedProvider = null;
+            $('.popupDownload', page).popup('open');
+            reloadBrowsableImages(page);
         };
     }
 
     window.EditItemImagesPage = new editItemImages();
 
-    $(document).on('pageinitdepends', "#editItemImagesPage", function () {
+    $(document).on('pageinitdepends', "#editItemMetadataPage", function () {
 
         var page = this;
-
-        $('.libraryTree', page).on('itemclicked', function (event, data) {
-
-            if (data.id != currentItem.Id) {
-
-                MetadataEditor.currentItemId = data.id;
-                MetadataEditor.currentItemType = data.itemType;
-                //Dashboard.navigate('edititemmetadata.html?id=' + data.id);
-
-                //$.mobile.urlHistory.ignoreNextHashChange = true;
-                window.location.hash = 'editItemImagesPage?id=' + data.id;
-
-                reload(page);
-            }
-        });
-
-        $('.lnkBrowseImages', page).on('click', function () {
-
-            selectedProvider = null;
-
-            $('.popupDownload', page).popup('open');
-
-            reloadBrowsableImages(page);
-        });
 
         $('#selectBrowsableImageType', page).on('change', function () {
 
@@ -568,12 +527,18 @@
 
         $('.uploadItemImageForm').off('submit', onSubmit).on('submit', onSubmit);
 
+        $('.btnOpenUploadMenu', page).on('click', function() {
 
-    }).on('pageshowready', "#editItemImagesPage", function () {
+            $('#popupUpload', page).popup('open');
+        });
 
-        var page = this;
+        $('.btnBrowseAllImages', page).on('click', function () {
 
-        reload(page);
+            selectedProvider = null;
+            browsableImageType = 'Primary';
+            $('.popupDownload', page).popup('open');
+            reloadBrowsableImages(page);
+        });
 
         $('#uploadImage', page).on("change", function () {
             setFiles(page, this.files);
@@ -596,15 +561,14 @@
             return false;
         });
 
-    }).on('pagebeforehide', "#editItemImagesPage", function () {
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
 
-        var page = this;
+            if (parseInt(this.selected) == 3) {
+                var tabContent = page.querySelector('.imageEditorTab');
 
-        currentItem = null;
-
-        $('#uploadImage', page).off("change");
-
-        $("#imageDropZone", page).off('dragover').off('drop');
+                reload(tabContent);
+            }
+        });
     });
 
 })(jQuery, document, window, window.FileReader, escape);

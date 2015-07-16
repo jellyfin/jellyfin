@@ -8,10 +8,10 @@
     <div id="languagePreferencesPage" data-role="page" class="page libraryPage userPreferencesPage" data-contextname="${HeaderSettings}" data-require="scripts/mypreferenceslanguages,scripts/mypreferencescommon,paperbuttonstyle,jqmicons">
 
         <div class="libraryViewNav">
-            <a href="#" class="lnkDisplayPreferences">${TabDisplay}</a>
+            <a href="#" class="lnkDisplayPreferences">${TabGeneral}</a>
+            <a href="#" class="lnkHomeScreenPreferences">${TabHomeScreen}</a>
             <a href="#" class="ui-btn-active lnkLanguagePreferences">${TabPlayback}</a>
             <a href="#" class="lnkMyProfile">${TabProfile}</a>
-            <a href="#" class="lnkWebClientPreferences">${TabAppSettings}</a>
         </div>
         <div data-role="content">
 
@@ -21,7 +21,7 @@
 
                 <div class="detailSection">
                     <div class="detailSectionHeader">
-                        ${HeaderLanguagePreferences}
+                        ${HeaderLanguagePreferences}<span style="color:#52B54B;margin-left:.5em;">*</span>
                     </div>
                     <div class="detailSectionContent">
                         <br />
@@ -58,7 +58,7 @@
                 </div>
                 <div class="detailSection cinemaModeOptions" style="display:none;">
                     <div class="detailSectionHeader">
-                        ${HeaderCinemaMode}
+                        ${HeaderCinemaMode}<span style="color:#52B54B;margin-left:.5em;">*</span>
                     </div>
                     <div class="detailSectionContent">
                         <br />
@@ -72,6 +72,87 @@
 
                 </div>
 
+                <div class="detailSection">
+                    <div class="detailSectionHeader">
+                        ${HeaderAdvanced}
+                    </div>
+                    <div class="detailSectionContent">
+                        <br />
+                        <div>
+                            <label for="selectMaxBitrate">${LabelMaxStreamingBitrate}</label>
+                            <select id="selectMaxBitrate" data-mini="true">
+                                <option value="30000000">30Mbps</option>
+                                <option value="25000000">25Mbps</option>
+                                <option value="20000000">20Mbps</option>
+                                <option value="15000000">15Mbps</option>
+                                <option value="10000000">10Mbps</option>
+                                <option value="8000000">8Mbps</option>
+                                <option value="6000000">6Mbps</option>
+                                <option value="5000000">5Mbps</option>
+                                <option value="4000000">4Mbps</option>
+                                <option value="3000000">3Mbps</option>
+                                <option value="2500000">2.5Mbps</option>
+                                <option value="2000000">2Mbps</option>
+                                <option value="1500000">1.5Mbps</option>
+                                <option value="1000000">1Mbps</option>
+                                <option value="720000">720kbps</option>
+                                <option value="420000">420kbps</option>
+                                <option value="400000">400kbps</option>
+                                <option value="320000">320kbps</option>
+                                <option value="192000">192kbps</option>
+                            </select>
+                        </div>
+                        <br />
+                        <div>
+                            <label for="selectMaxChromecastBitrate">${LabelMaxChromecastBitrate}</label>
+                            <select id="selectMaxChromecastBitrate" data-mini="true">
+                                <option value="30000000">30Mbps</option>
+                                <option value="25000000">25Mbps</option>
+                                <option value="20000000">20Mbps</option>
+                                <option value="15000000">15Mbps</option>
+                                <option value="12000000">12Mbps</option>
+                                <option value="11000000">11Mbps</option>
+                                <option value="10000000">10Mbps</option>
+                                <option value="9000000">9Mbps</option>
+                                <option value="8000000">8Mbps</option>
+                                <option value="7000000">7Mbps</option>
+                                <option value="6000000">6Mbps</option>
+                                <option value="5000000">5Mbps</option>
+                                <option value="4000000">4Mbps</option>
+                                <option value="3000000">3Mbps</option>
+                                <option value="2500000">2.5Mbps</option>
+                                <option value="2000000">2Mbps</option>
+                                <option value="1500000">1.5Mbps</option>
+                                <option value="1000000">1Mbps</option>
+                                <option value="720000">720kbps</option>
+                                <option value="420000">420kbps</option>
+                                <option value="400000">400kbps</option>
+                                <option value="320000">320kbps</option>
+                                <option value="192000">192kbps</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <br />
+                            <div>
+                                <label for="chkEnableChromecastAc3">${LabelEnableChromecastAc3Passthrough}</label>
+                                <input type="checkbox" id="chkEnableChromecastAc3" data-mini="true" />
+                            </div>
+                        </div>
+
+                        <br />
+                        <div>
+                            <fieldset data-role="controlgroup">
+                                <legend>${LabelExternalPlayers}</legend>
+                                <input type="checkbox" id="chkExternalVideoPlayer" />
+                                <label for="chkExternalVideoPlayer">${OptionEnableExternalVideoPlayers}</label>
+                            </fieldset>
+                            <div style="padding: 0 2px;display:none;" class="labelGenericExternalPlayers">${LabelExternalPlayersHelp}</div>
+                            <div style="padding: 0 2px;display:none;" class="labelNativeExternalPlayers">${LabelNativeExternalPlayersHelp}</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div>
                     <button type="submit" data-role="none" class="clearButton">
                         <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
@@ -79,6 +160,9 @@
 
                     <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                 </div>
+                <p>
+                    <span style="color:#52B54B;margin-left:.5em;margin-right:.5em;">*</span><span>${LegendTheseSettingsShared}</span>
+                </p>
             </form>
         </div>
     </div>

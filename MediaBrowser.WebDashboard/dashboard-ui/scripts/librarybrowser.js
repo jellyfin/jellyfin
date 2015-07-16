@@ -86,20 +86,26 @@
             }
 
             if (NavHelper.isBack()) {
+                Logger.log('Not refreshing data because IsBack=true');
                 return false;
             }
 
             var now = new Date().getTime();
-            var cacheDuration = 300000;
-            if (!AppInfo.isNativeApp && ($.browser.ipad || $.browser.iphone || $.browser.android)) {
+            var cacheDuration;
+
+            if (AppInfo.isNativeApp) {
+                cacheDuration = 600000;
+            }
+            else if ($.browser.ipad || $.browser.iphone || $.browser.android) {
                 cacheDuration = 10000;
             }
 
-            else if (!$.browser.mobile) {
+            else {
                 cacheDuration = 60000;
             }
 
             if ((now - last) < cacheDuration) {
+                Logger.log('Not refreshing data due to age');
                 return false;
             }
 
@@ -110,6 +116,167 @@
 
             elem.setAttribute('data-lastrefresh', new Date().getTime());
             elem.classList.add('hasrefreshtime');
+        },
+
+        configureSwipeTabs: function (ownerpage, tabs, pages) {
+
+            if (!$.browser.safari) {
+                // Safari doesn't handle the horizontal swiping very well
+                pages.entryAnimation = 'slide-from-right-animation';
+                pages.exitAnimation = 'slide-left-animation';
+            }
+
+            var pageCount = pages.querySelectorAll('neon-animatable').length;
+
+            function allowSwipeOn(elem) {
+
+                if (elem.tagName == 'PAPER-SLIDER') {
+                    return false;
+                }
+
+                if (elem.classList) {
+                    return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX');
+                }
+
+                return true;
+            }
+
+            function allowSwipe(e) {
+
+                var target = e.target;
+
+                var parent = target.parentNode;
+                while (parent != null) {
+                    if (!allowSwipeOn(parent)) {
+                        return false;
+                    }
+                    parent = parent.parentNode;
+                }
+
+                return true;
+            }
+
+            $(ownerpage).on('swipeleft', function (e) {
+
+                if (allowSwipe(e)) {
+                    var selected = parseInt(pages.selected || '0');
+                    if (selected < (pageCount - 1)) {
+                        pages.entryAnimation = 'slide-from-right-animation';
+                        pages.exitAnimation = 'slide-left-animation';
+                        tabs.selectNext();
+                    }
+                }
+            });
+
+            $(ownerpage).on('swiperight', function (e) {
+
+                if (allowSwipe(e)) {
+                    var selected = parseInt(pages.selected || '0');
+                    if (selected > 0) {
+                        pages.entryAnimation = 'slide-from-left-animation';
+                        pages.exitAnimation = 'slide-right-animation';
+                        tabs.selectPrevious();
+                    }
+                }
+            });
+        },
+
+        enableFullPaperTabs: function () {
+            return AppInfo.isNativeApp;
+        },
+
+        navigateOnLibraryTabSelect: function () {
+            return !LibraryBrowser.enableFullPaperTabs();
+        },
+
+        configurePaperLibraryTabs: function (ownerpage, tabs, pages) {
+
+            tabs.hideScrollButtons = true;
+
+            if (AppInfo.enableBottomTabs) {
+                tabs.alignBottom = true;
+                tabs.classList.add('bottomTabs');
+            }
+            tabs.noink = true;
+
+            if (LibraryBrowser.enableFullPaperTabs()) {
+
+                $(tabs).show();
+
+                if ($.browser.safari) {
+
+                    // Not very iOS-like I suppose
+                    tabs.noSlide = true;
+                    tabs.noink = true;
+                    tabs.noBar = true;
+                }
+                else {
+                    LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pages);
+                }
+
+                $('.libraryViewNav', ownerpage).addClass('paperLibraryViewNav').removeClass('libraryViewNavWithMinHeight');
+
+            } else {
+
+                tabs.noSlide = true;
+                tabs.noink = true;
+                tabs.noBar = true;
+                tabs.scrollable = true;
+
+                var legacyTabs = $('.legacyTabs', ownerpage).show();
+                document.body.classList.add('basicPaperLibraryTabs');
+
+                $(pages).on('iron-select', function (e) {
+
+                    var selected = this.selected;
+                    $('a', legacyTabs).removeClass('ui-btn-active')[selected].classList.add('ui-btn-active');
+                });
+
+                $('.libraryViewNav', ownerpage).removeClass('libraryViewNavWithMinHeight');
+            }
+
+            $(ownerpage).on('pagebeforeshowready', LibraryBrowser.onTabbedPageBeforeShowReady);
+
+            $(pages).on('iron-select', function () {
+
+                // When transition animations are used, add a content loading delay to allow the animations to finish
+                // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
+                var delay = LibraryBrowser.enableFullPaperTabs() ? 500 : 0;
+                var pgs = this;
+                setTimeout(function () {
+                    $(pgs).trigger('tabchange');
+                }, delay);
+            });
+        },
+
+        onTabbedPageBeforeShowReady: function () {
+            var page = this;
+
+            var tabs = page.querySelector('paper-tabs');
+            var selected = tabs.selected;
+
+            if (selected == null) {
+
+                Logger.log('selected tab is null, checking query string');
+
+                selected = parseInt(getParameterByName('tab') || '0');
+
+                Logger.log('selected tab will be ' + selected);
+
+                tabs.selected = selected;
+
+                if (!LibraryBrowser.enableFullPaperTabs()) {
+                    page.querySelector('neon-animated-pages').selected = selected;
+                }
+
+            } else {
+                Events.trigger(page.querySelector('neon-animated-pages'), 'tabchange');
+            }
+        },
+
+        canShare: function (item, user) {
+
+            return user.Policy.EnablePublicSharing;
         },
 
         getDateParamValue: function (date) {
@@ -971,7 +1138,7 @@
                 html += '</span>';
                 //html += '<button type="button" data-role="none" class="listviewMenuButton imageButton listViewMoreButton" data-icon="none">';
                 //html += '</button>';
-                html += '<paper-icon-button icon="more-vert" class="listviewMenuButton"></paper-icon-button>';
+                html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="listviewMenuButton"></paper-icon-button>';
                 html += '<span class="listViewUserDataButtons">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);
                 html += '</span>';
@@ -997,9 +1164,16 @@
 
             atts.push('data-itemid="' + item.Id + '"');
             atts.push('data-commands="' + itemCommands.join(',') + '"');
-            atts.push('data-context="' + (options.context || '') + '"');
+
+            if (options.context) {
+                atts.push('data-context="' + (options.context || '') + '"');
+            }
+
             atts.push('data-itemtype="' + item.Type + '"');
-            atts.push('data-mediatype="' + (item.MediaType || '') + '"');
+
+            if (item.MediaType) {
+                atts.push('data-mediatype="' + (item.MediaType || '') + '"');
+            }
 
             if (item.UserData.PlaybackPositionTicks) {
                 atts.push('data-positionticks="' + (item.UserData.PlaybackPositionTicks || 0) + '"');
@@ -1262,26 +1436,7 @@
 
                 primaryImageAspectRatio = LibraryBrowser.getAveragePrimaryImageAspectRatio([item]);
 
-                if (options.showPremiereDateIndex) {
-
-                    if (item.PremiereDate) {
-                        try {
-
-                            dateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.PremiereDate, { toLocal: true }), true);
-
-                        } catch (err) {
-                        }
-                    }
-
-                    var newIndexValue = dateText || Globalize.translate('HeaderUnknownDate');
-
-                    if (newIndexValue != currentIndexValue) {
-
-                        html += '<h2 class="timelineHeader detailSectionHeader" style="text-align:center;">' + newIndexValue + '</h2>';
-                        currentIndexValue = newIndexValue;
-                    }
-                }
-                else if (options.showStartDateIndex) {
+                if (options.showStartDateIndex) {
 
                     if (item.StartDate) {
                         try {
@@ -1525,7 +1680,10 @@
 
             var mediaSourceCount = item.MediaSourceCount || 1;
 
-            var href = options.linkItem === false ? '#' : LibraryBrowser.getHref(item, options.context);
+            var href = options.linkItem === false ? '#' :
+                (options.useSecondaryItemsPage && item.IsFolder) ?
+                    ('secondaryitems.html?parentid=' + item.Id) :
+                    LibraryBrowser.getHref(item, options.context);
 
             if (item.UserData) {
                 cssClass += ' ' + LibraryBrowser.getUserDataCssClass(item.UserData.Key);
@@ -1649,6 +1807,13 @@
             // cardContent
             html += '</a>';
 
+            if (options.overlayPlayButton) {
+                html += '<paper-icon-button icon="play-arrow" class="cardOverlayPlayButton" onclick="return false;"></paper-icon-button>';
+            }
+            if (options.overlayMoreButton) {
+                html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="cardOverlayMoreButton" onclick="return false;"></paper-icon-button>';
+            }
+
             // cardScalable
             html += '</div>';
 
@@ -1673,7 +1838,7 @@
 
             if (options.cardLayout) {
                 html += '<div class="cardButtonContainer">';
-                html += '<paper-icon-button icon="more-vert" class="listviewMenuButton btnCardOptions"></paper-icon-button>';
+                html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="listviewMenuButton btnCardOptions"></paper-icon-button>';
                 html += "</div>";
             }
 
@@ -2207,16 +2372,18 @@
 
             html += '<div class="listPaging">';
 
-            html += '<span style="margin-right: 10px;vertical-align:middle;">';
+            if (showControls) {
+                html += '<span style="vertical-align:middle;">';
 
-            var startAtDisplay = totalRecordCount ? startIndex + 1 : 0;
-            html += startAtDisplay + '-' + recordsEnd + ' of ' + totalRecordCount;
+                var startAtDisplay = totalRecordCount ? startIndex + 1 : 0;
+                html += startAtDisplay + '-' + recordsEnd + ' of ' + totalRecordCount;
 
-            html += '</span>';
+                html += '</span>';
+            }
 
             if (showControls || options.viewButton || options.addSelectionButton || options.additionalButtonsHtml) {
 
-                html += '<div data-role="controlgroup" data-type="horizontal" style="display:inline-block;">';
+                html += '<div style="display:inline-block;margin-left:10px;">';
 
                 if (showControls) {
 
@@ -2233,7 +2400,7 @@
                 if (options.viewButton) {
 
                     //html += '<paper-button raised class="subdued notext"><iron-icon icon="view-comfy"></iron-icon></paper-button>';
-                    html += '<paper-button raised class="subdued notext" onclick="require([\'jqmicons\']);jQuery(\'.viewPanel\', jQuery(this).parents(\'.page\')).panel(\'toggle\');"><iron-icon icon="more-vert"></iron-icon></paper-button>';
+                    html += '<paper-button raised class="subdued notext" onclick="require([\'jqmicons\']);jQuery(\'.viewPanel\', jQuery(this).parents(\'.page\')).panel(\'toggle\');"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></paper-button>';
                 }
 
                 html += '</div>';
@@ -2325,9 +2492,6 @@
         getUserDataButtonHtml: function (method, itemId, btnCssClass, icon, tooltip) {
 
             return '<paper-icon-button data-itemid="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></paper-icon-button>';
-            btnCssClass += " imageButton";
-
-            return '<button data-itemid="' + itemId + '" class="' + btnCssClass + '" type="button" onclick="LibraryBrowser.' + method + '(this);return false;" title="' + tooltip + '" data-role="none"><i class="fa ' + icon + '"></i></button>';
 
         },
 
@@ -2343,7 +2507,7 @@
             if (includePlayed !== false) {
                 var tooltipPlayed = Globalize.translate('TooltipPlayed');
 
-                if ((item.MediaType || item.IsFolder) && type != "TvChannel" && type != "MusicArtist" && item.MediaType != "Audio") {
+                if (item.MediaType == 'Video' || item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.Type == 'Playlist') {
                     if (userData.Played) {
                         html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRatingOn', 'check', tooltipPlayed);
                     } else {
@@ -2684,7 +2848,7 @@
                 html += "</a>";
             }
 
-            var progressHtml = item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
+            var progressHtml = item.IsFolder || !item.UserData ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
 
             if (progressHtml) {
                 html += '<div class="detailImageProgressContainer">';
@@ -2910,25 +3074,28 @@
             return miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;');
         },
 
-        renderOverview: function (elem, item) {
+        renderOverview: function (elems, item) {
 
-            var overview = item.Overview || '';
+            $(elems).each(function () {
+                var elem = this;
+                var overview = item.Overview || '';
 
-            elem.innerHTML = overview;
+                elem.innerHTML = overview;
 
-            $('a', elem).each(function () {
-                this.setAttribute("target", "_blank");
+                $('a', elem).each(function () {
+                    this.setAttribute("target", "_blank");
+                });
+
+                if (overview) {
+                    elem.classList.remove('empty');
+                } else {
+                    elem.classList.add('empty');
+                }
             });
-
-            if (overview) {
-                elem.classList.remove('empty');
-            } else {
-                elem.classList.add('empty');
-            }
 
         },
 
-        renderStudios: function (elem, item, context) {
+        renderStudios: function (elem, item, context, isStatic) {
 
             if (item.Studios && item.Studios.length && item.Type != "Series") {
 
@@ -2940,7 +3107,11 @@
                         html += '&nbsp;&nbsp;/&nbsp;&nbsp;';
                     }
 
-                    html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&id=' + item.Studios[i].Id + '">' + item.Studios[i].Name + '</a>';
+                    if (isStatic) {
+                        html += item.Studios[i].Name;
+                    } else {
+                        html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&id=' + item.Studios[i].Id + '">' + item.Studios[i].Name + '</a>';
+                    }
                 }
 
                 var translationKey = item.Studios.length > 1 ? "ValueStudios" : "ValueStudio";
@@ -2955,7 +3126,7 @@
             }
         },
 
-        renderGenres: function (elem, item, context, limit) {
+        renderGenres: function (elem, item, context, limit, isStatic) {
 
             var html = '';
 
@@ -2977,7 +3148,11 @@
                     param = "gamegenre";
                 }
 
-                html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&' + param + '=' + ApiClient.encodeName(genres[i]) + '">' + genres[i] + '</a>';
+                if (isStatic) {
+                    html += genres[i];
+                } else {
+                    html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&' + param + '=' + ApiClient.encodeName(genres[i]) + '">' + genres[i] + '</a>';
+                }
             }
 
             elem.html(html).trigger('create');

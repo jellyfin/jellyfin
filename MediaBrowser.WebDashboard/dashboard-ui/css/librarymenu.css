@@ -2,9 +2,13 @@
     padding-top: 50px !important;
 }
 
-    .libraryPage:not(.metadataEditorPage):not(.noSecondaryNavPage) {
-        padding-top: 98px !important;
+    .libraryPage:not(.noSecondaryNavPage) {
+        padding-top: 95px !important;
     }
+
+.pageWithAbsoluteTabs:not(.noSecondaryNavPage) {
+    padding-top: 98px !important;
+}
 
 .sidebarDivider {
     height: 1px;
@@ -27,7 +31,11 @@
     display: inline-block;
 }
 
-.viewMenuBar .material-icons, .viewMenuBar .fa, .viewMenuBar paper-icon-button {
+.headerUserButtonRound img {
+    border-radius: 1000px;
+}
+
+.viewMenuBar .fa, .viewMenuBar paper-icon-button {
     color: #fff;
     vertical-align: middle;
 }
@@ -171,7 +179,6 @@
 }
 
 .libraryViewNav {
-    height: 49px;
     overflow: hidden;
     position: fixed;
     right: 0;
@@ -189,29 +196,31 @@
     -webkit-overflow-scrolling: touch;
 }
 
-    .libraryViewNav .material-icons {
-        display: none;
-    }
+.libraryViewNavWithMinHeight {
+    min-height: 48px;
+}
+
+.viewMenuBar, .libraryViewNav {
+    background-color: #111;
+}
+
+.paperLibraryViewNav {
+    background-color: transparent !important;
+}
+
+.libraryViewNav iron-icon {
+    display: none;
+}
 
 .bottomSecondaryNav .libraryViewNav {
     top: initial;
     bottom: 0;
-    border-top: 1px solid #444;
-    height: 51px;
 }
 
-.viewMenuBar {
-    background-color: #111;
+.libraryViewNav::-webkit-scrollbar {
+    height: 0 !important;
+    display: none;
 }
-
-.libraryViewNav {
-    background-color: #111;
-}
-
-    .libraryViewNav::-webkit-scrollbar {
-        height: 0 !important;
-        display: none;
-    }
 
 .viewMenuLink {
     text-decoration: none;
@@ -253,11 +262,6 @@
     background-color: #212121;
 }
 
-.libraryViewNav .ui-btn-active {
-    border-bottom-color: #38c;
-    color: #fff !important;
-}
-
 .libraryViewNav a {
     display: inline-block;
     padding: 14px 13px 11px;
@@ -266,14 +270,29 @@
     margin: 0 0;
     position: relative;
     font-weight: normal;
-    border-bottom: 5px solid transparent;
+    border-bottom: 2px solid transparent;
 }
 
-    .libraryViewNav a:not(.ui-btn-active):hover {
-        color: #2ad !important;
-    }
+.libraryViewNav .ui-btn-active {
+    border-bottom-color: #38c;
+    color: #fff !important;
+}
 
-@media all and (max-width: 500px) {
+.libraryViewNav .iron-selected a {
+    color: inherit !important;
+    text-decoration: none;
+    text-align: center;
+}
+
+.basicPaperLibraryTabs .libraryViewNav paper-tabs {
+    display: none;
+}
+
+.libraryViewNav a:not(.ui-btn-active):hover {
+    color: #2ad;
+}
+
+@media all and (max-width: 440px) {
 
     .libraryMenuButtonText {
         display: none;

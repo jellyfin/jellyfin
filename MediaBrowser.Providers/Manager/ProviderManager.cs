@@ -485,11 +485,10 @@ namespace MediaBrowser.Providers.Manager
             // Give it a dummy path just so that it looks like a file system item
             var dummy = new T()
             {
-                Path = Path.Combine(_appPaths.InternalMetadataPath, "dummy"),
-
-                // Dummy this up to fool the local trailer check
-                Parent = new Folder()
+                Path = Path.Combine(_appPaths.InternalMetadataPath, "dummy")
             };
+
+            dummy.SetParent(new Folder());
 
             var options = GetMetadataOptions(dummy);
 
@@ -727,11 +726,10 @@ namespace MediaBrowser.Providers.Manager
             // Give it a dummy path just so that it looks like a file system item
             var dummy = new TItemType
             {
-                Path = Path.Combine(_appPaths.InternalMetadataPath, "dummy"),
-
-                // Dummy this up to fool the local trailer check
-                Parent = new Folder()
+                Path = Path.Combine(_appPaths.InternalMetadataPath, "dummy")
             };
+
+            dummy.SetParent(new Folder());
 
             var options = GetMetadataOptions(dummy);
 

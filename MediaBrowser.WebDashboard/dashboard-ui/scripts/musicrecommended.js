@@ -41,7 +41,8 @@
                 showTitle: true,
                 showParentTitle: true,
                 lazy: true,
-                cardLayout: true
+                centerText: true,
+                overlayPlayButton: true
 
             });
             ImageLoader.lazyChildren(elem);
@@ -87,7 +88,8 @@
                 showParentTitle: true,
                 defaultAction: 'play',
                 lazy: true,
-                cardLayout: true
+                centerText: true,
+                overlayMoreButton: true
 
             });
             ImageLoader.lazyChildren(itemsContainer);
@@ -131,7 +133,8 @@
                 showParentTitle: true,
                 defaultAction: 'play',
                 lazy: true,
-                cardLayout: true
+                centerText: true,
+                overlayMoreButton: true
 
             });
             ImageLoader.lazyChildren(itemsContainer);
@@ -173,7 +176,8 @@
                 defaultAction: 'play',
                 coverImage: true,
                 showItemCounts: true,
-                cardLayout: true
+                centerText: true,
+                overlayMoreButton: true
 
             });
             ImageLoader.lazyChildren(itemsContainer);

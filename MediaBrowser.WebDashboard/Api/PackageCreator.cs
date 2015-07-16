@@ -68,14 +68,14 @@ namespace MediaBrowser.WebDashboard.Api
                 }
                 else if (IsFormat(path, "js"))
                 {
-                    if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1)
+                    if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
                     {
                         resourceStream = await ModifyJs(resourceStream, enableMinification).ConfigureAwait(false);
                     }
                 }
                 else if (IsFormat(path, "css"))
                 {
-                    if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1)
+                    if (path.IndexOf("thirdparty", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
                     {
                         resourceStream = await ModifyCss(resourceStream, enableMinification).ConfigureAwait(false);
                     }
@@ -123,6 +123,15 @@ namespace MediaBrowser.WebDashboard.Api
             var rootPath = DashboardUIPath;
 
             var fullPath = Path.Combine(rootPath, virtualPath.Replace('/', Path.DirectorySeparatorChar));
+
+            try
+            {
+                fullPath = Path.GetFullPath(fullPath);
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in Path.GetFullPath", ex);
+            }
 
             // Don't allow file system access outside of the source folder
             if (!_fileSystem.ContainsSubPath(rootPath, fullPath))
@@ -260,10 +269,11 @@ namespace MediaBrowser.WebDashboard.Api
 
                         html = _localization.LocalizeDocument(html, localizationCulture, GetLocalizationToken);
 
-                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">")
-                            .Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div main><div class=\"pageContainer\">")
-                            .Replace("</body>", "</div></div></paper-drawer-panel></body>");
+                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">");
                     }
+
+                    html = html.Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div main><div class=\"pageContainer\">")
+                        .Replace("</body>", "</div></div></paper-drawer-panel></body>");
 
                     if (enableMinification)
                     {
@@ -305,7 +315,7 @@ namespace MediaBrowser.WebDashboard.Api
                 // In chrome it is causing the body to be hidden while loading, which leads to width-check methods to return 0 for everything
                 //imports = "";
 
-                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetCommonJavascript(mode, version) + importsHtml);
+                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetInitialJavascript(mode, version) + importsHtml + GetCommonJavascript(mode, version));
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
@@ -375,6 +385,14 @@ namespace MediaBrowser.WebDashboard.Api
 
             sb.Append("<meta name=\"robots\" content=\"noindex, nofollow, noarchive\" />");
 
+            // Open graph tags
+            sb.Append("<meta property=\"og:title\" content=\"Emby\" />");
+            sb.Append("<meta property=\"og:site_name\" content=\"Emby\"/>");
+            sb.Append("<meta property=\"og:url\" content=\"http://emby.media\" />");
+            sb.Append("<meta property=\"og:description\" content=\"Energize your media.\" />");
+            sb.Append("<meta property=\"og:type\" content=\"article\" />");
+            sb.Append("<meta property=\"fb:app_id\" content=\"1618309211750238\" />");
+
             // http://developer.apple.com/library/ios/#DOCUMENTATION/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
             sb.Append("<link rel=\"apple-touch-icon\" href=\"css/images/touchicon.png\" />");
             sb.Append("<link rel=\"apple-touch-icon\" sizes=\"72x72\" href=\"css/images/touchicon72.png\" />");
@@ -406,6 +424,30 @@ namespace MediaBrowser.WebDashboard.Api
             var tags = files.Select(s => string.Format("<link rel=\"stylesheet\" href=\"{0}\" />", s)).ToArray();
 
             return string.Join(string.Empty, tags);
+        }
+
+        /// <summary>
+        /// Gets the common javascript.
+        /// </summary>
+        /// <param name="mode">The mode.</param>
+        /// <param name="version">The version.</param>
+        /// <returns>System.String.</returns>
+        private string GetInitialJavascript(string mode, Version version)
+        {
+            var builder = new StringBuilder();
+
+            var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + version : string.Empty;
+
+            var files = new List<string>
+            {
+                "bower_components/webcomponentsjs/webcomponents-lite.js" + versionString
+            };
+
+            var tags = files.Select(s => string.Format("<script src=\"{0}\"></script>", s)).ToArray();
+
+            builder.Append(string.Join(string.Empty, tags));
+
+            return builder.ToString();
         }
 
         /// <summary>
@@ -446,14 +488,13 @@ namespace MediaBrowser.WebDashboard.Api
             var memoryStream = new MemoryStream();
             var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
 
-            await AppendResource(memoryStream, "bower_components/webcomponentsjs/webcomponents-lite.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "bower_components/jquery/dist/jquery.min.js", newLineBytes).ConfigureAwait(false);
 
-            await AppendResource(memoryStream, "thirdparty/jquery-2.1.1.min.js", newLineBytes).ConfigureAwait(false);
+            await AppendResource(memoryStream, "bower_components/requirejs/require.js", newLineBytes).ConfigureAwait(false);
+
             await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.min.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/browser.js", newLineBytes).ConfigureAwait(false);
-
-            await AppendResource(memoryStream, "thirdparty/require.js", newLineBytes).ConfigureAwait(false);
 
             await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
 
@@ -646,31 +687,32 @@ namespace MediaBrowser.WebDashboard.Api
 
             await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.min.css", newLineBytes).ConfigureAwait(false);
             await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.structure.min.css", newLineBytes).ConfigureAwait(false);
-    
+
             var files = new[]
                                   {
-                                      "site.css",
-                                      "chromecast.css",
-                                      "nowplayingbar.css",
-                                      "mediaplayer.css",
-                                      "mediaplayer-video.css",
-                                      "librarymenu.css",
-                                      "librarybrowser.css",
-                                      "card.css",
-                                      "notifications.css",
-                                      "search.css",
-                                      "pluginupdates.css",
-                                      "remotecontrol.css",
-                                      "userimage.css",
-                                      "nowplaying.css",
-                                      "materialize.css"
+                                      "css/site.css",
+                                      "css/chromecast.css",
+                                      "css/nowplayingbar.css",
+                                      "css/mediaplayer.css",
+                                      "css/mediaplayer-video.css",
+                                      "css/librarymenu.css",
+                                      "css/librarybrowser.css",
+                                      "css/card.css",
+                                      "css/notifications.css",
+                                      "css/search.css",
+                                      "css/pluginupdates.css",
+                                      "css/remotecontrol.css",
+                                      "css/userimage.css",
+                                      "css/nowplaying.css",
+                                      "css/materialize.css",
+                                      "thirdparty/paper-button-style.css"
                                   };
 
             var builder = new StringBuilder();
 
             foreach (var file in files)
             {
-                var path = GetDashboardResourcePath("css/" + file);
+                var path = GetDashboardResourcePath(file);
 
                 using (var fs = _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
                 {

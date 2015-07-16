@@ -4,14 +4,14 @@
     <title></title>
 </head>
 <body>
-    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage" data-theme="b" data-require="scripts/itemdetailpage,paperbuttonstyle,tileitemcss">
+    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage lightBackdropPage" data-theme="b" data-require="scripts/itemdetailpage,paperbuttonstyle,tileitemcss,jqmicons">
 
         <div class="itemTabs homeTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="index.html" class="lnkHomeHome"><i class="material-icons">home</i>${TabHome}</a>
-                <a href="homenextup.html" class="lnkHomeNextUp"><i class="material-icons">navigate_next</i>${TabNextUp}</a>
-                <a href="homefavorites.html" class="lnkHomeFavorites"><i class="material-icons">favorite</i>${TabFavorites}</a>
-                <a href="homeupcoming.html" class="lnkHomeUpcoming"><i class="material-icons">schedule</i>${TabUpcoming}</a>
+                <a href="index.html" class="lnkHomeHome"><iron-icon icon="home"></iron-icon>${TabHome}</a>
+                <a href="index.html?tab=1" class="lnkHomeNextUp"><iron-icon icon="navigate-next"></iron-icon>${TabNextUp}</a>
+                <a href="index.html?tab=2" class="lnkHomeFavorites"><iron-icon icon="favorite"></iron-icon>${TabFavorites}</a>
+                <a href="index.html?tab=3" class="lnkHomeUpcoming"><iron-icon icon="schedule"></iron-icon>${TabUpcoming}</a>
             </div>
         </div>
 
@@ -30,65 +30,65 @@
 
         <div id="movieTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="moviesrecommended.html"><i class="material-icons">info</i>${TabSuggestions}</a>
-                <a href="movies.html" class="lnkMovies"><i class="material-icons">local_movies</i>${TabMovies}</a>
-                <a href="movietrailers.html" class="movieTrailersTab lnkMovieTrailers"><i class="material-icons">movie</i>${TabTrailers}</a>
-                <a href="collections.html?context=movies" class="lnkCollections"><i class="material-icons">video_library</i>${TabCollections}</a>
-                <a href="moviegenres.html"><i class="material-icons">video_library</i>${TabGenres}</a>
-                <a href="moviepeople.html" class="moviePeopleTab"><i class="material-icons">people</i>${TabPeople}</a>
-                <a href="moviestudios.html" class="movieStudiosTab"><i class="material-icons">account_box</i>${TabStudios}</a>
+                <a href="moviesrecommended.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+                <a href="movies.html" class="lnkMovies"><iron-icon icon="local-movies"></iron-icon>${TabMovies}</a>
+                <a href="movietrailers.html" class="movieTrailersTab lnkMovieTrailers"><iron-icon icon="movie"></iron-icon>${TabTrailers}</a>
+                <a href="collections.html?context=movies" class="lnkCollections"><iron-icon icon="video-library"></iron-icon>${TabCollections}</a>
+                <a href="moviegenres.html"><iron-icon icon="video-library"></iron-icon>${TabGenres}</a>
+                <a href="moviepeople.html" class="moviePeopleTab"><iron-icon icon="people"></iron-icon>${TabPeople}</a>
+                <a href="moviestudios.html" class="movieStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabStudios}</a>
             </div>
         </div>
         <div class="itemTabs photoTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="photos.html" class="ui-btn-active lnkPhotoAlbums"><i class="material-icons">photo_album</i>${TabAlbums}</a>
-                <a href="photos.html?context=photos-photos" class="lnkPhotos"><i class="material-icons">photo</i>${TabPhotos}</a>
-                <a href="photos.html?context=photos-videos" class="lnkVideos"><i class="material-icons">videocam</i>${TabVideos}</a>
+                <a href="photos.html" class="ui-btn-active lnkPhotoAlbums"><iron-icon icon="photo-album"></iron-icon>${TabAlbums}</a>
+                <a href="photos.html?tab=1" class="lnkPhotos"><iron-icon icon="photo"></iron-icon>${TabPhotos}</a>
+                <a href="photos.html?tab=2" class="lnkVideos"><iron-icon icon="videocam"></iron-icon>${TabVideos}</a>
             </div>
         </div>
         <div id="tvShowsTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="tvrecommended.html"><i class="material-icons">info</i>${TabSuggestions}</a>
-                <a href="tvlatest.html"><i class="material-icons">new_releases</i>${TabLatest}</a>
-                <a href="tvupcoming.html"><i class="material-icons">schedule</i>${TabUpcoming}</a>
-                <a href="tvshows.html" class="ui-btn-active"><i class="material-icons">live_tv</i>${TabShows}</a>
-                <a href="episodes.html" class="tvEpisodesTab"><i class="material-icons">slideshow</i>${TabEpisodes}</a>
-                <a href="tvgenres.html"><i class="material-icons">video_library</i>${TabGenres}</a>
-                <a href="tvpeople.html" class="tvPeopleTab"><i class="material-icons">people</i>${TabPeople}</a>
-                <a href="tvstudios.html" class="tvStudiosTab"><i class="material-icons">account_box</i>${TabNetworks}</a>
+                <a href="tvrecommended.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+                <a href="tvlatest.html"><iron-icon icon="new-releases"></iron-icon>${TabLatest}</a>
+                <a href="tvupcoming.html"><iron-icon icon="schedule"></iron-icon>${TabUpcoming}</a>
+                <a href="tvshows.html" class="ui-btn-active"><iron-icon icon="live-tv"></iron-icon>${TabShows}</a>
+                <a href="episodes.html" class="tvEpisodesTab"><iron-icon icon="slideshow"></iron-icon>${TabEpisodes}</a>
+                <a href="tvgenres.html"><iron-icon icon="video-library"></iron-icon>${TabGenres}</a>
+                <a href="tvpeople.html" class="tvPeopleTab"><iron-icon icon="people"></iron-icon>${TabPeople}</a>
+                <a href="tvstudios.html" class="tvStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabNetworks}</a>
             </div>
         </div>
         <div id="songTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="musicrecommended.html"><i class="material-icons">info</i>${TabSuggestions}</a>
-                <a href="musicalbums.html"><i class="material-icons">album</i>${TabAlbums}</a>
-                <a href="musicalbumartists.html"><i class="material-icons">music_note</i>${TabAlbumArtists}</a>
-                <a href="musicartists.html" class="musicArtistsTab"><i class="material-icons">music_note</i>${TabArtists}</a>
-                <a href="songs.html" class="ui-btn-active musicSongsTab"><i class="material-icons">music_note</i>${TabSongs}</a>
-                <a href="musicgenres.html"><i class="material-icons">library_music</i>${TabGenres}</a>
-                <a href="musicvideos.html"><i class="material-icons">video_library</i>${TabMusicVideos}</a>
+                <a href="musicrecommended.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+                <a href="musicalbums.html"><iron-icon icon="album"></iron-icon>${TabAlbums}</a>
+                <a href="musicalbumartists.html"><iron-icon icon="music-note"></iron-icon>${TabAlbumArtists}</a>
+                <a href="musicartists.html" class="musicArtistsTab"><iron-icon icon="music-note"></iron-icon>${TabArtists}</a>
+                <a href="songs.html" class="ui-btn-active musicSongsTab"><iron-icon icon="music-note"></iron-icon>${TabSongs}</a>
+                <a href="musicgenres.html"><iron-icon icon="library-music"></iron-icon>${TabGenres}</a>
+                <a href="musicvideos.html"><iron-icon icon="video-library"></iron-icon>${TabMusicVideos}</a>
             </div>
         </div>
         <div id="albumTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="musicrecommended.html"><i class="material-icons">info</i>${TabSuggestions}</a>
-                <a href="musicalbums.html" class="ui-btn-active"><i class="material-icons">album</i>${TabAlbums}</a>
-                <a href="musicalbumartists.html"><i class="material-icons">music_note</i>${TabAlbumArtists}</a>
-                <a href="musicartists.html" class="musicArtistsTab"><i class="material-icons">music_note</i>${TabArtists}</a>
-                <a href="songs.html" class="musicSongsTab"><i class="material-icons">music_note</i>${TabSongs}</a>
-                <a href="musicgenres.html"><i class="material-icons">library_music</i>${TabGenres}</a>
-                <a href="musicvideos.html"><i class="material-icons">video_library</i>${TabMusicVideos}</a>
+                <a href="musicrecommended.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+                <a href="musicalbums.html" class="ui-btn-active"><iron-icon icon="album"></iron-icon>${TabAlbums}</a>
+                <a href="musicalbumartists.html"><iron-icon icon="music-note"></iron-icon>${TabAlbumArtists}</a>
+                <a href="musicartists.html" class="musicArtistsTab"><iron-icon icon="music-note"></iron-icon>${TabArtists}</a>
+                <a href="songs.html" class="musicSongsTab"><iron-icon icon="music-note"></iron-icon>${TabSongs}</a>
+                <a href="musicgenres.html"><iron-icon icon="library-music"></iron-icon>${TabGenres}</a>
+                <a href="musicvideos.html"><iron-icon icon="video-library"></iron-icon>${TabMusicVideos}</a>
             </div>
         </div>
         <div id="musicVideoTabs" class="itemTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="musicrecommended.html"><i class="material-icons">info</i>${TabSuggestions}</a>
+                <a href="musicrecommended.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
                 <a href="musicalbums.html">${TabAlbums}</a>
-                <a href="musicalbumartists.html"><i class="material-icons">music_note</i>${TabAlbumArtists}</a>
-                <a href="musicartists.html" class="musicArtistsTab"><i class="material-icons">music_note</i>${TabArtists}</a>
-                <a href="songs.html" class="musicSongsTab"><i class="material-icons">music_note</i>${TabSongs}</a>
-                <a href="musicgenres.html"><i class="material-icons">library_music</i>${TabGenres}</a>
-                <a href="musicvideos.html" class="ui-btn-active"><i class="material-icons">video_library</i>${TabMusicVideos}</a>
+                <a href="musicalbumartists.html"><iron-icon icon="music-note"></iron-icon>${TabAlbumArtists}</a>
+                <a href="musicartists.html" class="musicArtistsTab"><iron-icon icon="music-note"></iron-icon>${TabArtists}</a>
+                <a href="songs.html" class="musicSongsTab"><iron-icon icon="music-note"></iron-icon>${TabSongs}</a>
+                <a href="musicgenres.html"><iron-icon icon="library-music"></iron-icon>${TabGenres}</a>
+                <a href="musicvideos.html" class="ui-btn-active"><iron-icon icon="video-library"></iron-icon>${TabMusicVideos}</a>
             </div>
         </div>
         <div id="gameTabs" class="itemTabs" style="display: none;">
@@ -111,8 +111,8 @@
         </div>
         <div class="itemTabs channelTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
-                <a href="channelslatest.html" class="latestChannelItemsTab"><i class="material-icons">new_releases</i>${TabLatest}</a>
-                <a href="channels.html" class="ui-btn-active"><i class="material-icons">live_tv</i>${TabChannels}</a>
+                <a href="channelslatest.html" class="latestChannelItemsTab"><iron-icon icon="new-releases"></iron-icon>${TabLatest}</a>
+                <a href="channels.html" class="ui-btn-active"><iron-icon icon="live-tv"></iron-icon>${TabChannels}</a>
             </div>
         </div>
 
@@ -144,6 +144,7 @@
                             <paper-button raised class="alt btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button>
                             <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="alt btnPlayExternalTrailer"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button></a>
                             <paper-button raised class="submit btnSync hide"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
+                            <paper-button raised class="subdued btnShare notext hide" style="background-color:#673AB7"><iron-icon icon="share"></iron-icon></paper-button>
                             <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
                         </div>
                     </div>
@@ -170,6 +171,7 @@
                             <paper-button raised class="alt btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button>
                             <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="alt btnPlayExternalTrailer"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button></a>
                             <paper-button raised class="submit btnSync hide"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
+                            <paper-button raised class="subdued btnShare notext hide" style="background-color:#673AB7"><iron-icon icon="share"></iron-icon></paper-button>
                             <paper-button raised class="subdued btnMoreCommands forceHide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
                         </div>
                         <p id="artist"></p>
@@ -180,7 +182,7 @@
                 </div>
                 <div class="collectionItems"></div>
                 <div id="childrenCollapsible" class="hide detailSection">
-                    <div class="detailSectionHeader">
+                    <div class="detailSectionHeader childrenSectionHeader">
                         <span id="childrenTitle"></span>
                     </div>
                     <div id="childrenContent" class="detailSectionContent">

@@ -1,11 +1,11 @@
 <!--
 @license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
-The complete set of authors may be found at http://polymer.github.io/AUTHORS
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
 Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <!doctype html>
 <html>
@@ -17,7 +17,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta name="apple-mobile-web-app-capable" content="yes">
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <link rel="import" href="../../paper-styles/paper-styles.html">
+  <link rel="import" href="../../paper-styles/color.html">
   <link rel="import" href="../../paper-styles/demo-pages.html">
   <link rel="import" href="../paper-progress.html">
   <link rel="import" href="../../paper-button/paper-button.html">
@@ -56,8 +56,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </style>
 
 </head>
-<body>
-  <div class="vertical layout">
+<body unresolved>
+  <div class="vertical-section-container">
     <h4>Progress bar</h4>
     <div class="vertical-section">
       <paper-progress></paper-progress>
@@ -67,7 +67,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <h4>Indeterminate</h4>
     <div class="vertical-section">
       <paper-progress indeterminate></paper-progress><br>
-      <paper-progress class="blue" indeterminate alue="800" min="100" max="1000"></paper-progress><br>
+      <paper-progress class="blue" indeterminate value="800" min="100" max="1000"></paper-progress><br>
     </div>
 
     <h4>Color</h4>

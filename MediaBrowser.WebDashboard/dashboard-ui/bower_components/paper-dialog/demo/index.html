@@ -59,7 +59,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </style>
 
 </head>
-<body>
+<body unresolved>
 
   <section onclick="clickHandler(event)">
     <h4>Dialog layouts</h4>
@@ -128,7 +128,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <section onclick="clickHandler(event)">
     <h4>Transitions</h4>
     <paper-button data-dialog="animated">transitions</paper-button>
-    <paper-dialog id="animated" with-backdrop entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+    <paper-dialog id="animated" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
       <h2>Dialog Title</h2>
       <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
     </paper-dialog>
@@ -140,7 +140,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       while (!button.hasAttribute('data-dialog') && button !== document.body) {
         button = button.parentElement;
       }
-      
+
       if (!button.hasAttribute('data-dialog')) {
         return;
       }

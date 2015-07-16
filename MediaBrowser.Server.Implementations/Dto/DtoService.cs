@@ -88,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         public IEnumerable<BaseItemDto> GetBaseItemDtos(IEnumerable<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
         {
             var syncJobItems = GetSyncedItemProgress(options);
-            var syncDictionary = syncJobItems.ToDictionary(i => i.ItemId);
+            var syncDictionary = GetSyncedItemProgressDictionary(syncJobItems);
 
             var list = new List<BaseItemDto>();
 
@@ -120,11 +120,23 @@ namespace MediaBrowser.Server.Implementations.Dto
             return list;
         }
 
+        private Dictionary<string, SyncedItemProgress> GetSyncedItemProgressDictionary(IEnumerable<SyncedItemProgress> items)
+        {
+            var dict = new Dictionary<string, SyncedItemProgress>();
+
+            foreach (var item in items)
+            {
+                dict[item.ItemId] = item;
+            }
+
+            return dict;
+        }
+
         public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
         {
             var syncProgress = GetSyncedItemProgress(options);
 
-            var dto = GetBaseItemDtoInternal(item, options, syncProgress.ToDictionary(i => i.ItemId), user, owner);
+            var dto = GetBaseItemDtoInternal(item, options, GetSyncedItemProgressDictionary(syncProgress), user, owner);
 
             var byName = item as IItemByName;
 
@@ -132,13 +144,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 if (options.Fields.Contains(ItemFields.ItemCounts))
                 {
-                    var itemFilter = byName.GetItemFilter();
-
-                    var libraryItems = user != null ?
-                       user.RootFolder.GetRecursiveChildren(user, itemFilter) :
-                       _libraryManager.RootFolder.GetRecursiveChildren(itemFilter);
-
-                    SetItemByNameInfo(item, dto, libraryItems.ToList(), user);
+                    SetItemByNameInfo(item, dto, GetTaggedItems(byName, user), user);
                 }
 
                 FillSyncInfo(dto, item, options, user, syncProgress);
@@ -148,6 +154,33 @@ namespace MediaBrowser.Server.Implementations.Dto
             FillSyncInfo(dto, item, options, user, syncProgress);
 
             return dto;
+        }
+
+        private List<BaseItem> GetTaggedItems(IItemByName byName, User user)
+        {
+            var person = byName as Person;
+
+            if (person != null)
+            {
+                var items = _libraryManager.GetItems(new InternalItemsQuery
+                {
+                    Person = byName.Name
+
+                }).Items;
+
+                if (user != null)
+                {
+                    return items.Where(i => i.IsVisibleStandalone(user)).ToList();
+                }
+
+                return items.ToList();
+            }
+
+            var itemFilter = byName.GetItemFilter();
+
+            return user != null ?
+               user.RootFolder.GetRecursiveChildren(user, itemFilter).ToList() :
+               _libraryManager.RootFolder.GetRecursiveChildren(itemFilter).ToList();
         }
 
         private SyncedItemProgress[] GetSyncedItemProgress(DtoOptions options)
@@ -361,7 +394,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             var syncProgress = GetSyncedItemProgress(options);
 
-            var dto = GetBaseItemDtoInternal(item, options, syncProgress.ToDictionary(i => i.ItemId), user);
+            var dto = GetBaseItemDtoInternal(item, options, GetSyncedItemProgressDictionary(syncProgress), user);
 
             if (options.Fields.Contains(ItemFields.ItemCounts))
             {
@@ -684,7 +717,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                     }
 
                 }).Where(i => i != null)
-                .DistinctBy(i => i.Name)
+                .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < people.Count; i++)
@@ -736,6 +769,7 @@ namespace MediaBrowser.Server.Implementations.Dto
                 }
             })
             .Where(i => i != null)
+            .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < studios.Count; i++)

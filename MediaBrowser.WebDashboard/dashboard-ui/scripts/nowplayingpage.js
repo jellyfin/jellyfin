@@ -362,7 +362,7 @@
         player.beginPlayerUpdates();
 
         onStateChanged.call(player, e, state);
-        loadPlaylist($.mobile.activePage);
+        loadPlaylist($($.mobile.activePage)[0]);
     }
 
     function onPlaybackStopped(e, state) {
@@ -372,10 +372,22 @@
         player.endPlayerUpdates();
 
         onStateChanged.call(player, e, {});
-        loadPlaylist($.mobile.activePage);
+        loadPlaylist($($.mobile.activePage)[0]);
     }
 
+    var lastUpdateTime = 0;
+
     function onStateChanged(e, state) {
+
+        if (e.type == 'positionchange') {
+            // Try to avoid hammering the document with changes
+            var now = new Date().getTime();
+            if ((now - lastUpdateTime) < 700) {
+
+                return;
+            }
+            lastUpdateTime = now;
+        }
 
         updatePlayerState($($.mobile.activePage)[0], state);
     }
@@ -664,34 +676,6 @@
         return false;
     }
 
-    function getBackdropUrl(item) {
-
-        var screenWidth = screen.availWidth;
-
-        if (item.BackdropImageTags && item.BackdropImageTags.length) {
-
-            return ApiClient.getScaledImageUrl(item.Id, {
-                type: "Backdrop",
-                index: 0,
-                maxWidth: screenWidth,
-                tag: item.BackdropImageTags[0]
-            });
-
-        }
-        else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
-
-            return ApiClient.getScaledImageUrl(item.ParentBackdropItemId, {
-                type: 'Backdrop',
-                index: 0,
-                maxWidth: screenWidth,
-                tag: item.ParentBackdropImageTags[0]
-            });
-
-        }
-
-        return null;
-    };
-
     function updateCastIcon() {
 
         var info = MediaController.getPlayerInfo();
@@ -701,7 +685,7 @@
             $('.nowPlayingCastIcon').each(function () {
                 this.icon = 'cast';
             });
-            $('.headerSelectedPlayer').html('');
+            $('.nowPlayingSelectedPlayer').html('');
 
         } else {
 
@@ -709,22 +693,8 @@
                 this.icon = 'cast-connected';
             });
 
-            $('.headerSelectedPlayer').html((info.deviceName || info.name));
+            $('.nowPlayingSelectedPlayer').html((info.deviceName || info.name));
         }
-    }
-
-    function allowSwipe(e) {
-
-        var target = $(e.target);
-
-        if (target.is('.noSwipe')) {
-            return false;
-        }
-        if (target.parents('.noSwipe').length) {
-            return false;
-        }
-
-        return true;
     }
 
     function onPlayerChange() {
@@ -742,42 +712,17 @@
 
         $('.requiresJqmCreate', this).trigger('create');
 
-        $(page).on('swipeleft', function (e) {
+        var tabs = page.querySelectorAll('paper-tabs')[0];
+        tabs.alignBottom = true;
 
-            if (allowSwipe(e)) {
-                var pages = this.querySelectorAll('neon-animated-pages')[0];
-                var tabs = this.querySelectorAll('paper-tabs')[0];
-
-                var selected = parseInt(pages.selected || '0');
-                if (selected < 2) {
-                    pages.entryAnimation = 'slide-from-right-animation';
-                    pages.exitAnimation = 'slide-left-animation';
-                    tabs.selectNext();
-                }
-            }
-        });
-
-        $(page).on('swiperight', function (e) {
-
-            if (allowSwipe(e)) {
-                var pages = this.querySelectorAll('neon-animated-pages')[0];
-                var tabs = this.querySelectorAll('paper-tabs')[0];
-
-                var selected = parseInt(pages.selected || '0');
-                if (selected > 0) {
-                    pages.entryAnimation = 'slide-from-left-animation';
-                    pages.exitAnimation = 'slide-right-animation';
-                    tabs.selectPrevious();
-                }
-            }
-        });
+        LibraryBrowser.configureSwipeTabs(page, tabs, page.querySelectorAll('neon-animated-pages')[0]);
 
         $(MediaController).on('playerchange', function () {
             updateCastIcon(page);
         });
 
         $('paper-tabs').on('iron-select', function () {
-            page.querySelectorAll('neon-animated-pages')[0].selected = this.selected;
+            page.querySelector('neon-animated-pages').selected = this.selected;
         });
 
     }).on('pagebeforeshowready', "#nowPlayingPage", function () {
@@ -787,18 +732,14 @@
 
         currentImgUrl = null;
 
-        Dashboard.ready(function () {
+        $(MediaController).on('playerchange', onPlayerChange);
 
-            $(MediaController).on('playerchange', onPlayerChange);
-
-            bindToPlayer(page, MediaController.getCurrentPlayer());
-
-        });
+        bindToPlayer(page, MediaController.getCurrentPlayer());
 
         loadPlaylist(page);
 
-        var tab = getParameterByName('tab');
-        var selected = tab == 'Playlist' ? 2 : 0;;
+        var tab = window.location.hash;
+        var selected = tab == '#playlist' ? 2 : 0;;
         this.querySelectorAll('paper-tabs')[0].selected = selected;
 
         updateCastIcon(page);

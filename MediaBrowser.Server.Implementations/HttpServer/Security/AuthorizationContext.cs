@@ -170,7 +170,12 @@ namespace MediaBrowser.Server.Implementations.HttpServer.Security
         /// <returns>Dictionary{System.StringSystem.String}.</returns>
         private Dictionary<string, string> GetAuthorizationDictionary(IServiceRequest httpReq)
         {
-            var auth = httpReq.Headers["Authorization"];
+            var auth = httpReq.Headers["X-Emby-Authorization"];
+
+            if (string.IsNullOrWhiteSpace(auth))
+            {
+                auth = httpReq.Headers["Authorization"];
+            }
 
             return GetAuthorization(auth);
         }

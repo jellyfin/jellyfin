@@ -12,16 +12,37 @@
     margin-left: .5em;
 }
 
-.backdropPage.ui-page-theme-a {
+.pageWithAbsoluteTabs {
+    background-color: transparent !important;
+}
+
+.backdropPage.ui-page-theme-a:not(.pageWithAbsoluteTabs) {
     background-color: rgba(240, 240,240, .94) !important;
 }
 
-.ui-page-theme-b {
-    background-color: #1f1f1f;
+.backdropPage.ui-page-theme-b:not(.pageWithAbsoluteTabs), .backdropPage.pageWithAbsoluteTabs .pageBackground {
+    background-color: rgba(20, 20,20, .92) !important;
 }
 
-.backdropPage.ui-page-theme-b {
-    background-color: rgba(20, 20,20, .92) !important;
+.backdropPage.lightBackdropPage.ui-page-theme-b:not(.pageWithAbsoluteTabs), .backdropPage.lightBackdropPage.pageWithAbsoluteTabs .pageBackground {
+    background-color: rgba(20, 20,20, .88) !important;
+}
+
+.pageWithAbsoluteTabs .pageBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+.pageWithAbsoluteTabs neon-animatable {
+    z-index: 2;
+}
+
+.ui-page-theme-b:not(.pageWithAbsoluteTabs), .pageWithAbsoluteTabs .pageBackground {
+    background-color: #1f1f1f;
 }
 
 .backdropContainer {
@@ -39,11 +60,20 @@
     padding-top: 10px;
 }
 
+.pageWithAbsoluteTabs .pageTabContent {
+    padding-top: 10px;
+}
+
 @media all and (max-width: 1200px) {
 
     .libraryPage > .ui-content {
         padding-left: .5em !important;
         padding-right: .5em !important;
+    }
+
+    .pageWithAbsoluteTabs .pageTabContent {
+        padding-left: .3em !important;
+        padding-right: .3em !important;
     }
 }
 
@@ -54,6 +84,8 @@
 .listHeader {
     margin: .25em 0;
     padding-left: 2px;
+    line-height: 1.25em;
+    line-height: initial;
 }
 
     .listHeader + paper-button {
@@ -104,7 +136,7 @@
     }
 }
 
-@media all and (min-width: 600px) {
+@media all and (min-width: 1200px) {
 
     .paddedItemsContainer {
         padding: 0 .8em;
@@ -985,11 +1017,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .playedIndicator .fa {
         margin-top: 5px;
         display: inline-block;
-    }
-
-    .playedIndicator .material-icons {
-        font-size: 16px;
-        line-height: 24px;
     }
 
 .textIndicator {

@@ -146,7 +146,7 @@
 
         currentPlayer = player;
 
-        Logger.log('binding remotecontrols to MediaPlayer');
+        Logger.log('binding remotecontrols to ' + player.name);
 
         player.getPlayerState().done(function (state) {
 

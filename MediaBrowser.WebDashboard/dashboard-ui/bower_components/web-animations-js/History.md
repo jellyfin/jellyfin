@@ -1,3 +1,31 @@
+### 2.1.2 - *July 8 2015*
+  * Fix a bug where onfinish was being called for GroupEffects before they were finished.
+
+### 2.1.1 - *July 1 2015*
+  * Add Animation.timeline getter
+  * Add AnimationEffect.parent getter
+  * Make AnimationEffectTiming (returned by AnimationEffect.timing) attributes mutable
+  * Expose the Animation constructor
+  * Change custom effects from AnimationEffects to onsample functions. Custom effects should now be created by setting the onsample attribute of a KeyframeEffect.
+
+    For example, this is deprecated:
+
+        var myEffect = new KeyframeEffect(
+           element,
+           function(timeFraction, target, effect) {
+              target.style.opacity = timeFraction;
+           },
+           1000);
+        var myAnimation = document.timeline.play(myEffect);
+
+    and this should be used insead:
+
+        var myEffect = new KeyframeEffect(element, [], 1000);
+        effect.onsample = function(timeFraction, effect, animation) {
+           effect.target.style.opacity = timeFraction;
+        };
+        var myAnimation = document.timeline.play(myEffect);
+
 ### 2.1.0 - *June 15 2015*
   * Fix bug affecting GroupEffects with infinite iteration children
   * Add GroupEffect.firstChild and GroupEffect.lastChild

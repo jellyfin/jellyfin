@@ -84,7 +84,7 @@
 
         if (server.showOptions !== false) {
             html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
-            html += '<paper-icon-button icon="more-vert" class="btnServerMenu"></paper-icon-button>';
+            html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnServerMenu"></paper-icon-button>';
             html += "</div>";
         }
 
@@ -318,7 +318,7 @@
         html += '<div class="cardFooter outerCardFooter">';
 
         html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
-        html += '<paper-icon-button icon="more-vert" class="btnInviteMenu"></paper-icon-button>';
+        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnInviteMenu"></paper-icon-button>';
         html += "</div>";
 
         html += '<div class="cardText">';

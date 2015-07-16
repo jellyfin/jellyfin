@@ -518,7 +518,7 @@
                     var personHtml = '<div class="tileItem smallPosterTileItem" style="width:300px;">';
 
                     var imgUrl;
-                    var height = 160;
+                    var height = 150;
 
                     if (cast.PrimaryImageTag) {
 
@@ -612,7 +612,7 @@
 
         function ensureVideoPlayerElements() {
 
-            var html = '<div id="mediaPlayer" data-theme="b" class="ui-bar-b" style="display: none;">';
+            var html = '<div id="mediaPlayer" style="display: none;">';
 
             html += '<div class="videoBackdrop">';
             html += '<div id="videoPlayer">';
@@ -626,15 +626,13 @@
             html += '<div class="videoTopControlsLogo"></div>';
             html += '<div class="videoAdvancedControls">';
 
-            html += '<paper-icon-button icon="skip-previous" class="previousTrackButton mediaButton videoTrackControl" onclick="MediaPlayer.previousTrack();"></paper-icon-button>';
-            html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton videoTrackControl" onclick="MediaPlayer.nextTrack();"></paper-icon-button>';
+            html += '<paper-icon-button icon="skip-previous" class="previousTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.previousTrack();"></paper-icon-button>';
+            html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.nextTrack();"></paper-icon-button>';
 
             // Embedding onclicks due to issues not firing in cordova safari
             html += '<paper-icon-button icon="audiotrack" class="mediaButton videoAudioButton" onclick="MediaPlayer.showAudioTracksFlyout();"></paper-icon-button>';
-            html += '<div data-role="popup" class="videoAudioPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
             html += '<paper-icon-button icon="subtitles" class="mediaButton videoSubtitleButton" onclick="MediaPlayer.showSubtitleMenu();"></paper-icon-button>';
-            html += '<div data-role="popup" class="videoSubtitlePopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
             html += '<paper-icon-button icon="videocam" class="mediaButton videoChaptersButton" onclick="MediaPlayer.showChaptersFlyout();"></paper-icon-button>';
             html += '<div data-role="popup" class="videoChaptersPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
@@ -654,12 +652,12 @@
             html += '<div class="nowPlayingTabs"></div>';
             html += '</div>'; // nowPlayingInfo
 
-            html += '<paper-icon-button icon="skip-previous" class="previousTrackButton mediaButton videoTrackControl" onclick="MediaPlayer.previousTrack();"></paper-icon-button>';
+            html += '<paper-icon-button icon="skip-previous" class="previousTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.previousTrack();"></paper-icon-button>';
 
             html += '<paper-icon-button id="video-playButton" icon="play-arrow" class="mediaButton unpauseButton" onclick="MediaPlayer.unpause();"></paper-icon-button>';
             html += '<paper-icon-button id="video-pauseButton" icon="pause" class="mediaButton pauseButton" onclick="MediaPlayer.pause();"></paper-icon-button>';
 
-            html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton videoTrackControl" onclick="MediaPlayer.nextTrack();"></paper-icon-button>';
+            html += '<paper-icon-button icon="skip-next" class="nextTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.nextTrack();"></paper-icon-button>';
 
             html += '<paper-slider pin step=".1" min="0" max="100" value="0" class="videoPositionSlider" style="width:300px;vertical-align:middle;margin-left:-1em;"></paper-slider>';
 
@@ -681,6 +679,7 @@
             var div = document.createElement('div');
             div.innerHTML = html;
             document.body.appendChild(div);
+            $(div).trigger('create');
         }
 
         Dashboard.ready(function () {
@@ -926,24 +925,6 @@
             }
         }
 
-        self.canAutoPlayVideo = function () {
-
-            if (AppInfo.isNativeApp) {
-                return true;
-            }
-
-            if ($.browser.mobile) {
-                return false;
-            }
-
-            return true;
-        };
-
-        self.enableCustomVideoControls = function () {
-
-            return self.canAutoPlayVideo() && !$.browser.mobile;
-        };
-
         // Replace audio version
         self.cleanup = function (mediaRenderer) {
 
@@ -952,8 +933,11 @@
             unbindEventsForPlayback(mediaRenderer);
         };
 
-        self.playVideo = function (item, mediaSource, startPosition) {
+        self.playVideo = function (item, mediaSource, startPosition, callback) {
 
+            //ApiClient.detectBitrate().done(function (b) {
+            //    alert(b);
+            //});
             requirejs(['videorenderer'], function () {
 
                 var streamInfo = self.createStreamInfo('Video', item, mediaSource, startPosition);
@@ -972,11 +956,11 @@
                         Dashboard.hideLoadingMsg();
 
                     }).done(function () {
-                        self.playVideoInternal(item, mediaSource, startPosition, streamInfo);
+                        self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
                     });
 
                 } else {
-                    self.playVideoInternal(item, mediaSource, startPosition, streamInfo);
+                    self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
                 }
             });
         };
@@ -985,7 +969,7 @@
             return true;
         }
 
-        self.playVideoInternal = function (item, mediaSource, startPosition, streamInfo) {
+        self.playVideoInternal = function (item, mediaSource, startPosition, streamInfo, callback) {
 
             var videoUrl = streamInfo.url;
             var contentType = streamInfo.mimeType;
@@ -1002,54 +986,16 @@
                 videoUrl += '&EnableAutoStreamCopy=false';
             }
 
-            var posterCode = self.getPosterUrl(item);
-            posterCode = posterCode ? (' poster="' + posterCode + '"') : '';
-            //======================================================================================>
-
             // Create video player
-            var html = '';
-
-            var requiresNativeControls = !self.enableCustomVideoControls();
-
-            // Can't autoplay in these browsers so we need to use the full controls
-            if (requiresNativeControls && AppInfo.isNativeApp && $.browser.android) {
-                html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" ' + posterCode + ' webkit-playsinline>';
-            }
-            else if (requiresNativeControls) {
-                html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous" controls="controls"' + posterCode + ' webkit-playsinline>';
-            }
-            else {
-
-                // Chrome 35 won't play with preload none
-                html += '<video data-viblast-key="N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=" class="itemVideo" id="itemVideo" preload="metadata" crossorigin="anonymous" autoplay' + posterCode + '>';
-            }
-
-            html += '<source type="' + contentType + '" src="' + videoUrl + '" />';
-
-            var textStreams = subtitleStreams.filter(function (s) {
-                return s.DeliveryMethod == 'External';
-            });
-
-            for (var i = 0, length = textStreams.length; i < length; i++) {
-
-                var textStream = textStreams[i];
-                var textStreamUrl = !textStream.IsExternalUrl ? ApiClient.getUrl(textStream.DeliveryUrl) : textStream.DeliveryUrl;
-                var defaultAttribute = textStream.Index == mediaSource.DefaultSubtitleStreamIndex ? ' default' : '';
-
-                html += '<track kind="subtitles" src="' + textStreamUrl + '" srclang="' + (textStream.Language || 'und') + '"' + defaultAttribute + '></track>';
-            }
-
-            html += '</video>';
-
             var mediaPlayerContainer = $("#mediaPlayer").show();
             var videoControls = $('.videoControls', mediaPlayerContainer);
 
             //show stop button
             $('#video-playButton', videoControls).hide();
             $('#video-pauseButton', videoControls).show();
-            $('.videoTrackControl').hide();
+            $('.videoTrackControl').visible(false);
 
-            var videoElement = $('#videoElement', mediaPlayerContainer).prepend(html);
+            var videoElement = $('#videoElement', mediaPlayerContainer);
 
             $('.videoQualityButton', videoControls).show();
 
@@ -1073,6 +1019,12 @@
                 $('.videoChaptersButton').hide();
             }
 
+            var mediaRenderer = new VideoRenderer({
+                poster: self.getPosterUrl(item)
+            });
+
+            var requiresNativeControls = !mediaRenderer.enableCustomVideoControls();
+
             if (requiresNativeControls) {
                 $('#video-fullscreenButton', videoControls).hide();
             } else {
@@ -1094,8 +1046,6 @@
             } else {
                 videoControls.removeClass('hide');
             }
-
-            var mediaRenderer = new VideoRenderer('video');
 
             initialVolume = self.getSavedVolume();
 
@@ -1152,14 +1102,6 @@
                     errorMsg += '</p>';
                 }
 
-                if ($.browser.msie && !$.browser.mobile && !self.canPlayWebm()) {
-                    errorMsg += '<p>';
-                    errorMsg += '<a href="https://tools.google.com/dlpage/webmmf/" target="_blank">';
-                    errorMsg += Globalize.translate('MessageInternetExplorerWebm');
-                    errorMsg += '</a>';
-                    errorMsg += '</p>';
-                }
-
                 Dashboard.alert({
                     title: Globalize.translate('HeaderVideoError'),
                     message: errorMsg
@@ -1184,8 +1126,6 @@
 
             bindEventsForPlayback(mediaRenderer);
 
-            mediaPlayerContainer.trigger('create');
-
             self.currentSubtitleStreamIndex = mediaSource.DefaultSubtitleStreamIndex;
 
             $(document.body).addClass('bodyWithPopupOpen');
@@ -1194,15 +1134,47 @@
             self.currentDurationTicks = self.currentMediaSource.RunTimeTicks;
 
             self.updateNowPlayingInfo(item);
+
+            mediaRenderer.init().done(function () {
+
+                var textStreams = subtitleStreams.filter(function (s) {
+                    return s.DeliveryMethod == 'External';
+                });
+
+                var tracks = [];
+
+                for (var i = 0, length = textStreams.length; i < length; i++) {
+
+                    var textStream = textStreams[i];
+                    var textStreamUrl = !textStream.IsExternalUrl ? ApiClient.getUrl(textStream.DeliveryUrl) : textStream.DeliveryUrl;
+
+                    tracks.push({
+                        url: textStreamUrl,
+                        language: (textStream.Language || 'und'),
+                        isDefault: textStream.Index == mediaSource.DefaultSubtitleStreamIndex
+                    });
+                }
+
+                mediaRenderer.setCurrentSrc(videoUrl, item, mediaSource, tracks);
+
+                if (callback) {
+                    callback();
+                }
+            });
         };
 
         self.updatePlaylistUi = function () {
             var index = self.currentPlaylistIndex(null);
             var length = self.playlist.length;
-            var requiresNativeControls = !self.enableCustomVideoControls();
+
+            var requiresNativeControls = false;
+
+            if (self.currentMediaRenderer && !self.currentMediaRenderer.enableCustomVideoControls) {
+                requiresNativeControls = self.currentMediaRenderer.enableCustomVideoControls();
+            }
 
             if (length < 2) {
-                $('.videoTrackControl').hide();
+                $('.videoTrackControl').visible(false);
                 return;
             }
 
@@ -1224,7 +1196,8 @@
                 nextTrackButton.removeAttribute('disabled');
             }
 
-            $('.videoTrackControl', controls).show();
+            $(previousTrackButton).visible(true);
+            $(nextTrackButton).visible(true);
         };
     }
 

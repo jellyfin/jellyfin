@@ -1,8 +1,10 @@
 ﻿(function () {
 
     var supportsTextTracks;
+    var isViblastStarted;
+    var requiresSettingStartTimeOnStart;
 
-    function htmlMediaRenderer(type) {
+    function htmlMediaRenderer(options) {
 
         var mediaElement;
         var self = this;
@@ -12,6 +14,22 @@
         }
 
         function onTimeUpdate() {
+
+            if (isViblastStarted) {
+
+                // This is a workaround for viblast not stopping playback at the end
+                var time = this.currentTime;
+                var duration = this.duration;
+
+                if (duration) {
+                    if (time >= (duration - 1)) {
+
+                        onEnded();
+                        return;
+                    }
+                }
+            }
+
             $(self).trigger('timeupdate');
         }
 
@@ -53,23 +71,52 @@
 
         function onLoadedMetadata() {
 
-            // The IE video player won't autoplay without this
-            if ($.browser.msie) {
+            if (!isViblastStarted) {
                 this.play();
             }
         }
 
-        function onOneVideoPlaying() {
+        var viblastKey = 'N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=';
 
-            var requiresNativeControls = !MediaPlayer.enableCustomVideoControls();
+        function requireViblast(callback) {
+            require(['thirdparty/viblast/viblast.js'], function () {
 
-            if (requiresNativeControls) {
-                $(this).attr('controls', 'controls');
-            }
+                if (htmlMediaRenderer.customViblastKey) {
+                    callback();
+                } else {
+                    downloadViblastKey(callback);
+                }
+            });
+        }
 
-            var currentSrc = (this.currentSrc || '').toLowerCase();
+        function downloadViblastKey(callback) {
 
-            var parts = currentSrc.split('#');
+            var headers = {};
+            headers['X-Emby-Token'] = 'EMBY_SERVER';
+
+            HttpClient.send({
+                type: 'GET',
+                url: 'https://mb3admin.com/admin/service/registration/getViBlastKey',
+                headers: headers
+
+            }).done(function (key) {
+
+                htmlMediaRenderer.customViblastKey = key;
+                callback();
+            }).fail(function () {
+                callback();
+            });
+        }
+
+        function getViblastKey() {
+            return htmlMediaRenderer.customViblastKey || viblastKey;
+        }
+
+        function getStartTime(url) {
+
+            var src = url;
+
+            var parts = src.split('#');
 
             if (parts.length > 1) {
 
@@ -77,15 +124,32 @@
 
                 if (parts.length == 2) {
 
-                    var startPositionInSeekParam = parseFloat(parts[1]);
+                    return parseFloat(parts[1]);
+                }
+            }
 
-                    // Appending #t=xxx to the query string doesn't seem to work with HLS
-                    if (startPositionInSeekParam && currentSrc.indexOf('.m3u8') != -1) {
-                        var element = this;
-                        setTimeout(function () {
-                            element.currentTime = startPositionInSeekParam;
-                        }, 3000);
-                    }
+            return 0;
+        }
+
+        function onOneVideoPlaying() {
+
+            var requiresNativeControls = !self.enableCustomVideoControls();
+
+            if (requiresNativeControls) {
+                $(this).attr('controls', 'controls');
+            }
+
+            if (requiresSettingStartTimeOnStart) {
+                var src = (self.currentSrc() || '').toLowerCase();
+
+                var startPositionInSeekParam = getStartTime(src);
+
+                // Appending #t=xxx to the query string doesn't seem to work with HLS
+                if (startPositionInSeekParam && src.indexOf('.m3u8') != -1) {
+                    var element = this;
+                    setTimeout(function () {
+                        element.currentTime = startPositionInSeekParam;
+                    }, 2500);
                 }
             }
         }
@@ -124,11 +188,43 @@
 	            .on('error', onError)[0];
         }
 
+        function enableViblast(src) {
+
+            if (src) {
+                if (src.indexOf('.m3u8') == -1) {
+                    return false;
+                }
+            }
+
+            return MediaPlayer.canPlayHls() && !MediaPlayer.canPlayNativeHls();
+        }
+
         function createVideoElement() {
 
-            var elem = $('.itemVideo');
+            var html = '';
 
-            return elem
+            var requiresNativeControls = !self.enableCustomVideoControls();
+
+            var poster = options.poster ? (' poster="' + options.poster + '"') : '';
+
+            // Can't autoplay in these browsers so we need to use the full controls
+            if (requiresNativeControls && AppInfo.isNativeApp && $.browser.android) {
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous"' + poster + ' webkit-playsinline>';
+            }
+            else if (requiresNativeControls) {
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous"' + poster + ' controls="controls" webkit-playsinline>';
+            }
+            else {
+
+                // Chrome 35 won't play with preload none
+                html += '<video class="itemVideo" id="itemVideo" preload="metadata" autoplay="autoplay" crossorigin="anonymous"' + poster + ' webkit-playsinline>';
+            }
+
+            html += '</video>';
+
+            var elem = $('#videoElement', '#mediaPlayer').prepend(html);
+
+            return $('.itemVideo', elem)
             	.one('.loadedmetadata', onLoadedMetadata)
             	.one('playing', onOneVideoPlaying)
 	            .on('timeupdate', onTimeUpdate)
@@ -142,12 +238,18 @@
 	            .on('error', onError)[0];
         }
 
+        // Save this for when playback stops, because querying the time at that point might return 0
+        var _currentTime;
         self.currentTime = function (val) {
 
             if (mediaElement) {
                 if (val != null) {
                     mediaElement.currentTime = val / 1000;
                     return;
+                }
+
+                if (_currentTime) {
+                    return _currentTime * 1000;
                 }
 
                 return (mediaElement.currentTime || 0) * 1000;
@@ -166,6 +268,13 @@
         self.stop = function () {
             if (mediaElement) {
                 mediaElement.pause();
+
+                if (isViblastStarted) {
+                    _currentTime = mediaElement.currentTime;
+
+                    viblast(mediaElement).stop();
+                    isViblastStarted = false;
+                }
             }
         };
 
@@ -192,15 +301,18 @@
             }
         };
 
-        self.setCurrentSrc = function (val) {
+        var currentSrc;
+        self.setCurrentSrc = function (val, item, mediaSource, tracks) {
 
             var elem = mediaElement;
 
             if (!elem) {
+                currentSrc = null;
                 return;
             }
 
             if (!val) {
+                currentSrc = null;
                 elem.src = null;
                 elem.src = "";
 
@@ -213,20 +325,75 @@
                 return;
             }
 
-            elem.src = val;
+            requiresSettingStartTimeOnStart = false;
+            var startTime = getStartTime(val);
 
             if (elem.tagName.toLowerCase() == 'audio') {
+
+                elem.src = val;
                 elem.play();
+
             }
             else {
 
-                $(elem).one("loadedmetadata", onLoadedMetadata);
+                if (isViblastStarted) {
+                    viblast(elem).stop();
+                    isViblastStarted = false;
+                }
+
+                if (startTime) {
+
+                    try {
+                        elem.currentTime = startTime;
+                    } catch (err) {
+                        // IE will throw an invalid state exception when trying to set currentTime before starting playback
+                    }
+                    requiresSettingStartTimeOnStart = elem.currentTime == 0;
+                }
+
+                if (enableViblast(val)) {
+
+                    setTracks(elem, tracks || []);
+
+                    viblast(elem).setup({
+                        key: getViblastKey(),
+                        stream: val
+                    });
+
+                    isViblastStarted = true;
+
+                } else {
+
+                    elem.src = val;
+
+                    setTracks(elem, tracks || []);
+
+                    $(elem).one("loadedmetadata", onLoadedMetadata);
+                }
             }
+
+            currentSrc = val;
         };
+
+        function setTracks(elem, tracks) {
+            var html = tracks.map(function (t) {
+
+                var defaultAttribute = t.isDefault ? ' default' : '';
+
+                return '<track kind="subtitles" src="' + t.url + '" srclang="' + t.language + '"' + defaultAttribute + '></track>';
+
+            }).join('');
+
+            if (html) {
+                elem.innerHTML = html;
+            }
+        }
 
         self.currentSrc = function () {
             if (mediaElement) {
-                return mediaElement.currentSrc;
+                // We have to use this cached value because viblast will muck with the url
+                return currentSrc;
+                //return mediaElement.currentSrc;
             }
         };
 
@@ -242,6 +409,7 @@
         self.cleanup = function (destroyRenderer) {
 
             self.setCurrentSrc(null);
+            _currentTime = null;
 
             var elem = mediaElement;
 
@@ -276,14 +444,6 @@
                 if (elem.tagName.toLowerCase() != 'audio') {
                     $(elem).remove();
                 }
-            }
-        };
-
-        self.setPoster = function (url) {
-            var elem = mediaElement;
-
-            if (elem) {
-                elem.poster = url;
             }
         };
 
@@ -358,16 +518,48 @@
 
             $('track', mediaElement).each(function () {
 
-                var currentSrc = this.src;
-
-                currentSrc = replaceQueryString(currentSrc, 'startPositionTicks', startPositionTicks);
-
-                this.src = currentSrc;
+                this.src = replaceQueryString(this.src, 'startPositionTicks', startPositionTicks);
 
             });
         };
 
-        if (type == 'audio') {
+        self.enableCustomVideoControls = function () {
+
+            return self.canAutoPlayVideo() && !$.browser.mobile;
+        };
+
+        self.canAutoPlayVideo = function () {
+
+            if (AppInfo.isNativeApp) {
+                return true;
+            }
+
+            if ($.browser.mobile) {
+                return false;
+            }
+
+            return true;
+        };
+
+        self.init = function () {
+
+            var deferred = DeferredBuilder.Deferred();
+
+            if (options.type == 'video' && enableViblast()) {
+
+                requireViblast(function () {
+
+                    deferred.resolve();
+                });
+
+            } else {
+                deferred.resolve();
+            }
+
+            return deferred.promise();
+        };
+
+        if (options.type == 'audio') {
             mediaElement = createAudioElement();
         }
         else {
@@ -376,11 +568,21 @@
     }
 
     if (!window.AudioRenderer) {
-        window.AudioRenderer = htmlMediaRenderer;
+        window.AudioRenderer = function (options) {
+            options = options || {};
+            options.type = 'audio';
+
+            return new htmlMediaRenderer(options);
+        };
     }
 
     if (!window.VideoRenderer) {
-        window.VideoRenderer = htmlMediaRenderer;
+        window.VideoRenderer = function (options) {
+            options = options || {};
+            options.type = 'video';
+
+            return new htmlMediaRenderer(options);
+        };
     }
 
 })();

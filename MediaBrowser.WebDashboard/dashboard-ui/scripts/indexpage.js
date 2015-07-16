@@ -64,7 +64,7 @@
 
         } else {
 
-            elem.empty();
+            elem.innerHTML = '';
 
             var deferred = DeferredBuilder.Deferred();
             deferred.resolve();
@@ -107,7 +107,7 @@
         getDisplayPreferences('home', userId).done(function (result) {
 
             result.CustomPrefs[homePageTourKey] = homePageDismissValue;
-            ApiClient.updateDisplayPreferences('home', result, userId, getDisplayPreferencesAppName());
+            ApiClient.updateDisplayPreferences('home', result, userId, AppSettings.displayPreferencesKey());
         });
     }
 
@@ -164,19 +164,11 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#indexPage", function () {
+    function loadHomeTab(page) {
 
-        var page = this;
+        var tabContent = page.querySelector('.homeTabContent');
 
-        Events.on(page.querySelector('.btnTakeTour'), 'click', function () {
-            takeTour(page, Dashboard.getCurrentUserId());
-        });
-
-    }).on('pagebeforeshowready', "#indexPage", function () {
-
-        var page = this;
-
-        if (LibraryBrowser.needsRefresh(page)) {
+        if (LibraryBrowser.needsRefresh(tabContent)) {
             if (window.ApiClient) {
                 var userId = Dashboard.getCurrentUserId();
 
@@ -186,34 +178,72 @@
 
                     Dashboard.getCurrentUser().done(function (user) {
 
-                        loadSections(page, user, result).done(function () {
+                        loadSections(tabContent, user, result).done(function () {
 
                             if (!AppInfo.isNativeApp) {
                                 showWelcomeIfNeeded(page, result);
                             }
                             Dashboard.hideLoadingMsg();
 
-                            LibraryBrowser.setLastRefreshed(page);
+                            LibraryBrowser.setLastRefreshed(tabContent);
                         });
 
                     });
                 });
             }
         }
-    });
-
-    function getDisplayPreferencesAppName() {
-
-        if (AppInfo.isNativeApp) {
-            return 'Emby Mobile';
-        }
-
-        return 'webclient';
     }
+
+    function loadTab(page, index) {
+
+        switch (index) {
+
+            case 0:
+                loadHomeTab(page);
+                break;
+            default:
+                break;
+        }
+    }
+
+    $(document).on('pageinitdepends', "#indexPage", function () {
+
+        var page = this;
+
+        var tabs = page.querySelector('paper-tabs');
+        var pages = page.querySelector('neon-animated-pages');
+
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages);
+
+        $(tabs).on('iron-select', function () {
+            var selected = this.selected;
+
+            if (LibraryBrowser.navigateOnLibraryTabSelect()) {
+
+                if (selected) {
+                    Dashboard.navigate('index.html?tab=' + selected);
+                } else {
+                    Dashboard.navigate('index.html');
+                }
+
+            } else {
+                page.querySelector('neon-animated-pages').selected = selected;
+            }
+        });
+
+        $(pages).on('tabchange', function () {
+            loadTab(page, parseInt(this.selected));
+        });
+
+        Events.on(page.querySelector('.btnTakeTour'), 'click', function () {
+            takeTour(page, Dashboard.getCurrentUserId());
+        });
+
+    });
 
     function getDisplayPreferences(key, userId) {
 
-        return ApiClient.getDisplayPreferences(key, userId, getDisplayPreferencesAppName()).done(function (result) {
+        return ApiClient.getDisplayPreferences(key, userId, AppSettings.displayPreferencesKey()).done(function (result) {
 
         });
     }

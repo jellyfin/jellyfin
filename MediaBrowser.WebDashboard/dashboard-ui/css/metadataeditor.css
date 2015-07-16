@@ -1,4 +1,8 @@
-﻿.editPageContent {
+﻿.editorTab {
+    padding-bottom: 200px;
+}
+
+.editPageContent {
     padding: 0;
 }
 
@@ -193,24 +197,32 @@
 
 .editorTile {
     display: inline-block;
-    margin: 5px;
-    padding: 8px;
-    border: 1px solid #444;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#333),to(#2d2d2d));
-    background-image: -webkit-linear-gradient(#333,#2d2d2d);
-    background-image: -moz-linear-gradient(#333,#2d2d2d);
-    background-image: -ms-linear-gradient(#333,#2d2d2d);
-    background-image: -o-linear-gradient(#333,#2d2d2d);
-    background-image: linear-gradient(#333,#2d2d2d);
+    margin: .5em;
+    text-align: center;
+    vertical-align: middle;
 }
 
 .imageEditorTile {
     width: 256px;
-    padding-bottom: 0;
+    background-color: #282828;
+    padding: 0;
+}
+
+.editorTile h3 {
+    text-transform: uppercase;
+    background: #444;
+    padding: .5em 0;
+    text-align: center;
+    margin-top: 0;
+    color: #ddd;
 }
 
 .editorTile p {
     margin: .5em 0;
+}
+
+.editorTileInner {
+    padding: 1em;
 }
 
 .editorTile .ui-field-contain {

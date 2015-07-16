@@ -31,6 +31,11 @@
         $('#chkPlayDefaultAudioTrack', page).checked(user.Configuration.PlayDefaultAudioTrack || false).checkboxradio("refresh");
         $('#chkEnableCinemaMode', page).checked(user.Configuration.EnableCinemaMode || false).checkboxradio("refresh");
 
+        $('#chkEnableChromecastAc3', page).checked(AppSettings.enableChromecastAc3()).checkboxradio("refresh");
+        $('#chkExternalVideoPlayer', page).checked(AppSettings.enableExternalPlayers()).checkboxradio("refresh");
+        $('#selectMaxBitrate', page).val(AppSettings.maxStreamingBitrate()).selectmenu("refresh");
+        $('#selectMaxChromecastBitrate', page).val(AppSettings.maxChromecastBitrate()).selectmenu("refresh");
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -73,6 +78,9 @@
 
         ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
             Dashboard.alert(Globalize.translate('SettingsSaved'));
+
+        }).always(function () {
+            Dashboard.hideLoadingMsg();
         });
     }
 
@@ -81,6 +89,11 @@
         var page = $(this).parents('.page');
 
         Dashboard.showLoadingMsg();
+
+        AppSettings.enableExternalPlayers($('#chkExternalVideoPlayer', page).checked());
+        AppSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
+        AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
+        AppSettings.enableChromecastAc3($('#chkEnableChromecastAc3', page).checked());
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 
@@ -110,6 +123,14 @@
     }).on('pageshowready', "#languagePreferencesPage", function () {
 
         var page = this;
+
+        if (AppInfo.hasKnownExternalPlayerSupport) {
+            $('.labelNativeExternalPlayers', page).show();
+            $('.labelGenericExternalPlayers', page).hide();
+        } else {
+            $('.labelGenericExternalPlayers', page).show();
+            $('.labelNativeExternalPlayers', page).hide();
+        }
 
         loadPage(page);
     });

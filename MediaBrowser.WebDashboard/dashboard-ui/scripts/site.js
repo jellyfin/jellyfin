@@ -67,7 +67,7 @@ var Dashboard = {
         // These are not needed. Nulling them out can help reduce dom querying when pages are loaded
         $.mobile.nojs = null;
         $.mobile.degradeInputsWithin = null;
-        $.mobile.keepNative = ":jqmData(role='none')";
+        $.mobile.keepNative = ":jqmData(role='none'),.paper-input";
     },
 
     isConnectMode: function () {
@@ -114,17 +114,6 @@ var Dashboard = {
             return;
         }
         Dashboard.hideLoadingMsg();
-
-        if (!Dashboard.suppressAjaxErrors && data.type != 'GET' && !AppInfo.isNativeApp) {
-
-            setTimeout(function () {
-
-                var msg = data.errorCode || Dashboard.defaultErrorMessage;
-
-                Dashboard.showError(msg);
-
-            }, 500);
-        }
     },
 
     getCurrentUser: function () {
@@ -240,7 +229,11 @@ var Dashboard = {
             document.createStyleSheet(url);
         }
         else {
-            $('<link rel="stylesheet" type="text/css" href="' + url + '" />').appendTo('head');
+            var link = document.createElement('link');
+            link.setAttribute('rel', 'stylesheet');
+            link.setAttribute('type', 'text/css');
+            link.setAttribute('href', url);
+            document.head.appendChild(link);
         }
     },
 
@@ -471,22 +464,22 @@ var Dashboard = {
 
     showLoadingMsg: function () {
 
+        console.log('showLoadingMsg');
+
         require(['paperbuttonstyle'], function () {
-            var elem = document.getElementById('docspinner');
+            var elem = document.querySelector('.docspinner');
 
             if (elem) {
 
                 // This is just an attempt to prevent the fade-in animation from running repeating and causing flickering
-                if (!elem.active) {
-                    elem.active = true;
-                }
+                elem.active = true;
 
             } else {
+
                 elem = document.createElement("paper-spinner");
-                elem.id = 'docspinner';
+                elem.classList.add('docspinner');
 
                 document.body.appendChild(elem);
-
                 elem.active = true;
             }
         });
@@ -494,14 +487,21 @@ var Dashboard = {
 
     hideLoadingMsg: function () {
 
-        var elem = document.getElementById('docspinner');
+        console.log('hideLoadingMsg');
 
-        if (elem) {
+        require(['paperbuttonstyle'], function () {
 
-            setTimeout(function () {
+            var elem = document.querySelector('.docspinner');
+
+            if (elem) {
+
                 elem.active = false;
-            }, 100);
-        }
+
+                setTimeout(function () {
+                    elem.active = false;
+                }, 100);
+            }
+        });
     },
 
     getModalLoadingMsg: function () {
@@ -595,7 +595,7 @@ var Dashboard = {
 
                 callback(index == 1);
 
-            }, title || Globalize.translate('HeaderAlert'), buttonLabels.join(','));
+            }, title || Globalize.translate('HeaderConfirm'), buttonLabels.join(','));
 
         } else {
             Dashboard.confirmInternal(message, title, true, callback);
@@ -624,8 +624,6 @@ var Dashboard = {
 
             $(document.body).append(html);
 
-            document.body.classList.add('bodyWithPopupOpen');
-
             // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
             // element onload never fires
             setTimeout(function () {
@@ -636,8 +634,10 @@ var Dashboard = {
                 $(dlg).on('iron-overlay-closed', function (e) {
                     var confirmed = this.closingReason.confirmed;
                     this.parentNode.removeChild(this);
-                    document.body.classList.remove('bodyWithPopupOpen');
-                    callback(confirmed);
+
+                    if (callback) {
+                        callback(confirmed);
+                    }
                 });
 
                 dlg.open();
@@ -651,7 +651,7 @@ var Dashboard = {
         var apiClient = ApiClient;
 
         if (apiClient && apiClient.accessToken()) {
-            if (apiClient.enableFooterNotifications) {
+            if (AppInfo.enableFooterNotifications) {
                 apiClient.getSystemInfo().done(function (info) {
 
                     Dashboard.updateSystemInfo(info);
@@ -1250,7 +1250,7 @@ var Dashboard = {
 
         var newItems = data.ItemsAdded;
 
-        if (!newItems.length) {
+        if (!newItems.length || AppInfo.isNativeApp) {
             return;
         }
 
@@ -1713,9 +1713,17 @@ var AppInfo = {};
         AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
 
         if (isCordova && isAndroid) {
-            AppInfo.directPlayAudioContainers = ['aac', 'mp3', 'ogg', 'flac', 'wma', 'm4a', 'oga'];
+            AppInfo.directPlayAudioContainers = "flac,aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape".split(',');
+            AppInfo.directPlayVideoContainers = "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm".split(',');
         } else {
             AppInfo.directPlayAudioContainers = [];
+            AppInfo.directPlayVideoContainers = [];
+        }
+
+        if (isCordova && isIOS) {
+            AppInfo.moreIcon = 'more-horiz';
+        } else {
+            AppInfo.moreIcon = 'more-vert';
         }
     }
 
@@ -1780,9 +1788,11 @@ var AppInfo = {};
 
     function initFastClick() {
 
-        require(["thirdparty/fastclick"], function (FastClick) {
+        require(["bower_components/fastclick/lib/fastclick"], function (FastClick) {
 
-            FastClick.attach(document.body);
+            FastClick.attach(document.body, {
+                tapDelay: 0
+            });
 
             // Have to work around this issue of fast click breaking the panel dismiss
             $(document.body).on('touchstart', '.ui-panel-dismiss', function () {
@@ -1844,8 +1854,11 @@ var AppInfo = {};
             }
             else if ($.browser.safari) {
                 Dashboard.importCss('themes/ios.css');
-                Dashboard.importCss('thirdparty/materialicons/style.css');
             }
+        }
+
+        if ($.browser.msie && $.browser.tv && ($.browser.version || 11) <= 10) {
+            Dashboard.importCss('thirdparty/paper-ie10.css');
         }
 
         if ($.browser.safari && $.browser.mobile) {
@@ -1898,7 +1911,7 @@ var AppInfo = {};
             }
 
             if ($.browser.safari) {
-                require(['cordova/remotecontrols', 'cordova/ios/orientation']);
+                require(['cordova/ios/orientation']);
             }
 
         } else {
@@ -1964,8 +1977,7 @@ var AppInfo = {};
 
         if (Dashboard.isRunningInCordova() && $.browser.android) {
             define("audiorenderer", ["cordova/android/vlcplayer"]);
-            //define("audiorenderer", ["scripts/htmlmediarenderer"]);
-            define("videorenderer", ["scripts/htmlmediarenderer"]);
+            define("videorenderer", ["cordova/android/vlcplayer"]);
         }
         else {
             define("audiorenderer", ["scripts/htmlmediarenderer"]);
@@ -1974,7 +1986,6 @@ var AppInfo = {};
 
         define("connectservice", ["apiclient/connectservice"]);
         define("paperbuttonstyle", [], function () {
-            Dashboard.importCss('thirdparty/paper-button-style.css');
             return {};
         });
         define("jqmicons", [], function () {
@@ -1994,58 +2005,72 @@ var AppInfo = {};
             return {};
         });
 
-        if (Dashboard.isRunningInCordova() && $.browser.safari) {
-            define("actionsheet", ["cordova/ios/actionsheet"]);
+        if (Dashboard.isRunningInCordova()) {
+            define("actionsheet", ["cordova/actionsheet"]);
         } else {
             define("actionsheet", ["scripts/actionsheet"]);
         }
 
-        //requirejs(['http://viblast.com/player/free-version/qy2fdwajo1/viblast.js']);
+        define("sharingmanager", ["scripts/sharingmanager"]);
+
+        if (Dashboard.isRunningInCordova()) {
+            define("sharingwidget", ["cordova/sharingwidget"]);
+        } else {
+            define("sharingwidget", ["scripts/sharingwidget"]);
+        }
+
+        if (Dashboard.isRunningInCordova() && $.browser.safari) {
+            define("searchmenu", ["cordova/searchmenu"]);
+        } else {
+            define("searchmenu", ["scripts/searchmenu"]);
+        }
 
         $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
 
-        $(document).on('WebComponentsReady', function () {
+        var drawer = document.querySelector('.mainDrawerPanel');
+        drawer.classList.remove('mainDrawerPanelPreInit');
+        drawer.forceNarrow = true;
+        var drawerWidth = screen.availWidth - 50;
+        // At least 240
+        drawerWidth = Math.max(drawerWidth, 240);
+        // But not exceeding 310
+        drawerWidth = Math.min(drawerWidth, 310);
+        drawer.drawerWidth = drawerWidth + "px";
 
-            var drawer = document.querySelector('.mainDrawerPanel');
-            drawer.classList.remove('mainDrawerPanelPreInit');
-            drawer.forceNarrow = true;
-            drawer.drawerWidth = screen.availWidth >= 330 ? "310px" : "270px";
+        if ($.browser.safari && !AppInfo.isNativeApp) {
+            drawer.disableEdgeSwipe = true;
+        }
 
-            if ($.browser.safari && !AppInfo.isNativeApp) {
-                drawer.disableEdgeSwipe = true;
+        if (Dashboard.isConnectMode()) {
+
+            if (AppInfo.isNativeApp && $.browser.android) {
+                require(['cordova/android/logging']);
             }
 
-            if (Dashboard.isConnectMode()) {
+            require(['appstorage'], function () {
 
-                if (AppInfo.isNativeApp && $.browser.android) {
-                    require(['cordova/android/logging']);
-                }
-
-                require(['appstorage'], function () {
-
-                    capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
-                    createConnectionManager(capabilities).done(function () {
-                        $(function () {
-                            onDocumentReady();
-                            Dashboard.initPromiseDone = true;
-                            $.mobile.initializePage();
-                            deferred.resolve();
-                        });
+                capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
+                createConnectionManager(capabilities).done(function () {
+                    $(function () {
+                        onDocumentReady();
+                        Dashboard.initPromiseDone = true;
+                        $.mobile.initializePage();
+                        deferred.resolve();
                     });
                 });
+            });
 
-            } else {
-                createConnectionManager(capabilities);
+        } else {
+            createConnectionManager(capabilities);
 
-                $(function () {
+            $(function () {
 
-                    onDocumentReady();
-                    Dashboard.initPromiseDone = true;
-                    $.mobile.initializePage();
-                    deferred.resolve();
-                });
-            }
-        });
+                onDocumentReady();
+                Dashboard.initPromiseDone = true;
+                $.mobile.initializePage();
+                deferred.resolve();
+            });
+        }
     }
 
     function initCordovaWithDeviceId(deferred, deviceId) {
@@ -2079,11 +2104,13 @@ var AppInfo = {};
     setAppInfo();
     setDocumentClasses();
 
-    if (Dashboard.isRunningInCordova()) {
-        initCordova(initDeferred);
-    } else {
-        init(initDeferred, Dashboard.capabilities());
-    }
+    $(document).on('WebComponentsReady', function () {
+        if (Dashboard.isRunningInCordova()) {
+            initCordova(initDeferred);
+        } else {
+            init(initDeferred, Dashboard.capabilities());
+        }
+    });
 
 })();
 
@@ -2113,7 +2140,7 @@ $(document).on('pagecreate', ".page", function () {
         current = newTheme;
     }
 
-    if (current == 'b' && !$.browser.mobile) {
+    if (current != 'a' && !$.browser.mobile) {
         document.body.classList.add('darkScrollbars');
     } else {
         document.body.classList.remove('darkScrollbars');
@@ -2178,7 +2205,7 @@ $(document).on('pagecreate', ".page", function () {
             }
         }
 
-        if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !page.classList.contains('wizardPage')) {
+        if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !page.classList.contains('wizardPage') && this.id !== 'publicSharedItemPage') {
 
             Logger.log('Not logged into server. Redirecting to login.');
             Dashboard.logout();
