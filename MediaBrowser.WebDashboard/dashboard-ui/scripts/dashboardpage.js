@@ -738,7 +738,7 @@
         var html = '';
 
         tasks = tasks.filter(function (t) {
-            return t.State != 'Idle';
+            return t.State != 'Idle' && !t.IsHidden;
         });
 
         if (tasks.filter(function (t) {
@@ -1249,7 +1249,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
     }
 
     function onSocketOpen() {
-        
+
         var apiClient = ApiClient;
         if (apiClient) {
             startListening(apiClient);

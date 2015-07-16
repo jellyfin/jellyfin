@@ -1375,7 +1375,7 @@
         }
     }
 
-    function showMoreMenu(page) {
+    function showMoreMenu(page, elem) {
         
         Dashboard.getCurrentUser().done(function (user) {
 
@@ -1401,6 +1401,7 @@
 
                 ActionSheetElement.show({
                     items: menuItems,
+                    positionTo: elem,
                     callback: function (id) {
 
                         switch (id) {
@@ -1499,7 +1500,7 @@
         page.querySelector('.btnMore iron-icon').icon = AppInfo.moreIcon;
 
         $('.btnMore', page).on('click', function () {
-            showMoreMenu(page);
+            showMoreMenu(page, this);
         });
 
     }).on('pageshowready', "#editItemMetadataPage", function () {

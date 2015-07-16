@@ -72,8 +72,8 @@
     }
 
     .pageWithAbsoluteTabs .pageTabContent {
-        padding-left: .3em !important;
-        padding-right: .3em !important;
+        padding-left: .25em !important;
+        padding-right: .25em !important;
     }
 }
 
