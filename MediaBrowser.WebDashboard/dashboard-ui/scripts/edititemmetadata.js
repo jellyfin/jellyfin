@@ -4,15 +4,6 @@
     var currentSearchResult;
     var metadataEditorInfo;
 
-    function updateTabs(page, item) {
-
-        var query = MetadataEditor.getEditQueryString(item);
-
-        $('#btnEditImages', page).attr('href', 'edititemimages.html?' + query);
-        $('#btnEditSubtitles', page).attr('href', 'edititemsubtitles.html?' + query);
-        $('#btnEditCollectionTitles', page).attr('href', 'editcollectionitems.html?' + query);
-    }
-
     function reload(page) {
 
         unbindItemChanged(page);
@@ -50,21 +41,19 @@
 
             LibraryBrowser.renderName(item, $('.itemName', page), true);
 
-            updateTabs(page, item);
-
             setFieldVisibilities(page, item);
             fillItemInfo(page, item, metadataEditorInfo.ParentalRatingOptions);
 
             if (item.Type == "BoxSet") {
-                $('#btnEditCollectionTitles', page).show();
+                $('.collectionItemsTabButton', page).show();
             } else {
-                $('#btnEditCollectionTitles', page).hide();
+                $('.collectionItemsTabButton', page).hide();
             }
 
             if (item.MediaType == "Video" && item.LocationType == "FileSystem" && item.Type !== 'TvChannel') {
-                $('#btnEditSubtitles', page).show();
+                $('.subtitleTabButton', page).show();
             } else {
-                $('#btnEditSubtitles', page).hide();
+                $('.subtitleTabButton', page).hide();
             }
 
             if (item.MediaType == 'Photo') {
@@ -85,20 +74,8 @@
                 $('#fldTagline', page).hide();
             }
 
-            Dashboard.getCurrentUser().done(function (user) {
-
-                var moreCommands = LibraryBrowser.getMoreCommands(item, user);
-
-                if (moreCommands.indexOf('delete') != -1) {
-                    $('#fldDelete', page).show();
-                } else {
-                    $('#fldDelete', page).hide();
-                }
-
-                Dashboard.hideLoadingMsg();
-                bindItemChanged(page);
-            });
-
+            Dashboard.hideLoadingMsg();
+            bindItemChanged(page);
         });
     }
 
@@ -1109,7 +1086,7 @@
             $('.identifyOptionsForm', page).hide();
             $('.btnIdentifyBack', page).hide();
 
-            $('.popupIdentify', page).popup('open');
+            $('.popupIdentifyItem', page).popup('open');
         });
     }
 
@@ -1303,7 +1280,7 @@
 
             Dashboard.hideLoadingMsg();
 
-            $('.popupIdentify', page).popup('close');
+            $('.popupIdentifyItem', page).popup('close');
 
             reload(page);
         });
@@ -1347,9 +1324,17 @@
 
     function refreshWithOptions(page, options) {
 
-        $('#refreshLoading', page).show();
+        Dashboard.showLoadingMsg();
 
         ApiClient.refreshItem(currentItem.Id, options);
+
+        if (!ApiClient.isWebSocketOpen()) {
+
+            // For now this is a hack
+            setTimeout(function () {
+                Dashboard.hideLoadingMsg();
+            }, 5000);
+        }
     }
 
     function onWebSocketMessageReceived(e, data) {
@@ -1364,7 +1349,6 @@
 
                 Logger.log('Item updated - reloading metadata');
                 reload(page);
-                $('#refreshLoading', page).hide();
             }
         }
     }
@@ -1391,14 +1375,56 @@
         }
     }
 
+    function showMoreMenu(page) {
+        
+        Dashboard.getCurrentUser().done(function (user) {
+
+            var moreCommands = LibraryBrowser.getMoreCommands(currentItem, user);
+
+            var menuItems = [];
+
+            menuItems.push({
+                name: Globalize.translate('ButtonAdvancedRefresh'),
+                id: 'refresh',
+                ironIcon: 'refresh'
+            });
+
+            if (moreCommands.indexOf('delete') != -1) {
+                menuItems.push({
+                    name: Globalize.translate('ButtonDelete'),
+                    id: 'delete',
+                    ironIcon: 'delete'
+                });
+            }
+
+            require(['actionsheet'], function () {
+
+                ActionSheetElement.show({
+                    items: menuItems,
+                    callback: function (id) {
+
+                        switch (id) {
+
+                            case 'refresh':
+                                performAdvancedRefresh(page);
+                                break;
+                            case 'delete':
+                                LibraryBrowser.deleteItem(currentItem.Id);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                });
+
+            });
+
+        });
+    }
+
     $(document).on('pageinitdepends', "#editItemMetadataPage", function () {
 
         var page = this;
-
-        $('.btnRefreshAdvanced', this).on('click', function () {
-
-            performAdvancedRefresh(page);
-        });
 
         $('.btnSimpleRefresh', this).on('click', function () {
 
@@ -1426,10 +1452,6 @@
             }
         });
 
-        $('#btnDelete', this).on('click', function () {
-            LibraryBrowser.deleteItem(currentItem.Id);
-        });
-
         $('.libraryTree', page).on('itemclicked', function (event, data) {
 
             if (data.id != currentItem.Id) {
@@ -1440,7 +1462,7 @@
 
                 //$.mobile.urlHistory.ignoreNextHashChange = true;
                 window.location.hash = 'editItemMetadataPage?id=' + data.id;
-                reload(page);
+                $(page.querySelector('neon-animated-pages')).trigger('tabchange');
             }
         });
 
@@ -1455,13 +1477,48 @@
         $('.popupAdvancedRefreshForm').off('submit', EditItemMetadataPage.onRefreshFormSubmit).on('submit', EditItemMetadataPage.onRefreshFormSubmit);
         $('.identifyOptionsForm').off('submit', EditItemMetadataPage.onIdentificationOptionsSubmit).on('submit', EditItemMetadataPage.onIdentificationOptionsSubmit);
 
+        $(page.querySelector('paper-tabs')).on('iron-select', function () {
+            page.querySelector('neon-animated-pages').selected = this.selected;
+        });
+
+        var tabs = page.querySelector('paper-tabs');
+        var pages = page.querySelector('neon-animated-pages');
+
+        configurePaperLibraryTabs(page, tabs, pages);
+
+        $(tabs).on('iron-select', function () {
+            var selected = this.selected;
+
+            page.querySelector('neon-animated-pages').selected = selected;
+        });
+
+        $(pages).on('tabchange', function () {
+            loadTab(page, parseInt(this.selected));
+        });
+
+        page.querySelector('.btnMore iron-icon').icon = AppInfo.moreIcon;
+
+        $('.btnMore', page).on('click', function () {
+            showMoreMenu(page);
+        });
+
     }).on('pageshowready', "#editItemMetadataPage", function () {
 
         var page = this;
 
-        reload(page);
-
         $(LibraryBrowser).on('itemdeleting', onItemDeleted);
+
+        var selected = parseInt(getParameterByName('tab') || '0');
+
+        if (selected) {
+
+            page.querySelector('paper-tabs').selected = 0;
+
+            // Looks like a bug in paper-tabs. It won't set the tab if we try to do it too quickly
+            setTimeout(function () {
+                page.querySelectorAll('paper-tab')[selected].click();
+            }, 700);
+        }
 
     }).on('pagebeforehide', "#editItemMetadataPage", function () {
 
@@ -1471,6 +1528,36 @@
         unbindItemChanged(page);
 
     });
+
+    function configurePaperLibraryTabs(ownerpage, tabs, pages) {
+
+        tabs.hideScrollButtons = true;
+
+        $(ownerpage).on('pagebeforeshowready', LibraryBrowser.onTabbedPageBeforeShowReady);
+
+        $(pages).on('iron-select', function () {
+
+            // When transition animations are used, add a content loading delay to allow the animations to finish
+            // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
+            var delay = 500;
+            var pgs = this;
+            setTimeout(function () {
+                $(pgs).trigger('tabchange');
+            }, delay);
+        });
+    }
+
+    function loadTab(page, index) {
+
+        switch (index) {
+
+            case 0:
+                reload(page);
+                break;
+            default:
+                break;
+        }
+    }
 
 })(jQuery, document, window);
 

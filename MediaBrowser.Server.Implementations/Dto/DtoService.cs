@@ -88,7 +88,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         public IEnumerable<BaseItemDto> GetBaseItemDtos(IEnumerable<BaseItem> items, DtoOptions options, User user = null, BaseItem owner = null)
         {
             var syncJobItems = GetSyncedItemProgress(options);
-            var syncDictionary = syncJobItems.ToDictionary(i => i.ItemId);
+            var syncDictionary = GetSyncedItemProgressDictionary(syncJobItems);
 
             var list = new List<BaseItemDto>();
 
@@ -120,11 +120,23 @@ namespace MediaBrowser.Server.Implementations.Dto
             return list;
         }
 
+        private Dictionary<string, SyncedItemProgress> GetSyncedItemProgressDictionary(IEnumerable<SyncedItemProgress> items)
+        {
+            var dict = new Dictionary<string, SyncedItemProgress>();
+
+            foreach (var item in items)
+            {
+                dict[item.ItemId] = item;
+            }
+
+            return dict;
+        }
+
         public BaseItemDto GetBaseItemDto(BaseItem item, DtoOptions options, User user = null, BaseItem owner = null)
         {
             var syncProgress = GetSyncedItemProgress(options);
 
-            var dto = GetBaseItemDtoInternal(item, options, syncProgress.ToDictionary(i => i.ItemId), user, owner);
+            var dto = GetBaseItemDtoInternal(item, options, GetSyncedItemProgressDictionary(syncProgress), user, owner);
 
             var byName = item as IItemByName;
 
@@ -382,7 +394,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             var syncProgress = GetSyncedItemProgress(options);
 
-            var dto = GetBaseItemDtoInternal(item, options, syncProgress.ToDictionary(i => i.ItemId), user);
+            var dto = GetBaseItemDtoInternal(item, options, GetSyncedItemProgressDictionary(syncProgress), user);
 
             if (options.Fields.Contains(ItemFields.ItemCounts))
             {

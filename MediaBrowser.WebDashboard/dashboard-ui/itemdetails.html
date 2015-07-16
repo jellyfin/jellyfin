@@ -4,7 +4,7 @@
     <title></title>
 </head>
 <body>
-    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage lightBackdropPage" data-theme="b" data-require="scripts/itemdetailpage,paperbuttonstyle,tileitemcss">
+    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage lightBackdropPage" data-theme="b" data-require="scripts/itemdetailpage,paperbuttonstyle,tileitemcss,jqmicons">
 
         <div class="itemTabs homeTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
@@ -42,8 +42,8 @@
         <div class="itemTabs photoTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
                 <a href="photos.html" class="ui-btn-active lnkPhotoAlbums"><iron-icon icon="photo-album"></iron-icon>${TabAlbums}</a>
-                <a href="photos.html?context=photos-photos" class="lnkPhotos"><iron-icon icon="photo"></iron-icon>${TabPhotos}</a>
-                <a href="photos.html?context=photos-videos" class="lnkVideos"><iron-icon icon="videocam"></iron-icon>${TabVideos}</a>
+                <a href="photos.html?tab=1" class="lnkPhotos"><iron-icon icon="photo"></iron-icon>${TabPhotos}</a>
+                <a href="photos.html?tab=2" class="lnkVideos"><iron-icon icon="videocam"></iron-icon>${TabVideos}</a>
             </div>
         </div>
         <div id="tvShowsTabs" class="itemTabs" style="display: none;">

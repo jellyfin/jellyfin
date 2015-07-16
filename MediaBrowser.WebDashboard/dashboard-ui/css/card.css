@@ -106,6 +106,10 @@
     margin-bottom: 24px;
 }
 
+.hiddenScrollX .bottomPaddedCard .cardBox {
+    margin-bottom: 0;
+}
+
 .visualCardBox {
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;

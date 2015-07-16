@@ -72,8 +72,8 @@
     }
 
     .pageWithAbsoluteTabs .pageTabContent {
-        padding-left: .5em !important;
-        padding-right: .5em !important;
+        padding-left: .3em !important;
+        padding-right: .3em !important;
     }
 }
 
@@ -84,6 +84,8 @@
 .listHeader {
     margin: .25em 0;
     padding-left: 2px;
+    line-height: 1.25em;
+    line-height: initial;
 }
 
     .listHeader + paper-button {

@@ -10,6 +10,7 @@
         $('#chkUpcomingTheaterTrailers', page).checked(config.EnableIntrosFromUpcomingTrailers).checkboxradio('refresh');
         $('#chkUpcomingDvdTrailers', page).checked(config.EnableIntrosFromUpcomingDvdMovies).checkboxradio('refresh');
         $('#chkUpcomingStreamingTrailers', page).checked(config.EnableIntrosFromUpcomingStreamingMovies).checkboxradio('refresh');
+        $('#chkOtherTrailers', page).checked(config.EnableIntrosFromSimilarMovies).checkboxradio('refresh');
 
         $('#chkUnwatchedOnly', page).checked(!config.EnableIntrosForWatchedContent).checkboxradio('refresh');
         $('#chkEnableParentalControl', page).checked(config.EnableIntrosParentalControl).checkboxradio('refresh');
@@ -41,6 +42,7 @@
             config.EnableIntrosFromUpcomingTrailers = $('#chkUpcomingTheaterTrailers', page).checked();
             config.EnableIntrosFromUpcomingDvdMovies = $('#chkUpcomingDvdTrailers', page).checked();
             config.EnableIntrosFromUpcomingStreamingMovies = $('#chkUpcomingStreamingTrailers', page).checked();
+            config.EnableIntrosFromSimilarMovies = $('#chkOtherTrailers', page).checked();
 
             ApiClient.updateNamedConfiguration("cinemamode", config).done(Dashboard.processServerConfigurationUpdateResult);
         });

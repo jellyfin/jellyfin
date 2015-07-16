@@ -52,8 +52,7 @@ Enables a custom element to be included in an `iron-form`.
       },
 
       /**
-       * Need to keep a reference to the form this element is registered
-       * to, so that it can unregister if detached.
+       * The form that the element is registered to.
        */
       _parentForm: {
         type: Object
@@ -61,7 +60,8 @@ Enables a custom element to be included in an `iron-form`.
     },
 
     attached: function() {
-      this._parentForm = Polymer.dom(this).parentNode;
+      // Note: the iron-form that this element belongs to will set this
+      // element's _parentForm property when handling this event.
       this.fire('iron-form-element-register');
     },
 

@@ -160,6 +160,7 @@
         }
 
         LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
+        query.SortBy = "SortName";
 
         reloadItems(this);
 

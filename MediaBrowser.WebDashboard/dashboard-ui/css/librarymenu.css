@@ -31,6 +31,10 @@
     display: inline-block;
 }
 
+.headerUserButtonRound img {
+    border-radius: 1000px;
+}
+
 .viewMenuBar .fa, .viewMenuBar paper-icon-button {
     color: #fff;
     vertical-align: middle;

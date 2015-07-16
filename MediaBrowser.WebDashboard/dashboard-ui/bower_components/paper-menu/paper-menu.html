@@ -21,6 +21,13 @@ is highlighted, and the selected item has bolded text.
       <paper-item>Item 2</paper-item>
     </paper-menu>
 
+An initial selection can be specified with the `selected` attribute.
+
+    <paper-menu selected="0">
+      <paper-item>Item 1</paper-item>
+      <paper-item>Item 2</paper-item>
+    </paper-menu>
+
 Make a multi-select menu with the `multi` attribute. Items in a multi-select menu can be deselected,
 and multiple item can be selected.
 
@@ -36,7 +43,7 @@ The following custom properties and mixins are available for styling:
 Custom property | Description | Default
 ----------------|-------------|----------
 `--paper-menu-background-color`   | Menu background color                                            | `--primary-background-color`
-`-paper-menu-color`               | Menu foreground color                                            | `--primary-text-color`
+`--paper-menu-color`               | Menu foreground color                                            | `--primary-text-color`
 `--paper-menu-disabled-color`     | Foreground color for a disabled item                             | `--disabled-text-color`
 `--paper-menu`                    | Mixin applied to the menu                                        | `{}`
 `--paper-menu-selected-item`      | Mixin applied to the selected item                               | `{}`
@@ -85,7 +92,7 @@ of a menu item will also focus it.
       position: relative;
       outline: 0;
 
-      @apply(--paper-menu-colored-focused-item);
+      @apply(--paper-menu-focused-item);
     }
 
     .content > ::content > *:focus:after {
@@ -95,7 +102,7 @@ of a menu item will also focus it.
       opacity: 0.12;
       content: '';
 
-      @apply(--paper-menu-colored-focused-item-after);
+      @apply(--paper-menu-focused-item-after);
     }
 
     .content > ::content > *[colored]:focus:after {

@@ -120,6 +120,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       });
 
+      suite('validation', function() {
+        test('a required textarea with no text is invalid', function() {
+          var input = fixture('basic');
+          input.required = true;
+          assert.isFalse(input.validate());
+
+          input.bindValue = 'batman';
+          assert.isTrue(input.validate());
+        });
+      });
+
     </script>
 
   </body>

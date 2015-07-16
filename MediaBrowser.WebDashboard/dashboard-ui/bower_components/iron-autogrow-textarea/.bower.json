@@ -1,6 +1,6 @@
 {
   "name": "iron-autogrow-textarea",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A textarea element that automatically grows with input",
   "authors": [
     "The Polymer Authors"
@@ -26,6 +26,7 @@
     "iron-behaviors": "PolymerElements/iron-behaviors#^1.0.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
     "iron-validatable-behavior": "PolymerElements/iron-validatable-behavior#^1.0.0",
+    "iron-form-element-behavior": "PolymerElements/iron-form-element-behavior#^1.0.0",
     "polymer": "Polymer/polymer#^1.0.0"
   },
   "devDependencies": {
@@ -36,11 +37,11 @@
     "paper-styles": "PolymerElements/paper-styles#^1.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
-  "_release": "1.0.2",
+  "_release": "1.0.3",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.2",
-    "commit": "1697690de3010aa7b4d3557e7f3fa582e82dee6a"
+    "tag": "v1.0.3",
+    "commit": "9eae088ce72a31b0baf44e6cdc183e5b73014af5"
   },
   "_source": "git://github.com/PolymerElements/iron-autogrow-textarea.git",
   "_target": "^1.0.0",

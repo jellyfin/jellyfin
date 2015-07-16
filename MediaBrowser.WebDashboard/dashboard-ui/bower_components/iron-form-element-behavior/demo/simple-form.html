@@ -35,6 +35,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     _elementRegistered: function(e) {
       this.formElements.push(e.target);
+      e.target._parentForm = this;
     },
 
     _elementUnregistered: function(e) {

@@ -120,17 +120,37 @@
 
         configureSwipeTabs: function (ownerpage, tabs, pages) {
 
+            if (!$.browser.safari) {
+                // Safari doesn't handle the horizontal swiping very well
+                pages.entryAnimation = 'slide-from-right-animation';
+                pages.exitAnimation = 'slide-left-animation';
+            }
+
             var pageCount = pages.querySelectorAll('neon-animatable').length;
+
+            function allowSwipeOn(elem) {
+
+                if (elem.tagName == 'PAPER-SLIDER') {
+                    return false;
+                }
+
+                if (elem.classList) {
+                    return !elem.classList.contains('hiddenScrollX') && !elem.classList.contains('smoothScrollX');
+                }
+
+                return true;
+            }
 
             function allowSwipe(e) {
 
                 var target = e.target;
 
-                if (target.classList.contains('noSwipe')) {
-                    return false;
-                }
-                if ($(target).parents('.noSwipe').length) {
-                    return false;
+                var parent = target.parentNode;
+                while (parent != null) {
+                    if (!allowSwipeOn(parent)) {
+                        return false;
+                    }
+                    parent = parent.parentNode;
                 }
 
                 return true;
@@ -162,7 +182,6 @@
         },
 
         enableFullPaperTabs: function () {
-            //return true;
             return AppInfo.isNativeApp;
         },
 
@@ -192,12 +211,6 @@
                     tabs.noBar = true;
                 }
                 else {
-                    // Safari doesn't handle the horizontal swiping very well
-
-                    // Not very iOS-like I suppose
-                    pages.entryAnimation = 'slide-from-right-animation';
-                    pages.exitAnimation = 'slide-left-animation';
-
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pages);
                 }
 
@@ -223,6 +236,17 @@
             }
 
             $(ownerpage).on('pagebeforeshowready', LibraryBrowser.onTabbedPageBeforeShowReady);
+
+            $(pages).on('iron-select', function () {
+
+                // When transition animations are used, add a content loading delay to allow the animations to finish
+                // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
+                var delay = LibraryBrowser.enableFullPaperTabs() ? 500 : 0;
+                var pgs = this;
+                setTimeout(function () {
+                    $(pgs).trigger('tabchange');
+                }, delay);
+            });
         },
 
         onTabbedPageBeforeShowReady: function () {
@@ -1114,7 +1138,7 @@
                 html += '</span>';
                 //html += '<button type="button" data-role="none" class="listviewMenuButton imageButton listViewMoreButton" data-icon="none">';
                 //html += '</button>';
-                html += '<paper-icon-button icon="more-vert" class="listviewMenuButton"></paper-icon-button>';
+                html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="listviewMenuButton"></paper-icon-button>';
                 html += '<span class="listViewUserDataButtons">';
                 html += LibraryBrowser.getUserDataIconsHtml(item);
                 html += '</span>';
@@ -1412,26 +1436,7 @@
 
                 primaryImageAspectRatio = LibraryBrowser.getAveragePrimaryImageAspectRatio([item]);
 
-                if (options.showPremiereDateIndex) {
-
-                    if (item.PremiereDate) {
-                        try {
-
-                            dateText = LibraryBrowser.getFutureDateText(parseISO8601Date(item.PremiereDate, { toLocal: true }), true);
-
-                        } catch (err) {
-                        }
-                    }
-
-                    var newIndexValue = dateText || Globalize.translate('HeaderUnknownDate');
-
-                    if (newIndexValue != currentIndexValue) {
-
-                        html += '<h2 class="timelineHeader detailSectionHeader" style="text-align:center;">' + newIndexValue + '</h2>';
-                        currentIndexValue = newIndexValue;
-                    }
-                }
-                else if (options.showStartDateIndex) {
+                if (options.showStartDateIndex) {
 
                     if (item.StartDate) {
                         try {
@@ -1675,7 +1680,10 @@
 
             var mediaSourceCount = item.MediaSourceCount || 1;
 
-            var href = options.linkItem === false ? '#' : LibraryBrowser.getHref(item, options.context);
+            var href = options.linkItem === false ? '#' :
+                (options.useSecondaryItemsPage && item.IsFolder) ?
+                    ('secondaryitems.html?parentid=' + item.Id) :
+                    LibraryBrowser.getHref(item, options.context);
 
             if (item.UserData) {
                 cssClass += ' ' + LibraryBrowser.getUserDataCssClass(item.UserData.Key);
@@ -1803,7 +1811,7 @@
                 html += '<paper-icon-button icon="play-arrow" class="cardOverlayPlayButton" onclick="return false;"></paper-icon-button>';
             }
             if (options.overlayMoreButton) {
-                html += '<paper-icon-button icon="more-vert" class="cardOverlayMoreButton" onclick="return false;"></paper-icon-button>';
+                html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="cardOverlayMoreButton" onclick="return false;"></paper-icon-button>';
             }
 
             // cardScalable
@@ -1830,7 +1838,7 @@
 
             if (options.cardLayout) {
                 html += '<div class="cardButtonContainer">';
-                html += '<paper-icon-button icon="more-vert" class="listviewMenuButton btnCardOptions"></paper-icon-button>';
+                html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="listviewMenuButton btnCardOptions"></paper-icon-button>';
                 html += "</div>";
             }
 
@@ -2392,7 +2400,7 @@
                 if (options.viewButton) {
 
                     //html += '<paper-button raised class="subdued notext"><iron-icon icon="view-comfy"></iron-icon></paper-button>';
-                    html += '<paper-button raised class="subdued notext" onclick="require([\'jqmicons\']);jQuery(\'.viewPanel\', jQuery(this).parents(\'.page\')).panel(\'toggle\');"><iron-icon icon="more-vert"></iron-icon></paper-button>';
+                    html += '<paper-button raised class="subdued notext" onclick="require([\'jqmicons\']);jQuery(\'.viewPanel\', jQuery(this).parents(\'.page\')).panel(\'toggle\');"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></paper-button>';
                 }
 
                 html += '</div>';

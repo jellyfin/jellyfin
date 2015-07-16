@@ -1273,7 +1273,7 @@
                         "X-Application": appName + "/" + appVersion
                     }
 
-                }).done(onDone);
+                }).always(onDone);
 
             } else {
 

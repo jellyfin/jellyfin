@@ -188,7 +188,7 @@ paper-button.notext {
         margin-right: 0;
     }
 
-#docspinner {
+.docspinner {
     display: block;
     margin-top: -14px;
     margin-left: -14px;

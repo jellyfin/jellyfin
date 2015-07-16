@@ -35,8 +35,8 @@ Custom property | Description | Default
   <style>
 
     :host {
-      /* need to use display: none for role="alert" */
-      display: none;
+      display: inline-block;
+      visibility: hidden;
       float: left;
 
       color: var(--paper-input-container-invalid-color, --google-red-500);
@@ -46,7 +46,7 @@ Custom property | Description | Default
     }
 
     :host([invalid]) {
-      display: inline-block;
+      visibility: visible;
     };
 
   </style>
@@ -70,10 +70,6 @@ Custom property | Description | Default
     behaviors: [
       Polymer.PaperInputAddonBehavior
     ],
-
-    hostAttributes: {
-      'role': 'alert'
-    },
 
     properties: {
 

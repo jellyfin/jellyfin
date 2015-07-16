@@ -6735,6 +6735,7 @@ this._removeChildren();
 </script>
 
 
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
 <style is="custom-style">
 
   :root {
@@ -6751,7 +6752,7 @@ this._removeChildren();
     };
 
     --paper-font-common-code: {
-      font-family: 'Inconsolata', 'Consolas', 'Source Code Pro', 'Monaco', 'Menlo', monospace;
+      font-family: 'Roboto Mono', 'Consolas', 'Menlo', monospace;
       -webkit-font-smoothing: antialiased;
     };
 
@@ -6939,7 +6940,7 @@ this._removeChildren();
 
     --paper-font-code2: {
       /* @apply(--paper-font-common-code); */
-      font-family: 'Inconsolata', 'Consolas', 'Source Code Pro', 'Monaco', 'Menlo', monospace;
+      font-family: 'Roboto Mono', 'Consolas', 'Menlo', monospace;
       -webkit-font-smoothing: antialiased;
 
       font-size: 14px;
@@ -6949,7 +6950,7 @@ this._removeChildren();
 
     --paper-font-code1: {
       /* @apply(--paper-font-common-code); */
-      font-family: 'Inconsolata', 'Consolas', 'Source Code Pro', 'Monaco', 'Menlo', monospace;
+      font-family: 'Roboto Mono', 'Consolas', 'Menlo', monospace;
       -webkit-font-smoothing: antialiased;
 
       font-size: 14px;
@@ -11490,7 +11491,11 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
      * @return {boolean} True if `values` is valid.
      */
     validate: function(values) {
-      var valid = this._validator && this._validator.validate(values);
+      var valid = true;
+      if (this.hasValidator()) {
+        valid = this._validator.validate(values);
+      }
+
       this.invalid = !valid;
       return valid;
     }
@@ -12004,6 +12009,24 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         type: Number
       },
 
+      // Nonstandard attributes for binding if needed
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `autocapitalize` property.
+       */
+      autocapitalize: {
+        type: String,
+        value: 'none'
+      },
+
+      /**
+       * Bind this to the `<input is="iron-input">`'s `autocorrect` property.
+       */
+      autocorrect: {
+        type: String,
+        value: 'off'
+      },
+
       _ariaDescribedBy: {
         type: String,
         value: ''
@@ -12014,6 +12037,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     listeners: {
       'addon-attached': '_onAddonAttached'
     },
+
+    observers: [
+      '_focusedControlStateChanged(focused)'
+    ],
 
     /**
      * Returns a reference to the input element.
@@ -12079,6 +12106,24 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       return placeholder || alwaysFloatLabel;
     },
 
+    _focusedControlStateChanged: function(focused) {
+      // IronControlState stops the focus and blur events in order to redispatch them on the host
+      // element, but paper-input-container listens to those events. Since there are more
+      // pending work on focus/blur in IronControlState, I'm putting in this hack to get the
+      // input focus state working for now.
+      if (!this.$.container) {
+        this.$.container = Polymer.dom(this.root).querySelector('paper-input-container');
+        if (!this.$.container) {
+          return;
+        }
+      }
+      if (focused) {
+        this.$.container._onFocus();
+      } else {
+        this.$.container._onBlur();
+      }
+    },
+
     _updateAriaLabelledBy: function() {
       var label = Polymer.dom(this.root).querySelector('label');
       if (!label) {
@@ -12097,6 +12142,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
   };
 
+  /** @polymerBehavior */
   Polymer.PaperInputBehavior = [Polymer.IronControlState, Polymer.PaperInputBehaviorImpl];
 
 </script>
@@ -13215,7 +13261,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
  *      SHRINK_TIME = 400ms
  */
 
- :host {
+:host {
   display: inline-block;
   position: relative;
   width: 28px; /* CONTAINERWIDTH */
@@ -13225,6 +13271,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 #spinnerContainer {
   width: 100%;
   height: 100%;
+
+  /* The spinner does not have any contents that would have to be
+   * flipped if the direction changes. Always use ltr so that the
+   * style works out correctly in both cases. */
+  direction: ltr;
 }
 
 #spinnerContainer.active {
@@ -13563,123 +13614,101 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
 
-    (function() {
+    Polymer({
 
-      'use strict';
+      is: 'paper-spinner',
 
-      function classNames(obj) {
-        var classNames = [];
-        for (var key in obj) {
-          if (obj.hasOwnProperty(key) && obj[key]) {
-            classNames.push(key);
-          }
+      listeners: {
+        'animationend': 'reset',
+        'webkitAnimationEnd': 'reset'
+      },
+
+      properties: {
+
+        /**
+         * Displays the spinner.
+         *
+         * @attribute active
+         * @type boolean
+         * @default false
+         */
+        active: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+          observer: '_activeChanged'
+        },
+
+        /**
+         * Alternative text content for accessibility support.
+         * If alt is present, it will add an aria-label whose content matches alt when active.
+         * If alt is not present, it will default to 'loading' as the alt value.
+         *
+         * @attribute alt
+         * @type string
+         * @default 'loading'
+         */
+        alt: {
+          type: String,
+          value: 'loading',
+          observer: '_altChanged'
+        },
+
+        /**
+         * True when the spinner is going from active to inactive. This is represented by a fade
+         * to 0% opacity to the user.
+         */
+        _coolingDown: {
+          type: Boolean,
+          value: false
+        },
+
+        _spinnerContainerClassName: {
+          type: String,
+          computed: '_computeSpinnerContainerClassName(active, _coolingDown)'
         }
 
-        return classNames.join(' ');
+      },
+
+      _computeSpinnerContainerClassName: function(active, coolingDown) {
+        return [
+          active || coolingDown ? 'active' : '',
+          coolingDown ? 'cooldown' : ''
+        ].join(' ');
+      },
+
+      _activeChanged: function(active, old) {
+        this._setAriaHidden(!active);
+        if (!active && old) {
+          this._coolingDown = true;
+        }
+      },
+
+      _altChanged: function(alt) {
+        // user-provided `aria-label` takes precedence over prototype default
+        if (alt === this.getPropertyInfo('alt').value) {
+          this.alt = this.getAttribute('aria-label') || alt;
+        } else {
+          this._setAriaHidden(alt==='');
+          this.setAttribute('aria-label', alt);
+        }
+      },
+
+      _setAriaHidden: function(hidden) {
+        var attr = 'aria-hidden';
+        if (hidden) {
+          this.setAttribute(attr, 'true');
+        } else {
+          this.removeAttribute(attr);
+        }
+      },
+
+      reset: function() {
+        this.active = false;
+        this._coolingDown = false;
       }
 
-      Polymer({
-
-        is: 'paper-spinner',
-
-        listeners: {
-          'animationend': 'reset',
-          'webkitAnimationEnd': 'reset'
-        },
-
-        properties: {
-
-          /**
-           * Displays the spinner.
-           *
-           * @attribute active
-           * @type boolean
-           * @default false
-           */
-          active: {
-            observer: '_activeChanged',
-            type: Boolean,
-            value: false
-          },
-
-          /**
-           * Alternative text content for accessibility support.
-           * If alt is present, it will add an aria-label whose content matches alt when active.
-           * If alt is not present, it will default to 'loading' as the alt value.
-           *
-           * @attribute alt
-           * @type string
-           * @default 'loading'
-           */
-          alt: {
-            observer: '_altChanged',
-            type: String,
-            value: 'loading'
-          },
-
-          /**
-           * True when the spinner is going from active to inactive. This is represented by a fade
-           * to 0% opacity to the user.
-           */
-          _coolingDown: {
-            type: Boolean,
-            value: false
-          },
-
-          _spinnerContainerClassName: {
-            type: String,
-            computed: '_computeSpinnerContainerClassName(active, _coolingDown)'
-          }
-
-        },
-
-        _computeSpinnerContainerClassName: function(active, _coolingDown) {
-          return classNames({
-            active: active || _coolingDown,
-            cooldown: _coolingDown
-          });
-        },
-
-        ready: function() {
-          // Allow user-provided `aria-label` take preference to any other text alternative.
-          if (this.hasAttribute('aria-label')) {
-            this.alt = this.getAttribute('aria-label');
-          } else {
-            this.setAttribute('aria-label', this.alt);
-          }
-
-          if (!this.active) {
-            this.setAttribute('aria-hidden', 'true');
-          }
-        },
-
-        _activeChanged: function() {
-          if (this.active) {
-            this.removeAttribute('aria-hidden');
-          } else {
-            this._coolingDown = true;
-            this.setAttribute('aria-hidden', 'true');
-          }
-        },
-
-        _altChanged: function() {
-          if (this.alt === '') {
-            this.setAttribute('aria-hidden', 'true');
-          } else {
-            this.removeAttribute('aria-hidden');
-          }
-
-          this.setAttribute('aria-label', this.alt);
-        },
-
-        reset: function() {
-          this.active = false;
-          this._coolingDown = false;
-        }
-
-      });
-
-    }());
+    });
 
   </script>
 
@@ -14439,6 +14468,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       position: relative;
       padding: 8px;
       outline: none;
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
@@ -15660,6 +15690,9 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     },
 
     _positionBar: function(width, left) {
+      width = width || 0;
+      left = left || 0;
+
       this._width = width;
       this._left = left;
       this.transform(
@@ -15863,6 +15896,8 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       transform: scale3d(0,1,1);
 
       background: var(--paper-input-container-focus-color, --default-primary-color);
+
+      @apply(--paper-input-container-underline-focus);
     }
 
     .underline.is-highlighted .focused-line {
@@ -15888,12 +15923,16 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     .unfocused-line {
       height: 1px;
       background: var(--paper-input-container-color, --secondary-text-color);
+
+      @apply(--paper-input-container-underline);
     }
 
     :host([disabled]) .unfocused-line {
       border-bottom: 1px dashed;
       border-color: var(--paper-input-container-color, --secondary-text-color);
       background: transparent;
+
+      @apply(--paper-input-container-underline-disabled);
     }
 
     .input-content {
@@ -15928,6 +15967,8 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     .input-content.label-is-highlighted ::content label,
     .input-content.label-is-highlighted ::content .paper-input-label {
       color: var(--paper-input-container-focus-color, --default-primary-color);
+
+      @apply(--paper-input-container-label-focus);
     }
 
     .input-content.is-invalid ::content label,
@@ -16265,8 +16306,8 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
   <style>
 
     :host {
-      /* need to use display: none for role="alert" */
-      display: none;
+      display: inline-block;
+      visibility: hidden;
       float: left;
 
       color: var(--paper-input-container-invalid-color, --google-red-500);
@@ -16276,7 +16317,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     }
 
     :host([invalid]) {
-      display: inline-block;
+      visibility: visible;
     };
 
   </style>
@@ -16300,10 +16341,6 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     behaviors: [
       Polymer.PaperInputAddonBehavior
     ],
-
-    hostAttributes: {
-      'role': 'alert'
-    },
 
     properties: {
 
@@ -16423,7 +16460,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
 
       <label hidden$="[[!label]]">[[label]]</label>
 
-      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" maxlength$="[[maxlength]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]">
+      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" maxlength$="[[maxlength]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]" autocapitalize$="[[autocapitalize]]" autocorrect$="[[autocorrect]]">
 
       <template is="dom-if" if="[[errorMessage]]">
         <paper-input-error>[[errorMessage]]</paper-input-error>
@@ -16448,6 +16485,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     is: 'paper-input',
 
     behaviors: [
+      Polymer.IronFormElementBehavior,
       Polymer.PaperInputBehavior,
       Polymer.IronControlState
     ]
@@ -17159,7 +17197,7 @@ paper-ripple {
       position: relative;
       outline: 0;
 
-      @apply(--paper-menu-colored-focused-item);
+      @apply(--paper-menu-focused-item);
     }
 
     .content > ::content > *:focus:after {
@@ -17169,7 +17207,7 @@ paper-ripple {
       opacity: 0.12;
       content: '';
 
-      @apply(--paper-menu-colored-focused-item-after);
+      @apply(--paper-menu-focused-item-after);
     }
 
     .content > ::content > *[colored]:focus:after {
@@ -17260,6 +17298,7 @@ paper-ripple {
             <g id="search"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></g>
             <g id="menu"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></g>
             <g id="chevron-left"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path></g>
+            <g id="chevron-right"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></g>
             <g id="pause"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></g>
             <g id="stop"><path d="M6 6h12v12H6z"></path></g>
             <g id="skip-next"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"></path></g>
@@ -17293,6 +17332,7 @@ paper-ripple {
             <g id="photo-album"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4zm0 15l3-3.86 2.14 2.58 3-3.86L18 19H6z"></path></g>
             <g id="local-movies"><path d="M18 3v2h-2V3H8v2H6V3H4v18h2v-2h2v2h8v-2h2v2h2V3h-2zM8 17H6v-2h2v2zm0-4H6v-2h2v2zm0-4H6V7h2v2zm10 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z"></path></g>
             <g id="music-note"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"></path></g>
+            <g id="more-horiz"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path></g>
         </defs>
     </svg>
 </iron-iconset-svg>

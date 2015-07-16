@@ -26,7 +26,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
  *      SHRINK_TIME = 400ms
  */
 
- :host {
+:host {
   display: inline-block;
   position: relative;
   width: 28px; /* CONTAINERWIDTH */
@@ -36,6 +36,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 #spinnerContainer {
   width: 100%;
   height: 100%;
+
+  /* The spinner does not have any contents that would have to be
+   * flipped if the direction changes. Always use ltr so that the
+   * style works out correctly in both cases. */
+  direction: ltr;
 }
 
 #spinnerContainer.active {

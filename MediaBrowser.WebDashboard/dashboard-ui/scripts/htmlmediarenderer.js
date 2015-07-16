@@ -2,6 +2,7 @@
 
     var supportsTextTracks;
     var isViblastStarted;
+    var requiresSettingStartTimeOnStart;
 
     function htmlMediaRenderer(options) {
 
@@ -13,6 +14,22 @@
         }
 
         function onTimeUpdate() {
+
+            if (isViblastStarted) {
+
+                // This is a workaround for viblast not stopping playback at the end
+                var time = this.currentTime;
+                var duration = this.duration;
+
+                if (duration) {
+                    if (time >= (duration - 1)) {
+
+                        onEnded();
+                        return;
+                    }
+                }
+            }
+
             $(self).trigger('timeupdate');
         }
 
@@ -54,8 +71,7 @@
 
         function onLoadedMetadata() {
 
-            // The IE video player won't autoplay without this
-            if ($.browser.msie) {
+            if (!isViblastStarted) {
                 this.play();
             }
         }
@@ -96,15 +112,9 @@
             return htmlMediaRenderer.customViblastKey || viblastKey;
         }
 
-        function onOneVideoPlaying() {
+        function getStartTime(url) {
 
-            var requiresNativeControls = !self.enableCustomVideoControls();
-
-            if (requiresNativeControls) {
-                $(this).attr('controls', 'controls');
-            }
-
-            var src = (self.currentSrc() || '').toLowerCase();
+            var src = url;
 
             var parts = src.split('#');
 
@@ -114,15 +124,32 @@
 
                 if (parts.length == 2) {
 
-                    var startPositionInSeekParam = parseFloat(parts[1]);
+                    return parseFloat(parts[1]);
+                }
+            }
 
-                    // Appending #t=xxx to the query string doesn't seem to work with HLS
-                    if (startPositionInSeekParam && src.indexOf('.m3u8') != -1) {
-                        var element = this;
-                        setTimeout(function () {
-                            element.currentTime = startPositionInSeekParam;
-                        }, 2500);
-                    }
+            return 0;
+        }
+
+        function onOneVideoPlaying() {
+
+            var requiresNativeControls = !self.enableCustomVideoControls();
+
+            if (requiresNativeControls) {
+                $(this).attr('controls', 'controls');
+            }
+
+            if (requiresSettingStartTimeOnStart) {
+                var src = (self.currentSrc() || '').toLowerCase();
+
+                var startPositionInSeekParam = getStartTime(src);
+
+                // Appending #t=xxx to the query string doesn't seem to work with HLS
+                if (startPositionInSeekParam && src.indexOf('.m3u8') != -1) {
+                    var element = this;
+                    setTimeout(function () {
+                        element.currentTime = startPositionInSeekParam;
+                    }, 2500);
                 }
             }
         }
@@ -298,6 +325,9 @@
                 return;
             }
 
+            requiresSettingStartTimeOnStart = false;
+            var startTime = getStartTime(val);
+
             if (elem.tagName.toLowerCase() == 'audio') {
 
                 elem.src = val;
@@ -305,6 +335,21 @@
 
             }
             else {
+
+                if (isViblastStarted) {
+                    viblast(elem).stop();
+                    isViblastStarted = false;
+                }
+
+                if (startTime) {
+
+                    try {
+                        elem.currentTime = startTime;
+                    } catch (err) {
+                        // IE will throw an invalid state exception when trying to set currentTime before starting playback
+                    }
+                    requiresSettingStartTimeOnStart = elem.currentTime == 0;
+                }
 
                 if (enableViblast(val)) {
 
@@ -318,6 +363,7 @@
                     isViblastStarted = true;
 
                 } else {
+
                     elem.src = val;
 
                     setTracks(elem, tracks || []);

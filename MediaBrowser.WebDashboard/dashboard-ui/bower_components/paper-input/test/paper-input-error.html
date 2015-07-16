@@ -52,9 +52,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var container = fixture('auto-validate-numbers');
         var input = Polymer.dom(container).querySelector('#i');
         var error = Polymer.dom(container).querySelector('#e');
-        assert.equal(getComputedStyle(error).display, 'none', 'error is display:none');
+        assert.equal(getComputedStyle(error).visibility, 'hidden', 'error is visibility:hidden');
         input.bindValue = 'foobar';
-        assert.notEqual(getComputedStyle(error).display, 'none', 'error is not display:none');
+        assert.notEqual(getComputedStyle(error).visibility, 'hidden', 'error is not visibility:hidden');
       });
 
       test('error message add on is registered', function() {

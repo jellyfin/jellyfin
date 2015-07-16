@@ -258,7 +258,7 @@
 
         if (elem) {
             // commenting out for now because it's causing the whole window to scroll in chrome
-            //elem.scrollIntoView();
+            elem.scrollIntoView();
         }
     }
 

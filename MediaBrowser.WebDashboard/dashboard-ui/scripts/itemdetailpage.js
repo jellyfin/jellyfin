@@ -133,7 +133,7 @@
 
     function renderImage(page, item, user) {
 
-        var imageHref = user.Policy.IsAdministrator && item.MediaType != 'Photo' ? "edititemimages.html?id=" + item.Id : "";
+        var imageHref = user.Policy.IsAdministrator && item.MediaType != 'Photo' ? "edititemmetadata.html?tab=3&id=" + item.Id : "";
 
         LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, imageHref);
     }
@@ -959,7 +959,7 @@
         html += '<span>' + type.name + '</span>';
 
         if (user.Policy.IsAdministrator) {
-            html += '<a class="detailSectionHeaderButton" href="editcollectionitems.html?id=' + currentItem.Id + '" data-role="button" data-icon="edit" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonEdit') + '</a>';
+            html += '<a class="detailSectionHeaderButton" href="edititemmetadata.html?tab=2&id=' + currentItem.Id + '" data-role="button" data-icon="edit" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonEdit') + '</a>';
         }
 
         html += '</div>';
@@ -1691,8 +1691,12 @@
         }).on("click", ".moreCriticReviews", function () {
 
             renderCriticReviews(page, currentItem);
-
         });
+
+        var btnMore = page.querySelectorAll('.btnMoreCommands iron-icon');
+        for (var i = 0, length = btnMore.length; i < length; i++) {
+            btnMore[i].icon = AppInfo.moreIcon;
+        }
 
     }).on('pagebeforeshowready', "#itemDetailPage", function () {
 

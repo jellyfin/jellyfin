@@ -190,6 +190,19 @@
             return deferred.promise();
         };
 
+        var pollInterval;
+
+        function onPollIntervalFired() {
+
+            if (!ApiClient.isWebSocketOpen()) {
+                var apiClient = window.ApiClient;
+
+                if (apiClient) {
+                    apiClient.getSessions().done(processUpdatedSessions);
+                }
+            }
+        }
+
         self.subscribeToPlayerUpdates = function () {
 
             self.isUpdating = true;
@@ -198,15 +211,24 @@
 
                 ApiClient.sendWebSocketMessage("SessionsStart", "100,800");
             }
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+            pollInterval = setInterval(onPollIntervalFired, 1500);
         };
 
         function unsubscribeFromPlayerUpdates() {
 
-            self.false = true;
+            self.isUpdating = true;
 
             if (ApiClient.isWebSocketOpen()) {
 
                 ApiClient.sendWebSocketMessage("SessionsStop");
+            }
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
             }
         }
 
@@ -307,23 +329,28 @@
         }
     }
 
+    function processUpdatedSessions(sessions) {
+        
+        var currentTargetId = MediaController.getPlayerInfo().id;
+
+        // Update existing data
+        //updateSessionInfo(popup, msg.Data);
+        var session = sessions.filter(function (s) {
+            return s.Id == currentTargetId;
+        })[0];
+
+        if (session) {
+            firePlaybackEvent('playstatechange', session);
+        }
+    }
+
     function onWebSocketMessageReceived(e, msg) {
 
         var apiClient = this;
 
         if (msg.MessageType === "Sessions") {
 
-            var currentTargetId = MediaController.getPlayerInfo().id;
-
-            // Update existing data
-            //updateSessionInfo(popup, msg.Data);
-            var session = msg.Data.filter(function (s) {
-                return s.Id == currentTargetId;
-            })[0];
-
-            if (session) {
-                firePlaybackEvent('playstatechange', session);
-            }
+            processUpdatedSessions(msg.Data);
         }
         else if (msg.MessageType === "SessionEnded") {
 

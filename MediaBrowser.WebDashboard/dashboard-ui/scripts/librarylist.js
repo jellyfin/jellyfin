@@ -124,7 +124,7 @@
             buttonCount++;
         }
 
-        html += '<paper-icon-button icon="more-vert" class="btnMoreCommands"></paper-icon-button>';
+        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnMoreCommands"></paper-icon-button>';
         buttonCount++;
 
         html += '</div>';
@@ -508,7 +508,7 @@
 
         while (target != null) {
             var tagName = target.tagName || '';
-            if (tagName == 'A' || tagName.indexOf('BUTTON') != -1) {
+            if (tagName == 'A' || tagName.indexOf('BUTTON') != -1 || tagName.indexOf('INPUT') != -1) {
                 return true;
             }
 
@@ -780,9 +780,13 @@
 
     function onCardClick(e) {
 
+        if (isClickable(targetElem)) {
+            return;
+        }
+
         var targetElem = e.target;
         if (targetElem.classList.contains('itemSelectionPanel') || this.querySelector('.itemSelectionPanel')) {
-            return false;
+            return;
         }
 
         var info = LibraryBrowser.getListItemInfo(this);
@@ -804,10 +808,6 @@
         }
 
         if (card.getAttribute('data-detailsmenu') != 'true') {
-            return;
-        }
-
-        if (isClickable(targetElem)) {
             return;
         }
 

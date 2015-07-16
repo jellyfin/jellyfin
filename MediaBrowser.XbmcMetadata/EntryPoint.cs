@@ -36,7 +36,7 @@ namespace MediaBrowser.XbmcMetadata
 
         void _libraryManager_ItemUpdated(object sender, ItemChangeEventArgs e)
         {
-            if (e.UpdateReason == ItemUpdateType.ImageUpdate)
+            if (e.UpdateReason >= ItemUpdateType.ImageUpdate)
             {
                 var person = e.Item as Person;
 
@@ -57,7 +57,7 @@ namespace MediaBrowser.XbmcMetadata
 
                     foreach (var item in items)
                     {
-                        SaveMetadataForItem(item, ItemUpdateType.MetadataEdit);
+                        SaveMetadataForItem(item, e.UpdateReason);
                     }
                 }
             }
@@ -71,7 +71,7 @@ namespace MediaBrowser.XbmcMetadata
 
                 if (!string.IsNullOrWhiteSpace(_config.GetNfoConfiguration().UserId))
                 {
-                    SaveMetadataForItem(item, ItemUpdateType.MetadataEdit);
+                    SaveMetadataForItem(item, ItemUpdateType.MetadataDownload);
                 }
             }
         }

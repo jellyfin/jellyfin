@@ -1,0 +1,44 @@
+{
+	"name": "vakata/jstree",
+	"description": "jsTree is jquery plugin, that provides interactive trees.",
+	"type": "component",
+	"homepage": "http://jstree.com",
+	"license": "MIT",
+	"support": {
+		"issues": "https://github.com/vakata/jstree/issues",
+		"forum": "https://groups.google.com/forum/#!forum/jstree",
+		"source": "https://github.com/vakata/jstree"
+	},
+	"authors": [
+		{
+			"name": "Ivan Bozhanov",
+			"email": "jstree@jstree.com"
+		}
+	],
+	"require": {
+		"robloach/component-installer": "*",
+		"components/jquery": ">=1.9.1"
+	},
+	"extra": {
+		"component": {
+			"scripts": [
+				"dist/jstree.js"
+			],
+			"styles": [
+				"dist/themes/default/style.css"
+			],
+			"images": [
+				"dist/themes/default/32px.png",
+				"dist/themes/default/40px.png",
+				"dist/themes/default/throbber.gif"
+			],
+			"files": [
+				"dist/jstree.min.js",
+				"dist/themes/default/style.min.css",
+				"dist/themes/default/32px.png",
+				"dist/themes/default/40px.png",
+				"dist/themes/default/throbber.gif"
+			]
+		}
+	}
+}

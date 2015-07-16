@@ -138,18 +138,18 @@
                 }
 
                 if (!rRow.HasImageTagsPrimary) {
-                    html += '<a href="edititemimages.html?id=' + rRow.Id + '"><img src="css/images/editor/missingprimaryimage.png" title="Missing primary image." style="height:16px;" /></a>';
+                    html += '<a href="edititemmetadata.html?tab=3&id=' + rRow.Id + '"><img src="css/images/editor/missingprimaryimage.png" title="Missing primary image." style="height:16px;" /></a>';
                 }
 
                 if (!rRow.HasImageTagsBackdrop) {
                     if (rRow.RowType !== "Episode" && rRow.RowType !== "Season" && rRow.MediaType !== "Audio" && rRow.RowType !== "TvChannel" && rRow.RowType !== "MusicAlbum") {
-                        html += '<a href="edititemimages.html?id=' + rRow.Id + '"><img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." style="height:16px;" /></a>';
+                        html += '<a href="edititemmetadata.html?tab=3&id=' + rRow.Id + '"><img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." style="height:16px;" /></a>';
                     }
                 }
 
                 if (!rRow.HasImageTagsLogo) {
                     if (rRow.RowType === "Movie" || rRow.RowType === "Trailer" || rRow.RowType === "Series" || rRow.RowType === "MusicArtist" || rRow.RowType === "BoxSet") {
-                        html += '<a href="edititemimages.html?id=' + rRow.Id + '"><img src="css/images/editor/missinglogo.png" title="Missing logo image." style="height:16px;" /></a>';
+                        html += '<a href="edititemmetadata.html?tab=3&id=' + rRow.Id + '"><img src="css/images/editor/missinglogo.png" title="Missing logo image." style="height:16px;" /></a>';
                     }
                 }
                 break;

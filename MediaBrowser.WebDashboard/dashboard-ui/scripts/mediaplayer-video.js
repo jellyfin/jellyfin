@@ -1157,11 +1157,6 @@
 
                 mediaRenderer.setCurrentSrc(videoUrl, item, mediaSource, tracks);
 
-                // IE wont autoplay without this
-                if (videoUrl.indexOf('.m3u8') == -1) {
-                    mediaRenderer.unpause();
-                }
-
                 if (callback) {
                     callback();
                 }

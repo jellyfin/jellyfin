@@ -1,6 +1,6 @@
 {
   "name": "paper-tabs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "Material design tabs",
   "private": true,
@@ -14,7 +14,10 @@
     "tabs",
     "control"
   ],
-  "repository": "https://github.com/PolymerElements/paper-tabs.git",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/paper-tabs.git"
+  },
   "dependencies": {
     "iron-behaviors": "polymerelements/iron-behaviors#^1.0.0",
     "iron-flex-layout": "polymerelements/iron-flex-layout#^1.0.0",

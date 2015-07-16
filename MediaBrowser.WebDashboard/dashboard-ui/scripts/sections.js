@@ -297,7 +297,7 @@
             if (result.Items.length) {
                 html += '<h1 class="listHeader">' + Globalize.translate('HeaderResume') + '</h1>';
                 if (enableScrollX()) {
-                    html += '<div class="hiddenScrollX itemsContainer noSwipe">';
+                    html += '<div class="hiddenScrollX itemsContainer">';
                 } else {
                     html += '<div class="itemsContainer">';
                 }

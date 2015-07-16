@@ -167,15 +167,30 @@
         reloadList($.mobile.activePage);
     }
 
+    var pollInterval;
+    function onPollIntervalFired() {
+
+        if (!ApiClient.isWebSocketOpen()) {
+            reloadList($.mobile.activePage);
+        }
+    }
+
     function startInterval() {
         if (ApiClient.isWebSocketOpen()) {
             ApiClient.sendWebSocketMessage("ScheduledTasksInfoStart", "1000,1000");
         }
+        if (pollInterval) {
+            clearInterval(pollInterval);
+        }
+        pollInterval = setInterval(onPollIntervalFired, 1500);
     }
 
     function stopInterval() {
         if (ApiClient.isWebSocketOpen()) {
             ApiClient.sendWebSocketMessage("ScheduledTasksInfoStop");
+        }
+        if (pollInterval) {
+            clearInterval(pollInterval);
         }
     }
 
