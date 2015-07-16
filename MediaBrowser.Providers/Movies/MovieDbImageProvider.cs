@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Globalization;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -191,7 +192,20 @@ namespace MediaBrowser.Providers.Movies
             var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
             var language = item.GetPreferredMetadataLanguage();
 
-            if (string.IsNullOrEmpty(tmdbId))
+            if (string.IsNullOrWhiteSpace(tmdbId))
+            {
+                var imdbId = item.GetProviderId(MetadataProviders.Imdb);
+                if (!string.IsNullOrWhiteSpace(imdbId))
+                {
+                    var movieInfo = await MovieDbProvider.Current.FetchMainResult(imdbId, false, language, cancellationToken).ConfigureAwait(false);
+                    if (movieInfo != null)
+                    {
+                        tmdbId = movieInfo.id.ToString(CultureInfo.InvariantCulture);
+                    }
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(tmdbId))
             {
                 return null;
             }
