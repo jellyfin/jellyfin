@@ -336,7 +336,13 @@
             }
             else {
 
+                if (isViblastStarted) {
+                    viblast(elem).stop();
+                    isViblastStarted = false;
+                }
+
                 if (startTime) {
+
                     try {
                         elem.currentTime = startTime;
                     } catch (err) {

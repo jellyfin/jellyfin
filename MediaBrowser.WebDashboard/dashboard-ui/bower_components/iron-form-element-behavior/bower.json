@@ -1,9 +1,9 @@
 {
   "name": "iron-form-element-behavior",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "http://polymer.github.io/LICENSE.txt",
   "private": true,
-  "main": "iron-form-element-behavior",
+  "main": "iron-form-element-behavior.html",
   "authors": "The Polymer Authors",
   "description": "Enables a custom element to be included in an iron-form",
   "keywords": [

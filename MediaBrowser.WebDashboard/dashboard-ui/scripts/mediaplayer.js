@@ -281,22 +281,16 @@
 
             profile.ContainerProfiles = [];
 
-            var audioConditions = [];
-
-            var maxAudioChannels = $.browser.msie || $.browser.safari ?
-                '2' :
-                '6';
-
-            audioConditions.push({
-                Condition: 'LessThanEqual',
-                Property: 'AudioChannels',
-                Value: maxAudioChannels
-            });
+            var maxAudioChannels = isVlc ? '6' : '2';
 
             profile.CodecProfiles = [];
             profile.CodecProfiles.push({
                 Type: 'Audio',
-                Conditions: audioConditions
+                Conditions: [{
+                    Condition: 'LessThanEqual',
+                    Property: 'AudioChannels',
+                    Value: '2'
+                }]
             });
 
             profile.CodecProfiles.push({
@@ -576,13 +570,6 @@
             var playSessionId = getParameterByName('PlaySessionId', currentSrc);
             var liveStreamId = getParameterByName('LiveStreamId', currentSrc);
 
-            if (params.AudioStreamIndex == null && params.SubtitleStreamIndex == null && params.Bitrate == null) {
-
-                currentSrc = replaceQueryString(currentSrc, 'starttimeticks', ticks || 0);
-                changeStreamToUrl(mediaRenderer, playSessionId, currentSrc, ticks);
-                return;
-            }
-
             var deviceProfile = self.getDeviceProfile();
 
             var audioStreamIndex = params.AudioStreamIndex == null ? (getParameterByName('AudioStreamIndex', currentSrc) || null) : params.AudioStreamIndex;
@@ -600,10 +587,12 @@
                 if (validatePlaybackInfoResult(result)) {
 
                     self.currentMediaSource = result.MediaSources[0];
+                    var streamInfo = self.createStreamInfo(self.currentItem.MediaType, self.currentItem, self.currentMediaSource, ticks);
+
                     self.currentSubtitleStreamIndex = subtitleStreamIndex;
 
-                    currentSrc = ApiClient.getUrl(self.currentMediaSource.TranscodingUrl);
-                    changeStreamToUrl(mediaRenderer, playSessionId, currentSrc, ticks);
+                    currentSrc = streamInfo.url;
+                    changeStreamToUrl(mediaRenderer, playSessionId, currentSrc, streamInfo.startTimeTicksOffset || 0);
                 }
             });
         };
@@ -631,14 +620,15 @@
             if (self.currentItem.MediaType == "Video") {
                 ApiClient.stopActiveEncodings(playSessionId).done(function () {
 
-                    self.startTimeTicksOffset = newPositionTicks;
+                    //self.startTimeTicksOffset = newPositionTicks;
                     mediaRenderer.setCurrentSrc(url, self.currentItem, self.currentMediaSource);
 
                 });
 
+                self.startTimeTicksOffset = newPositionTicks || 0;
                 self.updateTextStreamUrls(newPositionTicks || 0);
             } else {
-                self.startTimeTicksOffset = newPositionTicks;
+                self.startTimeTicksOffset = newPositionTicks || 0;
                 mediaRenderer.setCurrentSrc(url, self.currentItem, self.currentMediaSource);
             }
         }

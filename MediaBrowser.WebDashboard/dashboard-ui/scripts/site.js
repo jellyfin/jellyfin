@@ -2030,7 +2030,12 @@ var AppInfo = {};
         var drawer = document.querySelector('.mainDrawerPanel');
         drawer.classList.remove('mainDrawerPanelPreInit');
         drawer.forceNarrow = true;
-        drawer.drawerWidth = screen.availWidth >= 350 ? "310px" : screen.availWidth >= 310 ? "290px" : "270px";
+        var drawerWidth = screen.availWidth - 50;
+        // At least 240
+        drawerWidth = Math.max(drawerWidth, 240);
+        // But not exceeding 310
+        drawerWidth = Math.min(drawerWidth, 310);
+        drawer.drawerWidth = drawerWidth + "px";
 
         if ($.browser.safari && !AppInfo.isNativeApp) {
             drawer.disableEdgeSwipe = true;
