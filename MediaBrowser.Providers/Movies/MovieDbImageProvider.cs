@@ -42,11 +42,21 @@ namespace MediaBrowser.Providers.Movies
 
         public bool Supports(IHasImages item)
         {
-            var channelItem = item as ChannelVideoItem;
+            var channelItem = item as IChannelMediaItem;
 
-            if (channelItem != null && channelItem.ContentType == ChannelMediaContentType.MovieExtra && channelItem.ExtraType == ExtraType.Trailer)
+            if (channelItem != null)
             {
-                return true;
+                if (channelItem.ContentType == ChannelMediaContentType.Movie)
+                {
+                    return true;
+                }
+                if (channelItem.ContentType == ChannelMediaContentType.MovieExtra)
+                {
+                    if (channelItem.ExtraType == ExtraType.Trailer)
+                    {
+                        return true;
+                    }
+                }
             }
 
             // Supports images for tv movies
@@ -56,7 +66,6 @@ namespace MediaBrowser.Providers.Movies
                 return true;
             }
 
-            // Don't support local trailers
             return item is Movie || item is MusicVideo;
         }
 
