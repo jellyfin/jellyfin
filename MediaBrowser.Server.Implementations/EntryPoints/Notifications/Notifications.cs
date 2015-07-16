@@ -256,7 +256,15 @@ namespace MediaBrowser.Server.Implementations.EntryPoints.Notifications
                 NotificationType = type
             };
 
-            notification.Variables["ItemName"] = item.Name;
+            if (e.Item != null)
+            {
+                notification.Variables["ItemName"] = GetItemName(e.Item);
+            }
+            else
+            {
+                notification.Variables["ItemName"] = item.Name;
+            }
+
             notification.Variables["UserName"] = user == null ? "Unknown user" : user.Name;
             notification.Variables["AppName"] = e.ClientName;
             notification.Variables["DeviceName"] = e.DeviceName;

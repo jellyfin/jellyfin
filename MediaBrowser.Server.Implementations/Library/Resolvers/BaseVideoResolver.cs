@@ -1,13 +1,10 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Naming.Common;
 using MediaBrowser.Naming.Video;
+using MediaBrowser.Server.Implementations.Logging;
 using System;
 using System.IO;
-using System.Linq;
-using MediaBrowser.Server.Implementations.Logging;
 
 namespace MediaBrowser.Server.Implementations.Library.Resolvers
 {

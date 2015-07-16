@@ -55,6 +55,15 @@ namespace MediaBrowser.Controller.Entities
             return true;
         }
 
+        [IgnoreDataMember]
+        public override bool EnableAlphaNumericSorting
+        {
+            get
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Gets a value indicating whether this instance is owned item.
         /// </summary>
@@ -70,7 +79,12 @@ namespace MediaBrowser.Controller.Entities
 
         public IEnumerable<BaseItem> GetTaggedItems(IEnumerable<BaseItem> inputItems)
         {
-            return inputItems.Where(GetItemFilter());
+            var itemsWithPerson = LibraryManager.GetItemIds(new InternalItemsQuery
+            {
+                Person = Name
+            });
+
+            return inputItems.Where(i => itemsWithPerson.Contains(i.Id));
         }
 
 
@@ -94,6 +108,8 @@ namespace MediaBrowser.Controller.Entities
     /// </summary>
     public class PersonInfo
     {
+        public Guid ItemId { get; set; }
+
         /// <summary>
         /// Gets or sets the name.
         /// </summary>

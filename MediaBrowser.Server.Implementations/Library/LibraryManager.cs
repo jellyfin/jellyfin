@@ -345,7 +345,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 try
                 {
-                    await UpdateItem(season, ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    await UpdateItem(season, ItemUpdateType.MetadataDownload, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -1108,6 +1108,8 @@ namespace MediaBrowser.Server.Implementations.Library
                     progress.Report(innerPercent);
                 });
 
+                _logger.Debug("Running post-scan task {0}", task.GetType().Name);
+
                 try
                 {
                     await task.Run(innerProgress, cancellationToken).ConfigureAwait(false);
@@ -1221,6 +1223,11 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 Items = items
             };
+        }
+
+        public List<Guid> GetItemIds(InternalItemsQuery query)
+        {
+            return ItemRepository.GetItemIdsList(query);
         }
 
         /// <summary>
@@ -2057,30 +2064,58 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
+        public List<PersonInfo> GetPeople(InternalPeopleQuery query)
+        {
+            return ItemRepository.GetPeople(query);
+        }
 
         public List<PersonInfo> GetPeople(BaseItem item)
         {
-            return item.People ?? ItemRepository.GetPeople(item.Id);
+            var people = GetPeople(new InternalPeopleQuery
+            {
+                ItemId = item.Id
+            });
+
+            if (people.Count > 0)
+            {
+                return people;
+            }
+
+            return item.People ?? new List<PersonInfo>();
+        }
+
+        public List<Person> GetPeopleItems(InternalPeopleQuery query)
+        {
+            return ItemRepository.GetPeopleNames(query).Select(i =>
+            {
+                try
+                {
+                    return GetPerson(i);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting person", ex);
+                    return null;
+                }
+
+            }).Where(i => i != null).ToList();
+        }
+
+        public List<string> GetPeopleNames(InternalPeopleQuery query)
+        {
+            return ItemRepository.GetPeopleNames(query);
         }
 
         public List<PersonInfo> GetAllPeople()
         {
-            return RootFolder.GetRecursiveChildren()
-                .SelectMany(GetPeople)
-                .Where(i => !string.IsNullOrWhiteSpace(i.Name))
+            return GetPeople(new InternalPeopleQuery())
                 .DistinctBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
         }
 
-        public async Task UpdatePeople(BaseItem item, List<PersonInfo> people)
+        public Task UpdatePeople(BaseItem item, List<PersonInfo> people)
         {
-            await ItemRepository.UpdatePeople(item.Id, people).ConfigureAwait(false);
-
-            if (item.People != null)
-            {
-                item.People = null;
-                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-            }
+            return ItemRepository.UpdatePeople(item.Id, people);
         }
     }
 }

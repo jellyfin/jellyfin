@@ -205,7 +205,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 
             if (item is UserView)
             {
-                return HasChanged(item, ImageType.Primary) || HasChanged(item, ImageType.Thumb);
+                return HasChanged(item, ImageType.Primary);
             }
 
             var items = GetItemsWithImages(item).Result;

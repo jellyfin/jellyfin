@@ -75,7 +75,6 @@ namespace MediaBrowser.Server.Implementations.Collections
                 var collection = new BoxSet
                 {
                     Name = name,
-                    Parent = parentFolder,
                     Path = path,
                     IsLocked = options.IsLocked,
                     ProviderIds = options.ProviderIds,

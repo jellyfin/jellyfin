@@ -1,5 +1,6 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
@@ -12,6 +13,7 @@ using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -133,8 +135,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             _connection.RunQueries(queries, _logger);
 
-			_connection.AddColumn(_logger, "TypedBaseItems", "Path", "Text");
-			_connection.AddColumn(_logger, "TypedBaseItems", "StartDate", "DATETIME");
+            _connection.AddColumn(_logger, "TypedBaseItems", "Path", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "StartDate", "DATETIME");
             _connection.AddColumn(_logger, "TypedBaseItems", "EndDate", "DATETIME");
             _connection.AddColumn(_logger, "TypedBaseItems", "ChannelId", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "IsMovie", "BIT");
@@ -152,6 +154,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "ParentIndexNumber", "INT");
             _connection.AddColumn(_logger, "TypedBaseItems", "PremiereDate", "DATETIME");
             _connection.AddColumn(_logger, "TypedBaseItems", "ProductionYear", "INT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "ParentId", "GUID");
 
             PrepareStatements();
 
@@ -191,10 +194,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "Overview",
                 "ParentIndexNumber",
                 "PremiereDate",
-                "ProductionYear"
+                "ProductionYear",
+                "ParentId"
             };
             _saveItemCommand = _connection.CreateCommand();
-            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21)";
+            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22)";
             for (var i = 1; i <= saveColumns.Count; i++)
             {
                 _saveItemCommand.Parameters.Add(_saveItemCommand, "@" + i.ToString(CultureInfo.InvariantCulture));
@@ -284,9 +288,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.GetType().FullName;
                     _saveItemCommand.GetParameter(index++).Value = _jsonSerializer.SerializeToBytes(item);
 
-					_saveItemCommand.GetParameter(index++).Value = item.Path;
+                    _saveItemCommand.GetParameter(index++).Value = item.Path;
 
-					var hasStartDate = item as IHasStartDate;
+                    var hasStartDate = item as IHasStartDate;
                     if (hasStartDate != null)
                     {
                         _saveItemCommand.GetParameter(index++).Value = hasStartDate.StartDate;
@@ -327,7 +331,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.ParentIndexNumber;
                     _saveItemCommand.GetParameter(index++).Value = item.PremiereDate;
                     _saveItemCommand.GetParameter(index++).Value = item.ProductionYear;
-                    
+
+                    if (item.ParentId == Guid.Empty)
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = null;
+                    }
+                    else
+                    {
+                        _saveItemCommand.GetParameter(index++).Value = item.ParentId;
+                    }
+
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -413,7 +426,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var stream = reader.GetMemoryStream(1))
             {
-                return _jsonSerializer.DeserializeFromStream(stream, type) as BaseItem;
+                try
+                {
+                    return _jsonSerializer.DeserializeFromStream(stream, type) as BaseItem;
+                }
+                catch (SerializationException ex)
+                {
+                    _logger.ErrorException("Error deserializing item", ex);
+                    return null;
+                }
             }
         }
 
@@ -696,7 +717,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {
                     while (reader.Read())
                     {
-                        list.Add(GetItem(reader));
+                        var item = GetItem(reader);
+                        if (item != null)
+                        {
+                            list.Add(item);
+                        }
                     }
 
                     if (reader.NextResult() && reader.Read())
@@ -726,9 +751,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 cmd.CommandText = "select guid from TypedBaseItems";
 
-                var whereClauses = GetWhereClauses(query, cmd, false);
-
-                whereClauses = GetWhereClauses(query, cmd, true);
+                var whereClauses = GetWhereClauses(query, cmd, true);
 
                 var whereText = whereClauses.Count == 0 ?
                     string.Empty :
@@ -901,6 +924,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(query.Person))
+            {
+                whereClauses.Add("Guid in (select ItemId from People where Name=@PersonName)");
+                cmd.Parameters.Add(cmd, "@PersonName", DbType.String).Value = query.Person;
+            }
+
             if (addPaging)
             {
                 if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
@@ -925,6 +954,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 {typeof(LiveTvChannel).Name, new []{typeof(LiveTvChannel).FullName}},
                 {typeof(LiveTvVideoRecording).Name, new []{typeof(LiveTvVideoRecording).FullName}},
                 {typeof(LiveTvAudioRecording).Name, new []{typeof(LiveTvAudioRecording).FullName}},
+                {typeof(Series).Name, new []{typeof(Series).FullName}},
                 {"Recording", new []{typeof(LiveTvAudioRecording).FullName, typeof(LiveTvVideoRecording).FullName}}
             };
 
@@ -985,6 +1015,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 _deleteChildrenCommand.GetParameter(0).Value = id;
                 _deleteChildrenCommand.Transaction = transaction;
                 _deleteChildrenCommand.ExecuteNonQuery();
+
+                // Delete people
+                _deletePeopleCommand.GetParameter(0).Value = id;
+                _deletePeopleCommand.Transaction = transaction;
+                _deletePeopleCommand.ExecuteNonQuery();
 
                 // Delete the item
                 _deleteItemCommand.GetParameter(0).Value = id;
@@ -1109,21 +1144,63 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return _mediaStreamsRepository.SaveMediaStreams(id, streams, cancellationToken);
         }
 
-
-        public List<PersonInfo> GetPeople(Guid itemId)
+        public List<string> GetPeopleNames(InternalPeopleQuery query)
         {
-            if (itemId == Guid.Empty)
+            if (query == null)
             {
-                throw new ArgumentNullException("itemId");
+                throw new ArgumentNullException("query");
             }
 
             CheckDisposed();
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select ItemId, Name, Role, PersonType, SortOrder from People where ItemId=@ItemId order by ListOrder";
+                cmd.CommandText = "select Distinct Name from People";
 
-                cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = itemId;
+                var whereClauses = GetPeopleWhereClauses(query, cmd);
+
+                if (whereClauses.Count > 0)
+                {
+                    cmd.CommandText += "  where " + string.Join(" AND ", whereClauses.ToArray());
+                }
+
+                cmd.CommandText += " order by ListOrder";
+
+                var list = new List<string>();
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(reader.GetString(0));
+                    }
+                }
+
+                return list;
+            }
+        }
+
+        public List<PersonInfo> GetPeople(InternalPeopleQuery query)
+        {
+            if (query == null)
+            {
+                throw new ArgumentNullException("query");
+            }
+
+            CheckDisposed();
+
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "select ItemId, Name, Role, PersonType, SortOrder from People";
+
+                var whereClauses = GetPeopleWhereClauses(query, cmd);
+
+                if (whereClauses.Count > 0)
+                {
+                    cmd.CommandText += "  where " + string.Join(" AND ", whereClauses.ToArray());
+                }
+
+                cmd.CommandText += " order by ListOrder";
 
                 var list = new List<PersonInfo>();
 
@@ -1137,6 +1214,56 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 return list;
             }
+        }
+
+        private List<string> GetPeopleWhereClauses(InternalPeopleQuery query, IDbCommand cmd)
+        {
+            var whereClauses = new List<string>();
+
+            if (query.ItemId != Guid.Empty)
+            {
+                whereClauses.Add("ItemId=@ItemId");
+                cmd.Parameters.Add(cmd, "@ItemId", DbType.Guid).Value = query.ItemId;
+            }
+            if (query.AppearsInItemId != Guid.Empty)
+            {
+                whereClauses.Add("Name in (Select Name from People where ItemId=@AppearsInItemId)");
+                cmd.Parameters.Add(cmd, "@AppearsInItemId", DbType.Guid).Value = query.AppearsInItemId;
+            }
+            if (query.PersonTypes.Count == 1)
+            {
+                whereClauses.Add("PersonType=@PersonType");
+                cmd.Parameters.Add(cmd, "@PersonType", DbType.String).Value = query.PersonTypes[0];
+            }
+            if (query.PersonTypes.Count > 1)
+            {
+                var val = string.Join(",", query.PersonTypes.Select(i => "'" + i + "'").ToArray());
+
+                whereClauses.Add("PersonType in (" + val + ")");
+            }
+            if (query.ExcludePersonTypes.Count == 1)
+            {
+                whereClauses.Add("PersonType<>@PersonType");
+                cmd.Parameters.Add(cmd, "@PersonType", DbType.String).Value = query.ExcludePersonTypes[0];
+            }
+            if (query.ExcludePersonTypes.Count > 1)
+            {
+                var val = string.Join(",", query.ExcludePersonTypes.Select(i => "'" + i + "'").ToArray());
+
+                whereClauses.Add("PersonType not in (" + val + ")");
+            }
+            if (query.MaxListOrder.HasValue)
+            {
+                whereClauses.Add("ListOrder<=@MaxListOrder");
+                cmd.Parameters.Add(cmd, "@MaxListOrder", DbType.Int32).Value = query.MaxListOrder.Value;
+            }
+            if (!string.IsNullOrWhiteSpace(query.NameContains))
+            {
+                whereClauses.Add("Name like @NameContains");
+                cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%"+query.NameContains+"%";
+            }
+
+            return whereClauses;
         }
 
         public async Task UpdatePeople(Guid itemId, List<PersonInfo> people)
@@ -1225,6 +1352,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var item = new PersonInfo();
 
+            item.ItemId = reader.GetGuid(0);
             item.Name = reader.GetString(1);
 
             if (!reader.IsDBNull(2))
