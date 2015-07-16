@@ -210,6 +210,13 @@ namespace MediaBrowser.Server.Implementations.Sync
                         },
                         new ProfileCondition
                         {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.AudioBitrate,
+                            Value = "320000",
+                            IsRequired = true
+                        },
+                        new ProfileCondition
+                        {
                             Condition = ProfileConditionType.Equals,
                             Property = ProfileConditionValue.IsSecondaryAudio,
                             Value = "false",
@@ -228,6 +235,13 @@ namespace MediaBrowser.Server.Implementations.Sync
                             Condition = ProfileConditionType.LessThanEqual,
                             Property = ProfileConditionValue.AudioChannels,
                             Value = "2",
+                            IsRequired = true
+                        },
+                        new ProfileCondition
+                        {
+                            Condition = ProfileConditionType.LessThanEqual,
+                            Property = ProfileConditionValue.AudioBitrate,
+                            Value = "320000",
                             IsRequired = true
                         },
                         new ProfileCondition

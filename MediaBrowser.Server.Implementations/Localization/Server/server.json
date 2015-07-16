@@ -86,7 +86,7 @@
     "OptionDetectArchiveFilesAsMedia": "Detect archive files as media",
     "OptionDetectArchiveFilesAsMediaHelp": "If enabled, files with .rar and .zip extensions will be detected as media files.",
     "LabelEnterConnectUserName": "Username or email:",
-    "LabelEnterConnectUserNameHelp": "This is your Emby online account username or password.",
+    "LabelEnterConnectUserNameHelp": "This is your Emby online account username or email.",
     "LabelEnableEnhancedMovies": "Enable enhanced movie displays",
     "LabelEnableEnhancedMoviesHelp": "When enabled, movies will be displayed as folders to include trailers, extras, cast & crew, and other related content.",
     "HeaderSyncJobInfo": "Sync Job",
@@ -1466,5 +1466,7 @@
     "TabHomeScreen": "Home Screen",
     "HeaderDisplay": "Display",
     "HeaderNavigation": "Navigation",
-    "LegendTheseSettingsShared": "These settings are shared on all devices"
+    "LegendTheseSettingsShared": "These settings are shared on all devices",
+    "OptionEnableAutomaticServerUpdates": "Enable automatic server updates",
+    "OptionOtherTrailers": "Include trailers from older movies"
 }

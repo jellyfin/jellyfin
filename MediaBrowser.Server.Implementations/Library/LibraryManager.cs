@@ -345,7 +345,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 try
                 {
-                    await UpdateItem(season, ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+                    await UpdateItem(season, ItemUpdateType.MetadataDownload, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -2071,10 +2071,17 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public List<PersonInfo> GetPeople(BaseItem item)
         {
-            return item.People ?? GetPeople(new InternalPeopleQuery
+            var people = GetPeople(new InternalPeopleQuery
             {
                 ItemId = item.Id
             });
+
+            if (people.Count > 0)
+            {
+                return people;
+            }
+
+            return item.People ?? new List<PersonInfo>();
         }
 
         public List<Person> GetPeopleItems(InternalPeopleQuery query)
@@ -2106,15 +2113,9 @@ namespace MediaBrowser.Server.Implementations.Library
                 .ToList();
         }
 
-        public async Task UpdatePeople(BaseItem item, List<PersonInfo> people)
+        public Task UpdatePeople(BaseItem item, List<PersonInfo> people)
         {
-            await ItemRepository.UpdatePeople(item.Id, people).ConfigureAwait(false);
-
-            if (item.People != null)
-            {
-                item.People = null;
-                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-            }
+            return ItemRepository.UpdatePeople(item.Id, people);
         }
     }
 }

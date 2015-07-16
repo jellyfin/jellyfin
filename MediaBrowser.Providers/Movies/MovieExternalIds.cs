@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
@@ -30,6 +31,13 @@ namespace MediaBrowser.Providers.Movies
             var channelItem = item as ChannelVideoItem;
 
             if (channelItem != null && channelItem.ContentType == ChannelMediaContentType.MovieExtra && channelItem.ExtraType == ExtraType.Trailer)
+            {
+                return true;
+            }
+
+            // Supports images for tv movies
+            var tvProgram = item as LiveTvProgram;
+            if (tvProgram != null && tvProgram.IsMovie)
             {
                 return true;
             }
