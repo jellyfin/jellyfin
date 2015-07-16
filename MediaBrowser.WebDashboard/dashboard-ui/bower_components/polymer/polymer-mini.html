@@ -753,7 +753,7 @@ d.appendChild(nc);
 return n;
 },
 importNode: function (externalNode, deep) {
-var doc = this.node instanceof HTMLDocument ? this.node : this.node.ownerDocument;
+var doc = this.node instanceof Document ? this.node : this.node.ownerDocument;
 var n = nativeImportNode.call(doc, externalNode, false);
 if (deep) {
 var c$ = factory(externalNode).childNodes;
@@ -941,15 +941,15 @@ DomApi.prototype.cloneNode = function (deep) {
 return this.node.cloneNode(deep);
 };
 DomApi.prototype.importNode = function (externalNode, deep) {
-var doc = this.node instanceof HTMLDocument ? this.node : this.node.ownerDocument;
+var doc = this.node instanceof Document ? this.node : this.node.ownerDocument;
 return doc.importNode(externalNode, deep);
 };
 DomApi.prototype.getDestinationInsertionPoints = function () {
-var n$ = this.node.getDestinationInsertionPoints();
+var n$ = this.node.getDestinationInsertionPoints && this.node.getDestinationInsertionPoints();
 return n$ ? Array.prototype.slice.call(n$) : [];
 };
 DomApi.prototype.getDistributedNodes = function () {
-var n$ = this.node.getDistributedNodes();
+var n$ = this.node.getDistributedNodes && this.node.getDistributedNodes();
 return n$ ? Array.prototype.slice.call(n$) : [];
 };
 DomApi.prototype._distributeParent = function () {
@@ -1407,7 +1407,6 @@ _registerFeatures: function () {
 this._prepIs();
 this._prepAttributes();
 this._prepBehaviors();
-this._prepExtends();
 this._prepConstructor();
 this._prepTemplate();
 this._prepShady();
