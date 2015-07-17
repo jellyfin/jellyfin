@@ -63,7 +63,7 @@ namespace MediaBrowser.WebDashboard.Api
                 {
                     if (IsCoreHtml(path))
                     {
-                        resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
+                        resourceStream = await ModifyHtml(resourceStream, mode, appVersion, localizationCulture, enableMinification).ConfigureAwait(false);
                     }
                 }
                 else if (IsFormat(path, "js"))
@@ -243,10 +243,11 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <param name="sourceStream">The source stream.</param>
         /// <param name="mode">The mode.</param>
+        /// <param name="appVersion">The application version.</param>
         /// <param name="localizationCulture">The localization culture.</param>
         /// <param name="enableMinification">if set to <c>true</c> [enable minification].</param>
         /// <returns>Task{Stream}.</returns>
-        public async Task<Stream> ModifyHtml(Stream sourceStream, string mode, string localizationCulture, bool enableMinification)
+        public async Task<Stream> ModifyHtml(Stream sourceStream, string mode, string appVersion, string localizationCulture, bool enableMinification)
         {
             using (sourceStream)
             {
@@ -305,9 +306,9 @@ namespace MediaBrowser.WebDashboard.Api
 
                 var version = GetType().Assembly.GetName().Version;
 
-                var imports = new string[]
+                var imports = new[]
                 {
-                    "vulcanize-out.html"
+                    "vulcanize-out.html?v=" + appVersion
                 };
                 var importsHtml = string.Join("", imports.Select(i => "<link rel=\"import\" href=\"" + i + "\">").ToArray());
 

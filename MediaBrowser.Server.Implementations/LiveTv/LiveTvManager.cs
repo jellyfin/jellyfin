@@ -55,6 +55,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly SemaphoreSlim _refreshRecordingsLock = new SemaphoreSlim(1, 1);
 
+        private ConcurrentDictionary<Guid, Guid> _refreshedPrograms = new ConcurrentDictionary<Guid, Guid>();
+
         public LiveTvManager(IApplicationHost appHost, IServerConfigurationManager config, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer, IProviderManager providerManager)
         {
             _config = config;
@@ -615,9 +617,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
 
-            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions());
+            var maxStartDate = DateTime.UtcNow.AddDays(3);
+
+            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions
+            {
+                ImageRefreshMode = info.StartDate <= maxStartDate ? ImageRefreshMode.Default : ImageRefreshMode.ValidationOnly
+            });
 
             return item;
+        }
+
+        private void RefreshIfNeeded(LiveTvProgram program)
+        {
+            if (_refreshedPrograms.TryAdd(program.Id, program.Id))
+            {
+                _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions());
+            }
         }
 
         private async Task<Guid> CreateRecordingRecord(RecordingInfo info, string serviceName, CancellationToken cancellationToken)
@@ -720,6 +735,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var program = GetInternalProgram(id);
 
+            RefreshIfNeeded(program);
+
             var dto = _dtoService.GetBaseItemDto(program, new DtoOptions(), user);
 
             await AddRecordingInfo(new[] { dto }, cancellationToken).ConfigureAwait(false);
@@ -786,7 +803,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             var returnArray = returnPrograms
-                .Select(i => _dtoService.GetBaseItemDto(i, new DtoOptions(), user))
+                .Select(i =>
+                {
+                    RefreshIfNeeded(i);
+                    return _dtoService.GetBaseItemDto(i, new DtoOptions(), user);
+                })
                 .ToArray();
 
             await AddRecordingInfo(returnArray, cancellationToken).ConfigureAwait(false);
@@ -850,6 +871,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             programList = programs.ToList();
 
             var returnArray = programList.ToArray();
+
+            foreach (var program in returnArray)
+            {
+                RefreshIfNeeded(program);
+            }
 
             var result = new QueryResult<LiveTvProgram>
             {
@@ -1037,6 +1063,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await CleanDatabaseInternal(newChannelIdList, new[] { typeof(LiveTvChannel).Name }, progress, cancellationToken).ConfigureAwait(false);
             await CleanDatabaseInternal(newProgramIdList, new[] { typeof(LiveTvProgram).Name }, progress, cancellationToken).ConfigureAwait(false);
+
+            _refreshedPrograms.Clear();
 
             // Load these now which will prefetch metadata
             var dtoOptions = new DtoOptions();
