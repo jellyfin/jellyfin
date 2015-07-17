@@ -358,6 +358,13 @@
     width: 42%;
 }
 
+@media all and (max-width: 500px) {
+
+    .backdropCard.fullWidthCardOnMobile {
+        width: 100% !important;
+    }
+}
+
 @media all and (max-width: 1200px) {
 
     .portraitCard .cardOverlayInner {

@@ -84,7 +84,10 @@
                     context: context,
                     lazy: true,
                     preferThumb: true,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    centerText: true,
+                    overlayPlayButton: AppInfo.enableAppLayouts,
+                    fullWidthOnMobile: AppInfo.enableAppLayouts
                 });
             }
 
@@ -162,7 +165,8 @@
                     overlayText: screenWidth >= 800 && !AppInfo.hasLowImageBandwidth,
                     lazy: true,
                     context: 'tv',
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    overlayPlayButton: true
                 });
             }
 

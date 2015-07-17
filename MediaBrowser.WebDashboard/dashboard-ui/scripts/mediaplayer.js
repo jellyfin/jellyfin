@@ -548,6 +548,11 @@
                 return true;
             }
 
+            // Don't use viblast with windows phone, not working at the moment.
+            if ($.browser.msie && $.browser.mobile) {
+                return false;
+            }
+
             // viblast can help us here
             //return true;
             return window.MediaSource != null;

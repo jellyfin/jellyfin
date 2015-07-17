@@ -65,7 +65,10 @@
                     context: context,
                     lazy: true,
                     preferThumb: true,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    centerText: true,
+                    overlayPlayButton: AppInfo.enableAppLayouts,
+                    fullWidthOnMobile: AppInfo.enableAppLayouts
                 });
             }
 

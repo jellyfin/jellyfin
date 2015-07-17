@@ -1484,6 +1484,10 @@
 
             var cssClass = "card";
 
+            if (options.fullWidthOnMobile) {
+                cssClass += " fullWidthCardOnMobile";
+            }
+
             if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.5) {
 
                 width = posterWidth;

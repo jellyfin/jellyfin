@@ -492,7 +492,7 @@
         var type = card.getAttribute('data-itemtype');
         var isFolder = card.getAttribute('data-isfolder') == 'true';
         var mediaType = card.getAttribute('data-mediatype');
-        var resumePosition = parseInt(card.getAttribute('data-resumeposition'));
+        var resumePosition = parseInt(card.getAttribute('data-positionticks'));
 
         if (type == 'MusicAlbum' || type == 'MusicArtist' || type == 'MusicGenre' || type == 'Playlist') {
             isFolder = true;

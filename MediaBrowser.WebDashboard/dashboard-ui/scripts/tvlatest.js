@@ -63,7 +63,9 @@
                     overlayText: false,
                     centerText: true,
                     lazy: true,
-                    showTitle: false
+                    showTitle: false,
+                    overlayPlayButton: AppInfo.enableAppLayouts,
+                    fullWidthOnMobile: AppInfo.enableAppLayouts
                 });
             }
 

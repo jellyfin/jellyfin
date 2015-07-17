@@ -311,7 +311,8 @@
                     context: 'home',
                     lazy: true,
                     cardLayout: cardLayout,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    overlayPlayButton: true
                 });
                 html += '</div>';
             }
