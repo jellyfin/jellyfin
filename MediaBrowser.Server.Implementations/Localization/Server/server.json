@@ -1468,5 +1468,10 @@
     "HeaderNavigation": "Navigation",
     "LegendTheseSettingsShared": "These settings are shared on all devices",
     "OptionEnableAutomaticServerUpdates": "Enable automatic server updates",
-    "OptionOtherTrailers": "Include trailers from older movies"
+    "OptionOtherTrailers": "Include trailers from older movies",
+    "HeaderOverview": "Overview",
+    "HeaderShortOverview": "Short Overview",
+    "HeaderType": "Type",
+    "HeaderSeverity": "Severity",
+    "OptionReportActivities": "Activities Log"
 }
