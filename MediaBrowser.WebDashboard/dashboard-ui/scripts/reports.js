@@ -1,6 +1,5 @@
 ﻿(function ($, document) {
     var defaultSortBy = "SortName";
-    var SelectedReportView = "ReportData";
     var topItems = 5;
 
     var query = {
@@ -8,7 +7,8 @@
         Limit: 100,
         IncludeItemTypes: "Movie",
         HasQueryLimit: true,
-        GroupBy: "None"
+        GroupBy: "None",
+        ReportView: "ReportData"
     };
 
     function getTable(result) {
@@ -127,29 +127,29 @@
                 break;
             case "StatusImage":
                 if (rRow.HasLockData) {
-                    html += '<img src="css/images/editor/lock.png" style="height:16px;"/>';
+                    html += '<img src="css/images/editor/lock.png"  style="width:18px"/>';
                 }
                 if (rRow.IsUnidentified) {
                     html += '<div class="libraryReportIndicator"><div class="ui-icon-alert ui-btn-icon-notext"></div></div>';
                 }
 
                 if (!rRow.HasLocalTrailer && rRow.RowType === "Movie") {
-                    html += '<img src="css/images/editor/missingtrailer.png" title="Missing local trailer." style="height:16px;" />';
+                    html += '<img src="css/images/editor/missingtrailer.png" title="Missing local trailer."  style="width:18px"/>';
                 }
 
                 if (!rRow.HasImageTagsPrimary) {
-                    html += '<a href="edititemmetadata.html?tab=3&id=' + rRow.Id + '"><img src="css/images/editor/missingprimaryimage.png" title="Missing primary image." style="height:16px;" /></a>';
+                    html += '<a href="edititemimages.html?id=' + rRow.Id + '"><img src="css/images/editor/missingprimaryimage.png" title="Missing primary image." style="width:18px"/></a>';
                 }
 
                 if (!rRow.HasImageTagsBackdrop) {
                     if (rRow.RowType !== "Episode" && rRow.RowType !== "Season" && rRow.MediaType !== "Audio" && rRow.RowType !== "TvChannel" && rRow.RowType !== "MusicAlbum") {
-                        html += '<a href="edititemmetadata.html?tab=3&id=' + rRow.Id + '"><img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." style="height:16px;" /></a>';
+                        html += '<a href="edititemimages.html?id=' + rRow.Id + '"><img src="css/images/editor/missingbackdrop.png" title="Missing backdrop image." style="width:18px"/></a>';
                     }
                 }
 
                 if (!rRow.HasImageTagsLogo) {
                     if (rRow.RowType === "Movie" || rRow.RowType === "Trailer" || rRow.RowType === "Series" || rRow.RowType === "MusicArtist" || rRow.RowType === "BoxSet") {
-                        html += '<a href="edititemmetadata.html?tab=3&id=' + rRow.Id + '"><img src="css/images/editor/missinglogo.png" title="Missing logo image." style="height:16px;" /></a>';
+                        html += '<a href="edititemimages.html?id=' + rRow.Id + '"><img src="css/images/editor/missinglogo.png" title="Missing logo image." style="width:18px"/></a>';
                     }
                 }
                 break;
@@ -263,18 +263,30 @@
         window.scrollTo(0, 0);
         var html = '';
 
-        if (SelectedReportView === "ReportData") {
+        if (query.ReportView === "ReportData" || query.ReportView === "ReportStatistics") {
+            $('#selectIncludeItemTypesBox', page).show();
+            $('#tabFilter', page).show();
+        }
+        else {
+            $('#selectIncludeItemTypesBox', page).hide();
+            $('#tabFilterBox', page).hide();
+            $('#tabFilter', page).hide();
+        }
 
-            var pagingHtml = LibraryBrowser.getQueryPagingHtml({
-                startIndex: query.StartIndex,
-                limit: query.Limit,
-                totalRecordCount: result.TotalRecordCount,
-                updatePageSizeSetting: false,
-                viewButton: true,
-                showLimit: false
-            });
+        var pagingHtml = LibraryBrowser.getQueryPagingHtml({
+            startIndex: query.StartIndex,
+            limit: query.Limit,
+            totalRecordCount: result.TotalRecordCount,
+            updatePageSizeSetting: false,
+            viewButton: true,
+            showLimit: false
+        });
 
-            page.querySelector('.listTopPaging').innerHTML = pagingHtml;
+        if (query.ReportView === "ReportData" || query.ReportView === "ReportActivities") {
+
+
+            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+           // page.querySelector('.listTopPaging').innerHTML = pagingHtml;
             $('.listTopPaging', page).show();
 
             $('.listBottomPaging', page).html(pagingHtml).trigger('create');
@@ -330,8 +342,13 @@
             });
         }
         else {
-            $('.listTopPaging', page).hide();
+
+            $('.listTopPaging', page).html(pagingHtml).trigger('create');
+            // page.querySelector('.listTopPaging').innerHTML = pagingHtml;
+
+            $('.listTopPaging', page).show();
             $('.listBottomPaging', page).hide();
+
             $('.btnNextPage', page).hide();
             $('.btnPreviousPage', page).hide();
 
@@ -359,7 +376,7 @@
                 $('#GroupEpisodes', page).show();
                 break;
         }
-
+        $('.viewPanel', page).refresh;
     }
 
     function reloadItems(page) {
@@ -368,15 +385,19 @@
         query.UserId = Dashboard.getCurrentUserId();
         var url = "";
 
-        switch (SelectedReportView) {
+        switch (query.ReportView) {
             case "ReportData":
                 query.HasQueryLimit = true;
                 url = ApiClient.getUrl("Reports/Items", query);
                 break;
-            case "ReportStatistic":
+            case "ReportStatistics":
                 query.TopItems = topItems;
                 query.HasQueryLimit = false;
                 url = ApiClient.getUrl("Reports/Statistics", query);
+                break;
+            case "ReportActivities":
+                query.HasQueryLimit = true;
+                url = ApiClient.getUrl("Reports/Activities", query);
                 break;
         }
 
@@ -390,9 +411,6 @@
     }
 
     function updateFilterControls(page) {
-
-
-
         $('.chkStandardFilter', page).each(function () {
 
             var filters = "," + (query.Filters || "");
@@ -436,6 +454,7 @@
 
         $('#chkSubtitle', page).checked(query.HasSubtitles == true).checkboxradio('refresh');
         $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
+        $('#chkMissingTrailer', page).checked(query.HasTrailer == false).checkboxradio('refresh');
         $('#chkSpecialFeature', page).checked(query.HasSpecialFeature == true).checkboxradio('refresh');
         $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
         $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
@@ -455,7 +474,7 @@
         $('#chkMissingEpisode', page).checked(query.IsMissing == true).checkboxradio('refresh');
         $('#chkFutureEpisode', page).checked(query.IsUnaired == true).checkboxradio('refresh');
 
-        $('#selectView').val(query.IncludeItemTypes).selectmenu('refresh');
+        $('#selectIncludeItemTypes').val(query.IncludeItemTypes).selectmenu('refresh');
     }
 
     var filtersLoaded;
@@ -475,17 +494,16 @@
                 reloadItems(page);
             });
         }
-
     }
 
     $(document).on('pageinitdepends', "#libraryReportManagerPage", function () {
 
         var page = this;
 
-        $('#selectView', page).on('change', function () {
+        $('#selectIncludeItemTypes', page).on('change', function () {
 
             query.StartIndex = 0;
-            SelectedReportView = $('#selectReportType', page).val();
+            query.ReportView = $('#selectViewType', page).val();
             query.IncludeItemTypes = this.value;
             query.SortOrder = "Ascending";
             query.ReportColumns = null;
@@ -494,22 +512,19 @@
             loadGroupByFilters(page);
             reloadFiltersIfNeeded(page);
             reloadItems(page);
-
-
         });
 
-        $('#selectReportType', page).on('change', function () {
+        $('#selectViewType', page).on('change', function () {
 
             query.StartIndex = 0;
-            query.IncludeItemTypes = $('#selectView', page).val();
-            SelectedReportView = this.value;
+            query.ReportView = this.value;
+            query.IncludeItemTypes = $('#selectIncludeItemTypes', page).val();
             query.SortOrder = "Ascending";
             filtersLoaded = false;
+            query.ReportColumns = null;
             loadGroupByFilters(page);
             reloadFiltersIfNeeded(page);
             reloadItems(page);
-
-
         });
 
         $('#selectReportGroup', page).on('change', function () {
@@ -540,7 +555,6 @@
         });
 
         $('.viewPanel', page).on('panelopen', function () {
-
             reloadFiltersIfNeeded(page);
         });
 
@@ -620,6 +634,14 @@
 
             query.StartIndex = 0;
             query.HasTrailer = this.checked ? true : null;
+
+            reloadItems(page);
+        });
+
+        $('#chkMissingTrailer', this).on('change', function () {
+
+            query.StartIndex = 0;
+            query.HasTrailer = this.checked ? false : null;
 
             reloadItems(page);
         });
@@ -789,7 +811,7 @@
 
 	    QueryReportFilters.onPageShow(page, query);
 	    QueryReportColumns.onPageShow(page, query);
-	    $('#selectView', page).val(query.IncludeItemTypes).selectmenu('refresh').trigger('change');
+	    $('#selectIncludeItemTypes', page).val(query.IncludeItemTypes).selectmenu('refresh').trigger('change');
 
 	    updateFilterControls(page);
 
@@ -974,7 +996,8 @@
 
             UserId: userId,
             ParentId: itemQuery.ParentId,
-            IncludeItemTypes: itemQuery.IncludeItemTypes
+            IncludeItemTypes: itemQuery.IncludeItemTypes,
+            ReportView: itemQuery.ReportView
 
 
         })).done(function (result) {
@@ -990,7 +1013,8 @@
         return ApiClient.getJSON(ApiClient.getUrl('Reports/Headers', {
 
             UserId: userId,
-            IncludeItemTypes: itemQuery.IncludeItemTypes
+            IncludeItemTypes: itemQuery.IncludeItemTypes,
+            ReportView: itemQuery.ReportView
 
         })).done(function (result) {
 
