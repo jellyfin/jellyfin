@@ -66,6 +66,6 @@ namespace MediaBrowser.Api.Reports
 
 		/// <summary> Gets or sets the type. </summary>
 		/// <value> The type. </value>
-		public ReportViewType RowType { get; set; }
+		public ReportIncludeItemTypes RowType { get; set; }
 	}
 }
