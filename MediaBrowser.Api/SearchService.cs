@@ -181,24 +181,19 @@ namespace MediaBrowser.Api
             SetThumbImageInfo(result, item);
             SetBackdropImageInfo(result, item);
 
-            var episode = item as Episode;
-
-            if (episode != null)
+            var hasSeries = item as IHasSeries;
+            if (hasSeries != null)
             {
-                result.Series = episode.Series.Name;
+                result.Series = hasSeries.SeriesName;
             }
 
             var season = item as Season;
-
             if (season != null)
             {
-                result.Series = season.Series.Name;
-
                 result.EpisodeCount = season.GetRecursiveChildren(i => i is Episode).Count;
             }
 
             var series = item as Series;
-
             if (series != null)
             {
                 result.EpisodeCount = series.GetRecursiveChildren(i => i is Episode).Count;
