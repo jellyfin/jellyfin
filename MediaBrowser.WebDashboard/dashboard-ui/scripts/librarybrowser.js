@@ -751,11 +751,7 @@
 
             if (item.CollectionType == 'channels') {
 
-                if (AppInfo.enableLatestChannelItems) {
-                    return 'channelslatest.html';
-                } else {
-                    return 'channels.html';
-                }
+                return 'channels.html';
             }
 
             if (context != 'folders') {

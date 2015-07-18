@@ -407,10 +407,10 @@
             if (self.supportsTextTracks()) {
 
                 if (isVlc) {
-                    profile.SubtitleProfiles.push({
-                        Format: 'srt',
-                        Method: 'External'
-                    });
+                    //profile.SubtitleProfiles.push({
+                    //    Format: 'srt',
+                    //    Method: 'External'
+                    //});
                     profile.SubtitleProfiles.push({
                         Format: 'srt',
                         Method: 'Embed'
@@ -425,6 +425,10 @@
                     });
                     profile.SubtitleProfiles.push({
                         Format: 'pgs',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'vtt',
                         Method: 'Embed'
                     });
                 } else {

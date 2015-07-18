@@ -548,6 +548,32 @@
 
         setTitle: function (title) {
             document.querySelector('.libraryMenuButtonText').innerHTML = title;
+        },
+
+        setBackButtonVisible: function (visible) {
+
+            var backButton = document.querySelector('.headerBackButton');
+
+            if (backButton) {
+                if (visible) {
+                    backButton.classList.remove('hide');
+                } else {
+                    backButton.classList.add('hide');
+                }
+            }
+        },
+
+        setMenuButtonVisible: function (visible) {
+
+            var mainDrawerButton = document.querySelector('.mainDrawerButton');
+
+            if (mainDrawerButton) {
+                if (!visible && $.browser.mobile) {
+                    mainDrawerButton.classList.add('hide');
+                } else {
+                    mainDrawerButton.classList.remove('hide');
+                }
+            }
         }
     };
 

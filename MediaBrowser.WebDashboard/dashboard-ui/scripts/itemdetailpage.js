@@ -209,7 +209,9 @@
     function renderHeader(page, item, context) {
 
         $('.itemTabs', page).hide();
-        $('.channelHeader', page).hide();
+
+        $(page).removeClass('noSecondaryNavPage');
+
         var elem;
 
         if (context == 'home') {
@@ -264,7 +266,9 @@
             }
         }
         else if (context == 'channels') {
-            elem = $('.channelTabs', page).show();
+            $(page).addClass('noSecondaryNavPage');
+            LibraryMenu.setBackButtonVisible(true);
+            LibraryMenu.setMenuButtonVisible(false);
         }
         else if (item.Type == "MusicAlbum") {
             $('#albumTabs', page).show();
@@ -279,8 +283,9 @@
         }
 
         else if (item.Type == "ChannelVideoItem" || item.Type == "ChannelAudioItem" || item.Type == "ChannelFolderItem") {
-            $('#channelTabs', page).show();
-            $('.channelHeader', page).show().html('<a href="channelitems.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
+            $(page).addClass('noSecondaryNavPage');
+            LibraryMenu.setBackButtonVisible(true);
+            LibraryMenu.setMenuButtonVisible(false);
         }
 
         else if (item.Type == "BoxSet") {
@@ -849,7 +854,9 @@
                     playFromHere: true,
                     overlayText: true,
                     lazy: true,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    overlayPlayButton: AppInfo.enableAppLayouts,
+                    fullWidthOnMobile: AppInfo.enableAppLayouts
                 });
             }
             else if (item.Type == "GameSystem") {

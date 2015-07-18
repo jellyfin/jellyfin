@@ -1,4 +1,5 @@
-﻿using ServiceStack.Web;
+﻿using MediaBrowser.Model.Logging;
+using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -25,6 +26,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private long TotalContentLength { get; set; }
 
         public Action OnComplete { get; set; }
+        private readonly ILogger _logger;
 
         /// <summary>
         /// The _options
@@ -61,7 +63,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="source">The source.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
-        public RangeRequestWriter(string rangeHeader, Stream source, string contentType, bool isHeadRequest)
+        public RangeRequestWriter(string rangeHeader, Stream source, string contentType, bool isHeadRequest, ILogger logger)
         {
             if (string.IsNullOrEmpty(contentType))
             {
@@ -71,6 +73,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             RangeHeader = rangeHeader;
             SourceStream = source;
             IsHeadRequest = isHeadRequest;
+            this._logger = logger;
 
             ContentType = contentType;
             Options["Content-Type"] = contentType;
@@ -188,9 +191,14 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     }
                     else
                     {
-                        CopyToInternal(source, responseStream, Convert.ToInt32(RangeLength));
+                        CopyToInternal(source, responseStream, RangeLength);
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in range request writer", ex);
+                throw;
             }
             finally
             {
@@ -201,7 +209,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
         }
 
-        private void CopyToInternal(Stream source, Stream destination, int copyLength)
+        private void CopyToInternal(Stream source, Stream destination, long copyLength)
         {
             const int bufferSize = 81920;
             var array = new byte[bufferSize];
@@ -210,7 +218,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 var bytesToCopy = Math.Min(count, copyLength);
 
-                destination.Write(array, 0, bytesToCopy);
+                destination.Write(array, 0, Convert.ToInt32(bytesToCopy));
 
                 copyLength -= bytesToCopy;
 

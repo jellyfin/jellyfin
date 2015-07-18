@@ -772,20 +772,6 @@ namespace MediaBrowser.Model.Dlna
                 }
             }
 
-            // Look for supported embedded subs that we can just mux into the output
-            foreach (SubtitleProfile profile in subtitleProfiles)
-            {
-                if (!profile.SupportsLanguage(subtitleStream.Language))
-                {
-                    continue;
-                }
-
-                if (profile.Method == SubtitleDeliveryMethod.Embed && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
-                {
-                    return profile;
-                }
-            }
-
             return new SubtitleProfile
             {
                 Method = SubtitleDeliveryMethod.Encode,

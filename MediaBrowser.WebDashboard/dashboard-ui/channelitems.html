@@ -4,19 +4,10 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="channelItemsPage" data-role="page" class="page libraryPage channelsPage" data-contextname="${HeaderChannels}" data-require="scripts/channelitems">
-
-        <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="channelslatest.html" class="latestChannelItemsTab"><iron-icon icon="new-releases"></iron-icon>${TabLatest}</a>
-            <a href="channels.html" class="ui-btn-active"><iron-icon icon="live-tv"></iron-icon>${TabChannels}</a>
-        </div>
-
-        <div class="channelHeader"></div>
+    <div id="channelItemsPage" data-role="page" class="page libraryPage channelsPage noSecondaryNavPage" data-contextname="${HeaderChannels}" data-require="scripts/channelitems" data-backbutton="true" data-menubutton="false">
 
         <div data-role="content">
             <div class="viewSettings">
-
-                <h1 class="categoryTitle" style="margin: 0 1em 0 0; display: inline-block; vertical-align: middle;"></h1>
 
                 <div class="listTopPaging">
                 </div>

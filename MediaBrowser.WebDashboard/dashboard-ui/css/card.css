@@ -341,7 +341,7 @@
 }
 
 .overflowBackdropCard {
-    width: 70%;
+    width: 80%;
 }
 
 .cardProgress {
@@ -358,7 +358,7 @@
     width: 42%;
 }
 
-@media all and (max-width: 500px) {
+@media all and (max-width: 480px) {
 
     .backdropCard.fullWidthCardOnMobile {
         width: 100% !important;
@@ -566,10 +566,17 @@
     width: 50%;
 }
 
-@media all and (min-width: 540px) {
+@media all and (min-width: 700px) {
 
     .detailPage169Card {
         width: 33.3%;
+    }
+}
+
+@media all and (max-width: 480px) {
+
+    .detailPage169Card.fullWidthCardOnMobile {
+        width: 100% !important;
     }
 }
 
