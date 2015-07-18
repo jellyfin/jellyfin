@@ -91,6 +91,14 @@
 
         function downloadViblastKey(callback) {
 
+            var savedKeyPropertyName = 'viblastkey';
+            var savedKey = appStorage.getItem(savedKeyPropertyName);
+            if (savedKey) {
+                var deferred = DeferredBuilder.Deferred();
+                deferred.resolveWith(null, [savedKey]);
+                return deferred.promise();
+            }
+
             var headers = {};
             headers['X-Emby-Token'] = 'EMBY_SERVER';
 
@@ -101,6 +109,7 @@
 
             }).done(function (key) {
 
+                appStorage.setItem(savedKeyPropertyName, key);
                 htmlMediaRenderer.customViblastKey = key;
                 callback();
             }).fail(function () {

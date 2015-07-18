@@ -1,5 +1,7 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
@@ -867,7 +869,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add("type=@type");
                 cmd.Parameters.Add(cmd, "@type", DbType.String).Value = includeTypes[0];
             }
-            if (includeTypes.Length > 1)
+            else if (includeTypes.Length > 1)
             {
                 var inClause = string.Join(",", includeTypes.Select(i => "'" + i + "'").ToArray());
                 whereClauses.Add(string.Format("type in ({0})", inClause));
@@ -930,6 +932,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.Parameters.Add(cmd, "@PersonName", DbType.String).Value = query.Person;
             }
 
+            if (!string.IsNullOrWhiteSpace(query.NameContains))
+            {
+                whereClauses.Add("Name like @NameContains");
+                cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + query.NameContains + "%";
+            }
+            
             if (addPaging)
             {
                 if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
@@ -947,16 +955,58 @@ namespace MediaBrowser.Server.Implementations.Persistence
             return whereClauses;
         }
 
-        // Not crazy about having this all the way down here, but at least it's in one place
-        readonly Dictionary<string, string[]> _types = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        private static readonly Type[] KnownTypes =
+        {
+            typeof(LiveTvProgram),
+            typeof(LiveTvChannel),
+            typeof(LiveTvVideoRecording),
+            typeof(LiveTvAudioRecording),
+            typeof(Series),
+            typeof(LiveTvAudioRecording),
+            typeof(LiveTvVideoRecording),
+            typeof(Audio),
+            typeof(MusicAlbum),
+            typeof(MusicArtist),
+            typeof(MusicGenre),
+            typeof(MusicVideo),
+            typeof(Movie),
+            typeof(BoxSet),
+            typeof(Episode),
+            typeof(Season),
+            typeof(Series),
+            typeof(Book),
+            typeof(CollectionFolder),
+            typeof(Folder),
+            typeof(Game),
+            typeof(GameGenre),
+            typeof(GameSystem),
+            typeof(Genre),
+            typeof(Person),
+            typeof(Photo),
+            typeof(PhotoAlbum),
+            typeof(Studio),
+            typeof(UserRootFolder),
+            typeof(UserView),
+            typeof(Video),
+            typeof(Year)
+        };
+
+        private static Dictionary<string, string[]> GetTypeMapDictionary()
+        {
+            var dict = new Dictionary<string, string[]>();
+
+            foreach (var t in KnownTypes)
             {
-                {typeof(LiveTvProgram).Name, new []{typeof(LiveTvProgram).FullName}},
-                {typeof(LiveTvChannel).Name, new []{typeof(LiveTvChannel).FullName}},
-                {typeof(LiveTvVideoRecording).Name, new []{typeof(LiveTvVideoRecording).FullName}},
-                {typeof(LiveTvAudioRecording).Name, new []{typeof(LiveTvAudioRecording).FullName}},
-                {typeof(Series).Name, new []{typeof(Series).FullName}},
-                {"Recording", new []{typeof(LiveTvAudioRecording).FullName, typeof(LiveTvVideoRecording).FullName}}
-            };
+                dict[t.Name] = new[] { t.FullName };
+            }
+
+            dict["Recording"] = new[] { typeof(LiveTvAudioRecording).FullName, typeof(LiveTvVideoRecording).FullName };
+
+            return dict;
+        }
+
+        // Not crazy about having this all the way down here, but at least it's in one place
+        readonly Dictionary<string, string[]> _types = GetTypeMapDictionary();
 
         private IEnumerable<string> MapIncludeItemTypes(string value)
         {
@@ -1260,7 +1310,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             if (!string.IsNullOrWhiteSpace(query.NameContains))
             {
                 whereClauses.Add("Name like @NameContains");
-                cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%"+query.NameContains+"%";
+                cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + query.NameContains + "%";
             }
 
             return whereClauses;
