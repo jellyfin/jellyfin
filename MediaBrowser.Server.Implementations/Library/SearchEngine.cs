@@ -37,26 +37,22 @@ namespace MediaBrowser.Server.Implementations.Library
 
             Func<BaseItem, bool> filter = i => !(i is ICollectionFolder);
 
+            User user = null;
+
             if (string.IsNullOrWhiteSpace(query.UserId))
             {
                 inputItems = _libraryManager.RootFolder.GetRecursiveChildren(filter);
             }
             else
             {
-                var user = _userManager.GetUserById(query.UserId);
+                user = _userManager.GetUserById(query.UserId);
 
                 inputItems = user.RootFolder.GetRecursiveChildren(user, filter);
             }
 
             inputItems = _libraryManager.ReplaceVideosWithPrimaryVersions(inputItems);
 
-            var results = await GetSearchHints(inputItems, query).ConfigureAwait(false);
-
-            // Include item types
-            if (query.IncludeItemTypes.Length > 0)
-            {
-                results = results.Where(f => query.IncludeItemTypes.Contains(f.Item.GetType().Name, StringComparer.OrdinalIgnoreCase));
-            }
+            var results = await GetSearchHints(inputItems, query, user).ConfigureAwait(false);
 
             var searchResultArray = results.ToArray();
             results = searchResultArray;
@@ -86,9 +82,10 @@ namespace MediaBrowser.Server.Implementations.Library
         /// </summary>
         /// <param name="inputItems">The input items.</param>
         /// <param name="query">The query.</param>
+        /// <param name="user">The user.</param>
         /// <returns>IEnumerable{SearchHintResult}.</returns>
         /// <exception cref="System.ArgumentNullException">searchTerm</exception>
-        private Task<IEnumerable<SearchHintInfo>> GetSearchHints(IEnumerable<BaseItem> inputItems, SearchQuery query)
+        private Task<IEnumerable<SearchHintInfo>> GetSearchHints(IEnumerable<BaseItem> inputItems, SearchQuery query, User user)
         {
             var searchTerm = query.SearchTerm;
 
@@ -98,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             searchTerm = searchTerm.RemoveDiacritics();
-            
+
             var terms = GetWords(searchTerm);
 
             var hints = new List<Tuple<BaseItem, string, int>>();
@@ -107,8 +104,25 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (query.IncludeMedia)
             {
+                var mediaItems = _libraryManager.GetItems(new InternalItemsQuery
+                {
+                    NameContains = searchTerm,
+                    ExcludeItemTypes = new[]
+                    {
+                        typeof (Person).Name,
+                        typeof (Genre).Name,
+                        typeof (MusicArtist).Name,
+                        typeof (GameGenre).Name,
+                        typeof (MusicGenre).Name,
+                        typeof (Year).Name,
+                        typeof (Studio).Name
+                    },
+                    IncludeItemTypes = query.IncludeItemTypes
+
+                }).Items;
+
                 // Add search hints based on item name
-                hints.AddRange(items.Where(i => !string.IsNullOrWhiteSpace(i.Name) && IncludeInSearch(i)).Select(item =>
+                hints.AddRange(mediaItems.Where(i => (user == null || i.IsVisibleStandalone(user)) && !(i is CollectionFolder)).Select(item =>
                 {
                     var index = GetIndex(item.Name, searchTerm, terms);
 

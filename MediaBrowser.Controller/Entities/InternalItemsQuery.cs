@@ -40,6 +40,7 @@ namespace MediaBrowser.Controller.Entities
         public string NameStartsWithOrGreater { get; set; }
         public string NameStartsWith { get; set; }
         public string NameLessThan { get; set; }
+        public string NameContains { get; set; }
 
         public string Person { get; set; }
         public string[] PersonIds { get; set; }
