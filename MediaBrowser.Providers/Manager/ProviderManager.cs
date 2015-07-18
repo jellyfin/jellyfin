@@ -912,6 +912,9 @@ namespace MediaBrowser.Providers.Manager
                 {
                     try
                     {
+                        // Try to throttle this a little bit.
+                        await Task.Delay(100).ConfigureAwait(false);
+
                         var artist = item as MusicArtist;
                         var task = artist == null
                             ? RefreshItem(item, refreshItem.Item2, CancellationToken.None)
