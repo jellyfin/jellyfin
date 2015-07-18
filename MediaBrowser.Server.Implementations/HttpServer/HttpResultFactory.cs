@@ -459,7 +459,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 if (!string.IsNullOrEmpty(rangeHeader))
                 {
-                    return new RangeRequestWriter(rangeHeader, stream, contentType, isHeadRequest)
+                    return new RangeRequestWriter(rangeHeader, stream, contentType, isHeadRequest, _logger)
                     {
                         OnComplete = options.OnComplete
                     };

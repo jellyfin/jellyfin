@@ -51,6 +51,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return Task.FromResult<IEnumerable<MediaSourceInfo>>(new List<MediaSourceInfo>());
         }
 
+        // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
+        private const char StreamIdDelimeter = '_';
+        private const string StreamIdDelimeterString = "|";
+        
         private async Task<IEnumerable<MediaSourceInfo>> GetMediaSourcesInternal(ILiveTvItem item, CancellationToken cancellationToken)
         {
             IEnumerable<MediaSourceInfo> sources;
@@ -89,7 +93,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 openKeys.Add(item.GetType().Name);
                 openKeys.Add(item.Id.ToString("N"));
                 openKeys.Add(source.Id ?? string.Empty);
-                source.OpenToken = string.Join("|", openKeys.ToArray());
+                source.OpenToken = string.Join(StreamIdDelimeterString, openKeys.ToArray());
 
                 // Dummy this up so that direct play checks can still run
                 if (string.IsNullOrEmpty(source.Path) && source.Protocol == MediaProtocol.Http)
@@ -108,7 +112,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             MediaSourceInfo stream;
             const bool isAudio = false;
 
-            var keys = openToken.Split(new[] { '|' }, 3);
+            var keys = openToken.Split(new[] { StreamIdDelimeter }, 3);
             var mediaSourceId = keys.Length >= 3 ? keys[2] : null;
 
             if (string.Equals(keys[0], typeof(LiveTvChannel).Name, StringComparison.OrdinalIgnoreCase))
