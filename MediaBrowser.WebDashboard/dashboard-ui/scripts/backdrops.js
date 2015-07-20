@@ -126,7 +126,7 @@
             return false;
         }
 
-        return true;
+        return !AppInfo.isTouchPreferred;
     }
 
     function enabled() {

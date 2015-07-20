@@ -86,8 +86,7 @@
                     preferThumb: true,
                     showDetailsMenu: true,
                     centerText: true,
-                    overlayPlayButton: AppInfo.enableAppLayouts,
-                    fullWidthOnMobile: AppInfo.enableAppLayouts
+                    overlayPlayButton: AppInfo.enableAppLayouts
                 });
             }
 
@@ -152,7 +151,8 @@
                     lazy: true,
                     cardLayout: true,
                     context: 'tv',
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    preferThumb: true
                 });
 
             } else if (view == 'Poster') {
@@ -162,11 +162,11 @@
                     shape: getThumbShape(),
                     showTitle: true,
                     showParentTitle: true,
-                    overlayText: screenWidth >= 800 && !AppInfo.hasLowImageBandwidth,
                     lazy: true,
                     context: 'tv',
                     showDetailsMenu: true,
-                    overlayPlayButton: true
+                    overlayPlayButton: true,
+                    preferThumb: true
                 });
             }
 

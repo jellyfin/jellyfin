@@ -689,7 +689,7 @@ namespace MediaBrowser.Api.Playback
 
                 // TODO: Perhaps also use original_size=1920x800 ??
                 return string.Format("subtitles=filename='{0}'{1},setpts=PTS -{2}/TB",
-                    subtitlePath.Replace('\\', '/').Replace("'", "\\'").Replace(":/", "\\:/"),
+                    subtitlePath.Replace('\\', '/').Replace(":/", "\\:/"),
                     charsetParam,
                     seconds.ToString(UsCulture));
             }
@@ -697,7 +697,7 @@ namespace MediaBrowser.Api.Playback
             var mediaPath = state.MediaPath ?? string.Empty;
 
             return string.Format("subtitles='{0}:si={1}',setpts=PTS -{2}/TB",
-                mediaPath.Replace('\\', '/').Replace("'", "\\'").Replace(":/", "\\:/"),
+                mediaPath.Replace('\\', '/').Replace(":/", "\\:/"),
                 state.InternalSubtitleStreamOffset.ToString(UsCulture),
                 seconds.ToString(UsCulture));
         }

@@ -76,8 +76,6 @@
             }
         }
 
-        var viblastKey = 'N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=';
-
         function requireViblast(callback) {
             require(['thirdparty/viblast/viblast.js'], function () {
 
@@ -91,7 +89,7 @@
 
         function downloadViblastKey(callback) {
 
-            var savedKeyPropertyName = 'viblastkey';
+            var savedKeyPropertyName = 'vbk';
             var savedKey = appStorage.getItem(savedKeyPropertyName);
             if (savedKey) {
                 var deferred = DeferredBuilder.Deferred();
@@ -118,7 +116,8 @@
         }
 
         function getViblastKey() {
-            return htmlMediaRenderer.customViblastKey || viblastKey;
+
+            return htmlMediaRenderer.customViblastKey || 'N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=';
         }
 
         function getStartTime(url) {

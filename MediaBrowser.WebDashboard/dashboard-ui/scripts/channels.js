@@ -19,8 +19,6 @@
 
             var html = '';
 
-            updateFilterControls(page);
-
             var view = 'Thumb';
 
             if (view == "Thumb") {
@@ -59,10 +57,6 @@
         });
     }
 
-    function updateFilterControls(page) {
-
-    }
-
     function loadTab(page, index) {
 
         switch (index) {
@@ -70,7 +64,6 @@
             case 1:
                 LibraryBrowser.loadSavedQueryValues('channels', query);
                 reloadItems(page);
-                updateFilterControls(page);
                 break;
             default:
                 break;
@@ -84,7 +77,7 @@
         var tabs = page.querySelector('paper-tabs');
         var pages = page.querySelector('neon-animated-pages');
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages);
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, 1);
 
         $(tabs).on('iron-select', function () {
             var selected = this.selected;

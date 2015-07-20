@@ -122,7 +122,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }).Items;
 
                 // Add search hints based on item name
-                hints.AddRange(mediaItems.Where(i => (user == null || i.IsVisibleStandalone(user)) && !(i is CollectionFolder)).Select(item =>
+                hints.AddRange(mediaItems.Where(i => IncludeInSearch(i) && (user == null || i.IsVisibleStandalone(user)) && !(i is CollectionFolder)).Select(item =>
                 {
                     var index = GetIndex(item.Name, searchTerm, terms);
 

@@ -1534,7 +1534,9 @@
 
         tabs.hideScrollButtons = true;
 
-        $(ownerpage).on('pagebeforeshowready', LibraryBrowser.onTabbedPageBeforeShowReady);
+        $(ownerpage).on('pagebeforeshowready', function() {
+            LibraryBrowser.onTabbedPageBeforeShowReady(this);
+        });
 
         $(pages).on('iron-select', function () {
 

@@ -67,8 +67,7 @@
                     preferThumb: true,
                     showDetailsMenu: true,
                     centerText: true,
-                    overlayPlayButton: AppInfo.enableAppLayouts,
-                    fullWidthOnMobile: AppInfo.enableAppLayouts
+                    overlayPlayButton: AppInfo.enableAppLayouts
                 });
             }
 

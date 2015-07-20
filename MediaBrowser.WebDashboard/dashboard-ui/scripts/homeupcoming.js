@@ -117,7 +117,8 @@
                 preferThumb: true,
                 context: 'tv',
                 lazy: true,
-                showDetailsMenu: true
+                showDetailsMenu: true,
+                centerText: true
 
             });
             html += '</div>';

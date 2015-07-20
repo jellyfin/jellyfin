@@ -304,7 +304,7 @@ html {
     -ms-touch-action: manipulation;
     touch-action: manipulation;
     /* Prevent white flickering */
-    background-color: #1f1f1f;
+    background-color: #262626;
     /* Normalize for different browsers */
     margin: 0;
     padding: 0;
@@ -660,7 +660,7 @@ h1 .imageLink {
 .warningFieldDescription {
     padding: 5px;
     border: 1px solid #f4c63f;
-    background: #ffefaa;
+    background: #fff3a5;
     border-radius: 5px;
 }
 
@@ -868,15 +868,8 @@ h1 .imageLink {
 }
 
 .directoryPickerHeadline {
-    border: 1px solid #f7c942;
-    color: #222;
-    background: #fff9df;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#fffadf),to(#fff3a5));
-    background-image: -webkit-linear-gradient(#fffadf,#fff3a5);
-    background-image: -moz-linear-gradient(#fffadf,#fff3a5);
-    background-image: -ms-linear-gradient(#fffadf,#fff3a5);
-    background-image: -o-linear-gradient(#fffadf,#fff3a5);
-    background-image: linear-gradient(#fffadf,#fff3a5);
+    color: #000;
+    background: #fff3a5;
     padding: 1em;
     border-radius: 5px;
 }

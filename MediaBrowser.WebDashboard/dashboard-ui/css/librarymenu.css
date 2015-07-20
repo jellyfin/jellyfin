@@ -35,7 +35,7 @@
     border-radius: 1000px;
 }
 
-.viewMenuBar .fa, .viewMenuBar paper-icon-button {
+.viewMenuBar paper-icon-button {
     color: #fff;
     vertical-align: middle;
 }
@@ -201,7 +201,7 @@
 }
 
 .viewMenuBar, .libraryViewNav {
-    background-color: #111;
+    background-color: #121212;
 }
 
 .paperLibraryViewNav {

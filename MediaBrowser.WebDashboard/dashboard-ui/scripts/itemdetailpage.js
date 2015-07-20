@@ -855,8 +855,7 @@
                     overlayText: true,
                     lazy: true,
                     showDetailsMenu: true,
-                    overlayPlayButton: AppInfo.enableAppLayouts,
-                    fullWidthOnMobile: AppInfo.enableAppLayouts
+                    overlayPlayButton: AppInfo.enableAppLayouts
                 });
             }
             else if (item.Type == "GameSystem") {

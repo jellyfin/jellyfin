@@ -189,7 +189,7 @@
             return !LibraryBrowser.enableFullPaperTabs();
         },
 
-        configurePaperLibraryTabs: function (ownerpage, tabs, pages) {
+        configurePaperLibraryTabs: function (ownerpage, tabs, pages, defaultTabIndex) {
 
             tabs.hideScrollButtons = true;
 
@@ -235,7 +235,9 @@
                 $('.libraryViewNav', ownerpage).removeClass('libraryViewNavWithMinHeight');
             }
 
-            $(ownerpage).on('pagebeforeshowready', LibraryBrowser.onTabbedPageBeforeShowReady);
+            $(ownerpage).on('pagebeforeshowready', function () {
+                LibraryBrowser.onTabbedPageBeforeShowReady(ownerpage, defaultTabIndex);
+            });
 
             $(pages).on('iron-select', function () {
 
@@ -249,8 +251,7 @@
             });
         },
 
-        onTabbedPageBeforeShowReady: function () {
-            var page = this;
+        onTabbedPageBeforeShowReady: function (page, defaultTabIndex) {
 
             var tabs = page.querySelector('paper-tabs');
             var selected = tabs.selected;
@@ -259,7 +260,12 @@
 
                 Logger.log('selected tab is null, checking query string');
 
-                selected = parseInt(getParameterByName('tab') || '0');
+                if (!LibraryBrowser.enableFullPaperTabs()) {
+                    // Currently not supported in this mode
+                    defaultTabIndex = null;
+                }
+
+                selected = parseInt(getParameterByName('tab')) || defaultTabIndex || 0;
 
                 Logger.log('selected tab will be ' + selected);
 

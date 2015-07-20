@@ -2,7 +2,11 @@
 
     function reloadItems(page) {
 
-        Sections.loadLatestChannelItems(page.querySelector('.latestItems'), Dashboard.getCurrentUserId());
+        Dashboard.showLoadingMsg();
+
+        Sections.loadLatestChannelItems(page.querySelector('.latestItems'), Dashboard.getCurrentUserId()).always(function() {
+            Dashboard.hideLoadingMsg();
+        });
     }
 
     function loadTab(page, index) {

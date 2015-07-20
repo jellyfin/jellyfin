@@ -185,7 +185,7 @@
 }
 
 .channelPrograms, .timeslotHeadersInner {
-    width: 8000px;
+    width: 12000px;
 }
 
 .timeslotHeader {
@@ -269,9 +269,9 @@
     overflow: hidden;
 }
 
-    .pointerInput .programCellInner:hover {
-        background-color: #444;
-    }
+.pointerInput .programCellInner:hover {
+    background-color: #444;
+}
 
 .timeslotCellInner {
     position: absolute;
@@ -310,6 +310,20 @@
     position: absolute;
     right: 7px;
     top: 7px;
+}
+
+@media (max-width: 1920px) {
+
+    .channelPrograms, .timeslotHeadersInner {
+        width: 10000px;
+    }
+}
+
+@media (max-width: 1600px) {
+
+    .channelPrograms, .timeslotHeadersInner {
+        width: 8000px;
+    }
 }
 
 @media (max-width: 600px) {

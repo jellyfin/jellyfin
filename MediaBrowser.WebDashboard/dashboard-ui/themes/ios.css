@@ -59,8 +59,12 @@ html, body, .ui-btn, .pageTitle {
 }
 
     .libraryViewNav .ui-btn-active, .libraryViewNav .iron-selected, .barsMenuButton .fa, .btnActiveCast, .libraryViewNav a:not(.ui-btn-active):hover {
-        color: #E91E63 !important;
+        color: #FF2D55 !important;
     }
+
+.viewMenuBar paper-icon-button {
+    color: #FF2D55 !important;
+}
 
 .libraryViewNav {
     border-top: 1px solid #333 !important;

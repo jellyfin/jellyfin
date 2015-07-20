@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Thumb');
 
     var data = {};
 

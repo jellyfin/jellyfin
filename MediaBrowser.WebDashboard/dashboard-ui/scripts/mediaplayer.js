@@ -407,10 +407,10 @@
             if (self.supportsTextTracks()) {
 
                 if (isVlc) {
-                    //profile.SubtitleProfiles.push({
-                    //    Format: 'srt',
-                    //    Method: 'External'
-                    //});
+                    profile.SubtitleProfiles.push({
+                        Format: 'srt',
+                        Method: 'External'
+                    });
                     profile.SubtitleProfiles.push({
                         Format: 'srt',
                         Method: 'Embed'

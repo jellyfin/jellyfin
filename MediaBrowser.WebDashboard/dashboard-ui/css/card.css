@@ -360,7 +360,7 @@
 
 @media all and (max-width: 480px) {
 
-    .backdropCard.fullWidthCardOnMobile {
+    .backdropCard {
         width: 100% !important;
     }
 }
@@ -575,7 +575,7 @@
 
 @media all and (max-width: 480px) {
 
-    .detailPage169Card.fullWidthCardOnMobile {
+    .detailPage169Card {
         width: 100% !important;
     }
 }
