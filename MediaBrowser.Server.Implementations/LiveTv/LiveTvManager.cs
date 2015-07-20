@@ -55,7 +55,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly SemaphoreSlim _refreshRecordingsLock = new SemaphoreSlim(1, 1);
 
-        private ConcurrentDictionary<Guid, Guid> _refreshedPrograms = new ConcurrentDictionary<Guid, Guid>();
+        private readonly ConcurrentDictionary<Guid, Guid> _refreshedPrograms = new ConcurrentDictionary<Guid, Guid>();
 
         public LiveTvManager(IApplicationHost appHost, IServerConfigurationManager config, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer, IProviderManager providerManager)
         {
