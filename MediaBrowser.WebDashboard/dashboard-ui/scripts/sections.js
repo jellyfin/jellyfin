@@ -390,26 +390,28 @@
 
             if (result.Items.length) {
 
-                var cssClass = index !== 0 ? 'listHeader' : 'listHeader';
+                html += '<div class="homePageSection">';
 
                 html += '<div>';
                 var text = Globalize.translate('HeaderLatestFromChannel').replace('{0}', channel.Name);
-                html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + text + '</h1>';
+                html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + text + '</h1>';
                 html += '<a href="channelitems.html?context=channels&id=' + channel.Id + '" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
                 html += '</div>';
+
+                html += '<div class="itemsContainer">';
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: 'autohome',
+                    defaultShape: 'square',
+                    showTitle: true,
+                    centerText: true,
+                    context: 'channels',
+                    lazy: true,
+                    showDetailsMenu: true
+                });
+                html += '</div>';
+                html += '</div>';
             }
-            html += '<div class="itemsContainer">';
-            html += LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: 'autohome',
-                defaultShape: 'square',
-                showTitle: true,
-                centerText: true,
-                context: 'channels',
-                lazy: true,
-                showDetailsMenu: true
-            });
-            html += '</div>';
 
             var elem = page.querySelector('#channel' + channel.Id + '');
             elem.innerHTML = html;

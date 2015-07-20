@@ -62,7 +62,7 @@ html, body, .ui-btn, .pageTitle {
         color: #FF2D55 !important;
     }
 
-.viewMenuBar paper-icon-button {
+.viewMenuBar .headerButtonLeft {
     color: #FF2D55 !important;
 }
 

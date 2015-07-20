@@ -479,12 +479,6 @@
 
             var query = "id=" + item.Id;
 
-            var context = getParameterByName('context');
-
-            if (context) {
-                query += "&context=" + context;
-            }
-
             return query;
         };
 

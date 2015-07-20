@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Providers;
@@ -17,12 +18,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         private readonly ILiveTvManager _liveTvManager;
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
+        private readonly IApplicationHost _appHost;
 
-        public ChannelImageProvider(ILiveTvManager liveTvManager, IHttpClient httpClient, ILogger logger)
+        public ChannelImageProvider(ILiveTvManager liveTvManager, IHttpClient httpClient, ILogger logger, IApplicationHost appHost)
         {
             _liveTvManager = liveTvManager;
             _httpClient = httpClient;
             _logger = logger;
+            _appHost = appHost;
         }
 
         public IEnumerable<ImageType> GetSupportedImages(IHasImages item)
@@ -46,7 +49,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 var options = new HttpRequestOptions
                 {
                     CancellationToken = cancellationToken,
-                    Url = liveTvItem.ProviderImageUrl
+                    Url = liveTvItem.ProviderImageUrl,
+
+                    // Some image hosts require a user agent to be specified.
+                    UserAgent = "Emby Server/" + _appHost.ApplicationVersion
                 };
 
                 var response = await _httpClient.GetResponse(options).ConfigureAwait(false);

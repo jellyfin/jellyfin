@@ -49,15 +49,11 @@
             var context = getParameterByName('context');
 
             var editQuery = '?id=' + item.Id;
-            if (context) {
-                editQuery += '&context=' + context;
-            }
 
             currentItem = item;
 
+            LibraryMenu.setTitle(item.Name);
             Backdrops.setBackdrops(page, [item]);
-
-            renderHeader(page, item, context);
 
             var name = item.Name;
 
@@ -102,48 +98,6 @@
 
             Dashboard.hideLoadingMsg();
         });
-    }
-
-    function renderHeader(page, item, context) {
-
-        $('.itemTabs', page).hide();
-
-        if (context == "movies" && item.Type == "Genre") {
-            $('#movieGenreTabs', page).show();
-        }
-
-        if (context == "movies" && item.Type == "Person") {
-            $('#moviePeopleTabs', page).show();
-        }
-
-        if (context == "movies" && item.Type == "Studio") {
-            $('#movieStudioTabs', page).show();
-        }
-
-        if (context == "tv" && item.Type == "Studio") {
-            $('#tvStudioTabs', page).show();
-        }
-
-        if (context == "tv" && item.Type == "Genre") {
-            $('#tvGenreTabs', page).show();
-        }
-
-        if (context == "tv" && item.Type == "Person") {
-            $('#tvPeopleTabs', page).show();
-        }
-
-        if (context == "music" && item.Type == "MusicGenre") {
-            $('#musicGenreTabs', page).show();
-        }
-        if (context == "music" && item.Type == "MusicArtist") {
-            $('#artistTabs', page).show();
-        }
-        if (context == "games" && item.Type == "GameGenre") {
-            $('#gameGenreTabs', page).show();
-        }
-        if (context == "games" && item.Type == "Studio") {
-            $('#gameStudioTabs', page).show();
-        }
     }
 
     function renderTabs(page, item, context) {

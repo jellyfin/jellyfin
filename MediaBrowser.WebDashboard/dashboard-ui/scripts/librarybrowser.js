@@ -235,9 +235,7 @@
                 $('.libraryViewNav', ownerpage).removeClass('libraryViewNavWithMinHeight');
             }
 
-            $(ownerpage).on('pagebeforeshowready', function () {
-                LibraryBrowser.onTabbedPageBeforeShowReady(ownerpage, defaultTabIndex);
-            });
+            $(ownerpage).on('pagebeforeshowready', LibraryBrowser.onTabbedPageBeforeShowReady);
 
             $(pages).on('iron-select', function () {
 
@@ -251,8 +249,9 @@
             });
         },
 
-        onTabbedPageBeforeShowReady: function (page, defaultTabIndex) {
+        onTabbedPageBeforeShowReady: function () {
 
+            var page = this;
             var tabs = page.querySelector('paper-tabs');
             var selected = tabs.selected;
 
@@ -260,12 +259,7 @@
 
                 Logger.log('selected tab is null, checking query string');
 
-                if (!LibraryBrowser.enableFullPaperTabs()) {
-                    // Currently not supported in this mode
-                    defaultTabIndex = null;
-                }
-
-                selected = parseInt(getParameterByName('tab')) || defaultTabIndex || 0;
+                selected = parseInt(getParameterByName('tab') || '0');
 
                 Logger.log('selected tab will be ' + selected);
 

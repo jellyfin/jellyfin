@@ -77,7 +77,7 @@
         var tabs = page.querySelector('paper-tabs');
         var pages = page.querySelector('neon-animated-pages');
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, 1);
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages);
 
         $(tabs).on('iron-select', function () {
             var selected = this.selected;

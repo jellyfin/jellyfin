@@ -358,7 +358,7 @@
     width: 42%;
 }
 
-@media all and (max-width: 480px) {
+@media all and (max-width: 420px) {
 
     .backdropCard {
         width: 100% !important;
@@ -573,7 +573,7 @@
     }
 }
 
-@media all and (max-width: 480px) {
+@media all and (max-width: 420px) {
 
     .detailPage169Card {
         width: 100% !important;
