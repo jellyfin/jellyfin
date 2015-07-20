@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using MediaBrowser.MediaEncoding.Subtitles;
+using MediaBrowser.Model.MediaInfo;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MediaBrowser.Tests.MediaEncoding.Subtitles {

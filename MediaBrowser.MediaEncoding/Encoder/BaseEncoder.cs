@@ -902,13 +902,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 // TODO: Perhaps also use original_size=1920x800 ??
                 return string.Format("subtitles=filename='{0}'{1},setpts=PTS -{2}/TB",
-                    subtitlePath.Replace('\\', '/').Replace("'", "\\'").Replace(":/", "\\:/"),
+                    subtitlePath.Replace('\\', '/').Replace(":/", "\\:/"),
                     charsetParam,
                     seconds.ToString(UsCulture));
             }
 
             return string.Format("subtitles='{0}:si={1}',setpts=PTS -{2}/TB",
-                state.MediaPath.Replace('\\', '/').Replace("'", "\\'").Replace(":/", "\\:/"),
+                state.MediaPath.Replace('\\', '/').Replace(":/", "\\:/"),
                 state.InternalSubtitleStreamOffset.ToString(UsCulture),
                 seconds.ToString(UsCulture));
         }

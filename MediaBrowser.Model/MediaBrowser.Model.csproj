@@ -169,6 +169,8 @@
     <Compile Include="Configuration\MetadataPluginType.cs" />
     <Compile Include="Dlna\SubtitleProfile.cs" />
     <Compile Include="MediaInfo\MediaProtocol.cs" />
+    <Compile Include="MediaInfo\SubtitleTrackEvent.cs" />
+    <Compile Include="MediaInfo\SubtitleTrackInfo.cs" />
     <Compile Include="Net\HttpResponse.cs" />
     <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="Notifications\NotificationOption.cs" />

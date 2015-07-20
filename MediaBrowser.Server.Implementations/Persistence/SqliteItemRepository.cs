@@ -1001,6 +1001,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             dict["Recording"] = new[] { typeof(LiveTvAudioRecording).FullName, typeof(LiveTvVideoRecording).FullName };
+            dict["Program"] = new[] { typeof(LiveTvProgram).FullName };
+            dict["TvChannel"] = new[] { typeof(LiveTvChannel).FullName };
 
             return dict;
         }

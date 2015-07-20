@@ -821,6 +821,12 @@
     <Compile Include="..\MediaBrowser.Model\MediaInfo\SubtitleFormat.cs">
       <Link>MediaInfo\SubtitleFormat.cs</Link>
     </Compile>
+    <Compile Include="..\MediaBrowser.Model\MediaInfo\SubtitleTrackEvent.cs">
+      <Link>MediaInfo\SubtitleTrackEvent.cs</Link>
+    </Compile>
+    <Compile Include="..\MediaBrowser.Model\MediaInfo\SubtitleTrackInfo.cs">
+      <Link>MediaInfo\SubtitleTrackInfo.cs</Link>
+    </Compile>
     <Compile Include="..\MediaBrowser.Model\MediaInfo\TransportStreamTimestamp.cs">
       <Link>MediaInfo\TransportStreamTimestamp.cs</Link>
     </Compile>

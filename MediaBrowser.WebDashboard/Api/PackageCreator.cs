@@ -304,11 +304,11 @@ namespace MediaBrowser.WebDashboard.Api
                     }
                 }
 
-                var version = GetType().Assembly.GetName().Version;
+                var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + appVersion : string.Empty;
 
                 var imports = new[]
                 {
-                    "vulcanize-out.html?v=" + appVersion
+                    "vulcanize-out.html" + versionString
                 };
                 var importsHtml = string.Join("", imports.Select(i => "<link rel=\"import\" href=\"" + i + "\">").ToArray());
 
@@ -316,7 +316,7 @@ namespace MediaBrowser.WebDashboard.Api
                 // In chrome it is causing the body to be hidden while loading, which leads to width-check methods to return 0 for everything
                 //imports = "";
 
-                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetInitialJavascript(mode, version) + importsHtml + GetCommonJavascript(mode, version));
+                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, appVersion) + GetInitialJavascript(mode, appVersion) + importsHtml + GetCommonJavascript(mode, appVersion));
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
@@ -412,7 +412,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="mode">The mode.</param>
         /// <param name="version">The version.</param>
         /// <returns>System.String.</returns>
-        private string GetCommonCss(string mode, Version version)
+        private string GetCommonCss(string mode, string version)
         {
             var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + version : string.Empty;
 
@@ -433,7 +433,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="mode">The mode.</param>
         /// <param name="version">The version.</param>
         /// <returns>System.String.</returns>
-        private string GetInitialJavascript(string mode, Version version)
+        private string GetInitialJavascript(string mode, string version)
         {
             var builder = new StringBuilder();
 
@@ -457,7 +457,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="mode">The mode.</param>
         /// <param name="version">The version.</param>
         /// <returns>System.String.</returns>
-        private string GetCommonJavascript(string mode, Version version)
+        private string GetCommonJavascript(string mode, string version)
         {
             var builder = new StringBuilder();
 
