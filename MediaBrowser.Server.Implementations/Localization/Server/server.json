@@ -1473,5 +1473,12 @@
     "HeaderShortOverview": "Short Overview",
     "HeaderType": "Type",
     "HeaderSeverity": "Severity",
-    "OptionReportActivities": "Activities Log"
+    "OptionReportActivities": "Activities Log",
+    "HeaderTunerDevices": "Tuner Devices",
+    "ButtonAddDevice": "Add Device",
+    "HeaderAddDevice": "Add Device",
+    "HeaderExternalServices": "External Services",
+    "LabelIpAddressPath": "IP Address / Path:",
+    "TabExternalServices": "External Services",
+    "TabTuners": "Tuners"
 }

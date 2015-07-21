@@ -10,28 +10,24 @@
             <div class="content-primary">
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" class="ui-btn-active">${TabStatus}</a>
-                    <a href="appservices.html?context=livetv" data-role="button">${TabServices}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabTuners}</a>
+                    <a href="#" data-role="button">${TabGuide}</a>
                     <a href="livetvsettings.html" data-role="button">${TabSettings}</a>
+                    <a href="appservices.html?context=livetv" data-role="button">${TabExternalServices}</a>
                 </div>
 
                 <div class="readOnlyContent" style="margin-top: 2em;">
 
                     <div class="liveTvStatusContent" style="display: none;">
 
-                        <h2>${HeaderServices}</h2>
-                        <div class="servicesList">
-                        </div>
-                        <br />
-
-                        <div class="refreshGuidePanel">
-                            <button type="button" class="btnRefreshGuide" data-icon="refresh" data-mini="true">${ButtonRefreshGuideData}</button>
-                            <progress max="100" min="0" style="width: 100%;" class="refreshGuideProgress"></progress>
-                            <div style="margin-top: 5px;">${LabelLastResult} <span class="lastRefreshGuideResult"></span></div>
+                        <h1>${HeaderTunerDevices}</h1>
+                        <paper-button raised class="submit btnAddDevice block"><iron-icon icon="add"></iron-icon><span>${ButtonAddDevice}</span></paper-button>
+                        <div class="devicesList">
                         </div>
 
                         <br />
-                        <h2>${HeaderTvTuners}</h2>
+                        <br />
+                        <h1>${HeaderTvTuners}</h1>
 
                         <table data-role="table" data-mode="reflow" class="tblTuners stripedTable ui-responsive table-stroke">
                             <thead>
@@ -48,12 +44,45 @@
                         </table>
                     </div>
 
+                    <div class="servicesSection" style="display:none;">
+                        <br />
+                        <br />
+                        <h1>${HeaderExternalServices}</h1>
+                        <div class="servicesList">
+                        </div>
+                    </div>
+
                     <div class="noLiveTvServices" style="display: none;">
 
                         <p>${LiveTvPluginRequired}</p>
 
                         <p><a href="plugincatalog.html">${LiveTvPluginRequiredHelp}</a></p>
                     </div>
+
+                    <paper-dialog class="dlgAddDevice" entry-animation="fade-in-animation" exit-animation="fade-out-animation" style="height:300px;width:250px;" with-backdrop>
+                        <h2>${HeaderAddDevice}</h2>
+
+                        <form class="formAddDevice">
+                            <div>
+                                <div>
+                                    <label for="selectTunerDeviceType">${LabelType}</label>
+                                    <select id="selectTunerDeviceType" data-mini="true">
+                                        <option value="hdhomerun">HD Homerun</option>
+                                        <option value="m3u">M3U</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <br />
+                                    <label for="txtDevicePath">${LabelIpAddressPath}</label>
+                                    <input type="text" id="txtDevicePath" required="required" />
+                                </div>
+                            </div>
+                            <div class="buttons">
+                                <paper-button dialog-dismiss>${ButtonCancel}</paper-button>
+                                <button data-role="none" type="submit" class="clearButton"><paper-button><span>${ButtonOk}</span></paper-button></button>
+                            </div>
+                        </form>
+                    </paper-dialog>
                 </div>
             </div>
         </div>

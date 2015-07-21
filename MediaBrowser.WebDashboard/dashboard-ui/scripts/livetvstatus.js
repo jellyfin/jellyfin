@@ -150,7 +150,19 @@
             $('.noLiveTvServices', page).show();
         }
 
-        $('.servicesList', page).html(liveTvInfo.Services.map(getServiceHtml).join('')).trigger('create');
+        var servicesToDisplay = liveTvInfo.Services.filter(function (s) {
+
+            return s.IsVisible;
+
+        });
+
+        if (servicesToDisplay.length) {
+            $('.servicesSection', page).show();
+        } else {
+            $('.servicesSection', page).hide();
+        }
+
+        $('.servicesList', page).html(servicesToDisplay.map(getServiceHtml).join('')).trigger('create');
 
         var tuners = [];
         for (var i = 0, length = liveTvInfo.Services.length; i < length; i++) {
@@ -162,7 +174,81 @@
 
         renderTuners(page, tuners);
 
+        ApiClient.getNamedConfiguration("livetv").done(function (config) {
+
+            renderDevices(page, config.TunerHosts);
+        });
+
         Dashboard.hideLoadingMsg();
+    }
+
+    function renderDevices(page, devices) {
+
+        var html = '';
+
+        html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
+
+        for (var i = 0, length = devices.length; i < length; i++) {
+
+            var device = devices[i];
+            html += '<li>';
+            html += '<a href="#">';
+
+            html += '<h3>';
+            if (device.Type == 'm3u') {
+                html += "M3U";
+            }
+            else if (device.Type == 'hdhomerun') {
+                html += "HD Homerun";
+            } else {
+                html += device.Type;
+            }
+            html += '</h3>';
+
+            html += '<p>';
+            html += device.Url;
+            html += '</p>';
+
+            html += '</a>';
+            html += '<a href="#" class="btnDeleteDevice">';
+            html += '</a>';
+            html += '</li>';
+        }
+
+        html += '</ul>';
+
+        var elem = $('.devicesList', page).html(html).trigger('create');
+
+        $('.btnDeleteDevice', elem).on('click', function () {
+
+            var id = this.getAttribute('data-id');
+
+            deleteDevice(page, id);
+        });
+    }
+
+    function deleteDevice(page, id) {
+
+        var message = Globalize.translate('MessageConfirmDeleteTunerDevice');
+
+        Dashboard.confirm(message, Globalize.translate('HeaderDeleteDevice'), function (confirmResult) {
+
+            if (confirmResult) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.ajax({
+                    type: "DELETE",
+                    url: ApiClient.getUrl('LiveTv/TunerHosts', {
+                        Id: id
+                    })
+
+                }).done(function () {
+
+                    reload(page);
+                });
+            }
+        });
     }
 
     function reload(page) {
@@ -176,29 +262,45 @@
         });
     }
 
-    $(document).on('pageshowready', "#liveTvStatusPage", function () {
+    function submitAddDeviceForm(page) {
+
+        page.querySelector('.dlgAddDevice').close();
+        Dashboard.showLoadingMsg();
+
+        ApiClient.ajax({
+            type: "POST",
+            url: ApiClient.getUrl('LiveTv/TunerHosts'),
+            data: JSON.stringify({
+                Type: $('#selectTunerDeviceType', page).val(),
+                Url: $('#txtDevicePath', page).val()
+            }),
+            contentType: "application/json"
+
+        }).done(function () {
+
+            reload(page);
+        });
+
+    }
+
+    $(document).on('pageinitdepends', "#liveTvStatusPage", function () {
+
+        var page = this;
+
+        $('.btnAddDevice', page).on('click', function () {
+            page.querySelector('.dlgAddDevice').open();
+        });
+
+        $('.dlgAddDevice', page).on('submit', function () {
+            submitAddDeviceForm(page);
+            return false;
+        });
+
+    }).on('pageshowready', "#liveTvStatusPage", function () {
 
         var page = this;
 
         reload(page);
-
-        // on here
-        $('.btnRefreshGuide', page).taskButton({
-            mode: 'on',
-            progressElem: $('.refreshGuideProgress', page),
-            lastResultElem: $('.lastRefreshGuideResult', page),
-            taskKey: 'RefreshGuide'
-        });
-
-    }).on('pagebeforehide', "#liveTvStatusPage", function () {
-
-        var page = this;
-
-        // off here
-        $('.btnRefreshGuide', page).taskButton({
-            mode: 'off'
-        });
-
     });
 
 })(jQuery, document, window);

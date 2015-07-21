@@ -66,6 +66,15 @@ html, body, .ui-btn, .pageTitle {
     color: #FF2D55 !important;
 }
 
+.channelTimeslotHeader {
+    border-right-color: #FF2D55 !important;
+}
+
+.channelTimeslotHeader, .timeslotHeader {
+    background: #FF2D55 !important;
+}
+
+
 .libraryViewNav {
     border-top: 1px solid #333 !important;
 }

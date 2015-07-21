@@ -2057,6 +2057,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 info.Version = statusInfo.Version;
                 info.HasUpdateAvailable = statusInfo.HasUpdateAvailable;
                 info.HomePageUrl = service.HomePageUrl;
+                info.IsVisible = statusInfo.IsVisible;
 
                 info.Tuners = statusInfo.Tuners.Select(i =>
                 {

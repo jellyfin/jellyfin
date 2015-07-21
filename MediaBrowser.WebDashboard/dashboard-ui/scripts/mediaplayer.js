@@ -58,6 +58,7 @@
                 options.push({ name: '1080p - 8Mbps', maxHeight: 1080, bitrate: 8000001 });
                 options.push({ name: '1080p - 6Mbps', maxHeight: 1080, bitrate: 6000001 });
                 options.push({ name: '1080p - 5Mbps', maxHeight: 1080, bitrate: 5000001 });
+                options.push({ name: '1080p - 4Mbps', maxHeight: 1080, bitrate: 4000002 });
 
             } else if (maxAllowedWidth >= 1260) {
                 options.push({ name: '720p - 10Mbps', maxHeight: 720, bitrate: 10000000 });
@@ -119,14 +120,22 @@
                 })[0].maxHeight;
             }
 
+            var isVlc = AppInfo.isNativeApp && $.browser.android;
             var bitrateSetting = AppSettings.maxStreamingBitrate();
+
+            if (isVlc) {
+                // Work around vlc 1080p stutter for now
+                if ((maxHeight || 1080) >= 1080) {
+                    bitrateSetting = Math.min(bitrateSetting, 4000002);
+                }
+            }
 
             var canPlayWebm = self.canPlayWebm();
 
             var profile = {};
 
             profile.MaxStreamingBitrate = bitrateSetting;
-            profile.MaxStaticBitrate = 40000000;
+            profile.MaxStaticBitrate = 4000000;
             profile.MusicStreamingTranscodingBitrate = Math.min(bitrateSetting, 192000);
 
             profile.DirectPlayProfiles = [];
@@ -302,8 +311,6 @@
                     Value: maxAudioChannels
                 }]
             });
-
-            var isVlc = AppInfo.isNativeApp && $.browser.android;
 
             if (!isVlc) {
                 profile.CodecProfiles.push({

@@ -816,5 +816,6 @@
     "ButtonShareHelp": "Share a web page containing media information with social media. Media files are never shared publicly.",
     "ButtonShare": "Share",
     "HeaderConfirm": "Confirm",
-    "ButtonAdvancedRefresh": "Advanced Refresh"
+    "ButtonAdvancedRefresh": "Advanced Refresh",
+    "MessageConfirmDeleteTunerDevice": "Are you sure you wish to delete this device?"
 }

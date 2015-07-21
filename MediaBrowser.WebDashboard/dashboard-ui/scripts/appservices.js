@@ -81,7 +81,6 @@
         var context = getParameterByName('context');
 
         $('.sectionTabs', page).hide();
-        $('.' + context + 'SectionTabs', page).show();
 
         if (context == 'sync') {
             Dashboard.setPageTitle(Globalize.translate('TitleSync'));
@@ -95,6 +94,17 @@
             Dashboard.setPageTitle(Globalize.translate('TitleNotifications'));
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Notifications');
         }
+
+    }).on('pagebeforeshowready', "#appServicesPage", function () {
+
+        // This needs both events for the helpurl to get done at the right time
+
+        var page = this;
+
+        var context = getParameterByName('context');
+
+        $('.sectionTabs', page).hide();
+        $('.' + context + 'SectionTabs', page).show();
 
     }).on('pageshowready', "#appServicesPage", function () {
 

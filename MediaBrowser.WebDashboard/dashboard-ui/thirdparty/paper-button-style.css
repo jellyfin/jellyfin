@@ -149,6 +149,8 @@ paper-button .fa {
     color: inherit;
     width: 100%;
     vertical-align: middle;
+    font-family: inherit;
+    font-weight: inherit;
 }
 
 .clearLink {

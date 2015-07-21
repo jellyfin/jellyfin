@@ -3,6 +3,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -14,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Server.Implementations.LiveTv.EmbyTV;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 {
@@ -70,12 +72,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
         public async Task<List<LiveTvTunerInfo>> GetTunerInfos(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            var httpOptions = new HttpRequestOptions()
+            string model = null;
+
+            using (var stream = await _httpClient.Get(new HttpRequestOptions()
+            {
+                Url = string.Format("{0}/", GetApiUrl(info)),
+                CancellationToken = cancellationToken
+            }))
+            {
+                using (var sr = new StreamReader(stream, System.Text.Encoding.UTF8))
+                {
+                    while (!sr.EndOfStream)
+                    {
+                        string line = StripXML(sr.ReadLine());
+                        if (line.StartsWith("Model:")) { model = line.Replace("Model: ", ""); }
+                        //if (line.StartsWith("Device ID:")) { deviceID = line.Replace("Device ID: ", ""); }
+                        //if (line.StartsWith("Firmware:")) { firmware = line.Replace("Firmware: ", ""); }
+                    }
+                }
+            }
+
+            using (var stream = await _httpClient.Get(new HttpRequestOptions()
             {
                 Url = string.Format("{0}/tuners.html", GetApiUrl(info)),
                 CancellationToken = cancellationToken
-            };
-            using (var stream = await _httpClient.Get(httpOptions))
+            }))
             {
                 var tuners = new List<LiveTvTunerInfo>();
                 using (var sr = new StreamReader(stream, System.Text.Encoding.UTF8))
@@ -93,7 +114,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                             tuners.Add(new LiveTvTunerInfo()
                             {
                                 Name = name,
-                                SourceType = Name,
+                                SourceType = string.IsNullOrWhiteSpace(model) ? Name : model,
                                 ProgramName = currentChannel,
                                 Status = status
                             });

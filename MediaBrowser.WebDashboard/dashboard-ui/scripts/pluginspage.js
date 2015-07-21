@@ -29,7 +29,7 @@
         });
     }
 
-    function getPluginCardHtml(plugin, pluginConfigurationPages) {
+    function getPluginCardHtml(plugin, getTextLinesCallback, pluginConfigurationPages) {
 
         var configPage = $.grep(pluginConfigurationPages, function (pluginConfigurationPage) {
             return pluginConfigurationPage.PluginId == plugin.Id;
@@ -96,6 +96,10 @@
         html += plugin.Version;
         html += "</div>";
 
+        if (getTextLinesCallback) {
+            html += getTextLinesCallback(plugin);
+        }
+
         // cardFooter
         html += "</div>";
 
@@ -108,16 +112,16 @@
         return html;
     }
 
-    function renderPlugins(page, plugins) {
+    function renderPlugins(page, plugins, getTextLinesCallback) {
 
         ApiClient.getJSON(ApiClient.getUrl("dashboard/configurationpages") + "?pageType=PluginConfiguration").done(function (configPages) {
 
-            populateList(page, plugins, configPages);
+            populateList(page, plugins, getTextLinesCallback, configPages);
 
         });
     }
 
-    function populateList(page, plugins, pluginConfigurationPages) {
+    function populateList(page, plugins, getTextLinesCallback, pluginConfigurationPages) {
 
         plugins = plugins.sort(function (plugin1, plugin2) {
 
@@ -126,7 +130,7 @@
         });
 
         var html = plugins.map(function (p) {
-            return getPluginCardHtml(p, pluginConfigurationPages);
+            return getPluginCardHtml(p, getTextLinesCallback, pluginConfigurationPages);
 
         }).join('');
 
@@ -187,7 +191,7 @@
 
             ActionSheetElement.show({
                 items: menuItems,
-                positionTo: card,
+                positionTo: elem,
                 callback: function (resultId) {
 
                     switch (resultId) {
