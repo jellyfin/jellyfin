@@ -20,6 +20,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
     public class EmbyTV : ILiveTvService, IDisposable
     {
+        private readonly IApplicationHost _appHpst;
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
         private readonly IConfigurationManager _config;
@@ -32,6 +33,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IConfigurationManager config)
         {
+            _appHpst = appHost;
             _logger = logger;
             _httpClient = httpClient;
             _config = config;
@@ -90,6 +92,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             status.Tuners = list;
             status.Status = LiveTvServiceStatus.Ok;
+            status.Version = _appHpst.ApplicationVersion.ToString();
+            status.IsVisible = false;
             return status;
         }
 

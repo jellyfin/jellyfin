@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Dto;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
@@ -330,15 +331,31 @@ namespace MediaBrowser.Api.LiveTv
         public string UserId { get; set; }
     }
 
+    [Route("/LiveTv/TunerHosts", "POST", Summary = "Adds a tuner host")]
+    [Authenticated]
+    public class AddTunerHost : TunerHostInfo, IReturnVoid
+    {
+    }
+
+    [Route("/LiveTv/TunerHosts", "DELETE", Summary = "Deletes a tuner host")]
+    [Authenticated]
+    public class DeleteTunerHost : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Tuner host id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public string Id { get; set; }
+    }
+
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;
         private readonly IUserManager _userManager;
+        private readonly IConfigurationManager _config;
 
-        public LiveTvService(ILiveTvManager liveTvManager, IUserManager userManager)
+        public LiveTvService(ILiveTvManager liveTvManager, IUserManager userManager, IConfigurationManager config)
         {
             _liveTvManager = liveTvManager;
             _userManager = userManager;
+            _config = config;
         }
 
         private void AssertUserCanManageLiveTv()
@@ -354,6 +371,34 @@ namespace MediaBrowser.Api.LiveTv
             {
                 throw new UnauthorizedAccessException("The current user does not have permission to manage live tv.");
             }
+        }
+
+        public void Post(AddTunerHost request)
+        {
+            var config = GetConfiguration();
+
+            config.TunerHosts.Add(new TunerHostInfo
+            {
+                Id = Guid.NewGuid().ToString("N"),
+                Url = request.Url,
+                Type = request.Type
+            });
+
+            _config.SaveConfiguration("livetv", config);
+        }
+
+        public void Delete(DeleteTunerHost request)
+        {
+            var config = GetConfiguration();
+
+            config.TunerHosts = config.TunerHosts.Where(i => !string.Equals(request.Id, i.Id, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            _config.SaveConfiguration("livetv", config);
+        }
+
+        private LiveTvOptions GetConfiguration()
+        {
+            return _config.GetConfiguration<LiveTvOptions>("livetv");
         }
 
         public async Task<object> Get(GetLiveTvInfo request)
