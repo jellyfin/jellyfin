@@ -81,14 +81,6 @@
 
     function getThreshold() {
 
-        // If less than 100, the search window ends up not getting images
-        // If less than 200, this happens on the home page
-        // Need to fix those before this can be set to 0
-
-        //if (window.AppInfo && AppInfo.isNativeApp && $.browser.safari) {
-        //    return 7000;
-        //}
-
         var screens = $.browser.mobile ? 2.5 : 1;
 
         // This helps eliminate the draw-in effect as you scroll
@@ -136,12 +128,12 @@
             images = remaining;
 
             if (!images.length) {
-                Events.off(window, 'scroll.' + eventNamespace);
+                Events.off(document, 'scroll.' + eventNamespace);
                 Events.off(window, 'resize.' + eventNamespace);
             }
         }
 
-        Events.on(window, 'scroll.' + eventNamespace, unveil);
+        Events.on(document, 'scroll.' + eventNamespace, unveil);
         Events.on(window, 'resize.' + eventNamespace, unveil);
 
         unveil();

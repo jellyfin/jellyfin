@@ -510,7 +510,7 @@
 
                     setTimeout(function () {
                         Dashboard.navigate(link.href);
-                    }, 350);
+                    }, 400);
                 }, 50);
             }
 
@@ -525,7 +525,7 @@
 
                 setTimeout(function () {
                     Dashboard.logout();
-                }, 350);
+                }, 400);
             }
 
             return false;

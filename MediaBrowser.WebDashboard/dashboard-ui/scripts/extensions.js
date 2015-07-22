@@ -251,7 +251,7 @@ function humane_date(date_str) {
         return Math.round(seconds / 4730400000) + ' centuries' + token;
 
     return date_str;
-};
+}
 
 function humane_elapsed(firstDateStr, secondDateStr) {
     var dt1 = new Date(firstDateStr);

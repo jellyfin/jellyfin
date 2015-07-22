@@ -285,8 +285,8 @@
 
             name = (name || '').toLowerCase();
             var validTokens = ['nexusplayer'];
-            //validTokens.push('chromecast');
-            //validTokens.push('eurekadongle');
+            validTokens.push('chromecast');
+            validTokens.push('eurekadongle');
 
             return validTokens.filter(function (t) {
 
