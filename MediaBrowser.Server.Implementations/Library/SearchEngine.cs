@@ -130,7 +130,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }));
             }
 
-            if (query.IncludeArtists)
+            if (query.IncludeArtists && (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains("MusicArtist", StringComparer.OrdinalIgnoreCase)))
             {
                 // Find artists
                 var artists = items.OfType<Audio>()
@@ -159,7 +159,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            if (query.IncludeGenres)
+            if (query.IncludeGenres && (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains("Genre", StringComparer.OrdinalIgnoreCase)))
             {
                 // Find genres, from non-audio items
                 var genres = items.Where(i => !(i is IHasMusicGenres) && !(i is Game))
@@ -240,7 +240,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            if (query.IncludeStudios)
+            if (query.IncludeStudios && (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains("Studio", StringComparer.OrdinalIgnoreCase)))
             {
                 // Find studios
                 var studios = items.SelectMany(i => i.Studios)
@@ -268,7 +268,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            if (query.IncludePeople)
+            if (query.IncludePeople && (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains("Person", StringComparer.OrdinalIgnoreCase)))
             {
                 var itemIds = items.Select(i => i.Id).ToList();
 
