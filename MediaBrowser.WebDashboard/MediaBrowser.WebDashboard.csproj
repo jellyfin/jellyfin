@@ -183,7 +183,7 @@
     <Content Include="dashboard-ui\livetvguide.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\livetvguidesettings.html">
+    <Content Include="dashboard-ui\livetvguideprovider-scd.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\livetvrecordings.html">
@@ -207,7 +207,7 @@
     <Content Include="dashboard-ui\scripts\homeupcoming.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\scripts\livetvguidesettings.js">
+    <Content Include="dashboard-ui\scripts\livetvguideprovider-scd.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\scripts\mypreferenceshome.js">

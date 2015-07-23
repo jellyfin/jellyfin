@@ -57,6 +57,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly ConcurrentDictionary<Guid, Guid> _refreshedPrograms = new ConcurrentDictionary<Guid, Guid>();
 
+        private readonly List<ITunerHost> _tunerHosts = new List<ITunerHost>();
+        private readonly List<IListingsProvider> _listingProviders = new List<IListingsProvider>();
+
         public LiveTvManager(IApplicationHost appHost, IServerConfigurationManager config, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer, IProviderManager providerManager)
         {
             _config = config;
@@ -92,14 +95,28 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         /// Adds the parts.
         /// </summary>
         /// <param name="services">The services.</param>
-        public void AddParts(IEnumerable<ILiveTvService> services)
+        /// <param name="tunerHosts">The tuner hosts.</param>
+        /// <param name="listingProviders">The listing providers.</param>
+        public void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<ITunerHost> tunerHosts, IEnumerable<IListingsProvider> listingProviders)
         {
             _services.AddRange(services);
+            _tunerHosts.AddRange(tunerHosts);
+            _listingProviders.AddRange(listingProviders);
 
             foreach (var service in _services)
             {
                 service.DataSourceChanged += service_DataSourceChanged;
             }
+        }
+
+        public List<ITunerHost> TunerHosts
+        {
+            get { return _tunerHosts; }
+        }
+
+        public List<IListingsProvider> ListingProviders
+        {
+            get { return _listingProviders; }
         }
 
         void service_DataSourceChanged(object sender, EventArgs e)
@@ -2153,6 +2170,85 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var name = _localization.GetLocalizedString("ViewTypeLiveTV");
             var user = _userManager.GetUserById(userId);
             return await _libraryManager.GetNamedView(user, name, "livetv", "zz_" + name, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task SaveTunerHost(TunerHostInfo info)
+        {
+            info = (TunerHostInfo)_jsonSerializer.DeserializeFromString(_jsonSerializer.SerializeToString(info), typeof(TunerHostInfo));
+            
+            var provider = _tunerHosts.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
+
+            if (provider == null)
+            {
+                throw new ResourceNotFoundException();
+            }
+
+            await provider.Validate(info).ConfigureAwait(false);
+
+            var config = GetConfiguration();
+
+            var index = config.TunerHosts.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
+
+            if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
+            {
+                info.Id = Guid.NewGuid().ToString("N");
+                config.TunerHosts.Add(info);
+            }
+            else
+            {
+                config.TunerHosts[index] = info;
+            }
+
+            _config.SaveConfiguration("livetv", config);
+        }
+
+        public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info)
+        {
+            info = (ListingsProviderInfo)_jsonSerializer.DeserializeFromString(_jsonSerializer.SerializeToString(info), typeof(ListingsProviderInfo));
+
+            var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
+
+            if (provider == null)
+            {
+                throw new ResourceNotFoundException();
+            }
+
+            await provider.Validate(info).ConfigureAwait(false);
+
+            var config = GetConfiguration();
+
+            var index = config.ListingProviders.FindIndex(i => string.Equals(i.Id, info.Id, StringComparison.OrdinalIgnoreCase));
+
+            if (index == -1 || string.IsNullOrWhiteSpace(info.Id))
+            {
+                info.Id = Guid.NewGuid().ToString("N");
+                config.ListingProviders.Add(info);
+            }
+            else
+            {
+                config.ListingProviders[index] = info;
+            }
+
+            _config.SaveConfiguration("livetv", config);
+
+            return info;
+        }
+
+
+        public Task<List<NameIdPair>> GetLineups(string providerId, string location)
+        {
+            var config = GetConfiguration();
+
+            var info = config.ListingProviders.FirstOrDefault(i => string.Equals(i.Id, providerId, StringComparison.OrdinalIgnoreCase));
+
+            var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
+
+            if (provider == null)
+            {
+                throw new ResourceNotFoundException();
+            }
+
+            return provider.GetLineups(info, location);
         }
     }
 }

@@ -112,8 +112,8 @@ var Dashboard = {
                 }
             }
             return;
+            Dashboard.hideLoadingMsg();
         }
-        Dashboard.hideLoadingMsg();
     },
 
     getCurrentUser: function () {
@@ -518,8 +518,8 @@ var Dashboard = {
     },
 
     showModalLoadingMsg: function () {
-        Dashboard.showLoadingMsg();
         Dashboard.getModalLoadingMsg().show();
+        Dashboard.showLoadingMsg();
     },
 
     hideModalLoadingMsg: function () {

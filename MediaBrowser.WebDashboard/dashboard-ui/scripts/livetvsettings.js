@@ -1,16 +1,9 @@
 ﻿(function ($, document, window) {
 
-    function loadPage(page, config, liveTvInfo) {
+    function loadPage(page, config) {
 
-        if (liveTvInfo.IsEnabled) {
-
-            $('.liveTvSettingsForm', page).show();
-            $('.noLiveTvServices', page).hide();
-
-        } else {
-            $('.liveTvSettingsForm', page).hide();
-            $('.noLiveTvServices', page).show();
-        }
+        $('.liveTvSettingsForm', page).show();
+        $('.noLiveTvServices', page).hide();
 
         $('#selectGuideDays', page).val(config.GuideDays || '').selectmenu('refresh');
 
@@ -47,13 +40,9 @@
 
         var page = this;
 
-        var promise1 = ApiClient.getNamedConfiguration("livetv");
+        ApiClient.getNamedConfiguration("livetv").done(function (config) {
 
-        var promise2 = ApiClient.getLiveTvInfo();
-
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            loadPage(page, response1[0], response2[0]);
+            loadPage(page, config);
 
         });
 

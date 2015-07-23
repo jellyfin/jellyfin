@@ -139,12 +139,15 @@
             profile.MusicStreamingTranscodingBitrate = Math.min(bitrateSetting, 192000);
 
             profile.DirectPlayProfiles = [];
-            profile.DirectPlayProfiles.push({
-                Container: 'mp4,m4v',
-                Type: 'Video',
-                VideoCodec: 'h264',
-                AudioCodec: 'aac,mp3'
-            });
+
+            if (canPlayH264()) {
+                profile.DirectPlayProfiles.push({
+                    Container: 'mp4,m4v',
+                    Type: 'Video',
+                    VideoCodec: 'h264',
+                    AudioCodec: 'aac,mp3'
+                });
+            }
 
             if ($.browser.chrome) {
                 profile.DirectPlayProfiles.push({
@@ -1717,11 +1720,20 @@
             }
         }
 
+        function canPlayH264() {
+
+            if (navigator.userAgent.toLowerCase().indexOf('firefox') != -1) {
+                return false;
+            }
+
+            return true;
+        }
+
         self._canPlayWebm = null;
         self.canPlayWebm = function () {
 
             if (self._canPlayWebm == null) {
-                self._canPlayWebm = ($.browser.android && AppInfo.isNativeApp) || document.createElement('video').canPlayType('video/webm').replace(/no/, '');
+                self._canPlayWebm = document.createElement('video').canPlayType('video/webm').replace(/no/, '');
             }
             return self._canPlayWebm;
         };

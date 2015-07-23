@@ -11,7 +11,6 @@
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
                     <a href="#" data-role="button" class="ui-btn-active">${TabTuners}</a>
-                    <a href="livetvguidesettings.html" data-role="button">${TabGuide}</a>
                     <a href="livetvsettings.html" data-role="button">${TabSettings}</a>
                     <a href="appservices.html?context=livetv" data-role="button">${TabExternalServices}</a>
                 </div>
@@ -21,11 +20,20 @@
                     <div class="liveTvStatusContent" style="display: none;">
 
                         <h1>${HeaderTunerDevices}</h1>
-                        <paper-button raised class="submit btnAddDevice block"><iron-icon icon="add"></iron-icon><span>${ButtonAddDevice}</span></paper-button>
+                        <paper-button raised class="submit btnAddDevice block"><iron-icon icon="add"></iron-icon><span>${ButtonAdd}</span></paper-button>
                         <div class="devicesList">
                         </div>
 
-                        <br />
+                        <div>
+                            <br />
+                            <h1>${HeaderGuideProviders}</h1>
+                            <p>${AddGuideProviderHelp}</p>
+                            <paper-button raised class="submit btnAddProvider block"><iron-icon icon="add"></iron-icon><span>${ButtonAdd}</span></paper-button>
+                            <div class="providerList">
+                            </div>
+
+                        </div>
+
                         <br />
                         <h1>${HeaderTvTuners}</h1>
 
@@ -45,7 +53,6 @@
                     </div>
 
                     <div class="servicesSection" style="display:none;">
-                        <br />
                         <br />
                         <h1>${HeaderExternalServices}</h1>
                         <div class="servicesList">

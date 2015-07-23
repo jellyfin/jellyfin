@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>${TitleLiveTV}</title>
+</head>
+<body>
+    <div id="liveTvGuideProviderScdPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvguideprovider-scd">
+
+        <div data-role="content">
+            <div class="content-primary">
+
+                <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
+                    <a href="livetvstatus.html" data-role="button" class="ui-btn-active">${TabTuners}</a>
+                    <a href="livetvsettings.html" data-role="button">${TabSettings}</a>
+                    <a href="appservices.html?context=livetv" data-role="button">${TabExternalServices}</a>
+                </div>
+
+                <div class="readOnlyContent" style="margin-top: 2em;">
+
+                    <h1>Schedules Direct</h1>
+
+                    <div style="background-color:rgba(82,181,75,.8);color:#fff;padding:.7em 1em;font-size:16px;border-radius:4px;">
+                        ${GuideProviderLoginStep}
+                    </div>
+
+                    <form class="formLogin">
+                        <div>
+                            <div>
+                                <br />
+                                <label for="txtUser">${LabelUsername}</label>
+                                <input type="text" id="txtUser" required="required" autocomplete="off" />
+                            </div>
+                            <div>
+                                <br />
+                                <label for="txtPass">${LabelPassword}</label>
+                                <input type="password" id="txtPass" required="required" autocomplete="off" />
+                            </div>
+                            <div>
+                                <button type="submit" data-role="none" class="clearButton">
+                                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                                </button>
+
+                            </div>
+                        </div>
+                    </form>
+                    <br />
+                    <br />
+                    <br />
+                    <div style="background-color:rgba(82,181,75,.8);color:#fff;padding:.7em 1em;font-size:16px;border-radius:4px;">
+                        ${GuideProviderListingsStep}
+                    </div>
+                    <form class="formListings">
+                        <div>
+                            <div>
+                                <br />
+                                <label for="txtZipCode">${LabelZipCode}</label>
+                                <input type="text" id="txtZipCode" required="required" />
+                            </div>
+                            <div>
+                                <br />
+                                <label for="selectListing">${LabelLineup}</label>
+                                <select id="selectListing" data-mini="true" required="required"></select>
+                            </div>
+                            <div>
+                                <button type="submit" data-role="none" class="clearButton">
+                                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                                </button>
+
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -177,6 +177,7 @@
         ApiClient.getNamedConfiguration("livetv").done(function (config) {
 
             renderDevices(page, config.TunerHosts);
+            renderProviders(page, config.ListingProviders);
         });
 
         Dashboard.hideLoadingMsg();
@@ -210,7 +211,7 @@
             html += '</p>';
 
             html += '</a>';
-            html += '<a href="#" class="btnDeleteDevice">';
+            html += '<a href="#" class="btnDeleteDevice" data-id="' + device.Id + '">';
             html += '</a>';
             html += '</li>';
         }
@@ -279,8 +280,120 @@
         }).done(function () {
 
             reload(page);
+
+        }).fail(function () {
+            Dashboard.alert({
+                message: Globalize.translate('ErrorAddingTunerDevice')
+            });
         });
 
+    }
+
+    function renderProviders(page, providers) {
+
+        var html = '';
+
+        html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
+
+        for (var i = 0, length = providers.length; i < length; i++) {
+
+            var provider = providers[i];
+            html += '<li>';
+            html += '<a href="' + getProviderConfigurationUrl(provider.Type) + '?id=' + provider.Id + '">';
+
+            html += '<h3>';
+            html += getProviderName(provider.Type);
+            html += '</h3>';
+
+            html += '</a>';
+            html += '<a href="#" class="btnDelete" data-id="' + provider.Id + '">';
+            html += '</a>';
+            html += '</li>';
+        }
+
+        html += '</ul>';
+
+        var elem = $('.providerList', page).html(html).trigger('create');
+
+        $('.btnDelete', elem).on('click', function () {
+
+            var id = this.getAttribute('data-id');
+
+            deleteProvider(page, id);
+        });
+    }
+
+    function deleteProvider(page, id) {
+
+        var message = Globalize.translate('MessageConfirmDeleteGuideProvider');
+
+        Dashboard.confirm(message, Globalize.translate('HeaderDeleteProvider'), function (confirmResult) {
+
+            if (confirmResult) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.ajax({
+                    type: "DELETE",
+                    url: ApiClient.getUrl('LiveTv/ListingProviders', {
+                        Id: id
+                    })
+
+                }).always(function () {
+
+                    reload(page);
+                });
+            }
+        });
+    }
+
+    function getProviderName(providerId) {
+
+        providerId = providerId.toLowerCase();
+
+        switch (providerId) {
+
+            case 'schedulesdirect':
+                return 'Schedules Direct';
+            default:
+                return 'Unknown';
+        }
+    }
+
+    function getProviderConfigurationUrl(providerId) {
+
+        providerId = providerId.toLowerCase();
+
+        switch (providerId) {
+
+            case 'schedulesdirect':
+                return 'livetvguideprovider-scd.html';
+            default:
+                break;
+        }
+    }
+
+    function addProvider(button) {
+
+        var menuItems = [];
+
+        menuItems.push({
+            name: 'Schedules Direct (USA / Canada)',
+            id: 'SchedulesDirect'
+        });
+
+        require(['actionsheet'], function () {
+
+            ActionSheetElement.show({
+                items: menuItems,
+                positionTo: button,
+                callback: function (id) {
+
+                    Dashboard.navigate(getProviderConfigurationUrl(id));
+                }
+            });
+
+        });
     }
 
     $(document).on('pageinitdepends', "#liveTvStatusPage", function () {
@@ -288,12 +401,17 @@
         var page = this;
 
         $('.btnAddDevice', page).on('click', function () {
+            $('#txtDevicePath', page).val('');
             page.querySelector('.dlgAddDevice').open();
         });
 
         $('.formAddDevice', page).on('submit', function () {
             submitAddDeviceForm(page);
             return false;
+        });
+
+        $('.btnAddProvider', page).on('click', function () {
+            addProvider(this);
         });
 
     }).on('pageshowready', "#liveTvStatusPage", function () {

@@ -383,8 +383,6 @@
 
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item));
 
-        LibraryBrowser.renderBudget($('#itemBudget', page), item);
-        LibraryBrowser.renderRevenue($('#itemRevenue', page), item);
         LibraryBrowser.renderAwardSummary($('#awardSummary', page), item);
 
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
@@ -405,7 +403,6 @@
         }
 
         renderTags(page, item);
-        renderKeywords(page, item);
 
         renderSeriesAirTime(page, item, context);
 
@@ -709,25 +706,6 @@
 
         } else {
             $('.itemTags', page).hide();
-        }
-    }
-
-    function renderKeywords(page, item) {
-
-        if (item.Keywords && item.Keywords.length) {
-
-            var html = '';
-            html += '<p>' + Globalize.translate('HeaderPlotKeywords') + '</p>';
-            for (var i = 0, length = item.Keywords.length; i < length; i++) {
-
-                html += '<div class="itemTag">' + item.Keywords[i] + '</div>';
-
-            }
-
-            $('.itemKeywords', page).show().html(html);
-
-        } else {
-            $('.itemKeywords', page).hide();
         }
     }
 

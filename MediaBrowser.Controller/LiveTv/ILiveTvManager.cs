@@ -56,12 +56,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="id">The identifier.</param>
         /// <returns>Task.</returns>
         Task CancelSeriesTimer(string id);
-        
+
         /// <summary>
         /// Adds the parts.
         /// </summary>
         /// <param name="services">The services.</param>
-        void AddParts(IEnumerable<ILiveTvService> services);
+        /// <param name="tunerHosts">The tuner hosts.</param>
+        /// <param name="listingProviders">The listing providers.</param>
+        void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<ITunerHost> tunerHosts, IEnumerable<IListingsProvider> listingProviders);
 
         /// <summary>
         /// Gets the channels.
@@ -337,5 +339,24 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="dto">The dto.</param>
         /// <param name="user">The user.</param>
         void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, User user = null);
+        /// <summary>
+        /// Saves the tuner host.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <returns>Task.</returns>
+        Task SaveTunerHost(TunerHostInfo info);
+        /// <summary>
+        /// Saves the listing provider.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <returns>Task.</returns>
+        Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info);
+        /// <summary>
+        /// Gets the lineups.
+        /// </summary>
+        /// <param name="providerId">The provider identifier.</param>
+        /// <param name="location">The location.</param>
+        /// <returns>Task&lt;List&lt;NameIdPair&gt;&gt;.</returns>
+        Task<List<NameIdPair>> GetLineups(string providerId, string location);
     }
 }
