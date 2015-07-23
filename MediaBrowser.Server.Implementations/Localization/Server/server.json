@@ -695,7 +695,7 @@
     "NotificationOptionNewLibraryContentMultiple": "New content added (multiple)",
     "NotificationOptionCameraImageUploaded": "Camera image uploaded",
     "NotificationOptionUserLockedOut": "User locked out",
-    "HeaderSendNotificationHelp": "By default, notifications are delivered to your dashboard inbox. Browse the plugin catalog to install additional notification options.",
+    "HeaderSendNotificationHelp": "Notifications are delivered to your Emby inbox. Additional options can be installed from the Services tab.",
     "NotificationOptionServerRestartRequired": "Server restart required",
     "LabelNotificationEnabled": "Enable this notification",
     "LabelMonitorUsers": "Monitor activity from:",
@@ -1480,5 +1480,8 @@
     "HeaderExternalServices": "External Services",
     "LabelIpAddressPath": "IP Address / Path:",
     "TabExternalServices": "External Services",
-    "TabTuners": "Tuners"
+    "TabTuners": "Tuners",
+    "HeaderGuideProviders": "Guide Providers",
+    "AddGuideProviderHelp": "Add a source for TV Guide information",
+    "LabelZipCode": "Zip Code"
 }
