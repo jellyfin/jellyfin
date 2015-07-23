@@ -2200,6 +2200,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             _config.SaveConfiguration("livetv", config);
+
+            _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
         }
 
         public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info)
@@ -2231,9 +2233,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             _config.SaveConfiguration("livetv", config);
 
+            _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
+            
             return info;
         }
-
 
         public Task<List<NameIdPair>> GetLineups(string providerId, string location)
         {

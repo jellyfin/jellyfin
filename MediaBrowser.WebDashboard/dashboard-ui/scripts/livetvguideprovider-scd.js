@@ -148,6 +148,7 @@
             refreshListings(page, this.value);
         });
 
+        $('.createAccountHelp', page).html(Globalize.translate('MessageCreateAccountAt', '<a href="http://www.schedulesdirect.org" target="_blank">http://www.schedulesdirect.org</a>'));
 
     }).on('pageshowready', "#liveTvGuideProviderScdPage", function () {
 
