@@ -1,8 +1,6 @@
 ﻿using MediaBrowser.Common.IO;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
-using MediaBrowser.Common.Security;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -29,22 +27,18 @@ namespace MediaBrowser.Server.Implementations.Channels
         private readonly IChannelManager _manager;
         private readonly IServerConfigurationManager _config;
         private readonly ILogger _logger;
-        private readonly IHttpClient _httpClient;
         private readonly IFileSystem _fileSystem;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
-        private readonly ISecurityManager _security;
 
-        public ChannelDownloadScheduledTask(IChannelManager manager, IServerConfigurationManager config, ILogger logger, IHttpClient httpClient, IFileSystem fileSystem, ILibraryManager libraryManager, IUserManager userManager, ISecurityManager security)
+        public ChannelDownloadScheduledTask(IChannelManager manager, IServerConfigurationManager config, ILogger logger, IFileSystem fileSystem, ILibraryManager libraryManager, IUserManager userManager)
         {
             _manager = manager;
             _config = config;
             _logger = logger;
-            _httpClient = httpClient;
             _fileSystem = fileSystem;
             _libraryManager = libraryManager;
             _userManager = userManager;
-            _security = security;
         }
 
         public string Name

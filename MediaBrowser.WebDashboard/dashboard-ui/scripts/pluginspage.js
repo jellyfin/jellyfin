@@ -29,7 +29,7 @@
         });
     }
 
-    function getPluginCardHtml(plugin, getTextLinesCallback, pluginConfigurationPages) {
+    function getPluginCardHtml(plugin, pluginConfigurationPages) {
 
         var configPage = $.grep(pluginConfigurationPages, function (pluginConfigurationPage) {
             return pluginConfigurationPage.PluginId == plugin.Id;
@@ -96,10 +96,6 @@
         html += plugin.Version;
         html += "</div>";
 
-        if (getTextLinesCallback) {
-            html += getTextLinesCallback(plugin);
-        }
-
         // cardFooter
         html += "</div>";
 
@@ -112,16 +108,16 @@
         return html;
     }
 
-    function renderPlugins(page, plugins, getTextLinesCallback) {
+    function renderPlugins(page, plugins) {
 
         ApiClient.getJSON(ApiClient.getUrl("dashboard/configurationpages") + "?pageType=PluginConfiguration").done(function (configPages) {
 
-            populateList(page, plugins, getTextLinesCallback, configPages);
+            populateList(page, plugins, configPages);
 
         });
     }
 
-    function populateList(page, plugins, getTextLinesCallback, pluginConfigurationPages) {
+    function populateList(page, plugins, pluginConfigurationPages) {
 
         plugins = plugins.sort(function (plugin1, plugin2) {
 
@@ -130,7 +126,7 @@
         });
 
         var html = plugins.map(function (p) {
-            return getPluginCardHtml(p, getTextLinesCallback, pluginConfigurationPages);
+            return getPluginCardHtml(p, pluginConfigurationPages);
 
         }).join('');
 

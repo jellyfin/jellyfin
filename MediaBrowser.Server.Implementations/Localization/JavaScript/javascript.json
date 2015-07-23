@@ -817,5 +817,8 @@
     "ButtonShare": "Share",
     "HeaderConfirm": "Confirm",
     "ButtonAdvancedRefresh": "Advanced Refresh",
-    "MessageConfirmDeleteTunerDevice": "Are you sure you wish to delete this device?"
+    "MessageConfirmDeleteTunerDevice": "Are you sure you wish to delete this device?",
+    "MessageConfirmDeleteGuideProvider": "Are you sure you wish to delete this guide provider?",
+    "HeaderDeleteProvider": "Delete Provider",
+    "HeaderAddProvider": "Add Provider"
 }

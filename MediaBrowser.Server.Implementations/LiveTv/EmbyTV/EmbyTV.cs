@@ -26,10 +26,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private readonly IConfigurationManager _config;
         private readonly IJsonSerializer _jsonSerializer;
 
-        private readonly List<ITunerHost> _tunerHosts = new List<ITunerHost>();
         private readonly ItemDataProvider<RecordingInfo> _recordingProvider;
         private readonly ItemDataProvider<SeriesTimerInfo> _seriesTimerProvider;
         private readonly TimerManager _timerProvider;
+
+        private readonly List<ITunerHost> _tunerHosts = new List<ITunerHost>();
+        private readonly List<IListingsProvider> _listingProviders = new List<IListingsProvider>();
 
         public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IConfigurationManager config)
         {
@@ -39,6 +41,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _config = config;
             _jsonSerializer = jsonSerializer;
             _tunerHosts.AddRange(appHost.GetExports<ITunerHost>());
+            _listingProviders.AddRange(appHost.GetExports<IListingsProvider>());
 
             _recordingProvider = new ItemDataProvider<RecordingInfo>(jsonSerializer, _logger, Path.Combine(DataPath, "recordings"), (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase));
             _seriesTimerProvider = new SeriesTimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers"));
@@ -115,6 +118,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     {
                         _logger.ErrorException("Error getting channels", ex);
                     }
+                }
+            }
+
+            if (list.Count > 0)
+            {
+                foreach (var provider in GetListingProviders())
+                {
+                    await provider.Item1.AddMetadata(provider.Item2, list, cancellationToken).ConfigureAwait(false);
                 }
             }
 
@@ -246,9 +257,43 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return Task.FromResult((IEnumerable<SeriesTimerInfo>)_seriesTimerProvider.GetAll());
         }
 
-        public Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var allChannels = await GetChannelsAsync(cancellationToken).ConfigureAwait(false);
+            var channelInfo = allChannels.FirstOrDefault(i => string.Equals(channelId, i.Id, StringComparison.OrdinalIgnoreCase));
+
+            if (channelInfo == null)
+            {
+                _logger.Debug("Returning empty program list because channel was not found.");
+                return new List<ProgramInfo>();
+            }
+
+            foreach (var provider in GetListingProviders())
+            {
+                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channelInfo, startDateUtc, endDateUtc, cancellationToken)
+                        .ConfigureAwait(false);
+                var list = programs.ToList();
+
+                if (list.Count > 0)
+                {
+                    return list;
+                }
+            }
+
+            return new List<ProgramInfo>();
+        }
+
+        private List<Tuple<IListingsProvider, ListingsProviderInfo>> GetListingProviders()
+        {
+            return GetConfiguration().ListingProviders
+                .Select(i =>
+                {
+                    var provider = _listingProviders.FirstOrDefault(l => string.Equals(l.Name, i.ProviderName, StringComparison.OrdinalIgnoreCase));
+
+                    return provider == null ? null : new Tuple<IListingsProvider, ListingsProviderInfo>(provider, i);
+                })
+                .Where(i => i != null)
+                .ToList();
         }
 
         public Task<MediaSourceInfo> GetRecordingStream(string recordingId, string streamId, CancellationToken cancellationToken)

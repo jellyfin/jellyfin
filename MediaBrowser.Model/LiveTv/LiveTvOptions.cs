@@ -6,13 +6,16 @@ namespace MediaBrowser.Model.LiveTv
     {
         public int? GuideDays { get; set; }
         public bool EnableMovieProviders { get; set; }
-        public List<TunerHostInfo> TunerHosts { get; set; }
         public string RecordingPath { get; set; }
 
+        public List<TunerHostInfo> TunerHosts { get; set; }
+        public List<ListingsProviderInfo> ListingProviders { get; set; }
+ 
         public LiveTvOptions()
         {
             EnableMovieProviders = true;
             TunerHosts = new List<TunerHostInfo>();
+            ListingProviders = new List<ListingsProviderInfo>();
         }
     }
 
@@ -21,5 +24,14 @@ namespace MediaBrowser.Model.LiveTv
         public string Id { get; set; }
         public string Url { get; set; }
         public string Type { get; set; }
+    }
+
+    public class ListingsProviderInfo
+    {
+        public string ProviderName { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string ZipCode { get; set; }
+        public string ListingsId { get; set; }
     }
 }

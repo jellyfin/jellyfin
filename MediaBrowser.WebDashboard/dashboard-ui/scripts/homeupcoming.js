@@ -16,16 +16,6 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        query.ParentId = LibraryMenu.getTopParentId();
-
-        var context = '';
-
-        if (query.ParentId) {
-
-            context = 'tv';
-
-        }
-
         ApiClient.getJSON(ApiClient.getUrl("Shows/Upcoming", query)).done(function (result) {
 
             var items = result.Items;

@@ -33,7 +33,15 @@
 
         $('#chkEnableChromecastAc3', page).checked(AppSettings.enableChromecastAc3()).checkboxradio("refresh");
         $('#chkExternalVideoPlayer', page).checked(AppSettings.enableExternalPlayers()).checkboxradio("refresh");
-        $('#selectMaxBitrate', page).val(AppSettings.maxStreamingBitrate()).selectmenu("refresh");
+
+        var bitrateOptions = MediaPlayer.getVideoQualityOptions().map(function (i) {
+
+            return '<option value="' + i.bitrate + '">' + i.name + '</option>';
+
+        }).join('');
+        $('#selectMaxBitrate', page).html(bitrateOptions).val(AppSettings.maxStreamingBitrate()).selectmenu("refresh");
+
+
         $('#selectMaxChromecastBitrate', page).val(AppSettings.maxChromecastBitrate()).selectmenu("refresh");
 
         Dashboard.hideLoadingMsg();

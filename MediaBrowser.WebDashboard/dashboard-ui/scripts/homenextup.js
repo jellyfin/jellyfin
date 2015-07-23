@@ -28,8 +28,6 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        query.ParentId = LibraryMenu.getTopParentId();
-
         ApiClient.getNextUpEpisodes(query).done(function (result) {
 
             if (result.Items.length) {

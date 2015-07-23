@@ -291,7 +291,7 @@
             page.querySelector('.dlgAddDevice').open();
         });
 
-        $('.dlgAddDevice', page).on('submit', function () {
+        $('.formAddDevice', page).on('submit', function () {
             submitAddDeviceForm(page);
             return false;
         });

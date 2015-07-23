@@ -68,6 +68,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
             ServicePointManager.Expect100Continue = false;
+
+            // Trakt requests sometimes fail without this
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls;
         }
 
         /// <summary>
