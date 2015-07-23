@@ -226,7 +226,8 @@
     <Compile Include="LiveTv\LiveTvDtoService.cs" />
     <Compile Include="LiveTv\LiveTvManager.cs" />
     <Compile Include="LiveTv\LiveTvMediaSourceProvider.cs" />
-    <Compile Include="LiveTv\TunerHosts\HdHomerun.cs" />
+    <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunHost.cs" />
+    <Compile Include="LiveTv\TunerHosts\HdHomerun\HdHomerunDiscovery.cs" />
     <Compile Include="LiveTv\TunerHosts\M3UTunerHost.cs" />
     <Compile Include="LiveTv\ProgramImageProvider.cs" />
     <Compile Include="LiveTv\RecordingImageProvider.cs" />

@@ -14,31 +14,31 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Dlna.Ssdp
 {
-    public class DeviceDiscovery : IDisposable
+    public class DeviceDiscovery : IDeviceDiscovery, IDisposable
     {
         private bool _disposed;
 
         private readonly ILogger _logger;
         private readonly IServerConfigurationManager _config;
-        private readonly SsdpHandler _ssdpHandler;
+        private SsdpHandler _ssdpHandler;
         private readonly CancellationTokenSource _tokenSource;
         private readonly IServerApplicationHost _appHost;
 
         public event EventHandler<SsdpMessageEventArgs> DeviceDiscovered;
         public event EventHandler<SsdpMessageEventArgs> DeviceLeft;
 
-        public DeviceDiscovery(ILogger logger, IServerConfigurationManager config, SsdpHandler ssdpHandler, IServerApplicationHost appHost)
+        public DeviceDiscovery(ILogger logger, IServerConfigurationManager config, IServerApplicationHost appHost)
         {
             _tokenSource = new CancellationTokenSource();
 
             _logger = logger;
             _config = config;
-            _ssdpHandler = ssdpHandler;
             _appHost = appHost;
         }
 
-        public void Start()
+        public void Start(SsdpHandler ssdpHandler)
         {
+            _ssdpHandler = ssdpHandler;
             _ssdpHandler.MessageReceived += _ssdpHandler_MessageReceived;
 
             foreach (var network in GetNetworkInterfaces())
@@ -71,7 +71,7 @@ namespace MediaBrowser.Dlna.Ssdp
                 }
             }
         }
-        
+
         void _ssdpHandler_MessageReceived(object sender, SsdpMessageEventArgs e)
         {
             string nts;
@@ -199,7 +199,7 @@ namespace MediaBrowser.Dlna.Ssdp
             socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 4);
 
             socket.Bind(localEndpoint);
-            
+
             return socket;
         }
 
@@ -248,7 +248,10 @@ namespace MediaBrowser.Dlna.Ssdp
 
         public void Dispose()
         {
-            _ssdpHandler.MessageReceived -= _ssdpHandler_MessageReceived;
+            if (_ssdpHandler != null)
+            {
+                _ssdpHandler.MessageReceived -= _ssdpHandler_MessageReceived;
+            }
 
             if (!_disposed)
             {

@@ -15,16 +15,16 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
+namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
-    public class HdHomerun : ITunerHost
+    public class HdHomerunHost : ITunerHost
     {
         private readonly IHttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IConfigurationManager _config;
 
-        public HdHomerun(IHttpClient httpClient, ILogger logger, IJsonSerializer jsonSerializer, IConfigurationManager config)
+        public HdHomerunHost(IHttpClient httpClient, ILogger logger, IJsonSerializer jsonSerializer, IConfigurationManager config)
         {
             _httpClient = httpClient;
             _logger = logger;
@@ -38,6 +38,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
         }
 
         public string Type
+        {
+            get { return DeviceType; }
+        }
+
+        public static string DeviceType
         {
             get { return "hdhomerun"; }
         }

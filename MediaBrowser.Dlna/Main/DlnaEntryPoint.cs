@@ -38,7 +38,7 @@ namespace MediaBrowser.Dlna.Main
         private readonly IMediaSourceManager _mediaSourceManager;
 
         private readonly SsdpHandler _ssdpHandler;
-        private DeviceDiscovery _deviceDiscovery;
+        private readonly IDeviceDiscovery _deviceDiscovery;
 
         private readonly List<string> _registeredServerIds = new List<string>();
         private bool _dlnaServerStarted;
@@ -56,7 +56,7 @@ namespace MediaBrowser.Dlna.Main
             IUserDataManager userDataManager, 
             ILocalizationManager localization, 
             IMediaSourceManager mediaSourceManager, 
-            ISsdpHandler ssdpHandler)
+            ISsdpHandler ssdpHandler, IDeviceDiscovery deviceDiscovery)
         {
             _config = config;
             _appHost = appHost;
@@ -70,6 +70,7 @@ namespace MediaBrowser.Dlna.Main
             _userDataManager = userDataManager;
             _localization = localization;
             _mediaSourceManager = mediaSourceManager;
+            _deviceDiscovery = deviceDiscovery;
             _ssdpHandler = (SsdpHandler)ssdpHandler;
             _logger = logManager.GetLogger("Dlna");
         }
@@ -81,7 +82,7 @@ namespace MediaBrowser.Dlna.Main
 
             _config.NamedConfigurationUpdated += _config_NamedConfigurationUpdated;
 
-            DlnaChannelFactory.Instance.Start(_deviceDiscovery, () => _registeredServerIds);
+            DlnaChannelFactory.Instance.Start(() => _registeredServerIds);
         }
 
         void _config_NamedConfigurationUpdated(object sender, ConfigurationUpdateEventArgs e)
@@ -125,25 +126,11 @@ namespace MediaBrowser.Dlna.Main
             {
                 _ssdpHandler.Start();
 
-                _deviceDiscovery = new DeviceDiscovery(_logger, _config, _ssdpHandler, _appHost);
-
-                _deviceDiscovery.Start();
+                ((DeviceDiscovery)_deviceDiscovery).Start(_ssdpHandler);
             }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error starting ssdp handlers", ex);
-            }
-        }
-
-        private void DisposeDeviceDiscovery()
-        {
-            try
-            {
-                _deviceDiscovery.Dispose();
-            }
-            catch (Exception ex)
-            {
-                _logger.ErrorException("Error disposing device discovery", ex);
             }
         }
 
@@ -240,7 +227,6 @@ namespace MediaBrowser.Dlna.Main
         {
             DisposeDlnaServer();
             DisposePlayToManager();
-            DisposeDeviceDiscovery();
         }
 
         public void DisposeDlnaServer()
