@@ -108,7 +108,7 @@
 
             $('#selectListing', page).html(result.map(function (o) {
 
-                return '<option value="' + o.Id + '">' + o.name + '</option>';
+                return '<option value="' + o.Id + '">' + o.Name + '</option>';
 
             })).selectmenu('refresh');
 

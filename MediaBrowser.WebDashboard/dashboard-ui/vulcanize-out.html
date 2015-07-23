@@ -12815,9 +12815,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         }
       },
 
-      get shouldKeepAnimating () {
-        for (var index = 0; index < this.ripples.length; ++index) {
-          if (!this.ripples[index].isAnimationComplete) {
+      get shouldKeepAnimating() {
+        var ripples = this.ripples || [];
+        for (var index = 0; index < ripples.length; ++index) {
+          if (!ripples[index].isAnimationComplete) {
             return true;
           }
         }
@@ -12855,9 +12856,11 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           return;
         }
 
-        this.ripples.forEach(function(ripple) {
-          ripple.upAction(event);
-        });
+        if (this.ripples) {
+            this.ripples.forEach(function (ripple) {
+                ripple.upAction(event);
+            });
+        }
 
         this.animate();
       },
@@ -12873,7 +12876,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
         Polymer.dom(this.$.waves).appendChild(ripple.waveContainer);
         this.$.background.style.backgroundColor = ripple.color;
-        this.ripples.push(ripple);
+
+        if (this.ripples) {
+            this.ripples.push(ripple);
+        }
 
         this._setAnimating(true);
 
@@ -12902,8 +12908,9 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
         this._animating = true;
 
-        for (index = 0; index < this.ripples.length; ++index) {
-          ripple = this.ripples[index];
+        var ripples = this.ripples || [];
+        for (index = 0; index < ripples.length; ++index) {
+            ripple = ripples[index];
 
           ripple.draw();
 
@@ -12914,7 +12921,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           }
         }
 
-        if (!this.shouldKeepAnimating && this.ripples.length === 0) {
+        if (!this.shouldKeepAnimating && ripples.length === 0) {
           this.onAnimationComplete();
         } else {
           window.requestAnimationFrame(this._boundAnimate);

@@ -9,6 +9,8 @@
 
         $('#chkMovies', page).checked(config.EnableMovieProviders).checkboxradio("refresh");
 
+        $('#txtRecordingPath', page).val(config.RecordingPath || '');
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -22,6 +24,7 @@
 
                 config.GuideDays = $('#selectGuideDays', form).val() || null;
                 config.EnableMovieProviders = $('#chkMovies', form).checked();
+                config.RecordingPath = $('#txtRecordingPath', form).val() || null;
 
                 ApiClient.updateNamedConfiguration("livetv", config).done(Dashboard.processServerConfigurationUpdateResult);
             });
@@ -32,7 +35,25 @@
 
     $(document).on('pageinitdepends', "#liveTvSettingsPage", function () {
 
+        var page = this;
+
         $('.liveTvSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
+
+        $('#btnSelectRecordingPath', page).on("click.selectDirectory", function () {
+
+            var picker = new DirectoryBrowser(page);
+
+            picker.show({
+
+                callback: function (path) {
+
+                    if (path) {
+                        $('#txtRecordingPath', page).val(path);
+                    }
+                    picker.close();
+                }
+            });
+        });
 
     }).on('pageshowready', "#liveTvSettingsPage", function () {
 

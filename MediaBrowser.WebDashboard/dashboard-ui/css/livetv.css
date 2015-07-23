@@ -328,7 +328,7 @@
 
 @media (max-width: 600px) {
 
-    .guideChannelImage {
+    .guideChannelInfoWithImage {
         display: none;
     }
 

@@ -203,7 +203,7 @@
     }
     function closeMainDrawer() {
 
-        document.getElementsByClassName('mainDrawerPanel')[0].closeDrawer();
+        document.querySelector('.mainDrawerPanel').closeDrawer();
     }
 
     function ensureDrawerStructure(drawer) {

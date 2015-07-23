@@ -285,9 +285,12 @@
             html += '<div class="channelHeaderCell">';
             html += '<a class="channelHeaderCellInner" href="livetvchannel.html?id=' + channel.Id + '">';
 
-            html += '<div class="guideChannelInfo">' + channel.Name + '<br/>' + channel.Number + '</div>';
+            var hasChannelImage = channel.ImageTags.Primary;
+            var cssClass = hasChannelImage ? 'guideChannelInfo guideChannelInfoWithImage' : 'guideChannelInfo';
 
-            if (channel.ImageTags.Primary) {
+            html += '<div class="' + cssClass + '">' + channel.Name + '<br/>' + channel.Number + '</div>';
+
+            if (hasChannelImage) {
 
                 var url = ApiClient.getScaledImageUrl(channel.Id, {
                     maxHeight: 35,

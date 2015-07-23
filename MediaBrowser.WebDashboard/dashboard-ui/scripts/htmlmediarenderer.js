@@ -91,10 +91,11 @@
 
             var savedKeyPropertyName = 'vbk';
             var savedKey = appStorage.getItem(savedKeyPropertyName);
+
             if (savedKey) {
-                var deferred = DeferredBuilder.Deferred();
-                deferred.resolveWith(null, [savedKey]);
-                return deferred.promise();
+                htmlMediaRenderer.customViblastKey = savedKey;
+                callback();
+                return;
             }
 
             var headers = {};

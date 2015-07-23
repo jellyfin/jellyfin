@@ -2035,6 +2035,7 @@ var AppInfo = {};
         drawerWidth = Math.max(drawerWidth, 240);
         // But not exceeding 310
         drawerWidth = Math.min(drawerWidth, 310);
+
         drawer.drawerWidth = drawerWidth + "px";
 
         if ($.browser.safari && !AppInfo.isNativeApp) {
