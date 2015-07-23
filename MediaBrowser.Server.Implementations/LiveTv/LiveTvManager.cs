@@ -2238,7 +2238,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return info;
         }
 
-        public Task<List<NameIdPair>> GetLineups(string providerId, string location)
+        public Task<List<NameIdPair>> GetLineups(string providerId, string country, string location)
         {
             var config = GetConfiguration();
 
@@ -2251,7 +2251,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 throw new ResourceNotFoundException();
             }
 
-            return provider.GetLineups(info, location);
+            return provider.GetLineups(info, country, location);
         }
     }
 }

@@ -13,6 +13,7 @@
 
             listingsId = info.ListingsId;
             $('#selectListing', page).val(info.ListingsId || '').selectmenu('refresh');
+            $('#selectCountry', page).val(info.Country || '').selectmenu('refresh');
             $('#txtZipCode', page).val(info.ZipCode || '').trigger('change');
             $('#txtUser', page).val(info.Username || '');
 
@@ -66,6 +67,7 @@
             })[0];
 
             info.ZipCode = $('#txtZipCode', page).val();
+            info.Country = $('#selectCountry', page).val();
             info.ListingsId = $('#selectListing', page).val();
 
             ApiClient.ajax({

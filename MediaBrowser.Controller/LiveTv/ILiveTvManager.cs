@@ -355,8 +355,9 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets the lineups.
         /// </summary>
         /// <param name="providerId">The provider identifier.</param>
+        /// <param name="country">The country.</param>
         /// <param name="location">The location.</param>
         /// <returns>Task&lt;List&lt;NameIdPair&gt;&gt;.</returns>
-        Task<List<NameIdPair>> GetLineups(string providerId, string location);
+        Task<List<NameIdPair>> GetLineups(string providerId, string country, string location);
     }
 }
