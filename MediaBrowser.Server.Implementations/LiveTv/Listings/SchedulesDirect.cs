@@ -35,10 +35,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, ChannelInfo channel, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
-            var channelNumber = channel.Number;
-
             List<ProgramInfo> programsInfo = new List<ProgramInfo>();
 
             var token = await GetToken(info, cancellationToken);
@@ -74,7 +72,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             ScheduleDirect.Station station = null;
 
-            if (!_channelPair.TryGetValue("", out station))
+            if (!_channelPair.TryGetValue(channelNumber, out station))
             {
                 return programsInfo;
             }
@@ -214,39 +212,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                         }
                     }
                 }
-            }
-        }
-
-        private async Task<ScheduleDirect.Channel> GetLineup(string listingsId, string token, CancellationToken cancellationToken)
-        {
-            var httpOptions = new HttpRequestOptions()
-            {
-                Url = ApiUrl + "/lineups/" + listingsId,
-                UserAgent = UserAgent,
-                CancellationToken = cancellationToken
-            };
-
-            httpOptions.RequestHeaders["token"] = token;
-
-            using (var response = await _httpClient.Get(httpOptions))
-            {
-                var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Channel>(response);
-                _logger.Info("Found " + root.map.Count() + " channels on the lineup on ScheduleDirect");
-                _logger.Info("Mapping Stations to Channel");
-                foreach (ScheduleDirect.Map map in root.map)
-                {
-                    var channel = (map.channel ?? (map.atscMajor + "." + map.atscMinor)).TrimStart('0');
-                    _logger.Debug("Found channel: " + channel + " in Schedules Direct");
-
-                    var schChannel = root.stations.FirstOrDefault(item => item.stationID == map.stationID);
-
-                    if (!_channelPair.ContainsKey(channel) && channel != "0.0" && schChannel != null)
-                    {
-                        _channelPair.TryAdd(channel, schChannel);
-                    }
-                }
-
-                return root;
             }
         }
 

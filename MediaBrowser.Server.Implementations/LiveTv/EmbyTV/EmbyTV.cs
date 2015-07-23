@@ -257,18 +257,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
-            var allChannels = await GetChannelsAsync(cancellationToken).ConfigureAwait(false);
-            var channelInfo = allChannels.FirstOrDefault(i => string.Equals(channelId, i.Id, StringComparison.OrdinalIgnoreCase));
-
-            if (channelInfo == null)
-            {
-                _logger.Debug("Returning empty program list because channel was not found.");
-                return new List<ProgramInfo>();
-            }
-
             foreach (var provider in GetListingProviders())
             {
-                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channelInfo, startDateUtc, endDateUtc, cancellationToken)
+                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channelId, startDateUtc, endDateUtc, cancellationToken)
                         .ConfigureAwait(false);
                 var list = programs.ToList();
 
