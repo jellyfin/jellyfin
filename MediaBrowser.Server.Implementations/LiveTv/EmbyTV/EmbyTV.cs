@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.LiveTv;
@@ -74,20 +75,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var status = new LiveTvServiceStatusInfo();
             var list = new List<LiveTvTunerInfo>();
 
-            foreach (var host in _liveTvManager.TunerHosts)
+            foreach (var hostInstance in GetTunerHosts())
             {
-                foreach (var hostInstance in host.GetTunerHosts())
+                try
                 {
-                    try
-                    {
-                        var tuners = await host.GetTunerInfos(hostInstance, cancellationToken).ConfigureAwait(false);
+                    var tuners = await hostInstance.Item1.GetTunerInfos(hostInstance.Item2, cancellationToken).ConfigureAwait(false);
 
-                        list.AddRange(tuners);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.ErrorException("Error getting tuners", ex);
-                    }
+                    list.AddRange(tuners);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting tuners", ex);
                 }
             }
 
@@ -102,20 +100,23 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             var list = new List<ChannelInfo>();
 
-            foreach (var host in _liveTvManager.TunerHosts)
+            foreach (var hostInstance in GetTunerHosts())
             {
-                foreach (var hostInstance in host.GetTunerHosts())
+                try
                 {
-                    try
-                    {
-                        var channels = await host.GetChannels(hostInstance, cancellationToken).ConfigureAwait(false);
+                    var channels = await hostInstance.Item1.GetChannels(hostInstance.Item2, cancellationToken).ConfigureAwait(false);
+                    var newChannels = channels.ToList();
 
-                        list.AddRange(channels);
-                    }
-                    catch (Exception ex)
+                    foreach (var channel in newChannels)
                     {
-                        _logger.ErrorException("Error getting channels", ex);
+                        channel.Id = hostInstance.Item1.Type.GetMD5().ToString("N") + "-" + channel.Id;
                     }
+
+                    list.AddRange(newChannels);
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting channels", ex);
                 }
             }
 
@@ -128,6 +129,19 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
 
             return list;
+        }
+
+        private List<Tuple<ITunerHost, TunerHostInfo>> GetTunerHosts()
+        {
+            return GetConfiguration().TunerHosts
+                .Select(i =>
+                {
+                    var provider = _liveTvManager.TunerHosts.FirstOrDefault(l => string.Equals(l.Type, i.Type, StringComparison.OrdinalIgnoreCase));
+
+                    return provider == null ? null : new Tuple<ITunerHost, TunerHostInfo>(provider, i);
+                })
+                .Where(i => i != null)
+                .ToList();
         }
 
         public Task CancelSeriesTimerAsync(string timerId, CancellationToken cancellationToken)
@@ -255,13 +269,26 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return Task.FromResult((IEnumerable<SeriesTimerInfo>)_seriesTimerProvider.GetAll());
         }
 
+        private string GetOriginalChannelId(string channelId)
+        {
+            var parts = channelId.Split('-');
+
+            return string.Join("-", parts.Skip(1).ToArray());
+        }
+
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             foreach (var provider in GetListingProviders())
             {
-                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channelId, startDateUtc, endDateUtc, cancellationToken)
+                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, GetOriginalChannelId(channelId), startDateUtc, endDateUtc, cancellationToken)
                         .ConfigureAwait(false);
                 var list = programs.ToList();
+
+                // Replace the value that came from the provider with a normalized value
+                foreach (var program in list)
+                {
+                    program.ChannelId = channelId;
+                }
 
                 if (list.Count > 0)
                 {
@@ -290,14 +317,67 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             throw new NotImplementedException();
         }
 
-        public Task<MediaSourceInfo> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken)
+        public async Task<MediaSourceInfo> GetChannelStream(string channelId, string streamId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            _logger.Info("Streaming Channel " + channelId);
+
+            var configurationId = channelId.Split('-')[0];
+
+            foreach (var hostInstance in GetTunerHosts())
+            {
+                if (!string.Equals(configurationId, hostInstance.Item1.Type.GetMD5().ToString("N"), StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (!string.IsNullOrWhiteSpace(streamId))
+                {
+                    var originalStreamId = string.Join("-", streamId.Split('-').Skip(1).ToArray());
+
+                    if (!string.Equals(hostInstance.Item2.Id, originalStreamId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+                }
+
+                MediaSourceInfo mediaSourceInfo = null;
+                try
+                {
+                    mediaSourceInfo = await hostInstance.Item1.GetChannelStream(hostInstance.Item2, GetOriginalChannelId(channelId), streamId, cancellationToken).ConfigureAwait(false);
+                }
+                catch (ApplicationException e)
+                {
+                    _logger.Info(e.Message);
+                    continue;
+                }
+
+                mediaSourceInfo.Id = Guid.NewGuid().ToString("N");
+                return mediaSourceInfo;
+            }
+
+            throw new ApplicationException("Tuner not found.");
         }
 
-        public Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
+        public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var configurationId = channelId.Split('-')[0];
+
+            foreach (var hostInstance in GetTunerHosts())
+            {
+                if (string.Equals(configurationId, hostInstance.Item1.Type.GetMD5().ToString("N"), StringComparison.OrdinalIgnoreCase))
+                {
+                    var sources = await hostInstance.Item1.GetChannelStreamMediaSources(hostInstance.Item2, GetOriginalChannelId(channelId), cancellationToken).ConfigureAwait(false);
+
+                    foreach (var source in sources)
+                    {
+                        source.Id = hostInstance.Item2.Id + "-" + source.Id;
+                    }
+
+                    return sources;
+                }
+            }
+
+            throw new ApplicationException("Tuner not found.");
         }
 
         public Task<List<MediaSourceInfo>> GetRecordingStreamMediaSources(string recordingId, CancellationToken cancellationToken)

@@ -51,7 +51,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var options = new HttpRequestOptions
             {
-                Url = string.Format("{0}/lineup.json", GetApiUrl(info)),
+                Url = string.Format("{0}/lineup.json", GetApiUrl(info, false)),
                 CancellationToken = cancellationToken
             };
             using (var stream = await _httpClient.Get(options))
@@ -79,7 +79,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             using (var stream = await _httpClient.Get(new HttpRequestOptions()
             {
-                Url = string.Format("{0}/", GetApiUrl(info)),
+                Url = string.Format("{0}/", GetApiUrl(info, false)),
                 CancellationToken = cancellationToken
             }))
             {
@@ -97,7 +97,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             using (var stream = await _httpClient.Get(new HttpRequestOptions()
             {
-                Url = string.Format("{0}/tuners.html", GetApiUrl(info)),
+                Url = string.Format("{0}/tuners.html", GetApiUrl(info, false)),
                 CancellationToken = cancellationToken
             }))
             {
@@ -128,7 +128,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
         }
 
-        public string GetApiUrl(TunerHostInfo info)
+        private string GetApiUrl(TunerHostInfo info, bool isPlayback)
         {
             var url = info.Url;
 
@@ -137,7 +137,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 url = "http://" + url;
             }
 
-            return url.TrimEnd('/');
+            var uri = new Uri(url);
+
+            if (isPlayback)
+            {
+                var builder = new UriBuilder(uri);
+                builder.Port = 5004;
+                uri = builder.Uri;
+            }
+
+            return uri.AbsoluteUri.TrimEnd('/');
         }
 
         private static string StripXML(string source)
@@ -187,21 +196,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return GetConfiguration().TunerHosts.Where(i => string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
-        public async Task<MediaSourceInfo> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
+        private MediaSourceInfo GetMediaSource(TunerHostInfo info, string channelId, string profile)
         {
-            var channels = await GetChannels(info, cancellationToken).ConfigureAwait(false);
-            var tuners = await GetTunerInfos(info, cancellationToken).ConfigureAwait(false);
-
-            var channel = channels.FirstOrDefault(c => string.Equals(c.Id, channelId, StringComparison.OrdinalIgnoreCase));
-            if (channel != null)
+            var mediaSource = new MediaSourceInfo
             {
-                if (tuners.FindIndex(t => t.Status == LiveTvTunerStatus.Available) >= 0)
-                {
-                    return new MediaSourceInfo
-                    {
-                        Path = GetApiUrl(info) + "/auto/v" + channelId,
-                        Protocol = MediaProtocol.Http,
-                        MediaStreams = new List<MediaStream>
+                Path = GetApiUrl(info, true) + "/auto/v" + channelId,
+                Protocol = MediaProtocol.Http,
+                MediaStreams = new List<MediaStream>
                         {
                             new MediaStream
                             {
@@ -217,15 +218,28 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 Index = -1
 
                             }
-                        }
-                    };
-                }
+                        },
+                RequiresOpening = false,
+                RequiresClosing = false,
+                BufferMs = 1000
+            };
 
-                throw new ApplicationException("No tuners avaliable.");
-            } 
-            throw new ApplicationException("Channel not found.");
+            return mediaSource;
         }
 
+        public Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, string channelId, CancellationToken cancellationToken)
+        {
+            var list = new List<MediaSourceInfo>();
+
+            list.Add(GetMediaSource(info, channelId, null));
+
+            return Task.FromResult(list);
+        }
+
+        public async Task<MediaSourceInfo> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
+        {
+            return GetMediaSource(info, channelId, null);
+        }
 
         public async Task Validate(TunerHostInfo info)
         {

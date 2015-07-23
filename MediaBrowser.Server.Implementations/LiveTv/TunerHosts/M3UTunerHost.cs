@@ -171,7 +171,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                             Index = -1
 
                         }
-                    }
+                    },
+                    RequiresOpening = false,
+                    RequiresClosing = false
                 };
             }
             throw new ApplicationException("Host doesnt provide this channel");
@@ -192,6 +194,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             {
                 throw new FileNotFoundException();
             }
+        }
+
+
+        public Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, string channelId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -72,6 +72,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     return;
                 }
 
+                // Strip off the port
+                url = new Uri(url).GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port, UriFormat.UriEscaped);
+
                 await _liveTvManager.SaveTunerHost(new TunerHostInfo
                 {
                     Type = HdHomerunHost.DeviceType,
@@ -103,13 +106,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             url = url.TrimEnd('/');
 
-            // If there isn't a port, add the default port of 80
-            if (url.Split(':').Length < 3)
-            {
-                url += ":80";
-            }
-
-            return url;
+            // Strip off the port
+            return new Uri(url).GetComponents(UriComponents.AbsoluteUri & ~UriComponents.Port, UriFormat.UriEscaped);
         }
 
         private LiveTvOptions GetConfiguration()

@@ -218,7 +218,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
         private ProgramInfo GetProgram(string channel, ScheduleDirect.Program programInfo,
             ScheduleDirect.ProgramDetails details)
         {
-            _logger.Debug("Show type is: " + (details.showType ?? "No ShowType"));
+            //_logger.Debug("Show type is: " + (details.showType ?? "No ShowType"));
             DateTime startAt = DateTime.ParseExact(programInfo.airDateTime, "yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'",
                 CultureInfo.InvariantCulture);
             DateTime endAt = startAt.AddSeconds(programInfo.duration);
@@ -401,7 +401,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             _logger.Info("Headends on account ");
 
             var countryParam = string.Equals("ca", country, StringComparison.OrdinalIgnoreCase)
-                ? "Canada"
+                ? "can"
                 : "USA";
 
             var options = new HttpRequestOptions()
@@ -560,6 +560,44 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
         public string Type
         {
             get { return "SchedulesDirect"; }
+        }
+
+        private async Task<bool> HasLineup(ListingsProviderInfo info, CancellationToken cancellationToken)
+        {
+            var token = await GetToken(info, cancellationToken);
+
+            _logger.Info("Headends on account ");
+
+            var options = new HttpRequestOptions()
+            {
+                Url = ApiUrl + "/lineups",
+                UserAgent = UserAgent,
+                CancellationToken = cancellationToken
+            };
+
+            options.RequestHeaders["token"] = token;
+
+            using (Stream responce = await _httpClient.Get(options).ConfigureAwait(false))
+            {
+                var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Lineups>(responce);
+
+                return root.lineups.Any(i => string.Equals(info.ListingsId, i.lineup, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        public async Task Validate(ListingsProviderInfo info)
+        {
+            var hasLineup = await HasLineup(info, CancellationToken.None).ConfigureAwait(false);
+
+            if (!hasLineup)
+            {
+                await AddLineupToAccount(info, CancellationToken.None).ConfigureAwait(false);
+            }
+        }
+
+        public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
+        {
+            return GetHeadends(info, country, location, CancellationToken.None);
         }
 
         public class ScheduleDirect
@@ -841,14 +879,5 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
         }
 
-        public async Task Validate(ListingsProviderInfo info)
-        {
-            //await AddLineupToAccount(info, CancellationToken.None).ConfigureAwait(false);
-        }
-
-        public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
-        {
-            return GetHeadends(info, country, location, CancellationToken.None);
-        }
     }
 }

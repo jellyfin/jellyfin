@@ -68,9 +68,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private void UpdateList(List<T> newList)
         {
+            var file = _dataPath + ".json";
+            Directory.CreateDirectory(Path.GetDirectoryName(file));
+
             lock (_fileDataLock)
             {
-                _jsonSerializer.SerializeToFile(newList, _dataPath + ".json");
+                _jsonSerializer.SerializeToFile(newList, file);
                 _items = newList;
             }
         }

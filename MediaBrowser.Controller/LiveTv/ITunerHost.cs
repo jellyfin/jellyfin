@@ -47,6 +47,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// <returns>Task&lt;MediaSourceInfo&gt;.</returns>
         Task<MediaSourceInfo> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken);
         /// <summary>
+        /// Gets the channel stream media sources.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;List&lt;MediaSourceInfo&gt;&gt;.</returns>
+        Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, string channelId, CancellationToken cancellationToken);
+        /// <summary>
         /// Validates the specified information.
         /// </summary>
         /// <param name="info">The information.</param>
