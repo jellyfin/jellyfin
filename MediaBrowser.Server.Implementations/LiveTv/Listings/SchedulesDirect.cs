@@ -523,6 +523,31 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             }
         }
 
+        private async Task AddLineupToAccount(ListingsProviderInfo info, CancellationToken cancellationToken)
+        {
+            var token = await GetToken(info, cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new ArgumentException("Authentication required.");
+            }
+
+            _logger.Info("Adding new LineUp ");
+
+            var httpOptions = new HttpRequestOptions()
+            {
+                Url = ApiUrl + "/lineups/" + info.ListingsId,
+                UserAgent = UserAgent,
+                CancellationToken = cancellationToken
+            };
+
+            httpOptions.RequestHeaders["token"] = token;
+            
+            using (var response = await _httpClient.SendAsync(httpOptions, "PUT"))
+            {
+            }
+        }
+
         public string Name
         {
             get { return "Schedules Direct"; }
@@ -814,6 +839,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
         public async Task Validate(ListingsProviderInfo info)
         {
+            await AddLineupToAccount(info, CancellationToken.None).ConfigureAwait(false);
         }
 
         public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string location)
