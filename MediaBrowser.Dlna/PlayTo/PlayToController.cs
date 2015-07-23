@@ -5,7 +5,6 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Dlna.Didl;
-using MediaBrowser.Dlna.Ssdp;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -35,7 +34,7 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly ILocalizationManager _localization;
         private readonly IMediaSourceManager _mediaSourceManager;
 
-        private readonly DeviceDiscovery _deviceDiscovery;
+        private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly string _serverAddress;
         private readonly string _accessToken;
 
@@ -58,7 +57,7 @@ namespace MediaBrowser.Dlna.PlayTo
 
         private Timer _updateTimer;
 
-        public PlayToController(SessionInfo session, ISessionManager sessionManager, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, string accessToken, DeviceDiscovery deviceDiscovery, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager)
+        public PlayToController(SessionInfo session, ISessionManager sessionManager, ILibraryManager libraryManager, ILogger logger, IDlnaManager dlnaManager, IUserManager userManager, IImageProcessor imageProcessor, string serverAddress, string accessToken, IDeviceDiscovery deviceDiscovery, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager)
         {
             _session = session;
             _sessionManager = sessionManager;

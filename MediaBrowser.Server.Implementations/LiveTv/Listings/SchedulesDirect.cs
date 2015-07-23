@@ -350,7 +350,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 {
                     url = apiUrl + "/image/" + images.data[logoIndex].uri;
                 }
-                _logger.Debug("URL for image is : " + url);
+                //_logger.Debug("URL for image is : " + url);
             }
             return url;
         }

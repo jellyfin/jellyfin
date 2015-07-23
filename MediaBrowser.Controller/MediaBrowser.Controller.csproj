@@ -113,6 +113,7 @@
     <Compile Include="Dlna\EventSubscriptionResponse.cs" />
     <Compile Include="Dlna\IConnectionManager.cs" />
     <Compile Include="Dlna\IContentDirectory.cs" />
+    <Compile Include="Dlna\IDeviceDiscovery.cs" />
     <Compile Include="Dlna\IDlnaManager.cs" />
     <Compile Include="Dlna\IEventManager.cs" />
     <Compile Include="Dlna\IMediaReceiverRegistrar.cs" />

@@ -160,7 +160,7 @@
                     auth += ', UserId="' + userId + '"';
                 }
 
-                headers.Authorization = auth;
+                headers["X-Emby-Authorization"] = auth;
             }
 
             var accessToken = currentServerInfo.AccessToken;
