@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Common.ScheduledTasks;
+﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
@@ -10,10 +12,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
     class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask, IHasKey
     {
         private readonly ILiveTvManager _liveTvManager;
+        private readonly IConfigurationManager _config;
 
-        public RefreshChannelsScheduledTask(ILiveTvManager liveTvManager)
+        public RefreshChannelsScheduledTask(ILiveTvManager liveTvManager, IConfigurationManager config)
         {
             _liveTvManager = liveTvManager;
+            _config = config;
         }
 
         public string Name
@@ -50,9 +54,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             };
         }
 
+        private LiveTvOptions GetConfiguration()
+        {
+            return _config.GetConfiguration<LiveTvOptions>("livetv");
+        }
+        
         public bool IsHidden
         {
-            get { return _liveTvManager.Services.Count == 0; }
+            get { return _liveTvManager.Services.Count == 1 && GetConfiguration().TunerHosts.Count == 0; }
         }
 
         public bool IsEnabled

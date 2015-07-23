@@ -369,6 +369,9 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "Location", Description = "Location", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Location { get; set; }
+
+        [ApiMember(Name = "Country", Description = "Country", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Country { get; set; }
     }
 
     public class LiveTvService : BaseApiService
@@ -436,7 +439,7 @@ namespace MediaBrowser.Api.LiveTv
 
         public async Task<object> Get(GetLineups request)
         {
-            var info = await _liveTvManager.GetLineups(request.Id, request.Location).ConfigureAwait(false);
+            var info = await _liveTvManager.GetLineups(request.Id, request.Country, request.Location).ConfigureAwait(false);
 
             return ToOptimizedSerializedResultUsingCache(info);
         }

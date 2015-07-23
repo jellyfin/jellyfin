@@ -91,15 +91,25 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private bool UriEquals(string savedUri, string location)
         {
-            if (!savedUri.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            return string.Equals(NormalizeUrl(location), NormalizeUrl(savedUri), StringComparison.OrdinalIgnoreCase);
+        }
+
+        private string NormalizeUrl(string url)
+        {
+            if (!url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                savedUri = "http://" + savedUri;
+                url = "http://" + url;
             }
 
-            savedUri = savedUri.TrimEnd('/');
-            location = location.TrimEnd('/');
+            url = url.TrimEnd('/');
 
-            return string.Equals(location, savedUri, StringComparison.OrdinalIgnoreCase);
+            // If there isn't a port, add the default port of 80
+            if (url.Split(':').Length < 3)
+            {
+                url += ":80";
+            }
+
+            return url;
         }
 
         private LiveTvOptions GetConfiguration()

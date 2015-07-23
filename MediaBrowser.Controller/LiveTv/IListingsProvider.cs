@@ -14,6 +14,6 @@ namespace MediaBrowser.Controller.LiveTv
         Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken);
         Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels, CancellationToken cancellationToken);
         Task Validate(ListingsProviderInfo info);
-        Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string location);
+        Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location);
     }
 }

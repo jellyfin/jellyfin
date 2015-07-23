@@ -387,7 +387,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             return images;
         }
 
-        public async Task<List<NameIdPair>> GetHeadends(ListingsProviderInfo info, string location, CancellationToken cancellationToken)
+        public async Task<List<NameIdPair>> GetHeadends(ListingsProviderInfo info, string country, string location, CancellationToken cancellationToken)
         {
             var token = await GetToken(info, cancellationToken);
 
@@ -400,9 +400,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             _logger.Info("Headends on account ");
 
+            var countryParam = string.Equals("ca", country, StringComparison.OrdinalIgnoreCase)
+                ? "Canada"
+                : "USA";
+
             var options = new HttpRequestOptions()
             {
-                Url = ApiUrl + "/headends?country=USA&postalcode=" + location,
+                Url = ApiUrl + "/headends?country=" + countryParam + "&postalcode=" + location,
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken
             };
@@ -839,12 +843,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
         public async Task Validate(ListingsProviderInfo info)
         {
-            await AddLineupToAccount(info, CancellationToken.None).ConfigureAwait(false);
+            //await AddLineupToAccount(info, CancellationToken.None).ConfigureAwait(false);
         }
 
-        public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string location)
+        public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
         {
-            return GetHeadends(info, location, CancellationToken.None);
+            return GetHeadends(info, country, location, CancellationToken.None);
         }
     }
 }
