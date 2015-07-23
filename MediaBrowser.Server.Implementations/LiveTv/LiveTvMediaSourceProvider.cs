@@ -53,7 +53,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
         private const char StreamIdDelimeter = '_';
-        private const string StreamIdDelimeterString = "|";
+        private const string StreamIdDelimeterString = "_";
         
         private async Task<IEnumerable<MediaSourceInfo>> GetMediaSourcesInternal(ILiveTvItem item, CancellationToken cancellationToken)
         {
@@ -86,14 +86,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             foreach (var source in list)
             {
                 source.Type = MediaSourceType.Default;
-                source.RequiresOpening = true;
-                source.BufferMs = source.BufferMs ?? 1500;
 
-                var openKeys = new List<string>();
-                openKeys.Add(item.GetType().Name);
-                openKeys.Add(item.Id.ToString("N"));
-                openKeys.Add(source.Id ?? string.Empty);
-                source.OpenToken = string.Join(StreamIdDelimeterString, openKeys.ToArray());
+                if (!source.RequiresOpening.HasValue)
+                {
+                    source.RequiresOpening = true;
+                }
+
+                if (source.RequiresOpening.HasValue && source.RequiresOpening.Value)
+                {
+                    var openKeys = new List<string>();
+                    openKeys.Add(item.GetType().Name);
+                    openKeys.Add(item.Id.ToString("N"));
+                    openKeys.Add(source.Id ?? string.Empty);
+                    source.OpenToken = string.Join(StreamIdDelimeterString, openKeys.ToArray());
+                }
+
+                source.BufferMs = source.BufferMs ?? 1500;
 
                 // Dummy this up so that direct play checks can still run
                 if (string.IsNullOrEmpty(source.Path) && source.Protocol == MediaProtocol.Http)

@@ -145,7 +145,7 @@
 
             html += '<div class="remoteImageDetails">';
 
-            if (image.Width || image.Height) {
+            if (image.Width && image.Height) {
                 html += image.Width + ' x ' + image.Height;
 
                 if (image.Language) {

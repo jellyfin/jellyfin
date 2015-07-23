@@ -122,10 +122,10 @@
 
         }).fail(function (result) {
 
-            //Dashboard.alert({
-            //    message: Globalize.translate('ErrorGettingTvLineups')
-            //});
-            //refreshListings(page, '');
+            Dashboard.alert({
+                message: Globalize.translate('ErrorGettingTvLineups')
+            });
+            refreshListings(page, '');
             Dashboard.hideModalLoadingMsg();
 
         });

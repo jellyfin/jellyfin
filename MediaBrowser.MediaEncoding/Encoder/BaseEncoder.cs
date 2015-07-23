@@ -436,7 +436,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 state.IsoMount = await IsoManager.Mount(state.MediaPath, cancellationToken).ConfigureAwait(false);
             }
 
-            if (state.MediaSource.RequiresOpening)
+            if (state.MediaSource.RequiresOpening ?? false)
             {
                 var liveStreamResponse = await MediaSourceManager.OpenLiveStream(new LiveStreamRequest
                 {
