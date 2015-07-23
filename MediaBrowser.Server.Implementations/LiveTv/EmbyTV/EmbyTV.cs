@@ -30,18 +30,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private readonly ItemDataProvider<SeriesTimerInfo> _seriesTimerProvider;
         private readonly TimerManager _timerProvider;
 
-        private readonly List<ITunerHost> _tunerHosts = new List<ITunerHost>();
-        private readonly List<IListingsProvider> _listingProviders = new List<IListingsProvider>();
+        private readonly LiveTvManager _liveTvManager;
 
-        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IConfigurationManager config)
+        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IConfigurationManager config, ILiveTvManager liveTvManager)
         {
             _appHpst = appHost;
             _logger = logger;
             _httpClient = httpClient;
             _config = config;
+            _liveTvManager = (LiveTvManager)liveTvManager;
             _jsonSerializer = jsonSerializer;
-            _tunerHosts.AddRange(appHost.GetExports<ITunerHost>());
-            _listingProviders.AddRange(appHost.GetExports<IListingsProvider>());
 
             _recordingProvider = new ItemDataProvider<RecordingInfo>(jsonSerializer, _logger, Path.Combine(DataPath, "recordings"), (r1, r2) => string.Equals(r1.Id, r2.Id, StringComparison.OrdinalIgnoreCase));
             _seriesTimerProvider = new SeriesTimerManager(jsonSerializer, _logger, Path.Combine(DataPath, "seriestimers"));
@@ -76,7 +74,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var status = new LiveTvServiceStatusInfo();
             var list = new List<LiveTvTunerInfo>();
 
-            foreach (var host in _tunerHosts)
+            foreach (var host in _liveTvManager.TunerHosts)
             {
                 foreach (var hostInstance in host.GetTunerHosts())
                 {
@@ -104,7 +102,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             var list = new List<ChannelInfo>();
 
-            foreach (var host in _tunerHosts)
+            foreach (var host in _liveTvManager.TunerHosts)
             {
                 foreach (var hostInstance in host.GetTunerHosts())
                 {
@@ -288,7 +286,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return GetConfiguration().ListingProviders
                 .Select(i =>
                 {
-                    var provider = _listingProviders.FirstOrDefault(l => string.Equals(l.Name, i.ProviderName, StringComparison.OrdinalIgnoreCase));
+                    var provider = _liveTvManager.ListingProviders.FirstOrDefault(l => string.Equals(l.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
                     return provider == null ? null : new Tuple<IListingsProvider, ListingsProviderInfo>(provider, i);
                 })

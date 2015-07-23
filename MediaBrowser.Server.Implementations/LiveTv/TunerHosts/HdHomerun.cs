@@ -3,7 +3,6 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -15,7 +14,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Server.Implementations.LiveTv.EmbyTV;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 {
@@ -221,6 +219,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                 throw new ApplicationException("No tuners avaliable.");
             } 
             throw new ApplicationException("Channel not found.");
+        }
+
+
+        public async Task Validate(TunerHostInfo info)
+        {
+            await GetChannels(info, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

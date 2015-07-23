@@ -784,7 +784,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
 
-            LiveTvManager.AddParts(GetExports<ILiveTvService>());
+            LiveTvManager.AddParts(GetExports<ILiveTvService>(), GetExports<ITunerHost>(), GetExports<IListingsProvider>());
 
             SubtitleManager.AddParts(GetExports<ISubtitleProvider>());
             ChapterManager.AddParts(GetExports<IChapterProvider>());

@@ -422,7 +422,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             return images;
         }
 
-        public async Task<List<NameIdPair>> GetHeadends(ListingsProviderInfo info, CancellationToken cancellationToken)
+        public async Task<List<NameIdPair>> GetHeadends(ListingsProviderInfo info, string location, CancellationToken cancellationToken)
         {
             var token = await GetToken(info, cancellationToken);
 
@@ -437,7 +437,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             var options = new HttpRequestOptions()
             {
-                Url = ApiUrl + "/headends?country=USA&postalcode=" + info.ZipCode,
+                Url = ApiUrl + "/headends?country=USA&postalcode=" + location,
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken
             };
@@ -484,43 +484,43 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
         private async Task<string> GetToken(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
+            var username = info.Username;
+
+            // Reset the token if there's no username
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return null;
+            }
+
+            var password = info.Password;
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                return null;
+            }
+
+            NameValuePair savedToken = null;
+            if (!_tokens.TryGetValue(username, out savedToken))
+            {
+                savedToken = new NameValuePair();
+                _tokens.TryAdd(username, savedToken);
+            }
+
+            if (!string.IsNullOrWhiteSpace(savedToken.Name) && !string.IsNullOrWhiteSpace(savedToken.Value))
+            {
+                long ticks;
+                if (long.TryParse(savedToken.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out ticks))
+                {
+                    // If it's under 24 hours old we can still use it
+                    if ((DateTime.UtcNow.Ticks - ticks) < TimeSpan.FromHours(24).Ticks)
+                    {
+                        return savedToken.Name;
+                    }
+                }
+            }
+
             await _tokenSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                var username = info.Username;
-
-                // Reset the token if there's no username
-                if (string.IsNullOrWhiteSpace(username))
-                {
-                    return null;
-                }
-
-                var password = info.Password;
-                if (string.IsNullOrWhiteSpace(password))
-                {
-                    return null;
-                }
-
-                NameValuePair savedToken = null;
-                if (!_tokens.TryGetValue(username, out savedToken))
-                {
-                    savedToken = new NameValuePair();
-                    _tokens.TryAdd(username, savedToken);
-                }
-
-                if (!string.IsNullOrWhiteSpace(savedToken.Name) && !string.IsNullOrWhiteSpace(savedToken.Value))
-                {
-                    long ticks;
-                    if (long.TryParse(savedToken.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out ticks))
-                    {
-                        // If it's under 24 hours old we can still use it
-                        if ((DateTime.UtcNow.Ticks - ticks) < TimeSpan.FromHours(24).Ticks)
-                        {
-                            return savedToken.Name;
-                        }
-                    }
-                }
-
                 var result = await GetTokenInternal(username, password, cancellationToken).ConfigureAwait(false);
                 savedToken.Name = result;
                 savedToken.Value = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
@@ -561,6 +561,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
         public string Name
         {
             get { return "Schedules Direct"; }
+        }
+
+        public string Type
+        {
+            get { return "SchedulesDirect"; }
         }
 
         public class ScheduleDirect
@@ -842,5 +847,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
         }
 
+        public async Task Validate(ListingsProviderInfo info)
+        {
+        }
+
+        public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string location)
+        {
+            return GetHeadends(info, location, CancellationToken.None);
+        }
     }
 }

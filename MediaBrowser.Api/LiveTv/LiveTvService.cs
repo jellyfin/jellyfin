@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -345,6 +346,31 @@ namespace MediaBrowser.Api.LiveTv
         public string Id { get; set; }
     }
 
+    [Route("/LiveTv/ListingProviders", "POST", Summary = "Adds a listing provider")]
+    [Authenticated]
+    public class AddListingProvider : ListingsProviderInfo, IReturn<ListingsProviderInfo>
+    {
+    }
+
+    [Route("/LiveTv/ListingProviders", "DELETE", Summary = "Deletes a listing provider")]
+    [Authenticated]
+    public class DeleteListingProvider : IReturnVoid
+    {
+        [ApiMember(Name = "Id", Description = "Provider id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "DELETE")]
+        public string Id { get; set; }
+    }
+
+    [Route("/LiveTv/ListingProviders/Lineups", "GET", Summary = "Gets available lineups")]
+    [Authenticated]
+    public class GetLineups : IReturn<List<NameIdPair>>
+    {
+        [ApiMember(Name = "Id", Description = "Provider id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Id { get; set; }
+
+        [ApiMember(Name = "Location", Description = "Location", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Location { get; set; }
+    }
+
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;
@@ -373,18 +399,25 @@ namespace MediaBrowser.Api.LiveTv
             }
         }
 
-        public void Post(AddTunerHost request)
+        public object Post(AddListingProvider request)
+        {
+            var result = _liveTvManager.SaveListingProvider(request).Result;
+            return ToOptimizedResult(result);
+        }
+
+        public void Delete(DeleteListingProvider request)
         {
             var config = GetConfiguration();
 
-            config.TunerHosts.Add(new TunerHostInfo
-            {
-                Id = Guid.NewGuid().ToString("N"),
-                Url = request.Url,
-                Type = request.Type
-            });
+            config.ListingProviders = config.ListingProviders.Where(i => !string.Equals(request.Id, i.Id, StringComparison.OrdinalIgnoreCase)).ToList();
 
             _config.SaveConfiguration("livetv", config);
+        }
+
+        public void Post(AddTunerHost request)
+        {
+            var task = _liveTvManager.SaveTunerHost(request);
+            Task.WaitAll(task);
         }
 
         public void Delete(DeleteTunerHost request)
@@ -399,6 +432,13 @@ namespace MediaBrowser.Api.LiveTv
         private LiveTvOptions GetConfiguration()
         {
             return _config.GetConfiguration<LiveTvOptions>("livetv");
+        }
+
+        public async Task<object> Get(GetLineups request)
+        {
+            var info = await _liveTvManager.GetLineups(request.Id, request.Location).ConfigureAwait(false);
+
+            return ToOptimizedSerializedResultUsingCache(info);
         }
 
         public async Task<object> Get(GetLiveTvInfo request)

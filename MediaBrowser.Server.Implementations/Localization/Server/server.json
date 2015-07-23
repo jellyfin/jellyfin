@@ -1483,5 +1483,8 @@
     "TabTuners": "Tuners",
     "HeaderGuideProviders": "Guide Providers",
     "AddGuideProviderHelp": "Add a source for TV Guide information",
-    "LabelZipCode": "Zip Code"
+    "LabelZipCode": "Zip Code:",
+    "GuideProviderListingsStep": "Step 2: Select Listings",
+    "GuideProviderLoginStep": "Step 1: Login",
+    "LabelLineup": "Lineup"
 }

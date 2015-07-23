@@ -28,10 +28,11 @@ namespace MediaBrowser.Model.LiveTv
 
     public class ListingsProviderInfo
     {
-        public string ProviderName { get; set; }
+        public string Id { get; set; }
+        public string Type { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
-        public string ZipCode { get; set; }
         public string ListingsId { get; set; }
+        public string ZipCode { get; set; }
     }
 }
