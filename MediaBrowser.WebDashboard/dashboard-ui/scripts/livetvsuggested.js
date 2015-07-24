@@ -1,26 +1,26 @@
 ﻿(function ($, document) {
 
     function loadRecommendedPrograms(page) {
-        
+
         Dashboard.showLoadingMsg();
 
         ApiClient.getLiveTvRecommendedPrograms({
 
             userId: Dashboard.getCurrentUserId(),
             IsAiring: true,
-            limit: 18
+            limit: 16
 
         }).done(function (result) {
 
             var html = LibraryBrowser.getPosterViewHtml({
-
                 items: result.Items,
                 shape: "auto",
                 showTitle: true,
                 showParentTitle: true,
                 overlayText: true,
                 coverImage: true,
-                lazy: true
+                lazy: true,
+                overlayPlayButton: true
 
             });
 
@@ -42,7 +42,7 @@
             userId: Dashboard.getCurrentUserId(),
             IsAiring: false,
             HasAired: false,
-            limit: 9,
+            limit: 8,
             IsMovie: false,
             IsSports: false
 
@@ -56,7 +56,8 @@
                 showParentTitle: true,
                 overlayText: true,
                 coverImage: true,
-                lazy: true
+                lazy: true,
+                overlayMoreButton: true
 
             });
 
@@ -70,7 +71,7 @@
             userId: Dashboard.getCurrentUserId(),
             IsAiring: false,
             HasAired: false,
-            limit: 9,
+            limit: 8,
             IsMovie: true
 
         }).done(function (result) {
@@ -81,7 +82,8 @@
                 showTitle: false,
                 coverImage: true,
                 overlayText: false,
-                lazy: true
+                lazy: true,
+                overlayMoreButton: true
             });
 
             var elem = page.querySelector('.upcomingTvMovieItems');
@@ -94,7 +96,7 @@
             userId: Dashboard.getCurrentUserId(),
             IsAiring: false,
             HasAired: false,
-            limit: 9,
+            limit: 8,
             IsSports: true
 
         }).done(function (result) {
@@ -105,7 +107,8 @@
                 showTitle: false,
                 coverImage: true,
                 overlayText: false,
-                lazy: true
+                lazy: true,
+                overlayMoreButton: true
             });
 
             var elem = page.querySelector('.upcomingSportsItems');

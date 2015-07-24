@@ -99,7 +99,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 list.Add(await GetUserView(parents, list, CollectionType.TvShows, string.Empty, user, cancellationToken).ConfigureAwait(false));
             }
 
-            parents = foldersWithViewTypes.Where(i => string.Equals(i.CollectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase) || string.Equals(i.CollectionType, CollectionType.MusicVideos, StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(i.CollectionType))
+            parents = foldersWithViewTypes.Where(i => string.Equals(i.CollectionType, CollectionType.Music, StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(i.CollectionType))
                 .ToList();
 
             if (parents.Count > 0)

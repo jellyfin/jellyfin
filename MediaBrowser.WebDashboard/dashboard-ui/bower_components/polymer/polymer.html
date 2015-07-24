@@ -586,7 +586,8 @@ prevent = dy > dx;
 prevent = dx > dy;
 }
 if (prevent) {
-ev.preventDefault();
+// This prevents side scrolling in safari
+//ev.preventDefault();
 } else {
 Gestures.prevent('track');
 }

@@ -407,7 +407,8 @@
                     centerText: true,
                     context: 'channels',
                     lazy: true,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    overlayPlayButton: true
                 });
                 html += '</div>';
                 html += '</div>';

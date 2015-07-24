@@ -544,16 +544,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var replaceImages = new List<ImageType>();
 
-            if (!string.Equals(item.ProviderImageUrl, channelInfo.ImageUrl, StringComparison.OrdinalIgnoreCase))
-            {
-                isNew = true;
-                replaceImages.Add(ImageType.Primary);
-            }
-            if (!string.Equals(item.ProviderImagePath, channelInfo.ImagePath, StringComparison.OrdinalIgnoreCase))
-            {
-                isNew = true;
-                replaceImages.Add(ImageType.Primary);
-            }
+            //if (!string.Equals(item.ProviderImageUrl, channelInfo.ImageUrl, StringComparison.OrdinalIgnoreCase))
+            //{
+            //    isNew = true;
+            //    replaceImages.Add(ImageType.Primary);
+            //}
+            //if (!string.Equals(item.ProviderImagePath, channelInfo.ImagePath, StringComparison.OrdinalIgnoreCase))
+            //{
+            //    isNew = true;
+            //    replaceImages.Add(ImageType.Primary);
+            //}
 
             item.ProviderImageUrl = channelInfo.ImageUrl;
             item.HasProviderImage = channelInfo.HasImage;

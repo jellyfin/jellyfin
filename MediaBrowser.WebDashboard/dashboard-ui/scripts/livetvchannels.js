@@ -8,11 +8,9 @@
 
     function getChannelsHtml(channels) {
 
-        return LibraryBrowser.getPosterViewHtml({
+        return LibraryBrowser.getListViewHtml({
             items: channels,
-            shape: "smallBackdrop",
-            centerText: true,
-            lazy: true
+            smallIcon: true
         });
     }
 
@@ -42,6 +40,7 @@
         var elem = page.querySelector('#items');
         elem.innerHTML = html;
         ImageLoader.lazyChildren(elem);
+        $(elem).trigger('create');
 
         $('.btnNextPage', page).on('click', function () {
             query.StartIndex += query.Limit;

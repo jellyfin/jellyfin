@@ -2508,10 +2508,12 @@
                 var tooltipPlayed = Globalize.translate('TooltipPlayed');
 
                 if (item.MediaType == 'Video' || item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.Type == 'Playlist') {
-                    if (userData.Played) {
-                        html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRatingOn', 'check', tooltipPlayed);
-                    } else {
-                        html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating', 'check', tooltipPlayed);
+                    if (item.Type != 'TvChannel') {
+                        if (userData.Played) {
+                            html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRatingOn', 'check', tooltipPlayed);
+                        } else {
+                            html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating', 'check', tooltipPlayed);
+                        }
                     }
                 }
             }

@@ -325,7 +325,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 if (model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1)
                 {
-                    list.Add(GetMediaSource(info, channelId, "heavy"));
+                    list.Insert(0, GetMediaSource(info, channelId, "heavy"));
+
                     list.Add(GetMediaSource(info, channelId, "internet480"));
                     list.Add(GetMediaSource(info, channelId, "internet360"));
                     list.Add(GetMediaSource(info, channelId, "internet240"));
