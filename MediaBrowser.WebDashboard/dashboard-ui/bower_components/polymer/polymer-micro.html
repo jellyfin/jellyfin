@@ -183,25 +183,30 @@ var DomModule = function () {
 return document.createElement('dom-module');
 };
 DomModule.prototype = Object.create(HTMLElement.prototype);
-DomModule.prototype.constructor = DomModule;
-DomModule.prototype.createdCallback = function () {
-var id = this.id || this.getAttribute('name') || this.getAttribute('is');
+Polymer.Base.extend(DomModule.prototype, {
+constructor: DomModule,
+createdCallback: function () {
+this.register();
+},
+register: function (id) {
+var id = id || this.id || this.getAttribute('name') || this.getAttribute('is');
 if (id) {
 this.id = id;
 modules[id] = this;
 }
-};
-DomModule.prototype.import = function (id, slctr) {
+},
+import: function (id, selector) {
 var m = modules[id];
 if (!m) {
 forceDocumentUpgrade();
 m = modules[id];
 }
-if (m && slctr) {
-m = m.querySelector(slctr);
+if (m && selector) {
+m = m.querySelector(selector);
 }
 return m;
-};
+}
+});
 var cePolyfill = window.CustomElements && !CustomElements.useNative;
 if (cePolyfill) {
 var ready = CustomElements.ready;
@@ -497,7 +502,7 @@ _setupDebouncers: function () {
 this._debouncers = {};
 },
 debounce: function (jobName, callback, wait) {
-this._debouncers[jobName] = Polymer.Debounce.call(this, this._debouncers[jobName], callback, wait);
+return this._debouncers[jobName] = Polymer.Debounce.call(this, this._debouncers[jobName], callback, wait);
 },
 isDebouncerActive: function (jobName) {
 var debouncer = this._debouncers[jobName];
@@ -516,7 +521,7 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.0.7';
+Polymer.version = '1.0.8';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
