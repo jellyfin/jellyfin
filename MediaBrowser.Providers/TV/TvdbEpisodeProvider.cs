@@ -330,6 +330,8 @@ namespace MediaBrowser.Providers.TV
                 {
                     reader.MoveToContent();
 
+                    result.ResetPeople();
+
                     // Loop through each element
                     while (reader.Read())
                     {
@@ -603,7 +605,7 @@ namespace MediaBrowser.Providers.TV
                                             .Where(i => !string.IsNullOrWhiteSpace(i))
                                             .Select(str => new PersonInfo { Type = personType, Name = str.Trim() }))
             {
-                PeopleHelper.AddPerson(result.People, person);
+                result.AddPerson(person);
             }
         }
 
@@ -632,7 +634,7 @@ namespace MediaBrowser.Providers.TV
             {
                 if (!string.IsNullOrWhiteSpace(person.Name))
                 {
-                    PeopleHelper.AddPerson(result.People, person);
+                    result.AddPerson(person);
                 }
             }
         }

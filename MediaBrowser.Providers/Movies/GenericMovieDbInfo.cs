@@ -231,13 +231,15 @@ namespace MediaBrowser.Providers.Movies
                 movie.AddGenre(genre);
             }
 
+            resultItem.ResetPeople();
+            
             //Actors, Directors, Writers - all in People
             //actors come from cast
             if (movieData.casts != null && movieData.casts.cast != null)
             {
                 foreach (var actor in movieData.casts.cast.OrderBy(a => a.order))
                 {
-                    PeopleHelper.AddPerson(resultItem.People, new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
+                    resultItem.AddPerson(new PersonInfo { Name = actor.name.Trim(), Role = actor.character, Type = PersonType.Actor, SortOrder = actor.order });
                 }
             }
 
@@ -246,7 +248,7 @@ namespace MediaBrowser.Providers.Movies
             {
                 foreach (var person in movieData.casts.crew)
                 {
-                    PeopleHelper.AddPerson(resultItem.People, new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
+                    resultItem.AddPerson(new PersonInfo { Name = person.name.Trim(), Role = person.job, Type = person.department });
                 }
             }
 

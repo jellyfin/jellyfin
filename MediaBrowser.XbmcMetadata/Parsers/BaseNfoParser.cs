@@ -84,6 +84,8 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="cancellationToken">The cancellation token.</param>
         private void Fetch(LocalMetadataResult<T> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
+            item.ResetPeople();
+
             if (!SupportsUrlAfterClosingXmlTag)
             {
                 using (var streamReader = BaseNfoSaver.GetStreamReader(metadataFile))
@@ -574,7 +576,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 continue;
                             }
-                            PeopleHelper.AddPerson(itemResult.People, p);
+                            itemResult.AddPerson(p);
                         }
                         break;
                     }
@@ -593,7 +595,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                                 {
                                     continue;
                                 }
-                                PeopleHelper.AddPerson(itemResult.People, p);
+                                itemResult.AddPerson(p);
                             }
                         }
                         break;
@@ -607,7 +609,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                             {
                                 continue;
                             }
-                            PeopleHelper.AddPerson(itemResult.People, p);
+                            itemResult.AddPerson(p);
                         }
                         break;
                     }
@@ -618,7 +620,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             var person = GetPersonFromXmlNode(subtree);
 
-                            PeopleHelper.AddPerson(itemResult.People, person);
+                            itemResult.AddPerson(person);
                         }
                         break;
                     }

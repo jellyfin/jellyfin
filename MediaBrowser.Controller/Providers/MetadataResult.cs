@@ -10,9 +10,26 @@ namespace MediaBrowser.Controller.Providers
         public bool HasMetadata { get; set; }
         public T Item { get; set; }
 
-        public MetadataResult()
+        public void AddPerson(PersonInfo p)
         {
-            People = new List<PersonInfo>();
+            if (People == null)
+            {
+                People = new List<PersonInfo>();
+            }
+
+            PeopleHelper.AddPerson(People, p);
+        }
+
+        /// <summary>
+        /// Not only does this clear, but initializes the list so that services can differentiate between a null list and zero people
+        /// </summary>
+        public void ResetPeople()
+        {
+            if (People == null)
+            {
+                People = new List<PersonInfo>();
+            }
+            People.Clear();
         }
     }
 }

@@ -73,14 +73,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
         }
 
-        public async Task<List<LiveTvTunerInfo>> GetTunerInfos(TunerHostInfo info, CancellationToken cancellationToken)
+        private async Task<string> GetModelInfo(TunerHostInfo info, CancellationToken cancellationToken)
         {
             string model = null;
 
             using (var stream = await _httpClient.Get(new HttpRequestOptions()
             {
                 Url = string.Format("{0}/", GetApiUrl(info, false)),
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                CacheLength = TimeSpan.FromDays(1),
+                CacheMode = CacheMode.Unconditional
             }))
             {
                 using (var sr = new StreamReader(stream, System.Text.Encoding.UTF8))
@@ -94,6 +96,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     }
                 }
             }
+
+            return null;
+        }
+
+        public async Task<List<LiveTvTunerInfo>> GetTunerInfos(TunerHostInfo info, CancellationToken cancellationToken)
+        {
+            string model = await GetModelInfo(info, cancellationToken).ConfigureAwait(false);
 
             using (var stream = await _httpClient.Get(new HttpRequestOptions()
             {
@@ -198,9 +207,79 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private MediaSourceInfo GetMediaSource(TunerHostInfo info, string channelId, string profile)
         {
+            int? width = null;
+            int? height = null;
+            bool isInterlaced = true;
+            var videoCodec = "mpeg2video";
+            int? videoBitrate = null;
+
+            if (string.Equals(profile, "mobile", StringComparison.OrdinalIgnoreCase))
+            {
+                width = 1280;
+                height = 720;
+                isInterlaced = false;
+                videoCodec = "h264";
+                videoBitrate = 2000000;
+            }
+            else if (string.Equals(profile, "heavy", StringComparison.OrdinalIgnoreCase))
+            {
+                width = 1920;
+                height = 1080;
+                isInterlaced = false;
+                videoCodec = "h264";
+                videoBitrate = 8000000;
+            }
+            else if (string.Equals(profile, "internet720", StringComparison.OrdinalIgnoreCase))
+            {
+                width = 1280;
+                height = 720;
+                isInterlaced = false;
+                videoCodec = "h264";
+                videoBitrate = 5000000;
+            }
+            else if (string.Equals(profile, "internet540", StringComparison.OrdinalIgnoreCase))
+            {
+                width = 1280;
+                height = 720;
+                isInterlaced = false;
+                videoCodec = "h264";
+                videoBitrate = 2500000;
+            }
+            else if (string.Equals(profile, "internet480", StringComparison.OrdinalIgnoreCase))
+            {
+                width = 848;
+                height = 480;
+                isInterlaced = false;
+                videoCodec = "h264";
+                videoBitrate = 2000000;
+            }
+            else if (string.Equals(profile, "internet360", StringComparison.OrdinalIgnoreCase))
+            {
+                width = 640;
+                height = 360;
+                isInterlaced = false;
+                videoCodec = "h264";
+                videoBitrate = 1500000;
+            }
+            else if (string.Equals(profile, "internet240", StringComparison.OrdinalIgnoreCase))
+            {
+                width = 432;
+                height = 240;
+                isInterlaced = false;
+                videoCodec = "h264";
+                videoBitrate = 1000000;
+            }
+
+            var url = GetApiUrl(info, true) + "/auto/v" + channelId;
+
+            if (!string.IsNullOrWhiteSpace(profile))
+            {
+                url += "?transcode=" + profile;
+            }
+
             var mediaSource = new MediaSourceInfo
             {
-                Path = GetApiUrl(info, true) + "/auto/v" + channelId,
+                Path = url,
                 Protocol = MediaProtocol.Http,
                 MediaStreams = new List<MediaStream>
                         {
@@ -209,14 +288,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                                 Type = MediaStreamType.Video,
                                 // Set the index to -1 because we don't know the exact index of the video stream within the container
                                 Index = -1,
-                                IsInterlaced = true
+                                IsInterlaced = isInterlaced,
+                                Codec = videoCodec,
+                                Width = width,
+                                Height = height,
+                                BitRate = videoBitrate
+                                
                             },
                             new MediaStream
                             {
                                 Type = MediaStreamType.Audio,
                                 // Set the index to -1 because we don't know the exact index of the audio stream within the container
-                                Index = -1
-
+                                Index = -1,
+                                Codec = "ac3",
+                                BitRate = 128000
                             }
                         },
                 RequiresOpening = false,
@@ -227,13 +312,32 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return mediaSource;
         }
 
-        public Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, string channelId, CancellationToken cancellationToken)
+        public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, string channelId, CancellationToken cancellationToken)
         {
             var list = new List<MediaSourceInfo>();
 
             list.Add(GetMediaSource(info, channelId, null));
 
-            return Task.FromResult(list);
+            try
+            {
+                string model = await GetModelInfo(info, cancellationToken).ConfigureAwait(false);
+                model = model ?? string.Empty;
+
+                if (model.IndexOf("hdtc", StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    list.Add(GetMediaSource(info, channelId, "heavy"));
+                    list.Add(GetMediaSource(info, channelId, "internet480"));
+                    list.Add(GetMediaSource(info, channelId, "internet360"));
+                    list.Add(GetMediaSource(info, channelId, "internet240"));
+                    list.Add(GetMediaSource(info, channelId, "mobile"));
+                }
+            }
+            catch (Exception ex)
+            {
+                
+            }
+
+            return list;
         }
 
         public async Task<MediaSourceInfo> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
