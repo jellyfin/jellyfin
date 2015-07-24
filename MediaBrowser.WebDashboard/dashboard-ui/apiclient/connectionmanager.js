@@ -176,9 +176,9 @@
             existingServer.ManualAddress = apiClient.serverAddress();
             apiClient.serverInfo(existingServer);
 
-            Events.on(apiClient, 'authenticated', function (e, result) {
-                onAuthenticated(this, result, {}, true);
-            });
+            apiClient.onAuthenticated = function (instance, result) {
+                onAuthenticated(instance, result, {}, true);
+            };
 
             if (!existingServers.length) {
                 var credentials = credentialProvider.credentials();
@@ -235,9 +235,9 @@
 
                 apiClient.serverInfo(server);
 
-                Events.on(apiClient, 'authenticated', function (e, result) {
-                    onAuthenticated(this, result, {}, true);
-                });
+                apiClient.onAuthenticated = function (instance, result) {
+                    onAuthenticated(instance, result, {}, true);
+                };
 
                 Events.trigger(self, 'apiclientcreated', [apiClient]);
             }

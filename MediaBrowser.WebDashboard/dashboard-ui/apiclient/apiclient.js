@@ -2617,8 +2617,9 @@
          */
         self.authenticateUserByName = function (name, password) {
 
+            var deferred = DeferredBuilder.Deferred();
+
             if (!name) {
-                var deferred = DeferredBuilder.Deferred();
                 deferred.reject();
                 return deferred.promise();
             }
@@ -2630,7 +2631,7 @@
                 Username: name
             };
 
-            return self.ajax({
+            self.ajax({
                 type: "POST",
                 url: url,
                 data: JSON.stringify(postData),
@@ -2639,8 +2640,18 @@
 
             }).done(function (result) {
 
-                Events.trigger(self, 'authenticated', [result]);
+                if (self.onAuthenticated) {
+                    self.onAuthenticated(self, result);
+                }
+
+                deferred.resolveWith(null, [result]);
+
+            }).fail(function () {
+
+                deferred.reject();
             });
+
+            return deferred.promise();
         };
 
         /**

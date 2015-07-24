@@ -56,6 +56,15 @@
 
     function submitListingsForm(page) {
 
+        var selectedListingsId = $('#selectListing', page).val();
+
+        if (!selectedListingsId) {
+            Dashboard.alert({
+                message: Globalize.translate('ErrorPleaseSelectLineup')
+            });
+            return;
+        }
+
         Dashboard.showLoadingMsg();
 
         var id = providerId;
@@ -68,7 +77,7 @@
 
             info.ZipCode = $('#txtZipCode', page).val();
             info.Country = $('#selectCountry', page).val();
-            info.ListingsId = $('#selectListing', page).val();
+            info.ListingsId = selectedListingsId;
 
             ApiClient.ajax({
                 type: "POST",

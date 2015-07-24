@@ -272,7 +272,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
             var url = GetApiUrl(info, true) + "/auto/v" + channelId;
 
-            if (!string.IsNullOrWhiteSpace(profile))
+            if (!string.IsNullOrWhiteSpace(profile) && !string.Equals(profile, "native", StringComparison.OrdinalIgnoreCase))
             {
                 url += "?transcode=" + profile;
             }
@@ -316,7 +316,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var list = new List<MediaSourceInfo>();
 
-            list.Add(GetMediaSource(info, channelId, null));
+            list.Add(GetMediaSource(info, channelId, "native"));
 
             try
             {
@@ -343,7 +343,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task<MediaSourceInfo> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
         {
-            return GetMediaSource(info, channelId, null);
+            return GetMediaSource(info, channelId, streamId);
         }
 
         public async Task Validate(TunerHostInfo info)

@@ -18,9 +18,7 @@
 
                 Logger.log('credentials initialized with: ' + json);
                 credentials = JSON.parse(json);
-                credentials.Servers = credentials.Servers || credentials.servers || [];
-
-                credentials.servers = null;
+                credentials.Servers = credentials.Servers || [];
             }
         }
 
