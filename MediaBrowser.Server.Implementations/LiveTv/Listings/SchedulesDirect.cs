@@ -536,6 +536,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 throw new ArgumentException("Authentication required.");
             }
 
+            if (string.IsNullOrWhiteSpace(info.ListingsId))
+            {
+                throw new ArgumentException("Listings Id required");
+            }
+
             _logger.Info("Adding new LineUp ");
 
             var httpOptions = new HttpRequestOptions()
@@ -564,6 +569,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
         private async Task<bool> HasLineup(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(info.ListingsId))
+            {
+                throw new ArgumentException("Listings Id required");
+            }
+
             var token = await GetToken(info, cancellationToken);
 
             _logger.Info("Headends on account ");
@@ -577,9 +587,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             options.RequestHeaders["token"] = token;
 
-            using (Stream responce = await _httpClient.Get(options).ConfigureAwait(false))
+            using (var response = await _httpClient.Get(options).ConfigureAwait(false))
             {
-                var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Lineups>(responce);
+                var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Lineups>(response);
 
                 return root.lineups.Any(i => string.Equals(info.ListingsId, i.lineup, StringComparison.OrdinalIgnoreCase));
             }
@@ -587,6 +597,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
         public async Task Validate(ListingsProviderInfo info)
         {
+            if (string.IsNullOrWhiteSpace(info.ListingsId))
+            {
+                throw new ArgumentException("Listings Id required");
+            }
+
             var hasLineup = await HasLineup(info, CancellationToken.None).ConfigureAwait(false);
 
             if (!hasLineup)
