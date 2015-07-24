@@ -127,7 +127,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         private WebRequest GetRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
         {
-            var request = WebRequest.Create(options.Url);
+            var request = CreateWebRequest(options.Url);
             var httpWebRequest = request as HttpWebRequest;
 
             if (httpWebRequest != null)

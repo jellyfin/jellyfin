@@ -23,14 +23,16 @@ namespace MediaBrowser.Server.Implementations.Playlists
         private readonly ILibraryMonitor _iLibraryMonitor;
         private readonly ILogger _logger;
         private readonly IUserManager _userManager;
+        private readonly IProviderManager _providerManager;
 
-        public PlaylistManager(ILibraryManager libraryManager, IFileSystem fileSystem, ILibraryMonitor iLibraryMonitor, ILogger logger, IUserManager userManager)
+        public PlaylistManager(ILibraryManager libraryManager, IFileSystem fileSystem, ILibraryMonitor iLibraryMonitor, ILogger logger, IUserManager userManager, IProviderManager providerManager)
         {
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
             _iLibraryMonitor = iLibraryMonitor;
             _logger = logger;
             _userManager = userManager;
+            _providerManager = providerManager;
         }
 
         public IEnumerable<Playlist> GetPlaylists(string userId)
@@ -193,11 +195,11 @@ namespace MediaBrowser.Server.Implementations.Playlists
             playlist.LinkedChildren.AddRange(list);
 
             await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-            await playlist.RefreshMetadata(new MetadataRefreshOptions
+
+            _providerManager.QueueRefresh(playlist.Id, new MetadataRefreshOptions
             {
                 ForceSave = true
-
-            }, CancellationToken.None).ConfigureAwait(false);
+            });
         }
 
         public async Task RemoveFromPlaylist(string playlistId, IEnumerable<string> entryIds)
@@ -220,10 +222,11 @@ namespace MediaBrowser.Server.Implementations.Playlists
                 .ToList();
 
             await playlist.UpdateToRepository(ItemUpdateType.MetadataEdit, CancellationToken.None).ConfigureAwait(false);
-            await playlist.RefreshMetadata(new MetadataRefreshOptions
+
+            _providerManager.QueueRefresh(playlist.Id, new MetadataRefreshOptions
             {
                 ForceSave = true
-            }, CancellationToken.None).ConfigureAwait(false);
+            });
         }
 
         public Folder GetPlaylistsFolder(string userId)
