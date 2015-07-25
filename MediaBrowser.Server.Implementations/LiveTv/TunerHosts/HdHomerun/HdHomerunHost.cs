@@ -313,7 +313,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         },
                 RequiresOpening = false,
                 RequiresClosing = false,
-                BufferMs = 1000
+                BufferMs = 1000,
+                Container = "ts",
+                Id = profile
             };
 
             return mediaSource;

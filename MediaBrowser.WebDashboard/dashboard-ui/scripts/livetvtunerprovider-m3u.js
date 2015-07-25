@@ -44,6 +44,7 @@
             Dashboard.navigate('livetvstatus.html');
 
         }).fail(function () {
+            Dashboard.hideLoadingMsg();
             Dashboard.alert({
                 message: Globalize.translate('ErrorSavingTvProvider')
             });

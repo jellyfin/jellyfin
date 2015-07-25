@@ -197,7 +197,7 @@
             html += '<a href="' + href + '">';
 
             html += '<h3>';
-            html += device.Type;
+            html += getTunerName(device.Type);
             html += '</h3>';
 
             html += '<p>';
@@ -341,6 +341,21 @@
         });
     }
 
+    function getTunerName(providerId) {
+
+        providerId = providerId.toLowerCase();
+
+        switch (providerId) {
+
+            case 'm3u':
+                return 'M3U';
+            case 'hdhomerun':
+                return 'HDHomerun';
+            default:
+                return 'Unknown';
+        }
+    }
+
     function getProviderName(providerId) {
 
         providerId = providerId.toLowerCase();
@@ -395,7 +410,7 @@
         var menuItems = [];
 
         menuItems.push({
-            name: 'HD Homerun',
+            name: 'HDHomerun',
             id: 'hdhomerun'
         });
 
