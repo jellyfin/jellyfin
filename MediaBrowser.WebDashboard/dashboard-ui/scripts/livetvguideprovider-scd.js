@@ -1,9 +1,8 @@
 ﻿(function ($, document, window) {
 
-    var providerId;
     var listingsId;
 
-    function reload(page) {
+    function reload(page, providerId) {
 
         ApiClient.getNamedConfiguration("livetv").done(function (config) {
 
@@ -30,6 +29,7 @@
             Password: CryptoJS.SHA1($('#txtPass', page).val()).toString()
         };
 
+        var providerId = getParameterByName('id');
         var id = providerId;
 
         if (id) {
@@ -38,13 +38,16 @@
 
         ApiClient.ajax({
             type: "POST",
-            url: ApiClient.getUrl('LiveTv/ListingProviders'),
+            url: ApiClient.getUrl('LiveTv/ListingProviders', {
+                ValidateLogin: true
+            }),
             data: JSON.stringify(info),
             contentType: "application/json"
 
         }).done(function (result) {
 
             Dashboard.processServerConfigurationUpdateResult();
+            Dashboard.navigate('livetvguideprovider-scd.html?id=' + result.Id);
 
         }).fail(function () {
             Dashboard.alert({
@@ -67,6 +70,7 @@
 
         Dashboard.showLoadingMsg();
 
+        var providerId = getParameterByName('id');
         var id = providerId;
 
         ApiClient.getNamedConfiguration("livetv").done(function (config) {
@@ -81,7 +85,9 @@
 
             ApiClient.ajax({
                 type: "POST",
-                url: ApiClient.getUrl('LiveTv/ListingProviders'),
+                url: ApiClient.getUrl('LiveTv/ListingProviders', {
+                    ValidateListings: true
+                }),
                 data: JSON.stringify(info),
                 contentType: "application/json"
 
@@ -105,13 +111,16 @@
             return;
         }
 
+        var providerId = getParameterByName('id');
+
         Dashboard.showModalLoadingMsg();
 
         ApiClient.ajax({
             type: "GET",
             url: ApiClient.getUrl('LiveTv/ListingProviders/Lineups', {
                 Id: providerId,
-                Location: value
+                Location: value,
+                Country: $('#selectCountry', page).val()
             }),
             dataType: 'json'
 
@@ -163,10 +172,9 @@
 
     }).on('pageshowready', "#liveTvGuideProviderScdPage", function () {
 
-        providerId = getParameterByName('id');
-
+        var providerId = getParameterByName('id');
         var page = this;
-        reload(page);
+        reload(page, providerId);
     });
 
 })(jQuery, document, window);

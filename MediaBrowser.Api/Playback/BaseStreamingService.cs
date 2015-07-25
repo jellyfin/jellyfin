@@ -819,11 +819,11 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the audio encoder.
         /// </summary>
-        /// <param name="request">The request.</param>
+        /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        protected string GetAudioEncoder(StreamRequest request)
+        protected string GetAudioEncoder(StreamState state)
         {
-            var codec = request.AudioCodec;
+            var codec = state.OutputAudioCodec;
 
             if (string.Equals(codec, "aac", StringComparison.OrdinalIgnoreCase))
             {
@@ -848,11 +848,11 @@ namespace MediaBrowser.Api.Playback
         /// <summary>
         /// Gets the name of the output video codec
         /// </summary>
-        /// <param name="request">The request.</param>
+        /// <param name="state">The state.</param>
         /// <returns>System.String.</returns>
-        protected string GetVideoEncoder(VideoStreamRequest request)
+        protected string GetVideoEncoder(StreamState state)
         {
-            var codec = request.VideoCodec;
+            var codec = state.OutputVideoCodec;
 
             if (!string.IsNullOrEmpty(codec))
             {

@@ -378,7 +378,7 @@ namespace MediaBrowser.Api.Playback.Dash
 
         protected override string GetAudioArguments(StreamState state)
         {
-            var codec = GetAudioEncoder(state.Request);
+            var codec = GetAudioEncoder(state);
 
             if (string.Equals(codec, "copy", StringComparison.OrdinalIgnoreCase))
             {
@@ -408,7 +408,7 @@ namespace MediaBrowser.Api.Playback.Dash
 
         protected override string GetVideoArguments(StreamState state)
         {
-            var codec = GetVideoEncoder(state.VideoRequest);
+            var codec = GetVideoEncoder(state);
 
             var args = "-codec:v:0 " + codec;
 
