@@ -13,8 +13,10 @@
             listingsId = info.ListingsId;
             $('#selectListing', page).val(info.ListingsId || '').selectmenu('refresh');
             $('#selectCountry', page).val(info.Country || '').selectmenu('refresh');
-            $('#txtZipCode', page).val(info.ZipCode || '').trigger('change');
-            $('#txtUser', page).val(info.Username || '');
+            page.querySelector('.txtZipCode').value = info.ZipCode || '';
+            $(page.querySelector('.txtZipCode')).trigger('change');
+            page.querySelector('.txtUser').value = info.Username || '';
+            page.querySelector('.txtPass').value = info.Username || '';
 
         });
     }
@@ -25,8 +27,8 @@
 
         var info = {
             Type: 'SchedulesDirect',
-            Username: $('#txtUser', page).val(),
-            Password: CryptoJS.SHA1($('#txtPass', page).val()).toString()
+            Username: page.querySelector('.txtUser').value,
+            Password: CryptoJS.SHA1(page.querySelector('.txtPass').value).toString()
         };
 
         var providerId = getParameterByName('id');
@@ -79,7 +81,7 @@
                 return i.Id == id;
             })[0];
 
-            info.ZipCode = $('#txtZipCode', page).val();
+            info.ZipCode = page.querySelector('.txtZipCode').value;
             info.Country = $('#selectCountry', page).val();
             info.ListingsId = selectedListingsId;
 
@@ -164,7 +166,7 @@
             return false;
         });
 
-        $('#txtZipCode', page).on('change', function () {
+        $('.txtZipCode', page).on('change', function () {
             refreshListings(page, this.value);
         });
 

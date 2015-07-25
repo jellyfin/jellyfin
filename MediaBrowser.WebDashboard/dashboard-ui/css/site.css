@@ -657,6 +657,11 @@ h1 .imageLink {
     white-space: normal !important;
 }
 
+.paperCheckboxFieldDescription {
+    padding-left: 30px;
+    padding-top: 5px;
+}
+
 .warningFieldDescription {
     padding: 5px;
     border: 1px solid #f4c63f;

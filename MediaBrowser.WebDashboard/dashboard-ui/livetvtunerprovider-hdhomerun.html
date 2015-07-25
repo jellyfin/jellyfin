@@ -22,15 +22,12 @@
                     <form>
                         <div>
                             <div>
-                                <br />
-                                <label for="txtDevicePath">${LabelTunerIpAddress}</label>
-                                <input type="text" id="txtDevicePath" required="required" />
+                                <paper-input class="txtDevicePath" label="${LabelPath}" required="required"></paper-input>
                             </div>
                             <div>
                                 <br />
-                                <label for="chkFavorite">${LabelImportOnlyFavoriteChannels}</label>
-                                <input type="checkbox" id="chkFavorite" data-mini="true" />
-                                <div class="fieldDescription">${ImportFavoriteChannelsHelp}</div>
+                                <paper-checkbox class="chkFavorite">${LabelImportOnlyFavoriteChannels}</paper-checkbox>
+                                <div class="fieldDescription paperCheckboxFieldDescription">${ImportFavoriteChannelsHelp}</div>
                             </div>
                             <br />
                             <div>

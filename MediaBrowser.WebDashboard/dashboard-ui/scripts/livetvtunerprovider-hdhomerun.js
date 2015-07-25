@@ -2,8 +2,8 @@
 
     function reload(page, providerId) {
 
-        $('#txtDevicePath', page).val('');
-        $('#chkFavorite', page).checked(false).checkboxradio('refresh');
+        page.querySelector('.txtDevicePath').value = '';
+        page.querySelector('.chkFavorite').checked = false;
 
         if (providerId) {
             ApiClient.getNamedConfiguration("livetv").done(function (config) {
@@ -12,8 +12,8 @@
                     return i.Id == providerId;
                 })[0];
 
-                $('#txtDevicePath', page).val(info.Url || '');
-                $('#chkFavorite', page).checked(info.ImportFavoritesOnly).checkboxradio('refresh');
+                page.querySelector('.txtDevicePath').value = info.Url || '';
+                page.querySelector('.chkFavorite').checked = info.ImportFavoritesOnly;
 
             });
         }
@@ -25,8 +25,8 @@
 
         var info = {
             Type: 'hdhomerun',
-            Url: $('#txtDevicePath', page).val(),
-            ImportFavoritesOnly: $('#chkFavorite', page).checked()
+            Url: page.querySelector('.txtDevicePath').value,
+            ImportFavoritesOnly: page.querySelector('.chkFavorite').checked
         };
 
         var id = getParameterByName('id');

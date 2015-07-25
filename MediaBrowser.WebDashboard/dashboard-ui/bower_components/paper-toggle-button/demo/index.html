@@ -1,0 +1,105 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <title>paper-toggle-button demo</title>
+
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../../paper-styles/demo-pages.html">
+    <link rel="import" href="../paper-toggle-button.html">
+
+    <style is="custom-style">
+      .line {
+        margin-bottom: 40px;
+      }
+
+      .line span {
+        margin-left: 24px;
+      }
+
+      paper-toggle-button.blue {
+        --paper-toggle-button-checked-bar-color:  var(--paper-light-blue-500);
+        --paper-toggle-button-checked-button-color:  var(--paper-light-blue-500);
+        --paper-toggle-button-checked-ink-color: var(--paper-light-blue-500);
+        --paper-toggle-button-unchecked-bar-color:  var(--paper-light-blue-900);
+        --paper-toggle-button-unchecked-button-color:  var(--paper-light-blue-900);
+        --paper-toggle-button-unchecked-ink-color: var(--paper-light-blue-900);
+      }
+
+      paper-toggle-button.red {
+        --paper-toggle-button-checked-bar-color:  var(--paper-red-500);
+        --paper-toggle-button-checked-button-color:  var(--paper-red-500);
+        --paper-toggle-button-checked-ink-color: var(--paper-red-500);
+        --paper-toggle-button-unchecked-bar-color:  var(--paper-red-900);
+        --paper-toggle-button-unchecked-button-color:  var(--paper-red-900);
+        --paper-toggle-button-unchecked-ink-color: var(--paper-red-900);
+      }
+
+      paper-toggle-button.green {
+        --paper-toggle-button-checked-bar-color:  var(--paper-green-500);
+        --paper-toggle-button-checked-button-color:  var(--paper-green-500);
+        --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+        --paper-toggle-button-unchecked-bar-color:  var(--paper-green-900);
+        --paper-toggle-button-unchecked-button-color:  var(--paper-green-900);
+        --paper-toggle-button-unchecked-ink-color: var(--paper-green-900);
+      }
+
+      paper-toggle-button.orange {
+        --paper-toggle-button-checked-bar-color:  var(--paper-orange-500);
+        --paper-toggle-button-checked-button-color:  var(--paper-orange-500);
+        --paper-toggle-button-checked-ink-color: var(--paper-orange-500);
+        --paper-toggle-button-unchecked-bar-color:  var(--paper-orange-900);
+        --paper-toggle-button-unchecked-button-color:  var(--paper-orange-900);
+        --paper-toggle-button-unchecked-ink-color: var(--paper-orange-900);
+      }
+    </style>
+  </head>
+  <body unresolved>
+    <div class="horizontal-section-container">
+      <div>
+        <h4>Enabled</h4>
+        <div class="horizontal-section">
+          <div class="line"><paper-toggle-button></paper-toggle-button><span>Oxygen</span></div>
+          <div class="line"><paper-toggle-button></paper-toggle-button><span>Carbon</span></div>
+          <div class="line"><paper-toggle-button checked></paper-toggle-button><span>Hydrogen</span></div>
+          <div class="line"><paper-toggle-button checked></paper-toggle-button><span>Nitrogen</span></div>
+          <div class="line"><paper-toggle-button checked></paper-toggle-button><span>Calcium</span></div>
+        </div>
+      </div>
+
+      <div>
+        <h4>Disabled</h4>
+        <div class="horizontal-section">
+          <div class="line"><paper-toggle-button disabled></paper-toggle-button><span>Oxygen</span></div>
+          <div class="line"><paper-toggle-button disabled></paper-toggle-button><span>Carbon</span></div>
+          <div class="line"><paper-toggle-button checked disabled></paper-toggle-button><span>Hydrogen</span></div>
+          <div class="line"><paper-toggle-button checked disabled></paper-toggle-button><span>Nitrogen</span></div>
+          <div class="line"><paper-toggle-button checked disabled></paper-toggle-button><span>Calcium</span></div>
+        </div>
+      </div>
+
+      <div>
+        <h4>Color</h4>
+        <div class="horizontal-section">
+          <div class="line"><paper-toggle-button class="blue"></paper-toggle-button><span>Oxygen</span></div>
+          <div class="line"><paper-toggle-button class="red"></paper-toggle-button><span>Carbon</span></div>
+          <div class="line"><paper-toggle-button checked class="orange"></paper-toggle-button><span>Hydrogen</span></div>
+          <div class="line"><paper-toggle-button checked class="green"></paper-toggle-button><span>Nitrogen</span></div>
+          <div class="line"><paper-toggle-button checked class="blue"></paper-toggle-button><span>Calcium</span></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

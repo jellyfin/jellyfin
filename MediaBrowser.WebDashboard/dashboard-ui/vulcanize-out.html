@@ -12314,6 +12314,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
 
 
+
+
 </head><body><div hidden="" by-vulcanize=""><dom-module id="paper-material" assetpath="bower_components/paper-material/">
   <style>
     :host {
@@ -15855,11 +15857,33 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       height: 4px;
     }
 
+    :host(.transiting) #activeProgress,
+    :host(.transiting) #secondaryProgress {
+      -webkit-transition-property: -webkit-transform;
+      transition-property: transform;
+
+      /* Duration */
+      -webkit-transition-duration: var(--paper-progress-transition-duration, 0.08s);
+      transition-duration: var(--paper-progress-transition-duration, 0.08s);
+
+      /* Timing function */
+      -webkit-transition-timing-function: var(--paper-progress-transition-timing-function, ease);
+      transition-timing-function: var(--paper-progress-transition-timing-function, ease);
+
+      /* Delay */
+      -webkit-transition-delay: var(--paper-progress-transition-delay, 0s);
+      transition-delay: var(--paper-progress-transition-delay, 0s);
+    }
+
     #progressContainer {
       position: relative;
       height: 100%;
-      background-color: var(--paper-progress-container-color, --google-grey-300);
       overflow: hidden;
+      @apply(--paper-progress-container);
+    }
+    
+    #progressContainer, #indeterminateSplitter {
+      background-color: var(--paper-progress-container-color, --google-grey-300);
     }
 
     #activeProgress,
@@ -15877,35 +15901,87 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     #secondaryProgress {
       background-color: var(--paper-progress-secondary-color, --google-green-100);
     }
+    
+    #indeterminateSplitter {
+      display: none;
+    }
 
     #activeProgress.indeterminate {
+      -webkit-transform-origin: right center;
+      transform-origin: right center;
+      -webkit-animation: indeterminate-bar 2s linear infinite;
+      animation: indeterminate-bar 2s linear infinite;
+    }
+
+    #indeterminateSplitter.indeterminate {
+      display: block;
       -webkit-transform-origin: center center;
       transform-origin: center center;
-      -webkit-animation: indeterminate-bar 1s linear infinite;
-      animation: indeterminate-bar 1s linear infinite;
+      -webkit-animation: indeterminate-splitter 2s linear infinite;
+      animation: indeterminate-splitter 2s linear infinite;
     }
 
     @-webkit-keyframes indeterminate-bar {
       0% {
-        -webkit-transform: translate(-50%) scaleX(0);
+        -webkit-transform: scaleX(1) translateX(-100%);
       }
       50% {
-        -webkit-transform: translate(0%) scaleX(0.3);
+        -webkit-transform: scaleX(1) translateX(0%);
+      }
+      75% {
+        -webkit-transform: scaleX(1) translateX(0%);
+        -webkit-animation-timing-function: cubic-bezier(.28,.62,.37,.91);
       }
       100% {
-        -webkit-transform: translate(50%) scaleX(0);
+        -webkit-transform: scaleX(0) translateX(0%);
+      }
+    }
+
+    @-webkit-keyframes indeterminate-splitter {
+      0% {
+        -webkit-transform: scaleX(.75) translateX(-125%);
+      }
+      30% {
+        -webkit-transform: scaleX(.75) translateX(-125%);
+        -webkit-animation-timing-function: cubic-bezier(.42,0,.6,.8);
+      }
+      90% {
+        -webkit-transform: scaleX(.75) translateX(125%);
+      }
+      100% {
+        -webkit-transform: scaleX(.75) translateX(125%);
       }
     }
 
     @keyframes indeterminate-bar {
       0% {
-        transform: translate(-50%) scaleX(0);
+        transform: scaleX(1) translateX(-100%);
       }
       50% {
-        transform: translate(0%) scaleX(0.3);
+        transform: scaleX(1) translateX(0%);
+      }
+      75% {
+        transform: scaleX(1) translateX(0%);
+        animation-timing-function: cubic-bezier(.28,.62,.37,.91);
       }
       100% {
-        transform: translate(50%) scaleX(0);
+        transform: scaleX(0) translateX(0%);
+      }
+    }
+
+    @keyframes indeterminate-splitter {
+      0% {
+        transform: scaleX(.75) translateX(-125%);
+      }
+      30% {
+        transform: scaleX(.75) translateX(-125%);
+        animation-timing-function: cubic-bezier(.42,0,.6,.8);
+      }
+      90% {
+        transform: scaleX(.75) translateX(125%);
+      }
+      100% {
+        transform: scaleX(.75) translateX(125%);
       }
     }
   </style>
@@ -15913,6 +15989,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     <div id="progressContainer" role="progressbar" aria-valuenow$="{{value}}" aria-valuemin$="{{min}}" aria-valuemax$="{{max}}">
       <div id="secondaryProgress" class="fit"></div>
       <div id="activeProgress" class="fit"></div>
+      <div id="indeterminateSplitter" class="fit"></div>
     </div>
   </template>
 </dom-module>
@@ -15967,6 +16044,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       // If we use attribute/class binding, the animation sometimes doesn't translate properly
       // on Safari 7.1. So instead, we toggle the class here in the update method.
       this.toggleClass('indeterminate', this.indeterminate, this.$.activeProgress);
+      this.toggleClass('indeterminate', this.indeterminate, this.$.indeterminateSplitter);
     },
 
     _transformProgress: function(progress, ratio) {
@@ -17374,6 +17452,266 @@ paper-ripple {
 })();
 
 </script>
+<dom-module id="paper-checkbox" assetpath="bower_components/paper-checkbox/">
+  <style>
+/*
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
+
+:host {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+:host(:focus) {
+  outline: none;
+}
+
+.hidden {
+  display: none;
+}
+
+#checkboxContainer {
+  display: inline-block;
+  position: relative;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  vertical-align: middle;
+  background-color: var(--paper-checkbox-unchecked-background-color, transparent);
+}
+
+:host #ink {
+  position: absolute;
+  top: -15px;
+  left: -15px;
+  width: 48px;
+  height: 48px;
+  color: var(--paper-checkbox-unchecked-ink-color, --primary-text-color);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+:host #ink[checked] {
+  color: var(--paper-checkbox-checked-ink-color, --default-primary-color);
+}
+
+:host #checkbox {
+  position: relative;
+  box-sizing: border-box;
+  height: 100%;
+  border: solid 2px;
+  border-color: var(--paper-checkbox-unchecked-color, --primary-text-color);
+  border-radius: 2px;
+  pointer-events: none;
+  -webkit-transition: background-color 140ms, border-color 140ms;
+  transition: background-color 140ms, border-color 140ms;
+}
+
+/* checkbox checked animations */
+#checkbox.checked #checkmark {
+  -webkit-animation: checkmark-expand 140ms ease-out forwards;
+  animation: checkmark-expand 140ms ease-out forwards;
+}
+
+@-webkit-keyframes checkmark-expand {
+  0% {
+    top: 9px;
+    left: 6px;
+    width: 0px;
+    height: 0px;
+  }
+  100% {
+    top: -1px;
+    left: 4px;
+    width: 5px;
+    height: 10px;
+  }
+}
+
+@keyframes checkmark-expand {
+  0% {
+    top: 9px;
+    left: 6px;
+    width: 0px;
+    height: 0px;
+  }
+  100% {
+    top: -1px;
+    left: 4px;
+    width: 5px;
+    height: 10px;
+  }
+}
+
+:host #checkbox.checked {
+  background-color: var(--paper-checkbox-checked-color, --default-primary-color);
+  border-color: var(--paper-checkbox-checked-color, --default-primary-color);
+}
+
+:host #checkmark {
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+  position: absolute;
+  top: -1px;
+  left: 4px;
+  width: 5px;
+  height: 10px;
+  border-style: solid;
+  border-top: none;
+  border-left: none;
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+  border-color: var(--paper-checkbox-checkmark-color, white);
+}
+
+/* label */
+#checkboxLabel {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  padding-left: 8px;
+  white-space: normal;
+  pointer-events: none;
+  color: var(--paper-checkbox-label-color, --primary-text-color);
+}
+
+#checkboxLabel[hidden] {
+  display: none;
+}
+
+/* disabled state */
+:host([disabled]) {
+  pointer-events: none;
+}
+
+:host([disabled]) #checkbox {
+  opacity: 0.5;
+  border-color: var(--paper-checkbox-unchecked-color, --primary-text-color);
+}
+
+:host([disabled][checked]) #checkbox {
+  background-color: var(--paper-checkbox-unchecked-color, --primary-text-color);
+  opacity: 0.5;
+}
+
+:host([disabled]) #checkboxLabel  {
+  opacity: 0.65;
+}
+
+</style>
+
+  <template>
+
+    <div id="checkboxContainer">
+      <paper-ripple id="ink" class="circle" center="" checked$="[[checked]]"></paper-ripple>
+      <div id="checkbox" class$="[[_computeCheckboxClass(checked)]]">
+        <div id="checkmark" class$="[[_computeCheckmarkClass(checked)]]"></div>
+      </div>
+    </div>
+
+    <div id="checkboxLabel" aria-hidden="true"><content></content></div>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'paper-checkbox',
+
+      behaviors: [
+        Polymer.PaperInkyFocusBehavior
+      ],
+
+      hostAttributes: {
+        role: 'checkbox',
+        'aria-checked': false,
+        tabindex: 0
+      },
+
+      properties: {
+        /**
+         * Fired when the checked state changes due to user interaction.
+         *
+         * @event change
+         */
+
+        /**
+         * Fired when the checked state changes.
+         *
+         * @event iron-change
+         */
+
+        /**
+         * Gets or sets the state, `true` is checked and `false` is unchecked.
+         */
+        checked: {
+          type: Boolean,
+          value: false,
+          reflectToAttribute: true,
+          notify: true,
+          observer: '_checkedChanged'
+        },
+
+        /**
+         * If true, the button toggles the active state with each tap or press
+         * of the spacebar.
+         */
+        toggles: {
+          type: Boolean,
+          value: true,
+          reflectToAttribute: true
+        }
+      },
+
+      ready: function() {
+        if (Polymer.dom(this).textContent == '') {
+          this.$.checkboxLabel.hidden = true;
+        } else {
+          this.setAttribute('aria-label', Polymer.dom(this).textContent);
+        }
+        this._isReady = true;
+      },
+
+      // button-behavior hook
+      _buttonStateChanged: function() {
+        if (this.disabled) {
+          return;
+        }
+        if (this._isReady) {
+          this.checked = this.active;
+        }
+      },
+
+      _checkedChanged: function(checked) {
+        this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
+        this.active = this.checked;
+        this.fire('iron-change');
+      },
+
+      _computeCheckboxClass: function(checked) {
+        if (checked) {
+          return 'checked';
+        }
+        return '';
+      },
+
+      _computeCheckmarkClass: function(checked) {
+        if (!checked) {
+          return 'hidden';
+        }
+        return '';
+      }
+    })
+  </script>
+
+</dom-module>
 <iron-iconset-svg name="icons" size="24">
     <svg>
         <defs>

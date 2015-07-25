@@ -29,7 +29,7 @@ Example:
 
     <paper-progress value="10" secondary-progress="30"></paper-progress>
 
-Styling progress bar:
+### Styling progress bar:
 
 To change the active progress bar color:
 
@@ -49,6 +49,26 @@ To change the progress bar background color:
       --paper-progress-container-color: #64ffda;
     }
 
+Add the class `transiting` to a paper-progress to animate the progress bar when
+the value changed. You can also customize the transition:
+
+    paper-progress {
+      --paper-progress-transition-duration: 0.08s;
+      --paper-progress-transition-timing-function: ease;
+      --paper-progress-transition-transition-delay: 0s;
+    }
+    
+The following mixins are available for styling:
+
+
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-progress-container` | Mixin applied to container | `{}`
+
+
+
+
 @group Paper Elements
 @element paper-progress
 @hero hero.svg
@@ -63,11 +83,33 @@ To change the progress bar background color:
       height: 4px;
     }
 
+    :host(.transiting) #activeProgress,
+    :host(.transiting) #secondaryProgress {
+      -webkit-transition-property: -webkit-transform;
+      transition-property: transform;
+
+      /* Duration */
+      -webkit-transition-duration: var(--paper-progress-transition-duration, 0.08s);
+      transition-duration: var(--paper-progress-transition-duration, 0.08s);
+
+      /* Timing function */
+      -webkit-transition-timing-function: var(--paper-progress-transition-timing-function, ease);
+      transition-timing-function: var(--paper-progress-transition-timing-function, ease);
+
+      /* Delay */
+      -webkit-transition-delay: var(--paper-progress-transition-delay, 0s);
+      transition-delay: var(--paper-progress-transition-delay, 0s);
+    }
+
     #progressContainer {
       position: relative;
       height: 100%;
-      background-color: var(--paper-progress-container-color, --google-grey-300);
       overflow: hidden;
+      @apply(--paper-progress-container);
+    }
+    
+    #progressContainer, #indeterminateSplitter {
+      background-color: var(--paper-progress-container-color, --google-grey-300);
     }
 
     #activeProgress,
@@ -85,35 +127,87 @@ To change the progress bar background color:
     #secondaryProgress {
       background-color: var(--paper-progress-secondary-color, --google-green-100);
     }
+    
+    #indeterminateSplitter {
+      display: none;
+    }
 
     #activeProgress.indeterminate {
+      -webkit-transform-origin: right center;
+      transform-origin: right center;
+      -webkit-animation: indeterminate-bar 2s linear infinite;
+      animation: indeterminate-bar 2s linear infinite;
+    }
+
+    #indeterminateSplitter.indeterminate {
+      display: block;
       -webkit-transform-origin: center center;
       transform-origin: center center;
-      -webkit-animation: indeterminate-bar 1s linear infinite;
-      animation: indeterminate-bar 1s linear infinite;
+      -webkit-animation: indeterminate-splitter 2s linear infinite;
+      animation: indeterminate-splitter 2s linear infinite;
     }
 
     @-webkit-keyframes indeterminate-bar {
       0% {
-        -webkit-transform: translate(-50%) scaleX(0);
+        -webkit-transform: scaleX(1) translateX(-100%);
       }
       50% {
-        -webkit-transform: translate(0%) scaleX(0.3);
+        -webkit-transform: scaleX(1) translateX(0%);
+      }
+      75% {
+        -webkit-transform: scaleX(1) translateX(0%);
+        -webkit-animation-timing-function: cubic-bezier(.28,.62,.37,.91);
       }
       100% {
-        -webkit-transform: translate(50%) scaleX(0);
+        -webkit-transform: scaleX(0) translateX(0%);
+      }
+    }
+
+    @-webkit-keyframes indeterminate-splitter {
+      0% {
+        -webkit-transform: scaleX(.75) translateX(-125%);
+      }
+      30% {
+        -webkit-transform: scaleX(.75) translateX(-125%);
+        -webkit-animation-timing-function: cubic-bezier(.42,0,.6,.8);
+      }
+      90% {
+        -webkit-transform: scaleX(.75) translateX(125%);
+      }
+      100% {
+        -webkit-transform: scaleX(.75) translateX(125%);
       }
     }
 
     @keyframes indeterminate-bar {
       0% {
-        transform: translate(-50%) scaleX(0);
+        transform: scaleX(1) translateX(-100%);
       }
       50% {
-        transform: translate(0%) scaleX(0.3);
+        transform: scaleX(1) translateX(0%);
+      }
+      75% {
+        transform: scaleX(1) translateX(0%);
+        animation-timing-function: cubic-bezier(.28,.62,.37,.91);
       }
       100% {
-        transform: translate(50%) scaleX(0);
+        transform: scaleX(0) translateX(0%);
+      }
+    }
+
+    @keyframes indeterminate-splitter {
+      0% {
+        transform: scaleX(.75) translateX(-125%);
+      }
+      30% {
+        transform: scaleX(.75) translateX(-125%);
+        animation-timing-function: cubic-bezier(.42,0,.6,.8);
+      }
+      90% {
+        transform: scaleX(.75) translateX(125%);
+      }
+      100% {
+        transform: scaleX(.75) translateX(125%);
       }
     }
   </style>
@@ -121,6 +215,7 @@ To change the progress bar background color:
     <div id="progressContainer" role="progressbar" aria-valuenow$="{{value}}" aria-valuemin$="{{min}}" aria-valuemax$="{{max}}">
       <div id="secondaryProgress" class="fit"></div>
       <div id="activeProgress" class="fit"></div>
+      <div id="indeterminateSplitter" class="fit"></div>
     </div>
   </template>
 </dom-module>
@@ -175,6 +270,7 @@ To change the progress bar background color:
       // If we use attribute/class binding, the animation sometimes doesn't translate properly
       // on Safari 7.1. So instead, we toggle the class here in the update method.
       this.toggleClass('indeterminate', this.indeterminate, this.$.activeProgress);
+      this.toggleClass('indeterminate', this.indeterminate, this.$.indeterminateSplitter);
     },
 
     _transformProgress: function(progress, ratio) {

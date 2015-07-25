@@ -1,6 +1,6 @@
 {
   "name": "iron-pages",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "Organizes a set of pages and shows one at a time",
   "main": "iron-pages.html",

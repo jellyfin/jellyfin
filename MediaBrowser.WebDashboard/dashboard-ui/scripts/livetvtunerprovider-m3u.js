@@ -2,7 +2,7 @@
 
     function reload(page, providerId) {
 
-        $('#txtDevicePath', page).val('');
+        page.querySelector('.txtDevicePath').value = '';
 
         if (providerId) {
             ApiClient.getNamedConfiguration("livetv").done(function (config) {
@@ -11,7 +11,7 @@
                     return i.Id == providerId;
                 })[0];
 
-                $('#txtDevicePath', page).val(info.Url || '');
+                page.querySelector('.txtDevicePath').value = info.Url || '';
             });
         }
     }
@@ -22,8 +22,7 @@
 
         var info = {
             Type: 'm3u',
-            Url: $('#txtDevicePath', page).val(),
-            ImportFavoritesOnly: $('#chkFavorite', page).checked()
+            Url: page.querySelector('.txtDevicePath').value
         };
 
         var id = getParameterByName('id');
