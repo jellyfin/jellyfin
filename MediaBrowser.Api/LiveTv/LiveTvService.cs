@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Common.Configuration;
+﻿using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -10,6 +9,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -350,6 +350,8 @@ namespace MediaBrowser.Api.LiveTv
     [Authenticated]
     public class AddListingProvider : ListingsProviderInfo, IReturn<ListingsProviderInfo>
     {
+        public bool ValidateLogin { get; set; }
+        public bool ValidateListings { get; set; }
     }
 
     [Route("/LiveTv/ListingProviders", "DELETE", Summary = "Deletes a listing provider")]
@@ -402,9 +404,9 @@ namespace MediaBrowser.Api.LiveTv
             }
         }
 
-        public object Post(AddListingProvider request)
+        public async Task<object> Post(AddListingProvider request)
         {
-            var result = _liveTvManager.SaveListingProvider(request).Result;
+            var result = await _liveTvManager.SaveListingProvider(request, request.ValidateLogin, request.ValidateListings).ConfigureAwait(false);
             return ToOptimizedResult(result);
         }
 

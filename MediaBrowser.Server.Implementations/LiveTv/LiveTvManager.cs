@@ -2204,7 +2204,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
         }
 
-        public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info)
+        public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
             info = (ListingsProviderInfo)_jsonSerializer.DeserializeFromString(_jsonSerializer.SerializeToString(info), typeof(ListingsProviderInfo));
 
@@ -2215,7 +2215,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 throw new ResourceNotFoundException();
             }
 
-            await provider.Validate(info).ConfigureAwait(false);
+            await provider.Validate(info, validateLogin, validateListings).ConfigureAwait(false);
 
             var config = GetConfiguration();
 

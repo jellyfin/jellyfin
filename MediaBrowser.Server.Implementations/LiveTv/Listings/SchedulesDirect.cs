@@ -400,13 +400,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             _logger.Info("Headends on account ");
 
-            var countryParam = string.Equals("ca", country, StringComparison.OrdinalIgnoreCase)
-                ? "can"
-                : "USA";
-
             var options = new HttpRequestOptions()
             {
-                Url = ApiUrl + "/headends?country=" + countryParam + "&postalcode=" + location,
+                Url = ApiUrl + "/headends?country=" + country + "&postalcode=" + location,
                 UserAgent = UserAgent,
                 CancellationToken = cancellationToken
             };
@@ -595,18 +591,32 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             }
         }
 
-        public async Task Validate(ListingsProviderInfo info)
+        public async Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
-            if (string.IsNullOrWhiteSpace(info.ListingsId))
+            if (validateLogin)
             {
-                throw new ArgumentException("Listings Id required");
+                if (string.IsNullOrWhiteSpace(info.Username))
+                {
+                    throw new ArgumentException("Username is required");
+                }
+                if (string.IsNullOrWhiteSpace(info.Password))
+                {
+                    throw new ArgumentException("Password is required");
+                }
             }
-
-            var hasLineup = await HasLineup(info, CancellationToken.None).ConfigureAwait(false);
-
-            if (!hasLineup)
+            if (validateListings)
             {
-                await AddLineupToAccount(info, CancellationToken.None).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(info.ListingsId))
+                {
+                    throw new ArgumentException("Listings Id required");
+                }
+
+                var hasLineup = await HasLineup(info, CancellationToken.None).ConfigureAwait(false);
+
+                if (!hasLineup)
+                {
+                    await AddLineupToAccount(info, CancellationToken.None).ConfigureAwait(false);
+                }
             }
         }
 

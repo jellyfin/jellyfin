@@ -349,8 +349,10 @@ namespace MediaBrowser.Controller.LiveTv
         /// Saves the listing provider.
         /// </summary>
         /// <param name="info">The information.</param>
+        /// <param name="validateLogin">if set to <c>true</c> [validate login].</param>
+        /// <param name="validateListings">if set to <c>true</c> [validate listings].</param>
         /// <returns>Task.</returns>
-        Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info);
+        Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings);
         /// <summary>
         /// Gets the lineups.
         /// </summary>

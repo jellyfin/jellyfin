@@ -30,7 +30,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             // Might not be needed
         }
 
-        public Task Validate(ListingsProviderInfo info)
+        public async Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
         {
             // Check that the path or url is valid. If not, throw a file not found exception
         }

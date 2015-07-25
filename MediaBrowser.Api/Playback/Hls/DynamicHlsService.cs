@@ -791,7 +791,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override string GetAudioArguments(StreamState state)
         {
-            var codec = GetAudioEncoder(state.Request);
+            var codec = GetAudioEncoder(state);
 
             if (!state.IsOutputVideo)
             {
@@ -856,7 +856,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 return string.Empty;
             }
 
-            var codec = GetVideoEncoder(state.VideoRequest);
+            var codec = GetVideoEncoder(state);
 
             var args = "-codec:v:0 " + codec;
 

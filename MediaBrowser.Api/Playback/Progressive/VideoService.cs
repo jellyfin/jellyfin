@@ -89,7 +89,7 @@ namespace MediaBrowser.Api.Playback.Progressive
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
         {
             // Get the output codec name
-            var videoCodec = GetVideoEncoder(state.VideoRequest);
+            var videoCodec = GetVideoEncoder(state);
 
             var format = string.Empty;
             var keyFrame = string.Empty;
@@ -183,7 +183,7 @@ namespace MediaBrowser.Api.Playback.Progressive
             }
 
             // Get the output codec name
-            var codec = GetAudioEncoder(state.Request);
+            var codec = GetAudioEncoder(state);
 
             var args = "-codec:a:0 " + codec;
 
