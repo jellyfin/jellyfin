@@ -344,7 +344,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <param name="info">The information.</param>
         /// <returns>Task.</returns>
-        Task SaveTunerHost(TunerHostInfo info);
+        Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info);
         /// <summary>
         /// Saves the listing provider.
         /// </summary>

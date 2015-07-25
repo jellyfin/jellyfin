@@ -143,11 +143,9 @@
         if (liveTvInfo.IsEnabled) {
 
             $('.liveTvStatusContent', page).show();
-            $('.noLiveTvServices', page).hide();
 
         } else {
             $('.liveTvStatusContent', page).hide();
-            $('.noLiveTvServices', page).show();
         }
 
         var servicesToDisplay = liveTvInfo.Services.filter(function (s) {
@@ -192,18 +190,14 @@
         for (var i = 0, length = devices.length; i < length; i++) {
 
             var device = devices[i];
+
+            var href = 'livetvtunerprovider-' + device.Type + '.html?id=' + device.Id;
+
             html += '<li>';
-            html += '<a href="#">';
+            html += '<a href="' + href + '">';
 
             html += '<h3>';
-            if (device.Type == 'm3u') {
-                html += "M3U";
-            }
-            else if (device.Type == 'hdhomerun') {
-                html += "HD Homerun";
-            } else {
-                html += device.Type;
-            }
+            html += device.Type;
             html += '</h3>';
 
             html += '<p>';
@@ -396,13 +390,40 @@
         });
     }
 
+    function addDevice(button) {
+
+        var menuItems = [];
+
+        menuItems.push({
+            name: 'HD Homerun',
+            id: 'hdhomerun'
+        });
+
+        menuItems.push({
+            name: 'M3U',
+            id: 'm3u'
+        });
+
+        require(['actionsheet'], function () {
+
+            ActionSheetElement.show({
+                items: menuItems,
+                positionTo: button,
+                callback: function (id) {
+
+                    Dashboard.navigate('livetvtunerprovider-' + id + '.html');
+                }
+            });
+
+        });
+    }
+
     $(document).on('pageinitdepends', "#liveTvStatusPage", function () {
 
         var page = this;
 
         $('.btnAddDevice', page).on('click', function () {
-            $('#txtDevicePath', page).val('');
-            page.querySelector('.dlgAddDevice').open();
+            addDevice(this);
         });
 
         $('.formAddDevice', page).on('submit', function () {

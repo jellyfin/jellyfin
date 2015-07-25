@@ -1480,7 +1480,7 @@
     "ButtonAddDevice": "Add Device",
     "HeaderAddDevice": "Add Device",
     "HeaderExternalServices": "External Services",
-    "LabelIpAddressPath": "IP Address / Path:",
+    "LabelTunerIpAddress": "Tuner IP Address:",
     "TabExternalServices": "External Services",
     "TabTuners": "Tuners",
     "HeaderGuideProviders": "Guide Providers",
@@ -1489,5 +1489,7 @@
     "GuideProviderListingsStep": "Step 2: Select Listings",
     "GuideProviderLoginStep": "Step 1: Login",
     "LabelLineup": "Lineup:",
-    "MessageTunerDeviceNotListed": "Is your tuner device not listed? Try installing an external service provider for more Live TV options."
+    "MessageTunerDeviceNotListed": "Is your tuner device not listed? Try installing an external service provider for more Live TV options.",
+    "LabelImportOnlyFavoriteChannels": "Restrict to channels marked as favorite",
+    "ImportFavoriteChannelsHelp": "If enabled, only channels that are marked as favorite on the tuner device will be imported."
 }

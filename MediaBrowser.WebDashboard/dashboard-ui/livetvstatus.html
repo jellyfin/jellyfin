@@ -58,40 +58,6 @@
                         <div class="servicesList">
                         </div>
                     </div>
-
-                    <div class="noLiveTvServices" style="display: none;">
-
-                        <p>${LiveTvPluginRequired}</p>
-
-                        <p><a href="plugincatalog.html">${LiveTvPluginRequiredHelp}</a></p>
-                    </div>
-
-                    <paper-dialog class="dlgAddDevice" entry-animation="fade-in-animation" exit-animation="fade-out-animation" style="height:500px;width:300px;" with-backdrop>
-                        <h2>${HeaderAddDevice}</h2>
-
-                        <form class="formAddDevice">
-                            <div>
-                                <div>
-                                    <label for="selectTunerDeviceType">${LabelType}</label>
-                                    <select id="selectTunerDeviceType" data-mini="true">
-                                        <option value="hdhomerun">HD Homerun</option>
-                                        <option value="m3u">M3U</option>
-                                    </select>
-                                    <div class="fieldDescription">${MessageTunerDeviceNotListed}</div>
-                                    <div class="fieldDescription"><a href="appservices.html?context=livetv">${TabExternalServices}</a></div>
-                                </div>
-                                <div>
-                                    <br />
-                                    <label for="txtDevicePath">${LabelIpAddressPath}</label>
-                                    <input type="text" id="txtDevicePath" required="required" />
-                                </div>
-                            </div>
-                            <div class="buttons">
-                                <paper-button dialog-dismiss>${ButtonCancel}</paper-button>
-                                <button data-role="none" type="submit" class="clearButton"><paper-button><span>${ButtonOk}</span></paper-button></button>
-                            </div>
-                        </form>
-                    </paper-dialog>
                 </div>
             </div>
         </div>
