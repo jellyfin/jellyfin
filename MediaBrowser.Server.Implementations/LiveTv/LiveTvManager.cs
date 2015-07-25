@@ -2172,7 +2172,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return await _libraryManager.GetNamedView(user, name, "livetv", "zz_" + name, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task SaveTunerHost(TunerHostInfo info)
+        public async Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info)
         {
             info = (TunerHostInfo)_jsonSerializer.DeserializeFromString(_jsonSerializer.SerializeToString(info), typeof(TunerHostInfo));
             
@@ -2202,6 +2202,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _config.SaveConfiguration("livetv", config);
 
             _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
+
+            return info;
         }
 
         public async Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings)

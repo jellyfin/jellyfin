@@ -334,7 +334,7 @@ namespace MediaBrowser.Api.LiveTv
 
     [Route("/LiveTv/TunerHosts", "POST", Summary = "Adds a tuner host")]
     [Authenticated]
-    public class AddTunerHost : TunerHostInfo, IReturnVoid
+    public class AddTunerHost : TunerHostInfo, IReturn<TunerHostInfo>
     {
     }
 
@@ -419,10 +419,10 @@ namespace MediaBrowser.Api.LiveTv
             _config.SaveConfiguration("livetv", config);
         }
 
-        public void Post(AddTunerHost request)
+        public async Task<object> Post(AddTunerHost request)
         {
-            var task = _liveTvManager.SaveTunerHost(request);
-            Task.WaitAll(task);
+            var result = await _liveTvManager.SaveTunerHost(request).ConfigureAwait(false);
+            return ToOptimizedResult(result);
         }
 
         public void Delete(DeleteTunerHost request)

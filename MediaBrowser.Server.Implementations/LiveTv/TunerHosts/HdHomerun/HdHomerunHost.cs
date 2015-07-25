@@ -60,7 +60,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
                 if (root != null)
                 {
-                    return root.Select(i => new ChannelInfo
+                    var result = root.Select(i => new ChannelInfo
                     {
                         Name = i.GuideName,
                         Number = i.GuideNumber.ToString(CultureInfo.InvariantCulture),
@@ -68,6 +68,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         IsFavorite = i.Favorite
 
                     });
+
+                    if (info.ImportFavoritesOnly)
+                    {
+                        result = result.Where(i => (i.IsFavorite ?? true)).ToList();
+                    }
+
+                    return result;
                 }
                 return new List<ChannelInfo>();
             }
