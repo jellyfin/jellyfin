@@ -1065,6 +1065,7 @@ var Dashboard = {
             case 'SetAudioStreamIndex':
             case 'SetSubtitleStreamIndex':
             case 'ToggleFullscreen':
+            case 'SetRepeatMode':
                 break;
             default:
                 Logger.log('Unrecognized command: ' + cmd.Name);
@@ -1430,7 +1431,8 @@ var Dashboard = {
             "SetSubtitleStreamIndex",
             "DisplayContent",
             "GoToSearch",
-            "DisplayMessage"
+            "DisplayMessage",
+            "SetRepeatMode"
         ];
 
     },

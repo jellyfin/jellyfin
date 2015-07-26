@@ -48,10 +48,6 @@
     font-weight: normal;
 }
 
-.volumeButton {
-    margin-right: .5em !important;
-}
-
 .mediaPlayerAudioContainer {
     position: fixed;
     top: 40%;

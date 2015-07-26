@@ -166,7 +166,8 @@
                     context: 'tv',
                     showDetailsMenu: true,
                     overlayPlayButton: true,
-                    preferThumb: true
+                    preferThumb: true,
+                    centerText: true
                 });
             }
 

@@ -16,7 +16,7 @@
 
         $('#chkEnableFullScreen', page).checked(AppSettings.enableFullScreen()).checkboxradio("refresh");
 
-        $('#txtSyncPath', page).val(AppSettings.syncPath());
+        $('#chkSyncToExternalCard', page).checked(AppSettings.enableSyncToExternalStorage()).checkboxradio("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -34,7 +34,7 @@
         appStorage.setItem('enableThemeSongs-' + user.Id, $('#selectThemeSong', page).val());
         appStorage.setItem('enableBackdrops-' + user.Id, $('#selectBackdrop', page).val());
 
-        AppSettings.syncPath($('#txtSyncPath', page).val());
+        AppSettings.enableSyncToExternalStorage($('#chkSyncToExternalCard', page).checked());
 
         ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
             Dashboard.alert(Globalize.translate('SettingsSaved'));

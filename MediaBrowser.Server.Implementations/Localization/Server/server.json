@@ -1459,7 +1459,7 @@
     "ButtonUnlockGuide": "Unlock Guide",
     "LabelEnableFullScreen": "Enable fullscreen mode",
     "LabelEnableChromecastAc3Passthrough": "Enable Chromecast AC3 Passthrough",
-    "LabelSyncPath": "Synced content path:",
+    "OptionSyncToSDCard": "Synced to external SD card",
     "LabelEmail": "Email:",
     "LabelUsername": "Username:",
     "HeaderSignUp": "Sign Up",
@@ -1491,5 +1491,6 @@
     "LabelLineup": "Lineup:",
     "MessageTunerDeviceNotListed": "Is your tuner device not listed? Try installing an external service provider for more Live TV options.",
     "LabelImportOnlyFavoriteChannels": "Restrict to channels marked as favorite",
-    "ImportFavoriteChannelsHelp": "If enabled, only channels that are marked as favorite on the tuner device will be imported."
+    "ImportFavoriteChannelsHelp": "If enabled, only channels that are marked as favorite on the tuner device will be imported.",
+    "ButtonRepeat": "Repeat"
 }

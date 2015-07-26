@@ -151,65 +151,72 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
         public async Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels,
             CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(info.ListingsId))
+            {
+                throw new Exception("ListingsId required");
+            }
+
             var token = await GetToken(info, cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new Exception("token required");
+            }
 
             _channelPair.Clear();
 
-            if (!String.IsNullOrWhiteSpace(token) && !String.IsNullOrWhiteSpace(info.ListingsId))
+            var httpOptions = new HttpRequestOptions()
             {
-                var httpOptions = new HttpRequestOptions()
-                {
-                    Url = ApiUrl + "/lineups/" + info.ListingsId,
-                    UserAgent = UserAgent,
-                    CancellationToken = cancellationToken
-                };
+                Url = ApiUrl + "/lineups/" + info.ListingsId,
+                UserAgent = UserAgent,
+                CancellationToken = cancellationToken
+            };
 
-                httpOptions.RequestHeaders["token"] = token;
-                
-                using (var response = await _httpClient.Get(httpOptions))
+            httpOptions.RequestHeaders["token"] = token;
+
+            using (var response = await _httpClient.Get(httpOptions))
+            {
+                var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Channel>(response);
+                _logger.Info("Found " + root.map.Count() + " channels on the lineup on ScheduleDirect");
+                _logger.Info("Mapping Stations to Channel");
+                foreach (ScheduleDirect.Map map in root.map)
                 {
-                    var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Channel>(response);
-                    _logger.Info("Found " + root.map.Count() + " channels on the lineup on ScheduleDirect");
-                    _logger.Info("Mapping Stations to Channel");
-                    foreach (ScheduleDirect.Map map in root.map)
+                    var channel = (map.channel ?? (map.atscMajor + "." + map.atscMinor)).TrimStart('0');
+                    _logger.Debug("Found channel: " + channel + " in Schedules Direct");
+                    var schChannel = root.stations.FirstOrDefault(item => item.stationID == map.stationID);
+
+                    if (!_channelPair.ContainsKey(channel) && channel != "0.0" && schChannel != null)
                     {
-                        var channel = (map.channel ?? (map.atscMajor + "." + map.atscMinor)).TrimStart('0');
-                        _logger.Debug("Found channel: " + channel + " in Schedules Direct");
-                        var schChannel = root.stations.FirstOrDefault(item => item.stationID == map.stationID);
-
-                        if (!_channelPair.ContainsKey(channel) && channel != "0.0" && schChannel != null)
-                        {
-                            _channelPair.TryAdd(channel, schChannel);
-                        }
+                        _channelPair.TryAdd(channel, schChannel);
                     }
-                    _logger.Info("Added " + _channelPair.Count() + " channels to the dictionary");
+                }
+                _logger.Info("Added " + _channelPair.Count() + " channels to the dictionary");
 
-                    foreach (ChannelInfo channel in channels)
+                foreach (ChannelInfo channel in channels)
+                {
+                    //  Helper.logger.Info("Modifyin channel " + channel.Number);
+                    if (_channelPair.ContainsKey(channel.Number))
                     {
-                        //  Helper.logger.Info("Modifyin channel " + channel.Number);
-                        if (_channelPair.ContainsKey(channel.Number))
+                        string channelName;
+                        if (_channelPair[channel.Number].logo != null)
                         {
-                            string channelName;
-                            if (_channelPair[channel.Number].logo != null)
-                            {
-                                channel.ImageUrl = _channelPair[channel.Number].logo.URL;
-                                channel.HasImage = true;
-                            }
-                            if (_channelPair[channel.Number].affiliate != null)
-                            {
-                                channelName = _channelPair[channel.Number].affiliate;
-                            }
-                            else
-                            {
-                                channelName = _channelPair[channel.Number].name;
-                            }
-                            channel.Name = channelName;
+                            channel.ImageUrl = _channelPair[channel.Number].logo.URL;
+                            channel.HasImage = true;
+                        }
+                        if (_channelPair[channel.Number].affiliate != null)
+                        {
+                            channelName = _channelPair[channel.Number].affiliate;
                         }
                         else
                         {
-                            _logger.Info("Schedules Direct doesnt have data for channel: " + channel.Number + " " +
-                                         channel.Name);
+                            channelName = _channelPair[channel.Number].name;
                         }
+                        channel.Name = channelName;
+                    }
+                    else
+                    {
+                        _logger.Info("Schedules Direct doesnt have data for channel: " + channel.Number + " " +
+                                     channel.Name);
                     }
                 }
             }
@@ -571,6 +578,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             }
 
             var token = await GetToken(info, cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new Exception("token required");
+            }
 
             _logger.Info("Headends on account ");
 

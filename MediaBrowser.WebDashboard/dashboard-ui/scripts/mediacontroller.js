@@ -573,6 +573,10 @@
             currentPlayer.volumeUp();
         };
 
+        self.setRepeatMode = function (mode) {
+            currentPlayer.setRepeatMode(mode);
+        };
+
         self.playlist = function () {
             return currentPlayer.playlist || [];
         };
@@ -586,6 +590,9 @@
             Logger.log('MediaController received command: ' + cmd.Name);
             switch (cmd.Name) {
 
+                case 'SetRepeatMode':
+                    player.setRepeatMode(cmd.Arguments.RepeatMode);
+                    break;
                 case 'VolumeUp':
                     player.volumeUp();
                     break;

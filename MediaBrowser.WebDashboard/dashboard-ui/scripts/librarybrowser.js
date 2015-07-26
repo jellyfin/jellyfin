@@ -156,7 +156,7 @@
                 return true;
             }
 
-            $(ownerpage).on('swipeleft', function (e) {
+            $(pages).on('swipeleft', function (e) {
 
                 if (allowSwipe(e)) {
                     var selected = parseInt(pages.selected || '0');
@@ -168,7 +168,7 @@
                 }
             });
 
-            $(ownerpage).on('swiperight', function (e) {
+            $(pages).on('swiperight', function (e) {
 
                 if (allowSwipe(e)) {
                     var selected = parseInt(pages.selected || '0');

@@ -265,7 +265,8 @@
                 "SetVolume",
                 "SetAudioStreamIndex",
                 "SetSubtitleStreamIndex",
-                "DisplayContent"
+                "DisplayContent",
+                "SetRepeatMode"
             ];
 
             return target;
@@ -369,6 +370,15 @@
             sendMessageToDevice({
                 options: {},
                 command: 'VolumeDown'
+            });
+        };
+
+        self.setRepeatMode = function (mode) {
+            sendMessageToDevice({
+                options: {
+                    RepeatMode: mode
+                },
+                command: 'SetRepeatMode'
             });
         };
 

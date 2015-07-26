@@ -1127,7 +1127,24 @@
 
         self.nextTrack = function () {
 
-            var newIndex = currentPlaylistIndex + 1;
+            var newIndex;
+
+            switch (self.getRepeatMode()) {
+
+                case 'RepeatOne':
+                    newIndex = currentPlaylistIndex;
+                    break;
+                case 'RepeatAll':
+                    newIndex = currentPlaylistIndex + 1;
+                    if (newIndex >= self.playlist.length) {
+                        newIndex = 0;
+                    }
+                    break;
+                default:
+                    newIndex = currentPlaylistIndex + 1;
+                    break;
+            }
+
             var newItem = self.playlist[newIndex];
 
             if (newItem) {
@@ -1498,6 +1515,7 @@
                 state.PlayState.IsMuted = mediaRenderer.volume() == 0;
                 state.PlayState.IsPaused = mediaRenderer.paused();
                 state.PlayState.PositionTicks = self.getCurrentTicks(mediaRenderer);
+                state.PlayState.RepeatMode = self.getRepeatMode();
 
                 var currentSrc = mediaRenderer.currentSrc();
 
@@ -1749,6 +1767,15 @@
             }
 
             return true;
+        };
+
+        var repeatMode = 'RepeatNone';
+        self.getRepeatMode = function () {
+            return repeatMode;
+        };
+
+        self.setRepeatMode = function (mode) {
+            repeatMode = mode;
         };
 
         function onTimeUpdate() {

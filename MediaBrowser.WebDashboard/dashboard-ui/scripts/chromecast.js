@@ -628,6 +628,15 @@
             self.setVolume(getCurrentVolume() + 2);
         };
 
+        self.setRepeatMode = function (mode) {
+            castPlayer.sendMessage({
+                options: {
+                    RepeatMode: mode
+                },
+                command: 'SetRepeatMode'
+            });
+        };
+
         self.toggleMute = function () {
 
             var state = self.lastPlayerData || {};
@@ -676,7 +685,8 @@
                                     "SetVolume",
                                     "SetAudioStreamIndex",
                                     "SetSubtitleStreamIndex",
-                                    "DisplayContent"]
+                                    "DisplayContent",
+                                    "SetRepeatMode"]
             };
         };
 

@@ -56,13 +56,13 @@
 
             return appStorage.getItem('enableFullScreen') == 'true';
         },
-        syncPath: function (val) {
+        enableSyncToExternalStorage: function (val) {
 
             if (val != null) {
-                update('syncPath', val.toString());
+                update('enableSyncToExternalStorage', val.toString());
             }
 
-            return appStorage.getItem('syncPath');
+            return appStorage.getItem('enableSyncToExternalStorage') == 'true';
         },
 
         displayPreferencesKey: function() {

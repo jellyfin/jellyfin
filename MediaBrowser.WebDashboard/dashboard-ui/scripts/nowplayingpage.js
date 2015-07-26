@@ -208,6 +208,24 @@
         });
     }
 
+    function toggleRepeat(player) {
+
+        if (player && lastPlayerState) {
+            var state = lastPlayerState;
+            switch ((state.PlayState || {}).RepeatMode) {
+                case 'RepeatNone':
+                    player.setRepeatMode('RepeatAll');
+                    break;
+                case 'RepeatAll':
+                    player.setRepeatMode('RepeatOne');
+                    break;
+                case 'RepeatOne':
+                    player.setRepeatMode('RepeatNone');
+                    break;
+            }
+        }
+    }
+
     function bindEvents(page) {
 
         $('.tabButton', page).on('click', function () {
@@ -240,10 +258,15 @@
         $('.btnCommand,.btnToggleFullscreen', page).on('click', function () {
 
             if (currentPlayer) {
-                MediaController.sendCommand({
-                    Name: this.getAttribute('data-command')
 
-                }, currentPlayer);
+                if (this.classList.contains('repeatToggleButton')) {
+                    toggleRepeat(currentPlayer);
+                } else {
+                    MediaController.sendCommand({
+                        Name: this.getAttribute('data-command')
+
+                    }, currentPlayer);
+                }
             }
         });
 
@@ -490,16 +513,32 @@
 
         if (playerInfo.isLocalPlayer && AppInfo.hasPhysicalVolumeButtons) {
             $('.volumeButton', page).css('visibility', 'hidden');
+            $('.nowPlayingPageVolumeControl', page).hide();
         } else {
             $('.volumeButton', page).css('visibility', 'visible');
+            $('.nowPlayingPageVolumeControl', page).show();
         }
 
-        if (playerInfo.isLocalPlayer && AppInfo.hasPhysicalVolumeButtons && item && item.MediaType == 'Audio') {
+        if (item && item.MediaType == 'Audio') {
             $('.buttonsRow2', page).hide();
             $('.buttonsRow3', page).hide();
         } else {
             $('.buttonsRow2', page).show();
             $('.buttonsRow3', page).show();
+        }
+
+        var toggleRepeatButton = page.querySelector('.repeatToggleButton');
+
+        if (playState.RepeatMode == 'RepeatAll') {
+            toggleRepeatButton.icon = "repeat";
+            toggleRepeatButton.classList.add('nowPlayingPageRepeatActive');
+        }
+        else if (playState.RepeatMode == 'RepeatOne') {
+            toggleRepeatButton.icon = "repeat-one";
+            toggleRepeatButton.classList.add('nowPlayingPageRepeatActive');
+        } else {
+            toggleRepeatButton.icon = "repeat";
+            toggleRepeatButton.classList.remove('nowPlayingPageRepeatActive');
         }
 
         updateNowPlayingInfo(page, state);
