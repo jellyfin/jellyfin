@@ -34,7 +34,6 @@
         DisplayContent = 26,
         GoToSearch = 27,
         DisplayMessage = 28,
-        SetRepeatAll = 29,
-        SetRepeatOne = 30
+        SetRepeatMode = 29
     }
 }
