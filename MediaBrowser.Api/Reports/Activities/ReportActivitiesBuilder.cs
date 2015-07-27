@@ -40,9 +40,10 @@ namespace MediaBrowser.Api.Reports
         /// <returns> The result. </returns>
         public ReportResult GetResult(QueryResult<ActivityLogEntry> queryResult, IReportsQuery request)
         {
+            ReportDisplayType displayType = ReportHelper.GetReportDisplayType(request.DisplayType);
             List<ReportOptions<ActivityLogEntry>> options = this.GetReportOptions<ActivityLogEntry>(request,
                 () => this.GetDefaultHeaderMetadata(),
-                (hm) => this.GetOption(hm)).Where(x => x.Header.Visible == true).ToList();
+                (hm) => this.GetOption(hm)).Where(x => this.DisplayTypeVisible(x.Header.DisplayType, displayType)).ToList();
 
             var headers = GetHeaders<ActivityLogEntry>(options);
             var rows = GetReportRows(queryResult.Items, options);
@@ -93,6 +94,7 @@ namespace MediaBrowser.Api.Reports
         {
             return new List<HeaderMetadata>
 					{
+                        HeaderMetadata.UserPrimaryImage,
                         HeaderMetadata.Date,
                         HeaderMetadata.User,
                         HeaderMetadata.Type,
@@ -100,7 +102,7 @@ namespace MediaBrowser.Api.Reports
 						HeaderMetadata.Name,
                         HeaderMetadata.ShortOverview,
 						HeaderMetadata.Overview,
-						//HeaderMetadata.UserPrimaryImageTag,
+                        //HeaderMetadata.UserId
                         //HeaderMetadata.Item,
 					};
         }
@@ -126,11 +128,6 @@ namespace MediaBrowser.Api.Reports
 
             switch (header)
             {
-                case HeaderMetadata.StatusImage:
-                    option.Header.ItemViewType = ItemViewType.StatusImage;
-                    internalHeader = HeaderMetadata.Status;
-                    option.Header.CanGroup = false;
-                    break;
                 case HeaderMetadata.Name:
                     option.Column = (i, r) => i.Name;
                     break;
@@ -158,15 +155,23 @@ namespace MediaBrowser.Api.Reports
                     option.Header.Type = "";
                     break;
 
-                case HeaderMetadata.UserPrimaryImageTag:
+                case HeaderMetadata.UserPrimaryImage:
                     //option.Column = (i, r) => i.UserPrimaryImageTag;
+                    option.Header.DisplayType = ReportDisplayType.Screen;
+                    option.Header.ItemViewType = ItemViewType.UserPrimaryImage;
+                    option.Header.ShowHeaderLabel = false;
+                    internalHeader = HeaderMetadata.User;
+                    option.Header.CanGroup = false;
                     option.Column = (i, r) =>
                     {
                         if (!string.IsNullOrEmpty(i.UserId))
                         {
                             MediaBrowser.Controller.Entities.User user = _userManager.GetUserById(i.UserId);
                             if (user != null)
-                                return user.PrimaryImagePath;
+                            {
+                                var dto = _userManager.GetUserDto(user);
+                                return dto.PrimaryImageTag;
+                            }
                         }
                         return string.Empty;
                     };
@@ -193,7 +198,10 @@ namespace MediaBrowser.Api.Reports
                     };
                     option.Header.SortField = "";
                     break;
-
+                case HeaderMetadata.UserId:
+                    option.Column = (i, r) => i.UserId;
+                    option.Header.SortField = "";
+                    break;
             }
 
             option.Header.Name = GetLocalizedHeader(internalHeader);
@@ -239,7 +247,7 @@ namespace MediaBrowser.Api.Reports
             ReportRow rRow = new ReportRow
             {
                 Id = item.Id,
-
+                UserId = item.UserId
             };
             return rRow;
         }
