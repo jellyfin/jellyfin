@@ -54,10 +54,10 @@ namespace MediaBrowser.Api.Reports
         /// <typeparam name="T"> Generic type parameter. </typeparam>
         /// <param name="options"> Options for controlling the operation. </param>
         /// <returns> The active headers. </returns>
-        protected List<ReportHeader> GetActiveHeaders<T>(List<ReportOptions<T>> options)
+        protected List<ReportHeader> GetActiveHeaders<T>(List<ReportOptions<T>> options, ReportDisplayType displayType)
         {
             List<ReportHeader> headers = new List<ReportHeader>();
-            foreach (ReportOptions<T> option in options.Where(x => x.Header.Visible == true))
+            foreach (ReportOptions<T> option in options.Where(x => this.DisplayTypeVisible(x.Header.DisplayType, displayType)))
             {
                 headers.Add(option.Header);
             }
@@ -221,9 +221,12 @@ namespace MediaBrowser.Api.Reports
         {
             List<HeaderMetadata> headersMetadata = getHeadersMetadata();
             List<ReportOptions<T>> options = new List<ReportOptions<T>>();
+            ReportDisplayType displayType = ReportHelper.GetReportDisplayType(request.DisplayType);
             foreach (HeaderMetadata header in headersMetadata)
             {
-                options.Add(getOptions(header));
+                ReportOptions<T> headerOptions = getOptions(header);
+                if (this.DisplayTypeVisible(headerOptions.Header.DisplayType, displayType))
+                    options.Add(headerOptions);
             }
 
             if (request != null && !string.IsNullOrEmpty(request.ReportColumns))
@@ -231,10 +234,17 @@ namespace MediaBrowser.Api.Reports
                 List<HeaderMetadata> headersMetadataFiltered = ReportHelper.GetFilteredReportHeaderMetadata(request.ReportColumns, () => headersMetadata);
                 foreach (ReportHeader header in options.Select(x => x.Header))
                 {
-                    if (!headersMetadataFiltered.Contains(header.FieldName))
+
+                    if (this.DisplayTypeVisible(header.DisplayType, displayType))
                     {
-                        header.Visible = false;
+                       
+                        if (!headersMetadataFiltered.Contains(header.FieldName) && displayType != ReportDisplayType.Export)
+                        {
+                            header.DisplayType = ReportDisplayType.None;
+                        }
                     }
+                    else
+                        header.DisplayType = ReportDisplayType.None;
                 }
             }
 
@@ -334,6 +344,19 @@ namespace MediaBrowser.Api.Reports
                 return stream.Codec.ToUpper();
 
             return string.Empty;
+        }
+
+        /// <summary> Displays a type visible. </summary>
+        /// <param name="headerDisplayType"> Type of the header display. </param>
+        /// <param name="displayType"> Type of the display. </param>
+        /// <returns> true if it succeeds, false if it fails. </returns>
+        protected bool DisplayTypeVisible(ReportDisplayType headerDisplayType, ReportDisplayType displayType)
+        {
+            if (headerDisplayType == ReportDisplayType.None)
+                return false;
+
+            bool rval = headerDisplayType == displayType || headerDisplayType == ReportDisplayType.ScreenExport && (displayType == ReportDisplayType.Screen || displayType == ReportDisplayType.Export);
+            return rval;
         }
 
         #endregion
