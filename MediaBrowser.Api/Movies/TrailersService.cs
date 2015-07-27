@@ -29,12 +29,6 @@ namespace MediaBrowser.Api.Movies
     [Route("/Trailers", "GET", Summary = "Finds movies and trailers similar to a given trailer.")]
     public class Getrailers : BaseItemsRequest, IReturn<ItemsResult>
     {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
     }
 
     /// <summary>

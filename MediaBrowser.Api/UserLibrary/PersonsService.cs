@@ -16,12 +16,6 @@ namespace MediaBrowser.Api.UserLibrary
     [Route("/Persons", "GET", Summary = "Gets all persons from a given item, folder, or the entire library")]
     public class GetPersons : GetItemsByName
     {
-        /// <summary>
-        /// Gets or sets the person types.
-        /// </summary>
-        /// <value>The person types.</value>
-        [ApiMember(Name = "PersonTypes", Description = "Optional filter by person type. Accepts multiple, comma-delimited.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
-        public string PersonTypes { get; set; }
     }
 
     /// <summary>

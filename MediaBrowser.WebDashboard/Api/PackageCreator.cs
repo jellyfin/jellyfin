@@ -314,7 +314,9 @@ namespace MediaBrowser.WebDashboard.Api
                 // In chrome it is causing the body to be hidden while loading, which leads to width-check methods to return 0 for everything
                 //imports = "";
 
-                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, appVersion) + GetInitialJavascript(mode, appVersion) + importsHtml + GetCommonJavascript(mode, appVersion));
+                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, appVersion));
+
+                html = html.Replace("</body>", GetInitialJavascript(mode, appVersion) + importsHtml + GetCommonJavascript(mode, appVersion)) + "</body>";
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
