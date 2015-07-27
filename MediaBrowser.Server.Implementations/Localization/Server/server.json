@@ -1494,5 +1494,11 @@
     "ImportFavoriteChannelsHelp": "If enabled, only channels that are marked as favorite on the tuner device will be imported.",
     "ButtonRepeat": "Repeat",
     "LabelEnableThisTuner": "Enable this tuner",
-    "LabelEnableThisTunerHelp": "Uncheck to prevent importing channels from this tuner."
+    "LabelEnableThisTunerHelp": "Uncheck to prevent importing channels from this tuner.",
+    "HeaderLocked": "Locked",
+    "HeaderUnidentified": "Unidentified",
+    "HeaderImagePrimary": "Primary",
+    "HeaderImageBackdrop": "Backdrop",
+    "HeaderImageLogo": "Logo",
+    "HeaderUserPrimaryImage": "User Image"
 }

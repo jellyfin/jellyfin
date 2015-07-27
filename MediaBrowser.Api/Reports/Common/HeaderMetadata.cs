@@ -35,22 +35,28 @@ namespace MediaBrowser.Api.Reports
 		Subtitles,
 		Genres,
 		Countries,
-		StatusImage,
+        Status,
 		Tracks,
 		EpisodeSeries,
 		EpisodeSeason,
 		AudioAlbumArtist,
 		MusicArtist,
 		AudioAlbum,
-		Status,
+        Locked,
+        Unidentified,
+        ImagePrimary,
+        ImageBackdrop,
+        ImageLogo,
+
         //Activity logs
         Overview,
         ShortOverview,
         Type,
         Date,
-        UserPrimaryImageTag,
+        UserPrimaryImage,
         Severity,
         Item,
-        User
+        User,
+        UserId
 	}
 }
