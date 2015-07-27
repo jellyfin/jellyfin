@@ -120,5 +120,10 @@
     "UserStartedPlayingItemWithValues": "{0} has started playing {1}",
     "UserStoppedPlayingItemWithValues": "{0} has stopped playing {1}",
     "SubtitlesDownloadedForItem": "Subtitles downloaded for {0}",
-    "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}"
+    "SubtitleDownloadFailureForItem": "Subtitles failed to download for {0}",
+    "HeaderUnidentified": "Unidentified",
+    "HeaderImagePrimary": "Primary",
+    "HeaderImageBackdrop": "Backdrop",
+    "HeaderImageLogo": "Logo",
+    "HeaderUserPrimaryImage": "User Image"
 }
