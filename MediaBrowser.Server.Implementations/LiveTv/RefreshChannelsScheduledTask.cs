@@ -5,6 +5,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv
@@ -61,7 +62,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         
         public bool IsHidden
         {
-            get { return _liveTvManager.Services.Count == 1 && GetConfiguration().TunerHosts.Count == 0; }
+            get { return _liveTvManager.Services.Count == 1 && GetConfiguration().TunerHosts.Count(i => i.IsEnabled) == 0; }
         }
 
         public bool IsEnabled

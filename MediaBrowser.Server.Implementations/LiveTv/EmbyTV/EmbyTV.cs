@@ -134,6 +134,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private List<Tuple<ITunerHost, TunerHostInfo>> GetTunerHosts()
         {
             return GetConfiguration().TunerHosts
+                .Where(i => i.IsEnabled)
                 .Select(i =>
                 {
                     var provider = _liveTvManager.TunerHosts.FirstOrDefault(l => string.Equals(l.Type, i.Type, StringComparison.OrdinalIgnoreCase));

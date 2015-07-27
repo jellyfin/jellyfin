@@ -107,7 +107,8 @@
                 preferThumb: true,
                 lazy: true,
                 showDetailsMenu: true,
-                centerText: true
+                centerText: true,
+                context: 'home-upcoming'
 
             });
             html += '</div>';

@@ -167,7 +167,8 @@
                     cardLayout: cardLayout,
                     showTitle: cardLayout,
                     showYear: cardLayout,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    context: 'home'
                 });
                 html += '</div>';
             }
@@ -310,7 +311,8 @@
                     lazy: true,
                     cardLayout: cardLayout,
                     showDetailsMenu: true,
-                    overlayPlayButton: true
+                    overlayPlayButton: true,
+                    context: 'home'
                 });
                 html += '</div>';
             }

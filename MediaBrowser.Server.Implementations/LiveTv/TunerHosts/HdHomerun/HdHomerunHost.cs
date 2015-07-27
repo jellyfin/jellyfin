@@ -207,11 +207,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             return _config.GetConfiguration<LiveTvOptions>("livetv");
         }
 
-        public List<TunerHostInfo> GetTunerHosts()
-        {
-            return GetConfiguration().TunerHosts.Where(i => string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase)).ToList();
-        }
-
         private MediaSourceInfo GetMediaSource(TunerHostInfo info, string channelId, string profile)
         {
             int? width = null;

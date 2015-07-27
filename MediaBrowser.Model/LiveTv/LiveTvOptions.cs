@@ -25,6 +25,12 @@ namespace MediaBrowser.Model.LiveTv
         public string Url { get; set; }
         public string Type { get; set; }
         public bool ImportFavoritesOnly { get; set; }
+        public bool IsEnabled { get; set; }
+
+        public TunerHostInfo()
+        {
+            IsEnabled = true;
+        }
     }
 
     public class ListingsProviderInfo

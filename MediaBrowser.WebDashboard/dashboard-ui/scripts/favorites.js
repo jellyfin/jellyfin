@@ -81,7 +81,8 @@
                     lazy: true,
                     showDetailsMenu: true,
                     centerText: section.centerText,
-                    overlayPlayButton: section.overlayPlayButton
+                    overlayPlayButton: section.overlayPlayButton,
+                    context: 'home-favorites'
                 });
 
                 html += '</div>';

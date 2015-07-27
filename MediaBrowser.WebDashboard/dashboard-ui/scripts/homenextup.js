@@ -48,7 +48,8 @@
                     showParentTitle: true,
                     lazy: true,
                     cardLayout: true,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    context: 'home-nextup'
                 });
 
             } else if (view == 'Thumb') {
@@ -63,7 +64,8 @@
                     preferThumb: true,
                     showDetailsMenu: true,
                     centerText: true,
-                    overlayPlayButton: AppInfo.enableAppLayouts
+                    overlayPlayButton: AppInfo.enableAppLayouts,
+                    context: 'home-nextup'
                 });
             }
 

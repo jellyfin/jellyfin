@@ -197,7 +197,31 @@
             LibraryMenu.setBackButtonVisible(true);
             LibraryMenu.setMenuButtonVisible(false);
         }
-        if (context == 'photos' || context == 'photos-photos') {
+        else if (context == 'home') {
+            elem = $('.homeTabs', page).show();
+            $('a', elem).removeClass('ui-btn-active');
+            $('.lnkHomeHome', page).addClass('ui-btn-active');
+        }
+        else if (context == 'home-nextup') {
+            elem = $('.homeTabs', page).show();
+            $('a', elem).removeClass('ui-btn-active');
+            $('.lnkHomeNextUp', page).addClass('ui-btn-active');
+        }
+        else if (context == 'home-favorites') {
+            elem = $('.homeTabs', page).show();
+            $('a', elem).removeClass('ui-btn-active');
+            $('.lnkHomeFavorites', page).addClass('ui-btn-active');
+        }
+        else if (context == 'home-upcoming') {
+            elem = $('.homeTabs', page).show();
+            $('a', elem).removeClass('ui-btn-active');
+            $('.lnkHomeUpcoming', page).addClass('ui-btn-active');
+        }
+        else if (context == 'home-latest') {
+            elem = $('.homeTabs', page).show();
+            $('a', elem).removeClass('ui-btn-active');
+        }
+        else if (context == 'photos' || context == 'photos-photos') {
             elem = $('.photoTabs', page).show();
             $('a', elem).removeClass('ui-btn-active');
 
