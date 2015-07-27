@@ -288,6 +288,7 @@
     "HeaderSelectPath": "Select Path",
     "ButtonNetwork": "Network",
     "MessageDirectoryPickerInstruction": "Network paths can be entered manually in the event the Network button fails to locate your devices. For example, {0} or {1}.",
+    "MessageDirectoryPickerBSDInstruction": "For BSD, you may need to configure storage within your FreeNAS Jail in order to allow Emby to access it.",
     "HeaderMenu": "Menu",
     "ButtonOpen": "Open",
     "ButtonOpenInNewTab": "Open in new tab",
@@ -828,7 +829,7 @@
     "ErrorPleaseSelectLineup": "Please select a lineup and try again. If no lineups are available, then please check that your username, password, and postal code is correct.",
     "HeaderTryCinemaMode": "Try Cinema Mode",
     "ButtonBecomeSupporter": "Become an Emby Supporter",
-    "ButtonClosePlayVideo": "Close and play my video",
-    "MessageDidYouKnowCinemaMode":  "Did you know that by becoming an Emby Supporter, you can enhance your experience with features like Cinema Mode?",
-    "MessageDidYouKnowCinemaMode2":  "Cinema Mode gives you the true cinema experience with trailers and custom intros before the main feature."
+    "ButtonClosePlayVideo": "Close and play my media",
+    "MessageDidYouKnowCinemaMode": "Did you know that by becoming an Emby Supporter, you can enhance your experience with features like Cinema Mode?",
+    "MessageDidYouKnowCinemaMode2": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the main feature."
 }

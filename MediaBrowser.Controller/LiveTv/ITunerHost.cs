@@ -19,11 +19,6 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The type.</value>
         string Type { get; }
         /// <summary>
-        /// Gets the tuner hosts.
-        /// </summary>
-        /// <returns>List&lt;TunerHostInfo&gt;.</returns>
-        List<TunerHostInfo> GetTunerHosts();
-        /// <summary>
         /// Gets the channels.
         /// </summary>
         /// <param name="info">The information.</param>

@@ -13,6 +13,11 @@ namespace MediaBrowser.Model.System
         /// </summary>
         /// <value>The operating sytem.</value>
         public string OperatingSystem { get; set; }
+        /// <summary>
+        /// Gets or sets the display name of the operating system.
+        /// </summary>
+        /// <value>The display name of the operating system.</value>
+        public string OperatingSystemDisplayName { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is running as service.

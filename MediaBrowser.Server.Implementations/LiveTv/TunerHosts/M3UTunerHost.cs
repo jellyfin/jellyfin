@@ -124,11 +124,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             return _config.GetConfiguration<LiveTvOptions>("livetv");
         }
 
-        public List<TunerHostInfo> GetTunerHosts()
-        {
-            return GetConfiguration().TunerHosts.Where(i => string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase)).ToList();
-        }
-
         public async Task<MediaSourceInfo> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
         {
             var channels = await GetChannels(info, cancellationToken).ConfigureAwait(false);

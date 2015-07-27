@@ -2127,7 +2127,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private bool IsLiveTvEnabled(User user)
         {
-            return user.Policy.EnableLiveTvAccess && Services.Count > 0;
+            return user.Policy.EnableLiveTvAccess && (Services.Count > 1 || GetConfiguration().TunerHosts.Count(i => i.IsEnabled) > 0);
         }
 
         public IEnumerable<User> GetEnabledUsers()
@@ -2175,7 +2175,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public async Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info)
         {
             info = (TunerHostInfo)_jsonSerializer.DeserializeFromString(_jsonSerializer.SerializeToString(info), typeof(TunerHostInfo));
-            
+
             var provider = _tunerHosts.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
 
             if (provider == null)
@@ -2236,7 +2236,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _config.SaveConfiguration("livetv", config);
 
             _taskManager.CancelIfRunningAndQueue<RefreshChannelsScheduledTask>();
-            
+
             return info;
         }
 
