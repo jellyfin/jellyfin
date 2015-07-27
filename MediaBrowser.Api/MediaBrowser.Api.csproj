@@ -89,6 +89,7 @@
     <Compile Include="Reports\Common\HeaderMetadata.cs" />
     <Compile Include="Reports\Common\ItemViewType.cs" />
     <Compile Include="Reports\Common\ReportBuilderBase.cs" />
+    <Compile Include="Reports\Common\ReportDisplayType.cs" />
     <Compile Include="Reports\Common\ReportExportType.cs" />
     <Compile Include="Reports\Common\ReportFieldType.cs" />
     <Compile Include="Reports\Common\ReportHeaderIdType.cs" />
