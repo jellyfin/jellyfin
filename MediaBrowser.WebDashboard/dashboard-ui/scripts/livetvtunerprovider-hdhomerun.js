@@ -14,6 +14,7 @@
 
                 page.querySelector('.txtDevicePath').value = info.Url || '';
                 page.querySelector('.chkFavorite').checked = info.ImportFavoritesOnly;
+                page.querySelector('.chkEnabled').checked = info.IsEnabled;
 
             });
         }
@@ -26,7 +27,8 @@
         var info = {
             Type: 'hdhomerun',
             Url: page.querySelector('.txtDevicePath').value,
-            ImportFavoritesOnly: page.querySelector('.chkFavorite').checked
+            ImportFavoritesOnly: page.querySelector('.chkFavorite').checked,
+            IsEnabled: page.querySelector('.chkEnabled').checked
         };
 
         var id = getParameterByName('id');
