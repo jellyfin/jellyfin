@@ -78,9 +78,8 @@
         var playerInfo = MediaController.getPlayerInfo();
 
         var html = '';
-        html += '<form>';
 
-        html += '<h3>' + Globalize.translate('HeaderSelectPlayer') + '</h3>';
+        html += '<form>';
         html += '<fieldset data-role="controlgroup" data-mini="true">';
 
         var checkedHtml;
@@ -112,7 +111,9 @@
 
         checkedHtml = isMirrorModeEnabled() ? ' checked="checked"' : '';
 
-        html += '<div style="margin-top:1.5em;" class="fldMirrorMode"><label for="chkEnableMirrorMode">Enable display mirroring</label><input type="checkbox" class="chkEnableMirrorMode" id="chkEnableMirrorMode" data-mini="true"' + checkedHtml + ' /></div>';
+        html += '<div style="margin:1em 0;" class="fldMirrorMode">';
+        html += '<paper-checkbox class="chkEnableMirrorMode"' + checkedHtml + '>' + Globalize.translate('OptionEnableDisplayMirroring') + '</paper-checkbox>';
+        html += '</div>';
 
         html += '</form>';
 
@@ -123,78 +124,84 @@
 
         var promise = MediaController.getTargets();
 
-        var html = '<div data-role="panel" data-position="right" data-display="overlay" data-position-fixed="true" id="playerSelectionPanel" data-theme="a">';
+        var html = '<paper-dialog id="playerSelectionPanel" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop>';
 
-        html += '<div class="players"></div>';
+        html += '<h2>' + Globalize.translate('HeaderSelectPlayer') + '</h2>';
 
-        html += '<br/>';
+        html += '<paper-dialog-scrollable>';
+        html += '<div class="players">';
+        html += '</div>';
+
         html += '<p><a href="nowplaying.html" class="clearLink"><paper-button raised class="block"><iron-icon icon="tablet-android"></iron-icon><span>' + Globalize.translate('ButtonRemoteControl') + '</span></paper-button></a></p>';
 
+        html += '</paper-dialog-scrollable>';
         html += '</div>';
 
         $(document.body).append(html);
 
         require(['jqmicons']);
 
-        var elem = $('#playerSelectionPanel').panel({}).trigger('create').panel("open").on("panelclose", function () {
+        setTimeout(function () {
 
-            $(this).off("panelclose").remove();
-        });
+            var elem = document.getElementById('playerSelectionPanel');
+            elem.open();
 
-        promise.done(function (targets) {
+            promise.done(function (targets) {
 
-            $('.players', elem).html(getTargetsHtml(targets)).trigger('create');
+                $('.players', elem).html(getTargetsHtml(targets)).trigger('create');
 
-            $('.chkEnableMirrorMode', elem).on('change', function () {
-                setMirrorModeEnabled(this.checked);
+                $('.chkEnableMirrorMode', elem).on('change', function () {
+                    setMirrorModeEnabled(this.checked);
 
-                if (this.checked && currentDisplayInfo) {
+                    if (this.checked && currentDisplayInfo) {
 
-                    mirrorItem(currentDisplayInfo);
+                        mirrorItem(currentDisplayInfo);
 
-                }
+                    }
 
-            });
+                });
 
-            $('.radioSelectPlayerTarget', elem).off('change').on('change', function () {
+                $('.radioSelectPlayerTarget', elem).off('change').on('change', function () {
 
-                var supportsMirror = this.getAttribute('data-mirror') == 'true';
+                    var supportsMirror = this.getAttribute('data-mirror') == 'true';
 
-                if (supportsMirror) {
+                    if (supportsMirror) {
+                        $('.fldMirrorMode', elem).show();
+                    } else {
+                        $('.fldMirrorMode', elem).hide();
+                    }
+
+                    var playerName = this.getAttribute('data-playername');
+                    var targetId = this.getAttribute('data-targetid');
+                    var targetName = this.getAttribute('data-targetname');
+                    var deviceName = this.getAttribute('data-deviceName');
+                    var playableMediaTypes = this.getAttribute('data-mediatypes').split(',');
+                    var supportedCommands = this.getAttribute('data-commands').split(',');
+
+                    MediaController.trySetActivePlayer(playerName, {
+                        id: targetId,
+                        name: targetName,
+                        playableMediaTypes: playableMediaTypes,
+                        supportedCommands: supportedCommands,
+                        deviceName: deviceName
+
+                    });
+
+                    if (currentDisplayInfo) {
+
+                        mirrorIfEnabled(currentDisplayInfo);
+                    }
+
+                });
+
+                if ($('.radioSelectPlayerTarget:checked', elem)[0].getAttribute('data-mirror') == 'true') {
                     $('.fldMirrorMode', elem).show();
                 } else {
                     $('.fldMirrorMode', elem).hide();
                 }
-
-                var playerName = this.getAttribute('data-playername');
-                var targetId = this.getAttribute('data-targetid');
-                var targetName = this.getAttribute('data-targetname');
-                var deviceName = this.getAttribute('data-deviceName');
-                var playableMediaTypes = this.getAttribute('data-mediatypes').split(',');
-                var supportedCommands = this.getAttribute('data-commands').split(',');
-
-                MediaController.trySetActivePlayer(playerName, {
-                    id: targetId,
-                    name: targetName,
-                    playableMediaTypes: playableMediaTypes,
-                    supportedCommands: supportedCommands,
-                    deviceName: deviceName
-
-                });
-
-                if (currentDisplayInfo) {
-
-                    mirrorIfEnabled(currentDisplayInfo);
-                }
-
             });
+        }, 350);
 
-            if ($('.radioSelectPlayerTarget:checked', elem)[0].getAttribute('data-mirror') == 'true') {
-                $('.fldMirrorMode', elem).show();
-            } else {
-                $('.fldMirrorMode', elem).hide();
-            }
-        });
     }
 
     function bindKeys(controller) {

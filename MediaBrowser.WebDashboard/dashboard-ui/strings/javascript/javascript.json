@@ -831,5 +831,6 @@
     "ButtonBecomeSupporter": "Become an Emby Supporter",
     "ButtonClosePlayVideo": "Close and play my media",
     "MessageDidYouKnowCinemaMode": "Did you know that by becoming an Emby Supporter, you can enhance your experience with features like Cinema Mode?",
-    "MessageDidYouKnowCinemaMode2": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the main feature."
+    "MessageDidYouKnowCinemaMode2": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the main feature.",
+    "OptionEnableDisplayMirroring": "Enable display mirroring"
 }
