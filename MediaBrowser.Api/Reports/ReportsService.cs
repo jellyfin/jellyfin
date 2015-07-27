@@ -71,6 +71,7 @@ namespace MediaBrowser.Api.Reports
         /// <returns> A Task&lt;object&gt; </returns>
         public async Task<object> Get(GetActivityLogs request)
         {
+            request.DisplayType = "Screen";
             ReportResult result = await GetReportActivities(request).ConfigureAwait(false);
             return ToOptimizedResult(result);
         }
@@ -83,8 +84,8 @@ namespace MediaBrowser.Api.Reports
             if (string.IsNullOrEmpty(request.IncludeItemTypes))
                 return null;
 
+            request.DisplayType = "Screen";
             ReportViewType reportViewType = ReportHelper.GetReportViewType(request.ReportView);
-            ReportIncludeItemTypes reportRowType = ReportHelper.GetRowType(request.IncludeItemTypes);
 
             List<ReportHeader> result = new List<ReportHeader>();
             switch (reportViewType)
@@ -113,6 +114,7 @@ namespace MediaBrowser.Api.Reports
             if (string.IsNullOrEmpty(request.IncludeItemTypes))
                 return null;
 
+            request.DisplayType = "Screen";
             var reportResult = await GetReportResult(request);
 
             return ToOptimizedResult(reportResult);
@@ -125,6 +127,7 @@ namespace MediaBrowser.Api.Reports
         {
             if (string.IsNullOrEmpty(request.IncludeItemTypes))
                 return null;
+            request.DisplayType = "Screen";
             var reportResult = await GetReportStatistic(request);
 
             return ToOptimizedResult(reportResult);
@@ -138,6 +141,7 @@ namespace MediaBrowser.Api.Reports
             if (string.IsNullOrEmpty(request.IncludeItemTypes))
                 return null;
 
+            request.DisplayType = "Export";
             ReportViewType reportViewType = ReportHelper.GetReportViewType(request.ReportView);
             var headers = new Dictionary<string, string>();
             string fileExtension = "csv";
@@ -190,538 +194,126 @@ namespace MediaBrowser.Api.Reports
 
         #endregion
 
-        #region [Internal Methods]
-
-        /// <summary> Applies filtering. </summary>
-        /// <param name="items"> The items. </param>
-        /// <param name="filter"> The filter. </param>
-        /// <param name="user"> The user. </param>
-        /// <param name="repository"> The repository. </param>
-        /// <returns> IEnumerable{BaseItem}. </returns>
-        internal static IEnumerable<BaseItem> ApplyFilter(IEnumerable<BaseItem> items, ItemFilter filter, User user, IUserDataManager repository)
-        {
-            // Avoid implicitly captured closure
-            var currentUser = user;
-
-            switch (filter)
-            {
-                case ItemFilter.IsFavoriteOrLikes:
-                    return items.Where(item =>
-                    {
-                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey());
-
-                        if (userdata == null)
-                        {
-                            return false;
-                        }
-
-                        var likes = userdata.Likes ?? false;
-                        var favorite = userdata.IsFavorite;
-
-                        return likes || favorite;
-                    });
-
-                case ItemFilter.Likes:
-                    return items.Where(item =>
-                    {
-                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey());
-
-                        return userdata != null && userdata.Likes.HasValue && userdata.Likes.Value;
-                    });
-
-                case ItemFilter.Dislikes:
-                    return items.Where(item =>
-                    {
-                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey());
-
-                        return userdata != null && userdata.Likes.HasValue && !userdata.Likes.Value;
-                    });
-
-                case ItemFilter.IsFavorite:
-                    return items.Where(item =>
-                    {
-                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey());
-
-                        return userdata != null && userdata.IsFavorite;
-                    });
-
-                case ItemFilter.IsResumable:
-                    return items.Where(item =>
-                    {
-                        var userdata = repository.GetUserData(user.Id, item.GetUserDataKey());
-
-                        return userdata != null && userdata.PlaybackPositionTicks > 0;
-                    });
-
-                case ItemFilter.IsPlayed:
-                    return items.Where(item => item.IsPlayed(currentUser));
-
-                case ItemFilter.IsUnplayed:
-                    return items.Where(item => item.IsUnplayed(currentUser));
-
-                case ItemFilter.IsFolder:
-                    return items.Where(item => item.IsFolder);
-
-                case ItemFilter.IsNotFolder:
-                    return items.Where(item => !item.IsFolder);
-
-                case ItemFilter.IsRecentlyAdded:
-                    return items.Where(item => (DateTime.UtcNow - item.DateCreated).TotalDays <= 10);
-            }
-
-            return items;
-        }
-
-        #endregion
-
         #region [Private Methods]
 
-        /// <summary> Applies the additional filters. </summary>
+        /// <summary> Gets items query. </summary>
         /// <param name="request"> The request. </param>
-        /// <param name="i"> Zero-based index of the. </param>
         /// <param name="user"> The user. </param>
-        /// <param name="isPreFiltered"> true if this object is pre filtered. </param>
-        /// <param name="libraryManager"> Manager for library. </param>
-        /// <returns> true if it succeeds, false if it fails. </returns>
-        private bool ApplyAdditionalFilters(BaseReportRequest request, BaseItem i, User user, bool isPreFiltered, ILibraryManager libraryManager)
+        /// <returns> The items query. </returns>
+        private InternalItemsQuery GetItemsQuery(BaseReportRequest request, User user)
         {
-            var video = i as Video;
-
-            if (!isPreFiltered)
+            var query = new InternalItemsQuery
             {
-                var mediaTypes = request.GetMediaTypes();
-                if (mediaTypes.Length > 0)
+                User = user,
+                IsPlayed = request.IsPlayed,
+                MediaTypes = request.GetMediaTypes(),
+                IncludeItemTypes = request.GetIncludeItemTypes(),
+                ExcludeItemTypes = request.GetExcludeItemTypes(),
+                Recursive = request.Recursive,
+                SortBy = request.GetOrderBy(),
+                SortOrder = request.SortOrder ?? SortOrder.Ascending,
+
+                Filter = i => ApplyAdditionalFilters(request, i, user, _libraryManager),
+
+                Limit = request.Limit,
+                StartIndex = request.StartIndex,
+                IsMissing = request.IsMissing,
+                IsVirtualUnaired = request.IsVirtualUnaired,
+                IsUnaired = request.IsUnaired,
+                CollapseBoxSetItems = request.CollapseBoxSetItems,
+                NameLessThan = request.NameLessThan,
+                NameStartsWith = request.NameStartsWith,
+                NameStartsWithOrGreater = request.NameStartsWithOrGreater,
+                HasImdbId = request.HasImdbId,
+                IsYearMismatched = request.IsYearMismatched,
+                IsUnidentified = request.IsUnidentified,
+                IsPlaceHolder = request.IsPlaceHolder,
+                IsLocked = request.IsLocked,
+                IsInBoxSet = request.IsInBoxSet,
+                IsHD = request.IsHD,
+                Is3D = request.Is3D,
+                HasTvdbId = request.HasTvdbId,
+                HasTmdbId = request.HasTmdbId,
+                HasOverview = request.HasOverview,
+                HasOfficialRating = request.HasOfficialRating,
+                HasParentalRating = request.HasParentalRating,
+                HasSpecialFeature = request.HasSpecialFeature,
+                HasSubtitles = request.HasSubtitles,
+                HasThemeSong = request.HasThemeSong,
+                HasThemeVideo = request.HasThemeVideo,
+                HasTrailer = request.HasTrailer,
+                Tags = request.GetTags(),
+                OfficialRatings = request.GetOfficialRatings(),
+                Genres = request.GetGenres(),
+                Studios = request.GetStudios(),
+                StudioIds = request.GetStudioIds(),
+                Person = request.Person,
+                PersonIds = request.GetPersonIds(),
+                PersonTypes = request.GetPersonTypes(),
+                Years = request.GetYears(),
+                ImageTypes = request.GetImageTypes().ToArray(),
+                VideoTypes = request.GetVideoTypes().ToArray(),
+                AdjacentTo = request.AdjacentTo,
+                ItemIds = request.GetItemIds(),
+                MinPlayers = request.MinPlayers,
+                MaxPlayers = request.MaxPlayers,
+                MinCommunityRating = request.MinCommunityRating,
+                MinCriticRating = request.MinCriticRating
+            };
+
+            if (!string.IsNullOrWhiteSpace(request.Ids))
+            {
+                query.CollapseBoxSetItems = false;
+            }
+
+            foreach (var filter in request.GetFilters())
+            {
+                switch (filter)
                 {
-                    if (!(!string.IsNullOrEmpty(i.MediaType) && mediaTypes.Contains(i.MediaType, StringComparer.OrdinalIgnoreCase)))
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.IsPlayed.HasValue)
-                {
-                    var val = request.IsPlayed.Value;
-                    if (i.IsPlayed(user) != val)
-                    {
-                        return false;
-                    }
-                }
-
-                // Exclude item types
-                var excluteItemTypes = request.GetExcludeItemTypes();
-                if (excluteItemTypes.Length > 0 && excluteItemTypes.Contains(i.GetType().Name, StringComparer.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // Include item types
-                var includeItemTypes = request.GetIncludeItemTypes();
-                if (includeItemTypes.Length > 0 && !includeItemTypes.Contains(i.GetType().Name, StringComparer.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                if (request.IsInBoxSet.HasValue)
-                {
-                    var val = request.IsInBoxSet.Value;
-                    if (i.Parents.OfType<BoxSet>().Any() != val)
-                    {
-                        return false;
-                    }
-                }
-
-                // Filter by Video3DFormat
-                if (request.Is3D.HasValue)
-                {
-                    var val = request.Is3D.Value;
-
-                    if (video == null || val != video.Video3DFormat.HasValue)
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.IsHD.HasValue)
-                {
-                    var val = request.IsHD.Value;
-
-                    if (video == null || val != video.IsHD)
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.IsUnidentified.HasValue)
-                {
-                    var val = request.IsUnidentified.Value;
-                    if (i.IsUnidentified != val)
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.IsLocked.HasValue)
-                {
-                    var val = request.IsLocked.Value;
-                    if (i.IsLocked != val)
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.HasOverview.HasValue)
-                {
-                    var filterValue = request.HasOverview.Value;
-
-                    var hasValue = !string.IsNullOrEmpty(i.Overview);
-
-                    if (hasValue != filterValue)
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.HasImdbId.HasValue)
-                {
-                    var filterValue = request.HasImdbId.Value;
-
-                    var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Imdb));
-
-                    if (hasValue != filterValue)
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.HasTmdbId.HasValue)
-                {
-                    var filterValue = request.HasTmdbId.Value;
-
-                    var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tmdb));
-
-                    if (hasValue != filterValue)
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.HasTvdbId.HasValue)
-                {
-                    var filterValue = request.HasTvdbId.Value;
-
-                    var hasValue = !string.IsNullOrEmpty(i.GetProviderId(MetadataProviders.Tvdb));
-
-                    if (hasValue != filterValue)
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.IsYearMismatched.HasValue)
-                {
-                    var filterValue = request.IsYearMismatched.Value;
-
-                    if (UserViewBuilder.IsYearMismatched(i, libraryManager) != filterValue)
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.HasOfficialRating.HasValue)
-                {
-                    var filterValue = request.HasOfficialRating.Value;
-
-                    var hasValue = !string.IsNullOrEmpty(i.OfficialRating);
-
-                    if (hasValue != filterValue)
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.IsPlaceHolder.HasValue)
-                {
-                    var filterValue = request.IsPlaceHolder.Value;
-
-                    var isPlaceHolder = false;
-
-                    var hasPlaceHolder = i as ISupportsPlaceHolders;
-
-                    if (hasPlaceHolder != null)
-                    {
-                        isPlaceHolder = hasPlaceHolder.IsPlaceHolder;
-                    }
-
-                    if (isPlaceHolder != filterValue)
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.HasSpecialFeature.HasValue)
-                {
-                    var filterValue = request.HasSpecialFeature.Value;
-
-                    var movie = i as IHasSpecialFeatures;
-
-                    if (movie != null)
-                    {
-                        var ok = filterValue
-                            ? movie.SpecialFeatureIds.Count > 0
-                            : movie.SpecialFeatureIds.Count == 0;
-
-                        if (!ok)
-                        {
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.HasSubtitles.HasValue)
-                {
-                    var val = request.HasSubtitles.Value;
-
-                    if (video == null || val != video.HasSubtitles)
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.HasParentalRating.HasValue)
-                {
-                    var val = request.HasParentalRating.Value;
-
-                    var rating = i.CustomRating;
-
-                    if (string.IsNullOrEmpty(rating))
-                    {
-                        rating = i.OfficialRating;
-                    }
-
-                    if (val)
-                    {
-                        if (string.IsNullOrEmpty(rating))
-                        {
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(rating))
-                        {
-                            return false;
-                        }
-                    }
-                }
-
-                if (request.HasTrailer.HasValue)
-                {
-                    var val = request.HasTrailer.Value;
-                    var trailerCount = 0;
-
-                    var hasTrailers = i as IHasTrailers;
-                    if (hasTrailers != null)
-                    {
-                        trailerCount = hasTrailers.GetTrailerIds().Count;
-                    }
-
-                    var ok = val ? trailerCount > 0 : trailerCount == 0;
-
-                    if (!ok)
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.HasThemeSong.HasValue)
-                {
-                    var filterValue = request.HasThemeSong.Value;
-
-                    var themeCount = 0;
-                    var iHasThemeMedia = i as IHasThemeMedia;
-
-                    if (iHasThemeMedia != null)
-                    {
-                        themeCount = iHasThemeMedia.ThemeSongIds.Count;
-                    }
-                    var ok = filterValue ? themeCount > 0 : themeCount == 0;
-
-                    if (!ok)
-                    {
-                        return false;
-                    }
-                }
-
-                if (request.HasThemeVideo.HasValue)
-                {
-                    var filterValue = request.HasThemeVideo.Value;
-
-                    var themeCount = 0;
-                    var iHasThemeMedia = i as IHasThemeMedia;
-
-                    if (iHasThemeMedia != null)
-                    {
-                        themeCount = iHasThemeMedia.ThemeVideoIds.Count;
-                    }
-                    var ok = filterValue ? themeCount > 0 : themeCount == 0;
-
-                    if (!ok)
-                    {
-                        return false;
-                    }
-                }
-
-                // Apply tag filter
-                var tags = request.GetTags();
-                if (tags.Length > 0)
-                {
-                    var hasTags = i as IHasTags;
-                    if (hasTags == null)
-                    {
-                        return false;
-                    }
-                    if (!(tags.Any(v => hasTags.Tags.Contains(v, StringComparer.OrdinalIgnoreCase))))
-                    {
-                        return false;
-                    }
-                }
-
-                // Apply official rating filter
-                var officialRatings = request.GetOfficialRatings();
-                if (officialRatings.Length > 0 && !officialRatings.Contains(i.OfficialRating ?? string.Empty))
-                {
-                    return false;
-                }
-
-                // Apply genre filter
-                var genres = request.GetGenres();
-                if (genres.Length > 0 && !(genres.Any(v => i.Genres.Contains(v, StringComparer.OrdinalIgnoreCase))))
-                {
-                    return false;
-                }
-
-                // Filter by VideoType
-                var videoTypes = request.GetVideoTypes();
-                if (videoTypes.Length > 0 && (video == null || !videoTypes.Contains(video.VideoType)))
-                {
-                    return false;
-                }
-
-                var imageTypes = request.GetImageTypes().ToList();
-                if (imageTypes.Count > 0)
-                {
-                    if (!(imageTypes.Any(i.HasImage)))
-                    {
-                        return false;
-                    }
-                }
-
-                // Apply studio filter
-                var studios = request.GetStudios();
-                if (studios.Length > 0 && !studios.Any(v => i.Studios.Contains(v, StringComparer.OrdinalIgnoreCase)))
-                {
-                    return false;
-                }
-
-                // Apply studio filter
-                var studioIds = request.GetStudioIds();
-                if (studioIds.Length > 0 && !studioIds.Any(id =>
-                {
-                    var studioItem = libraryManager.GetItemById(id);
-                    return studioItem != null && i.Studios.Contains(studioItem.Name, StringComparer.OrdinalIgnoreCase);
-                }))
-                {
-                    return false;
-                }
-
-                // Apply year filter
-                var years = request.GetYears();
-                if (years.Length > 0 && !(i.ProductionYear.HasValue && years.Contains(i.ProductionYear.Value)))
-                {
-                    return false;
-                }
-
-                // Apply person filter
-                var personIds = request.GetPersonIds();
-                if (personIds.Length > 0)
-                {
-                    var names = personIds
-                        .Select(libraryManager.GetItemById)
-                        .Select(p => p == null ? "-1" : p.Name)
-                        .ToList();
-
-                    if (!(names.Any(v => i.People.Select(p => p.Name).Contains(v, StringComparer.OrdinalIgnoreCase))))
-                    {
-                        return false;
-                    }
-                }
-
-                // Apply person filter
-                if (!string.IsNullOrEmpty(request.Person))
-                {
-                    var personTypes = request.GetPersonTypes();
-
-                    if (personTypes.Length == 0)
-                    {
-                        if (!(i.People.Any(p => string.Equals(p.Name, request.Person, StringComparison.OrdinalIgnoreCase))))
-                        {
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        var types = personTypes;
-
-                        var ok = new[] { i }.Any(item =>
-                                item.People != null &&
-                                item.People.Any(p =>
-                                    p.Name.Equals(request.Person, StringComparison.OrdinalIgnoreCase) && (types.Contains(p.Type, StringComparer.OrdinalIgnoreCase) || types.Contains(p.Role, StringComparer.OrdinalIgnoreCase))));
-
-                        if (!ok)
-                        {
-                            return false;
-                        }
-                    }
+                    case ItemFilter.Dislikes:
+                        query.IsLiked = false;
+                        break;
+                    case ItemFilter.IsFavorite:
+                        query.IsFavorite = true;
+                        break;
+                    case ItemFilter.IsFavoriteOrLikes:
+                        query.IsFavoriteOrLiked = true;
+                        break;
+                    case ItemFilter.IsFolder:
+                        query.IsFolder = true;
+                        break;
+                    case ItemFilter.IsNotFolder:
+                        query.IsFolder = false;
+                        break;
+                    case ItemFilter.IsPlayed:
+                        query.IsPlayed = true;
+                        break;
+                    case ItemFilter.IsRecentlyAdded:
+                        break;
+                    case ItemFilter.IsResumable:
+                        query.IsResumable = true;
+                        break;
+                    case ItemFilter.IsUnplayed:
+                        query.IsPlayed = false;
+                        break;
+                    case ItemFilter.Likes:
+                        query.IsLiked = true;
+                        break;
                 }
             }
 
-            if (request.MinCommunityRating.HasValue)
-            {
-                var val = request.MinCommunityRating.Value;
+            if (request.HasQueryLimit)
+                query.Limit = request.Limit;
 
-                if (!(i.CommunityRating.HasValue && i.CommunityRating >= val))
-                {
-                    return false;
-                }
-            }
+            return query;
+        }
 
-            if (request.MinCriticRating.HasValue)
-            {
-                var val = request.MinCriticRating.Value;
-
-                var hasCriticRating = i as IHasCriticRating;
-
-                if (hasCriticRating != null)
-                {
-                    if (!(hasCriticRating.CriticRating.HasValue && hasCriticRating.CriticRating >= val))
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
+        private bool ApplyAdditionalFilters(BaseReportRequest request, BaseItem i, User user, ILibraryManager libraryManager)
+        {
             // Artists
             if (!string.IsNullOrEmpty(request.ArtistIds))
             {
-                var artistIds = request.ArtistIds.Split('|');
+                var artistIds = request.ArtistIds.Split(new[] { '|', ',' });
 
                 var audio = i as IHasArtist;
 
@@ -904,52 +496,6 @@ namespace MediaBrowser.Api.Reports
                 }
             }
 
-            if (request.MinPlayers.HasValue)
-            {
-                var filterValue = request.MinPlayers.Value;
-
-                var game = i as Game;
-
-                if (game != null)
-                {
-                    var players = game.PlayersSupported ?? 1;
-
-                    var ok = players >= filterValue;
-
-                    if (!ok)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            if (request.MaxPlayers.HasValue)
-            {
-                var filterValue = request.MaxPlayers.Value;
-
-                var game = i as Game;
-
-                if (game != null)
-                {
-                    var players = game.PlayersSupported ?? 1;
-
-                    var ok = players <= filterValue;
-
-                    if (!ok)
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
             if (request.ParentIndexNumber.HasValue)
             {
                 var filterValue = request.ParentIndexNumber.Value;
@@ -1017,7 +563,7 @@ namespace MediaBrowser.Api.Reports
         /// <param name="request"> The request. </param>
         /// <param name="items"> The items. </param>
         /// <returns> IEnumerable{BaseItem}. </returns>
-        private IEnumerable<BaseItem> ApplyPaging(GetItems request, IEnumerable<BaseItem> items)
+        private IEnumerable<BaseItem> ApplyPaging(BaseReportRequest request, IEnumerable<BaseItem> items)
         {
             // Start at
             if (request.StartIndex.HasValue)
@@ -1032,110 +578,6 @@ namespace MediaBrowser.Api.Reports
             }
 
             return items;
-        }
-
-        /// <summary> Gets items query. </summary>
-        /// <param name="request"> The request. </param>
-        /// <param name="user"> The user. </param>
-        /// <returns> The items query. </returns>
-        private InternalItemsQuery GetItemsQuery(BaseReportRequest request, User user)
-        {
-            var query = new InternalItemsQuery
-            {
-                User = user,
-                IsPlayed = request.IsPlayed,
-                MediaTypes = request.GetMediaTypes(),
-                IncludeItemTypes = request.GetIncludeItemTypes(),
-                ExcludeItemTypes = request.GetExcludeItemTypes(),
-                Recursive = true,
-                SortBy = request.GetOrderBy(),
-                SortOrder = request.SortOrder ?? SortOrder.Ascending,
-
-                Filter = i => ApplyAdditionalFilters(request, i, user, true, _libraryManager),
-                StartIndex = request.StartIndex,
-                IsMissing = request.IsMissing,
-                IsVirtualUnaired = request.IsVirtualUnaired,
-                IsUnaired = request.IsUnaired,
-                CollapseBoxSetItems = request.CollapseBoxSetItems,
-                NameLessThan = request.NameLessThan,
-                NameStartsWith = request.NameStartsWith,
-                NameStartsWithOrGreater = request.NameStartsWithOrGreater,
-                HasImdbId = request.HasImdbId,
-                IsYearMismatched = request.IsYearMismatched,
-                IsUnidentified = request.IsUnidentified,
-                IsPlaceHolder = request.IsPlaceHolder,
-                IsLocked = request.IsLocked,
-                IsInBoxSet = request.IsInBoxSet,
-                IsHD = request.IsHD,
-                Is3D = request.Is3D,
-                HasTvdbId = request.HasTvdbId,
-                HasTmdbId = request.HasTmdbId,
-                HasOverview = request.HasOverview,
-                HasOfficialRating = request.HasOfficialRating,
-                HasParentalRating = request.HasParentalRating,
-                HasSpecialFeature = request.HasSpecialFeature,
-                HasSubtitles = request.HasSubtitles,
-                HasThemeSong = request.HasThemeSong,
-                HasThemeVideo = request.HasThemeVideo,
-                HasTrailer = request.HasTrailer,
-                Tags = request.GetTags(),
-                OfficialRatings = request.GetOfficialRatings(),
-                Genres = request.GetGenres(),
-                Studios = request.GetStudios(),
-                StudioIds = request.GetStudioIds(),
-                Person = request.Person,
-                PersonIds = request.GetPersonIds(),
-                PersonTypes = request.GetPersonTypes(),
-                Years = request.GetYears(),
-                ImageTypes = request.GetImageTypes().ToArray(),
-                VideoTypes = request.GetVideoTypes().ToArray(),
-                AdjacentTo = request.AdjacentTo
-            };
-
-            if (!string.IsNullOrWhiteSpace(request.Ids))
-            {
-                query.CollapseBoxSetItems = false;
-            }
-
-            foreach (var filter in request.GetFilters())
-            {
-                switch (filter)
-                {
-                    case ItemFilter.Dislikes:
-                        query.IsLiked = false;
-                        break;
-                    case ItemFilter.IsFavorite:
-                        query.IsFavorite = true;
-                        break;
-                    case ItemFilter.IsFavoriteOrLikes:
-                        query.IsFavoriteOrLiked = true;
-                        break;
-                    case ItemFilter.IsFolder:
-                        query.IsFolder = true;
-                        break;
-                    case ItemFilter.IsNotFolder:
-                        query.IsFolder = false;
-                        break;
-                    case ItemFilter.IsPlayed:
-                        query.IsPlayed = true;
-                        break;
-                    case ItemFilter.IsRecentlyAdded:
-                        break;
-                    case ItemFilter.IsResumable:
-                        query.IsResumable = true;
-                        break;
-                    case ItemFilter.IsUnplayed:
-                        query.IsPlayed = false;
-                        break;
-                    case ItemFilter.Likes:
-                        query.IsLiked = true;
-                        break;
-                }
-            }
-
-            if (request.HasQueryLimit)
-                query.Limit = request.Limit;
-            return query;
         }
 
         /// <summary> Gets query result. </summary>
@@ -1197,7 +639,12 @@ namespace MediaBrowser.Api.Reports
                 DateTime? minDate = string.IsNullOrWhiteSpace(request.MinDate) ?
                 (DateTime?)null :
                 DateTime.Parse(request.MinDate, null, DateTimeStyles.RoundtripKind).ToUniversalTime();
-                var queryResult = _repo.GetActivityLogEntries(minDate, request.StartIndex, request.Limit);
+
+                QueryResult<ActivityLogEntry> queryResult;
+                 if (request.HasQueryLimit)   
+                   queryResult = _repo.GetActivityLogEntries(minDate, request.StartIndex, request.Limit);
+                 else
+                     queryResult = _repo.GetActivityLogEntries(minDate, request.StartIndex, null);
                 //var queryResult = _activityManager.GetActivityLogEntries(minDate, request.StartIndex, request.Limit);
 
                 ReportActivitiesBuilder builder = new ReportActivitiesBuilder(_libraryManager, _userManager);

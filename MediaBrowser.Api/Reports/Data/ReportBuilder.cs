@@ -43,9 +43,11 @@ namespace MediaBrowser.Api.Reports
         public ReportResult GetResult(BaseItem[] items, IReportsQuery request)
         {
             ReportIncludeItemTypes reportRowType = ReportHelper.GetRowType(request.IncludeItemTypes);
+            ReportDisplayType displayType = ReportHelper.GetReportDisplayType(request.DisplayType);
+
             List<ReportOptions<BaseItem>> options = this.GetReportOptions<BaseItem>(request,
                 () => this.GetDefaultHeaderMetadata(reportRowType),
-                (hm) => this.GetOption(hm)).Where(x => x.Header.Visible == true).ToList();
+                (hm) => this.GetOption(hm)).Where(x => this.DisplayTypeVisible(x.Header.DisplayType, displayType)).ToList();
 
             var headers = GetHeaders<BaseItem>(options);
             var rows = GetReportRows(items, options);
@@ -100,8 +102,13 @@ namespace MediaBrowser.Api.Reports
             {
                 case ReportIncludeItemTypes.Season:
                     return new List<HeaderMetadata>
-					{
-						HeaderMetadata.StatusImage,
+					{   
+                        HeaderMetadata.Status,                     
+                        HeaderMetadata.Locked,
+						HeaderMetadata.Unidentified,
+                        HeaderMetadata.ImagePrimary,
+                        HeaderMetadata.ImageBackdrop,
+                        HeaderMetadata.ImageLogo,
 						HeaderMetadata.Series,
 						HeaderMetadata.Season,
 						HeaderMetadata.SeasonNumber,
@@ -112,8 +119,13 @@ namespace MediaBrowser.Api.Reports
 
                 case ReportIncludeItemTypes.Series:
                     return new List<HeaderMetadata>
-					{
-						HeaderMetadata.StatusImage,
+					{     
+                        HeaderMetadata.Status,
+                        HeaderMetadata.Locked,
+						HeaderMetadata.Unidentified,
+                        HeaderMetadata.ImagePrimary,
+                        HeaderMetadata.ImageBackdrop,
+                        HeaderMetadata.ImageLogo,
 						HeaderMetadata.Name,
 						HeaderMetadata.Network,
 						HeaderMetadata.DateAdded,
@@ -129,7 +141,12 @@ namespace MediaBrowser.Api.Reports
                 case ReportIncludeItemTypes.MusicAlbum:
                     return new List<HeaderMetadata>
 					{
-						HeaderMetadata.StatusImage,
+                        HeaderMetadata.Status,
+                        HeaderMetadata.Locked,
+						HeaderMetadata.Unidentified,
+                        HeaderMetadata.ImagePrimary,
+                        HeaderMetadata.ImageBackdrop,
+                        HeaderMetadata.ImageLogo,
 						HeaderMetadata.Name,
 						HeaderMetadata.AlbumArtist,
 						HeaderMetadata.DateAdded,
@@ -142,7 +159,12 @@ namespace MediaBrowser.Api.Reports
                 case ReportIncludeItemTypes.MusicArtist:
                     return new List<HeaderMetadata>
 					{
-						HeaderMetadata.StatusImage,
+                        HeaderMetadata.Status,
+                        HeaderMetadata.Locked,
+						HeaderMetadata.Unidentified,
+                        HeaderMetadata.ImagePrimary,
+                        HeaderMetadata.ImageBackdrop,
+                        HeaderMetadata.ImageLogo,
 						HeaderMetadata.MusicArtist,
 						HeaderMetadata.Countries,
 						HeaderMetadata.DateAdded,
@@ -153,7 +175,12 @@ namespace MediaBrowser.Api.Reports
                 case ReportIncludeItemTypes.Game:
                     return new List<HeaderMetadata>
 					{
-						HeaderMetadata.StatusImage,
+                        HeaderMetadata.Status,
+                        HeaderMetadata.Locked,
+						HeaderMetadata.Unidentified,
+                        HeaderMetadata.ImagePrimary,
+                        HeaderMetadata.ImageBackdrop,
+                        HeaderMetadata.ImageLogo,
 						HeaderMetadata.Name,
 						HeaderMetadata.GameSystem,
 						HeaderMetadata.DateAdded,
@@ -169,7 +196,12 @@ namespace MediaBrowser.Api.Reports
                 case ReportIncludeItemTypes.Movie:
                     return new List<HeaderMetadata>
 					{
-						HeaderMetadata.StatusImage,
+                        HeaderMetadata.Status,
+                        HeaderMetadata.Locked,
+						HeaderMetadata.Unidentified,
+                        HeaderMetadata.ImagePrimary,
+                        HeaderMetadata.ImageBackdrop,
+                        HeaderMetadata.ImageLogo,
 						HeaderMetadata.Name,
 						HeaderMetadata.DateAdded,
 						HeaderMetadata.ReleaseDate,
@@ -189,7 +221,12 @@ namespace MediaBrowser.Api.Reports
                 case ReportIncludeItemTypes.Book:
                     return new List<HeaderMetadata>
 					{
-						HeaderMetadata.StatusImage,
+                        HeaderMetadata.Status,
+                        HeaderMetadata.Locked,
+						HeaderMetadata.Unidentified,
+                        HeaderMetadata.ImagePrimary,
+                        HeaderMetadata.ImageBackdrop,
+                        HeaderMetadata.ImageLogo,
 						HeaderMetadata.Name,
 						HeaderMetadata.DateAdded,
 						HeaderMetadata.ReleaseDate,
@@ -202,7 +239,12 @@ namespace MediaBrowser.Api.Reports
                 case ReportIncludeItemTypes.BoxSet:
                     return new List<HeaderMetadata>
 					{
-						HeaderMetadata.StatusImage,
+                        HeaderMetadata.Status,
+                        HeaderMetadata.Locked,
+						HeaderMetadata.Unidentified,
+                        HeaderMetadata.ImagePrimary,
+                        HeaderMetadata.ImageBackdrop,
+                        HeaderMetadata.ImageLogo,
 						HeaderMetadata.Name,
 						HeaderMetadata.DateAdded,
 						HeaderMetadata.ReleaseDate,
@@ -216,7 +258,12 @@ namespace MediaBrowser.Api.Reports
                 case ReportIncludeItemTypes.Audio:
                     return new List<HeaderMetadata>
 					{
-						HeaderMetadata.StatusImage,
+                        HeaderMetadata.Status,
+                        HeaderMetadata.Locked,
+						HeaderMetadata.Unidentified,
+                        HeaderMetadata.ImagePrimary,
+                        HeaderMetadata.ImageBackdrop,
+                        HeaderMetadata.ImageLogo,
 						HeaderMetadata.Name,
 						HeaderMetadata.AudioAlbumArtist,
 						HeaderMetadata.AudioAlbum,
@@ -235,7 +282,12 @@ namespace MediaBrowser.Api.Reports
                 case ReportIncludeItemTypes.Episode:
                     return new List<HeaderMetadata>
 					{
-						HeaderMetadata.StatusImage,
+                        HeaderMetadata.Status,
+                        HeaderMetadata.Locked,
+						HeaderMetadata.Unidentified,
+                        HeaderMetadata.ImagePrimary,
+                        HeaderMetadata.ImageBackdrop,
+                        HeaderMetadata.ImageLogo,
 						HeaderMetadata.Name,
 						HeaderMetadata.EpisodeSeries,
 						HeaderMetadata.Season,
@@ -261,7 +313,16 @@ namespace MediaBrowser.Api.Reports
                 default:
                     return new List<HeaderMetadata>
 					{
-						HeaderMetadata.StatusImage,
+                        HeaderMetadata.Status,
+                        HeaderMetadata.Locked,
+						HeaderMetadata.Unidentified,
+                        HeaderMetadata.ImagePrimary,
+                        HeaderMetadata.ImageBackdrop,
+                        HeaderMetadata.ImageLogo,
+						HeaderMetadata.Unidentified,
+                        HeaderMetadata.ImagePrimary,
+                        HeaderMetadata.ImageBackdrop,
+                        HeaderMetadata.ImageLogo,
 						HeaderMetadata.Name,
 						HeaderMetadata.DateAdded,
 						HeaderMetadata.ReleaseDate,
@@ -303,10 +364,41 @@ namespace MediaBrowser.Api.Reports
 
             switch (header)
             {
-                case HeaderMetadata.StatusImage:
+                case HeaderMetadata.Status:
                     option.Header.ItemViewType = ItemViewType.StatusImage;
                     internalHeader = HeaderMetadata.Status;
                     option.Header.CanGroup = false;
+                    option.Header.DisplayType = ReportDisplayType.Screen;
+                    break;
+                case HeaderMetadata.Locked:
+                    option.Column = (i, r) => this.GetBoolString(r.HasLockData);
+                    option.Header.ItemViewType = ItemViewType.LockDataImage;
+                    option.Header.CanGroup = false;
+                    option.Header.DisplayType = ReportDisplayType.Export;
+                    break;
+                case HeaderMetadata.Unidentified:
+                    option.Column = (i, r) => this.GetBoolString(r.IsUnidentified);
+                    option.Header.ItemViewType = ItemViewType.UnidentifiedImage;
+                    option.Header.CanGroup = false;
+                    option.Header.DisplayType = ReportDisplayType.Export;
+                    break;
+                case HeaderMetadata.ImagePrimary:
+                    option.Column = (i, r) => this.GetBoolString(r.HasImageTagsPrimary);
+                    option.Header.ItemViewType = ItemViewType.TagsPrimaryImage;
+                    option.Header.CanGroup = false;
+                    option.Header.DisplayType = ReportDisplayType.Export;
+                    break;
+                case HeaderMetadata.ImageBackdrop:
+                    option.Column = (i, r) => this.GetBoolString(r.HasImageTagsBackdrop);
+                    option.Header.ItemViewType = ItemViewType.TagsBackdropImage;
+                    option.Header.CanGroup = false;
+                    option.Header.DisplayType = ReportDisplayType.Export;
+                    break;
+                case HeaderMetadata.ImageLogo:
+                    option.Column = (i, r) => this.GetBoolString(r.HasImageTagsLogo);
+                    option.Header.ItemViewType = ItemViewType.TagsLogoImage;
+                    option.Header.CanGroup = false;
+                    option.Header.DisplayType = ReportDisplayType.Export;
                     break;
 
                 case HeaderMetadata.Name:

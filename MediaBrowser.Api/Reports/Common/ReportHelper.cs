@@ -127,6 +127,22 @@ namespace MediaBrowser.Api.Reports
             return rType;
         }
 
+        /// <summary> Gets report display type. </summary>
+        /// <param name="displayType"> Type of the display. </param>
+        /// <returns> The report display type. </returns>
+        public static ReportDisplayType GetReportDisplayType(string displayType)
+        {
+            if (string.IsNullOrEmpty(displayType))
+                return ReportDisplayType.ScreenExport;
+
+            ReportDisplayType rType;
+
+            if (!Enum.TryParse<ReportDisplayType>(displayType, out rType))
+                return ReportDisplayType.ScreenExport;
+
+            return rType;
+        }
+
         /// <summary> Gets server localized string. </summary>
         /// <param name="phrase"> The phrase. </param>
         /// <returns> The server localized string. </returns>
