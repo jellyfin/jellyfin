@@ -1660,7 +1660,6 @@ var AppInfo = {};
 
             if (isCordova) {
                 AppInfo.enableBottomTabs = true;
-                AppInfo.cardMargin = 'mediumCardMargin';
                 //AppInfo.enableSectionTransitions = true;
 
             } else {

@@ -12,7 +12,7 @@
         loadNextUp(page, 'home-nextup');
     }
 
-    function loadNextUp(page, context) {
+    function loadNextUp(page) {
 
         var limit = AppInfo.hasLowImageBandwidth ?
          16 :
@@ -48,7 +48,6 @@
                     showParentTitle: true,
                     lazy: true,
                     cardLayout: true,
-                    context: 'tv',
                     showDetailsMenu: true
                 });
 
@@ -60,7 +59,6 @@
                     showTitle: true,
                     showParentTitle: true,
                     overlayText: false,
-                    context: context,
                     lazy: true,
                     preferThumb: true,
                     showDetailsMenu: true,

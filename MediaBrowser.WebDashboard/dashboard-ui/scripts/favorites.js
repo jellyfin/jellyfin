@@ -76,7 +76,6 @@
                     preferThumb: section.preferThumb,
                     shape: section.shape,
                     overlayText: section.overlayText !== false,
-                    context: 'home-favorites',
                     showTitle: section.showTitle,
                     showParentTitle: section.showParentTitle,
                     lazy: true,

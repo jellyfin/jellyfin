@@ -129,7 +129,7 @@
         });
     }
 
-    function loadRecentlyAdded(elem, user, context) {
+    function loadRecentlyAdded(elem, user) {
 
         var limit = AppInfo.hasLowImageBandwidth ?
          16 :
@@ -161,7 +161,6 @@
                     items: items,
                     preferThumb: true,
                     shape: 'backdrop',
-                    context: context || 'home',
                     showUnplayedIndicator: false,
                     showChildCountIndicator: true,
                     lazy: true,
@@ -308,7 +307,6 @@
                     overlayText: screenWidth >= 800 && !cardLayout,
                     showTitle: true,
                     showParentTitle: true,
-                    context: 'home',
                     lazy: true,
                     cardLayout: cardLayout,
                     showDetailsMenu: true,
@@ -395,7 +393,7 @@
                 html += '<div>';
                 var text = Globalize.translate('HeaderLatestFromChannel').replace('{0}', channel.Name);
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + text + '</h1>';
-                html += '<a href="channelitems.html?context=channels&id=' + channel.Id + '" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
+                html += '<a href="channelitems.html?id=' + channel.Id + '" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
                 html += '</div>';
 
                 html += '<div class="itemsContainer">';
@@ -405,7 +403,6 @@
                     defaultShape: 'square',
                     showTitle: true,
                     centerText: true,
-                    context: 'channels',
                     lazy: true,
                     showDetailsMenu: true,
                     overlayPlayButton: true
@@ -440,7 +437,7 @@
 
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderLatestTvRecordings') + '</h1>';
-                html += '<a href="livetvrecordings.html?context=livetv" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
+                html += '<a href="livetvrecordings.html" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
                 html += '</div>';
             }
 

@@ -181,29 +181,7 @@
 
     function getContext(item) {
 
-        // should return either movies, tv, music or games
-        var context = getParameterByName('context');
-
-        if (context) {
-            return context;
-        }
-
-        if (item.Type == "Episode" || item.Type == "Series" || item.Type == "Season") {
-            return "tv";
-        }
-        if (item.Type == "Movie" || item.Type == "Trailer") {
-            return "movies";
-        }
-        if (item.Type == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicVideo") {
-            return "music";
-        }
-        if (item.MediaType == "Game") {
-            return "games";
-        }
-        if (item.Type == "BoxSet") {
-            return "boxsets";
-        }
-        return "";
+        return getParameterByName('context');
     }
 
     function renderHeader(page, item, context) {
@@ -214,31 +192,12 @@
 
         var elem;
 
-        if (context == 'home') {
-            elem = $('.homeTabs', page).show();
-            $('a', elem).removeClass('ui-btn-active');
-            $('.lnkHomeHome', page).addClass('ui-btn-active');
+        if (!context) {
+            $(page).addClass('noSecondaryNavPage');
+            LibraryMenu.setBackButtonVisible(true);
+            LibraryMenu.setMenuButtonVisible(false);
         }
-        else if (context == 'home-nextup') {
-            elem = $('.homeTabs', page).show();
-            $('a', elem).removeClass('ui-btn-active');
-            $('.lnkHomeNextUp', page).addClass('ui-btn-active');
-        }
-        else if (context == 'home-favorites') {
-            elem = $('.homeTabs', page).show();
-            $('a', elem).removeClass('ui-btn-active');
-            $('.lnkHomeFavorites', page).addClass('ui-btn-active');
-        }
-        else if (context == 'home-upcoming') {
-            elem = $('.homeTabs', page).show();
-            $('a', elem).removeClass('ui-btn-active');
-            $('.lnkHomeUpcoming', page).addClass('ui-btn-active');
-        }
-        else if (context == 'home-latest') {
-            elem = $('.homeTabs', page).show();
-            $('a', elem).removeClass('ui-btn-active');
-        }
-        else if (context == 'photos' || context == 'photos-photos') {
+        if (context == 'photos' || context == 'photos-photos') {
             elem = $('.photoTabs', page).show();
             $('a', elem).removeClass('ui-btn-active');
 
@@ -265,43 +224,11 @@
                 $('.lnkMovies', page).addClass('ui-btn-active');
             }
         }
-        else if (context == 'channels') {
-            $(page).addClass('noSecondaryNavPage');
-            LibraryMenu.setBackButtonVisible(true);
-            LibraryMenu.setMenuButtonVisible(false);
+        else if (context == 'tv') {
+            elem = $('#tvShowsTabs', page).show();
         }
-        else if (item.Type == "MusicAlbum") {
-            $('#albumTabs', page).show();
-        }
-
-        else if (item.Type == "MusicVideo") {
-            $('#musicVideoTabs', page).show();
-        }
-
-        else if (item.Type == "Audio") {
-            $('#songTabs', page).show();
-        }
-
-        else if (item.Type == "ChannelVideoItem" || item.Type == "ChannelAudioItem" || item.Type == "ChannelFolderItem") {
-            $(page).addClass('noSecondaryNavPage');
-            LibraryMenu.setBackButtonVisible(true);
-            LibraryMenu.setMenuButtonVisible(false);
-        }
-
-        else if (item.Type == "BoxSet") {
-            $('#boxsetTabs', page).show();
-        }
-
-        else if (item.MediaType == "Game") {
-            $('#gameTabs', page).show();
-        }
-
-        else if (item.Type == "GameSystem") {
-            $('#gameSystemTabs', page).show();
-        }
-
-        else if (item.Type == "Episode" || item.Type == "Season" || item.Type == "Series") {
-            $('#tvShowsTabs', page).show();
+        else if (context == 'games') {
+            elem = $('#gameTabs', page).show();
         }
     }
 

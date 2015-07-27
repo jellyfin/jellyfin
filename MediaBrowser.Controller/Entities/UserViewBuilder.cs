@@ -66,7 +66,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         var result = await _channelManager.GetChannelsInternal(new ChannelQuery
                         {
-                            UserId = user.Id.ToString("N"),
+                            UserId = user == null ? null : user.Id.ToString("N"),
                             Limit = query.Limit,
                             StartIndex = query.StartIndex
 

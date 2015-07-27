@@ -55,11 +55,7 @@
 }
 
 .largeCardMargin .cardBox {
-    margin: 8px;
-}
-
-.mediumCardMargin .cardBox {
-    margin: 5px;
+    margin: 10px;
 }
 
 .defaultBackground .cardImage {
