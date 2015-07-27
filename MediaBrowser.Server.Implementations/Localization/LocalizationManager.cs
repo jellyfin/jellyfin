@@ -298,18 +298,10 @@ namespace MediaBrowser.Server.Implementations.Localization
 
         public Dictionary<string, string> GetLocalizationDictionary(string culture)
         {
-            const string prefix = "Server";
+            const string prefix = "Core";
             var key = prefix + culture;
 
-            return _dictionaries.GetOrAdd(key, k => GetDictionary(prefix, culture, "server.json"));
-        }
-
-        public Dictionary<string, string> GetJavaScriptLocalizationDictionary(string culture)
-        {
-            const string prefix = "JavaScript";
-            var key = prefix + culture;
-
-            return _dictionaries.GetOrAdd(key, k => GetDictionary(prefix, culture, "javascript.json"));
+            return _dictionaries.GetOrAdd(key, k => GetDictionary(prefix, culture, "core.json"));
         }
 
         private Dictionary<string, string> GetDictionary(string prefix, string culture, string baseFilename)
@@ -394,18 +386,6 @@ namespace MediaBrowser.Server.Implementations.Localization
                 new LocalizatonOption{ Name="Vietnamese", Value="vi"}
 
             }.OrderBy(i => i.Name);
-        }
-
-        public string LocalizeDocument(string document, string culture, Func<string, string> tokenBuilder)
-        {
-            foreach (var pair in GetLocalizationDictionary(culture).ToList())
-            {
-                var token = tokenBuilder(pair.Key);
-
-                document = document.Replace(token, pair.Value, StringComparison.Ordinal);
-            }
-
-            return document;
         }
     }
 }

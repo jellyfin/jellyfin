@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Reports
 {
@@ -83,16 +81,7 @@ namespace MediaBrowser.Api.Reports
         /// <returns> The java script localized string. </returns>
         public static string GetJavaScriptLocalizedString(string phrase)
         {
-            var dictionary = BaseItem.LocalizationManager.GetJavaScriptLocalizationDictionary(BaseItem.ConfigurationManager.Configuration.UICulture);
-
-            string value;
-
-            if (dictionary.TryGetValue(phrase, out value))
-            {
-                return value;
-            }
-
-            return phrase;
+            return BaseItem.LocalizationManager.GetLocalizedString(phrase);
         }
 
         /// <summary> Gets report view type. </summary>
@@ -132,7 +121,7 @@ namespace MediaBrowser.Api.Reports
         /// <returns> The server localized string. </returns>
         public static string GetServerLocalizedString(string phrase)
         {
-            return BaseItem.LocalizationManager.GetLocalizedString(phrase, BaseItem.ConfigurationManager.Configuration.UICulture);
+            return BaseItem.LocalizationManager.GetLocalizedString(phrase);
         }
 
         #endregion

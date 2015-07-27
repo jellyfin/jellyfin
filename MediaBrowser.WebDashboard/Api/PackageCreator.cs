@@ -268,9 +268,7 @@ namespace MediaBrowser.WebDashboard.Api
                     {
                         var lang = localizationCulture.Split('-').FirstOrDefault();
 
-                        html = _localization.LocalizeDocument(html, localizationCulture, GetLocalizationToken);
-
-                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">");
+                        html = html.Replace("<html>", "<html data-culture=\"" + localizationCulture + "\" lang=\"" + lang + "\">");
                     }
 
                     html = html.Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div main><div class=\"pageContainer\">")
@@ -493,20 +491,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             await AppendResource(memoryStream, "bower_components/requirejs/require.js", newLineBytes).ConfigureAwait(false);
 
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.min.js", newLineBytes).ConfigureAwait(false);
-
-            await AppendResource(memoryStream, "thirdparty/browser.js", newLineBytes).ConfigureAwait(false);
-
-            await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
-
-            var excludePhrases = new List<string>();
-
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
-            {
-                excludePhrases.Add("paypal");
-            }
-
-            await AppendLocalization(memoryStream, culture, excludePhrases).ConfigureAwait(false);
+            //await AppendLocalization(memoryStream, culture, excludePhrases).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(mode))
@@ -524,8 +509,11 @@ namespace MediaBrowser.WebDashboard.Api
 
             var builder = new StringBuilder();
 
-            var apiClientFiles = new[]
+            var commonFiles = new[]
             {
+                "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js",
+                "thirdparty/browser.js",
+                "thirdparty/jquery.unveil-custom.js",
                 "apiclient/logger.js",
                 "apiclient/md5.js",
                 "apiclient/sha1.js",
@@ -538,9 +526,9 @@ namespace MediaBrowser.WebDashboard.Api
                 "apiclient/apiclient.js"
             }.ToList();
 
-            apiClientFiles.Add("apiclient/connectionmanager.js");
+            commonFiles.Add("apiclient/connectionmanager.js");
 
-            foreach (var file in apiClientFiles)
+            foreach (var file in commonFiles)
             {
                 using (var fs = _fileSystem.GetFileStream(GetDashboardResourcePath(file), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
                 {
@@ -602,6 +590,7 @@ namespace MediaBrowser.WebDashboard.Api
             return new[]
                             {
                                 "extensions.js",
+                                "globalize.js",
                                 "site.js",
                                 "librarybrowser.js",
                                 "librarylist.js",
@@ -622,34 +611,6 @@ namespace MediaBrowser.WebDashboard.Api
                                 "search.js",
                                 "thememediaplayer.js"
                             };
-        }
-
-        private async Task AppendLocalization(Stream stream, string culture, List<string> excludePhrases)
-        {
-            var dictionary = _localization.GetJavaScriptLocalizationDictionary(culture);
-
-            if (excludePhrases.Count > 0)
-            {
-                var removes = new List<string>();
-
-                foreach (var pair in dictionary)
-                {
-                    if (excludePhrases.Any(i => pair.Key.IndexOf(i, StringComparison.OrdinalIgnoreCase) != -1 || pair.Value.IndexOf(i, StringComparison.OrdinalIgnoreCase) != -1))
-                    {
-                        removes.Add(pair.Key);
-                    }
-                }
-
-                foreach (var remove in removes)
-                {
-                    dictionary.Remove(remove);
-                }
-            }
-
-            var js = "window.localizationGlossary=" + _jsonSerializer.SerializeToString(dictionary);
-
-            var bytes = Encoding.UTF8.GetBytes(js);
-            await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
         }
 
         /// <summary>
