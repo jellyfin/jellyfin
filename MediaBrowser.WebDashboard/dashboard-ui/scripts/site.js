@@ -2066,10 +2066,19 @@ var AppInfo = {};
         });
     }
 
+    var pageContainer = document.querySelector('.pageContainer');
+    var pageContainerInnerHtml = pageContainer ? pageContainer.innerHTML : '';
+
     function onConnectionManagerCreated(deferred) {
 
         Globalize.ensure().done(function () {
             $(function () {
+
+                document.title = Globalize.translateDocument(document.title, 'html');
+
+                if (pageContainer) {
+                    pageContainer.innerHTML = Globalize.translateDocument(pageContainerInnerHtml, 'html');
+                }
 
                 onDocumentReady();
                 Dashboard.initPromiseDone = true;

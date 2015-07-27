@@ -4,6 +4,12 @@
 
     function getUrl(name, culture) {
 
+        var parts = culture.split('-');
+        if (parts.length == 2) {
+            parts[1] = parts[1].toUpperCase();
+            culture = parts.join('-');
+        }
+
         return 'strings/' + name + '/' + culture + '.json';
     }
     function getDictionary(name, culture) {
@@ -33,14 +39,9 @@
     var currentCulture = 'en-US';
     function setCulture(value) {
 
-        var promises = [];
-
         currentCulture = value;
 
-        promises.push(loadDictionary('html', value));
-        promises.push(loadDictionary('javascript', value));
-
-        return $.when(promises);
+        return $.when(loadDictionary('html', value), loadDictionary('javascript', value));
     }
 
     function ensure() {
@@ -57,7 +58,6 @@
     function translateDocument(html, dictionaryName) {
 
         var glossary = getDictionary(dictionaryName, currentCulture) || {};
-
         return translateHtml(html, glossary);
     }
 

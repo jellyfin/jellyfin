@@ -59,7 +59,7 @@ namespace MediaBrowser.Api.Reports
 
     }
 
-    public class BaseReportRequest : GetItems, IReportsQuery
+    public class BaseReportRequest : BaseItemsRequest, IReportsQuery
     {
         /// <summary> Gets or sets the report view. </summary>
         /// <value> The report view. </value>
