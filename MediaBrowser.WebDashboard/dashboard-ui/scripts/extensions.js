@@ -502,29 +502,6 @@ function ticks_to_human(str) {
     return time;
 };
 
-(function (window) {
-
-    // Mimic Globalize api
-    // https://github.com/jquery/globalize
-    // Maybe later switch to it
-
-    window.Globalize = {
-        translate: function (key) {
-
-            var val = window.localizationGlossary[key] || key;
-
-            for (var i = 1; i < arguments.length; i++) {
-
-                val = val.replace('{' + (i - 1) + '}', arguments[i]);
-
-            }
-
-            return val;
-        }
-    };
-
-})(window);
-
 (function () {
     var supportTouch = $.support.touch,
             scrollEvent = "touchmove scroll",
@@ -595,7 +572,7 @@ function ticks_to_human(str) {
 })();
 
 // This only exists because the polymer elements get distorted when using regular jquery show/hide
-$.fn.visible = function(visible) {
+$.fn.visible = function (visible) {
 
     if (visible) {
         return this.removeClass('hide');

@@ -160,7 +160,6 @@
     function loadForm(page, user, displayPreferences) {
 
         $('#chkDisplayCollectionView', page).checked(user.Configuration.DisplayCollectionsView || false).checkboxradio("refresh");
-        $('#chkDisplayFolderView', page).checked(user.Configuration.DisplayFoldersView || false).checkboxradio("refresh");
 
         $('#chkHidePlayedFromLatest', page).checked(user.Configuration.HidePlayedInLatest || false).checkboxradio("refresh");
 
@@ -195,7 +194,6 @@
     function saveUser(page, user, displayPreferences) {
 
         user.Configuration.DisplayCollectionsView = $('#chkDisplayCollectionView', page).checked();
-        user.Configuration.DisplayFoldersView = $('#chkDisplayFolderView', page).checked();
 
         user.Configuration.HidePlayedInLatest = $('#chkHidePlayedFromLatest', page).checked();
 

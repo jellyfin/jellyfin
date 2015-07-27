@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Globalization;
-using System;
 using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Localization
@@ -48,25 +47,9 @@ namespace MediaBrowser.Controller.Localization
         string GetLocalizedString(string phrase);
 
         /// <summary>
-        /// Localizes the document.
-        /// </summary>
-        /// <param name="document">The document.</param>
-        /// <param name="culture">The culture.</param>
-        /// <param name="tokenBuilder">The token builder.</param>
-        /// <returns>System.String.</returns>
-        string LocalizeDocument(string document, string culture, Func<string, string> tokenBuilder);
-
-        /// <summary>
         /// Gets the localization options.
         /// </summary>
         /// <returns>IEnumerable{LocalizatonOption}.</returns>
         IEnumerable<LocalizatonOption> GetLocalizationOptions();
-
-        /// <summary>
-        /// Gets the java script localization dictionary.
-        /// </summary>
-        /// <param name="culture">The culture.</param>
-        /// <returns>Dictionary{System.StringSystem.String}.</returns>
-        Dictionary<string, string> GetJavaScriptLocalizationDictionary(string culture);
     }
 }

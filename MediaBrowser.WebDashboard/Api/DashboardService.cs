@@ -298,7 +298,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             CopyDirectory(creator.DashboardUIPath, path);
 
-            var culture = "en-US";
+            string culture = null;
 
             var appVersion = _appHost.ApplicationVersion.ToString();
 

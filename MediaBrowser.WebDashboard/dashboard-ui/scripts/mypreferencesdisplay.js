@@ -12,8 +12,6 @@
         $('#selectThemeSong', page).val(appStorage.getItem('enableThemeSongs-' + user.Id) || '').selectmenu("refresh");
         $('#selectBackdrop', page).val(appStorage.getItem('enableBackdrops-' + user.Id) || '').selectmenu("refresh");
 
-        $('#selectEnableItemPreviews', page).val(AppSettings.enableItemPreviews().toString().toLowerCase()).selectmenu("refresh");
-
         $('#chkEnableFullScreen', page).checked(AppSettings.enableFullScreen()).checkboxradio("refresh");
 
         $('#chkSyncToExternalCard', page).checked(AppSettings.enableSyncToExternalStorage()).checkboxradio("refresh");
@@ -28,7 +26,6 @@
         user.Configuration.GroupMoviesIntoBoxSets = $('#chkGroupMoviesIntoCollections', page).checked();
         user.Configuration.IncludeTrailersInSuggestions = $('#chkDisplayTrailersWithinMovieSuggestions', page).checked();
 
-        AppSettings.enableItemPreviews($('#selectEnableItemPreviews', page).val() == 'true');
         AppSettings.enableFullScreen($('#chkEnableFullScreen', page).checked());
 
         appStorage.setItem('enableThemeSongs-' + user.Id, $('#selectThemeSong', page).val());

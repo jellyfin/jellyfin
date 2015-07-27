@@ -68,6 +68,13 @@ var Dashboard = {
         $.mobile.nojs = null;
         $.mobile.degradeInputsWithin = null;
         $.mobile.keepNative = ":jqmData(role='none'),.paper-input";
+
+        $.mobile.filterHtml = Dashboard.filterHtml;
+    },
+
+    filterHtml: function (html) {
+
+        return Globalize.translateDocument(html, 'html');
     },
 
     isConnectMode: function () {
@@ -1783,6 +1790,7 @@ var AppInfo = {};
             ConnectionManager.addApiClient(apiClient);
             Dashboard.importCss(apiClient.getUrl('Branding/Css'));
             window.ApiClient = apiClient;
+            deferred.resolve();
         }
         return deferred.promise();
     }
@@ -2043,28 +2051,24 @@ var AppInfo = {};
             drawer.disableEdgeSwipe = true;
         }
 
-        if (Dashboard.isConnectMode()) {
+        var deps = [];
 
-            if (AppInfo.isNativeApp && $.browser.android) {
-                require(['cordova/android/logging']);
-            }
+        if (AppInfo.isNativeApp && $.browser.android) {
+            deps.push('cordova/android/logging');
+        }
 
-            require(['appstorage'], function () {
+        deps.push('appstorage');
 
-                capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
-                createConnectionManager(capabilities).done(function () {
-                    $(function () {
-                        onDocumentReady();
-                        Dashboard.initPromiseDone = true;
-                        $.mobile.initializePage();
-                        deferred.resolve();
-                    });
-                });
-            });
+        require([deps], function () {
 
-        } else {
-            createConnectionManager(capabilities);
+            capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
+            createConnectionManager(capabilities).done(function () { onConnectionManagerCreated(deferred); });
+        });
+    }
 
+    function onConnectionManagerCreated(deferred) {
+
+        Globalize.ensure().done(function () {
             $(function () {
 
                 onDocumentReady();
@@ -2072,7 +2076,7 @@ var AppInfo = {};
                 $.mobile.initializePage();
                 deferred.resolve();
             });
-        }
+        });
     }
 
     function initCordovaWithDeviceId(deferred, deviceId) {
