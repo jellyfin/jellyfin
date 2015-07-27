@@ -1615,7 +1615,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
 
-        private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
+        private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(.01);
 
         public async Task<UserView> GetNamedView(User user,
             string name,
@@ -1666,7 +1666,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }
 
-            if (!refresh && item != null)
+            if (!refresh)
             {
                 refresh = (DateTime.UtcNow - item.DateLastSaved) >= _viewRefreshInterval;
             }

@@ -49,11 +49,6 @@ namespace MediaBrowser.Server.Implementations.UserViews
         {
             var view = (UserView)item;
 
-            if (!view.UserId.HasValue)
-            {
-                return new List<BaseItem>();
-            }
-
             if (string.Equals(view.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
             {
                 return new List<BaseItem>();
@@ -66,7 +61,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
             {
                 var userItemsResult = await view.GetItems(new InternalItemsQuery
                 {
-                    User = _userManager.GetUserById(view.UserId.Value),
+                    User = view.UserId.HasValue ? _userManager.GetUserById(view.UserId.Value) : null,
                     CollapseBoxSetItems = false
                 });
 
@@ -78,7 +73,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
 
             var result = await view.GetItems(new InternalItemsQuery
             {
-                User = _userManager.GetUserById(view.UserId.Value),
+                User = view.UserId.HasValue ? _userManager.GetUserById(view.UserId.Value) : null,
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
                 ExcludeItemTypes = new[] { "UserView", "CollectionFolder", "Playlist" }
@@ -141,8 +136,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
         public override bool Supports(IHasImages item)
         {
             var view = item as UserView;
-
-            if (view != null && view.UserId.HasValue)
+            if (view != null)
             {
                 var supported = new[]
                 {
@@ -182,10 +176,10 @@ namespace MediaBrowser.Server.Implementations.UserViews
                     SpecialFolder.MusicFavoriteArtists,
                     SpecialFolder.MusicFavoriteAlbums,
                     SpecialFolder.MusicFavoriteSongs
+
                 };
 
-                return (IsUsingCollectionStrip(view) || supported.Contains(view.ViewType, StringComparer.OrdinalIgnoreCase)) &&
-                    _userManager.GetUserById(view.UserId.Value) != null;
+                return (IsUsingCollectionStrip(view) || supported.Contains(view.ViewType, StringComparer.OrdinalIgnoreCase));
             }
 
             return false;

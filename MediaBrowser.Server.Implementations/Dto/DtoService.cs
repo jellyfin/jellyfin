@@ -187,7 +187,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             if (!options.Fields.Contains(ItemFields.SyncInfo))
             {
-                return new SyncedItemProgress[]{};
+                return new SyncedItemProgress[] { };
             }
 
             var deviceId = options.DeviceId;
@@ -281,7 +281,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, Dictionary<string,SyncedItemProgress> syncProgress, User user = null, BaseItem owner = null)
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, Dictionary<string, SyncedItemProgress> syncProgress, User user = null, BaseItem owner = null)
         {
             var fields = options.Fields;
 
@@ -1629,7 +1629,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <param name="fields">The fields.</param>
         /// <param name="syncProgress">The synchronize progress.</param>
         /// <returns>Task.</returns>
-        private void SetSpecialCounts(Folder folder, User user, BaseItemDto dto, List<ItemFields> fields, Dictionary<string,SyncedItemProgress> syncProgress)
+        private void SetSpecialCounts(Folder folder, User user, BaseItemDto dto, List<ItemFields> fields, Dictionary<string, SyncedItemProgress> syncProgress)
         {
             var recursiveItemCount = 0;
             var unplayed = 0;
@@ -1640,21 +1640,14 @@ namespace MediaBrowser.Server.Implementations.Dto
             double totalSyncPercent = 0;
             var addSyncInfo = fields.Contains(ItemFields.SyncInfo);
 
-            IEnumerable<BaseItem> children;
-
-            var season = folder as Season;
-
-            if (season != null)
+            var children = folder.GetItems(new InternalItemsQuery
             {
-                children = season
-                    .GetEpisodes(user)
-                    .Where(i => i.LocationType != LocationType.Virtual);
-            }
-            else
-            {
-                children = folder
-                    .GetRecursiveChildren(user, i => !i.IsFolder && i.LocationType != LocationType.Virtual);
-            }
+                IsFolder = false,
+                Recursive = true,
+                IsVirtualUnaired = false,
+                IsMissing = false
+
+            }).Result.Items;
 
             // Loop through each recursive child
             foreach (var child in children)

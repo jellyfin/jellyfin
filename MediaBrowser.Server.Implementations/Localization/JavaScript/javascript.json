@@ -825,5 +825,10 @@
     "ErrorSavingTvProvider": "There was an error saving the TV provider. Please ensure it is accessible and try again.",
     "ErrorGettingTvLineups": "There was an error downloading tv lineups. Please ensure your username and password are correct and try again.",
     "MessageCreateAccountAt": "Create an account at {0}",
-    "ErrorPleaseSelectLineup": "Please select a lineup and try again. If no lineups are available, then please check that your username, password, and postal code is correct."
+    "ErrorPleaseSelectLineup": "Please select a lineup and try again. If no lineups are available, then please check that your username, password, and postal code is correct.",
+    "HeaderTryCinemaMode": "Try Cinema Mode",
+    "ButtonBecomeSupporter": "Become an Emby Supporter",
+    "ButtonClosePlayVideo": "Close and play my video",
+    "MessageDidYouKnowCinemaMode":  "Did you know that by becoming an Emby Supporter, you can enhance your experience with features like Cinema Mode?",
+    "MessageDidYouKnowCinemaMode2":  "Cinema Mode gives you the true cinema experience with trailers and custom intros before the main feature."
 }
