@@ -72,6 +72,12 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private bool InternalTextStreamSupportsExternalStream(MediaStream stream)
         {
+            // These usually have styles and fonts that won't convert to text very well
+            if (string.Equals(stream.Codec, "ass", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -463,7 +469,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 _liveStreamSemaphore.Release();
             }
         }
-        
+
         // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
         private const char LiveStreamIdDelimeter = '_';
 
