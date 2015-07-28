@@ -157,6 +157,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "PremiereDate", "DATETIME");
             _connection.AddColumn(_logger, "TypedBaseItems", "ProductionYear", "INT");
             _connection.AddColumn(_logger, "TypedBaseItems", "ParentId", "GUID");
+            _connection.AddColumn(_logger, "TypedBaseItems", "Genres", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "ParentalRatingValue", "INT");
 
             PrepareStatements();
 
@@ -197,10 +199,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "ParentIndexNumber",
                 "PremiereDate",
                 "ProductionYear",
-                "ParentId"
+                "ParentId",
+                "Genres",
+                "ParentalRatingValue"
             };
             _saveItemCommand = _connection.CreateCommand();
-            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22)";
+            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22, @23, @24)";
             for (var i = 1; i <= saveColumns.Count; i++)
             {
                 _saveItemCommand.Parameters.Add(_saveItemCommand, "@" + i.ToString(CultureInfo.InvariantCulture));
@@ -342,6 +346,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     {
                         _saveItemCommand.GetParameter(index++).Value = item.ParentId;
                     }
+
+                    _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Genres.ToArray());
+                    _saveItemCommand.GetParameter(index++).Value = item.GetParentalRatingValue();
 
                     _saveItemCommand.Transaction = transaction;
 
@@ -937,7 +944,39 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 whereClauses.Add("Name like @NameContains");
                 cmd.Parameters.Add(cmd, "@NameContains", DbType.String).Value = "%" + query.NameContains + "%";
             }
-            
+
+            if (query.Genres.Length > 0)
+            {
+                var genres = new List<string>();
+                var index = 0;
+                foreach (var genre in query.Genres)
+                {
+                    genres.Add("Genres like @Genres" + index);
+                    cmd.Parameters.Add(cmd, "@Genres" + index, DbType.String).Value = "%" + genre + "%";
+                    index++;
+                }
+                var genreCaluse = "(" + string.Join(" OR ", genres.ToArray()) + ")";
+                whereClauses.Add(genreCaluse);
+            }
+
+            if (query.MaxParentalRating.HasValue)
+            {
+                whereClauses.Add("(ParentalRatingValue is NULL OR ParentalRatingValue<=@MaxParentalRating)");
+                cmd.Parameters.Add(cmd, "@MaxParentalRating", DbType.Int32).Value = query.MaxParentalRating.Value;
+            }
+
+            if (query.HasParentalRating.HasValue)
+            {
+                if (query.HasParentalRating.Value)
+                {
+                    whereClauses.Add("ParentalRatingValue NOT NULL");
+                }
+                else
+                {
+                    whereClauses.Add("ParentalRatingValue IS NULL");
+                }
+            }
+
             if (addPaging)
             {
                 if (query.StartIndex.HasValue && query.StartIndex.Value > 0)
@@ -1019,31 +1058,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             return new[] { value };
-        }
-
-        public IEnumerable<Guid> GetItemIdsOfType(Type type)
-        {
-            if (type == null)
-            {
-                throw new ArgumentNullException("type");
-            }
-
-            CheckDisposed();
-
-            using (var cmd = _connection.CreateCommand())
-            {
-                cmd.CommandText = "select guid from TypedBaseItems where type = @type";
-
-                cmd.Parameters.Add(cmd, "@type", DbType.String).Value = type.FullName;
-
-                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
-                {
-                    while (reader.Read())
-                    {
-                        yield return reader.GetGuid(0);
-                    }
-                }
-            }
         }
 
         public async Task DeleteItem(Guid id, CancellationToken cancellationToken)

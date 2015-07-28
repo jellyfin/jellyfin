@@ -1115,6 +1115,18 @@ namespace MediaBrowser.Controller.Entities
             return value.Value <= maxAllowedRating.Value;
         }
 
+        public int? GetParentalRatingValue()
+        {
+            var rating = CustomRatingForComparison;
+
+            if (string.IsNullOrWhiteSpace(rating))
+            {
+                rating = OfficialRatingForComparison;
+            }
+
+            return LocalizationManager.GetRatingLevel(rating);
+        }
+
         private bool IsVisibleViaTags(User user)
         {
             var hasTags = this as IHasTags;
