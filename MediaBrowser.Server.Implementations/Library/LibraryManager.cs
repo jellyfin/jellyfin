@@ -2071,14 +2071,17 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public List<PersonInfo> GetPeople(BaseItem item)
         {
-            var people = GetPeople(new InternalPeopleQuery
+            if (item.SupportsPeople)
             {
-                ItemId = item.Id
-            });
+                var people = GetPeople(new InternalPeopleQuery
+                {
+                    ItemId = item.Id
+                });
 
-            if (people.Count > 0)
-            {
-                return people;
+                if (people.Count > 0)
+                {
+                    return people;
+                }
             }
 
             return item.People ?? new List<PersonInfo>();

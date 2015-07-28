@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.IO;
+﻿using System.ComponentModel;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -338,7 +339,7 @@ namespace MediaBrowser.Server.Implementations.IO
             }
             catch
             {
-                
+
             }
             finally
             {
@@ -370,6 +371,17 @@ namespace MediaBrowser.Server.Implementations.IO
             Logger.ErrorException("Error in Directory watcher for: " + dw.Path, ex);
 
             DisposeWatcher(dw);
+
+            if (ex is Win32Exception)
+            {
+                Logger.Info("Disabling realtime monitor to prevent future instability");
+
+                if (ConfigurationManager.Configuration.EnableLibraryMonitor == AutoOnOff.Auto)
+                {
+                    ConfigurationManager.Configuration.EnableLibraryMonitor = AutoOnOff.Disabled;
+                    Stop();
+                }
+            }
         }
 
         /// <summary>

@@ -1124,6 +1124,11 @@ namespace MediaBrowser.Controller.Entities
                 rating = OfficialRatingForComparison;
             }
 
+            if (string.IsNullOrWhiteSpace(rating))
+            {
+                return null;
+            }
+
             return LocalizationManager.GetRatingLevel(rating);
         }
 
