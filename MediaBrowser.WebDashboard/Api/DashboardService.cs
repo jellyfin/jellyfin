@@ -327,7 +327,9 @@ namespace MediaBrowser.WebDashboard.Api
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "requirejs", "require.js"), Path.Combine(path, "bower_components", "requirejs", "require.js"));
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "fastclick", "lib", "fastclick.js"), Path.Combine(path, "bower_components", "fastclick", "lib", "fastclick.js"));
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "jquery", "dist", "jquery.min.js"), Path.Combine(path, "bower_components", "jquery", "dist", "jquery.min.js"));
-    
+
+                CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "jstree", "dist", "jstree.min.js"), Path.Combine(path, "bower_components", "jstree", "dist", "jstree.min.js"));
+                
                 CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "css"), Path.Combine(path, "bower_components", "swipebox", "src", "css"));
                 CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "js"), Path.Combine(path, "bower_components", "swipebox", "src", "js"));
                 CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "img"), Path.Combine(path, "bower_components", "swipebox", "src", "img"));
