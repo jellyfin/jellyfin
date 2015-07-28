@@ -207,7 +207,9 @@
     <Content Include="dashboard-ui\mypreferenceshome.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\mypreferencesmenu.html" />
+    <Content Include="dashboard-ui\mypreferencesmenu.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\scripts\actionsheet.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

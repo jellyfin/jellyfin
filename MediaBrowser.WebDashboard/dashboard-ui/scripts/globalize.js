@@ -17,7 +17,7 @@
         return dictionaries[getUrl(name, culture)];
     }
 
-    function loadDictionary(name, culture, loadUrl, saveUrl) {
+    function loadDictionary(name, culture) {
 
         var deferred = DeferredBuilder.Deferred();
 
@@ -25,9 +25,22 @@
             deferred.resolve();
         } else {
 
-            $.getJSON(loadUrl).done(function (dictionary) {
-                dictionaries[saveUrl] = dictionary;
+            var url = getUrl(name, culture);
+
+            $.getJSON(url).done(function (dictionary) {
+
+                dictionaries[url] = dictionary;
                 deferred.resolve();
+
+            }).fail(function () {
+
+                // If there's no dictionary for that language, grab English
+                $.getJSON(getUrl(name, 'en-US')).done(function (dictionary) {
+
+                    dictionaries[url] = dictionary;
+                    deferred.resolve();
+
+                });
             });
         }
 
@@ -39,30 +52,53 @@
 
         currentCulture = value;
 
-        var htmlValue = value;
-        var jsValue = value;
-
-        var htmlUrl = getUrl('html', htmlValue);
-        var jsUrl = getUrl('javascript', jsValue);
-
-        var htmlLoadUrl = getUrl('html', htmlValue);
-        var jsLoadUrl = getUrl('javascript', jsValue);
-
-        //htmlLoadUrl = getUrl('html', 'server');
-        //jsLoadUrl = getUrl('javascript', 'javascript');
-
-        return $.when(loadDictionary('html', htmlValue, htmlLoadUrl, htmlUrl), loadDictionary('javascript', jsValue, jsLoadUrl, jsUrl));
+        return $.when(loadDictionary('html', value), loadDictionary('javascript', value));
     }
+
+    function getDeviceCulture() {
+        var deferred = DeferredBuilder.Deferred();
+
+        var culture;
+
+        if (navigator.globalization && navigator.globalization.getLocaleName) {
+
+            navigator.globalization.getLocaleName(function (locale) {
+
+                culture = (locale.value || '').replace('_', '-');
+                Logger.log('Device culture is ' + culture);
+                deferred.resolveWith(null, [culture]);
+
+            }, function () {
+                deferred.resolveWith(null, [null]);
+            });
+
+
+        } else {
+
+            culture = document.documentElement.getAttribute('data-culture');
+            deferred.resolveWith(null, [culture]);
+        }
+
+        return deferred.promise();
+    }
+
 
     function ensure() {
 
-        var culture = document.documentElement.getAttribute('data-culture');
+        var deferred = DeferredBuilder.Deferred();
 
-        if (!culture) {
-            culture = 'en-US';
-        }
+        getDeviceCulture().done(function (culture) {
 
-        return setCulture(culture);
+            if (!culture) {
+                culture = 'en-US';
+            }
+
+            setCulture(culture).done(function () {
+                deferred.resolve();
+            });
+        });
+
+        return deferred.promise();
     }
 
     function translateDocument(html, dictionaryName) {
