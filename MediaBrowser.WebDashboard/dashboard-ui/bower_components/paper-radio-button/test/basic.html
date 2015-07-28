@@ -1,0 +1,101 @@
+<!doctype html>
+<!--
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>paper-radio-button basic tests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+  <link rel="import" href="../paper-radio-button.html">
+
+</head>
+<body>
+
+  <test-fixture id="NoLabel">
+    <template>
+      <paper-radio-button id="radio1"></paper-radio-button>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="WithLabel">
+    <template>
+      <paper-radio-button id="radio2">Batman</paper-radio-button>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('defaults', function() {
+      var r1;
+
+      setup(function() {
+        r1 = fixture('NoLabel');
+      });
+
+      test('check button via click', function() {
+        r1.addEventListener('click', function() {
+          assert.isTrue(r1.getAttribute('aria-checked'));
+          assert.isTrue(r1.checked);
+          done();
+        });
+        MockInteractions.down(r1);
+      });
+
+      test('toggle button via click', function() {
+        r1.checked = true;
+        r1.addEventListener('click', function() {
+          assert.isFalse(r1.getAttribute('aria-checked'));
+          assert.isFalse(r1.checked);
+          done();
+        });
+        MockInteractions.down(r1);
+      });
+
+      test('disabled button cannot be clicked', function() {
+        r1.disabled = true;
+        r1.addEventListener('click', function() {
+          assert.isTrue(r1.getAttribute('aria-checked'));
+          assert.isTrue(r1.checked);
+          done();
+        });
+        MockInteractions.down(r1);
+      });
+    });
+
+    suite('a11y', function() {
+      var r1;
+      var r2;
+
+      setup(function() {
+        r1 = fixture('NoLabel');
+        r2 = fixture('WithLabel');
+      });
+
+      test('has aria role "radio"', function() {
+        assert.isTrue(r1.getAttribute('role') == 'radio');
+        assert.isTrue(r2.getAttribute('role') == 'radio');
+      });
+
+      test('button with no label has no aria label', function() {
+        assert.isTrue(!r1.getAttribute('aria-label'));
+      });
+
+      test('button with a label sets an aria label', function() {
+        assert.isTrue(r2.getAttribute('aria-label') == "Batman");
+      });
+    });
+  </script>
+</body>
+</html>
