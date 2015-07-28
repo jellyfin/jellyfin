@@ -1751,22 +1751,19 @@
     <Content Include="dashboard-ui\apiclient\md5.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree3.0.8\jstree.min.js">
+    <Content Include="dashboard-ui\thirdparty\jstree\themes\default\32px.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree3.0.8\themes\default\32px.png">
+    <Content Include="dashboard-ui\thirdparty\jstree\themes\default\40px.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree3.0.8\themes\default\40px.png">
+    <Content Include="dashboard-ui\thirdparty\jstree\themes\default\style.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree3.0.8\themes\default\style.css">
+    <Content Include="dashboard-ui\thirdparty\jstree\themes\default\style.min.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree3.0.8\themes\default\style.min.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="dashboard-ui\thirdparty\jstree3.0.8\themes\default\throbber.gif">
+    <Content Include="dashboard-ui\thirdparty\jstree\themes\default\throbber.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\tvupcoming.html">
