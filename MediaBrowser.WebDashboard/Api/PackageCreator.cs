@@ -271,9 +271,6 @@ namespace MediaBrowser.WebDashboard.Api
                         html = html.Replace("<html>", "<html data-culture=\"" + localizationCulture + "\" lang=\"" + lang + "\">");
                     }
 
-                    html = html.Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div class=\"mainDrawerPanelContent\" main><!--<div class=\"pageContainer\">")
-                        .Replace("</body>", "</div>--></div></paper-drawer-panel></body>");
-
                     if (enableMinification)
                     {
                         try
@@ -300,6 +297,9 @@ namespace MediaBrowser.WebDashboard.Api
                             _logger.ErrorException("Error minifying html", ex);
                         }
                     }
+
+                    html = html.Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div class=\"mainDrawerPanelContent\" main><!--<div class=\"pageContainer\">")
+                        .Replace("</body>", "</div>--></div></paper-drawer-panel></body>");
                 }
 
                 var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + appVersion : string.Empty;
@@ -316,7 +316,7 @@ namespace MediaBrowser.WebDashboard.Api
 
                 html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, appVersion));
 
-                html = html.Replace("</body>", GetInitialJavascript(mode, appVersion) + importsHtml + GetCommonJavascript(mode, appVersion)) + "</body>";
+                html = html.Replace("</body>", GetInitialJavascript(mode, appVersion) + importsHtml + GetCommonJavascript(mode, appVersion) + "</body>");
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
