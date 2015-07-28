@@ -424,6 +424,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private async Task RecordStream(TimerInfo timer, CancellationToken cancellationToken)
         {
+            if (timer == null)
+            {
+                throw new ArgumentNullException("timer");
+            }
+
             var mediaStreamInfo = await GetChannelStream(timer.ChannelId, null, CancellationToken.None);
             var duration = (timer.EndDate - RecordingHelper.GetStartTime(timer)).TotalSeconds + timer.PrePaddingSeconds;
 

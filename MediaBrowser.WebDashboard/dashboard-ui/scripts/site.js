@@ -78,8 +78,11 @@ var Dashboard = {
         html = html.replace('<!--', '');
 
         // replace the last instance
-        // https://stackoverflow.com/questions/29188409/how-do-i-replace-the-last-occurance-of-a-variable-in-a-string
-        html = html.replace(new RegExp("(.*)" + '-->'), "");
+        var lastIndex = html.lastIndexOf('-->');
+
+        if (lastIndex != -1) {
+            html = html.substring(0, lastIndex) + html.substring(lastIndex + 3);
+        }
 
         return Globalize.translateDocument(html, 'html');
     },
@@ -2076,9 +2079,9 @@ var AppInfo = {};
     function onConnectionManagerCreated(deferred) {
 
         Globalize.ensure().done(function () {
-            $(function () {
+            document.title = Globalize.translateDocument(document.title, 'html');
 
-                document.title = Globalize.translateDocument(document.title, 'html');
+            $(function () {
 
                 var mainDrawerPanelContent = document.querySelector('.mainDrawerPanelContent');
 
