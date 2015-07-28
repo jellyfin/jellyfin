@@ -76,14 +76,6 @@ namespace MediaBrowser.Api.Reports
             return rType;
         }
 
-        /// <summary> Gets java script localized string. </summary>
-        /// <param name="phrase"> The phrase. </param>
-        /// <returns> The java script localized string. </returns>
-        public static string GetJavaScriptLocalizedString(string phrase)
-        {
-            return BaseItem.LocalizationManager.GetLocalizedString(phrase);
-        }
-
         /// <summary> Gets report view type. </summary>
         /// <param name="rowType"> The type. </param>
         /// <returns> The report view type. </returns>
@@ -132,10 +124,10 @@ namespace MediaBrowser.Api.Reports
             return rType;
         }
 
-        /// <summary> Gets server localized string. </summary>
+        /// <summary> Gets core localized string. </summary>
         /// <param name="phrase"> The phrase. </param>
-        /// <returns> The server localized string. </returns>
-        public static string GetServerLocalizedString(string phrase)
+        /// <returns> The core localized string. </returns>
+        public static string GetCoreLocalizedString(string phrase)
         {
             return BaseItem.LocalizationManager.GetLocalizedString(phrase);
         }

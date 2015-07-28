@@ -155,9 +155,7 @@ namespace MediaBrowser.Api.Reports
             if (internalHeader != HeaderMetadata.None)
             {
                 string localHeader = "Header" + internalHeader.ToString();
-                headerName = internalHeader != HeaderMetadata.None ? ReportHelper.GetJavaScriptLocalizedString(localHeader) : "";
-                if (string.Compare(localHeader, headerName, StringComparison.CurrentCultureIgnoreCase) == 0)
-                    headerName = ReportHelper.GetServerLocalizedString(localHeader);
+                headerName = ReportHelper.GetCoreLocalizedString(localHeader);
             }
             return headerName;
         }
