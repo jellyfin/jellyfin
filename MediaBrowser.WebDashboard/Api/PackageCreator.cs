@@ -271,8 +271,8 @@ namespace MediaBrowser.WebDashboard.Api
                         html = html.Replace("<html>", "<html data-culture=\"" + localizationCulture + "\" lang=\"" + lang + "\">");
                     }
 
-                    html = html.Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div main><div class=\"pageContainer\">")
-                        .Replace("</body>", "</div></div></paper-drawer-panel></body>");
+                    html = html.Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div class=\"mainDrawerPanelContent\" main><!--<div class=\"pageContainer\">")
+                        .Replace("</body>", "</div>--></div></paper-drawer-panel></body>");
 
                     if (enableMinification)
                     {

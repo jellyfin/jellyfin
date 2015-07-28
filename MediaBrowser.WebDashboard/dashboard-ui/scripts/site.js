@@ -74,6 +74,13 @@ var Dashboard = {
 
     filterHtml: function (html) {
 
+        // replace the first instance
+        html = html.replace('<!--', '');
+
+        // replace the last instance
+        // https://stackoverflow.com/questions/29188409/how-do-i-replace-the-last-occurance-of-a-variable-in-a-string
+        html = html.replace(new RegExp("(.*)" + '-->'), "");
+
         return Globalize.translateDocument(html, 'html');
     },
 
@@ -2066,9 +2073,6 @@ var AppInfo = {};
         });
     }
 
-    var pageContainer = document.querySelector('.pageContainer');
-    var pageContainerInnerHtml = pageContainer ? pageContainer.innerHTML : '';
-
     function onConnectionManagerCreated(deferred) {
 
         Globalize.ensure().done(function () {
@@ -2076,8 +2080,13 @@ var AppInfo = {};
 
                 document.title = Globalize.translateDocument(document.title, 'html');
 
-                if (pageContainer) {
-                    pageContainer.innerHTML = Globalize.translateDocument(pageContainerInnerHtml, 'html');
+                var mainDrawerPanelContent = document.querySelector('.mainDrawerPanelContent');
+
+                if (mainDrawerPanelContent) {
+                    var newHtml = mainDrawerPanelContent.innerHTML.substring(4);
+                    newHtml = newHtml.substring(0, newHtml.length - 3);
+
+                    mainDrawerPanelContent.innerHTML = Globalize.translateDocument(newHtml, 'html');
                 }
 
                 onDocumentReady();
