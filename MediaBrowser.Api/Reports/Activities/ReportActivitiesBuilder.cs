@@ -130,6 +130,7 @@ namespace MediaBrowser.Api.Reports
             {
                 case HeaderMetadata.Name:
                     option.Column = (i, r) => i.Name;
+                    option.Header.SortField = "";
                     break;
                 case HeaderMetadata.Overview:
                     option.Column = (i, r) => i.Overview;
