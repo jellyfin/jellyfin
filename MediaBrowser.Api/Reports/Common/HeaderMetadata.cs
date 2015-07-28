@@ -47,6 +47,17 @@ namespace MediaBrowser.Api.Reports
         ImagePrimary,
         ImageBackdrop,
         ImageLogo,
+        Actor, 
+        Studios,
+        Composer, 
+        Director, 
+        GuestStar, 
+        Producer, 
+        Writer,
+        Artist,
+        Years,
+        ParentalRatings,
+        CommunityRatings,
 
         //Activity logs
         Overview,
