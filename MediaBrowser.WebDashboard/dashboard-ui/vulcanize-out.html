@@ -1,4 +1,12 @@
 <html><head><meta charset="UTF-8"><!--
+    @license
+    Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+    This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+    The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+    The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+    Code distributed by Google as part of the polymer project is also
+    subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+--><!--
 @license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
@@ -17743,324 +17751,127 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </script>
 
 </dom-module>
-<dom-module id="paper-radio-button" assetpath="bower_components/paper-radio-button/">
+<dom-module id="paper-icon-item" assetpath="bower_components/paper-item/">
 
   <style>
 /*
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+    @license
+    Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+    This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+    The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+    The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+    Code distributed by Google as part of the polymer project is also
+    subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 
 :host {
-  display: inline-block;
-  white-space: nowrap;
+  display: block;
+  min-height: var(--paper-item-min-height, 48px);
+  padding: 0px 16px;
 }
 
-:host(:focus) {
-  outline: none;
-}
-
-#radioContainer {
-  display: inline-block;
-  position: relative;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  vertical-align: middle;
-}
-
-:host #ink {
-  position: absolute;
-  top: -16px;
-  left: -16px;
-  width: 48px;
-  height: 48px;
-  color: var(--paper-radio-button-unchecked-ink-color, --primary-text-color);
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-:host #ink[checked] {
-  color: var(--paper-radio-button-checked-ink-color, --default-primary-color);
-}
-
-:host #offRadio {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: solid 2px;
-  background-color: var(--paper-radio-button-unchecked-background-color, transparent);
-  border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
-  transition: border-color 0.28s;
-}
-
-:host #onRadio {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--paper-radio-button-checked-color, --default-primary-color);
-  -webkit-transform: scale(0);
-  transform: scale(0);
-  transition: -webkit-transform ease 0.28s;
-  transition: transform ease 0.28s;
-}
-
-:host([checked]) #offRadio {
-  border-color: var(--paper-radio-button-checked-color, --default-primary-color);
-}
-
-:host([checked]) #onRadio {
-  -webkit-transform: scale(1);
-  transform: scale(1);
-}
-
-#radioLabel {
-  position: relative;
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 10px;
-  white-space: normal;
-  pointer-events: none;
-  color: var(--paper-radio-button-label-color, --primary-text-color);
-}
-
-#radioLabel[hidden] {
-  display: none;
-}
-
-/* disabled state */
-:host([disabled]) {
-  pointer-events: none;
-}
-
-:host([disabled]) #offRadio {
-  border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
-  opacity: 0.5;
-}
-
-:host([disabled][checked]) #onRadio {
-  background-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
-  opacity: 0.5;
-}
-
-:host([disabled]) #radioLabel {
-  /* slightly darker than the button, so that it's readable */
-  opacity: 0.65;
+:host > ::content > *:not(:first-child):not(:last-child) {
+  margin-right: 16px;
 }
 
 </style>
 
-  <template>
-
-    <div id="radioContainer">
-      <div id="offRadio"></div>
-      <div id="onRadio"></div>
-      <paper-ripple id="ink" class="circle" center="" checked$="[[checked]]"></paper-ripple>
-    </div>
-
-    <div id="radioLabel" aria-hidden="true"><content></content></div>
-
-  </template>
-
-  <script>
-    Polymer({
-      is: 'paper-radio-button',
-
-      behaviors: [
-        Polymer.PaperInkyFocusBehavior
-      ],
-
-      hostAttributes: {
-        role: 'radio',
-        'aria-checked': false,
-        tabindex: 0
-      },
-
-      properties: {
-        /**
-         * Fired when the checked state changes due to user interaction.
-         *
-         * @event change
-         */
-
-        /**
-         * Fired when the checked state changes.
-         *
-         * @event iron-change
-         */
-
-        /**
-         * Gets or sets the state, `true` is checked and `false` is unchecked.
-         */
-        checked: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,
-          notify: true,
-          observer: '_checkedChanged'
-        },
-
-        /**
-         * If true, the button toggles the active state with each tap or press
-         * of the spacebar.
-         */
-        toggles: {
-          type: Boolean,
-          value: true,
-          reflectToAttribute: true
-        }
-      },
-
-      ready: function() {
-        if (Polymer.dom(this).textContent == '') {
-          this.$.radioLabel.hidden = true;
-        } else {
-          this.setAttribute('aria-label', Polymer.dom(this).textContent);
-        }
-        this._isReady = true;
-      },
-
-      _buttonStateChanged: function() {
-        if (this.disabled) {
-          return;
-        }
-        if (this._isReady) {
-          this.checked = this.active;
-        }
-      },
-
-      _checkedChanged: function() {
-        this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
-        this.active = this.checked;
-        this.fire('iron-change');
-      }
-    })
-  </script>
-
-</dom-module>
-<dom-module name="paper-radio-group">
   <style>
+
     :host {
-      display: inline-block;
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+      @apply(--paper-font-subhead);
+
+      @apply(--paper-item);
+      @apply(--paper-icon-item);
     }
 
-    :host ::content > * {
-      padding: 12px;
+    .content-icon {
+      width: var(--paper-item-icon-width, 56px);
     }
+
   </style>
 
   <template>
-      <content id="items" select="*"></content>
+    <div id="contentIcon" class="content-icon layout horizontal center">
+      <content select="[item-icon]"></content>
+    </div>
+    <content></content>
   </template>
 
 </dom-module>
 
 <script>
-  Polymer({
-    is: 'paper-radio-group',
 
-    behaviors: [
-      Polymer.IronA11yKeysBehavior,
-      Polymer.IronSelectableBehavior
-    ],
+(function() {
+
+  Polymer({
+
+    is: 'paper-icon-item',
 
     hostAttributes: {
-      role: 'radiogroup',
-      tabindex: 0
-    },
+      'role': 'listitem'
+    }
 
-    properties: {
-      /**
-       * Overriden from Polymer.IronSelectableBehavior
-       */
-      attrForSelected: {
-        type: String,
-        value: 'name'
-      },
-
-      /**
-       * Overriden from Polymer.IronSelectableBehavior
-       */
-      selectedAttribute: {
-        type: String,
-        value: 'checked'
-      },
-
-      /**
-       * Overriden from Polymer.IronSelectableBehavior
-       */
-      selectable: {
-        type: String,
-        value: 'paper-radio-button'
-      }
-    },
-
-    keyBindings: {
-      'left up': 'selectPrevious',
-      'right down': 'selectNext',
-    },
-
-    /**
-     * Selects the given value.
-     */
-     select: function(value) {
-      if (this.selected) {
-        var oldItem = this._valueToItem(this.selected);
-
-        // Do not allow unchecking the selected item.
-        if (this.selected == value) {
-          oldItem.checked = true;
-          return;
-        }
-
-        if (oldItem)
-          oldItem.checked = false;
-      }
-
-      Polymer.IronSelectableBehavior.select.apply(this, [value]);
-      this.fire('paper-radio-group-changed');
-    },
-
-    /**
-     * Selects the previous item. If the previous item is disabled, then it is
-     * skipped, and its previous item is selected
-     */
-    selectPrevious: function() {
-      var length = this.items.length;
-      var newIndex = Number(this._valueToIndex(this.selected));
-
-      do {
-        newIndex = (newIndex - 1 + length) % length;
-      } while (this.items[newIndex].disabled)
-
-      this.select(this._indexToValue(newIndex));
-    },
-
-    /**
-     * Selects the next item. If the next item is disabled, then it is
-     * skipped, and the next item after it is selected.
-     */
-    selectNext: function() {
-      var length = this.items.length;
-      var newIndex = Number(this._valueToIndex(this.selected));
-
-      do {
-        newIndex = (newIndex + 1 + length) % length;
-      } while (this.items[newIndex].disabled)
-
-      this.select(this._indexToValue(newIndex));
-    },
   });
+
+})();
+
+</script>
+<dom-module id="paper-item-body" assetpath="bower_components/paper-item/">
+
+  <style>
+
+    :host {
+      overflow: hidden; /* needed for text-overflow: ellipsis to work on ff */
+      @apply(--layout-vertical);
+      @apply(--layout-center-justified);
+      @apply(--layout-flex);
+    }
+
+    :host([two-line]) {
+      min-height: var(--paper-item-body-two-line-min-height, 72px);
+    }
+
+    :host([three-line]) {
+      min-height: var(--paper-item-body-three-line-min-height, 88px);
+    }
+
+    :host > ::content > * {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    :host > ::content [secondary] {
+      color: var(--paper-item-body-secondary-color, --secondary-text-color);
+      @apply(--paper-font-body1);
+
+      @apply(--paper-item-body-secondary);
+    }
+
+
+  </style>
+
+  <template>
+    <content></content>
+  </template>
+
+</dom-module>
+
+<script>
+
+(function() {
+
+  Polymer({
+
+    is: 'paper-item-body'
+
+  });
+
+})();
+
 </script>
 <iron-iconset-svg name="icons" size="24">
     <svg>

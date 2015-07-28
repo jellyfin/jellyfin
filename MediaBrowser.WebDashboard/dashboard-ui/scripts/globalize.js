@@ -17,7 +17,7 @@
         return dictionaries[getUrl(name, culture)];
     }
 
-    function loadDictionary(name, culture) {
+    function loadDictionary(name, culture, loadUrl, saveUrl) {
 
         var deferred = DeferredBuilder.Deferred();
 
@@ -25,10 +25,8 @@
             deferred.resolve();
         } else {
 
-            var url = getUrl(name, culture);
-
-            $.getJSON(url).done(function (dictionary) {
-                dictionaries[url] = dictionary;
+            $.getJSON(loadUrl).done(function (dictionary) {
+                dictionaries[saveUrl] = dictionary;
                 deferred.resolve();
             });
         }
@@ -41,7 +39,19 @@
 
         currentCulture = value;
 
-        return $.when(loadDictionary('html', value), loadDictionary('javascript', value));
+        var htmlValue = value;
+        var jsValue = value;
+
+        var htmlUrl = getUrl('html', htmlValue);
+        var jsUrl = getUrl('javascript', jsValue);
+
+        var htmlLoadUrl = getUrl('html', htmlValue);
+        var jsLoadUrl = getUrl('javascript', jsValue);
+
+        //htmlLoadUrl = getUrl('html', 'server');
+        //jsLoadUrl = getUrl('javascript', 'javascript');
+
+        return $.when(loadDictionary('html', htmlValue, htmlLoadUrl, htmlUrl), loadDictionary('javascript', jsValue, jsLoadUrl, jsUrl));
     }
 
     function ensure() {

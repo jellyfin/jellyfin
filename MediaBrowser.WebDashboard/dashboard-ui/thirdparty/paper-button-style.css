@@ -343,3 +343,48 @@ paper-menu-item {
 .scrollablePaperTabs #tabsContent {
     position: static !important;
 }*/
+
+.ui-page-theme-b paper-item-body [secondary] {
+    color: #aaa;
+}
+
+.ui-page-theme-b paper-checkbox {
+    color: #fff;
+}
+
+    .ui-page-theme-b paper-checkbox paper-ripple {
+        color: inherit !important;
+    }
+
+    .ui-page-theme-b paper-checkbox #checkboxLabel.paper-checkbox {
+        color: inherit;
+    }
+
+.ui-page-theme-b .paperCheckboxFieldDescription {
+    color: #ccc;
+}
+
+.ui-page-theme-b paper-checkbox #checkbox.paper-checkbox {
+    border-color: #ccc;
+}
+
+.ui-page-theme-b paper-checkbox #checkbox.checked.paper-checkbox {
+    background-color: #2ad;
+    border-color: #2ad;
+}
+
+.ui-page-theme-b paper-input label {
+    color: #fff !important;
+}
+
+.ui-page-theme-b paper-input input {
+    color: #fff !important;
+}
+
+.ui-page-theme-b paper-input .focused-line {
+    background-color: #52B54B !important;
+}
+
+.ui-page-theme-b .unfocused-line.paper-input-container {
+    background: #858585;
+}

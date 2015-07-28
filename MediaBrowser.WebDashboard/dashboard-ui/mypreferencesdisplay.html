@@ -5,23 +5,16 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="displayPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage" data-contextname="${HeaderSettings}" data-require="scripts/mypreferencesdisplay,scripts/mypreferencescommon,paperbuttonstyle,jqmicons">
-
-        <div class="libraryViewNav">
-            <a href="#" class="ui-btn-active lnkDisplayPreferences">${TabGeneral}</a>
-            <a href="#" class="lnkHomeScreenPreferences">${TabHomeScreen}</a>
-            <a href="#" class="lnkLanguagePreferences">${TabPlayback}</a>
-            <a href="#" class="lnkMyProfile">${TabProfile}</a>
-        </div>
+    <div id="displayPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderDisplaySettings}" data-require="scripts/mypreferencesdisplay,paperbuttonstyle,jqmicons" data-backbutton="true" data-menubutton="false">
 
         <div data-role="content">
-            <br />
             <form class="displayPreferencesForm userProfileSettingsForm" style="margin: 0 auto;">
 
                 <div class="detailSection">
-                    <div class="detailSectionHeader">
+                    <h1>
                         ${HeaderNavigation}
-                    </div>
+                    </h1>
+
                     <div class="detailSectionContent">
                         <br />
                         <div>
@@ -46,11 +39,9 @@
 
                         <div class="fldFullscreen">
                             <br />
+                            <br />
                             <div>
-                                <div data-role="controlgroup">
-                                    <label for="chkEnableFullScreen">${LabelEnableFullScreen}</label>
-                                    <input type="checkbox" id="chkEnableFullScreen" />
-                                </div>
+                                <paper-checkbox class="chkEnableFullScreen">${LabelEnableFullScreen}</paper-checkbox>
                             </div>
                         </div>
 
@@ -58,52 +49,37 @@
                 </div>
 
                 <div class="detailSection syncSettingsSection">
-                    <div class="detailSectionHeader">
+                    <h1>
                         ${HeaderSync}
-                    </div>
+                    </h1>
                     <div class="detailSectionContent">
-                        <br />
-                        <div>
-                            <div data-role="controlgroup">
-                                <label for="chkSyncToExternalCard">${OptionSyncToSDCard}</label>
-                                <input type="checkbox" id="chkSyncToExternalCard" />
-                            </div>
-                        </div>
+                        <paper-checkbox class="chkSyncToExternalCard">${OptionSyncToSDCard}</paper-checkbox>
 
                     </div>
                 </div>
 
                 <div class="detailSection requiresUserPreferences">
-                    <div class="detailSectionHeader">
+                    <h1>
                         ${HeaderDisplay}<span style="color:#52B54B;margin-left:.5em;">*</span>
-                    </div>
+                    </h1>
                     <div class="detailSectionContent">
                         <br />
-                        <div data-role="controlgroup">
-                            <div>
-                                <input type="checkbox" id="chkDisplayMissingEpisodes" />
-                                <label for="chkDisplayMissingEpisodes">${LabelDisplayMissingEpisodesWithinSeasons}</label>
-                            </div>
-                            <div>
-                                <input type="checkbox" id="chkDisplayUnairedEpisodes" />
-                                <label for="chkDisplayUnairedEpisodes">${LabelUnairedMissingEpisodesWithinSeasons}</label>
-                            </div>
+                        <div>
+                            <paper-checkbox class="chkDisplayMissingEpisodes">${LabelDisplayMissingEpisodesWithinSeasons}</paper-checkbox>
                         </div>
                         <br />
                         <div>
-                            <div data-role="controlgroup">
-                                <input type="checkbox" id="chkDisplayTrailersWithinMovieSuggestions" />
-                                <label for="chkDisplayTrailersWithinMovieSuggestions">${LabelDisplayTrailersWithinMovieSuggestions}</label>
-                            </div>
-                            <div class="fieldDescription">${LabelDisplayTrailersWithinMovieSuggestionsHelp}</div>
+                            <paper-checkbox class="chkDisplayUnairedEpisodes">${LabelUnairedMissingEpisodesWithinSeasons}</paper-checkbox>
                         </div>
                         <br />
                         <div>
-                            <div data-role="controlgroup">
-                                <input type="checkbox" id="chkGroupMoviesIntoCollections" />
-                                <label for="chkGroupMoviesIntoCollections">${LabelGroupMoviesIntoCollections}</label>
-                            </div>
-                            <div class="fieldDescription">${LabelGroupMoviesIntoCollectionsHelp}</div>
+                            <paper-checkbox class="chkDisplayTrailersWithinMovieSuggestions">${LabelDisplayTrailersWithinMovieSuggestions}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelDisplayTrailersWithinMovieSuggestionsHelp}</div>
+                        </div>
+                        <br />
+                        <div>
+                            <paper-checkbox class="chkGroupMoviesIntoCollections">${LabelGroupMoviesIntoCollections}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelGroupMoviesIntoCollectionsHelp}</div>
                         </div>
                     </div>
 
@@ -113,8 +89,6 @@
                     <button type="submit" data-role="none" class="clearButton">
                         <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                     </button>
-
-                    <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                 </div>
                 <p>
                     <span style="color:#52B54B;margin-left:.5em;margin-right:.5em;">*</span><span>${LegendTheseSettingsShared}</span>

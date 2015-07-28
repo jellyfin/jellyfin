@@ -5,23 +5,15 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="homeScreenPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage" data-contextname="${HeaderSettings}" data-require="scripts/mypreferenceshome,scripts/mypreferencescommon,paperbuttonstyle,jqmicons">
-
-        <div class="libraryViewNav">
-            <a href="#" class="lnkDisplayPreferences">${TabGeneral}</a>
-            <a href="#" class="ui-btn-active lnkHomeScreenPreferences">${TabHomeScreen}</a>
-            <a href="#" class="lnkLanguagePreferences">${TabPlayback}</a>
-            <a href="#" class="lnkMyProfile">${TabProfile}</a>
-        </div>
+    <div id="homeScreenPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${HeaderHomeScreenSettings}" data-require="scripts/mypreferenceshome,paperbuttonstyle,jqmicons" data-backbutton="true" data-menubutton="false">
 
         <div data-role="content">
-            <br />
             <form class="homeScreenPreferencesForm userProfileSettingsForm" style="margin: 0 auto;">
 
                 <div class="detailSection">
-                    <div class="detailSectionHeader">
+                    <h1>
                         ${HeaderHomePage}
-                    </div>
+                    </h1>
 
                     <div class="detailSectionContent">
                         <br />
@@ -87,9 +79,9 @@
                 </div>
 
                 <div class="detailSection">
-                    <div class="detailSectionHeader">
+                    <h1>
                         ${HeaderMyViews}<span style="color:#52B54B;margin-left:.5em;">*</span>
-                    </div>
+                    </h1>
                     <div class="detailSectionContent">
                         <div>
                             <p>${LabelSelectFolderGroups}</p>
@@ -99,11 +91,8 @@
                         <br />
 
                         <div>
-                            <div data-role="controlgroup">
-                                <label for="chkDisplayCollectionView">${LabelDisplayCollectionsView}</label>
-                                <input id="chkDisplayCollectionView" type="checkbox" />
-                            </div>
-                            <div class="fieldDescription">${LabelDisplayCollectionsViewHelp}</div>
+                            <paper-checkbox class="chkDisplayCollectionView">${LabelDisplayCollectionsView}</paper-checkbox>
+                            <div class="fieldDescription paperCheckboxFieldDescription">${LabelDisplayCollectionsViewHelp}</div>
                         </div>
 
                         <br />
@@ -119,9 +108,9 @@
                 </div>
 
                 <div class="detailSection viewStylesSection" style="display:none;">
-                    <div class="detailSectionHeader">
+                    <h1>
                         ${HeaderViewStyles}<span style="color:#52B54B;margin-left:.5em;">*</span>
-                    </div>
+                    </h1>
                     <div class="detailSectionContent">
                         <p>${LabelSelectViewStyles}</p>
                         <div class="viewStylesList">
@@ -132,9 +121,9 @@
                 </div>
 
                 <div class="detailSection">
-                    <div class="detailSectionHeader">
+                    <h1>
                         ${HeaderViewOrder}<span style="color:#52B54B;margin-left:.5em;">*</span>
-                    </div>
+                    </h1>
                     <div class="detailSectionContent">
                         <p>${LabelSelectUserViewOrder}</p>
                         <div class="viewOrderList">
@@ -145,9 +134,9 @@
                 </div>
 
                 <div class="detailSection">
-                    <div class="detailSectionHeader">
+                    <h1>
                         ${HeaderLatestItems}<span style="color:#52B54B;margin-left:.5em;">*</span>
-                    </div>
+                    </h1>
                     <div class="detailSectionContent">
                         <p>${LabelSelectLastestItemsFolders}</p>
                         <div class="latestItemsList">
@@ -155,10 +144,7 @@
                         </div>
 
                         <br />
-                        <div data-role="controlgroup">
-                            <label for="chkHidePlayedFromLatest">${OptionHideWatchedContentFromLatestMedia}</label>
-                            <input id="chkHidePlayedFromLatest" type="checkbox" />
-                        </div>
+                        <paper-checkbox class="chkHidePlayedFromLatest">${OptionHideWatchedContentFromLatestMedia}</paper-checkbox>
                     </div>
 
                 </div>
@@ -167,8 +153,6 @@
                     <button type="submit" data-role="none" class="clearButton">
                         <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
                     </button>
-
-                    <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
                 </div>
                 <p>
                     <span style="color:#52B54B;margin-left:.5em;margin-right:.5em;">*</span><span>${LegendTheseSettingsShared}</span>

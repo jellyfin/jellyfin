@@ -20,7 +20,7 @@
             $('#fldConnectInfo', page).show();
         }
 
-        $('.lnkEditUserPreferences', page).attr('href', 'mypreferencesdisplay.html?userId=' + user.Id);
+        $('.lnkEditUserPreferences', page).attr('href', 'mypreferencesmenu.html?userId=' + user.Id);
 
         Dashboard.setPageTitle(user.Name);
 

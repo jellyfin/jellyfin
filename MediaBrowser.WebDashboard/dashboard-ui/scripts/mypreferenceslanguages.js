@@ -28,11 +28,11 @@
         });
 
         $('#selectSubtitlePlaybackMode', page).val(user.Configuration.SubtitleMode || "").selectmenu("refresh").trigger('change');
-        $('#chkPlayDefaultAudioTrack', page).checked(user.Configuration.PlayDefaultAudioTrack || false).checkboxradio("refresh");
-        $('#chkEnableCinemaMode', page).checked(user.Configuration.EnableCinemaMode || false).checkboxradio("refresh");
 
-        $('#chkEnableChromecastAc3', page).checked(AppSettings.enableChromecastAc3()).checkboxradio("refresh");
-        $('#chkExternalVideoPlayer', page).checked(AppSettings.enableExternalPlayers()).checkboxradio("refresh");
+        page.querySelector('.chkPlayDefaultAudioTrack').checked = user.Configuration.PlayDefaultAudioTrack || false;
+        page.querySelector('.chkEnableCinemaMode').checked = user.Configuration.EnableCinemaMode || false;
+        page.querySelector('.chkEnableChromecastAc3').checked = AppSettings.enableChromecastAc3();
+        page.querySelector('.chkExternalVideoPlayer').checked = AppSettings.enableExternalPlayers();
 
         var bitrateOptions = MediaPlayer.getVideoQualityOptions().map(function (i) {
 
@@ -81,8 +81,8 @@
         user.Configuration.SubtitleLanguagePreference = $('#selectSubtitleLanguage', page).val();
 
         user.Configuration.SubtitleMode = $('#selectSubtitlePlaybackMode', page).val();
-        user.Configuration.PlayDefaultAudioTrack = $('#chkPlayDefaultAudioTrack', page).checked();
-        user.Configuration.EnableCinemaMode = $('#chkEnableCinemaMode', page).checked();
+        user.Configuration.PlayDefaultAudioTrack = page.querySelector('.chkPlayDefaultAudioTrack').checked;
+        user.Configuration.EnableCinemaMode = page.querySelector('.chkEnableCinemaMode').checked;
 
         ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
             Dashboard.alert(Globalize.translate('SettingsSaved'));
@@ -98,10 +98,11 @@
 
         Dashboard.showLoadingMsg();
 
-        AppSettings.enableExternalPlayers($('#chkExternalVideoPlayer', page).checked());
+        AppSettings.enableExternalPlayers(page.querySelector('.chkExternalVideoPlayer').checked);
+
         AppSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
         AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
-        AppSettings.enableChromecastAc3($('#chkEnableChromecastAc3', page).checked());
+        AppSettings.enableExternalPlayers(page.querySelector('.chkEnableChromecastAc3').checked);
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 

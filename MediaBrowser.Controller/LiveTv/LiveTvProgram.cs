@@ -227,5 +227,19 @@ namespace MediaBrowser.Controller.LiveTv
             info.IsMovie = IsMovie; 
             return info;
         }
+
+        public override bool SupportsPeople
+        {
+            get
+            {
+                // Optimization
+                if (IsNews || IsSports)
+                {
+                    return false;
+                }
+
+                return base.SupportsPeople;
+            }
+        }
     }
 }

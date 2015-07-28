@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Emby</title>
+</head>
+<body>
+    <div id="myPreferencesMenuPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-contextname="${HeaderSettings}" data-require="scripts/mypreferencescommon,paperbuttonstyle,jqmicons">
+
+        <style>
+            .avatar.green {
+                background-color: #81c784;
+            }
+
+            .avatar.orange {
+                background-color: #ffd54f;
+            }
+
+            .avatar.blue {
+                background-color: #4fc3f7;
+            }
+
+            .avatar.red {
+                background-color: #e57373;
+            }
+
+            .avatar {
+                display: inline-block;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                overflow: hidden;
+                background: #ccc;
+            }
+
+            .list {
+                padding-top: 12px;
+                background-color: #303030;
+                margin: 12px auto;
+                box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+            }
+        </style>
+        <div data-role="content">
+            <div class="readOnlyContent" style="margin: 0 auto;">
+                <h1>${HeaderSettings}</h1>
+                <div class="list">
+                    <a href="#" class="clearLink lnkDisplayPreferences">
+                        <paper-icon-item>
+                            <div class="avatar blue" item-icon></div>
+                            <paper-item-body two-line>
+                                <div>${ButtonDisplaySettings}</div>
+                                <div secondary>${ButtonDisplaySettingsHelp}</div>
+                            </paper-item-body>
+                            <iron-icon icon="tv"></iron-icon>
+                        </paper-icon-item>
+                    </a>
+
+                    <a href="#" class="clearLink lnkHomeScreenPreferences">
+                        <paper-icon-item>
+                            <div class="avatar red" item-icon></div>
+                            <paper-item-body two-line>
+                                <div>${ButtonHomeScreenSettings}</div>
+                                <div secondary>${ButtonHomeScreenSettingsHelp}</div>
+                            </paper-item-body>
+                            <iron-icon icon="home"></iron-icon>
+                        </paper-icon-item>
+                    </a>
+
+                    <a href="#" class="clearLink lnkLanguagePreferences">
+                        <paper-icon-item>
+                            <div class="avatar green" item-icon></div>
+                            <paper-item-body two-line>
+                                <div>${ButtonPlaybackSettings}</div>
+                                <div secondary>${ButtonPlaybackSettingsHelp}</div>
+                            </paper-item-body>
+                            <iron-icon icon="play-circle-outline"></iron-icon>
+                        </paper-icon-item>
+                    </a>
+
+                    <a href="#" class="clearLink lnkMyProfile">
+                        <paper-icon-item>
+                            <div class="avatar orange" item-icon></div>
+                            <paper-item-body two-line>
+                                <div>${ButtonProfile}</div>
+                                <div secondary>${ButtonProfileHelp}</div>
+                            </paper-item-body>
+                            <iron-icon icon="person"></iron-icon>
+                        </paper-icon-item>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

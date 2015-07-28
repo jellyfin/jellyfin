@@ -159,9 +159,8 @@
 
     function loadForm(page, user, displayPreferences) {
 
-        $('#chkDisplayCollectionView', page).checked(user.Configuration.DisplayCollectionsView || false).checkboxradio("refresh");
-
-        $('#chkHidePlayedFromLatest', page).checked(user.Configuration.HidePlayedInLatest || false).checkboxradio("refresh");
+        page.querySelector('.chkDisplayCollectionView').checked = user.Configuration.DisplayCollectionsView || false;
+        page.querySelector('.chkHidePlayedFromLatest').checked = user.Configuration.HidePlayedInLatest || false;
 
         $('#selectHomeSection1', page).val(displayPreferences.CustomPrefs.home0 || '').selectmenu("refresh");
         $('#selectHomeSection2', page).val(displayPreferences.CustomPrefs.home1 || '').selectmenu("refresh");
@@ -191,9 +190,8 @@
 
     function saveUser(page, user, displayPreferences) {
 
-        user.Configuration.DisplayCollectionsView = $('#chkDisplayCollectionView', page).checked();
-
-        user.Configuration.HidePlayedInLatest = $('#chkHidePlayedFromLatest', page).checked();
+        user.Configuration.DisplayCollectionsView = page.querySelector('.chkDisplayCollectionView').checked;
+        user.Configuration.HidePlayedInLatest = page.querySelector('.chkHidePlayedFromLatest').checked;
 
         user.Configuration.LatestItemsExcludes = $(".chkIncludeInLatest:not(:checked)", page).get().map(function (i) {
 
@@ -239,7 +237,7 @@
 
     function onSubmit() {
 
-        var page = $(this).parents('.page');
+        var page = $(this).parents('.page')[0];
 
         Dashboard.showLoadingMsg();
 

@@ -1,4 +1,4 @@
-﻿$(document).on('pageshowready', ".userPreferencesPage", function () {
+﻿$(document).on('pageshowready', "#myPreferencesMenuPage", function () {
 
     var page = this;
 
