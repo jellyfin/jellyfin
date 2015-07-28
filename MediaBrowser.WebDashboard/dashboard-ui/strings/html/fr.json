@@ -1484,5 +1484,15 @@
     "HeaderImagePrimary": "Primaire",
     "HeaderImageBackdrop": "Contexte",
     "HeaderImageLogo": "Logo",
-    "HeaderUserPrimaryImage": "Avatar de l'utilisateur"
+    "HeaderUserPrimaryImage": "Avatar de l'utilisateur",
+    "ButtonDisplaySettings": "Display settings",
+    "ButtonHomeScreenSettings": "Home screen settings",
+    "ButtonPlaybackSettings": "Playback settings",
+    "ButtonProfile": "Profile",
+    "ButtonDisplaySettingsHelp": "Your Emby display settings",
+    "ButtonHomeScreenSettingsHelp": "Configure the display of your home screen",
+    "ButtonPlaybackSettingsHelp": "Specify your audio and subtitle preferences, streaming quality, and more.",
+    "ButtonProfileHelp": "Set your profile image and password.",
+    "HeaderHomeScreenSettings": "Home Screen Settings",
+    "HeaderProfile": "Profile"
 }

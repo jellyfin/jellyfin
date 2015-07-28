@@ -821,5 +821,6 @@
     "ButtonBecomeSupporter": "Devenez supporteur Emby",
     "ButtonClosePlayVideo": "Fermer et lire mon m\u00e9dia",
     "MessageDidYouKnowCinemaMode": "Saviez-vous qu'en devenant membre supporteur Emby, vous pouvez am\u00e9liorer votre exp\u00e9rience utilisateur avec des fonctionnalit\u00e9s comme le mode Cin\u00e9ma ?",
-    "MessageDidYouKnowCinemaMode2": "Le mode Cin\u00e9ma vous apporte une vraie exp\u00e9rience utilisateur de cin\u00e9ma, avec les bandes-annonces et les intros personnalis\u00e9es avant le film principal."
+    "MessageDidYouKnowCinemaMode2": "Le mode Cin\u00e9ma vous apporte une vraie exp\u00e9rience utilisateur de cin\u00e9ma, avec les bandes-annonces et les intros personnalis\u00e9es avant le film principal.",
+    "OptionEnableDisplayMirroring": "Enable display mirroring"
 }

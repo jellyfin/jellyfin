@@ -287,7 +287,7 @@
     "HeaderSelectPath": "Verzeichnis W\u00e4hlen",
     "ButtonNetwork": "Netzwerk",
     "MessageDirectoryPickerInstruction": "Falls der Netzwerk Button deine Endger\u00e4te nicht automatisch findet, kannst du deren Netzwerkpfade auch manuell eintragen. Zum Beispiel {0} oder {1}.",
-    "MessageDirectoryPickerBSDInstruction": "For BSD, you may need to configure storage within your FreeNAS Jail in order to allow Emby to access it.",
+    "MessageDirectoryPickerBSDInstruction": "F\u00fcr BSD m\u00fcssen Sie ggf. Speicherplatz auf Ihrem FreeNAS Jail f\u00fcr Empby freigeben.",
     "HeaderMenu": "Men\u00fc",
     "ButtonOpen": "\u00d6ffnen",
     "ButtonOpenInNewTab": "\u00d6ffne in neuem Tab",
@@ -815,11 +815,12 @@
     "ErrorAddingTunerDevice": "Es trat ein Fehler beim hinzuf\u00fcgen eines Tuners auf. Bitte stellen Sie sicher das dieser erreichbar ist und versuchen Sie es erneut.",
     "ErrorSavingTvProvider": "Ein Fehler beim speichern des TV Verzeichnisses trat auf. Bitte stellen Sie sicher das dieser erreichbar ist und versuchen Sie es erneut.",
     "ErrorGettingTvLineups": "Ein Fehler beim herunterladen des TV Programms trat auf. Bitte stellen Sie sicher das Benutzername und Passwort korrekt sind und versuchen Sie es erneut.",
-    "MessageCreateAccountAt": "Create an account at {0}",
-    "ErrorPleaseSelectLineup": "Please select a lineup and try again. If no lineups are available, then please check that your username, password, and postal code is correct.",
-    "HeaderTryCinemaMode": "Try Cinema Mode",
-    "ButtonBecomeSupporter": "Become an Emby Supporter",
-    "ButtonClosePlayVideo": "Close and play my media",
-    "MessageDidYouKnowCinemaMode": "Did you know that by becoming an Emby Supporter, you can enhance your experience with features like Cinema Mode?",
-    "MessageDidYouKnowCinemaMode2": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the main feature."
+    "MessageCreateAccountAt": "Erstellen Sie ein Konto bei {0}",
+    "ErrorPleaseSelectLineup": "Bitte w\u00e4hlen Sie ein TV Programm und versuchen Sie es erneut. Wenn keine Programme verf\u00fcgbar sind pr\u00fcfen Sie bitte Benutzername, Passwort und Ihre Postleitzahl.",
+    "HeaderTryCinemaMode": "Versuche Kino Modus",
+    "ButtonBecomeSupporter": "Werde ein Emby Unterst\u00fctzer",
+    "ButtonClosePlayVideo": "Schlie\u00dfe und starte meine Medien",
+    "MessageDidYouKnowCinemaMode": "Wussten Sie es schon? Wenn Sie ein Emby Unterst\u00fctzer sind k\u00f6nnen Sie den Komfort von Emby mit Funktionen wie dem Kino Modus erweitern.",
+    "MessageDidYouKnowCinemaMode2": "Der Kino-Modus bringt ihnen das richtige Kino-Erlebnis nach Hause, mit Trailern und eigenen Intros vor Ihrem Hauptfilm.",
+    "OptionEnableDisplayMirroring": "Enable display mirroring"
 }

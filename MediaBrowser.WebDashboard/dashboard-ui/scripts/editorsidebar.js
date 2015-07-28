@@ -488,10 +488,10 @@
             var deferred = DeferredBuilder.Deferred();
 
             require([
-                'thirdparty/jstree3.0.8/jstree.min'
+                'bower_components/jstree/dist/jstree.min'
             ], function () {
 
-                Dashboard.importCss('thirdparty/jstree3.0.8/themes/default/style.min.css');
+                Dashboard.importCss('thirdparty/jstree/themes/default/style.min.css');
                 deferred.resolve();
             });
             return deferred.promise();
