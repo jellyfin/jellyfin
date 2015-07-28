@@ -312,7 +312,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
                 trigger.Triggered -= trigger_Triggered;
                 trigger.Triggered += trigger_Triggered;
-                trigger.Start(isApplicationStartup);
+                trigger.Start(LastExecutionResult, isApplicationStartup);
             }
         }
 
@@ -340,7 +340,7 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
 
             await Task.Delay(1000).ConfigureAwait(false);
 
-            trigger.Start(false);
+            trigger.Start(LastExecutionResult, false);
         }
 
         private Task _currentTask;

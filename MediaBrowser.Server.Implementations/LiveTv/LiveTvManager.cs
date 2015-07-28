@@ -13,6 +13,7 @@ using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Sorting;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
@@ -772,8 +773,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 MaxStartDate = query.MaxStartDate,
                 ChannelIds = query.ChannelIds,
                 IsMovie = query.IsMovie,
-                IsSports = query.IsSports
+                IsSports = query.IsSports,
+                Genres = query.Genres
             };
+
+            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
+            if (user != null)
+            {
+                internalQuery.MaxParentalRating = user.Policy.MaxParentalRating;
+
+                if (user.Policy.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram))
+                {
+                    internalQuery.HasParentalRating = true;
+                }
+            }
 
             if (query.HasAired.HasValue)
             {
@@ -788,20 +801,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
 
             IEnumerable<LiveTvProgram> programs = _libraryManager.GetItems(internalQuery).Items.Cast<LiveTvProgram>();
-
-            // Apply genre filter
-            if (query.Genres.Length > 0)
-            {
-                programs = programs.Where(p => p.Genres.Any(g => query.Genres.Contains(g, StringComparer.OrdinalIgnoreCase)));
-            }
-
-            var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
-            if (user != null)
-            {
-                // Avoid implicitly captured closure
-                var currentUser = user;
-                programs = programs.Where(i => i.IsVisible(currentUser));
-            }
 
             programs = _libraryManager.Sort(programs, user, query.SortBy, query.SortOrder ?? SortOrder.Ascending)
                 .Cast<LiveTvProgram>();
@@ -860,13 +859,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
             }
 
-            IEnumerable<LiveTvProgram> programs = _libraryManager.GetItems(internalQuery).Items.Cast<LiveTvProgram>();
-
             var user = _userManager.GetUserById(query.UserId);
+            if (user != null)
+            {
+                internalQuery.MaxParentalRating = user.Policy.MaxParentalRating;
 
-            // Avoid implicitly captured closure
-            var currentUser = user;
-            programs = programs.Where(i => i.IsVisible(currentUser));
+                if (user.Policy.BlockUnratedItems.Contains(UnratedItem.LiveTvProgram))
+                {
+                    internalQuery.HasParentalRating = true;
+                }
+            }
+
+            IEnumerable<LiveTvProgram> programs = _libraryManager.GetItems(internalQuery).Items.Cast<LiveTvProgram>();
 
             var programList = programs.ToList();
 

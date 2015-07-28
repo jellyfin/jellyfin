@@ -42,10 +42,6 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             return new ITaskTrigger[] 
             { 
-                new StartupTrigger{DelayMs = 10000},
-
-                new SystemEventTrigger{ SystemEvent = SystemEvent.WakeFromSleep},
-
                 new IntervalTrigger{ Interval = TimeSpan.FromHours(24)}
             };
         }

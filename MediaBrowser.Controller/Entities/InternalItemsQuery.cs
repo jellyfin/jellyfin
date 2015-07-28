@@ -94,6 +94,7 @@ namespace MediaBrowser.Controller.Entities
         public string[] ChannelIds { get; set; }
 
         internal List<Guid> ItemIdsFromPersonFilters { get; set; }
+        public int? MaxParentalRating { get; set; }
 
         public InternalItemsQuery()
         {

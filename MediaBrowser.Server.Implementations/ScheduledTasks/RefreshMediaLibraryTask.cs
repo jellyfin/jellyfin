@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Tasks;
 using MediaBrowser.Server.Implementations.Library;
 using System;
 using System.Collections.Generic;
@@ -37,8 +36,6 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
             return new ITaskTrigger[] { 
 
                 new StartupTrigger(),
-
-                new SystemEventTrigger{ SystemEvent = SystemEvent.WakeFromSleep},
 
                 new IntervalTrigger{ Interval = TimeSpan.FromHours(6)}
             };
