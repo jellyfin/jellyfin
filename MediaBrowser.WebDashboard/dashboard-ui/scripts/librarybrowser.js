@@ -832,7 +832,7 @@
                 return "itembynamedetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "Recording") {
-                return "livetvrecording.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id;
             }
 
             if (item.Type == "MusicArtist") {

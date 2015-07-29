@@ -296,9 +296,9 @@
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
             if (pluginSecurityInfo.IsMBSupporter || !AppInfo.enableSupporterMembership) {
-                $('.syncPromotion', page).hide();
+                $('.supporterPromotionContainer', hide).show();
             } else {
-                $('.syncPromotion', page).show();
+                $('.supporterPromotionContainer', page).show();
             }
         });
 

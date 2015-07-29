@@ -1398,7 +1398,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
 
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
-            if (!$('.staticSupporterPromotion', page).length) {
+            if (!$('.customSupporterPromotion', page).length) {
                 $('.supporterPromotion', page).remove();
 
                 if (!pluginSecurityInfo.IsMBSupporter && AppInfo.enableSupporterMembership) {

@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
@@ -376,17 +377,40 @@ namespace MediaBrowser.Api.LiveTv
         public string Country { get; set; }
     }
 
+    [Route("/LiveTv/ListingProviders/SchedulesDirect/Countries", "GET", Summary = "Gets available lineups")]
+    [Authenticated]
+    public class GetSchedulesDirectCountries
+    {
+    }
+
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;
         private readonly IUserManager _userManager;
         private readonly IConfigurationManager _config;
+        private readonly IHttpClient _httpClient;
 
-        public LiveTvService(ILiveTvManager liveTvManager, IUserManager userManager, IConfigurationManager config)
+        public LiveTvService(ILiveTvManager liveTvManager, IUserManager userManager, IConfigurationManager config, IHttpClient httpClient)
         {
             _liveTvManager = liveTvManager;
             _userManager = userManager;
             _config = config;
+            _httpClient = httpClient;
+        }
+
+        public async Task<object> Get(GetSchedulesDirectCountries request)
+        {
+            // https://json.schedulesdirect.org/20141201/available/countries
+
+            var response = await _httpClient.Get(new HttpRequestOptions
+            {
+                Url = "https://json.schedulesdirect.org/20141201/available/countries",
+                CacheLength = TimeSpan.FromDays(1),
+                CacheMode = CacheMode.Unconditional
+
+            }).ConfigureAwait(false);
+
+            return ResultFactory.GetResult(response, "application/json");
         }
 
         private void AssertUserCanManageLiveTv()

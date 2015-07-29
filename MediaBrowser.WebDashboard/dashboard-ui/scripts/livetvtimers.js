@@ -103,8 +103,6 @@
         ApiClient.getLiveTvTimers().done(function (result) {
 
             renderTimers(page, result.Items);
-
-            LibraryBrowser.setLastRefreshed(page);
         });
     }
 

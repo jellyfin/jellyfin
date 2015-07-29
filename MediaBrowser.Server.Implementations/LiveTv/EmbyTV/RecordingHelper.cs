@@ -1,51 +1,12 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
     internal class RecordingHelper
     {
-        public static List<TimerInfo> GetTimersForSeries(SeriesTimerInfo seriesTimer, IEnumerable<ProgramInfo> epgData, IReadOnlyList<RecordingInfo> currentRecordings, ILogger logger)
-        {
-            List<TimerInfo> timers = new List<TimerInfo>();
-
-            // Filtered Per Show
-            var filteredEpg = epgData.Where(epg => epg.Id.Substring(0, 10) == seriesTimer.Id);
-
-            if (!seriesTimer.RecordAnyTime)
-            {
-                filteredEpg = filteredEpg.Where(epg => (seriesTimer.StartDate.TimeOfDay == epg.StartDate.TimeOfDay));
-            }
-
-            if (seriesTimer.RecordNewOnly)
-            {
-                filteredEpg = filteredEpg.Where(epg => !epg.IsRepeat); //Filtered by New only
-            }
-
-            if (!seriesTimer.RecordAnyChannel)
-            {
-                filteredEpg = filteredEpg.Where(epg => string.Equals(epg.ChannelId, seriesTimer.ChannelId, StringComparison.OrdinalIgnoreCase));
-            }
-
-            filteredEpg = filteredEpg.Where(epg => seriesTimer.Days.Contains(epg.StartDate.DayOfWeek));
-
-            filteredEpg = filteredEpg.Where(epg => currentRecordings.All(r => r.Id.Substring(0, 14) != epg.Id.Substring(0, 14))); //filtered recordings already running
-
-            filteredEpg = filteredEpg.GroupBy(epg => epg.Id.Substring(0, 14)).Select(g => g.First()).ToList();
-
-            foreach (var epg in filteredEpg)
-            {
-                timers.Add(CreateTimer(epg, seriesTimer));
-            }
-
-            return timers;
-        }
-
         public static DateTime GetStartTime(TimerInfo timer)
         {
             return timer.StartDate.AddSeconds(-timer.PrePaddingSeconds);

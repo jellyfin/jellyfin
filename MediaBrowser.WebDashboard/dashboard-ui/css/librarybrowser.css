@@ -681,6 +681,11 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         padding-bottom: .75em;
     }
 
+.detailSection h1 {
+    margin-bottom: .25em;
+    position: relative;
+}
+
 .detailSectionHeader {
     background-clip: border-box;
     padding: .75em 0 .75em 1em;
@@ -716,7 +721,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .detailSectionHeaderButton {
     position: absolute;
     right: 0;
-    top: 7px;
     margin-top: 0;
     margin-bottom: 0;
 }

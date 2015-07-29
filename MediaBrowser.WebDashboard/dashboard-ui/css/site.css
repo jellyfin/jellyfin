@@ -1352,11 +1352,15 @@ progress {
 
 @media all and (min-width: 800px) {
 
-    .supporterPromotion {
+    .supporterPromotion:not(.inlineSupporterPromotion) {
         position: absolute;
         top: 70px;
         right: 20px;
         margin: 0;
+    }
+
+    .inlineSupporterPromotion {
+        display: inline-block;
     }
 }
 

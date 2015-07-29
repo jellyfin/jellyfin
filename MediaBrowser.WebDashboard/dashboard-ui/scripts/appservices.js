@@ -119,9 +119,9 @@
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
             if (pluginSecurityInfo.IsMBSupporter || context != 'sync' || !AppInfo.enableSupporterMembership) {
-                $('.syncPromotion', page).hide();
+                $('.supporterPromotion', page).hide();
             } else {
-                $('.syncPromotion', page).show();
+                $('.supporterPromotion', page).show();
             }
         });
 

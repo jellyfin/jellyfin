@@ -4,6 +4,8 @@
 
     function reload(page, providerId) {
 
+        Dashboard.showLoadingMsg();
+
         ApiClient.getNamedConfiguration("livetv").done(function (config) {
 
             var info = config.ListingProviders.filter(function (i) {
@@ -12,13 +14,62 @@
 
             listingsId = info.ListingsId;
             $('#selectListing', page).val(info.ListingsId || '').selectmenu('refresh');
-            $('#selectCountry', page).val(info.Country || '').selectmenu('refresh');
-            page.querySelector('.txtZipCode').value = info.ZipCode || '';
-            $(page.querySelector('.txtZipCode')).trigger('change');
             page.querySelector('.txtUser').value = info.Username || '';
             page.querySelector('.txtPass').value = info.Username || '';
 
+            page.querySelector('.txtZipCode').value = info.ZipCode || '';
+
+            setCountry(page, info);
         });
+    }
+
+    function setCountry(page, info) {
+
+        ApiClient.getJSON(ApiClient.getUrl('LiveTv/ListingProviders/SchedulesDirect/Countries')).done(function (result) {
+
+            var countryList = [];
+            var i, length;
+
+            for (var region in result) {
+                var countries = result[region];
+
+                if (countries.length && region !== 'ZZZ') {
+                    for (i = 0, length = countries.length; i < length; i++) {
+                        countryList.push({
+                            name: countries[i].fullName,
+                            value: countries[i].shortName
+                        });
+                    }
+                }
+            }
+
+            countryList.sort(function (a, b) {
+                if (a.name > b.name) {
+                    return 1;
+                }
+                if (a.name < b.name) {
+                    return -1;
+                }
+                // a must be equal to b
+                return 0;
+            });
+
+            $('#selectCountry', page).html(countryList.map(function (c) {
+
+                return '<option value="' + c.value + '">' + c.name + '</option>';
+
+            }).join('')).val(info.Country || '').selectmenu('refresh');
+
+            $(page.querySelector('.txtZipCode')).trigger('change');
+
+        }).fail(function () {
+
+            Dashboard.alert({
+                message: Globalize.translate('ErrorGettingTvLineups')
+            });
+        });
+
+        Dashboard.hideLoadingMsg();
     }
 
     function submitLoginForm(page) {

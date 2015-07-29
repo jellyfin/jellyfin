@@ -88,8 +88,6 @@
         }).done(function (result) {
 
             renderRecordings($('#latestRecordings', page), result.Items);
-
-            LibraryBrowser.setLastRefreshed(page);
         });
 
         ApiClient.getLiveTvRecordingGroups({

@@ -614,7 +614,7 @@
 
             var elem = $('#similarCollapsible', page).show();
 
-            $('.detailSectionHeader', elem).html(Globalize.translate('HeaderIfYouLikeCheckTheseOut', item.Name));
+            $('.similiarHeader', elem).html(Globalize.translate('HeaderIfYouLikeCheckTheseOut', item.Name));
 
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
@@ -915,14 +915,14 @@
 
         html += '<div class="detailSection">';
 
-        html += '<div class="detailSectionHeader" style="position: relative;">';
+        html += '<h1>';
         html += '<span>' + type.name + '</span>';
 
         if (user.Policy.IsAdministrator) {
-            html += '<a class="detailSectionHeaderButton" href="edititemmetadata.html?tab=2&id=' + currentItem.Id + '" data-role="button" data-icon="edit" data-iconpos="notext" data-inline="true">' + Globalize.translate('ButtonEdit') + '</a>';
+            html += '<a class="detailSectionHeaderButton clearLink" style="margin-top:-8px;display:inline-block;" href="edititemmetadata.html?tab=2&id=' + currentItem.Id + '" title="' + Globalize.translate('ButtonEdit') + '" style="display:none;"><paper-icon-button icon="mode-edit"></paper-icon-button></a>';
         }
 
-        html += '</div>';
+        html += '</h1>';
 
         html += '<div class="detailSectionContent">';
 
