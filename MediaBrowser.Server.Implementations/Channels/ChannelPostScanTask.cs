@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.Channels
 {
-    public class ChannelPostScanTask : ILibraryPostScanTask
+    public class ChannelPostScanTask
     {
         private readonly IChannelManager _channelManager;
         private readonly IUserManager _userManager;

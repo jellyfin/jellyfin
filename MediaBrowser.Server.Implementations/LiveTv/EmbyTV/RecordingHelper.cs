@@ -1,11 +1,10 @@
-﻿using System.Text;
-using MediaBrowser.Common.Extensions;
+﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.LiveTv;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
@@ -49,10 +48,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public static DateTime GetStartTime(TimerInfo timer)
         {
-            if (timer.StartDate.AddSeconds(-timer.PrePaddingSeconds + 1) < DateTime.UtcNow)
-            {
-                return DateTime.UtcNow.AddSeconds(1);
-            }
             return timer.StartDate.AddSeconds(-timer.PrePaddingSeconds);
         }
 

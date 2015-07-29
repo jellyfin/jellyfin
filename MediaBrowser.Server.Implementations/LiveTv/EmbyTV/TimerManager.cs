@@ -24,6 +24,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         public void RestartTimers()
         {
             StopTimers();
+
+            foreach (var item in GetAll().ToList())
+            {
+                AddTimer(item);
+            }
         }
 
         public void StopTimers()
@@ -90,7 +95,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private void AddTimer(TimerInfo item)
         {
-            var timespan = RecordingHelper.GetStartTime(item) - DateTime.UtcNow;
+            var startDate = RecordingHelper.GetStartTime(item);
+            var now = DateTime.UtcNow;
+
+            if (startDate < now)
+            {
+                EventHelper.FireEventIfNotNull(TimerFired, this, new GenericEventArgs<TimerInfo> { Argument = item }, Logger);
+                return;
+            }
+
+            var timespan = startDate - now;
 
             var timer = new Timer(TimerCallback, item.Id, timespan, TimeSpan.Zero);
 

@@ -37,7 +37,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
 
                 new StartupTrigger(),
 
-                new IntervalTrigger{ Interval = TimeSpan.FromHours(6)}
+                new IntervalTrigger{ Interval = TimeSpan.FromHours(8)}
             };
         }
 
