@@ -1615,7 +1615,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 .FirstOrDefault(i => !string.IsNullOrWhiteSpace(i));
         }
 
-        private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(.01);
+        private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
 
         public async Task<UserView> GetNamedView(User user,
             string name,

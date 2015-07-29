@@ -118,7 +118,7 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected Task<bool> CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, bool drawText)
         {
-            return CreateCollage(primaryItem, items, outputPath, 960, 540, drawText, primaryItem.Name);
+            return CreateCollage(primaryItem, items, outputPath, 640, 360, drawText, primaryItem.Name);
         }
 
         protected virtual IEnumerable<string> GetStripCollageImagePaths(IHasImages primaryItem, IEnumerable<BaseItem> items)
@@ -130,12 +130,12 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected Task<bool> CreatePosterCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
         {
-            return CreateCollage(primaryItem, items, outputPath, 600, 900, true, primaryItem.Name);
+            return CreateCollage(primaryItem, items, outputPath, 400, 600, true, primaryItem.Name);
         }
 
         protected Task<bool> CreateSquareCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, bool drawText)
         {
-            return CreateCollage(primaryItem, items, outputPath, 800, 800, drawText, primaryItem.Name);
+            return CreateCollage(primaryItem, items, outputPath, 600, 600, drawText, primaryItem.Name);
         }
 
         protected Task<bool> CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height, bool drawText, string text)

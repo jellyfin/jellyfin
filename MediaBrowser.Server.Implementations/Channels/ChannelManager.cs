@@ -476,7 +476,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public Channel GetChannel(string id)
         {
-            return (Channel)_libraryManager.GetItemById(new Guid(id));
+            return _libraryManager.GetItemById(new Guid(id)) as Channel;
         }
 
         public IEnumerable<ChannelFeatures> GetAllChannelFeatures()

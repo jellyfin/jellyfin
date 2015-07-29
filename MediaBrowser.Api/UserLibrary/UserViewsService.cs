@@ -89,7 +89,7 @@ namespace MediaBrowser.Api.UserLibrary
             var views = user.RootFolder
                 .GetChildren(user, true)
                 .OfType<ICollectionFolder>()
-                .Where(i => IsEligibleForSpecialView(i))
+                .Where(IsEligibleForSpecialView)
                 .ToList();
 
             var list = views

@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
@@ -20,19 +21,25 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
-        private const string UserAgent = "EmbyTV";
         private readonly SemaphoreSlim _tokenSemaphore = new SemaphoreSlim(1, 1);
+        private readonly IApplicationHost _appHost;
 
         private const string ApiUrl = "https://json.schedulesdirect.org/20141201";
 
         private readonly ConcurrentDictionary<string, ScheduleDirect.Station> _channelPair =
             new ConcurrentDictionary<string, ScheduleDirect.Station>();
 
-        public SchedulesDirect(ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient)
+        public SchedulesDirect(ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IApplicationHost appHost)
         {
             _logger = logger;
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
+            _appHost = appHost;
+        }
+
+        private string UserAgent
+        {
+            get { return "Emby/" + _appHost.ApplicationVersion; }
         }
 
         private List<string> GetScheduleRequestDates(DateTime startDateUtc, DateTime endDateUtc)

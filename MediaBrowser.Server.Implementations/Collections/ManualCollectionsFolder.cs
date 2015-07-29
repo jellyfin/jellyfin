@@ -1,5 +1,4 @@
 ﻿using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Collections

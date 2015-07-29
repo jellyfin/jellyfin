@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common;
+﻿using System.Globalization;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -453,11 +454,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
 
             var mediaStreamInfo = await GetChannelStream(timer.ChannelId, null, CancellationToken.None);
-            var duration = (timer.EndDate - DateTime.UtcNow).TotalSeconds + timer.PostPaddingSeconds;
+            var duration = (timer.EndDate - DateTime.UtcNow).Add(TimeSpan.FromSeconds(timer.PostPaddingSeconds));
 
             HttpRequestOptions httpRequestOptions = new HttpRequestOptions()
             {
-                Url = mediaStreamInfo.Path + "?duration=" + duration
+                Url = mediaStreamInfo.Path + "?duration=" + duration.TotalSeconds.ToString(CultureInfo.InvariantCulture)
             };
 
             var info = GetProgramInfoFromCache(timer.ChannelId, timer.ProgramId);
@@ -516,13 +517,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             try
             {
                 httpRequestOptions.BufferContent = false;
-                httpRequestOptions.CancellationToken = cancellationToken;
+                var durationToken = new CancellationTokenSource(duration);
+                var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, durationToken.Token).Token;
+                httpRequestOptions.CancellationToken = linkedToken;
                 _logger.Info("Writing file to path: " + recordPath);
                 using (var response = await _httpClient.SendAsync(httpRequestOptions, "GET"))
                 {
                     using (var output = File.Open(recordPath, FileMode.Create, FileAccess.Write, FileShare.Read))
                     {
-                        await response.Content.CopyToAsync(output, 4096, cancellationToken);
+                        await response.Content.CopyToAsync(output, 4096, linkedToken);
                     }
                 }
 
@@ -530,7 +533,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
             catch (OperationCanceledException)
             {
-                recording.Status = RecordingStatus.Cancelled;
+                recording.Status = RecordingStatus.Completed;
             }
             catch
             {

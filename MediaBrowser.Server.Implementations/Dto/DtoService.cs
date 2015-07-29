@@ -351,6 +351,14 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             AttachBasicFields(dto, item, owner, options);
 
+            var collectionFolder = item as ICollectionFolder;
+            if (collectionFolder != null)
+            {
+                dto.CollectionType = user == null ?
+                    collectionFolder.CollectionType :
+                    collectionFolder.GetViewType(user);
+            }
+
             var playlist = item as Playlist;
             if (playlist != null)
             {
@@ -1064,12 +1072,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (hasDisplayOrder != null)
             {
                 dto.DisplayOrder = hasDisplayOrder.DisplayOrder;
-            }
-
-            var collectionFolder = item as ICollectionFolder;
-            if (collectionFolder != null)
-            {
-                dto.CollectionType = collectionFolder.CollectionType;
             }
 
             var userView = item as UserView;
