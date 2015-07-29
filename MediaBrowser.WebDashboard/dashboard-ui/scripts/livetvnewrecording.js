@@ -163,7 +163,7 @@
 
             var programId = getParameterByName('programid');
 
-            Dashboard.navigate('livetvprogram.html?id=' + programId);
+            Dashboard.navigate('itemdetails.html?id=' + programId);
 
         });
 

@@ -26,7 +26,7 @@
                 currentIndexValue = startDateText;
             }
 
-            html += '<a href="livetvprogram.html?id=' + program.Id + '" class="tvProgram">';
+            html += '<a href="itemdetails.html?id=' + program.Id + '" class="tvProgram">';
 
             var cssClass = "tvProgramTimeSlot";
 

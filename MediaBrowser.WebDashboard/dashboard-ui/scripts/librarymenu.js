@@ -32,7 +32,7 @@
             html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton" onclick="return Dashboard.showUserFlyout(this);"></paper-icon-button>';
         }
 
-        if (!$.browser.mobile && !AppInfo.isNativeApp) {
+        if (!$.browser.mobile && !Dashboard.isConnectMode()) {
             html += '<paper-icon-button icon="settings" class="headerButton headerButtonRight dashboardEntryHeaderButton hide" onclick="return LibraryMenu.onSettingsClicked(event);"></paper-icon-button>';
         }
 
@@ -469,7 +469,7 @@
     }
 
     function showUserAtTop() {
-        return AppInfo.isNativeApp;
+        return Dashboard.isConnectMode();
     }
 
     var requiresLibraryMenuRefresh = false;
@@ -797,7 +797,7 @@
             document.body.classList.add('hideMainDrawer');
         }
 
-        if (!AppInfo.isNativeApp) {
+        if (!Dashboard.isConnectMode()) {
             darkDrawer = true;
         }
 

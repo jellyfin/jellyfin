@@ -387,7 +387,7 @@
         var menuItems = [];
 
         menuItems.push({
-            name: 'Schedules Direct (USA / Canada)',
+            name: 'Schedules Direct',
             id: 'SchedulesDirect'
         });
 

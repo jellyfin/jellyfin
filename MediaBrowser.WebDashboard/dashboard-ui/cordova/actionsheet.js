@@ -9,27 +9,23 @@
 
         // If any items have an icon, give them all an icon just to make sure they're all lined up evenly
         var renderIcon = options.items.filter(function (o) {
-            return o.ironIcon;
+            return o.ironIcon == 'check';
         }).length;
 
         if (renderIcon) {
 
-            // iOS supports unicode icons
-            if ($.browser.safari) {
+            for (var i = 0, length = options.items.length; i < length; i++) {
 
-                for (var i = 0, length = options.items.length; i < length; i++) {
+                var option = options.items[i];
 
-                    var option = options.items[i];
+                switch (option.ironIcon) {
 
-                    switch (option.ironIcon) {
-
-                        case 'check':
-                            option.name = '\\u2713 ' + option.name;
-                            break;
-                        default:
-                            option.name = '\\u2001 ' + option.name;
-                            break;
-                    }
+                    case 'check':
+                        option.name = '• ' + option.name;
+                        break;
+                    default:
+                        option.name = '  ' + option.name;
+                        break;
                 }
             }
         }

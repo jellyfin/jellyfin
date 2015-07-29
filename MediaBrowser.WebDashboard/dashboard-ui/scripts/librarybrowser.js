@@ -197,7 +197,6 @@
                 tabs.alignBottom = true;
                 tabs.classList.add('bottomTabs');
             }
-            tabs.noink = true;
 
             if (LibraryBrowser.enableFullPaperTabs()) {
 
@@ -207,8 +206,8 @@
 
                     // Not very iOS-like I suppose
                     tabs.noSlide = true;
-                    tabs.noink = true;
                     tabs.noBar = true;
+                    tabs.noink = true;
                 }
                 else {
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pages);
@@ -219,7 +218,6 @@
             } else {
 
                 tabs.noSlide = true;
-                tabs.noink = true;
                 tabs.noBar = true;
                 tabs.scrollable = true;
 
@@ -801,7 +799,7 @@
                 return "channelitems.html?id=" + item.ChannelId + '&folderId=' + item.Id;
             }
             if (item.Type == "Program") {
-                return "livetvprogram.html?id=" + id;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "Series") {
                 return "itemdetails.html?id=" + id + contextSuffix;
@@ -2302,6 +2300,8 @@
 
             } else if (item.Album) {
                 html.push(item.Album);
+            } else if (item.Type == 'Program' && item.EpisodeTitle) {
+                html.push(item.Name);
             }
 
             if (html.length) {

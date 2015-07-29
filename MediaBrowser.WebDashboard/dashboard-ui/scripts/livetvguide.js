@@ -214,7 +214,7 @@
                 cssClass += " plainProgramInfo";
             }
 
-            html += '<a href="livetvprogram.html?id=' + program.Id + '" class="' + cssClass + '" data-programid="' + program.Id + '">';
+            html += '<a href="itemdetails.html?id=' + program.Id + '" class="' + cssClass + '" data-programid="' + program.Id + '">';
 
             html += '<div class="guideProgramName">';
             html += program.Name;

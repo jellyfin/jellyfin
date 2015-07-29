@@ -24,6 +24,7 @@
 
         LibraryBrowser.renderName(item, $('.itemName', page), false, context);
         LibraryBrowser.renderParentName(item, $('.parentName', page), context);
+        LibraryMenu.setTitle(item.Name);
 
         Dashboard.getCurrentUser().done(function (user) {
 
@@ -39,7 +40,17 @@
                 LibraryBrowser.renderDetailPageBackdrop(page, item);
             }
 
-            if (MediaController.canPlay(item)) {
+            if (item.Type == 'Program') {
+
+                var now = new Date();
+
+                if (now >= parseISO8601Date(item.StartDate, { toLocal: true }) && now < parseISO8601Date(item.EndDate, { toLocal: true })) {
+                    $('.btnPlay', page).removeClass('hide');
+                } else {
+                    $('.btnPlay', page).addClass('hide');
+                }
+            }
+            else if (MediaController.canPlay(item)) {
                 $('.btnPlay', page).removeClass('hide');
             }
             else {
@@ -62,6 +73,18 @@
                 $('.btnShare', page).removeClass('hide');
             } else {
                 $('.btnShare', page).addClass('hide');
+            }
+
+            if (item.Type == 'Program' && item.TimerId) {
+                $('.btnCancelRecording', page).removeClass('hide');
+            } else {
+                $('.btnCancelRecording', page).addClass('hide');
+            }
+
+            if (item.Type == 'Program' && (!item.TimerId && !item.SeriesTimerId)) {
+                $('.btnRecord', page).removeClass('hide');
+            } else {
+                $('.btnRecord', page).addClass('hide');
             }
 
             if (!item.LocalTrailerCount && item.RemoteTrailers.length && item.PlayAccess == 'Full') {
@@ -90,6 +113,8 @@
             } else {
                 $('.chapterSettingsButton', page).hide();
             }
+
+            LiveTvHelpers.renderOriginalAirDate($('.airDate', page), item);
         });
 
         if (item.LocationType == "Offline") {
@@ -1548,20 +1573,54 @@
         }
     }
 
+    function playCurrentItem(button) {
+
+        if (currentItem.Type == 'Program') {
+
+            ApiClient.getLiveTvChannel(currentItem.ChannelId, Dashboard.getCurrentUserId()).done(function (channel) {
+
+                LibraryBrowser.showPlayMenu(null, channel.Id, channel.Type, false, channel.MediaType, (channel.UserData || {}).PlaybackPositionTicks);
+            });
+
+            return;
+        }
+
+        var userdata = currentItem.UserData || {};
+
+        var mediaType = currentItem.MediaType;
+
+        if (currentItem.Type == "MusicArtist" || currentItem.Type == "MusicAlbum") {
+            mediaType = "Audio";
+        }
+
+        LibraryBrowser.showPlayMenu(button, currentItem.Id, currentItem.Type, currentItem.IsFolder, mediaType, userdata.PlaybackPositionTicks);
+    }
+
+    function deleteTimer(page, id) {
+
+        Dashboard.confirm(Globalize.translate('MessageConfirmRecordingCancellation'), Globalize.translate('HeaderConfirmRecordingCancellation'), function (result) {
+
+            if (result) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.cancelLiveTvTimer(id).done(function () {
+
+                    Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
+
+                    reload(page);
+                });
+            }
+
+        });
+    }
+
     $(document).on('pageinitdepends', "#itemDetailPage", function () {
 
         var page = this;
 
         $('.btnPlay', page).on('click', function () {
-            var userdata = currentItem.UserData || {};
-
-            var mediaType = currentItem.MediaType;
-
-            if (currentItem.Type == "MusicArtist" || currentItem.Type == "MusicAlbum") {
-                mediaType = "Audio";
-            }
-
-            LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, currentItem.IsFolder, mediaType, userdata.PlaybackPositionTicks);
+            playCurrentItem(this);
         });
 
         $('.btnPlayTrailer', page).on('click', function () {
@@ -1578,6 +1637,19 @@
             SyncManager.showMenu({
                 items: [currentItem]
             });
+        });
+
+        $('.btnRecord', page).on('click', function () {
+
+            var id = getParameterByName('id');
+
+            Dashboard.navigate('livetvnewrecording.html?programid=' + id);
+
+        });
+
+        $('.btnCancelRecording', page).on('click', function () {
+
+            deleteTimer(page, currentItem.TimerId);
         });
 
         $('.btnShare', page).on('click', function () {

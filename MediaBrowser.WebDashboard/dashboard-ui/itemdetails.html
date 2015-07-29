@@ -4,7 +4,7 @@
     <title></title>
 </head>
 <body>
-    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage lightBackdropPage" data-theme="b" data-require="scripts/itemdetailpage,paperbuttonstyle,tileitemcss,jqmicons">
+    <div id="itemDetailPage" data-role="page" class="page libraryPage itemDetailPage lightBackdropPage" data-theme="b" data-require="scripts/itemdetailpage,paperbuttonstyle,tileitemcss,jqmicons,scripts/livetvcomponents">
 
         <div class="itemTabs homeTabs" style="display: none;">
             <div class="libraryViewNav scopedLibraryViewNav">
@@ -128,6 +128,8 @@
                             <paper-button raised class="secondary btnPlay hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlay}</span></paper-button>
                             <paper-button raised class="alt btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button>
                             <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="alt btnPlayExternalTrailer"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button></a>
+                            <paper-button raised class="subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
+                            <paper-button raised class="subdued hide btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></paper-button>
                             <paper-button raised class="submit btnSync hide"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
                             <paper-button raised class="subdued btnShare notext hide" style="background-color:#673AB7"><iron-icon icon="share"></iron-icon></paper-button>
                             <paper-button raised class="subdued btnMoreCommands hide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
@@ -155,6 +157,8 @@
                             <paper-button raised class="secondary btnPlay hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlay}</span></paper-button>
                             <paper-button raised class="alt btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button>
                             <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="alt btnPlayExternalTrailer"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button></a>
+                            <paper-button raised class="subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
+                            <paper-button raised class="subdued hide btnCancelRecording"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></paper-button>
                             <paper-button raised class="submit btnSync hide"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
                             <paper-button raised class="subdued btnShare notext hide" style="background-color:#673AB7"><iron-icon icon="share"></iron-icon></paper-button>
                             <paper-button raised class="subdued btnMoreCommands forceHide notext"><iron-icon icon="more-vert"></iron-icon></paper-button>
@@ -163,6 +167,7 @@
                         <p class="itemGenres"></p>
                         <p class="itemOverview smoothScrollY"></p>
                         <p id="seriesAirTime"></p>
+                        <p class="airDate"></p>
                     </div>
                 </div>
                 <div class="collectionItems"></div>

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Model.Tasks;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,11 +10,15 @@ namespace MediaBrowser.Server.Implementations.Channels
 {
     class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
-        private readonly IChannelManager _manager;
+        private readonly IChannelManager _channelManager;
+        private readonly IUserManager _userManager;
+        private readonly ILogger _logger;
 
-        public RefreshChannelsScheduledTask(IChannelManager manager)
+        public RefreshChannelsScheduledTask(IChannelManager channelManager, IUserManager userManager, ILogger logger)
         {
-            _manager = manager;
+            _channelManager = channelManager;
+            _userManager = userManager;
+            _logger = logger;
         }
 
         public string Name
@@ -31,11 +36,14 @@ namespace MediaBrowser.Server.Implementations.Channels
             get { return "Channels"; }
         }
 
-        public Task Execute(System.Threading.CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Execute(System.Threading.CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var manager = (ChannelManager)_manager;
+            var manager = (ChannelManager)_channelManager;
 
-            return manager.RefreshChannels(progress, cancellationToken);
+            await manager.RefreshChannels(new Progress<double>(), cancellationToken).ConfigureAwait(false);
+
+            await new ChannelPostScanTask(_channelManager, _userManager, _logger).Run(progress, cancellationToken)
+                    .ConfigureAwait(false);
         }
 
         public IEnumerable<ITaskTrigger> GetDefaultTriggers()
@@ -48,7 +56,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public bool IsHidden
         {
-            get { return true; }
+            get { return false; }
         }
 
         public bool IsEnabled

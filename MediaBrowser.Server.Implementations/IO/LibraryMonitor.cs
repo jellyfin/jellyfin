@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -372,15 +371,12 @@ namespace MediaBrowser.Server.Implementations.IO
 
             DisposeWatcher(dw);
 
-            if (ex is Win32Exception)
+            if (ConfigurationManager.Configuration.EnableLibraryMonitor == AutoOnOff.Auto)
             {
                 Logger.Info("Disabling realtime monitor to prevent future instability");
 
-                if (ConfigurationManager.Configuration.EnableLibraryMonitor == AutoOnOff.Auto)
-                {
-                    ConfigurationManager.Configuration.EnableLibraryMonitor = AutoOnOff.Disabled;
-                    Stop();
-                }
+                ConfigurationManager.Configuration.EnableLibraryMonitor = AutoOnOff.Disabled;
+                Stop();
             }
         }
 
