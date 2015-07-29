@@ -228,7 +228,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
-            info.Id = info.ProgramId.Substring(0, 10);
+            info.Id = Guid.NewGuid().ToString("N");
 
             UpdateTimersForSeriesTimer(info);
             _seriesTimerProvider.Add(info);
@@ -581,7 +581,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 epgData = GetEpgDataForChannel(seriesTimer.ChannelId);
             }
 
-            var newTimers = RecordingHelper.GetTimersForSeries(seriesTimer, epgData, _recordingProvider.GetAll(), _logger);
+            var newTimers = GetTimersForSeries(seriesTimer, epgData, _recordingProvider.GetAll()).ToList();
 
             var existingTimers = _timerProvider.GetAll()
                 .Where(i => string.Equals(i.SeriesTimerId, seriesTimer.Id, StringComparison.OrdinalIgnoreCase))
@@ -603,6 +603,38 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
         }
 
+        private IEnumerable<TimerInfo> GetTimersForSeries(SeriesTimerInfo seriesTimer, IEnumerable<ProgramInfo> allPrograms, IReadOnlyList<RecordingInfo> currentRecordings)
+        {
+            allPrograms = GetProgramsForSeries(seriesTimer, allPrograms);
+
+            allPrograms = allPrograms.Where(epg => currentRecordings.All(r => r.ProgramId.Substring(0, 14) != epg.Id.Substring(0, 14))); //filtered recordings already running
+
+            return allPrograms.Select(i => RecordingHelper.CreateTimer(i, seriesTimer));
+        }
+
+        private IEnumerable<ProgramInfo> GetProgramsForSeries(SeriesTimerInfo seriesTimer, IEnumerable<ProgramInfo> allPrograms)
+        {
+            if (!seriesTimer.RecordAnyTime)
+            {
+                allPrograms = allPrograms.Where(epg => (seriesTimer.StartDate.TimeOfDay == epg.StartDate.TimeOfDay));
+            }
+
+            if (seriesTimer.RecordNewOnly)
+            {
+                allPrograms = allPrograms.Where(epg => !epg.IsRepeat); //Filtered by New only
+            }
+
+            if (!seriesTimer.RecordAnyChannel)
+            {
+                allPrograms = allPrograms.Where(epg => string.Equals(epg.ChannelId, seriesTimer.ChannelId, StringComparison.OrdinalIgnoreCase));
+            }
+
+            allPrograms = allPrograms.Where(epg => seriesTimer.Days.Contains(epg.StartDate.DayOfWeek));
+
+            // TODO: This assumption will require review once additional listing providers are added
+            return allPrograms.Where(epg => epg.Id.StartsWith(seriesTimer.ProgramId, StringComparison.OrdinalIgnoreCase));
+        }
+        
         private string GetChannelEpgCachePath(string channelId)
         {
             return Path.Combine(DataPath, "epg", channelId + ".json");

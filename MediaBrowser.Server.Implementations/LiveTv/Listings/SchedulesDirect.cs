@@ -35,6 +35,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             _httpClient = httpClient;
         }
 
+        private List<string> GetScheduleRequestDates(DateTime startDateUtc, DateTime endDateUtc)
+        {
+            List<string> dates = new List<string>();
+
+            var start = new List<DateTime> { startDateUtc, startDateUtc.ToLocalTime() }.Min();
+            var end = new List<DateTime> { endDateUtc, endDateUtc.ToLocalTime() }.Max();
+
+            while (start.DayOfYear <= end.Day)
+            {
+                dates.Add(start.ToString("yyyy-MM-dd"));
+                start = start.AddDays(1);
+            }
+
+            return dates;
+        }
+
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             List<ProgramInfo> programsInfo = new List<ProgramInfo>();
@@ -60,15 +76,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             httpOptions.RequestHeaders["token"] = token;
 
-            List<string> dates = new List<string>();
-            int numberOfDay = 0;
-            DateTime lastEntry = startDateUtc;
-            while (lastEntry != endDateUtc)
-            {
-                lastEntry = startDateUtc.AddDays(numberOfDay);
-                dates.Add(lastEntry.ToString("yyyy-MM-dd"));
-                numberOfDay++;
-            }
+            var dates = GetScheduleRequestDates(startDateUtc, endDateUtc);
 
             ScheduleDirect.Station station = null;
 
@@ -97,8 +105,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 StreamReader reader = new StreamReader(response.Content);
                 string responseString = reader.ReadToEnd();
                 var dailySchedules = _jsonSerializer.DeserializeFromString<List<ScheduleDirect.Day>>(responseString);
-                _logger.Debug("Found " + dailySchedules.Count() + " programs on " + channelNumber +
-                              " ScheduleDirect");
+                _logger.Debug("Found " + dailySchedules.Count() + " programs on " + channelNumber + " ScheduleDirect");
 
                 httpOptions = new HttpRequestOptions()
                 {
@@ -234,10 +241,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             bool repeat = (programInfo.@new == null);
             string newID = programInfo.programID + "T" + startAt.Ticks + "C" + channel;
 
-
             if (programInfo.audioProperties != null)
             {
-                if (programInfo.audioProperties.Exists(item => item == "stereo"))
+                if (programInfo.audioProperties.Exists(item => string.Equals(item, "dd 5.1", StringComparison.OrdinalIgnoreCase)))
+                {
+                    audioType = ProgramAudio.DolbyDigital;
+                }
+                else if (programInfo.audioProperties.Exists(item => string.Equals(item, "dd", StringComparison.OrdinalIgnoreCase)))
+                {
+                    audioType = ProgramAudio.DolbyDigital;
+                }
+                else if (programInfo.audioProperties.Exists(item => string.Equals(item, "stereo", StringComparison.OrdinalIgnoreCase)))
                 {
                     audioType = ProgramAudio.Stereo;
                 }
@@ -285,7 +299,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             {
                 imageLink = details.images;
             }
-
 
             var info = new ProgramInfo
             {
@@ -554,7 +567,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             };
 
             httpOptions.RequestHeaders["token"] = token;
-            
+
             using (var response = await _httpClient.SendAsync(httpOptions, "PUT"))
             {
             }
@@ -915,6 +928,5 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             }
 
         }
-
     }
 }
