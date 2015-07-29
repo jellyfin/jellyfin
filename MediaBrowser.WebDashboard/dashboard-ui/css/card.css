@@ -562,7 +562,7 @@
     width: 50%;
 }
 
-@media all and (min-width: 700px) {
+@media all and (min-width: 800px) {
 
     .detailPage169Card {
         width: 33.3%;

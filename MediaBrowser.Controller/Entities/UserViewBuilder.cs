@@ -264,10 +264,7 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<QueryResult<BaseItem>> FindPlaylists(Folder parent, User user, InternalItemsQuery query)
         {
-            var collectionFolders = user.RootFolder.GetChildren(user, true).Select(i => i.Id).ToList();
-
-            var list = _playlistManager.GetPlaylists(user.Id.ToString("N"))
-                .Where(i => i.GetChildren(user, true).Any(media => _libraryManager.GetCollectionFolders(media).Select(c => c.Id).Any(collectionFolders.Contains)));
+            var list = _playlistManager.GetPlaylists(user.Id.ToString("N"));
 
             return GetResult(list, parent, query);
         }

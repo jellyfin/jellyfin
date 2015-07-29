@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -13,5 +14,18 @@ namespace MediaBrowser.Controller.Entities
         string Name { get; }
         Guid Id { get; }
         IEnumerable<string> PhysicalLocations { get; }
+    }
+
+    public static class CollectionFolderExtensions
+    {
+        public static string GetViewType(this ICollectionFolder folder, User user)
+        {
+            if (user.Configuration.PlainFolderViews.Contains(folder.Id.ToString("N"), StringComparer.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            return folder.CollectionType;
+        }
     }
 }
