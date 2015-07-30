@@ -12355,6 +12355,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
 
 
+
+
+
+
 </head><body><div hidden="" by-vulcanize=""><dom-module id="paper-material" assetpath="bower_components/paper-material/">
   <style>
     :host {
@@ -17485,6 +17489,331 @@ paper-ripple {
     behaviors: [
       Polymer.IronMenuBehavior
     ]
+
+  });
+
+})();
+
+</script>
+<dom-module id="iron-autogrow-textarea" assetpath="bower_components/iron-autogrow-textarea/">
+
+  <style>
+    :host {
+      display: inline-block;
+      position: relative;
+      width: 400px;
+      border: 1px solid;
+      padding: 2px;
+      -moz-appearance: textarea;
+      -webkit-appearance: textarea;
+    }
+
+    .mirror-text {
+      visibility: hidden;
+      word-wrap: break-word;
+    }
+
+    textarea {
+      position: relative;
+      outline: none;
+      border: none;
+      resize: none;
+      background: inherit;
+      color: inherit;
+      /* see comments in template */
+      width: 100%;
+      height: 100%;
+      font-size: inherit;
+      font-family: inherit;
+    }
+
+    ::content textarea:invalid {
+      box-shadow: none;
+    }
+
+  </style>
+  <template>
+    
+    <div id="mirror" class="mirror-text" aria-hidden="true">&nbsp;</div>
+
+    
+    <div class="textarea-container fit">
+      <textarea id="textarea" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" required$="[[required]]" rows$="[[rows]]" maxlength$="[[maxlength]]"></textarea>
+    </div>
+  </template>
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'iron-autogrow-textarea',
+
+    behaviors: [
+      Polymer.IronFormElementBehavior,
+      Polymer.IronValidatableBehavior,
+      Polymer.IronControlState
+    ],
+
+    properties: {
+
+      /**
+       * Use this property instead of `value` for two-way data binding.
+       */
+      bindValue: {
+        observer: '_bindValueChanged',
+        type: String
+      },
+
+      /**
+       * The initial number of rows.
+       *
+       * @attribute rows
+       * @type number
+       * @default 1
+       */
+      rows: {
+        type: Number,
+        value: 1,
+        observer: '_updateCached'
+      },
+
+      /**
+       * The maximum number of rows this element can grow to until it
+       * scrolls. 0 means no maximum.
+       *
+       * @attribute maxRows
+       * @type number
+       * @default 0
+       */
+      maxRows: {
+       type: Number,
+       value: 0,
+       observer: '_updateCached'
+      },
+
+      /**
+       * Bound to the textarea's `autocomplete` attribute.
+       */
+      autocomplete: {
+        type: String,
+        value: 'off'
+      },
+
+      /**
+       * Bound to the textarea's `autofocus` attribute.
+       */
+      autofocus: {
+        type: String,
+        value: 'off'
+      },
+
+      /**
+       * Bound to the textarea's `inputmode` attribute.
+       */
+      inputmode: {
+        type: String
+      },
+
+      /**
+       * Bound to the textarea's `name` attribute.
+       */
+      name: {
+        type: String
+      },
+
+      /**
+       * The value for this input, same as `bindValue`
+       */
+      value: {
+        notify: true,
+        type: String,
+        computed: '_computeValue(bindValue)'
+      },
+
+      /**
+       * Bound to the textarea's `placeholder` attribute.
+       */
+      placeholder: {
+        type: String
+      },
+
+      /**
+       * Bound to the textarea's `readonly` attribute.
+       */
+      readonly: {
+        type: String
+      },
+
+      /**
+       * Set to true to mark the textarea as required.
+       */
+      required: {
+        type: Boolean
+      },
+
+      /**
+       * The maximum length of the input value.
+       */
+      maxlength: {
+        type: Number
+      }
+
+    },
+
+    listeners: {
+      'input': '_onInput'
+    },
+
+    /**
+     * Returns the underlying textarea.
+     * @type HTMLTextAreaElement
+     */
+    get textarea() {
+      return this.$.textarea;
+    },
+
+    /**
+     * Returns true if `value` is valid. The validator provided in `validator`
+     * will be used first, if it exists; otherwise, the `textarea`'s validity
+     * is used.
+     * @return {boolean} True if the value is valid.
+     */
+    validate: function() {
+      // Empty, non-required input is valid.
+      if (!this.required && this.value == '') {
+        this.invalid = false;
+        return true;
+      }
+
+      var valid;
+      if (this.hasValidator()) {
+        valid = Polymer.IronValidatableBehavior.validate.call(this, this.value);
+      } else {
+        valid = this.$.textarea.validity.valid;
+        this.invalid = !valid;
+      }
+      this.fire('iron-input-validate');
+      return valid;
+    },
+
+    _update: function() {
+      this.$.mirror.innerHTML = this._valueForMirror();
+
+      var textarea = this.textarea;
+      // If the value of the textarea was updated imperatively, then we
+      // need to manually update bindValue as well.
+      if (textarea && this.bindValue != textarea.value) {
+        this.bindValue = textarea.value;
+      }
+    },
+
+    _bindValueChanged: function() {
+      var textarea = this.textarea;
+      if (!textarea) {
+        return;
+      }
+
+      textarea.value = this.bindValue;
+      this._update();
+      // manually notify because we don't want to notify until after setting value
+      this.fire('bind-value-changed', {value: this.bindValue});
+    },
+
+    _onInput: function(event) {
+      this.bindValue = event.path ? event.path[0].value : event.target.value;
+      this._update();
+    },
+
+    _constrain: function(tokens) {
+      var _tokens;
+      tokens = tokens || [''];
+      // Enforce the min and max heights for a multiline input to avoid measurement
+      if (this.maxRows > 0 && tokens.length > this.maxRows) {
+        _tokens = tokens.slice(0, this.maxRows);
+      } else {
+        _tokens = tokens.slice(0);
+      }
+      while (this.rows > 0 && _tokens.length < this.rows) {
+        _tokens.push('');
+      }
+      return _tokens.join('<br>') + '&nbsp;';
+    },
+
+    _valueForMirror: function() {
+      var input = this.textarea;
+      if (!input) {
+        return;
+      }
+      this.tokens = (input && input.value) ? input.value.replace(/&/gm, '&amp;').replace(/"/gm, '&quot;').replace(/'/gm, '&#39;').replace(/</gm, '&lt;').replace(/>/gm, '&gt;').split('\n') : [''];
+      return this._constrain(this.tokens);
+    },
+
+    _updateCached: function() {
+      this.$.mirror.innerHTML = this._constrain(this.tokens);
+    },
+
+    _computeValue: function() {
+      return this.bindValue;
+    }
+  })
+</script>
+<dom-module id="paper-textarea" assetpath="bower_components/paper-input/">
+  <template>
+
+    <paper-input-container no-label-float$="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
+
+      <label hidden$="[[!label]]">[[label]]</label>
+
+      <iron-autogrow-textarea id="input" class="paper-input-input" bind-value="{{value}}" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" required$="[[required]]" maxlength$="[[maxlength]]" autocapitalize$="[[autocapitalize]]"></iron-autogrow-textarea>
+
+      <template is="dom-if" if="[[errorMessage]]">
+        <paper-input-error>[[errorMessage]]</paper-input-error>
+      </template>
+
+      <template is="dom-if" if="[[charCounter]]">
+        <paper-input-char-counter></paper-input-char-counter>
+      </template>
+
+    </paper-input-container>
+
+  </template>
+
+</dom-module>
+
+<script>
+
+(function() {
+
+  Polymer({
+
+    is: 'paper-textarea',
+
+    behaviors: [
+      Polymer.PaperInputBehavior
+    ],
+
+    properties: {
+
+      _ariaLabelledBy: {
+        observer: '_ariaLabelledByChanged',
+        type: String
+      },
+
+      _ariaDescribedBy: {
+        observer: '_ariaDescribedByChanged',
+        type: String
+      }
+
+    },
+
+    _ariaLabelledByChanged: function(ariaLabelledBy) {
+      this.$.input.textarea.setAttribute('aria-labelledby', ariaLabelledBy);
+    },
+
+    _ariaDescribedByChanged: function(ariaDescribedBy) {
+      this.$.input.textarea.setAttribute('aria-describedby', ariaDescribedBy);
+    }
 
   });
 

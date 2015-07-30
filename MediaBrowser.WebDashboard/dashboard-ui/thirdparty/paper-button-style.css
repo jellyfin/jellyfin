@@ -388,3 +388,6 @@ paper-menu-item {
 .ui-page-theme-b .unfocused-line.paper-input-container {
     background: #858585;
 }
+paper-textarea.mono textarea {
+    font-family: monospace!important;
+}

@@ -16,24 +16,23 @@
 
                 <form class="dashboardGeneralForm">
 
-                    <ul data-role="listview" class="ulForm">
-                        <li>
-                            <label for="txtServerName">${LabelFriendlyServerName}</label>
-                            <input id="txtServerName" />
-                            <div class="fieldDescription">${LabelFriendlyServerNameHelp}</div>
-                        </li>
-                        <li>
-                            <label for="selectLocalizationLanguage">${LabelPreferredDisplayLanguage}</label>
-                            <select id="selectLocalizationLanguage" data-mini="true"></select>
-                            <div class="fieldDescription">
-                                <div>${LabelPreferredDisplayLanguageHelp}</div>
-                                <div style="margin-top: .25em;">
-                                    <a href="http://emby.media/community/index.php?/topic/5727-join-our-translation-team/" target="_blank">${LabelReadHowYouCanContribute}</a>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
+                    <div>
+                        <paper-input type="text" id="txtServerName" label="${LabelFriendlyServerName}"></paper-input>
+                        <div class="fieldDescription">${LabelFriendlyServerNameHelp}</div>
 
+                    </div>
+                    <br/><br />
+                    <div>
+                        <label for="selectLocalizationLanguage">${LabelPreferredDisplayLanguage}</label>
+                        <select id="selectLocalizationLanguage" data-mini="true"></select>
+                        <div class="fieldDescription">
+                            <div>${LabelPreferredDisplayLanguageHelp}</div>
+                            <div style="margin-top: .25em;">
+                                <a href="http://emby.media/community/index.php?/topic/5727-join-our-translation-team/" target="_blank">${LabelReadHowYouCanContribute}</a>
+                            </div>
+                        </div>
+                    </div>
+                    <br /><br />
 
                     <div data-role="collapsible">
                         <h2>${HeaderAdvanced}</h2>
@@ -41,11 +40,8 @@
                             <br />
                             <ul data-role="listview" class="ulForm">
                                 <li>
-                                    <label for="txtCachePath">${LabelCachePath}</label>
-                                    <div style="display: inline-block; width: 85%;">
-                                        <input type="text" id="txtCachePath" name="txtCachePath" />
-                                    </div>
-                                    <button id="btnSelectCachePath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                                    <paper-input type="text" id="txtCachePath" label="${LabelCachePath}" style="display:inline-block;width:85%;"></paper-input>
+                                    <paper-icon-button id="btnSelectCachePath" icon="search">${ButtonSelectDirectory}</paper-icon-button>
                                     <div class="fieldDescription">${LabelCachePathHelp}</div>
                                 </li>
                             </ul>
@@ -60,13 +56,11 @@
 
                             <ul data-role="listview" class="ulForm">
                                 <li>
-                                    <label for="txtLoginDisclaimer">${LabelLoginDisclaimer}</label>
-                                    <input id="txtLoginDisclaimer" type="text" />
+                                    <paper-input type="text" id="txtLoginDisclaimer" label="${LabelLoginDisclaimer}"></paper-input>
                                     <div class="fieldDescription">${LabelLoginDisclaimerHelp}</div>
                                 </li>
                                 <li>
-                                    <label for="txtCustomCss">${LabelCustomCss}</label>
-                                    <textarea id="txtCustomCss" style="font-family:monospace;height:200px!important;overflow-y:auto;"></textarea>
+                                    <paper-textarea id="txtCustomCss" label="${LabelCustomCss}" class="mono"></paper-textarea>
                                     <div class="fieldDescription">${LabelCustomCssHelp}</div>
                                 </li>
                             </ul>

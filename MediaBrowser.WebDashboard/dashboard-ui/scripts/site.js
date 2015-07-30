@@ -67,7 +67,7 @@ var Dashboard = {
         // These are not needed. Nulling them out can help reduce dom querying when pages are loaded
         $.mobile.nojs = null;
         $.mobile.degradeInputsWithin = null;
-        $.mobile.keepNative = ":jqmData(role='none'),.paper-input";
+        $.mobile.keepNative = ":jqmData(role='none'),.paper-input,textarea.style-scope";
 
         $.mobile.filterHtml = Dashboard.filterHtml;
     },
