@@ -216,7 +216,7 @@
 
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
-            if (!pluginSecurityInfo.IsMBSupporter) {
+            if (pluginSecurityInfo.IsMBSupporter) {
                 deferred.resolve();
                 return;
             }
@@ -227,7 +227,7 @@
 
                 Dashboard.hideLoadingMsg();
 
-                if (!registrationInfo.IsRegistered) {
+                if (registrationInfo.IsRegistered) {
                     deferred.resolve();
                     return;
                 }
