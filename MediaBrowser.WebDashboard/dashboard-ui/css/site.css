@@ -892,7 +892,7 @@ h1 .imageLink {
     max-width: 800px;
     padding: .5em 2em 1em;
     margin: 0 auto;
-    background: #e8e8e8;
+    background: #fff;
 }
 
 .wizardNavigation {
@@ -901,10 +901,6 @@ h1 .imageLink {
 
 .wizardContent form {
     max-width: 100%;
-}
-
-.wizardContent p {
-    margin: 2em 0;
 }
 
 .wizardContent h2 img {

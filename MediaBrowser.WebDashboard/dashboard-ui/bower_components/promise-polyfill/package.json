@@ -1,0 +1,32 @@
+{
+  "name": "promise-polyfill",
+  "version": "2.1.0",
+  "description": "Lightweight promise polyfill. A+ compliant",
+  "main": "Promise.js",
+  "scripts": {
+    "test": "./node_modules/.bin/promises-aplus-tests tests/adapter.js && JASMINE_CONFIG_PATH=jasmine.json ./node_modules/jasmine/bin/jasmine.js;"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://taylorhakes@github.com/taylorhakes/promise-polyfill.git"
+  },
+  "author": "Taylor Hakes",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/taylorhakes/promise-polyfill/issues"
+  },
+  "homepage": "https://github.com/taylorhakes/promise-polyfill",
+  "devDependencies": {
+    "grunt": "^0.4.4",
+    "grunt-contrib-uglify": "^0.4.0",
+    "jasmine": "^2.3.1",
+    "promises-aplus-tests": "*"
+  },
+  "keywords": [
+    "promise",
+    "promise-polyfill",
+    "ES6",
+    "promises-aplus"
+  ],
+  "dependencies": {}
+}

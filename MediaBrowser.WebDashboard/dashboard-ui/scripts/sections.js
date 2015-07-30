@@ -4,7 +4,7 @@
 
         var deferred = $.Deferred();
 
-        ApiClient.getUserViews(userId).done(function (result) {
+        ApiClient.getUserViews({}, userId).done(function (result) {
 
             var items = result.Items;
 

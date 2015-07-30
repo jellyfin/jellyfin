@@ -140,17 +140,18 @@
 
         toggleRepeatButton = $('.toggleRepeatButton', elem).on('click', function () {
 
-            if (currentPlayer && lastPlayerState) {
-                var state = lastPlayerState;
+            if (currentPlayer) {
+                var state = lastPlayerState || {};
+
                 switch ((state.PlayState || {}).RepeatMode) {
-                    case 'RepeatNone':
-                        currentPlayer.setRepeatMode('RepeatAll');
-                        break;
                     case 'RepeatAll':
                         currentPlayer.setRepeatMode('RepeatOne');
                         break;
                     case 'RepeatOne':
                         currentPlayer.setRepeatMode('RepeatNone');
+                        break;
+                    default:
+                        currentPlayer.setRepeatMode('RepeatAll');
                         break;
                 }
             }

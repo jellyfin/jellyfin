@@ -366,6 +366,7 @@ namespace MediaBrowser.Server.Implementations.Session
             session.PlayState.AudioStreamIndex = info.AudioStreamIndex;
             session.PlayState.SubtitleStreamIndex = info.SubtitleStreamIndex;
             session.PlayState.PlayMethod = info.PlayMethod;
+            session.PlayState.RepeatMode = info.RepeatMode;
         }
 
         /// <summary>

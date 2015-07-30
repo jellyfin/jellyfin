@@ -62,7 +62,7 @@
                 update('enableSyncToExternalStorage', val.toString());
             }
 
-            return appStorage.getItem('enableSyncToExternalStorage') == 'true';
+            return appStorage.getItem('enableSyncToExternalStorage') != 'false';
         },
 
         displayPreferencesKey: function() {

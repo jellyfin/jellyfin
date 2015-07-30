@@ -1726,7 +1726,7 @@
             };
 
             info = $.extend(info, state.PlayState);
-
+            console.log('repeat mode ' + info.RepeatMode);
             ApiClient.reportPlaybackProgress(info);
         }
 

@@ -382,7 +382,7 @@
 
         var apiClient = window.ApiClient;
 
-        apiClient.getUserViews(userId).done(function (result) {
+        apiClient.getUserViews({}, userId).done(function (result) {
 
             var items = result.Items;
 

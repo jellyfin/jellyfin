@@ -2995,15 +2995,11 @@
             });
         };
 
-        self.getUserViews = function (userId, options) {
-
-            if (!userId) {
-                throw new Error("null userId");
-            }
+        self.getUserViews = function (options, userId) {
 
             options = options || {};
 
-            var url = self.getUrl("Users/" + userId + "/Views", options);
+            var url = self.getUrl("Users/" + (userId || self.getCurrentUserId()) + "/Views", options);
 
             return self.ajax({
                 type: "GET",

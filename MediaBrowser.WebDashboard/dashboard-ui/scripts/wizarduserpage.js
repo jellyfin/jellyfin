@@ -38,8 +38,8 @@
             type: 'POST',
             data: {
 
-                Name: $('#txtUsername', form).val(),
-                ConnectUserName: $('#txtConnectUserName', form).val()
+                Name: form.querySelector('#txtUsername').value,
+                ConnectUserName: page.querySelector('#txtConnectUserName').value
 
             },
             url: apiClient.getUrl('Startup/User'),
@@ -70,8 +70,8 @@
 
         apiClient.getJSON(apiClient.getUrl('Startup/User')).done(function (user) {
 
-            $('#txtUsername', page).val(user.Name);
-            $('#txtConnectUserName', page).val(user.ConnectUserName);
+            page.querySelector('#txtUsername').value = user.Name;
+            page.querySelector('#txtConnectUserName').value = user.ConnectUserName;
 
             Dashboard.hideLoadingMsg();
         });

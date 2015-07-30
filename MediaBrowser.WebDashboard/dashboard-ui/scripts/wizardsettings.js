@@ -11,8 +11,8 @@
 
             config.PreferredMetadataLanguage = $('#selectLanguage', page).val();
             config.MetadataCountryCode = $('#selectCountry', page).val();
-            config.SaveLocalMeta = $('#chkSaveLocalMetadata', page).checked();
-            config.EnableInternetProviders = $('#chkEnableInternetProviders', page).checked();
+            config.SaveLocalMeta = page.querySelector('.chkSaveLocalMetadata').checked;
+            config.EnableInternetProviders = page.querySelector('.chkEnableInternetProviders').checked;
 
             apiClient.ajax({
 

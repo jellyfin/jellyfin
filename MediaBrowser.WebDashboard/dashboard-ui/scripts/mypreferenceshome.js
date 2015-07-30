@@ -173,7 +173,7 @@
         var promise2 = ApiClient.getJSON(ApiClient.getUrl("Channels", {
             UserId: user.Id
         }));
-        var promise3 = ApiClient.getUserViews(user.Id);
+        var promise3 = ApiClient.getUserViews({}, user.Id);
         var promise4 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/SpecialViewOptions"));
 
         $.when(promise1, promise2, promise3, promise4).done(function (r1, r2, r3, r4) {
@@ -225,8 +225,8 @@
         displayPreferences.CustomPrefs.home2 = $('#selectHomeSection3', page).val();
         displayPreferences.CustomPrefs.home3 = $('#selectHomeSection4', page).val();
 
-        ApiClient.updateDisplayPreferences('home', displayPreferences, user.Id, AppSettings.displayPreferencesKey()).done(function() {
-            
+        ApiClient.updateDisplayPreferences('home', displayPreferences, user.Id, AppSettings.displayPreferencesKey()).done(function () {
+
             ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
                 Dashboard.alert(Globalize.translate('SettingsSaved'));
 
