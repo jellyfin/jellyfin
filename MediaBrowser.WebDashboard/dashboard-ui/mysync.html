@@ -4,24 +4,16 @@
     <title>${TitleSync}</title>
 </head>
 <body>
-    <div id="mySyncActivityPage" data-role="page" class="page libraryPage syncActivityPage mySyncPage" data-contextname="${TitleSync}" data-require="scripts/syncactivity,scripts/taskbutton">
-
-        <div class="libraryViewNav">
-            <a href="#" class="ui-btn-active"><iron-icon icon="refresh"></iron-icon>${TabSyncJobs}</a>
-        </div>
+    <div id="mySyncActivityPage" data-role="page" class="page libraryPage syncActivityPage mySyncPage noSecondaryNavPage" data-contextname="${TitleSync}" data-require="scripts/syncactivity,scripts/taskbutton">
 
         <div data-role="content">
 
             <div class="supporterPromotionContainer" style="display:none;text-align: right;">
                 <div class="customSupporterPromotion supporterPromotion inlineSupporterPromotion">
-                    <a class="btn btnActionAccent" href="supporter.html" style="font-size:14px;">
-                        <div>
-                            ${HeaderSyncRequiresSupporterMembership}
+                    <a class="btn btnActionAccent" href="http://emby.media/donate" target="_blank" style="font-size:14px;">
+                        <div class="mainText">
                         </div>
-                        <div>
-                            ${HeaderEnjoyDayTrial}
-                        </div>
-                        <div style="font-weight:normal;font-size:90%;margin-top:5px;">
+                        <div class="btnLearnMore" style="font-weight:normal;font-size:90%;margin-top:5px;">
                             ${ButtonLearnMore}
                         </div>
                     </a>

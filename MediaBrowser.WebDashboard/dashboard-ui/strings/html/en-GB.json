@@ -1494,5 +1494,6 @@
     "ButtonPlaybackSettingsHelp": "Specify your audio and subtitle preferences, streaming quality, and more.",
     "ButtonProfileHelp": "Set your profile image and password.",
     "HeaderHomeScreenSettings": "Home Screen Settings",
-    "HeaderProfile": "Profile"
+    "HeaderProfile": "Profile",
+    "HeaderLanguage": "Language"
 }

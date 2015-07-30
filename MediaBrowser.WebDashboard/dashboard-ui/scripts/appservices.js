@@ -113,18 +113,6 @@
         var page = this;
 
         reloadList(page);
-
-        var context = getParameterByName('context');
-
-        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
-
-            if (pluginSecurityInfo.IsMBSupporter || context != 'sync' || !AppInfo.enableSupporterMembership) {
-                $('.supporterPromotion', page).hide();
-            } else {
-                $('.supporterPromotion', page).show();
-            }
-        });
-
     });
 
 })(jQuery, document);

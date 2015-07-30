@@ -347,7 +347,7 @@
     "ButtonSelectDirectory": "Seleziona cartella",
     "LabelCustomPaths": "Specifica un percorso personalizzato.Lasciare vuoto per usare quello predefinito",
     "LabelCachePath": "Percorso Cache:",
-    "LabelCachePathHelp": "Specifica la cartella dove memorizzare i file di cache del server, come le immagini",
+    "LabelCachePathHelp": "Specify a custom location for server cache files, such as images. Leave blank to use the server default.",
     "LabelRecordingPath": "Recording path:",
     "LabelRecordingPathHelp": "Specify a custom location to save recordings. Leave blank to use the server default.",
     "LabelImagesByNamePath": "Percorso immagini per nome:",
@@ -369,9 +369,9 @@
     "LabelAutomaticUpdates": "Abilita gli aggiornamenti automatici",
     "LabelAutomaticUpdatesTmdb": "Abilita gli aggiornamenti automatici da TheMovieDB.org",
     "LabelAutomaticUpdatesTvdb": "Abilita gli aggiornamenti automatici da TheTVDB.com",
-    "LabelAutomaticUpdatesFanartHelp": "Se abilitato le nuove immagini verranno scaricate automaticamente da fanart.tv. Le immagini esistenti non verranno sovrascritte.",
-    "LabelAutomaticUpdatesTmdbHelp": "Se abilitato le nuove immagini verranno scaricate automaticamente da ThemovieDb.org. Le immagini esistenti non verranno sovrascritte.",
-    "LabelAutomaticUpdatesTvdbHelp": "Se abilitato le nuove immagini verranno scaricate automaticamente da TheTvDB.com. Le immagini esistenti non verranno sovrascritte.",
+    "LabelAutomaticUpdatesFanartHelp": "If enabled, new images will be downloaded automatically as they're added to fanart.tv. Existing images will not be replaced. This will cause library scans to take longer and will result in more disk activity.",
+    "LabelAutomaticUpdatesTmdbHelp": "If enabled, new images will be downloaded automatically as they're added to TheMovieDB.org. Existing images will not be replaced. This will cause library scans to take longer and will result in more disk activity.",
+    "LabelAutomaticUpdatesTvdbHelp": "If enabled, new images will be downloaded automatically as they're added to TheTVDB.com. Existing images will not be replaced. This will cause library scans to take longer and will result in more disk activity.",
     "LabelFanartApiKey": "Chiavi API personali",
     "LabelFanartApiKeyHelp": "Le richieste di fanart effettuate senza una chiave API personale restituiranno risultati approvati pi\u00f9 di 7 giorni fa. Con una chiave API personale questo tempo scende a 48 ore, e se sei un membro VIP questo tempo scender\u00e0 ulteriormente a circa 10 minuti.",
     "ExtractChapterImagesHelp": "L'estrazione delle immagini dai capitoli permetter\u00e0 ai client di avere un men\u00f9 grafico per la selezione delle scene. Il processo potrebbe essere lento, con uso intensivo della CPU e potrebbe richiedere diversi gigabyte di spazio. Viene avviato quando vengono trovati nuovi video, e anche durante la notte, ad ogni modo \u00e8 configurabile nella sezione azioni pianificate. Non \u00e8 raccomandato l'avvio di questo processo durante le ore di massimo utilizzo.",
@@ -694,7 +694,7 @@
     "NotificationOptionNewLibraryContentMultiple": "Nuovi contenuti aggiunti (multipli)",
     "NotificationOptionCameraImageUploaded": "Immagine fotocamera caricata",
     "NotificationOptionUserLockedOut": "Utente bloccato",
-    "HeaderSendNotificationHelp": "Per impostazione predefinita, le notifiche vengono inviate alla casella della pagina principale. Sfoglia il catalogo plugin da installare opzioni di notifica aggiuntive.",
+    "HeaderSendNotificationHelp": "Notifications are delivered to your Emby inbox. Additional options can be installed from the Services tab.",
     "NotificationOptionServerRestartRequired": "Riavvio del server necessario",
     "LabelNotificationEnabled": "Abilita questa notifica",
     "LabelMonitorUsers": "Monitorare l'attivit\u00e0 da:",
@@ -1494,5 +1494,6 @@
     "ButtonPlaybackSettingsHelp": "Specify your audio and subtitle preferences, streaming quality, and more.",
     "ButtonProfileHelp": "Set your profile image and password.",
     "HeaderHomeScreenSettings": "Home Screen Settings",
-    "HeaderProfile": "Profile"
+    "HeaderProfile": "Profile",
+    "HeaderLanguage": "Language"
 }

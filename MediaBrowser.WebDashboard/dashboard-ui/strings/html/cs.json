@@ -369,9 +369,9 @@
     "LabelAutomaticUpdates": "Enable automatic updates",
     "LabelAutomaticUpdatesTmdb": "Povolit automatick\u00e9 aktualizace z TheMovieDB.org",
     "LabelAutomaticUpdatesTvdb": "Povolit automatick\u00e9 aktualizace z TheTVDB.org",
-    "LabelAutomaticUpdatesFanartHelp": "Pokud je povoleno, budou nov\u00e9 sn\u00edmky budou sta\u017eeny automaticky tak, jak jsou p\u0159id\u00e1ny na fanart.tv. St\u00e1vaj\u00edc\u00ed sn\u00edmky nebudou nahrazeny.",
-    "LabelAutomaticUpdatesTmdbHelp": "Pokud je povoleno, budou nov\u00e9 sn\u00edmky budou sta\u017eeny automaticky tak, jak jsou p\u0159id\u00e1ny na TheMovieDB.org. St\u00e1vaj\u00edc\u00ed sn\u00edmky nebudou nahrazeny.",
-    "LabelAutomaticUpdatesTvdbHelp": "Pokud je povoleno, budou nov\u00e9 sn\u00edmky budou sta\u017eeny automaticky tak, jak jsou p\u0159id\u00e1ny na TheTVDB.org. St\u00e1vaj\u00edc\u00ed sn\u00edmky nebudou nahrazeny.",
+    "LabelAutomaticUpdatesFanartHelp": "If enabled, new images will be downloaded automatically as they're added to fanart.tv. Existing images will not be replaced. This will cause library scans to take longer and will result in more disk activity.",
+    "LabelAutomaticUpdatesTmdbHelp": "If enabled, new images will be downloaded automatically as they're added to TheMovieDB.org. Existing images will not be replaced. This will cause library scans to take longer and will result in more disk activity.",
+    "LabelAutomaticUpdatesTvdbHelp": "If enabled, new images will be downloaded automatically as they're added to TheTVDB.com. Existing images will not be replaced. This will cause library scans to take longer and will result in more disk activity.",
     "LabelFanartApiKey": "Personal api key:",
     "LabelFanartApiKeyHelp": "Requests to fanart without a personal API key return results that were approved over 7 days ago. With a personal API key that drops to 48 hours and if you are also a fanart VIP member that will further drop to around 10 minutes.",
     "ExtractChapterImagesHelp": "Extracting chapter images will allow clients to display graphical scene selection menus. The process can be slow, cpu-intensive and may require several gigabytes of space. It runs when videos are discovered, and also as a nightly scheduled task. The schedule is configurable in the scheduled tasks area. It is not recommended to run this task during peak usage hours.",
@@ -1494,5 +1494,6 @@
     "ButtonPlaybackSettingsHelp": "Specify your audio and subtitle preferences, streaming quality, and more.",
     "ButtonProfileHelp": "Set your profile image and password.",
     "HeaderHomeScreenSettings": "Home Screen Settings",
-    "HeaderProfile": "Profile"
+    "HeaderProfile": "Profile",
+    "HeaderLanguage": "Language"
 }

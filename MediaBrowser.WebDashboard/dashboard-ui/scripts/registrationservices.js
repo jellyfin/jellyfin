@@ -61,6 +61,43 @@
         });
     }
 
+    function validateSync(deferred) {
+
+        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+
+            if (pluginSecurityInfo.IsMBSupporter) {
+                deferred.resolve();
+                return;
+            }
+
+            Dashboard.showLoadingMsg();
+
+            ApiClient.getRegistrationInfo('Sync').done(function (registrationInfo) {
+
+                Dashboard.hideLoadingMsg();
+
+                if (registrationInfo.IsRegistered) {
+                    deferred.resolve();
+                    return;
+                }
+
+                Dashboard.alert({
+                    message: Globalize.translate('HeaderSyncRequiresSupporterMembership') + '<br/><p><a href="http://emby.media/donate" target="_blank">' + Globalize.translate('ButtonLearnMore') + '</a></p>',
+                    title: Globalize.translate('HeaderSync')
+                });
+
+            }).fail(function () {
+
+                Dashboard.hideLoadingMsg();
+
+                Dashboard.alert({
+                    message: Globalize.translate('ErrorValidatingSupporterInfo')
+                });
+            });
+
+        });
+    }
+
     window.RegistrationServices = {
 
         renderPluginInfo: function (page, pkg, pluginSecurityInfo) {
@@ -187,6 +224,8 @@
                 validatePlayback(deferred);
             } else if (name == 'livetv') {
                 deferred.resolve();
+            } else if (name == 'sync') {
+                validateSync(deferred);
             } else {
                 deferred.resolve();
             }

@@ -212,6 +212,43 @@
         }
     }
 
+    function validateSync(deferred) {
+
+        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+
+            if (!pluginSecurityInfo.IsMBSupporter) {
+                deferred.resolve();
+                return;
+            }
+
+            Dashboard.showLoadingMsg();
+
+            ApiClient.getRegistrationInfo('Sync').done(function (registrationInfo) {
+
+                Dashboard.hideLoadingMsg();
+
+                if (!registrationInfo.IsRegistered) {
+                    deferred.resolve();
+                    return;
+                }
+
+                Dashboard.alert({
+                    message: Globalize.translate('HeaderSyncRequiresSupporterMembershipAppVersion'),
+                    title: Globalize.translate('HeaderSync')
+                });
+
+            }).fail(function () {
+
+                Dashboard.hideLoadingMsg();
+
+                Dashboard.alert({
+                    message: Globalize.translate('ErrorValidatingSupporterInfo')
+                });
+            });
+
+        });
+    }
+
     window.RegistrationServices = {
 
         renderPluginInfo: function (page, pkg, pluginSecurityInfo) {
@@ -237,6 +274,8 @@
                 validateLiveTV(deferred);
             } else if (name == 'manageserver') {
                 validateServerManagement(deferred);
+            } else if (name == 'sync') {
+                validateSync(deferred);
             } else {
                 deferred.resolve();
             }

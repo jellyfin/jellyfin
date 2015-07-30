@@ -295,10 +295,20 @@
 
         Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
 
-            if (pluginSecurityInfo.IsMBSupporter || !AppInfo.enableSupporterMembership) {
-                $('.supporterPromotionContainer', hide).show();
+            if (pluginSecurityInfo.IsMBSupporter) {
+                $('.supporterPromotionContainer', page).hide();
             } else {
                 $('.supporterPromotionContainer', page).show();
+
+                if (AppInfo.enableSupporterMembership) {
+                    $('.supporterPromotion a', page).attr('href', 'http://emby.media/donate');
+                    $('.supporterPromotion .btnLearnMore', page).show();
+                    $('.supporterPromotion .mainText', page).html(Globalize.translate('HeaderSyncRequiresSupporterMembership'));
+                } else {
+                    $('.supporterPromotion a', page).attr('href', '#');
+                    $('.supporterPromotion .btnLearnMore', page).hide();
+                    $('.supporterPromotion .mainText', page).html(Globalize.translate('HeaderSyncRequiresSupporterMembershipAppVersion'));
+                }
             }
         });
 

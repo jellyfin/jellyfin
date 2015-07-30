@@ -142,13 +142,13 @@
     "ButtonMute": "Bez zvuka",
     "ButtonUnmute": "Unmute",
     "ButtonStop": "Stop",
-    "ButtonNextTrack": "Sljede\u0107a traka",
+    "ButtonNextTrack": "Next track",
     "ButtonPause": "Pauza",
     "ButtonPlay": "Pokreni",
     "ButtonEdit": "Izmjeni",
     "ButtonQueue": "Queue",
     "ButtonPlaylist": "Playlist",
-    "ButtonPreviousTrack": "Prethodna traka",
+    "ButtonPreviousTrack": "Previous track",
     "LabelEnabled": "Enabled",
     "LabelDisabled": "Disabled",
     "ButtonMoreInformation": "More Information",
@@ -822,5 +822,9 @@
     "ButtonClosePlayVideo": "Close and play my media",
     "MessageDidYouKnowCinemaMode": "Did you know that by becoming an Emby Supporter, you can enhance your experience with features like Cinema Mode?",
     "MessageDidYouKnowCinemaMode2": "Cinema Mode gives you the true cinema experience with trailers and custom intros before the main feature.",
-    "OptionEnableDisplayMirroring": "Enable display mirroring"
+    "OptionEnableDisplayMirroring": "Enable display mirroring",
+    "HeaderSyncRequiresSupporterMembership": "Sync Requires a Supporter Membership",
+    "HeaderSyncRequiresSupporterMembershipAppVersion": "Sync requires connecting to an Emby Server with an active Supporter membership.",
+    "ErrorValidatingSupporterInfo": "There was an error validating your Emby Supporter information. Please try again later.",
+    "HeaderSync": "Sync"
 }

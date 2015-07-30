@@ -200,6 +200,15 @@
 
     function showSyncMenu(options) {
 
+        requirejs(["scripts/registrationservices"], function () {
+            RegistrationServices.validateFeature('sync').done(function () {
+                showSyncMenuInternal(options);
+            });
+        });
+    }
+
+    function showSyncMenuInternal(options) {
+
         var userId = Dashboard.getCurrentUserId();
 
         var dialogOptionsQuery = {

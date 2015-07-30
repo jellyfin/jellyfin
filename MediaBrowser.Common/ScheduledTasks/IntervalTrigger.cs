@@ -45,11 +45,13 @@ namespace MediaBrowser.Common.ScheduledTasks
 
             if (DateTime.UtcNow > triggerDate)
             {
-                triggerDate = DateTime.UtcNow;
-
                 if (isApplicationStartup)
                 {
-                    triggerDate = triggerDate.AddMinutes(1);
+                    triggerDate = DateTime.UtcNow.AddMinutes(5);
+                }
+                else
+                {
+                    triggerDate = DateTime.UtcNow.Add(Interval);
                 }
             }
 

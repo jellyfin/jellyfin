@@ -102,7 +102,7 @@
 
         AppSettings.maxStreamingBitrate($('#selectMaxBitrate', page).val());
         AppSettings.maxChromecastBitrate($('#selectMaxChromecastBitrate', page).val());
-        AppSettings.enableExternalPlayers(page.querySelector('.chkEnableChromecastAc3').checked);
+        AppSettings.enableChromecastAc3(page.querySelector('.chkEnableChromecastAc3').checked);
 
         var userId = getParameterByName('userId') || Dashboard.getCurrentUserId();
 

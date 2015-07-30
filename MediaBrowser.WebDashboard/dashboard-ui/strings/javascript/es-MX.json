@@ -390,7 +390,7 @@
     "ButtonRestart": "Reiniciar",
     "MessagePleaseRefreshPage": "Por favor actualice esta p\u00e1gina para recibir nuevas actualizaciones desde el servidor.",
     "ButtonHide": "Ocultar",
-    "MessageSettingsSaved": "Configuraciones guardadas",
+    "MessageSettingsSaved": "Configuraci\u00f3n guardada.",
     "ButtonSignOut": "Cerrar Sesi\u00f3n",
     "ButtonMyProfile": "Mi Perf\u00edl",
     "ButtonMyPreferences": "Mis Preferencias",
@@ -449,7 +449,7 @@
     "HeaderNetwork": "Cadena",
     "HeaderYear": "A\u00f1o",
     "HeaderGameSystem": "Sistema de juegos",
-    "HeaderPlayers": "Jugadores",
+    "HeaderPlayers": "Reproductores",
     "HeaderEmbeddedImage": "Im\u00e1gen embebida",
     "HeaderTrack": "Pista",
     "HeaderDisc": "Disco",
@@ -822,5 +822,9 @@
     "ButtonClosePlayVideo": "Cerrar y reproducir mi medio",
     "MessageDidYouKnowCinemaMode": "\u00bfSabia que volvi\u00e9ndose un Fan\u00e1tico Emby, puede mejorar su experiencia con caracter\u00edsticas como el Modo Cine?",
     "MessageDidYouKnowCinemaMode2": "El Modo Cine le da una verdadera experiencia de cine con trailers e intros personalizados antes de la presentaci\u00f3n estelar.",
-    "OptionEnableDisplayMirroring": "Enable display mirroring"
+    "OptionEnableDisplayMirroring": "Habilitar duplicaci\u00f3n de pantalla",
+    "HeaderSyncRequiresSupporterMembership": "Sinc requiere de una Membres\u00eda de Aficionado",
+    "HeaderSyncRequiresSupporterMembershipAppVersion": "Sync requires connecting to an Emby Server with an active Supporter membership.",
+    "ErrorValidatingSupporterInfo": "There was an error validating your Emby Supporter information. Please try again later.",
+    "HeaderSync": "Sinc"
 }

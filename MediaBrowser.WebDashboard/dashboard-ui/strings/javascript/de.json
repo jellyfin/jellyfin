@@ -822,5 +822,9 @@
     "ButtonClosePlayVideo": "Schlie\u00dfe und starte meine Medien",
     "MessageDidYouKnowCinemaMode": "Wussten Sie es schon? Wenn Sie ein Emby Unterst\u00fctzer sind k\u00f6nnen Sie den Komfort von Emby mit Funktionen wie dem Kino Modus erweitern.",
     "MessageDidYouKnowCinemaMode2": "Der Kino-Modus bringt ihnen das richtige Kino-Erlebnis nach Hause, mit Trailern und eigenen Intros vor Ihrem Hauptfilm.",
-    "OptionEnableDisplayMirroring": "Enable display mirroring"
+    "OptionEnableDisplayMirroring": "Aktiviere Display-Weiterleitung",
+    "HeaderSyncRequiresSupporterMembership": "Synchronisation ben\u00f6tigt eine Supporter-Mitgliedschaft",
+    "HeaderSyncRequiresSupporterMembershipAppVersion": "Sync requires connecting to an Emby Server with an active Supporter membership.",
+    "ErrorValidatingSupporterInfo": "There was an error validating your Emby Supporter information. Please try again later.",
+    "HeaderSync": "Synchronisation"
 }

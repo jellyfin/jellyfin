@@ -364,6 +364,10 @@
     display: none !important;
 }
 
+.libraryDocument .inboxSidebarLink {
+    display: none !important;
+}
+
 .dashboardDocument .lnkMySync {
     display: none !important;
 }
