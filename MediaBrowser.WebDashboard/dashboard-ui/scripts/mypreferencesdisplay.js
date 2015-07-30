@@ -11,7 +11,6 @@
         $('#selectBackdrop', page).val(appStorage.getItem('enableBackdrops-' + user.Id) || '').selectmenu("refresh");
 
         page.querySelector('.chkEnableFullScreen').checked = AppSettings.enableFullScreen();
-        page.querySelector('.chkSyncToExternalCard').checked = AppSettings.enableSyncToExternalStorage();
 
         Dashboard.hideLoadingMsg();
     }
@@ -27,8 +26,6 @@
 
         appStorage.setItem('enableThemeSongs-' + user.Id, $('#selectThemeSong', page).val());
         appStorage.setItem('enableBackdrops-' + user.Id, $('#selectBackdrop', page).val());
-
-        AppSettings.enableSyncToExternalStorage(page.querySelector('.chkSyncToExternalCard').checked);
 
         ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
             Dashboard.alert(Globalize.translate('SettingsSaved'));
@@ -61,15 +58,6 @@
 
         $('.displayPreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
 
-        $('.btnSelectSyncPath', page).on('click', function () {
-
-            require(['nativedirectorychooser'], function () {
-                NativeDirectoryChooser.chooseDirectory().done(function (path) {
-                    $('#txtSyncPath', page).val(path);
-                });
-            });
-        });
-
     }).on('pageshowready', "#displayPreferencesPage", function () {
 
         var page = this;
@@ -95,12 +83,6 @@
             $('.fldFullscreen', page).show();
         } else {
             $('.fldFullscreen', page).hide();
-        }
-
-        if (AppInfo.supportsSyncPathSetting) {
-            $('.syncSettingsSection', page).show();
-        } else {
-            $('.syncSettingsSection', page).hide();
         }
     });
 

@@ -334,10 +334,12 @@
 
 .overflowPortraitCard {
     width: 40%;
+    max-width: 200px;
 }
 
 .overflowBackdropCard {
     width: 80%;
+    max-width: 400px;
 }
 
 .cardProgress {

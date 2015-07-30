@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Emby</title>
+</head>
+<body>
+    <div id="syncPreferencesPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-title="${ButtonSyncSettings}" data-require="scripts/mysyncsettings,paperbuttonstyle,jqmicons" data-backbutton="true" data-menubutton="false">
+
+        <div data-role="content">
+            <form class="userProfileSettingsForm" style="margin: 0 auto;">
+
+                <h1>
+                    ${HeaderSync}
+                </h1>
+                <div class="detailSectionContent">
+
+                    <br />
+                    <paper-checkbox class="chkSyncToExternalCard">${OptionSyncToSDCard}</paper-checkbox>
+
+                </div>
+
+                <br />
+                <br />
+                <button type="submit" data-role="none" class="clearButton">
+                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
