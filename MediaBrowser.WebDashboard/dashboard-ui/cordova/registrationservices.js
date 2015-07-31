@@ -2,9 +2,7 @@
 
     function isAndroid() {
 
-        var platform = (device.platform || '').toLowerCase();
-
-        return platform.indexOf('android') != -1;
+        return $.browser.android;
     }
 
     function getPremiumUnlockFeatureId() {

@@ -18,32 +18,23 @@
 
                 <form class="encodingSettingsForm">
 
-                    <fieldset data-role="controlgroup">
-                        <legend>${HeaderTranscodingQualityPreference}</legend>
-                        <input type="radio" name="radioEncodingQuality" class="radioEncodingQuality" id="radioAuto" value="Auto">
-                        <label for="radioAuto">
-                            ${OptionAutomatic}<br />
-                            <span style="font-weight: normal;">${OptionAutomaticTranscodingHelp}</span>
-                        </label>
-                        <input type="radio" name="radioEncodingQuality" class="radioEncodingQuality" id="radioHighSpeed" value="HighSpeed">
-                        <label for="radioHighSpeed">
-                            ${OptionHighSpeedTranscoding}<br />
-                            <span style="font-weight: normal;">${OptionHighSpeedTranscodingHelp}</span>
-                        </label>
-                        <input type="radio" name="radioEncodingQuality" class="radioEncodingQuality" id="radioHighQuality" value="HighQuality">
-                        <label for="radioHighQuality">
-                            ${OptionHighQualityTranscoding}<br />
-                            <span style="font-weight: normal;">${OptionHighQualityTranscodingHelp}</span>
-                        </label>
-                        <input type="radio" name="radioEncodingQuality" class="radioEncodingQuality" id="radioMaxQuality" value="MaxQuality">
-                        <label for="radioMaxQuality">
-                            ${OptionMaxQualityTranscoding}<br />
-                            <span style="font-weight: normal;">${OptionMaxQualityTranscodingHelp}</span>
-                        </label>
-                    </fieldset>
-
-                    <br />
                     <ul data-role="listview" class="ulForm">
+                        <li>
+                            <label for="selectThreadCount">${LabelTranscodingThreadCount}</label>
+                            <select id="selectThreadCount" data-mini="true">
+                                <option value="-1">${OptionAuto}</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="0">${OptionMax}</option>
+                            </select>
+                            <div class="fieldDescription">${LabelTranscodingThreadCountHelp}</div>
+                        </li>
                         <li>
                             <input type="checkbox" id="chkEnableThrottle" data-mini="true" />
                             <label for="chkEnableThrottle">${OptionEnableTranscodingThrottle}</label>

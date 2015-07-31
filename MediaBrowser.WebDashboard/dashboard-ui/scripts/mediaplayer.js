@@ -640,7 +640,7 @@
                 ApiClient.stopActiveEncodings(playSessionId).done(function () {
 
                     //self.startTimeTicksOffset = newPositionTicks;
-                    mediaRenderer.setCurrentSrc(url, self.currentItem, self.currentMediaSource);
+                    self.setSrcIntoRenderer(mediaRenderer, url, self.currentItem, self.currentMediaSource);
 
                 });
 
@@ -648,9 +648,36 @@
                 self.updateTextStreamUrls(newPositionTicks || 0);
             } else {
                 self.startTimeTicksOffset = newPositionTicks || 0;
-                mediaRenderer.setCurrentSrc(url, self.currentItem, self.currentMediaSource);
+                self.setSrcIntoRenderer(mediaRenderer, url, self.currentItem, self.currentMediaSource);
             }
         }
+
+        self.setSrcIntoRenderer = function (mediaRenderer, url, item, mediaSource) {
+
+            var subtitleStreams = mediaSource.MediaStreams.filter(function (s) {
+                return s.Type == 'Subtitle';
+            });
+
+            var textStreams = subtitleStreams.filter(function (s) {
+                return s.DeliveryMethod == 'External';
+            });
+
+            var tracks = [];
+
+            for (var i = 0, length = textStreams.length; i < length; i++) {
+
+                var textStream = textStreams[i];
+                var textStreamUrl = !textStream.IsExternalUrl ? ApiClient.getUrl(textStream.DeliveryUrl) : textStream.DeliveryUrl;
+
+                tracks.push({
+                    url: textStreamUrl,
+                    language: (textStream.Language || 'und'),
+                    isDefault: textStream.Index == mediaSource.DefaultSubtitleStreamIndex
+                });
+            }
+
+            mediaRenderer.setCurrentSrc(url, item, mediaSource, tracks);
+        };
 
         self.setCurrentTime = function (ticks, positionSlider, currentTimeElement) {
 

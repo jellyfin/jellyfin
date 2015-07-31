@@ -364,15 +364,15 @@
     display: none !important;
 }
 
-.libraryDocument .inboxSidebarLink {
-    display: none !important;
-}
-
 .dashboardDocument .lnkMySync {
     display: none !important;
 }
 
 .dashboardDocument .lnkManageServer {
+    display: none !important;
+}
+
+.dashboardDocument .headerVoiceButton {
     display: none !important;
 }
 

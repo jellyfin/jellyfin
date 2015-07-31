@@ -159,7 +159,6 @@
     <Compile Include="FileOrganization\TvFileOrganizationOptions.cs" />
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Configuration\DlnaOptions.cs" />
-    <Compile Include="Configuration\EncodingQuality.cs" />
     <Compile Include="Configuration\ImageOption.cs" />
     <Compile Include="Configuration\ImageSavingConvention.cs" />
     <Compile Include="LiveTv\LiveTvOptions.cs" />

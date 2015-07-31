@@ -972,8 +972,7 @@
         self.playVideoInternal = function (item, mediaSource, startPosition, streamInfo, callback) {
 
             var videoUrl = streamInfo.url;
-            var contentType = streamInfo.mimeType;
-            var startPositionInSeekParam = streamInfo.startPositionInSeekParam;
+
             self.startTimeTicksOffset = streamInfo.startTimeTicksOffset;
 
             var mediaStreams = mediaSource.MediaStreams || [];
@@ -1137,25 +1136,7 @@
 
             mediaRenderer.init().done(function () {
 
-                var textStreams = subtitleStreams.filter(function (s) {
-                    return s.DeliveryMethod == 'External';
-                });
-
-                var tracks = [];
-
-                for (var i = 0, length = textStreams.length; i < length; i++) {
-
-                    var textStream = textStreams[i];
-                    var textStreamUrl = !textStream.IsExternalUrl ? ApiClient.getUrl(textStream.DeliveryUrl) : textStream.DeliveryUrl;
-
-                    tracks.push({
-                        url: textStreamUrl,
-                        language: (textStream.Language || 'und'),
-                        isDefault: textStream.Index == mediaSource.DefaultSubtitleStreamIndex
-                    });
-                }
-
-                mediaRenderer.setCurrentSrc(videoUrl, item, mediaSource, tracks);
+                self.setSrcIntoRenderer(mediaRenderer, videoUrl, item, self.currentMediaSource);
 
                 if (callback) {
                     callback();
