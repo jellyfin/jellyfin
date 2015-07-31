@@ -150,7 +150,7 @@ namespace MediaBrowser.Controller.Entities.TV
                 {
                     var series = Series;
 
-                    if (ParentIndexNumber.HasValue)
+                    if (series != null && ParentIndexNumber.HasValue)
                     {
                         var findNumber = ParentIndexNumber.Value;
 

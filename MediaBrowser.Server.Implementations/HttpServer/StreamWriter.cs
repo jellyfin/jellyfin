@@ -81,6 +81,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             WriteToInternal(responseStream);
         }
 
+        // 256k
+        private const int BufferSize = 262144;
+        
         /// <summary>
         /// Writes to async.
         /// </summary>
@@ -92,7 +95,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             {
                 using (var src = SourceStream)
                 {
-                    src.CopyTo(responseStream);
+                    src.CopyTo(responseStream, BufferSize);
                 }
             }
             catch (Exception ex)

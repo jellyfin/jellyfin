@@ -28,6 +28,9 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         public Action OnComplete { get; set; }
         private readonly ILogger _logger;
 
+        // 256k
+        private const int BufferSize = 262144;
+
         /// <summary>
         /// The _options
         /// </summary>
@@ -187,7 +190,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     // If the requested range is "0-", we can optimize by just doing a stream copy
                     if (RangeEnd >= TotalContentLength - 1)
                     {
-                        source.CopyTo(responseStream);
+                        source.CopyTo(responseStream, BufferSize);
                     }
                     else
                     {
@@ -211,8 +214,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private void CopyToInternal(Stream source, Stream destination, long copyLength)
         {
-            const int bufferSize = 81920;
-            var array = new byte[bufferSize];
+            var array = new byte[BufferSize];
             int count;
             while ((count = source.Read(array, 0, array.Length)) != 0)
             {
@@ -249,7 +251,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     // If the requested range is "0-", we can optimize by just doing a stream copy
                     if (RangeEnd >= TotalContentLength - 1)
                     {
-                        await source.CopyToAsync(responseStream).ConfigureAwait(false);
+                        await source.CopyToAsync(responseStream, BufferSize).ConfigureAwait(false);
                     }
                     else
                     {
@@ -268,8 +270,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
         private async Task CopyToAsyncInternal(Stream source, Stream destination, int copyLength, CancellationToken cancellationToken)
         {
-            const int bufferSize = 81920;
-            var array = new byte[bufferSize];
+            var array = new byte[BufferSize];
             int count;
             while ((count = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
             {

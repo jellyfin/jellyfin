@@ -525,7 +525,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     using (var output = File.Open(recordPath, FileMode.Create, FileAccess.Write, FileShare.Read))
                     {
-                        await response.Content.CopyToAsync(output, 4096, linkedToken);
+                        await response.Content.CopyToAsync(output, 131072, linkedToken);
                     }
                 }
 

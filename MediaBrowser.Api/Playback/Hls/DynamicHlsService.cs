@@ -210,8 +210,6 @@ namespace MediaBrowser.Api.Playback.Hls
                         {
                             ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.PlaySessionId, p => false);
 
-                            await ReadSegmentLengths(playlistPath).ConfigureAwait(false);
-
                             if (currentTranscodingIndex.HasValue)
                             {
                                 DeleteLastFile(playlistPath, segmentExtension, 0);
@@ -255,55 +253,8 @@ namespace MediaBrowser.Api.Playback.Hls
             return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
         }
 
-        private static readonly ConcurrentDictionary<string, double> SegmentLengths = new ConcurrentDictionary<string, double>(StringComparer.OrdinalIgnoreCase);
-        private async Task ReadSegmentLengths(string playlist)
-        {
-            try
-            {
-                using (var fileStream = GetPlaylistFileStream(playlist))
-                {
-                    using (var reader = new StreamReader(fileStream))
-                    {
-                        double duration = -1;
-
-                        while (!reader.EndOfStream)
-                        {
-                            var text = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                            if (text.StartsWith("#EXTINF", StringComparison.OrdinalIgnoreCase))
-                            {
-                                var parts = text.Split(new[] { ':' }, 2);
-                                if (parts.Length == 2)
-                                {
-                                    var time = parts[1].Trim(new[] { ',' }).Trim();
-                                    double timeValue;
-                                    if (double.TryParse(time, NumberStyles.Any, CultureInfo.InvariantCulture, out timeValue))
-                                    {
-                                        duration = timeValue;
-                                        continue;
-                                    }
-                                }
-                            }
-                            else if (duration != -1)
-                            {
-                                SegmentLengths.AddOrUpdate(text, duration, (k, v) => duration);
-                                Logger.Debug("Added segment length of {0} for {1}", duration, text);
-                            }
-
-                            duration = -1;
-                        }
-                    }
-                }
-            }
-            catch (DirectoryNotFoundException)
-            {
-
-            }
-            catch (FileNotFoundException)
-            {
-
-            }
-        }
+        // 256k
+        private const int BufferSize = 262144;
 
         private long GetSeekPositionTicks(StreamState state, string playlist, int requestedIndex)
         {
@@ -455,21 +406,18 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     using (var fileStream = GetPlaylistFileStream(playlistPath))
                     {
-                        using (var reader = new StreamReader(fileStream))
+                        using (var reader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
                         {
-                            while (!reader.EndOfStream)
-                            {
-                                var text = await reader.ReadLineAsync().ConfigureAwait(false);
+                            var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                                // If it appears in the playlist, it's done
-                                if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                            // If it appears in the playlist, it's done
+                            if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                            {
+                                if (File.Exists(segmentPath))
                                 {
-                                    if (File.Exists(segmentPath))
-                                    {
-                                        return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
-                                    }
-                                    break;
+                                    return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
                                 }
+                                //break;
                             }
                         }
                     }
