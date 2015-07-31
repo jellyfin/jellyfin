@@ -824,7 +824,7 @@
     "MessageDidYouKnowCinemaMode2": "El Modo Cine le da una verdadera experiencia de cine con trailers e intros personalizados antes de la presentaci\u00f3n estelar.",
     "OptionEnableDisplayMirroring": "Habilitar duplicaci\u00f3n de pantalla",
     "HeaderSyncRequiresSupporterMembership": "Sinc requiere de una Membres\u00eda de Aficionado",
-    "HeaderSyncRequiresSupporterMembershipAppVersion": "Sync requires connecting to an Emby Server with an active Supporter membership.",
-    "ErrorValidatingSupporterInfo": "There was an error validating your Emby Supporter information. Please try again later.",
+    "HeaderSyncRequiresSupporterMembershipAppVersion": "Sinc requiere estar conectado a un Servidor Emby con una cuenta de Aficionado Emby.",
+    "ErrorValidatingSupporterInfo": "Hubo un error al validar su informaci\u00f3n de su cuenta de Aficionado Emby. Por favor intente de nuevo mas tarde.",
     "HeaderSync": "Sinc"
 }

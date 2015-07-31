@@ -1495,5 +1495,10 @@
     "ButtonProfileHelp": "D\u00e9finir votre avatar et votre mot de passe",
     "HeaderHomeScreenSettings": "Param\u00e8tres de l'\u00e9cran d'accueil",
     "HeaderProfile": "Profil",
-    "HeaderLanguage": "Language"
+    "HeaderLanguage": "Langue",
+    "ButtonSyncSettings": "Param\u00e8tres de synchro",
+    "ButtonSyncSettingsHelp": "R\u00e9gler vos param\u00e8tres de synchro",
+    "LabelTranscodingThreadCount": "Transcoding thread count:",
+    "LabelTranscodingThreadCountHelp": "Select the maximum number of threads to use when transcoding. Reducing the thread count will lower cpu usage but may not convert fast enough for a smooth playback experience.",
+    "OptionMax": "Max"
 }

@@ -1495,5 +1495,10 @@
     "ButtonProfileHelp": "Definir sua imagem do perfil e senha.",
     "HeaderHomeScreenSettings": "Ajustes da Tela Inicial",
     "HeaderProfile": "Perfil",
-    "HeaderLanguage": "Language"
+    "HeaderLanguage": "Idioma",
+    "ButtonSyncSettings": "Ajustes de sincroniza\u00e7\u00e3o",
+    "ButtonSyncSettingsHelp": "Configure seus ajustes de sincroniza\u00e7\u00e3o",
+    "LabelTranscodingThreadCount": "Transcoding thread count:",
+    "LabelTranscodingThreadCountHelp": "Select the maximum number of threads to use when transcoding. Reducing the thread count will lower cpu usage but may not convert fast enough for a smooth playback experience.",
+    "OptionMax": "Max"
 }

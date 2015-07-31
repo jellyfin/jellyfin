@@ -1493,7 +1493,12 @@
     "ButtonHomeScreenSettingsHelp": "Configure el despliegue de su pantalla de inicio",
     "ButtonPlaybackSettingsHelp": "Especifique sus preferencias de audio y subt\u00edtulos, calidad de transferencia y m\u00e1s.",
     "ButtonProfileHelp": "Establezca su im\u00e1gen del perf\u00edl y contrase\u00f1a.",
-    "HeaderHomeScreenSettings": "Configuraci\u00f3n de Pantalla de Inicio",
+    "HeaderHomeScreenSettings": "Home Screen settings",
     "HeaderProfile": "Perf\u00edl",
-    "HeaderLanguage": "Language"
+    "HeaderLanguage": "Idioma",
+    "ButtonSyncSettings": "Configuraci\u00f3n de Sinc.",
+    "ButtonSyncSettingsHelp": "Configure sus preferencias de sincronizaci\u00f3n",
+    "LabelTranscodingThreadCount": "Transcoding thread count:",
+    "LabelTranscodingThreadCountHelp": "Select the maximum number of threads to use when transcoding. Reducing the thread count will lower cpu usage but may not convert fast enough for a smooth playback experience.",
+    "OptionMax": "Max"
 }

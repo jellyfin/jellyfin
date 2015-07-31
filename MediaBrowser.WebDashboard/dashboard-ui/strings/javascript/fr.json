@@ -824,7 +824,7 @@
     "MessageDidYouKnowCinemaMode2": "Le mode Cin\u00e9ma vous apporte une vraie exp\u00e9rience utilisateur de cin\u00e9ma, avec les bandes-annonces et les intros personnalis\u00e9es avant le film principal.",
     "OptionEnableDisplayMirroring": "Activer la recopie d'\u00e9cran",
     "HeaderSyncRequiresSupporterMembership": "Sync n\u00e9cessite un abonnement actif comme supporteur",
-    "HeaderSyncRequiresSupporterMembershipAppVersion": "Sync requires connecting to an Emby Server with an active Supporter membership.",
-    "ErrorValidatingSupporterInfo": "There was an error validating your Emby Supporter information. Please try again later.",
+    "HeaderSyncRequiresSupporterMembershipAppVersion": "La synchronisation n\u00e9cessite de se connecter \u00e0 un serveur Emby avec une adh\u00e9sion supporteur actif.",
+    "ErrorValidatingSupporterInfo": "Une erreur s'est produite lors de la validation de vos informations de membre supporteur actif d'Emby. Veuillez r\u00e9essayer ult\u00e9rieurement.",
     "HeaderSync": "Sync"
 }

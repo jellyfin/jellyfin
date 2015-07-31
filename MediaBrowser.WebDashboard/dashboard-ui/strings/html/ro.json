@@ -1493,7 +1493,12 @@
     "ButtonHomeScreenSettingsHelp": "Configure the display of your home screen",
     "ButtonPlaybackSettingsHelp": "Specify your audio and subtitle preferences, streaming quality, and more.",
     "ButtonProfileHelp": "Set your profile image and password.",
-    "HeaderHomeScreenSettings": "Home Screen Settings",
+    "HeaderHomeScreenSettings": "Home Screen settings",
     "HeaderProfile": "Profile",
-    "HeaderLanguage": "Language"
+    "HeaderLanguage": "Language",
+    "ButtonSyncSettings": "Sync settings",
+    "ButtonSyncSettingsHelp": "Configure your sync settings",
+    "LabelTranscodingThreadCount": "Transcoding thread count:",
+    "LabelTranscodingThreadCountHelp": "Select the maximum number of threads to use when transcoding. Reducing the thread count will lower cpu usage but may not convert fast enough for a smooth playback experience.",
+    "OptionMax": "Max"
 }
