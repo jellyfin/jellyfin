@@ -41,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 string location;
                 if (e.Headers.TryGetValue("Location", out location))
                 {
-                    _logger.Debug("HdHomerun found at {0}", location);
+                    //_logger.Debug("HdHomerun found at {0}", location);
 
                     // Just get the beginning of the url
                     Uri uri;
@@ -50,7 +50,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                         var apiUrl = location.Replace(uri.LocalPath, String.Empty, StringComparison.OrdinalIgnoreCase)
                                 .TrimEnd('/');
 
-                        _logger.Debug("HdHomerun api url: {0}", apiUrl);
+                        //_logger.Debug("HdHomerun api url: {0}", apiUrl);
                         AddDevice(apiUrl);
                     }
                 }

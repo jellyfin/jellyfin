@@ -336,6 +336,11 @@
 
         html += '<div class="sidebarDivider"></div>';
 
+        html += '<a class="sidebarLink lnkMediaFolder sidebarLinkNotifications" data-itemid="inbox" onclick="return LibraryMenu.onLinkClicked(event, this);" href="notificationlist.html"><iron-icon icon="inbox" class="sidebarLinkIcon"></iron-icon>';
+        html += Globalize.translate('ButtonInbox');
+        html += '<div class="btnNotifications"><div class="btnNotificationsInner">0</div></div>';
+        html += '</a>';
+
         if (user.localUser && showUserAtTop()) {
             html += '<a class="sidebarLink lnkMediaFolder lnkMySettings" onclick="return LibraryMenu.onLinkClicked(event, this);" data-itemid="mysync" href="mypreferencesmenu.html?userId=' + user.localUser.Id + '"><iron-icon icon="settings" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSettings') + '</span></a>';
         }
