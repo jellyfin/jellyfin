@@ -735,7 +735,12 @@ namespace MediaBrowser.Model.Dlna
                         continue;
                     }
 
-                    if (profile.Method == SubtitleDeliveryMethod.Embed && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
+                    if (profile.Method != SubtitleDeliveryMethod.Embed)
+                    {
+                        continue;
+                    }
+
+                    if (subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format) && StringHelper.EqualsIgnoreCase(profile.Format, subtitleStream.Codec))
                     {
                         return profile;
                     }
