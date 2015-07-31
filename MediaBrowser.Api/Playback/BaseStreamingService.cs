@@ -263,38 +263,27 @@ namespace MediaBrowser.Api.Playback
             return returnFirstIfNoIndex ? streams.FirstOrDefault() : null;
         }
 
-        protected EncodingQuality GetQualitySetting()
-        {
-            var quality = ApiEntryPoint.Instance.GetEncodingOptions().EncodingQuality;
-
-            if (quality == EncodingQuality.Auto)
-            {
-                var cpuCount = Environment.ProcessorCount;
-
-                if (cpuCount >= 4)
-                {
-                    //return EncodingQuality.HighQuality;
-                }
-
-                return EncodingQuality.HighSpeed;
-            }
-
-            return quality;
-        }
-
         /// <summary>
         /// Gets the number of threads.
         /// </summary>
         /// <returns>System.Int32.</returns>
         protected int GetNumberOfThreads(StreamState state, bool isWebm)
         {
+            var threads = ApiEntryPoint.Instance.GetEncodingOptions().EncodingThreadCount;
+
             if (isWebm)
             {
                 // Recommended per docs
                 return Math.Max(Environment.ProcessorCount - 1, 2);
             }
 
-            return 0;
+            // Automatic
+            if (threads == -1)
+            {
+                return 0;
+            }
+
+            return threads;
         }
 
         protected string H264Encoder
@@ -326,77 +315,31 @@ namespace MediaBrowser.Api.Playback
             var isVc1 = state.VideoStream != null &&
                 string.Equals(state.VideoStream.Codec, "vc1", StringComparison.OrdinalIgnoreCase);
 
-            var qualitySetting = GetQualitySetting();
-
             if (string.Equals(videoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
             {
                 param = "-preset superfast";
 
-                switch (qualitySetting)
-                {
-                    case EncodingQuality.HighSpeed:
-                        param += " -crf 23";
-                        break;
-                    case EncodingQuality.HighQuality:
-                        param += " -crf 20";
-                        break;
-                    case EncodingQuality.MaxQuality:
-                        param += " -crf 18";
-                        break;
-                }
+                param += " -crf 23";
             }
 
             else if (string.Equals(videoCodec, "libx265", StringComparison.OrdinalIgnoreCase))
             {
                 param = "-preset fast";
 
-                switch (qualitySetting)
-                {
-                    case EncodingQuality.HighSpeed:
-                        param += " -crf 28";
-                        break;
-                    case EncodingQuality.HighQuality:
-                        param += " -crf 25";
-                        break;
-                    case EncodingQuality.MaxQuality:
-                        param += " -crf 21";
-                        break;
-                }
+                param += " -crf 28";
             }
 
             // h264 (h264_qsv)
             else if (string.Equals(videoCodec, "h264_qsv", StringComparison.OrdinalIgnoreCase))
             {
-                switch (qualitySetting)
-                {
-                    case EncodingQuality.HighSpeed:
-                        param = "-preset 7";
-                        break;
-                    case EncodingQuality.HighQuality:
-                        param = "-preset 4";
-                        break;
-                    case EncodingQuality.MaxQuality:
-                        param = "-preset 1";
-                        break;
-                }
+                param = "-preset 7";
 
             }
 
             // h264 (libnvenc)
             else if (string.Equals(videoCodec, "libnvenc", StringComparison.OrdinalIgnoreCase))
             {
-                switch (qualitySetting)
-                {
-                    case EncodingQuality.HighSpeed:
-                        param = "-preset high-performance";
-                        break;
-                    case EncodingQuality.HighQuality:
-                        param = "";
-                        break;
-                    case EncodingQuality.MaxQuality:
-                        param = "-preset high-quality";
-                        break;
-                }
+                param = "-preset high-performance";
             }
 
             // webm
@@ -409,20 +352,7 @@ namespace MediaBrowser.Api.Playback
                 var qmin = "0";
                 var qmax = "50";
 
-                switch (qualitySetting)
-                {
-                    case EncodingQuality.HighSpeed:
-                        crf = "10";
-                        break;
-                    case EncodingQuality.HighQuality:
-                        crf = "6";
-                        break;
-                    case EncodingQuality.MaxQuality:
-                        crf = "4";
-                        break;
-                    default:
-                        throw new ArgumentException("Unrecognized quality setting");
-                }
+                crf = "10";
 
                 if (isVc1)
                 {

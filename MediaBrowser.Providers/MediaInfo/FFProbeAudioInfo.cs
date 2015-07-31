@@ -61,22 +61,22 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var idString = item.Id.ToString("N");
-            var cachePath = Path.Combine(_appPaths.CachePath,
-                "ffprobe-audio",
-                idString.Substring(0, 2), idString, "v" + SchemaVersion + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
+            //var idString = item.Id.ToString("N");
+            //var cachePath = Path.Combine(_appPaths.CachePath,
+            //    "ffprobe-audio",
+            //    idString.Substring(0, 2), idString, "v" + SchemaVersion + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
 
-            try
-            {
-                return _json.DeserializeFromFile<Model.MediaInfo.MediaInfo>(cachePath);
-            }
-            catch (FileNotFoundException)
-            {
+            //try
+            //{
+            //    return _json.DeserializeFromFile<Model.MediaInfo.MediaInfo>(cachePath);
+            //}
+            //catch (FileNotFoundException)
+            //{
 
-            }
-            catch (DirectoryNotFoundException)
-            {
-            }
+            //}
+            //catch (DirectoryNotFoundException)
+            //{
+            //}
 
             var result = await _mediaEncoder.GetMediaInfo(new MediaInfoRequest
             {
@@ -86,8 +86,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
             }, cancellationToken).ConfigureAwait(false);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
-            _json.SerializeToFile(result, cachePath);
+            //Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
+            //_json.SerializeToFile(result, cachePath);
 
             return result;
         }
