@@ -123,13 +123,6 @@
             var isVlc = AppInfo.isNativeApp && $.browser.android;
             var bitrateSetting = AppSettings.maxStreamingBitrate();
 
-            if (isVlc) {
-                // Work around vlc 1080p stutter for now
-                if ((maxHeight || 1080) >= 1080) {
-                    bitrateSetting = Math.min(bitrateSetting, 4000002);
-                }
-            }
-
             var canPlayWebm = self.canPlayWebm();
 
             var profile = {};

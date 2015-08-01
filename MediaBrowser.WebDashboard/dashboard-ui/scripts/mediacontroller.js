@@ -1,16 +1,5 @@
 ﻿(function ($, window) {
 
-    function setMirrorModeEnabled(enabled) {
-
-        var val = enabled ? '1' : '0';
-
-        appStorage.setItem('displaymirror--' + Dashboard.getCurrentUserId(), val);
-
-    }
-    function isMirrorModeEnabled() {
-        return (appStorage.getItem('displaymirror--' + Dashboard.getCurrentUserId()) || '') != '0';
-    }
-
     var currentDisplayInfo;
     function mirrorItem(info) {
 
@@ -25,9 +14,11 @@
         });
     }
 
-    function mirrorIfEnabled(info) {
+    function mirrorIfEnabled() {
 
-        if (isMirrorModeEnabled()) {
+        var info = currentDisplayInfo;
+
+        if (info && MediaController.enableDisplayMirroring()) {
 
             var player = MediaController.getPlayerInfo();
 
@@ -110,9 +101,9 @@
 
         html += '<p class="fieldDescription">' + Globalize.translate('LabelAllPlaysSentToPlayer') + '</p>';
 
-        checkedHtml = isMirrorModeEnabled() ? ' checked="checked"' : '';
+        checkedHtml = MediaController.enableDisplayMirroring() ? ' checked="checked"' : '';
 
-        html += '<div style="margin-top:1.5em;" class="fldMirrorMode"><label for="chkEnableMirrorMode">Enable display mirroring</label><input type="checkbox" class="chkEnableMirrorMode" id="chkEnableMirrorMode" data-mini="true"' + checkedHtml + ' /></div>';
+        html += '<div style="margin-top:1.5em;" class="fldMirrorMode"><label for="chkEnableMirrorMode">' + Globalize.translate('OptionEnableDisplayMirroring') + '</label><input type="checkbox" class="chkEnableMirrorMode" id="chkEnableMirrorMode" data-mini="true"' + checkedHtml + ' /></div>';
 
         html += '</form>';
 
@@ -146,13 +137,7 @@
             $('.players', elem).html(getTargetsHtml(targets)).trigger('create');
 
             $('.chkEnableMirrorMode', elem).on('change', function () {
-                setMirrorModeEnabled(this.checked);
-
-                if (this.checked && currentDisplayInfo) {
-
-                    mirrorItem(currentDisplayInfo);
-
-                }
+                MediaController.enableDisplayMirroring(this.checked);
 
             });
 
@@ -182,10 +167,7 @@
 
                 });
 
-                if (currentDisplayInfo) {
-
-                    mirrorIfEnabled(currentDisplayInfo);
-                }
+                mirrorIfEnabled();
 
             });
 
@@ -343,6 +325,27 @@
             });
         };
 
+        self.trySetActiveDeviceName = function (name) {
+
+            function normalizeName(t) {
+                return t.toLowerCase().replace(' ', '');
+            }
+
+            name = normalizeName(name);
+
+            self.getTargets().done(function (result) {
+
+                var target = result.filter(function (p) {
+                    return normalizeName(p.name) == name;
+                })[0];
+
+                if (target) {
+                    self.trySetActivePlayer(target.playerName, target);
+                }
+
+            });
+        };
+
         self.setDefaultPlayerActive = function () {
 
             var player = self.getDefaultPlayer();
@@ -416,6 +419,26 @@
                 RegistrationServices.validateFeature('playback').done(fn);
             });
         }
+
+        self.toggleDisplayMirroring = function () {
+            self.enableDisplayMirroring(!self.enableDisplayMirroring());
+        };
+
+        self.enableDisplayMirroring = function (enabled) {
+
+            if (enabled != null) {
+
+                var val = enabled ? '1' : '0';
+                appStorage.setItem('displaymirror--' + Dashboard.getCurrentUserId(), val);
+
+                if (enabled) {
+                    mirrorIfEnabled();
+                }
+                return;
+            }
+
+            return (appStorage.getItem('displaymirror--' + Dashboard.getCurrentUserId()) || '') != '0';
+        };
 
         self.play = function (options) {
 

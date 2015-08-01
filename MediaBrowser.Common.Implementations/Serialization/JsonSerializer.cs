@@ -61,7 +61,7 @@ namespace MediaBrowser.Common.Implementations.Serialization
 
         private Stream OpenFile(string path)
         {
-            return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131072);
         }
 
         /// <summary>

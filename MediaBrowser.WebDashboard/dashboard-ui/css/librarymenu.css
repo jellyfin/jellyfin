@@ -51,11 +51,6 @@
     display: none !important;
 }
 
-.mainDrawerPanelPreInit #main {
-    left: 0 !important;
-    position: static !important;
-}
-
 .mainDrawerPanel #drawer {
     z-index: 1099 !important;
     position: fixed !important;

@@ -1,6 +1,6 @@
 {
   "name": "paper-input",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Material design text fields",
   "authors": [
     "The Polymer Authors"
@@ -42,11 +42,11 @@
     "web-component-tester": "*",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
-  "_release": "1.0.6",
+  "_release": "1.0.7",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.6",
-    "commit": "327605642c1bfa5366c0d3effc638b81f24c3adc"
+    "tag": "v1.0.7",
+    "commit": "b3150c105a4599d50a2da0789789fa50fa73e644"
   },
   "_source": "git://github.com/PolymerElements/paper-input.git",
   "_target": "^1.0.0",

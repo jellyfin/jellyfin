@@ -521,10 +521,8 @@
 
         if (item && item.MediaType == 'Audio') {
             $('.buttonsRow2', page).hide();
-            $('.buttonsRow3', page).hide();
         } else {
             $('.buttonsRow2', page).show();
-            $('.buttonsRow3', page).show();
         }
 
         var toggleRepeatButton = page.querySelector('.repeatToggleButton');
@@ -751,7 +749,7 @@
 
         $('.requiresJqmCreate', this).trigger('create');
 
-        var tabs = page.querySelectorAll('paper-tabs')[0];
+        var tabs = page.querySelector('paper-tabs');
         tabs.alignBottom = true;
 
         LibraryBrowser.configureSwipeTabs(page, tabs, page.querySelectorAll('neon-animated-pages')[0]);
