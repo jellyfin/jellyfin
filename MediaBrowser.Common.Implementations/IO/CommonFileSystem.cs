@@ -234,10 +234,10 @@ namespace MediaBrowser.Common.Implementations.IO
         {
             if (_supportsAsyncFileStreams && isAsync)
             {
-                return new FileStream(path, mode, access, share, 4096, true);
+                return new FileStream(path, mode, access, share, StreamDefaults.DefaultFileStreamBufferSize, true);
             }
 
-            return new FileStream(path, mode, access, share);
+            return new FileStream(path, mode, access, share, StreamDefaults.DefaultFileStreamBufferSize);
         }
 
         /// <summary>
