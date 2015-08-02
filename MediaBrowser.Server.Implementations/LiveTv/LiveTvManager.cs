@@ -368,7 +368,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     info = await service.GetChannelStream(channel.ExternalId, mediaSourceId, cancellationToken).ConfigureAwait(false);
                     info.RequiresClosing = true;
 
-                    if (info.RequiresClosing ?? false)
+                    if (info.RequiresClosing)
                     {
                         var idPrefix = service.GetType().FullName.GetMD5().ToString("N") + "_";
 
@@ -385,7 +385,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     info = await service.GetRecordingStream(recording.ExternalId, null, cancellationToken).ConfigureAwait(false);
                     info.RequiresClosing = true;
 
-                    if (info.RequiresClosing ?? false)
+                    if (info.RequiresClosing)
                     {
                         var idPrefix = service.GetType().FullName.GetMD5().ToString("N") + "_";
 

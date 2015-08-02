@@ -136,7 +136,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private async void DisposeLiveStream()
         {
-            if (MediaSource.RequiresClosing ?? false)
+            if (MediaSource.RequiresClosing)
             {
                 try
                 {
