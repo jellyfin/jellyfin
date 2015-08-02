@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using MediaBrowser.Common;
+﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
@@ -13,6 +12,7 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -134,7 +134,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 foreach (var provider in GetListingProviders())
                 {
-                    await provider.Item1.AddMetadata(provider.Item2, list, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        await provider.Item1.AddMetadata(provider.Item2, list, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (NotSupportedException)
+                    {
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error adding metadata", ex);
+                    }
                 }
             }
 
@@ -637,7 +648,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             // TODO: This assumption will require review once additional listing providers are added
             return allPrograms.Where(epg => epg.Id.StartsWith(seriesTimer.ProgramId, StringComparison.OrdinalIgnoreCase));
         }
-        
+
         private string GetChannelEpgCachePath(string channelId)
         {
             return Path.Combine(DataPath, "epg", channelId + ".json");

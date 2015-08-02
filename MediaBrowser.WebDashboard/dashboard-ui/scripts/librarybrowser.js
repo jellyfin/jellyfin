@@ -192,6 +192,7 @@
         configurePaperLibraryTabs: function (ownerpage, tabs, pages, defaultTabIndex) {
 
             tabs.hideScrollButtons = true;
+            tabs.noink = true;
 
             if (AppInfo.enableBottomTabs) {
                 tabs.alignBottom = true;

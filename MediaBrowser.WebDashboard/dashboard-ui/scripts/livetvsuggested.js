@@ -117,13 +117,56 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#liveTvSuggestedPage", function () {
+    function loadSuggestedTab(page) {
+
+        var tabContent = page.querySelector('.suggestedTabContent');
+
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reload(tabContent);
+        }
+    }
+
+    function loadTab(page, index) {
+
+        switch (index) {
+
+            case 0:
+                loadSuggestedTab(page);
+                break;
+            default:
+                break;
+        }
+    }
+
+    $(document).on('pageinitdepends', "#liveTvSuggestedPage", function () {
 
         var page = this;
 
-        if (LibraryBrowser.needsRefresh(page)) {
-            reload(page);
-        }
+        var tabs = page.querySelector('paper-tabs');
+        var pages = page.querySelector('neon-animated-pages');
+
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages);
+
+        $(tabs).on('iron-select', function () {
+            var selected = this.selected;
+
+            if (LibraryBrowser.navigateOnLibraryTabSelect()) {
+
+                if (selected) {
+                    Dashboard.navigate('livetvsuggested.html?tab=' + selected);
+                } else {
+                    Dashboard.navigate('livetvsuggested.html');
+                }
+
+            } else {
+                page.querySelector('neon-animated-pages').selected = selected;
+            }
+        });
+
+        $(pages).on('tabchange', function () {
+            loadTab(page, parseInt(this.selected));
+        });
+
     });
 
 })(jQuery, document);

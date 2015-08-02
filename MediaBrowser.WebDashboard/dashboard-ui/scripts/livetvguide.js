@@ -444,9 +444,9 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#liveTvGuidePage", function () {
+    $(document).on('pageinitdepends', "#liveTvSuggestedPage", function () {
 
-        var page = this;
+        var page = this.querySelector('.guideTabContent');
 
         Events.on(page.querySelector('.programGrid'), 'scroll', function () {
 
@@ -485,13 +485,20 @@
             selectDate(page);
         });
 
-    }).on('pagebeforeshowready', "#liveTvGuidePage", function () {
+    }).on('pagebeforeshowready', "#liveTvSuggestedPage", function () {
 
         var page = this;
 
-        if (LibraryBrowser.needsRefresh(page)) {
-            reloadPage(page);
-        }
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+
+            if (parseInt(this.selected) == 1) {
+                var tabContent = page.querySelector('.guideTabContent');
+
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    reloadPage(tabContent);
+                }
+            }
+        });
     });
 
 })(jQuery, document);

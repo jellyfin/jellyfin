@@ -126,7 +126,7 @@
                 ApiClient.createLiveTvSeriesTimer(item).done(function () {
 
                     Dashboard.hideLoadingMsg();
-                    Dashboard.navigate('livetvseriestimers.html');
+                    Dashboard.navigate('livetvsuggested.html');
 
                 });
 
@@ -134,7 +134,7 @@
                 ApiClient.createLiveTvTimer(item).done(function () {
 
                     Dashboard.hideLoadingMsg();
-                    Dashboard.navigate('livetvtimers.html');
+                    Dashboard.navigate('livetvsuggested.html');
 
                 });
             }

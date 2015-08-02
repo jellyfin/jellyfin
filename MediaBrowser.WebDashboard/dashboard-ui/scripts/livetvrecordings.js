@@ -52,7 +52,7 @@
         }
 
         $('.recordingItems', elem).html(LibraryBrowser.getPosterViewHtml({
-            
+
             items: recordings,
             shape: "auto",
             showTitle: true,
@@ -101,13 +101,20 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#liveTvRecordingsPage", function () {
+    $(document).on('pagebeforeshowready', "#liveTvSuggestedPage", function () {
 
         var page = this;
 
-        if (LibraryBrowser.needsRefresh(page)) {
-            reload(page);
-        }
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+
+            if (parseInt(this.selected) == 3) {
+                var tabContent = page.querySelector('.recordingsTabContent');
+
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    reload(tabContent);
+                }
+            }
+        });
 
     });
 

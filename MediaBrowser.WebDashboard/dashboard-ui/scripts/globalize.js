@@ -69,11 +69,15 @@
                 deferred.resolveWith(null, [culture]);
 
             }, function () {
+
+                Logger.log('navigator.globalization.getLocaleName failed');
+
                 deferred.resolveWith(null, [null]);
             });
 
-
         } else {
+
+            Logger.log('navigator.globalization.getLocaleName is unavailable');
 
             culture = document.documentElement.getAttribute('data-culture');
             deferred.resolveWith(null, [culture]);

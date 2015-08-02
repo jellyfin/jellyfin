@@ -92,7 +92,7 @@
         margin-left: 2em;
     }
 
-.ehsContent {
+.ehsContent, .ehsContent .pageTabContent {
     margin: 0 auto;
 }
 
@@ -131,8 +131,9 @@
 
 @media all and (min-width: 500px) {
 
-    .ehsContent {
+    .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
         width: 98%;
+        margin: 0 auto;
     }
 }
 
@@ -145,14 +146,14 @@
 
 @media all and (min-width: 1200px) {
 
-    .ehsContent {
+    .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
         width: 97%;
     }
 }
 
 @media all and (min-width: 1920px) {
 
-    .ehsContent {
+    .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
         width: 96%;
     }
 }

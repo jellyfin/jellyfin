@@ -275,7 +275,11 @@
 
             html += '<div class="editorTileInner">';
 
-            html += '<p>' + image.Width + ' X ' + image.Height + '</p>';
+            if (image.Width && image.Height) {
+                html += '<p>' + image.Width + ' X ' + image.Height + '</p>';
+            } else {
+                html += '<p>&nbsp;</p>';
+            }
 
             html += '<p>';
 
@@ -527,7 +531,7 @@
 
         $('.uploadItemImageForm').off('submit', onSubmit).on('submit', onSubmit);
 
-        $('.btnOpenUploadMenu', page).on('click', function() {
+        $('.btnOpenUploadMenu', page).on('click', function () {
 
             $('#popupUpload', page).popup('open');
         });

@@ -117,25 +117,32 @@
         }).checkboxradio('refresh');
     }
 
-    $(document).on('pagebeforeshowready', "#liveTvSeriesTimersPage", function () {
+    $(document).on('pagebeforeshowready', "#liveTvSuggestedPage", function () {
 
         var page = this;
 
-        if (LibraryBrowser.needsRefresh(page)) {
-            reload(page);
-        }
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
 
-    }).on('pageinit', "#liveTvSeriesTimersPage", function () {
+            if (parseInt(this.selected) == 5) {
+                var tabContent = page.querySelector('.seriesTimersTabContent');
 
-        var page = this;
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    reload(tabContent);
+                }
+            }
+        });
 
-        $('.radioSortBy', this).on('click', function () {
+    }).on('pageinitdepends', "#liveTvSuggestedPage", function () {
+
+        var page = this.querySelector('.seriesTimersTabContent');
+
+        $('.radioSortBy', page).on('click', function () {
             query.StartIndex = 0;
             query.SortBy = this.getAttribute('data-sortby');
             reload(page);
         });
 
-        $('.radioSortOrder', this).on('click', function () {
+        $('.radioSortOrder', page).on('click', function () {
             query.StartIndex = 0;
             query.SortOrder = this.getAttribute('data-sortorder');
             reload(page);

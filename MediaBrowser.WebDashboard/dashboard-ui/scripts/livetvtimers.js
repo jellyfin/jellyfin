@@ -42,7 +42,7 @@
 
             var program = timer.ProgramInfo || {};
             var imgUrl;
-            
+
             if (program.ImageTags && program.ImageTags.Primary) {
 
                 imgUrl = ApiClient.getScaledImageUrl(program.Id, {
@@ -106,13 +106,20 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#liveTvTimersPage", function () {
+    $(document).on('pagebeforeshowready', "#liveTvSuggestedPage", function () {
 
         var page = this;
 
-        if (LibraryBrowser.needsRefresh(page)) {
-            reload(page);
-        }
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+
+            if (parseInt(this.selected) == 4) {
+                var tabContent = page.querySelector('.timersTabContent');
+
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    reload(tabContent);
+                }
+            }
+        });
     });
 
 })(jQuery, document);

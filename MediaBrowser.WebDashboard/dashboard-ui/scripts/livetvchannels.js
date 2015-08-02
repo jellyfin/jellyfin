@@ -77,11 +77,11 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinitdepends', "#liveTvChannelsPage", function () {
+    $(document).on('pageinitdepends', "#liveTvSuggestedPage", function () {
 
-        var page = this;
+        var page = this.querySelector('.channelsTabContent');
 
-        $('#chkFavorite', this).on('change', function () {
+        $('#chkFavorite', page).on('change', function () {
 
             query.StartIndex = 0;
             query.IsFavorite = this.checked ? true : null;
@@ -90,7 +90,7 @@
         });
 
 
-        $('#chkLikes', this).on('change', function () {
+        $('#chkLikes', page).on('change', function () {
 
             query.StartIndex = 0;
             query.IsLiked = this.checked ? true : null;
@@ -98,7 +98,7 @@
             reloadItems(page);
         });
 
-        $('#chkDislikes', this).on('change', function () {
+        $('#chkDislikes', page).on('change', function () {
 
             query.StartIndex = 0;
             query.IsDisliked = this.checked ? true : null;
@@ -112,19 +112,27 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#liveTvChannelsPage", function () {
+    });
 
-        // Can't use pagebeforeshow here or the loading popup won't center correctly
+    $(document).on('pageinitdepends', "#liveTvSuggestedPage", function () {
+
         var page = this;
 
-        if (LibraryBrowser.needsRefresh(page)) {
-            query.UserId = Dashboard.getCurrentUserId();
-            LibraryBrowser.loadSavedQueryValues('movies', query);
-            query.Limit = query.Limit || LibraryBrowser.getDefaultPageSize();
-            reloadItems(page);
-            updateFilterControls(this);
-        }
-        
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+
+            if (parseInt(this.selected) == 2) {
+                var tabContent = page.querySelector('.channelsTabContent');
+
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    query.UserId = Dashboard.getCurrentUserId();
+                    LibraryBrowser.loadSavedQueryValues('movies', query);
+                    query.Limit = query.Limit || LibraryBrowser.getDefaultPageSize();
+                    reloadItems(tabContent);
+                    updateFilterControls(this);
+                }
+            }
+        });
+
     });
 
 })(jQuery, document);
