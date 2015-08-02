@@ -1,10 +1,20 @@
 using MediaBrowser.Controller.Entities;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MediaBrowser.Controller.Providers
 {
     public class MetadataResult<T>
     {
+        public List<LocalImageInfo> Images { get; set; }
+        public List<UserItemData> UserDataList { get; set; }
+
+        public MetadataResult()
+        {
+            Images = new List<LocalImageInfo>();
+        }
+
         public List<PersonInfo> People { get; set; }
 
         public bool HasMetadata { get; set; }
@@ -30,6 +40,28 @@ namespace MediaBrowser.Controller.Providers
                 People = new List<PersonInfo>();
             }
             People.Clear();
+        }
+
+        public UserItemData GetOrAddUserData(string userId)
+        {
+            if (UserDataList == null)
+            {
+                UserDataList = new List<UserItemData>();
+            }
+
+            var userData = UserDataList.FirstOrDefault(i => string.Equals(userId, i.UserId.ToString("N"), StringComparison.OrdinalIgnoreCase));
+
+            if (userData == null)
+            {
+                userData = new UserItemData()
+                {
+                    UserId = new Guid(userId)
+                };
+
+                UserDataList.Add(userData);
+            }
+
+            return userData;
         }
     }
 }

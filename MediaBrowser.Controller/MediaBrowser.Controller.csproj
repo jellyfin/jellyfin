@@ -312,7 +312,6 @@
     <Compile Include="Providers\ItemInfo.cs" />
     <Compile Include="Providers\LiveTvProgramLookupInfo.cs" />
     <Compile Include="Providers\LocalImageInfo.cs" />
-    <Compile Include="Providers\LocalMetadataResult.cs" />
     <Compile Include="Providers\MetadataRefreshMode.cs" />
     <Compile Include="Providers\MetadataResult.cs" />
     <Compile Include="Providers\MovieInfo.cs" />

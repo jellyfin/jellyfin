@@ -1,10 +1,10 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using System.Xml;
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Xml;
 
 namespace MediaBrowser.LocalMetadata.Parsers
 {

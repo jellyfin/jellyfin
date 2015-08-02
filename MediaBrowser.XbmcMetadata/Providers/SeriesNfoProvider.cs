@@ -21,7 +21,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             _config = config;
         }
 
-        protected override void Fetch(LocalMetadataResult<Series> result, string path, CancellationToken cancellationToken)
+        protected override void Fetch(MetadataResult<Series> result, string path, CancellationToken cancellationToken)
         {
             new SeriesNfoParser(_logger, _config).Fetch(result, path, cancellationToken);
         }
