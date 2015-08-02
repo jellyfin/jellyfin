@@ -153,9 +153,9 @@
             if (LibraryBrowser.navigateOnLibraryTabSelect()) {
 
                 if (selected) {
-                    Dashboard.navigate('livetvsuggested.html?tab=' + selected);
+                    Dashboard.navigate('livetv.html?tab=' + selected);
                 } else {
-                    Dashboard.navigate('livetvsuggested.html');
+                    Dashboard.navigate('livetv.html');
                 }
 
             } else {

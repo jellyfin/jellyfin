@@ -189,21 +189,7 @@ namespace Emby.Drawing
                 dateModified = tuple.Item2;
             }
 
-            ImageSize originalImageSize;
-
-            try
-            {
-                originalImageSize = GetImageSize(originalImagePath, dateModified);
-            }
-            catch
-            {
-                // This is an arbitrary default, but don't fail the whole process over this
-                originalImageSize = new ImageSize
-                {
-                    Width = 100,
-                    Height = 100
-                };
-            }
+            var originalImageSize = GetImageSize(originalImagePath, dateModified, true);
 
             // Determine the output size based on incoming parameters
             var newSize = DrawingUtils.Resize(originalImageSize, options.Width, options.Height, options.MaxWidth, options.MaxHeight);
@@ -377,12 +363,12 @@ namespace Emby.Drawing
         /// <returns>ImageSize.</returns>
         public ImageSize GetImageSize(string path)
         {
-            return GetImageSize(path, File.GetLastWriteTimeUtc(path));
+            return GetImageSize(path, File.GetLastWriteTimeUtc(path), false);
         }
 
         public ImageSize GetImageSize(ItemImageInfo info)
         {
-            return GetImageSize(info.Path, info.DateModified);
+            return GetImageSize(info.Path, info.DateModified, false);
         }
 
         /// <summary>
@@ -390,9 +376,10 @@ namespace Emby.Drawing
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="imageDateModified">The image date modified.</param>
+        /// <param name="allowSlowMethod">if set to <c>true</c> [allow slow method].</param>
         /// <returns>ImageSize.</returns>
         /// <exception cref="System.ArgumentNullException">path</exception>
-        private ImageSize GetImageSize(string path, DateTime imageDateModified)
+        private ImageSize GetImageSize(string path, DateTime imageDateModified, bool allowSlowMethod)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -407,7 +394,7 @@ namespace Emby.Drawing
 
             if (!_cachedImagedSizes.TryGetValue(cacheHash, out size))
             {
-                size = GetImageSizeInternal(path);
+                size = GetImageSizeInternal(path, allowSlowMethod);
 
                 _cachedImagedSizes.AddOrUpdate(cacheHash, size, (keyName, oldValue) => size);
             }
@@ -419,25 +406,28 @@ namespace Emby.Drawing
         /// Gets the image size internal.
         /// </summary>
         /// <param name="path">The path.</param>
+        /// <param name="allowSlowMethod">if set to <c>true</c> [allow slow method].</param>
         /// <returns>ImageSize.</returns>
-        private ImageSize GetImageSizeInternal(string path)
+        private ImageSize GetImageSizeInternal(string path, bool allowSlowMethod)
         {
             ImageSize size;
 
-            size = ImageHeader.GetDimensions(path, _logger, _fileSystem);
-            //try
-            //{
-            //    size = ImageHeader.GetDimensions(path, _logger, _fileSystem);
-            //}
-            //catch
-            //{
-            //    return;
-            //    //_logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
+            try
+            {
+                size = ImageHeader.GetDimensions(path, _logger, _fileSystem);
+            }
+            catch
+            {
+                if (!allowSlowMethod)
+                {
+                    throw;
+                }
+                _logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
 
-            //    //CheckDisposed();
+                CheckDisposed();
 
-            //    //size = _imageEncoder.GetImageSize(path);
-            //}
+                size = _imageEncoder.GetImageSize(path);
+            }
 
             StartSaveImageSizeTimer();
 

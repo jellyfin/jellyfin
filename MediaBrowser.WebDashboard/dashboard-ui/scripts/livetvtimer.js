@@ -14,7 +14,7 @@
 
                     Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
 
-                    Dashboard.navigate('livetvsuggested.html');
+                    Dashboard.navigate('livetv.html');
                 });
             }
 
