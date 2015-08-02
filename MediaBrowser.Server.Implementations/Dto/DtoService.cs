@@ -1767,11 +1767,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 size = _imageProcessor.GetImageSize(imageInfo);
             }
-            catch (FileNotFoundException)
-            {
-                _logger.Error("Image file does not exist: {0}", path);
-                return;
-            }
             catch (Exception ex)
             {
                 _logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
