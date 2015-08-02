@@ -28,8 +28,7 @@
 
     function visibleInViewport(elem, partial, hidden, direction, threshold) {
 
-        var $t = $(elem),
-            t = elem,
+        var t = elem,
             vpWidth = $w.width(),
             vpHeight = $w.height(),
             direction = (direction) ? direction : 'both',
@@ -54,6 +53,7 @@
                 return clientSize && hVisible;
         } else {
 
+            var $t = $(elem);
             var viewTop = $w.scrollTop(),
                 viewBottom = viewTop + vpHeight,
                 viewLeft = $w.scrollLeft(),

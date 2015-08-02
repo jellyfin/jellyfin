@@ -69,9 +69,10 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets the channels.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>IEnumerable{Channel}.</returns>
-        Task<QueryResult<ChannelInfoDto>> GetChannels(LiveTvChannelQuery query, CancellationToken cancellationToken);
+        Task<QueryResult<ChannelInfoDto>> GetChannels(LiveTvChannelQuery query, DtoOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the recording.
@@ -173,14 +174,15 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="user">The user.</param>
         /// <returns>Task{ProgramInfoDto}.</returns>
         Task<BaseItemDto> GetProgram(string id, CancellationToken cancellationToken, User user = null);
-        
+
         /// <summary>
         /// Gets the programs.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>IEnumerable{ProgramInfo}.</returns>
-        Task<QueryResult<BaseItemDto>> GetPrograms(ProgramQuery query, CancellationToken cancellationToken);
+        Task<QueryResult<BaseItemDto>> GetPrograms(ProgramQuery query, DtoOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the timer.
@@ -240,10 +242,10 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets the recommended programs.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{ProgramInfoDto}}.</returns>
-        Task<QueryResult<BaseItemDto>> GetRecommendedPrograms(RecommendedProgramQuery query,
-            CancellationToken cancellationToken);
+        Task<QueryResult<BaseItemDto>> GetRecommendedPrograms(RecommendedProgramQuery query, DtoOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the recommended programs internal.
@@ -251,8 +253,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;QueryResult&lt;LiveTvProgram&gt;&gt;.</returns>
-        Task<QueryResult<LiveTvProgram>> GetRecommendedProgramsInternal(RecommendedProgramQuery query,
-            CancellationToken cancellationToken);
+        Task<QueryResult<LiveTvProgram>> GetRecommendedProgramsInternal(RecommendedProgramQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the live tv information.

@@ -238,7 +238,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return result;
         }
 
-        public async Task<QueryResult<ChannelInfoDto>> GetChannels(LiveTvChannelQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<ChannelInfoDto>> GetChannels(LiveTvChannelQuery query, DtoOptions options, CancellationToken cancellationToken)
         {
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
 
@@ -261,7 +261,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 var channelIdString = channel.Id.ToString("N");
                 var currentProgram = programs.FirstOrDefault(i => string.Equals(i.ChannelId, channelIdString, StringComparison.OrdinalIgnoreCase));
 
-                returnList.Add(_tvDtoService.GetChannelInfoDto(channel, currentProgram, user));
+                returnList.Add(_tvDtoService.GetChannelInfoDto(channel, options, currentProgram, user));
             }
 
             var result = new QueryResult<ChannelInfoDto>
@@ -762,7 +762,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return dto;
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetPrograms(ProgramQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<BaseItemDto>> GetPrograms(ProgramQuery query, DtoOptions options, CancellationToken cancellationToken)
         {
             var internalQuery = new InternalItemsQuery
             {
@@ -822,7 +822,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 .Select(i =>
                 {
                     RefreshIfNeeded(i);
-                    return _dtoService.GetBaseItemDto(i, new DtoOptions(), user);
+                    return _dtoService.GetBaseItemDto(i, options, user);
                 })
                 .ToArray();
 
@@ -907,14 +907,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return result;
         }
 
-        public async Task<QueryResult<BaseItemDto>> GetRecommendedPrograms(RecommendedProgramQuery query, CancellationToken cancellationToken)
+        public async Task<QueryResult<BaseItemDto>> GetRecommendedPrograms(RecommendedProgramQuery query, DtoOptions options, CancellationToken cancellationToken)
         {
             var internalResult = await GetRecommendedProgramsInternal(query, cancellationToken).ConfigureAwait(false);
 
             var user = _userManager.GetUserById(query.UserId);
 
             var returnArray = internalResult.Items
-                .Select(i => _dtoService.GetBaseItemDto(i, new DtoOptions(), user))
+                .Select(i => _dtoService.GetBaseItemDto(i, options, user))
                 .ToArray();
 
             await AddRecordingInfo(returnArray, cancellationToken).ConfigureAwait(false);
@@ -1712,7 +1712,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 .OrderBy(i => i.StartDate)
                 .FirstOrDefault();
 
-            var dto = _tvDtoService.GetChannelInfoDto(channel, currentProgram, user);
+            var dto = _tvDtoService.GetChannelInfoDto(channel, new DtoOptions(), currentProgram, user);
 
             return dto;
         }

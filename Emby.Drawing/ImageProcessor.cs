@@ -410,18 +410,20 @@ namespace Emby.Drawing
         {
             ImageSize size;
 
-            try
-            {
-                size = ImageHeader.GetDimensions(path, _logger, _fileSystem);
-            }
-            catch
-            {
-                _logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
+            size = ImageHeader.GetDimensions(path, _logger, _fileSystem);
+            //try
+            //{
+            //    size = ImageHeader.GetDimensions(path, _logger, _fileSystem);
+            //}
+            //catch
+            //{
+            //    return;
+            //    //_logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
 
-                CheckDisposed();
+            //    //CheckDisposed();
 
-                size = _imageEncoder.GetImageSize(path);
-            }
+            //    //size = _imageEncoder.GetImageSize(path);
+            //}
 
             StartSaveImageSizeTimer();
 
