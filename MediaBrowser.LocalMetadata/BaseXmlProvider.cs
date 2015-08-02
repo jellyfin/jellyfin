@@ -13,11 +13,11 @@ namespace MediaBrowser.LocalMetadata
     {
         protected IFileSystem FileSystem;
 
-        public async Task<LocalMetadataResult<T>> GetMetadata(ItemInfo info,
+        public async Task<MetadataResult<T>> GetMetadata(ItemInfo info,
             IDirectoryService directoryService,
             CancellationToken cancellationToken)
         {
-            var result = new LocalMetadataResult<T>();
+            var result = new MetadataResult<T>();
 
             var file = GetXmlFile(info, directoryService);
 
@@ -47,7 +47,7 @@ namespace MediaBrowser.LocalMetadata
             return result;
         }
 
-        protected abstract void Fetch(LocalMetadataResult<T> result, string path, CancellationToken cancellationToken);
+        protected abstract void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken);
 
         protected BaseXmlProvider(IFileSystem fileSystem)
         {

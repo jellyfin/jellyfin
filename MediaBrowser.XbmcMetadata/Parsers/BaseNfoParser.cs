@@ -47,7 +47,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <exception cref="System.ArgumentNullException">
         /// </exception>
-        public void Fetch(LocalMetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
+        public void Fetch(MetadataResult<T> item, string metadataFile, CancellationToken cancellationToken)
         {
             if (item == null)
             {
@@ -82,7 +82,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// <param name="metadataFile">The metadata file.</param>
         /// <param name="settings">The settings.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        private void Fetch(LocalMetadataResult<T> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
+        private void Fetch(MetadataResult<T> item, string metadataFile, XmlReaderSettings settings, CancellationToken cancellationToken)
         {
             item.ResetPeople();
 
@@ -184,7 +184,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             // http://www.themoviedb.org/movie/36557
         }
 
-        protected virtual void FetchDataFromXmlNode(XmlReader reader, LocalMetadataResult<T> itemResult)
+        protected virtual void FetchDataFromXmlNode(XmlReader reader, MetadataResult<T> itemResult)
         {
             var item = itemResult.Item;
 
@@ -927,17 +927,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(val))
+                        if (!string.IsNullOrWhiteSpace(val) && !string.IsNullOrWhiteSpace(userDataUserId))
                         {
                             bool parsedValue;
                             if (bool.TryParse(val, out parsedValue))
                             {
-                                if (!string.IsNullOrWhiteSpace(userDataUserId))
-                                {
-                                    var userData = GetOrAdd(itemResult.UserDataLIst, userDataUserId);
+                                var userData = GetOrAdd(itemResult, userDataUserId);
 
-                                    userData.Played = parsedValue;
-                                }
+                                userData.Played = parsedValue;
                             }
                         }
                         break;
@@ -947,21 +944,18 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(val))
+                        if (!string.IsNullOrWhiteSpace(val) && !string.IsNullOrWhiteSpace(userDataUserId))
                         {
                             int parsedValue;
                             if (int.TryParse(val, NumberStyles.Integer, _usCulture, out parsedValue))
                             {
-                                if (!string.IsNullOrWhiteSpace(userDataUserId))
+                                var userData = GetOrAdd(itemResult, userDataUserId);
+
+                                userData.PlayCount = parsedValue;
+
+                                if (parsedValue > 0)
                                 {
-                                    var userData = GetOrAdd(itemResult.UserDataLIst, userDataUserId);
-
-                                    userData.PlayCount = parsedValue;
-
-                                    if (parsedValue > 0)
-                                    {
-                                        userData.Played = true;
-                                    }
+                                    userData.Played = true;
                                 }
                             }
                         }
@@ -972,17 +966,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(val))
+                        if (!string.IsNullOrWhiteSpace(val) && !string.IsNullOrWhiteSpace(userDataUserId))
                         {
                             DateTime parsedValue;
                             if (DateTime.TryParseExact(val, "yyyy-MM-dd HH:mm:ss", _usCulture, DateTimeStyles.None, out parsedValue))
                             {
-                                if (!string.IsNullOrWhiteSpace(userDataUserId))
-                                {
-                                    var userData = GetOrAdd(itemResult.UserDataLIst, userDataUserId);
+                                var userData = GetOrAdd(itemResult, userDataUserId);
 
-                                    userData.LastPlayedDate = parsedValue;
-                                }
+                                userData.LastPlayedDate = parsedValue;
                             }
                         }
                         break;
@@ -994,7 +985,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                         {
                             if (!string.IsNullOrWhiteSpace(userDataUserId))
                             {
-                                var userData = GetOrAdd(itemResult.UserDataLIst, userDataUserId);
+                                var userData = GetOrAdd(itemResult, userDataUserId);
 
                                 FetchFromResumeNode(subtree, item, userData);
                             }
@@ -1006,17 +997,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(val))
+                        if (!string.IsNullOrWhiteSpace(val) && !string.IsNullOrWhiteSpace(userDataUserId))
                         {
                             bool parsedValue;
                             if (bool.TryParse(val, out parsedValue))
                             {
-                                if (!string.IsNullOrWhiteSpace(userDataUserId))
-                                {
-                                    var userData = GetOrAdd(itemResult.UserDataLIst, userDataUserId);
+                                var userData = GetOrAdd(itemResult, userDataUserId);
 
-                                    userData.IsFavorite = parsedValue;
-                                }
+                                userData.IsFavorite = parsedValue;
                             }
                         }
                         break;
@@ -1026,17 +1014,14 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     {
                         var val = reader.ReadElementContentAsString();
 
-                        if (!string.IsNullOrWhiteSpace(val))
+                        if (!string.IsNullOrWhiteSpace(val) && !string.IsNullOrWhiteSpace(userDataUserId))
                         {
                             double parsedValue;
                             if (double.TryParse(val, NumberStyles.Any, _usCulture, out parsedValue))
                             {
-                                if (!string.IsNullOrWhiteSpace(userDataUserId))
-                                {
-                                    var userData = GetOrAdd(itemResult.UserDataLIst, userDataUserId);
+                                var userData = GetOrAdd(itemResult, userDataUserId);
 
-                                    userData.Rating = parsedValue;
-                                }
+                                userData.Rating = parsedValue;
                             }
                         }
                         break;
@@ -1048,21 +1033,9 @@ namespace MediaBrowser.XbmcMetadata.Parsers
             }
         }
 
-        private UserItemData GetOrAdd(List<UserItemData> userDataList, string userId)
+        private UserItemData GetOrAdd(MetadataResult<T> result, string userId)
         {
-            var userData = userDataList.FirstOrDefault(i => string.Equals(userId, i.UserId.ToString("N"), StringComparison.OrdinalIgnoreCase));
-
-            if (userData == null)
-            {
-                userData = new UserItemData()
-                {
-                    UserId = new Guid(userId)
-                };
-
-                userDataList.Add(userData);
-            }
-
-            return userData;
+            return result.GetOrAddUserData(userId);
         }
 
         private void FetchFromResumeNode(XmlReader reader, T item, UserItemData userData)

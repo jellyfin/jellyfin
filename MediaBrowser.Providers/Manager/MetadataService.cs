@@ -408,7 +408,10 @@ namespace MediaBrowser.Providers.Manager
                             refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.ImageUpdate;
                         }
 
-                        userDataList = localItem.UserDataLIst;
+                        if (localItem.UserDataList != null)
+                        {
+                            userDataList.AddRange(localItem.UserDataList);
+                        }
 
                         MergeData(localItem, temp, new List<MetadataFields>(), !options.ReplaceAllMetadata, true);
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;

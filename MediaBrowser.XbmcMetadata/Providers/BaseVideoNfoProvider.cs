@@ -24,9 +24,9 @@ namespace MediaBrowser.XbmcMetadata.Providers
             _config = config;
         }
 
-        protected override void Fetch(LocalMetadataResult<T> result, string path, CancellationToken cancellationToken)
+        protected override void Fetch(MetadataResult<T> result, string path, CancellationToken cancellationToken)
         {
-            var tmpItem = new LocalMetadataResult<Video>
+            var tmpItem = new MetadataResult<Video>
             {
                 Item = result.Item
             };
@@ -34,7 +34,11 @@ namespace MediaBrowser.XbmcMetadata.Providers
 
             result.Item = (T)tmpItem.Item;
             result.People = tmpItem.People;
-            result.UserDataLIst = tmpItem.UserDataLIst;
+
+            if (tmpItem.UserDataList != null)
+            {
+                result.UserDataList = tmpItem.UserDataList;
+            }
         }
 
         protected override FileSystemInfo GetXmlFile(ItemInfo info, IDirectoryService directoryService)

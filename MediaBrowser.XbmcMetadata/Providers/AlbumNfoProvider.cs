@@ -21,7 +21,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             _config = config;
         }
 
-        protected override void Fetch(LocalMetadataResult<MusicAlbum> result, string path, CancellationToken cancellationToken)
+        protected override void Fetch(MetadataResult<MusicAlbum> result, string path, CancellationToken cancellationToken)
         {
             new BaseNfoParser<MusicAlbum>(_logger, _config).Fetch(result, path, cancellationToken);
         }

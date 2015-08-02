@@ -17,7 +17,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         {
         }
 
-        public void Fetch(LocalMetadataResult<Episode> item,
+        public void Fetch(MetadataResult<Episode> item,
             List<LocalImageInfo> images,
             string metadataFile, 
             CancellationToken cancellationToken)
@@ -32,7 +32,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <param name="itemResult">The item result.</param>
-        protected override void FetchDataFromXmlNode(XmlReader reader, LocalMetadataResult<Episode> itemResult)
+        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Episode> itemResult)
         {
             var item = itemResult.Item;
 
