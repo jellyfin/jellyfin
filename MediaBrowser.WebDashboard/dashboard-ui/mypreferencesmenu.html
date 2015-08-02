@@ -8,45 +8,29 @@
     <div id="myPreferencesMenuPage" data-role="page" class="page libraryPage userPreferencesPage noSecondaryNavPage" data-contextname="${HeaderSettings}" data-require="scripts/mypreferencescommon,paperbuttonstyle,jqmicons">
 
         <style>
-            .avatar.green {
+            .listAvatar.green {
                 background-color: #81c784;
             }
 
-            .avatar.orange {
+            .listAvatar.orange {
                 background-color: #ffd54f;
             }
 
-            .avatar.blue {
+            .listAvatar.blue {
                 background-color: #4fc3f7;
             }
 
-            .avatar.red {
+            .listAvatar.red {
                 background-color: #e57373;
-            }
-
-            .avatar {
-                display: inline-block;
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                overflow: hidden;
-                background: #ccc;
-            }
-
-            .list {
-                padding-top: 12px;
-                background-color: #303030;
-                margin: 12px auto;
-                box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
             }
         </style>
         <div data-role="content">
             <div class="readOnlyContent" style="margin: 0 auto;">
                 <h1>${HeaderSettings}</h1>
-                <div class="list">
+                <div class="paperList">
                     <a href="#" class="clearLink lnkDisplayPreferences">
                         <paper-icon-item>
-                            <paper-fab class="avatar blue" icon="tv" item-icon></paper-fab>
+                            <paper-fab class="listAvatar blue" icon="tv" item-icon></paper-fab>
                             <paper-item-body two-line>
                                 <div>${ButtonDisplaySettings}</div>
                                 <div secondary>${ButtonDisplaySettingsHelp}</div>
@@ -56,7 +40,7 @@
 
                     <a href="#" class="clearLink lnkHomeScreenPreferences">
                         <paper-icon-item>
-                            <paper-fab class="avatar red" icon="home" item-icon></paper-fab>
+                            <paper-fab class="listAvatar red" icon="home" item-icon></paper-fab>
                             <paper-item-body two-line>
                                 <div>${ButtonHomeScreenSettings}</div>
                                 <div secondary>${ButtonHomeScreenSettingsHelp}</div>
@@ -66,7 +50,7 @@
 
                     <a href="#" class="clearLink lnkLanguagePreferences">
                         <paper-icon-item>
-                            <paper-fab class="avatar green" icon="play-circle-filled" item-icon></paper-fab>
+                            <paper-fab class="listAvatar green" icon="play-circle-filled" item-icon></paper-fab>
                             <paper-item-body two-line>
                                 <div>${ButtonPlaybackSettings}</div>
                                 <div secondary>${ButtonPlaybackSettingsHelp}</div>
@@ -76,7 +60,7 @@
 
                     <a href="#" class="clearLink lnkMyProfile">
                         <paper-icon-item>
-                            <paper-fab class="avatar orange" icon="person" item-icon></paper-fab>
+                            <paper-fab class="listAvatar orange" icon="person" item-icon></paper-fab>
                             <paper-item-body two-line>
                                 <div>${ButtonProfile}</div>
                                 <div secondary>${ButtonProfileHelp}</div>
@@ -86,7 +70,7 @@
 
                     <a href="#" class="clearLink lnkSync hide">
                         <paper-icon-item>
-                            <paper-fab class="avatar" icon="refresh" style="background-color:#673AB7;" item-icon></paper-fab>
+                            <paper-fab class="listAvatar" icon="refresh" style="background-color:#673AB7;" item-icon></paper-fab>
                             <paper-item-body two-line>
                                 <div>${ButtonSyncSettings}</div>
                                 <div secondary>${ButtonSyncHelp}</div>

@@ -449,7 +449,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 LiveStreamInfo current;
                 if (_openStreams.TryGetValue(id, out current))
                 {
-                    if (current.MediaSource.RequiresClosing ?? false)
+                    if (current.MediaSource.RequiresClosing)
                     {
                         var tuple = GetProvider(id);
 

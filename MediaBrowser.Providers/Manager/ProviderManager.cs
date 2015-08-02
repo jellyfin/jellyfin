@@ -106,9 +106,15 @@ namespace MediaBrowser.Providers.Manager
             _identityProviders = identityProviders.ToArray();
             _identityConverters = identityConverters.ToArray();
             _metadataProviders = metadataProviders.ToArray();
-            _savers = metadataSavers.ToArray();
             _imageSavers = imageSavers.ToArray();
             _externalIds = externalIds.OrderBy(i => i.Name).ToArray();
+
+            _savers = metadataSavers.Where(i =>
+            {
+                var configurable = i as IConfigurableProvider;
+
+                return configurable == null || configurable.IsEnabled;
+            }).ToArray();
         }
 
         public Task<ItemUpdateType> RefreshSingleItem(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)

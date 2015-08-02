@@ -59,6 +59,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             IEnumerable<MediaSourceInfo> sources;
 
+            var forceRequireOpening = false;
+
             try
             {
                 if (item is ILiveTvRecording)
@@ -78,6 +80,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
                 sources = _mediaSourceManager.GetStaticMediaSources(hasMediaSources, false)
                    .ToList();
+
+                forceRequireOpening = true;
             }
 
             var list = sources.ToList();
@@ -87,12 +91,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 source.Type = MediaSourceType.Default;
 
-                if (!source.RequiresOpening.HasValue)
+                if (source.RequiresOpening || forceRequireOpening)
                 {
                     source.RequiresOpening = true;
                 }
 
-                if (source.RequiresOpening.HasValue && source.RequiresOpening.Value)
+                if (source.RequiresOpening)
                 {
                     var openKeys = new List<string>();
                     openKeys.Add(item.GetType().Name);

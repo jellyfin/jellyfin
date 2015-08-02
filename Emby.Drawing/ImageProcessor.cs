@@ -189,7 +189,21 @@ namespace Emby.Drawing
                 dateModified = tuple.Item2;
             }
 
-            var originalImageSize = GetImageSize(originalImagePath, dateModified);
+            ImageSize originalImageSize;
+
+            try
+            {
+                originalImageSize = GetImageSize(originalImagePath, dateModified);
+            }
+            catch
+            {
+                // This is an arbitrary default, but don't fail the whole process over this
+                originalImageSize = new ImageSize
+                {
+                    Width = 100,
+                    Height = 100
+                };
+            }
 
             // Determine the output size based on incoming parameters
             var newSize = DrawingUtils.Resize(originalImageSize, options.Width, options.Height, options.MaxWidth, options.MaxHeight);

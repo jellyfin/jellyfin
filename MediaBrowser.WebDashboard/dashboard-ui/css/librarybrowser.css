@@ -1531,7 +1531,7 @@ paper-icon-button.listviewMenuButton {
 
 @media all and (min-width: 1200px) {
 
-    li:hover .listViewUserDataButtons {
+    paper-icon-item:hover .listViewUserDataButtons {
         visibility: visible !important;
     }
 }
