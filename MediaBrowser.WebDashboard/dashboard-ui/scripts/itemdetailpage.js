@@ -1568,8 +1568,13 @@
     }
 
     function onItemDeleted(e, itemId) {
+
         if (currentItem && currentItem.Id == itemId) {
-            Dashboard.navigate('index.html');
+            if (currentItem.Type == 'Recording') {
+                Dashboard.navigate('livetv.html');
+            } else {
+                Dashboard.navigate('index.html');
+            }
         }
     }
 

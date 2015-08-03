@@ -1106,13 +1106,13 @@
 
                 if (textlines.length > 1 && verticalTextLines > 1) {
                     html += '<p>';
-                    html += textlines[1];
+                    html += textlines[1] || '&nbsp;';
                     html += '</p>';
                 }
 
                 if (textlines.length > 2 && verticalTextLines > 2) {
                     html += '<p>';
-                    html += textlines[2];
+                    html += textlines[2] || '&nbsp;';
                     html += '</p>';
                 }
 

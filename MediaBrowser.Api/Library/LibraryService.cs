@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
@@ -255,6 +256,7 @@ namespace MediaBrowser.Api.Library
         private readonly IAuthorizationContext _authContext;
         private readonly IActivityManager _activityManager;
         private readonly ILocalizationManager _localization;
+        private readonly ILiveTvManager _liveTv;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
@@ -524,7 +526,6 @@ namespace MediaBrowser.Api.Library
         public void Delete(DeleteItem request)
         {
             var item = _libraryManager.GetItemById(request.Id);
-
             var auth = _authContext.GetAuthorizationInfo(Request);
             var user = _userManager.GetUserById(auth.UserId);
 
@@ -533,9 +534,16 @@ namespace MediaBrowser.Api.Library
                 throw new UnauthorizedAccessException();
             }
 
-            var task = _libraryManager.DeleteItem(item);
-
-            Task.WaitAll(task);
+            if (item is ILiveTvRecording)
+            {
+                var task = _liveTv.DeleteRecording(request.Id);
+                Task.WaitAll(task);
+            }
+            else
+            {
+                var task = _libraryManager.DeleteItem(item);
+                Task.WaitAll(task);
+            }
         }
 
         /// <summary>

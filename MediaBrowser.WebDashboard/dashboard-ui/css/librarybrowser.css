@@ -1443,7 +1443,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     width: 70px;
     height: 70px;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
     background-position: center center;
 }
 
