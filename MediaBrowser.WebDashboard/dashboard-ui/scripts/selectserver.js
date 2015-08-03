@@ -1,7 +1,6 @@
 ﻿(function () {
 
-	var serverList = [];
-	function connectToServer(page, server) {
+    function connectToServer(page, server) {
 
         Dashboard.showLoadingMsg();
 
@@ -110,8 +109,6 @@
 
     function renderServers(page, servers) {
 
-    	serverList = servers;
-
         if (servers.length) {
             $('.noServersMessage', page).hide();
         } else {
@@ -182,12 +179,7 @@
 
             Dashboard.hideModalLoadingMsg();
 
-            // Just re-render the servers without discovering them again
-            // If we re-discover then the one they deleted may just come back
-            var newServerList = serverList.filter(function(s){
-            	return s.Id != id;
-            });
-            renderServers(page, newServerList);
+            loadPage(page);
 
         }).fail(function () {
 

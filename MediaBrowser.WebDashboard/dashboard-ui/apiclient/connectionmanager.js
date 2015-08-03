@@ -1232,56 +1232,43 @@
 
         self.deleteServer = function (serverId) {
 
-            var credentials = credentialProvider.credentials();
+            var connectToken = self.connectToken();
 
-            var serverInfo = credentials.Servers = credentials.Servers.filter(function (s) {
-                return s.ConnectServerId == serverId;
-            });
+            if (!serverId) {
+                throw new Error("null serverId");
+            }
+
+            var deferred = DeferredBuilder.Deferred();
 
             function onDone() {
-
-                credentials = credentialProvider.credentials();
+                var credentials = credentialProvider.credentials();
 
                 credentials.Servers = credentials.Servers.filter(function (s) {
                     return s.ConnectServerId != serverId;
                 });
 
                 credentialProvider.credentials(credentials);
+                deferred.resolve();
             }
 
-            if (serverInfo.ExchangeToken) {
-
-                var connectToken = self.connectToken();
-
-                if (!serverId) {
-                    throw new Error("null serverId");
-                }
-                if (!connectToken) {
-                    throw new Error("null connectToken");
-                }
-                if (!self.connectUserId()) {
-                    throw new Error("null connectUserId");
-                }
-
-                var url = "https://connect.mediabrowser.tv/service/serverAuthorizations?serverId=" + serverId + "&userId=" + self.connectUserId();
-
-                return HttpClient.send({
-                    type: "DELETE",
-                    url: url,
-                    headers: {
-                        "X-Connect-UserToken": connectToken,
-                        "X-Application": appName + "/" + appVersion
-                    }
-
-                }).always(onDone);
-
-            } else {
-
+            if (!connectToken || !self.connectUserId()) {
                 onDone();
-                var deferred = DeferredBuilder.Deferred();
-                deferred.resolve();
                 return deferred.promise();
             }
+
+            var url = "https://connect.mediabrowser.tv/service/serverAuthorizations?serverId=" + serverId + "&userId=" + self.connectUserId();
+
+            HttpClient.send({
+                type: "DELETE",
+                url: url,
+                headers: {
+                    "X-Connect-UserToken": connectToken,
+                    "X-Application": appName + "/" + appVersion
+                }
+
+            }).always(onDone);
+
+            return deferred.promise();
         };
 
         self.rejectServer = function (serverId) {
