@@ -286,20 +286,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 }
             }
             ScheduleDirect.Gracenote gracenote;
-            string EpisodeTitle = "";
+            string episodeTitle = null;
             if (details.metadata != null)
             {
                 gracenote = details.metadata.Find(x => x.Gracenote != null).Gracenote;
                 if ((details.showType ?? "No ShowType") == "Series")
                 {
-                    EpisodeTitle = "Season: " + gracenote.season + " Episode: " + gracenote.episode;
+                    episodeTitle = "Season: " + gracenote.season + " Episode: " + gracenote.episode;
                 }
             }
             if (details.episodeTitle150 != null)
             {
-                EpisodeTitle = EpisodeTitle + " " + details.episodeTitle150;
+                episodeTitle = ((episodeTitle ?? string.Empty) + " " + details.episodeTitle150).Trim();
             }
-            bool hasImage = false;
+
             var imageLink = "";
 
             if (details.hasImageArtwork)
@@ -314,11 +314,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 Overview = desc,
                 StartDate = startAt,
                 EndDate = endAt,
-                Genres = new List<string>() { "N/A" },
                 Name = details.titles[0].title120 ?? "Unkown",
                 OfficialRating = "0",
                 CommunityRating = null,
-                EpisodeTitle = EpisodeTitle,
+                EpisodeTitle = episodeTitle,
                 Audio = audioType,
                 IsHD = hdtv,
                 IsRepeat = repeat,
@@ -339,8 +338,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     (details.showType ?? "No ShowType") == "Short Film",
                 IsPremiere = false,
             };
-            //logger.Info("Done init");
-            if (null != details.originalAirDate)
+
+            if (!string.IsNullOrWhiteSpace(details.originalAirDate))
             {
                 info.OriginalAirDate = DateTime.Parse(details.originalAirDate);
             }

@@ -774,6 +774,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ChannelIds = query.ChannelIds,
                 IsMovie = query.IsMovie,
                 IsSports = query.IsSports,
+                IsKids = query.IsKids,
                 Genres = query.Genres
             };
 
@@ -844,7 +845,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 IsAiring = query.IsAiring,
                 IsMovie = query.IsMovie,
-                IsSports = query.IsSports
+                IsSports = query.IsSports,
+                IsKids = query.IsKids
             };
 
             if (query.HasAired.HasValue)

@@ -490,13 +490,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             if (recording == null)
             {
-                recording = new RecordingInfo()
+                recording = new RecordingInfo
                 {
                     ChannelId = info.ChannelId,
                     Id = Guid.NewGuid().ToString("N"),
                     StartDate = info.StartDate,
                     EndDate = info.EndDate,
-                    Genres = info.Genres ?? null,
+                    Genres = info.Genres,
                     IsKids = info.IsKids,
                     IsLive = info.IsLive,
                     IsMovie = info.IsMovie,
@@ -507,10 +507,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     IsSports = info.IsSports,
                     IsRepeat = !info.IsPremiere,
                     Name = info.Name,
-                    EpisodeTitle = info.EpisodeTitle ?? "",
+                    EpisodeTitle = info.EpisodeTitle,
                     ProgramId = info.Id,
-                    HasImage = info.HasImage ?? false,
-                    ImagePath = info.ImagePath ?? null,
+                    HasImage = info.HasImage,
+                    ImagePath = info.ImagePath,
                     ImageUrl = info.ImageUrl,
                     OriginalAirDate = info.OriginalAirDate,
                     Status = RecordingStatus.Scheduled,

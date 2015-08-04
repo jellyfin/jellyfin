@@ -222,6 +222,9 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "IsMovie", Description = "Optional filter for movies.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
         public bool? IsMovie { get; set; }
 
+        [ApiMember(Name = "IsKids", Description = "Optional filter for kids.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
+        public bool? IsKids { get; set; }
+
         [ApiMember(Name = "IsSports", Description = "Optional filter for sports.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET,POST")]
         public bool? IsSports { get; set; }
 
@@ -278,6 +281,9 @@ namespace MediaBrowser.Api.LiveTv
 
         [ApiMember(Name = "IsMovie", Description = "Optional filter for movies.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
         public bool? IsMovie { get; set; }
+
+        [ApiMember(Name = "IsKids", Description = "Optional filter for kids.", IsRequired = false, DataType = "bool", ParameterType = "query", Verb = "GET")]
+        public bool? IsKids { get; set; }
 
         [ApiMember(Name = "EnableImages", Description = "Optional, include image information in output", IsRequired = false, DataType = "boolean", ParameterType = "query", Verb = "GET")]
         public bool? EnableImages { get; set; }
@@ -607,6 +613,7 @@ namespace MediaBrowser.Api.LiveTv
             query.SortBy = (request.SortBy ?? String.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             query.SortOrder = request.SortOrder;
             query.IsMovie = request.IsMovie;
+            query.IsKids = request.IsKids;
             query.IsSports = request.IsSports;
             query.Genres = (request.Genres ?? String.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -624,6 +631,7 @@ namespace MediaBrowser.Api.LiveTv
                 Limit = request.Limit,
                 HasAired = request.HasAired,
                 IsMovie = request.IsMovie,
+                IsKids = request.IsKids,
                 IsSports = request.IsSports
             };
 
