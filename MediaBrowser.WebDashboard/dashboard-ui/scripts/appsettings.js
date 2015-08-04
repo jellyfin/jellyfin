@@ -65,7 +65,16 @@
             return appStorage.getItem('enableSyncToExternalStorage') != 'false';
         },
 
-        displayPreferencesKey: function() {
+        displayLanguage: function (val) {
+
+            if (val != null) {
+                update('displayLanguage', val);
+            }
+
+            return appStorage.getItem('displayLanguage') || 'en-US';
+        },
+
+        displayPreferencesKey: function () {
             if (AppInfo.isNativeApp) {
                 return 'Emby Mobile';
             }

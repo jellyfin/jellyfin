@@ -10,6 +10,8 @@
         $('#selectThemeSong', page).val(appStorage.getItem('enableThemeSongs-' + user.Id) || '').selectmenu("refresh");
         $('#selectBackdrop', page).val(appStorage.getItem('enableBackdrops-' + user.Id) || '').selectmenu("refresh");
 
+        $('#selectLanguage', page).val(AppSettings.displayLanguage()).selectmenu("refresh");
+
         page.querySelector('.chkEnableFullScreen').checked = AppSettings.enableFullScreen();
 
         Dashboard.hideLoadingMsg();
@@ -23,6 +25,7 @@
         user.Configuration.GroupMoviesIntoBoxSets = page.querySelector('.chkGroupMoviesIntoCollections').checked;
 
         AppSettings.enableFullScreen(page.querySelector('.chkEnableFullScreen').checked);
+        AppSettings.displayLanguage(page.querySelector('#selectLanguage').value);
 
         appStorage.setItem('enableThemeSongs-' + user.Id, $('#selectThemeSong', page).val());
         appStorage.setItem('enableBackdrops-' + user.Id, $('#selectBackdrop', page).val());
@@ -83,6 +86,12 @@
             $('.fldFullscreen', page).show();
         } else {
             $('.fldFullscreen', page).hide();
+        }
+
+        if (AppInfo.supportsUserDisplayLanguageSetting) {
+            $('.languageSection', page).show();
+        } else {
+            $('.languageSection', page).hide();
         }
     });
 

@@ -341,12 +341,12 @@
     function showCommand(result) {
 
         if (result.category == 'tvguide') {
-            Dashboard.navigate('livetv.html');
+            Dashboard.navigate('livetv.html?tab=1');
             return;
         }
 
         if (result.category == 'recordings') {
-            Dashboard.navigate('livetv.html');
+            Dashboard.navigate('livetv.html?tab=3');
             return;
         }
     }

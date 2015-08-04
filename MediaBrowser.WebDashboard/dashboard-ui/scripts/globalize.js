@@ -75,6 +75,13 @@
                 deferred.resolveWith(null, [null]);
             });
 
+        } else if (AppInfo.supportsUserDisplayLanguageSetting) {
+
+            Logger.log('AppInfo.supportsUserDisplayLanguageSetting is true');
+
+            culture = document.documentElement.getAttribute('data-culture');
+            deferred.resolveWith(null, [culture]);
+
         } else {
 
             Logger.log('navigator.globalization.getLocaleName is unavailable');
