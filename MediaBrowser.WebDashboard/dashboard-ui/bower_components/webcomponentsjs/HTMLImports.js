@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.8
+// @version 0.7.9
 if (typeof WeakMap === "undefined") {
   (function() {
     var defineProperty = Object.defineProperty;
@@ -692,7 +692,7 @@ window.HTMLImports.addModule(function(scope) {
   var path = scope.path;
   var rootDocument = scope.rootDocument;
   var flags = scope.flags;
-  var isIE11OrOlder = scope.isIE11OrOlder;
+  var isIE = scope.isIE;
   var IMPORT_LINK_TYPE = scope.IMPORT_LINK_TYPE;
   var IMPORT_SELECTOR = "link[rel=" + IMPORT_LINK_TYPE + "]";
   var importParser = {
@@ -821,7 +821,7 @@ window.HTMLImports.addModule(function(scope) {
       };
       elt.addEventListener("load", done);
       elt.addEventListener("error", done);
-      if (isIE11OrOlder && elt.localName === "style") {
+      if (isIE && elt.localName === "style") {
         var fakeLoad = false;
         if (elt.textContent.indexOf("@import") == -1) {
           fakeLoad = true;

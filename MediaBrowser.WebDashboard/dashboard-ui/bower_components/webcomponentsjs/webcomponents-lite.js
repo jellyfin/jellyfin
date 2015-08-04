@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.8
+// @version 0.7.9
 window.WebComponents = window.WebComponents || {};
 
 (function(scope) {
@@ -1260,7 +1260,7 @@ window.HTMLImports.addModule(function(scope) {
   var path = scope.path;
   var rootDocument = scope.rootDocument;
   var flags = scope.flags;
-  var isIE11OrOlder = scope.isIE11OrOlder;
+  var isIE = scope.isIE;
   var IMPORT_LINK_TYPE = scope.IMPORT_LINK_TYPE;
   var IMPORT_SELECTOR = "link[rel=" + IMPORT_LINK_TYPE + "]";
   var importParser = {
@@ -1389,7 +1389,7 @@ window.HTMLImports.addModule(function(scope) {
       };
       elt.addEventListener("load", done);
       elt.addEventListener("error", done);
-      if (isIE11OrOlder && elt.localName === "style") {
+      if (isIE && elt.localName === "style") {
         var fakeLoad = false;
         if (elt.textContent.indexOf("@import") == -1) {
           fakeLoad = true;
@@ -2285,6 +2285,7 @@ if (typeof HTMLTemplateElement === "undefined") {
   (function() {
     var TEMPLATE_TAG = "template";
     var contentDoc = document.implementation.createHTMLDocument("template");
+    var canDecorate = true;
     HTMLTemplateElement = function() {};
     HTMLTemplateElement.prototype = Object.create(HTMLElement.prototype);
     HTMLTemplateElement.decorate = function(template) {
@@ -2295,25 +2296,31 @@ if (typeof HTMLTemplateElement === "undefined") {
       while (child = template.firstChild) {
         template.content.appendChild(child);
       }
-      Object.defineProperty(template, "innerHTML", {
-        get: function() {
-          var o = "";
-          for (var e = this.content.firstChild; e; e = e.nextSibling) {
-            o += e.outerHTML || escapeData(e.data);
-          }
-          return o;
-        },
-        set: function(text) {
-          contentDoc.body.innerHTML = text;
-          while (this.content.firstChild) {
-            this.content.removeChild(this.content.firstChild);
-          }
-          while (contentDoc.body.firstChild) {
-            this.content.appendChild(contentDoc.body.firstChild);
-          }
-        },
-        configurable: true
-      });
+      if (canDecorate) {
+        try {
+          Object.defineProperty(template, "innerHTML", {
+            get: function() {
+              var o = "";
+              for (var e = this.content.firstChild; e; e = e.nextSibling) {
+                o += e.outerHTML || escapeData(e.data);
+              }
+              return o;
+            },
+            set: function(text) {
+              contentDoc.body.innerHTML = text;
+              while (this.content.firstChild) {
+                this.content.removeChild(this.content.firstChild);
+              }
+              while (contentDoc.body.firstChild) {
+                this.content.appendChild(contentDoc.body.firstChild);
+              }
+            },
+            configurable: true
+          });
+        } catch (err) {
+          canDecorate = false;
+        }
+      }
     };
     HTMLTemplateElement.bootstrap = function(doc) {
       var templates = doc.querySelectorAll(TEMPLATE_TAG);

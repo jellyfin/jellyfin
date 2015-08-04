@@ -646,6 +646,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets a value indicating whether [supports playlists].
         /// </summary>
         /// <value><c>true</c> if [supports playlists]; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public bool SupportsPlaylists
         {
             get

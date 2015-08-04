@@ -25,14 +25,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../paper-input-char-counter.html">
   <link rel="import" href="../paper-textarea.html">
   <link rel="import" href="../../iron-input/iron-input.html">
+  <link rel="import" href="../../iron-icon/iron-icon.html">
+  <link rel="import" href="../../iron-icons/iron-icons.html">
+  <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
   <link rel="import" href="ssn-input.html">
 
-  <link rel="stylesheet" href="../../paper-styles/paper-styles.html">
+  <link rel="stylesheet" href="../../paper-styles/color.html">
   <link rel="import" href="../../paper-styles/demo-pages.html">
 
-  <style>
+  <style is="custom-style">
     body {
       padding: 40px;
+    }
+
+    paper-input.short {
+      width: 200px;
+    }
+
+    paper-icon-button {
+      color: var(--paper-red-300);
+      --paper-icon-button-ink-color: var(--paper-red-a100);
+      --iron-icon-width: 15px;
+      --iron-icon-height: 15px;
+      padding: 0px 4px;
     }
   </style>
 
@@ -78,6 +93,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <paper-textarea label="text area with rows and max-rows" rows="3" max-rows="4"><paper-textarea>
     </div>
 
+    <h4>Prefixes and Suffixes</h4>
+    <div class="vertical-section">
+      <paper-input class="short" label="total" type="number">
+        <div prefix>$</div>
+      </paper-input>
+
+      <paper-input class="short" label="username">
+        <div suffix>@email.com</div>
+      </paper-input>
+
+      <paper-input class="short" label="icons and buttons" id="inputWithButton">
+        <iron-icon icon="search" prefix></iron-icon>
+        <paper-icon-button suffix onclick="clearInput()"
+            icon="clear" alt="clear" title="clear" tabindex="0">
+        </paper-icon-button>
+      </paper-input>
+    </div>
+
     <h4>Complex inputs</h4>
     <div class="vertical-section">
       <template is="dom-bind">
@@ -92,6 +125,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script>
     function validate() {
       document.getElementById('inputForValidation').validate();
+    }
+
+    function clearInput() {
+      document.getElementById('inputWithButton').value = '';
     }
   </script>
 </body>

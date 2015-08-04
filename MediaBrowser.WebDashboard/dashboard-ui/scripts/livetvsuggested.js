@@ -46,7 +46,9 @@
             HasAired: false,
             limit: 8,
             IsMovie: false,
-            IsSports: false
+            IsSports: false,
+            IsKids: false,
+            IsSeries: true
 
         }).done(function (result) {
 

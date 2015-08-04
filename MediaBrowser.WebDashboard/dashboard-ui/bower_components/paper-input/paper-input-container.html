@@ -34,7 +34,7 @@ the attribute it listens to with the `attr-for-value` attribute.
 You can use a custom input element in a `<paper-input-container>`, for example to implement a
 compound input field like a social security number input. The custom input element should have the
 `paper-input-input` class, have a `notify:true` value property and optionally implements
-`Polymer.IronValidatableBehavior` if it is validatble.
+`Polymer.IronValidatableBehavior` if it is validatable.
 
     <paper-input-container attr-for-value="ssn-value">
       <label>Social security number</label>
@@ -52,6 +52,17 @@ Add-ons are child elements of a `<paper-input-container>` with the `add-on` attr
 implements the `Polymer.PaperInputAddonBehavior` behavior. They are notified when the input value
 or validity changes, and may implement functionality such as error messages or character counters.
 They appear at the bottom of the input.
+
+### Prefixes and suffixes
+These are child elements of a `<paper-input-container>` with the `prefix`
+or `suffix` attribute, and are displayed inline with the input, before or after.
+
+    <paper-input-container>
+      <div prefix>$</div>
+      <label>Total</label>
+      <input is="iron-input">
+      <paper-icon-button suffix icon="clear"></paper-icon-button>
+    </paper-input-container>
 
 ### Styling
 
@@ -150,8 +161,15 @@ This element is `display:block` by default, but you can set the `inline` attribu
       @apply(--paper-input-container-underline-disabled);
     }
 
+    .label-and-input-container {
+      @apply(--layout-flex);
+      @apply(--layout-relative);
+    }
+
     .input-content {
       position: relative;
+      @apply(--layout-horizontal);
+      @apply(--layout-end);
     }
 
     .input-content ::content label,
@@ -213,6 +231,12 @@ This element is `display:block` by default, but you can set the `inline` attribu
       @apply(--paper-input-container-input);
     }
 
+    ::content [prefix],
+    ::content [suffix] {
+      @apply(--paper-font-subhead);
+      @apply(--paper-input-container-input);
+    }
+
     /* Firefox sets a min-width on the input, which can cause layout issues */
     .input-content ::content input {
       min-width: 0;
@@ -239,7 +263,11 @@ This element is `display:block` by default, but you can set the `inline` attribu
     </template>
 
     <div class$="[[_computeInputContentClass(noLabelFloat,alwaysFloatLabel,focused,invalid,_inputHasContent)]]">
-      <content select=":not([add-on])"></content>
+      <content select="[prefix]" id="prefix"></content>
+      <div class="label-and-input-container">
+        <content select=":not([add-on]):not([prefix]):not([suffix])"></content>
+      </div>
+      <content select="[suffix]"></content>
     </div>
 
     <div class$="[[_computeUnderlineClass(focused,invalid)]]">
@@ -476,12 +504,24 @@ This element is `display:block` by default, but you can set the `inline` attribu
     _computeInputContentClass: function(noLabelFloat, alwaysFloatLabel, focused, invalid, _inputHasContent) {
       var cls = 'input-content';
       if (!noLabelFloat) {
+        var label = this.querySelector('label');
+
         if (alwaysFloatLabel || _inputHasContent) {
           cls += ' label-is-floating';
           if (invalid) {
             cls += ' is-invalid';
           } else if (focused) {
             cls += " label-is-highlighted";
+          }
+          // The label might have a horizontal offset if a prefix element exists
+          // which needs to be undone when displayed as a floating label.
+          if (this.$.prefix && label && label.offsetParent) {
+           label.style.left = -label.offsetParent.offsetLeft + 'px';
+          }
+        } else {
+          // When the label is not floating, it should overlap the input element.
+          if (label) {
+            label.style.left = 0;
           }
         }
       } else {

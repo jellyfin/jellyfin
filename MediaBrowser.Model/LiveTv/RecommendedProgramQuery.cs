@@ -44,6 +44,11 @@ namespace MediaBrowser.Model.LiveTv
         /// <value><c>null</c> if [is movie] contains no value, <c>true</c> if [is movie]; otherwise, <c>false</c>.</value>
         public bool? IsMovie { get; set; }
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is kids.
+        /// </summary>
+        /// <value><c>null</c> if [is kids] contains no value, <c>true</c> if [is kids]; otherwise, <c>false</c>.</value>
+        public bool? IsKids { get; set; }
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is sports.
         /// </summary>
         /// <value><c>null</c> if [is sports] contains no value, <c>true</c> if [is sports]; otherwise, <c>false</c>.</value>
