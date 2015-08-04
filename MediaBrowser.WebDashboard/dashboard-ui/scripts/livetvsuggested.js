@@ -8,7 +8,9 @@
 
             userId: Dashboard.getCurrentUserId(),
             IsAiring: true,
-            limit: 16
+            limit: 16,
+            ImageTypeLimit: 1,
+            EnableImageTypes: "Primary"
 
         }).done(function (result) {
 

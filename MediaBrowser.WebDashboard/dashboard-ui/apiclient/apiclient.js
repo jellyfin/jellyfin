@@ -2995,6 +2995,11 @@
             });
         };
 
+        self.getChannels = function (query) {
+
+            return self.getJSON(self.getUrl("Channels", query || {}));
+        };
+
         self.getUserViews = function (options, userId) {
 
             options = options || {};

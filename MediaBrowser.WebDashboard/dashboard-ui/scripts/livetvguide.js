@@ -62,7 +62,9 @@
                 MinEndDate: date.toISOString(),
                 channelIds: channelsResult.Items.map(function (c) {
                     return c.Id;
-                }).join(',')
+                }).join(','),
+                ImageTypeLimit: 1,
+                EnableImageTypes: "Primary"
 
             }).done(function (programsResult) {
 
