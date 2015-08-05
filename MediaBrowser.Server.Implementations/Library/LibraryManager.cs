@@ -1217,7 +1217,7 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var result = ItemRepository.GetItemIdsList(query);
 
-            var items = result.Select(GetItemById).ToArray();
+            var items = result.Select(GetItemById).Where(i => i != null).ToArray();
 
             return new QueryResult<BaseItem>
             {

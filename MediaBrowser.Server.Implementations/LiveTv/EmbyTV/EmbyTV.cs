@@ -541,13 +541,16 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 }
 
                 recording.Status = RecordingStatus.Completed;
+                _logger.Info("Recording completed");
             }
             catch (OperationCanceledException)
             {
+                _logger.Info("Recording cancelled");
                 recording.Status = RecordingStatus.Completed;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.ErrorException("Error recording", ex);
                 recording.Status = RecordingStatus.Error;
             }
 

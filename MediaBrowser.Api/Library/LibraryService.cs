@@ -262,7 +262,7 @@ namespace MediaBrowser.Api.Library
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization)
+                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization, ILiveTvManager liveTv)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
@@ -272,6 +272,7 @@ namespace MediaBrowser.Api.Library
             _authContext = authContext;
             _activityManager = activityManager;
             _localization = localization;
+            _liveTv = liveTv;
         }
 
         public object Get(GetMediaFolders request)
