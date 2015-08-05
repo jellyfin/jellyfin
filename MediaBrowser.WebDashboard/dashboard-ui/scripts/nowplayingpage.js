@@ -513,10 +513,8 @@
 
         if (playerInfo.isLocalPlayer && AppInfo.hasPhysicalVolumeButtons) {
             $('.volumeButton', page).css('visibility', 'hidden');
-            $('.nowPlayingPageVolumeControl', page).hide();
         } else {
             $('.volumeButton', page).css('visibility', 'visible');
-            $('.nowPlayingPageVolumeControl', page).show();
         }
 
         if (item && item.MediaType == 'Audio') {
