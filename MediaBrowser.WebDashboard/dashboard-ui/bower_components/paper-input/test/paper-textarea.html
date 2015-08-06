@@ -138,20 +138,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         input = fixture('basic');
       });
 
-      test('focus/blur events fired on host element', function(done) {
+      test('focus/blur events fired on host element', function() {
         var nFocusEvents = 0;
         var nBlurEvents = 0;
         input.addEventListener('focus', function(event) {
           nFocusEvents += 1;
+          assert(input.focused, 'input is focused');
           MockInteractions.blur(input.inputElement.textarea);
         });
         input.addEventListener('blur', function() {
           nBlurEvents += 1;
-          assert.isTrue(nFocusEvents >= 1, 'focus event fired');
-          assert.isTrue(nBlurEvents >= 1, 'blur event fired');
-          done();
+          assert(!input.focused, 'input is blurred');
         });
         MockInteractions.focus(input.inputElement.textarea);
+        assert.isTrue(nFocusEvents >= 1, 'focus event fired');
+        assert.isTrue(nBlurEvents >= 1, 'blur event fired')
       });
 
     });

@@ -50,9 +50,26 @@
     var currentCulture = 'en-US';
     function setCulture(value) {
 
+        Logger.log('Setting culture to ' + value);
+
         currentCulture = value;
 
         return $.when(loadDictionary('html', value), loadDictionary('javascript', value));
+    }
+
+    function normalizeLocaleName(culture) {
+
+        culture = culture.replace('_', '-');
+
+        // If it's de-DE, convert to just de
+        var parts = culture.split('-');
+        if (parts.length == 2) {
+            if (parts[0].toLowerCase() == parts[1].toLowerCase()) {
+                culture = parts[0].toLowerCase();
+            }
+        }
+
+        return culture;
     }
 
     function getDeviceCulture() {
@@ -62,9 +79,11 @@
 
         if (navigator.globalization && navigator.globalization.getLocaleName) {
 
+            Logger.log('Calling navigator.globalization.getLocaleName');
+
             navigator.globalization.getLocaleName(function (locale) {
 
-                culture = (locale.value || '').replace('_', '-');
+                culture = normalizeLocaleName(locale.value || '');
                 Logger.log('Device culture is ' + culture);
                 deferred.resolveWith(null, [culture]);
 
@@ -79,12 +98,12 @@
 
             Logger.log('AppInfo.supportsUserDisplayLanguageSetting is true');
 
-            culture = document.documentElement.getAttribute('data-culture');
+            culture = AppSettings.displayLanguage();
             deferred.resolveWith(null, [culture]);
 
         } else {
 
-            Logger.log('navigator.globalization.getLocaleName is unavailable');
+            Logger.log('Getting culture from document');
 
             culture = document.documentElement.getAttribute('data-culture');
             deferred.resolveWith(null, [culture]);
@@ -95,6 +114,8 @@
 
 
     function ensure() {
+
+        Logger.log('Entering Globalize.ensure');
 
         var deferred = DeferredBuilder.Deferred();
 

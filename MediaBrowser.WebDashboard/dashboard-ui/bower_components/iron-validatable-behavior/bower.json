@@ -1,6 +1,6 @@
 {
   "name": "iron-validatable-behavior",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Provides a behavior for an element that validates user input",
   "authors": "The Polymer Authors",
   "keywords": [

@@ -280,7 +280,7 @@ namespace MediaBrowser.Providers.Music
         {
             // MusicBrainz is extremely adamant about limiting to one request per second
 
-            await Task.Delay(800, cancellationToken).ConfigureAwait(false);
+            await Task.Delay(1000, cancellationToken).ConfigureAwait(false);
 
             var doc = new XmlDocument();
 

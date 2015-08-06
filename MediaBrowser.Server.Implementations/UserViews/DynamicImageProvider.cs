@@ -155,12 +155,6 @@ namespace MediaBrowser.Server.Implementations.UserViews
                     SpecialFolder.MovieMovies,
                     SpecialFolder.MovieResume,
 
-                    SpecialFolder.GameFavorites,
-                    SpecialFolder.GameGenres,
-                    SpecialFolder.GameSystems,
-                    SpecialFolder.LatestGames,
-                    SpecialFolder.RecentlyPlayedGames,
-
                     SpecialFolder.MusicArtists,
                     SpecialFolder.MusicAlbumArtists,
                     SpecialFolder.MusicAlbums,

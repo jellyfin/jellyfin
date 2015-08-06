@@ -2070,7 +2070,7 @@ var AppInfo = {};
 
         deps.push('appstorage');
 
-        require([deps], function () {
+        require(deps, function () {
 
             capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
             createConnectionManager(capabilities).done(function () { onConnectionManagerCreated(deferred); });
