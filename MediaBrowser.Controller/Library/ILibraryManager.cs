@@ -61,7 +61,18 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name.</param>
         /// <returns>Task{Artist}.</returns>
         MusicArtist GetArtist(string name);
-
+        /// <summary>
+        /// Gets the album artists.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns>IEnumerable&lt;MusicArtist&gt;.</returns>
+        IEnumerable<MusicArtist> GetAlbumArtists(IEnumerable<IHasAlbumArtist> items);
+        /// <summary>
+        /// Gets the artists.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns>IEnumerable&lt;MusicArtist&gt;.</returns>
+        IEnumerable<MusicArtist> GetArtists(IEnumerable<IHasArtist> items);
         /// <summary>
         /// Gets a Studio
         /// </summary>

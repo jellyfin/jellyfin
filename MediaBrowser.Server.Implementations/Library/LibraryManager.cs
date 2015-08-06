@@ -939,26 +939,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            var fileInfo = new DirectoryInfo(path);
-
-            var isNew = false;
-
-            if (!fileInfo.Exists)
-            {
-                try
-                {
-                    fileInfo = Directory.CreateDirectory(path);
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    _logger.Error("Error creating directory {0}", ex, path);
-                    throw new Exception(string.Format("Error creating directory {0}", path), ex);
-                }
-
-                isNew = true;
-            }
-
-            var item = isNew ? null : GetItemById(id) as T;
+            var item = GetItemById(id) as T;
 
             if (item == null)
             {
@@ -966,8 +947,8 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     Name = name,
                     Id = id,
-                    DateCreated = _fileSystem.GetCreationTimeUtc(fileInfo),
-                    DateModified = _fileSystem.GetLastWriteTimeUtc(fileInfo),
+                    DateCreated = DateTime.UtcNow,
+                    DateModified = DateTime.UtcNow,
                     Path = path
                 };
             }
@@ -980,6 +961,59 @@ namespace MediaBrowser.Server.Implementations.Library
             return item;
         }
 
+        public IEnumerable<MusicArtist> GetAlbumArtists(IEnumerable<IHasAlbumArtist> items)
+        {
+            var names = items
+                .SelectMany(i => i.AlbumArtists)
+                .DistinctNames()
+                .Select(i =>
+                {
+                    try
+                    {
+                        var artist = GetArtist(i);
+
+                        return artist;
+                    }
+                    catch
+                    {
+                        // Already logged at lower levels
+                        return null;
+                    }
+                })
+                .Where(i => i != null);
+
+            return names;
+        }
+
+        public IEnumerable<MusicArtist> GetArtists(IEnumerable<IHasArtist> items)
+        {
+            var names = items
+                .SelectMany(i => i.AllArtists)
+                .DistinctNames()
+                .Select(i =>
+                {
+                    try
+                    {
+                        var artist = GetArtist(i);
+
+                        return artist;
+                    }
+                    catch
+                    {
+                        // Already logged at lower levels
+                        return null;
+                    }
+                })
+                .Where(i => i != null);
+
+            return names;
+        }
+
+        private void SetPropertiesFromSongs(MusicArtist artist, IEnumerable<IHasMetadata> items)
+        {
+            
+        }
+        
         /// <summary>
         /// Validate and refresh the People sub-set of the IBN.
         /// The items are stored in the db but not loaded into memory until actually requested by an operation.
@@ -2118,6 +2152,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public Task UpdatePeople(BaseItem item, List<PersonInfo> people)
         {
+            if (!item.SupportsPeople)
+            {
+                return Task.FromResult(true);
+            }
+
             return ItemRepository.UpdatePeople(item.Id, people);
         }
     }

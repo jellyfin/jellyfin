@@ -1398,14 +1398,40 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             dto.EpisodeTitle = program.EpisodeTitle;
             dto.ChannelType = program.ChannelType;
             dto.Audio = program.Audio;
-            dto.IsHD = program.IsHD;
-            dto.IsMovie = program.IsMovie;
-            dto.IsSeries = program.IsSeries;
-            dto.IsSports = program.IsSports;
-            dto.IsLive = program.IsLive;
-            dto.IsNews = program.IsNews;
-            dto.IsKids = program.IsKids;
-            dto.IsPremiere = program.IsPremiere;
+
+            if (program.IsHD.HasValue && program.IsHD.Value)
+            {
+                dto.IsHD = program.IsHD;
+            }
+            if (program.IsMovie)
+            {
+                dto.IsMovie = program.IsMovie;
+            }
+            if (program.IsSeries)
+            {
+                dto.IsSeries = program.IsSeries;
+            }
+            if (program.IsSports)
+            {
+                dto.IsSports = program.IsSports;
+            }
+            if (program.IsLive)
+            {
+                dto.IsLive = program.IsLive;
+            }
+            if (program.IsNews)
+            {
+                dto.IsNews = program.IsNews;
+            }
+            if (program.IsKids)
+            {
+                dto.IsKids = program.IsKids;
+            }
+            if (program.IsPremiere)
+            {
+                dto.IsPremiere = program.IsPremiere;
+            }
+
             dto.OriginalAirDate = program.OriginalAirDate;
 
             if (channel != null)

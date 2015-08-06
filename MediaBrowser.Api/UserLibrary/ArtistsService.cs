@@ -6,7 +6,6 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Dto;
 using ServiceStack;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -128,44 +127,14 @@ namespace MediaBrowser.Api.UserLibrary
         {
             if (request is GetAlbumArtists)
             {
-                return items
-                    .Where(i => !i.IsFolder)
-                    .OfType<IHasAlbumArtist>()
-                    .SelectMany(i => i.AlbumArtists)
-                    .DistinctNames()
-                    .Select(name =>
-                    {
-                        try
-                        {
-                            return LibraryManager.GetArtist(name);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.ErrorException("Error getting artist {0}", ex, name);
-                            return null;
-                        }
-
-                    }).Where(i => i != null);
+                return LibraryManager.GetAlbumArtists(items
+                   .Where(i => !i.IsFolder)
+                   .OfType<IHasAlbumArtist>());
             }
 
-            return items
+            return LibraryManager.GetArtists(items
                 .Where(i => !i.IsFolder)
-                .OfType<IHasArtist>()
-                .SelectMany(i => i.AllArtists)
-                .DistinctNames()
-                .Select(name =>
-                {
-                    try
-                    {
-                        return LibraryManager.GetArtist(name);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.ErrorException("Error getting artist {0}", ex, name);
-                        return null;
-                    }
-
-                }).Where(i => i != null);
+                .OfType<IHasArtist>());
         }
     }
 }
