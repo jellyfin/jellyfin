@@ -154,6 +154,11 @@ namespace MediaBrowser.Providers.Music
                 result.HasMetadata = true;
             }
 
+            if (!string.IsNullOrEmpty(releaseId) || !string.IsNullOrEmpty(releaseGroupId))
+            {
+                result.HasMetadata = true;
+            }
+
             if (result.HasMetadata)
             {
                 if (!string.IsNullOrEmpty(releaseId))
