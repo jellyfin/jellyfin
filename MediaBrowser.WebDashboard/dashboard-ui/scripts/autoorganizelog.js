@@ -195,7 +195,7 @@
             status = Globalize.translate('StatusSuccess');
         }
 
-        if (enhance && enhance) {
+        if (enhance) {
 
             if (item.StatusMessage) {
 
@@ -293,7 +293,7 @@
             updatePageSizeSetting: false
         });
 
-        page.querySelector('.listTopPaging').innerHTML = pagingHtml;
+        $(page)[0].querySelector('.listTopPaging').innerHTML = pagingHtml;
 
         if (result.TotalRecordCount > query.Limit && result.TotalRecordCount > 50) {
             $('.listBottomPaging', page).html(pagingHtml).trigger('create');

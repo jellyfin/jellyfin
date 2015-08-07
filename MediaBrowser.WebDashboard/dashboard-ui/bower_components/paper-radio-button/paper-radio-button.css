@@ -42,6 +42,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 :host #offRadio {
   position: absolute;
+  box-sizing: content-box;
   top: 0px;
   left: 0px;
   width: 12px;
@@ -55,6 +56,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 :host #onRadio {
   position: absolute;
+  box-sizing: content-box;
   top: 4px;
   left: 4px;
   width: 8px;

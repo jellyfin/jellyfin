@@ -36,6 +36,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="AriaLabel">
+    <template>
+      <paper-radio-button aria-label="Batman">Robin</paper-radio-button>
+    </template>
+  </test-fixture>
+
   <script>
     suite('defaults', function() {
       var r1;
@@ -94,6 +100,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       test('button with a label sets an aria label', function() {
         assert.isTrue(r2.getAttribute('aria-label') == "Batman");
+      });
+
+      test('button respects the user set aria-label', function() {
+        var c = fixture('AriaLabel');
+        assert.isTrue(c.getAttribute('aria-label') == "Batman");
       });
     });
   </script>

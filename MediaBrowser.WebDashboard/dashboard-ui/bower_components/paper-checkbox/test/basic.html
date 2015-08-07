@@ -36,6 +36,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="AriaLabel">
+    <template>
+      <paper-checkbox id="check3" aria-label="Batman">Robin</paper-checkbox>
+    </template>
+  </test-fixture>
+
   <script>
     suite('defaults', function() {
       var c1;
@@ -92,6 +98,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       test('checkbox with a label sets an aria label', function() {
         assert.isTrue(c2.getAttribute('aria-label') == "Batman");
+      });
+
+      test('checkbox respects the user set aria-label', function() {
+        var c = fixture('AriaLabel');
+        assert.isTrue(c.getAttribute('aria-label') == "Batman");
       });
     });
   </script>

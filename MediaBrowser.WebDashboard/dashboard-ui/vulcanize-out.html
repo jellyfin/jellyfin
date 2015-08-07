@@ -7435,8 +7435,14 @@ this.fire('dom-change');
   }
 
 </style>
-<style is="custom-style">
+<style>
+  /* IE 10 support for HTML5 hidden attr */
+  [hidden] {
+    display: none !important;
+  }
+</style>
 
+<style is="custom-style">
   :root {
 
     --layout: {
@@ -7702,32 +7708,29 @@ this.fire('dom-change');
 
     /* fixed position */
 
-    --layout-fixed-bottom:,
-    --layout-fixed-left:,
-    --layout-fixed-right:,
     --layout-fixed-top: {
       position: fixed;
-    };
-
-    --layout-fixed-top: {
       top: 0;
       left: 0;
       right: 0;
     };
 
     --layout-fixed-right: {
+      position: fixed;
       top: 0;
       right: 0;
       bottom: 0;
     };
 
     --layout-fixed-bottom: {
+      position: fixed;
       right: 0;
       bottom: 0;
       left: 0;
     };
 
     --layout-fixed-left: {
+      position: fixed;
       top: 0;
       bottom: 0;
       left: 0;
@@ -11898,14 +11901,13 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   */
 
 </script>
-
 <script>
-
   /**
+  Polymer.IronFormElementBehavior enables a custom element to be included
+  in an `iron-form`.
 
   @demo demo/index.html
   @polymerBehavior
-
   */
   Polymer.IronFormElementBehavior = {
 
@@ -11935,6 +11937,19 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       value: {
         notify: true,
         type: String
+      },
+
+      /**
+       * Set to true to mark the input as required. If used in a form, a
+       * custom element that uses this behavior should also use
+       * Polymer.IronValidatableBehavior and define a custom validation method.
+       * Otherwise, a `required` element will always be considered valid.
+       * It's also strongly recomended to provide a visual style for the element
+       * when it's value is invalid.
+       */
+      required: {
+        type: Boolean,
+        value: false
       },
 
       /**
@@ -12977,10 +12992,9 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         }
       },
 
-      get shouldKeepAnimating() {
-        var ripples = this.ripples || [];
-        for (var index = 0; index < ripples.length; ++index) {
-          if (!ripples[index].isAnimationComplete) {
+      get shouldKeepAnimating () {
+        for (var index = 0; index < this.ripples.length; ++index) {
+          if (!this.ripples[index].isAnimationComplete) {
             return true;
           }
         }
@@ -13018,11 +13032,9 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           return;
         }
 
-        if (this.ripples) {
-            this.ripples.forEach(function (ripple) {
-                ripple.upAction(event);
-            });
-        }
+        this.ripples.forEach(function(ripple) {
+          ripple.upAction(event);
+        });
 
         this.animate();
       },
@@ -13038,10 +13050,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
         Polymer.dom(this.$.waves).appendChild(ripple.waveContainer);
         this.$.background.style.backgroundColor = ripple.color;
-
-        if (this.ripples) {
-            this.ripples.push(ripple);
-        }
+        this.ripples.push(ripple);
 
         this._setAnimating(true);
 
@@ -13070,9 +13079,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
         this._animating = true;
 
-        var ripples = this.ripples || [];
-        for (index = 0; index < ripples.length; ++index) {
-            ripple = ripples[index];
+        for (index = 0; index < this.ripples.length; ++index) {
+          ripple = this.ripples[index];
 
           ripple.draw();
 
@@ -13083,7 +13091,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           }
         }
 
-        if (!this.shouldKeepAnimating && ripples.length === 0) {
+        if (!this.shouldKeepAnimating && this.ripples.length === 0) {
           this.onAnimationComplete();
         } else {
           window.requestAnimationFrame(this._boundAnimate);
@@ -17930,7 +17938,8 @@ paper-ripple {
 </script>
 <dom-module id="paper-checkbox" assetpath="bower_components/paper-checkbox/">
   <style>
-/*
+/**
+@license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
@@ -18146,11 +18155,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
-      ready: function() {
-        if (Polymer.dom(this).textContent == '') {
+      attached: function() {
+        var trimmedText = Polymer.dom(this).textContent.trim();
+        if (trimmedText === '') {
           this.$.checkboxLabel.hidden = true;
-        } else {
-          this.setAttribute('aria-label', Polymer.dom(this).textContent);
+        }
+        // Don't stomp over a user-set aria-label.
+        if (trimmedText !== '' && !this.getAttribute('aria-label')) {
+          this.setAttribute('aria-label', trimmedText);
         }
         this._isReady = true;
       },

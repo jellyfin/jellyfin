@@ -113,8 +113,6 @@ namespace MediaBrowser.Providers.Music
 
             var path = GetArtistInfoPath(_config.ApplicationPaths, musicBrainzId);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-
             using (var response = await _httpClient.Get(new HttpRequestOptions
             {
                 Url = url,
@@ -123,6 +121,8 @@ namespace MediaBrowser.Providers.Music
 
             }).ConfigureAwait(false))
             {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+
                 using (var xmlFileStream = _fileSystem.GetFileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, true))
                 {
                     await response.CopyToAsync(xmlFileStream).ConfigureAwait(false);

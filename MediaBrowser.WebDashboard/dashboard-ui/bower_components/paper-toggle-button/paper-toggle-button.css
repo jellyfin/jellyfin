@@ -22,18 +22,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 :host .toggle-bar {
   background-color: var(--paper-toggle-button-unchecked-bar-color, #000000);
+  @apply(--paper-toggle-button-unchecked-bar);
 }
 
 :host .toggle-button {
   background-color: var(--paper-toggle-button-unchecked-button-color, --paper-grey-50);
+  @apply(--paper-toggle-button-unchecked-button);
 }
 
 :host([checked]) .toggle-bar {
   background-color: var(--paper-toggle-button-checked-bar-color, --google-green-500);
+  @apply(--paper-toggle-button-checked-bar);
 }
 
 :host([checked]) .toggle-button {
   background-color: var(--paper-toggle-button-checked-button-color, --google-green-500);
+  @apply(--paper-toggle-button-checked-button);
 }
 
 :host .toggle-ink {

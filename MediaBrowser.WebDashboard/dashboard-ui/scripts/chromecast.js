@@ -264,8 +264,11 @@
      * Stops the running receiver application associated with the session.
      */
     CastPlayer.prototype.stopApp = function () {
-        this.session.stop(this.onStopAppSuccess.bind(this, 'Session stopped'),
-            this.errorHandler);
+
+        if (this.session) {
+            this.session.stop(this.onStopAppSuccess.bind(this, 'Session stopped'),
+                this.errorHandler);
+        }
 
     };
 
