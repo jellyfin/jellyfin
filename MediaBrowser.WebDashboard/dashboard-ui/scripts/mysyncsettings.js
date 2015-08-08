@@ -36,7 +36,7 @@
 
         var page = this;
 
-        $('form').off('submit', onSubmit).on('submit', onSubmit);
+        $('form', page).off('submit', onSubmit).on('submit', onSubmit);
 
         $('.btnSelectSyncPath', page).on('click', function () {
 

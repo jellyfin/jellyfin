@@ -7,6 +7,10 @@
     max-width: 100%;
 }
 
+.neon-animating .tvGuideHeader {
+    position: static;
+}
+
 .bottomSecondaryNav .tvGuideHeader {
     top: 48px;
 }
