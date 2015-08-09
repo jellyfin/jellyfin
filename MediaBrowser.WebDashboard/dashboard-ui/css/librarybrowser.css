@@ -147,14 +147,14 @@
 @media all and (min-width: 1200px) {
 
     .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
-        width: 97%;
+        width: 95%;
     }
 }
 
 @media all and (min-width: 1920px) {
 
     .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
-        width: 96%;
+        width: 95%;
     }
 }
 

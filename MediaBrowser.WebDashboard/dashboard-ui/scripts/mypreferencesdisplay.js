@@ -4,7 +4,6 @@
 
         page.querySelector('.chkDisplayMissingEpisodes').checked = user.Configuration.DisplayMissingEpisodes || false;
         page.querySelector('.chkDisplayUnairedEpisodes').checked = user.Configuration.DisplayUnairedEpisodes || false;
-        page.querySelector('.chkDisplayTrailersWithinMovieSuggestions').checked = user.Configuration.IncludeTrailersInSuggestions || false;
         page.querySelector('.chkGroupMoviesIntoCollections').checked = user.Configuration.GroupMoviesIntoBoxSets || false;
 
         $('#selectThemeSong', page).val(appStorage.getItem('enableThemeSongs-' + user.Id) || '').selectmenu("refresh");
@@ -21,7 +20,6 @@
 
         user.Configuration.DisplayMissingEpisodes = page.querySelector('.chkDisplayMissingEpisodes').checked;
         user.Configuration.DisplayUnairedEpisodes = page.querySelector('.chkDisplayUnairedEpisodes').checked;
-        user.Configuration.IncludeTrailersInSuggestions = page.querySelector('.chkDisplayTrailersWithinMovieSuggestions').checked;
         user.Configuration.GroupMoviesIntoBoxSets = page.querySelector('.chkGroupMoviesIntoCollections').checked;
 
         AppSettings.enableFullScreen(page.querySelector('.chkEnableFullScreen').checked);

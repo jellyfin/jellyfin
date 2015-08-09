@@ -100,7 +100,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     args;
             }
             
-            var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
+            var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
                 state.SegmentLength.ToString(UsCulture));
 
             var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
