@@ -46,9 +46,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
         public async Task<List<NameIdPair>> GetLineups(string country, string location)
         {
             // location = postal code
-            var path = await GetResponse<String>("https://data.emby.media/service/lineups?postalCode=" + location).ConfigureAwait(false);
-
-            var response = await GetResponse<LineupInfo[]>("https://www.mb3admin.com" + path).ConfigureAwait(false);
+            var response = await GetResponse<LineupInfo[]>("https://data.emby.media/service/lineups?postalCode=" + location).ConfigureAwait(false);
 
             return response.Select(i => new NameIdPair
             {
@@ -93,7 +91,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
 
                     using (var secondStream = await _httpClient.Get(new HttpRequestOptions
                     {
-                        Url = "https://data.emby.media" + path
+                        Url = "https://www.mb3admin.com" + path
 
                     }).ConfigureAwait(false))
                     {
