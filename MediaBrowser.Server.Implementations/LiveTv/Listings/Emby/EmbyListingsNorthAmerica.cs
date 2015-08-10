@@ -48,7 +48,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
             // location = postal code
             var path = await GetResponse<String>("https://data.emby.media/service/lineups?postalCode=" + location).ConfigureAwait(false);
 
-            var response = await GetResponse<LineupInfo[]>("https://data.emby.media" + path).ConfigureAwait(false);
+            var response = await GetResponse<LineupInfo[]>("https://www.mb3admin.com" + path).ConfigureAwait(false);
 
             return response.Select(i => new NameIdPair
             {
