@@ -222,6 +222,9 @@
     <Compile Include="LiveTv\EmbyTV\RecordingHelper.cs" />
     <Compile Include="LiveTv\EmbyTV\SeriesTimerManager.cs" />
     <Compile Include="LiveTv\EmbyTV\TimerManager.cs" />
+    <Compile Include="LiveTv\Listings\Emby\EmbyListings.cs" />
+    <Compile Include="LiveTv\Listings\Emby\EmbyListingsNorthAmerica.cs" />
+    <Compile Include="LiveTv\Listings\Emby\IEmbyListingProvider.cs" />
     <Compile Include="LiveTv\Listings\SchedulesDirect.cs" />
     <Compile Include="LiveTv\Listings\XmlTv.cs" />
     <Compile Include="LiveTv\LiveTvConfigurationFactory.cs" />
