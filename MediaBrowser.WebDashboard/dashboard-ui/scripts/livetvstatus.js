@@ -364,6 +364,8 @@
 
             case 'schedulesdirect':
                 return 'Schedules Direct';
+            case 'emby':
+                return 'Emby Guide';
             default:
                 return 'Unknown';
         }

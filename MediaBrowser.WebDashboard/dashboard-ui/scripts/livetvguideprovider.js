@@ -46,22 +46,22 @@
         Dashboard.showLoadingMsg();
 
         var providerId = getParameterByName('id');
-        var id = providerId;
 
         ApiClient.getNamedConfiguration("livetv").done(function (config) {
 
             var info = config.ListingProviders.filter(function (i) {
-                return i.Id == id;
-            })[0];
+                return i.Id == providerId;
+
+            })[0] || {};
 
             info.ZipCode = page.querySelector('.txtZipCode').value;
             info.Country = $('#selectCountry', page).val();
             info.ListingsId = selectedListingsId;
+            info.Type = 'emby';
 
             ApiClient.ajax({
                 type: "POST",
                 url: ApiClient.getUrl('LiveTv/ListingProviders', {
-                    ValidateListings: true
                 }),
                 data: JSON.stringify(info),
                 contentType: "application/json"
