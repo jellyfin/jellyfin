@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common.Net;
+﻿using System.Globalization;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
@@ -40,7 +41,27 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
 
             foreach (var channel in channels)
             {
+                var station = response.stations.FirstOrDefault(i =>
+                {
+                    var channelNumber = i.channelNumber.ToString(CultureInfo.InvariantCulture);
+                    if (i.subChannelNumber > 0)
+                    {
+                        channelNumber += "." + i.subChannelNumber.ToString(CultureInfo.InvariantCulture);
+                    }
 
+                    return string.Equals(channelNumber, channel.Number, StringComparison.OrdinalIgnoreCase);
+                });
+
+                if (station != null)
+                {
+                    channel.Name = station.name;
+
+                    if (!string.IsNullOrWhiteSpace(station.logoFilename))
+                    {
+                        channel.HasImage = true;
+                        channel.ImageUrl = "http://cdn.tvpassport.com/image/station/100x100/" + station.logoFilename;
+                    }
+                }
             }
         }
 
