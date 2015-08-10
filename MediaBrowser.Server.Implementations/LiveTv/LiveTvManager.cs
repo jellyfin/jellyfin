@@ -2272,20 +2272,34 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             return info;
         }
 
-        public Task<List<NameIdPair>> GetLineups(string providerId, string country, string location)
+        public Task<List<NameIdPair>> GetLineups(string providerType, string providerId, string country, string location)
         {
             var config = GetConfiguration();
 
-            var info = config.ListingProviders.FirstOrDefault(i => string.Equals(i.Id, providerId, StringComparison.OrdinalIgnoreCase));
-
-            var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
-
-            if (provider == null)
+            if (string.IsNullOrWhiteSpace(providerId))
             {
-                throw new ResourceNotFoundException();
-            }
+                var provider = _listingProviders.FirstOrDefault(i => string.Equals(providerType, i.Type, StringComparison.OrdinalIgnoreCase));
 
-            return provider.GetLineups(info, country, location);
+                if (provider == null)
+                {
+                    throw new ResourceNotFoundException();
+                }
+
+                return provider.GetLineups(null, country, location);
+            }
+            else
+            {
+                var info = config.ListingProviders.FirstOrDefault(i => string.Equals(i.Id, providerId, StringComparison.OrdinalIgnoreCase));
+
+                var provider = _listingProviders.FirstOrDefault(i => string.Equals(info.Type, i.Type, StringComparison.OrdinalIgnoreCase));
+
+                if (provider == null)
+                {
+                    throw new ResourceNotFoundException();
+                }
+
+                return provider.GetLineups(info, country, location);
+            }
         }
     }
 }

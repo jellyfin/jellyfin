@@ -48,7 +48,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
 
         public Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
         {
-            return GetListingsProvider(country).GetLineups(info, country, location);
+            return GetListingsProvider(country).GetLineups(country, location);
         }
 
         private IEmbyListingProvider GetListingsProvider(string country)

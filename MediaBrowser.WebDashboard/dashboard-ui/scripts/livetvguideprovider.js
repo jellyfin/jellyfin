@@ -86,14 +86,12 @@
             return;
         }
 
-        var providerId = getParameterByName('id');
-
         Dashboard.showModalLoadingMsg();
 
         ApiClient.ajax({
             type: "GET",
             url: ApiClient.getUrl('LiveTv/ListingProviders/Lineups', {
-                Id: providerId,
+                Type: 'emby',
                 Location: value,
                 Country: $('#selectCountry', page).val()
             }),
