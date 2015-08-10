@@ -25,6 +25,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
+            var url = "https://data.emby.media/service/listings?id=" + info.ListingsId;
+            url += "&start=" + startDateUtc.ToString("s", System.Globalization.CultureInfo.InvariantCulture);
+            url += "&end=" + endDateUtc.ToString("s", System.Globalization.CultureInfo.InvariantCulture);
+
+            var response = await GetResponse<ListingInfo[]>(url).ConfigureAwait(false);
+            
             return new List<ProgramInfo>();
         }
 
@@ -53,7 +59,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
                 Name = GetName(i),
                 Id = i.lineupID
 
-            }).ToList();
+            }).OrderBy(i => i.Name).ToList();
         }
 
         private string GetName(LineupInfo info)
@@ -138,6 +144,59 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
             public string serviceArea { get; set; }
             public string country { get; set; }
             public List<Station> stations { get; set; }
+        }
+
+        private class ListingInfo
+        {
+            public string number { get; set; }
+            public int channelNumber { get; set; }
+            public int subChannelNumber { get; set; }
+            public int stationID { get; set; }
+            public string name { get; set; }
+            public string callsign { get; set; }
+            public string network { get; set; }
+            public string stationType { get; set; }
+            public string webLink { get; set; }
+            public string logoFilename { get; set; }
+            public int listingID { get; set; }
+            public string listDateTime { get; set; }
+            public int duration { get; set; }
+            public int showID { get; set; }
+            public int seriesID { get; set; }
+            public string showName { get; set; }
+            public string episodeTitle { get; set; }
+            public string episodeNumber { get; set; }
+            public int parts { get; set; }
+            public int partNum { get; set; }
+            public bool seriesPremiere { get; set; }
+            public bool seasonPremiere { get; set; }
+            public bool seriesFinale { get; set; }
+            public bool seasonFinale { get; set; }
+            public bool repeat { get; set; }
+            public bool @new { get; set; }
+            public string rating { get; set; }
+            public bool captioned { get; set; }
+            public bool educational { get; set; }
+            public bool blackWhite { get; set; }
+            public bool subtitled { get; set; }
+            public bool live { get; set; }
+            public bool hd { get; set; }
+            public bool descriptiveVideo { get; set; }
+            public bool inProgress { get; set; }
+            public string showTypeID { get; set; }
+            public int breakoutLevel { get; set; }
+            public string showType { get; set; }
+            public string year { get; set; }
+            public string guest { get; set; }
+            public string cast { get; set; }
+            public string director { get; set; }
+            public int starRating { get; set; }
+            public string description { get; set; }
+            public string league { get; set; }
+            public string team1 { get; set; }
+            public string team2 { get; set; }
+            public string @event { get; set; }
+            public string location { get; set; }
         }
     }
 }
