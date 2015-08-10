@@ -63,8 +63,6 @@ namespace MediaBrowser.Model.Configuration
         {
             EnableAutoUpdate = true;
             LogFileRetentionDays = 3;
-
-            EnableDebugLevelLogging = true;
         }
     }
 }

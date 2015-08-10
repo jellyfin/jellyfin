@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
@@ -171,6 +172,8 @@ namespace MediaBrowser.Api
                 ProductionYear = item.ProductionYear
             };
 
+            result.ChannelId = item.ChannelId;
+
             var primaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary);
 
             if (primaryImageTag != null)
@@ -216,6 +219,12 @@ namespace MediaBrowser.Api
                 result.Album = song.Album;
                 result.AlbumArtist = song.AlbumArtists.FirstOrDefault();
                 result.Artists = song.Artists.ToArray();
+            }
+
+            if (!string.IsNullOrWhiteSpace(item.ChannelId))
+            {
+                var channel = _libraryManager.GetItemById(item.ChannelId);
+                result.ChannelName = channel == null ? null : channel.Name;
             }
 
             return result;

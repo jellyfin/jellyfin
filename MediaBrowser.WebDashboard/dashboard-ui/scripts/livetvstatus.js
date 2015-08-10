@@ -377,6 +377,8 @@
 
             case 'schedulesdirect':
                 return 'livetvguideprovider-scd.html';
+            case 'emby':
+                return 'livetvguideprovider.html';
             default:
                 break;
         }
@@ -386,9 +388,14 @@
 
         var menuItems = [];
 
+        //menuItems.push({
+        //    name: 'Schedules Direct',
+        //    id: 'SchedulesDirect'
+        //});
+
         menuItems.push({
-            name: 'Schedules Direct',
-            id: 'SchedulesDirect'
+            name: 'Emby Guide',
+            id: 'emby'
         });
 
         require(['actionsheet'], function () {

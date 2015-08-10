@@ -529,7 +529,7 @@ namespace MediaBrowser.Server.Startup.Common
             var sharingRepo = new SharingRepository(LogManager, ApplicationPaths);
             await sharingRepo.Initialize().ConfigureAwait(false);
             RegisterSingleInstance<ISharingManager>(new SharingManager(sharingRepo, ServerConfigurationManager, LibraryManager, this));
-            
+
             RegisterSingleInstance<ISsdpHandler>(new SsdpHandler(LogManager.GetLogger("SsdpHandler"), ServerConfigurationManager, this));
 
             var activityLogRepo = await GetActivityLogRepository().ConfigureAwait(false);
@@ -1088,15 +1088,24 @@ namespace MediaBrowser.Server.Startup.Common
         {
             get
             {
-                // Return the first matched address, if found, or the first known local address
-                var address = LocalIpAddress;
-
-                if (!string.IsNullOrWhiteSpace(address))
+                try
                 {
-                    address = GetLocalApiUrl(address);
+                    // Return the first matched address, if found, or the first known local address
+                    var address = LocalIpAddress;
+
+                    if (!string.IsNullOrWhiteSpace(address))
+                    {
+                        address = GetLocalApiUrl(address);
+                    }
+
+                    return address;
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error getting local Ip address information", ex);
                 }
 
-                return address;
+                return null;
             }
         }
 

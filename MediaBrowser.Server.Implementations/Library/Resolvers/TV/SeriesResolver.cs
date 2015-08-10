@@ -110,11 +110,11 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.TV
             {
                 var attributes = child.Attributes;
 
-                if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
-                {
-                    //logger.Debug("Igoring series file or folder marked hidden: {0}", child.FullName);
-                    continue;
-                }
+                //if ((attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                //{
+                //    //logger.Debug("Igoring series file or folder marked hidden: {0}", child.FullName);
+                //    continue;
+                //}
 
                 // Can't enforce this because files saved by Bitcasa are always marked System
                 //if ((attributes & FileAttributes.System) == FileAttributes.System)

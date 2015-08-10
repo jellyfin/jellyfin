@@ -50,6 +50,10 @@
 
             return [Globalize.translate('LabelCollection')];
         }
+        else if (hint.ChannelName) {
+
+            return [hint.ChannelName];
+        }
 
         return [hint.Type];
     }

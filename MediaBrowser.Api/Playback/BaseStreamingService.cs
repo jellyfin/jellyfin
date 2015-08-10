@@ -1748,6 +1748,11 @@ namespace MediaBrowser.Api.Playback
                 return false;
             }
 
+            if (videoStream.IsAnamorphic ?? false)
+            {
+                return false;
+            }
+            
             // Can't stream copy if we're burning in subtitles
             if (request.SubtitleStreamIndex.HasValue)
             {
