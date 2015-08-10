@@ -43,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
             return Task.FromResult(true);
         }
 
-        public async Task<List<NameIdPair>> GetLineups(ListingsProviderInfo info, string country, string location)
+        public async Task<List<NameIdPair>> GetLineups(string country, string location)
         {
             // location = postal code
             var path = await GetResponse<String>("https://data.emby.media/service/lineups?postalCode=" + location).ConfigureAwait(false);
