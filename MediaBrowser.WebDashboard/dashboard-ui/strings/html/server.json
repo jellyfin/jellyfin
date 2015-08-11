@@ -1517,5 +1517,6 @@
     "LabelTranscodingThreadCount": "Transcoding thread count:",
     "LabelTranscodingThreadCountHelp": "Select the maximum number of threads to use when transcoding. Reducing the thread count will lower cpu usage but may not convert fast enough for a smooth playback experience.",
     "OptionMax": "Max",
-    "HeaderEmbyGuide": "Emby Guide"
+    "HeaderEmbyGuide": "Emby Guide",
+    "LabelSyncPath": "Sync path:"
 }

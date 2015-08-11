@@ -2,14 +2,14 @@
 
     function loadForm(page, user) {
 
-        page.querySelector('.chkSyncToExternalCard').checked = AppSettings.enableSyncToExternalStorage();
+        page.querySelector('#txtSyncPath').value = AppSettings.syncPath();
 
         Dashboard.hideLoadingMsg();
     }
 
     function saveUser(page, user) {
 
-        AppSettings.enableSyncToExternalStorage(page.querySelector('.chkSyncToExternalCard').checked);
+        AppSettings.syncPath(page.querySelector('#txtSyncPath').value);
         Dashboard.hideLoadingMsg();
         Dashboard.alert(Globalize.translate('SettingsSaved'));
     }
