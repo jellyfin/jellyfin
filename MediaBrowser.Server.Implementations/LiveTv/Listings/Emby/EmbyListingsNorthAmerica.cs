@@ -65,6 +65,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
             if (!string.IsNullOrWhiteSpace(info.listDateTime))
             {
                 program.StartDate = DateTime.ParseExact(info.listDateTime, "yyyy'-'MM'-'dd' 'HH':'mm':'ss", CultureInfo.InvariantCulture);
+                program.StartDate = DateTime.SpecifyKind(program.StartDate, DateTimeKind.Utc);
                 program.EndDate = program.StartDate.AddMinutes(info.duration);
             }
 
