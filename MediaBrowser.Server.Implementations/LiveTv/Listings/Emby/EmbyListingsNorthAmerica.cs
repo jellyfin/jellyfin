@@ -1,11 +1,11 @@
-﻿using System.Globalization;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -27,8 +27,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             var url = "https://data.emby.media/service/listings?id=" + info.ListingsId;
-            url += "&start=" + startDateUtc.ToString("s", System.Globalization.CultureInfo.InvariantCulture);
-            url += "&end=" + endDateUtc.ToString("s", System.Globalization.CultureInfo.InvariantCulture);
+
+            // Normalize
+            startDateUtc = startDateUtc.Date;
+            endDateUtc = startDateUtc.AddDays(7);
+
+            url += "&start=" + startDateUtc.ToString("s", CultureInfo.InvariantCulture) + "Z";
+            url += "&end=" + endDateUtc.ToString("s", CultureInfo.InvariantCulture) + "Z";
 
             var response = await GetResponse<ListingInfo[]>(url).ConfigureAwait(false);
             
@@ -108,7 +113,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
         {
             using (var stream = await _httpClient.Get(new HttpRequestOptions
             {
-                Url = url
+                Url = url,
+                CacheLength = TimeSpan.FromDays(1),
+                CacheMode = CacheMode.Unconditional
 
             }).ConfigureAwait(false))
             {
@@ -118,7 +125,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
 
                     using (var secondStream = await _httpClient.Get(new HttpRequestOptions
                     {
-                        Url = "https://www.mb3admin.com" + path
+                        Url = "https://www.mb3admin.com" + path,
+                        CacheLength = TimeSpan.FromDays(1),
+                        CacheMode = CacheMode.Unconditional
 
                     }).ConfigureAwait(false))
                     {
