@@ -295,6 +295,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 RecordAnyTime = false,
                 RecordNewOnly = false
             };
+
+            if (program != null)
+            {
+                defaults.SeriesId = program.SeriesId;
+                defaults.ProgramId = program.Id;
+            }
+
             return Task.FromResult(defaults);
         }
 
@@ -515,8 +522,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     OriginalAirDate = info.OriginalAirDate,
                     Status = RecordingStatus.Scheduled,
                     Overview = info.Overview,
-                    SeriesTimerId = info.Id.Substring(0, 10),
-                    TimerId = timer.Id
+                    SeriesTimerId = timer.SeriesTimerId,
+                    TimerId = timer.Id,
+                    ShowId = info.ShowId
                 };
                 _recordingProvider.Add(recording);
             }
@@ -624,7 +632,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             allPrograms = GetProgramsForSeries(seriesTimer, allPrograms);
 
-            allPrograms = allPrograms.Where(epg => currentRecordings.All(r => r.ProgramId.Substring(0, 14) != epg.Id.Substring(0, 14))); //filtered recordings already running
+            var recordingShowIds = currentRecordings.Select(i => i.ShowId).ToList();
+
+            allPrograms = allPrograms.Where(epg => !recordingShowIds.Contains(epg.ShowId, StringComparer.OrdinalIgnoreCase)); 
 
             return allPrograms.Select(i => RecordingHelper.CreateTimer(i, seriesTimer));
         }
@@ -638,7 +648,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             if (seriesTimer.RecordNewOnly)
             {
-                allPrograms = allPrograms.Where(epg => !epg.IsRepeat); //Filtered by New only
+                allPrograms = allPrograms.Where(epg => !epg.IsRepeat); 
             }
 
             if (!seriesTimer.RecordAnyChannel)
@@ -648,8 +658,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             allPrograms = allPrograms.Where(epg => seriesTimer.Days.Contains(epg.StartDate.DayOfWeek));
 
-            // TODO: This assumption will require review once additional listing providers are added
-            return allPrograms.Where(epg => epg.Id.StartsWith(seriesTimer.ProgramId, StringComparison.OrdinalIgnoreCase));
+            return allPrograms.Where(epg => string.Equals(epg.SeriesId, seriesTimer.SeriesId, StringComparison.OrdinalIgnoreCase));
         }
 
         private string GetChannelEpgCachePath(string channelId)

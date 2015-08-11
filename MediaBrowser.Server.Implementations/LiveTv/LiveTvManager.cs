@@ -622,6 +622,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.ProviderImageUrl = info.ImageUrl;
             item.RunTimeTicks = (info.EndDate - info.StartDate).Ticks;
             item.StartDate = info.StartDate;
+            item.HomePageUrl = info.HomePageUrl;
 
             item.ProductionYear = info.ProductionYear;
             item.PremiereDate = item.PremiereDate ?? info.OriginalAirDate;

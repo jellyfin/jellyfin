@@ -185,7 +185,11 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>null</c> if [has image] contains no value, <c>true</c> if [has image]; otherwise, <c>false</c>.</value>
         public bool? HasImage { get; set; }
-
+        /// <summary>
+        /// Gets or sets the show identifier.
+        /// </summary>
+        /// <value>The show identifier.</value>
+        public string ShowId { get; set; }
 
         public RecordingInfo()
         {

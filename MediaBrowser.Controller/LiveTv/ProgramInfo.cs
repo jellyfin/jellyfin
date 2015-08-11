@@ -150,7 +150,22 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The production year.</value>
         public int? ProductionYear { get; set; }
-        
+        /// <summary>
+        /// Gets or sets the home page URL.
+        /// </summary>
+        /// <value>The home page URL.</value>
+        public string HomePageUrl { get; set; }
+        /// <summary>
+        /// Gets or sets the series identifier.
+        /// </summary>
+        /// <value>The series identifier.</value>
+        public string SeriesId { get; set; }
+        /// <summary>
+        /// Gets or sets the show identifier.
+        /// </summary>
+        /// <value>The show identifier.</value>
+        public string ShowId { get; set; }
+   
         public ProgramInfo()
         {
             Genres = new List<string>();
