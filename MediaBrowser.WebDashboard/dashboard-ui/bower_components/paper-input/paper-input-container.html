@@ -72,12 +72,13 @@ Custom property | Description | Default
 ----------------|-------------|----------
 `--paper-input-container-color` | Label and underline color when the input is not focused | `--secondary-text-color`
 `--paper-input-container-focus-color` | Label and underline color when the input is focused | `--default-primary-color`
-`--paper-input-container-invalid-color` | Label and underline color when the input is focused | `--google-red-500`
+`--paper-input-container-invalid-color` | Label and underline color when the input is is invalid | `--google-red-500`
 `--paper-input-container-input-color` | Input foreground color | `--primary-text-color`
 `--paper-input-container` | Mixin applied to the container | `{}`
 `--paper-input-container-label` | Mixin applied to the label | `{}`
 `--paper-input-container-label-focus` | Mixin applied to the label when the input is focused | `{}`
 `--paper-input-container-input` | Mixin applied to the input | `{}`
+`--paper-input-container-input-disabled` | Mixin applied to the input when it's disabled | `{}`
 `--paper-input-container-prefix` | Mixin applied to the input prefix | `{}`
 `--paper-input-container-suffix` | Mixin applied to the input suffix | `{}`
 `--paper-input-container-underline` | Mixin applied to the underline | `{}`
@@ -105,6 +106,8 @@ This element is `display:block` by default, but you can set the `inline` attribu
     :host([disabled]) {
       pointer-events: none;
       opacity: 0.33;
+
+      @apply(--paper-input-container-disabled);
     }
 
     .floated-label-placeholder {
@@ -474,7 +477,7 @@ This element is `display:block` by default, but you can set the `inline` attribu
       }
 
       // type="number" hack needed because this.value is empty until it's valid
-      if (value || (inputElement.type === 'number' && !inputElement.checkValidity())) {
+      if (value || value === 0 || (inputElement.type === 'number' && !inputElement.checkValidity())) {
         this._inputHasContent = true;
       } else {
         this._inputHasContent = false;
@@ -521,7 +524,8 @@ This element is `display:block` by default, but you can set the `inline` attribu
           }
           // The label might have a horizontal offset if a prefix element exists
           // which needs to be undone when displayed as a floating label.
-          if (this.$.prefix && label && label.offsetParent) {
+          if (this.$.prefix && label && label.offsetParent &&
+              Polymer.dom(this.$.prefix).getDistributedNodes().length > 0) {
            label.style.left = -label.offsetParent.offsetLeft + 'px';
           }
         } else {

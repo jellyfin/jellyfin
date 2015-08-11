@@ -11973,7 +11973,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
     _bindValueChanged: function() {
       if (this.value !== this.bindValue) {
-        this.value = !this.bindValue ? '' : this.bindValue;
+        this.value = !(this.bindValue || this.bindValue === 0) ? '' : this.bindValue;
       }
       // manually notify because we don't want to notify until after setting value
       this.fire('bind-value-changed', {value: this.bindValue});
@@ -12008,6 +12008,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       // For these keys, ASCII code == browser keycode.
       var anyNonPrintable =
         (event.keyCode == 8)   ||  // backspace
+        (event.keyCode == 9)   ||  // tab
         (event.keyCode == 13)  ||  // enter
         (event.keyCode == 27);     // escape
 
@@ -16364,6 +16365,8 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     :host([disabled]) {
       pointer-events: none;
       opacity: 0.33;
+
+      @apply(--paper-input-container-disabled);
     }
 
     .floated-label-placeholder {
@@ -16733,7 +16736,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       }
 
       // type="number" hack needed because this.value is empty until it's valid
-      if (value || (inputElement.type === 'number' && !inputElement.checkValidity())) {
+      if (value || value === 0 || (inputElement.type === 'number' && !inputElement.checkValidity())) {
         this._inputHasContent = true;
       } else {
         this._inputHasContent = false;
@@ -16780,7 +16783,8 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
           }
           // The label might have a horizontal offset if a prefix element exists
           // which needs to be undone when displayed as a floating label.
-          if (this.$.prefix && label && label.offsetParent) {
+          if (this.$.prefix && label && label.offsetParent &&
+              Polymer.dom(this.$.prefix).getDistributedNodes().length > 0) {
            label.style.left = -label.offsetParent.offsetLeft + 'px';
           }
         } else {

@@ -39,7 +39,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
 
             var response = await GetResponse<ListingInfo[]>(url).ConfigureAwait(false);
 
-            return response.Where(i => IncludeInResults(i, channelNumber)).Select(GetProgramInfo);
+            return response.Where(i => IncludeInResults(i, channelNumber)).Select(GetProgramInfo).OrderBy(i => i.StartDate);
         }
 
         private ProgramInfo GetProgramInfo(ListingInfo info)
