@@ -26,6 +26,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(ListingsProviderInfo info, string channelNumber, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
+            channelNumber = NormalizeNumber(channelNumber);
+
             var url = "https://data.emby.media/service/listings?id=" + info.ListingsId;
 
             // Normalize
@@ -36,8 +38,100 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
             url += "&end=" + endDateUtc.ToString("s", CultureInfo.InvariantCulture) + "Z";
 
             var response = await GetResponse<ListingInfo[]>(url).ConfigureAwait(false);
-            
-            return new List<ProgramInfo>();
+
+            return response.Where(i => IncludeInResults(i, channelNumber)).Select(GetProgramInfo);
+        }
+
+        private ProgramInfo GetProgramInfo(ListingInfo info)
+        {
+            var showType = info.showType ?? string.Empty;
+
+            var program = new ProgramInfo
+            {
+                Id = info.listingID.ToString(CultureInfo.InvariantCulture),
+                Name = GetStringValue(info.showName),
+                EpisodeTitle = GetStringValue(info.episodeTitle),
+                HomePageUrl = GetStringValue(info.webLink),
+                Overview = info.description,
+                IsHD = info.hd,
+                IsLive = info.live,
+                IsPremiere = info.seasonPremiere || info.seriesPremiere,
+                IsMovie = showType.IndexOf("Movie", StringComparison.OrdinalIgnoreCase) != -1,
+                IsKids = showType.IndexOf("Children", StringComparison.OrdinalIgnoreCase) != -1,
+                IsNews = showType.IndexOf("News", StringComparison.OrdinalIgnoreCase) != -1,
+                IsSports = showType.IndexOf("Sports", StringComparison.OrdinalIgnoreCase) != -1
+            };
+
+            if (!string.IsNullOrWhiteSpace(info.listDateTime))
+            {
+                program.StartDate = DateTime.ParseExact(info.listDateTime, "yyyy'-'MM'-'dd' 'HH':'mm':'ss", CultureInfo.InvariantCulture);
+                program.EndDate = program.StartDate.AddMinutes(info.duration);
+            }
+
+            if (info.starRating > 0)
+            {
+                program.CommunityRating = info.starRating*2;
+            }
+
+            if (!string.IsNullOrWhiteSpace(info.rating))
+            {
+                // They don't have dashes so try to normalize
+                program.OfficialRating = info.rating.Replace("TV", "TV-").Replace("--", "-");
+            }
+
+            if (!string.IsNullOrWhiteSpace(info.year))
+            {
+                program.ProductionYear = int.Parse(info.year, CultureInfo.InvariantCulture);
+            }
+
+            if (info.showID > 0)
+            {
+                program.ShowId = info.showID.ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (info.seriesID > 0)
+            {
+                program.SeriesId = info.seriesID.ToString(CultureInfo.InvariantCulture);
+                program.IsSeries = true;
+                program.IsRepeat = info.repeat;
+            }
+
+            if (info.starRating > 0)
+            {
+                program.CommunityRating = info.starRating * 2;
+            }
+
+            if (string.Equals(info.showName, "Movie", StringComparison.OrdinalIgnoreCase))
+            {
+                // Sometimes the movie title will be in here
+                if (!string.IsNullOrWhiteSpace(info.episodeTitle))
+                {
+                    program.Name = info.episodeTitle;
+                }
+            }
+
+            return program;
+        }
+
+        private string GetStringValue(string s)
+        {
+            return string.IsNullOrWhiteSpace(s) ? null : s;
+        }
+
+        private bool IncludeInResults(ListingInfo info, string itemNumber)
+        {
+            if (string.Equals(itemNumber, NormalizeNumber(info.number), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            var channelNumber = info.channelNumber.ToString(CultureInfo.InvariantCulture);
+            if (info.subChannelNumber > 0)
+            {
+                channelNumber += "." + info.subChannelNumber.ToString(CultureInfo.InvariantCulture);
+            }
+
+            return string.Equals(channelNumber, itemNumber, StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task AddMetadata(ListingsProviderInfo info, List<ChannelInfo> channels, CancellationToken cancellationToken)
@@ -48,18 +142,25 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
             {
                 var station = response.stations.FirstOrDefault(i =>
                 {
+                    var itemNumber = NormalizeNumber(channel.Number);
+
+                    if (string.Equals(itemNumber, NormalizeNumber(i.number), StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+
                     var channelNumber = i.channelNumber.ToString(CultureInfo.InvariantCulture);
                     if (i.subChannelNumber > 0)
                     {
                         channelNumber += "." + i.subChannelNumber.ToString(CultureInfo.InvariantCulture);
                     }
 
-                    return string.Equals(channelNumber, channel.Number, StringComparison.OrdinalIgnoreCase);
+                    return string.Equals(channelNumber, itemNumber, StringComparison.OrdinalIgnoreCase);
                 });
 
                 if (station != null)
                 {
-                    channel.Name = station.name;
+                    //channel.Name = station.name;
 
                     if (!string.IsNullOrWhiteSpace(station.logoFilename))
                     {
@@ -68,6 +169,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
                     }
                 }
             }
+        }
+
+        private string NormalizeNumber(string number)
+        {
+            return number.Replace('-', '.');
         }
 
         public Task Validate(ListingsProviderInfo info, bool validateLogin, bool validateListings)
@@ -108,7 +214,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
             return name;
         }
 
-        private async Task<T> GetResponse<T>(string url)
+        private async Task<T> GetResponse<T>(string url, Func<string, string> filter = null)
             where T : class
         {
             using (var stream = await _httpClient.Get(new HttpRequestOptions
@@ -131,9 +237,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
 
                     }).ConfigureAwait(false))
                     {
-                        return _jsonSerializer.DeserializeFromStream<T>(secondStream);
+                        return ParseResponse<T>(secondStream, filter);
                     }
                 }
+            }
+        }
+
+        private T ParseResponse<T>(Stream response, Func<string,string> filter)
+        {
+            using (var reader = new StreamReader(response))
+            {
+                var json = reader.ReadToEnd();
+
+                if (filter != null)
+                {
+                    json = filter(json);
+                }
+
+                return _jsonSerializer.DeserializeFromString<T>(json);
             }
         }
 
