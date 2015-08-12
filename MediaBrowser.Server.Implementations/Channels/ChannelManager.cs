@@ -914,7 +914,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 if (query.Limit.HasValue && query.Limit.Value > channelInfo.MaxPageSize.Value)
                 {
-                    throw new ArgumentException(string.Format("{0} channel only supports a maximum of {1} records at a time.", channel.Name, channelInfo.MaxPageSize.Value));
+                    query.Limit = Math.Min(query.Limit.Value, channelInfo.MaxPageSize.Value);
                 }
                 providerLimit = query.Limit;
 
