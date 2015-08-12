@@ -4,7 +4,7 @@
     <title>${TitleSync}</title>
 </head>
 <body>
-    <div id="mySyncActivityPage" data-role="page" class="page libraryPage syncActivityPage mySyncPage noSecondaryNavPage" data-contextname="${TitleSync}" data-require="scripts/syncactivity,scripts/taskbutton">
+    <div id="mySyncActivityPage" data-role="page" class="page libraryPage syncActivityPage mySyncPage noSecondaryNavPage" data-contextname="${TitleSync}" data-require="scripts/syncactivity,scripts/taskbutton,scripts/mysync">
 
         <div data-role="content">
 
@@ -21,6 +21,11 @@
             </div>
             <div class="ehsContent" style="clear:both;">
                 <br />
+                <div class="localSyncStatus hide" style="text-align:right;margin:0 0 1em;">
+                    <span style="vertical-align: middle;margin-right:.5em;" class="labelSyncStatus">${LabelSyncStatus}</span>
+                    <paper-spinner class="syncSpinner" active style="vertical-align: middle;"></paper-spinner>
+                    <paper-fab class="btnSyncNow bottomFab" icon="refresh" style="position:fixed;right:20px;background-color:#2ad;z-index:10;"></paper-fab>
+                </div>
                 <div class="syncActivity">
 
                 </div>

@@ -1501,6 +1501,7 @@
     "LabelTranscodingThreadCount": "Aantal transcodeer threads:",
     "LabelTranscodingThreadCountHelp": "Selecteer het maximale aantal threads die gebruikt mogen worden om te transcoderen. Bij een lager aantal zal het CPU gebruik lager zijn, maar kan de afspeelkwaliteit minder zijn.",
     "OptionMax": "Max",
-    "HeaderEmbyGuide": "Emby Guide",
-    "LabelSyncPath": "Gesynchroniseerde inhoud pad:"
+    "HeaderEmbyGuide": "Emby gids",
+    "LabelSyncPath": "Gesynchroniseerde inhoud pad:",
+    "OptionSyncOnlyOnWifi": "Sync only on Wifi"
 }

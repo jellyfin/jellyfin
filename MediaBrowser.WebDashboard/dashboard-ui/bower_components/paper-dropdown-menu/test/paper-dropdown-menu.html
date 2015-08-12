@@ -1,0 +1,104 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>paper-dropdown-menu basic tests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="../../paper-menu/paper-menu.html">
+  <link rel="import" href="../../paper-item/paper-item.html">
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+  <link rel="import" href="../paper-dropdown-menu.html">
+
+</head>
+<body>
+
+  <test-fixture id="TrivialDropdownMenu">
+    <template>
+      <paper-dropdown-menu no-animations>
+        <paper-menu class="dropdown-content">
+          <paper-item>Foo</paper-item>
+          <paper-item>Bar</paper-item>
+        </paper-menu>
+      </paper-dropdown-menu>
+    </template>
+  </test-fixture>
+
+  <script>
+
+    suite('<paper-dropdown-menu>', function() {
+      var dropdownMenu;
+
+      setup(function() {
+        dropdownMenu = fixture('TrivialDropdownMenu');
+        content = Polymer.dom(dropdownMenu).querySelector('.dropdown-content');
+      });
+
+      test('opens when tapped', function(done) {
+        var contentRect = content.getBoundingClientRect();
+
+        expect(contentRect.width).to.be.equal(0);
+        expect(contentRect.height).to.be.equal(0);
+
+        MockInteractions.tap(dropdownMenu);
+        expect(dropdownMenu.opened).to.be.equal(true);
+
+        Polymer.Base.async(function() {
+          contentRect = content.getBoundingClientRect();
+
+          expect(dropdownMenu.opened).to.be.equal(true);
+
+          expect(contentRect.width).to.be.greaterThan(0);
+          expect(contentRect.height).to.be.greaterThan(0);
+          done();
+        });
+      });
+
+      test('closes when an item is activated', function(done) {
+        MockInteractions.tap(dropdownMenu);
+
+        Polymer.Base.async(function() {
+          var firstItem = Polymer.dom(content).querySelector('paper-item');
+
+          MockInteractions.tap(firstItem);
+
+          Polymer.Base.async(function() {
+            expect(dropdownMenu.opened).to.be.equal(false);
+            done();
+          });
+        });
+      });
+
+      test('sets selected item to the activated item', function(done) {
+        MockInteractions.tap(dropdownMenu);
+
+        Polymer.Base.async(function() {
+          var firstItem = Polymer.dom(content).querySelector('paper-item');
+
+          MockInteractions.tap(firstItem);
+
+          Polymer.Base.async(function() {
+            expect(dropdownMenu.selectedItem).to.be.equal(firstItem);
+            done();
+          });
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

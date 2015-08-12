@@ -1,0 +1,169 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>iron-dropdown basic tests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="../iron-dropdown.html">
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+
+</head>
+<body>
+
+  <test-fixture id="TrivialDropdown">
+    <template>
+      <iron-dropdown>
+        <div class="dropdown-content">Hello!</div>
+      </iron-dropdown>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="AlignedDropdown">
+    <template>
+      <div style="display: block; position: relative; width: 100px; height: 100px;">
+        <iron-dropdown horizontal-align="right" vertical-align="top">
+          <div class="dropdown-content">Hello!</div>
+        </iron-dropdown>
+      </div>
+    </template>
+  </test-fixture>
+
+  <script>
+    function elementIsVisible(element) {
+      var contentRect = element.getBoundingClientRect();
+      var computedStyle = window.getComputedStyle(element);
+
+      return computedStyle.display !== 'none' &&
+        contentRect.width > 0 &&
+        contentRect.height > 0;
+    }
+
+    suite('<iron-dropdown>', function() {
+      var dropdown;
+      suite('basic', function() {
+        setup(function() {
+          dropdown = fixture('TrivialDropdown');
+        });
+
+        test('effectively hides the dropdown content', function() {
+          var content = dropdown.querySelector('.dropdown-content');
+
+          expect(elementIsVisible(content)).to.be.equal(false);
+        });
+
+        test('shows dropdown content when opened', function(done) {
+          var content = dropdown.querySelector('.dropdown-content');
+
+          dropdown.open();
+
+          Polymer.Base.async(function() {
+            expect(elementIsVisible(content)).to.be.equal(true);
+            done();
+          });
+        });
+
+        test('hides dropdown content when outside is clicked', function(done) {
+          var content = dropdown.querySelector('.dropdown-content');
+
+          dropdown.open();
+
+          Polymer.Base.async(function() {
+            expect(elementIsVisible(content)).to.be.equal(true);
+
+            MockInteractions.downAndUp(document.body, function() {
+
+              Polymer.Base.async(function() {
+                expect(elementIsVisible(content)).to.be.equal(false);
+                done();
+              }, 100);
+            });
+          });
+
+        });
+      });
+
+      suite('aligned dropdown', function() {
+        var parent;
+        setup(function() {
+          parent = fixture('AlignedDropdown');
+          dropdown = parent.querySelector('iron-dropdown');
+        });
+
+        test('can be re-aligned to the right and the top', function(done) {
+          var parentRect;
+          var dropdownRect;
+
+          dropdown.opened = true;
+
+          Polymer.Base.async(function() {
+            dropdownRect = dropdown.getBoundingClientRect();
+            parentRect = parent.getBoundingClientRect();
+
+            // NOTE(cdata): IE10 / 11 have minor rounding errors in this case,
+            // so we assert with `closeTo` and a tight threshold:
+            expect(dropdownRect.top).to.be.closeTo(parentRect.top, 0.1);
+            expect(dropdownRect.right).to.be.closeTo(parentRect.right, 0.1);
+            done();
+          }, 1);
+        });
+
+        test('can be re-aligned to the bottom', function(done) {
+          var parentRect;
+          var dropdownRect;
+
+          dropdown.verticalAlign = 'bottom';
+          dropdown.opened = true;
+
+          Polymer.Base.async(function() {
+            parentRect = parent.getBoundingClientRect();
+            dropdownRect = dropdown.getBoundingClientRect();
+
+            // NOTE(cdata): IE10 / 11 have minor rounding errors in this case,
+            // so we assert with `closeTo` and a tight threshold:
+            expect(dropdownRect.bottom).to.be.closeTo(parentRect.bottom, 0.1);
+            expect(dropdownRect.right).to.be.closeTo(parentRect.right, 0.1);
+            done();
+          }, 1);
+        });
+
+        suite('with an offset', function() {
+          test('is offset by the offset value when open', function() {
+            var dropdownRect;
+            var offsetDropdownRect;
+
+            dropdown.opened = true;
+
+            Polymer.Base.async(function() {
+              dropdownRect = dropdown.getBoundingClientRect();
+
+              dropdownRect.verticalOffset = 10;
+              dropdownRect.horizontalOffset = -10;
+
+              offsetDropdownRect = dropdown.getBoundingClientRect();
+
+              expect(dropdownRect.top).to.be.equal(offsetDropdownRect.top - 10);
+              expect(dropdownRect.left).to.be.equal(offsetDropdownRect.left + 10);
+            }, 1);
+          });
+        });
+
+      });
+    });
+  </script>
+</body>
+</html>

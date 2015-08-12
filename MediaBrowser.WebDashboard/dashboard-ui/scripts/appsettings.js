@@ -56,6 +56,14 @@
 
             return appStorage.getItem('enableFullScreen') == 'true';
         },
+        syncOnlyOnWifi: function (val) {
+
+            if (val != null) {
+                update('syncOnlyOnWifi', val.toString());
+            }
+
+            return appStorage.getItem('syncOnlyOnWifi') != 'false';
+        },
         syncPath: function (val) {
 
             if (val != null) {

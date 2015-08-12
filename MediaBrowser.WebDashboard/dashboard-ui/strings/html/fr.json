@@ -1501,6 +1501,7 @@
     "LabelTranscodingThreadCount": "Nombre de threads de transcodage :",
     "LabelTranscodingThreadCountHelp": "S\u00e9lectionnez le nombre maximum de threads \u00e0 utiliser pour le transcodage. La r\u00e9duction de cette valeur \u00e9conomisera du temps CPU mais pourrait ne pas suffire pour que le transcodage soit assez rapide pour maintenir une lecture fluide.",
     "OptionMax": "Max",
-    "HeaderEmbyGuide": "Emby Guide",
-    "LabelSyncPath": "Chemin du contenu synchronis\u00e9:"
+    "HeaderEmbyGuide": "Guide Emby",
+    "LabelSyncPath": "Chemin du contenu synchronis\u00e9:",
+    "OptionSyncOnlyOnWifi": "Sync only on Wifi"
 }

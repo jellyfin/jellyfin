@@ -3,6 +3,7 @@
     function loadForm(page, user) {
 
         page.querySelector('#txtSyncPath').value = AppSettings.syncPath();
+        page.querySelector('#chkWifi').checked = AppSettings.syncOnlyOnWifi();
 
         Dashboard.hideLoadingMsg();
     }
@@ -10,6 +11,8 @@
     function saveUser(page, user) {
 
         AppSettings.syncPath(page.querySelector('#txtSyncPath').value);
+        AppSettings.syncOnlyOnWifi(page.querySelector('#chkWifi').checked);
+
         Dashboard.hideLoadingMsg();
         Dashboard.alert(Globalize.translate('SettingsSaved'));
     }

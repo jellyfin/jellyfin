@@ -826,5 +826,7 @@
     "HeaderSyncRequiresSupporterMembership": "Sync requires an active Emby Supporter membership.",
     "HeaderSyncRequiresSupporterMembershipAppVersion": "Sync requires connecting to an Emby Server with an active Supporter membership.",
     "ErrorValidatingSupporterInfo": "There was an error validating your Emby Supporter information. Please try again later.",
-    "HeaderSync": "Sync"
+    "HeaderSync": "Sync",
+    "LabelLocalSyncStatusValue": "Status: {0}",
+    "MessageSyncStarted": "Sync started"
 }

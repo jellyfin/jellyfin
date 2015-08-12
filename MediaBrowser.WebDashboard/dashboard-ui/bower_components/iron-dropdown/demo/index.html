@@ -1,0 +1,163 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+
+  <title>iron-dropdown</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../iron-image/iron-image.html">
+  <link rel="import" href="../../paper-styles/demo-pages.html">
+  <link rel="import" href="x-select.html">
+  <style>
+
+    ul {
+      display: block;
+      position: relative;
+      background-color: #fff;
+      box-shadow: 0px 2px 6px #ccc;
+      margin: 0.25em 0;
+      padding: 0.25em;
+      border-radius: 3px;
+    }
+
+    [vertical-align="top"] ul {
+      margin-top: 0;
+    }
+
+    [vertical-align="bottom"] ul {
+      margin-bottom: 0;
+    }
+
+    li {
+      display: block;
+      position: relative;
+      margin: 0;
+      padding: 0;
+    }
+
+    a {
+      display: block;
+      position: relative;
+      padding: 1em;
+      text-decoration: none;
+    }
+
+    li:not(:last-of-type) {
+      border-bottom: 1px solid #eee;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    button {
+      border: 1px solid #ccc;
+      background-color: #eee;
+      padding: 1em;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    button:focus {
+      outline: none;
+      border-color: blue;
+    }
+
+    iron-image {
+      padding: 1em;
+      background-color: #fff;
+      box-shadow: 0px 2px 6px #ccc;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <template is="dom-bind" id="Demo">
+    <div class="horizontal-section flex layout horizontal">
+      <x-select>
+        <button class="dropdown-trigger">Basic</button>
+        <ul class="dropdown-content">
+          <template is="dom-repeat" items="[[letters]]">
+            <li><a href="javascript:void(0)">[[item]]</a></li>
+          </template>
+        </ul>
+      </x-select>
+      <x-select>
+        <button class="dropdown-trigger">Overflowing</button>
+        <ul class="dropdown-content" tabindex="0">
+          <template is="dom-repeat" items="[[dinosaurs]]">
+            <li><a href="javascript:void(0)">[[item]]</a></li>
+          </template>
+        </ul>
+      </x-select>
+      <x-select vertical-align="bottom">
+        <button class="dropdown-trigger">Bottom-left Aligned</button>
+        <ul class="dropdown-content">
+          <template is="dom-repeat" items="[[letters]]">
+            <li><a href="javascript:void(0)">[[item]]</a></li>
+          </template>
+        </ul>
+      </x-select>
+      <x-select horizontal-align="right" vertical-align="top">
+        <button class="dropdown-trigger">Top-right Aligned</button>
+        <ul class="dropdown-content">
+          <template is="dom-repeat" items="[[dinosaurs]]">
+            <li><a href="javascript:void(0)">[[item]]</a></li>
+          </template>
+        </ul>
+      </x-select>
+      <x-select horizontal-align="left" vertical-align="top">
+        <button class="dropdown-trigger">Alternate Content</button>
+        <iron-image class="dropdown-content" src="../../iron-image/demo/polymer.svg"></iron-image>
+      </x-select>
+    </div>
+  </template>
+
+  <script>
+    Demo.letters = [
+      'alpha',
+      'beta',
+      'gamma',
+      'delta',
+      'epsilon'
+    ];
+    Demo.dinosaurs = [
+      'allosaurus',
+      'brontosaurus',
+      'carcharodontosaurus',
+      'diplodocus',
+      'ekrixinatosaurus',
+      'fukuiraptor',
+      'gallimimus',
+      'hadrosaurus',
+      'iguanodon',
+      'jainosaurus',
+      'kritosaurus',
+      'liaoceratops',
+      'megalosaurus',
+      'nemegtosaurus',
+      'ornithomimus',
+      'protoceratops',
+      'quetecsaurus',
+      'rajasaurus',
+      'stegosaurus',
+      'triceratops',
+      'utahraptor',
+      'vulcanodon',
+      'wannanosaurus',
+      'xenoceratops',
+      'yandusaurus',
+      'zephyrosaurus'
+    ];
+  </script>
+</body>
+</html>

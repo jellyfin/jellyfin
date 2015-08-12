@@ -20,6 +20,7 @@ using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
+using MoreLinq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -878,8 +879,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var programList = programs.ToList();
 
             var genres = programList.SelectMany(i => i.Genres)
+                .Where(i => !string.IsNullOrWhiteSpace(i))
                 .DistinctNames()
                 .Select(i => _libraryManager.GetGenre(i))
+                .DistinctBy(i => i.Id)
                 .ToDictionary(i => i.Name, StringComparer.OrdinalIgnoreCase);
 
             programs = programList.OrderBy(i => i.HasImage(ImageType.Primary) ? 0 : 1)

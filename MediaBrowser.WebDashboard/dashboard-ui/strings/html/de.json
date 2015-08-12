@@ -1502,5 +1502,6 @@
     "LabelTranscodingThreadCountHelp": "Legen Sie die maximale Anzahl von Transkodierungs-Threads fest. Das Reduzieren der Thread-Anzahl verringert die CPU Auslastung, wird aber m\u00f6glicherweise die Transkodierung nicht schnell genug f\u00fcr eine st\u00f6rungsfrei Wiedergabe erm\u00f6glichen.",
     "OptionMax": "Max",
     "HeaderEmbyGuide": "Emby Guide",
-    "LabelSyncPath": "Pfad der synchronisierten Medien:"
+    "LabelSyncPath": "Pfad der synchronisierten Medien:",
+    "OptionSyncOnlyOnWifi": "Sync only on Wifi"
 }

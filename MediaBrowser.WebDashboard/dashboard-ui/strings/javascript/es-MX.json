@@ -814,7 +814,7 @@
     "HeaderAddProvider": "Agregar Proveedor",
     "ErrorAddingTunerDevice": "Hubo un error al agregar el dispositivo sintonizador. Por favor aseg\u00farese de que este disponible e intente de nuevo.",
     "ErrorSavingTvProvider": "Hubo un error al salvar el proveedor de TV. Por favor aseg\u00farese de que este disponible e intente de nuevo.",
-    "ErrorGettingTvLineups": "Hubo un error al descargar la programaci\u00f3n de TV. Por favor aseg\u00farese que su nombre y usuario y contrase\u00f1a est\u00e9n correctas e intente de nuevo.",
+    "ErrorGettingTvLineups": "Hubo un error al descargar la programaci\u00f3n de TV. Por favor aseg\u00farese que su informaci\u00f3n este correctas e intente de nuevo.",
     "MessageCreateAccountAt": "Crear una cuenta en {0}",
     "ErrorPleaseSelectLineup": "Por favor seleccione una programaci\u00f3n e intente de nuevo. Si no hay disponible ninguna, entonces por favor verifique que su nombre de usuario, contrase\u00f1a, y c\u00f3digo postal sean correctos.",
     "HeaderTryCinemaMode": "Intente el Modo Cine",
@@ -826,5 +826,7 @@
     "HeaderSyncRequiresSupporterMembership": "Sinc requiere de una Membres\u00eda de Aficionado Emby activa.",
     "HeaderSyncRequiresSupporterMembershipAppVersion": "Sinc requiere estar conectado a un Servidor Emby con una cuenta de Aficionado Emby.",
     "ErrorValidatingSupporterInfo": "Hubo un error al validar su informaci\u00f3n de su cuenta de Aficionado Emby. Por favor intente de nuevo mas tarde.",
-    "HeaderSync": "Sinc"
+    "HeaderSync": "Sinc",
+    "LabelLocalSyncStatusValue": "Status: {0}",
+    "MessageSyncStarted": "Sync started"
 }

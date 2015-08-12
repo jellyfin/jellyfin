@@ -826,5 +826,7 @@
     "HeaderSyncRequiresSupporterMembership": "La synchronisation requiert d'\u00eatre membre supporteur actif d'Emby",
     "HeaderSyncRequiresSupporterMembershipAppVersion": "La synchronisation n\u00e9cessite de se connecter \u00e0 un serveur Emby avec une adh\u00e9sion supporteur actif.",
     "ErrorValidatingSupporterInfo": "Une erreur s'est produite lors de la validation de vos informations de membre supporteur actif d'Emby. Veuillez r\u00e9essayer ult\u00e9rieurement.",
-    "HeaderSync": "Sync"
+    "HeaderSync": "Sync",
+    "LabelLocalSyncStatusValue": "Status: {0}",
+    "MessageSyncStarted": "Sync started"
 }

@@ -2004,6 +2004,13 @@ var AppInfo = {};
             define("videorenderer", ["scripts/htmlmediarenderer"]);
         }
 
+        if (Dashboard.isRunningInCordova() && $.browser.android) {
+            define("localsync", ["cordova/android/localsync"]);
+        }
+        else {
+            define("localsync", ["scripts/localsync"]);
+        }
+
         define("connectservice", ["apiclient/connectservice"]);
         define("paperbuttonstyle", [], function () {
             return {};
@@ -2107,7 +2114,9 @@ var AppInfo = {};
 
         var capablities = Dashboard.capabilities();
 
-        init(deferred, capablities, "Emby Mobile", deviceId, device.model);
+        var name = $.browser.android ? "Emby for Android" : ($.browser.safari ? "Emby for iOS" : "Emby Mobile");
+
+        init(deferred, capablities, name, deviceId, device.model);
     }
 
     function initCordova(deferred) {

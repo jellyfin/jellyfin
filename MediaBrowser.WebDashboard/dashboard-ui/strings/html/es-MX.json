@@ -552,8 +552,8 @@
     "LabelFriendlyServerName": "Nombre amigable del servidor:",
     "LabelFriendlyServerNameHelp": "Este nombre ser\u00e1 usado para identificar este servidor. Si se deja en blanco, se usar\u00e1 el nombre de la computadora.",
     "LabelPreferredDisplayLanguage": "Idioma de pantalla preferido:",
-    "LabelPreferredDisplayLanguageHelp": "La traducci\u00f3n de Emby es un proyecto en curso y aun no esta completado.",
-    "LabelReadHowYouCanContribute": "Lea acerca de c\u00f3mo puede contribuir.",
+    "LabelPreferredDisplayLanguageHelp": "La traducci\u00f3n de Emby es un proyecto en curso.",
+    "LabelReadHowYouCanContribute": "Inf\u00f3rmese de c\u00f3mo puede contribuir.",
     "HeaderNewCollection": "Nueva Colecci\u00f3n",
     "ButtonSubmit": "Enviar",
     "ButtonCreate": "Crear",
@@ -1501,6 +1501,7 @@
     "LabelTranscodingThreadCount": "Conteo de hilos de transcodificaci\u00f3n:",
     "LabelTranscodingThreadCountHelp": "Elija el numero m\u00e1ximo de hilos a usar para transcodificar. Reduciendo el conteo de hilos disminuir\u00e1 el uso del cpu pero es posible que no convierta lo suficientemente r\u00e1pido para obtener una reproducci\u00f3n fluida.",
     "OptionMax": "M\u00e1ximo",
-    "HeaderEmbyGuide": "Emby Guide",
-    "LabelSyncPath": "Ruta para contenido sincronizado:"
+    "HeaderEmbyGuide": "Gu\u00eda de Emby",
+    "LabelSyncPath": "Ruta para sinc:",
+    "OptionSyncOnlyOnWifi": "Sync only on Wifi"
 }
