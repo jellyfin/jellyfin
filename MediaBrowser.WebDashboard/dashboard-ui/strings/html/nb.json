@@ -552,8 +552,8 @@
     "LabelFriendlyServerName": "Vennlig server navn:",
     "LabelFriendlyServerNameHelp": "Dette navnet vil bli brukt for \u00e5 identifisere denne serveren. Hvis feltet er tomt, vil maskinens navn bli brukt.",
     "LabelPreferredDisplayLanguage": "Foretrukket spr\u00e5k:",
-    "LabelPreferredDisplayLanguageHelp": "Oversettelse av Emby er et p\u00e5g\u00e5ende prosjekt, og er enn\u00e5 ikke fullf\u00f8rt.",
-    "LabelReadHowYouCanContribute": "Les mer om hvordan du kan bidra.",
+    "LabelPreferredDisplayLanguageHelp": "Translating Emby is an ongoing project.",
+    "LabelReadHowYouCanContribute": "Learn how you can contribute.",
     "HeaderNewCollection": "Ny Samling",
     "ButtonSubmit": "Send",
     "ButtonCreate": "Opprett",
@@ -993,8 +993,8 @@
     "LabelKodiMetadataEnablePathSubstitution": "Aktiver sti erstatter",
     "LabelKodiMetadataEnablePathSubstitutionHelp": "Aktiverer sti erstatning av bilde stier ved hjelp av serverens sti erstatter innstillinger.",
     "LabelKodiMetadataEnablePathSubstitutionHelp2": "Vis sti erstatter",
-    "LabelGroupChannelsIntoViews": "Via f\u00f8lgende kanaler direkte gjennom Mitt Syn:",
-    "LabelGroupChannelsIntoViewsHelp": "Hvis sl\u00e5tt p\u00e5 vil disse kanalene bli vist direkte sammen med andre visninger. Hvis avsl\u00e5tt, vil de bli vist sammen med separerte Kanaler visning.",
+    "OptionDisplayChannelsInline": "Display channels inline within my views",
+    "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
     "LabelDisplayCollectionsView": "Vis en samling for \u00e5 vise film samlinger",
     "LabelDisplayCollectionsViewHelp": "This will create a separate view to display collections that you've created or have access to. To create a collection, right-click or tap-hold any movie and select 'Add to Collection'. ",
     "LabelKodiMetadataEnableExtraThumbs": "kopier extrafanart inn til extrathumbs",
@@ -1503,5 +1503,6 @@
     "OptionMax": "Max",
     "HeaderEmbyGuide": "Emby Guide",
     "LabelSyncPath": "Sync path:",
-    "OptionSyncOnlyOnWifi": "Sync only on Wifi"
+    "OptionSyncOnlyOnWifi": "Sync only on Wifi",
+    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality (when supported)"
 }

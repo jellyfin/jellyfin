@@ -552,8 +552,8 @@
     "LabelFriendlyServerName": "Nombre informal del servidor:",
     "LabelFriendlyServerNameHelp": "Este nombre se podr\u00e1 utilizar para identificar este servidor. Si se deja en blanco se usar\u00e1 el nombre del ordenador.",
     "LabelPreferredDisplayLanguage": "Idioma preferido visualizado",
-    "LabelPreferredDisplayLanguageHelp": "Traducir Emby es un proyecto continuo que no ha sido completado.",
-    "LabelReadHowYouCanContribute": "Lea acerca de c\u00f3mo usted puede contribuir.",
+    "LabelPreferredDisplayLanguageHelp": "Translating Emby is an ongoing project.",
+    "LabelReadHowYouCanContribute": "Learn how you can contribute.",
     "HeaderNewCollection": "Nueva colecci\u00f3n",
     "ButtonSubmit": "Enviar",
     "ButtonCreate": "Crear",
@@ -993,8 +993,8 @@
     "LabelKodiMetadataEnablePathSubstitution": "Enable path substitution",
     "LabelKodiMetadataEnablePathSubstitutionHelp": "Enables path substitution of image paths using the server's path substitution settings.",
     "LabelKodiMetadataEnablePathSubstitutionHelp2": "See path substitution.",
-    "LabelGroupChannelsIntoViews": "Display the following channels directly within my views:",
-    "LabelGroupChannelsIntoViewsHelp": "Si est\u00e1 activado, estos canales se mostrar\u00e1n directamente junto a Mis Vistas. Si est\u00e1 desactivada, ser\u00e1n mostrados separadamente en la vista de Canales.",
+    "OptionDisplayChannelsInline": "Display channels inline within my views",
+    "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
     "LabelDisplayCollectionsView": "Display a collections view to show movie collections",
     "LabelDisplayCollectionsViewHelp": "This will create a separate view to display collections that you've created or have access to. To create a collection, right-click or tap-hold any movie and select 'Add to Collection'. ",
     "LabelKodiMetadataEnableExtraThumbs": "Copy extrafanart into extrathumbs",
@@ -1503,5 +1503,6 @@
     "OptionMax": "Max",
     "HeaderEmbyGuide": "Emby Guide",
     "LabelSyncPath": "Sync path:",
-    "OptionSyncOnlyOnWifi": "Sync only on Wifi"
+    "OptionSyncOnlyOnWifi": "Sync only on Wifi",
+    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality (when supported)"
 }

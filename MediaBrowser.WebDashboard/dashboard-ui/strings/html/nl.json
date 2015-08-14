@@ -552,7 +552,7 @@
     "LabelFriendlyServerName": "Aangepaste servernaam",
     "LabelFriendlyServerNameHelp": "Deze naam wordt gebruikt om deze server te identificeren. Indien leeg gelaten, zal de naam van de computer worden gebruikt.",
     "LabelPreferredDisplayLanguage": "Voorkeurs weergavetaal:",
-    "LabelPreferredDisplayLanguageHelp": "Vertaling van Emby is een voortdurend project en is nog niet afgerond.",
+    "LabelPreferredDisplayLanguageHelp": "Vertaling van Emby is een voortdurend project.",
     "LabelReadHowYouCanContribute": "Lees meer over hoe u kunt bijdragen.",
     "HeaderNewCollection": "Nieuwe Collectie",
     "ButtonSubmit": "Uitvoeren",
@@ -993,8 +993,8 @@
     "LabelKodiMetadataEnablePathSubstitution": "Pad vervanging inschakelen",
     "LabelKodiMetadataEnablePathSubstitutionHelp": "Stelt pad vervanging in voor afbeeldingspaden en maakt gebruik van de Pad Vervangen instellingen van de server.",
     "LabelKodiMetadataEnablePathSubstitutionHelp2": "Bekijk pad vervanging.",
-    "LabelGroupChannelsIntoViews": "Toon de volgende kanalen binnen mijn overzichten:",
-    "LabelGroupChannelsIntoViewsHelp": "Indien ingeschakeld, zullen deze kanalen direct naast andere overzichten worden weergegeven. Indien uitgeschakeld, zullen ze worden weergegeven in een aparte kanalen overzicht.",
+    "OptionDisplayChannelsInline": "Display channels inline within my views",
+    "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
     "LabelDisplayCollectionsView": "Toon collecties in mijn overzichten om film verzamelingen weer te geven",
     "LabelDisplayCollectionsViewHelp": "Hiermee wordt een aparte weergave gemaakt waarin collecties worden weergegeven die u hebt aangemaakt of toegang toe hebt. Klik rechts op een film of druk en houd vast en kies 'Toevoegen aan Collectie'. ",
     "LabelKodiMetadataEnableExtraThumbs": "Kopieer extrafanart naar extrathumbs",
@@ -1502,6 +1502,7 @@
     "LabelTranscodingThreadCountHelp": "Selecteer het maximale aantal threads die gebruikt mogen worden om te transcoderen. Bij een lager aantal zal het CPU gebruik lager zijn, maar kan de afspeelkwaliteit minder zijn.",
     "OptionMax": "Max",
     "HeaderEmbyGuide": "Emby gids",
-    "LabelSyncPath": "Gesynchroniseerde inhoud pad:",
-    "OptionSyncOnlyOnWifi": "Sync only on Wifi"
+    "LabelSyncPath": "Synchroniseerpad:",
+    "OptionSyncOnlyOnWifi": "Synchroniseer alleen via Wifi",
+    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality (when supported)"
 }

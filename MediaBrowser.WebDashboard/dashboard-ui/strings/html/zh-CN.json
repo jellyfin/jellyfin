@@ -553,7 +553,7 @@
     "LabelFriendlyServerNameHelp": "\u6b64\u540d\u79f0\u5c06\u7528\u505a\u670d\u52a1\u5668\u540d\uff0c\u5982\u679c\u7559\u7a7a\uff0c\u5c06\u4f7f\u7528\u8ba1\u7b97\u673a\u540d\u3002",
     "LabelPreferredDisplayLanguage": "Preferred display language:",
     "LabelPreferredDisplayLanguageHelp": "Translating Emby is an ongoing project.",
-    "LabelReadHowYouCanContribute": "\u9605\u8bfb\u5173\u4e8e\u5982\u4f55\u4e3aMedia Browser\u8d21\u732e\u529b\u91cf\u3002",
+    "LabelReadHowYouCanContribute": "Learn how you can contribute.",
     "HeaderNewCollection": "\u65b0\u5408\u96c6",
     "ButtonSubmit": "\u63d0\u4ea4",
     "ButtonCreate": "\u521b\u5efa",
@@ -993,8 +993,8 @@
     "LabelKodiMetadataEnablePathSubstitution": "\u542f\u7528\u8def\u5f84\u66ff\u6362",
     "LabelKodiMetadataEnablePathSubstitutionHelp": "\u5141\u8bb8\u56fe\u50cf\u7684\u8def\u5f84\u66ff\u6362\u4f7f\u7528\u670d\u52a1\u5668\u7684\u8def\u5f84\u66ff\u6362\u8bbe\u7f6e\u3002",
     "LabelKodiMetadataEnablePathSubstitutionHelp2": "\u67e5\u770b\u8def\u5f84\u66ff\u6362",
-    "LabelGroupChannelsIntoViews": "\u5728\u6211\u7684\u754c\u9762\u91cc\u76f4\u63a5\u663e\u793a\u4ee5\u4e0b\u9891\u9053\uff1a",
-    "LabelGroupChannelsIntoViewsHelp": "\u5982\u679c\u542f\u7528\uff0c\u8fd9\u4e9b\u9891\u9053\u5c06\u548c\u5176\u4ed6\u7684\u754c\u9762\u89c6\u56fe\u5e76\u5217\u663e\u793a\u3002\u5982\u679c\u7981\u7528\uff0c\u5b83\u4eec\u5c06\u88ab\u663e\u793a\u5728\u4e00\u4e2a\u5355\u72ec\u7684\u754c\u9762\u89c6\u56fe\u91cc\u3002",
+    "OptionDisplayChannelsInline": "Display channels inline within my views",
+    "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
     "LabelDisplayCollectionsView": "\u663e\u793a\u5408\u96c6\u89c6\u56fe\u6765\u5448\u73b0\u7535\u5f71\u5408\u96c6",
     "LabelDisplayCollectionsViewHelp": "\u8fd9\u5c06\u521b\u5efa\u4e00\u4e2a\u5355\u72ec\u7684\u89c6\u56fe\u6765\u663e\u793a\u60a8\u5df2\u7ecf\u521b\u5efa\u6216\u8bbf\u95ee\u7684\u5408\u96c6\u3002\u8981\u521b\u5efa\u5408\u96c6\uff0c\u8bf7\u5728\u4efb\u4e00\u7535\u5f71\u4e0a\u70b9\u51fb\u53f3\u952e\u5e76\u6309\u4f4f\uff0c\u7136\u540e\u9009\u62e9\u201c\u6dfb\u52a0\u5230\u5408\u96c6\u201d\u3002",
     "LabelKodiMetadataEnableExtraThumbs": "\u590d\u5236\u540c\u4eba\u753b\u5230extrathumbs\u6587\u4ef6\u5939",
@@ -1503,5 +1503,6 @@
     "OptionMax": "Max",
     "HeaderEmbyGuide": "Emby Guide",
     "LabelSyncPath": "Sync path:",
-    "OptionSyncOnlyOnWifi": "Sync only on Wifi"
+    "OptionSyncOnlyOnWifi": "Sync only on Wifi",
+    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality (when supported)"
 }

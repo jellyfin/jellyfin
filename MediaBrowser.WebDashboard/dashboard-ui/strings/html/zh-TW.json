@@ -553,7 +553,7 @@
     "LabelFriendlyServerNameHelp": "\u6b64\u540d\u7a31\u5c07\u7528\u65bc\u6a19\u8b58\u4f3a\u670d\u5668\u3002\u5982\u679c\u7559\u7a7a\uff0c\u8a08\u7b97\u6a5f\u540d\u7a31\u5c07\u88ab\u4f7f\u7528\u3002",
     "LabelPreferredDisplayLanguage": "Preferred display language:",
     "LabelPreferredDisplayLanguageHelp": "Translating Emby is an ongoing project.",
-    "LabelReadHowYouCanContribute": "\u95b1\u8b80\u95dc\u65bc\u5982\u4f55\u70baMedia Browser\u8ca2\u737b\u3002",
+    "LabelReadHowYouCanContribute": "Learn how you can contribute.",
     "HeaderNewCollection": "\u65b0\u5408\u96c6",
     "ButtonSubmit": "Submit",
     "ButtonCreate": "\u5275\u5efa",
@@ -993,8 +993,8 @@
     "LabelKodiMetadataEnablePathSubstitution": "Enable path substitution",
     "LabelKodiMetadataEnablePathSubstitutionHelp": "Enables path substitution of image paths using the server's path substitution settings.",
     "LabelKodiMetadataEnablePathSubstitutionHelp2": "See path substitution.",
-    "LabelGroupChannelsIntoViews": "Display the following channels directly within my views:",
-    "LabelGroupChannelsIntoViewsHelp": "If enabled, these channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
+    "OptionDisplayChannelsInline": "Display channels inline within my views",
+    "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
     "LabelDisplayCollectionsView": "Display a collections view to show movie collections",
     "LabelDisplayCollectionsViewHelp": "This will create a separate view to display collections that you've created or have access to. To create a collection, right-click or tap-hold any movie and select 'Add to Collection'. ",
     "LabelKodiMetadataEnableExtraThumbs": "Copy extrafanart into extrathumbs",
@@ -1503,5 +1503,6 @@
     "OptionMax": "Max",
     "HeaderEmbyGuide": "Emby Guide",
     "LabelSyncPath": "Sync path:",
-    "OptionSyncOnlyOnWifi": "Sync only on Wifi"
+    "OptionSyncOnlyOnWifi": "Sync only on Wifi",
+    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality (when supported)"
 }

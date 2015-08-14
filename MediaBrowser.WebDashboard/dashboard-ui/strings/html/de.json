@@ -552,8 +552,8 @@
     "LabelFriendlyServerName": "Freundlicher Servername:",
     "LabelFriendlyServerNameHelp": "Dieser Name wird benutzt um diesen Server zu identifizieren. Wenn leer gelassen, wird der Computername benutzt.",
     "LabelPreferredDisplayLanguage": "Bevorzugte Anzeigesprache:",
-    "LabelPreferredDisplayLanguageHelp": "Die \u00dcbersetzung von Emby wird stetig fortgesetzt und ist aktuell noch nicht vollst\u00e4ndig.",
-    "LabelReadHowYouCanContribute": "Lese wie du dazu beitragen kannst.",
+    "LabelPreferredDisplayLanguageHelp": "Translating Emby is an ongoing project.",
+    "LabelReadHowYouCanContribute": "Learn how you can contribute.",
     "HeaderNewCollection": "Neue Collection",
     "ButtonSubmit": "Best\u00e4tigen",
     "ButtonCreate": "Kreieren",
@@ -993,8 +993,8 @@
     "LabelKodiMetadataEnablePathSubstitution": "Aktiviere Pfadersetzung",
     "LabelKodiMetadataEnablePathSubstitutionHelp": "Aktiviert die Pfadersetzung f\u00fcr Bildpfade durch Benutzung der Server Pfadersetzung Einstellungen",
     "LabelKodiMetadataEnablePathSubstitutionHelp2": "Siehe Pfadersetzung.",
-    "LabelGroupChannelsIntoViews": "Zeige die folgenden Kan\u00e4le direkt innerhalb meiner Ansichten:",
-    "LabelGroupChannelsIntoViewsHelp": "Falls aktiviert, werden diese Kan\u00e4le direkt neben den anderen Ansichten angezeigt. Falls deaktiviert, werden sie innerhalb einer separaten Kanalansicht angezeigt.",
+    "OptionDisplayChannelsInline": "Display channels inline within my views",
+    "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
     "LabelDisplayCollectionsView": "Zeigt eine Ansicht f\u00fcr Sammlungen, um Filmsammlungen darzustellen",
     "LabelDisplayCollectionsViewHelp": "Die erstellt eine eigene Ansicht f\u00fcr Sammlungen, auf denen Sie Zugriff haben. Um eine Sammlung zu erstellen benutzen Sie einen Rechtsklick oder halten Sie einen Film gedr\u00fcckt und w\u00e4hlen Sie 'Zu Sammlung hinzuf\u00fcgen'.",
     "LabelKodiMetadataEnableExtraThumbs": "Kopiere Extrafanart in Extrathumbs",
@@ -1502,6 +1502,7 @@
     "LabelTranscodingThreadCountHelp": "Legen Sie die maximale Anzahl von Transkodierungs-Threads fest. Das Reduzieren der Thread-Anzahl verringert die CPU Auslastung, wird aber m\u00f6glicherweise die Transkodierung nicht schnell genug f\u00fcr eine st\u00f6rungsfrei Wiedergabe erm\u00f6glichen.",
     "OptionMax": "Max",
     "HeaderEmbyGuide": "Emby Guide",
-    "LabelSyncPath": "Pfad der synchronisierten Medien:",
-    "OptionSyncOnlyOnWifi": "Sync only on Wifi"
+    "LabelSyncPath": "Sync path:",
+    "OptionSyncOnlyOnWifi": "Synchronisiere nur bei Wifi",
+    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality (when supported)"
 }

@@ -814,7 +814,7 @@
     "HeaderAddProvider": "Ajouter un fournisseur",
     "ErrorAddingTunerDevice": "Une erreur est survenue lors de l'ajout de l'appareil tuner. Assurez-vous qu'il est accessible et r\u00e9essayez.",
     "ErrorSavingTvProvider": "Une erreur est survenue lors de la sauvegarde du fournisseur TV. Assurez-vous qu'il est accessible et r\u00e9essayez.",
-    "ErrorGettingTvLineups": "Une erreur est survenue lors du t\u00e9l\u00e9chargement des lineup TV. Veuillez v\u00e9rifier que votre nom d'utilisateur et mot de passe sont corrects et r\u00e9essayez.",
+    "ErrorGettingTvLineups": "There was an error downloading tv lineups. Please ensure your information is correct and try again.",
     "MessageCreateAccountAt": "Cr\u00e9er un compte sur {0}",
     "ErrorPleaseSelectLineup": "Veuillez s\u00e9lectionner une gamme et r\u00e9essayer. Si aucune gamme n'est disponible, veuillez v\u00e9rifier que votre identifiant, mot de passe et code postal sont corrects.",
     "HeaderTryCinemaMode": "Essayez le mode cin\u00e9ma",
@@ -827,6 +827,6 @@
     "HeaderSyncRequiresSupporterMembershipAppVersion": "La synchronisation n\u00e9cessite de se connecter \u00e0 un serveur Emby avec une adh\u00e9sion supporteur actif.",
     "ErrorValidatingSupporterInfo": "Une erreur s'est produite lors de la validation de vos informations de membre supporteur actif d'Emby. Veuillez r\u00e9essayer ult\u00e9rieurement.",
     "HeaderSync": "Sync",
-    "LabelLocalSyncStatusValue": "Status: {0}",
-    "MessageSyncStarted": "Sync started"
+    "LabelLocalSyncStatusValue": "Status : {0}",
+    "MessageSyncStarted": "Synchronisation d\u00e9marr\u00e9e"
 }

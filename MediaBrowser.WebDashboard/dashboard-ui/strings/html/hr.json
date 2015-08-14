@@ -553,7 +553,7 @@
     "LabelFriendlyServerNameHelp": "Ovo ime \u0107e se koristiti za identifikaciju servera. Ako ostavite prazno, ime ra\u010dunala \u0107e se koristi kao identifikator.",
     "LabelPreferredDisplayLanguage": "Preferred display language:",
     "LabelPreferredDisplayLanguageHelp": "Translating Emby is an ongoing project.",
-    "LabelReadHowYouCanContribute": "Pro\u010ditajte kako mo\u017eete doprinjeti.",
+    "LabelReadHowYouCanContribute": "Learn how you can contribute.",
     "HeaderNewCollection": "Nova kolekcija",
     "ButtonSubmit": "Submit",
     "ButtonCreate": "Kreiraj",
@@ -993,8 +993,8 @@
     "LabelKodiMetadataEnablePathSubstitution": "Enable path substitution",
     "LabelKodiMetadataEnablePathSubstitutionHelp": "Enables path substitution of image paths using the server's path substitution settings.",
     "LabelKodiMetadataEnablePathSubstitutionHelp2": "See path substitution.",
-    "LabelGroupChannelsIntoViews": "Display the following channels directly within my views:",
-    "LabelGroupChannelsIntoViewsHelp": "If enabled, these channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
+    "OptionDisplayChannelsInline": "Display channels inline within my views",
+    "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
     "LabelDisplayCollectionsView": "Display a collections view to show movie collections",
     "LabelDisplayCollectionsViewHelp": "This will create a separate view to display collections that you've created or have access to. To create a collection, right-click or tap-hold any movie and select 'Add to Collection'. ",
     "LabelKodiMetadataEnableExtraThumbs": "Copy extrafanart into extrathumbs",
@@ -1503,5 +1503,6 @@
     "OptionMax": "Max",
     "HeaderEmbyGuide": "Emby Guide",
     "LabelSyncPath": "Sync path:",
-    "OptionSyncOnlyOnWifi": "Sync only on Wifi"
+    "OptionSyncOnlyOnWifi": "Sync only on Wifi",
+    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality (when supported)"
 }

@@ -827,6 +827,6 @@
     "HeaderSyncRequiresSupporterMembershipAppVersion": "Sinc requiere estar conectado a un Servidor Emby con una cuenta de Aficionado Emby.",
     "ErrorValidatingSupporterInfo": "Hubo un error al validar su informaci\u00f3n de su cuenta de Aficionado Emby. Por favor intente de nuevo mas tarde.",
     "HeaderSync": "Sinc",
-    "LabelLocalSyncStatusValue": "Status: {0}",
-    "MessageSyncStarted": "Sync started"
+    "LabelLocalSyncStatusValue": "Estado: {0}",
+    "MessageSyncStarted": "Sincronizaci\u00f3n iniciada"
 }

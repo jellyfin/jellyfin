@@ -553,7 +553,7 @@
     "LabelFriendlyServerNameHelp": "\u05d4\u05e9\u05dd \u05d9\u05ea\u05df \u05dc\u05d6\u05d9\u05d4\u05d5\u05d9 \u05d4\u05e9\u05e8\u05ea. \u05d0\u05dd \u05de\u05d5\u05e9\u05d0\u05e8 \u05e8\u05d9\u05e7, \u05e9\u05dd \u05d4\u05e9\u05e8\u05ea \u05d9\u05d4\u05d9\u05d4 \u05e9\u05dd \u05d4\u05de\u05d7\u05e9\u05d1.",
     "LabelPreferredDisplayLanguage": "Preferred display language:",
     "LabelPreferredDisplayLanguageHelp": "Translating Emby is an ongoing project.",
-    "LabelReadHowYouCanContribute": "\u05e7\u05e8\u05d0 \u05db\u05d9\u05e6\u05d3 \u05d0\u05ea\u05d4 \u05d9\u05db\u05d5\u05dc \u05dc\u05ea\u05e8\u05d5\u05dd.",
+    "LabelReadHowYouCanContribute": "Learn how you can contribute.",
     "HeaderNewCollection": "\u05d0\u05d5\u05e4\u05e1\u05d9\u05dd \u05d7\u05d3\u05e9\u05d9\u05dd",
     "ButtonSubmit": "Submit",
     "ButtonCreate": "\u05e6\u05d5\u05e8",
@@ -993,8 +993,8 @@
     "LabelKodiMetadataEnablePathSubstitution": "Enable path substitution",
     "LabelKodiMetadataEnablePathSubstitutionHelp": "Enables path substitution of image paths using the server's path substitution settings.",
     "LabelKodiMetadataEnablePathSubstitutionHelp2": "See path substitution.",
-    "LabelGroupChannelsIntoViews": "Display the following channels directly within my views:",
-    "LabelGroupChannelsIntoViewsHelp": "If enabled, these channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
+    "OptionDisplayChannelsInline": "Display channels inline within my views",
+    "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
     "LabelDisplayCollectionsView": "Display a collections view to show movie collections",
     "LabelDisplayCollectionsViewHelp": "This will create a separate view to display collections that you've created or have access to. To create a collection, right-click or tap-hold any movie and select 'Add to Collection'. ",
     "LabelKodiMetadataEnableExtraThumbs": "Copy extrafanart into extrathumbs",
@@ -1503,5 +1503,6 @@
     "OptionMax": "Max",
     "HeaderEmbyGuide": "Emby Guide",
     "LabelSyncPath": "Sync path:",
-    "OptionSyncOnlyOnWifi": "Sync only on Wifi"
+    "OptionSyncOnlyOnWifi": "Sync only on Wifi",
+    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality (when supported)"
 }

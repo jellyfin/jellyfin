@@ -814,7 +814,7 @@
     "HeaderAddProvider": "Voeg aanbieder toe.",
     "ErrorAddingTunerDevice": "Er was een fout bij het toevoegen van de tuner. Controleer of deze toegankelijk is en probeer het opnieuw.",
     "ErrorSavingTvProvider": "Er was een fout bij het opslaan van de TV aanbieder. Controleer of deze toegankelijk is en probeer het opnieuw.",
-    "ErrorGettingTvLineups": "Er was een fout bij het downloaden van de TV lineup. Controleer uw gebruikersnaam en wachtwoord en probeer het opnieuw.",
+    "ErrorGettingTvLineups": "Er was een fout bij het downloaden van de TV lineup. Controleer of uw gegevens correct zijn en probeer het opnieuw.",
     "MessageCreateAccountAt": "Maak een account bij {0}",
     "ErrorPleaseSelectLineup": "Selecteer een lineup en probeer het opnieuw. Als er geen lineups beschibaar zijn, controleer dan of uw gebruikersnaam, wachtwoord en postcode correct zijn.",
     "HeaderTryCinemaMode": "Probeer Cinema Mode",
@@ -828,5 +828,5 @@
     "ErrorValidatingSupporterInfo": "Er was een out bij het valideren van uw Emby Supporter informatie. Probeer het later nog eens.",
     "HeaderSync": "Sync",
     "LabelLocalSyncStatusValue": "Status: {0}",
-    "MessageSyncStarted": "Sync started"
+    "MessageSyncStarted": "Synchroniseren gestart"
 }
