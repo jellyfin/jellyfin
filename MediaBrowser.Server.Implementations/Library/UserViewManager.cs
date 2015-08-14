@@ -156,7 +156,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 var channels = channelResult.Items;
 
                 var embeddedChannels = channels
-                    .Where(i => user.Configuration.DisplayChannelsWithinViews.Contains(i.Id.ToString("N")))
+                    .Where(i => user.Configuration.DisplayChannelsInline || user.Configuration.DisplayChannelsWithinViews.Contains(i.Id.ToString("N")))
                     .ToList();
 
                 list.AddRange(embeddedChannels);
@@ -168,8 +168,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 if (_liveTvManager.GetEnabledUsers().Select(i => i.Id.ToString("N")).Contains(query.UserId))
                 {
-                    var name = _localizationManager.GetLocalizedString("ViewType" + CollectionType.LiveTv);
-                    list.Add(await _libraryManager.GetNamedView(name, CollectionType.LiveTv, string.Empty, cancellationToken).ConfigureAwait(false));
+                    list.Add(await _liveTvManager.GetInternalLiveTvFolder(CancellationToken.None).ConfigureAwait(false));
                 }
             }
 

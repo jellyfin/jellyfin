@@ -1824,7 +1824,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 throw new ArgumentNullException("name");
             }
 
-            var idValues = "37_namedview_" + name + (parentId ?? string.Empty);
+            var idValues = "37_namedview_" + name + (parentId ?? string.Empty) + (viewType ?? string.Empty);
             if (!string.IsNullOrWhiteSpace(uniqueId))
             {
                 idValues += uniqueId;

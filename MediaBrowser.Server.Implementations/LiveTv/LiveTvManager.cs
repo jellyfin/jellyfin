@@ -2196,15 +2196,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(userId);
 
-            var folder = await GetInternalLiveTvFolder(userId, cancellationToken).ConfigureAwait(false);
+            var folder = await GetInternalLiveTvFolder(cancellationToken).ConfigureAwait(false);
 
             return _dtoService.GetBaseItemDto(folder, new DtoOptions(), user);
         }
 
-        public async Task<Folder> GetInternalLiveTvFolder(string userId, CancellationToken cancellationToken)
+        public async Task<Folder> GetInternalLiveTvFolder(CancellationToken cancellationToken)
         {
             var name = _localization.GetLocalizedString("ViewTypeLiveTV");
-            return await _libraryManager.GetNamedView(name, "livetv", "zz_" + name, cancellationToken).ConfigureAwait(false);
+            return await _libraryManager.GetNamedView(name, "livetv", name, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info)

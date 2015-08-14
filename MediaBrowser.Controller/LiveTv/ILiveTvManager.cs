@@ -273,10 +273,9 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets the live tv folder.
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>BaseItemDto.</returns>
-        Task<Folder> GetInternalLiveTvFolder(string userId, CancellationToken cancellationToken);
+        Task<Folder> GetInternalLiveTvFolder(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the live tv folder.

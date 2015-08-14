@@ -89,33 +89,6 @@
         $('.latestItemsList', page).html(folderHtml).trigger('create');
     }
 
-    function renderChannels(page, user, result) {
-
-        var folderHtml = '';
-
-        folderHtml += '<div data-role="controlgroup">';
-        folderHtml += result.Items.map(function (i) {
-
-            var currentHtml = '';
-
-            var id = 'chkGroupChannel' + i.Id;
-
-            currentHtml += '<label for="' + id + '">' + i.Name + '</label>';
-
-            var isChecked = user.Configuration.DisplayChannelsWithinViews.indexOf(i.Id) != -1;
-            var checkedHtml = isChecked ? ' checked="checked"' : '';
-
-            currentHtml += '<input class="chkGroupChannel" data-channelid="' + i.Id + '" type="checkbox" id="' + id + '"' + checkedHtml + ' />';
-
-            return currentHtml;
-
-        }).join('');
-
-        folderHtml += '</div>';
-
-        $('.channelGroupList', page).html(folderHtml).trigger('create');
-    }
-
     function renderViewOrder(page, user, result) {
 
         var html = '';
@@ -161,6 +134,7 @@
 
         page.querySelector('.chkDisplayCollectionView').checked = user.Configuration.DisplayCollectionsView || false;
         page.querySelector('.chkHidePlayedFromLatest').checked = user.Configuration.HidePlayedInLatest || false;
+        page.querySelector('.chkDisplayChannelsInline').checked = user.Configuration.DisplayChannelsInline || false;
 
         $('#selectHomeSection1', page).val(displayPreferences.CustomPrefs.home0 || '').selectmenu("refresh");
         $('#selectHomeSection2', page).val(displayPreferences.CustomPrefs.home1 || '').selectmenu("refresh");
@@ -170,19 +144,15 @@
         var promise1 = ApiClient.getItems(user.Id, {
             sortBy: "SortName"
         });
-        var promise2 = ApiClient.getJSON(ApiClient.getUrl("Channels", {
-            UserId: user.Id
-        }));
-        var promise3 = ApiClient.getUserViews({}, user.Id);
-        var promise4 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/SpecialViewOptions"));
+        var promise2 = ApiClient.getUserViews({}, user.Id);
+        var promise3 = ApiClient.getJSON(ApiClient.getUrl("Users/" + user.Id + "/SpecialViewOptions"));
 
-        $.when(promise1, promise2, promise3, promise4).done(function (r1, r2, r3, r4) {
+        $.when(promise1, promise2, promise3).done(function (r1, r2, r3) {
 
             renderViews(page, user, r1[0]);
             renderLatestItems(page, user, r1[0]);
-            renderChannels(page, user, r2[0]);
-            renderViewOrder(page, user, r3[0]);
-            renderViewStyles(page, user, r4[0]);
+            renderViewOrder(page, user, r2[0]);
+            renderViewStyles(page, user, r3[0]);
 
             Dashboard.hideLoadingMsg();
         });
@@ -192,6 +162,8 @@
 
         user.Configuration.DisplayCollectionsView = page.querySelector('.chkDisplayCollectionView').checked;
         user.Configuration.HidePlayedInLatest = page.querySelector('.chkHidePlayedFromLatest').checked;
+
+        user.Configuration.DisplayChannelsInline = page.querySelector('.chkDisplayChannelsInline').checked;
 
         user.Configuration.LatestItemsExcludes = $(".chkIncludeInLatest:not(:checked)", page).get().map(function (i) {
 
@@ -208,11 +180,6 @@
         user.Configuration.PlainFolderViews = $(".chkPlainFolder:not(:checked)", page).get().map(function (i) {
 
             return i.getAttribute('data-folderid');
-        });
-
-        user.Configuration.DisplayChannelsWithinViews = $(".chkGroupChannel:checked", page).get().map(function (i) {
-
-            return i.getAttribute('data-channelid');
         });
 
         user.Configuration.OrderedViews = $(".viewItem", page).get().map(function (i) {
