@@ -1407,9 +1407,8 @@ namespace MediaBrowser.Server.Implementations.Channels
         public async Task<Folder> GetInternalChannelFolder(string userId, CancellationToken cancellationToken)
         {
             var name = _localization.GetLocalizedString("ViewTypeChannels");
-            var user = _userManager.GetUserById(userId);
 
-            return await _libraryManager.GetNamedView(user, name, "channels", "zz_" + name, cancellationToken).ConfigureAwait(false);
+            return await _libraryManager.GetNamedView(name, "channels", "zz_" + name, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task DownloadChannelItem(IChannelMediaItem item, string destination,

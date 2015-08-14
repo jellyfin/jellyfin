@@ -167,8 +167,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 if (_liveTvManager.GetEnabledUsers().Select(i => i.Id.ToString("N")).Contains(query.UserId))
                 {
-                    //list.Add(await _liveTvManager.GetInternalLiveTvFolder(query.UserId, cancellationToken).ConfigureAwait(false));
-                    list.Add(await GetUserView(new List<ICollectionFolder>(), list, CollectionType.LiveTv, string.Empty, user, cancellationToken).ConfigureAwait(false));
+                    var name = _localizationManager.GetLocalizedString("ViewType" + CollectionType.LiveTv);
+                    list.Add(await _libraryManager.GetNamedView(name, CollectionType.LiveTv, string.Empty, cancellationToken).ConfigureAwait(false));
                 }
             }
 
@@ -187,18 +187,18 @@ namespace MediaBrowser.Server.Implementations.Library
                 .ThenBy(i => i.SortName);
         }
 
-        public Task<UserView> GetUserSubView(string name, string parentId, string type, User user, string sortName, CancellationToken cancellationToken)
+        public Task<UserView> GetUserSubView(string name, string parentId, string type, string sortName, CancellationToken cancellationToken)
         {
             var uniqueId = parentId + "subview" + type;
 
-            return _libraryManager.GetNamedView(user, name, parentId, type, sortName, uniqueId, cancellationToken);
+            return _libraryManager.GetNamedView(name, parentId, type, sortName, uniqueId, cancellationToken);
         }
 
-        public Task<UserView> GetUserSubView(string parentId, string type, User user, string sortName, CancellationToken cancellationToken)
+        public Task<UserView> GetUserSubView(string parentId, string type, string sortName, CancellationToken cancellationToken)
         {
             var name = _localizationManager.GetLocalizedString("ViewType" + type);
 
-            return GetUserSubView(name, parentId, type, user, sortName, cancellationToken);
+            return GetUserSubView(name, parentId, type, sortName, cancellationToken);
         }
 
         public async Task<UserView> GetUserView(List<ICollectionFolder> parents, List<Folder> currentViews, string viewType, string sortName, User user, CancellationToken cancellationToken)

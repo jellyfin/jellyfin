@@ -1651,7 +1651,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
 
-        public async Task<UserView> GetNamedView(User user,
+        public Task<UserView> GetNamedView(User user,
             string name,
             string viewType,
             string sortName,
@@ -1659,10 +1659,17 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             if (ConfigurationManager.Configuration.EnableUserSpecificUserViews)
             {
-                return await GetNamedViewInternal(user, name, null, viewType, sortName, null, cancellationToken)
-                            .ConfigureAwait(false);
+                return GetNamedViewInternal(user, name, null, viewType, sortName, null, cancellationToken);
             }
 
+            return GetNamedView(name, viewType, sortName, cancellationToken);
+        }
+
+        public async Task<UserView> GetNamedView(string name,
+            string viewType,
+            string sortName,
+            CancellationToken cancellationToken)
+        {
             var path = Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath,
                             "views");
 
@@ -1749,6 +1756,76 @@ namespace MediaBrowser.Server.Implementations.Library
             }
 
             var idValues = "37_namedview_" + name + user.Id.ToString("N") + (parentId ?? string.Empty);
+            if (!string.IsNullOrWhiteSpace(uniqueId))
+            {
+                idValues += uniqueId;
+            }
+
+            var id = GetNewItemId(idValues, typeof(UserView));
+
+            var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views", id.ToString("N"));
+
+            var item = GetItemById(id) as UserView;
+
+            var isNew = false;
+
+            if (item == null)
+            {
+                Directory.CreateDirectory(path);
+
+                item = new UserView
+                {
+                    Path = path,
+                    Id = id,
+                    DateCreated = DateTime.UtcNow,
+                    Name = name,
+                    ViewType = viewType,
+                    ForcedSortName = sortName
+                };
+
+                if (!string.IsNullOrWhiteSpace(parentId))
+                {
+                    item.ParentId = new Guid(parentId);
+                }
+
+                await CreateItem(item, cancellationToken).ConfigureAwait(false);
+
+                isNew = true;
+            }
+
+            if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
+            {
+                item.ViewType = viewType;
+                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+            }
+
+            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved) >= _viewRefreshInterval;
+
+            if (refresh)
+            {
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions
+                {
+                    // Need to force save to increment DateLastSaved
+                    ForceSave = true
+                });
+            }
+
+            return item;
+        }
+
+        public async Task<UserView> GetNamedView(string name,
+            string parentId,
+            string viewType,
+            string sortName,
+            string uniqueId,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+
+            var idValues = "37_namedview_" + name + (parentId ?? string.Empty);
             if (!string.IsNullOrWhiteSpace(uniqueId))
             {
                 idValues += uniqueId;
