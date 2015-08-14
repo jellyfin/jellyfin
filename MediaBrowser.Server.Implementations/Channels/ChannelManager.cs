@@ -1399,12 +1399,12 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(userId);
 
-            var folder = await GetInternalChannelFolder(userId, cancellationToken).ConfigureAwait(false);
+            var folder = await GetInternalChannelFolder(cancellationToken).ConfigureAwait(false);
 
             return _dtoService.GetBaseItemDto(folder, new DtoOptions(), user);
         }
 
-        public async Task<Folder> GetInternalChannelFolder(string userId, CancellationToken cancellationToken)
+        public async Task<Folder> GetInternalChannelFolder(CancellationToken cancellationToken)
         {
             var name = _localization.GetLocalizedString("ViewTypeChannels");
 

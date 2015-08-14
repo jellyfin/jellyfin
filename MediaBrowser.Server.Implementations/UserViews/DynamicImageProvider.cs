@@ -72,6 +72,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
 
             var result = await view.GetItems(new InternalItemsQuery
             {
+                User = (view.UserId.HasValue ? _userManager.GetUserById(view.UserId.Value) : null),
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
                 ExcludeItemTypes = new[] { "UserView", "CollectionFolder", "Playlist" }
