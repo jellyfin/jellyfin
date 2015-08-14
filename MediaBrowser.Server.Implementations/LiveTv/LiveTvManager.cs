@@ -2204,8 +2204,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         public async Task<Folder> GetInternalLiveTvFolder(string userId, CancellationToken cancellationToken)
         {
             var name = _localization.GetLocalizedString("ViewTypeLiveTV");
-            var user = _userManager.GetUserById(userId);
-            return await _libraryManager.GetNamedView(user, name, "livetv", "zz_" + name, cancellationToken).ConfigureAwait(false);
+            return await _libraryManager.GetNamedView(name, "livetv", "zz_" + name, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info)
