@@ -1769,7 +1769,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
             catch (Exception ex)
             {
-                _logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
+                //_logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
                 return;
             }
 

@@ -116,9 +116,9 @@ namespace MediaBrowser.Server.Implementations.Photos
             return parts.GetMD5().ToString("N");
         }
 
-        protected Task<bool> CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, bool drawText)
+        protected Task<bool> CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
         {
-            return CreateCollage(primaryItem, items, outputPath, 640, 360, drawText, primaryItem.Name);
+            return CreateCollage(primaryItem, items, outputPath, 640, 360);
         }
 
         protected virtual IEnumerable<string> GetStripCollageImagePaths(IHasImages primaryItem, IEnumerable<BaseItem> items)
@@ -130,20 +130,20 @@ namespace MediaBrowser.Server.Implementations.Photos
 
         protected Task<bool> CreatePosterCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
         {
-            return CreateCollage(primaryItem, items, outputPath, 400, 600, true, primaryItem.Name);
+            return CreateCollage(primaryItem, items, outputPath, 400, 600);
         }
 
-        protected Task<bool> CreateSquareCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, bool drawText)
+        protected Task<bool> CreateSquareCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath)
         {
-            return CreateCollage(primaryItem, items, outputPath, 600, 600, drawText, primaryItem.Name);
+            return CreateCollage(primaryItem, items, outputPath, 600, 600);
         }
 
-        protected Task<bool> CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height, bool drawText, string text)
+        protected Task<bool> CreateThumbCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height)
         {
-            return CreateCollage(primaryItem, items, outputPath, width, height, drawText, text);
+            return CreateCollage(primaryItem, items, outputPath, width, height);
         }
 
-        private Task<bool> CreateCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height, bool drawText, string text)
+        private Task<bool> CreateCollage(IHasImages primaryItem, List<BaseItem> items, string outputPath, int width, int height)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
@@ -152,7 +152,6 @@ namespace MediaBrowser.Server.Implementations.Photos
                 Height = height,
                 Width = width,
                 OutputPath = outputPath,
-                Text = drawText ? text : null,
                 InputPaths = GetStripCollageImagePaths(primaryItem, items).ToArray()
             };
 
@@ -181,22 +180,20 @@ namespace MediaBrowser.Server.Implementations.Photos
                 return false;
             }
 
-            var drawText = !(item is UserView) && !(item is ICollectionFolder);
-
             if (imageType == ImageType.Thumb)
             {
-                return await CreateThumbCollage(item, itemsWithImages, outputPath, drawText).ConfigureAwait(false);
+                return await CreateThumbCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
             }
 
             if (imageType == ImageType.Primary)
             {
                 if (item is UserView)
                 {
-                    return await CreateSquareCollage(item, itemsWithImages, outputPath, drawText).ConfigureAwait(false);
+                    return await CreateSquareCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
                 }
                 if (item is PhotoAlbum || item is Playlist)
                 {
-                    return await CreateSquareCollage(item, itemsWithImages, outputPath, drawText).ConfigureAwait(false);
+                    return await CreateSquareCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
                 }
                 return await CreatePosterCollage(item, itemsWithImages, outputPath).ConfigureAwait(false);
             }

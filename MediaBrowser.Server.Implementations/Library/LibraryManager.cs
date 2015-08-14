@@ -1773,8 +1773,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     DateCreated = DateTime.UtcNow,
                     Name = name,
                     ViewType = viewType,
-                    ForcedSortName = sortName,
-                    UserId = user.Id
+                    ForcedSortName = sortName
                 };
 
                 if (!string.IsNullOrWhiteSpace(parentId))
