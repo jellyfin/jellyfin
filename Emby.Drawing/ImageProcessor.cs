@@ -422,7 +422,7 @@ namespace Emby.Drawing
                 {
                     throw;
                 }
-                _logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
+                //_logger.Info("Failed to read image header for {0}. Doing it the slow way.", path);
 
                 CheckDisposed();
 

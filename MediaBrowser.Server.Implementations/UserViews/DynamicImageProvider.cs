@@ -61,7 +61,6 @@ namespace MediaBrowser.Server.Implementations.UserViews
             {
                 var userItemsResult = await view.GetItems(new InternalItemsQuery
                 {
-                    User = view.UserId.HasValue ? _userManager.GetUserById(view.UserId.Value) : null,
                     CollapseBoxSetItems = false
                 });
 
@@ -73,7 +72,6 @@ namespace MediaBrowser.Server.Implementations.UserViews
 
             var result = await view.GetItems(new InternalItemsQuery
             {
-                User = view.UserId.HasValue ? _userManager.GetUserById(view.UserId.Value) : null,
                 CollapseBoxSetItems = false,
                 Recursive = recursive,
                 ExcludeItemTypes = new[] { "UserView", "CollectionFolder", "Playlist" }
@@ -138,38 +136,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
             var view = item as UserView;
             if (view != null)
             {
-                var supported = new[]
-                {
-                    SpecialFolder.TvFavoriteEpisodes,
-                    SpecialFolder.TvFavoriteSeries,
-                    SpecialFolder.TvGenres,
-                    SpecialFolder.TvLatest,
-                    SpecialFolder.TvNextUp,
-                    SpecialFolder.TvResume,
-                    SpecialFolder.TvShowSeries,
-
-                    SpecialFolder.MovieCollections,
-                    SpecialFolder.MovieFavorites,
-                    SpecialFolder.MovieGenres,
-                    SpecialFolder.MovieLatest,
-                    SpecialFolder.MovieMovies,
-                    SpecialFolder.MovieResume,
-
-                    SpecialFolder.MusicArtists,
-                    SpecialFolder.MusicAlbumArtists,
-                    SpecialFolder.MusicAlbums,
-                    SpecialFolder.MusicGenres,
-                    SpecialFolder.MusicLatest,
-                    SpecialFolder.MusicPlaylists,
-                    SpecialFolder.MusicSongs,
-                    SpecialFolder.MusicFavorites,
-                    SpecialFolder.MusicFavoriteArtists,
-                    SpecialFolder.MusicFavoriteAlbums,
-                    SpecialFolder.MusicFavoriteSongs
-
-                };
-
-                return (IsUsingCollectionStrip(view) || supported.Contains(view.ViewType, StringComparer.OrdinalIgnoreCase));
+                return (IsUsingCollectionStrip(view));
             }
 
             return false;
@@ -207,7 +174,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
                     return false;
                 }
 
-                return await CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540, false, item.Name).ConfigureAwait(false);
+                return await CreateThumbCollage(item, itemsWithImages, outputPath, 960, 540).ConfigureAwait(false);
             }
 
             return await base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex).ConfigureAwait(false);

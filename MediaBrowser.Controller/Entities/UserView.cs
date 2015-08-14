@@ -1,10 +1,10 @@
-﻿using System.Runtime.Serialization;
-using MediaBrowser.Controller.Playlists;
+﻿using MediaBrowser.Controller.Playlists;
 using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace MediaBrowser.Controller.Entities
@@ -13,8 +13,6 @@ namespace MediaBrowser.Controller.Entities
     {
         public string ViewType { get; set; }
         public Guid ParentId { get; set; }
-
-        public Guid? UserId { get; set; }
 
         public static ITVSeriesManager TVSeriesManager;
         public static IPlaylistManager PlaylistManager;
