@@ -247,19 +247,14 @@ return m;
 }
 });
 var cePolyfill = window.CustomElements && !CustomElements.useNative;
-if (cePolyfill) {
-var ready = CustomElements.ready;
-CustomElements.ready = true;
-}
 document.registerElement('dom-module', DomModule);
-if (cePolyfill) {
-CustomElements.ready = ready;
-}
 function forceDocumentUpgrade() {
 if (cePolyfill) {
 var script = document._currentScript || document.currentScript;
-if (script) {
-CustomElements.upgradeAll(script.ownerDocument);
+var doc = script && script.ownerDocument;
+if (doc && !doc.__customElementsForceUpgraded) {
+doc.__customElementsForceUpgraded = true;
+CustomElements.upgradeAll(doc);
 }
 }
 }
@@ -563,7 +558,7 @@ debouncer.stop();
 }
 }
 });
-Polymer.version = '1.0.9';
+Polymer.version = '1.1.0';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();

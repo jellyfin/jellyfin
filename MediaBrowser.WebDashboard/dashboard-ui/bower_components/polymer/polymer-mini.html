@@ -458,11 +458,14 @@ Polymer.dom.addDebouncer(host.debounce('_distribute', host._distributeContent));
 },
 appendChild: function (node) {
 var handled;
+this._ensureContentLogicalInfo(node);
 this._removeNodeFromHost(node, true);
 if (this._nodeIsInLogicalTree(this.node)) {
 this._addLogicalInfo(node, this.node);
 this._addNodeToHost(node);
 handled = this._maybeDistribute(node, this.node);
+} else {
+this._addNodeToHost(node);
 }
 if (!handled && !this._tryRemoveUndistributedNode(node)) {
 var container = this.node._isShadyRoot ? this.node.host : this.node;
@@ -476,9 +479,9 @@ if (!ref_node) {
 return this.appendChild(node);
 }
 var handled;
+this._ensureContentLogicalInfo(node);
 this._removeNodeFromHost(node, true);
 if (this._nodeIsInLogicalTree(this.node)) {
-saveLightChildrenIfNeeded(this.node);
 var children = this.childNodes;
 var index = children.indexOf(ref_node);
 if (index < 0) {
@@ -487,6 +490,8 @@ throw Error('The ref_node to be inserted before is not a child ' + 'of this node
 this._addLogicalInfo(node, this.node, index);
 this._addNodeToHost(node);
 handled = this._maybeDistribute(node, this.node);
+} else {
+this._addNodeToHost(node);
 }
 if (!handled && !this._tryRemoveUndistributedNode(node)) {
 ref_node = ref_node.localName === CONTENT ? this._firstComposedNode(ref_node) : ref_node;
@@ -504,6 +509,8 @@ var handled;
 if (this._nodeIsInLogicalTree(this.node)) {
 this._removeNodeFromHost(node);
 handled = this._maybeDistribute(node, this.node);
+} else {
+this._removeNodeFromHost(node);
 }
 if (!handled) {
 var container = this.node._isShadyRoot ? this.node.host : this.node;
@@ -572,10 +579,27 @@ return true;
 }
 },
 _updateInsertionPoints: function (host) {
-host.shadyRoot._insertionPoints = factory(host.shadyRoot).querySelectorAll(CONTENT);
+var i$ = host.shadyRoot._insertionPoints = factory(host.shadyRoot).querySelectorAll(CONTENT);
+for (var i = 0, c; i < i$.length; i++) {
+c = i$[i];
+saveLightChildrenIfNeeded(c);
+saveLightChildrenIfNeeded(factory(c).parentNode);
+}
 },
 _nodeIsInLogicalTree: function (node) {
-return Boolean(node._lightParent !== undefined || node._isShadyRoot || this._ownerShadyRootForNode(node) || node.shadyRoot);
+return Boolean(node._lightParent !== undefined || node._isShadyRoot || node.shadyRoot);
+},
+_ensureContentLogicalInfo: function (node) {
+if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+saveLightChildrenIfNeeded(this.node);
+var c$ = Array.prototype.slice.call(node.childNodes);
+for (var i = 0, n; i < c$.length && (n = c$[i]); i++) {
+this._ensureContentLogicalInfo(n);
+}
+} else if (node.localName === CONTENT) {
+saveLightChildrenIfNeeded(this.node);
+saveLightChildrenIfNeeded(node);
+}
 },
 _parentNeedsDistribution: function (parent) {
 return parent && parent.shadyRoot && hasInsertionPoint(parent.shadyRoot);
@@ -629,14 +653,12 @@ node = factory(node).parentNode;
 }
 },
 _addNodeToHost: function (node) {
-var checkNode = node.nodeType === Node.DOCUMENT_FRAGMENT_NODE ? node.firstChild : node;
-var root = this._ownerShadyRootForNode(checkNode);
+var root = this.getOwnerRoot();
 if (root) {
 root.host._elementAdd(node);
 }
 },
 _addLogicalInfo: function (node, container, index) {
-saveLightChildrenIfNeeded(container);
 var children = factory(container).childNodes;
 index = index === undefined ? children.length : index;
 if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
@@ -1163,8 +1185,13 @@ this.shadyRoot = this.root;
 this.shadyRoot._distributionClean = false;
 this.shadyRoot._isShadyRoot = true;
 this.shadyRoot._dirtyRoots = [];
-this.shadyRoot._insertionPoints = !this._notes || this._notes._hasContent ? this.shadyRoot.querySelectorAll('content') : [];
+var i$ = this.shadyRoot._insertionPoints = !this._notes || this._notes._hasContent ? this.shadyRoot.querySelectorAll('content') : [];
 saveLightChildrenIfNeeded(this.shadyRoot);
+for (var i = 0, c; i < i$.length; i++) {
+c = i$[i];
+saveLightChildrenIfNeeded(c);
+saveLightChildrenIfNeeded(c.parentNode);
+}
 this.shadyRoot.host = this;
 },
 get domHost() {
@@ -1399,14 +1426,12 @@ if (newChildParent !== parentNode) {
 removeFromComposedParent(newChildParent, newChild);
 }
 remove(newChild);
-saveLightChildrenIfNeeded(parentNode);
 nativeInsertBefore.call(parentNode, newChild, refChild || null);
 newChild._composedParent = parentNode;
 }
 function remove(node) {
 var parentNode = getComposedParent(node);
 if (parentNode) {
-saveLightChildrenIfNeeded(parentNode);
 node._composedParent = null;
 nativeRemoveChild.call(parentNode, node);
 }

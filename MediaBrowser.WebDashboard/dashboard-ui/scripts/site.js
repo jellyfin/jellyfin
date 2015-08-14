@@ -1731,13 +1731,8 @@ var AppInfo = {};
         AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
         AppInfo.supportsUserDisplayLanguageSetting = Dashboard.isConnectMode() && !isCordova;
 
-        if (isCordova && isAndroid) {
-            AppInfo.directPlayAudioContainers = "flac,aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus".split(',');
-            AppInfo.directPlayVideoContainers = "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm".split(',');
-        } else {
-            AppInfo.directPlayAudioContainers = [];
-            AppInfo.directPlayVideoContainers = [];
-        }
+        AppInfo.directPlayAudioContainers = [];
+        AppInfo.directPlayVideoContainers = [];
 
         if (isCordova && isIOS) {
             AppInfo.moreIcon = 'more-horiz';
@@ -2078,6 +2073,17 @@ var AppInfo = {};
         deps.push('appstorage');
 
         require(deps, function () {
+
+            if (Dashboard.isRunningInCordova() && $.browser.android) {
+                AppInfo.directPlayAudioContainers = "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus".split(',');
+
+                // TODO: This is going to exclude it from both playback and sync, so improve on this
+                if (AppSettings.syncLosslessAudio()) {
+                    AppInfo.directPlayAudioContainers.push('flac');
+                }
+
+                AppInfo.directPlayVideoContainers = "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm".split(',');
+            }
 
             capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
             createConnectionManager(capabilities).done(function () { onConnectionManagerCreated(deferred); });

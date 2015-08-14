@@ -939,8 +939,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     text-align: center;
     vertical-align: middle;
     width: 24px;
-    height: 19px;
-    padding-top: 3px;
+    height: 24px;
     border-radius: 50%;
     color: #fff;
     background: rgba(82, 181, 75, .8);
@@ -971,11 +970,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     z-index: 1;
 }
 
-.pieIndicator .fa {
-    color: #fff;
-    z-index: 4;
+.pieIndicator iron-icon {
     position: absolute;
-    margin: 4px 0 0 6px;
+    z-index: 4;
+    color: #fff;
 }
 
 .pie {
@@ -987,7 +985,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     -o-border-radius: 50px;
     border-radius: 50px;
     clip: rect(0px, 12px, 24px, 0px);
-    background-color: rgba(10, 10, 10, .9);
+    background-color: rgba(10, 10, 10, 1);
     z-index: 2;
 }
 

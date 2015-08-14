@@ -2159,18 +2159,18 @@
                 }
 
                 var degree = (item.SyncPercent / 100) * 360;
-                return '<div class="pieIndicator"><i class="fa fa-refresh"></i><div class="pieBackground"></div><div class="hold"><div class="pie" style="-webkit-transform: rotate(' + degree + 'deg);-moz-transform: rotate(' + degree + 'deg);-o-transform: rotate(' + degree + 'deg);transform: rotate(' + degree + 'deg);"></div></div></div>';
+                return '<div class="pieIndicator"><iron-icon icon="refresh"></iron-icon><div class="pieBackground"></div><div class="hold"><div class="pie" style="-webkit-transform: rotate(' + degree + 'deg);-moz-transform: rotate(' + degree + 'deg);-o-transform: rotate(' + degree + 'deg);transform: rotate(' + degree + 'deg);"></div></div></div>';
             }
 
             if (item.SyncStatus) {
                 if (item.SyncStatus == 'Queued' || item.SyncStatus == 'Converting' || item.SyncStatus == 'ReadyToTransfer' || item.SyncStatus == 'Transferring') {
 
-                    return '<div class="syncIndicator syncWorkingIndicator"><i class="fa fa-refresh"></i></div>';
+                    return '<div class="syncIndicator syncWorkingIndicator"><iron-icon icon="refresh"></iron-icon></div>';
                 }
 
                 if (item.SyncStatus == 'Synced') {
 
-                    return '<div class="syncIndicator"><i class="fa fa-refresh"></i></div>';
+                    return '<div class="syncIndicator"><iron-icon icon="refresh"></iron-icon></div>';
                 }
             }
 

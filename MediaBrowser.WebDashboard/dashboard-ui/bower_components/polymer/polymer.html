@@ -637,8 +637,7 @@ prevent = dy > dx;
 prevent = dx > dy;
 }
 if (prevent) {
-// This prevents horizontal scrolling in safari
-//ev.preventDefault();
+ev.preventDefault();
 } else {
 Gestures.prevent('track');
 }
@@ -2187,7 +2186,7 @@ MIXIN_RULE: 1000
 OPEN_BRACE: '{',
 CLOSE_BRACE: '}',
 _rx: {
-comments: /\/\*[^*]*\*+([^\/*][^*]*\*+)*\//gim,
+comments: /\/\*[^*]*\*+([^/*][^*]*\*+)*\//gim,
 port: /@import[^;]*;/gim,
 customProp: /(?:^|[\s;])--[^;{]*?:[^{};]*?(?:[;\n]|$)/gim,
 mixinProp: /(?:^|[\s;])--[^;{]*?:[^{;]*?{[^}]*?}(?:[;\n]|$)?/gim,
@@ -2203,7 +2202,8 @@ return api;
 }();
 Polymer.StyleUtil = function () {
 return {
-MODULE_STYLES_SELECTOR: 'style, link[rel=import][type~=css]',
+MODULE_STYLES_SELECTOR: 'style, link[rel=import][type~=css], template',
+INCLUDE_ATTR: 'include',
 toCssText: function (rules, callback, preserveProperties) {
 if (typeof rules === 'string') {
 rules = this.parser.parse(rules);
@@ -2258,27 +2258,52 @@ afterNode = n$[n$.length - 1];
 target.insertBefore(style, afterNode && afterNode.nextSibling || target.firstChild);
 return style;
 },
+cssFromModules: function (moduleIds) {
+var modules = moduleIds.trim().split(' ');
+var cssText = '';
+for (var i = 0; i < modules.length; i++) {
+cssText += this.cssFromModule(modules[i]);
+}
+return cssText;
+},
 cssFromModule: function (moduleId) {
 var m = Polymer.DomModule.import(moduleId);
 if (m && !m._cssText) {
+m._cssText = this._cssFromElement(m);
+}
+return m && m._cssText || '';
+},
+_cssFromElement: function (element) {
 var cssText = '';
-var e$ = Array.prototype.slice.call(m.querySelectorAll(this.MODULE_STYLES_SELECTOR));
-for (var i = 0, e; i < e$.length; i++) {
+var content = element.content || element;
+var sourceDoc = element.ownerDocument;
+var e$ = Array.prototype.slice.call(content.querySelectorAll(this.MODULE_STYLES_SELECTOR));
+for (var i = 0, e, resolveDoc, addModule; i < e$.length; i++) {
 e = e$[i];
+resolveDoc = sourceDoc;
+addModule = null;
+if (e.localName === 'template') {
+cssText += this._cssFromElement(e);
+} else {
 if (e.localName === 'style') {
+addModule = e.getAttribute(this.INCLUDE_ATTR);
 e = e.__appliedElement || e;
 e.parentNode.removeChild(e);
 } else {
 e = e.import && e.import.body;
+resolveDoc = e.ownerDocument;
 }
 if (e) {
-cssText += Polymer.ResolveUrl.resolveCss(e.textContent, e.ownerDocument);
+cssText += this.resolveCss(e.textContent, resolveDoc);
 }
 }
-m._cssText = cssText;
+if (addModule) {
+cssText += this.cssFromModules(addModule);
 }
-return m && m._cssText || '';
+}
+return cssText;
 },
+resolveCss: Polymer.ResolveUrl.resolveCss,
 parser: Polymer.CssParse,
 ruleTypes: Polymer.CssParse.types
 };
@@ -3179,7 +3204,8 @@ var styleTransformer = Polymer.StyleTransformer;
 Polymer({
 is: 'custom-style',
 extends: 'style',
-created: function () {
+properties: { include: String },
+ready: function () {
 this._tryApply();
 },
 attached: function () {
@@ -3191,7 +3217,7 @@ if (this.parentNode && this.parentNode.localName !== 'dom-module') {
 this._appliesToDocument = true;
 var e = this.__appliedElement || this;
 styleDefaults.addStyle(e);
-if (e.textContent) {
+if (e.textContent || this.include) {
 this._apply();
 } else {
 var observer = new MutationObserver(function () {
@@ -3205,6 +3231,9 @@ observer.observe(e, { childList: true });
 },
 _apply: function () {
 var e = this.__appliedElement || this;
+if (this.include) {
+e.textContent += styleUtil.cssFromModules(this.include);
+}
 this._computeStyleProperties();
 var props = this._styleProperties;
 var self = this;
@@ -3542,29 +3571,36 @@ items.push(store[key]);
 return items;
 },
 _applySplices: function (splices) {
-var keySplices = [];
-for (var i = 0; i < splices.length; i++) {
-var j, o, key, s = splices[i];
+var keyMap = {}, key, i;
+splices.forEach(function (s) {
+s.addedKeys = [];
+for (i = 0; i < s.removed.length; i++) {
+key = this.getKey(s.removed[i]);
+keyMap[key] = keyMap[key] ? null : -1;
+}
+for (i = 0; i < s.addedCount; i++) {
+var item = this.userArray[s.index + i];
+key = this.getKey(item);
+key = key === undefined ? this.add(item) : key;
+keyMap[key] = keyMap[key] ? null : 1;
+s.addedKeys.push(key);
+}
+}, this);
 var removed = [];
-for (j = 0; j < s.removed.length; j++) {
-o = s.removed[j];
-key = this.remove(o);
+var added = [];
+for (var key in keyMap) {
+if (keyMap[key] < 0) {
+this.removeKey(key);
 removed.push(key);
 }
-var added = [];
-for (j = 0; j < s.addedCount; j++) {
-o = this.userArray[s.index + j];
-key = this.add(o);
+if (keyMap[key] > 0) {
 added.push(key);
 }
-keySplices.push({
-index: s.index,
-removed: removed,
-removedItems: s.removed,
-added: added
-});
 }
-return keySplices;
+return [{
+removed: removed,
+added: added
+}];
 }
 };
 Polymer.Collection.get = function (userArray) {
@@ -3659,11 +3695,13 @@ this.collection = null;
 } else {
 this._error(this._logf('dom-repeat', 'expected array for `items`,' + ' found', this.items));
 }
-this._splices = [];
+this._keySplices = [];
+this._indexSplices = [];
 this._needFullRefresh = true;
 this._debounceTemplate(this._render);
 } else if (change.path == 'items.splices') {
-this._splices = this._splices.concat(change.value.keySplices);
+this._keySplices = this._keySplices.concat(change.value.keySplices);
+this._indexSplices = this._indexSplices.concat(change.value.indexSplices);
 this._debounceTemplate(this._render);
 } else {
 var subpath = change.path.slice(6);
@@ -3700,16 +3738,17 @@ this._applyFullRefresh();
 this._needFullRefresh = false;
 } else {
 if (this._sortFn) {
-this._applySplicesUserSort(this._splices);
+this._applySplicesUserSort(this._keySplices);
 } else {
 if (this._filterFn) {
 this._applyFullRefresh();
 } else {
-this._applySplicesArrayOrder(this._splices);
+this._applySplicesArrayOrder(this._indexSplices);
 }
 }
 }
-this._splices = [];
+this._keySplices = [];
+this._indexSplices = [];
 var keyToIdx = this._keyToInstIdx = {};
 for (var i = 0; i < this._instances.length; i++) {
 var inst = this._instances[i];
@@ -3847,10 +3886,10 @@ pool.push(inst);
 }
 }
 this._instances.splice(s.index, s.removed.length);
-for (var i = 0; i < s.added.length; i++) {
+for (var i = 0; i < s.addedKeys.length; i++) {
 var inst = {
 isPlaceholder: true,
-key: s.added[i]
+key: s.addedKeys[i]
 };
 this._instances.splice(s.index + i, 0, inst);
 }
@@ -3959,12 +3998,12 @@ is: 'array-selector',
 properties: {
 items: {
 type: Array,
-observer: '_resetSelection'
+observer: 'clearSelection'
 },
 multi: {
 type: Boolean,
 value: false,
-observer: '_resetSelection'
+observer: 'clearSelection'
 },
 selected: {
 type: Object,
@@ -3975,7 +4014,7 @@ type: Boolean,
 value: false
 }
 },
-_resetSelection: function () {
+clearSelection: function () {
 if (Array.isArray(this.selected)) {
 for (var i = 0; i < this.selected.length; i++) {
 this.unlinkPaths('selected.' + i);

@@ -4,6 +4,7 @@
 
         page.querySelector('#txtSyncPath').value = AppSettings.syncPath();
         page.querySelector('#chkWifi').checked = AppSettings.syncOnlyOnWifi();
+        page.querySelector('#chkSyncLosslessAudio').checked = AppSettings.syncLosslessAudio();
 
         Dashboard.hideLoadingMsg();
     }
@@ -12,6 +13,7 @@
 
         AppSettings.syncPath(page.querySelector('#txtSyncPath').value);
         AppSettings.syncOnlyOnWifi(page.querySelector('#chkWifi').checked);
+        AppSettings.syncLosslessAudio(page.querySelector('#chkSyncLosslessAudio').checked);
 
         Dashboard.hideLoadingMsg();
         Dashboard.alert(Globalize.translate('SettingsSaved'));

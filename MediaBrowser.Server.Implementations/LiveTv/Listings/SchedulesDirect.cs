@@ -337,6 +337,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     (details.showType ?? "No ShowType") == "TV Movie" ||
                     (details.showType ?? "No ShowType") == "Short Film",
                 IsPremiere = false,
+                ShowId = programInfo.programID
             };
 
             if (!string.IsNullOrWhiteSpace(details.originalAirDate))
@@ -448,8 +449,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                             _logger.Info("Headend: " + headend.headend);
                             foreach (ScheduleDirect.Lineup lineup in headend.lineups)
                             {
-                                _logger.Info("Headend: " + lineup.uri.Substring(18));
-                                lineups.Add(new NameIdPair()
+                                _logger.Info("Headend: " + lineup.uri);
+
+                                lineups.Add(new NameIdPair
                                 {
                                     Name = string.IsNullOrWhiteSpace(lineup.name) ? lineup.lineup : lineup.name,
                                     Id = lineup.uri.Substring(18)
