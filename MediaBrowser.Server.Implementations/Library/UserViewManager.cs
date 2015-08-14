@@ -141,12 +141,13 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (user.Configuration.DisplayFoldersView)
             {
-                list.Add(await GetUserView(new List<ICollectionFolder>(), list, CollectionType.Folders, "zz_" + CollectionType.Folders, user, cancellationToken).ConfigureAwait(false));
+                var name = _localizationManager.GetLocalizedString("ViewType" + CollectionType.Folders);
+                list.Add(await _libraryManager.GetNamedView(name, CollectionType.Folders, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
             if (query.IncludeExternalContent)
             {
-                var channelResult = await _channelManager.GetChannels(new ChannelQuery
+                var channelResult = await _channelManager.GetChannelsInternal(new ChannelQuery
                 {
                     UserId = query.UserId
 
@@ -155,14 +156,14 @@ namespace MediaBrowser.Server.Implementations.Library
                 var channels = channelResult.Items;
 
                 var embeddedChannels = channels
-                    .Where(i => user.Configuration.DisplayChannelsWithinViews.Contains(i.Id))
+                    .Where(i => user.Configuration.DisplayChannelsWithinViews.Contains(i.Id.ToString("N")))
                     .ToList();
 
-                list.AddRange(embeddedChannels.Select(i => _channelManager.GetChannel(i.Id)));
+                list.AddRange(embeddedChannels);
 
                 if (channels.Length > embeddedChannels.Count)
                 {
-                    list.Add(await _channelManager.GetInternalChannelFolder(query.UserId, cancellationToken).ConfigureAwait(false));
+                    list.Add(await _channelManager.GetInternalChannelFolder(cancellationToken).ConfigureAwait(false));
                 }
 
                 if (_liveTvManager.GetEnabledUsers().Select(i => i.Id.ToString("N")).Contains(query.UserId))
