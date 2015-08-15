@@ -10,7 +10,7 @@
 
             var info = config.ListingProviders.filter(function (i) {
                 return i.Id == providerId;
-            })[0];
+            })[0] || {};
 
             listingsId = info.ListingsId;
             $('#selectListing', page).val(info.ListingsId || '').selectmenu('refresh');

@@ -337,7 +337,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     (details.showType ?? "No ShowType") == "TV Movie" ||
                     (details.showType ?? "No ShowType") == "Short Film",
                 IsPremiere = false,
-                ShowId = programInfo.programID
+                ShowId = programInfo.programID,
+                SeriesId = programInfo.programID.Substring(0, 10)
             };
 
             if (!string.IsNullOrWhiteSpace(details.originalAirDate))

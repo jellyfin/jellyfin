@@ -2,7 +2,7 @@
 
     var currentDialogOptions;
 
-    function submitJob(userId, syncOptions, form) {
+    function submitJob(panel, userId, syncOptions, form) {
 
         if (!userId) {
             throw new Error('userId cannot be null');
@@ -46,11 +46,12 @@
             type: "POST",
             url: ApiClient.getUrl("Sync/Jobs"),
             data: JSON.stringify(options),
-            contentType: "application/json"
+            contentType: "application/json",
+            dataType: 'json'
 
         }).done(function () {
 
-            $('.syncPanel').panel('close');
+            panel.panel('close');
             $(window.SyncManager).trigger('jobsubmit');
             Dashboard.alert(Globalize.translate('MessageSyncJobCreated'));
         });
@@ -256,7 +257,7 @@
 
             $('form', elem).on('submit', function () {
 
-                submitJob(userId, options, this);
+                submitJob(elem, userId, options, this);
                 return false;
             });
 

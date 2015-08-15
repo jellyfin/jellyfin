@@ -390,10 +390,10 @@
 
         var menuItems = [];
 
-        //menuItems.push({
-        //    name: 'Schedules Direct',
-        //    id: 'SchedulesDirect'
-        //});
+        menuItems.push({
+            name: 'Schedules Direct',
+            id: 'SchedulesDirect'
+        });
 
         //menuItems.push({
         //    name: 'Emby Guide',

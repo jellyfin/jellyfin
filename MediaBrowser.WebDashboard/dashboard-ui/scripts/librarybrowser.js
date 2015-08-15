@@ -101,7 +101,7 @@
             var cacheDuration;
 
             if (AppInfo.isNativeApp) {
-                cacheDuration = 600000;
+                cacheDuration = 300000;
             }
             else if ($.browser.ipad || $.browser.iphone || $.browser.android) {
                 cacheDuration = 10000;
@@ -247,9 +247,11 @@
 
                 // When transition animations are used, add a content loading delay to allow the animations to finish
                 // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
-                var delay = LibraryBrowser.enableFullPaperTabs() ? 500 : 0;
+                var enablePaperTabs = LibraryBrowser.enableFullPaperTabs();
+                var delay = enablePaperTabs ? 500 : 0;
                 var pgs = this;
                 setTimeout(function () {
+
                     $(pgs).trigger('tabchange');
                 }, delay);
             });
@@ -1129,7 +1131,7 @@
                     if (item.UserData.UnplayedItemCount) {
                         //html += '<span class="ui-li-count">' + item.UserData.UnplayedItemCount + '</span>';
                     } else if (item.UserData.Played && item.Type != 'TvChannel') {
-                        html += '<div class="playedIndicator"><i class="fa fa-check"></i></div>';
+                        html += '<div class="playedIndicator"><iron-icon icon="check"></iron-icon></div>';
                     }
                 }
                 html += '</a>';
@@ -2162,7 +2164,7 @@
             if (item.SyncPercent) {
 
                 if (item.SyncPercent >= 100) {
-                    return '<div class="syncIndicator"><i class="fa fa-refresh"></i></div>';
+                    return '<div class="syncIndicator"><iron-icon icon="refresh"></iron-icon></div>';
                 }
 
                 var degree = (item.SyncPercent / 100) * 360;
