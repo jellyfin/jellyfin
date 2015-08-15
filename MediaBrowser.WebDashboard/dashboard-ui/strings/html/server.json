@@ -1518,7 +1518,7 @@
     "LabelTranscodingThreadCountHelp": "Select the maximum number of threads to use when transcoding. Reducing the thread count will lower cpu usage but may not convert fast enough for a smooth playback experience.",
     "OptionMax": "Max",
     "HeaderEmbyGuide": "Emby Guide",
-    "LabelSyncPath": "Sync path:",
+    "LabelSyncPath": "Synced content path:",
     "OptionSyncOnlyOnWifi": "Sync only on Wifi",
-    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality (when supported)"
+    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality"
 }
