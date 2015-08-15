@@ -1181,16 +1181,15 @@
 
         $(page.getElementsByClassName('viewTabButton')).on('click', function () {
 
-            $('.viewTabButton', page).removeClass('ui-btn-active');
+            var parent = $(this).parents('.viewPanel');
+            $('.viewTabButton', parent).removeClass('ui-btn-active');
             this.classList.add('ui-btn-active');
 
-            $('.viewTab', page).hide();
-            $('.' + this.getAttribute('data-tab'), page).show();
+            $('.viewTab', parent).hide();
+            $('.' + this.getAttribute('data-tab'), parent).show();
         });
 
-        var viewPanel = $('.viewPanel', page);
-
-        $('#selectPageSize', viewPanel).html(LibraryBrowser.getDefaultPageSizeSelections().map(function (i) {
+        $('select.selectPageSize', $('.viewPanel', page)).html(LibraryBrowser.getDefaultPageSizeSelections().map(function (i) {
 
             return '<option value="' + i + '">' + i + '</option>';
 
@@ -1212,12 +1211,7 @@
         var page = this;
 
         hideSelections(page);
-
-        var elem = page.querySelector('.viewTabButton');
-        if (elem) {
-            Events.trigger(elem, 'click');
-        }
-
+        $(page.querySelectorAll('.viewTabButton:first-child')).trigger('click');
     });
 
     function renderUserDataChanges(card, userData) {

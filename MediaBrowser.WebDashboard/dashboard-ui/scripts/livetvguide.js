@@ -487,7 +487,7 @@
             selectDate(page);
         });
 
-    }).on('pagebeforeshowready', "#liveTvSuggestedPage", function () {
+    }).on('pageinitdepends', "#liveTvSuggestedPage", function () {
 
         var page = this;
 

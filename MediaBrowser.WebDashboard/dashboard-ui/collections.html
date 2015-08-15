@@ -4,21 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="boxsetsPage" data-role="page" class="page libraryPage backdropPage collectionEditorPage" data-backdroptype="movie,boxset">
-
-        <div class="libraryViewNav scopedLibraryViewNav movieTabs">
-            <a href="moviesrecommended.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
-            <a href="movies.html"><iron-icon icon="local-movies"></iron-icon>${TabMovies}</a>
-            <a href="movietrailers.html" class="movieTrailersTab"><iron-icon icon="movie"></iron-icon>${TabTrailers}</a>
-            <a href="#" class="ui-btn-active"><iron-icon icon="video-library"></iron-icon>${TabCollections}</a>
-            <a href="moviegenres.html"><iron-icon icon="video-library"></iron-icon>${TabGenres}</a>
-            <a href="moviepeople.html" class="moviePeopleTab"><iron-icon icon="people"></iron-icon>${TabPeople}</a>
-            <a href="moviestudios.html" class="movieStudiosTab"><iron-icon icon="account-box"></iron-icon>${TabStudios}</a>
-        </div>
-
-        <div class="libraryViewNav scopedLibraryViewNav collectionTabs">
-            <a href="#" class="ui-btn-active">${TabCollections}</a>
-        </div>
+    <div id="boxsetsPage" data-role="page" class="page libraryPage backdropPage collectionEditorPage noSecondaryNavPage" data-backdroptype="movie,boxset" data-require="scripts/moviecollections">
 
         <div data-role="content">
             <div class="viewSettings">
@@ -27,7 +13,7 @@
                     &nbsp;
                 </div>
             </div>
-            <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
+            <div class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
             <div class="noItemsMessage" style="display: none; text-align: center;">
                 <p>${MessageNoCollectionsAvailable}</p>
             </div>
@@ -35,7 +21,7 @@
             <paper-fab class="btnNewCollection bottomFab" icon="add" style="position:fixed;right:20px;background-color:#db4437;"></paper-fab>
         </div>
 
-        <div data-role="panel" class="viewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
+        <div data-role="panel" class="viewPanel collectionViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
             <form>
 
                 <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
@@ -47,8 +33,8 @@
                 <div class="tabView viewTab">
 
                     <div>
-                        <label for="selectView">${LabelView}</label>
-                        <select id="selectView">
+                        <label for="selectCollectionView">${LabelView}</label>
+                        <select id="selectCollectionView" class="selectView">
                             <option value="Poster">${OptionPoster}</option>
                             <option value="PosterCard">${OptionPosterCard}</option>
                             <option value="List">${OptionList}</option>
@@ -58,35 +44,35 @@
                     </div>
                     <br />
                     <div>
-                        <label for="selectPageSize">${LabelPageSize}</label>
-                        <select id="selectPageSize"></select>
+                        <label for="selectCollectionPageSize">${LabelPageSize}</label>
+                        <select id="selectCollectionPageSize" class="selectPageSize"></select>
                     </div>
 
                 </div>
                 <div class="tabFilter viewTab">
                     <fieldset data-role="controlgroup">
                         <legend>${HeaderFilters}</legend>
-                        <input class="chkStandardFilter" type="checkbox" name="chkIsFavorite" id="chkIsFavorite" data-filter="IsFavorite" data-mini="true">
-                        <label for="chkIsFavorite">${OptionFavorite}</label>
+                        <input class="chkStandardFilter chkIsFavorite" type="checkbox" id="chkIsFavoriteCollection" data-filter="IsFavorite" data-mini="true">
+                        <label for="chkIsFavoriteCollection">${OptionFavorite}</label>
 
-                        <input class="chkStandardFilter" type="checkbox" name="chkLikes" id="chkLikes" data-filter="Likes" data-mini="true">
-                        <label for="chkLikes">${OptionLikes}</label>
+                        <input class="chkStandardFilter chkLikes" type="checkbox" id="chkLikesCollection" data-filter="Likes" data-mini="true">
+                        <label for="chkLikesCollection">${OptionLikes}</label>
 
-                        <input class="chkStandardFilter" type="checkbox" name="chkDislikes" id="chkDislikes" data-filter="Dislikes" data-mini="true">
-                        <label for="chkDislikes">${OptionDislikes}</label>
+                        <input class="chkStandardFilter chkDislikes" type="checkbox" id="chkDislikesCollection" data-filter="Dislikes" data-mini="true">
+                        <label for="chkDislikesCollection">${OptionDislikes}</label>
                     </fieldset>
 
                     <fieldset data-role="controlgroup">
                         <legend>${LabelFeatures}</legend>
 
-                        <input class="chkFeatureFilter" type="checkbox" name="chkTrailer" id="chkTrailer" data-mini="true">
-                        <label for="chkTrailer">${OptionHasTrailer}</label>
+                        <input class="chkFeatureFilter chkTrailer" type="checkbox" id="chkTrailerCollection" data-mini="true">
+                        <label for="chkTrailerCollection">${OptionHasTrailer}</label>
 
-                        <input class="chkFeatureFilter" type="checkbox" name="chkThemeSong" id="chkThemeSong" data-mini="true">
-                        <label for="chkThemeSong">${OptionHasThemeSong}</label>
+                        <input class="chkFeatureFilter chkThemeSong" type="checkbox" id="chkThemeSongCollection" data-mini="true">
+                        <label for="chkThemeSongCollection">${OptionHasThemeSong}</label>
 
-                        <input class="chkFeatureFilter" type="checkbox" name="chkThemeVideo" id="chkThemeVideo" data-mini="true">
-                        <label for="chkThemeVideo">${OptionHasThemeVideo}</label>
+                        <input class="chkFeatureFilter chkThemeVideo" type="checkbox" id="chkThemeVideoCollection" data-mini="true">
+                        <label for="chkThemeVideoCollection">${OptionHasThemeVideo}</label>
 
                     </fieldset>
 
@@ -97,14 +83,14 @@
                             ${HeaderSortBy}
                         </legend>
 
-                        <input class="radioSortBy defaultSort" type="radio" name="radioSortBy" id="radioSortName" value="on" checked="checked" data-sortby="SortName" data-mini="true">
-                        <label for="radioSortName">${OptionNameSort}</label>
+                        <input class="radioSortBy defaultSort" type="radio" id="radioSortNameCollection" value="on" checked="checked" data-sortby="SortName" data-mini="true">
+                        <label for="radioSortNameCollection">${OptionNameSort}</label>
 
-                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioCommunityRating" value="off" data-sortby="CommunityRating" data-mini="true">
-                        <label for="radioCommunityRating">${OptionCommunityRating}</label>
+                        <input class="radioSortBy radioCommunityRating" type="radio" id="radioCommunityRatingCollection" value="off" data-sortby="CommunityRating" data-mini="true">
+                        <label for="radioCommunityRatingCollection">${OptionCommunityRating}</label>
 
-                        <input class="radioSortBy" type="radio" name="radioSortBy" id="radioDateCreated" value="off" data-sortby="DateCreated" data-mini="true">
-                        <label for="radioDateCreated">${OptionDateAdded}</label>
+                        <input class="radioSortBy radioDateCreated" type="radio" id="radioDateCreatedCollection" value="off" data-sortby="DateCreated" data-mini="true">
+                        <label for="radioDateCreatedCollection">${OptionDateAdded}</label>
                     </fieldset>
 
                     <fieldset data-role="controlgroup">
@@ -112,19 +98,15 @@
                             ${HeaderSortOrder}
                         </legend>
 
-                        <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioAscending" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
-                        <label for="radioAscending">${OptionAscending}</label>
+                        <input class="radioSortOrder radioAscending" type="radio" id="radioAscendingCollection" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
+                        <label for="radioAscendingCollection">${OptionAscending}</label>
 
-                        <input class="radioSortOrder" type="radio" name="radioSortOrder" id="radioDescending" value="off" data-sortorder="Descending" data-mini="true">
-                        <label for="radioDescending">${OptionDescending}</label>
+                        <input class="radioSortOrder radioDescending" type="radio" id="radioDescendingCollection" value="off" data-sortorder="Descending" data-mini="true">
+                        <label for="radioDescendingCollection">${OptionDescending}</label>
                     </fieldset>
                 </div>
             </form>
         </div>
-
-        <script type="text/javascript">
-            $('.newCollectionForm').off('submit', BoxSetEditor.onNewCollectionSubmit).on('submit', BoxSetEditor.onNewCollectionSubmit);
-        </script>
     </div>
 </body>
 </html>

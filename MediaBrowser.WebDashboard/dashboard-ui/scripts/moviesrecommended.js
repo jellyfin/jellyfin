@@ -230,17 +230,10 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
-
-        var page = this;
-
-        $('.recommendations', page).createCardMenus();
-
-    }).on('pagebeforeshowready', "#moviesRecommendedPage", function () {
+    function loadSuggestionsTab(page) {
 
         var parentId = LibraryMenu.getTopParentId();
 
-        var page = this;
         var userId = Dashboard.getCurrentUserId();
 
         var containers = page.querySelectorAll('.itemsContainer');
@@ -256,6 +249,75 @@
 
             if (AppInfo.enableMovieHomeSuggestions) {
                 loadSuggestions(page, userId, parentId);
+            }
+        }
+    }
+
+    function loadTab(page, index) {
+
+        page = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+
+        switch (index) {
+
+            case 0:
+                loadSuggestionsTab(page);
+                break;
+            default:
+                break;
+        }
+    }
+
+    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
+
+        var page = this;
+
+        $('.recommendations', page).createCardMenus();
+
+        var tabs = page.querySelector('paper-tabs');
+        var pages = page.querySelector('neon-animated-pages');
+
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages);
+
+        $(tabs).on('iron-select', function () {
+            var selected = this.selected;
+
+            if (LibraryBrowser.navigateOnLibraryTabSelect()) {
+
+                if (selected) {
+                    Dashboard.navigate('moviesrecommended.html?tab=' + selected);
+                } else {
+                    Dashboard.navigate('moviesrecommended.html');
+                }
+
+            } else {
+                page.querySelector('neon-animated-pages').selected = selected;
+            }
+        });
+
+        $(pages).on('tabchange', function () {
+            loadTab(page, parseInt(this.selected));
+        });
+
+    }).on('pageshowready', "#moviesRecommendedPage", function () {
+
+        var page = this;
+
+        if (!page.getAttribute('data-title')) {
+
+            var parentId = LibraryMenu.getTopParentId();
+
+            if (parentId) {
+
+                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).done(function (item) {
+
+                    page.setAttribute('data-title', item.Name);
+                    LibraryMenu.setTitle(item.Name);
+                });
+
+
+            } else {
+                page.setAttribute('data-title', Globalize.translate('TabMovies'));
+                LibraryMenu.setTitle(Globalize.translate('TabMovies'));
             }
         }
 

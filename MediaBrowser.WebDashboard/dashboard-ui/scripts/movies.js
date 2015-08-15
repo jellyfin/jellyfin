@@ -35,7 +35,7 @@
         return getWindowUrl();
     }
 
-    function reloadItems(page) {
+    function reloadItems(page, viewPanel) {
 
         Dashboard.showLoadingMsg();
 
@@ -56,7 +56,8 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false,
-                addSelectionButton: true
+                addSelectionButton: true,
+                viewPanelClass: 'movieViewPanel'
 
             });
 
@@ -70,7 +71,6 @@
                     items: result.Items,
                     shape: "backdrop",
                     preferThumb: true,
-                    context: 'movies',
                     lazy: true,
                     overlayText: true,
                     showDetailsMenu: true
@@ -82,7 +82,6 @@
                     items: result.Items,
                     shape: "backdrop",
                     preferThumb: true,
-                    context: 'movies',
                     lazy: true,
                     showTitle: true,
                     cardLayout: true,
@@ -96,7 +95,6 @@
                     items: result.Items,
                     shape: "banner",
                     preferBanner: true,
-                    context: 'movies',
                     lazy: true,
                     showDetailsMenu: true
                 });
@@ -105,7 +103,6 @@
 
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    context: 'movies',
                     sortBy: query.SortBy
                 });
                 trigger = true;
@@ -114,7 +111,6 @@
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "portrait",
-                    context: 'movies',
                     centerText: true,
                     lazy: true,
                     overlayText: true,
@@ -125,7 +121,6 @@
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "portrait",
-                    context: 'movies',
                     showTitle: true,
                     showYear: true,
                     lazy: true,
@@ -137,7 +132,6 @@
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "portrait",
-                    context: 'movies',
                     showTitle: true,
                     timeline: true,
                     centerText: true,
@@ -156,38 +150,47 @@
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             LibraryBrowser.setLastRefreshed(page);
+
             Dashboard.hideLoadingMsg();
+        });
+
+        Dashboard.getCurrentUser().done(function (user) {
+            if (user.Policy.IsAdministrator) {
+                $('.btnMergeVersions', page).show();
+            } else {
+                $('.btnMergeVersions', page).hide();
+            }
         });
     }
 
-    function updateFilterControls(page) {
+    function updateFilterControls(tabContent, viewPanel) {
 
         var query = getQuery();
         // Reset form values using the last used query
-        $('.radioSortBy', page).each(function () {
+        $('.radioSortBy', viewPanel).each(function () {
 
             this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
 
         }).checkboxradio('refresh');
 
-        $('.radioSortOrder', page).each(function () {
+        $('.radioSortOrder', viewPanel).each(function () {
 
             this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
 
         }).checkboxradio('refresh');
 
-        $('.chkStandardFilter', page).each(function () {
+        $('.chkStandardFilter', viewPanel).each(function () {
 
             var filters = "," + (query.Filters || "");
             var filterName = this.getAttribute('data-filter');
@@ -196,7 +199,7 @@
 
         }).checkboxradio('refresh');
 
-        $('.chkVideoTypeFilter', page).each(function () {
+        $('.chkVideoTypeFilter', viewPanel).each(function () {
 
             var filters = "," + (query.VideoTypes || "");
             var filterName = this.getAttribute('data-filter');
@@ -205,61 +208,74 @@
 
         }).checkboxradio('refresh');
 
-        $('#selectView', page).val(view).selectmenu('refresh');
+        $('select.selectView', viewPanel).val(view).selectmenu('refresh');
 
-        $('#chk3D', page).checked(query.Is3D == true).checkboxradio('refresh');
-        $('#chkHD', page).checked(query.IsHD == true).checkboxradio('refresh');
-        $('#chkSD', page).checked(query.IsHD == false).checkboxradio('refresh');
+        $('.chk3D', viewPanel).checked(query.Is3D == true).checkboxradio('refresh');
+        $('.chkHD', viewPanel).checked(query.IsHD == true).checkboxradio('refresh');
+        $('.chkSD', viewPanel).checked(query.IsHD == false).checkboxradio('refresh');
 
-        $('#chkSubtitle', page).checked(query.HasSubtitles == true).checkboxradio('refresh');
-        $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
-        $('#chkSpecialFeature', page).checked(query.HasSpecialFeature == true).checkboxradio('refresh');
-        $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
-        $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
+        $('.chkSubtitle', viewPanel).checked(query.HasSubtitles == true).checkboxradio('refresh');
+        $('.chkTrailer', viewPanel).checked(query.HasTrailer == true).checkboxradio('refresh');
+        $('.chkSpecialFeature', viewPanel).checked(query.HasSpecialFeature == true).checkboxradio('refresh');
+        $('.chkThemeSong', viewPanel).checked(query.HasThemeSong == true).checkboxradio('refresh');
+        $('.chkThemeVideo', viewPanel).checked(query.HasThemeVideo == true).checkboxradio('refresh');
 
-        $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
+        $('select.selectPageSize', viewPanel).val(query.Limit).selectmenu('refresh');
     }
 
     var filtersLoaded;
-    function reloadFiltersIfNeeded(page) {
+    function reloadFiltersIfNeeded(tabContent, viewPanel) {
 
         if (!filtersLoaded) {
 
             filtersLoaded = true;
 
             var query = getQuery();
-            QueryFilters.loadFilters(page, Dashboard.getCurrentUserId(), query, function () {
+            QueryFilters.loadFilters(viewPanel, Dashboard.getCurrentUserId(), query, function () {
 
-                reloadItems(page);
+                reloadItems(tabContent, viewPanel);
             });
         }
     }
 
-    $(document).on('pageinitdepends', "#moviesPage", function () {
+    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
 
         var page = this;
+        var index = 1;
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var viewPanel = $('.movieViewPanel', page);
 
-        $('.viewPanel', page).on('panelopen', function () {
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
 
-            reloadFiltersIfNeeded(page);
+            if (parseInt(this.selected) == index) {
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    reloadItems(tabContent, viewPanel);
+                    updateFilterControls(tabContent, viewPanel);
+                }
+            }
         });
 
-        $('.radioSortBy', this).on('click', function () {
+        $(viewPanel).on('panelopen', function () {
+
+            reloadFiltersIfNeeded(tabContent, viewPanel);
+        });
+
+        $('.radioSortBy', viewPanel).on('click', function () {
             var query = getQuery();
             query.StartIndex = 0;
             query.SortBy = this.getAttribute('data-sortby');
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.radioSortOrder', this).on('click', function () {
+        $('.radioSortOrder', viewPanel).on('click', function () {
             var query = getQuery();
             query.StartIndex = 0;
             query.SortOrder = this.getAttribute('data-sortorder');
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.chkStandardFilter', this).on('change', function () {
+        $('.chkStandardFilter', viewPanel).on('change', function () {
 
             var query = getQuery();
             var filterName = this.getAttribute('data-filter');
@@ -274,10 +290,10 @@
             query.StartIndex = 0;
             query.Filters = filters;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#selectView', this).on('change', function () {
+        $('select.selectView', viewPanel).on('change', function () {
 
             view = this.value;
 
@@ -287,16 +303,16 @@
                 query.SortBy = "PremiereDate";
                 query.SortOrder = "Descending";
                 query.StartIndex = 0;
-                $('#radioPremiereDate', page)[0].click();
+                $('.radioPremiereDate', page)[0].click();
 
             } else {
-                reloadItems(page);
+                reloadItems(tabContent, viewPanel);
             }
 
             LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
         });
 
-        $('.chkVideoTypeFilter', this).on('change', function () {
+        $('.chkVideoTypeFilter', viewPanel).on('change', function () {
 
             var query = getQuery();
             var filterName = this.getAttribute('data-filter');
@@ -311,323 +327,130 @@
             query.StartIndex = 0;
             query.VideoTypes = filters;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#chk3D', this).on('change', function () {
+        $('.chk3D', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
             query.Is3D = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#chkHD', this).on('change', function () {
+        $('.chkHD', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
             query.IsHD = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#chkSD', this).on('change', function () {
+        $('.chkSD', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
             query.IsHD = this.checked ? false : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#chkSubtitle', this).on('change', function () {
+        $('.chkSubtitle', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
             query.HasSubtitles = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#chkTrailer', this).on('change', function () {
+        $('.chkTrailer', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
             query.HasTrailer = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#chkSpecialFeature', this).on('change', function () {
+        $('.chkSpecialFeature', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
             query.HasSpecialFeature = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#chkThemeSong', this).on('change', function () {
+        $('.chkThemeSong', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
             query.HasThemeSong = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#chkThemeVideo', this).on('change', function () {
+        $('.chkThemeVideo', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
             query.HasThemeVideo = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+        $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
 
             var query = getQuery();
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
 
         }).on('alphaclear', function (e) {
 
             var query = getQuery();
             query.NameStartsWithOrGreater = '';
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#radioBasicFilters', this).on('change', function () {
+        $('.radioBasicFilters', viewPanel).on('change', function () {
 
             if (this.checked) {
-                $('.basicFilters', page).show();
-                $('.advancedFilters', page).hide();
+                $('.basicFilters', viewPanel).show();
+                $('.advancedFilters', viewPanel).hide();
             } else {
-                $('.basicFilters', page).hide();
+                $('.basicFilters', viewPanel).hide();
             }
         });
 
-        $('#radioAdvancedFilters', this).on('change', function () {
+        $('.radioAdvancedFilters', viewPanel).on('change', function () {
 
             if (this.checked) {
-                $('.advancedFilters', page).show();
-                $('.basicFilters', page).hide();
+                $('.advancedFilters', viewPanel).show();
+                $('.basicFilters', viewPanel).hide();
             } else {
-                $('.advancedFilters', page).hide();
+                $('.advancedFilters', viewPanel).hide();
             }
         });
 
-        $('.itemsContainer', page).on('needsrefresh', function () {
+        $('.itemsContainer', tabContent).on('needsrefresh', function () {
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
 
         });
 
-        $('#selectPageSize', page).on('change', function () {
+        $('select.selectPageSize', viewPanel).on('change', function () {
             var query = getQuery();
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-    }).on('pagebeforeshowready', "#moviesPage", function () {
-
-        var query = getQuery();
-
-        var page = this;
-
-        var viewkey = getSavedQueryKey();
-
-        LibraryBrowser.loadSavedQueryValues(viewkey, query);
-
-        QueryFilters.onPageShow(page, query);
-
-        if (LibraryBrowser.needsRefresh(page)) {
-            LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
-
-                if (val) {
-                    $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
-                } else {
-                    reloadItems(page);
-                }
-            });
-        }
-
-        updateFilterControls(page);
-
-        filtersLoaded = false;
-
-        Dashboard.getCurrentUser().done(function (user) {
-            if (user.Policy.IsAdministrator) {
-                $('.btnMergeVersions', page).show();
-            } else {
-                $('.btnMergeVersions', page).hide();
-            }
-        });
     });
 
 })(jQuery, document);
-
-(function (window) {
-
-    function renderOptions(page, selector, cssClass, items) {
-
-        var elem;
-
-        if (items.length) {
-
-            elem = $(selector, page).show();
-
-        } else {
-            elem = $(selector, page).hide();
-        }
-
-        var html = '';
-
-        //  style="margin: -.2em -.8em;"
-        html += '<div data-role="controlgroup">';
-
-        var index = 0;
-        var idPrefix = 'chk' + selector.substring(1);
-
-        html += items.map(function (filter) {
-
-            var itemHtml = '';
-
-            var id = idPrefix + index;
-            itemHtml += '<label for="' + id + '">' + filter + '</label>';
-            itemHtml += '<input id="' + id + '" type="checkbox" data-filter="' + filter + '" data-mini="true" class="' + cssClass + '" />';
-
-            index++;
-
-            return itemHtml;
-
-        }).join('');
-
-        html += '</div>';
-
-        $('.filterOptions', elem).html(html).trigger('create');
-    }
-
-    function renderFilters(page, result) {
-
-        // If there's a huge number of these they will be really show to render
-        if (result.Tags) {
-            result.Tags.length = Math.min(result.Tags.length, 50);
-        }
-
-        renderOptions(page, '.genreFilters', 'chkGenreFilter', result.Genres);
-        renderOptions(page, '.officialRatingFilters', 'chkOfficialRatingFilter', result.OfficialRatings);
-        renderOptions(page, '.tagFilters', 'chkTagFilter', result.Tags);
-        renderOptions(page, '.yearFilters', 'chkYearFilter', result.Years);
-
-    }
-
-    function onFiltersLoaded(page, query, reloadItemsFn) {
-
-        $('.chkGenreFilter', page).on('change', function () {
-
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.Genres || "";
-            var delimiter = '|';
-
-            filters = (delimiter + filters).replace(delimiter + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + delimiter + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.Genres = filters;
-
-            reloadItemsFn();
-        });
-        $('.chkTagFilter', page).on('change', function () {
-
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.Tags || "";
-            var delimiter = '|';
-
-            filters = (delimiter + filters).replace(delimiter + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + delimiter + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.Tags = filters;
-
-            reloadItemsFn();
-        });
-        $('.chkYearFilter', page).on('change', function () {
-
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.Years || "";
-            var delimiter = ',';
-
-            filters = (delimiter + filters).replace(delimiter + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + delimiter + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.Years = filters;
-
-            reloadItemsFn();
-        });
-        $('.chkOfficialRatingFilter', page).on('change', function () {
-
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.OfficialRatings || "";
-            var delimiter = '|';
-
-            filters = (delimiter + filters).replace(delimiter + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + delimiter + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.OfficialRatings = filters;
-
-            reloadItemsFn();
-        });
-    }
-
-    function loadFilters(page, userId, itemQuery, reloadItemsFn) {
-
-        return ApiClient.getJSON(ApiClient.getUrl('Items/Filters', {
-
-            UserId: userId,
-            ParentId: itemQuery.ParentId,
-            IncludeItemTypes: itemQuery.IncludeItemTypes
-
-
-        })).done(function (result) {
-
-            renderFilters(page, result);
-
-            onFiltersLoaded(page, itemQuery, reloadItemsFn);
-        });
-
-    }
-
-    function onPageShow(page, query) {
-        query.Genres = null;
-        query.Years = null;
-        query.OfficialRatings = null;
-        query.Tags = null;
-    }
-
-    window.QueryFilters = {
-        loadFilters: loadFilters,
-        onPageShow: onPageShow
-    };
-
-})(window);

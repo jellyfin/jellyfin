@@ -2,26 +2,41 @@
 
     var view = LibraryBrowser.getDefaultItemsView('Thumb', 'Thumb');
 
-    // The base query options
-    var query = {
+    var data = {};
+    function getQuery() {
 
-        SortBy: "SortName",
-        SortOrder: "Ascending",
-        IncludeItemTypes: "Movie",
-        Recursive: true,
-        Fields: "DateCreated,SyncInfo,ItemCounts",
-        StartIndex: 0
-    };
+        var key = getSavedQueryKey();
+        var pageData = data[key];
+
+        if (!pageData) {
+            pageData = data[key] = {
+                query: {
+                    SortBy: "SortName",
+                    SortOrder: "Ascending",
+                    IncludeItemTypes: "Movie",
+                    Recursive: true,
+                    Fields: "DateCreated,SyncInfo,ItemCounts",
+                    StartIndex: 0,
+                    Limit: LibraryBrowser.getDefaultPageSize()
+                }
+            };
+
+            pageData.query.ParentId = LibraryMenu.getTopParentId();
+            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+        }
+        return pageData.query;
+    }
 
     function getSavedQueryKey() {
 
-        return 'moviegenres' + (query.ParentId || '');
+        return getWindowUrl();
     }
 
-    function reloadItems(page) {
+    function reloadItems(page, viewPanel) {
 
         Dashboard.showLoadingMsg();
 
+        var query = getQuery();
         ApiClient.getGenres(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
@@ -34,7 +49,9 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
-                showLimit: false
+                showLimit: false,
+                viewPanelClass: 'genreViewPanel'
+
             })).trigger('create');
 
             updateFilterControls(page);
@@ -85,18 +102,18 @@
                 });
             }
 
-            var elem = page.querySelector('#items');
+            var elem = page.querySelector('.itemsContainer');
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
@@ -107,16 +124,31 @@
 
     function updateFilterControls(page) {
 
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
-        $('#selectView', page).val(view).selectmenu('refresh');
+        var query = getQuery();
+        $('select.selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('select.selectView', page).val(view).selectmenu('refresh');
     }
 
-    $(document).on('pageinitdepends', "#movieGenresPage", function () {
+    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
 
         var page = this;
+        var index = 4;
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var viewPanel = $('.genreViewPanel', page);
 
-        $('.chkStandardFilter', this).on('change', function () {
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
 
+            if (parseInt(this.selected) == index) {
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    reloadItems(tabContent, viewPanel);
+                    updateFilterControls(viewPanel);
+                }
+            }
+        });
+
+        $('.chkStandardFilter', viewPanel).on('change', function () {
+
+            var query = getQuery();
             var filterName = this.getAttribute('data-filter');
             var filters = query.Filters || "";
 
@@ -129,60 +161,24 @@
             query.StartIndex = 0;
             query.Filters = filters;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#selectPageSize', page).on('change', function () {
+        $('select.selectPageSize', viewPanel).on('change', function () {
+            var query = getQuery();
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#selectView', this).on('change', function () {
+        $('select.selectView', viewPanel).on('change', function () {
 
             view = this.value;
 
-            if (view == "Timeline") {
-
-                query.SortBy = "PremiereDate";
-                query.SortOrder = "Descending";
-                query.StartIndex = 0;
-                $('#radioPremiereDate', page)[0].click();
-
-            } else {
-                reloadItems(page);
-            }
-
+            reloadItems(tabContent, viewPanel);
             LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
         });
 
-    }).on('pagebeforeshowready', "#movieGenresPage", function () {
-
-        var page = this;
-        query.ParentId = LibraryMenu.getTopParentId();
-
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
-        }
-
-        var viewkey = getSavedQueryKey();
-
-        LibraryBrowser.loadSavedQueryValues(viewkey, query);
-
-        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
-
-            if (val) {
-                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
-            } else {
-                reloadItems(page);
-            }
-        });
-
-        updateFilterControls(this);
     });
 
 })(jQuery, document);

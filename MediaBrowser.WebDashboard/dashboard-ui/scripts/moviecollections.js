@@ -2,28 +2,43 @@
 
     var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
 
-    // The base query options
-    var query = {
+    var data = {};
+    function getQuery() {
 
-        SortBy: "SortName",
-        SortOrder: "Ascending",
-        IncludeItemTypes: "BoxSet",
-        Recursive: true,
-        Fields: "PrimaryImageAspectRatio,SortName,SyncInfo,CanDelete",
-        StartIndex: 0,
-        ImageTypeLimit: 1,
-        EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
-    };
+        var key = getSavedQueryKey();
+        var pageData = data[key];
+
+        if (!pageData) {
+            pageData = data[key] = {
+                query: {
+                    SortBy: "SortName",
+                    SortOrder: "Ascending",
+                    IncludeItemTypes: "BoxSet",
+                    Recursive: true,
+                    Fields: "PrimaryImageAspectRatio,SortName,SyncInfo,CanDelete",
+                    ImageTypeLimit: 1,
+                    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+                    StartIndex: 0,
+                    Limit: LibraryBrowser.getDefaultPageSize()
+                }
+            };
+
+            //pageData.query.ParentId = LibraryMenu.getTopParentId();
+            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+        }
+        return pageData.query;
+    }
 
     function getSavedQueryKey() {
 
-        return 'collections' + (query.ParentId || '');
+        return getWindowUrl();
     }
 
-    function reloadItems(page) {
+    function reloadItems(page, viewPanel) {
 
         Dashboard.showLoadingMsg();
 
+        var query = getQuery();
         var promise1 = ApiClient.getItems(Dashboard.getCurrentUserId(), query);
         var promise2 = Dashboard.getCurrentUser();
 
@@ -43,18 +58,22 @@
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
                 showLimit: false,
+                viewPanelClass: 'collectionViewPanel'
+
             })).trigger('create');
 
-            updateFilterControls(page);
+            updateFilterControls(page, viewPanel);
             var trigger = false;
 
             if (result.TotalRecordCount) {
+
+                var context = getParameterByName('context');
 
                 if (view == "List") {
 
                     html = LibraryBrowser.getListViewHtml({
                         items: result.Items,
-                        context: 'movies',
+                        context: context,
                         sortBy: query.SortBy
                     });
                     trigger = true;
@@ -63,7 +82,7 @@
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "auto",
-                        context: 'movies',
+                        context: context,
                         showTitle: true,
                         centerText: true,
                         lazy: true
@@ -73,7 +92,7 @@
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "auto",
-                        context: 'movies',
+                        context: context,
                         showTitle: true,
                         cardLayout: true,
                         lazy: true,
@@ -84,7 +103,7 @@
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "backdrop",
-                        context: 'movies',
+                        context: context,
                         showTitle: true,
                         centerText: true,
                         lazy: true,
@@ -95,7 +114,7 @@
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "backdrop",
-                        context: 'movies',
+                        context: context,
                         showTitle: true,
                         lazy: true,
                         preferThumb: true,
@@ -121,12 +140,12 @@
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
@@ -135,22 +154,23 @@
         });
     }
 
-    function updateFilterControls(page) {
+    function updateFilterControls(tabContent, viewPanel) {
 
+        var query = getQuery();
         // Reset form values using the last used query
-        $('.radioSortBy', page).each(function () {
+        $('.radioSortBy', viewPanel).each(function () {
 
             this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
 
         }).checkboxradio('refresh');
 
-        $('.radioSortOrder', page).each(function () {
+        $('.radioSortOrder', viewPanel).each(function () {
 
             this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
 
         }).checkboxradio('refresh');
 
-        $('.chkStandardFilter', page).each(function () {
+        $('.chkStandardFilter', viewPanel).each(function () {
 
             var filters = "," + (query.Filters || "");
             var filterName = this.getAttribute('data-filter');
@@ -159,31 +179,32 @@
 
         }).checkboxradio('refresh');
 
-        $('#selectView', page).val(view).selectmenu('refresh');
+        $('select.selectView', viewPanel).val(view).selectmenu('refresh');
 
-        $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
-        $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
-        $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
+        $('.chkTrailer', viewPanel).checked(query.HasTrailer == true).checkboxradio('refresh');
+        $('.chkThemeSong', viewPanel).checked(query.HasThemeSong == true).checkboxradio('refresh');
+        $('.chkThemeVideo', viewPanel).checked(query.HasThemeVideo == true).checkboxradio('refresh');
 
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('select.selectPageSize', viewPanel).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinitdepends', "#boxsetsPage", function () {
+    function initEvents(tabContent, viewPanel) {
 
-        var page = this;
-
-        $('.radioSortBy', this).on('click', function () {
+        $('.radioSortBy', viewPanel).on('click', function () {
+            var query = getQuery();
             query.SortBy = this.getAttribute('data-sortby');
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.radioSortOrder', this).on('click', function () {
+        $('.radioSortOrder', viewPanel).on('click', function () {
+            var query = getQuery();
             query.SortOrder = this.getAttribute('data-sortorder');
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.chkStandardFilter', this).on('change', function () {
+        $('.chkStandardFilter', viewPanel).on('change', function () {
 
+            var query = getQuery();
             var filterName = this.getAttribute('data-filter');
             var filters = query.Filters || "";
 
@@ -196,313 +217,91 @@
             query.StartIndex = 0;
             query.Filters = filters;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#chkTrailer', this).on('change', function () {
+        $('.chkTrailer', viewPanel).on('change', function () {
 
+            var query = getQuery();
             query.StartIndex = 0;
             query.HasTrailer = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#chkThemeSong', this).on('change', function () {
+        $('.chkThemeSong', viewPanel).on('change', function () {
 
+            var query = getQuery();
             query.StartIndex = 0;
             query.HasThemeSong = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#chkThemeVideo', this).on('change', function () {
+        $('.chkThemeVideo', viewPanel).on('change', function () {
 
+            var query = getQuery();
             query.StartIndex = 0;
             query.HasThemeVideo = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('#selectView', this).on('change', function () {
+        $('select.selectView', viewPanel).on('change', function () {
 
             view = this.value;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
 
             LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
         });
 
-        $('#selectPageSize', page).on('change', function () {
+        $('select.selectPageSize', viewPanel).on('change', function () {
+            var query = getQuery();
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
+    }
+
+    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
+
+        var page = this;
+        var index = 3;
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var viewPanel = $('.collectionViewPanel', page);
+
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+
+            if (parseInt(this.selected) == index) {
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    reloadItems(tabContent, viewPanel);
+                    updateFilterControls(viewPanel);
+                }
+            }
+        });
+
+        initEvents(tabContent, viewPanel);
+    });
+
+    $(document).on('pageinitdepends', "#boxsetsPage", function () {
+
+        var page = this;
+
+        var content = page;
+        var viewPanel = page.querySelector('.viewPanel');
+
+        initEvents(content, viewPanel);
 
     }).on('pagebeforeshowready', "#boxsetsPage", function () {
 
         var page = this;
 
-        var context = getParameterByName('context');
+        var content = page;
+        var viewPanel = page.querySelector('.viewPanel');
 
-        if (context == 'movies') {
-            $('.collectionTabs', page).hide();
-            $('.movieTabs', page).show();
-
-            // TODO: Improve in the future to limit scope
-            query.ParentId = null;
-        } else {
-            $('.collectionTabs', page).show();
-            $('.movieTabs', page).hide();
-            query.ParentId = LibraryMenu.getTopParentId();
-
-            // Doing this for now due to reports of the page being empty for AutoBoxSet users
-            query.ParentId = null;
-        }
-
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
-        }
-
-        var viewkey = getSavedQueryKey();
-
-        LibraryBrowser.loadSavedQueryValues(viewkey, query);
-
-        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
-
-            if (val) {
-                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
-            } else {
-                reloadItems(page);
-            }
-        });
-
-        updateFilterControls(this);
-
+        reloadItems(content, viewPanel);
+        updateFilterControls(content, viewPanel);
     });
-
-})(jQuery, document);
-
-(function ($, document) {
-
-    function getNewCollectionPanel(createIfNeeded) {
-
-        var panel = $('.newCollectionPanel');
-
-        if (createIfNeeded && !panel.length) {
-
-            var html = '';
-
-            html += '<div>';
-            html += '<div data-role="panel" class="newCollectionPanel" data-position="right" data-display="overlay" data-position-fixed="true" data-theme="a">';
-            html += '<form class="newCollectionForm">';
-
-            html += '<h3>' + Globalize.translate('HeaderAddToCollection') + '</h3>';
-
-            html += '<div class="fldSelectCollection">';
-            html += '<br />';
-            html += '<label for="selectCollectionToAddTo">' + Globalize.translate('LabelSelectCollection') + '</label>';
-            html += '<select id="selectCollectionToAddTo" data-mini="true"></select>';
-            html += '</div>';
-
-            html += '<div class="newCollectionInfo">';
-            html += '<br />';
-
-            html += '<div>';
-            html += '<label for="txtNewCollectionName">' + Globalize.translate('LabelName') + '</label>';
-            html += '<input type="text" id="txtNewCollectionName" required="required" />';
-            html += '<div class="fieldDescription">' + Globalize.translate('NewCollectionNameExample') + '</div>';
-            html += '</div>';
-
-            html += '<br />';
-
-            html += '<div>';
-            html += '<label for="chkEnableInternetMetadata">' + Globalize.translate('OptionSearchForInternetMetadata') + '</label>';
-            html += '<input type="checkbox" id="chkEnableInternetMetadata" data-mini="true" />';
-            html += '</div>';
-
-            // newCollectionInfo
-            html += '</div>';
-
-            html += '<br />';
-            html += '<p>';
-            html += '<input class="fldSelectedItemIds" type="hidden" />';
-            html += '<button type="submit" data-icon="plus" data-mini="true" data-theme="b">' + Globalize.translate('ButtonSubmit') + '</button>';
-            html += '</p>';
-
-            html += '</form>';
-            html += '</div>';
-            html += '</div>';
-
-            panel = $(html).appendTo(document.body).trigger('create').find('.newCollectionPanel');
-
-            $('#selectCollectionToAddTo', panel).on('change', function () {
-
-                if (this.value) {
-                    $('.newCollectionInfo', panel).hide();
-                    $('#txtNewCollectionName', panel).removeAttr('required');
-                } else {
-                    $('.newCollectionInfo', panel).show();
-                    $('#txtNewCollectionName', panel).attr('required', 'required');
-                }
-            });
-
-            $('.newCollectionForm', panel).off('submit', BoxSetEditor.onNewCollectionSubmit).on('submit', BoxSetEditor.onNewCollectionSubmit);
-        }
-        return panel;
-    }
-
-    function showCollectionPanel(items) {
-
-        var panel = getNewCollectionPanel(true).panel('toggle');
-
-        $('.fldSelectedItemIds', panel).val(items.join(','));
-
-
-        require(['jqmicons']);
-
-        if (items.length) {
-            $('.fldSelectCollection', panel).show();
-            populateCollections(panel);
-        } else {
-            $('.fldSelectCollection', panel).hide();
-            $('#selectCollectionToAddTo', panel).html('').val('').selectmenu('refresh').trigger('change');
-        }
-    }
-
-    function populateCollections(panel) {
-
-        var select = $('#selectCollectionToAddTo', panel);
-
-        $('.newCollectionInfo', panel).hide();
-
-        var options = {
-
-            Recursive: true,
-            IncludeItemTypes: "BoxSet",
-            SortBy: "SortName"
-        };
-
-        ApiClient.getItems(Dashboard.getCurrentUserId(), options).done(function (result) {
-
-            var html = '';
-
-            html += '<option value="">' + Globalize.translate('OptionNewCollection') + '</option>';
-
-            html += result.Items.map(function (i) {
-
-                return '<option value="' + i.Id + '">' + i.Name + '</option>';
-            });
-
-            select.html(html).val('').selectmenu('refresh').trigger('change');
-
-        });
-    }
-
-    $(document).on('pageinitdepends', ".collectionEditorPage", function () {
-
-        var page = this;
-
-        // The button is created dynamically
-        $(page).on('click', '.btnNewCollection', function () {
-
-            showCollectionPanel([]);
-        });
-    });
-
-    function redirectToCollection(id) {
-
-        var context = getParameterByName('context');
-
-        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
-
-            Dashboard.navigate(LibraryBrowser.getHref(item, context));
-
-        });
-    }
-
-    function createCollection(panel) {
-
-        var url = ApiClient.getUrl("Collections", {
-
-            Name: $('#txtNewCollectionName', panel).val(),
-            IsLocked: !$('#chkEnableInternetMetadata', panel).checked(),
-            Ids: $('.fldSelectedItemIds', panel).val() || ''
-
-            //ParentId: getParameterByName('parentId') || LibraryMenu.getTopParentId()
-
-        });
-
-        ApiClient.ajax({
-            type: "POST",
-            url: url,
-            dataType: "json"
-
-        }).done(function (result) {
-
-            Dashboard.hideLoadingMsg();
-
-            var id = result.Id;
-
-            panel.panel('toggle');
-            redirectToCollection(id);
-
-        });
-    }
-
-    function addToCollection(panel, id) {
-
-        var url = ApiClient.getUrl("Collections/" + id + "/Items", {
-
-            Ids: $('.fldSelectedItemIds', panel).val() || ''
-        });
-
-        ApiClient.ajax({
-            type: "POST",
-            url: url
-
-        }).done(function () {
-
-            Dashboard.hideLoadingMsg();
-
-            panel.panel('toggle');
-
-            Dashboard.alert(Globalize.translate('MessageItemsAdded'));
-        });
-    }
-
-    window.BoxSetEditor = {
-
-        showPanel: function (items) {
-            showCollectionPanel(items);
-        },
-
-        onNewCollectionSubmit: function () {
-
-            Dashboard.showLoadingMsg();
-
-            var panel = getNewCollectionPanel(false);
-
-            var collectionId = $('#selectCollectionToAddTo', panel).val();
-
-            if (collectionId) {
-                addToCollection(panel, collectionId);
-            } else {
-                createCollection(panel);
-            }
-
-            return false;
-        },
-
-        supportsAddingToCollection: function (item) {
-
-            var invalidTypes = ['Person', 'Genre', 'MusicGenre', 'Studio', 'GameGenre', 'BoxSet', 'Playlist', 'UserView', 'CollectionFolder', 'Audio', 'Episode'];
-
-            return item.LocationType == 'FileSystem' && !item.CollectionType && invalidTypes.indexOf(item.Type) == -1 && item.MediaType != 'Photo';
-        }
-    };
 
 })(jQuery, document);

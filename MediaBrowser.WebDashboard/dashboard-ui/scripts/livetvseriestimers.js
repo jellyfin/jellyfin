@@ -117,7 +117,7 @@
         }).checkboxradio('refresh');
     }
 
-    $(document).on('pagebeforeshowready', "#liveTvSuggestedPage", function () {
+    $(document).on('pageinitdepends', "#liveTvSuggestedPage", function () {
 
         var page = this;
 

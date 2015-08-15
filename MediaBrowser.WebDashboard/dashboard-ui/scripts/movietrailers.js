@@ -1,28 +1,42 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
+    var data = {};
 
-    // The base query options
-    var query = {
+    function getQuery() {
 
-        SortBy: "SortName",
-        SortOrder: "Ascending",
-        Recursive: true,
-        Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
-        StartIndex: 0,
-        ImageTypeLimit: 1,
-        EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
-    };
+        var key = getSavedQueryKey();
+        var pageData = data[key];
+
+        if (!pageData) {
+            pageData = data[key] = {
+                query: {
+                    SortBy: "SortName",
+                    SortOrder: "Ascending",
+                    Recursive: true,
+                    Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
+                    ImageTypeLimit: 1,
+                    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+                    StartIndex: 0,
+                    Limit: LibraryBrowser.getDefaultPageSize()
+                }
+            };
+
+            pageData.query.ParentId = LibraryMenu.getTopParentId();
+            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+        }
+        return pageData.query;
+    }
 
     function getSavedQueryKey() {
 
-        return 'trailers' + (query.ParentId || '');
+        return getWindowUrl();
     }
 
-    function reloadItems(page) {
+    function reloadItems(page, viewPanel) {
 
         Dashboard.showLoadingMsg();
 
+        var query = getQuery();
         query.UserId = Dashboard.getCurrentUserId();
 
         ApiClient.getJSON(ApiClient.getUrl('Trailers', query)).done(function (result) {
@@ -43,17 +57,17 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
-                showLimit: false
+                showLimit: false,
+                viewPanelClass: 'trailerViewPanel'
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
-            updateFilterControls(page);
+            updateFilterControls(page, viewPanel);
 
             html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "portrait",
-                context: 'movies-trailers',
                 lazy: true,
                 showDetailsMenu: true
             });
@@ -64,12 +78,12 @@
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
@@ -87,22 +101,23 @@
         });
     }
 
-    function updateFilterControls(page) {
+    function updateFilterControls(tabContent, viewPanel) {
 
+        var query = getQuery();
         // Reset form values using the last used query
-        $('.radioSortBy', page).each(function () {
+        $('.radioSortBy', viewPanel).each(function () {
 
             this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
 
         }).checkboxradio('refresh');
 
-        $('.radioSortOrder', page).each(function () {
+        $('.radioSortOrder', viewPanel).each(function () {
 
             this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
 
         }).checkboxradio('refresh');
 
-        $('.chkStandardFilter', page).each(function () {
+        $('.chkStandardFilter', viewPanel).each(function () {
 
             var filters = "," + (query.Filters || "");
             var filterName = this.getAttribute('data-filter');
@@ -111,8 +126,8 @@
 
         }).checkboxradio('refresh');
 
-        $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
+        $('select.selectPageSize', viewPanel).val(query.Limit).selectmenu('refresh');
     }
 
     function playReel(page) {
@@ -126,7 +141,7 @@
             Fields: "MediaSources,Chapters"
         };
 
-        if ($('#chkUnwatchedOnly', page).checked()) {
+        if ($('.chkUnwatchedOnly', page).checked()) {
             reelQuery.Filters = "IsPlayed";
         }
 
@@ -145,24 +160,40 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#movieTrailersPage", function () {
+    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
 
         var page = this;
+        var index = 2;
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var viewPanel = $('.trailerViewPanel', page);
 
-        $('.radioSortBy', this).on('click', function () {
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+
+            if (parseInt(this.selected) == index) {
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    reloadItems(tabContent, viewPanel);
+                    updateFilterControls(tabContent, viewPanel);
+                }
+            }
+        });
+
+        $('.radioSortBy', viewPanel).on('click', function () {
+            var query = getQuery();
             query.StartIndex = 0;
             query.SortBy = this.getAttribute('data-sortby');
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.radioSortOrder', this).on('click', function () {
+        $('.radioSortOrder', viewPanel).on('click', function () {
+            var query = getQuery();
             query.StartIndex = 0;
             query.SortOrder = this.getAttribute('data-sortorder');
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.chkStandardFilter', this).on('change', function () {
+        $('.chkStandardFilter', viewPanel).on('change', function () {
 
+            var query = getQuery();
             var filterName = this.getAttribute('data-filter');
             var filters = query.Filters || "";
 
@@ -175,70 +206,45 @@
             query.StartIndex = 0;
             query.Filters = filters;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+        $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
 
+            var query = getQuery();
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
 
         }).on('alphaclear', function (e) {
 
+            var query = getQuery();
             query.NameStartsWithOrGreater = '';
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.itemsContainer', page).on('needsrefresh', function () {
+        $('.itemsContainer', tabContent).on('needsrefresh', function () {
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
 
         });
 
-        $('#selectPageSize', page).on('change', function () {
+        $('select.selectPageSize', viewPanel).on('change', function () {
+            var query = getQuery();
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.btnTrailerReel', page).on('click', function () {
+        $('.btnTrailerReel', tabContent).on('click', function () {
 
             $('.popupTrailerReel', page).popup('open');
 
         });
 
-        $('.popupTrailerReelForm').off('submit', onSubmit).on('submit', onSubmit);
-
-    }).on('pagebeforeshowready', "#movieTrailersPage", function () {
-
-        query.ParentId = LibraryMenu.getTopParentId();
-
-        var page = this;
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
-        }
-
-        var viewkey = getSavedQueryKey();
-
-        LibraryBrowser.loadSavedQueryValues(viewkey, query);
-
-        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
-
-            if (val) {
-                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
-            } else {
-                reloadItems(page);
-            }
-        });
-
-        updateFilterControls(this);
+        $('.popupTrailerReelForm', page).off('submit', onSubmit).on('submit', onSubmit);
     });
 
 })(jQuery, document);
