@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="moviesRecommendedPage" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs collectionEditorPage" data-backdroptype="movie" data-require="scripts/moviesrecommended,scripts/moviestudios,scripts/moviepeople,scripts/moviegenres,scripts/movietrailers,scripts/queryfilters,scripts/movies,scripts/moviecollections">
+    <div id="moviesPage" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs collectionEditorPage" data-backdroptype="movie" data-require="scripts/moviesrecommended,scripts/moviestudios,scripts/moviepeople,scripts/moviegenres,scripts/movietrailers,scripts/queryfilters,scripts/movies,scripts/moviecollections">
 
         <div class="libraryViewNav libraryViewNavWithMinHeight">
             <paper-tabs style="display:none;min-width:770px;margin:auto;">
@@ -101,7 +101,7 @@
                                 &nbsp;
                             </div>
                         </div>
-                        <div class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
+                        <div class="itemsContainer" style="text-align:center;"></div>
                         <div class="noItemsMessage" style="display: none; text-align: center;">
                             <p>${MessageNoCollectionsAvailable}</p>
                         </div>
@@ -141,92 +141,6 @@
             </neon-animated-pages>
         </div>
 
-        <div data-role="panel" class="viewPanel collectionViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
-
-                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabSort">${TabSort}</a>
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
-                </div>
-
-                <div class="tabView viewTab">
-
-                    <div>
-                        <label for="selectCollectionView">${LabelView}</label>
-                        <select id="selectCollectionView" class="selectView">
-                            <option value="Poster">${OptionPoster}</option>
-                            <option value="PosterCard">${OptionPosterCard}</option>
-                            <option value="List">${OptionList}</option>
-                            <option value="Thumb">${OptionThumb}</option>
-                            <option value="ThumbCard">${OptionThumbCard}</option>
-                        </select>
-                    </div>
-                    <br />
-                    <div>
-                        <label for="selectCollectionPageSize">${LabelPageSize}</label>
-                        <select id="selectCollectionPageSize" class="selectPageSize"></select>
-                    </div>
-
-                </div>
-                <div class="tabFilter viewTab">
-                    <fieldset data-role="controlgroup">
-                        <legend>${HeaderFilters}</legend>
-                        <input class="chkStandardFilter chkIsFavorite" type="checkbox" id="chkIsFavoriteCollection" data-filter="IsFavorite" data-mini="true">
-                        <label for="chkIsFavoriteCollection">${OptionFavorite}</label>
-
-                        <input class="chkStandardFilter chkLikes" type="checkbox" id="chkLikesCollection" data-filter="Likes" data-mini="true">
-                        <label for="chkLikesCollection">${OptionLikes}</label>
-
-                        <input class="chkStandardFilter chkDislikes" type="checkbox" id="chkDislikesCollection" data-filter="Dislikes" data-mini="true">
-                        <label for="chkDislikesCollection">${OptionDislikes}</label>
-                    </fieldset>
-
-                    <fieldset data-role="controlgroup">
-                        <legend>${LabelFeatures}</legend>
-
-                        <input class="chkFeatureFilter chkTrailer" type="checkbox" id="chkTrailerCollection" data-mini="true">
-                        <label for="chkTrailerCollection">${OptionHasTrailer}</label>
-
-                        <input class="chkFeatureFilter chkThemeSong" type="checkbox" id="chkThemeSongCollection" data-mini="true">
-                        <label for="chkThemeSongCollection">${OptionHasThemeSong}</label>
-
-                        <input class="chkFeatureFilter chkThemeVideo" type="checkbox" id="chkThemeVideoCollection" data-mini="true">
-                        <label for="chkThemeVideoCollection">${OptionHasThemeVideo}</label>
-
-                    </fieldset>
-
-                </div>
-                <div class="tabSort viewTab">
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            ${HeaderSortBy}
-                        </legend>
-
-                        <input class="radioSortBy defaultSort" type="radio" id="radioSortNameCollection" value="on" checked="checked" data-sortby="SortName" data-mini="true">
-                        <label for="radioSortNameCollection">${OptionNameSort}</label>
-
-                        <input class="radioSortBy radioCommunityRating" type="radio" id="radioCommunityRatingCollection" value="off" data-sortby="CommunityRating" data-mini="true">
-                        <label for="radioCommunityRatingCollection">${OptionCommunityRating}</label>
-
-                        <input class="radioSortBy radioDateCreated" type="radio" id="radioDateCreatedCollection" value="off" data-sortby="DateCreated" data-mini="true">
-                        <label for="radioDateCreatedCollection">${OptionDateAdded}</label>
-                    </fieldset>
-
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            ${HeaderSortOrder}
-                        </legend>
-
-                        <input class="radioSortOrder radioAscending" type="radio" id="radioAscendingCollection" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
-                        <label for="radioAscendingCollection">${OptionAscending}</label>
-
-                        <input class="radioSortOrder radioDescending" type="radio" id="radioDescendingCollection" value="off" data-sortorder="Descending" data-mini="true">
-                        <label for="radioDescendingCollection">${OptionDescending}</label>
-                    </fieldset>
-                </div>
-            </form>
-        </div>
         <div data-role="panel" class="viewPanel movieViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
             <form>
 
@@ -503,49 +417,6 @@
                 </div>
             </form>
         </div>
-        <div data-role="panel" class="viewPanel genreViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
-
-                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
-                </div>
-
-                <div class="tabView viewTab">
-
-                    <div>
-                        <label for="selectGenreView">${LabelView}</label>
-                        <select id="selectGenreView" class="selectView">
-                            <option value="Poster">${OptionPoster}</option>
-                            <option value="Thumb">${OptionThumb}</option>
-                            <option value="ThumbCard">${OptionThumbCard}</option>
-                        </select>
-                    </div>
-                    <br />
-                    <div>
-                        <label for="selectGenrePageSize">${LabelPageSize}</label>
-                        <select id="selectGenrePageSize" class="selectPageSize"></select>
-                    </div>
-
-                </div>
-                <div class="tabFilter viewTab">
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            ${HeaderFilters}
-                        </legend>
-                        <input class="chkStandardFilter" type="checkbox" id="chkIsFavoriteGenre" data-filter="IsFavorite" data-mini="true">
-                        <label for="chkIsFavoriteGenre">${OptionFavorite}</label>
-
-                        <input class="chkStandardFilter" type="checkbox" id="chkLikesGenre" data-filter="Likes" data-mini="true">
-                        <label for="chkLikesGenre">${OptionLikes}</label>
-
-                        <input class="chkStandardFilter" type="checkbox" id="chkDislikesGenre" data-filter="Dislikes" data-mini="true">
-                        <label for="chkDislikesGenre">${OptionDislikes}</label>
-                    </fieldset>
-
-                </div>
-            </form>
-        </div>
         <div data-role="panel" class="viewPanel peopleViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
             <form>
 
@@ -583,40 +454,6 @@
                         <input class="chkPersonTypeFilter" type="checkbox" id="chkWriterPerson" data-filter="Writer" data-mini="true">
                         <label for="chkWriterPerson">${OptionWriters}</label>
                     </fieldset>
-                </div>
-            </form>
-        </div>
-        <div data-role="panel" class="viewPanel studioViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
-            <form>
-
-                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
-                </div>
-
-                <div class="tabView viewTab">
-
-                    <div>
-                        <label for="selectStudioPageSize">${LabelPageSize}</label>
-                        <select id="selectStudioPageSize" class="selectPageSize"></select>
-                    </div>
-
-                </div>
-                <div class="tabFilter viewTab">
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            ${HeaderFilters}
-                        </legend>
-                        <input class="chkStandardFilter" type="checkbox" id="chkIsFavoriteStudio" data-filter="IsFavorite" data-mini="true" />
-                        <label for="chkIsFavoriteStudio">${OptionFavorite}</label>
-
-                        <input class="chkStandardFilter" type="checkbox" id="chkLikesStudio" data-filter="Likes" data-mini="true" />
-                        <label for="chkLikesStudio">${OptionLikes}</label>
-
-                        <input class="chkStandardFilter" type="checkbox" id="chkDislikesStudio" data-filter="Dislikes" data-mini="true" />
-                        <label for="chkDislikesStudio">${OptionDislikes}</label>
-                    </fieldset>
-
                 </div>
             </form>
         </div>

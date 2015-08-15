@@ -159,17 +159,17 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
+    $(document).on('pageinitdepends', "#moviesPage", function () {
 
         var page = this;
         var index = 5;
-        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-        var viewPanel = $('.peopleViewPanel', page);
 
         $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
 
             if (parseInt(this.selected) == index) {
 
+                var viewPanel = page.querySelector('.peopleViewPanel');
+                var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                 if (!tabContent.initComplete) {
                     initPage(tabContent, viewPanel);
                     tabContent.initComplete = true;

@@ -838,5 +838,12 @@
     "ErrorValidatingSupporterInfo": "There was an error validating your Emby Supporter information. Please try again later.",
     "HeaderSync": "Sync",
     "LabelLocalSyncStatusValue": "Status: {0}",
-    "MessageSyncStarted": "Sync started"
+    "MessageSyncStarted": "Sync started",
+    "OptionPoster": "Poster",
+    "OptionPosterCard": "Poster card",
+    "OptionList": "List",
+    "OptionThumb": "Thumb",
+    "OptionThumbCard": "Thumb card",
+    "OptionBanner": "Banner"
+
 }

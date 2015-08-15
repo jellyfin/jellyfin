@@ -15,10 +15,7 @@
                 return defaultValue;
             }
 
-            // Chrome seems to have virtualization built-in and can handle large lists easily
-            var isChrome = $.browser.chrome;
-
-            return isChrome ? 200 : 100;
+            return 100;
         },
 
         getDefaultItemsView: function (view, mobileView) {
@@ -2359,6 +2356,34 @@
             return [20, 50, 100, 200, 300, 400, 500];
         },
 
+        showLayoutMenu: function (button, currentLayout) {
+
+            // Add banner and list once all screens support them
+            var views = ['Poster', 'PosterCard', 'Thumb', 'ThumbCard'];
+
+            var menuItems = views.map(function (v) {
+                return {
+                    name: Globalize.translate('Option' + v),
+                    id: v,
+                    ironIcon: currentLayout == v ? 'check' : null
+                };
+            });
+
+            require(['actionsheet'], function () {
+
+                ActionSheetElement.show({
+                    items: menuItems,
+                    positionTo: button,
+                    callback: function (id) {
+
+                        $(button).trigger('layoutchange', [id]);
+                    }
+                });
+
+            });
+
+        },
+
         getQueryPagingHtml: function (options) {
 
             var startIndex = options.startIndex;
@@ -2391,7 +2416,7 @@
                 html += '</span>';
             }
 
-            if (showControls || options.viewButton || options.addSelectionButton || options.additionalButtonsHtml) {
+            if (showControls || options.viewButton || options.addLayoutButton || options.addSelectionButton || options.additionalButtonsHtml) {
 
                 html += '<div style="display:inline-block;margin-left:10px;">';
 
@@ -2405,6 +2430,11 @@
 
                 if (options.addSelectionButton) {
                     html += '<paper-button raised class="subdued notext btnToggleSelections"><iron-icon icon="check"></iron-icon></paper-button>';
+                }
+
+                if (options.addLayoutButton) {
+
+                    html += '<paper-button raised class="subdued notext btnChangeLayout" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');"><iron-icon icon="view-comfy"></iron-icon></paper-button>';
                 }
 
                 if (options.viewButton) {

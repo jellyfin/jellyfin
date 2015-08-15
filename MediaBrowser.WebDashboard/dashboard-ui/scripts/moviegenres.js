@@ -35,7 +35,7 @@
         return getWindowUrl();
     }
 
-    function reloadItems(page, viewPanel) {
+    function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
@@ -47,18 +47,20 @@
 
             var html = '';
 
+            var view = getPageData().view;
             $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
-                viewButton: true,
+                viewButton: false,
                 showLimit: false,
-                viewPanelClass: 'genreViewPanel'
+                updatePageSizeSetting: false,
+                addLayoutButton: true,
+                currentLayout: view
 
             })).trigger('create');
 
             updateFilterControls(page);
-            var view = getPageData().view;
 
             if (view == "Thumb") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -112,12 +114,17 @@
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page, viewPanel);
+                reloadItems(page);
             });
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page, viewPanel);
+                reloadItems(page);
+            });
+
+            $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
+                getPageData().view = layout;
+                reloadItems(page);
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
@@ -128,67 +135,25 @@
 
     function updateFilterControls(page) {
 
-        var query = getQuery();
-        $('select.selectPageSize', page).val(query.Limit).selectmenu('refresh');
-        $('select.selectView', page).val(getPageData().view).selectmenu('refresh');
     }
 
-    function initPage(tabContent, viewPanel) {
-
-        $('.chkStandardFilter', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.Filters || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.Filters = filters;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('select.selectPageSize', viewPanel).on('change', function () {
-            var query = getQuery();
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('select.selectView', viewPanel).on('change', function () {
-
-            var newView = this.value;
-            getPageData().view = newView;
-
-            reloadItems(tabContent, viewPanel);
-            LibraryBrowser.saveViewSetting(getSavedQueryKey(), newView);
-        });
-    }
-
-    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
+    $(document).on('pageinitdepends', "#moviesPage", function () {
 
         var page = this;
         var index = 4;
-        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-        var viewPanel = $('.genreViewPanel', page);
 
         $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
 
             if (parseInt(this.selected) == index) {
 
+                var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
                 if (!tabContent.initComplete) {
-                    initPage(tabContent, viewPanel);
                     tabContent.initComplete = true;
                 }
 
                 if (LibraryBrowser.needsRefresh(tabContent)) {
-                    reloadItems(tabContent, viewPanel);
-                    updateFilterControls(viewPanel);
+                    reloadItems(tabContent);
+                    updateFilterControls();
                 }
             }
         });

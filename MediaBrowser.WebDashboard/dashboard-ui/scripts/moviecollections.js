@@ -36,7 +36,7 @@
         return getWindowUrl();
     }
 
-    function reloadItems(page, viewPanel) {
+    function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
 
@@ -54,22 +54,25 @@
 
             var html = '';
 
+            var view = getPageData().view;
+
             $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
-                viewButton: true,
+                viewButton: false,
                 showLimit: false,
-                viewPanelClass: 'collectionViewPanel'
+                updatePageSizeSetting: false,
+                addLayoutButton: true,
+                currentLayout: view
 
             })).trigger('create');
 
-            updateFilterControls(page, viewPanel);
+            updateFilterControls(page);
             var trigger = false;
 
             if (result.TotalRecordCount) {
 
-                var view = getPageData().view;
                 var context = getParameterByName('context');
 
                 if (view == "List") {
@@ -143,12 +146,17 @@
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page, viewPanel);
+                reloadItems(page);
             });
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page, viewPanel);
+                reloadItems(page);
+            });
+
+            $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
+                getPageData().view = layout;
+                reloadItems(page);
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
@@ -157,135 +165,40 @@
         });
     }
 
-    function updateFilterControls(tabContent, viewPanel) {
+    function updateFilterControls(tabContent) {
 
-        var query = getQuery();
-        // Reset form values using the last used query
-        $('.radioSortBy', viewPanel).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', viewPanel).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.chkStandardFilter', viewPanel).each(function () {
-
-            var filters = "," + (query.Filters || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        }).checkboxradio('refresh');
-
-        $('select.selectView', viewPanel).val(getPageData().view).selectmenu('refresh');
-
-        $('.chkTrailer', viewPanel).checked(query.HasTrailer == true).checkboxradio('refresh');
-        $('.chkThemeSong', viewPanel).checked(query.HasThemeSong == true).checkboxradio('refresh');
-        $('.chkThemeVideo', viewPanel).checked(query.HasThemeVideo == true).checkboxradio('refresh');
-
-        $('select.selectPageSize', viewPanel).val(query.Limit).selectmenu('refresh');
     }
 
-    function initPage(tabContent, viewPanel) {
+    function initPage(tabContent) {
 
-        $('.radioSortBy', viewPanel).on('click', function () {
-            var query = getQuery();
-            query.SortBy = this.getAttribute('data-sortby');
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.radioSortOrder', viewPanel).on('click', function () {
-            var query = getQuery();
-            query.SortOrder = this.getAttribute('data-sortorder');
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.chkStandardFilter', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.Filters || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.Filters = filters;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.chkTrailer', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.HasTrailer = this.checked ? true : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.chkThemeSong', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.HasThemeSong = this.checked ? true : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.chkThemeVideo', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.HasThemeVideo = this.checked ? true : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('select.selectView', viewPanel).on('change', function () {
+        $('select.selectView').on('change', function () {
 
             var newView = this.value;
             getPageData().view = newView;
 
-            reloadItems(tabContent, viewPanel);
+            reloadItems(tabContent);
 
             LibraryBrowser.saveViewSetting(getSavedQueryKey(), newView);
         });
-
-        $('select.selectPageSize', viewPanel).on('change', function () {
-            var query = getQuery();
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(tabContent, viewPanel);
-        });
     }
 
-    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
+    $(document).on('pageinitdepends', "#moviesPage", function () {
 
         var page = this;
         var index = 3;
-        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-        var viewPanel = $('.collectionViewPanel', page);
 
         $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
 
             if (parseInt(this.selected) == index) {
+                var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+
                 if (!tabContent.initComplete) {
-                    initPage(tabContent, viewPanel);
+                    initPage(tabContent);
                     tabContent.initComplete = true;
                 }
 
                 if (LibraryBrowser.needsRefresh(tabContent)) {
-                    reloadItems(tabContent, viewPanel);
-                    updateFilterControls(viewPanel);
+                    reloadItems(tabContent);
                 }
             }
         });
@@ -296,19 +209,17 @@
         var page = this;
 
         var content = page;
-        var viewPanel = page.querySelector('.viewPanel');
 
-        initPage(content, viewPanel);
+        initPage(content);
 
     }).on('pagebeforeshowready', "#boxsetsPage", function () {
 
         var page = this;
 
         var content = page;
-        var viewPanel = page.querySelector('.viewPanel');
 
-        reloadItems(content, viewPanel);
-        updateFilterControls(content, viewPanel);
+        reloadItems(content);
+        updateFilterControls(content);
     });
 
 })(jQuery, document);

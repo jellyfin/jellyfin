@@ -268,7 +268,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
+    $(document).on('pageinitdepends', "#moviesPage", function () {
 
         var page = this;
 
@@ -299,7 +299,7 @@
             loadTab(page, parseInt(this.selected));
         });
 
-    }).on('pageshowready', "#moviesRecommendedPage", function () {
+    }).on('pageshowready', "#moviesPage", function () {
 
         var page = this;
 
