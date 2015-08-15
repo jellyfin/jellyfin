@@ -238,20 +238,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return Task.FromResult(0);
         }
 
-        public Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
+        public async Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
             info.Id = Guid.NewGuid().ToString("N");
 
-            UpdateTimersForSeriesTimer(info);
+            await UpdateTimersForSeriesTimer(info).ConfigureAwait(false);
             _seriesTimerProvider.Add(info);
-            return Task.FromResult(true);
         }
 
-        public Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
+        public async Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
             _seriesTimerProvider.Update(info);
-            UpdateTimersForSeriesTimer(info);
-            return Task.FromResult(true);
+            await UpdateTimersForSeriesTimer(info).ConfigureAwait(false);
         }
 
         public Task UpdateTimerAsync(TimerInfo info, CancellationToken cancellationToken)
@@ -594,12 +592,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return _config.GetConfiguration<LiveTvOptions>("livetv");
         }
 
-        private void UpdateTimersForSeriesTimer(SeriesTimerInfo seriesTimer)
+        private async Task UpdateTimersForSeriesTimer(SeriesTimerInfo seriesTimer)
         {
             List<ProgramInfo> epgData;
             if (seriesTimer.RecordAnyChannel)
             {
-                epgData = GetEpgDataForAllChannels();
+                var channels = await GetChannelsAsync(CancellationToken.None).ConfigureAwait(false);
+                var channelIds = channels.Select(i => i.Id).ToList();
+                epgData = GetEpgDataForChannels(channelIds);
             }
             else
             {
@@ -656,9 +656,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 allPrograms = allPrograms.Where(epg => string.Equals(epg.ChannelId, seriesTimer.ChannelId, StringComparison.OrdinalIgnoreCase));
             }
 
-            allPrograms = allPrograms.Where(epg => seriesTimer.Days.Contains(epg.StartDate.DayOfWeek));
+            allPrograms = allPrograms.Where(i => seriesTimer.Days.Contains(i.StartDate.DayOfWeek));
 
-            return allPrograms.Where(epg => string.Equals(epg.SeriesId, seriesTimer.SeriesId, StringComparison.OrdinalIgnoreCase));
+            return allPrograms.Where(i => string.Equals(i.SeriesId, seriesTimer.SeriesId, StringComparison.OrdinalIgnoreCase));
         }
 
         private string GetChannelEpgCachePath(string channelId)
@@ -690,16 +690,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 return new List<ProgramInfo>();
             }
         }
-        private List<ProgramInfo> GetEpgDataForAllChannels()
+        private List<ProgramInfo> GetEpgDataForChannels(List<string> channelIds)
         {
-            List<ProgramInfo> channelEpg = new List<ProgramInfo>();
-            DirectoryInfo dir = new DirectoryInfo(Path.Combine(DataPath, "epg"));
-            List<string> channels = dir.GetFiles("*").Where(i => string.Equals(i.Extension, ".json", StringComparison.OrdinalIgnoreCase)).Select(f => f.Name).ToList();
-            foreach (var channel in channels)
-            {
-                channelEpg.AddRange(GetEpgDataForChannel(channel));
-            }
-            return channelEpg;
+            return channelIds.SelectMany(GetEpgDataForChannel).ToList();
         }
 
         public void Dispose()
