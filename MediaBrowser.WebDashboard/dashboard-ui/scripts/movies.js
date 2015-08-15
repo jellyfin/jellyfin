@@ -239,22 +239,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
-
-        var page = this;
-        var index = 1;
-        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-        var viewPanel = $('.movieViewPanel', page);
-
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-
-            if (parseInt(this.selected) == index) {
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-                    reloadItems(tabContent, viewPanel);
-                    updateFilterControls(tabContent, viewPanel);
-                }
-            }
-        });
+    function initPage(tabContent, viewPanel) {
 
         $(viewPanel).on('panelopen', function () {
 
@@ -303,7 +288,7 @@
                 query.SortBy = "PremiereDate";
                 query.SortOrder = "Descending";
                 query.StartIndex = 0;
-                $('.radioPremiereDate', page)[0].click();
+                $('.radioPremiereDate', viewPanel)[0].click();
 
             } else {
                 reloadItems(tabContent, viewPanel);
@@ -450,6 +435,30 @@
             query.StartIndex = 0;
             reloadItems(tabContent, viewPanel);
         });
+    }
+
+    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
+
+        var page = this;
+        var index = 1;
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var viewPanel = $('.movieViewPanel', page);
+
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+
+            if (parseInt(this.selected) == index) {
+                if (!tabContent.initComplete) {
+                    initPage(tabContent, viewPanel);
+                    tabContent.initComplete = true;
+                }
+
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    reloadItems(tabContent, viewPanel);
+                    updateFilterControls(tabContent, viewPanel);
+                }
+            }
+        });
+
 
     });
 

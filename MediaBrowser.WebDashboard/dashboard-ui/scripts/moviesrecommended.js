@@ -284,9 +284,9 @@
             if (LibraryBrowser.navigateOnLibraryTabSelect()) {
 
                 if (selected) {
-                    Dashboard.navigate('moviesrecommended.html?tab=' + selected);
+                    Dashboard.navigate('movies.html?tab=' + selected);
                 } else {
-                    Dashboard.navigate('moviesrecommended.html');
+                    Dashboard.navigate('movies.html');
                 }
 
             } else {

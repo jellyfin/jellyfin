@@ -188,7 +188,7 @@
         $('select.selectPageSize', viewPanel).val(query.Limit).selectmenu('refresh');
     }
 
-    function initEvents(tabContent, viewPanel) {
+    function initPage(tabContent, viewPanel) {
 
         $('.radioSortBy', viewPanel).on('click', function () {
             var query = getQuery();
@@ -274,14 +274,17 @@
         $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
 
             if (parseInt(this.selected) == index) {
+                if (!tabContent.initComplete) {
+                    initPage(tabContent, viewPanel);
+                    tabContent.initComplete = true;
+                }
+
                 if (LibraryBrowser.needsRefresh(tabContent)) {
                     reloadItems(tabContent, viewPanel);
                     updateFilterControls(viewPanel);
                 }
             }
         });
-
-        initEvents(tabContent, viewPanel);
     });
 
     $(document).on('pageinitdepends', "#boxsetsPage", function () {
@@ -291,7 +294,7 @@
         var content = page;
         var viewPanel = page.querySelector('.viewPanel');
 
-        initEvents(content, viewPanel);
+        initPage(content, viewPanel);
 
     }).on('pagebeforeshowready', "#boxsetsPage", function () {
 

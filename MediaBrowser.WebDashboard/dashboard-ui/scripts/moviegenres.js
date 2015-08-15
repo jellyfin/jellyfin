@@ -129,22 +129,7 @@
         $('select.selectView', page).val(view).selectmenu('refresh');
     }
 
-    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
-
-        var page = this;
-        var index = 4;
-        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-        var viewPanel = $('.genreViewPanel', page);
-
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-
-            if (parseInt(this.selected) == index) {
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-                    reloadItems(tabContent, viewPanel);
-                    updateFilterControls(viewPanel);
-                }
-            }
-        });
+    function initPage(tabContent, viewPanel) {
 
         $('.chkStandardFilter', viewPanel).on('change', function () {
 
@@ -178,6 +163,31 @@
             reloadItems(tabContent, viewPanel);
             LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
         });
+    }
+
+    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
+
+        var page = this;
+        var index = 4;
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var viewPanel = $('.genreViewPanel', page);
+
+        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+
+            if (parseInt(this.selected) == index) {
+
+                if (!tabContent.initComplete) {
+                    initPage(tabContent, viewPanel);
+                    tabContent.initComplete = true;
+                }
+
+                if (LibraryBrowser.needsRefresh(tabContent)) {
+                    reloadItems(tabContent, viewPanel);
+                    updateFilterControls(viewPanel);
+                }
+            }
+        });
+
 
     });
 

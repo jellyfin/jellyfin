@@ -259,20 +259,6 @@
                 $('.lnkPhotoAlbums', page).addClass('ui-btn-active');
             }
         }
-        else if (context == 'movies' || context == 'movies-trailers') {
-            elem = $('#movieTabs', page).show();
-            $('a', elem).removeClass('ui-btn-active');
-
-            if (item.Type == 'BoxSet') {
-                $('.lnkCollections', page).addClass('ui-btn-active');
-            }
-            else if (context == 'movies-trailers') {
-                $('.lnkMovieTrailers', page).addClass('ui-btn-active');
-            }
-            else {
-                $('.lnkMovies', page).addClass('ui-btn-active');
-            }
-        }
         else if (context == 'tv') {
             elem = $('#tvShowsTabs', page).show();
         }

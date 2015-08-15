@@ -1819,7 +1819,7 @@
     <Content Include="dashboard-ui\librarysettings.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\moviesrecommended.html">
+    <Content Include="dashboard-ui\movies.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\musicalbums.html">
