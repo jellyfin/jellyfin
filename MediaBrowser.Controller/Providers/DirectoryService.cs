@@ -58,8 +58,9 @@ namespace MediaBrowser.Controller.Providers
                 
                 try
                 {
-                    var list = new DirectoryInfo(path)
-                        .EnumerateFileSystemInfos("*", SearchOption.TopDirectoryOnly);
+                    // using EnumerateFileSystemInfos doesn't handle reparse points (symlinks)
+                    var list = new DirectoryInfo(path).EnumerateDirectories("*", SearchOption.TopDirectoryOnly)
+                        .Concat<FileSystemInfo>(new DirectoryInfo(path).EnumerateFiles("*", SearchOption.TopDirectoryOnly));
 
                     // Seeing dupes on some users file system for some reason
                     foreach (var item in list)
