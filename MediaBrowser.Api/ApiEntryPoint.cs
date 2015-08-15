@@ -336,12 +336,6 @@ namespace MediaBrowser.Api
             if (job.Type != TranscodingJobType.Progressive)
             {
                 timerDuration = 1800000;
-
-                // We can really reduce the timeout for apps that are using the newer api
-                if (!string.IsNullOrWhiteSpace(job.PlaySessionId))
-                {
-                    timerDuration = 300000;
-                }
             }
 
             job.PingTimeout = timerDuration;
