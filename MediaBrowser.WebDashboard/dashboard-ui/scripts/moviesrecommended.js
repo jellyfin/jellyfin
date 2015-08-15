@@ -68,6 +68,7 @@
             }
 
             $('#recentlyAddedItems', page).html(html).lazyChildren();
+            LibraryBrowser.setLastRefreshed(page);
         });
     }
 

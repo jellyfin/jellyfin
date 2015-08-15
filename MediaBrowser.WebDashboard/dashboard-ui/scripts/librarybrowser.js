@@ -68,10 +68,17 @@
             }
         },
 
+        getSavedView: function (key) {
+
+            var val = appStorage.getItem(key + '_' + Dashboard.getCurrentUserId() + '_view');
+
+            return val;
+        },
+
         getSavedViewSetting: function (key) {
 
             var deferred = $.Deferred();
-            var val = appStorage.getItem(key + '_' + Dashboard.getCurrentUserId() + '_view');
+            var val = LibraryBrowser.getSavedView(key);
 
             deferred.resolveWith(null, [val]);
             return deferred.promise();

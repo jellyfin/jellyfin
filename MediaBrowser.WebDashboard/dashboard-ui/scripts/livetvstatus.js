@@ -395,10 +395,10 @@
         //    id: 'SchedulesDirect'
         //});
 
-        menuItems.push({
-            name: 'Emby Guide',
-            id: 'emby'
-        });
+        //menuItems.push({
+        //    name: 'Emby Guide',
+        //    id: 'emby'
+        //});
 
         require(['actionsheet'], function () {
 

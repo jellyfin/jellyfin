@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 {
-    public class SchedulesDirect
+    public class SchedulesDirect : IListingsProvider
     {
         private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;

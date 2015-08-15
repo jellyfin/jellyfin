@@ -1,11 +1,8 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
-
     var data = {};
 
-    function getQuery() {
-
+    function getPageData() {
         var key = getSavedQueryKey();
         var pageData = data[key];
 
@@ -21,13 +18,19 @@
                     EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                     StartIndex: 0,
                     Limit: LibraryBrowser.getDefaultPageSize()
-                }
+                },
+                view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('Poster', 'Poster')
             };
 
             pageData.query.ParentId = LibraryMenu.getTopParentId();
             LibraryBrowser.loadSavedQueryValues(key, pageData.query);
         }
-        return pageData.query;
+        return pageData;
+    }
+
+    function getQuery() {
+
+        return getPageData().query;
     }
 
     function getSavedQueryKey() {
@@ -42,6 +45,7 @@
         var userId = Dashboard.getCurrentUserId();
 
         var query = getQuery();
+        var view = getPageData().view;
 
         ApiClient.getItems(userId, query).done(function (result) {
 
@@ -208,7 +212,7 @@
 
         }).checkboxradio('refresh');
 
-        $('select.selectView', viewPanel).val(view).selectmenu('refresh');
+        $('select.selectView', viewPanel).val(getPageData().view).selectmenu('refresh');
 
         $('.chk3D', viewPanel).checked(query.Is3D == true).checkboxradio('refresh');
         $('.chkHD', viewPanel).checked(query.IsHD == true).checkboxradio('refresh');
@@ -280,10 +284,11 @@
 
         $('select.selectView', viewPanel).on('change', function () {
 
-            view = this.value;
+            var newView = this.value;
+            getPageData().view = newView;
 
             var query = getQuery();
-            if (view == "Timeline") {
+            if (newView == "Timeline") {
 
                 query.SortBy = "PremiereDate";
                 query.SortOrder = "Descending";
@@ -294,7 +299,7 @@
                 reloadItems(tabContent, viewPanel);
             }
 
-            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(), newView);
         });
 
         $('.chkVideoTypeFilter', viewPanel).on('change', function () {
@@ -453,6 +458,7 @@
                 }
 
                 if (LibraryBrowser.needsRefresh(tabContent)) {
+
                     reloadItems(tabContent, viewPanel);
                     updateFilterControls(tabContent, viewPanel);
                 }

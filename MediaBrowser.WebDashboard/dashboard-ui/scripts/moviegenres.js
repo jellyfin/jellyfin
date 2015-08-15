@@ -1,10 +1,7 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Thumb', 'Thumb');
-
     var data = {};
-    function getQuery() {
-
+    function getPageData() {
         var key = getSavedQueryKey();
         var pageData = data[key];
 
@@ -18,13 +15,19 @@
                     Fields: "DateCreated,SyncInfo,ItemCounts",
                     StartIndex: 0,
                     Limit: LibraryBrowser.getDefaultPageSize()
-                }
+                },
+                view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('Thumb', 'Thumb')
             };
 
             pageData.query.ParentId = LibraryMenu.getTopParentId();
             LibraryBrowser.loadSavedQueryValues(key, pageData.query);
         }
-        return pageData.query;
+        return pageData;
+    }
+
+    function getQuery() {
+
+        return getPageData().query;
     }
 
     function getSavedQueryKey() {
@@ -55,6 +58,7 @@
             })).trigger('create');
 
             updateFilterControls(page);
+            var view = getPageData().view;
 
             if (view == "Thumb") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -126,7 +130,7 @@
 
         var query = getQuery();
         $('select.selectPageSize', page).val(query.Limit).selectmenu('refresh');
-        $('select.selectView', page).val(view).selectmenu('refresh');
+        $('select.selectView', page).val(getPageData().view).selectmenu('refresh');
     }
 
     function initPage(tabContent, viewPanel) {
@@ -158,10 +162,11 @@
 
         $('select.selectView', viewPanel).on('change', function () {
 
-            view = this.value;
+            var newView = this.value;
+            getPageData().view = newView;
 
             reloadItems(tabContent, viewPanel);
-            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(), newView);
         });
     }
 

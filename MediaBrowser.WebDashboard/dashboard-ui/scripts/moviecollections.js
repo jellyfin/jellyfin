@@ -1,10 +1,7 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
-
     var data = {};
-    function getQuery() {
-
+    function getPageData() {
         var key = getSavedQueryKey();
         var pageData = data[key];
 
@@ -20,13 +17,19 @@
                     EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
                     StartIndex: 0,
                     Limit: LibraryBrowser.getDefaultPageSize()
-                }
+                },
+                view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('Poster', 'Poster')
             };
 
-            //pageData.query.ParentId = LibraryMenu.getTopParentId();
+            pageData.query.ParentId = LibraryMenu.getTopParentId();
             LibraryBrowser.loadSavedQueryValues(key, pageData.query);
         }
-        return pageData.query;
+        return pageData;
+    }
+
+    function getQuery() {
+
+        return getPageData().query;
     }
 
     function getSavedQueryKey() {
@@ -67,6 +70,7 @@
 
             if (result.TotalRecordCount) {
 
+                var view = getPageData().view;
                 var context = getParameterByName('context');
 
                 if (view == "List") {
@@ -179,7 +183,7 @@
 
         }).checkboxradio('refresh');
 
-        $('select.selectView', viewPanel).val(view).selectmenu('refresh');
+        $('select.selectView', viewPanel).val(getPageData().view).selectmenu('refresh');
 
         $('.chkTrailer', viewPanel).checked(query.HasTrailer == true).checkboxradio('refresh');
         $('.chkThemeSong', viewPanel).checked(query.HasThemeSong == true).checkboxradio('refresh');
@@ -249,11 +253,12 @@
 
         $('select.selectView', viewPanel).on('change', function () {
 
-            view = this.value;
+            var newView = this.value;
+            getPageData().view = newView;
 
             reloadItems(tabContent, viewPanel);
 
-            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
+            LibraryBrowser.saveViewSetting(getSavedQueryKey(), newView);
         });
 
         $('select.selectPageSize', viewPanel).on('change', function () {
