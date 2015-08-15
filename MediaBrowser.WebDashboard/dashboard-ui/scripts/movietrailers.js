@@ -88,15 +88,6 @@
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
-            Dashboard.getCurrentUser().done(function (user) {
-
-                if (user.Policy.EnableMediaPlayback && result.Items.length) {
-                    $('.btnTrailerReel', page).show();
-                } else {
-                    $('.btnTrailerReel', page).hide();
-                }
-            });
-
             Dashboard.hideLoadingMsg();
         });
     }
@@ -128,36 +119,6 @@
 
         $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
         $('select.selectPageSize', viewPanel).val(query.Limit).selectmenu('refresh');
-    }
-
-    function playReel(page) {
-
-        $('.popupTrailerReel', page).popup('close');
-
-        var reelQuery = {
-            UserId: Dashboard.getCurrentUserId(),
-            SortBy: 'Random',
-            Limit: 50,
-            Fields: "MediaSources,Chapters"
-        };
-
-        if ($('.chkUnwatchedOnly', page).checked()) {
-            reelQuery.Filters = "IsPlayed";
-        }
-
-        ApiClient.getJSON(ApiClient.getUrl('Trailers', reelQuery)).done(function (result) {
-
-            MediaController.play({
-                items: result.Items
-            });
-        });
-    }
-
-    function onSubmit() {
-        var page = $(this).parents('.page');
-
-        playReel(page);
-        return false;
     }
 
     function initPage(page, tabContent, viewPanel) {
@@ -222,14 +183,6 @@
             query.StartIndex = 0;
             reloadItems(tabContent, viewPanel);
         });
-
-        $('.btnTrailerReel', tabContent).on('click', function () {
-
-            $('.popupTrailerReel', page).popup('open');
-
-        });
-
-        $('.popupTrailerReelForm', page).off('submit', onSubmit).on('submit', onSubmit);
     }
 
     $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {

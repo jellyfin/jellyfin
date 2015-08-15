@@ -1654,32 +1654,32 @@
             } else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
 
                 if (item.Name && options.showTitle) {
-                    icon = 'fa-music';
+                    icon = 'library-music';
                 }
                 cssClass += " defaultBackground";
 
             } else if (item.Type == "Recording" || item.Type == "Program" || item.Type == "TvChannel") {
 
                 if (item.Name && options.showTitle) {
-                    icon = 'fa-folder-open';
+                    icon = 'folder-open';
                 }
 
                 cssClass += " defaultBackground";
             } else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
 
                 if (item.Name && options.showTitle) {
-                    icon = 'fa-video-camera';
+                    icon = 'videocam';
                 }
                 cssClass += " defaultBackground";
             } else if (item.Type == "Person") {
 
                 if (item.Name && options.showTitle) {
-                    icon = 'fa-user';
+                    icon = 'person';
                 }
                 cssClass += " defaultBackground";
             } else {
                 if (item.Name && options.showTitle) {
-                    icon = 'fa-folder-open';
+                    icon = 'folder-open';
                 }
                 cssClass += " defaultBackground";
             }
@@ -1765,7 +1765,7 @@
             html += '<a' + transition + ' class="' + anchorCssClass + '" href="' + href + '"' + defaultActionAttribute + '>';
             html += '<div class="' + imageCssClass + '" style="' + style + '"' + dataSrc + '>';
             if (icon) {
-                html += '<i class="fa ' + icon + '"></i>';
+                html += '<iron-icon icon="' + icon + '"></iron-icon>';
             }
             html += '</div>';
 

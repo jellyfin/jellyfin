@@ -302,12 +302,13 @@
     position: relative;
 }
 
-    .iconCardImage .fa {
+    .iconCardImage iron-icon {
         color: rgb(255, 255, 255);
         position: absolute;
         left: 0;
         right: 0;
-        font-size: 50px;
+        width: 64px;
+        height: 64px;
         margin: auto;
         top: 25%;
     }

@@ -4,10 +4,10 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="moviesRecommendedPage" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs collectionEditorPage" data-backdroptype="movie" data-require="jqmicons,scripts/moviesrecommended,paperbuttonstyle,scripts/moviestudios,scripts/moviepeople,scripts/moviegenres,scripts/movietrailers,scripts/queryfilters,scripts/movies,scripts/moviecollections">
+    <div id="moviesRecommendedPage" data-role="page" class="page libraryPage backdropPage pageWithAbsoluteTabs collectionEditorPage" data-backdroptype="movie" data-require="scripts/moviesrecommended,scripts/moviestudios,scripts/moviepeople,scripts/moviegenres,scripts/movietrailers,scripts/queryfilters,scripts/movies,scripts/moviecollections">
 
         <div class="libraryViewNav libraryViewNavWithMinHeight">
-            <paper-tabs style="display:none;min-width:800px;margin:auto;">
+            <paper-tabs style="display:none;min-width:770px;margin:auto;">
                 <paper-tab><iron-icon icon="info"></iron-icon>${TabSuggestions}</paper-tab>
                 <paper-tab><iron-icon icon="local-movies"></iron-icon>${TabMovies}</paper-tab>
                 <paper-tab class="movieTrailersTab"><iron-icon icon="movie"></iron-icon>${TabTrailers}</paper-tab>
@@ -88,7 +88,6 @@
                         <div class="viewSettings">
                             <div class="listTopPaging">
                             </div>
-                            <button class="btnTrailerReel" type="button" data-icon="action" data-inline="true" data-mini="true">${ButtonTrailerReel}</button>
                         </div>
                         <div class="itemsContainer"></div>
                         <p class="noItemsMessage" style="display:none;text-align:center;">${MessageNoTrailersFound}</p>
@@ -503,35 +502,6 @@
                     </fieldset>
                 </div>
             </form>
-        </div>
-
-        <div data-role="popup" class="popup popupTrailerReel" data-theme="a">
-
-            <div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
-                <h3 style="margin: .5em;">${HeaderTrailerReel}</h3>
-            </div>
-
-            <div data-role="content">
-
-                <form class="popupTrailerReelForm" style="min-width: 200px;">
-
-                    <p>${HeaderTrailerReelHelp}</p>
-                    <div>
-                        <label for="chkUnwatchedOnly">${OptionPlayUnwatchedTrailersOnly}</label>
-                        <input id="chkUnwatchedOnly" class="chkUnwatchedOnly" data-mini="true" type="checkbox" />
-                    </div>
-                    <br />
-                    <p>
-                        <button type="submit" data-theme="b" data-icon="check" data-mini="true">
-                            ${ButtonOk}
-                        </button>
-                        <button type="button" data-icon="delete" onclick="$(this).parents('.popup').popup('close');" data-mini="true">
-                            ${ButtonCancel}
-                        </button>
-                    </p>
-                </form>
-            </div>
-
         </div>
         <div data-role="panel" class="viewPanel genreViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
             <form>

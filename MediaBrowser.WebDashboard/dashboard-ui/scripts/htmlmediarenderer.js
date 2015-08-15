@@ -360,9 +360,11 @@
                     requiresSettingStartTimeOnStart = elem.currentTime == 0;
                 }
 
+                tracks = tracks || [];
+
                 if (enableViblast(val)) {
 
-                    setTracks(elem, tracks || []);
+                    setTracks(elem, tracks);
 
                     viblast(elem).setup({
                         key: getViblastKey(),
@@ -375,10 +377,20 @@
 
                     elem.src = val;
 
-                    setTracks(elem, tracks || []);
+                    setTracks(elem, tracks);
 
                     $(elem).one("loadedmetadata", onLoadedMetadata);
                 }
+
+                var currentTrackIndex = -1;
+                for (var i = 0, length = tracks.length; i < length; i++) {
+                    if (tracks[i].isDefault) {
+                        currentTrackIndex = i;
+                        break;
+                    }
+                }
+
+                self.setCurrentTrackElement(currentTrackIndex);
             }
 
             currentSrc = val;
