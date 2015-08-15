@@ -35,6 +35,15 @@ namespace MediaBrowser.Controller.Entities
             }
         }
 
+        [IgnoreDataMember]
+        protected override bool SupportsShortcutChildren
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override bool CanDelete()
         {
             return false;

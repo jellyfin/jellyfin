@@ -214,6 +214,7 @@ namespace MediaBrowser.Model.Configuration
         public int SharingExpirationDays { get; set; }
 
         public bool DisableXmlSavers { get; set; }
+        public bool EnableWindowsShortcuts { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ServerConfiguration" /> class.
