@@ -99,14 +99,24 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Tuple{System.StringFunc{System.Int32}}}.</returns>
-        protected override IEnumerable<GameGenre> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
+        protected override IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items)
         {
-            var itemsList = items.Where(i => i.Genres != null).ToList();
-
-            return itemsList
+            return items
                 .SelectMany(i => i.Genres)
                 .DistinctNames()
-                .Select(name => LibraryManager.GetGameGenre(name));
+                .Select(name =>
+                {
+                    try
+                    {
+                        return LibraryManager.GetGameGenre(name);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorException("Error getting genre {0}", ex, name);
+                        return null;
+                    }
+                })
+                .Where(i => i != null);
         }
     }
 }
