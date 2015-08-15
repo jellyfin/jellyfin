@@ -81,13 +81,11 @@ namespace MediaBrowser.Controller.Dto
         /// <summary>
         /// Gets the item by name dto.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="item">The item.</param>
         /// <param name="options">The options.</param>
         /// <param name="taggedItems">The tagged items.</param>
         /// <param name="user">The user.</param>
         /// <returns>BaseItemDto.</returns>
-        BaseItemDto GetItemByNameDto<T>(T item, DtoOptions options, List<BaseItem> taggedItems, User user = null)
-            where T : BaseItem, IItemByName;
+        BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, User user = null);
     }
 }

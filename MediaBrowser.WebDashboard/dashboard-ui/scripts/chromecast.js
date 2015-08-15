@@ -461,10 +461,26 @@
 
             var userId = Dashboard.getCurrentUserId();
 
-            query.Limit = query.Limit || 100;
-            query.ExcludeLocationTypes = "Virtual";
+            if (query.Ids && query.Ids.split(',').length == 1) {
+                var deferred = DeferredBuilder.Deferred();
 
-            return ApiClient.getItems(userId, query);
+                ApiClient.getItem(userId, query.Ids.split(',')).done(function (item) {
+                    deferred.resolveWith(null, [
+                    {
+                        Items: [item],
+                        TotalRecordCount: 1
+                    }]);
+                });
+
+                return deferred.promise();
+            }
+            else {
+
+                query.Limit = query.Limit || 100;
+                query.ExcludeLocationTypes = "Virtual";
+
+                return ApiClient.getItems(userId, query);
+            }
         };
 
         $(castPlayer).on("connect", function (e) {
