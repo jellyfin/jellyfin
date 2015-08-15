@@ -198,6 +198,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     }
                 }
             }
+            catch (IOException ex)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 _logger.ErrorException("Error in range request writer", ex);
