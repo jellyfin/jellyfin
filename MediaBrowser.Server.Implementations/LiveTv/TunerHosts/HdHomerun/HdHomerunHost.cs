@@ -47,6 +47,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             get { return "hdhomerun"; }
         }
 
+        private const string ChannelIdPrefix = "hdhr_";
+
         public async Task<IEnumerable<ChannelInfo>> GetChannels(TunerHostInfo info, CancellationToken cancellationToken)
         {
             var options = new HttpRequestOptions
@@ -64,7 +66,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                     {
                         Name = i.GuideName,
                         Number = i.GuideNumber.ToString(CultureInfo.InvariantCulture),
-                        Id = i.GuideNumber.ToString(CultureInfo.InvariantCulture),
+                        Id = ChannelIdPrefix + i.GuideNumber.ToString(CultureInfo.InvariantCulture),
                         IsFavorite = i.Favorite
 
                     });
@@ -320,6 +322,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var list = new List<MediaSourceInfo>();
 
+            if (!channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return list;
+            }
+
             list.Add(GetMediaSource(info, channelId, "native"));
 
             try
@@ -339,7 +346,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             }
             catch (Exception ex)
             {
-                
+
             }
 
             return list;
@@ -347,6 +354,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task<MediaSourceInfo> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
         {
+            if (!channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
             return GetMediaSource(info, channelId, streamId);
         }
 

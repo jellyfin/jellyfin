@@ -373,20 +373,21 @@ paper-menu-item {
     border-color: #2ad;
 }
 
-.ui-page-theme-b paper-input label {
-    color: #ddd !important;
+.ui-page-theme-b paper-input label, .ui-page-theme-b paper-textarea label {
+    color: #ccc !important;
+    font-size: 20px !important;
+    font-family: inherit !important;
 }
 
-.ui-page-theme-b paper-input input {
+.ui-page-theme-b paper-input input, .ui-page-theme-b paper-textarea textarea {
     color: #fff !important;
 }
 
-.ui-page-theme-b paper-input .focused-line {
+.ui-page-theme-b paper-input .focused-line, .ui-page-theme-b paper-textarea .focused-line {
     background-color: #52B54B !important;
 }
 
-.ui-page-theme-b .unfocused-line.paper-input-container {
-    background: #858585;
+.ui-page-theme-b .unfocused-line.paper-input-container, .ui-page-theme-b .unfocused-line.paper-textarea-container {
 }
 
 paper-textarea.mono textarea {
@@ -416,6 +417,6 @@ paper-dropdown-menu {
     display: inline-block;
 }
 
-paper-dropdown-menu paper-item {
-    display: block;
-}
+    paper-dropdown-menu paper-item {
+        display: block;
+    }

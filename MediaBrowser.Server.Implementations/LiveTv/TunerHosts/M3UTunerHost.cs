@@ -35,6 +35,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
         public Task<IEnumerable<ChannelInfo>> GetChannels(TunerHostInfo info, CancellationToken cancellationToken)
         {
+            var urlHash = info.Url.GetMD5().ToString("N");
+            
             int position = 0;
             string line;
             // Read the file and display it line by line.
@@ -87,7 +89,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                             switch (list[0])
                             {
                                 case "tvg-id":
-                                    channels.Last().Id = list[1];
+                                    channels.Last().Id = urlHash + list[1];
                                     channels.Last().Number = list[1];
                                     break;
                                 case "tvg-name":
@@ -126,6 +128,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
         public async Task<MediaSourceInfo> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
         {
+            var urlHash = info.Url.GetMD5().ToString("N");
+            if (!channelId.StartsWith(urlHash, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            channelId = channelId.Substring(urlHash.Length);
+
             var channels = await GetChannels(info, cancellationToken).ConfigureAwait(false);
             var m3uchannels = channels.Cast<M3UChannel>();
             var channel = m3uchannels.FirstOrDefault(c => c.Id == channelId);
@@ -190,7 +200,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                 throw new FileNotFoundException();
             }
         }
-
 
         public Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(TunerHostInfo info, string channelId, CancellationToken cancellationToken)
         {

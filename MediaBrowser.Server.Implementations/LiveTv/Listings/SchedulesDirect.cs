@@ -307,6 +307,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 imageLink = details.images;
             }
 
+            var showType = details.showType ?? string.Empty;
+
             var info = new ProgramInfo
             {
                 ChannelId = channel,
@@ -315,31 +317,28 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 StartDate = startAt,
                 EndDate = endAt,
                 Name = details.titles[0].title120 ?? "Unkown",
-                OfficialRating = "0",
+                OfficialRating = null,
                 CommunityRating = null,
                 EpisodeTitle = episodeTitle,
                 Audio = audioType,
                 IsHD = hdtv,
                 IsRepeat = repeat,
-                IsSeries =
-                    ((details.showType ?? "No ShowType") == "Series") ||
-                    (details.showType ?? "No ShowType") == "Miniseries",
+                IsSeries = showType.IndexOf("series", StringComparison.OrdinalIgnoreCase) != -1,
                 ImageUrl = imageLink,
                 HasImage = details.hasImageArtwork,
                 IsNews = false,
                 IsKids = false,
-                IsSports =
-                    ((details.showType ?? "No ShowType") == "Sports non-event") ||
-                    (details.showType ?? "No ShowType") == "Sports event",
+                IsSports = showType.IndexOf("sports", StringComparison.OrdinalIgnoreCase) != -1,
                 IsLive = false,
-                IsMovie =
-                    (details.showType ?? "No ShowType") == "Feature Film" ||
-                    (details.showType ?? "No ShowType") == "TV Movie" ||
-                    (details.showType ?? "No ShowType") == "Short Film",
+                IsMovie = showType.IndexOf("movie", StringComparison.OrdinalIgnoreCase) != -1 || showType.IndexOf("film", StringComparison.OrdinalIgnoreCase) != -1,
                 IsPremiere = false,
-                ShowId = programInfo.programID,
-                SeriesId = programInfo.programID.Substring(0, 10)
+                ShowId = programInfo.programID
             };
+
+            if (info.IsSeries)
+            {
+                info.SeriesId = programInfo.programID.Substring(0, 10);
+            }
 
             if (!string.IsNullOrWhiteSpace(details.originalAirDate))
             {

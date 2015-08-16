@@ -341,13 +341,13 @@
             $('#fldIndexNumber', page).show();
 
             if (item.Type == "Episode") {
-                $('#lblIndexNumber', page).html(Globalize.translate('LabelEpisodeNumber'));
+                page.querySelector('#txtIndexNumber').label = Globalize.translate('LabelEpisodeNumber');
             } else if (item.Type == "Season") {
-                $('#lblIndexNumber', page).html(Globalize.translate('LabelSeasonNumber'));
+                page.querySelector('#txtIndexNumber').label = Globalize.translate('LabelSeasonNumber');
             } else if (item.Type == "Audio") {
-                $('#lblIndexNumber', page).html(Globalize.translate('LabelTrackNumber'));
+                page.querySelector('#txtIndexNumber').label = Globalize.translate('LabelTrackNumber');
             } else {
-                $('#lblIndexNumber', page).html(Globalize.translate('LabelNumber'));
+                page.querySelector('#txtIndexNumber').label = Globalize.translate('LabelNumber');
             }
         } else {
             $('#fldIndexNumber', page).hide();
@@ -357,11 +357,11 @@
             $('#fldParentIndexNumber', page).show();
 
             if (item.Type == "Episode") {
-                $('#lblParentIndexNumber', page).html(Globalize.translate('LabelSeasonNumber'));
+                page.querySelector('#txtParentIndexNumber').label = Globalize.translate('LabelSeasonNumber');
             } else if (item.Type == "Audio") {
-                $('#lblParentIndexNumber', page).html(Globalize.translate('LabelDiscNumber'));
+                page.querySelector('#txtParentIndexNumber').label = Globalize.translate('LabelDiscNumber');
             } else {
-                $('#lblParentIndexNumber', page).html(Globalize.translate('LabelParentNumber'));
+                page.querySelector('#txtParentIndexNumber').label = Globalize.translate('LabelParentNumber');
             }
         } else {
             $('#fldParentIndexNumber', page).hide();
@@ -419,7 +419,7 @@
 
             this.checked = (item.AirDays || []).indexOf(this.getAttribute('data-day')) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
         populateListView($('#listCountries', page), item.ProductionLocations || []);
         populateListView($('#listGenres', page), item.Genres);
@@ -440,7 +440,7 @@
         }
         populateInternetProviderSettings(page, item, item.LockedFields);
 
-        $("#chkDisplaySpecialsInline", page).checked(item.DisplaySpecialsWithSeasons || false).checkboxradio('refresh');
+        page.querySelector('#chkDisplaySpecialsInline').checked = item.DisplaySpecialsWithSeasons || false;
 
         $('#txtPath', page).val(item.Path || '');
         $('#txtName', page).val(item.Name || "");
@@ -824,7 +824,7 @@
                 CriticRating: $('#txtCriticRating', form).val(),
                 CriticRatingSummary: $('#txtCriticRatingSummary', form).val(),
                 IndexNumber: $('#txtIndexNumber', form).val() || null,
-                DisplaySpecialsWithSeasons: $('#chkDisplaySpecialsInline', form).checked(),
+                DisplaySpecialsWithSeasons: form.querySelector('#chkDisplaySpecialsInline').checked,
                 AbsoluteEpisodeNumber: $('#txtAbsoluteEpisodeNumber', form).val(),
                 DvdEpisodeNumber: $('#txtDvdEpisodeNumber', form).val(),
                 DvdSeasonNumber: $('#txtDvdSeasonNumber', form).val(),

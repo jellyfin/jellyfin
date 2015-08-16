@@ -213,41 +213,10 @@
 
         $('.itemTabs', page).hide();
 
-        $(page).removeClass('noSecondaryNavPage');
+        if (context == 'photos' || context == 'photos-photos') {
+            $(page).removeClass('noSecondaryNavPage');
 
-        var elem;
-
-        if (!context) {
-            $(page).addClass('noSecondaryNavPage');
-            LibraryMenu.setBackButtonVisible(true);
-            LibraryMenu.setMenuButtonVisible(false);
-        }
-        else if (context == 'home') {
-            elem = $('.homeTabs', page).show();
-            $('a', elem).removeClass('ui-btn-active');
-            $('.lnkHomeHome', page).addClass('ui-btn-active');
-        }
-        else if (context == 'home-nextup') {
-            elem = $('.homeTabs', page).show();
-            $('a', elem).removeClass('ui-btn-active');
-            $('.lnkHomeNextUp', page).addClass('ui-btn-active');
-        }
-        else if (context == 'home-favorites') {
-            elem = $('.homeTabs', page).show();
-            $('a', elem).removeClass('ui-btn-active');
-            $('.lnkHomeFavorites', page).addClass('ui-btn-active');
-        }
-        else if (context == 'home-upcoming') {
-            elem = $('.homeTabs', page).show();
-            $('a', elem).removeClass('ui-btn-active');
-            $('.lnkHomeUpcoming', page).addClass('ui-btn-active');
-        }
-        else if (context == 'home-latest') {
-            elem = $('.homeTabs', page).show();
-            $('a', elem).removeClass('ui-btn-active');
-        }
-        else if (context == 'photos' || context == 'photos-photos') {
-            elem = $('.photoTabs', page).show();
+            var elem = $('.photoTabs', page).show();
             $('a', elem).removeClass('ui-btn-active');
 
             if (context == 'photos-photos') {
@@ -260,10 +229,14 @@
             }
         }
         else if (context == 'tv') {
-            elem = $('#tvShowsTabs', page).show();
+            $(page).removeClass('noSecondaryNavPage');
+
+            $('#tvShowsTabs', page).show();
         }
-        else if (context == 'games') {
-            elem = $('#gameTabs', page).show();
+        else {
+            $(page).addClass('noSecondaryNavPage');
+            LibraryMenu.setBackButtonVisible(true);
+            LibraryMenu.setMenuButtonVisible(false);
         }
     }
 

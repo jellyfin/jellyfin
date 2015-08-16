@@ -1520,5 +1520,6 @@
     "HeaderEmbyGuide": "Emby Guide",
     "LabelSyncPath": "Synced content path:",
     "OptionSyncOnlyOnWifi": "Sync only on Wifi",
-    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality"
+    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality",
+    "HeaderMetadata": "Metadata"
 }
