@@ -51,10 +51,11 @@ namespace MediaBrowser.Providers.Omdb
             {
                 var result = _jsonSerializer.DeserializeFromStream<RootObject>(stream);
 
-                // Only take the name if the user's language is set to english, since Omdb has no localization
+                // Only take the name and rating if the user's language is set to english, since Omdb has no localization
                 if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
                 {
                     item.Name = result.Title;
+                    item.OfficialRating = result.Rated;
                 }
 
                 int year;
@@ -65,9 +66,6 @@ namespace MediaBrowser.Providers.Omdb
                 {
                     item.ProductionYear = year;
                 }
-
-                item.OfficialRating = result.Rated;
-
 
                 var hasCriticRating = item as IHasCriticRating;
                 if (hasCriticRating != null)
