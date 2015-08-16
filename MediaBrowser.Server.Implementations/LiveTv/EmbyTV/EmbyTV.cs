@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.LiveTv;
@@ -33,6 +34,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private readonly TimerManager _timerProvider;
 
         private readonly LiveTvManager _liveTvManager;
+        private IFileSystem _fileSystem;
 
         public static EmbyTV Current;
 
@@ -481,14 +483,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var recordPath = RecordingPath;
             if (info.IsMovie)
             {
-                recordPath = Path.Combine(recordPath, "Movies", RecordingHelper.RemoveSpecialCharacters(info.Name));
+                recordPath = Path.Combine(recordPath, "Movies", _fileSystem.GetValidFilename(info.Name));
             }
             else
             {
-                recordPath = Path.Combine(recordPath, "TV", RecordingHelper.RemoveSpecialCharacters(info.Name));
+                recordPath = Path.Combine(recordPath, "TV", _fileSystem.GetValidFilename(info.Name));
             }
 
-            recordPath = Path.Combine(recordPath, RecordingHelper.GetRecordingName(timer, info));
+            recordPath = Path.Combine(recordPath, _fileSystem.GetValidFilename(RecordingHelper.GetRecordingName(timer, info)));
             Directory.CreateDirectory(Path.GetDirectoryName(recordPath));
 
             var recording = _recordingProvider.GetAll().FirstOrDefault(x => string.Equals(x.ProgramId, info.Id, StringComparison.OrdinalIgnoreCase));
