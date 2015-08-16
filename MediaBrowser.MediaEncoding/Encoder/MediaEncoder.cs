@@ -767,7 +767,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         public string EscapeSubtitleFilterPath(string path)
         {
-            return path.Replace('\\', '/').Replace(":/", "\\:/").Replace("'", "'\\\\\\'");
+            return path.Replace('\\', '/').Replace(":/", "\\:/").Replace("'", "'\\\\\\''");
         }
 
         /// <summary>
