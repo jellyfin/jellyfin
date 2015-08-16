@@ -627,7 +627,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             item.ProductionYear = info.ProductionYear;
             item.PremiereDate = item.PremiereDate ?? info.OriginalAirDate;
-            item.ExternalSeriesId = info.SeriesId;
 
             if (isNew)
             {
@@ -1787,8 +1786,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     ImagePath = program.ProviderImagePath,
                     ImageUrl = program.ProviderImageUrl,
                     Name = program.Name,
-                    OfficialRating = program.OfficialRating,
-                    SeriesId = program.ExternalSeriesId
+                    OfficialRating = program.OfficialRating
                 };
             }
 
@@ -1831,7 +1829,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             info.Overview = program.Overview;
             info.ProgramId = programDto.Id;
             info.ExternalProgramId = program.ExternalId;
-            info.ExternalSeriesId = program.ExternalSeriesId;
 
             if (program.EndDate.HasValue)
             {

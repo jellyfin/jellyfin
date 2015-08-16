@@ -105,8 +105,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 ExternalProgramId = info.ProgramId,
                 ServiceName = service.Name,
                 ChannelName = channelName,
-                ServerId = _appHost.SystemId,
-                ExternalSeriesId = info.SeriesId
+                ServerId = _appHost.SystemId
             };
 
             if (!string.IsNullOrEmpty(info.ChannelId))
@@ -377,8 +376,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 RecordNewOnly = dto.RecordNewOnly,
                 ProgramId = dto.ExternalProgramId,
                 ChannelId = dto.ExternalChannelId,
-                Id = dto.ExternalId,
-                SeriesId = dto.ExternalSeriesId
+                Id = dto.ExternalId
             };
 
             // Convert internal server id's to external tv provider id's

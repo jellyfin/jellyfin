@@ -251,14 +251,50 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             info.Id = Guid.NewGuid().ToString("N");
 
-            await UpdateTimersForSeriesTimer(info).ConfigureAwait(false);
+            List<ProgramInfo> epgData;
+            if (info.RecordAnyChannel)
+            {
+                var channels = await GetChannelsAsync(true, CancellationToken.None).ConfigureAwait(false);
+                var channelIds = channels.Select(i => i.Id).ToList();
+                epgData = GetEpgDataForChannels(channelIds);
+            }
+            else
+            {
+                epgData = GetEpgDataForChannel(info.ChannelId);
+            }
+
+            // populate info.seriesID
+            var program = epgData.FirstOrDefault(i => string.Equals(i.Id, info.ProgramId, StringComparison.OrdinalIgnoreCase));
+
+            if (program != null)
+            {
+                info.SeriesId = program.SeriesId;
+            }
+            else
+            {
+                throw new InvalidOperationException("SeriesId for program not found");
+            }
+
             _seriesTimerProvider.Add(info);
+            await UpdateTimersForSeriesTimer(epgData, info).ConfigureAwait(false);
         }
 
         public async Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
             _seriesTimerProvider.Update(info);
-            await UpdateTimersForSeriesTimer(info).ConfigureAwait(false);
+            List<ProgramInfo> epgData;
+            if (info.RecordAnyChannel)
+            {
+                var channels = await GetChannelsAsync(true, CancellationToken.None).ConfigureAwait(false);
+                var channelIds = channels.Select(i => i.Id).ToList();
+                epgData = GetEpgDataForChannels(channelIds);
+            }
+            else
+            {
+                epgData = GetEpgDataForChannel(info.ChannelId);
+            }
+
+            await UpdateTimersForSeriesTimer(epgData, info).ConfigureAwait(false);
         }
 
         public Task UpdateTimerAsync(TimerInfo info, CancellationToken cancellationToken)
@@ -597,20 +633,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return _config.GetConfiguration<LiveTvOptions>("livetv");
         }
 
-        private async Task UpdateTimersForSeriesTimer(SeriesTimerInfo seriesTimer)
+        private async Task UpdateTimersForSeriesTimer(List<ProgramInfo> epgData, SeriesTimerInfo seriesTimer)
         {
-            List<ProgramInfo> epgData;
-            if (seriesTimer.RecordAnyChannel)
-            {
-                var channels = await GetChannelsAsync(true, CancellationToken.None).ConfigureAwait(false);
-                var channelIds = channels.Select(i => i.Id).ToList();
-                epgData = GetEpgDataForChannels(channelIds);
-            }
-            else
-            {
-                epgData = GetEpgDataForChannel(seriesTimer.ChannelId);
-            }
-
             var newTimers = GetTimersForSeries(seriesTimer, epgData, _recordingProvider.GetAll()).ToList();
 
             var existingTimers = _timerProvider.GetAll()

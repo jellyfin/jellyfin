@@ -49,12 +49,6 @@ namespace MediaBrowser.Model.LiveTv
         public Dictionary<ImageType, string> ImageTags { get; set; }
 
         /// <summary>
-        /// Gets or sets the external series identifier.
-        /// </summary>
-        /// <value>The external series identifier.</value>
-        public string ExternalSeriesId { get; set; }
-
-        /// <summary>
         /// Gets a value indicating whether this instance has primary image.
         /// </summary>
         /// <value><c>true</c> if this instance has primary image; otherwise, <c>false</c>.</value>
