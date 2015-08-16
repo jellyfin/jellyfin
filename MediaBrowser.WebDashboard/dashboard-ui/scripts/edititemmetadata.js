@@ -6,6 +6,8 @@
 
     function reload(page) {
 
+        page = $(page)[0];
+
         unbindItemChanged(page);
         Dashboard.showLoadingMsg();
 
@@ -123,20 +125,16 @@
             var buttonId = "btnOpen1" + idInfo.Key;
             var formatString = idInfo.UrlFormatString || '';
 
-            html += '<div data-role="fieldcontain">';
-            var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
-            html += '<label for="' + id + '">' + idLabel + '</label>';
+            var labelText = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
 
-            html += '<div style="display: inline-block; width: 80%;">';
+            html += '<div>';
 
             var value = providerIds[idInfo.Key] || '';
 
-            html += '<input class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" />';
-
-            html += '</div>';
+            html += '<paper-input style="display:inline-block;width:80%;" class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" label="' + labelText + '"></paper-input>';
 
             if (formatString) {
-                html += '<a class="' + buttonId + '" href="#" target="_blank" data-icon="arrow-r" data-inline="true" data-iconpos="notext" data-role="button" style="float: none; width: 1.75em"></a>';
+                html += '<a class="clearLink ' + buttonId + '" href="#" target="_blank" data-role="none" style="float: none; width: 1.75em"><paper-icon-button icon="open-in-browser"></paper-icon-button></a>';
             }
 
             html += '</div>';
@@ -433,8 +431,9 @@
         populateListView($('#listKeywords', page), item.Keywords);
 
         var lockData = (item.LockData || false);
-        var chkLockData = $("#chkLockData", page).attr('checked', lockData).checkboxradio('refresh');
-        if (chkLockData.checked()) {
+        var chkLockData = page.querySelector("#chkLockData");
+        chkLockData.checked = lockData;
+        if (chkLockData.checked) {
             $('#providerSettingsContainer', page).hide();
         } else {
             $('#providerSettingsContainer', page).show();
@@ -708,20 +707,16 @@
         return list.find('a.data').map(function () { return $(this).text(); }).get();
     }
 
-    function generateSliders(fields, type) {
+    function generateSliders(fields, currentFields) {
+
         var html = '';
         for (var i = 0; i < fields.length; i++) {
 
             var field = fields[i];
             var name = field.name;
             var value = field.value || field.name;
-            html += '<div data-role="fieldcontain">';
-            html += '<label for="lock' + value + '">' + name + '</label>';
-            html += '<select class="selectLockedField" id="lock' + value + '" data-role="slider" data-mini="true">';
-            html += '<option value="' + value + '">' + Globalize.translate('OptionOff') + '</option>';
-            html += '<option value="" selected="selected">' + Globalize.translate('OptionOn') + '</option>';
-            html += '</select>';
-            html += '</div>';
+            var checkedHtml = currentFields.indexOf(value) == -1 ? ' checked' : '';
+            html += '<paper-checkbox class="selectLockedField" data-value="' + value + '" style="display:block;margin:1em 0;"' + checkedHtml + '>' + name + '</paper-checkbox>';
         }
         return html;
     }
@@ -760,14 +755,10 @@
 
         var html = '';
 
-        html += "<h1>" + Globalize.translate('HeaderFields') + "</h1>";
-        html += "<p>" + Globalize.translate('HeaderFieldsHelp') + "</p>";
-        html += generateSliders(metadatafields, 'Fields');
-        container.html(html).trigger('create');
-        for (var fieldIndex = 0; fieldIndex < lockedFields.length; fieldIndex++) {
-            var field = lockedFields[fieldIndex];
-            $('#lock' + field).val(field).slider('refresh');
-        }
+        html += "<h1>" + Globalize.translate('HeaderEnabledFields') + "</h1>";
+        html += "<p>" + Globalize.translate('HeaderEnabledFieldsHelp') + "</p>";
+        html += generateSliders(metadatafields, lockedFields);
+        container.html(html);
     }
 
     function getSelectedAirDays(form) {
@@ -869,11 +860,12 @@
                 OfficialRating: $('#selectOfficialRating', form).val(),
                 CustomRating: $('#selectCustomRating', form).val(),
                 People: currentItem.People,
-                LockData: $("#chkLockData", form).prop('checked'),
-                LockedFields: $('.selectLockedField', form).map(function () {
-                    var value = $(this).val();
-                    if (value != '') return value;
-                }).get()
+                LockData: form.querySelector("#chkLockData").checked,
+                LockedFields: $('.selectLockedField', form).get().filter(function (c) {
+                    return !c.checked;
+                }).map(function (c) {
+                    return c.getAttribute('data-value');
+                })
             };
 
             item.ProviderIds = $.extend({}, currentItem.ProviderIds || {});
@@ -1376,7 +1368,7 @@
     }
 
     function showMoreMenu(page, elem) {
-        
+
         Dashboard.getCurrentUser().done(function (user) {
 
             var moreCommands = LibraryBrowser.getMoreCommands(currentItem, user);

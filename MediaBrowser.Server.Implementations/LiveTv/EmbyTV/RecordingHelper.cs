@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.LiveTv;
 using System;
-using System.Text;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
@@ -44,7 +43,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 fancyName += "_(" + info.ProductionYear + ")";
             }
-            if (info.IsSeries)
+            if (info.IsSeries && !string.IsNullOrWhiteSpace(info.EpisodeTitle))
             {
                 fancyName += "_" + info.EpisodeTitle.Replace("Season: ", "S").Replace(" Episode: ", "E");
             }
@@ -56,20 +55,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 fancyName += "_" + info.OriginalAirDate.Value.ToString("yyyy-MM-dd");
             }
-            return RemoveSpecialCharacters(fancyName) + ".ts";
-        }
-
-        public static string RemoveSpecialCharacters(string str)
-        {
-            StringBuilder sb = new StringBuilder();
-            foreach (char c in str)
-            {
-                if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '.' || c == '_' || c == '-' || c == ' ')
-                {
-                    sb.Append(c);
-                }
-            }
-            return sb.ToString();
+            return fancyName + ".ts";
         }
     }
 }

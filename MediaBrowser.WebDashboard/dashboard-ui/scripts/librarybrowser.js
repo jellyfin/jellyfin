@@ -2359,7 +2359,7 @@
         showLayoutMenu: function (button, currentLayout) {
 
             // Add banner and list once all screens support them
-            var views = ['Poster', 'PosterCard', 'Thumb', 'ThumbCard'];
+            var views = ['List', 'Poster', 'PosterCard', 'Thumb', 'ThumbCard'];
 
             var menuItems = views.map(function (v) {
                 return {
