@@ -220,7 +220,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     if (enableDelay)
                     {
                         // A hack yes, but need to make sure the file is closed before attempting to delete it
-                        await Task.Delay(3000).ConfigureAwait(false);
+                        await Task.Delay(3000, cancellationToken).ConfigureAwait(false);
                     }
                 }
 

@@ -61,6 +61,12 @@ namespace MediaBrowser.Controller.LiveTv
         public bool IsRepeat { get; set; }
 
         /// <summary>
+        /// Gets or sets the external series identifier.
+        /// </summary>
+        /// <value>The external series identifier.</value>
+        public string ExternalSeriesId { get; set; }
+        
+        /// <summary>
         /// Gets or sets the episode title.
         /// </summary>
         /// <value>The episode title.</value>
