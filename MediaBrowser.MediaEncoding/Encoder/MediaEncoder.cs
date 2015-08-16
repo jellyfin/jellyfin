@@ -765,6 +765,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        public string EscapeSubtitleFilterPath(string path)
+        {
+            return path.Replace('\\', '/').Replace(":/", "\\:/").Replace("'", "'\\\\\\'");
+        }
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
