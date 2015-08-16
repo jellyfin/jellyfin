@@ -1827,8 +1827,6 @@ var AppInfo = {};
 
         if (AppInfo.isTouchPreferred) {
             elem.classList.add('touch');
-        } else {
-            elem.classList.add('pointerInput');
         }
 
         if (AppInfo.cardMargin) {

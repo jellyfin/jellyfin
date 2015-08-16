@@ -115,10 +115,6 @@
     border-bottom: 2px solid #0B487D;
 }
 
-.pointerInput .tvProgram:hover, .pointerInput .tvProgram:hover .tvProgramInfo {
-    background-color: #444;
-}
-
 .timerCircle {
     display: inline-block;
     width: 12px;
@@ -271,10 +267,6 @@
     text-decoration: none;
     font-weight: 400 !important;
     overflow: hidden;
-}
-
-.pointerInput .programCellInner:hover {
-    background-color: #444;
 }
 
 .timeslotCellInner {

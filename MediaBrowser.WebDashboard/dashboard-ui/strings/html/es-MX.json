@@ -1504,5 +1504,5 @@
     "HeaderEmbyGuide": "Gu\u00eda de Emby",
     "LabelSyncPath": "Ruta para sinc:",
     "OptionSyncOnlyOnWifi": "Sincronizar \u00fanicamente por WiFi",
-    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality (when supported)"
+    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality"
 }

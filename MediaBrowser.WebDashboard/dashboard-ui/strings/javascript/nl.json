@@ -355,8 +355,8 @@
     "OptionOn": "Aan",
     "ButtonSettings": "Instellingen",
     "ButtonUninstall": "Uninstall",
-    "HeaderFields": "Velden",
-    "HeaderFieldsHelp": "Schuiven naar 'uit' om het te vergrendelen en om te voorkomen dat het de gegevens worden gewijzigd.",
+    "HeaderEnabledFields": "Enabled Fields",
+    "HeaderEnabledFieldsHelp": "Uncheck a field to lock it and prevent it's data from being changed.",
     "HeaderLiveTV": "Live TV",
     "MissingLocalTrailer": "Lokale trailer ontbreekt.",
     "MissingPrimaryImage": "Primaire afbeelding ontbreekt.",
@@ -828,5 +828,11 @@
     "ErrorValidatingSupporterInfo": "Er was een out bij het valideren van uw Emby Supporter informatie. Probeer het later nog eens.",
     "HeaderSync": "Sync",
     "LabelLocalSyncStatusValue": "Status: {0}",
-    "MessageSyncStarted": "Synchroniseren gestart"
+    "MessageSyncStarted": "Synchroniseren gestart",
+    "OptionPoster": "Poster",
+    "OptionPosterCard": "Poster kaart",
+    "OptionList": "Lijst",
+    "OptionThumb": "Miniatuur",
+    "OptionThumbCard": "Miniaturen kaart",
+    "OptionBanner": "Banner"
 }

@@ -993,8 +993,8 @@
     "LabelKodiMetadataEnablePathSubstitution": "Ativar substitui\u00e7\u00e3o de caminho",
     "LabelKodiMetadataEnablePathSubstitutionHelp": "Ativa a substitui\u00e7\u00e3o do caminho das imagens usando as op\u00e7\u00f5es de substitui\u00e7\u00e3o de caminho no servidor.",
     "LabelKodiMetadataEnablePathSubstitutionHelp2": "Ver substitui\u00e7\u00e3o de caminho.",
-    "OptionDisplayChannelsInline": "Display channels inline within my views",
-    "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
+    "OptionDisplayChannelsInline": "Exibir canais em linha dentro de minhas visualiza\u00e7\u00f5es",
+    "OptionDisplayChannelsInlineHelp": "Se ativado, os canais ser\u00e3o exibidos diretamente em outras visualiza\u00e7\u00f5es. Se desativado, eles ser\u00e3o exibidos dentro de uma visualiza\u00e7\u00e3o separada de Canais.",
     "LabelDisplayCollectionsView": "Exibir uma visualiza\u00e7\u00e3o de cole\u00e7\u00f5es para mostrar colet\u00e2neas de filmes",
     "LabelDisplayCollectionsViewHelp": "Esta op\u00e7\u00e3o criar\u00e1 uma visualiza\u00e7\u00e3o separada para exibir cole\u00e7\u00f5es criadas ou acessadas por voc\u00ea. Para criar uma cole\u00e7\u00e3o, clique com o bot\u00e3o direito ou toque e segure qualquer filme e selecione 'Adicionar \u00e0 Cole\u00e7\u00e3o'.",
     "LabelKodiMetadataEnableExtraThumbs": "Copiar extrafanart para extrathumbs",
@@ -1504,5 +1504,5 @@
     "HeaderEmbyGuide": "Guia do Emby",
     "LabelSyncPath": "Caminho para sinc:",
     "OptionSyncOnlyOnWifi": "Sincronizar apenas no Wifi",
-    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality (when supported)"
+    "OptionSyncLosslessAudioOriginal": "Sincronizar \u00e1udio lossless na qualidade original (quando suportado)"
 }

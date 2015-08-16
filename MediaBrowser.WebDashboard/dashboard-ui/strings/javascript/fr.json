@@ -355,8 +355,8 @@
     "OptionOn": "On",
     "ButtonSettings": "Param\u00e8tres",
     "ButtonUninstall": "D\u00e9sinstaller",
-    "HeaderFields": "Champs",
-    "HeaderFieldsHelp": "Glisser un champ sur \"off\" pour le verrouiller et emp\u00eacher les modifications des donn\u00e9es correspondantes.",
+    "HeaderEnabledFields": "Activer les champs",
+    "HeaderEnabledFieldsHelp": "D\u00e9cocher un champ pour le verrouiller et emp\u00eacher ainsi ses donn\u00e9es d'\u00eatre modifi\u00e9es.",
     "HeaderLiveTV": "TV en direct",
     "MissingLocalTrailer": "Bande-annonce locale manquante.",
     "MissingPrimaryImage": "Image principale manquante.",
@@ -814,7 +814,7 @@
     "HeaderAddProvider": "Ajouter un fournisseur",
     "ErrorAddingTunerDevice": "Une erreur est survenue lors de l'ajout de l'appareil tuner. Assurez-vous qu'il est accessible et r\u00e9essayez.",
     "ErrorSavingTvProvider": "Une erreur est survenue lors de la sauvegarde du fournisseur TV. Assurez-vous qu'il est accessible et r\u00e9essayez.",
-    "ErrorGettingTvLineups": "There was an error downloading tv lineups. Please ensure your information is correct and try again.",
+    "ErrorGettingTvLineups": "Une erreur est survenue pendant le t\u00e9l\u00e9chargement des programmes tv. Assurez vous que vos informations sont corrects et r\u00e9essayez.",
     "MessageCreateAccountAt": "Cr\u00e9er un compte sur {0}",
     "ErrorPleaseSelectLineup": "Veuillez s\u00e9lectionner une gamme et r\u00e9essayer. Si aucune gamme n'est disponible, veuillez v\u00e9rifier que votre identifiant, mot de passe et code postal sont corrects.",
     "HeaderTryCinemaMode": "Essayez le mode cin\u00e9ma",
@@ -828,5 +828,11 @@
     "ErrorValidatingSupporterInfo": "Une erreur s'est produite lors de la validation de vos informations de membre supporteur actif d'Emby. Veuillez r\u00e9essayer ult\u00e9rieurement.",
     "HeaderSync": "Sync",
     "LabelLocalSyncStatusValue": "Status : {0}",
-    "MessageSyncStarted": "Synchronisation d\u00e9marr\u00e9e"
+    "MessageSyncStarted": "Synchronisation d\u00e9marr\u00e9e",
+    "OptionPoster": "Affiche",
+    "OptionPosterCard": "Carte Affiche",
+    "OptionList": "Liste",
+    "OptionThumb": "Vignette",
+    "OptionThumbCard": "Carte Vignette",
+    "OptionBanner": "Banni\u00e8re"
 }

@@ -355,8 +355,8 @@
     "OptionOn": "Encendido",
     "ButtonSettings": "Opciones",
     "ButtonUninstall": "Uninstall",
-    "HeaderFields": "Campos",
-    "HeaderFieldsHelp": "Deslice un campo en 'off' para bloquearlo y evitar que la informaci\u00f3n sea cambiada.",
+    "HeaderEnabledFields": "Enabled Fields",
+    "HeaderEnabledFieldsHelp": "Uncheck a field to lock it and prevent it's data from being changed.",
     "HeaderLiveTV": "Tv en vivo",
     "MissingLocalTrailer": "Falta trailer local.",
     "MissingPrimaryImage": "Falta imagen principal.",
@@ -828,5 +828,11 @@
     "ErrorValidatingSupporterInfo": "There was an error validating your Emby Supporter information. Please try again later.",
     "HeaderSync": "Sincronizar",
     "LabelLocalSyncStatusValue": "Status: {0}",
-    "MessageSyncStarted": "Sync started"
+    "MessageSyncStarted": "Sync started",
+    "OptionPoster": "Poster",
+    "OptionPosterCard": "Cartelera",
+    "OptionList": "Lista",
+    "OptionThumb": "Miniatura",
+    "OptionThumbCard": "Cartel postal",
+    "OptionBanner": "Banner"
 }

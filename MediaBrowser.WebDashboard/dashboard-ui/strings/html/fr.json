@@ -552,8 +552,8 @@
     "LabelFriendlyServerName": "Surnom du serveur:",
     "LabelFriendlyServerNameHelp": "Ce nom sera utilis\u00e9 pour identifier le serveur. Si laiss\u00e9 vide, le nom d'ordinateur sera utilis\u00e9.",
     "LabelPreferredDisplayLanguage": "Langue d'affichage pr\u00e9f\u00e9r\u00e9e :",
-    "LabelPreferredDisplayLanguageHelp": "Translating Emby is an ongoing project.",
-    "LabelReadHowYouCanContribute": "Learn how you can contribute.",
+    "LabelPreferredDisplayLanguageHelp": "La traduction d'Emby est un porjet en cours.",
+    "LabelReadHowYouCanContribute": "Voir comment vous pouvez contribuer.",
     "HeaderNewCollection": "Nouvelle collection",
     "ButtonSubmit": "Soumettre",
     "ButtonCreate": "Cr\u00e9er",
@@ -993,8 +993,8 @@
     "LabelKodiMetadataEnablePathSubstitution": "Activer la substitution de chemins",
     "LabelKodiMetadataEnablePathSubstitutionHelp": "Activer la substitution du chemin des images en utilisant les param\u00e8tres de substitution des chemins du serveur.",
     "LabelKodiMetadataEnablePathSubstitutionHelp2": "Voir substitution de chemins.",
-    "OptionDisplayChannelsInline": "Display channels inline within my views",
-    "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
+    "OptionDisplayChannelsInline": "Int\u00e9grer les affichage des chaines dans mes vues",
+    "OptionDisplayChannelsInlineHelp": "Si aciv\u00e9, les chaines seront affich\u00e9s directement \u00e0 c\u00f4t\u00e9 des autres vues. Si d\u00e9sactiv\u00e9, elles seront affich\u00e9es dans une vue de cha\u00eenes s\u00e9par\u00e9e.",
     "LabelDisplayCollectionsView": "Afficher un aper\u00e7u de collections pour montrer les collections de film",
     "LabelDisplayCollectionsViewHelp": "Ceci cr\u00e9era une vue s\u00e9par\u00e9e pour l'affichage des collections que vous avez cr\u00e9\u00e9es ou auxquelles vous avez acc\u00e8s. Pour cr\u00e9er une collection, faites un clic-droit ou tapotez et maintenez l'\u00e9cran sur un film, puis choisissez 'Ajouter \u00e0 une collection'. ",
     "LabelKodiMetadataEnableExtraThumbs": "Copier les extrafanart dans les extrathumbs",
@@ -1502,7 +1502,7 @@
     "LabelTranscodingThreadCountHelp": "S\u00e9lectionnez le nombre maximum de threads \u00e0 utiliser pour le transcodage. La r\u00e9duction de cette valeur \u00e9conomisera du temps CPU mais pourrait ne pas suffire pour que le transcodage soit assez rapide pour maintenir une lecture fluide.",
     "OptionMax": "Max",
     "HeaderEmbyGuide": "Guide Emby",
-    "LabelSyncPath": "Sync path:",
+    "LabelSyncPath": "Dossier de syncro:",
     "OptionSyncOnlyOnWifi": "Synchroniser sur Wifi uniquement",
-    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality (when supported)"
+    "OptionSyncLosslessAudioOriginal": "Synchrosniser l'audio sans perte de la qualit\u00e9 originelle (lorsque c'est support\u00e9)"
 }

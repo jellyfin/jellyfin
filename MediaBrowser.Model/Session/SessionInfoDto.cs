@@ -99,6 +99,12 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The device id.</value>
         public string DeviceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the application icon URL.
+        /// </summary>
+        /// <value>The application icon URL.</value>
+        public string AppIconUrl { get; set; }
         
         /// <summary>
         /// Gets or sets a value indicating whether [supports remote control].

@@ -1504,5 +1504,5 @@
     "HeaderEmbyGuide": "Emby gids",
     "LabelSyncPath": "Synchroniseerpad:",
     "OptionSyncOnlyOnWifi": "Synchroniseer alleen via Wifi",
-    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality (when supported)"
+    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality"
 }

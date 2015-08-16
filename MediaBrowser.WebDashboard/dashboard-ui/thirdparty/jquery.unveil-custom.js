@@ -26,7 +26,10 @@
     */
     var $w = $(window);
 
-    function visibleInViewport(elem, partial, hidden, direction, threshold) {
+    var thresholdX = Math.max(screen.availWidth * 2, 1000);
+    var thresholdY = Math.max(screen.availHeight * 2, 1000);
+
+    function visibleInViewport(elem, partial, hidden, direction) {
 
         var t = elem,
             vpWidth = $w.width(),
@@ -38,10 +41,10 @@
 
             // Use this native browser method, if available.
             var rec = t.getBoundingClientRect(),
-                tViz = rec.top >= 0 && rec.top < vpHeight + threshold,
-                bViz = rec.bottom > 0 && rec.bottom <= vpHeight + threshold,
-                lViz = rec.left >= 0 && rec.left < vpWidth + threshold,
-                rViz = rec.right > 0 && rec.right <= vpWidth + threshold,
+                tViz = rec.top >= 0 && rec.top < vpHeight + thresholdY,
+                bViz = rec.bottom > 0 && rec.bottom <= vpHeight + thresholdY,
+                lViz = rec.left >= 0 && rec.left < vpWidth + thresholdX,
+                rViz = rec.right > 0 && rec.right <= vpWidth + thresholdX,
                 vVisible = partial ? tViz || bViz : tViz && bViz,
                 hVisible = partial ? lViz || rViz : lViz && rViz;
 
@@ -79,18 +82,8 @@
 
     var unveilId = 0;
 
-    function getThreshold() {
-
-        var screens = $.browser.mobile ? 2.5 : 1;
-
-        // This helps eliminate the draw-in effect as you scroll
-        return Math.max(screen.availHeight * screens, 1000);
-    }
-
-    var threshold = getThreshold();
-
     function isVisible(elem) {
-        return visibleInViewport(elem, true, false, 'both', threshold);
+        return visibleInViewport(elem, true, false, 'both');
     }
 
     function fillImage(elem) {

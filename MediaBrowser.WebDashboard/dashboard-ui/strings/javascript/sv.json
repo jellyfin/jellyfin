@@ -355,8 +355,8 @@
     "OptionOn": "P\u00e5",
     "ButtonSettings": "Inst\u00e4llningar",
     "ButtonUninstall": "Avinstallera",
-    "HeaderFields": "F\u00e4lt",
-    "HeaderFieldsHelp": "Dra ett f\u00e4lt till \"av\" f\u00f6r att l\u00e5sa det och f\u00f6rhindra att dess data \u00e4ndras.",
+    "HeaderEnabledFields": "Enabled Fields",
+    "HeaderEnabledFieldsHelp": "Uncheck a field to lock it and prevent it's data from being changed.",
     "HeaderLiveTV": "Live-TV",
     "MissingLocalTrailer": "Lokalt sparad trailer saknas.",
     "MissingPrimaryImage": "Huvudbild saknas.",
@@ -828,5 +828,11 @@
     "ErrorValidatingSupporterInfo": "There was an error validating your Emby Supporter information. Please try again later.",
     "HeaderSync": "Sync",
     "LabelLocalSyncStatusValue": "Status: {0}",
-    "MessageSyncStarted": "Sync started"
+    "MessageSyncStarted": "Sync started",
+    "OptionPoster": "Affisch",
+    "OptionPosterCard": "Poster card",
+    "OptionList": "Lista",
+    "OptionThumb": "Miniatyr",
+    "OptionThumbCard": "Thumb card",
+    "OptionBanner": "Banderoll"
 }

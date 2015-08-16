@@ -122,11 +122,7 @@
             return false;
         }
 
-        if ($.browser.mobile) {
-            return false;
-        }
-
-        return !AppInfo.isTouchPreferred;
+        return false;
     }
 
     function enabled() {

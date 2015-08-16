@@ -355,8 +355,8 @@
     "OptionOn": "Si",
     "ButtonSettings": "Configuraci\u00f3n",
     "ButtonUninstall": "Desinstalar",
-    "HeaderFields": "Campos",
-    "HeaderFieldsHelp": "Deslice un campo hacia \"apagado\" para bloquearlo y evitar que sus datos sean modificados.",
+    "HeaderEnabledFields": "Enabled Fields",
+    "HeaderEnabledFieldsHelp": "Uncheck a field to lock it and prevent it's data from being changed.",
     "HeaderLiveTV": "TV en Vivo",
     "MissingLocalTrailer": "Falta tr\u00e1iler local.",
     "MissingPrimaryImage": "Falta im\u00e1gen principal.",
@@ -828,5 +828,11 @@
     "ErrorValidatingSupporterInfo": "Hubo un error al validar su informaci\u00f3n de su cuenta de Aficionado Emby. Por favor intente de nuevo mas tarde.",
     "HeaderSync": "Sinc",
     "LabelLocalSyncStatusValue": "Estado: {0}",
-    "MessageSyncStarted": "Sincronizaci\u00f3n iniciada"
+    "MessageSyncStarted": "Sincronizaci\u00f3n iniciada",
+    "OptionPoster": "P\u00f3ster",
+    "OptionPosterCard": "Tarjeta de P\u00f3ster",
+    "OptionList": "Lista",
+    "OptionThumb": "Miniatura",
+    "OptionThumbCard": "Tarjeta de Miniatura",
+    "OptionBanner": "Cart\u00e9l"
 }

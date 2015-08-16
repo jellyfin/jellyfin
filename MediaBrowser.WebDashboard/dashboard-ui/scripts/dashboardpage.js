@@ -612,6 +612,9 @@
         var clientLowered = connection.Client.toLowerCase();
         var device = connection.DeviceName.toLowerCase();
 
+        if (connection.AppIconUrl) {
+            return "<img src='" + connection.AppIconUrl + "' />";
+        }
 
         if (clientLowered == "dashboard" || clientLowered == "emby web client") {
 
@@ -635,42 +638,19 @@
 
             return "<img src='" + imgUrl + "' alt='Emby Web Client' />";
         }
-        if (clientLowered == "emby mobile") {
-
-            var imgUrl;
-
-            if (device.indexOf('iphone') != -1 || device.indexOf('ipad') != -1) {
-                imgUrl = 'css/images/clients/ios.png';
-            }
-            else {
-                imgUrl = 'css/images/clients/android.png';
-            }
-
-            return "<img src='" + imgUrl + "' alt='Emby Mobile' />";
+        if (clientLowered.indexOf('android') != -1) {
+            return "<img src='css/images/clients/android.png' />";
+        }
+        if (clientLowered.indexOf('ios') != -1) {
+            return "<img src='css/images/clients/ios.png' />";
         }
         if (clientLowered == "mb-classic") {
 
             return "<img src='css/images/clients/mbc.png' />";
         }
-        if (clientLowered == "emby theater") {
-
-            return "<img src='css/images/clients/mb.png' />";
-        }
-        if (clientLowered == "android" || clientLowered == "androidtv") {
-
-            return "<img src='css/images/clients/android.png' />";
-        }
-        if (clientLowered == "nuvue") {
-
-            return "<img src='css/images/clients/nuvue.png' />";
-        }
         if (clientLowered == "roku") {
 
             return "<img src='css/images/clients/roku.jpg' />";
-        }
-        if (clientLowered == "ios") {
-
-            return "<img src='css/images/clients/ios.png' />";
         }
         if (clientLowered == "windows rt") {
 
@@ -690,10 +670,6 @@
         if (clientLowered == "chromecast") {
 
             return "<img src='css/images/clients/chromecast.png' />";
-        }
-        if (clientLowered == "chrome companion") {
-
-            return "<img src='css/images/clients/chrome_companion.png' />";
         }
 
         return null;

@@ -126,6 +126,12 @@ namespace MediaBrowser.Controller.Session
         public ISessionController SessionController { get; set; }
 
         /// <summary>
+        /// Gets or sets the application icon URL.
+        /// </summary>
+        /// <value>The application icon URL.</value>
+        public string AppIconUrl { get; set; }
+        
+        /// <summary>
         /// Gets or sets the supported commands.
         /// </summary>
         /// <value>The supported commands.</value>

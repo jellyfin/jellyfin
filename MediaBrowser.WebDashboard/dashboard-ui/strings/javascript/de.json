@@ -355,8 +355,8 @@
     "OptionOn": "Ein",
     "ButtonSettings": "Einstellungen",
     "ButtonUninstall": "Deinstallieren",
-    "HeaderFields": "Felder",
-    "HeaderFieldsHelp": "Verschiebe ein Feld zu \"Aus\" um es zu sperren und \u00c4nderungen an dessen Daten zu verhindern.",
+    "HeaderEnabledFields": "Enabled Fields",
+    "HeaderEnabledFieldsHelp": "Uncheck a field to lock it and prevent it's data from being changed.",
     "HeaderLiveTV": "Live-TV",
     "MissingLocalTrailer": "Fehlender lokaler Trailer.",
     "MissingPrimaryImage": "Fehlendes Hauptbild.",
@@ -814,7 +814,7 @@
     "HeaderAddProvider": "TV Verzeichnis hinzuf\u00fcgen",
     "ErrorAddingTunerDevice": "Es trat ein Fehler beim hinzuf\u00fcgen eines Tuners auf. Bitte stellen Sie sicher das dieser erreichbar ist und versuchen Sie es erneut.",
     "ErrorSavingTvProvider": "Ein Fehler beim speichern des TV Verzeichnisses trat auf. Bitte stellen Sie sicher das dieser erreichbar ist und versuchen Sie es erneut.",
-    "ErrorGettingTvLineups": "There was an error downloading tv lineups. Please ensure your information is correct and try again.",
+    "ErrorGettingTvLineups": "Ein Fehler trat beim herunterladen des TV Programs auf. Bitte stellen Sie sicher, dass Ihre Informationen korrekt sind und versuchen Sie es erneut.",
     "MessageCreateAccountAt": "Erstellen Sie ein Konto bei {0}",
     "ErrorPleaseSelectLineup": "Bitte w\u00e4hlen Sie ein TV Programm und versuchen Sie es erneut. Wenn keine Programme verf\u00fcgbar sind pr\u00fcfen Sie bitte Benutzername, Passwort und Ihre Postleitzahl.",
     "HeaderTryCinemaMode": "Versuche Kino Modus",
@@ -828,5 +828,11 @@
     "ErrorValidatingSupporterInfo": "Ein Fehler trat bei der Pr\u00fcfung Ihrer Emby Unterst\u00fctzer-Mitgliedschaft auf. Bitte versuchen Sie es sp\u00e4ter erneut.",
     "HeaderSync": "Synchronisation",
     "LabelLocalSyncStatusValue": "Status: {0}",
-    "MessageSyncStarted": "Synchronisation gestartet"
+    "MessageSyncStarted": "Synchronisation gestartet",
+    "OptionPoster": "Poster",
+    "OptionPosterCard": "Poster Karte",
+    "OptionList": "List",
+    "OptionThumb": "Thumb",
+    "OptionThumbCard": "Thumb Karte",
+    "OptionBanner": "Banner"
 }

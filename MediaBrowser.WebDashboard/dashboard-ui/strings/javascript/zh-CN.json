@@ -355,8 +355,8 @@
     "OptionOn": "On",
     "ButtonSettings": "\u8bbe\u7f6e",
     "ButtonUninstall": "Uninstall",
-    "HeaderFields": "\u533a\u57df",
-    "HeaderFieldsHelp": "\u6ed1\u52a8\u6b64\u533a\u57df\u81f3\u201c\u5173\u95ed\u201d\u4ee5\u9501\u4f4f\u6570\u636e\uff0c\u9632\u6b62\u6570\u636e\u88ab\u6539\u53d8\u3002",
+    "HeaderEnabledFields": "Enabled Fields",
+    "HeaderEnabledFieldsHelp": "Uncheck a field to lock it and prevent it's data from being changed.",
     "HeaderLiveTV": "\u7535\u89c6\u76f4\u64ad",
     "MissingLocalTrailer": "\u7f3a\u5c11\u672c\u5730\u9884\u544a\u7247\u3002",
     "MissingPrimaryImage": "\u7f3a\u5c11\u5c01\u9762\u56fe\u3002",
@@ -828,5 +828,11 @@
     "ErrorValidatingSupporterInfo": "There was an error validating your Emby Supporter information. Please try again later.",
     "HeaderSync": "Sync",
     "LabelLocalSyncStatusValue": "Status: {0}",
-    "MessageSyncStarted": "Sync started"
+    "MessageSyncStarted": "Sync started",
+    "OptionPoster": "\u6d77\u62a5",
+    "OptionPosterCard": "Poster card",
+    "OptionList": "\u5217\u8868",
+    "OptionThumb": "\u7f29\u7565\u56fe",
+    "OptionThumbCard": "Thumb card",
+    "OptionBanner": "\u6a2a\u5e45"
 }
