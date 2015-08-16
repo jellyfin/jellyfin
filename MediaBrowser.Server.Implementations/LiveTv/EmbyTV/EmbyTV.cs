@@ -34,11 +34,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private readonly TimerManager _timerProvider;
 
         private readonly LiveTvManager _liveTvManager;
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
 
         public static EmbyTV Current;
 
-        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IConfigurationManager config, ILiveTvManager liveTvManager)
+        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem)
         {
             Current = this;
 
@@ -46,6 +46,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _logger = logger;
             _httpClient = httpClient;
             _config = config;
+            _fileSystem = fileSystem;
             _liveTvManager = (LiveTvManager)liveTvManager;
             _jsonSerializer = jsonSerializer;
 
@@ -108,8 +109,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return status;
         }
 
-        public async Task<IEnumerable<ChannelInfo>> GetChannelsAsync(CancellationToken cancellationToken)
+        private List<ChannelInfo> _channelCache = null;
+        private async Task<IEnumerable<ChannelInfo>> GetChannelsAsync(bool enableCache, CancellationToken cancellationToken)
         {
+            if (enableCache && _channelCache != null)
+            {
+
+                return _channelCache.ToList();
+            }
+
             var list = new List<ChannelInfo>();
 
             foreach (var hostInstance in GetTunerHosts())
@@ -144,8 +152,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                     }
                 }
             }
-
+            _channelCache = list;
             return list;
+        }
+
+        public Task<IEnumerable<ChannelInfo>> GetChannelsAsync(CancellationToken cancellationToken)
+        {
+            return GetChannelsAsync(false, cancellationToken);
         }
 
         private List<Tuple<ITunerHost, TunerHostInfo>> GetTunerHosts()
@@ -306,9 +319,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
+            var channels = await GetChannelsAsync(true, cancellationToken).ConfigureAwait(false);
+            var channel = channels.First(i => string.Equals(i.Id, channelId, StringComparison.OrdinalIgnoreCase));
+
             foreach (var provider in GetListingProviders())
             {
-                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channelId, startDateUtc, endDateUtc, cancellationToken)
+                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channel.Number, startDateUtc, endDateUtc, cancellationToken)
                         .ConfigureAwait(false);
                 var list = programs.ToList();
 
@@ -403,7 +419,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 }
                 catch (NotImplementedException)
                 {
-                    
+
                 }
             }
 
@@ -586,7 +602,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             List<ProgramInfo> epgData;
             if (seriesTimer.RecordAnyChannel)
             {
-                var channels = await GetChannelsAsync(CancellationToken.None).ConfigureAwait(false);
+                var channels = await GetChannelsAsync(true, CancellationToken.None).ConfigureAwait(false);
                 var channelIds = channels.Select(i => i.Id).ToList();
                 epgData = GetEpgDataForChannels(channelIds);
             }
