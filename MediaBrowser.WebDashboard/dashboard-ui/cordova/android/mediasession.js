@@ -35,6 +35,14 @@
 
         var artist = parts.length == 1 ? '' : parts[0];
         var title = parts[parts.length - 1];
+
+        // Switch these two around for video
+        if (state.NowPlayingItem.MediaType == 'Video') {
+            var temp = artist;
+            artist = title;
+            title = temp;
+        }
+
         var album = state.NowPlayingItem.Album || '';
         var itemId = state.NowPlayingItem.Id;
 

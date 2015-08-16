@@ -23,7 +23,6 @@
 
         var html = '';
 
-        html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
 
         var index = '';
 
@@ -34,11 +33,20 @@
             var startDateText = LibraryBrowser.getFutureDateText(parseISO8601Date(timer.StartDate, { toLocal: true }));
 
             if (startDateText != index) {
-                html += '<li data-role="list-divider">' + startDateText + '</li>';
+
+                if (index) {
+                    html += '</div>';
+                    html += '</div>';
+                }
+
+                html += '<div class="homePageSection">';
+                html += '<h1>' + startDateText + '</h1>';
+                //html += '<ul data-role="listview" data-split-icon="delete">';
+                html += '<div class="paperList">';
                 index = startDateText;
             }
 
-            html += '<li><a href="livetvtimer.html?id=' + timer.Id + '">';
+            html += '<paper-icon-item>';
 
             var program = timer.ProgramInfo || {};
             var imgUrl;
@@ -50,22 +58,28 @@
                     tag: program.ImageTags.Primary,
                     type: "Primary"
                 });
-            } else {
-                imgUrl = "css/images/items/searchhintsv2/tv.png";
             }
 
-            html += '<img src="css/images/items/searchhintsv2/tv.png" style="display:none;">';
-            html += '<div class="ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');width:5em;height:5em;background-repeat:no-repeat;background-position:center center;background-size: cover;"></div>';
+            if (imgUrl) {
+                html += '<paper-fab class="listAvatar blue" style="background-image:url(\'' + imgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
+            } else {
+                html += '<paper-fab class="listAvatar blue" icon="tv" item-icon></paper-fab>';
+            }
 
-            html += '<h3>';
+            html += '<paper-item-body two-line>';
+            html += '<a class="clearLink" href="livetvtimer.html?id=' + timer.Id + '">';
+
+            html += '<div>';
             html += timer.Name;
-            html += '</h3>';
+            html += '</div>';
 
-            html += '<p>';
+            html += '<div secondary>';
             html += LibraryBrowser.getDisplayTime(timer.StartDate);
             html += ' - ' + LibraryBrowser.getDisplayTime(timer.EndDate);
-            html += '</p>';
+            html += '</div>';
 
+            html += '</a>';
+            html += '</paper-item-body>';
 
             if (timer.SeriesTimerId) {
                 html += '<div class="ui-li-aside" style="right:0;">';
@@ -75,14 +89,15 @@
                 html += '</div>';
             }
 
-            html += '</a>';
+            html += '<paper-icon-button icon="delete" data-timerid="' + timer.Id + '" title="' + Globalize.translate('ButonCancelRecording') + '" class="btnDeleteTimer"></paper-icon-button>';
 
-            html += '<a data-timerid="' + timer.Id + '" href="#" title="' + Globalize.translate('ButonCancelRecording') + '" class="btnDeleteTimer">' + Globalize.translate('ButonCancelRecording') + '</a>';
-
-            html += '</li>';
+            html += '</paper-icon-item>';
         }
 
-        html += '</ul>';
+        if (timers.length) {
+            html += '</div>';
+            html += '</div>';
+        }
 
         var elem = $('#items', page).html(html).trigger('create');
 

@@ -31,8 +31,6 @@
 
         html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
 
-        html += '<li data-role="list-divider">' + Globalize.translate('HeaderSeriesRecordings') + '</li>';
-
         for (var i = 0, length = timers.length; i < length; i++) {
 
             var timer = timers[i];
