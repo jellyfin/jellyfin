@@ -117,14 +117,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 try
                 {
                     var channels = await hostInstance.Item1.GetChannels(hostInstance.Item2, cancellationToken).ConfigureAwait(false);
-                    var newChannels = channels.ToList();
 
-                    foreach (var channel in newChannels)
-                    {
-                        channel.Id = hostInstance.Item1.Type.GetMD5().ToString("N") + "-" + channel.Id;
-                    }
-
-                    list.AddRange(newChannels);
+                    list.AddRange(channels);
                 }
                 catch (Exception ex)
                 {
@@ -310,18 +304,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             return Task.FromResult((IEnumerable<SeriesTimerInfo>)_seriesTimerProvider.GetAll());
         }
 
-        private string GetOriginalChannelId(string channelId)
-        {
-            var parts = channelId.Split('-');
-
-            return string.Join("-", parts.Skip(1).ToArray());
-        }
-
         public async Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
         {
             foreach (var provider in GetListingProviders())
             {
-                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, GetOriginalChannelId(channelId), startDateUtc, endDateUtc, cancellationToken)
+                var programs = await provider.Item1.GetProgramsAsync(provider.Item2, channelId, startDateUtc, endDateUtc, cancellationToken)
                         .ConfigureAwait(false);
                 var list = programs.ToList();
 
@@ -364,15 +351,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             _logger.Info("Streaming Channel " + channelId);
 
-            var configurationId = channelId.Split('-')[0];
-
             foreach (var hostInstance in GetTunerHosts())
             {
-                if (!string.Equals(configurationId, hostInstance.Item1.Type.GetMD5().ToString("N"), StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
                 if (!string.IsNullOrWhiteSpace(streamId))
                 {
                     var originalStreamId = string.Join("-", streamId.Split('-').Skip(1).ToArray());
@@ -386,16 +366,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 MediaSourceInfo mediaSourceInfo = null;
                 try
                 {
-                    mediaSourceInfo = await hostInstance.Item1.GetChannelStream(hostInstance.Item2, GetOriginalChannelId(channelId), streamId, cancellationToken).ConfigureAwait(false);
+                    mediaSourceInfo = await hostInstance.Item1.GetChannelStream(hostInstance.Item2, channelId, streamId, cancellationToken).ConfigureAwait(false);
                 }
-                catch (ApplicationException e)
+                catch (Exception e)
                 {
-                    _logger.Info(e.Message);
-                    continue;
+                    _logger.ErrorException("Error getting channel stream", e);
                 }
 
-                mediaSourceInfo.Id = Guid.NewGuid().ToString("N");
-                return mediaSourceInfo;
+                if (mediaSourceInfo != null)
+                {
+                    mediaSourceInfo.Id = Guid.NewGuid().ToString("N");
+                    return mediaSourceInfo;
+                }
             }
 
             throw new ApplicationException("Tuner not found.");
@@ -403,20 +385,25 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
         {
-            var configurationId = channelId.Split('-')[0];
-
             foreach (var hostInstance in GetTunerHosts())
             {
-                if (string.Equals(configurationId, hostInstance.Item1.Type.GetMD5().ToString("N"), StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    var sources = await hostInstance.Item1.GetChannelStreamMediaSources(hostInstance.Item2, GetOriginalChannelId(channelId), cancellationToken).ConfigureAwait(false);
+                    var sources = await hostInstance.Item1.GetChannelStreamMediaSources(hostInstance.Item2, channelId, cancellationToken).ConfigureAwait(false);
 
                     foreach (var source in sources)
                     {
                         source.Id = hostInstance.Item2.Id + "-" + source.Id;
                     }
 
-                    return sources;
+                    if (sources.Count > 0)
+                    {
+                        return sources;
+                    }
+                }
+                catch (NotImplementedException)
+                {
+                    
                 }
             }
 
@@ -636,7 +623,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             var recordingShowIds = currentRecordings.Select(i => i.ShowId).ToList();
 
-            allPrograms = allPrograms.Where(epg => !recordingShowIds.Contains(epg.ShowId, StringComparer.OrdinalIgnoreCase)); 
+            allPrograms = allPrograms.Where(epg => !recordingShowIds.Contains(epg.ShowId, StringComparer.OrdinalIgnoreCase));
 
             return allPrograms.Select(i => RecordingHelper.CreateTimer(i, seriesTimer));
         }
@@ -650,7 +637,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             if (seriesTimer.RecordNewOnly)
             {
-                allPrograms = allPrograms.Where(epg => !epg.IsRepeat); 
+                allPrograms = allPrograms.Where(epg => !epg.IsRepeat);
             }
 
             if (!seriesTimer.RecordAnyChannel)
@@ -659,6 +646,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
 
             allPrograms = allPrograms.Where(i => seriesTimer.Days.Contains(i.StartDate.DayOfWeek));
+
+            if (string.IsNullOrWhiteSpace(seriesTimer.SeriesId))
+            {
+                _logger.Error("seriesTimer.SeriesId is null. Cannot find programs for series");
+                return new List<ProgramInfo>();
+            }
 
             return allPrograms.Where(i => string.Equals(i.SeriesId, seriesTimer.SeriesId, StringComparison.OrdinalIgnoreCase));
         }
