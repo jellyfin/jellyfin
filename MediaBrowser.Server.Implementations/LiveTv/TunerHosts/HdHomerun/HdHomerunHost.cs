@@ -326,6 +326,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 return list;
             }
+            channelId = channelId.Substring(ChannelIdPrefix.Length);
 
             list.Add(GetMediaSource(info, channelId, "native"));
 
@@ -358,6 +359,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             {
                 return null;
             }
+            channelId = channelId.Substring(ChannelIdPrefix.Length);
 
             return GetMediaSource(info, channelId, streamId);
         }

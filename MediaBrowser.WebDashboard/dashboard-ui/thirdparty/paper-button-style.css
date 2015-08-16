@@ -383,11 +383,12 @@ paper-menu-item {
     color: #fff !important;
 }
 
-.ui-page-theme-b paper-input .focused-line, .ui-page-theme-b paper-textarea .focused-line {
+paper-input .focused-line, .ui-page-theme-b paper-textarea .focused-line {
     background-color: #52B54B !important;
 }
 
 .ui-page-theme-b .unfocused-line.paper-input-container, .ui-page-theme-b .unfocused-line.paper-textarea-container {
+    background: #454545;
 }
 
 paper-textarea.mono textarea {
