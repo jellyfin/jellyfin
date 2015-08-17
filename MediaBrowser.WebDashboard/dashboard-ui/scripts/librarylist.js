@@ -498,6 +498,10 @@
             isFolder = true;
         }
 
+        if (type == 'Program') {
+            id = card.getAttribute('data-channelid');
+        }
+
         LibraryBrowser.showPlayMenu(playButton, id, type, isFolder, mediaType, resumePosition);
 
         e.preventDefault();

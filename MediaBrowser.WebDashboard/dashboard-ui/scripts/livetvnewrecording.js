@@ -21,14 +21,14 @@
 
         LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), program);
 
-        $('#chkNewOnly', page).checked(defaultTimer.RecordNewOnly).checkboxradio('refresh');
-        $('#chkAllChannels', page).checked(defaultTimer.RecordAnyChannel).checkboxradio('refresh');
-        $('#chkAnyTime', page).checked(defaultTimer.RecordAnyTime).checkboxradio('refresh');
+        $('#chkNewOnly', page).checked(defaultTimer.RecordNewOnly);
+        $('#chkAllChannels', page).checked(defaultTimer.RecordAnyChannel);
+        $('#chkAnyTime', page).checked(defaultTimer.RecordAnyTime);
 
         $('#txtPrePaddingMinutes', page).val(defaultTimer.PrePaddingSeconds / 60);
         $('#txtPostPaddingMinutes', page).val(defaultTimer.PostPaddingSeconds / 60);
-        $('#chkPrePaddingRequired', page).checked(defaultTimer.IsPrePaddingRequired).checkboxradio('refresh');
-        $('#chkPostPaddingRequired', page).checked(defaultTimer.IsPostPaddingRequired).checkboxradio('refresh');
+        $('#chkPrePaddingRequired', page).checked(defaultTimer.IsPrePaddingRequired);
+        $('#chkPostPaddingRequired', page).checked(defaultTimer.IsPostPaddingRequired);
 
         if (program.IsSeries) {
             $('#eligibleForSeriesFields', page).show();
@@ -67,7 +67,7 @@
 
             var day = daysOfWeek[i];
 
-            $('#chk' + day, page).checked(days.indexOf(day) != -1).checkboxradio('refresh');
+            $('#chk' + day, page).checked(days.indexOf(day) != -1);
 
         }
 

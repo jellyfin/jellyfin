@@ -1192,6 +1192,10 @@
                 atts.push('data-albumid="' + item.AlbumId + '"');
             }
 
+            if (item.ChannelId) {
+                atts.push('data-channelid="' + item.ChannelId + '"');
+            }
+
             if (item.ArtistItems && item.ArtistItems.length) {
                 atts.push('data-artistid="' + item.ArtistItems[0].Id + '"');
             }
@@ -3112,6 +3116,17 @@
 
             if (item.MediaType == 'Photo' && item.Width && item.Height) {
                 miscInfo.push(item.Width + "x" + item.Height);
+            }
+
+            if (item.SeriesTimerId) {
+                var html = '';
+                html += '<a href="livetvseriestimer.html?id=' + item.SeriesTimerId + '" title="' + Globalize.translate('ButtonViewSeriesRecording') + '">';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '</a>';
+                miscInfo.push(html);
+                require(['livetvcss']);
             }
 
             return miscInfo.join('&nbsp;&nbsp;&nbsp;&nbsp;');

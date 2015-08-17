@@ -373,6 +373,11 @@ paper-menu-item {
     border-color: #2ad;
 }
 
+.paperCheckboxList paper-checkbox {
+    display: block;
+    padding: .5em 0;
+}
+
 .ui-page-theme-b paper-input label, .ui-page-theme-b paper-textarea label {
     color: #ccc !important;
     font-size: 20px !important;

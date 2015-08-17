@@ -29,12 +29,12 @@
 
         $('#txtPrePaddingMinutes', page).val(item.PrePaddingSeconds / 60);
         $('#txtPostPaddingMinutes', page).val(item.PostPaddingSeconds / 60);
-        $('#chkPrePaddingRequired', page).checked(item.IsPrePaddingRequired).checkboxradio('refresh');
-        $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired).checkboxradio('refresh');
+        $('#chkPrePaddingRequired', page).checked(item.IsPrePaddingRequired);
+        $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired);
 
-        $('#chkNewOnly', page).checked(item.RecordNewOnly).checkboxradio('refresh');
-        $('#chkAllChannels', page).checked(item.RecordAnyChannel).checkboxradio('refresh');
-        $('#chkAnyTime', page).checked(item.RecordAnyTime).checkboxradio('refresh');
+        $('#chkNewOnly', page).checked(item.RecordNewOnly);
+        $('#chkAllChannels', page).checked(item.RecordAnyChannel);
+        $('#chkAnyTime', page).checked(item.RecordAnyTime);
 
         var channelHtml = '';
         if (item.RecordAnyChannel) {
@@ -75,7 +75,7 @@
 
             var day = daysOfWeek[i];
 
-            $('#chk' + day, page).checked(days.indexOf(day) != -1).checkboxradio('refresh');
+            $('#chk' + day, page).checked(days.indexOf(day) != -1);
 
         }
 

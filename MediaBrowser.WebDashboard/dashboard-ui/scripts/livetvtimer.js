@@ -59,10 +59,14 @@
 
         $('#txtPrePaddingMinutes', page).val(item.PrePaddingSeconds / 60);
         $('#txtPostPaddingMinutes', page).val(item.PostPaddingSeconds / 60);
-        $('#chkPrePaddingRequired', page).checked(item.IsPrePaddingRequired).checkboxradio('refresh');
-        $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired).checkboxradio('refresh');
+        $('#chkPrePaddingRequired', page).checked(item.IsPrePaddingRequired);
+        $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired);
 
-        $('.timerStatus', page).html('Status:&nbsp;&nbsp;&nbsp;' + item.Status);
+        if (item.Status == 'New') {
+            $('.timerStatus', page).hide();
+        } else {
+            $('.timerStatus', page).show().html('Status:&nbsp;&nbsp;&nbsp;' + item.Status);
+        }
 
         Dashboard.hideLoadingMsg();
     }
@@ -81,6 +85,7 @@
             item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 
             ApiClient.updateLiveTvTimer(item).done(function () {
+                Dashboard.hideLoadingMsg();
                 Dashboard.alert(Globalize.translate('MessageRecordingSaved'));
             });
         });

@@ -29,19 +29,26 @@
 
         var html = '';
 
-        html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
+        if (timers.length) {
+            html += '<div class="paperList">';
+        }
 
         for (var i = 0, length = timers.length; i < length; i++) {
 
             var timer = timers[i];
 
-            html += '<li><a href="livetvseriestimer.html?id=' + timer.Id + '">';
+            html += '<paper-icon-item>';
 
-            html += '<h3>';
+            html += '<paper-fab class="listAvatar" icon="live-tv" item-icon></paper-fab>';
+
+            html += '<paper-item-body two-line>';
+            html += '<a class="clearLink" href="livetvseriestimer.html?id=' + timer.Id + '">';
+
+            html += '<div>';
             html += timer.Name;
-            html += '</h3>';
+            html += '</div>';
 
-            html += '<p>';
+            html += '<div secondary>';
             if (timer.DayPattern) {
                 html += timer.DayPattern;
             }
@@ -57,24 +64,28 @@
             } else {
                 html += ' - ' + LibraryBrowser.getDisplayTime(timer.StartDate);
             }
-            html += '</p>';
+            html += '</div>';
 
-            html += '<p>';
+            html += '<div secondary>';
             if (timer.RecordAnyChannel) {
                 html += Globalize.translate('LabelAllChannels');
             }
             else if (timer.ChannelId) {
                 html += timer.ChannelName;
             }
-            html += '</p>';
+            html += '</div>';
             html += '</a>';
 
-            html += '<a data-seriestimerid="' + timer.Id + '" href="#" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries">' + Globalize.translate('ButtonCancelSeries') + '</a>';
+            html += '</paper-item-body>';
 
-            html += '</li>';
+            html += '<paper-icon-button icon="delete" data-seriestimerid="' + timer.Id + '" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries"></paper-icon-button>';
+
+            html += '</paper-icon-item>';
         }
 
-        html += '</ul>';
+        if (timers.length) {
+            html += '</div>';
+        }
 
         var elem = $('#items', page).html(html).trigger('create');
 

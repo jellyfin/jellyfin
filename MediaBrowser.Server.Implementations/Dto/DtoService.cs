@@ -1526,10 +1526,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(tvChannel, true).ToList();
             }
 
+            dto.ChannelId = item.ChannelId;
+            
             var channelItem = item as IChannelItem;
             if (channelItem != null)
             {
-                dto.ChannelId = channelItem.ChannelId;
                 dto.ChannelName = _channelManagerFactory().GetChannel(channelItem.ChannelId).Name;
             }
 

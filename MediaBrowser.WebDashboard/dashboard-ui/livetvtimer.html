@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvTimerPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvtimer,livetvcss" data-backbutton="true" data-menubutton="false">
+    <div id="liveTvTimerPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvtimer,livetvcss,jqmicons" data-backbutton="true" data-menubutton="false">
 
         <div data-role="content">
 
@@ -24,57 +24,44 @@
                 </div>
                 <p class="itemOverview smoothScrollY"></p>
 
-                <p style="margin-top: 2em;">
-                    <span class="timerStatus"></span>
+                <p style="margin-top: 2em;" class="timerStatus">
                 </p>
-
+                <div style="margin-top: 2em;">
+                    <paper-button class="subdued" raised id="btnCancelTimer"><iron-icon icon="delete"></iron-icon><span>${ButtonCancelRecording}</span></paper-button>
+                </div>
             </div>
             <br />
             <form class="liveTvTimerForm" style="margin: 0 auto;">
-
+                <h1>${HeaderRecordingOptions}</h1>
                 <div data-role="collapsible" data-mini="true">
-                    <h3>${HeaderPrePostPadding}</h3>
+                    <h3>${HeaderAdvanced}</h3>
                     <div>
                         <br />
                         <ul data-role="listview" class="ulForm">
                             <li>
-                                <label for="txtPrePaddingMinutes">${LabelPrePaddingMinutes}</label>
-                                <input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" />
+                                <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
                             </li>
                             <li>
-                                <input type="checkbox" data-mini="true" id="chkPrePaddingRequired" />
-                                <label for="chkPrePaddingRequired">${OptionPrePaddingRequired}</label>
+                                <paper-checkbox id="chkPrePaddingRequired">${OptionPrePaddingRequired}</paper-checkbox>
                             </li>
                             <li>
-                                <div style="height: .5em;"></div>
+                                <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
                             </li>
                             <li>
-                                <label for="txtPostPaddingMinutes">${LabelPostPaddingMinutes}</label>
-                                <input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" />
-                            </li>
-                            <li>
-                                <input type="checkbox" data-mini="true" id="chkPostPaddingRequired" />
-                                <label for="chkPostPaddingRequired">${OptionPostPaddingRequired}</label>
+                                <paper-checkbox id="chkPostPaddingRequired">${OptionPostPaddingRequired}</paper-checkbox>
                             </li>
                         </ul>
                     </div>
                 </div>
                 <br />
                 <br />
+                <div>
+                    <button type="submit" data-role="none" class="clearButton">
+                        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                    </button>
 
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button type="submit" data-theme="a" data-icon="check" data-mini="true">
-                            ${ButtonSave}
-                        </button>
-                        <button type="button" onclick="Dashboard.navigate('livetvtimers.html');" data-icon="delete" data-mini="true">
-                            ${ButtonCancel}
-                        </button>
-                    </li>
-                </ul>
-                <p style="border-top: 1px solid #444; padding-top: .5em; margin-top: 3em;">
-                    <button id="btnCancelTimer" type="button" data-mini="true" data-icon="delete">${ButtonCancelRecording}</button>
-                </p>
+                    <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                </div>
             </form>
 
         </div>

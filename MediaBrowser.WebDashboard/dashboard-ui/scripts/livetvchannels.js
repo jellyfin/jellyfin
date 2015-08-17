@@ -23,17 +23,19 @@
         Dashboard.hideLoadingMsg();
     }
 
-    function renderChannels(page, result) {
+    function renderChannels(page, viewPanel, result) {
 
         $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
             startIndex: query.StartIndex,
             limit: query.Limit,
             totalRecordCount: result.TotalRecordCount,
             viewButton: true,
-            showLimit: false
+            showLimit: false,
+            viewPanelClass: 'channelViewPanel'
+
         })).trigger('create');
 
-        updateFilterControls(this);
+        updateFilterControls(viewPanel);
 
         var html = getChannelsHtml(result.Items);
 
@@ -44,24 +46,24 @@
 
         $('.btnNextPage', page).on('click', function () {
             query.StartIndex += query.Limit;
-            reloadItems(page);
+            reloadItems(page, viewPanel);
         });
 
         $('.btnPreviousPage', page).on('click', function () {
             query.StartIndex -= query.Limit;
-            reloadItems(page);
+            reloadItems(page, viewPanel);
         });
 
         LibraryBrowser.saveQueryValues('movies', query);
     }
     
-    function reloadItems(page) {
+    function reloadItems(page, viewPanel) {
 
         showLoadingMessage(page);
         
         ApiClient.getLiveTvChannels(query).done(function (result) {
 
-            renderChannels(page, result);
+            renderChannels(page, viewPanel, result);
 
             hideLoadingMessage(page);
 
@@ -80,36 +82,37 @@
     $(document).on('pageinitdepends', "#liveTvSuggestedPage", function () {
 
         var page = this.querySelector('.channelsTabContent');
+        var viewPanel = this.querySelector('.channelViewPanel');
 
-        $('#chkFavorite', page).on('change', function () {
+        $('#chkFavorite', viewPanel).on('change', function () {
 
             query.StartIndex = 0;
             query.IsFavorite = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(page, viewPanel);
         });
 
 
-        $('#chkLikes', page).on('change', function () {
+        $('#chkLikes', viewPanel).on('change', function () {
 
             query.StartIndex = 0;
             query.IsLiked = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(page, viewPanel);
         });
 
-        $('#chkDislikes', page).on('change', function () {
+        $('#chkDislikes', viewPanel).on('change', function () {
 
             query.StartIndex = 0;
             query.IsDisliked = this.checked ? true : null;
 
-            reloadItems(page);
+            reloadItems(page, viewPanel);
         });
 
-        $('#selectPageSize', page).on('change', function () {
+        $('#selectPageSize', viewPanel).on('change', function () {
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
-            reloadItems(page);
+            reloadItems(page, viewPanel);
         });
 
     });
@@ -122,13 +125,14 @@
 
             if (parseInt(this.selected) == 2) {
                 var tabContent = page.querySelector('.channelsTabContent');
+                var viewPanel = page.querySelector('.channelViewPanel');
 
                 if (LibraryBrowser.needsRefresh(tabContent)) {
                     query.UserId = Dashboard.getCurrentUserId();
                     LibraryBrowser.loadSavedQueryValues('movies', query);
                     query.Limit = query.Limit || LibraryBrowser.getDefaultPageSize();
-                    reloadItems(tabContent);
-                    updateFilterControls(this);
+                    reloadItems(tabContent, viewPanel);
+                    updateFilterControls(viewPanel);
                 }
             }
         });

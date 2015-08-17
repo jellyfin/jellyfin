@@ -23,7 +23,6 @@
 
         var html = '';
 
-
         var index = '';
 
         for (var i = 0, length = timers.length; i < length; i++) {
@@ -62,8 +61,21 @@
 
             if (imgUrl) {
                 html += '<paper-fab class="listAvatar blue" style="background-image:url(\'' + imgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
-            } else {
-                html += '<paper-fab class="listAvatar blue" icon="tv" item-icon></paper-fab>';
+            }
+            else if (program.IsKids) {
+                html += '<paper-fab class="listAvatar" style="background:#2196F3;" icon="person" item-icon></paper-fab>';
+            }
+            else if (program.IsSports) {
+                html += '<paper-fab class="listAvatar" style="background:#8BC34A;" icon="person" item-icon></paper-fab>';
+            }
+            else if (program.IsMovie) {
+                html += '<paper-fab class="listAvatar" icon="movie" item-icon></paper-fab>';
+            }
+            else if (program.IsNews) {
+                html += '<paper-fab class="listAvatar" style="background:#673AB7;" icon="new-releases" item-icon></paper-fab>';
+            }
+            else {
+                html += '<paper-fab class="listAvatar blue" icon="live-tv" item-icon></paper-fab>';
             }
 
             html += '<paper-item-body two-line>';

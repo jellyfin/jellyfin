@@ -55,7 +55,7 @@ $.fn.checked = function (value) {
         });
     } else {
         // Return check state
-        return $(this).is(':checked');
+        return this.length && this[0].checked;
     }
 };
 

@@ -1521,5 +1521,6 @@
     "LabelSyncPath": "Synced content path:",
     "OptionSyncOnlyOnWifi": "Sync only on Wifi",
     "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality",
-    "HeaderMetadata": "Metadata"
+    "HeaderMetadata": "Metadata",
+    "HeaderRecordingOptions": "Recording Options"
 }

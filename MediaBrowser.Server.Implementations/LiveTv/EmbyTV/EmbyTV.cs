@@ -515,7 +515,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             HttpRequestOptions httpRequestOptions = new HttpRequestOptions()
             {
-                Url = mediaStreamInfo.Path + "?duration=" + duration.TotalSeconds.ToString(CultureInfo.InvariantCulture)
+                Url = mediaStreamInfo.Path
             };
 
             var info = GetProgramInfoFromCache(timer.ChannelId, timer.ProgramId);

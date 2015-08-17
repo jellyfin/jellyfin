@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvNewRecordingPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvnewrecording,livetvcss" data-backbutton="true" data-menubutton="false">
+    <div id="liveTvNewRecordingPage" data-role="page" class="page libraryPage liveTvPage noSecondaryNavPage" data-contextname="${HeaderLiveTv}" data-require="scripts/livetvcomponents,scripts/livetvnewrecording,livetvcss,jqmicons" data-backbutton="true" data-menubutton="false">
 
         <div data-role="content">
             <form class="liveTvNewRecordingForm" style="margin: 0 auto;">
@@ -20,93 +20,65 @@
                 <br />
 
                 <div style="display: none;" id="eligibleForSeriesFields">
-                    <p>
-                        <input type="checkbox" id="chkRecordSeries" />
-                        <label for="chkRecordSeries">${OptionRecordSeries}</label>
-                    </p>
+                    <div>
+                        <paper-checkbox id="chkRecordSeries">${OptionRecordSeries}</paper-checkbox>
+                    </div>
                     <br />
 
-                    <ul data-role="listview" class="ulForm" id="seriesFields" style="display: none;">
-                        <li>
-                            <h3>${HeaderDays}</h3>
-                            <div data-role="controlgroup">
-
-                                <input type="checkbox" id="chkSunday" />
-                                <label for="chkSunday">${OptionSunday}</label>
-
-                                <input type="checkbox" id="chkMonday" />
-                                <label for="chkMonday">${OptionMonday}</label>
-
-                                <input type="checkbox" id="chkTuesday" />
-                                <label for="chkTuesday">${OptionTuesday}</label>
-
-                                <input type="checkbox" id="chkWednesday" />
-                                <label for="chkWednesday">${OptionWednesday}</label>
-
-                                <input type="checkbox" id="chkThursday" />
-                                <label for="chkThursday">${OptionThursday}</label>
-
-                                <input type="checkbox" id="chkFriday" />
-                                <label for="chkFriday">${OptionFriday}</label>
-
-                                <input type="checkbox" id="chkSaturday" />
-                                <label for="chkSaturday">${OptionSaturday}</label>
-                            </div>
-                        </li>
-                        <li>
-                            <h3>${HeaderRepeatingOptions}</h3>
-                            <div data-role="controlgroup">
-
-                                <label for="chkNewOnly">${OptionRecordOnlyNewEpisodes}</label>
-                                <input type="checkbox" id="chkNewOnly" />
-                                <label for="chkAnyTime">${OptionRecordAnytime}</label>
-                                <input type="checkbox" id="chkAnyTime" />
-                                <label for="chkAllChannels">${OptionRecordOnAllChannels}</label>
-                                <input type="checkbox" id="chkAllChannels" />
-                            </div>
-                        </li>
-                    </ul>
+                    <div id="seriesFields" style="display: none;">
+                        <div>
+                            <h1>${HeaderDays}</h1>
+                        </div>
+                        <div class="paperCheckboxList">
+                            <paper-checkbox id="chkSunday">${OptionSunday}</paper-checkbox>
+                            <paper-checkbox id="chkMonday">${OptionMonday}</paper-checkbox>
+                            <paper-checkbox id="chkTuesday">${OptionTuesday}</paper-checkbox>
+                            <paper-checkbox id="chkWednesday">${OptionWednesday}</paper-checkbox>
+                            <paper-checkbox id="chkThursday">${OptionThursday}</paper-checkbox>
+                            <paper-checkbox id="chkFriday">${OptionFriday}</paper-checkbox>
+                            <paper-checkbox id="chkSaturday">${OptionSaturday}</paper-checkbox>
+                        </div>
+                        <div>
+                            <h1>${HeaderRepeatingOptions}</h1>
+                        </div>
+                        <div class="paperCheckboxList">
+                            <paper-checkbox id="chkNewOnly">${OptionRecordOnlyNewEpisodes}</paper-checkbox>
+                            <paper-checkbox id="chkAnyTime">${OptionRecordAnytime}</paper-checkbox>
+                            <paper-checkbox id="chkAllChannels">${OptionRecordOnAllChannels}</paper-checkbox>
+                        </div>
+                    </div>
+                    <br />
                 </div>
 
                 <div data-role="collapsible" data-mini="true">
-                    <h3>${HeaderPrePostPadding}</h3>
+                    <h3>${HeaderAdvanced}</h3>
                     <div>
                         <br />
                         <ul data-role="listview" class="ulForm">
                             <li>
-                                <label for="txtPrePaddingMinutes">${LabelPrePaddingMinutes}</label>
-                                <input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" />
+                                <paper-input type="number" id="txtPrePaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPrePaddingMinutes}"></paper-input>
                             </li>
                             <li>
-                                <input type="checkbox" data-mini="true" id="chkPrePaddingRequired" />
-                                <label for="chkPrePaddingRequired">${OptionPrePaddingRequired}</label>
+                                <paper-checkbox id="chkPrePaddingRequired">${OptionPrePaddingRequired}</paper-checkbox>
                             </li>
                             <li>
-                                <div style="height: .5em;"></div>
+                                <paper-input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" label="${LabelPostPaddingMinutes}"></paper-input>
                             </li>
                             <li>
-                                <label for="txtPostPaddingMinutes">${LabelPostPaddingMinutes}</label>
-                                <input type="number" id="txtPostPaddingMinutes" pattern="[0-9]*" required="required" min="0" step="1" />
-                            </li>
-                            <li>
-                                <input type="checkbox" data-mini="true" id="chkPostPaddingRequired" />
-                                <label for="chkPostPaddingRequired">${OptionPostPaddingRequired}</label>
+                                <paper-checkbox id="chkPostPaddingRequired">${OptionPostPaddingRequired}</paper-checkbox>
                             </li>
                         </ul>
                     </div>
                 </div>
                 <br />
                 <br />
-                <ul data-role="listview" class="ulForm">
-                    <li>
-                        <button type="submit" data-theme="a" data-icon="check">
-                            ${ButtonRecord}
-                        </button>
-                        <button id="btnCancel" type="button" data-icon="delete">
-                            ${ButtonCancel}
-                        </button>
-                    </li>
-                </ul>
+                <div>
+                    <button type="submit" data-role="none" class="clearButton">
+                        <paper-button raised class="submit block" style="background:#cc3333;"><iron-icon icon="check"></iron-icon><span>${ButtonRecord}</span></paper-button>
+                    </button>
+
+                    <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
+                </div>
             </form>
         </div>
     </div>
