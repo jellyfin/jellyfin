@@ -1647,7 +1647,8 @@ namespace MediaBrowser.Server.Implementations.Dto
                 IsFolder = false,
                 Recursive = true,
                 IsVirtualUnaired = false,
-                IsMissing = false
+                IsMissing = false,
+                User = user
 
             }).Result.Items;
 
