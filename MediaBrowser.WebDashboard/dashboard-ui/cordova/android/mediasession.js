@@ -37,7 +37,7 @@
         var title = parts[parts.length - 1];
 
         // Switch these two around for video
-        if (state.NowPlayingItem.MediaType == 'Video') {
+        if (state.NowPlayingItem.MediaType == 'Video' && parts.length > 1) {
             var temp = artist;
             artist = title;
             title = temp;

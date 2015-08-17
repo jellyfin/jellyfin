@@ -41,7 +41,7 @@
 
             html += '<paper-fab class="listAvatar" icon="live-tv" item-icon></paper-fab>';
 
-            html += '<paper-item-body two-line>';
+            html += '<paper-item-body three-line>';
             html += '<a class="clearLink" href="livetvseriestimer.html?id=' + timer.Id + '">';
 
             html += '<div>';
