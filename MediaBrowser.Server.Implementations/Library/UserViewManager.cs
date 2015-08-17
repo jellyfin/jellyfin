@@ -224,7 +224,6 @@ namespace MediaBrowser.Server.Implementations.Library
 
                 if (enableUserSpecificViews)
                 {
-                    viewType = enableRichView ? viewType : null;
                     var view = await _libraryManager.GetNamedView(user, name, viewType, sortName, cancellationToken).ConfigureAwait(false);
 
                     if (view.ParentId != parentId)

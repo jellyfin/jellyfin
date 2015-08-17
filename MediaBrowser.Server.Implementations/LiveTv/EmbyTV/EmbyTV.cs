@@ -177,6 +177,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public Task CancelSeriesTimerAsync(string timerId, CancellationToken cancellationToken)
         {
+            var timers = _timerProvider.GetAll().Where(i => string.Equals(i.SeriesTimerId, timerId, StringComparison.OrdinalIgnoreCase));
+            foreach (var timer in timers)
+            {
+                CancelTimerInternal(timer.Id);
+            }
+
             var remove = _seriesTimerProvider.GetAll().FirstOrDefault(r => string.Equals(r.Id, timerId, StringComparison.OrdinalIgnoreCase));
             if (remove != null)
             {
@@ -583,7 +589,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     using (var output = File.Open(recordPath, FileMode.Create, FileAccess.Write, FileShare.Read))
                     {
-                        await response.Content.CopyToAsync(output, 131072, linkedToken);
+                        await response.Content.CopyToAsync(output, StreamDefaults.DefaultCopyToBufferSize, linkedToken);
                     }
                 }
 
@@ -659,6 +665,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private IEnumerable<TimerInfo> GetTimersForSeries(SeriesTimerInfo seriesTimer, IEnumerable<ProgramInfo> allPrograms, IReadOnlyList<RecordingInfo> currentRecordings)
         {
+            // Exclude programs that have already ended
+            allPrograms = allPrograms.Where(i => i.EndDate > DateTime.UtcNow);
+
             allPrograms = GetProgramsForSeries(seriesTimer, allPrograms);
 
             var recordingShowIds = currentRecordings.Select(i => i.ShowId).ToList();
