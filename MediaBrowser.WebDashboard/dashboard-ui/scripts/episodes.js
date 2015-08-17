@@ -50,7 +50,6 @@
 
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    context: 'tv',
                     sortBy: query.SortBy
                 });
                 trigger = true;
@@ -63,7 +62,6 @@
                     showParentTitle: true,
                     overlayText: true,
                     lazy: true,
-                    context: 'tv',
                     showDetailsMenu: true
                 });
             }
@@ -74,7 +72,6 @@
                     showTitle: true,
                     showParentTitle: true,
                     lazy: true,
-                    context: 'tv',
                     cardLayout: true,
                     showDetailsMenu: true
                 });

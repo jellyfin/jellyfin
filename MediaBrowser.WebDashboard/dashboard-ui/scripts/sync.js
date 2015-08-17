@@ -85,17 +85,17 @@
 
         if (options.showName || dialogOptions.Options.indexOf('Name') != -1) {
 
-            html += '<p>';
-            html += '<label for="txtSyncJobName">' + Globalize.translate('LabelSyncJobName') + '</label>';
-            html += '<input type="text" id="txtSyncJobName" class="txtSyncJobName" required="required" />';
-            html += '</p>';
+            html += '<div>';
+            html += '<paper-input type="text" id="txtSyncJobName" class="txtSyncJobName" required="required" label="' + Globalize.translate('LabelSyncJobName') + '"></paper-input>';
+            html += '</div>';
+            html += '<br/>';
         }
 
         html += '<div>';
-        html += '<label for="selectSyncTarget">' + Globalize.translate('LabelSyncTo') + '</label>';
         if (options.readOnlySyncTarget) {
-            html += '<input type="text" id="selectSyncTarget" readonly="readonly" />';
+            html += '<paper-input type="text" id="selectSyncTarget" readonly label="' + Globalize.translate('LabelSyncTo') + '"></paper-input>';
         } else {
+            html += '<label for="selectSyncTarget">' + Globalize.translate('LabelSyncTo') + '</label>';
             html += '<select id="selectSyncTarget" required="required" data-mini="true">';
 
             html += targets.map(function (t) {
@@ -132,17 +132,15 @@
         html += '<div class="fldBitrate" style="display:none;">';
         html += '<br/>';
         html += '<div>';
-        html += '<label for="txtBitrate">' + Globalize.translate('LabelBitrateMbps') + '</label>';
-        html += '<input type="number" id="txtBitrate" step=".1" min=".1" />';
+        html += '<paper-input type="number" step=".1" min=".1" id="txtBitrate" label="' + Globalize.translate('LabelBitrateMbps') + '"></paper-input>';
         html += '</div>';
         html += '</div>';
 
         if (dialogOptions.Options.indexOf('UnwatchedOnly') != -1) {
             html += '<br/>';
             html += '<div>';
-            html += '<label for="chkUnwatchedOnly">' + Globalize.translate('OptionSyncUnwatchedVideosOnly') + '</label>';
-            html += '<input type="checkbox" id="chkUnwatchedOnly" data-mini="true" />';
-            html += '<div class="fieldDescription">' + Globalize.translate('OptionSyncUnwatchedVideosOnlyHelp') + '</div>';
+            html += '<paper-checkbox id="chkUnwatchedOnly">' + Globalize.translate('OptionSyncUnwatchedVideosOnly') + '</paper-checkbox>';
+            html += '<div class="fieldDescription paperCheckboxFieldDescription">' + Globalize.translate('OptionSyncUnwatchedVideosOnlyHelp') + '</div>';
             html += '</div>';
         }
 
@@ -156,17 +154,14 @@
             if (dialogOptions.Options.indexOf('SyncNewContent') != -1) {
                 html += '<br/>';
                 html += '<div>';
-                html += '<label for="chkSyncNewContent">' + Globalize.translate('OptionAutomaticallySyncNewContent') + '</label>';
-                html += '<input type="checkbox" id="chkSyncNewContent" data-mini="true" checked="checked" />';
-                html += '<div class="fieldDescription">' + Globalize.translate('OptionAutomaticallySyncNewContentHelp') + '</div>';
+                html += '<paper-checkbox id="chkSyncNewContent" checked>' + Globalize.translate('OptionAutomaticallySyncNewContent') + '</paper-checkbox>';
+                html += '<div class="fieldDescription paperCheckboxFieldDescription">' + Globalize.translate('OptionAutomaticallySyncNewContentHelp') + '</div>';
                 html += '</div>';
             }
 
             if (dialogOptions.Options.indexOf('ItemLimit') != -1) {
-                html += '<br/>';
                 html += '<div>';
-                html += '<label for="txtItemLimit">' + Globalize.translate('LabelItemLimit') + '</label>';
-                html += '<input type="number" id="txtItemLimit" step="1" min="1" />';
+                html += '<paper-input type="number" step="1" min="1" id="txtItemLimit" label="' + Globalize.translate('LabelItemLimit') + '"></paper-input>';
                 html += '<div class="fieldDescription">' + Globalize.translate('LabelItemLimitHelp') + '</div>';
                 html += '</div>';
             }
@@ -235,7 +230,7 @@
             html += '<div style="margin:1em 0 1.5em;">';
             html += '<h1 style="margin: 0;display:inline-block;vertical-align:middle;">' + Globalize.translate('SyncMedia') + '</h1>';
 
-            html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><i class="fa fa-info-circle"></i>' + Globalize.translate('ButtonHelp') + '</paper-button></a>';
+            html += '<a href="https://github.com/MediaBrowser/Wiki/wiki/Sync" target="_blank" class="clearLink" style="margin-top:0;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></paper-button></a>';
             html += '</div>';
 
             html += '<div class="formFields"></div>';

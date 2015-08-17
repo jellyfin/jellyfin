@@ -83,7 +83,6 @@
 
                     html = LibraryBrowser.getListViewHtml({
                         items: result.Items,
-                        context: 'playlists',
                         sortBy: query.SortBy
                     });
                     trigger = true;
@@ -92,7 +91,6 @@
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "square",
-                        context: 'playlists',
                         showTitle: true,
                         lazy: true,
                         coverImage: true,
@@ -104,13 +102,33 @@
                     html = LibraryBrowser.getPosterViewHtml({
                         items: result.Items,
                         shape: "square",
-                        context: 'playlists',
                         showTitle: true,
                         lazy: true,
                         coverImage: true,
                         showItemCounts: true,
                         centerText: true,
                         overlayPlayButton: true
+                    });
+                }
+                else if (view == "Thumb") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "backdrop",
+                        showTitle: true,
+                        centerText: true,
+                        lazy: true,
+                        preferThumb: true
+                    });
+                }
+                else if (view == "ThumbCard") {
+                    html = LibraryBrowser.getPosterViewHtml({
+                        items: result.Items,
+                        shape: "backdrop",
+                        showTitle: true,
+                        lazy: true,
+                        preferThumb: true,
+                        cardLayout: true,
+                        showItemCounts: true
                     });
                 }
 

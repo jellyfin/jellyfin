@@ -24,7 +24,7 @@
 
         LibraryBrowser.renderName(item, $('.itemName', page), false, context);
         LibraryBrowser.renderParentName(item, $('.parentName', page), context);
-        LibraryMenu.setTitle(item.Name);
+        LibraryMenu.setTitle(item.SeriesName || item.Name);
 
         Dashboard.getCurrentUser().done(function (user) {
 
@@ -213,22 +213,7 @@
 
         $('.itemTabs', page).hide();
 
-        if (context == 'photos' || context == 'photos-photos') {
-            $(page).removeClass('noSecondaryNavPage');
-
-            var elem = $('.photoTabs', page).show();
-            $('a', elem).removeClass('ui-btn-active');
-
-            if (context == 'photos-photos') {
-                $('.lnkPhotos', page).addClass('ui-btn-active');
-            }
-            else if (context == 'photos-videos') {
-                $('.lnkVideos', page).addClass('ui-btn-active');
-            } else {
-                $('.lnkPhotoAlbums', page).addClass('ui-btn-active');
-            }
-        }
-        else if (context == 'tv') {
+        if (context == 'tv') {
             $(page).removeClass('noSecondaryNavPage');
 
             $('#tvShowsTabs', page).show();
@@ -763,7 +748,6 @@
                     shape: "detailPage169",
                     showTitle: true,
                     displayAsSpecial: item.Type == "Season" && item.IndexNumber,
-                    context: context,
                     playFromHere: true,
                     overlayText: true,
                     lazy: true,
@@ -777,7 +761,6 @@
                     shape: "auto",
                     showTitle: true,
                     centerText: true,
-                    context: context,
                     lazy: true,
                     showDetailsMenu: true
                 });

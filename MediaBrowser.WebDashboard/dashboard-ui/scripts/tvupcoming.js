@@ -109,7 +109,6 @@
                 showTitle: true,
                 showPremiereDate: true,
                 preferThumb: true,
-                context: 'tv',
                 lazy: true,
                 showDetailsMenu: true,
                 centerText: true

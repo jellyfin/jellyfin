@@ -61,8 +61,17 @@
             })).trigger('create');
 
             updateFilterControls(page);
+            var trigger = false;
 
-            if (view == "Thumb") {
+            if (view == "List") {
+
+                html = LibraryBrowser.getListViewHtml({
+                    items: result.Items,
+                    sortBy: query.SortBy
+                });
+                trigger = true;
+            }
+            else if (view == "Thumb") {
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
                     shape: "backdrop",
@@ -111,6 +120,10 @@
             var elem = page.querySelector('.itemsContainer');
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
+
+            if (trigger) {
+                $(elem).trigger('create');
+            }
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;

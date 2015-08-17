@@ -31,6 +31,10 @@ html, body, .ui-btn, .pageTitle {
     display: block !important;
 }
 
+.libraryViewNav paper-tabs {
+    height: 58px !important;
+}
+
 .libraryViewNav paper-tab {
     height: auto !important;
 }
@@ -39,7 +43,7 @@ html, body, .ui-btn, .pageTitle {
     width: 22px;
     height: 22px;
     display: block;
-    margin: -4px auto 6px;
+    margin: 0 auto 6px;
 }
 
 .libraryViewNav #selectionBar {
