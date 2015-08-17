@@ -1395,8 +1395,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             dto.Id = _tvDtoService.GetInternalProgramId(service.Name, program.ExternalId).ToString("N");
 
-            dto.ChannelId = item.ChannelId;
-
             dto.StartDate = program.StartDate;
             dto.IsRepeat = program.IsRepeat;
             dto.EpisodeTitle = program.EpisodeTitle;
@@ -1462,8 +1460,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             dto.SeriesTimerId = string.IsNullOrEmpty(info.SeriesTimerId)
                 ? null
                 : _tvDtoService.GetInternalSeriesTimerId(service.Name, info.SeriesTimerId).ToString("N");
-
-            dto.ChannelId = item.ChannelId;
 
             dto.StartDate = info.StartDate;
             dto.RecordingStatus = info.Status;
