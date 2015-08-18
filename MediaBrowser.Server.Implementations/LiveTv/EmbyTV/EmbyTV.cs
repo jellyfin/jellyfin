@@ -692,7 +692,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 allPrograms = allPrograms.Where(epg => string.Equals(epg.ChannelId, seriesTimer.ChannelId, StringComparison.OrdinalIgnoreCase));
             }
 
-            allPrograms = allPrograms.Where(i => seriesTimer.Days.Contains(i.StartDate.DayOfWeek));
+            allPrograms = allPrograms.Where(i => seriesTimer.Days.Contains(i.StartDate.ToLocalTime().DayOfWeek));
 
             if (string.IsNullOrWhiteSpace(seriesTimer.SeriesId))
             {
