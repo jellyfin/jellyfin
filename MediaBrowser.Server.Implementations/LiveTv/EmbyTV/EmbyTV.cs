@@ -576,6 +576,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             recording.Path = recordPath;
             recording.Status = RecordingStatus.InProgress;
+            recording.DateLastUpdated = DateTime.UtcNow;
             _recordingProvider.Update(recording);
 
             try
@@ -598,7 +599,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             }
             catch (OperationCanceledException)
             {
-                _logger.Info("Recording cancelled");
+                _logger.Info("Recording stopped");
                 recording.Status = RecordingStatus.Completed;
             }
             catch (Exception ex)
@@ -607,6 +608,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 recording.Status = RecordingStatus.Error;
             }
 
+            recording.DateLastUpdated = DateTime.UtcNow;
             _recordingProvider.Update(recording);
             _timerProvider.Delete(timer);
             _logger.Info("Recording was a success");

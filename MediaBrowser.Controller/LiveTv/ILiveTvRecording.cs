@@ -42,5 +42,8 @@ namespace MediaBrowser.Controller.LiveTv
         RecordingStatus Status { get; set; }
         DateTime? EndDate { get; set; }
         ChannelType ChannelType { get; set; }
+        DateTime DateLastSaved { get; set; }
+        DateTime DateCreated { get; set; }
+        DateTime DateModified { get; set; }
     }
 }
