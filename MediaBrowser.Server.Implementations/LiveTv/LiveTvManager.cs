@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Common;
+﻿using System.IO;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
+using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Configuration;
@@ -61,8 +63,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
         private readonly List<ITunerHost> _tunerHosts = new List<ITunerHost>();
         private readonly List<IListingsProvider> _listingProviders = new List<IListingsProvider>();
+        private readonly IFileSystem _fileSystem;
 
-        public LiveTvManager(IApplicationHost appHost, IServerConfigurationManager config, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer, IProviderManager providerManager)
+        public LiveTvManager(IApplicationHost appHost, IServerConfigurationManager config, ILogger logger, IItemRepository itemRepo, IImageProcessor imageProcessor, IUserDataManager userDataManager, IDtoService dtoService, IUserManager userManager, ILibraryManager libraryManager, ITaskManager taskManager, ILocalizationManager localization, IJsonSerializer jsonSerializer, IProviderManager providerManager, IFileSystem fileSystem)
         {
             _config = config;
             _logger = logger;
@@ -73,6 +76,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             _localization = localization;
             _jsonSerializer = jsonSerializer;
             _providerManager = providerManager;
+            _fileSystem = fileSystem;
             _dtoService = dtoService;
             _userDataManager = userDataManager;
 
@@ -729,6 +733,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             if (!string.IsNullOrEmpty(info.Path))
             {
                 item.Path = info.Path;
+                var fileInfo = new FileInfo(info.Path);
+
+                recording.DateCreated = _fileSystem.GetCreationTimeUtc(fileInfo);
+                recording.DateModified = _fileSystem.GetLastWriteTimeUtc(fileInfo);
             }
             else if (!string.IsNullOrEmpty(info.Url))
             {
@@ -741,7 +749,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
             }
-            else if (pathChanged)
+            else if (pathChanged || info.DateLastUpdated > recording.DateLastSaved)
             {
                 await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }

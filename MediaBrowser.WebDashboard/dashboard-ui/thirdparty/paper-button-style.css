@@ -379,9 +379,13 @@ paper-menu-item {
 }
 
 .ui-page-theme-b paper-input label, .ui-page-theme-b paper-textarea label {
-    color: #ccc !important;
     font-size: 20px !important;
     font-family: inherit !important;
+    color: #858585 !important;
+}
+
+.ui-page-theme-b .label-is-highlighted label {
+    color: #52B54B !important;
 }
 
 .ui-page-theme-b paper-input input, .ui-page-theme-b paper-textarea textarea {

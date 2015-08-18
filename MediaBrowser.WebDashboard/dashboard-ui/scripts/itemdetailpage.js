@@ -228,6 +228,7 @@
             $(page).removeClass('noSecondaryNavPage');
 
             $('#tvShowsTabs', page).show();
+            LibraryMenu.setMenuButtonVisible(true);
         }
         else {
             $(page).addClass('noSecondaryNavPage');

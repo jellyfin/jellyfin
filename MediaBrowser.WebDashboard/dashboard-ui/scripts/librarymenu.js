@@ -470,7 +470,7 @@
     }
 
     function showUserAtTop() {
-        return Dashboard.isConnectMode();
+        return Dashboard.isConnectMode() || $.browser.mobile;
     }
 
     var requiresLibraryMenuRefresh = false;
@@ -570,7 +570,7 @@
 
             if (mainDrawerButton) {
                 if (!visible && $.browser.mobile) {
-                    mainDrawerButton.classList.add('hide');
+                    mainDrawerButton.classList.remove('hide');
                 } else {
                     mainDrawerButton.classList.remove('hide');
                 }
@@ -756,15 +756,15 @@
             LibraryMenu.setTitle(Globalize.translate(titleKey));
         }
 
-        //var mainDrawerButton = document.querySelector('.mainDrawerButton');
+        var mainDrawerButton = document.querySelector('.mainDrawerButton');
 
-        //if (mainDrawerButton) {
-        //    if (page.getAttribute('data-menubutton') == 'false' && $.browser.mobile) {
-        //        mainDrawerButton.classList.add('hide');
-        //    } else {
-        //        mainDrawerButton.classList.remove('hide');
-        //    }
-        //}
+        if (mainDrawerButton) {
+            if (page.getAttribute('data-menubutton') == 'false' && $.browser.mobile) {
+                mainDrawerButton.classList.remove('hide');
+            } else {
+                mainDrawerButton.classList.remove('hide');
+            }
+        }
 
         if (isLibraryPage) {
 
@@ -798,7 +798,7 @@
             document.body.classList.add('hideMainDrawer');
         }
 
-        if (!Dashboard.isConnectMode()) {
+        if (!Dashboard.isConnectMode() && !$.browser.mobile) {
             darkDrawer = true;
         }
 

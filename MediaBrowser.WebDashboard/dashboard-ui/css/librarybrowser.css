@@ -840,7 +840,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .inlineItemName {
-        font-size: 18px;
+        font-size: 22px;
     }
 
     .primaryDetailPageContent p {

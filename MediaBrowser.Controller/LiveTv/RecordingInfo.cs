@@ -191,6 +191,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// <value>The show identifier.</value>
         public string ShowId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the date last updated.
+        /// </summary>
+        /// <value>The date last updated.</value>
+        public DateTime DateLastUpdated { get; set; }
+
         public RecordingInfo()
         {
             Genres = new List<string>();
