@@ -615,11 +615,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private ProgramInfo GetProgramInfoFromCache(string channelId, string programId)
         {
             var epgData = GetEpgDataForChannel(channelId);
-            if (epgData.Any())
-            {
-                return epgData.FirstOrDefault(p => p.Id == programId);
-            }
-            return null;
+            return epgData.FirstOrDefault(p => string.Equals(p.Id, programId, StringComparison.OrdinalIgnoreCase));
         }
 
         private string RecordingPath
@@ -670,9 +666,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             allPrograms = GetProgramsForSeries(seriesTimer, allPrograms);
 
-            var recordingShowIds = currentRecordings.Select(i => i.ShowId).ToList();
+            var recordingShowIds = currentRecordings.Select(i => i.ProgramId).Where(i => !string.IsNullOrWhiteSpace(i)).ToList();
 
-            allPrograms = allPrograms.Where(epg => !recordingShowIds.Contains(epg.ShowId, StringComparer.OrdinalIgnoreCase));
+            allPrograms = allPrograms.Where(i => !recordingShowIds.Contains(i.Id, StringComparer.OrdinalIgnoreCase));
 
             return allPrograms.Select(i => RecordingHelper.CreateTimer(i, seriesTimer));
         }
