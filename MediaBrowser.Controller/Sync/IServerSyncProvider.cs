@@ -63,4 +63,15 @@ namespace MediaBrowser.Controller.Sync
         /// <returns>Task&lt;SyncedFileInfo&gt;.</returns>
         Task<SyncedFileInfo> SendFile(string path, string[] pathParts, SyncTarget target, IProgress<double> progress, CancellationToken cancellationToken);
     }
+
+    public interface IHasDuplicateCheck
+    {
+        /// <summary>
+        /// Allows the duplicate job item.
+        /// </summary>
+        /// <param name="original">The original.</param>
+        /// <param name="duplicate">The duplicate.</param>
+        /// <returns><c>true</c> if XXXX, <c>false</c> otherwise.</returns>
+        bool AllowDuplicateJobItem(SyncJobItem original, SyncJobItem duplicate);
+    }
 }

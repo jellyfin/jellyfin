@@ -50,7 +50,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
             {
                 Id = info.listingID.ToString(CultureInfo.InvariantCulture),
                 Name = GetStringValue(info.showName),
-                EpisodeTitle = GetStringValue(info.episodeTitle),
                 HomePageUrl = GetStringValue(info.webLink),
                 Overview = info.description,
                 IsHD = info.hd,
@@ -101,6 +100,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
                 program.SeriesId = info.seriesID.ToString(CultureInfo.InvariantCulture);
                 program.IsSeries = true;
                 program.IsRepeat = info.repeat;
+
+                program.EpisodeTitle = GetStringValue(info.episodeTitle);
+
+                if (string.Equals(program.Name, program.EpisodeTitle, StringComparison.OrdinalIgnoreCase))
+                {
+                    program.EpisodeTitle = null;
+                }
             }
 
             if (info.starRating > 0)
