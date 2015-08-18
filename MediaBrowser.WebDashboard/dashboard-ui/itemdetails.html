@@ -42,9 +42,11 @@
                         <span class="itemCommunityRating" style="margin-left:1em;"></span>
                     </div>
                 </div>
-                <div class="desktopDetails">
+                <div class="desktopDetails" style="padding-top:5px;">
 
-                    <div class="detailButtonsContainer" style="padding-top:5px;">
+                    <p class="artist"></p>
+                    <p class="itemGenres"></p>
+                    <div class="detailButtonsContainer">
                         <paper-button raised class="subdued btnPlayTrailer hide"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button>
                         <a class="btnPlayExternalTrailer hide clearLink" href="#" target="_blank"><paper-button raised class="subdued"><iron-icon icon="play-arrow"></iron-icon><span>${ButtonPlayTrailer}</span></paper-button></a>
                         <paper-button raised class="subdued btnRecord hide"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
@@ -77,8 +79,11 @@
         <div data-role="content" style="padding-top:0;clear:both;">
             <div class="detailPageContent">
                 <div class="detailSection">
-                    <p id="artist"></p>
-                    <p class="itemGenres"></p>
+                    <div class="mobileDetails">
+                        <p class="artist"></p>
+                        <p class="itemGenres"></p>
+                    </div>
+                    <h2 class="tagline"></h2>
                     <p class="itemOverview smoothScrollY"></p>
                     <p id="seriesAirTime"></p>
                     <p class="airDate"></p>

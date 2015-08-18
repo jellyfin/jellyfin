@@ -3236,6 +3236,7 @@
             var screenWidth = screen.availWidth;
 
             var imgUrl;
+            var hasbackdrop = false;
 
             if (item.BackdropImageTags && item.BackdropImageTags.length) {
 
@@ -3247,6 +3248,7 @@
                 });
 
                 ImageLoader.lazyImage($('#itemBackdrop', page).removeClass('noBackdrop')[0], imgUrl);
+                hasbackdrop = true;
             }
             else if (item.ParentBackdropItemId && item.ParentBackdropImageTags && item.ParentBackdropImageTags.length) {
 
@@ -3258,12 +3260,14 @@
                 });
 
                 ImageLoader.lazyImage($('#itemBackdrop', page).removeClass('noBackdrop')[0], imgUrl);
-
+                hasbackdrop = true;
             }
             else {
 
                 $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
             }
+
+            return hasbackdrop;
         }
     };
 

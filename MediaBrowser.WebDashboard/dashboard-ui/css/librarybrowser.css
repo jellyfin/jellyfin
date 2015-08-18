@@ -391,13 +391,18 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 500px;
+    height: 560px;
     position: relative;
+}
+
+.noSecondaryNavPage .itemBackdrop {
+    margin-top: -50px;
 }
 
 .noBackdrop {
     height: 170px;
     background: #181818;
+    margin-top: 0 !important;
 }
 
 .itemBackdropContent {
@@ -426,7 +431,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .lnkSibling {
     position: absolute;
-    top: 15px;
+    bottom: 0;
     text-decoration: none;
     font-weight: normal !important;
     display: none;
@@ -444,6 +449,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         display: block;
     }
 
+@media all and (max-width: 1200px) {
+
+    .lnkSibling {
+        display: none !important;
+    }
+}
 
 .lnkPreviousItem {
     left: 10px;

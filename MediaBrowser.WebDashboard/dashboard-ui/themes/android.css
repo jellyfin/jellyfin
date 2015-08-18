@@ -2,6 +2,10 @@
     background-color: #1b1b1b;
 }
 
+    .viewMenuBar.semiTransparent {
+        background-color: rgba(27, 27, 27, .8);
+    }
+
 .ui-page-theme-b:not(.pageWithAbsoluteTabs), .pageWithAbsoluteTabs .pageBackground {
     background-color: #2b2b2b;
 }
@@ -19,9 +23,9 @@
 }
 
 .libraryViewNav a {
-    font-weight: 500!important;
+    font-weight: 500 !important;
 }
 
 paper-tab {
-    font-weight: 500!important;
+    font-weight: 500 !important;
 }

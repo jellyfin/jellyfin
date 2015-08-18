@@ -575,6 +575,18 @@
                     mainDrawerButton.classList.remove('hide');
                 }
             }
+        },
+        setTransparentMenu: function (transparent) {
+
+            var viewMenuBar = document.querySelector('.viewMenuBar');
+
+            if (viewMenuBar) {
+                if (transparent) {
+                    viewMenuBar.classList.add('semiTransparent');
+                } else {
+                    viewMenuBar.classList.remove('semiTransparent');
+                }
+            }
         }
     };
 

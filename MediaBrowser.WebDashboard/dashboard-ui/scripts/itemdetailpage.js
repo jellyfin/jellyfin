@@ -33,12 +33,17 @@
             setInitialCollapsibleState(page, item, context, user);
             renderDetails(page, item, context);
 
+            var hasBackdrop = false;
             if (item.Type == 'MusicAlbum1' || item.Type == 'Season1') {
                 Backdrops.setBackdrops(page, [item]);
                 $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
             } else {
-                LibraryBrowser.renderDetailPageBackdrop(page, item);
+                hasBackdrop = LibraryBrowser.renderDetailPageBackdrop(page, item);
             }
+
+            var transparentHeader = hasBackdrop && page.classList.contains('noSecondaryNavPage');
+
+            LibraryMenu.setTransparentMenu(transparentHeader);
 
             var canPlay = false;
 
@@ -311,9 +316,9 @@
         renderSiblingLinks(page, item, context);
 
         if (item.Taglines && item.Taglines.length) {
-            $('#itemTagline', page).html(item.Taglines[0]).show();
+            $('.tagline', page).html(item.Taglines[0]).show();
         } else {
-            $('#itemTagline', page).hide();
+            $('.tagline', page).hide();
         }
 
         LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), item);
@@ -350,9 +355,9 @@
         }
 
         if (item.ArtistItems && item.ArtistItems.length && item.Type != "MusicAlbum") {
-            $('#artist', page).show().html(getArtistLinksHtml(item.ArtistItems, context)).trigger('create');
+            $('.artist', page).show().html(getArtistLinksHtml(item.ArtistItems, context)).trigger('create');
         } else {
-            $('#artist', page).hide();
+            $('.artist', page).hide();
         }
 
         if (item.MediaSources && item.MediaSources.length && item.Path) {
@@ -1697,6 +1702,7 @@
         var page = this;
 
         Events.off(ApiClient, 'websocketmessage', onWebSocketMessage);
+        LibraryMenu.setTransparentMenu(false);
     });
 
     function itemDetailPage() {
