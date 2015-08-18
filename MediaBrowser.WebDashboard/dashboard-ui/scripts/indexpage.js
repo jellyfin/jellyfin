@@ -164,9 +164,7 @@
         });
     }
 
-    function loadHomeTab(page) {
-
-        var tabContent = page.querySelector('.homeTabContent');
+    function loadHomeTab(page, tabContent) {
 
         if (LibraryBrowser.needsRefresh(tabContent)) {
             if (window.ApiClient) {
@@ -196,14 +194,38 @@
 
     function loadTab(page, index) {
 
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var depends = [];
+        var scope = 'HomePage';
+        var method = '';
+
         switch (index) {
 
             case 0:
-                loadHomeTab(page);
+                depends.push('scripts/sections');
+                method = 'renderHomeTab';
+                break;
+            case 1:
+                depends.push('scripts/homenextup');
+                method = 'renderNextUp';
+                break;
+            case 2:
+                depends.push('scripts/favorites');
+                method = 'renderFavorites';
+                break;
+            case 3:
+                depends.push('scripts/homeupcoming');
+                method = 'renderUpcoming';
                 break;
             default:
                 break;
         }
+
+        require(depends, function () {
+
+            window[scope][method](page, tabContent);
+
+        });
     }
 
     $(document).on('pageinitdepends', "#indexPage", function () {
@@ -247,5 +269,9 @@
 
         });
     }
+
+    window.HomePage = {
+        renderHomeTab: loadHomeTab
+    };
 
 })(jQuery, document);

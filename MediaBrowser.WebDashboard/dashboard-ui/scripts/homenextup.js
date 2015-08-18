@@ -78,20 +78,10 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#indexPage", function () {
-
-        var page = this;
-        var tabContent = page.querySelector('.homeNextUpTabContent');
-
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-            
-            if (parseInt(this.selected) == 1) {
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-
-                    reload(tabContent);
-                }
-            }
-        });
-    });
+    window.HomePage.renderNextUp = function (page, tabContent) {
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reload(tabContent);
+        }
+    };
 
 })(jQuery, document);

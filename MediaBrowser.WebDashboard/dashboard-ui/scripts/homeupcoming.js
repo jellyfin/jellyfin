@@ -120,20 +120,10 @@
         ImageLoader.lazyChildren(elem);
     }
 
-    $(document).on('pageinitdepends', "#indexPage", function () {
-
-        var page = this;
-
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-
-            if (parseInt(this.selected) == 3) {
-                var tabContent = page.querySelector('.homeUpcomingTabContent');
-
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-                    loadUpcoming(tabContent);
-                }
-            }
-        });
-    });
+    window.HomePage.renderUpcoming = function (page, tabContent) {
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            loadUpcoming(tabContent);
+        }
+    };
 
 })(jQuery, document);

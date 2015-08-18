@@ -141,20 +141,10 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#indexPage", function () {
-
-        var page = this;
-        var tabContent = page.querySelector('.homeFavoritesTabContent');
-
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-
-            if (parseInt(this.selected) == 2) {
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-                    loadSections(tabContent, Dashboard.getCurrentUserId());
-                }
-            }
-        });
-
-    });
+    window.HomePage.renderFavorites = function (page, tabContent) {
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            loadSections(tabContent, Dashboard.getCurrentUserId());
+        }
+    };
 
 })(jQuery, document);
