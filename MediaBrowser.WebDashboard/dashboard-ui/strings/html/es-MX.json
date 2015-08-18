@@ -993,8 +993,8 @@
     "LabelKodiMetadataEnablePathSubstitution": "Habilitar sustituci\u00f3n de trayectorias",
     "LabelKodiMetadataEnablePathSubstitutionHelp": "Habilita la sustituci\u00f3n de trayectorias de im\u00e1genes usando la configuraci\u00f3n de sustituci\u00f3n de trayectorias del servidor.",
     "LabelKodiMetadataEnablePathSubstitutionHelp2": "Ver sustituci\u00f3n de trayectoras.",
-    "OptionDisplayChannelsInline": "Display channels inline within my views",
-    "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
+    "OptionDisplayChannelsInline": "Mostrar canales alineado junto con mis vistas",
+    "OptionDisplayChannelsInlineHelp": "Al activarse, estos canales ser\u00e1n mostrados directamente junto con otras vistas. Si se deshabilitados, ser\u00e1n mostrados dentro de una vista independiente de Canales.",
     "LabelDisplayCollectionsView": "Desplegar una vista de colecciones para mostrar las colecciones de pel\u00edculas",
     "LabelDisplayCollectionsViewHelp": "Esto crear\u00e1 una vista separada para desplegar colecciones que usted haya creado o a las que tenga acceso. Para crear una colecci\u00f3n, haga clic derecho o presione y mantenga sobre cualquier pel\u00edcula y seleccione 'Agregar a Colecci\u00f3n'.",
     "LabelKodiMetadataEnableExtraThumbs": "Copiar extrafanart en extrathumbs",
@@ -1502,7 +1502,10 @@
     "LabelTranscodingThreadCountHelp": "Elija el numero m\u00e1ximo de hilos a usar para transcodificar. Reduciendo el conteo de hilos disminuir\u00e1 el uso del cpu pero es posible que no convierta lo suficientemente r\u00e1pido para obtener una reproducci\u00f3n fluida.",
     "OptionMax": "M\u00e1ximo",
     "HeaderEmbyGuide": "Gu\u00eda de Emby",
-    "LabelSyncPath": "Ruta para sinc:",
+    "LabelSyncPath": "Trayectoria para contenido sincronizado:",
     "OptionSyncOnlyOnWifi": "Sincronizar \u00fanicamente por WiFi",
-    "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality"
+    "OptionSyncLosslessAudioOriginal": "Sincronizar audio \"lossless\" con su calidad original.",
+    "HeaderMetadata": "Metadatos",
+    "HeaderRecordingOptions": "Opciones de Grabaci\u00f3n",
+    "ButtonShare": "Compartir"
 }

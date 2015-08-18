@@ -1504,5 +1504,8 @@
     "HeaderEmbyGuide": "Emby Guide",
     "LabelSyncPath": "Synchronisationsverzeichnis:",
     "OptionSyncOnlyOnWifi": "Synchronisiere nur bei Wifi",
-    "OptionSyncLosslessAudioOriginal": "Synchronisiere unkomprimierte Audiospur in original Qualit\u00e4t (Wenn unterst\u00fctzt)."
+    "OptionSyncLosslessAudioOriginal": "Synchronisiere unkomprimierte Audiospur in original Qualit\u00e4t (Wenn unterst\u00fctzt).",
+    "HeaderMetadata": "Metadaten",
+    "HeaderRecordingOptions": "Aufnahme Einstellungen",
+    "ButtonShare": "Teilen"
 }

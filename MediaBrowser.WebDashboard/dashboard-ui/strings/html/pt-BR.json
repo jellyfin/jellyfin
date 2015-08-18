@@ -1502,7 +1502,10 @@
     "LabelTranscodingThreadCountHelp": "Selecione o n\u00famero m\u00e1ximo de threads a ser usado quando transcodificar. Reduzir o n\u00famero de threads ir\u00e1 diminuir o uso da CPU, mas pode n\u00e3o converter r\u00e1pido o suficiente para uma experi\u00eancia de reprodu\u00e7\u00e3o suave.",
     "OptionMax": "M\u00e1x",
     "HeaderEmbyGuide": "Guia do Emby",
-    "LabelSyncPath": "Caminho para sinc:",
+    "LabelSyncPath": "Caminho para conte\u00fado sincronizado:",
     "OptionSyncOnlyOnWifi": "Sincronizar apenas no Wifi",
-    "OptionSyncLosslessAudioOriginal": "Sincronizar \u00e1udio lossless na qualidade original (quando suportado)"
+    "OptionSyncLosslessAudioOriginal": "Sincronizar \u00e1udio lossless na qualidade original",
+    "HeaderMetadata": "Metadados",
+    "HeaderRecordingOptions": "Op\u00e7\u00f5es de Grava\u00e7\u00e3o",
+    "ButtonShare": "Compartilhar"
 }
