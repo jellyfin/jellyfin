@@ -185,29 +185,19 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#moviesPage", function () {
+    window.MoviesPage.initTrailerTab = function (page, tabContent) {
 
-        var page = this;
-        var index = 2;
+        var viewPanel = page.querySelector('.trailerViewPanel');
+        initPage(page, tabContent, viewPanel);
+    };
 
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+    window.MoviesPage.renderTrailerTab = function (page, tabContent) {
 
-            if (parseInt(this.selected) == index) {
-
-                var viewPanel = page.querySelector('.trailerViewPanel');
-                var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-                if (!tabContent.initComplete) {
-                    initPage(page, tabContent, viewPanel);
-                    tabContent.initComplete = true;
-                }
-
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-                    reloadItems(tabContent, viewPanel);
-                    updateFilterControls(tabContent, viewPanel);
-                }
-            }
-        });
-
-    });
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            var viewPanel = page.querySelector('.trailerViewPanel');
+            reloadItems(tabContent, viewPanel);
+            updateFilterControls(tabContent, viewPanel);
+        }
+    };
 
 })(jQuery, document);

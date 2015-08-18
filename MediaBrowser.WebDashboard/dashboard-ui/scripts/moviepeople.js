@@ -159,27 +159,19 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#moviesPage", function () {
+    window.MoviesPage.initPeopleTab = function (page, tabContent) {
 
-        var page = this;
-        var index = 5;
+        var viewPanel = page.querySelector('.peopleViewPanel');
+        initPage(tabContent, viewPanel);
+    };
 
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+    window.MoviesPage.renderPeopleTab = function (page, tabContent) {
 
-            if (parseInt(this.selected) == index) {
-
-                var viewPanel = page.querySelector('.peopleViewPanel');
-                var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-                if (!tabContent.initComplete) {
-                    initPage(tabContent, viewPanel);
-                    tabContent.initComplete = true;
-                }
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-                    reloadItems(tabContent, viewPanel);
-                    updateFilterControls(tabContent, viewPanel);
-                }
-            }
-        });
-    });
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            var viewPanel = page.querySelector('.peopleViewPanel');
+            reloadItems(tabContent, viewPanel);
+            updateFilterControls(tabContent, viewPanel);
+        }
+    };
 
 })(jQuery, document);

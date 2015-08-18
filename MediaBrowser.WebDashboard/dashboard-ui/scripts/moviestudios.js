@@ -55,8 +55,6 @@
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
-            updateFilterControls();
-
             html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "backdrop",
@@ -87,31 +85,11 @@
         });
     }
 
-    function updateFilterControls(page) {
-    }
+    window.MoviesPage.renderStudiosTab = function (page, tabContent) {
 
-    $(document).on('pageinitdepends', "#moviesPage", function () {
-
-        var page = this;
-        var index = 6;
-
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-
-            if (parseInt(this.selected) == index) {
-
-                var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-                if (!tabContent.initComplete) {
-                    tabContent.initComplete = true;
-                }
-
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-                    reloadItems(tabContent);
-                    updateFilterControls();
-                }
-            }
-        });
-
-
-    });
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reloadItems(tabContent);
+        }
+    };
 
 })(jQuery, document);

@@ -68,7 +68,6 @@
 
             })).trigger('create');
 
-            updateFilterControls(page);
             var trigger = false;
 
             if (result.TotalRecordCount) {
@@ -165,10 +164,6 @@
         });
     }
 
-    function updateFilterControls(tabContent) {
-
-    }
-
     function initPage(tabContent) {
 
         $('select.selectView').on('change', function () {
@@ -181,28 +176,6 @@
             LibraryBrowser.saveViewSetting(getSavedQueryKey(), newView);
         });
     }
-
-    $(document).on('pageinitdepends', "#moviesPage", function () {
-
-        var page = this;
-        var index = 3;
-
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-
-            if (parseInt(this.selected) == index) {
-                var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
-
-                if (!tabContent.initComplete) {
-                    initPage(tabContent);
-                    tabContent.initComplete = true;
-                }
-
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-                    reloadItems(tabContent);
-                }
-            }
-        });
-    });
 
     $(document).on('pageinitdepends', "#boxsetsPage", function () {
 
@@ -219,7 +192,18 @@
         var content = page;
 
         reloadItems(content);
-        updateFilterControls(content);
     });
+
+    window.MoviesPage = window.MoviesPage || {};
+    window.MoviesPage.renderCollectionsTab = function (page, tabContent) {
+
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reloadItems(tabContent);
+        }
+    };
+    window.MoviesPage.initCollectionsTab = function (page, tabContent) {
+
+        initPage(tabContent);
+    };
 
 })(jQuery, document);

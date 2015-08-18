@@ -231,42 +231,89 @@
         });
     }
 
-    function loadSuggestionsTab(page) {
+    function loadSuggestionsTab(page, tabContent) {
 
         var parentId = LibraryMenu.getTopParentId();
 
         var userId = Dashboard.getCurrentUserId();
 
-        var containers = page.querySelectorAll('.itemsContainer');
+        var containers = tabContent.querySelectorAll('.itemsContainer');
         if (enableScrollX()) {
             $(containers).addClass('hiddenScrollX');
         } else {
             $(containers).removeClass('hiddenScrollX');
         }
 
-        if (LibraryBrowser.needsRefresh(page)) {
-            loadResume(page, userId, parentId);
-            loadLatest(page, userId, parentId);
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            loadResume(tabContent, userId, parentId);
+            loadLatest(tabContent, userId, parentId);
 
             if (AppInfo.enableMovieHomeSuggestions) {
-                loadSuggestions(page, userId, parentId);
+                loadSuggestions(tabContent, userId, parentId);
             }
         }
     }
 
     function loadTab(page, index) {
 
-        page = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var depends = [];
+        var scope = 'MoviesPage';
+        var renderMethod = '';
+        var initMethod = '';
 
         switch (index) {
 
             case 0:
-                loadSuggestionsTab(page);
+                renderMethod = 'renderSuggestedTab';
+                break;
+            case 1:
+                depends.push('scripts/movies');
+                renderMethod = 'renderMoviesTab';
+                initMethod = 'initMoviesTab';
+                break;
+            case 2:
+                depends.push('scripts/movietrailers');
+                renderMethod = 'renderTrailerTab';
+                initMethod = 'initTrailerTab';
+                break;
+            case 3:
+                depends.push('scripts/moviecollections');
+                renderMethod = 'renderCollectionsTab';
+                initMethod = 'initCollectionsTab';
+                break;
+            case 4:
+                depends.push('scripts/moviegenres');
+                renderMethod = 'renderGenresTab';
+                break;
+            case 5:
+                depends.push('scripts/moviepeople');
+                renderMethod = 'renderPeopleTab';
+                initMethod = 'initPeopleTab';
+                break;
+            case 6:
+                depends.push('scripts/moviestudios');
+                renderMethod = 'renderStudiosTab';
                 break;
             default:
                 break;
         }
+
+        require(depends, function () {
+
+            if (initMethod && !tabContent.initComplete) {
+
+                window[scope][initMethod](page, tabContent);
+                tabContent.initComplete = true;
+            }
+
+            window[scope][renderMethod](page, tabContent);
+
+        });
     }
+
+    window.MoviesPage = window.MoviesPage || {};
+    window.MoviesPage.renderSuggestedTab = loadSuggestionsTab;
 
     $(document).on('pageinitdepends', "#moviesPage", function () {
 
