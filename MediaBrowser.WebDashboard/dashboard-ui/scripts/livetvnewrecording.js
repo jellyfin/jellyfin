@@ -19,8 +19,6 @@
 
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(program));
 
-        LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), program);
-
         $('#chkNewOnly', page).checked(defaultTimer.RecordNewOnly);
         $('#chkAllChannels', page).checked(defaultTimer.RecordAnyChannel);
         $('#chkAnyTime', page).checked(defaultTimer.RecordAnyTime);

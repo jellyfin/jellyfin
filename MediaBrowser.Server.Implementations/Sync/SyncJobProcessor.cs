@@ -466,6 +466,32 @@ namespace MediaBrowser.Server.Implementations.Sync
                 return;
             }
 
+            // See if there's already another active job item for the same target
+            var existingJobItems = _syncManager.GetJobItems(new SyncJobItemQuery
+            {
+                AddMetadata = false,
+                ItemId = jobItem.ItemId,
+                TargetId = job.TargetId,
+                Statuses = new[] { SyncJobItemStatus.Converting, SyncJobItemStatus.Queued, SyncJobItemStatus.ReadyToTransfer, SyncJobItemStatus.Synced, SyncJobItemStatus.Transferring }
+            });
+
+            var duplicateJobItems = existingJobItems.Items
+                .Where(i => !string.Equals(i.Id, jobItem.Id, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (duplicateJobItems.Count > 0)
+            {
+                var syncProvider = _syncManager.GetSyncProvider(jobItem, job) as IHasDuplicateCheck;
+
+                if (!duplicateJobItems.Any(i => AllowDuplicateJobItem(syncProvider, i, jobItem)))
+                {
+                    _logger.Debug("Cancelling sync job item because there is already another active job for the same target.");
+                    jobItem.Status = SyncJobItemStatus.Cancelled;
+                    await _syncManager.UpdateSyncJobItemInternal(jobItem).ConfigureAwait(false);
+                    return;
+                }
+            }
+
             var video = item as Video;
             if (video != null)
             {
@@ -486,6 +512,16 @@ namespace MediaBrowser.Server.Implementations.Sync
             {
                 await SyncGeneric(jobItem, item, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        private bool AllowDuplicateJobItem(IHasDuplicateCheck provider, SyncJobItem original, SyncJobItem duplicate)
+        {
+            if (provider != null)
+            {
+                return provider.AllowDuplicateJobItem(original, duplicate);
+            }
+
+            return true;
         }
 
         private async Task Sync(SyncJobItem jobItem, SyncJob job, Video item, User user, bool enableConversion, SyncOptions syncOptions, IProgress<double> progress, CancellationToken cancellationToken)

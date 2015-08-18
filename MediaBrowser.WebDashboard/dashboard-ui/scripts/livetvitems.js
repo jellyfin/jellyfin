@@ -10,7 +10,8 @@
         UserId: Dashboard.getCurrentUserId(),
         SortBy: "StartDate,SortName",
         SortOrder: "Ascending",
-        StartIndex: 0
+        StartIndex: 0,
+        HasAired: false
     };
 
     function getSavedQueryKey() {

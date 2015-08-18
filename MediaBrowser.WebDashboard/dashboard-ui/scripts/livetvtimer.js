@@ -53,9 +53,7 @@
             $('.timerPageImageContainer', page).hide();
         }
 
-        $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
-
-        LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), programInfo);
+        $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(programInfo));
 
         $('#txtPrePaddingMinutes', page).val(item.PrePaddingSeconds / 60);
         $('#txtPostPaddingMinutes', page).val(item.PostPaddingSeconds / 60);

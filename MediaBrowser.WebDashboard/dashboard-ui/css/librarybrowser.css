@@ -839,7 +839,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .detailImageContainer img {
-        max-width: 100px;
+        max-width: 80px;
     }
 
     .mobileOverview:not(.hide), .mobileGenres {
@@ -861,19 +861,11 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .backdropDetailPageContent {
         text-align: center;
     }
-}
-
-@media all and (max-width: 800px) {
-
-    .detailImageContainer img {
-        max-width: 80px;
-    }
 
     .thumbDetailImageContainer img {
         max-width: 180px;
     }
 }
-
 @media all and (min-width: 750px) {
     .detailPageContent {
         width: 950px;

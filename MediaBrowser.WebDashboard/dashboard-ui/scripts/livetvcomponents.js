@@ -24,57 +24,6 @@
             });
         },
 
-        renderMiscProgramInfo: function (elem, obj) {
-
-            var html = [];
-
-            if (obj.IsSeries && !obj.IsRepeat) {
-
-                html.push('<span class="newTvProgram">' + Globalize.translate('LabelNewProgram') + '</span>');
-
-            }
-
-            if (obj.IsLive) {
-
-                html.push('<span class="liveTvProgram">' + Globalize.translate('LabelLiveProgram') + '</span>');
-
-            }
-
-            if (obj.ChannelId) {
-                html.push('<a class="textlink" href="itemdetails.html?id=' + obj.ChannelId + '">' + obj.ChannelName + '</a>');
-            }
-
-            if (obj.IsHD) {
-
-                html.push(Globalize.translate('LabelHDProgram'));
-
-            }
-
-            if (obj.Audio) {
-
-                html.push(obj.Audio);
-
-            }
-
-            html = html.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
-
-            if (obj.SeriesTimerId) {
-                html += '<a href="livetvseriestimer.html?id=' + obj.SeriesTimerId + '" title="' + Globalize.translate('ButtonViewSeriesRecording') + '">';
-                html += '<div class="timerCircle seriesTimerCircle"></div>';
-                html += '<div class="timerCircle seriesTimerCircle"></div>';
-                html += '<div class="timerCircle seriesTimerCircle"></div>';
-                html += '</a>';
-            }
-            else if (obj.TimerId) {
-
-                html += '<a href="livetvtimer.html?id=' + obj.TimerId + '">';
-                html += '<div class="timerCircle"></div>';
-                html += '</a>';
-            }
-
-            elem.html(html).trigger('create');
-        },
-
         renderOriginalAirDate: function (elem, item) {
 
             var airDate = item.OriginalAirDate;
@@ -181,7 +130,7 @@
         });
 
         LibraryBrowser.renderGenres($('.itemGenres', popup), item, 'livetv', 3);
-        LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', popup), item);
+        $('.miscTvProgramInfo', popup).html(LibraryBrowser.getMiscInfoHtml(item)).trigger('create');
 
         popup.parents().prev('.ui-popup-screen').remove();
         currentPosterItem = elem;

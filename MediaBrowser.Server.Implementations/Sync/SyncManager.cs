@@ -1159,6 +1159,21 @@ namespace MediaBrowser.Server.Implementations.Sync
             return options;
         }
 
+        public ISyncProvider GetSyncProvider(SyncJobItem jobItem, SyncJob job)
+        {
+            foreach (var provider in _providers)
+            {
+                foreach (var target in GetSyncTargets(provider))
+                {
+                    if (string.Equals(target.Id, jobItem.TargetId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return provider;
+                    }
+                }
+            }
+            return null;
+        }
+
         public SyncJobOptions GetVideoOptions(SyncJobItem jobItem, SyncJob job)
         {
             var options = GetSyncJobOptions(jobItem.TargetId, job.Profile, job.Quality);

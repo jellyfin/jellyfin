@@ -2564,29 +2564,29 @@
                 }
             }
 
-            //var tooltipLike = Globalize.translate('TooltipLike');
-            //var tooltipDislike = Globalize.translate('TooltipDislike');
+            var tooltipLike = Globalize.translate('TooltipLike');
+            var tooltipDislike = Globalize.translate('TooltipDislike');
 
-            //if (typeof userData.Likes == "undefined") {
-            //    html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'thumb-down', tooltipDislike, style);
-            //    html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'thumb-up', tooltipLike, style);
-            //}
-            //else if (userData.Likes) {
-            //    html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'thumb-down', tooltipDislike, style);
-            //    html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'thumb-up', tooltipLike, style);
-            //}
-            //else {
-            //    html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'thumb-down', tooltipDislike, style);
-            //    html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'thumb-up', tooltipLike, style);
-            //}
+            if (typeof userData.Likes == "undefined") {
+                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'thumb-down', tooltipDislike, style);
+                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'thumb-up', tooltipLike, style);
+            }
+            else if (userData.Likes) {
+                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'thumb-down', tooltipDislike, style);
+                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'thumb-up', tooltipLike, style);
+            }
+            else {
+                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'thumb-down', tooltipDislike, style);
+                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'thumb-up', tooltipLike, style);
+            }
 
-            //var tooltipFavorite = Globalize.translate('TooltipFavorite');
-            //if (userData.IsFavorite) {
+            var tooltipFavorite = Globalize.translate('TooltipFavorite');
+            if (userData.IsFavorite) {
 
-            //    html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating btnUserItemRatingOn', 'favorite', tooltipFavorite, style);
-            //} else {
-            //    html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating', 'favorite', tooltipFavorite, style);
-            //}
+                html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating btnUserItemRatingOn', 'favorite', tooltipFavorite, style);
+            } else {
+                html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating', 'favorite', tooltipFavorite, style);
+            }
 
             return html;
         },
@@ -2974,6 +2974,25 @@
             var miscInfo = [];
             var text, date;
 
+            if (item.IsSeries && !item.IsRepeat) {
+
+                require(['livetvcss']);
+                miscInfo.push('<span class="newTvProgram">' + Globalize.translate('LabelNewProgram') + '</span>');
+
+            }
+
+            if (item.IsLive) {
+
+                miscInfo.push('<span class="liveTvProgram">' + Globalize.translate('LabelLiveProgram') + '</span>');
+
+            }
+
+            if (item.ChannelId && item.ChannelName) {
+                if (item.Type == 'Program' || item.Type == 'Recording') {
+                    miscInfo.push('<a class="textlink" href="itemdetails.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>');
+                }
+            }
+
             if (item.Type == "Episode" || item.MediaType == 'Photo') {
 
                 if (item.PremiereDate) {
@@ -3077,6 +3096,17 @@
                 miscInfo.push(item.OfficialRating);
             }
 
+            if (item.IsHD) {
+
+                miscInfo.push(Globalize.translate('LabelHDProgram'));
+            }
+
+            if (item.Audio) {
+
+                miscInfo.push(item.Audio);
+
+            }
+
             if (item.Video3DFormat) {
                 miscInfo.push("3D");
             }
@@ -3091,6 +3121,15 @@
                 html += '<div class="timerCircle seriesTimerCircle"></div>';
                 html += '<div class="timerCircle seriesTimerCircle"></div>';
                 html += '<div class="timerCircle seriesTimerCircle"></div>';
+                html += '</a>';
+                miscInfo.push(html);
+                require(['livetvcss']);
+            }
+            else if (item.TimerId) {
+
+                var html = '';
+                html += '<a href="livetvtimer.html?id=' + item.TimerId + '">';
+                html += '<div class="timerCircle"></div>';
                 html += '</a>';
                 miscInfo.push(html);
                 require(['livetvcss']);
