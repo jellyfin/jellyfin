@@ -446,24 +446,22 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#liveTvSuggestedPage", function () {
+    window.LiveTvPage.initGuideTab = function (page, tabContent) {
 
-        var page = this.querySelector('.guideTabContent');
+        Events.on(tabContent.querySelector('.programGrid'), 'scroll', function () {
 
-        Events.on(page.querySelector('.programGrid'), 'scroll', function () {
-
-            onProgramGridScroll(page, this);
+            onProgramGridScroll(tabContent, this);
         });
 
         if ($.browser.mobile) {
-            page.querySelector('.tvGuide').classList.add('mobileGuide');
+            tabContent.querySelector('.tvGuide').classList.add('mobileGuide');
         } else {
 
-            page.querySelector('.tvGuide').classList.remove('mobileGuide');
+            tabContent.querySelector('.tvGuide').classList.remove('mobileGuide');
 
-            Events.on(page.querySelector('.timeslotHeaders'), 'scroll', function () {
+            Events.on(tabContent.querySelector('.timeslotHeaders'), 'scroll', function () {
 
-                onTimeslotHeadersScroll(page, this);
+                onTimeslotHeadersScroll(tabContent, this);
             });
         }
 
@@ -471,36 +469,28 @@
             requirejs(["thirdparty/headroom"], function () {
 
                 // construct an instance of Headroom, passing the element
-                var headroom = new Headroom(page.querySelector('.tvGuideHeader'));
+                var headroom = new Headroom(tabContent.querySelector('.tvGuideHeader'));
                 // initialise
                 headroom.init();
             });
         }
 
-        $('.btnUnlockGuide', page).on('click', function () {
+        $('.btnUnlockGuide', tabContent).on('click', function () {
 
-            reloadPage(page);
+            reloadPage(tabContent);
         });
 
-        $('.btnSelectDate', page).on('click', function () {
+        $('.btnSelectDate', tabContent).on('click', function () {
 
-            selectDate(page);
+            selectDate(tabContent);
         });
+    };
 
-    }).on('pageinitdepends', "#liveTvSuggestedPage", function () {
+    window.LiveTvPage.renderGuideTab = function (page, tabContent) {
 
-        var page = this;
-
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-
-            if (parseInt(this.selected) == 1) {
-                var tabContent = page.querySelector('.guideTabContent');
-
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-                    reloadPage(tabContent);
-                }
-            }
-        });
-    });
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reloadPage(tabContent);
+        }
+    };
 
 })(jQuery, document);

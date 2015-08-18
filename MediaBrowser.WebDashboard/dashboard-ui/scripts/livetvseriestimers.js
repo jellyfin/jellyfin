@@ -110,54 +110,11 @@
         });
     }
 
-    function updateFilterControls(page) {
+    window.LiveTvPage.renderSeriesTimersTab = function (page, tabContent) {
 
-        // Reset form values using the last used query
-        $('.radioSortBy', page).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', page).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
-    }
-
-    $(document).on('pageinitdepends', "#liveTvSuggestedPage", function () {
-
-        var page = this;
-
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-
-            if (parseInt(this.selected) == 5) {
-                var tabContent = page.querySelector('.seriesTimersTabContent');
-
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-                    reload(tabContent);
-                }
-            }
-        });
-
-    }).on('pageinitdepends', "#liveTvSuggestedPage", function () {
-
-        var page = this.querySelector('.seriesTimersTabContent');
-
-        $('.radioSortBy', page).on('click', function () {
-            query.StartIndex = 0;
-            query.SortBy = this.getAttribute('data-sortby');
-            reload(page);
-        });
-
-        $('.radioSortOrder', page).on('click', function () {
-            query.StartIndex = 0;
-            query.SortOrder = this.getAttribute('data-sortorder');
-            reload(page);
-        });
-
-        updateFilterControls(this);
-    });
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reload(tabContent);
+        }
+    };
 
 })(jQuery, document);

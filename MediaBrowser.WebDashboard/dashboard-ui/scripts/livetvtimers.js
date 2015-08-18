@@ -133,20 +133,11 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#liveTvSuggestedPage", function () {
+    window.LiveTvPage.renderTimersTab = function (page, tabContent) {
 
-        var page = this;
-
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-
-            if (parseInt(this.selected) == 4) {
-                var tabContent = page.querySelector('.timersTabContent');
-
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-                    reload(tabContent);
-                }
-            }
-        });
-    });
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reload(tabContent);
+        }
+    };
 
 })(jQuery, document);

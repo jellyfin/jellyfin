@@ -121,9 +121,7 @@
         });
     }
 
-    function loadSuggestedTab(page) {
-
-        var tabContent = page.querySelector('.suggestedTabContent');
+    function renderSuggestedTab(page, tabContent) {
 
         if (LibraryBrowser.needsRefresh(tabContent)) {
             reload(tabContent);
@@ -132,14 +130,55 @@
 
     function loadTab(page, index) {
 
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var depends = [];
+        var scope = 'LiveTvPage';
+        var renderMethod = '';
+        var initMethod = '';
+
         switch (index) {
 
             case 0:
-                loadSuggestedTab(page);
+                renderMethod = 'renderSuggestedTab';
+                break;
+            case 1:
+                depends.push('scripts/registrationservices');
+                depends.push('scripts/livetvguide');
+                renderMethod = 'renderGuideTab';
+                initMethod = 'initGuideTab';
+                break;
+            case 2:
+                depends.push('scripts/livetvchannels');
+                renderMethod = 'renderChannelsTab';
+                initMethod = 'initChannelsTab';
+                break;
+            case 3:
+                depends.push('scripts/livetvrecordings');
+                renderMethod = 'renderRecordingsTab';
+                break;
+            case 4:
+                depends.push('scripts/livetvtimers');
+                renderMethod = 'renderTimersTab';
+                break;
+            case 5:
+                depends.push('scripts/livetvseriestimers');
+                renderMethod = 'renderSeriesTimersTab';
                 break;
             default:
                 break;
         }
+
+        require(depends, function () {
+
+            if (initMethod && !tabContent.initComplete) {
+
+                window[scope][initMethod](page, tabContent);
+                tabContent.initComplete = true;
+            }
+
+            window[scope][renderMethod](page, tabContent);
+
+        });
     }
 
     $(document).on('pageinitdepends', "#liveTvSuggestedPage", function () {
@@ -172,5 +211,9 @@
         });
 
     });
+
+    window.LiveTvPage = {
+        renderSuggestedTab: renderSuggestedTab
+    };
 
 })(jQuery, document);

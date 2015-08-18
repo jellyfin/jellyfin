@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="liveTvSuggestedPage" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="scripts/livetvsuggested,paperbuttonstyle,livetvcss,scripts/livetvchannels,scripts/livetvseriestimers,scripts/livetvtimers,scripts/livetvrecordings,scripts/registrationservices,scripts/livetvcomponents,scripts/livetvguide">
+    <div id="liveTvSuggestedPage" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="scripts/livetvsuggested,livetvcss,scripts/livetvcomponents">
 
         <div class="libraryViewNav libraryViewNavWithMinHeight">
             <paper-tabs style="display:none;min-width:660px;margin:auto;">
@@ -29,7 +29,7 @@
         <div class="ehsContent fullWidth">
             <neon-animated-pages>
                 <neon-animatable>
-                    <div class="pageTabContent suggestedTabContent">
+                    <div class="pageTabContent suggestedTabContent" data-index="0">
                         <div id="activePrograms" class="homePageSection">
                             <h1 class="listHeader">${HeaderWhatsOnTV}</h1>
                             <div class="activeProgramItems itemsContainer"></div>
@@ -59,7 +59,7 @@
                     </div>
                 </neon-animatable>
                 <neon-animatable>
-                    <div class="pageTabContent guideTabContent" style="width:auto;">
+                    <div class="pageTabContent guideTabContent" style="width:auto;" data-index="1">
                         <div class="tvGuide">
                             <div class="tvGuideHeader">
                                 <div class="channelTimeslotHeader">
@@ -82,7 +82,7 @@
                     </div>
                 </neon-animatable>
                 <neon-animatable>
-                    <div class="pageTabContent channelsTabContent">
+                    <div class="pageTabContent channelsTabContent" data-index="2">
                         <div class="viewSettings">
                             <div class="listTopPaging">
                             </div>
@@ -91,7 +91,7 @@
                     </div>
                 </neon-animatable>
                 <neon-animatable>
-                    <div class="pageTabContent recordingsTabContent">
+                    <div class="pageTabContent recordingsTabContent" data-index="3">
                         <div id="activeRecordings" style="display: none;">
                             <h1 class="listHeader">${HeaderActiveRecordings}</h1>
                             <div class="recordingItems itemsContainer"></div>
@@ -112,13 +112,13 @@
                     </div>
                 </neon-animatable>
                 <neon-animatable>
-                    <div class="pageTabContent timersTabContent">
+                    <div class="pageTabContent timersTabContent" data-index="4">
                         <div style="max-width: 700px; margin: 0 auto;" id="items">
                         </div>
                     </div>
                 </neon-animatable>
                 <neon-animatable>
-                    <div class="pageTabContent seriesTimersTabContent">
+                    <div class="pageTabContent seriesTimersTabContent" data-index="5">
                         <div style="max-width: 700px; margin: 0 auto;" id="items">
                         </div>
                     </div>

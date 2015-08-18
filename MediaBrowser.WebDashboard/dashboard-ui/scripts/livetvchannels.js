@@ -14,15 +14,6 @@
         });
     }
 
-    function showLoadingMessage(page) {
-
-        Dashboard.showLoadingMsg();
-    }
-
-    function hideLoadingMessage(page) {
-        Dashboard.hideLoadingMsg();
-    }
-
     function renderChannels(page, viewPanel, result) {
 
         $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
@@ -59,13 +50,13 @@
     
     function reloadItems(page, viewPanel) {
 
-        showLoadingMessage(page);
+        Dashboard.showLoadingMsg();
         
         ApiClient.getLiveTvChannels(query).done(function (result) {
 
             renderChannels(page, viewPanel, result);
 
-            hideLoadingMessage(page);
+            Dashboard.hideLoadingMsg();
 
             LibraryBrowser.setLastRefreshed(page);
         });
@@ -79,17 +70,16 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinitdepends', "#liveTvSuggestedPage", function () {
+    window.LiveTvPage.initChannelsTab = function (page, tabContent) {
 
-        var page = this.querySelector('.channelsTabContent');
-        var viewPanel = this.querySelector('.channelViewPanel');
+        var viewPanel = page.querySelector('.channelViewPanel');
 
         $('#chkFavorite', viewPanel).on('change', function () {
 
             query.StartIndex = 0;
             query.IsFavorite = this.checked ? true : null;
 
-            reloadItems(page, viewPanel);
+            reloadItems(tabContent, viewPanel);
         });
 
 
@@ -98,7 +88,7 @@
             query.StartIndex = 0;
             query.IsLiked = this.checked ? true : null;
 
-            reloadItems(page, viewPanel);
+            reloadItems(tabContent, viewPanel);
         });
 
         $('#chkDislikes', viewPanel).on('change', function () {
@@ -106,37 +96,27 @@
             query.StartIndex = 0;
             query.IsDisliked = this.checked ? true : null;
 
-            reloadItems(page, viewPanel);
+            reloadItems(tabContent, viewPanel);
         });
 
         $('#selectPageSize', viewPanel).on('change', function () {
             query.Limit = parseInt(this.value);
             query.StartIndex = 0;
-            reloadItems(page, viewPanel);
+            reloadItems(tabContent, viewPanel);
         });
+    };
 
-    });
+    window.LiveTvPage.renderChannelsTab = function (page, tabContent) {
 
-    $(document).on('pageinitdepends', "#liveTvSuggestedPage", function () {
+        var viewPanel = page.querySelector('.channelViewPanel');
 
-        var page = this;
-
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-
-            if (parseInt(this.selected) == 2) {
-                var tabContent = page.querySelector('.channelsTabContent');
-                var viewPanel = page.querySelector('.channelViewPanel');
-
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-                    query.UserId = Dashboard.getCurrentUserId();
-                    LibraryBrowser.loadSavedQueryValues('movies', query);
-                    query.Limit = query.Limit || LibraryBrowser.getDefaultPageSize();
-                    reloadItems(tabContent, viewPanel);
-                    updateFilterControls(viewPanel);
-                }
-            }
-        });
-
-    });
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            query.UserId = Dashboard.getCurrentUserId();
+            LibraryBrowser.loadSavedQueryValues('movies', query);
+            query.Limit = query.Limit || LibraryBrowser.getDefaultPageSize();
+            reloadItems(tabContent, viewPanel);
+            updateFilterControls(viewPanel);
+        }
+    };
 
 })(jQuery, document);
