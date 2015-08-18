@@ -255,12 +255,6 @@
         $('#txtSignupPassword', page).val('');
         $('#txtSignupPasswordConfirm', page).val('');
 
-        if (AppInfo.isNativeApp) {
-            $('.skip', page).show();
-        } else {
-            $('.skip', page).hide();
-        }
-
         var link = '<a href="http://emby.media" target="_blank">http://emby.media</a>';
         $('.embyIntroDownloadMessage', page).html(Globalize.translate('EmbyIntroDownloadMessage', link));
 

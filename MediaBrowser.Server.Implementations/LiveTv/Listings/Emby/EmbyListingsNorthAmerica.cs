@@ -78,6 +78,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings.Emby
             {
                 // They don't have dashes so try to normalize
                 program.OfficialRating = info.rating.Replace("TV", "TV-").Replace("--", "-");
+
+                var invalid = new[] { "N/A", "Approved", "Not Rated" };
+                if (invalid.Contains(program.OfficialRating, StringComparer.OrdinalIgnoreCase))
+                {
+                    program.OfficialRating = null;
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(info.year))

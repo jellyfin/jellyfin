@@ -756,15 +756,15 @@
             LibraryMenu.setTitle(Globalize.translate(titleKey));
         }
 
-        var mainDrawerButton = document.querySelector('.mainDrawerButton');
+        //var mainDrawerButton = document.querySelector('.mainDrawerButton');
 
-        if (mainDrawerButton) {
-            if (page.getAttribute('data-menubutton') == 'false' && $.browser.mobile) {
-                mainDrawerButton.classList.add('hide');
-            } else {
-                mainDrawerButton.classList.remove('hide');
-            }
-        }
+        //if (mainDrawerButton) {
+        //    if (page.getAttribute('data-menubutton') == 'false' && $.browser.mobile) {
+        //        mainDrawerButton.classList.add('hide');
+        //    } else {
+        //        mainDrawerButton.classList.remove('hide');
+        //    }
+        //}
 
         if (isLibraryPage) {
 

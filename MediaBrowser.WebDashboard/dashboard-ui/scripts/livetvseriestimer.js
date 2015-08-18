@@ -41,7 +41,7 @@
             channelHtml += Globalize.translate('LabelAllChannels');
         }
         else if (item.ChannelId) {
-            channelHtml += '<a href="livetvchannel.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>';
+            channelHtml += '<a href="itemdetails.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>';
         }
 
         $('.channel', page).html(channelHtml).trigger('create');

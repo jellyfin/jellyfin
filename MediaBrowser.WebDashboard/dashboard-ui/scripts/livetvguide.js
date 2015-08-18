@@ -285,7 +285,7 @@
             html += '<div class="channelHeaderCellContainer">';
 
             html += '<div class="channelHeaderCell">';
-            html += '<a class="channelHeaderCellInner" href="livetvchannel.html?id=' + channel.Id + '">';
+            html += '<a class="channelHeaderCellInner" href="itemdetails.html?id=' + channel.Id + '">';
 
             var hasChannelImage = channel.ImageTags.Primary;
             var cssClass = hasChannelImage ? 'guideChannelInfo guideChannelInfoWithImage' : 'guideChannelInfo';

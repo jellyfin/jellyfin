@@ -165,15 +165,6 @@
     border-collapse: collapse;
 }
 
-.detailButtonsContainer {
-    padding: 0 0 1em;
-    text-align: center;
-}
-
-    .detailButtonsContainer a, .detailButtonsContainer button {
-        margin-top: 0;
-    }
-
 .viewSettings {
     margin: 0 0 .25em;
     text-align: center;
@@ -400,8 +391,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 640px;
+    height: 500px;
     position: relative;
+}
+
+.noBackdrop {
+    height: 170px;
+    background: #181818;
 }
 
 .itemBackdropContent {
@@ -410,21 +406,23 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     left: 0;
     right: 0;
     background-color: rgba(0,0,0,0.7);
+    min-height: 120px;
 }
 
-.noBackdrop {
-    height: auto;
-    margin: 3em 0 0;
+.noBackdrop .itemBackdropContent {
+    background-color: transparent;
 }
 
-    .noBackdrop .itemBackdropContent {
-        background-color: transparent;
-    }
+.detailNameContainer {
+    position: absolute;
+    bottom: 15px;
+    margin-bottom: 0;
+}
 
-    .noBackdrop .itemBackdropContent {
-        position: static;
-    }
-
+.desktopMiscInfoContainer {
+    position: absolute;
+    bottom: 10px;
+}
 
 .lnkSibling {
     position: absolute;
@@ -456,26 +454,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .detailImageContainer {
-    position: absolute;
-    top: -66px;
-}
-
-.portraitDetailImageContainer {
-    top: -26px;
-}
-
-.thumbDetailImageContainer {
-    top: -26px;
-}
-
-.noBackdrop .squareDetailImageContainer {
-    top: 0;
-}
-
-.noBackdrop .detailImageContainer {
-    position: static;
-    display: inline-block;
-    vertical-align: top;
+    float: left;
+    margin-top: -140px;
 }
 
 .itemDetailImage {
@@ -485,19 +465,17 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     border: solid 1px #222;
 }
 
-.thumbDetailImageContainer img {
-    max-width: 360px;
-    max-height: 203px;
-}
-
-.squareDetailImageContainer img {
-    max-width: 240px;
-    max-height: 240px;
-}
-
-.portraitDetailImageContainer img {
-    max-width: 210px;
+.detailImageContainer img {
+    max-width: 280px;
     max-height: 300px;
+}
+
+.squareDetailImageContainer {
+    margin-top: -150px;
+}
+
+.thumbDetailImageContainer {
+    margin-top: -130px;
 }
 
 .itemDetailGalleryLink img:hover {
@@ -506,39 +484,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     box-shadow: 0 0 20px 3px #38c;
 }
 
-.detailContentEffectedByThumbImage:not(.lastDetailContentEffectedByImage) {
-    margin-left: 380px;
-}
-
-.detailContentEffectedBySquareImage:not(.lastDetailContentEffectedByImage) {
-    margin-left: 260px;
-}
-
-.detailContentEffectedByPortraitImage {
-    margin-left: 220px;
-}
-
-.lastDetailContentEffectedByImage.detailContentEffectedByThumbImage {
-    padding: 0 .5em;
-}
-
-.lastDetailContentEffectedByImage.detailContentEffectedBySquareImage {
-    padding: 0 .5em;
-}
-
-.lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
-    min-height: 115px;
-}
-
-.noBackdrop .detailContentEffectedByImage {
-    display: inline-block;
-    margin-left: 10px;
-}
-
-.noBackdrop + .ui-content .lastDetailContentEffectedByImage {
-    margin-top: 0;
-    margin-left: 0;
-    min-height: initial;
+.primaryDetailsContainer {
+    float: left;
+    padding: .75em 0 0 1.5em;
+    width: 68%;
 }
 
 .parentName {
@@ -547,66 +496,78 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-bottom: .5em;
 }
 
-@media all and (min-width: 800px) {
-    .lastDetailContentEffectedByImage.detailContentEffectedBySquareImage {
-        margin-top: 2em;
-    }
+.detailButtonsContainer {
+    font-size: 90%;
 }
 
-@media all and (max-width: 1000px) {
-    .detailImageContainer {
-        margin-left: 20px;
-    }
+.detailFloatingButton {
+    width: 56px;
+    height: 56px;
+    top: -28px;
+    position: absolute;
+    right: 25%;
+    background-color: #52B54B !important;
+}
 
-    .thumbDetailImageContainer img {
-        max-width: 340px;
-    }
+.btnFloatingRecord {
+    background-color: #cc3333 !important;
+}
 
-    .squareDetailImageContainer img {
-        max-width: 220px;
-    }
-
-    .portraitDetailImageContainer img {
-        max-width: 185px;
-    }
-
-    .lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
-        min-height: 85px;
-    }
+.detailFloatingButton iron-icon {
+    width: 40px;
+    height: 40px;
 }
 
 @media all and (max-width: 800px) {
-    .detailContentEffectedByThumbImage {
-        margin-left: 0 !important;
-        padding: 0 1em;
-    }
-
-    .detailContentEffectedBySquareImage {
-        margin-left: 0 !important;
-        padding: 0 1em;
-    }
-
-    .detailContentEffectedByPortraitImage {
-        margin-left: 0 !important;
-        padding: 0 1em;
-    }
-
-    .portraitDetailImageContainer img {
-        max-height: 120px;
-    }
-
-    .lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
-        min-height: initial;
-    }
-
 
     .parentName {
         margin-bottom: 1em;
     }
+
+    .primaryDetailsContainer {
+        padding-top: 2.5em;
+        padding-left: 1em;
+    }
+
+    .detailNameContainer {
+        position: static;
+    }
+
+    .itemBackdropContent {
+        min-height: 0;
+    }
+}
+
+@media all and (max-width: 600px) {
+
+    .detailFloatingButton {
+        right: 15px;
+    }
+}
+
+@media all and (max-width: 400px) {
+
+    .primaryDetailsContainer {
+        width: 60%;
+    }
+}
+
+@media all and (min-width: 600px) {
+
+    .mobileDetails {
+        display: none;
+    }
+}
+
+@media all and (max-width: 600px) {
+
+    .desktopDetails {
+        display: none;
+    }
 }
 
 .inlineItemName {
-    font-size: 22px;
+    font-size: 30px;
 }
 
 .itemName + .itemMiscInfo {
@@ -635,10 +596,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .mobileGenres {
     display: none;
     padding: 0 1em;
-}
-
-.mobileDetailButtons {
-    display: none;
 }
 
 .darkScrollbars ::-webkit-scrollbar {
@@ -785,7 +742,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (max-width: 800px) {
+@media all and (max-height: 900px), (max-width: 800px) {
 
     .itemBackdrop:not(.noBackdrop) {
         height: 500px;
@@ -802,14 +759,49 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (max-height: 700px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 340px;
+        height: 300px;
     }
 }
 
-@media all and (max-height: 540px), (max-width: 540px) {
+@media all and (max-width: 540px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 280px;
+        height: 240px;
+    }
+}
+
+@media all and (max-height: 540px) {
+
+    .itemBackdrop:not(.noBackdrop) {
+        height: 200px;
+    }
+}
+
+@media all and (max-height: 460px) {
+
+    .itemBackdrop:not(.noBackdrop) {
+        height: 150px;
+    }
+}
+
+@media all and (max-height: 300px) {
+
+    .itemBackdrop:not(.noBackdrop) {
+        height: 100px;
+    }
+}
+
+@media all and (max-height: 250px) {
+
+    .itemBackdrop:not(.noBackdrop) {
+        height: 70px;
+    }
+}
+
+@media all and (max-width: 1000px) {
+
+    .detailImageContainer {
+        padding-left: 15px;
     }
 }
 
@@ -819,16 +811,31 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         display: none;
     }
 
-    .itemDetailImage {
-        max-height: 240px;
+    .noBackdrop {
+        height: 80px;
+    }
+
+    .detailImageContainer {
+        margin-top: -55px;
+    }
+
+    .squareDetailImageContainer {
+        margin-top: -40px;
+    }
+
+    .thumbDetailImageContainer {
+        margin-top: -80px;
+    }
+
+    .detailImageContainer img {
         max-width: 100px;
     }
 
-    .mobileOverview:not(.hide), .mobileGenres, .mobileDetailButtons {
+    .mobileOverview:not(.hide), .mobileGenres {
         display: block;
     }
 
-    .desktopOverview, .desktopGenres, .desktopDetailButtons {
+    .desktopOverview, .desktopGenres {
         display: none;
     }
 
@@ -843,22 +850,22 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .backdropDetailPageContent {
         text-align: center;
     }
+}
 
-    .detailImageContainer {
-        display: none;
+@media all and (max-width: 800px) {
+
+    .detailImageContainer img {
+        max-width: 80px;
     }
 
-    .noBackdrop .detailImageContainer {
-        display: block;
-        position: static;
-        text-align: center;
+    .thumbDetailImageContainer img {
+        max-width: 180px;
     }
 }
 
 @media all and (min-width: 750px) {
     .detailPageContent {
-        max-width: 950px;
-        width: auto;
+        width: 950px;
     }
 }
 

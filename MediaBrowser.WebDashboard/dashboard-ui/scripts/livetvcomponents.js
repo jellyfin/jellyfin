@@ -41,7 +41,7 @@
             }
 
             if (obj.ChannelId) {
-                html.push('<a class="textlink" href="livetvchannel.html?id=' + obj.ChannelId + '">' + obj.ChannelName + '</a>');
+                html.push('<a class="textlink" href="itemdetails.html?id=' + obj.ChannelId + '">' + obj.ChannelName + '</a>');
             }
 
             if (obj.IsHD) {

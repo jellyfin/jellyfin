@@ -398,12 +398,6 @@
         } else {
             $(page).removeClass('libraryPage').removeClass('noSecondaryNavPage').addClass('standalonePage');
         }
-
-        if (AppInfo.isNativeApp) {
-            $('.addServer', page).show();
-        } else {
-            $('.addServer', page).hide();
-        }
     }
 
     $(document).on('pageinitdepends pagebeforeshowready', "#selectServerPage", function () {

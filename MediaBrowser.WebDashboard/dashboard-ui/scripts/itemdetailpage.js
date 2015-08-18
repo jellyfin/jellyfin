@@ -40,18 +40,22 @@
                 LibraryBrowser.renderDetailPageBackdrop(page, item);
             }
 
+            var canPlay = false;
+
             if (item.Type == 'Program') {
 
                 var now = new Date();
 
                 if (now >= parseISO8601Date(item.StartDate, { toLocal: true }) && now < parseISO8601Date(item.EndDate, { toLocal: true })) {
                     $('.btnPlay', page).removeClass('hide');
+                    canPlay = true;
                 } else {
                     $('.btnPlay', page).addClass('hide');
                 }
             }
             else if (MediaController.canPlay(item)) {
                 $('.btnPlay', page).removeClass('hide');
+                canPlay = true;
             }
             else {
                 $('.btnPlay', page).addClass('hide');
@@ -82,9 +86,17 @@
             }
 
             if (item.Type == 'Program' && (!item.TimerId && !item.SeriesTimerId)) {
-                $('.btnRecord', page).removeClass('hide');
+
+                if (canPlay) {
+                    $('.btnRecord', page).removeClass('hide');
+                    $('.btnFloatingRecord', page).addClass('hide');
+                } else {
+                    $('.btnRecord', page).addClass('hide');
+                    $('.btnFloatingRecord', page).removeClass('hide');
+                }
             } else {
                 $('.btnRecord', page).addClass('hide');
+                $('.btnFloatingRecord', page).addClass('hide');
             }
 
             if (!item.LocalTrailerCount && item.RemoteTrailers.length && item.PlayAccess == 'Full') {
@@ -182,7 +194,6 @@
                 if (userData) {
 
                     currentItem.UserData = userData;
-                    renderUserDataIcons(page, currentItem);
 
                     Dashboard.getCurrentUser().done(function (user) {
 
@@ -229,7 +240,12 @@
 
         $('.collectionItems', page).empty();
 
-        if (item.IsFolder) {
+        if (item.Type == 'TvChannel') {
+
+            $('#childrenCollapsible', page).removeClass('hide');
+            renderChannelGuide(page, item, user);
+        }
+        else if (item.IsFolder) {
 
             if (item.Type == "BoxSet") {
                 $('#childrenCollapsible', page).addClass('hide');
@@ -811,6 +827,15 @@
         }
     }
 
+    function renderChannelGuide(page, item, user) {
+
+        require('scripts/livetvcomponents,scripts/livetvchannel,livetvcss'.split(','), function () {
+
+
+            LiveTvChannelPage.renderPrograms(page, item.Id);
+        });
+    }
+
     function renderCollectionItems(page, types, items, user) {
 
         for (var i = 0, length = types.length; i < length; i++) {
@@ -890,7 +915,7 @@
 
     function renderUserDataIcons(page, item) {
 
-        $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item));
+        $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item, true, 'fab'));
     }
 
     function renderCriticReviews(page, item, limit) {
@@ -1586,7 +1611,7 @@
             });
         });
 
-        $('.btnRecord', page).on('click', function () {
+        $('.btnRecord,.btnFloatingRecord', page).on('click', function () {
 
             var id = getParameterByName('id');
 

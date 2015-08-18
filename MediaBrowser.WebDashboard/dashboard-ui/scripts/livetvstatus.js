@@ -43,7 +43,7 @@
             if (tuner.Status == 'RecordingTv') {
                 if (tuner.ChannelName) {
 
-                    html += '<a href="livetvchannel.html?id=' + tuner.ChannelId + '">';
+                    html += '<a href="itemdetails.html?id=' + tuner.ChannelId + '">';
                     html += Globalize.translate('StatusRecordingProgram').replace('{0}', tuner.ChannelName);
                     html += '</a>';
                 } else {
@@ -55,7 +55,7 @@
 
                 if (tuner.ChannelName) {
 
-                    html += '<a href="livetvchannel.html?id=' + tuner.ChannelId + '">';
+                    html += '<a href="itemdetails.html?id=' + tuner.ChannelId + '">';
                     html += Globalize.translate('StatusWatchingProgram').replace('{0}', tuner.ChannelName);
                     html += '</a>';
                 } else {

@@ -797,7 +797,7 @@
                 return "playlistedit.html?id=" + id;
             }
             if (item.Type == "TvChannel") {
-                return "livetvchannel.html?id=" + id;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "Channel") {
                 return "channelitems.html?id=" + id;
@@ -2501,17 +2501,17 @@
                 html += '<div class="criticRating" title="Rotten Tomatoes">' + item.CriticRating + '%</div>';
             }
 
-            if (item.Metascore && metascore !== false) {
+            //if (item.Metascore && metascore !== false) {
 
-                if (item.Metascore >= 60) {
-                    html += '<div class="metascore metascorehigh" title="Metascore">' + item.Metascore + '</div>';
-                }
-                else if (item.Metascore >= 40) {
-                    html += '<div class="metascore metascoremid" title="Metascore">' + item.Metascore + '</div>';
-                } else {
-                    html += '<div class="metascore metascorelow" title="Metascore">' + item.Metascore + '</div>';
-                }
-            }
+            //    if (item.Metascore >= 60) {
+            //        html += '<div class="metascore metascorehigh" title="Metascore">' + item.Metascore + '</div>';
+            //    }
+            //    else if (item.Metascore >= 40) {
+            //        html += '<div class="metascore metascoremid" title="Metascore">' + item.Metascore + '</div>';
+            //    } else {
+            //        html += '<div class="metascore metascorelow" title="Metascore">' + item.Metascore + '</div>';
+            //    }
+            //}
 
             return html;
         },
@@ -2534,20 +2534,21 @@
             return null;
         },
 
-        getUserDataButtonHtml: function (method, itemId, btnCssClass, icon, tooltip) {
+        getUserDataButtonHtml: function (method, itemId, btnCssClass, icon, tooltip, style) {
 
-            return '<paper-icon-button data-itemid="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></paper-icon-button>';
+            var tagName = style == 'fab' ? 'paper-fab' : 'paper-icon-button';
+
+            return '<' + tagName + ' title="' + tooltip + '" data-itemid="' + itemId + '" icon="' + icon + '" class="' + btnCssClass + '" onclick="LibraryBrowser.' + method + '(this);return false;"></' + tagName + '>';
 
         },
 
-        getUserDataIconsHtml: function (item, includePlayed) {
+        getUserDataIconsHtml: function (item, includePlayed, style) {
 
             var html = '';
 
             var userData = item.UserData || {};
 
             var itemId = item.Id;
-            var type = item.Type;
 
             if (includePlayed !== false) {
                 var tooltipPlayed = Globalize.translate('TooltipPlayed');
@@ -2555,37 +2556,37 @@
                 if (item.MediaType == 'Video' || item.Type == 'Series' || item.Type == 'Season' || item.Type == 'BoxSet' || item.Type == 'Playlist') {
                     if (item.Type != 'TvChannel') {
                         if (userData.Played) {
-                            html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRatingOn', 'check', tooltipPlayed);
+                            html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating btnUserItemRatingOn', 'check', tooltipPlayed, style);
                         } else {
-                            html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating', 'check', tooltipPlayed);
+                            html += LibraryBrowser.getUserDataButtonHtml('markPlayed', itemId, 'btnUserItemRating', 'check', tooltipPlayed, style);
                         }
                     }
                 }
             }
 
-            var tooltipLike = Globalize.translate('TooltipLike');
-            var tooltipDislike = Globalize.translate('TooltipDislike');
+            //var tooltipLike = Globalize.translate('TooltipLike');
+            //var tooltipDislike = Globalize.translate('TooltipDislike');
 
-            if (typeof userData.Likes == "undefined") {
-                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'thumb-down', tooltipDislike);
-                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'thumb-up', tooltipLike);
-            }
-            else if (userData.Likes) {
-                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'thumb-down', tooltipDislike);
-                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'thumb-up', tooltipLike);
-            }
-            else {
-                html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'thumb-down', tooltipDislike);
-                html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'thumb-up', tooltipLike);
-            }
+            //if (typeof userData.Likes == "undefined") {
+            //    html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'thumb-down', tooltipDislike, style);
+            //    html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'thumb-up', tooltipLike, style);
+            //}
+            //else if (userData.Likes) {
+            //    html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating', 'thumb-down', tooltipDislike, style);
+            //    html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'thumb-up', tooltipLike, style);
+            //}
+            //else {
+            //    html += LibraryBrowser.getUserDataButtonHtml('markDislike', itemId, 'btnUserItemRating btnUserItemRatingOn', 'thumb-down', tooltipDislike, style);
+            //    html += LibraryBrowser.getUserDataButtonHtml('markLike', itemId, 'btnUserItemRating', 'thumb-up', tooltipLike, style);
+            //}
 
-            var tooltipFavorite = Globalize.translate('TooltipFavorite');
-            if (userData.IsFavorite) {
+            //var tooltipFavorite = Globalize.translate('TooltipFavorite');
+            //if (userData.IsFavorite) {
 
-                html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating btnUserItemRatingOn', 'favorite', tooltipFavorite);
-            } else {
-                html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating', 'favorite', tooltipFavorite);
-            }
+            //    html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating btnUserItemRatingOn', 'favorite', tooltipFavorite, style);
+            //} else {
+            //    html += LibraryBrowser.getUserDataButtonHtml('markFavorite', itemId, 'btnUserItemRating', 'favorite', tooltipFavorite, style);
+            //}
 
             return html;
         },
@@ -2882,14 +2883,7 @@
                 }
             }
 
-            var screenWidth = $(window).width();
-
-            // Take a guess about whether we should lazy load or not
-            if (screenWidth > 600) {
-                html += "<img class='itemDetailImage' src='" + url + "' />";
-            } else {
-                html += "<img class='itemDetailImage lazy' data-src='" + url + "' src='css/images/empty.png' />";
-            }
+            html += "<img class='itemDetailImage' src='" + url + "' />";
 
             if (href) {
                 html += "</a>";
@@ -2907,43 +2901,16 @@
 
             elem.innerHTML = html;
 
-            function addClass(elems, name) {
-                for (var i = 0, length = elems.length; i < length; i++) {
-                    elems[i].classList.add(name);
-                }
-            }
-            function removeClass(elems, name) {
-                for (var i = 0, length = elems.length; i < length; i++) {
-                    elems[i].classList.remove(name);
-                }
-            }
-
-            var page = $(elem).parents('.page')[0];
-
-            var detailContentEffectedByImage = page.querySelectorAll('.detailContentEffectedByImage');
-
             if (shape == 'thumb') {
-                addClass(detailContentEffectedByImage, 'detailContentEffectedByThumbImage');
-                removeClass(detailContentEffectedByImage, 'detailContentEffectedBySquareImage');
-                removeClass(detailContentEffectedByImage, 'detailContentEffectedByPortraitImage');
-
                 elem.classList.add('thumbDetailImageContainer');
                 elem.classList.remove('portraitDetailImageContainer');
                 elem.classList.remove('squareDetailImageContainer');
             }
             else if (shape == 'square') {
-                removeClass(detailContentEffectedByImage, 'detailContentEffectedByThumbImage');
-                removeClass(detailContentEffectedByImage, 'detailContentEffectedByPortraitImage');
-                addClass(detailContentEffectedByImage, 'detailContentEffectedBySquareImage');
-
                 elem.classList.remove('thumbDetailImageContainer');
                 elem.classList.remove('portraitDetailImageContainer');
                 elem.classList.add('squareDetailImageContainer');
             } else {
-                removeClass(detailContentEffectedByImage, 'detailContentEffectedByThumbImage');
-                removeClass(detailContentEffectedByImage, 'detailContentEffectedBySquareImage');
-                addClass(detailContentEffectedByImage, 'detailContentEffectedByPortraitImage');
-
                 elem.classList.remove('thumbDetailImageContainer');
                 elem.classList.add('portraitDetailImageContainer');
                 elem.classList.remove('squareDetailImageContainer');
@@ -3138,15 +3105,17 @@
                 var elem = this;
                 var overview = item.Overview || '';
 
-                elem.innerHTML = overview;
-
                 $('a', elem).each(function () {
                     this.setAttribute("target", "_blank");
                 });
 
                 if (overview) {
+                    elem.innerHTML = overview;
+
                     elem.classList.remove('empty');
                 } else {
+                    elem.innerHTML = '';
+
                     elem.classList.add('empty');
                 }
             });
