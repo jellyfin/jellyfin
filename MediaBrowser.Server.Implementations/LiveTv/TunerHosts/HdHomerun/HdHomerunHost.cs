@@ -49,7 +49,46 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private const string ChannelIdPrefix = "hdhr_";
 
-        public async Task<IEnumerable<ChannelInfo>> GetChannels(TunerHostInfo info, CancellationToken cancellationToken)
+        private List<TunerHostInfo> GetTunerHosts()
+        {
+            return GetConfiguration().TunerHosts
+                .Where(i => i.IsEnabled && string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        public async Task<IEnumerable<ChannelInfo>> GetChannels(CancellationToken cancellationToken)
+        {
+            var list = new List<ChannelInfo>();
+
+            var hosts = GetTunerHosts();
+
+            var ipAddresses = new List<string>();
+
+            foreach (var host in hosts)
+            {
+                var ip = GetApiUrl(host, false);
+
+                if (ipAddresses.Contains(ip, StringComparer.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    list.AddRange(await GetChannels(host, cancellationToken).ConfigureAwait(false));
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting channel list", ex);
+                }
+
+                ipAddresses.Add(ip);
+            }
+
+            return list;
+        }
+
+        private async Task<IEnumerable<ChannelInfo>> GetChannels(TunerHostInfo info, CancellationToken cancellationToken)
         {
             var options = new HttpRequestOptions
             {
@@ -144,6 +183,26 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
                 return tuners;
             }
+        }
+
+        public async Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken)
+        {
+            var list = new List<LiveTvTunerInfo>();
+
+            foreach (var host in GetConfiguration().TunerHosts
+                .Where(i => i.IsEnabled && string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase)))
+            {
+                try
+                {
+                    list.AddRange(await GetTunerInfos(host, cancellationToken).ConfigureAwait(false));
+                }
+                catch (Exception ex)
+                {
+                    _logger.ErrorException("Error getting tuner info", ex);
+                }
+            }
+
+            return list;
         }
 
         private string GetApiUrl(TunerHostInfo info, bool isPlayback)
