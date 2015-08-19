@@ -15753,7 +15753,8 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     is: 'paper-tab',
 
     behaviors: [
-      Polymer.IronControlState
+      Polymer.IronControlState,
+      Polymer.IronButtonState
     ],
 
     properties: {
@@ -15775,7 +15776,11 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
     },
 
     listeners: {
-      down: '_onDown'
+      down: '_updateNoink'
+    },
+
+    attached: function() {
+      this._updateNoink();
     },
 
     get _parentNoink () {
@@ -15783,7 +15788,7 @@ iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
       return !!parent && !!parent.noink;
     },
 
-    _onDown: function(e) {
+    _updateNoink: function() {
       this.noink = !!this.noink || !!this._parentNoink;
     }
   });

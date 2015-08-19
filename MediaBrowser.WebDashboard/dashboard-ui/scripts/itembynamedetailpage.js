@@ -113,7 +113,7 @@
                     shape: "detailPagePortrait",
                     showTitle: true,
                     centerText: true,
-                    overlayPlayButton: true
+                    overlayMoreButton: true
                 });
                 break;
 
@@ -142,7 +142,8 @@
                 }, {
                     shape: "detailPagePortrait",
                     showTitle: true,
-                    centerText: true
+                    centerText: true,
+                    overlayMoreButton: true
                 });
                 break;
 
@@ -171,7 +172,8 @@
                 }, {
                     shape: "detailPagePortrait",
                     showTitle: true,
-                    centerText: true
+                    centerText: true,
+                    overlayMoreButton: true
                 });
                 break;
 

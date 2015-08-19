@@ -3101,11 +3101,11 @@
                 miscInfo.push(Globalize.translate('LabelHDProgram'));
             }
 
-            if (item.Audio) {
+            //if (item.Audio) {
 
-                miscInfo.push(item.Audio);
+            //    miscInfo.push(item.Audio);
 
-            }
+            //}
 
             if (item.Video3DFormat) {
                 miscInfo.push("3D");

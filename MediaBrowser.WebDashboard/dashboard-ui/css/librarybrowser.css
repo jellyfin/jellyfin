@@ -387,6 +387,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-left: 1.25em;
 }
 
+.userDataIcons paper-fab {
+    background: #444;
+    width: 40px;
+    height: 40px;
+}
+
 .itemBackdrop {
     background-size: cover;
     background-position: center 15%;

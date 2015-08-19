@@ -41,19 +41,13 @@
                         </li>
                     </ul>
                     <div>
-                        <fieldset data-role="controlgroup">
-                            <legend>${LabelEnableInternetMetadataForTvPrograms}</legend>
-                            <label for="chkMovies">${OptionTVMovies}</label>
-                            <input type="checkbox" id="chkMovies" />
-                        </fieldset>
+                        <label>${LabelEnableInternetMetadataForTvPrograms}</label>
+                        <paper-checkbox id="chkMovies">${OptionTVMovies}</paper-checkbox>
                     </div>
                     <div>
                         <br />
-                        <label for="txtRecordingPath">${LabelRecordingPath}</label>
-                        <div style="display: inline-block; width: 85%;">
-                            <input type="text" id="txtRecordingPath" />
-                        </div>
-                        <button id="btnSelectRecordingPath" type="button" data-icon="search" data-iconpos="notext" data-inline="true">${ButtonSelectDirectory}</button>
+                        <paper-input id="txtRecordingPath" label="${LabelRecordingPath}" style="width:80%;display:inline-block;"></paper-input>
+                        <paper-icon-button id="btnSelectRecordingPath" icon="search"></paper-icon-button>
                         <div class="fieldDescription">${LabelRecordingPathHelp}</div>
                     </div>
                     <br />

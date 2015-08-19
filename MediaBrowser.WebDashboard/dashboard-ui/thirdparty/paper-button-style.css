@@ -384,6 +384,10 @@ paper-menu-item {
     color: #858585 !important;
 }
 
+.ui-page-theme-a .label-is-highlighted label {
+    color: green !important;
+}
+
 .ui-page-theme-b .label-is-highlighted label {
     color: #52B54B !important;
 }
@@ -392,7 +396,7 @@ paper-menu-item {
     color: #fff !important;
 }
 
-paper-input .focused-line, .ui-page-theme-b paper-textarea .focused-line {
+paper-input .focused-line, paper-textarea .focused-line {
     background-color: #52B54B !important;
 }
 

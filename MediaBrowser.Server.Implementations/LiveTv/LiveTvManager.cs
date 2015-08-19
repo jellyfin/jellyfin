@@ -632,6 +632,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             item.ProductionYear = info.ProductionYear;
             item.PremiereDate = item.PremiereDate ?? info.OriginalAirDate;
 
+            item.IndexNumber = info.EpisodeNumber;
+            item.ParentIndexNumber = info.SeasonNumber;
+
             if (isNew)
             {
                 await _libraryManager.CreateItem(item, cancellationToken).ConfigureAwait(false);
@@ -641,22 +644,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
             }
 
-            var maxStartDate = DateTime.UtcNow.AddDays(3);
-
-            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions
-            {
-                ImageRefreshMode = info.StartDate <= maxStartDate ? ImageRefreshMode.Default : ImageRefreshMode.ValidationOnly
-            });
+            _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions());
 
             return item;
-        }
-
-        private void RefreshIfNeeded(LiveTvProgram program)
-        {
-            if (_refreshedPrograms.TryAdd(program.Id, program.Id))
-            {
-                _providerManager.QueueRefresh(program.Id, new MetadataRefreshOptions());
-            }
         }
 
         private async Task<Guid> CreateRecordingRecord(RecordingInfo info, string serviceName, CancellationToken cancellationToken)
@@ -763,8 +753,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             var program = GetInternalProgram(id);
 
-            RefreshIfNeeded(program);
-
             var dto = _dtoService.GetBaseItemDto(program, new DtoOptions(), user);
 
             await AddRecordingInfo(new[] { dto }, cancellationToken).ConfigureAwait(false);
@@ -832,7 +820,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var returnArray = returnPrograms
                 .Select(i =>
                 {
-                    RefreshIfNeeded(i);
                     return _dtoService.GetBaseItemDto(i, options, user);
                 })
                 .ToArray();
@@ -906,11 +893,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             programList = programs.ToList();
 
             var returnArray = programList.ToArray();
-
-            foreach (var program in returnArray)
-            {
-                RefreshIfNeeded(program);
-            }
 
             var result = new QueryResult<LiveTvProgram>
             {

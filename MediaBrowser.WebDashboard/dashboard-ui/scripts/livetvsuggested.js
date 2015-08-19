@@ -119,6 +119,31 @@
             elem.innerHTML = html;
             ImageLoader.lazyChildren(elem);
         });
+
+        ApiClient.getLiveTvRecommendedPrograms({
+
+            userId: Dashboard.getCurrentUserId(),
+            IsAiring: false,
+            HasAired: false,
+            limit: 8,
+            IsKids: true
+
+        }).done(function (result) {
+
+            var html = LibraryBrowser.getPosterViewHtml({
+                items: result.Items,
+                shape: "auto",
+                showTitle: false,
+                coverImage: true,
+                overlayText: false,
+                lazy: true,
+                overlayMoreButton: true
+            });
+
+            var elem = page.querySelector('.upcomingKidsItems');
+            elem.innerHTML = html;
+            ImageLoader.lazyChildren(elem);
+        });
     }
 
     function renderSuggestedTab(page, tabContent) {

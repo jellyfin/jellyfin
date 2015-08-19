@@ -7,7 +7,7 @@
 
         $('#selectGuideDays', page).val(config.GuideDays || '').selectmenu('refresh');
 
-        $('#chkMovies', page).checked(config.EnableMovieProviders).checkboxradio("refresh");
+        $('#chkMovies', page).checked(config.EnableMovieProviders);
 
         $('#txtRecordingPath', page).val(config.RecordingPath || '');
 

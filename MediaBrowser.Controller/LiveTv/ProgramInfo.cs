@@ -33,6 +33,11 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The overview.</value>
         public string Overview { get; set; }
+        /// <summary>
+        /// Gets or sets the short overview.
+        /// </summary>
+        /// <value>The short overview.</value>
+        public string ShortOverview { get; set; }
 
         /// <summary>
         /// The start date of the program, in UTC.
@@ -165,7 +170,17 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The show identifier.</value>
         public string ShowId { get; set; }
-   
+        /// <summary>
+        /// Gets or sets the season number.
+        /// </summary>
+        /// <value>The season number.</value>
+        public int? SeasonNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the episode number.
+        /// </summary>
+        /// <value>The episode number.</value>
+        public int? EpisodeNumber { get; set; }
+        
         public ProgramInfo()
         {
             Genres = new List<string>();

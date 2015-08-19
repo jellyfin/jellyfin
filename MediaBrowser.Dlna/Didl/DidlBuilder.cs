@@ -193,6 +193,9 @@ namespace MediaBrowser.Dlna.Didl
 
             if (string.Equals(subtitleMode, "CaptionInfoEx", StringComparison.OrdinalIgnoreCase))
             {
+                // <sec:CaptionInfoEx sec:type="srt">http://192.168.1.3:9999/video.srt</sec:CaptionInfoEx>
+                // <sec:CaptionInfo sec:type="srt">http://192.168.1.3:9999/video.srt</sec:CaptionInfo>
+
                 //var res = container.OwnerDocument.CreateElement("SEC", "CaptionInfoEx");
 
                 //res.InnerText = info.Url;
@@ -200,6 +203,16 @@ namespace MediaBrowser.Dlna.Didl
                 //// TODO: attribute needs SEC:
                 //res.SetAttribute("type", info.Format.ToLower());
                 //container.AppendChild(res);
+            }
+            else if (string.Equals(subtitleMode, "smi", StringComparison.OrdinalIgnoreCase))
+            {
+                var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
+
+                res.InnerText = info.Url;
+
+                res.SetAttribute("protocolInfo", "http-get:*:smi/caption:*");
+
+                container.AppendChild(res);
             }
             else
             {

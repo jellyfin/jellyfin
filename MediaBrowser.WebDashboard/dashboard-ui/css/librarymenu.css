@@ -375,10 +375,6 @@
     display: none !important;
 }
 
-.libraryDocument .lnkManageServer {
-    display: none !important;
-}
-
 .dashboardDocument .headerVoiceButton {
     display: none !important;
 }

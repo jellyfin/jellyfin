@@ -50,7 +50,7 @@
             if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    shape: "portrait",
+                    shape: "auto",
                     context: 'livetv',
                     showTitle: false,
                     centerText: true,
@@ -153,6 +153,7 @@
 
         query.IsMovie = getParameterByName('type') == 'movies' ? true : null;
         query.IsSports = getParameterByName('type') == 'sports' ? true : null;
+        query.IsKids = getParameterByName('type') == 'kids' ? true : null;
 
         var viewkey = getSavedQueryKey();
 
