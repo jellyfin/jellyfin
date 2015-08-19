@@ -882,7 +882,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 @media all and (min-width: 750px) {
     .detailPageContent {
-        width: 950px;
+        max-width: 950px;
     }
 }
 
@@ -1554,7 +1554,7 @@ paper-icon-button.listviewMenuButton {
 
 @media all and (min-width: 1200px) {
 
-    paper-icon-item:hover .listViewUserDataButtons {
+    li:hover .listViewUserDataButtons {
         visibility: visible !important;
     }
 }

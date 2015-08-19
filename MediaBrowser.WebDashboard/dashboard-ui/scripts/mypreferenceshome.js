@@ -159,19 +159,31 @@
 
         user.Configuration.DisplayChannelsInline = page.querySelector('.chkDisplayChannelsInline').checked;
 
-        user.Configuration.LatestItemsExcludes = $(".chkIncludeInLatest:not(:checked)", page).get().map(function (i) {
+        user.Configuration.LatestItemsExcludes = $(".chkIncludeInLatest", page).get().filter(function (i) {
+
+            return !i.checked;
+
+        }).map(function (i) {
 
             return i.getAttribute('data-folderid');
         });
 
         user.Configuration.ExcludeFoldersFromGrouping = null;
 
-        user.Configuration.GroupedFolders = $(".chkGroupFolder:checked", page).get().map(function (i) {
+        user.Configuration.GroupedFolders = $(".chkGroupFolder", page).get().filter(function(i) {
+
+            return i.checked;
+
+        }).map(function (i) {
 
             return i.getAttribute('data-folderid');
         });
 
-        user.Configuration.PlainFolderViews = $(".chkPlainFolder:not(:checked)", page).get().map(function (i) {
+        user.Configuration.PlainFolderViews = $(".chkPlainFolder", page).get().filter(function (i) {
+
+            return !i.checked;
+
+        }).map(function (i) {
 
             return i.getAttribute('data-folderid');
         });
