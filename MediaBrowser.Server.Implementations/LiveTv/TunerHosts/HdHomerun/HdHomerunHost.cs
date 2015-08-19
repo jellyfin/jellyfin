@@ -17,19 +17,15 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 {
-    public class HdHomerunHost : ITunerHost
+    public class HdHomerunHost : BaseTunerHost, ITunerHost
     {
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IConfigurationManager _config;
 
-        public HdHomerunHost(IHttpClient httpClient, ILogger logger, IJsonSerializer jsonSerializer, IConfigurationManager config)
+        public HdHomerunHost(IConfigurationManager config, ILogger logger, IHttpClient httpClient, IJsonSerializer jsonSerializer) : base(config, logger)
         {
             _httpClient = httpClient;
-            _logger = logger;
             _jsonSerializer = jsonSerializer;
-            _config = config;
         }
 
         public string Name
@@ -37,7 +33,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             get { return "HD Homerun"; }
         }
 
-        public string Type
+        public override string Type
         {
             get { return DeviceType; }
         }
@@ -49,46 +45,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         private const string ChannelIdPrefix = "hdhr_";
 
-        private List<TunerHostInfo> GetTunerHosts()
-        {
-            return GetConfiguration().TunerHosts
-                .Where(i => i.IsEnabled && string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
-
-        public async Task<IEnumerable<ChannelInfo>> GetChannels(CancellationToken cancellationToken)
-        {
-            var list = new List<ChannelInfo>();
-
-            var hosts = GetTunerHosts();
-
-            var ipAddresses = new List<string>();
-
-            foreach (var host in hosts)
-            {
-                var ip = GetApiUrl(host, false);
-
-                if (ipAddresses.Contains(ip, StringComparer.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                try
-                {
-                    list.AddRange(await GetChannels(host, cancellationToken).ConfigureAwait(false));
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error getting channel list", ex);
-                }
-
-                ipAddresses.Add(ip);
-            }
-
-            return list;
-        }
-
-        private async Task<IEnumerable<ChannelInfo>> GetChannels(TunerHostInfo info, CancellationToken cancellationToken)
+        protected override async Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
         {
             var options = new HttpRequestOptions
             {
@@ -198,7 +155,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error getting tuner info", ex);
+                    Logger.ErrorException("Error getting tuner info", ex);
                 }
             }
 
@@ -261,11 +218,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             public string URL { get; set; }
             public bool Favorite { get; set; }
             public bool DRM { get; set; }
-        }
-
-        private LiveTvOptions GetConfiguration()
-        {
-            return _config.GetConfiguration<LiveTvOptions>("livetv");
         }
 
         private MediaSourceInfo GetMediaSource(TunerHostInfo info, string channelId, string profile)
@@ -425,7 +377,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task Validate(TunerHostInfo info)
         {
-            await GetChannels(info, CancellationToken.None).ConfigureAwait(false);
+            await GetChannels(info, false, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

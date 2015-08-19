@@ -701,10 +701,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .detailSectionHeaderButton {
-    position: absolute;
-    right: 0;
-    margin-top: 0;
-    margin-bottom: 0;
+    margin-left: 1em;
 }
 
 .lblDetailTab {
