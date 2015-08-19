@@ -138,8 +138,9 @@ namespace MediaBrowser.Api.Music
         public object Get(GetInstantMixFromArtist request)
         {
             var user = _userManager.GetUserById(request.UserId);
+            var artist = _libraryManager.GetArtist(request.Name);
 
-            var items = _musicManager.GetInstantMixFromArtist(request.Name, user);
+            var items = _musicManager.GetInstantMixFromArtist(artist, user);
 
             return GetResult(items, user, request);
         }

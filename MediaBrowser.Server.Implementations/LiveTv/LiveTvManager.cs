@@ -1,5 +1,4 @@
-﻿using System.IO;
-using MediaBrowser.Common;
+﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
@@ -26,6 +25,7 @@ using MoreLinq;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,8 +58,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             new ConcurrentDictionary<string, LiveStreamData>();
 
         private readonly SemaphoreSlim _refreshRecordingsLock = new SemaphoreSlim(1, 1);
-
-        private readonly ConcurrentDictionary<Guid, Guid> _refreshedPrograms = new ConcurrentDictionary<Guid, Guid>();
 
         private readonly List<ITunerHost> _tunerHosts = new List<ITunerHost>();
         private readonly List<IListingsProvider> _listingProviders = new List<IListingsProvider>();
@@ -253,7 +251,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var now = DateTime.UtcNow;
 
-            var programs = _libraryManager.GetItems(new InternalItemsQuery
+            var programs = _libraryManager.QueryItems(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 MaxStartDate = now,
@@ -799,7 +797,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
             }
 
-            IEnumerable<LiveTvProgram> programs = _libraryManager.GetItems(internalQuery).Items.Cast<LiveTvProgram>();
+            IEnumerable<LiveTvProgram> programs = _libraryManager.QueryItems(internalQuery).Items.Cast<LiveTvProgram>();
 
             programs = _libraryManager.Sort(programs, user, query.SortBy, query.SortOrder ?? SortOrder.Ascending)
                 .Cast<LiveTvProgram>();
@@ -869,7 +867,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
             }
 
-            IEnumerable<LiveTvProgram> programs = _libraryManager.GetItems(internalQuery).Items.Cast<LiveTvProgram>();
+            IEnumerable<LiveTvProgram> programs = _libraryManager.QueryItems(internalQuery).Items.Cast<LiveTvProgram>();
 
             var programList = programs.ToList();
 
@@ -1080,8 +1078,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             await CleanDatabaseInternal(newChannelIdList, new[] { typeof(LiveTvChannel).Name }, progress, cancellationToken).ConfigureAwait(false);
             await CleanDatabaseInternal(newProgramIdList, new[] { typeof(LiveTvProgram).Name }, progress, cancellationToken).ConfigureAwait(false);
-
-            _refreshedPrograms.Clear();
 
             // Load these now which will prefetch metadata
             var dtoOptions = new DtoOptions();

@@ -3,12 +3,14 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
@@ -244,10 +246,6 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// The _items by name path
-        /// </summary>
-        private string _itemsByNamePath;
-        /// <summary>
         /// The _season zero display name
         /// </summary>
         private string _seasonZeroDisplayName;
@@ -260,7 +258,6 @@ namespace MediaBrowser.Server.Implementations.Library
         private void RecordConfigurationValues(ServerConfiguration configuration)
         {
             _seasonZeroDisplayName = configuration.SeasonZeroDisplayName;
-            _itemsByNamePath = ConfigurationManager.ApplicationPaths.ItemsByNamePath;
             _wizardCompleted = configuration.IsStartupWizardCompleted;
         }
 
@@ -273,56 +270,24 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var config = ConfigurationManager.Configuration;
 
-            var ibnPathChanged = !string.Equals(_itemsByNamePath, ConfigurationManager.ApplicationPaths.ItemsByNamePath, StringComparison.Ordinal);
-
-            if (ibnPathChanged)
-            {
-                RemoveItemsByNameFromCache();
-            }
-
             var newSeasonZeroName = ConfigurationManager.Configuration.SeasonZeroDisplayName;
             var seasonZeroNameChanged = !string.Equals(_seasonZeroDisplayName, newSeasonZeroName, StringComparison.Ordinal);
             var wizardChanged = config.IsStartupWizardCompleted != _wizardCompleted;
 
             RecordConfigurationValues(config);
 
-            Task.Run(async () =>
+            if (seasonZeroNameChanged || wizardChanged)
             {
-                if (seasonZeroNameChanged)
+                _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
+            }
+
+            if (seasonZeroNameChanged)
+            {
+                Task.Run(async () =>
                 {
                     await UpdateSeasonZeroNames(newSeasonZeroName, CancellationToken.None).ConfigureAwait(false);
-                }
 
-                if (seasonZeroNameChanged || ibnPathChanged || wizardChanged)
-                {
-                    _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
-                }
-            });
-        }
-
-        private void RemoveItemsByNameFromCache()
-        {
-            RemoveItemsFromCache(i => i is Person);
-            RemoveItemsFromCache(i => i is Year);
-            RemoveItemsFromCache(i => i is Genre);
-            RemoveItemsFromCache(i => i is MusicGenre);
-            RemoveItemsFromCache(i => i is GameGenre);
-            RemoveItemsFromCache(i => i is Studio);
-            RemoveItemsFromCache(i =>
-            {
-                var artist = i as MusicArtist;
-                return artist != null && artist.IsAccessedByName;
-            });
-        }
-
-        private void RemoveItemsFromCache(Func<BaseItem, bool> remove)
-        {
-            var items = _libraryItemsCache.ToList().Where(i => remove(i.Value)).ToList();
-
-            foreach (var item in items)
-            {
-                BaseItem value;
-                _libraryItemsCache.TryRemove(item.Key, out value);
+                });
             }
         }
 
@@ -374,6 +339,21 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void RegisterItem(Guid id, BaseItem item)
         {
+            if (item is LiveTvProgram)
+            {
+                return;
+            }
+            if (item is IChannelItem)
+            {
+                return;
+            }
+            if (item is IItemByName)
+            {
+                if (!(item is MusicArtist))
+                {
+                    return;
+                }
+            }
             LibraryItemsCache.AddOrUpdate(id, item, delegate { return item; });
         }
 
@@ -951,11 +931,14 @@ namespace MediaBrowser.Server.Implementations.Library
                     DateModified = DateTime.UtcNow,
                     Path = path
                 };
-            }
 
-            if (isArtist)
-            {
-                (item as MusicArtist).IsAccessedByName = true;
+                if (isArtist)
+                {
+                    (item as MusicArtist).IsAccessedByName = true;
+                }
+
+                var task = item.UpdateToRepository(ItemUpdateType.None, CancellationToken.None);
+                Task.WaitAll(task);
             }
 
             return item;
@@ -1257,6 +1240,11 @@ namespace MediaBrowser.Server.Implementations.Library
             {
                 Items = items
             };
+        }
+
+        public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
+        {
+            return ItemRepository.GetItems(query);
         }
 
         public List<Guid> GetItemIds(InternalItemsQuery query)

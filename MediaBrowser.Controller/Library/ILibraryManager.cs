@@ -502,5 +502,12 @@ namespace MediaBrowser.Controller.Library
         /// <param name="query">The query.</param>
         /// <returns>List&lt;System.String&gt;.</returns>
         List<string> GetPeopleNames(InternalPeopleQuery query);
+
+        /// <summary>
+        /// Queries the items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
+        QueryResult<BaseItem> QueryItems(InternalItemsQuery query);
     }
 }

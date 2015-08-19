@@ -16,10 +16,10 @@ namespace MediaBrowser.Controller.Library
         /// <summary>
         /// Gets the instant mix from artist.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="artist">The artist.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{Audio}.</returns>
-        IEnumerable<Audio> GetInstantMixFromArtist(string name, User user);
+        IEnumerable<Audio> GetInstantMixFromArtist(MusicArtist artist, User user);
         /// <summary>
         /// Gets the instant mix from genre.
         /// </summary>

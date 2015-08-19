@@ -27,10 +27,8 @@ namespace MediaBrowser.Server.Implementations.Library
             return list.Concat(GetInstantMixFromGenres(item.Genres, user));
         }
 
-        public IEnumerable<Audio> GetInstantMixFromArtist(string name, User user)
+        public IEnumerable<Audio> GetInstantMixFromArtist(MusicArtist artist, User user)
         {
-            var artist = _libraryManager.GetArtist(name);
-
             var genres = user.RootFolder
                 .GetRecursiveChildren(user, i => i is Audio)
                 .Cast<Audio>()
@@ -107,7 +105,7 @@ namespace MediaBrowser.Server.Implementations.Library
             var artist = item as MusicArtist;
             if (artist != null)
             {
-                return GetInstantMixFromArtist(artist.Name, user);
+                return GetInstantMixFromArtist(artist, user);
             }
 
             var song = item as Audio;

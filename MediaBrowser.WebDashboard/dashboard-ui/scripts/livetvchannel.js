@@ -19,7 +19,7 @@
 
             if (startDateText != currentIndexValue) {
 
-                html += '<h1 tvProgramSectionHeader" style="margin-bottom:1em;">' + startDateText + '</h1>';
+                html += '<h1 tvProgramSectionHeader" style="margin-bottom:1em;margin-top:2em;">' + startDateText + '</h1>';
                 currentIndexValue = startDateText;
             }
 

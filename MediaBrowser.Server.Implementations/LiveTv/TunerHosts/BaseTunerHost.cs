@@ -176,7 +176,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
                     if (stream != null)
                     {
-                        return null;
+                        return stream;
                     }
                 }
             }
@@ -184,7 +184,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             throw new LiveTvConflictException();
         }
 
-        protected abstract Task<bool> IsAvailable(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken);
+        protected async Task<bool> IsAvailable(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                return await IsAvailableInternal(tuner, channelId, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Error checking tuner availability", ex);
+                return false;
+            }
+        }
+
+        protected abstract Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken);
 
         protected abstract bool IsValidChannelId(string channelId);
 
