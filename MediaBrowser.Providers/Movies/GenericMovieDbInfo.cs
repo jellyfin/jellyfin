@@ -185,18 +185,25 @@ namespace MediaBrowser.Providers.Movies
             //release date and certification are retrieved based on configured country and we fall back on US if not there and to minimun release date if still no match
             if (movieData.releases != null && movieData.releases.countries != null)
             {
-                var ourRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals(preferredCountryCode, StringComparison.OrdinalIgnoreCase)) ?? new MovieDbProvider.Country();
-                var usRelease = movieData.releases.countries.FirstOrDefault(c => c.iso_3166_1.Equals("US", StringComparison.OrdinalIgnoreCase)) ?? new MovieDbProvider.Country();
-                var minimunRelease = movieData.releases.countries.OrderBy(c => c.release_date).FirstOrDefault() ?? new MovieDbProvider.Country();
+                var releases = movieData.releases.countries.Where(i => !string.IsNullOrWhiteSpace(i.certification)).ToList();
 
-                var ratingPrefix = string.Equals(preferredCountryCode, "us", StringComparison.OrdinalIgnoreCase) ? "" : preferredCountryCode + "-";
-                movie.OfficialRating = !string.IsNullOrEmpty(ourRelease.certification)
-                                           ? ratingPrefix + ourRelease.certification
-                                           : !string.IsNullOrEmpty(usRelease.certification)
-                                                 ? usRelease.certification
-                                                 : !string.IsNullOrEmpty(minimunRelease.certification)
-                                                       ? minimunRelease.iso_3166_1 + "-" + minimunRelease.certification
-                                                       : null;
+                var ourRelease = releases.FirstOrDefault(c => c.iso_3166_1.Equals(preferredCountryCode, StringComparison.OrdinalIgnoreCase));
+                var usRelease = releases.FirstOrDefault(c => c.iso_3166_1.Equals("US", StringComparison.OrdinalIgnoreCase));
+                var minimunRelease = releases.OrderBy(c => c.release_date).FirstOrDefault();
+
+                if (ourRelease != null)
+                {
+                    var ratingPrefix = string.Equals(preferredCountryCode, "us", StringComparison.OrdinalIgnoreCase) ? "" : preferredCountryCode + "-";
+                    movie.OfficialRating = ratingPrefix + ourRelease.certification;
+                }
+                else if (usRelease != null)
+                {
+                    movie.OfficialRating = usRelease.certification;
+                }
+                else if (minimunRelease != null)
+                {
+                    movie.OfficialRating = minimunRelease.iso_3166_1 + "-" + minimunRelease.certification;
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(movieData.release_date))
@@ -232,7 +239,7 @@ namespace MediaBrowser.Providers.Movies
             }
 
             resultItem.ResetPeople();
-            
+
             //Actors, Directors, Writers - all in People
             //actors come from cast
             if (movieData.casts != null && movieData.casts.cast != null)

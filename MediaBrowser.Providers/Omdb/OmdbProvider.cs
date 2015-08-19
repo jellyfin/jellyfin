@@ -28,7 +28,7 @@ namespace MediaBrowser.Providers.Omdb
             Current = this;
         }
 
-        public async Task Fetch(BaseItem item, string imdbId, string language, CancellationToken cancellationToken)
+        public async Task Fetch(BaseItem item, string imdbId, string language, string country, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(imdbId))
             {
@@ -55,7 +55,11 @@ namespace MediaBrowser.Providers.Omdb
                 if (string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
                 {
                     item.Name = result.Title;
-                    item.OfficialRating = result.Rated;
+
+                    if (string.Equals(country, "us", StringComparison.OrdinalIgnoreCase))
+                    {
+                        item.OfficialRating = result.Rated;
+                    }
                 }
 
                 int year;

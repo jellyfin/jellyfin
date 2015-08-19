@@ -21,17 +21,15 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets the channels.
         /// </summary>
-        /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;IEnumerable&lt;ChannelInfo&gt;&gt;.</returns>
-        Task<IEnumerable<ChannelInfo>> GetChannels(TunerHostInfo info, CancellationToken cancellationToken);
+        Task<IEnumerable<ChannelInfo>> GetChannels(CancellationToken cancellationToken);
         /// <summary>
         /// Gets the tuner infos.
         /// </summary>
-        /// <param name="info">The information.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;List&lt;LiveTvTunerInfo&gt;&gt;.</returns>
-        Task<List<LiveTvTunerInfo>> GetTunerInfos(TunerHostInfo info, CancellationToken cancellationToken);
+        Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken);
         /// <summary>
         /// Gets the channel stream.
         /// </summary>

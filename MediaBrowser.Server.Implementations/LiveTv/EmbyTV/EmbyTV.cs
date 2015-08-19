@@ -88,11 +88,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             var status = new LiveTvServiceStatusInfo();
             var list = new List<LiveTvTunerInfo>();
 
-            foreach (var hostInstance in GetTunerHosts())
+            foreach (var hostInstance in _liveTvManager.TunerHosts)
             {
                 try
                 {
-                    var tuners = await hostInstance.Item1.GetTunerInfos(hostInstance.Item2, cancellationToken).ConfigureAwait(false);
+                    var tuners = await hostInstance.GetTunerInfos(cancellationToken).ConfigureAwait(false);
 
                     list.AddRange(tuners);
                 }
@@ -120,11 +120,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             var list = new List<ChannelInfo>();
 
-            foreach (var hostInstance in GetTunerHosts())
+            foreach (var hostInstance in _liveTvManager.TunerHosts)
             {
                 try
                 {
-                    var channels = await hostInstance.Item1.GetChannels(hostInstance.Item2, cancellationToken).ConfigureAwait(false);
+                    var channels = await hostInstance.GetChannels(cancellationToken).ConfigureAwait(false);
 
                     list.AddRange(channels);
                 }
