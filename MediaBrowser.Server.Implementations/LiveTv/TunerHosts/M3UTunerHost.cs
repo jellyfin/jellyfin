@@ -15,9 +15,13 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 {
-    public class M3UTunerHost : ITunerHost
+    public class M3UTunerHost : BaseTunerHost, ITunerHost
     {
-        public string Type
+        public M3UTunerHost(IConfigurationManager config, ILogger logger) : base(config, logger)
+        {
+        }
+
+        public override string Type
         {
             get { return "m3u"; }
         }
@@ -27,47 +31,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             get { return "M3U Tuner"; }
         }
 
-        private readonly IConfigurationManager _config;
-        private readonly ILogger _logger;
-
-        public M3UTunerHost(IConfigurationManager config, ILogger logger)
+        protected override async Task<IEnumerable<ChannelInfo>> GetChannelsInternal(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            _config = config;
-            _logger = logger;
-        }
-
-        private List<TunerHostInfo> GetTunerHosts()
-        {
-            return GetConfiguration().TunerHosts
-                .Where(i => i.IsEnabled && string.Equals(i.Type, Type, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
-
-        public async Task<IEnumerable<ChannelInfo>> GetChannels(CancellationToken cancellationToken)
-        {
-            var list = new List<ChannelInfo>();
-
-            var urls = GetTunerHosts().Select(i => i.Url)
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .Distinct(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var url in urls)
-            {
-                try
-                {
-                    list.AddRange(await GetChannels(url, cancellationToken).ConfigureAwait(false));
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error getting channel list", ex);
-                }
-            }
-
-            return list;
-        }
-
-        private Task<IEnumerable<ChannelInfo>> GetChannels(string url, CancellationToken cancellationToken)
-        {
+            var url = info.Url;
             var urlHash = url.GetMD5().ToString("N");
 
             int position = 0;
@@ -135,7 +101,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
                 }
             }
             file.Close();
-            return Task.FromResult((IEnumerable<ChannelInfo>)channels);
+            return channels;
         }
 
         public Task<List<LiveTvTunerInfo>> GetTunerInfos(CancellationToken cancellationToken)
@@ -155,11 +121,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             return Task.FromResult(list);
         }
 
-        private LiveTvOptions GetConfiguration()
-        {
-            return _config.GetConfiguration<LiveTvOptions>("livetv");
-        }
-
         public async Task<MediaSourceInfo> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
         {
             var urlHash = info.Url.GetMD5().ToString("N");
@@ -170,7 +131,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
 
             channelId = channelId.Substring(urlHash.Length);
 
-            var channels = await GetChannels(info.Url, cancellationToken).ConfigureAwait(false);
+            var channels = await GetChannels(info, true, cancellationToken).ConfigureAwait(false);
             var m3uchannels = channels.Cast<M3UChannel>();
             var channel = m3uchannels.FirstOrDefault(c => c.Id == channelId);
             if (channel != null)

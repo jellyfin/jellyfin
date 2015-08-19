@@ -348,6 +348,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             {
                 info.Genres = details.genres.Where(g => !string.IsNullOrWhiteSpace(g)).ToList();
                 info.IsNews = details.genres.Contains("news", StringComparer.OrdinalIgnoreCase);
+
+                if (info.Genres.Contains("children", StringComparer.OrdinalIgnoreCase))
+                {
+                    info.IsKids = true;
+                }
             }
 
             return info;
