@@ -132,6 +132,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 {
                     StreamReader innerReader = new StreamReader(innerResponse.Content);
                     responseString = innerReader.ReadToEnd();
+
                     var programDetails =
                         _jsonSerializer.DeserializeFromString<List<ScheduleDirect.ProgramDetails>>(
                             responseString);
@@ -142,10 +143,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     var schedules = dailySchedules.SelectMany(d => d.programs);
                     foreach (ScheduleDirect.Program schedule in schedules)
                     {
-                        _logger.Debug("Proccesing Schedule for statio ID " + stationID +
-                                      " which corresponds to channel " + channelNumber + " and program id " +
-                                      schedule.programID + " which says it has images? " +
-                                      programDict[schedule.programID].hasImageArtwork);
+                        //_logger.Debug("Proccesing Schedule for statio ID " + stationID +
+                        //              " which corresponds to channel " + channelNumber + " and program id " +
+                        //              schedule.programID + " which says it has images? " +
+                        //              programDict[schedule.programID].hasImageArtwork);
 
                         var imageIndex = images.FindIndex(i => i.programID == schedule.programID.Substring(0, 10));
                         if (imageIndex > -1)
@@ -244,7 +245,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 CultureInfo.InvariantCulture);
             DateTime endAt = startAt.AddSeconds(programInfo.duration);
             ProgramAudio audioType = ProgramAudio.Stereo;
-            bool hdtv = false;
+
             bool repeat = (programInfo.@new == null);
             string newID = programInfo.programID + "T" + startAt.Ticks + "C" + channel;
 
@@ -268,43 +269,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 }
             }
 
-            if ((programInfo.videoProperties != null))
-            {
-                hdtv = programInfo.videoProperties.Exists(item => item == "hdtv");
-            }
-
-            string desc = "";
-            if (details.descriptions != null)
-            {
-                if (details.descriptions.description1000 != null)
-                {
-                    desc = details.descriptions.description1000[0].description;
-                }
-                else if (details.descriptions.description100 != null)
-                {
-                    desc = details.descriptions.description100[0].description;
-                }
-            }
-            ScheduleDirect.Gracenote gracenote;
             string episodeTitle = null;
-            if (details.metadata != null)
-            {
-                gracenote = details.metadata.Find(x => x.Gracenote != null).Gracenote;
-                if ((details.showType ?? "No ShowType") == "Series")
-                {
-                    episodeTitle = "Season: " + gracenote.season + " Episode: " + gracenote.episode;
-                }
-            }
             if (details.episodeTitle150 != null)
             {
-                episodeTitle = ((episodeTitle ?? string.Empty) + " " + details.episodeTitle150).Trim();
+                episodeTitle = details.episodeTitle150;
             }
 
-            var imageLink = "";
+            string imageUrl = null;
 
             if (details.hasImageArtwork)
             {
-                imageLink = details.images;
+                imageUrl = details.images;
             }
 
             var showType = details.showType ?? string.Empty;
@@ -313,7 +288,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             {
                 ChannelId = channel,
                 Id = newID,
-                Overview = desc,
                 StartDate = startAt,
                 EndDate = endAt,
                 Name = details.titles[0].title120 ?? "Unkown",
@@ -321,23 +295,48 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 CommunityRating = null,
                 EpisodeTitle = episodeTitle,
                 Audio = audioType,
-                IsHD = hdtv,
                 IsRepeat = repeat,
                 IsSeries = showType.IndexOf("series", StringComparison.OrdinalIgnoreCase) != -1,
-                ImageUrl = imageLink,
+                ImageUrl = imageUrl,
                 HasImage = details.hasImageArtwork,
-                IsNews = false,
-                IsKids = false,
+                IsKids = string.Equals(details.audience, "children", StringComparison.OrdinalIgnoreCase),
                 IsSports = showType.IndexOf("sports", StringComparison.OrdinalIgnoreCase) != -1,
-                IsLive = false,
                 IsMovie = showType.IndexOf("movie", StringComparison.OrdinalIgnoreCase) != -1 || showType.IndexOf("film", StringComparison.OrdinalIgnoreCase) != -1,
-                IsPremiere = false,
                 ShowId = programInfo.programID
             };
+
+            if (programInfo.videoProperties != null)
+            {
+                info.IsHD = programInfo.videoProperties.Contains("hdtv", StringComparer.OrdinalIgnoreCase);
+            }
+
+            if (details.contentRating != null && details.contentRating.Count > 0)
+            {
+                info.OfficialRating = details.contentRating[0].code.Replace("TV", "TV-").Replace("--", "-");
+            }
+
+            if (details.descriptions != null)
+            {
+                if (details.descriptions.description1000 != null)
+                {
+                    info.Overview = details.descriptions.description1000[0].description;
+                }
+                else if (details.descriptions.description100 != null)
+                {
+                    info.ShortOverview = details.descriptions.description100[0].description;
+                }
+            }
 
             if (info.IsSeries)
             {
                 info.SeriesId = programInfo.programID.Substring(0, 10);
+
+                if (details.metadata != null)
+                {
+                    var gracenote = details.metadata.Find(x => x.Gracenote != null).Gracenote;
+                    info.SeasonNumber = gracenote.season;
+                    info.EpisodeNumber = gracenote.episode;
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(details.originalAirDate))
@@ -349,8 +348,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             {
                 info.Genres = details.genres.Where(g => !string.IsNullOrWhiteSpace(g)).ToList();
                 info.IsNews = details.genres.Contains("news", StringComparer.OrdinalIgnoreCase);
-                info.IsKids = false;
             }
+
             return info;
         }
 
@@ -888,6 +887,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             public class ProgramDetails
             {
+                public string audience { get; set; }
                 public string programID { get; set; }
                 public List<Title> titles { get; set; }
                 public EventDetails eventDetails { get; set; }
