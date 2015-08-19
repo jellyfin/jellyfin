@@ -210,7 +210,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             throw new NotImplementedException();
         }
 
-        protected override Task<bool> IsAvailable(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
+        protected override Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
         }

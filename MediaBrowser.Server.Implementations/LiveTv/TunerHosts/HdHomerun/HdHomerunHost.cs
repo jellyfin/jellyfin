@@ -128,7 +128,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
                             var name = line.Substring(0, index - 1);
                             var currentChannel = line.Substring(index + 7);
                             if (currentChannel != "none") { status = LiveTvTunerStatus.LiveTv; } else { status = LiveTvTunerStatus.Available; }
-                            tuners.Add(new LiveTvTunerInfo()
+                            tuners.Add(new LiveTvTunerInfo
                             {
                                 Name = name,
                                 SourceType = string.IsNullOrWhiteSpace(model) ? Name : model,
@@ -385,10 +385,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
             await GetChannels(info, false, CancellationToken.None).ConfigureAwait(false);
         }
 
-        protected override async Task<bool> IsAvailable(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
+        protected override async Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)
         {
-            // TODO
-            return true;
+            var info = await GetTunerInfos(tuner, cancellationToken).ConfigureAwait(false);
+
+            return info.Any(i => i.Status == LiveTvTunerStatus.Available);
         }
     }
 }
