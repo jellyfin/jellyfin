@@ -1,6 +1,5 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
-using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
@@ -13,7 +12,6 @@ using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -159,20 +157,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         public Task<IEnumerable<ChannelInfo>> GetChannelsAsync(CancellationToken cancellationToken)
         {
             return GetChannelsAsync(false, cancellationToken);
-        }
-
-        private List<Tuple<ITunerHost, TunerHostInfo>> GetTunerHosts()
-        {
-            return GetConfiguration().TunerHosts
-                .Where(i => i.IsEnabled)
-                .Select(i =>
-                {
-                    var provider = _liveTvManager.TunerHosts.FirstOrDefault(l => string.Equals(l.Type, i.Type, StringComparison.OrdinalIgnoreCase));
-
-                    return provider == null ? null : new Tuple<ITunerHost, TunerHostInfo>(provider, i);
-                })
-                .Where(i => i != null)
-                .ToList();
         }
 
         public Task CancelSeriesTimerAsync(string timerId, CancellationToken cancellationToken)
@@ -409,22 +393,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             _logger.Info("Streaming Channel " + channelId);
 
-            foreach (var hostInstance in GetTunerHosts())
+            foreach (var hostInstance in _liveTvManager.TunerHosts)
             {
-                if (!string.IsNullOrWhiteSpace(streamId))
-                {
-                    var originalStreamId = string.Join("-", streamId.Split('-').Skip(1).ToArray());
-
-                    if (!string.Equals(hostInstance.Item2.Id, originalStreamId, StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-                }
-
                 MediaSourceInfo mediaSourceInfo = null;
                 try
                 {
-                    mediaSourceInfo = await hostInstance.Item1.GetChannelStream(hostInstance.Item2, channelId, streamId, cancellationToken).ConfigureAwait(false);
+                    mediaSourceInfo = await hostInstance.GetChannelStream(channelId, streamId, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -443,16 +417,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public async Task<List<MediaSourceInfo>> GetChannelStreamMediaSources(string channelId, CancellationToken cancellationToken)
         {
-            foreach (var hostInstance in GetTunerHosts())
+            foreach (var hostInstance in _liveTvManager.TunerHosts)
             {
                 try
                 {
-                    var sources = await hostInstance.Item1.GetChannelStreamMediaSources(hostInstance.Item2, channelId, cancellationToken).ConfigureAwait(false);
-
-                    foreach (var source in sources)
-                    {
-                        source.Id = hostInstance.Item2.Id + "-" + source.Id;
-                    }
+                    var sources = await hostInstance.GetChannelStreamMediaSources(channelId, cancellationToken).ConfigureAwait(false);
 
                     if (sources.Count > 0)
                     {
