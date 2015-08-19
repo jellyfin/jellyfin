@@ -117,7 +117,16 @@ namespace MediaBrowser.Api.UserLibrary
             if (!string.IsNullOrEmpty(request.Ids))
             {
                 request.Recursive = true;
-                var result = await ((Folder)item).GetItems(GetItemsQuery(request, user)).ConfigureAwait(false);
+                var query = GetItemsQuery(request, user);
+                var result = await ((Folder)item).GetItems(query).ConfigureAwait(false);
+
+                if (string.IsNullOrWhiteSpace(request.SortBy))
+                {
+                    var ids = query.ItemIds.ToList();
+
+                    // Try to preserve order
+                    result.Items = result.Items.OrderBy(i => ids.IndexOf(i.Id.ToString("N"))).ToArray();
+                }
 
                 return new Tuple<QueryResult<BaseItem>, bool>(result, true);
             }
