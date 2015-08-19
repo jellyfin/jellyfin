@@ -1173,22 +1173,22 @@ var Dashboard = {
         var type = (cmd.ItemType || "").toLowerCase();
 
         if (type == "genre") {
-            url = "itembynamedetails.html?id=" + cmd.ItemId;
+            url = "itemdetails.html?id=" + cmd.ItemId;
         }
         else if (type == "musicgenre") {
-            url = "itembynamedetails.html?id=" + cmd.ItemId;
+            url = "itemdetails.html?id=" + cmd.ItemId;
         }
         else if (type == "gamegenre") {
-            url = "itembynamedetails.html?id=" + cmd.ItemId;
+            url = "itemdetails.html?id=" + cmd.ItemId;
         }
         else if (type == "studio") {
-            url = "itembynamedetails.html?id=" + cmd.ItemId;
+            url = "itemdetails.html?id=" + cmd.ItemId;
         }
         else if (type == "person") {
-            url = "itembynamedetails.html?id=" + cmd.ItemId;
+            url = "itemdetails.html?id=" + cmd.ItemId;
         }
         else if (type == "musicartist") {
-            url = "itembynamedetails.html?id=" + cmd.ItemId;
+            url = "itemdetails.html?id=" + cmd.ItemId;
         }
 
         if (url) {

@@ -1,6 +1,6 @@
 {
   "name": "paper-menu-button",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "authors": [
     "The Polymer Authors"
@@ -41,11 +41,11 @@
     "iron-image": "polymerelements/iron-image#^1.0.0",
     "iron-icon": "polymerelements/iron-icon#^1.0.0"
   },
-  "_release": "1.0.2",
+  "_release": "1.0.3",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.2",
-    "commit": "cf8bdea832bfa7b4f413e021ecb328273d659b17"
+    "tag": "v1.0.3",
+    "commit": "24abacffd443f967125f5eae580eadc7b90f41c7"
   },
   "_source": "git://github.com/polymerelements/paper-menu-button.git",
   "_target": "^1.0.0",

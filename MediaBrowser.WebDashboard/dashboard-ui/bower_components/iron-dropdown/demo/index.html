@@ -85,7 +85,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div class="horizontal-section flex layout horizontal">
       <x-select>
         <button class="dropdown-trigger">Basic</button>
-        <ul class="dropdown-content">
+        <ul class="dropdown-content" tabindex="0">
           <template is="dom-repeat" items="[[letters]]">
             <li><a href="javascript:void(0)">[[item]]</a></li>
           </template>
@@ -101,7 +101,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </x-select>
       <x-select vertical-align="bottom">
         <button class="dropdown-trigger">Bottom-left Aligned</button>
-        <ul class="dropdown-content">
+        <ul class="dropdown-content" tabindex="0">
           <template is="dom-repeat" items="[[letters]]">
             <li><a href="javascript:void(0)">[[item]]</a></li>
           </template>
@@ -109,7 +109,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </x-select>
       <x-select horizontal-align="right" vertical-align="top">
         <button class="dropdown-trigger">Top-right Aligned</button>
-        <ul class="dropdown-content">
+        <ul class="dropdown-content" tabindex="0">
           <template is="dom-repeat" items="[[dinosaurs]]">
             <li><a href="javascript:void(0)">[[item]]</a></li>
           </template>

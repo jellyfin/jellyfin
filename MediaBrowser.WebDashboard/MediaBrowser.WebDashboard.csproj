@@ -1938,9 +1938,6 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dashboard-ui\itembynamedetails.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="dashboard-ui\scripts\tvgenres.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

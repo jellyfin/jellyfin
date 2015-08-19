@@ -106,7 +106,7 @@
                 html += '<a href="itemlist.html?id=' + rRow.Id + '">' + rItem.Name + '</a>';
                 break;
             case "ItemByNameDetails":
-                html += '<a href="itembynamedetails.html?id=' + rItem.Id + '&context=' + rRow.RowType + '">' + rItem.Name + '</a>';
+                html += '<a href="itemdetails.html?id=' + rItem.Id + '&context=' + rRow.RowType + '">' + rItem.Name + '</a>';
                 break;
             case "EmbeddedImage":
                 if (rRow.HasEmbeddedImage) {
@@ -237,7 +237,7 @@
                     var rItem = group.Items[j];
                     html += '<a class="item ui-btn"';
                     if (rItem.Id > "")
-                        html += ' href="itembynamedetails.html?id=' + rItem.Id + '"';
+                        html += ' href="itemdetails.html?id=' + rItem.Id + '"';
                     html += '>' + rItem.Name + '&nbsp;' + '</a>';
                     html += '<a title="" class="listviewMenuButton ui-btn ui-btn-inline">' + rItem.Value + '&nbsp;' + '</a>';
                 }

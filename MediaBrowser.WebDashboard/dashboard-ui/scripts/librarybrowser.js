@@ -428,7 +428,7 @@
                 var artist = artists[i];
 
                 var css = cssClass ? (' class="' + cssClass + '"') : '';
-                html.push('<a' + css + ' href="itembynamedetails.html?context=music&id=' + artist.Id + '">' + artist.Name + '</a>');
+                html.push('<a' + css + ' href="itemdetails.html?context=music&id=' + artist.Id + '">' + artist.Name + '</a>');
 
             }
 
@@ -824,26 +824,26 @@
                 return "itemdetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "Genre") {
-                return "itembynamedetails.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "MusicGenre") {
-                return "itembynamedetails.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "GameGenre") {
-                return "itembynamedetails.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "Studio") {
-                return "itembynamedetails.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "Person") {
-                return "itembynamedetails.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id + contextSuffix;
             }
             if (item.Type == "Recording") {
                 return "itemdetails.html?id=" + id;
             }
 
             if (item.Type == "MusicArtist") {
-                return "itembynamedetails.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id + contextSuffix;
             }
 
             if (item.IsFolder) {
@@ -3176,7 +3176,7 @@
                     if (isStatic) {
                         html += item.Studios[i].Name;
                     } else {
-                        html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&id=' + item.Studios[i].Id + '">' + item.Studios[i].Name + '</a>';
+                        html += '<a class="textlink" href="itemdetails.html?context=' + context + '&id=' + item.Studios[i].Id + '">' + item.Studios[i].Name + '</a>';
                     }
                 }
 
@@ -3217,7 +3217,7 @@
                 if (isStatic) {
                     html += genres[i];
                 } else {
-                    html += '<a class="textlink" href="itembynamedetails.html?context=' + context + '&' + param + '=' + ApiClient.encodeName(genres[i]) + '">' + genres[i] + '</a>';
+                    html += '<a class="textlink" href="itemdetails.html?context=' + context + '&' + param + '=' + ApiClient.encodeName(genres[i]) + '">' + genres[i] + '</a>';
                 }
             }
 

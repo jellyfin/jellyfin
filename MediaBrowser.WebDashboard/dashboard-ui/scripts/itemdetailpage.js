@@ -2,13 +2,47 @@
 
     var currentItem;
 
-    function reload(page) {
+    function getPromise() {
 
         var id = getParameterByName('id');
 
+        if (id) {
+            return ApiClient.getItem(Dashboard.getCurrentUserId(), id);
+        }
+
+        var name = getParameterByName('genre');
+
+        if (name) {
+            return ApiClient.getGenre(name, Dashboard.getCurrentUserId());
+        }
+
+        name = getParameterByName('musicgenre');
+
+        if (name) {
+            return ApiClient.getMusicGenre(name, Dashboard.getCurrentUserId());
+        }
+
+        name = getParameterByName('gamegenre');
+
+        if (name) {
+            return ApiClient.getGameGenre(name, Dashboard.getCurrentUserId());
+        }
+
+        name = getParameterByName('musicartist');
+
+        if (name) {
+            return ApiClient.getArtist(name, Dashboard.getCurrentUserId());
+        }
+        else {
+            throw new Error('Invalid request');
+        }
+    }
+
+    function reload(page) {
+
         Dashboard.showLoadingMsg();
 
-        ApiClient.getItem(Dashboard.getCurrentUserId(), id).done(function (item) {
+        getPromise().done(function (item) {
 
             reloadFromItem(page, item);
         });
@@ -251,6 +285,11 @@
             $('#childrenCollapsible', page).removeClass('hide');
             renderChannelGuide(page, item, user);
         }
+        else if (item.Type == 'Studio' || item.Type == 'Person' || item.Type == 'Genre' || item.Type == 'MusicGenre' || item.Type == 'GameGenre' || item.Type == 'MusicArtist') {
+
+            $('#childrenCollapsible', page).removeClass('hide');
+            renderItemsByName(page, item, user);
+        }
         else if (item.IsFolder) {
 
             if (item.Type == "BoxSet") {
@@ -460,7 +499,7 @@
 
             var artist = artists[i];
 
-            html.push('<a class="textlink" href="itembynamedetails.html?context=' + context + '&id=' + artist.Id + '">' + artist.Name + '</a>');
+            html.push('<a class="textlink" href="itemdetails.html?context=' + context + '&id=' + artist.Id + '">' + artist.Name + '</a>');
 
         }
 
@@ -620,7 +659,7 @@
         }
 
         if (item.Studios.length) {
-            html += ' on <a class="textlink" href="itembynamedetails.html?context=' + context + '&id=' + item.Studios[0].Id + '">' + item.Studios[0].Name + '</a>';
+            html += ' on <a class="textlink" href="itemdetails.html?context=' + context + '&id=' + item.Studios[0].Id + '">' + item.Studios[0].Name + '</a>';
         }
 
         if (html) {
@@ -831,6 +870,15 @@
         } else {
             $('.childrenSectionHeader', page).show();
         }
+    }
+
+    function renderItemsByName(page, item, user) {
+
+        require('scripts/itembynamedetailpage'.split(','), function () {
+
+
+            window.ItemsByName.renderItems(page, item);
+        });
     }
 
     function renderChannelGuide(page, item, user) {
@@ -1438,7 +1486,7 @@
             }
 
             var cast = casts[i];
-            var href = isStatic ? '#' : 'itembynamedetails.html?context=' + context + '&id=' + cast.Id + '';
+            var href = isStatic ? '#' : 'itemdetails.html?context=' + context + '&id=' + cast.Id + '';
             html += '<a class="tileItem smallPosterTileItem" href="' + href + '">';
 
             var imgUrl;

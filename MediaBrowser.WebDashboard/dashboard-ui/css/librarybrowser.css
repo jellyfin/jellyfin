@@ -391,7 +391,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     background-size: cover;
     background-position: center 15%;
     background-repeat: no-repeat;
-    height: 560px;
+    height: 600px;
     position: relative;
 }
 
@@ -527,6 +527,13 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .detailFloatingButton iron-icon {
     width: 40px;
     height: 40px;
+}
+
+@media all and (max-width: 1000px) {
+
+    .detailImageContainer img {
+        max-width: 240px;
+    }
 }
 
 @media all and (max-width: 800px) {
@@ -756,56 +763,56 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 @media all and (max-height: 900px), (max-width: 800px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 500px;
+        height: 550px;
     }
 }
 
 @media all and (max-height: 800px), (max-width: 700px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 400px;
+        height: 450px;
     }
 }
 
 @media all and (max-height: 700px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 300px;
+        height: 350px;
     }
 }
 
 @media all and (max-width: 540px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 240px;
+        height: 290px;
     }
 }
 
 @media all and (max-height: 540px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 200px;
+        height: 250px;
     }
 }
 
 @media all and (max-height: 460px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 150px;
+        height: 200px;
     }
 }
 
 @media all and (max-height: 300px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 100px;
+        height: 150px;
     }
 }
 
 @media all and (max-height: 250px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 70px;
+        height: 120px;
     }
 }
 
@@ -866,6 +873,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         max-width: 180px;
     }
 }
+
 @media all and (min-width: 750px) {
     .detailPageContent {
         width: 950px;

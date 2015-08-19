@@ -417,13 +417,13 @@
                                 Dashboard.navigate('itemdetails.html?id=' + albumid);
                                 break;
                             case 'artist':
-                                Dashboard.navigate('itembynamedetails.html?context=music&id=' + artistid);
+                                Dashboard.navigate('itemdetails.html?context=music&id=' + artistid);
                                 break;
                             case 'play':
                                 MediaController.play(itemId);
                                 break;
                             case 'playallfromhere':
-                                $(card).parents('.itemsContainer').trigger('playallfromhere', [index]);
+                                playAllFromHere(index, $(card).parents('.itemsContainer'), 'play');
                                 break;
                             case 'queue':
                                 MediaController.queue(itemId);
@@ -440,7 +440,7 @@
                                 });
                                 break;
                             case 'queueallfromhere':
-                                $(card).parents('.itemsContainer').trigger('queueallfromhere', [index]);
+                                playAllFromHere(index, $(card).parents('.itemsContainer'), 'queue');
                                 break;
                             case 'sync':
                                 SyncManager.showMenu({
@@ -1145,10 +1145,32 @@
             index = elemWithAttributes.getAttribute('data-index');
             itemsContainer = $(elem).parents('.itemsContainer');
 
-            itemsContainer.trigger('playallfromhere', [index]);
+            playAllFromHere(index, itemsContainer, 'play');
         }
 
         return false;
+    }
+
+    function playAllFromHere(index, itemsContainer, method) {
+
+        var ids = $('.mediaItem', itemsContainer).get().map(function(i) {
+            return i.getAttribute('data-itemid') || i.parentNode.getAttribute('data-itemid');
+        });
+
+        ids = ids.slice(index);
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+            
+            Ids: ids.join(','),
+            Fields: 'MediaSources,Chapters',
+            Limit: 100
+
+        }).done(function (result) {
+
+            MediaController[method]({
+                items: result.Items
+            });
+        });
     }
 
     $(document).on('pageinitdepends', ".libraryPage", function () {

@@ -43,6 +43,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="FocusableContentDropdown">
+    <template>
+      <iron-dropdown>
+        <div class="dropdown-content" tabindex="0">
+          <div class="subcontent" tabindex="0"></div>
+        </div>
+      </iron-dropdown>
+    </template>
+  </test-fixture>
+
   <script>
     function elementIsVisible(element) {
       var contentRect = element.getBoundingClientRect();
@@ -55,20 +65,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     suite('<iron-dropdown>', function() {
       var dropdown;
+      var content;
+
       suite('basic', function() {
         setup(function() {
           dropdown = fixture('TrivialDropdown');
+          content = Polymer.dom(dropdown).querySelector('.dropdown-content');
         });
 
         test('effectively hides the dropdown content', function() {
-          var content = dropdown.querySelector('.dropdown-content');
-
           expect(elementIsVisible(content)).to.be.equal(false);
         });
 
         test('shows dropdown content when opened', function(done) {
-          var content = dropdown.querySelector('.dropdown-content');
-
           dropdown.open();
 
           Polymer.Base.async(function() {
@@ -78,8 +87,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('hides dropdown content when outside is clicked', function(done) {
-          var content = dropdown.querySelector('.dropdown-content');
-
           dropdown.open();
 
           Polymer.Base.async(function() {
@@ -93,7 +100,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               }, 100);
             });
           });
+        });
 
+        suite('when content is focusable', function() {
+          setup(function() {
+            dropdown = fixture('FocusableContentDropdown');
+            content = Polymer.dom(dropdown).querySelector('.dropdown-content');
+          });
+          test('focuses the content when opened', function(done) {
+            dropdown.open();
+
+            Polymer.Base.async(function() {
+              expect(document.activeElement).to.be.equal(content);
+              done();
+            });
+          });
+
+          test('focuses a configured focus target', function(done) {
+            var focusableChild = Polymer.dom(content).querySelector('div[tabindex]');
+            dropdown.focusTarget = focusableChild;
+
+            dropdown.open();
+
+            Polymer.Base.async(function() {
+              expect(document.activeElement).to.not.be.equal(content);
+              expect(document.activeElement).to.be.equal(focusableChild);
+              done();
+            });
+          });
         });
       });
 

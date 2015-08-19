@@ -38,6 +38,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="PreselectedDropdownMenu">
+    <template>
+      <paper-dropdown-menu no-animations>
+        <paper-menu class="dropdown-content" selected="1">
+          <paper-item>Foo</paper-item>
+          <paper-item>Bar</paper-item>
+        </paper-menu>
+      </paper-dropdown-menu>
+    </template>
+  </test-fixture>
+
   <script>
 
     suite('<paper-dropdown-menu>', function() {
@@ -95,6 +106,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             expect(dropdownMenu.selectedItem).to.be.equal(firstItem);
             done();
           });
+        });
+      });
+
+      suite('when a value is preselected', function() {
+        setup(function() {
+          dropdownMenu = fixture('PreselectedDropdownMenu');
+        });
+
+        test('the input area shows the correct selection', function() {
+          var secondItem = Polymer.dom(dropdownMenu).querySelectorAll('paper-item')[1];
+          expect(dropdownMenu.selectedItem).to.be.equal(secondItem);
         });
       });
     });

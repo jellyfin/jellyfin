@@ -101,7 +101,7 @@
                 html += '</div>';
             }
 
-            html += '<paper-icon-button icon="delete" data-timerid="' + timer.Id + '" title="' + Globalize.translate('ButonCancelRecording') + '" class="btnDeleteTimer"></paper-icon-button>';
+            html += '<paper-icon-button icon="cancel" data-timerid="' + timer.Id + '" title="' + Globalize.translate('ButonCancelRecording') + '" class="btnDeleteTimer"></paper-icon-button>';
 
             html += '</paper-icon-item>';
         }

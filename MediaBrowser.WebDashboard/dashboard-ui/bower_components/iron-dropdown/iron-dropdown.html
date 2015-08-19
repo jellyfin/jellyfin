@@ -146,6 +146,14 @@ method is called on the element.
           },
 
           /**
+           * If provided, this will be the element that will be focused when
+           * the dropdown opens.
+           */
+          focusTarget: {
+            type: Object
+          },
+
+          /**
            * Set to true to disable animations when opening and closing the
            * dropdown.
            */
@@ -185,6 +193,17 @@ method is called on the element.
           return Polymer.dom(this.$.content).getDistributedNodes()[0];
         },
 
+        /**
+         * The element that should be focused when the dropdown opens.
+         */
+        get _focusTarget() {
+          return this.focusTarget || this.containedElement;
+        },
+
+        /**
+         * The element that should be used to position the dropdown when
+         * it opens, if no position target is configured.
+         */
         get _defaultPositionTarget() {
           var parent = Polymer.dom(this).parentNode;
 
@@ -195,6 +214,9 @@ method is called on the element.
           return parent;
         },
 
+        /**
+         * The bounding rect of the position target.
+         */
         get _positionRect() {
           if (!this._positionRectMemo && this.positionTarget) {
             this._positionRectMemo = this.positionTarget.getBoundingClientRect();
@@ -203,6 +225,9 @@ method is called on the element.
           return this._positionRectMemo;
         },
 
+        /**
+         * The horizontal offset value used to position the dropdown.
+         */
         get _horizontalAlignTargetValue() {
           var target;
 
@@ -217,6 +242,9 @@ method is called on the element.
           return Math.max(target, 0);
         },
 
+        /**
+         * The vertical offset value used to position the dropdown.
+         */
         get _verticalAlignTargetValue() {
           var target;
 
@@ -231,27 +259,41 @@ method is called on the element.
           return Math.max(target, 0);
         },
 
+        /**
+         * Called when the value of `opened` changes.
+         *
+         * @param {boolean} opened True if the dropdown is opened.
+         */
         _openedChanged: function(opened) {
           if (opened && this.disabled) {
             this.cancel();
           } else {
-            this._cancelAnimations();
+            this.cancelAnimation();
             this._prepareDropdown();
             Polymer.IronOverlayBehaviorImpl._openedChanged.apply(this, arguments);
           }
+
+          if (this.opened) {
+            this._focusContent();
+          }
         },
 
+        /**
+         * Overridden from `IronOverlayBehavior`.
+         */
         _renderOpened: function() {
           Polymer.IronDropdownScrollManager.pushScrollLock(this);
           if (!this.noAnimations && this.animationConfig && this.animationConfig.open) {
             this.$.contentWrapper.classList.add('animating');
             this.playAnimation('open');
           } else {
-            this._focusContent();
             Polymer.IronOverlayBehaviorImpl._renderOpened.apply(this, arguments);
           }
         },
 
+        /**
+         * Overridden from `IronOverlayBehavior`.
+         */
         _renderClosed: function() {
           Polymer.IronDropdownScrollManager.removeScrollLock(this);
           if (!this.noAnimations && this.animationConfig && this.animationConfig.close) {
@@ -262,6 +304,12 @@ method is called on the element.
           }
         },
 
+        /**
+         * Called when animation finishes on the dropdown (when opening or
+         * closing). Responsible for "completing" the process of opening or
+         * closing the dropdown by positioning it or setting its display to
+         * none.
+         */
         _onNeonAnimationFinish: function() {
           this.$.contentWrapper.classList.remove('animating');
           if (this.opened) {
@@ -271,6 +319,9 @@ method is called on the element.
           }
         },
 
+        /**
+         * Called when an `iron-resize` event fires.
+         */
         _onIronResize: function() {
           var containedElement = this.containedElement;
           var scrollTop;
@@ -293,14 +344,17 @@ method is called on the element.
           }
         },
 
+        /**
+         * Called when the `positionTarget` property changes.
+         */
         _positionTargetChanged: function() {
           this._updateOverlayPosition();
         },
 
-        _cancelAnimations: function() {
-          this.cancelAnimation();
-        },
-
+        /**
+         * Constructs the final animation config from different properties used
+         * to configure specific parts of the opening and closing animations.
+         */
         _updateAnimationConfig: function() {
           var animationConfig = {};
           var animations = [];
@@ -328,12 +382,21 @@ method is called on the element.
           this.animationConfig = animationConfig;
         },
 
+        /**
+         * Prepares the dropdown for opening by updating measured layout
+         * values.
+         */
         _prepareDropdown: function() {
           this.sizingTarget = this.containedElement || this.sizingTarget;
           this._updateAnimationConfig();
           this._updateOverlayPosition();
         },
 
+        /**
+         * Updates the overlay position based on configured horizontal
+         * and vertical alignment, and re-memoizes these values for the sake
+         * of behavior in `IronFitBehavior`.
+         */
         _updateOverlayPosition: function() {
           this._positionRectMemo = null;
 
@@ -359,10 +422,17 @@ method is called on the element.
           }
         },
 
+        /**
+         * Focuses the configured focus target.
+         */
         _focusContent: function() {
-          if (this.containedElement) {
-            this.containedElement.focus();
-          }
+          // NOTE(cdata): This is async so that it can attempt the focus after
+          // `display: none` is removed from the element.
+          this.async(function() {
+            if (this._focusTarget) {
+              this._focusTarget.focus();
+            }
+          });
         }
       });
     })();
