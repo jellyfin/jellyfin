@@ -32,8 +32,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
         public async Task<IEnumerable<ChannelInfo>> GetChannels(TunerHostInfo tuner, bool enableCache, CancellationToken cancellationToken)
         {
             ChannelCache cache = null;
+            var key = tuner.Id;
 
-            if (enableCache && _channelCache.TryGetValue(tuner.Id, out cache))
+            if (enableCache && !string.IsNullOrWhiteSpace(key) && _channelCache.TryGetValue(key, out cache))
             {
                 if ((DateTime.UtcNow - cache.Date) < TimeSpan.FromMinutes(60))
                 {
@@ -48,7 +49,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             cache.Date = DateTime.UtcNow;
             cache.Channels = result.ToList();
 
-            _channelCache.AddOrUpdate(tuner.Id, cache, (k, v) => cache);
+            _channelCache.AddOrUpdate(key, cache, (k, v) => cache);
 
             return cache.Channels.ToList();
         }
