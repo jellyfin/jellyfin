@@ -993,8 +993,8 @@
     "LabelKodiMetadataEnablePathSubstitution": "Pad vervanging inschakelen",
     "LabelKodiMetadataEnablePathSubstitutionHelp": "Stelt pad vervanging in voor afbeeldingspaden en maakt gebruik van de Pad Vervangen instellingen van de server.",
     "LabelKodiMetadataEnablePathSubstitutionHelp2": "Bekijk pad vervanging.",
-    "OptionDisplayChannelsInline": "Display channels inline within my views",
-    "OptionDisplayChannelsInlineHelp": "If enabled, channels will be displayed directly alongside other views. If disabled, they'll be displayed within a separate Channels view.",
+    "OptionDisplayChannelsInline": "Toon kanalen samen met andere media",
+    "OptionDisplayChannelsInlineHelp": "Als dit ingeschakeld is zullen kanalen samen met andere mediasoorten getoond worden. Als dit uitgeschakeld is worden de kanalen gegroepeerd in een eigen weergave.",
     "LabelDisplayCollectionsView": "Toon collecties in mijn overzichten om film verzamelingen weer te geven",
     "LabelDisplayCollectionsViewHelp": "Hiermee wordt een aparte weergave gemaakt waarin collecties worden weergegeven die u hebt aangemaakt of toegang toe hebt. Klik rechts op een film of druk en houd vast en kies 'Toevoegen aan Collectie'. ",
     "LabelKodiMetadataEnableExtraThumbs": "Kopieer extrafanart naar extrathumbs",
@@ -1395,9 +1395,9 @@
     "MessageReenableUser": "Zie hieronder hoe opnieuw in te schakelen",
     "LabelEnableInternetMetadataForTvPrograms": "Download internet metadata voor:",
     "OptionTVMovies": "TV Movies",
-    "HeaderUpcomingMovies": "Aankomende Films",
+    "HeaderUpcomingMovies": "Films binnenkort",
     "HeaderUpcomingSports": "Sport binnenkort",
-    "HeaderUpcomingPrograms": "Aankomende Programma's",
+    "HeaderUpcomingPrograms": "Programma's binnenkort",
     "LabelShowLibraryTileNames": "Toon bibliotheek tegel namen",
     "LabelShowLibraryTileNamesHelp": "Bepaalt of labels onder de bibliotheek tegels zullen worden weergegeven op de startpagina",
     "OptionEnableTranscodingThrottle": "Throtteling inschakelen",
@@ -1506,6 +1506,7 @@
     "OptionSyncOnlyOnWifi": "Synchroniseer alleen via Wifi",
     "OptionSyncLosslessAudioOriginal": "Synchroniseer lossless geluid in originele kwaliteit",
     "HeaderMetadata": "Metadata",
-    "HeaderRecordingOptions": "Recording Options",
-    "ButtonShare": "Delen"
+    "HeaderRecordingOptions": "Opnamen opties",
+    "ButtonShare": "Delen",
+    "HeaderUpcomingForKids": "Binnenkort voor kinderen"
 }

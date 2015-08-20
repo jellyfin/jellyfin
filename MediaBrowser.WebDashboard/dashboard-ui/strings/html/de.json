@@ -1507,5 +1507,6 @@
     "OptionSyncLosslessAudioOriginal": "Synchronisiere unkomprimierte Audiospur in original Qualit\u00e4t (Wenn unterst\u00fctzt).",
     "HeaderMetadata": "Metadaten",
     "HeaderRecordingOptions": "Aufnahme Einstellungen",
-    "ButtonShare": "Teilen"
+    "ButtonShare": "Teilen",
+    "HeaderUpcomingForKids": "Vorschau f\u00fcr Kinder"
 }

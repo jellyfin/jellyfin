@@ -1507,5 +1507,6 @@
     "OptionSyncLosslessAudioOriginal": "Sync lossless audio at original quality",
     "HeaderMetadata": "Metadata",
     "HeaderRecordingOptions": "Recording Options",
-    "ButtonShare": "Share"
+    "ButtonShare": "Share",
+    "HeaderUpcomingForKids": "Upcoming for Kids"
 }

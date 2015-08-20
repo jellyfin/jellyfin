@@ -1076,7 +1076,7 @@
         }
 
         if (limit && result.TotalRecordCount > limit) {
-            html += '<p style="margin: 0;"><paper-button raised class="more moreCriticReviews">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
+            html += '<p style="margin: 0;"><paper-button raised class="more moreCriticReviews">' + Globalize.translate('ButtonMore') + '</paper-button></p>';
         }
 
         var criticReviewsContent = page.querySelector('#criticReviewsContent');
@@ -1235,7 +1235,7 @@
         }
 
         if (limit && chapters.length > limit) {
-            html += '<p style="margin: 0;"><paper-button raised class="more moreScenes">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
+            html += '<p style="margin: 0;"><paper-button raised class="more moreScenes">' + Globalize.translate('ButtonMore') + '</paper-button></p>';
         }
 
         var scenesContent = page.querySelector('#scenesContent');
@@ -1470,7 +1470,7 @@
         }
 
         if (limit && items.length > limit) {
-            html += '<p style="margin: 0;padding-left:5px;"><paper-button raised class="more ' + moreButtonClass + '">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
+            html += '<p style="margin: 0;padding-left:5px;"><paper-button raised class="more ' + moreButtonClass + '">' + Globalize.translate('ButtonMore') + '</paper-button></p>';
         }
 
         return html;
@@ -1553,7 +1553,7 @@
         }
 
         if (limit && casts.length > limit) {
-            html += '<p style="margin: 0;padding-left:5px;"><paper-button raised class="more morePeople">' + Globalize.translate('ButtonMoreItems') + '</paper-button></p>';
+            html += '<p style="margin: 0;padding-left:5px;"><paper-button raised class="more morePeople">' + Globalize.translate('ButtonMore') + '</paper-button></p>';
         }
 
         var castContent = page.querySelector('#castContent');

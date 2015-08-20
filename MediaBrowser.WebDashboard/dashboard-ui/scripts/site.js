@@ -1499,7 +1499,7 @@ var Dashboard = {
                 quality -= 10;
 
                 if (isBackdrop) {
-                    quality -= 20;
+                    quality -= 15;
                 }
 
             } else {
