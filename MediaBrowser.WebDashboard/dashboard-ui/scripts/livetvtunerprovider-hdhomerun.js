@@ -17,6 +17,8 @@
                 page.querySelector('.chkEnabled').checked = info.IsEnabled;
 
             });
+        } else {
+            page.querySelector('.chkEnabled').checked = true;
         }
     }
 
