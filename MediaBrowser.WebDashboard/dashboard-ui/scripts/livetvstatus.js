@@ -185,34 +185,39 @@
 
         var html = '';
 
-        html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
+        if (devices.length) {
+            html += '<div class="paperList">';
 
-        for (var i = 0, length = devices.length; i < length; i++) {
+            for (var i = 0, length = devices.length; i < length; i++) {
 
-            var device = devices[i];
+                var device = devices[i];
 
-            var href = 'livetvtunerprovider-' + device.Type + '.html?id=' + device.Id;
+                var href = 'livetvtunerprovider-' + device.Type + '.html?id=' + device.Id;
 
-            html += '<li>';
-            html += '<a href="' + href + '">';
+                html += '<paper-icon-item>';
 
-            html += '<h3>';
-            html += getTunerName(device.Type);
-            html += '</h3>';
+                html += '<paper-fab class="listAvatar" style="background:#52B54B;" icon="live-tv" item-icon></paper-fab>';
 
-            html += '<p>';
-            html += device.Url;
-            html += '</p>';
+                html += '<paper-item-body two-line>';
+                html += '<a class="clearLink" href="' + href + '">';
+                html += '<div>';
+                html += getTunerName(device.Type);
+                html += '</div>';
 
-            html += '</a>';
-            html += '<a href="#" class="btnDeleteDevice" data-id="' + device.Id + '">';
-            html += '</a>';
-            html += '</li>';
+                html += '<div secondary>';
+                html += device.Url;
+                html += '</div>';
+                html += '</a>';
+                html += '</paper-item-body>';
+
+                html += '<paper-icon-button icon="cancel" data-id="' + device.Id + '" title="' + Globalize.translate('ButtonDelete') + '" class="btnDeleteDevice"></paper-icon-button>';
+                html += '</paper-icon-item>';
+            }
+
+            html += '</div>';
         }
 
-        html += '</ul>';
-
-        var elem = $('.devicesList', page).html(html).trigger('create');
+        var elem = $('.devicesList', page).html(html);
 
         $('.btnDeleteDevice', elem).on('click', function () {
 
@@ -287,27 +292,34 @@
 
         var html = '';
 
-        html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
+        if (providers.length) {
+            html += '<div class="paperList">';
 
-        for (var i = 0, length = providers.length; i < length; i++) {
+            for (var i = 0, length = providers.length; i < length; i++) {
 
-            var provider = providers[i];
-            html += '<li>';
-            html += '<a href="' + getProviderConfigurationUrl(provider.Type) + '?id=' + provider.Id + '">';
+                var provider = providers[i];
+                html += '<paper-icon-item>';
 
-            html += '<h3>';
-            html += getProviderName(provider.Type);
-            html += '</h3>';
+                html += '<paper-fab class="listAvatar" icon="dvr" item-icon></paper-fab>';
 
-            html += '</a>';
-            html += '<a href="#" class="btnDelete" data-id="' + provider.Id + '">';
-            html += '</a>';
-            html += '</li>';
+                html += '<paper-item-body two-line>';
+
+                html += '<a class="clearLink" href="' + getProviderConfigurationUrl(provider.Type) + '?id=' + provider.Id + '">';
+
+                html += '<div>';
+                html += getProviderName(provider.Type);
+                html += '</div>';
+
+                html += '</a>';
+                html += '</paper-item-body>';
+                html += '<paper-icon-button icon="cancel" data-id="' + provider.Id + '" title="' + Globalize.translate('ButtonDelete') + '" class="btnDelete"></paper-icon-button>';
+                html += '</paper-icon-item>';
+            }
+
+            html += '</div>';
         }
 
-        html += '</ul>';
-
-        var elem = $('.providerList', page).html(html).trigger('create');
+        var elem = $('.providerList', page).html(html);
 
         $('.btnDelete', elem).on('click', function () {
 

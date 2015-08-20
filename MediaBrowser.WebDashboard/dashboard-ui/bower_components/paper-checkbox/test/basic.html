@@ -76,6 +76,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
         MockInteractions.tap(c1);
       });
+
+      test('checkbox label can be updated', function() {
+        Polymer.dom(c1).textContent = 'Batman';
+        c1.updateAriaLabel();
+        assert.isTrue(c1.getAttribute('aria-label') == 'Batman');
+
+        Polymer.dom(c1).textContent = 'Robin';
+        c1.updateAriaLabel();
+        assert.isTrue(c1.getAttribute('aria-label') == 'Robin');
+      });
     });
 
     suite('a11y', function() {

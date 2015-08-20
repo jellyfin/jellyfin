@@ -388,7 +388,7 @@ paper-input label, paper-textarea label {
 }
 
 .ui-page-theme-a paper-input label, .ui-page-theme-a paper-textarea label {
-    color: #222 !important;
+    color: #333 !important;
 }
 
 .ui-page-theme-a .label-is-highlighted label {
