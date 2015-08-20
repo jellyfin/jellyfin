@@ -86,7 +86,7 @@ namespace MediaBrowser.Api
 
         public object Get(GetStartupConfiguration request)
         {
-            return new StartupConfiguration
+            var result = new StartupConfiguration
             {
                 UICulture = _config.Configuration.UICulture,
                 EnableInternetProviders = _config.Configuration.EnableInternetProviders,
@@ -94,6 +94,16 @@ namespace MediaBrowser.Api
                 MetadataCountryCode = _config.Configuration.MetadataCountryCode,
                 PreferredMetadataLanguage = _config.Configuration.PreferredMetadataLanguage
             };
+
+            var tvConfig = GetLiveTVConfiguration();
+
+            if (tvConfig.TunerHosts.Count > 0)
+            {
+                result.LiveTvTunerPath = tvConfig.TunerHosts[0].Url;
+                result.LiveTvTunerType = tvConfig.TunerHosts[0].Type;
+            }
+
+            return result;
         }
 
         public void Post(UpdateStartupConfiguration request)
