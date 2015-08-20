@@ -39,7 +39,7 @@
             data: {
 
                 Name: form.querySelector('#txtUsername').value,
-                ConnectUserName: page.querySelector('#txtConnectUserName').value
+                ConnectUserName: form.querySelector('#txtConnectUserName').value
 
             },
             url: apiClient.getUrl('Startup/User'),
