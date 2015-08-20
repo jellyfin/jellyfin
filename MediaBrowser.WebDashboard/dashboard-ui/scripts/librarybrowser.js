@@ -794,7 +794,7 @@
                 return "photos.html?parentId=" + id;
             }
             if (item.Type == "Playlist") {
-                return "playlistedit.html?id=" + id;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "TvChannel") {
                 return "itemdetails.html?id=" + id;
@@ -3090,6 +3090,11 @@
 
                     miscInfo.push(Math.round(minutes) + "min");
                 }
+            }
+
+            if (item.CumulativeRunTimeTicks && item.Type != "Series" && item.Type != "Season") {
+
+                miscInfo.push(Dashboard.getDisplayTime(item.CumulativeRunTimeTicks));
             }
 
             if (item.OfficialRating && item.Type !== "Season" && item.Type !== "Episode") {

@@ -285,6 +285,11 @@
             $('#childrenCollapsible', page).removeClass('hide');
             renderChannelGuide(page, item, user);
         }
+        else if (item.Type == 'Playlist') {
+
+            $('#childrenCollapsible', page).removeClass('hide');
+            renderPlaylistItems(page, item, user);
+        }
         else if (item.Type == 'Studio' || item.Type == 'Person' || item.Type == 'Genre' || item.Type == 'MusicGenre' || item.Type == 'GameGenre' || item.Type == 'MusicArtist') {
 
             $('#childrenCollapsible', page).removeClass('hide');
@@ -878,6 +883,15 @@
 
 
             window.ItemsByName.renderItems(page, item);
+        });
+    }
+
+    function renderPlaylistItems(page, item, user) {
+
+        require('scripts/playlistedit'.split(','), function () {
+
+
+            PlaylistViewer.render(page, item);
         });
     }
 

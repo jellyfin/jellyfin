@@ -460,7 +460,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-top: 1em;
 }
 
-@media all and (min-width: 620px) {
+@media all and (min-width: 540px) {
 
     .detailUserDataIcons {
         display: inline-block;
