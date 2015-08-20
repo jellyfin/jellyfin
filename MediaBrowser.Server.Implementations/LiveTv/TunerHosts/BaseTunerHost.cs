@@ -43,15 +43,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts
             }
 
             var result = await GetChannelsInternal(tuner, cancellationToken).ConfigureAwait(false);
+            var list = result.ToList();
 
-            cache = cache ?? new ChannelCache();
+            if (!string.IsNullOrWhiteSpace(key))
+            {
+                cache = cache ?? new ChannelCache();
+                cache.Date = DateTime.UtcNow;
+                cache.Channels = list;
+                _channelCache.AddOrUpdate(key, cache, (k, v) => cache);
+            }
 
-            cache.Date = DateTime.UtcNow;
-            cache.Channels = result.ToList();
-
-            _channelCache.AddOrUpdate(key, cache, (k, v) => cache);
-
-            return cache.Channels.ToList();
+            return list;
         }
 
         private List<TunerHostInfo> GetTunerHosts()
