@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.LiveTv;
 using System;
+using System.Globalization;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
@@ -36,26 +37,33 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             if (info == null)
             {
-                return (timer.ProgramId + ".ts");
+                return timer.ProgramId + ".ts";
             }
-            var fancyName = info.Name;
-            if (info.ProductionYear != null)
+
+            var name = info.Name;
+
+            if (info.IsSeries)
             {
-                fancyName += "_(" + info.ProductionYear + ")";
+                if (info.SeasonNumber.HasValue && info.EpisodeNumber.HasValue)
+                {
+                    name += string.Format(" S{0}E{1}", info.SeasonNumber.Value.ToString("00", CultureInfo.InvariantCulture), info.EpisodeNumber.Value.ToString("00", CultureInfo.InvariantCulture));
+                }
+                else if (info.OriginalAirDate.HasValue)
+                {
+                    name += " " + info.OriginalAirDate.Value.ToString("yyyy-MM-dd");
+                }
+                else if (!string.IsNullOrWhiteSpace(info.EpisodeTitle))
+                {
+                    name += " " + info.EpisodeTitle;
+                }
             }
-            if (info.IsSeries && !string.IsNullOrWhiteSpace(info.EpisodeTitle))
+
+            else if (info.ProductionYear != null)
             {
-                fancyName += "_" + info.EpisodeTitle.Replace("Season: ", "S").Replace(" Episode: ", "E");
+                name += " (" + info.ProductionYear + ")";
             }
-            if (info.IsHD ?? false)
-            {
-                fancyName += "_HD";
-            }
-            if (info.OriginalAirDate != null)
-            {
-                fancyName += "_" + info.OriginalAirDate.Value.ToString("yyyy-MM-dd");
-            }
-            return fancyName + ".ts";
+
+            return name + ".ts";
         }
     }
 }

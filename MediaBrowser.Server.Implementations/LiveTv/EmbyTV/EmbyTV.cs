@@ -495,9 +495,22 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             var info = GetProgramInfoFromCache(timer.ChannelId, timer.ProgramId);
             var recordPath = RecordingPath;
+
             if (info.IsMovie)
             {
                 recordPath = Path.Combine(recordPath, "Movies", _fileSystem.GetValidFilename(info.Name));
+            }
+            else if (info.IsSeries)
+            {
+                recordPath = Path.Combine(recordPath, "Series", _fileSystem.GetValidFilename(info.Name));
+            }
+            else if (info.IsKids)
+            {
+                recordPath = Path.Combine(recordPath, "Kids", _fileSystem.GetValidFilename(info.Name));
+            }
+            else if (info.IsSports)
+            {
+                recordPath = Path.Combine(recordPath, "Sports", _fileSystem.GetValidFilename(info.Name));
             }
             else
             {
