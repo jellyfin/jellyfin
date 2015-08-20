@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.LiveTv;
@@ -17,6 +18,15 @@ namespace MediaBrowser.Controller.LiveTv
         /// <returns>System.String.</returns>
         protected override string CreateUserDataKey()
         {
+            if (IsMovie)
+            {
+                var key = Movie.GetMovieUserDataKey(this);
+
+                if (!string.IsNullOrWhiteSpace(key))
+                {
+                    return key;
+                }
+            }
             return GetClientTypeName() + "-" + Name;
         }
 
