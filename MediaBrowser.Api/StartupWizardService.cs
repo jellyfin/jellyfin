@@ -3,8 +3,10 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Connect;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.LiveTv;
 using ServiceStack;
 using System;
 using System.Linq;
@@ -49,6 +51,7 @@ namespace MediaBrowser.Api
         private readonly IServerApplicationHost _appHost;
         private readonly IUserManager _userManager;
         private readonly IConnectManager _connectManager;
+        private ILiveTvManager _liveTvManager;
 
         public StartupWizardService(IServerConfigurationManager config, IServerApplicationHost appHost, IUserManager userManager, IConnectManager connectManager)
         {
@@ -101,6 +104,9 @@ namespace MediaBrowser.Api
             _config.Configuration.MetadataCountryCode = request.MetadataCountryCode;
             _config.Configuration.PreferredMetadataLanguage = request.PreferredMetadataLanguage;
             _config.SaveConfiguration();
+
+            var task = UpdateTuners(request);
+            Task.WaitAll(task);
         }
 
         public object Get(GetStartupUser request)
@@ -141,6 +147,51 @@ namespace MediaBrowser.Api
 
             return result;
         }
+
+        private async Task UpdateTuners(UpdateStartupConfiguration request)
+        {
+            var config = GetLiveTVConfiguration();
+            var save = false;
+
+            if (string.IsNullOrWhiteSpace(request.LiveTvTunerPath) ||
+                string.IsNullOrWhiteSpace(request.LiveTvTunerType))
+            {
+                if (config.TunerHosts.Count > 0)
+                {
+                    config.TunerHosts.Clear();
+                    save = true;
+                }
+            }
+            else
+            {
+                if (!config.TunerHosts.Any(i => string.Equals(i.Type, request.LiveTvTunerType, StringComparison.OrdinalIgnoreCase) && string.Equals(i.Url, request.LiveTvTunerPath, StringComparison.OrdinalIgnoreCase)))
+                {
+                    // Add tuner
+                    await _liveTvManager.SaveTunerHost(new TunerHostInfo
+                    {
+                        IsEnabled = true,
+                        Type = request.LiveTvTunerType,
+                        Url = request.LiveTvTunerPath
+
+                    }).ConfigureAwait(false);
+                }
+            }
+
+            if (save)
+            {
+                SaveLiveTVConfiguration(config);
+            }
+        }
+
+        private void SaveLiveTVConfiguration(LiveTvOptions config)
+        {
+            _config.SaveConfiguration("livetv", config);
+        }
+
+        private LiveTvOptions GetLiveTVConfiguration()
+        {
+            return _config.GetConfiguration<LiveTvOptions>("livetv");
+        }
     }
 
     public class StartupConfiguration
@@ -150,6 +201,8 @@ namespace MediaBrowser.Api
         public bool SaveLocalMeta { get; set; }
         public string MetadataCountryCode { get; set; }
         public string PreferredMetadataLanguage { get; set; }
+        public string LiveTvTunerType { get; set; }
+        public string LiveTvTunerPath { get; set; }
     }
 
     public class StartupInfo

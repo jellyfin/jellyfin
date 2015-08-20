@@ -662,6 +662,11 @@ h1 .imageLink {
     padding-top: 5px;
 }
 
+paper-input + .fieldDescription {
+    padding-top: 5px;
+    opacity: .9;
+}
+
 .warningFieldDescription {
     padding: 5px;
     border: 1px solid #f4c63f;
