@@ -322,8 +322,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             var defaults = new SeriesTimerInfo()
             {
-                PostPaddingSeconds = 60,
-                PrePaddingSeconds = 60,
+                PostPaddingSeconds = 0,
+                PrePaddingSeconds = 0,
                 RecordAnyChannel = false,
                 RecordAnyTime = false,
                 RecordNewOnly = false
