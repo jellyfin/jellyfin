@@ -637,8 +637,7 @@ prevent = dy > dx;
 prevent = dx > dy;
 }
 if (prevent) {
-// This prevents horizontal scrolling in safari
-//ev.preventDefault();
+ev.preventDefault();
 } else {
 Gestures.prevent('track');
 }
@@ -1657,6 +1656,9 @@ name: arg,
 model: this._modelForPath(arg)
 };
 var fc = arg[0];
+if (fc === '-') {
+fc = arg[1];
+}
 if (fc >= '0' && fc <= '9') {
 fc = '#';
 }
@@ -2277,29 +2279,23 @@ return m && m._cssText || '';
 _cssFromElement: function (element) {
 var cssText = '';
 var content = element.content || element;
-var sourceDoc = element.ownerDocument;
 var e$ = Array.prototype.slice.call(content.querySelectorAll(this.MODULE_STYLES_SELECTOR));
-for (var i = 0, e, resolveDoc, addModule; i < e$.length; i++) {
+for (var i = 0, e; i < e$.length; i++) {
 e = e$[i];
-resolveDoc = sourceDoc;
-addModule = null;
 if (e.localName === 'template') {
 cssText += this._cssFromElement(e);
 } else {
 if (e.localName === 'style') {
-addModule = e.getAttribute(this.INCLUDE_ATTR);
+var include = e.getAttribute(this.INCLUDE_ATTR);
 e = e.__appliedElement || e;
 e.parentNode.removeChild(e);
-} else {
-e = e.import && e.import.body;
-resolveDoc = e.ownerDocument;
+cssText += this.resolveCss(e.textContent, element.ownerDocument);
+if (include) {
+cssText += this.cssFromModules(include);
 }
-if (e) {
-cssText += this.resolveCss(e.textContent, resolveDoc);
+} else if (e.import && e.import.body) {
+cssText += this.resolveCss(e.import.body.textContent, e.import);
 }
-}
-if (addModule) {
-cssText += this.cssFromModules(addModule);
 }
 }
 return cssText;
@@ -3235,16 +3231,18 @@ var e = this.__appliedElement || this;
 if (this.include) {
 e.textContent += styleUtil.cssFromModules(this.include);
 }
+var rules = styleUtil.rulesForStyle(e);
+styleUtil.forEachStyleRule(rules, function (rule) {
+styleTransformer.documentRule(rule);
+});
 this._computeStyleProperties();
 var props = this._styleProperties;
-var self = this;
-e.textContent = styleUtil.toCssText(styleUtil.rulesForStyle(e), function (rule) {
+e.textContent = styleUtil.toCssText(rules, function (rule) {
 var css = rule.cssText = rule.parsedCssText;
 if (rule.propertyInfo && rule.propertyInfo.cssText) {
 css = cssParse.removeCustomPropAssignment(css);
 rule.cssText = propertyUtils.valueForProperties(css, props);
 }
-styleTransformer.documentRule(rule);
 });
 }
 });
@@ -3800,6 +3798,9 @@ this._instances.splice(keys.length, this._instances.length - keys.length);
 _keySort: function (a, b) {
 return this.collection.getKey(a) - this.collection.getKey(b);
 },
+_numericSort: function (a, b) {
+return a - b;
+},
 _applySplicesUserSort: function (splices) {
 var c = this.collection;
 var instances = this._instances;
@@ -3827,7 +3828,7 @@ addedKeys.push(key);
 }
 }
 if (removedIdxs.length) {
-removedIdxs.sort();
+removedIdxs.sort(this._numericSort);
 for (var i = removedIdxs.length - 1; i >= 0; i--) {
 var idx = removedIdxs[i];
 if (idx !== undefined) {
@@ -4010,6 +4011,10 @@ selected: {
 type: Object,
 notify: true
 },
+selectedItem: {
+type: Object,
+notify: true
+},
 toggle: {
 type: Boolean,
 value: false
@@ -4032,6 +4037,7 @@ this._selectedColl = Polymer.Collection.get(this.selected);
 this.selected = null;
 this._selectedColl = null;
 }
+this.selectedItem = null;
 },
 isSelected: function (item) {
 if (this.multi) {
@@ -4049,7 +4055,9 @@ this.unlinkPaths('selected.' + skey);
 }
 } else {
 this.selected = null;
+this.selectedItem = null;
 this.unlinkPaths('selected');
+this.unlinkPaths('selectedItem');
 }
 },
 select: function (item) {
@@ -4069,8 +4077,10 @@ this.linkPaths('selected.' + skey, 'items.' + key);
 if (this.toggle && item == this.selected) {
 this.deselect();
 } else {
-this.linkPaths('selected', 'items.' + key);
 this.selected = item;
+this.selectedItem = item;
+this.linkPaths('selected', 'items.' + key);
+this.linkPaths('selectedItem', 'items.' + key);
 }
 }
 }
