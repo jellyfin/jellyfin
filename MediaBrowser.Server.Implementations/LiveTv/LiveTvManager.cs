@@ -2286,5 +2286,34 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 return provider.GetLineups(info, country, location);
             }
         }
+
+        public Task<MBRegistrationRecord> GetRegistrationInfo(string channelId, string programId, string feature)
+        {
+            ILiveTvService service;
+
+            if (string.IsNullOrWhiteSpace(programId))
+            {
+                var channel = GetInternalChannel(channelId);
+                service = GetService(channel);
+            }
+            else
+            {
+                var program = GetInternalProgram(programId);
+                service = GetService(program);
+            }
+
+            var hasRegistration = service as IHasRegistrationInfo;
+
+            if (hasRegistration != null)
+            {
+                return hasRegistration.GetRegistrationInfo(feature);
+            }
+
+            return Task.FromResult(new MBRegistrationRecord
+            {
+                IsValid = true,
+                IsRegistered = true
+            });
+        }
     }
 }

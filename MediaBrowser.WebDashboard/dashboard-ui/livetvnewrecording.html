@@ -73,7 +73,13 @@
                 <br />
                 <br />
                 <div>
-                    <button type="submit" data-role="none" class="clearButton">
+                    <div class="supporterContainer hide">
+                        <p>${MessageActiveSupporterMembershipRequiredSeriesRecordings}</p>
+                        <p class="supporterTrial hide">${HeaderEnjoyDayTrial}</p>
+                        <a class="clearLink btnSupporter hide" href="http://emby.media/donate" target="_blank"><paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${HeaderBecomeProjectSupporter}</span></paper-button></a>
+                        <br/>
+                    </div>
+                    <button type="submit" data-role="none" class="clearButton btnSubmitContainer">
                         <paper-button raised class="submit block" style="background:#cc3333;"><iron-icon icon="videocam"></iron-icon><span>${ButtonRecord}</span></paper-button>
                     </button>
 

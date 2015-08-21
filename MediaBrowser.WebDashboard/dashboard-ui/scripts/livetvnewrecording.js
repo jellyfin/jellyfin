@@ -1,6 +1,44 @@
 ﻿(function ($, document) {
 
     var currentProgram;
+    var registrationInfo;
+    var lastRegId;
+
+    function getRegistration(programId) {
+
+        var deferred = DeferredBuilder.Deferred();
+        if (registrationInfo && lastRegId == programId) {
+            deferred.resolveWith(null, [registrationInfo]);
+        }
+        registrationInfo = null;
+        lastRegId = programId;
+        Dashboard.showLoadingMsg();
+
+        ApiClient.getJSON(ApiClient.getUrl('LiveTv/Registration', {
+
+            ProgramId: programId,
+            Feature: 'seriesrecordings'
+        })).done(function (result) {
+
+            lastRegId = programId;
+            registrationInfo = result;
+            deferred.resolveWith(null, [registrationInfo]);
+            Dashboard.hideLoadingMsg();
+
+        }).fail(function () {
+
+            deferred.resolveWith(null, [
+            {
+                TrialVersion: true,
+                IsValid: true,
+                IsRegistered: false
+            }]);
+
+            Dashboard.hideLoadingMsg();
+        });
+
+        return deferred.promise();
+    }
 
     function renderRecording(page, defaultTimer, program) {
 
@@ -141,6 +179,47 @@
         return false;
     }
 
+    function hideSeriesRecordingFields(page) {
+        $('#seriesFields', page).hide();
+        page.querySelector('.btnSubmitContainer').classList.remove('hide');
+        page.querySelector('.supporterContainer').classList.add('hide');
+    }
+
+    function showSeriesRecordingFields(page) {
+        $('#seriesFields', page).show();
+        page.querySelector('.btnSubmitContainer').classList.remove('hide');
+
+        getRegistration(getParameterByName('programid')).done(function (regInfo) {
+
+            if (regInfo.IsValid) {
+                page.querySelector('.btnSubmitContainer').classList.remove('hide');
+            } else {
+                page.querySelector('.btnSubmitContainer').classList.add('hide');
+            }
+
+            if (regInfo.IsRegistered) {
+
+                page.querySelector('.supporterContainer').classList.add('hide');
+
+            } else {
+
+                page.querySelector('.supporterContainer').classList.remove('hide');
+
+                if (AppInfo.enableSupporterMembership) {
+                    page.querySelector('.btnSupporter').classList.remove('hide');
+                } else {
+                    page.querySelector('.btnSupporter').classList.add('hide');
+                }
+
+                if (regInfo.TrialVersion) {
+                    page.querySelector('.supporterTrial').classList.remove('hide');
+                } else {
+                    page.querySelector('.supporterTrial').classList.add('hide');
+                }
+            }
+        });
+    }
+
     $(document).on('pageinitdepends', "#liveTvNewRecordingPage", function () {
 
         var page = this;
@@ -148,11 +227,10 @@
         $('#chkRecordSeries', page).on('change', function () {
 
             if (this.checked) {
-                $('#seriesFields', page).show();
+                showSeriesRecordingFields(page);
             } else {
-                $('#seriesFields', page).hide();
+                hideSeriesRecordingFields(page);
             }
-
         });
 
         $('#btnCancel', page).on('click', function () {
@@ -168,7 +246,7 @@
     }).on('pagebeforeshowready', "#liveTvNewRecordingPage", function () {
 
         var page = this;
-
+        hideSeriesRecordingFields(page);
         reload(page);
 
     }).on('pagebeforehide', "#liveTvNewRecordingPage", function () {
