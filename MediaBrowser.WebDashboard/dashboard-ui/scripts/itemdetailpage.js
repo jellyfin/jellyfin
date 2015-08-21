@@ -426,7 +426,7 @@
 
         renderTags(page, item);
 
-        renderSeriesAirTime(page, item, context);
+        renderSeriesAirTime(page, item, isStatic);
 
         if (item.Players) {
             $('#players', page).show().html(item.Players + ' Player');
@@ -664,7 +664,7 @@
         });
     }
 
-    function renderSeriesAirTime(page, item, context) {
+    function renderSeriesAirTime(page, item, isStatic) {
 
         if (item.Type != "Series") {
             $('#seriesAirTime', page).hide();
@@ -685,7 +685,12 @@
         }
 
         if (item.Studios.length) {
-            html += ' on <a class="textlink" href="itemdetails.html?id=' + item.Studios[0].Id + '">' + item.Studios[0].Name + '</a>';
+
+            if (isStatic) {
+                html += ' on ' + item.Studios[0].Name;
+            } else {
+                html += ' on <a class="textlink" href="itemdetails.html?id=' + item.Studios[0].Id + '">' + item.Studios[0].Name + '</a>';
+            }
         }
 
         if (html) {

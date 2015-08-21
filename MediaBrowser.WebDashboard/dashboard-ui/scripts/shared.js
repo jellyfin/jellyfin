@@ -87,13 +87,4 @@
 
     });
 
-    function itemDetailPage() {
-
-        var self = this;
-
-        self.play = play;
-    }
-
-    window.ItemDetailPage = new itemDetailPage();
-
 })(jQuery, document, LibraryBrowser, window);

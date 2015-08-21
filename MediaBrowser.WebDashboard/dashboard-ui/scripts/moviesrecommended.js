@@ -62,7 +62,7 @@
                     shape: getPortraitShape(),
                     centerText: true,
                     lazy: true,
-                    overlayText: true,
+                    overlayText: false,
                     showDetailsMenu: true
                 });
             }
