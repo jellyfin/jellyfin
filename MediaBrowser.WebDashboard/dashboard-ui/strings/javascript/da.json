@@ -834,5 +834,8 @@
     "OptionList": "Liste",
     "OptionThumb": "Miniature",
     "OptionThumbCard": "Miniature kort",
-    "OptionBanner": "Banner"
+    "OptionBanner": "Banner",
+    "NoSlideshowContentFound": "No slideshow images were found.",
+    "OptionPhotoSlideshow": "Photo slideshow",
+    "OptionBackdropSlideshow": "Backdrop slideshow"
 }

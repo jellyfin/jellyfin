@@ -834,5 +834,8 @@
     "OptionList": "Lista",
     "OptionThumb": "\u00cdcone",
     "OptionThumbCard": "Cart\u00e3o do \u00edcone",
-    "OptionBanner": "Banner"
+    "OptionBanner": "Banner",
+    "NoSlideshowContentFound": "No slideshow images were found.",
+    "OptionPhotoSlideshow": "Photo slideshow",
+    "OptionBackdropSlideshow": "Backdrop slideshow"
 }

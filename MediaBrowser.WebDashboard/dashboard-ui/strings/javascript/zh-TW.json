@@ -834,5 +834,8 @@
     "OptionList": "List",
     "OptionThumb": "\u7e2e\u7565\u5716",
     "OptionThumbCard": "Thumb card",
-    "OptionBanner": "\u6a6b\u5411\u5716"
+    "OptionBanner": "\u6a6b\u5411\u5716",
+    "NoSlideshowContentFound": "No slideshow images were found.",
+    "OptionPhotoSlideshow": "Photo slideshow",
+    "OptionBackdropSlideshow": "Backdrop slideshow"
 }

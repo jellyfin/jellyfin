@@ -834,5 +834,8 @@
     "OptionList": "List",
     "OptionThumb": "Thumb",
     "OptionThumbCard": "Thumb Karte",
-    "OptionBanner": "Banner"
+    "OptionBanner": "Banner",
+    "NoSlideshowContentFound": "No slideshow images were found.",
+    "OptionPhotoSlideshow": "Photo slideshow",
+    "OptionBackdropSlideshow": "Backdrop slideshow"
 }

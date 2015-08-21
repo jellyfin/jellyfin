@@ -834,5 +834,8 @@
     "OptionList": "\u0422\u0456\u0437\u0456\u043c",
     "OptionThumb": "\u041d\u043e\u0431\u0430\u0439",
     "OptionThumbCard": "\u041d\u043e\u0431\u0430\u0439-\u043a\u0430\u0440\u0442\u0430",
-    "OptionBanner": "\u0411\u0430\u043d\u043d\u0435\u0440"
+    "OptionBanner": "\u0411\u0430\u043d\u043d\u0435\u0440",
+    "NoSlideshowContentFound": "No slideshow images were found.",
+    "OptionPhotoSlideshow": "Photo slideshow",
+    "OptionBackdropSlideshow": "Backdrop slideshow"
 }

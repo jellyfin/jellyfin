@@ -834,5 +834,8 @@
     "OptionList": "Lista",
     "OptionThumb": "Miniatura",
     "OptionThumbCard": "Tarjeta de Miniatura",
-    "OptionBanner": "Cart\u00e9l"
+    "OptionBanner": "Cart\u00e9l",
+    "NoSlideshowContentFound": "No slideshow images were found.",
+    "OptionPhotoSlideshow": "Presentaci\u00f3n de fotograf\u00edas",
+    "OptionBackdropSlideshow": "Presentaci\u00f3n de Im\u00e1genes de Fondo"
 }

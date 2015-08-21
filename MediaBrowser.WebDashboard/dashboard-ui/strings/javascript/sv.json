@@ -834,5 +834,8 @@
     "OptionList": "Lista",
     "OptionThumb": "Miniatyr",
     "OptionThumbCard": "Thumb card",
-    "OptionBanner": "Banderoll"
+    "OptionBanner": "Banderoll",
+    "NoSlideshowContentFound": "No slideshow images were found.",
+    "OptionPhotoSlideshow": "Photo slideshow",
+    "OptionBackdropSlideshow": "Backdrop slideshow"
 }

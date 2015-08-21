@@ -1508,8 +1508,9 @@
     "HeaderMetadata": "Metadatos",
     "HeaderRecordingOptions": "Opciones de Grabaci\u00f3n",
     "ButtonShare": "Compartir",
-    "HeaderUpcomingForKids": "Upcoming for Kids",
-    "HeaderSetupLiveTV": "Setup Live TV",
-    "LabelTunerType": "Tuner type:",
-    "HelpMoreTunersCanBeAdded": "More tuners can be added later within the Live TV section."
+    "HeaderUpcomingForKids": "Pr\u00f3ximamente para Ni\u00f1os",
+    "HeaderSetupLiveTV": "Configurar TV en Vivo",
+    "LabelTunerType": "Tipo de sintonizador:",
+    "HelpMoreTunersCanBeAdded": "Se pueden agregar mas sintonizadores posteriormente en la secci\u00f3n de TV en Vivo",
+    "MessageActiveSupporterMembershipRequiredSeriesRecordings": "An active Emby Supporter membership is required in order to create automated series recordings."
 }

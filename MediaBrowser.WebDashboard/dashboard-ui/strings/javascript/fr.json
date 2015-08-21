@@ -834,5 +834,8 @@
     "OptionList": "Liste",
     "OptionThumb": "Vignette",
     "OptionThumbCard": "Carte Vignette",
-    "OptionBanner": "Banni\u00e8re"
+    "OptionBanner": "Banni\u00e8re",
+    "NoSlideshowContentFound": "No slideshow images were found.",
+    "OptionPhotoSlideshow": "Photo slideshow",
+    "OptionBackdropSlideshow": "Backdrop slideshow"
 }

@@ -834,5 +834,8 @@
     "OptionList": "List",
     "OptionThumb": "Sli\u010dica",
     "OptionThumbCard": "Thumb card",
-    "OptionBanner": "Zaglavlje"
+    "OptionBanner": "Zaglavlje",
+    "NoSlideshowContentFound": "No slideshow images were found.",
+    "OptionPhotoSlideshow": "Photo slideshow",
+    "OptionBackdropSlideshow": "Backdrop slideshow"
 }

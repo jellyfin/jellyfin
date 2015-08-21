@@ -834,5 +834,8 @@
     "OptionList": "Seznam",
     "OptionThumb": "Miniatura",
     "OptionThumbCard": "Thumb card",
-    "OptionBanner": "Prapor"
+    "OptionBanner": "Prapor",
+    "NoSlideshowContentFound": "No slideshow images were found.",
+    "OptionPhotoSlideshow": "Photo slideshow",
+    "OptionBackdropSlideshow": "Backdrop slideshow"
 }

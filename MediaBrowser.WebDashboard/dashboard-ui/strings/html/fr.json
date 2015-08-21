@@ -1502,14 +1502,15 @@
     "LabelTranscodingThreadCountHelp": "S\u00e9lectionnez le nombre maximum de threads \u00e0 utiliser pour le transcodage. La r\u00e9duction de cette valeur \u00e9conomisera du temps CPU mais pourrait ne pas suffire pour que le transcodage soit assez rapide pour maintenir une lecture fluide.",
     "OptionMax": "Max",
     "HeaderEmbyGuide": "Guide Emby",
-    "LabelSyncPath": "Dossier de syncro:",
+    "LabelSyncPath": "Chemin de synchro :",
     "OptionSyncOnlyOnWifi": "Synchroniser sur Wifi uniquement",
-    "OptionSyncLosslessAudioOriginal": "Synchrosniser l'audio sans perte de la qualit\u00e9 originelle (lorsque c'est support\u00e9)",
-    "HeaderMetadata": "Metadata",
-    "HeaderRecordingOptions": "Recording Options",
+    "OptionSyncLosslessAudioOriginal": "Synchroniser le son sans perte de la qualit\u00e9 originelle",
+    "HeaderMetadata": "M\u00e9tadonn\u00e9es",
+    "HeaderRecordingOptions": "Options d'enregistrement",
     "ButtonShare": "Partager",
-    "HeaderUpcomingForKids": "Upcoming for Kids",
-    "HeaderSetupLiveTV": "Setup Live TV",
-    "LabelTunerType": "Tuner type:",
-    "HelpMoreTunersCanBeAdded": "More tuners can be added later within the Live TV section."
+    "HeaderUpcomingForKids": "A venir pour les enfants",
+    "HeaderSetupLiveTV": "Configuration de la TV Live",
+    "LabelTunerType": "Type de tuner :",
+    "HelpMoreTunersCanBeAdded": "D'autres tuners peuvent \u00eatre ajout\u00e9s plus tard dans la section TV Live",
+    "MessageActiveSupporterMembershipRequiredSeriesRecordings": "An active Emby Supporter membership is required in order to create automated series recordings."
 }

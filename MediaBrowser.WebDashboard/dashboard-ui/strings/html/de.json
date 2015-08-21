@@ -1511,5 +1511,6 @@
     "HeaderUpcomingForKids": "Vorschau f\u00fcr Kinder",
     "HeaderSetupLiveTV": "Setup Live TV",
     "LabelTunerType": "Tuner type:",
-    "HelpMoreTunersCanBeAdded": "More tuners can be added later within the Live TV section."
+    "HelpMoreTunersCanBeAdded": "More tuners can be added later within the Live TV section.",
+    "MessageActiveSupporterMembershipRequiredSeriesRecordings": "An active Emby Supporter membership is required in order to create automated series recordings."
 }
