@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Querying;
 using ServiceStack;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,11 @@ namespace MediaBrowser.Api.Music
 {
     [Route("/Albums/{Id}/Similar", "GET", Summary = "Finds albums similar to a given album.")]
     public class GetSimilarAlbums : BaseGetSimilarItemsFromItem
+    {
+    }
+
+    [Route("/Artists/{Id}/Similar", "GET", Summary = "Finds albums similar to a given album.")]
+    public class GetSimilarArtists : BaseGetSimilarItemsFromItem
     {
     }
 
@@ -44,6 +50,17 @@ namespace MediaBrowser.Api.Music
             _dtoService = dtoService;
         }
 
+        public object Get(GetSimilarArtists request)
+        {
+            var result = GetSimilarItemsResult(
+
+                request, 
+
+                SimilarItemsHelper.GetSimiliarityScore);
+
+            return ToOptimizedSerializedResultUsingCache(result);
+        }
+        
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -65,6 +82,39 @@ namespace MediaBrowser.Api.Music
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
+        private ItemsResult GetSimilarItemsResult(BaseGetSimilarItemsFromItem request, Func<BaseItem, List<PersonInfo>, List<PersonInfo>, BaseItem, int> getSimilarityScore)
+        {
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
+
+            var item = string.IsNullOrEmpty(request.Id) ?
+                (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
+                _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
+
+            var inputItems = _libraryManager.GetArtists(user.RootFolder.GetRecursiveChildren(user, i => i is IHasArtist).OfType<IHasArtist>());
+
+            var list = inputItems.ToList();
+
+            var items = SimilarItemsHelper.GetSimilaritems(item, _libraryManager, list, getSimilarityScore).ToList();
+
+            IEnumerable<BaseItem> returnItems = items;
+
+            if (request.Limit.HasValue)
+            {
+                returnItems = returnItems.Take(request.Limit.Value);
+            }
+
+            var dtoOptions = GetDtoOptions(request);
+
+            var result = new ItemsResult
+            {
+                Items = _dtoService.GetBaseItemDtos(returnItems, dtoOptions, user).ToArray(),
+
+                TotalRecordCount = items.Count
+            };
+
+            return result;
+        }
+        
         /// <summary>
         /// Gets the album similarity score.
         /// </summary>

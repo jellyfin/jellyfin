@@ -583,7 +583,13 @@
 
     function renderSimilarItems(page, item, context) {
 
-        var promise;
+        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "Series" || item.Type == "Program" || item.Type == "Recording" || item.Type == "Game" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "ChannelVideoItem") {
+            $('#similarCollapsible', page).show();
+        }
+        else {
+            $('#similarCollapsible', page).hide();
+            return;
+        }
 
         var screenWidth = $(window).width();
 
@@ -593,28 +599,7 @@
             fields: "PrimaryImageAspectRatio,UserData,SyncInfo"
         };
 
-        if (item.Type == "Movie") {
-            promise = ApiClient.getSimilarMovies(item.Id, options);
-        }
-        else if (item.Type == "Trailer" ||
-            (item.Type == "ChannelVideoItem" && item.ExtraType == "Trailer")) {
-            promise = ApiClient.getSimilarTrailers(item.Id, options);
-        }
-        else if (item.Type == "MusicAlbum") {
-            options.limit = 4;
-            promise = ApiClient.getSimilarAlbums(item.Id, options);
-        }
-        else if (item.Type == "Series") {
-            promise = ApiClient.getSimilarShows(item.Id, options);
-        }
-        else if (item.MediaType == "Game") {
-            promise = ApiClient.getSimilarGames(item.Id, options);
-        } else {
-            $('#similarCollapsible', page).hide();
-            return;
-        }
-
-        promise.done(function (result) {
+        ApiClient.getSimilarItems(item.Id, options).done(function (result) {
 
             if (!result.Items.length) {
 
@@ -628,15 +613,15 @@
 
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: item.Type == "MusicAlbum" ? "detailPageSquare" : "detailPagePortrait",
+                shape: item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? "detailPageSquare" : "detailPagePortrait",
                 showParentTitle: item.Type == "MusicAlbum",
-                centerText: item.Type != "MusicAlbum",
-                showTitle: item.Type == "MusicAlbum" || item.Type == "Game",
+                centerText: true,
+                showTitle: item.Type == "MusicAlbum" || item.Type == "Game" || item.Type == "MusicArtist",
                 borderless: item.Type == "Game",
                 context: context,
-                overlayText: item.Type != "MusicAlbum",
                 lazy: true,
-                showDetailsMenu: true
+                showDetailsMenu: true,
+                coverImage: item.Type == "MusicAlbum" || item.Type == "MusicArtist"
             });
 
             $('#similarContent', page).html(html).lazyChildren();

@@ -165,7 +165,7 @@ paper-button.mini {
 }
 
     paper-button.mini .content {
-        padding: 0.3em 0.7em;
+        padding: 0.5em 0.7em;
     }
 
     paper-button.mini.noIcon .content {
