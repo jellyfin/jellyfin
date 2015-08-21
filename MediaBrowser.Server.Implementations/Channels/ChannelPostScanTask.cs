@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Logging;
@@ -28,7 +29,7 @@ namespace MediaBrowser.Server.Implementations.Channels
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
         {
             var users = _userManager.Users
-                .DistinctBy(ChannelDownloadScheduledTask.GetUserDistinctValue)
+                .DistinctBy(GetUserDistinctValue)
                 .Select(i => i.Id.ToString("N"))
                 .ToList();
 
@@ -54,6 +55,15 @@ namespace MediaBrowser.Server.Implementations.Channels
             progress.Report(100);
         }
 
+        public static string GetUserDistinctValue(User user)
+        {
+            var channels = user.Policy.EnabledChannels
+                .OrderBy(i => i)
+                .ToList();
+
+            return string.Join("|", channels.ToArray());
+        }
+        
         private async Task DownloadContent(string user, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var channels = await _channelManager.GetChannelsInternal(new ChannelQuery

@@ -109,7 +109,6 @@
     <Compile Include="Activity\ActivityRepository.cs" />
     <Compile Include="Branding\BrandingConfigurationFactory.cs" />
     <Compile Include="Channels\ChannelConfigurations.cs" />
-    <Compile Include="Channels\ChannelDownloadScheduledTask.cs" />
     <Compile Include="Channels\ChannelDynamicMediaSourceProvider.cs" />
     <Compile Include="Channels\ChannelImageProvider.cs" />
     <Compile Include="Channels\ChannelItemImageProvider.cs" />
