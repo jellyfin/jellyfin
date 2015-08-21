@@ -2,9 +2,11 @@
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Common.Security;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
@@ -19,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
-    public class EmbyTV : ILiveTvService, IDisposable
+    public class EmbyTV : ILiveTvService, IHasRegistrationInfo, IDisposable
     {
         private readonly IApplicationHost _appHpst;
         private readonly ILogger _logger;
@@ -33,10 +35,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private readonly LiveTvManager _liveTvManager;
         private readonly IFileSystem _fileSystem;
+        private readonly ISecurityManager _security;
 
         public static EmbyTV Current;
 
-        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem)
+        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem, ISecurityManager security)
         {
             Current = this;
 
@@ -45,6 +48,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _httpClient = httpClient;
             _config = config;
             _fileSystem = fileSystem;
+            _security = security;
             _liveTvManager = (LiveTvManager)liveTvManager;
             _jsonSerializer = jsonSerializer;
 
@@ -629,9 +633,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 .Where(i => string.Equals(i.SeriesTimerId, seriesTimer.Id, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            foreach (var timer in newTimers)
+            var registration = await GetRegistrationInfo("seriesrecordings").ConfigureAwait(false);
+
+            if (registration.IsValid)
             {
-                _timerProvider.AddOrUpdate(timer);
+                foreach (var timer in newTimers)
+                {
+                    _timerProvider.AddOrUpdate(timer);
+                }
             }
 
             var newTimerIds = newTimers.Select(i => i.Id).ToList();
@@ -727,6 +736,20 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 pair.Value.Cancel();
             }
+        }
+
+        public Task<MBRegistrationRecord> GetRegistrationInfo(string feature)
+        {
+            if (string.Equals(feature, "seriesrecordings", StringComparison.OrdinalIgnoreCase))
+            {
+                return _security.GetRegistrationStatus("embytvseriesrecordings");
+            }
+
+            return Task.FromResult(new MBRegistrationRecord
+            {
+                IsValid = true,
+                IsRegistered = true
+            });
         }
     }
 }

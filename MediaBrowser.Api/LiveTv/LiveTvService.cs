@@ -456,6 +456,20 @@ namespace MediaBrowser.Api.LiveTv
     {
     }
 
+    [Route("/LiveTv/Registration", "GET")]
+    [Authenticated]
+    public class GetLiveTvRegistrationInfo : IReturn<MBRegistrationRecord>
+    {
+        [ApiMember(Name = "ChannelId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ChannelId { get; set; }
+
+        [ApiMember(Name = "ProgramId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string ProgramId { get; set; }
+
+        [ApiMember(Name = "Feature", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public string Feature { get; set; }
+    }
+    
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;
@@ -469,6 +483,13 @@ namespace MediaBrowser.Api.LiveTv
             _userManager = userManager;
             _config = config;
             _httpClient = httpClient;
+        }
+
+        public async Task<object> Get(GetLiveTvRegistrationInfo request)
+        {
+            var result = await _liveTvManager.GetRegistrationInfo(request.ChannelId, request.ProgramId, request.Feature).ConfigureAwait(false);
+
+            return ToOptimizedResult(result);
         }
 
         public async Task<object> Get(GetSchedulesDirectCountries request)

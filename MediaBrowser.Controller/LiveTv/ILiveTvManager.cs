@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
@@ -362,5 +363,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="location">The location.</param>
         /// <returns>Task&lt;List&lt;NameIdPair&gt;&gt;.</returns>
         Task<List<NameIdPair>> GetLineups(string providerType, string providerId, string country, string location);
+
+        /// <summary>
+        /// Gets the registration information.
+        /// </summary>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="programId">The program identifier.</param>
+        /// <param name="feature">The feature.</param>
+        /// <returns>Task&lt;MBRegistrationRecord&gt;.</returns>
+        Task<MBRegistrationRecord> GetRegistrationInfo(string channelId, string programId, string feature);
     }
 }
