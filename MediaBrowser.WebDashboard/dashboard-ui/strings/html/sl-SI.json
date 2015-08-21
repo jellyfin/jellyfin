@@ -1508,5 +1508,8 @@
     "HeaderMetadata": "Metadata",
     "HeaderRecordingOptions": "Recording Options",
     "ButtonShare": "Share",
-    "HeaderUpcomingForKids": "Upcoming for Kids"
+    "HeaderUpcomingForKids": "Upcoming for Kids",
+    "HeaderSetupLiveTV": "Setup Live TV",
+    "LabelTunerType": "Tuner type:",
+    "HelpMoreTunersCanBeAdded": "More tuners can be added later within the Live TV section."
 }

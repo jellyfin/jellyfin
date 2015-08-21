@@ -1,9 +1,11 @@
-﻿using MediaBrowser.Common;
+﻿using System.Net;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Net;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Concurrent;
@@ -620,11 +622,24 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             options.RequestHeaders["token"] = token;
 
-            using (var response = await _httpClient.Get(options).ConfigureAwait(false))
+            try
             {
-                var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Lineups>(response);
+                using (var response = await _httpClient.Get(options).ConfigureAwait(false))
+                {
+                    var root = _jsonSerializer.DeserializeFromStream<ScheduleDirect.Lineups>(response);
 
-                return root.lineups.Any(i => string.Equals(info.ListingsId, i.lineup, StringComparison.OrdinalIgnoreCase));
+                    return root.lineups.Any(i => string.Equals(info.ListingsId, i.lineup, StringComparison.OrdinalIgnoreCase));
+                }
+            }
+            catch (HttpException ex)
+            {
+                // Apparently we're supposed to swallow this
+                if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.BadRequest)
+                {
+                    return false;
+                }
+
+                throw;
             }
         }
 

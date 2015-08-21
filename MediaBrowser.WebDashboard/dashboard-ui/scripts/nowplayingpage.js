@@ -736,6 +736,12 @@
         bindToPlayer($($.mobile.activePage)[0], MediaController.getCurrentPlayer());
     }
 
+    function showSlideshowMenu(page) {
+        require(['scripts/slideshow'], function () {
+            SlideShow.showMenu();
+        });
+    }
+
     $(document).on('pageinitdepends', "#nowPlayingPage", function () {
 
         var page = this;
@@ -747,17 +753,21 @@
 
         $('.requiresJqmCreate', this).trigger('create');
 
+        $('.btnSlideshow').on('click', function () {
+            showSlideshowMenu(page);
+        });
+
         var tabs = page.querySelector('paper-tabs');
         tabs.alignBottom = true;
 
         LibraryBrowser.configureSwipeTabs(page, tabs, page.querySelectorAll('neon-animated-pages')[0]);
 
-        $(MediaController).on('playerchange', function () {
-            updateCastIcon(page);
+        $(tabs).on('iron-select', function () {
+            page.querySelector('neon-animated-pages').selected = this.selected;
         });
 
-        $('paper-tabs').on('iron-select', function () {
-            page.querySelector('neon-animated-pages').selected = this.selected;
+        $(MediaController).on('playerchange', function () {
+            updateCastIcon(page);
         });
 
     }).on('pagebeforeshowready', "#nowPlayingPage", function () {

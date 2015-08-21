@@ -1793,3 +1793,59 @@ paper-icon-button.listviewMenuButton {
         max-height: 160px;
     }
 }
+
+.slideshowContainer {
+    background: #000;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.slideshowImage {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1001;
+    background-position: center center;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+    .slideshowImage.cover {
+        background-size: cover;
+    }
+
+.slideshowImageText {
+    position: fixed;
+    bottom: .25em;
+    right: .5em;
+    color: #fff;
+    z-index: 1002;
+    font-size: 100px;
+}
+
+.btnStopSlideshow {
+    position: fixed;
+    top: 1em;
+    right: 1em;
+    color: #fff;
+    z-index: 1002;
+}
+
+    .btnStopSlideshow iron-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+@media all and (max-width:1200px) {
+
+    .slideshowImageText {
+        font-size: 40px;
+    }
+}
