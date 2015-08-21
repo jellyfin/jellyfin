@@ -166,6 +166,42 @@
             }
 
             LiveTvHelpers.renderOriginalAirDate($('.airDate', page), item);
+
+            if (item.Type == "Person" && item.PremiereDate) {
+
+                try {
+                    var birthday = parseISO8601Date(item.PremiereDate, { toLocal: true }).toDateString();
+
+                    $('#itemBirthday', page).show().html(Globalize.translate('BirthDateValue').replace('{0}', birthday));
+                }
+                catch (err) {
+                    $('#itemBirthday', page).hide();
+                }
+            } else {
+                $('#itemBirthday', page).hide();
+            }
+
+            if (item.Type == "Person" && item.EndDate) {
+
+                try {
+                    var deathday = parseISO8601Date(item.EndDate, { toLocal: true }).toDateString();
+
+                    $('#itemDeathDate', page).show().html(Globalize.translate('DeathDateValue').replace('{0}', deathday));
+                }
+                catch (err) {
+                    $('#itemBirthday', page).hide();
+                }
+            } else {
+            }
+
+            if (item.Type == "Person" && item.ProductionLocations && item.ProductionLocations.length) {
+
+                var gmap = '<a class="textlink" target="_blank" href="https://maps.google.com/maps?q=' + item.ProductionLocations[0] + '">' + item.ProductionLocations[0] + '</a>';
+
+                $('#itemBirthLocation', page).show().html(Globalize.translate('BirthPlaceValue').replace('{0}', gmap)).trigger('create');
+            } else {
+                $('#itemBirthLocation', page).hide();
+            }
         });
 
         if (item.LocationType == "Offline") {

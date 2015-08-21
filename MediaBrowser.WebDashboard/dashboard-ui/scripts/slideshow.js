@@ -6,12 +6,14 @@
 
         menuItems.push({
             name: Globalize.translate('OptionBackdropSlideshow'),
-            id: 'backdrops'
+            id: 'backdrops',
+            ironIcon: 'video-library'
         });
 
         menuItems.push({
             name: Globalize.translate('OptionPhotoSlideshow'),
-            id: 'photos'
+            id: 'photos',
+            ironIcon: 'photo-library'
         });
 
         require(['actionsheet'], function () {
@@ -176,7 +178,7 @@
             var keyframes = [
                     { opacity: '0', offset: 0 },
                     { opacity: '1', offset: 1 }];
-            var timing = { duration: 1500, iterations: 1 };
+            var timing = { duration: 1200, iterations: 1 };
             newCardImageContainer.animate(keyframes, timing).onfinish = onAnimationFinished;
         } else {
             onAnimationFinished();
@@ -216,7 +218,7 @@
         var keyframes = [
           { opacity: '1', offset: 0 },
           { opacity: '0', offset: 1 }];
-        var timing = { duration: 400, iterations: iterations };
+        var timing = { duration: 500, iterations: iterations };
         return elem.animate(keyframes, timing);
     }
 

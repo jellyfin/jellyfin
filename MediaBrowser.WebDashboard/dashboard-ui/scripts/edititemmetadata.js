@@ -320,14 +320,14 @@
         }
 
         if (item.Type == "Person") {
-            $('#lblPremiereDate', page).html(Globalize.translate('LabelBirthDate'));
-            $('#lblYear', page).html(Globalize.translate('LabelBirthYear'));
-            $('#lblEndDate', page).html(Globalize.translate('LabelDeathDate'));
+            page.querySelector('#txtPremiereDate').label = Globalize.translate('LabelBirthDate');
+            page.querySelector('#txtProductionYear').label = Globalize.translate('LabelBirthYear');
+            page.querySelector('#txtEndDate').label = Globalize.translate('LabelDeathDate');
             $('#fldPlaceOfBirth', page).show();
         } else {
-            $('#lblPremiereDate', page).html(Globalize.translate('LabelReleaseDate'));
-            $('#lblYear', page).html(Globalize.translate('LabelYear'));
-            $('#lblEndDate', page).html(Globalize.translate('LabelEndDate'));
+            page.querySelector('#txtPremiereDate').label = Globalize.translate('LabelReleaseDate');
+            page.querySelector('#txtProductionYear').label = Globalize.translate('LabelYear');
+            page.querySelector('#txtEndDate').label = Globalize.translate('LabelEndDate');
             $('#fldPlaceOfBirth', page).hide();
         }
 
