@@ -946,17 +946,15 @@
                 // This will start the transcoding process before actually feeding the video url into the player
                 if ($.browser.safari && !mediaSource.RunTimeTicks) {
 
-                    Dashboard.showLoadingMsg();
+                    Dashboard.showModalLoadingMsg();
 
                     ApiClient.ajax({
                         type: 'GET',
                         url: streamInfo.url.replace('master.m3u8', 'live.m3u8')
-                    }).always(function () {
-
-                        Dashboard.hideLoadingMsg();
-
                     }).done(function () {
                         self.playVideoInternal(item, mediaSource, startPosition, streamInfo, callback);
+                    }).fail(function() {
+                        Dashboard.hideModalLoadingMsg();
                     });
 
                 } else {
@@ -1059,6 +1057,8 @@
 
             }).one("playing.mediaplayerevent", function () {
 
+                Dashboard.hideModalLoadingMsg();
+
                 // For some reason this is firing at the start, so don't bind until playback has begun
                 $(this).on("ended", self.onPlaybackStopped).one('ended', self.playNextAfterEnded);
 
@@ -1091,6 +1091,7 @@
 
             }).on("error.mediaplayerevent", function () {
 
+                Dashboard.hideModalLoadingMsg();
                 self.stop();
 
                 var errorMsg = Globalize.translate('MessageErrorPlayingVideo');
