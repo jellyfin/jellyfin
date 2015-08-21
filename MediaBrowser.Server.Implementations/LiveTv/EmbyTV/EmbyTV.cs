@@ -517,7 +517,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 recordPath = Path.Combine(recordPath, "TV", _fileSystem.GetValidFilename(info.Name));
             }
 
-            recordPath = Path.Combine(recordPath, _fileSystem.GetValidFilename(RecordingHelper.GetRecordingName(timer, info)));
+            var recordingFileName = _fileSystem.GetValidFilename(RecordingHelper.GetRecordingName(timer, info)) + ".ts";
+
+            recordPath = Path.Combine(recordPath, recordingFileName);
             Directory.CreateDirectory(Path.GetDirectoryName(recordPath));
 
             var recording = _recordingProvider.GetAll().FirstOrDefault(x => string.Equals(x.ProgramId, info.Id, StringComparison.OrdinalIgnoreCase));

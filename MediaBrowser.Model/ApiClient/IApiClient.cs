@@ -353,39 +353,7 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetSimilarMoviesAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// Gets the similar trailers async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetSimilarTrailersAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// Gets the similar series async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetSimilarSeriesAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// Gets the similar albums async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetSimilarAlbumsAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// Gets the similar games async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetSimilarGamesAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken));
+        Task<ItemsResult> GetSimilarItemsAsync(SimilarItemsQuery query, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Gets the people async.
@@ -441,20 +409,6 @@ namespace MediaBrowser.Model.ApiClient
         /// <param name="query">The query.</param>
         /// <returns>Task{ItemsResult}.</returns>
         Task<ItemsResult> GetGenresAsync(ItemsByNameQuery query);
-
-        /// <summary>
-        /// Gets the music genres async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetMusicGenresAsync(ItemsByNameQuery query);
-
-        /// <summary>
-        /// Gets the game genres async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetGameGenresAsync(ItemsByNameQuery query);
 
         /// <summary>
         /// Gets the studios async.

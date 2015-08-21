@@ -37,7 +37,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             if (info == null)
             {
-                return timer.ProgramId + ".ts";
+                return timer.ProgramId;
             }
 
             var name = info.Name;
@@ -52,7 +52,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 {
                     name += " " + info.OriginalAirDate.Value.ToString("yyyy-MM-dd");
                 }
-                else if (!string.IsNullOrWhiteSpace(info.EpisodeTitle))
+
+                if (!string.IsNullOrWhiteSpace(info.EpisodeTitle))
                 {
                     name += " " + info.EpisodeTitle;
                 }
@@ -63,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 name += " (" + info.ProductionYear + ")";
             }
 
-            return name + ".ts";
+            return name;
         }
     }
 }

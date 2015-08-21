@@ -1,4 +1,7 @@
-﻿using MediaBrowser.Controller.Activity;
+﻿using MediaBrowser.Api.Movies;
+using MediaBrowser.Api.Music;
+using MediaBrowser.Controller.Activity;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
@@ -9,7 +12,9 @@ using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -238,6 +243,12 @@ namespace MediaBrowser.Api.Library
         public string Id { get; set; }
     }
 
+    [Route("/Items/{Id}/Similar", "GET", Summary = "Downloads item media")]
+    [Authenticated(Roles = "download")]
+    public class GetSimilarItems : BaseGetSimilarItemsFromItem
+    {
+    }
+
     /// <summary>
     /// Class LibraryService
     /// </summary>
@@ -257,12 +268,14 @@ namespace MediaBrowser.Api.Library
         private readonly IActivityManager _activityManager;
         private readonly ILocalizationManager _localization;
         private readonly ILiveTvManager _liveTv;
+        private readonly IChannelManager _channelManager;
+        private readonly ITVSeriesManager _tvManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization, ILiveTvManager liveTv)
+                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization, ILiveTvManager liveTv, IChannelManager channelManager, ITVSeriesManager tvManager)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
@@ -273,6 +286,115 @@ namespace MediaBrowser.Api.Library
             _activityManager = activityManager;
             _localization = localization;
             _liveTv = liveTv;
+            _channelManager = channelManager;
+            _tvManager = tvManager;
+        }
+
+        public object Get(GetSimilarItems request)
+        {
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
+
+            var item = string.IsNullOrEmpty(request.Id) ?
+                (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
+                _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
+
+            if (item is Game)
+            {
+                return new GamesService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService)
+                {
+                    AuthorizationContext = AuthorizationContext,
+                    Logger = Logger,
+                    Request = Request,
+                    SessionContext = SessionContext,
+                    ResultFactory = ResultFactory
+
+                }.Get(new GetSimilarGames
+                {
+                    Fields = request.Fields,
+                    Id = request.Id,
+                    Limit = request.Limit,
+                    UserId = request.UserId
+                });
+            }
+            if (item is MusicAlbum)
+            {
+                return new AlbumsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService)
+                {
+                    AuthorizationContext = AuthorizationContext,
+                    Logger = Logger,
+                    Request = Request,
+                    SessionContext = SessionContext,
+                    ResultFactory = ResultFactory
+
+                }.Get(new GetSimilarAlbums
+                {
+                    Fields = request.Fields,
+                    Id = request.Id,
+                    Limit = request.Limit,
+                    UserId = request.UserId
+                });
+            }
+            if (item is MusicArtist)
+            {
+                return new AlbumsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService)
+                {
+                    AuthorizationContext = AuthorizationContext,
+                    Logger = Logger,
+                    Request = Request,
+                    SessionContext = SessionContext,
+                    ResultFactory = ResultFactory
+
+                }.Get(new GetSimilarArtists
+                {
+                    Fields = request.Fields,
+                    Id = request.Id,
+                    Limit = request.Limit,
+                    UserId = request.UserId
+                });
+            }
+
+            var program = item as IHasProgramAttributes;
+            var channelItem = item as ChannelVideoItem;
+
+            if (item is Movie || (program != null && program.IsMovie) || (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Movie && channelItem.ContentType == ChannelMediaContentType.MovieExtra))
+            {
+                return new MoviesService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _channelManager)
+                {
+                    AuthorizationContext = AuthorizationContext,
+                    Logger = Logger,
+                    Request = Request,
+                    SessionContext = SessionContext,
+                    ResultFactory = ResultFactory
+
+                }.Get(new GetSimilarMovies
+                {
+                    Fields = request.Fields,
+                    Id = request.Id,
+                    Limit = request.Limit,
+                    UserId = request.UserId
+                });
+            }
+
+            if (item is Series || (program != null && program.IsSeries) || (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Episode))
+            {
+                return new TvShowsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _tvManager)
+                {
+                    AuthorizationContext = AuthorizationContext,
+                    Logger = Logger,
+                    Request = Request,
+                    SessionContext = SessionContext,
+                    ResultFactory = ResultFactory
+
+                }.Get(new GetSimilarShows
+                {
+                    Fields = request.Fields,
+                    Id = request.Id,
+                    Limit = request.Limit,
+                    UserId = request.UserId
+                });
+            }
+
+            return new ItemsResult();
         }
 
         public object Get(GetMediaFolders request)

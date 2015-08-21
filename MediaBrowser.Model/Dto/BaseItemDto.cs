@@ -1081,6 +1081,15 @@ namespace MediaBrowser.Model.Dto
             get { return StringHelper.EqualsIgnoreCase(Type, "Studio"); }
         }
 
+        [IgnoreDataMember]
+        public bool SupportsSimilarItems
+        {
+            get
+            {
+                return IsType("Movie") || IsType("Series") || IsType("MusicAlbum") || IsType("MusicArtist") || IsType("Program") || IsType("Recording") || IsType("ChannelVideoItem") || IsType("Game");
+            }
+        }
+
         /// <summary>
         /// Occurs when [property changed].
         /// </summary>
