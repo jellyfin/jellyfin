@@ -243,8 +243,8 @@ namespace MediaBrowser.Api.Library
         public string Id { get; set; }
     }
 
-    [Route("/Items/{Id}/Similar", "GET", Summary = "Downloads item media")]
-    [Authenticated(Roles = "download")]
+    [Route("/Items/{Id}/Similar", "GET", Summary = "Gets similar items")]
+    [Authenticated]
     public class GetSimilarItems : BaseGetSimilarItemsFromItem
     {
     }
@@ -356,7 +356,7 @@ namespace MediaBrowser.Api.Library
             var program = item as IHasProgramAttributes;
             var channelItem = item as ChannelVideoItem;
 
-            if (item is Movie || (program != null && program.IsMovie) || (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Movie && channelItem.ContentType == ChannelMediaContentType.MovieExtra))
+            if (item is Movie || (program != null && program.IsMovie) || (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Movie) || (channelItem != null && channelItem.ContentType == ChannelMediaContentType.MovieExtra))
             {
                 return new MoviesService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _channelManager)
                 {

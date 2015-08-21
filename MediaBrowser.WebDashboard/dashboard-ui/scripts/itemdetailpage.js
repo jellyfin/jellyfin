@@ -373,8 +373,8 @@
 
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
 
-        LibraryBrowser.renderGenres($('.itemGenres', page), item, context, null, isStatic);
-        LibraryBrowser.renderStudios($('.itemStudios', page), item, context, isStatic);
+        LibraryBrowser.renderGenres($('.itemGenres', page), item, null, isStatic);
+        LibraryBrowser.renderStudios($('.itemStudios', page), item, isStatic);
         renderUserDataIcons(page, item);
         LibraryBrowser.renderLinks(page.querySelector('.itemExternalLinks'), item);
 
@@ -504,7 +504,7 @@
 
             var artist = artists[i];
 
-            html.push('<a class="textlink" href="itemdetails.html?context=' + context + '&id=' + artist.Id + '">' + artist.Name + '</a>');
+            html.push('<a class="textlink" href="itemdetails.html?id=' + artist.Id + '">' + artist.Name + '</a>');
 
         }
 
@@ -649,7 +649,7 @@
         }
 
         if (item.Studios.length) {
-            html += ' on <a class="textlink" href="itemdetails.html?context=' + context + '&id=' + item.Studios[0].Id + '">' + item.Studios[0].Name + '</a>';
+            html += ' on <a class="textlink" href="itemdetails.html?id=' + item.Studios[0].Id + '">' + item.Studios[0].Name + '</a>';
         }
 
         if (html) {
@@ -1485,7 +1485,7 @@
             }
 
             var cast = casts[i];
-            var href = isStatic ? '#' : 'itemdetails.html?context=' + context + '&id=' + cast.Id + '';
+            var href = isStatic ? '#' : 'itemdetails.html?id=' + cast.Id + '';
             html += '<a class="tileItem smallPosterTileItem" href="' + href + '">';
 
             var imgUrl;

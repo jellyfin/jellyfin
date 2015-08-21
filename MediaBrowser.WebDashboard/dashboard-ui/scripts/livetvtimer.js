@@ -23,7 +23,6 @@
 
     function renderTimer(page, item) {
 
-        var context = 'livetv';
         currentItem = item;
 
         var programInfo = item.ProgramInfo || {};
@@ -34,7 +33,7 @@
 
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(programInfo));
 
-        LibraryBrowser.renderGenres($('.itemGenres', page), programInfo, context);
+        LibraryBrowser.renderGenres($('.itemGenres', page), programInfo);
         LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), programInfo);
 
         if (programInfo.ImageTags && programInfo.ImageTags.Primary) {

@@ -6,15 +6,13 @@
 
         currentProgram = program;
 
-        var context = 'livetv';
-
         $('.itemName', page).html(program.Name);
 
         $('.itemEpisodeName', page).html(program.EpisodeTitle || '');
 
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(program));
 
-        LibraryBrowser.renderGenres($('.itemGenres', page), program, context);
+        LibraryBrowser.renderGenres($('.itemGenres', page), program);
         LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), program);
 
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(program));

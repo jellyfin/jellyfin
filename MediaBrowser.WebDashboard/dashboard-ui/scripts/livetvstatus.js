@@ -210,7 +210,7 @@
                 html += '</a>';
                 html += '</paper-item-body>';
 
-                html += '<paper-icon-button icon="cancel" data-id="' + device.Id + '" title="' + Globalize.translate('ButtonDelete') + '" class="btnDeleteDevice"></paper-icon-button>';
+                html += '<paper-icon-button icon="delete" data-id="' + device.Id + '" title="' + Globalize.translate('ButtonDelete') + '" class="btnDeleteDevice"></paper-icon-button>';
                 html += '</paper-icon-item>';
             }
 
@@ -300,7 +300,7 @@
                 var provider = providers[i];
                 html += '<paper-icon-item>';
 
-                html += '<paper-fab class="listAvatar" icon="dvr" item-icon></paper-fab>';
+                html += '<paper-fab class="listAvatar" style="background:#52B54B;" icon="dvr" item-icon></paper-fab>';
 
                 html += '<paper-item-body two-line>';
 
@@ -312,7 +312,7 @@
 
                 html += '</a>';
                 html += '</paper-item-body>';
-                html += '<paper-icon-button icon="cancel" data-id="' + provider.Id + '" title="' + Globalize.translate('ButtonDelete') + '" class="btnDelete"></paper-icon-button>';
+                html += '<paper-icon-button icon="delete" data-id="' + provider.Id + '" title="' + Globalize.translate('ButtonDelete') + '" class="btnDelete"></paper-icon-button>';
                 html += '</paper-icon-item>';
             }
 

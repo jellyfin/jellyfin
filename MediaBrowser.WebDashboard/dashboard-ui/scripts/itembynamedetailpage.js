@@ -80,7 +80,7 @@
             html += '<h1 class="listHeader" style="display:inline-block;vertical-align:middle;">';
             html += section.name;
             html += '</h1>';
-            html += '<a href="#" class="clearLink hide" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more noIcon">' + Globalize.translate('ButtonMore') + '</paper-button></a>';
+            html += '<a href="#" class="clearLink hide" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more mini noIcon">' + Globalize.translate('ButtonMore') + '</paper-button></a>';
             html += '</div>';
 
             html += '<div class="itemsContainer">';
@@ -216,7 +216,7 @@
                     IncludeItemTypes: "Audio",
                     PersonTypes: "",
                     ArtistIds: "",
-                    Limit: 50
+                    Limit: 30
                 }, {
                     playFromHere: true,
                     defaultAction: 'playallfromhere',

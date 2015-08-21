@@ -428,7 +428,7 @@
                 var artist = artists[i];
 
                 var css = cssClass ? (' class="' + cssClass + '"') : '';
-                html.push('<a' + css + ' href="itemdetails.html?context=music&id=' + artist.Id + '">' + artist.Name + '</a>');
+                html.push('<a' + css + ' href="itemdetails.html?id=' + artist.Id + '">' + artist.Name + '</a>');
 
             }
 
@@ -745,8 +745,6 @@
                 return item.url;
             }
 
-            var contextSuffix = context ? ('&context=' + context) : '';
-
             // Handle search hints
             var id = item.Id || item.ItemId;
 
@@ -808,41 +806,42 @@
             if (item.Type == "Program") {
                 return "itemdetails.html?id=" + id;
             }
-            if (item.Type == "Series") {
-                return "itemdetails.html?id=" + id + contextSuffix;
-            }
-            if (item.Type == "Season") {
-                return "itemdetails.html?id=" + id + contextSuffix;
-            }
+
             if (item.Type == "BoxSet") {
-                return "itemdetails.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "MusicAlbum") {
-                return "itemdetails.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "GameSystem") {
-                return "itemdetails.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "Genre") {
-                return "itemdetails.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "MusicGenre") {
-                return "itemdetails.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "GameGenre") {
-                return "itemdetails.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "Studio") {
-                return "itemdetails.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "Person") {
-                return "itemdetails.html?id=" + id + contextSuffix;
+                return "itemdetails.html?id=" + id;
             }
             if (item.Type == "Recording") {
                 return "itemdetails.html?id=" + id;
             }
 
             if (item.Type == "MusicArtist") {
+                return "itemdetails.html?id=" + id;
+            }
+
+            var contextSuffix = context ? ('&context=' + context) : '';
+
+            if (item.Type == "Series" || item.Type == "Season" || item.Type == "Episode") {
                 return "itemdetails.html?id=" + id + contextSuffix;
             }
 
@@ -850,7 +849,7 @@
                 return id ? "itemlist.html?parentId=" + id : "#";
             }
 
-            return "itemdetails.html?id=" + id + contextSuffix;
+            return "itemdetails.html?id=" + id;
         },
 
         getImageUrl: function (item, type, index, options) {
@@ -3166,7 +3165,7 @@
 
         },
 
-        renderStudios: function (elem, item, context, isStatic) {
+        renderStudios: function (elem, item, isStatic) {
 
             if (item.Studios && item.Studios.length && item.Type != "Series") {
 
@@ -3181,7 +3180,7 @@
                     if (isStatic) {
                         html += item.Studios[i].Name;
                     } else {
-                        html += '<a class="textlink" href="itemdetails.html?context=' + context + '&id=' + item.Studios[i].Id + '">' + item.Studios[i].Name + '</a>';
+                        html += '<a class="textlink" href="itemdetails.html?id=' + item.Studios[i].Id + '">' + item.Studios[i].Name + '</a>';
                     }
                 }
 
@@ -3197,7 +3196,7 @@
             }
         },
 
-        renderGenres: function (elem, item, context, limit, isStatic) {
+        renderGenres: function (elem, item, limit, isStatic) {
 
             var html = '';
 
@@ -3222,7 +3221,7 @@
                 if (isStatic) {
                     html += genres[i];
                 } else {
-                    html += '<a class="textlink" href="itemdetails.html?context=' + context + '&' + param + '=' + ApiClient.encodeName(genres[i]) + '">' + genres[i] + '</a>';
+                    html += '<a class="textlink" href="itemdetails.html?' + param + '=' + ApiClient.encodeName(genres[i]) + '">' + genres[i] + '</a>';
                 }
             }
 

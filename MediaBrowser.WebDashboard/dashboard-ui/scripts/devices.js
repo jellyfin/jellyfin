@@ -27,44 +27,45 @@
 
         var html = '';
 
-        html += '<ul data-role="listview" data-inset="true" data-split-icon="minus">';
+        html += '<div class="paperList">';
 
         html += devices.map(function (d) {
 
             var deviceHtml = '';
-            deviceHtml += '<li>';
+            deviceHtml += '<paper-icon-item>';
 
-            deviceHtml += '<a href="device.html?id=' + d.Id + '">';
+            deviceHtml += '<paper-fab class="listAvatar" style="background:#999;" icon="tablet-android" item-icon></paper-fab>';
 
-            deviceHtml += '<h3>';
+            deviceHtml += '<paper-item-body three-line>';
+            deviceHtml += '<a class="clearLink" href="device.html?id=' + d.Id + '">';
+
+            deviceHtml += '<div>';
             deviceHtml += d.Name;
-            deviceHtml += '</h3>';
+            deviceHtml += '</div>';
 
             if (d.AppName) {
-                deviceHtml += '<p style="color:blue;">';
+                deviceHtml += '<div secondary>';
                 deviceHtml += d.AppName;
-                deviceHtml += '</p>';
+                deviceHtml += '</div>';
             }
 
             if (d.LastUserName) {
-                deviceHtml += '<p style="color:green;">';
+                deviceHtml += '<div secondary>';
                 deviceHtml += Globalize.translate('DeviceLastUsedByUserName', d.LastUserName);
-                deviceHtml += '</p>';
+                deviceHtml += '</div>';
             }
 
             deviceHtml += '</a>';
+            deviceHtml += '</paper-item-body>';
 
-            deviceHtml += '<a href="#" data-icon="minus" class="btnDeleteDevice" data-id="' + d.Id + '">';
-            deviceHtml += Globalize.translate('Delete');
-            deviceHtml += '</a>';
+            deviceHtml += '<paper-icon-button icon="delete" data-id="' + d.Id + '" title="' + Globalize.translate('ButtonDelete') + '" class="btnDeleteDevice"></paper-icon-button>';
+            deviceHtml += '</paper-icon-item>';
 
-
-            deviceHtml += '</li>';
             return deviceHtml;
 
         }).join('');
 
-        html += '</ul>';
+        html += '</div>';
 
         var elem = $('.devicesList', page).html(html).trigger('create');
 
