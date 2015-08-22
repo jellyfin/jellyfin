@@ -43,6 +43,13 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
             _providerManager = providerManager;
         }
 
+        public Task<FileOrganizationResult> OrganizeEpisodeFile(string path, CancellationToken cancellationToken)
+        {
+            var options = _config.GetAutoOrganizeOptions().TvOptions;
+
+            return OrganizeEpisodeFile(path, options, false, cancellationToken);
+        }
+
         public async Task<FileOrganizationResult> OrganizeEpisodeFile(string path, TvFileOrganizationOptions options, bool overwriteExisting, CancellationToken cancellationToken)
         {
             _logger.Info("Sorting file {0}", path);
@@ -56,7 +63,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                 FileSize = new FileInfo(path).Length
             };
 
-            var namingOptions = ((LibraryManager) _libraryManager).GetNamingOptions();
+            var namingOptions = ((LibraryManager)_libraryManager).GetNamingOptions();
             var resolver = new Naming.TV.EpisodeResolver(namingOptions, new PatternsLogger());
 
             var episodeInfo = resolver.Resolve(path, false) ??
@@ -254,7 +261,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                     .ToList();
 
                 var targetFilenameWithoutExtension = Path.GetFileNameWithoutExtension(targetPath);
-                
+
                 foreach (var file in files)
                 {
                     directory = Path.GetDirectoryName(file);

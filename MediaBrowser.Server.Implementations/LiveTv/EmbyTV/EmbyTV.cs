@@ -3,14 +3,20 @@ using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Security;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.FileOrganization;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.FileOrganization;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using MediaBrowser.Server.Implementations.FileOrganization;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -21,12 +27,12 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
-    public class EmbyTV : ILiveTvService/*, IHasRegistrationInfo*/, IDisposable
+    public class EmbyTV : ILiveTvService, IHasRegistrationInfo, IDisposable
     {
         private readonly IApplicationHost _appHpst;
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
-        private readonly IConfigurationManager _config;
+        private readonly IServerConfigurationManager _config;
         private readonly IJsonSerializer _jsonSerializer;
 
         private readonly ItemDataProvider<RecordingInfo> _recordingProvider;
@@ -37,9 +43,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         private readonly IFileSystem _fileSystem;
         private readonly ISecurityManager _security;
 
+        private readonly ILibraryMonitor _libraryMonitor;
+        private readonly ILibraryManager _libraryManager;
+        private readonly IProviderManager _providerManager;
+        private readonly IFileOrganizationService _organizationService;
+
         public static EmbyTV Current;
 
-        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem, ISecurityManager security)
+        public EmbyTV(IApplicationHost appHost, ILogger logger, IJsonSerializer jsonSerializer, IHttpClient httpClient, IServerConfigurationManager config, ILiveTvManager liveTvManager, IFileSystem fileSystem, ISecurityManager security, ILibraryManager libraryManager, ILibraryMonitor libraryMonitor, IProviderManager providerManager, IFileOrganizationService organizationService)
         {
             Current = this;
 
@@ -49,6 +60,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _config = config;
             _fileSystem = fileSystem;
             _security = security;
+            _libraryManager = libraryManager;
+            _libraryMonitor = libraryMonitor;
+            _providerManager = providerManager;
+            _organizationService = organizationService;
             _liveTvManager = (LiveTvManager)liveTvManager;
             _jsonSerializer = jsonSerializer;
 
@@ -610,6 +625,36 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _recordingProvider.Update(recording);
             _timerProvider.Delete(timer);
             _logger.Info("Recording was a success");
+
+            if (recording.Status == RecordingStatus.Completed)
+            {
+                OnSuccessfulRecording(recording);
+            }
+        }
+
+        private async void OnSuccessfulRecording(RecordingInfo recording)
+        {
+            if (GetConfiguration().EnableAutoOrganize)
+            {
+                if (recording.IsSeries)
+                {
+                    try
+                    {
+                        var organize = new EpisodeFileOrganizer(_organizationService, _config, _fileSystem, _logger, _libraryManager, _libraryMonitor, _providerManager);
+
+                        var result = await organize.OrganizeEpisodeFile(recording.Path, CancellationToken.None).ConfigureAwait(false);
+
+                        if (result.Status == FileSortingStatus.Success)
+                        {
+                            _recordingProvider.Delete(recording);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error processing new recording", ex);
+                    }
+                }
+            }
         }
 
         private ProgramInfo GetProgramInfoFromCache(string channelId, string programId)

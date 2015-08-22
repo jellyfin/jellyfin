@@ -7,6 +7,7 @@ namespace MediaBrowser.Model.LiveTv
         public int? GuideDays { get; set; }
         public bool EnableMovieProviders { get; set; }
         public string RecordingPath { get; set; }
+        public bool EnableAutoOrganize { get; set; }
 
         public List<TunerHostInfo> TunerHosts { get; set; }
         public List<ListingsProviderInfo> ListingProviders { get; set; }
