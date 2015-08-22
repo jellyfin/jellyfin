@@ -837,5 +837,6 @@
     "OptionBanner": "\u05d1\u05d0\u05e0\u05e8",
     "NoSlideshowContentFound": "No slideshow images were found.",
     "OptionPhotoSlideshow": "Photo slideshow",
-    "OptionBackdropSlideshow": "Backdrop slideshow"
+    "OptionBackdropSlideshow": "Backdrop slideshow",
+    "HeaderTopPlugins": "Top Plugins"
 }

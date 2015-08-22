@@ -837,5 +837,6 @@
     "OptionBanner": "Baner",
     "NoSlideshowContentFound": "No slideshow images were found.",
     "OptionPhotoSlideshow": "Photo slideshow",
-    "OptionBackdropSlideshow": "Backdrop slideshow"
+    "OptionBackdropSlideshow": "Backdrop slideshow",
+    "HeaderTopPlugins": "Top Plugins"
 }
