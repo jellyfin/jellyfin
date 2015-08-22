@@ -13,12 +13,14 @@ namespace MediaBrowser.Server.Implementations.Channels
         private readonly IChannelManager _channelManager;
         private readonly IUserManager _userManager;
         private readonly ILogger _logger;
+        private readonly ILibraryManager _libraryManager;
 
-        public RefreshChannelsScheduledTask(IChannelManager channelManager, IUserManager userManager, ILogger logger)
+        public RefreshChannelsScheduledTask(IChannelManager channelManager, IUserManager userManager, ILogger logger, ILibraryManager libraryManager)
         {
             _channelManager = channelManager;
             _userManager = userManager;
             _logger = logger;
+            _libraryManager = libraryManager;
         }
 
         public string Name
@@ -42,7 +44,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             await manager.RefreshChannels(new Progress<double>(), cancellationToken).ConfigureAwait(false);
 
-            await new ChannelPostScanTask(_channelManager, _userManager, _logger).Run(progress, cancellationToken)
+            await new ChannelPostScanTask(_channelManager, _userManager, _logger, _libraryManager).Run(progress, cancellationToken)
                     .ConfigureAwait(false);
         }
 

@@ -18,12 +18,14 @@ namespace MediaBrowser.Server.Implementations.Channels
         private readonly IChannelManager _channelManager;
         private readonly IUserManager _userManager;
         private readonly ILogger _logger;
+        private readonly ILibraryManager _libraryManager;
 
-        public ChannelPostScanTask(IChannelManager channelManager, IUserManager userManager, ILogger logger)
+        public ChannelPostScanTask(IChannelManager channelManager, IUserManager userManager, ILogger logger, ILibraryManager libraryManager)
         {
             _channelManager = channelManager;
             _userManager = userManager;
             _logger = logger;
+            _libraryManager = libraryManager;
         }
 
         public async Task Run(IProgress<double> progress, CancellationToken cancellationToken)
@@ -52,6 +54,8 @@ namespace MediaBrowser.Server.Implementations.Channels
                 progress.Report(percent * 100);
             }
 
+            await CleanDatabase(cancellationToken).ConfigureAwait(false);
+            
             progress.Report(100);
         }
 
@@ -63,7 +67,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             return string.Join("|", channels.ToArray());
         }
-        
+
         private async Task DownloadContent(string user, CancellationToken cancellationToken, IProgress<double> progress)
         {
             var channels = await _channelManager.GetChannelsInternal(new ChannelQuery
@@ -114,6 +118,59 @@ namespace MediaBrowser.Server.Implementations.Channels
             }
 
             progress.Report(100);
+        }
+
+        private async Task CleanDatabase(CancellationToken cancellationToken)
+        {
+            var allChannels = await _channelManager.GetChannelsInternal(new ChannelQuery { }, cancellationToken);
+
+            var allIds = _libraryManager.GetItemIds(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Channel).Name }
+            });
+
+            var invalidIds = allIds
+                .Except(allChannels.Items.Select(i => i.Id).ToList())
+                .ToList();
+
+            foreach (var id in invalidIds)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await CleanChannel(id, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        private async Task CleanChannel(Guid id, CancellationToken cancellationToken)
+        {
+            _logger.Debug("Cleaning channel {0} from database", id);
+
+            // Delete all channel items
+            var allIds = _libraryManager.GetItemIds(new InternalItemsQuery
+            {
+                ChannelIds = new[] { id.ToString("N") }
+            });
+
+            foreach (var deleteId in allIds)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await DeleteItem(deleteId).ConfigureAwait(false);
+            }
+
+            // Finally, delete the channel itself
+            await DeleteItem(id).ConfigureAwait(false);
+        }
+
+        private Task DeleteItem(Guid id)
+        {
+            var item = _libraryManager.GetItemById(id);
+
+            return _libraryManager.DeleteItem(item, new DeleteOptions
+            {
+                DeleteFileLocation = false
+
+            });
         }
 
         private async Task GetAllItems(string user, string channelId, string folderId, int currentRefreshLevel, int maxRefreshLevel, IProgress<double> progress, CancellationToken cancellationToken)
