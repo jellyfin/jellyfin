@@ -149,9 +149,14 @@
 
                 }).done(function (result) {
 
-                    Dashboard.processServerConfigurationUpdateResult();
+                    Dashboard.hideLoadingMsg();
+                    if (options.showConfirmation !== false) {
+                        Dashboard.processServerConfigurationUpdateResult();
+                    }
+                    $(self).trigger('submitted');
 
                 }).fail(function () {
+                    Dashboard.hideLoadingMsg();
                     Dashboard.alert({
                         message: Globalize.translate('ErrorSavingTvProvider')
                     });

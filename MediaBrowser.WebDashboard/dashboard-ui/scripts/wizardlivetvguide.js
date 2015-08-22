@@ -2,23 +2,42 @@
 
     var guideController;
 
-    function init(page, type, providerId) {
+    function init(page, type) {
 
-        var url = 'tvproviders/' + type + '.js';
+        Dashboard.showLoadingMsg();
 
-        require([url], function (factory) {
+        var apiClient = ApiClient;
 
-            var instance = new factory(page, providerId, {
-                showCancelButton: false,
-                showSubmitButton: false
+        apiClient.getJSON(apiClient.getUrl('Startup/Configuration')).done(function (config) {
+
+            var providerId = null;
+
+            if (config.LiveTvGuideProviderType.toLowerCase() == type.toLowerCase()) {
+                if (config.LiveTvGuideProviderId) {
+                    providerId = config.LiveTvGuideProviderId;
+                }
+            }
+
+            var url = 'tvproviders/' + type.toLowerCase() + '.js';
+
+            require([url], function (factory) {
+
+                var instance = new factory(page, providerId, {
+                    showCancelButton: false,
+                    showSubmitButton: false,
+                    showConfirmation: false
+                });
+
+                Dashboard.hideLoadingMsg();
+                instance.init();
+                guideController = instance;
+
+                $(guideController).on('submitted', skip);
             });
-
-            instance.init();
-            guideController = instance;
         });
     }
 
-    function loadTemplate(page, type, providerId) {
+    function loadTemplate(page, type) {
 
         guideController = null;
 
@@ -33,7 +52,7 @@
             elem.innerHTML = Globalize.translateDocument(html);
             $(elem).trigger('create');
 
-            init(page, type, providerId);
+            init(page, type);
         });
     }
 
@@ -55,6 +74,11 @@
         guideController.submit();
     }
 
+    function reload(page) {
+
+        $('#selectType', page).trigger('change');
+    }
+
     $(document).on('pageinitdepends', "#wizardGuidePage", function () {
 
         var page = this;
@@ -71,7 +95,7 @@
 
         var page = this;
 
-        $('#selectType', page).trigger('change');
+        reload(page);
     });
 
 })(jQuery, document, window);
