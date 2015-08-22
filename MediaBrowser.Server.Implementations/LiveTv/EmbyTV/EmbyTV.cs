@@ -482,10 +482,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             {
                 _logger.ErrorException("Error recording stream", ex);
 
-                const int retryIntervalSeconds = 60;
-                _logger.Debug("Retrying recording in {0} seconds.", retryIntervalSeconds);
+                if (DateTime.UtcNow < timer.EndDate)
+                {
+                    const int retryIntervalSeconds = 60;
+                    _logger.Debug("Retrying recording in {0} seconds.", retryIntervalSeconds);
 
-                _timerProvider.StartTimer(timer, TimeSpan.FromSeconds(retryIntervalSeconds));
+                    _timerProvider.StartTimer(timer, TimeSpan.FromSeconds(retryIntervalSeconds));
+                }
             }
         }
 
