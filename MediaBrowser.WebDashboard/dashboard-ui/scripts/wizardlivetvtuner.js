@@ -22,6 +22,14 @@
 
                 Dashboard.hideLoadingMsg();
                 navigateToNextPage(config);
+
+            }).fail(function () {
+
+                Dashboard.hideLoadingMsg();
+                Dashboard.alert({
+                    message: Globalize.translate('ErrorSavingTvProvider')
+                });
+
             });
         });
 

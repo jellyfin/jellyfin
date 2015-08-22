@@ -67,6 +67,7 @@
             } else {
                 Dashboard.navigate('wizardagreement.html');
             }
+
         });
     }
 
