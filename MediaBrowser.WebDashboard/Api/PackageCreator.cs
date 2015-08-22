@@ -61,7 +61,7 @@ namespace MediaBrowser.WebDashboard.Api
                 // jQuery ajax doesn't seem to handle if-modified-since correctly
                 if (IsFormat(path, "html"))
                 {
-                    if (IsCoreHtml(path))
+                    if (IsCoreHtml(path) && path.IndexOf(".template.html", StringComparison.OrdinalIgnoreCase) == -1)
                     {
                         resourceStream = await ModifyHtml(resourceStream, mode, appVersion, localizationCulture, enableMinification).ConfigureAwait(false);
                     }

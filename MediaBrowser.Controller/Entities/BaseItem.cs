@@ -485,6 +485,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the parent.
         /// </summary>
         /// <value>The parent.</value>
+        [IgnoreDataMember]
         public Folder Parent
         {
             get

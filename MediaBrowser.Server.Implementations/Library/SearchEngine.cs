@@ -33,26 +33,17 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public async Task<QueryResult<SearchHintInfo>> GetSearchHints(SearchQuery query)
         {
-            IEnumerable<BaseItem> inputItems;
-
-            Func<BaseItem, bool> filter = i => !(i is ICollectionFolder);
-
             User user = null;
 
             if (string.IsNullOrWhiteSpace(query.UserId))
             {
-                inputItems = _libraryManager.RootFolder.GetRecursiveChildren(filter);
             }
             else
             {
                 user = _userManager.GetUserById(query.UserId);
-
-                inputItems = user.RootFolder.GetRecursiveChildren(user, filter);
             }
 
-            inputItems = _libraryManager.ReplaceVideosWithPrimaryVersions(inputItems);
-
-            var results = await GetSearchHints(inputItems, query, user).ConfigureAwait(false);
+            var results = await GetSearchHints(query, user).ConfigureAwait(false);
 
             var searchResultArray = results.ToArray();
             results = searchResultArray;
@@ -77,15 +68,22 @@ namespace MediaBrowser.Server.Implementations.Library
             };
         }
 
+        private void AddIfMissing(List<string> list, string value)
+        {
+            if (!list.Contains(value, StringComparer.OrdinalIgnoreCase))
+            {
+                list.Add(value);
+            }
+        }
+
         /// <summary>
         /// Gets the search hints.
         /// </summary>
-        /// <param name="inputItems">The input items.</param>
         /// <param name="query">The query.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{SearchHintResult}.</returns>
         /// <exception cref="System.ArgumentNullException">searchTerm</exception>
-        private Task<IEnumerable<SearchHintInfo>> GetSearchHints(IEnumerable<BaseItem> inputItems, SearchQuery query, User user)
+        private Task<IEnumerable<SearchHintInfo>> GetSearchHints(SearchQuery query, User user)
         {
             var searchTerm = query.SearchTerm;
 
@@ -100,207 +98,80 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var hints = new List<Tuple<BaseItem, string, int>>();
 
-            var items = inputItems.Where(i => !(i is MusicArtist)).ToList();
+            var excludeItemTypes = new List<string>();
+            var includeItemTypes = (query.IncludeItemTypes ?? new string[] { }).ToList();
 
-            if (query.IncludeMedia)
+            excludeItemTypes.Add(typeof(Year).Name);
+
+            if (query.IncludeGenres && (includeItemTypes.Count == 0 || includeItemTypes.Contains("Genre", StringComparer.OrdinalIgnoreCase)))
             {
-                var mediaItems = _libraryManager.GetItems(new InternalItemsQuery
+                if (!query.IncludeMedia)
                 {
-                    NameContains = searchTerm,
-                    ExcludeItemTypes = new[]
-                    {
-                        typeof (Person).Name,
-                        typeof (Genre).Name,
-                        typeof (MusicArtist).Name,
-                        typeof (GameGenre).Name,
-                        typeof (MusicGenre).Name,
-                        typeof (Year).Name,
-                        typeof (Studio).Name
-                    },
-                    IncludeItemTypes = query.IncludeItemTypes
-
-                }).Items;
-
-                // Add search hints based on item name
-                hints.AddRange(mediaItems.Where(i => IncludeInSearch(i) && (user == null || i.IsVisibleStandalone(user)) && !(i is CollectionFolder)).Select(item =>
-                {
-                    var index = GetIndex(item.Name, searchTerm, terms);
-
-                    return new Tuple<BaseItem, string, int>(item, index.Item1, index.Item2);
-                }));
-            }
-
-            if (query.IncludeArtists && (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains("MusicArtist", StringComparer.OrdinalIgnoreCase)))
-            {
-                // Find artists
-                var artists = items.OfType<Audio>()
-                    .SelectMany(i => i.AllArtists)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .DistinctNames()
-                    .ToList();
-
-                foreach (var item in artists)
-                {
-                    var index = GetIndex(item, searchTerm, terms);
-
-                    if (index.Item2 != -1)
-                    {
-                        try
-                        {
-                            var artist = _libraryManager.GetArtist(item);
-
-                            hints.Add(new Tuple<BaseItem, string, int>(artist, index.Item1, index.Item2));
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error getting {0}", ex, item);
-                        }
-                    }
+                    AddIfMissing(includeItemTypes, typeof(Genre).Name);
+                    AddIfMissing(includeItemTypes, typeof(GameGenre).Name);
+                    AddIfMissing(includeItemTypes, typeof(MusicGenre).Name);
                 }
             }
-
-            if (query.IncludeGenres && (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains("Genre", StringComparer.OrdinalIgnoreCase)))
+            else
             {
-                // Find genres, from non-audio items
-                var genres = items.Where(i => !(i is IHasMusicGenres) && !(i is Game))
-                    .SelectMany(i => i.Genres)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
-                foreach (var item in genres)
-                {
-                    var index = GetIndex(item, searchTerm, terms);
-
-                    if (index.Item2 != -1)
-                    {
-                        try
-                        {
-                            var genre = _libraryManager.GetGenre(item);
-
-                            hints.Add(new Tuple<BaseItem, string, int>(genre, index.Item1, index.Item2));
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error getting {0}", ex, item);
-                        }
-                    }
-                }
-
-                // Find music genres
-                var musicGenres = items.Where(i => i is IHasMusicGenres)
-                    .SelectMany(i => i.Genres)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
-                foreach (var item in musicGenres)
-                {
-                    var index = GetIndex(item, searchTerm, terms);
-
-                    if (index.Item2 != -1)
-                    {
-                        try
-                        {
-                            var genre = _libraryManager.GetMusicGenre(item);
-
-                            hints.Add(new Tuple<BaseItem, string, int>(genre, index.Item1, index.Item2));
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error getting {0}", ex, item);
-                        }
-                    }
-                }
-
-                // Find music genres
-                var gameGenres = items.OfType<Game>()
-                    .SelectMany(i => i.Genres)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
-                foreach (var item in gameGenres)
-                {
-                    var index = GetIndex(item, searchTerm, terms);
-
-                    if (index.Item2 != -1)
-                    {
-                        try
-                        {
-                            var genre = _libraryManager.GetGameGenre(item);
-
-                            hints.Add(new Tuple<BaseItem, string, int>(genre, index.Item1, index.Item2));
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error getting {0}", ex, item);
-                        }
-                    }
-                }
+                AddIfMissing(excludeItemTypes, typeof(Genre).Name);
+                AddIfMissing(excludeItemTypes, typeof(GameGenre).Name);
+                AddIfMissing(excludeItemTypes, typeof(MusicGenre).Name);
             }
 
-            if (query.IncludeStudios && (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains("Studio", StringComparer.OrdinalIgnoreCase)))
+            if (query.IncludePeople && (includeItemTypes.Count == 0 || includeItemTypes.Contains("People", StringComparer.OrdinalIgnoreCase)))
             {
-                // Find studios
-                var studios = items.SelectMany(i => i.Studios)
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
-                foreach (var item in studios)
+                if (!query.IncludeMedia)
                 {
-                    var index = GetIndex(item, searchTerm, terms);
-
-                    if (index.Item2 != -1)
-                    {
-                        try
-                        {
-                            var studio = _libraryManager.GetStudio(item);
-
-                            hints.Add(new Tuple<BaseItem, string, int>(studio, index.Item1, index.Item2));
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error getting {0}", ex, item);
-                        }
-                    }
+                    AddIfMissing(includeItemTypes, typeof(Person).Name);
                 }
             }
-
-            if (query.IncludePeople && (query.IncludeItemTypes.Length == 0 || query.IncludeItemTypes.Contains("Person", StringComparer.OrdinalIgnoreCase)))
+            else
             {
-                var itemIds = items.Select(i => i.Id).ToList();
+                AddIfMissing(excludeItemTypes, typeof(Person).Name);
+            }
 
-                // Find persons
-                var persons = _libraryManager.GetPeople(new InternalPeopleQuery
+            if (query.IncludeStudios && (includeItemTypes.Count == 0 || includeItemTypes.Contains("Studio", StringComparer.OrdinalIgnoreCase)))
+            {
+                if (!query.IncludeMedia)
                 {
-                    NameContains = searchTerm
-                })
-                    .Where(i => itemIds.Contains(i.ItemId))
-                    .Select(i => i.Name)
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-
-                foreach (var item in persons)
-                {
-                    var index = GetIndex(item, searchTerm, terms);
-
-                    if (index.Item2 != -1)
-                    {
-                        try
-                        {
-                            var person = _libraryManager.GetPerson(item);
-
-                            hints.Add(new Tuple<BaseItem, string, int>(person, index.Item1, index.Item2));
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error getting {0}", ex, item);
-                        }
-                    }
+                    AddIfMissing(includeItemTypes, typeof(Studio).Name);
                 }
             }
+            else
+            {
+                AddIfMissing(excludeItemTypes, typeof(Studio).Name);
+            }
+
+            if (query.IncludeArtists && (includeItemTypes.Count == 0 || includeItemTypes.Contains("MusicArtist", StringComparer.OrdinalIgnoreCase)))
+            {
+                if (!query.IncludeMedia)
+                {
+                    AddIfMissing(includeItemTypes, typeof(MusicArtist).Name);
+                }
+            }
+            else
+            {
+                AddIfMissing(excludeItemTypes, typeof(MusicArtist).Name);
+            }
+
+            var mediaItems = _libraryManager.GetItems(new InternalItemsQuery
+            {
+                NameContains = searchTerm,
+                ExcludeItemTypes = excludeItemTypes.ToArray(),
+                IncludeItemTypes = includeItemTypes.ToArray(),
+                MaxParentalRating = user == null ? null : user.Policy.MaxParentalRating,
+                Limit = query.Limit.HasValue ? query.Limit * 3 : null
+
+            }).Items;
+
+            // Add search hints based on item name
+            hints.AddRange(mediaItems.Where(i => IncludeInSearch(i) && IsVisible(i, user) && !(i is CollectionFolder)).Select(item =>
+            {
+                var index = GetIndex(item.Name, searchTerm, terms);
+
+                return new Tuple<BaseItem, string, int>(item, index.Item1, index.Item2);
+            }));
 
             var returnValue = hints.Where(i => i.Item3 >= 0).OrderBy(i => i.Item3).Select(i => new SearchHintInfo
             {
@@ -311,13 +182,32 @@ namespace MediaBrowser.Server.Implementations.Library
             return Task.FromResult(returnValue);
         }
 
+        private bool IsVisible(BaseItem item, User user)
+        {
+            if (user == null)
+            {
+                return true;
+            }
+
+            if (item is IItemByName)
+            {
+                var dual = item as IHasDualAccess;
+                if (dual == null || dual.IsAccessedByName)
+                {
+                    return true;
+                }
+            }
+
+            return item.IsVisibleStandalone(user);
+        }
+
         private bool IncludeInSearch(BaseItem item)
         {
             var episode = item as Episode;
 
             if (episode != null)
             {
-                if (episode.IsVirtualUnaired || episode.IsMissingEpisode)
+                if (episode.IsMissingEpisode)
                 {
                     return false;
                 }

@@ -304,7 +304,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 IsKids = string.Equals(details.audience, "children", StringComparison.OrdinalIgnoreCase),
                 IsSports = showType.IndexOf("sports", StringComparison.OrdinalIgnoreCase) != -1,
                 IsMovie = showType.IndexOf("movie", StringComparison.OrdinalIgnoreCase) != -1 || showType.IndexOf("film", StringComparison.OrdinalIgnoreCase) != -1,
-                ShowId = programInfo.programID
+                ShowId = programInfo.programID,
+                Etag = programInfo.md5
             };
 
             if (programInfo.videoProperties != null)
@@ -408,7 +409,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 ;
             });
             imageIdString = imageIdString.TrimEnd(',') + "]";
-            _logger.Debug("Json for show images = " + imageIdString);
+
             var httpOptions = new HttpRequestOptions()
             {
                 Url = ApiUrl + "/metadata/programs",
