@@ -160,6 +160,12 @@ namespace MediaBrowser.Model.Updates
         public bool enableInAppStore { get; set; }
 
         /// <summary>
+        /// Gets or sets the installs.
+        /// </summary>
+        /// <value>The installs.</value>
+        public int installs { get; set; }
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="PackageInfo"/> class.
         /// </summary>
         public PackageInfo()
