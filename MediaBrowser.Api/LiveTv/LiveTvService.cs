@@ -418,7 +418,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/ListingProviders", "POST", Summary = "Adds a listing provider")]
-    [Authenticated]
+    [Authenticated(AllowBeforeStartupWizard = true)]
     public class AddListingProvider : ListingsProviderInfo, IReturn<ListingsProviderInfo>
     {
         public bool ValidateLogin { get; set; }
@@ -426,7 +426,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/ListingProviders", "DELETE", Summary = "Deletes a listing provider")]
-    [Authenticated]
+    [Authenticated(AllowBeforeStartupWizard = true)]
     public class DeleteListingProvider : IReturnVoid
     {
         [ApiMember(Name = "Id", Description = "Provider id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "DELETE")]
@@ -434,7 +434,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/ListingProviders/Lineups", "GET", Summary = "Gets available lineups")]
-    [Authenticated]
+    [Authenticated(AllowBeforeStartupWizard = true)]
     public class GetLineups : IReturn<List<NameIdPair>>
     {
         [ApiMember(Name = "Id", Description = "Provider id", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
@@ -451,7 +451,7 @@ namespace MediaBrowser.Api.LiveTv
     }
 
     [Route("/LiveTv/ListingProviders/SchedulesDirect/Countries", "GET", Summary = "Gets available lineups")]
-    [Authenticated]
+    [Authenticated(AllowBeforeStartupWizard = true)]
     public class GetSchedulesDirectCountries
     {
     }
@@ -469,7 +469,7 @@ namespace MediaBrowser.Api.LiveTv
         [ApiMember(Name = "Feature", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
         public string Feature { get; set; }
     }
-    
+
     public class LiveTvService : BaseApiService
     {
         private readonly ILiveTvManager _liveTvManager;
