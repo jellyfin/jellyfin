@@ -12,7 +12,7 @@
 
             var providerId = null;
 
-            if (config.LiveTvGuideProviderType.toLowerCase() == type.toLowerCase()) {
+            if ((config.LiveTvGuideProviderType || '').toLowerCase() == type.toLowerCase()) {
                 if (config.LiveTvGuideProviderId) {
                     providerId = config.LiveTvGuideProviderId;
                 }

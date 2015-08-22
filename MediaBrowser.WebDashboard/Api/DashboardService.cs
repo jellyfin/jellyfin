@@ -198,10 +198,8 @@ namespace MediaBrowser.WebDashboard.Api
 
             var contentType = MimeTypes.GetMimeType(path);
 
-            var isHtml = IsHtml(path);
-
             // Bounce them to the startup wizard if it hasn't been completed yet
-            if (isHtml && !_serverConfigurationManager.Configuration.IsStartupWizardCompleted && path.IndexOf("wizard", StringComparison.OrdinalIgnoreCase) == -1)
+            if (!_serverConfigurationManager.Configuration.IsStartupWizardCompleted && path.IndexOf("wizard", StringComparison.OrdinalIgnoreCase) == -1 && GetPackageCreator().IsCoreHtml(path))
             {
                 // But don't redirect if an html import is being requested.
                 if (path.IndexOf("vulcanize", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
