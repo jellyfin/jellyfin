@@ -51,14 +51,15 @@ namespace MediaBrowser.Api
         private readonly IServerApplicationHost _appHost;
         private readonly IUserManager _userManager;
         private readonly IConnectManager _connectManager;
-        private ILiveTvManager _liveTvManager;
+        private readonly ILiveTvManager _liveTvManager;
 
-        public StartupWizardService(IServerConfigurationManager config, IServerApplicationHost appHost, IUserManager userManager, IConnectManager connectManager)
+        public StartupWizardService(IServerConfigurationManager config, IServerApplicationHost appHost, IUserManager userManager, IConnectManager connectManager, ILiveTvManager liveTvManager)
         {
             _config = config;
             _appHost = appHost;
             _userManager = userManager;
             _connectManager = connectManager;
+            _liveTvManager = liveTvManager;
         }
 
         public void Post(ReportStartupWizardComplete request)
@@ -101,6 +102,12 @@ namespace MediaBrowser.Api
             {
                 result.LiveTvTunerPath = tvConfig.TunerHosts[0].Url;
                 result.LiveTvTunerType = tvConfig.TunerHosts[0].Type;
+            }
+
+            if (tvConfig.ListingProviders.Count > 0)
+            {
+                result.LiveTvGuideProviderId = tvConfig.ListingProviders[0].Id;
+                result.LiveTvGuideProviderType = tvConfig.ListingProviders[0].Type;
             }
 
             return result;
@@ -213,6 +220,8 @@ namespace MediaBrowser.Api
         public string PreferredMetadataLanguage { get; set; }
         public string LiveTvTunerType { get; set; }
         public string LiveTvTunerPath { get; set; }
+        public string LiveTvGuideProviderId { get; set; }
+        public string LiveTvGuideProviderType { get; set; }
     }
 
     public class StartupInfo
