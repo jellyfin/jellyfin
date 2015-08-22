@@ -1384,7 +1384,7 @@
                 } else if (primaryImageAspectRatio && Math.abs(primaryImageAspectRatio - 0.6666667) < .2) {
                     options.shape = options.shape == 'auto' ? 'portrait' : 'portrait';
                 } else {
-                    options.shape = options.defaultShape || (options.shape == 'auto' ? 'portrait' : 'portrait');
+                    options.shape = options.defaultShape || (options.shape == 'auto' ? 'square' : 'square');
                 }
             }
 
