@@ -101,32 +101,37 @@
         var html = '';
         var i, length, plugin;
 
-        var currentCategory = Globalize.translate('HeaderTopPlugins');
-        html += '<div class="detailSectionHeader">' + currentCategory + '</div>';
-        var topPlugins = allPlugins.slice(0).sort(function (a, b) {
+        var currentCategory;
 
-            if (a.installs > b.installs) {
-                return 1;
+        if (!options.categories) {
+            currentCategory = Globalize.translate('HeaderTopPlugins');
+            html += '<div class="detailSectionHeader">' + currentCategory + '</div>';
+            var topPlugins = allPlugins.slice(0).sort(function (a, b) {
+
+                if (a.installs > b.installs) {
+                    return 1;
+                }
+                if (b.installs > a.installs) {
+                    return -1;
+                }
+
+                var aName = (a.name);
+                var bName = (b.name);
+
+                if (aName > bName) {
+                    return 1;
+                }
+                if (bName > aName) {
+                    return -1;
+                }
+
+                return 0;
+            });
+
+            var limit = screen.availWidth >= 1920 ? 15 : 12;
+            for (i = 0, length = Math.min(topPlugins.length, limit) ; i < length; i++) {
+                html += getPluginHtml(topPlugins[i], options, installedPlugins);
             }
-            if (b.installs > a.installs) {
-                return -1;
-            }
-
-            var aName = (a.name);
-            var bName = (b.name);
-
-            if (aName > bName) {
-                return 1;
-            }
-            if (bName > aName) {
-                return -1;
-            }
-
-            return 0;
-        });
-
-        for (i = 0, length = Math.min(topPlugins.length, 12) ; i < length; i++) {
-            html += getPluginHtml(topPlugins[i], options, installedPlugins);
         }
 
         for (i = 0, length = availablePlugins.length; i < length; i++) {

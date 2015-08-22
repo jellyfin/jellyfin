@@ -1514,5 +1514,7 @@
     "HelpMoreTunersCanBeAdded": "Se pueden agregar mas sintonizadores posteriormente en la secci\u00f3n de TV en Vivo",
     "MessageActiveSupporterMembershipRequiredSeriesRecordings": "An active Emby Supporter membership is required in order to create automated series recordings.",
     "HeaderSetupTVGuide": "Setup TV Guide",
-    "LabelDataProvider": "Data provider:"
+    "LabelDataProvider": "Data provider:",
+    "OptionSendRecordingsToAutoOrganize": "Enable Auto-Organize for new recordings",
+    "OptionSendRecordingsToAutoOrganizeHelp": "New recordings will be sent to the Auto-Organize feature and imported into your regular TV library."
 }

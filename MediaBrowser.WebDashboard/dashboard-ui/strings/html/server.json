@@ -1530,5 +1530,7 @@
     "HelpMoreTunersCanBeAdded": "Additional tuners can be added later within the Live TV section.",
     "MessageActiveSupporterMembershipRequiredSeriesRecordings": "An active Emby Supporter membership is required in order to create automated series recordings.",
     "HeaderSetupTVGuide": "Setup TV Guide",
-    "LabelDataProvider": "Data provider:"
+    "LabelDataProvider": "Data provider:",
+    "OptionSendRecordingsToAutoOrganize": "Enable Auto-Organize for new recordings",
+    "OptionSendRecordingsToAutoOrganizeHelp": "New recordings will be sent to the Auto-Organize feature and imported into your media library."
 }

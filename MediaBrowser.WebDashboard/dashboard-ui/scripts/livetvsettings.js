@@ -8,6 +8,7 @@
         $('#selectGuideDays', page).val(config.GuideDays || '').selectmenu('refresh');
 
         $('#chkMovies', page).checked(config.EnableMovieProviders);
+        $('#chkOrganize', page).checked(config.EnableAutoOrganize);
 
         $('#txtRecordingPath', page).val(config.RecordingPath || '');
 
@@ -24,6 +25,7 @@
 
                 config.GuideDays = $('#selectGuideDays', form).val() || null;
                 config.EnableMovieProviders = $('#chkMovies', form).checked();
+                config.EnableAutoOrganize = $('#chkOrganize', form).checked();
                 config.RecordingPath = $('#txtRecordingPath', form).val() || null;
 
                 ApiClient.updateNamedConfiguration("livetv", config).done(Dashboard.processServerConfigurationUpdateResult);

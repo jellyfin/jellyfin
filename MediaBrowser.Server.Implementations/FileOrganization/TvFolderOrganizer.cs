@@ -48,8 +48,6 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
             progress.Report(10);
 
-            var scanLibrary = false;
-
             if (eligibleFiles.Count > 0)
             {
                 var numComplete = 0;
@@ -61,12 +59,7 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
 
                     try
                     {
-                        var result = await organizer.OrganizeEpisodeFile(file.FullName, options, options.OverwriteExistingEpisodes, cancellationToken).ConfigureAwait(false);
-
-                        if (result.Status == FileSortingStatus.Success)
-                        {
-                            scanLibrary = true;
-                        }
+                        await organizer.OrganizeEpisodeFile(file.FullName, options, options.OverwriteExistingEpisodes, cancellationToken).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -104,12 +97,6 @@ namespace MediaBrowser.Server.Implementations.FileOrganization
                         DeleteEmptyFolders(subfolder);
                     }
                 }
-            }
-
-            if (scanLibrary)
-            {
-                await _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None)
-                        .ConfigureAwait(false);
             }
 
             progress.Report(100);

@@ -1514,5 +1514,7 @@
     "HelpMoreTunersCanBeAdded": "D'autres tuners peuvent \u00eatre ajout\u00e9s plus tard dans la section TV Live",
     "MessageActiveSupporterMembershipRequiredSeriesRecordings": "Une adh\u00e9sion active au programme de soutien Emby est requise pour cr\u00e9er des enregistrements automatiques de s\u00e9ries.",
     "HeaderSetupTVGuide": "Setup TV Guide",
-    "LabelDataProvider": "Data provider:"
+    "LabelDataProvider": "Data provider:",
+    "OptionSendRecordingsToAutoOrganize": "Enable Auto-Organize for new recordings",
+    "OptionSendRecordingsToAutoOrganizeHelp": "New recordings will be sent to the Auto-Organize feature and imported into your regular TV library."
 }
