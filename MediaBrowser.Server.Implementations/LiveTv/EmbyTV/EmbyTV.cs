@@ -463,13 +463,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         async void _timerProvider_TimerFired(object sender, GenericEventArgs<TimerInfo> e)
         {
+            var timer = e.Argument;
+
             try
             {
                 var cancellationTokenSource = new CancellationTokenSource();
 
-                if (_activeRecordings.TryAdd(e.Argument.Id, cancellationTokenSource))
+                if (_activeRecordings.TryAdd(timer.Id, cancellationTokenSource))
                 {
-                    await RecordStream(e.Argument, cancellationTokenSource.Token).ConfigureAwait(false);
+                    await RecordStream(timer, cancellationTokenSource.Token).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException)
@@ -479,6 +481,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             catch (Exception ex)
             {
                 _logger.ErrorException("Error recording stream", ex);
+
+                const int retryIntervalSeconds = 60;
+                _logger.Debug("Retrying recording in {0} seconds.", retryIntervalSeconds);
+
+                _timerProvider.StartTimer(timer, TimeSpan.FromSeconds(retryIntervalSeconds));
             }
         }
 

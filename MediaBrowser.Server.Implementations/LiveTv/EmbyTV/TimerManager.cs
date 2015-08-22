@@ -44,12 +44,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         public override void Delete(TimerInfo item)
         {
             base.Delete(item);
-
-            Timer timer;
-            if (_timers.TryRemove(item.Id, out timer))
-            {
-                timer.Dispose();
-            }
+            StopTimer(item);
         }
 
         public override void Update(TimerInfo item)
@@ -104,11 +99,26 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 return;
             }
 
-            var timespan = startDate - now;
+            var timerLength = startDate - now;
+            StartTimer(item, timerLength);
+        }
 
-            var timer = new Timer(TimerCallback, item.Id, timespan, TimeSpan.Zero);
+        public void StartTimer(TimerInfo item, TimeSpan length)
+        {
+            StopTimer(item);
+            
+            var timer = new Timer(TimerCallback, item.Id, length, TimeSpan.Zero);
 
             if (!_timers.TryAdd(item.Id, timer))
+            {
+                timer.Dispose();
+            }
+        }
+
+        private void StopTimer(TimerInfo item)
+        {
+            Timer timer;
+            if (_timers.TryRemove(item.Id, out timer))
             {
                 timer.Dispose();
             }
