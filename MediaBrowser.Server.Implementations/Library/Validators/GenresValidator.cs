@@ -85,6 +85,8 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             foreach (var id in invalidIds)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                
                 var item = _libraryManager.GetItemById(id);
 
                 await _libraryManager.DeleteItem(item, new DeleteOptions

@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 {
-    public class EmbyTV : ILiveTvService, IHasRegistrationInfo, IDisposable
+    public class EmbyTV : ILiveTvService/*, IHasRegistrationInfo*/, IDisposable
     {
         private readonly IApplicationHost _appHpst;
         private readonly ILogger _logger;

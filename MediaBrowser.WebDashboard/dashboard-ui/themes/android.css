@@ -3,7 +3,7 @@
 }
 
     .viewMenuBar.semiTransparent {
-        background-color: rgba(27, 27, 27, .8);
+        background-color: rgba(27, 27, 27, .75);
     }
 
 .ui-page-theme-b:not(.pageWithAbsoluteTabs), .pageWithAbsoluteTabs .pageBackground {
