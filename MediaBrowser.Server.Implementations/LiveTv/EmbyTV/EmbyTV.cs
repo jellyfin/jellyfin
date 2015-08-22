@@ -627,29 +627,15 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         private async Task UpdateTimersForSeriesTimer(List<ProgramInfo> epgData, SeriesTimerInfo seriesTimer)
         {
-            var newTimers = GetTimersForSeries(seriesTimer, epgData, _recordingProvider.GetAll()).ToList();
-
-            var existingTimers = _timerProvider.GetAll()
-                .Where(i => string.Equals(i.SeriesTimerId, seriesTimer.Id, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
             var registration = await GetRegistrationInfo("seriesrecordings").ConfigureAwait(false);
 
             if (registration.IsValid)
             {
+                var newTimers = GetTimersForSeries(seriesTimer, epgData, _recordingProvider.GetAll()).ToList();
+
                 foreach (var timer in newTimers)
                 {
                     _timerProvider.AddOrUpdate(timer);
-                }
-            }
-
-            var newTimerIds = newTimers.Select(i => i.Id).ToList();
-
-            foreach (var timer in existingTimers)
-            {
-                if (!newTimerIds.Contains(timer.Id, StringComparer.OrdinalIgnoreCase))
-                {
-                    CancelTimerInternal(timer.Id);
                 }
             }
         }

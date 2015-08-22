@@ -593,7 +593,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     Name = info.Name,
                     Id = id,
                     DateCreated = DateTime.UtcNow,
-                    DateModified = DateTime.UtcNow
+                    DateModified = DateTime.UtcNow,
+                    Etag = info.Etag
                 };
             }
 
@@ -639,7 +640,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             }
             else
             {
-                await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                if (string.IsNullOrWhiteSpace(info.Etag) || !string.Equals(info.Etag, item.Etag, StringComparison.OrdinalIgnoreCase))
+                {
+                    item.Etag = info.Etag;
+                    await _libraryManager.UpdateItem(item, ItemUpdateType.MetadataImport, cancellationToken).ConfigureAwait(false);
+                }
             }
 
             _providerManager.QueueRefresh(item.Id, new MetadataRefreshOptions());

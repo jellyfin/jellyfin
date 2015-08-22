@@ -31,6 +31,12 @@ namespace MediaBrowser.Controller.LiveTv
         }
 
         /// <summary>
+        /// Gets or sets the etag.
+        /// </summary>
+        /// <value>The etag.</value>
+        public string Etag { get; set; }
+        
+        /// <summary>
         /// Id of the program.
         /// </summary>
         public string ExternalId { get; set; }

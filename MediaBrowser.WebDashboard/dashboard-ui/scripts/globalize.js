@@ -135,6 +135,8 @@
 
     function translateDocument(html, dictionaryName) {
 
+        dictionaryName = dictionaryName || 'html';
+
         var glossary = getDictionary(dictionaryName, currentCulture) || {};
         return translateHtml(html, glossary);
     }

@@ -7,11 +7,13 @@
     function getRegistration(programId) {
 
         var deferred = DeferredBuilder.Deferred();
-        if (registrationInfo && lastRegId == programId) {
+
+        if (registrationInfo && (lastRegId == programId)) {
             deferred.resolveWith(null, [registrationInfo]);
+            return deferred.promise();
         }
+
         registrationInfo = null;
-        lastRegId = programId;
         Dashboard.showLoadingMsg();
 
         ApiClient.getJSON(ApiClient.getUrl('LiveTv/Registration', {

@@ -1,146 +1,43 @@
 ﻿(function ($, document, window) {
 
-    var listingsId;
+    function init(page, type, providerId) {
 
-    function reload(page, providerId) {
+        var url = 'tvproviders/' + type + '.js';
 
-        Dashboard.showLoadingMsg();
+        require([url], function (factory) {
 
-        ApiClient.getNamedConfiguration("livetv").done(function (config) {
+            var instance = new factory(page, providerId, {
+            });
 
-            var info = config.ListingProviders.filter(function (i) {
-                return i.Id == providerId;
-            })[0];
-
-            info = info || {};
-
-            listingsId = info.ListingsId;
-            $('#selectListing', page).val(info.ListingsId || '').selectmenu('refresh');
-
-            page.querySelector('.txtZipCode').value = info.ZipCode || '';
-
-            setCountry(page, info);
+            instance.init();
         });
     }
 
-    function setCountry(page, info) {
-
-        $('#selectCountry', page).val(info.Country || '').selectmenu('refresh');
-
-        $(page.querySelector('.txtZipCode')).trigger('change');
-
-        Dashboard.hideLoadingMsg();
-    }
-
-    function submitListingsForm(page) {
-
-        var selectedListingsId = $('#selectListing', page).val();
-
-        if (!selectedListingsId) {
-            Dashboard.alert({
-                message: Globalize.translate('ErrorPleaseSelectLineup')
-            });
-            return;
-        }
-
-        Dashboard.showLoadingMsg();
-
-        var providerId = getParameterByName('id');
-
-        ApiClient.getNamedConfiguration("livetv").done(function (config) {
-
-            var info = config.ListingProviders.filter(function (i) {
-                return i.Id == providerId;
-
-            })[0] || {};
-
-            info.ZipCode = page.querySelector('.txtZipCode').value;
-            info.Country = $('#selectCountry', page).val();
-            info.ListingsId = selectedListingsId;
-            info.Type = 'emby';
-
-            ApiClient.ajax({
-                type: "POST",
-                url: ApiClient.getUrl('LiveTv/ListingProviders', {
-                }),
-                data: JSON.stringify(info),
-                contentType: "application/json"
-
-            }).done(function (result) {
-
-                Dashboard.processServerConfigurationUpdateResult();
-
-            }).fail(function () {
-                Dashboard.alert({
-                    message: Globalize.translate('ErrorSavingTvProvider')
-                });
-            });
-
-        });
-    }
-
-    function refreshListings(page, value) {
-
-        if (!value) {
-            $('#selectListing', page).html('').selectmenu('refresh');
-            return;
-        }
-
-        Dashboard.showModalLoadingMsg();
+    function loadTemplate(page, type, providerId) {
 
         ApiClient.ajax({
-            type: "GET",
-            url: ApiClient.getUrl('LiveTv/ListingProviders/Lineups', {
-                Type: 'emby',
-                Location: value,
-                Country: $('#selectCountry', page).val()
-            }),
-            dataType: 'json'
 
-        }).done(function (result) {
+            type: 'GET',
+            url: 'tvproviders/' + type + '.template.html'
 
-            $('#selectListing', page).html(result.map(function (o) {
+        }).done(function (html) {
 
-                return '<option value="' + o.Id + '">' + o.Name + '</option>';
+            var elem = page.querySelector('.providerTemplate');
+            elem.innerHTML = Globalize.translateDocument(html);
+            $(elem).trigger('create');
 
-            })).selectmenu('refresh');
-
-            if (listingsId) {
-                $('#selectListing', page).val(listingsId).selectmenu('refresh');
-            }
-
-            Dashboard.hideModalLoadingMsg();
-
-        }).fail(function (result) {
-
-            Dashboard.alert({
-                message: Globalize.translate('ErrorGettingTvLineups')
-            });
-            refreshListings(page, '');
-            Dashboard.hideModalLoadingMsg();
-
+            init(page, type, providerId);
         });
-
     }
 
-    $(document).on('pageinitdepends', "#liveTvGuideProviderPage", function () {
+    $(document).on('pageshowready', "#liveTvGuideProviderPage", function () {
 
-        var page = this;
-
-        $('.formListings', page).on('submit', function () {
-            submitListingsForm(page);
-            return false;
-        });
-
-        $('.txtZipCode', page).on('change', function () {
-            refreshListings(page, this.value);
-        });
-
-    }).on('pageshowready', "#liveTvGuideProviderPage", function () {
+        Dashboard.showLoadingMsg();
 
         var providerId = getParameterByName('id');
+        var type = getParameterByName('type');
         var page = this;
-        reload(page, providerId);
+        loadTemplate(page, type, providerId);
     });
 
 })(jQuery, document, window);

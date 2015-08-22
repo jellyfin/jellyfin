@@ -304,7 +304,7 @@
 
                 html += '<paper-item-body two-line>';
 
-                html += '<a class="clearLink" href="' + getProviderConfigurationUrl(provider.Type) + '?id=' + provider.Id + '">';
+                html += '<a class="clearLink" href="' + getProviderConfigurationUrl(provider.Type) + '&id=' + provider.Id + '">';
 
                 html += '<div>';
                 html += getProviderName(provider.Type);
@@ -390,9 +390,9 @@
         switch (providerId) {
 
             case 'schedulesdirect':
-                return 'livetvguideprovider-scd.html';
+                return 'livetvguideprovider.html?type=schedulesdirect';
             case 'emby':
-                return 'livetvguideprovider.html';
+                return 'livetvguideprovider.html?type=emby';
             default:
                 break;
         }

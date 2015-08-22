@@ -173,6 +173,13 @@ paper-button.mini {
     }
 
 
+
+    paper-button.mini iron-icon {
+        height: 20px;
+        width: 20px;
+    }
+
+
 paper-toast {
     z-index: 9999999;
 }

@@ -21,7 +21,7 @@
             }).done(function () {
 
                 Dashboard.hideLoadingMsg();
-                navigateToNextPage();
+                navigateToNextPage(config);
             });
         });
 
@@ -42,8 +42,13 @@
         });
     }
 
-    function navigateToNextPage() {
-        skip();
+    function navigateToNextPage(config) {
+
+        if (config.LiveTvTunerPath && config.LiveTvTunerType) {
+            Dashboard.navigate('wizardlivetvguide.html');
+        } else {
+            skip();
+        }
     }
 
     function skip() {

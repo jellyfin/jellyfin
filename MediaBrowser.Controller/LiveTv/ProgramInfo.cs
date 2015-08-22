@@ -180,6 +180,11 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The episode number.</value>
         public int? EpisodeNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the etag.
+        /// </summary>
+        /// <value>The etag.</value>
+        public string Etag { get; set; }
         
         public ProgramInfo()
         {

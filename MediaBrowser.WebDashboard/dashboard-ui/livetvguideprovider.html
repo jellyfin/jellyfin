@@ -15,36 +15,8 @@
                     <a href="appservices.html?context=livetv" data-role="button">${TabExternalServices}</a>
                 </div>
 
-                <div class="readOnlyContent" style="margin-top: 2em;">
+                <div class="readOnlyContent providerTemplate" style="margin-top: 2em;">
 
-                    <h1>${HeaderEmbyGuide}</h1>
-
-                    <form class="formListings">
-                        <div>
-                            <div>
-                                <br />
-                                <label for="selectCountry">${LabelCountry}</label>
-                                <select id="selectCountry" data-mini="true" required="required">
-                                    <option value="ca">Canada</option>
-                                    <option value="us" selected>United States</option>
-                                </select>
-                            </div>
-                            <div>
-                                <paper-input class="txtZipCode" label="${LabelZipCode}" required="required"></paper-input>
-                            </div>
-                            <div>
-                                <br />
-                                <label for="selectListing">${LabelLineup}</label>
-                                <select id="selectListing" data-mini="true" required="required"></select>
-                            </div>
-                            <div>
-                                <button type="submit" data-role="none" class="clearButton">
-                                    <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
-                                </button>
-                                <paper-button raised class="cancel block btnCancel" onclick="history.back();"><iron-icon icon="close"></iron-icon><span>${ButtonCancel}</span></paper-button>
-                            </div>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
