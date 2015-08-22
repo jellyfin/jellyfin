@@ -90,8 +90,8 @@
             lazy: true,
             overlayText: false,
             showTitle: true,
-            coverImage: true,
             centerImage: true,
+            centerText: true,
             textLines: getAdditionalTextLines
         });
 
