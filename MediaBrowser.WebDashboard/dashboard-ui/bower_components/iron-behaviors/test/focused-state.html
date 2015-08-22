@@ -96,9 +96,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         focusable.addEventListener('focus', function() {
           nFocusEvents += 1;
+          expect(focusable.focused).to.be.equal(true);
           MockInteractions.blur(focusable.$.input);
         });
         focusable.addEventListener('blur', function() {
+          expect(focusable.focused).to.be.equal(false);
           nBlurEvents += 1;
         });
 

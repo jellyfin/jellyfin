@@ -57,7 +57,7 @@
             shape: "auto",
             showTitle: true,
             showParentTitle: true,
-            overlayText: screenWidth >= 600,
+            centerText: true,
             coverImage: true,
             lazy: true
 

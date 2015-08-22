@@ -1511,6 +1511,8 @@
     "HeaderUpcomingForKids": "Upcoming for Kids",
     "HeaderSetupLiveTV": "Setup Live TV",
     "LabelTunerType": "Tuner type:",
-    "HelpMoreTunersCanBeAdded": "More tuners can be added later within the Live TV section.",
-    "MessageActiveSupporterMembershipRequiredSeriesRecordings": "An active Emby Supporter membership is required in order to create automated series recordings."
+    "HelpMoreTunersCanBeAdded": "Additional tuners can be added later within the Live TV section.",
+    "MessageActiveSupporterMembershipRequiredSeriesRecordings": "An active Emby Supporter membership is required in order to create automated series recordings.",
+    "HeaderSetupTVGuide": "Setup TV Guide",
+    "LabelDataProvider": "Data provider:"
 }

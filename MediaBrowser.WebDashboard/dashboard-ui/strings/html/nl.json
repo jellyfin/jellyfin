@@ -1512,5 +1512,7 @@
     "HeaderSetupLiveTV": "Configureer Live TV",
     "LabelTunerType": "Soort Tuner:",
     "HelpMoreTunersCanBeAdded": "In de Live TV sectie kunnen later meer tuners toegevoegd worden.",
-    "MessageActiveSupporterMembershipRequiredSeriesRecordings": "An active Emby Supporter membership is required in order to create automated series recordings."
+    "MessageActiveSupporterMembershipRequiredSeriesRecordings": "An active Emby Supporter membership is required in order to create automated series recordings.",
+    "HeaderSetupTVGuide": "Setup TV Guide",
+    "LabelDataProvider": "Data provider:"
 }

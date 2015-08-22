@@ -835,7 +835,7 @@
     "OptionThumb": "\u00cdcone",
     "OptionThumbCard": "Cart\u00e3o do \u00edcone",
     "OptionBanner": "Banner",
-    "NoSlideshowContentFound": "No slideshow images were found.",
-    "OptionPhotoSlideshow": "Photo slideshow",
-    "OptionBackdropSlideshow": "Backdrop slideshow"
+    "NoSlideshowContentFound": "Nenhuma imagem para apresenta\u00e7\u00e3o foi encontrada.",
+    "OptionPhotoSlideshow": "Apresenta\u00e7\u00e3o de Fotos",
+    "OptionBackdropSlideshow": "Apresenta\u00e7\u00e3o de Imagens de Fundo"
 }

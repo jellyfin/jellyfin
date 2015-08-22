@@ -1512,5 +1512,7 @@
     "HeaderSetupLiveTV": "Configura\u00e7\u00e3o da TV ao Vivo",
     "LabelTunerType": "Tipo do sintonizador:",
     "HelpMoreTunersCanBeAdded": "Mais sintonizadores podem ser adicionados posteriormente dentro da se\u00e7\u00e3o da TV ao Vivo.",
-    "MessageActiveSupporterMembershipRequiredSeriesRecordings": "An active Emby Supporter membership is required in order to create automated series recordings."
+    "MessageActiveSupporterMembershipRequiredSeriesRecordings": "\u00c9 necess\u00e1ria uma ades\u00e3o ativa de Colaborador do Emby para criar uma grava\u00e7\u00e3o automatizada de s\u00e9ries.",
+    "HeaderSetupTVGuide": "Setup TV Guide",
+    "LabelDataProvider": "Data provider:"
 }

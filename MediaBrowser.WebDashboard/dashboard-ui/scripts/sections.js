@@ -450,10 +450,10 @@
                 shape: "autohome",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: screenWidth >= 600,
                 coverImage: true,
                 lazy: true,
-                showDetailsMenu: true
+                showDetailsMenu: true,
+                centerText: true
             });
 
             elem.innerHTML = html;
