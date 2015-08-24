@@ -63,8 +63,6 @@
 
         $('#txtPrePaddingMinutes', page).val(defaultTimer.PrePaddingSeconds / 60);
         $('#txtPostPaddingMinutes', page).val(defaultTimer.PostPaddingSeconds / 60);
-        $('#chkPrePaddingRequired', page).checked(defaultTimer.IsPrePaddingRequired);
-        $('#chkPostPaddingRequired', page).checked(defaultTimer.IsPostPaddingRequired);
 
         if (program.IsSeries) {
             $('#eligibleForSeriesFields', page).show();
@@ -148,8 +146,6 @@
 
             item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
             item.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
-            item.IsPrePaddingRequired = $('#chkPrePaddingRequired', form).checked();
-            item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 
             item.RecordNewOnly = $('#chkNewOnly', form).checked();
             item.RecordAnyChannel = $('#chkAllChannels', form).checked();

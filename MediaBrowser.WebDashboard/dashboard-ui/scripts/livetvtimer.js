@@ -56,8 +56,6 @@
 
         $('#txtPrePaddingMinutes', page).val(item.PrePaddingSeconds / 60);
         $('#txtPostPaddingMinutes', page).val(item.PostPaddingSeconds / 60);
-        $('#chkPrePaddingRequired', page).checked(item.IsPrePaddingRequired);
-        $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired);
 
         if (item.Status == 'New') {
             $('.timerStatus', page).hide();
@@ -78,8 +76,6 @@
 
             item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
             item.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
-            item.IsPrePaddingRequired = $('#chkPrePaddingRequired', form).checked();
-            item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 
             ApiClient.updateLiveTvTimer(item).done(function () {
                 Dashboard.hideLoadingMsg();

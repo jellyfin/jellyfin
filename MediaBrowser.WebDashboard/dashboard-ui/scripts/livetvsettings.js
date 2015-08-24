@@ -12,6 +12,9 @@
 
         $('#txtRecordingPath', page).val(config.RecordingPath || '');
 
+        $('#txtPrePaddingMinutes', page).val(config.PrePaddingSeconds / 60);
+        $('#txtPostPaddingMinutes', page).val(config.PostPaddingSeconds / 60);
+
         Dashboard.hideLoadingMsg();
     }
 
@@ -27,6 +30,9 @@
                 config.EnableMovieProviders = $('#chkMovies', form).checked();
                 config.EnableAutoOrganize = $('#chkOrganize', form).checked();
                 config.RecordingPath = $('#txtRecordingPath', form).val() || null;
+
+                config.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
+                config.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
 
                 ApiClient.updateNamedConfiguration("livetv", config).done(Dashboard.processServerConfigurationUpdateResult);
             });

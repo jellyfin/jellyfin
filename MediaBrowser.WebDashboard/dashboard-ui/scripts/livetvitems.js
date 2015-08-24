@@ -50,7 +50,7 @@
             if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    shape: "auto",
+                    shape: query.IsMovie ? 'portrait' : "auto",
                     context: 'livetv',
                     showTitle: false,
                     centerText: true,

@@ -483,42 +483,37 @@ var Dashboard = {
 
         console.log('showLoadingMsg');
 
-        require(['paperbuttonstyle'], function () {
-            var elem = document.querySelector('.docspinner');
+        var elem = document.querySelector('.docspinner');
 
-            if (elem) {
+        if (elem) {
 
-                // This is just an attempt to prevent the fade-in animation from running repeating and causing flickering
-                elem.active = true;
+            // This is just an attempt to prevent the fade-in animation from running repeating and causing flickering
+            elem.active = true;
 
-            } else {
+        } else {
 
-                elem = document.createElement("paper-spinner");
-                elem.classList.add('docspinner');
+            elem = document.createElement("paper-spinner");
+            elem.classList.add('docspinner');
 
-                document.body.appendChild(elem);
-                elem.active = true;
-            }
-        });
+            document.body.appendChild(elem);
+            elem.active = true;
+        }
     },
 
     hideLoadingMsg: function () {
 
         console.log('hideLoadingMsg');
 
-        require(['paperbuttonstyle'], function () {
+        var elem = document.querySelector('.docspinner');
 
-            var elem = document.querySelector('.docspinner');
+        if (elem) {
 
-            if (elem) {
+            elem.active = false;
 
+            setTimeout(function () {
                 elem.active = false;
-
-                setTimeout(function () {
-                    elem.active = false;
-                }, 100);
-            }
-        });
+            }, 100);
+        }
     },
 
     getModalLoadingMsg: function () {

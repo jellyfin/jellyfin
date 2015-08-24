@@ -250,6 +250,11 @@
         LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, imageHref);
     }
 
+    function refreshImage(page, item, user) {
+
+        LibraryBrowser.refreshDetailImageUserData(page.querySelector('.detailImageContainer'), item);
+    }
+
     function onWebSocketMessage(e, data) {
 
         var msg = data;
@@ -272,7 +277,7 @@
 
                     Dashboard.getCurrentUser().done(function (user) {
 
-                        renderImage(page, currentItem, user);
+                        refreshImage(page, currentItem, user);
                     });
                 }
             }
@@ -401,7 +406,18 @@
             $('.tagline', page).hide();
         }
 
-        LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), item);
+        var topOverview = page.querySelector('.topOverview');
+        var bottomOverview = page.querySelector('.bottomOverview');
+
+        if (item.Type == 'MusicAlbum' || item.Type == 'MusicArtist') {
+            LibraryBrowser.renderOverview([bottomOverview], item);
+            topOverview.classList.add('hide');
+            bottomOverview.classList.remove('hide');
+        } else {
+            LibraryBrowser.renderOverview([topOverview], item);
+            topOverview.classList.remove('hide');
+            bottomOverview.classList.add('hide');
+        }
 
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(item));
 
@@ -830,7 +846,6 @@
                     showTitle: false,
                     centerText: true,
                     context: context,
-                    overlayText: true,
                     lazy: true
                 });
             }

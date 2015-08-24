@@ -19,7 +19,7 @@
                 shape: "auto",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: true,
+                centerText: true,
                 coverImage: true,
                 lazy: true,
                 overlayPlayButton: true
@@ -58,7 +58,7 @@
                 shape: "auto",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: true,
+                centerText: true,
                 coverImage: true,
                 lazy: true,
                 overlayMoreButton: true
@@ -75,15 +75,16 @@
             userId: Dashboard.getCurrentUserId(),
             IsAiring: false,
             HasAired: false,
-            limit: 8,
+            limit: 9,
             IsMovie: true
 
         }).done(function (result) {
 
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: "auto",
-                showTitle: false,
+                shape: "portrait",
+                showTitle: true,
+                centerText: true,
                 coverImage: true,
                 overlayText: false,
                 lazy: true,
@@ -108,7 +109,8 @@
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "auto",
-                showTitle: false,
+                showTitle: true,
+                centerText: true,
                 coverImage: true,
                 overlayText: false,
                 lazy: true,
@@ -133,7 +135,8 @@
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "auto",
-                showTitle: false,
+                showTitle: true,
+                centerText: true,
                 coverImage: true,
                 overlayText: false,
                 lazy: true,

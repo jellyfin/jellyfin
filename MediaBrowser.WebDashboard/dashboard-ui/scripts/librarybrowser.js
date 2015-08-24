@@ -2890,11 +2890,11 @@
 
             var progressHtml = item.IsFolder || !item.UserData ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
 
+            html += '<div class="detailImageProgressContainer">';
             if (progressHtml) {
-                html += '<div class="detailImageProgressContainer">';
                 html += progressHtml;
-                html += "</div>";
             }
+            html += "</div>";
 
             html += "</div>";
 
@@ -2916,6 +2916,15 @@
             }
 
             ImageLoader.lazyChildren(elem);
+        },
+
+        refreshDetailImageUserData: function (elem, item) {
+
+            var progressHtml = item.IsFolder || !item.UserData ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
+
+            var detailImageProgressContainer = elem.querySelector('.detailImageProgressContainer');
+
+            detailImageProgressContainer.innerHTML = progressHtml || '';
         },
 
         getDisplayTime: function (date) {

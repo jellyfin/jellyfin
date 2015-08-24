@@ -22,7 +22,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private readonly IHttpClient _httpClient;
         private readonly IJsonSerializer _jsonSerializer;
 
-        public HdHomerunHost(IConfigurationManager config, ILogger logger, IHttpClient httpClient, IJsonSerializer jsonSerializer) : base(config, logger)
+        public HdHomerunHost(IConfigurationManager config, ILogger logger, IHttpClient httpClient, IJsonSerializer jsonSerializer)
+            : base(config, logger)
         {
             _httpClient = httpClient;
             _jsonSerializer = jsonSerializer;
@@ -165,6 +166,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         private string GetApiUrl(TunerHostInfo info, bool isPlayback)
         {
             var url = info.Url;
+
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                throw new ArgumentException("Invalid tuner info");
+            }
 
             if (!url.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
@@ -382,7 +388,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task Validate(TunerHostInfo info)
         {
-            await GetChannels(info, false, CancellationToken.None).ConfigureAwait(false);
+            if (info.IsEnabled)
+            {
+                await GetChannels(info, false, CancellationToken.None).ConfigureAwait(false);
+            }
         }
 
         protected override async Task<bool> IsAvailableInternal(TunerHostInfo tuner, string channelId, CancellationToken cancellationToken)

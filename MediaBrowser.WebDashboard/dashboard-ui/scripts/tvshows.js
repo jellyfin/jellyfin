@@ -67,8 +67,7 @@
                     shape: "backdrop",
                     preferThumb: true,
                     context: 'tv',
-                    lazy: true,
-                    overlayText: true
+                    lazy: true
                 });
 
             }
@@ -123,8 +122,7 @@
                     shape: "portrait",
                     context: 'tv',
                     centerText: true,
-                    lazy: true,
-                    overlayText: true
+                    lazy: true
                 });
             }
 

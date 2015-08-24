@@ -191,7 +191,6 @@
                 shape: getPortraitShape(),
                 centerText: true,
                 lazy: true,
-                overlayText: true,
                 showDetailsMenu: true
             });
         }

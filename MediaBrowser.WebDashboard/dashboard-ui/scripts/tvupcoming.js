@@ -81,7 +81,7 @@
                 }
 
                 currentGroupName = dateText;
-                currentGroup = [];
+                currentGroup = [item];
             } else {
                 currentGroup.push(item);
             }

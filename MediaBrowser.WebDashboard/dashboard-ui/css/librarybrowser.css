@@ -611,28 +611,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-left: 1em;
 }
 
-.itemOverview {
-    text-overflow: ellipsis;
-    max-height: 100px;
-    padding-right: .5em;
-}
-
-.desktopOverview {
-    min-width: 500px;
-}
-
-.mobileOverview {
-    display: none;
-    padding: 0 1em;
-}
-
 .empty {
     margin: 0;
-}
-
-.mobileGenres {
-    display: none;
-    padding: 0 1em;
 }
 
 .darkScrollbars ::-webkit-scrollbar {
@@ -863,14 +843,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
     .detailImageContainer img {
         max-width: 120px;
-    }
-
-    .mobileOverview:not(.hide), .mobileGenres {
-        display: block;
-    }
-
-    .desktopOverview, .desktopGenres {
-        display: none;
     }
 
     .inlineItemName {

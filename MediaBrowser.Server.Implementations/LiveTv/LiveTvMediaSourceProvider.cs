@@ -125,7 +125,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             const bool isAudio = false;
 
             var keys = openToken.Split(new[] { StreamIdDelimeter }, 3);
-            var mediaSourceId = keys.Length >= 3 ? keys[2] : null;
+            string mediaSourceId = null;
+
+            if (keys.Length >= 3)
+            {
+                mediaSourceId = openToken.Substring(keys[0].Length + keys[1].Length + 2);
+            }
 
             if (string.Equals(keys[0], typeof(LiveTvChannel).Name, StringComparison.OrdinalIgnoreCase))
             {

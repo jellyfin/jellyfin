@@ -11,7 +11,10 @@ namespace MediaBrowser.Model.LiveTv
 
         public List<TunerHostInfo> TunerHosts { get; set; }
         public List<ListingsProviderInfo> ListingProviders { get; set; }
- 
+
+        public int PrePaddingSeconds { get; set; }
+        public int PostPaddingSeconds { get; set; }
+        
         public LiveTvOptions()
         {
             EnableMovieProviders = true;

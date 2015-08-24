@@ -76,7 +76,6 @@
                     shape: "backdrop",
                     preferThumb: true,
                     lazy: true,
-                    overlayText: true,
                     showDetailsMenu: true
                 });
             }
@@ -117,7 +116,6 @@
                     shape: "portrait",
                     centerText: true,
                     lazy: true,
-                    overlayText: true,
                     showDetailsMenu: true
                 });
             }

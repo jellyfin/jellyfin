@@ -360,7 +360,7 @@
         switch (providerId) {
 
             case 'm3u':
-                return 'M3U';
+                return 'M3U Playlist';
             case 'hdhomerun':
                 return 'HDHomerun';
             default:
@@ -436,7 +436,7 @@
         });
 
         menuItems.push({
-            name: 'M3U',
+            name: getTunerName('m3u'),
             id: 'm3u'
         });
 

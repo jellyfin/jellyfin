@@ -889,8 +889,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (query.Limit.HasValue)
             {
-                programs = programs.Take(query.Limit.Value)
-                    .OrderBy(i => i.StartDate);
+                programs = programs.Take(query.Limit.Value);
             }
 
             programList = programs.ToList();

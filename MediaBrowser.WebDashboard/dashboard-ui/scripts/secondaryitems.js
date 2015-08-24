@@ -121,8 +121,7 @@
                     items: result.Items,
                     shape: "auto",
                     centerText: true,
-                    lazy: true,
-                    overlayText: true
+                    lazy: true
                 };
 
                 if (query.IncludeItemTypes == "MusicAlbum") {

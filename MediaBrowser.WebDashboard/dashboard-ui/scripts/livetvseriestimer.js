@@ -29,8 +29,6 @@
 
         $('#txtPrePaddingMinutes', page).val(item.PrePaddingSeconds / 60);
         $('#txtPostPaddingMinutes', page).val(item.PostPaddingSeconds / 60);
-        $('#chkPrePaddingRequired', page).checked(item.IsPrePaddingRequired);
-        $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired);
 
         $('#chkNewOnly', page).checked(item.RecordNewOnly);
         $('#chkAllChannels', page).checked(item.RecordAnyChannel);
@@ -109,8 +107,6 @@
 
             item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
             item.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
-            item.IsPrePaddingRequired = $('#chkPrePaddingRequired', form).checked();
-            item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 
             item.RecordNewOnly = $('#chkNewOnly', form).checked();
             item.RecordAnyChannel = $('#chkAllChannels', form).checked();
@@ -135,7 +131,7 @@
             items: result.Items,
             shape: "detailPageSquare",
             showTitle: true,
-            overlayText: true,
+            centerText: true,
             coverImage: true
 
         }));
