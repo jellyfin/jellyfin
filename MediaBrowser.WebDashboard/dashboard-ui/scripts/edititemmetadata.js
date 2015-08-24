@@ -47,15 +47,15 @@
             fillItemInfo(page, item, metadataEditorInfo.ParentalRatingOptions);
 
             if (item.Type == "BoxSet") {
-                $('.collectionItemsTabButton', page).show();
+                page.querySelector('.collectionItemsTabButton').classList.remove('hide');
             } else {
-                $('.collectionItemsTabButton', page).hide();
+                page.querySelector('.collectionItemsTabButton').classList.add('hide');
             }
 
             if (item.MediaType == "Video" && item.LocationType == "FileSystem" && item.Type !== 'TvChannel') {
-                $('.subtitleTabButton', page).show();
+                page.querySelector('.subtitleTabButton').classList.remove('hide');
             } else {
-                $('.subtitleTabButton', page).hide();
+                page.querySelector('.subtitleTabButton').classList.add('hide');
             }
 
             if (item.MediaType == 'Photo') {
@@ -1415,6 +1415,11 @@
         });
     }
 
+    function showTab(page, index) {
+
+        $('.editorTab', page).addClass('hide')[index].classList.remove('hide');
+    }
+
     $(document).on('pageinitdepends', "#editItemMetadataPage", function () {
 
         var page = this;
@@ -1455,7 +1460,7 @@
 
                 //$.mobile.urlHistory.ignoreNextHashChange = true;
                 window.location.hash = 'editItemMetadataPage?id=' + data.id;
-                $(page.querySelector('neon-animated-pages')).trigger('tabchange');
+                $(page.querySelector('paper-tabs')).trigger('tabchange');
             }
         });
 
@@ -1470,22 +1475,16 @@
         $('.popupAdvancedRefreshForm').off('submit', EditItemMetadataPage.onRefreshFormSubmit).on('submit', EditItemMetadataPage.onRefreshFormSubmit);
         $('.identifyOptionsForm').off('submit', EditItemMetadataPage.onIdentificationOptionsSubmit).on('submit', EditItemMetadataPage.onIdentificationOptionsSubmit);
 
-        $(page.querySelector('paper-tabs')).on('iron-select', function () {
-            page.querySelector('neon-animated-pages').selected = this.selected;
-        });
-
         var tabs = page.querySelector('paper-tabs');
-        var pages = page.querySelector('neon-animated-pages');
 
-        configurePaperLibraryTabs(page, tabs, pages);
+        configurePaperLibraryTabs(page, tabs);
 
         $(tabs).on('iron-select', function () {
+            Events.trigger(this, 'tabchange');
+
+        }).on('tabchange', function () {
             var selected = this.selected;
-
-            page.querySelector('neon-animated-pages').selected = selected;
-        });
-
-        $(pages).on('tabchange', function () {
+            showTab(page, selected);
             loadTab(page, parseInt(this.selected));
         });
 
@@ -1503,15 +1502,7 @@
 
         var selected = parseInt(getParameterByName('tab') || '0');
 
-        page.querySelector('paper-tabs').selected = 0;
-
-        if (selected) {
-
-            // Looks like a bug in paper-tabs. It won't set the tab if we try to do it too quickly
-            setTimeout(function () {
-                page.querySelector('paper-tabs').selected = selected;
-            }, 700);
-        }
+        page.querySelector('paper-tabs').selected = selected;
 
     }).on('pagebeforehide', "#editItemMetadataPage", function () {
 
@@ -1522,21 +1513,30 @@
 
     });
 
-    function configurePaperLibraryTabs(ownerpage, tabs, pages) {
+    function configurePaperLibraryTabs(ownerpage, tabs) {
 
         tabs.hideScrollButtons = true;
+        tabs.noSlide = true;
+        tabs.noink = true;
 
-        $(ownerpage).on('pagebeforeshowready', LibraryBrowser.onTabbedPageBeforeShowReady);
+        $(ownerpage).on('pagebeforeshowready', function () {
 
-        $(pages).on('iron-select', function () {
+            var selected = tabs.selected;
 
-            // When transition animations are used, add a content loading delay to allow the animations to finish
-            // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
-            var delay = 500;
-            var pgs = this;
-            setTimeout(function () {
-                $(pgs).trigger('tabchange');
-            }, delay);
+            if (selected == null) {
+
+                Logger.log('selected tab is null, checking query string');
+
+                selected = parseInt(getParameterByName('tab') || '0');
+
+                Logger.log('selected tab will be ' + selected);
+
+                tabs.selected = selected;
+                Events.trigger(tabs, 'tabchange');
+
+            } else {
+                Events.trigger(tabs, 'tabchange');
+            }
         });
     }
 
@@ -1548,6 +1548,7 @@
                 reload(page);
                 break;
             default:
+                reload(page);
                 break;
         }
     }

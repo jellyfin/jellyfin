@@ -287,7 +287,7 @@
 
         $('.subtitleSearchForm').off('submit', onSearchSubmit).on('submit', onSearchSubmit);
 
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+        $(page.querySelector('paper-tabs')).on('tabchange', function () {
 
             if (parseInt(this.selected) == 1) {
                 var tabContent = page.querySelector('.subtitleTabContent');

@@ -1018,6 +1018,7 @@
 
         function playInternalPostMediaSourceSelection(item, mediaSource, startPosition, callback) {
 
+            Dashboard.hideModalLoadingMsg();
 
             self.currentMediaSource = mediaSource;
             self.currentItem = item;
@@ -1030,7 +1031,6 @@
 
             } else if (item.MediaType === "Audio") {
 
-                Dashboard.hideModalLoadingMsg();
                 playAudio(item, self.currentMediaSource, startPosition, callback);
             }
         }

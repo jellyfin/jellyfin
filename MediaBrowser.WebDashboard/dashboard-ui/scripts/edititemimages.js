@@ -565,7 +565,7 @@
             return false;
         });
 
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+        $(page.querySelector('paper-tabs')).on('tabchange', function () {
 
             if (parseInt(this.selected) == 3) {
                 var tabContent = page.querySelector('.imageEditorTab');

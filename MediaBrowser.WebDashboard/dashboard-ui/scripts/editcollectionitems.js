@@ -254,7 +254,7 @@
 
         $('.collectionItemSearchForm').off('submit', onSearchFormSubmit).on('submit', onSearchFormSubmit);
 
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+        $(page.querySelector('paper-tabs')).on('tabchange', function () {
 
             if (parseInt(this.selected) == 2) {
                 var tabContent = page.querySelector('.collectionItemsTabContent');

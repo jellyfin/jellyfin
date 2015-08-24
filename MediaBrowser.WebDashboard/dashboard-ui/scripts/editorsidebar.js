@@ -402,8 +402,6 @@
 
     }).on('pagebeforeshowready', ".metadataEditorPage", function () {
 
-        window.MetadataEditor = new metadataEditor();
-
         var page = this;
 
         Dashboard.getCurrentUser().done(function (user) {
@@ -430,6 +428,7 @@
     }).on('pageinitdepends', ".metadataEditorPage", function () {
 
         Dashboard.importCss('css/metadataeditor.css');
+        window.MetadataEditor = new metadataEditor();
 
     }).on('pagebeforehide', ".metadataEditorPage", function () {
 
@@ -481,7 +480,6 @@
 
             return query;
         };
-
 
         self.loadJsTree = function () {
 

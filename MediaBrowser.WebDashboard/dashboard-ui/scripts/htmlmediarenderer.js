@@ -336,11 +336,12 @@
 
             requiresSettingStartTimeOnStart = false;
             var startTime = getStartTime(val);
+            var playNow = false;
 
             if (elem.tagName.toLowerCase() == 'audio') {
 
                 elem.src = val;
-                elem.play();
+                playNow = true;
 
             }
             else {
@@ -376,10 +377,12 @@
                 } else {
 
                     elem.src = val;
+                    elem.autoplay = true;
 
                     setTracks(elem, tracks);
 
                     $(elem).one("loadedmetadata", onLoadedMetadata);
+                    playNow = true;
                 }
 
                 var currentTrackIndex = -1;
@@ -394,6 +397,10 @@
             }
 
             currentSrc = val;
+
+            if (playNow) {
+                elem.play();
+            }
         };
 
         function setTracks(elem, tracks) {

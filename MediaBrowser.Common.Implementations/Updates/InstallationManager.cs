@@ -149,10 +149,12 @@ namespace MediaBrowser.Common.Implementations.Updates
         /// Gets all available packages.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="withRegistration">if set to <c>true</c> [with registration].</param>
         /// <param name="packageType">Type of the package.</param>
         /// <param name="applicationVersion">The application version.</param>
         /// <returns>Task{List{PackageInfo}}.</returns>
         public async Task<IEnumerable<PackageInfo>> GetAvailablePackages(CancellationToken cancellationToken,
+            bool withRegistration = true,
             PackageType? packageType = null,
             Version applicationVersion = null)
         {
@@ -163,13 +165,22 @@ namespace MediaBrowser.Common.Implementations.Updates
                 { "systemid", _applicationHost.SystemId }
             };
 
-            using (var json = await _httpClient.Post(MbAdmin.HttpsUrl + "service/package/retrieveall", data, cancellationToken).ConfigureAwait(false))
+            if (withRegistration)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                using (var json = await _httpClient.Post(MbAdmin.HttpsUrl + "service/package/retrieveall", data, cancellationToken).ConfigureAwait(false))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(json).ToList();
+                    var packages = _jsonSerializer.DeserializeFromStream<List<PackageInfo>>(json).ToList();
 
-                return FilterPackages(packages, packageType, applicationVersion);
+                    return FilterPackages(packages, packageType, applicationVersion);
+                }
+            }
+            else
+            {
+                var packages = await GetAvailablePackagesWithoutRegistrationInfo(cancellationToken).ConfigureAwait(false);
+
+                return FilterPackages(packages.ToList(), packageType, applicationVersion);
             }
         }
 

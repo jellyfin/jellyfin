@@ -563,9 +563,7 @@
             }
 
             if (user.Policy.IsAdministrator) {
-                if (item.Type != "Recording" && item.Type != "Program") {
-                    commands.push('edit');
-                }
+                commands.push('edit');
             }
 
             commands.push('refresh');
@@ -1216,9 +1214,7 @@
             //    itemCommands.push('playmenu');
             //}
 
-            if (item.Type != "Recording" && item.Type != "Program") {
-                itemCommands.push('edit');
-            }
+            itemCommands.push('edit');
 
             if (item.LocalTrailerCount) {
                 itemCommands.push('trailer');

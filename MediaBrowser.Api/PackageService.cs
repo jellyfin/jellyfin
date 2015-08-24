@@ -190,7 +190,7 @@ namespace MediaBrowser.Api
         /// <returns>System.Object.</returns>
         public async Task<object> Get(GetPackages request)
         {
-            var packages = await _installationManager.GetAvailablePackages(CancellationToken.None, request.PackageType, _appHost.ApplicationVersion).ConfigureAwait(false);
+            var packages = await _installationManager.GetAvailablePackages(CancellationToken.None, false, request.PackageType, _appHost.ApplicationVersion).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(request.TargetSystems))
             {
