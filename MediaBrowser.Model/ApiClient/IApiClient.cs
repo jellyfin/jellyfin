@@ -1149,14 +1149,6 @@ namespace MediaBrowser.Model.ApiClient
         Task CancelLiveTvSeriesTimerAsync(string id, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Deletes the live tv recording asynchronous.
-        /// </summary>
-        /// <param name="id">The identifier.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>Task.</returns>
-        Task DeleteLiveTvRecordingAsync(string id, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
         /// Gets the default timer information.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
