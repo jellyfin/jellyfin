@@ -67,12 +67,14 @@
             setInitialCollapsibleState(page, item, context, user);
             renderDetails(page, item, context);
 
-            var hasBackdrop = false;
-            if (item.Type == 'MusicAlbum1' || item.Type == 'Season1') {
-                Backdrops.setBackdrops(page, [item]);
-                $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
+            var hasBackdrop = LibraryBrowser.renderDetailPageBackdrop(page, item);
+            //$('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
+            //Backdrops.setBackdrops(page, [item]);
+            // For these types, make the backdrop a little smaller so that the items are more quickly accessible
+            if (item.Type == "Season" || item.Type == "MusicArtist" || item.Type == "MusicAlbum" || item.Type == "Series" || item.Type == "Playlist" || item.Type == "BoxSet") {
+                page.querySelector('#itemBackdrop').classList.add('smallBackdrop');
             } else {
-                hasBackdrop = LibraryBrowser.renderDetailPageBackdrop(page, item);
+                page.querySelector('#itemBackdrop').classList.remove('smallBackdrop');
             }
 
             var transparentHeader = hasBackdrop && page.classList.contains('noSecondaryNavPage');
@@ -409,7 +411,9 @@
         var topOverview = page.querySelector('.topOverview');
         var bottomOverview = page.querySelector('.bottomOverview');
 
-        if (item.Type == 'MusicAlbum' || item.Type == 'MusicArtist') {
+        var seasonOnBottom = screen.availHeight < 1080 || screen.availWidth < 1920;
+
+        if (item.Type == 'MusicAlbum' || item.Type == 'MusicArtist' || (item.Type == 'Season' && seasonOnBottom) || (item.Type == 'Series' && seasonOnBottom)) {
             LibraryBrowser.renderOverview([bottomOverview], item);
             topOverview.classList.add('hide');
             bottomOverview.classList.remove('hide');

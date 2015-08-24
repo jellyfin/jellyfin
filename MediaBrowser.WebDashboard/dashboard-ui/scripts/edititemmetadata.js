@@ -1503,13 +1503,13 @@
 
         var selected = parseInt(getParameterByName('tab') || '0');
 
-        if (selected) {
+        page.querySelector('paper-tabs').selected = 0;
 
-            page.querySelector('paper-tabs').selected = 0;
+        if (selected) {
 
             // Looks like a bug in paper-tabs. It won't set the tab if we try to do it too quickly
             setTimeout(function () {
-                page.querySelectorAll('paper-tab')[selected].click();
+                page.querySelector('paper-tabs').selected = selected;
             }, 700);
         }
 

@@ -401,6 +401,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     position: relative;
 }
 
+.smallBackdrop {
+    height: 500px;
+}
+
 .noSecondaryNavPage .itemBackdrop {
     margin-top: -50px;
 }
@@ -456,15 +460,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
 .detailUserDataIcons {
-    display: block;
-    margin-top: 1em;
+    display: inline-block;
 }
 
 @media all and (min-width: 540px) {
 
     .detailUserDataIcons {
-        display: inline-block;
-        margin-top: 0;
         margin-left: 1em;
     }
 }
@@ -761,12 +762,20 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .itemBackdrop:not(.noBackdrop) {
         height: 550px;
     }
+
+    .smallBackdrop:not(.noBackdrop) {
+        height: 300px;
+    }
 }
 
 @media all and (max-height: 800px), (max-width: 700px) {
 
     .itemBackdrop:not(.noBackdrop) {
         height: 450px;
+    }
+
+    .smallBackdrop:not(.noBackdrop) {
+        height: 300px;
     }
 }
 
@@ -775,12 +784,20 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .itemBackdrop:not(.noBackdrop) {
         height: 350px;
     }
+
+    .smallBackdrop:not(.noBackdrop) {
+        height: 300px;
+    }
 }
 
 @media all and (max-width: 540px) {
 
     .itemBackdrop:not(.noBackdrop) {
         height: 290px;
+    }
+
+    .smallBackdrop:not(.noBackdrop) {
+        height: 200px;
     }
 }
 
@@ -789,6 +806,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .itemBackdrop:not(.noBackdrop) {
         height: 250px;
     }
+
+    .smallBackdrop:not(.noBackdrop) {
+        height: 200px;
+    }
 }
 
 @media all and (max-height: 460px) {
@@ -796,12 +817,20 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     .itemBackdrop:not(.noBackdrop) {
         height: 200px;
     }
+
+    .smallBackdrop:not(.noBackdrop) {
+        height: 120px;
+    }
 }
 
 @media all and (max-height: 300px) {
 
     .itemBackdrop:not(.noBackdrop) {
         height: 150px;
+    }
+
+    .smallBackdrop:not(.noBackdrop) {
+        height: 120px;
     }
 }
 
