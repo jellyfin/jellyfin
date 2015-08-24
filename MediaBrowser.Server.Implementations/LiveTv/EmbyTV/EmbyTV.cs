@@ -339,10 +339,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
         public Task<SeriesTimerInfo> GetNewTimerDefaultsAsync(CancellationToken cancellationToken, ProgramInfo program = null)
         {
+            var config = GetConfiguration();
+
             var defaults = new SeriesTimerInfo()
             {
-                PostPaddingSeconds = 0,
-                PrePaddingSeconds = 0,
+                PostPaddingSeconds = Math.Max(config.PostPaddingSeconds, 0),
+                PrePaddingSeconds = Math.Max(config.PrePaddingSeconds, 0),
                 RecordAnyChannel = false,
                 RecordAnyTime = false,
                 RecordNewOnly = false

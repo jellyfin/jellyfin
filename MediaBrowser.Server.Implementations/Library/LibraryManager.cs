@@ -937,7 +937,7 @@ namespace MediaBrowser.Server.Implementations.Library
                     (item as MusicArtist).IsAccessedByName = true;
                 }
 
-                var task = item.UpdateToRepository(ItemUpdateType.None, CancellationToken.None);
+                var task = CreateItem(item, CancellationToken.None);
                 Task.WaitAll(task);
             }
 

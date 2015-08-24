@@ -483,7 +483,10 @@ namespace MediaBrowser.Server.Implementations.Library
 
             var provider = _providers.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N"), keys[0], StringComparison.OrdinalIgnoreCase));
 
-            return new Tuple<IMediaSourceProvider, string>(provider, keys[1]);
+            var splitIndex = key.IndexOf(LiveStreamIdDelimeter);
+            var keyId = key.Substring(splitIndex + 1);
+
+            return new Tuple<IMediaSourceProvider, string>(provider, keyId);
         }
 
         private Timer _closeTimer;
