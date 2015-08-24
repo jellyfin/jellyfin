@@ -479,6 +479,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private Tuple<IMediaSourceProvider, string> GetProvider(string key)
         {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new ArgumentException("key");
+            }
+
             var keys = key.Split(new[] { LiveStreamIdDelimeter }, 2);
 
             var provider = _providers.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N"), keys[0], StringComparison.OrdinalIgnoreCase));

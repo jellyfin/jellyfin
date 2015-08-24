@@ -90,6 +90,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             foreach (var source in list)
             {
                 source.Type = MediaSourceType.Default;
+                source.BufferMs = source.BufferMs ?? 1500;
 
                 if (source.RequiresOpening || forceRequireOpening)
                 {
@@ -103,9 +104,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                     openKeys.Add(item.Id.ToString("N"));
                     openKeys.Add(source.Id ?? string.Empty);
                     source.OpenToken = string.Join(StreamIdDelimeterString, openKeys.ToArray());
-                }
-
-                source.BufferMs = source.BufferMs ?? 1500;
+                } 
 
                 // Dummy this up so that direct play checks can still run
                 if (string.IsNullOrEmpty(source.Path) && source.Protocol == MediaProtocol.Http)
@@ -125,12 +124,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             const bool isAudio = false;
 
             var keys = openToken.Split(new[] { StreamIdDelimeter }, 3);
-            string mediaSourceId = null;
-
-            if (keys.Length >= 3)
-            {
-                mediaSourceId = openToken.Substring(keys[0].Length + keys[1].Length + 2);
-            }
+            var mediaSourceId = keys.Length >= 3 ? keys[2] : null;
 
             if (string.Equals(keys[0], typeof(LiveTvChannel).Name, StringComparison.OrdinalIgnoreCase))
             {

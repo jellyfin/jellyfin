@@ -1511,10 +1511,11 @@
     "HeaderUpcomingForKids": "Pr\u00f3ximamente para Ni\u00f1os",
     "HeaderSetupLiveTV": "Configurar TV en Vivo",
     "LabelTunerType": "Tipo de sintonizador:",
-    "HelpMoreTunersCanBeAdded": "Se pueden agregar mas sintonizadores posteriormente en la secci\u00f3n de TV en Vivo",
+    "HelpMoreTunersCanBeAdded": "Se pueden agregar sintonizadores adicionales posteriormente en la secci\u00f3n de TV en Vivo.",
     "MessageActiveSupporterMembershipRequiredSeriesRecordings": "An active Emby Supporter membership is required in order to create automated series recordings.",
     "HeaderSetupTVGuide": "Setup TV Guide",
     "LabelDataProvider": "Data provider:",
     "OptionSendRecordingsToAutoOrganize": "Enable Auto-Organize for new recordings",
-    "OptionSendRecordingsToAutoOrganizeHelp": "New recordings will be sent to the Auto-Organize feature and imported into your regular TV library."
+    "OptionSendRecordingsToAutoOrganizeHelp": "New recordings will be sent to the Auto-Organize feature and imported into your media library.",
+    "HeaderDefaultPadding": "Default Padding"
 }

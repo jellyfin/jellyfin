@@ -75,7 +75,7 @@
             userId: Dashboard.getCurrentUserId(),
             IsAiring: false,
             HasAired: false,
-            limit: 9,
+            limit: 8,
             IsMovie: true
 
         }).done(function (result) {
