@@ -13,7 +13,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -713,11 +712,13 @@ namespace MediaBrowser.Api.Playback.Hls
 
             var index = 0;
 
+            double segmentLength = state.SegmentLength;
+
             while (seconds > 0)
             {
-                var length = seconds >= state.SegmentLength ? state.SegmentLength : seconds;
+                var length = seconds >= state.SegmentLength ? segmentLength : seconds;
 
-                builder.AppendLine("#EXTINF:" + length.ToString(UsCulture) + ",");
+                builder.AppendLine("#EXTINF:" + length.ToString("0.000000", UsCulture) + ",");
 
                 builder.AppendLine(string.Format("hlsdynamic/{0}/{1}{2}{3}",
 
@@ -726,7 +727,7 @@ namespace MediaBrowser.Api.Playback.Hls
                     GetSegmentFileExtension(isOutputVideo),
                     queryString));
 
-                seconds -= state.SegmentLength;
+                seconds -= length;
                 index++;
             }
 
