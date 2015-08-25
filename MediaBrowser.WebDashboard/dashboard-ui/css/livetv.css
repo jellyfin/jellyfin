@@ -282,7 +282,7 @@
     color: #fff !important;
     text-decoration: none;
     font-weight: 400 !important;
-    font-size: 15px;
+    font-size: 14px;
     overflow: hidden;
 }
 
@@ -303,7 +303,7 @@
 }
 
 .guideProgramName {
-    padding: .4em .5em .35em;
+    padding: .45em .5em .35em;
 }
 
 .guideProgramTime {
