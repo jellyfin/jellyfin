@@ -175,7 +175,9 @@
     <EmbeddedResource Include="Profiles\Xml\Xbox One.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\Default.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Default.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Images\logo120.jpg" />
@@ -213,6 +215,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 4.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Kodi.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
