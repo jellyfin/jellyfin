@@ -1,4 +1,8 @@
-﻿.tvGuideHeader {
+﻿.guideTabContent {
+    background: #161616;
+}
+
+.tvGuideHeader {
     white-space: nowrap;
     position: fixed;
     top: 96px;
@@ -38,7 +42,7 @@
 }
 
 .detailSectionHeader + .tvProgram {
-    border-top: 1px solid #404040;
+    border-top: 6px solid #161616;
     margin-top: 1px;
 }
 
@@ -51,7 +55,7 @@
     top: 0;
     left: 0;
     bottom: 0;
-    border-bottom: 1px solid #404040;
+    border-bottom: 6px solid #161616;
 }
 
 .tvProgramTimeSlotInner {
@@ -61,12 +65,13 @@
 .tvProgramInfo {
     vertical-align: middle;
     padding: .5em .5em;
-    border-bottom: 1px solid #404040;
+    border-bottom: 6px solid #161616;
 }
 
 .tvProgramTimeSlot + .tvProgramInfo {
     margin-left: 80px;
-    border-left: 1px solid #404040;
+    border-left: 6px solid #161616;
+    position: relative;
 }
 
 .tvProgramCurrentTimeSlot {
@@ -95,24 +100,28 @@
     color: yellow;
 }
 
-.sportsProgramInfo {
-    background-color: #0F2624;
-    border-bottom: 2px solid #0A7C33;
+.programAccent {
+    position: absolute;
+    bottom: 0;
+    left: 6px;
+    right: 0;
+    height: 2px;
 }
 
-.newsProgramInfo {
-    background-color: #211A32;
-    border-bottom: 2px solid #523378;
+.sportsProgramInfo .programAccent {
+    background-color: #0A7C33;
 }
 
-.movieProgramInfo {
-    background-color: #271A21;
-    border-bottom: 2px solid #A43913;
+.newsProgramInfo .programAccent {
+    background-color: #523378;
 }
 
-.childProgramInfo {
-    background-color: #092345;
-    border-bottom: 2px solid #0B487D;
+.movieProgramInfo .programAccent {
+    background-color: #A43913;
+}
+
+.childProgramInfo .programAccent {
+    background-color: #0B487D;
 }
 
 .timerCircle {
@@ -178,8 +187,7 @@
 
 .channelPrograms {
     white-space: nowrap;
-    height: 55px;
-    border-bottom: 1px solid #404040;
+    height: 61px;
     position: relative;
 }
 
@@ -204,10 +212,18 @@
 .channelHeaderCell, .channelTimeslotHeader {
     overflow: hidden;
     text-overflow: ellipsis;
-    border-bottom: 1px solid #404040;
-    border-right: 1px solid #404040;
+    border-right: 1px solid #161616;
     width: 189px;
+    background: #303030;
 }
+
+.channelHeaderCell {
+    border-bottom: 0 !important;
+}
+
+    .channelHeaderCellContainer + .channelHeaderCellContainer .channelHeaderCell {
+        border-top: 6px solid #161616;
+    }
 
 .channelTimeslotHeader {
     border-right: 1px solid #38c;
@@ -254,17 +270,19 @@
 
 .programCell {
     position: absolute;
-    top: 1px;
-    bottom: 1px;
+    top: 0;
+    bottom: 6px;
 }
 
 .programCellInner {
-    border-left: 1px solid #404040;
+    border-left: 6px solid #161616;
+    background-color: #212121;
     display: block;
     height: 100%;
     color: #fff !important;
     text-decoration: none;
     font-weight: 400 !important;
+    font-size: 15px;
     overflow: hidden;
 }
 
@@ -285,11 +303,12 @@
 }
 
 .guideProgramName {
-    padding: .55em .5em .35em;
+    padding: .4em .5em .35em;
 }
 
 .guideProgramTime {
     padding: 0 .5em .35em;
+    color: #bbb;
 }
 
 .guideChannelInfo {

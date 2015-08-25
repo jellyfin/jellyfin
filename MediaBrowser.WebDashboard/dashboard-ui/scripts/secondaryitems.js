@@ -136,8 +136,8 @@
                 else if (query.IncludeItemTypes == "Episode") {
                     posterOptions.overlayText = false;
                     posterOptions.showParentTitle = true;
+                    posterOptions.showTitle = true;
                     posterOptions.overlayPlayButton = true;
-                    posterOptions.centerText = false;
                 }
 
                 // Poster

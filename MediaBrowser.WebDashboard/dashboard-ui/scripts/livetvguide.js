@@ -203,6 +203,7 @@
             html += '<div class="programCell" style="left:' + startPercent + '%;width:' + endPercent + '%;">';
 
             var cssClass = "programCellInner";
+            var addAccent = true;
 
             if (program.IsKids) {
                 cssClass += " childProgramInfo";
@@ -215,6 +216,7 @@
             }
             else {
                 cssClass += " plainProgramInfo";
+                addAccent = false;
             }
 
             html += '<a href="itemdetails.html?id=' + program.Id + '" class="' + cssClass + '" data-programid="' + program.Id + '">';
@@ -248,6 +250,10 @@
                 html += '<div class="timerCircle"></div>';
             }
             html += '</div>';
+
+            if (addAccent) {
+                html += '<div class="programAccent"></div>';
+            }
 
             html += '</a>';
 

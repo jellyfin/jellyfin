@@ -90,6 +90,7 @@
             }
 
             html += '</div>';
+            html += '<div class="programAccent"></div>';
             html += '</div>';
 
             html += '</a>';
