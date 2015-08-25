@@ -108,7 +108,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         public async Task<List<LiveTvTunerInfo>> GetTunerInfos(TunerHostInfo info, CancellationToken cancellationToken)
         {
-            string model = await GetModelInfo(info, cancellationToken).ConfigureAwait(false);
+            var model = await GetModelInfo(info, cancellationToken).ConfigureAwait(false);
 
             using (var stream = await _httpClient.Get(new HttpRequestOptions()
             {
@@ -398,7 +398,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
         {
             var info = await GetTunerInfos(tuner, cancellationToken).ConfigureAwait(false);
 
-            return info.Any(i => i.Status == LiveTvTunerStatus.Available);
+            return info.Any(i => i.Status == LiveTvTunerStatus.Available || string.Equals(i.ChannelId, channelId, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

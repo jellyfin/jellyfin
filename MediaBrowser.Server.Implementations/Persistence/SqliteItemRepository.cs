@@ -712,6 +712,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += whereText;
 
+                cmd.CommandText += GetOrderByText(query);
+
                 if (query.Limit.HasValue)
                 {
                     cmd.CommandText += " LIMIT " + query.Limit.Value.ToString(CultureInfo.InvariantCulture);
@@ -719,6 +721,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 cmd.CommandText += "; select count (guid) from TypedBaseItems" + whereTextWithoutPaging;
 
+                _logger.Debug(cmd.CommandText);
+                
                 var list = new List<BaseItem>();
                 var count = 0;
 
@@ -747,6 +751,28 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
         }
 
+        private string GetOrderByText(InternalItemsQuery query)
+        {
+            if (query.SortBy == null || query.SortBy.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            var sortOrder = query.SortOrder == SortOrder.Descending ? "DESC" : "ASC";
+
+            return " ORDER BY " + string.Join(",", query.SortBy.Select(i => MapOrderByField(i) + " " + sortOrder).ToArray());
+        }
+
+        private string MapOrderByField(string name)
+        {
+            if (string.Equals(name, "sortname", StringComparison.OrdinalIgnoreCase))
+            {
+                return "name";
+            }
+
+            return name;
+        }
+
         public List<Guid> GetItemIdsList(InternalItemsQuery query)
         {
             if (query == null)
@@ -767,6 +793,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     " where " + string.Join(" AND ", whereClauses.ToArray());
 
                 cmd.CommandText += whereText;
+
+                cmd.CommandText += GetOrderByText(query);
 
                 if (query.Limit.HasValue)
                 {
@@ -815,6 +843,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     " where " + string.Join(" AND ", whereClauses.ToArray());
 
                 cmd.CommandText += whereText;
+
+                cmd.CommandText += GetOrderByText(query);
 
                 if (query.Limit.HasValue)
                 {
@@ -985,7 +1015,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                         string.Empty :
                         " where " + string.Join(" AND ", whereClauses.ToArray());
 
-                    whereClauses.Add(string.Format("Id NOT IN (SELECT Id FROM TypedBaseItems {0} ORDER BY DateCreated DESC LIMIT {1})",
+                    var orderBy = GetOrderByText(query);
+
+                    whereClauses.Add(string.Format("guid NOT IN (SELECT guid FROM TypedBaseItems {0}" + orderBy + " LIMIT {1})",
                         pagingWhereText,
                         query.StartIndex.Value.ToString(CultureInfo.InvariantCulture)));
                 }
