@@ -54,7 +54,7 @@
     "tag": "v1.0.6",
     "commit": "ec51bf68f05c40373536cc726ca674e4549b7db2"
   },
-  "_source": "git://github.com/polymerelements/neon-animation.git",
+  "_source": "git://github.com/PolymerElements/neon-animation.git",
   "_target": "^1.0.0",
-  "_originalSource": "polymerelements/neon-animation"
+  "_originalSource": "PolymerElements/neon-animation"
 }

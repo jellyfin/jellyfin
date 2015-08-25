@@ -266,9 +266,10 @@
 
                 Logger.log('selected tab will be ' + selected);
 
-                tabs.selected = selected;
 
-                if (!LibraryBrowser.enableFullPaperTabs()) {
+                if (LibraryBrowser.enableFullPaperTabs()) {
+                    tabs.selected = selected;
+                } else {
                     page.querySelector('neon-animated-pages').selected = selected;
                 }
 
