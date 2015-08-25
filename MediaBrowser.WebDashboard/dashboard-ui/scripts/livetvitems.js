@@ -57,7 +57,8 @@
                     lazy: true,
                     showStartDateIndex: true,
                     overlayText: false,
-                    showProgramAirInfo: true
+                    showProgramAirInfo: true,
+                    overlayMoreButton: true
                 });
             }
             else if (view == "PosterCard") {
@@ -69,7 +70,8 @@
                     showStartDateIndex: true,
                     lazy: true,
                     cardLayout: true,
-                    showProgramAirInfo: true
+                    showProgramAirInfo: true,
+                    overlayMoreButton: true
                 });
             }
 

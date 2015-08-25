@@ -78,6 +78,14 @@ namespace MediaBrowser.Api.LiveTv
         /// <value>The fields.</value>
         [ApiMember(Name = "Fields", Description = "Optional. Specify additional fields of information to return in the output. This allows multiple, comma delimeted. Options: Budget, Chapters, CriticRatingSummary, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET", AllowMultiple = true)]
         public string Fields { get; set; }
+
+        [ApiMember(Name = "AddCurrentProgram", Description = "Optional. Adds current program info to each channel", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
+        public bool AddCurrentProgram { get; set; }
+
+        public GetChannels()
+        {
+            AddCurrentProgram = true;
+        }
     }
 
     [Route("/LiveTv/Channels/{Id}", "GET", Summary = "Gets a live tv channel")]
@@ -582,7 +590,8 @@ namespace MediaBrowser.Api.LiveTv
                 IsFavorite = request.IsFavorite,
                 IsLiked = request.IsLiked,
                 IsDisliked = request.IsDisliked,
-                EnableFavoriteSorting = request.EnableFavoriteSorting
+                EnableFavoriteSorting = request.EnableFavoriteSorting,
+                AddCurrentProgram = request.AddCurrentProgram
 
             }, GetDtoOptions(request), CancellationToken.None).ConfigureAwait(false);
 

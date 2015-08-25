@@ -24,11 +24,11 @@
             currentItem = item;
 
             if (item.Type == "UserRootFolder") {
-                $('.editPageInnerContent', page).hide();
+                $('.editPageInnerContent', page)[0].style.visibility = 'hidden';
                 Dashboard.hideLoadingMsg();
                 return;
             } else {
-                $('.editPageInnerContent', page).show();
+                $('.editPageInnerContent', page)[0].style.visibility = 'visible';
             }
 
             var languages = metadataEditorInfo.Cultures;

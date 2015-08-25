@@ -213,10 +213,15 @@
             var selected = this.selected;
             if (LibraryBrowser.navigateOnLibraryTabSelect()) {
 
+                var url = 'photos.html';
+                var topParentId = LibraryMenu.getTopParentId();
+                if (topParentId) {
+                    url += '?topParentId=' + topParentId;
+                }
                 if (selected) {
-                    Dashboard.navigate('photos.html?tab=' + selected + '&topParentId=' + LibraryMenu.getTopParentId());
+                    Dashboard.navigate(url + '&tab=' + selected);
                 } else {
-                    Dashboard.navigate('photos.html?topParentId=' + LibraryMenu.getTopParentId());
+                    Dashboard.navigate(url);
                 }
 
             } else {

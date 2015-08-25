@@ -2,7 +2,7 @@
 
     var pageSizeKey = 'pagesize_v4';
 
-    return {
+    var libraryBrowser = {
         getDefaultPageSize: function (key, defaultValue) {
 
             var saved = appStorage.getItem(key || pageSizeKey);
@@ -205,8 +205,6 @@
 
             if (LibraryBrowser.enableFullPaperTabs()) {
 
-                $(tabs).show();
-
                 if ($.browser.safari) {
 
                     // Not very iOS-like I suppose
@@ -226,8 +224,7 @@
                 tabs.noBar = true;
                 tabs.scrollable = true;
 
-                var legacyTabs = $('.legacyTabs', ownerpage).show();
-                document.body.classList.add('basicPaperLibraryTabs');
+                var legacyTabs = $('.legacyTabs', ownerpage);
 
                 $(pages).on('iron-select', function (e) {
 
@@ -242,6 +239,7 @@
 
             $(pages).on('iron-select', function () {
 
+                console.log('iron-select');
                 // When transition animations are used, add a content loading delay to allow the animations to finish
                 // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
                 var enablePaperTabs = LibraryBrowser.enableFullPaperTabs();
@@ -1256,6 +1254,11 @@
 
             if (SyncManager.isAvailable(item)) {
                 itemCommands.push('sync');
+            }
+
+            if (item.Type == 'Program' && (!item.TimerId && !item.SeriesTimerId)) {
+
+                itemCommands.push('record');
             }
 
             return itemCommands;
@@ -3318,5 +3321,13 @@
             return hasbackdrop;
         }
     };
+
+    if (libraryBrowser.enableFullPaperTabs()) {
+        document.documentElement.classList.add('fullPaperLibraryTabs');
+    } else {
+        document.documentElement.classList.add('basicPaperLibraryTabs');
+    }
+
+    return libraryBrowser;
 
 })(window, document, jQuery, screen);

@@ -677,10 +677,11 @@
                 context: context,
                 lazy: true,
                 showDetailsMenu: true,
-                coverImage: item.Type == "MusicAlbum" || item.Type == "MusicArtist"
+                coverImage: item.Type == "MusicAlbum" || item.Type == "MusicArtist",
+                overlayPlayButton: true
             });
 
-            $('#similarContent', page).html(html).lazyChildren();
+            $('#similarContent', page).html(html).lazyChildren().createCardMenus();
         });
     }
 

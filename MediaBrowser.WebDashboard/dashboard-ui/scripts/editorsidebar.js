@@ -155,7 +155,7 @@
 
     function loadLiveTvChannels(service, openItems, callback) {
 
-        ApiClient.getLiveTvChannels({ ServiceName: service }).done(function (result) {
+        ApiClient.getLiveTvChannels({ ServiceName: service, AddCurrentProgram: false }).done(function (result) {
 
             var nodes = result.Items.map(function (i) {
 

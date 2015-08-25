@@ -835,8 +835,9 @@
     "OptionThumb": "Miniatura",
     "OptionThumbCard": "Tarjeta de Miniatura",
     "OptionBanner": "Cart\u00e9l",
-    "NoSlideshowContentFound": "No slideshow images were found.",
+    "NoSlideshowContentFound": "No se encontraron presentaciones de im\u00e1genes.",
     "OptionPhotoSlideshow": "Presentaci\u00f3n de fotograf\u00edas",
     "OptionBackdropSlideshow": "Presentaci\u00f3n de Im\u00e1genes de Fondo",
-    "HeaderTopPlugins": "Top Plugins"
+    "HeaderTopPlugins": "Complementos Destacados",
+    "ButtonRecord": "Grabar"
 }

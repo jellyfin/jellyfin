@@ -835,8 +835,9 @@
     "OptionThumb": "Thumb",
     "OptionThumbCard": "Thumb Karte",
     "OptionBanner": "Banner",
-    "NoSlideshowContentFound": "No slideshow images were found.",
-    "OptionPhotoSlideshow": "Photo slideshow",
-    "OptionBackdropSlideshow": "Backdrop slideshow",
-    "HeaderTopPlugins": "Top Plugins"
+    "NoSlideshowContentFound": "Keine Diashow Bilder gefunden.",
+    "OptionPhotoSlideshow": "Diashow",
+    "OptionBackdropSlideshow": "Hintergrund Diashow",
+    "HeaderTopPlugins": "Top Plugins",
+    "ButtonRecord": "Aufnehmen"
 }

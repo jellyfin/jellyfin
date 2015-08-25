@@ -1517,5 +1517,6 @@
     "LabelDataProvider": "Fournisseur de donn\u00e9es :",
     "OptionSendRecordingsToAutoOrganize": "Activer l'auto-organisation pour les nouveaux enregistrements",
     "OptionSendRecordingsToAutoOrganizeHelp": "Les nouveaux enregistrements seront envoy\u00e9s au service d'auto-organisation et import\u00e9s dans votre biblioth\u00e8que de m\u00e9dias TV.",
-    "HeaderDefaultPadding": "Default Padding"
+    "HeaderDefaultPadding": "Default Padding",
+    "HeaderSubtitles": "Sous-titres"
 }

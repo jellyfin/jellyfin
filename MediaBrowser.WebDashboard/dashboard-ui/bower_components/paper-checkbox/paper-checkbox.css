@@ -150,3 +150,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 :host([disabled]) #checkboxLabel  {
   opacity: 0.65;
 }
+
+/* invalid state */
+#checkbox.invalid:not(.checked) {
+  border-color: var(--paper-checkbox-error-color, --google-red-500);
+}

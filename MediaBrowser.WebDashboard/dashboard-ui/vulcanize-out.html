@@ -11310,9 +11310,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
       /**
        * Returns the currently focused item.
-       *
-       * @attribute focusedItem
-       * @type Object
        */
       focusedItem: {
         observer: '_focusedItemChanged',
@@ -11324,9 +11321,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
        * The attribute to use on menu items to look up the item title. Typing the first
        * letter of an item when the menu is open focuses that item. If unset, `textContent`
        * will be used.
-       *
-       * @attribute attrForItemTitle
-       * @type String
        */
       attrForItemTitle: {
         type: String
@@ -11403,6 +11397,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
         this._defaultFocusAsync = null;
       }
       var item = this._valueToItem(value);
+      if (item && item.hasAttribute('disabled')) return;
       this._setFocusedItem(item);
       Polymer.IronMultiSelectableBehaviorImpl.select.apply(this, arguments);
     },
@@ -12682,6 +12677,98 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
 
 
+<script>
+
+  /**
+   * Use `Polymer.IronCheckedElementBehavior` to implement a custom element
+   * that has a `checked` property, which can be used for validation if the
+   * element is also `required`. Element instances implementing this behavior
+   * will also be registered for use in an `iron-form` element.
+   *
+   * @demo demo/index.html
+   * @polymerBehavior Polymer.IronCheckedElementBehavior
+   */
+  Polymer.IronCheckedElementBehaviorImpl = {
+
+    properties: {
+      /**
+       * Fired when the checked state changes.
+       *
+       * @event iron-change
+       */
+
+      /**
+       * Gets or sets the state, `true` is checked and `false` is unchecked.
+       */
+      checked: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+        notify: true,
+        observer: '_checkedChanged'
+      },
+
+      /**
+       * If true, the button toggles the active state with each tap or press
+       * of the spacebar.
+       */
+      toggles: {
+        type: Boolean,
+        value: true,
+        reflectToAttribute: true
+      },
+
+      /* Overriden from Polymer.IronFormElementBehavior */
+      value: {
+        type: String,
+        value: ''
+      }
+    },
+
+    observers: [
+      '_requiredChanged(required)'
+    ],
+
+    /**
+     * Returns false if the element is required and not checked, and true otherwise.
+     * @return {Boolean} true if `required` is false, or if `required` and `checked` are both true.
+     */
+    _getValidity: function() {
+      return this.disabled || !this.required || (this.required && this.checked);
+    },
+
+    /**
+     * Update the aria-required label when `required` is changed.
+     */
+    _requiredChanged: function() {
+      if (this.required) {
+        this.setAttribute('aria-required', 'true');
+      } else {
+        this.removeAttribute('aria-required');
+      }
+    },
+
+    /**
+     * Update the element's value when checked.
+     */
+    _checkedChanged: function() {
+      this.active = this.checked;
+      // Unless the user has specified a value, a checked element has the
+      // default value "on" when checked.
+      if (this.value === '')
+        this.value = this.checked ? 'on' : '';
+      this.fire('iron-change');
+    }
+  };
+
+  /** @polymerBehavior Polymer.IronCheckedElementBehavior */
+  Polymer.IronCheckedElementBehavior = [
+    Polymer.IronFormElementBehavior,
+    Polymer.IronValidatableBehavior,
+    Polymer.IronCheckedElementBehaviorImpl
+  ];
+
+</script>
 
 
 
@@ -18399,13 +18486,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   opacity: 0.65;
 }
 
+/* invalid state */
+#checkbox.invalid:not(.checked) {
+  border-color: var(--paper-checkbox-error-color, --google-red-500);
+}
+
 </style>
 
   <template>
 
     <div id="checkboxContainer">
       <paper-ripple id="ink" class="circle" center="" checked$="[[checked]]"></paper-ripple>
-      <div id="checkbox" class$="[[_computeCheckboxClass(checked)]]">
+      <div id="checkbox" class$="[[_computeCheckboxClass(checked, invalid)]]">
         <div id="checkmark" class$="[[_computeCheckmarkClass(checked)]]"></div>
       </div>
     </div>
@@ -18419,7 +18511,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       is: 'paper-checkbox',
 
       behaviors: [
-        Polymer.PaperInkyFocusBehavior
+        Polymer.PaperInkyFocusBehavior,
+        Polymer.IronCheckedElementBehavior
       ],
 
       hostAttributes: {
@@ -18441,25 +18534,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          * @event iron-change
          */
 
-        /**
-         * Gets or sets the state, `true` is checked and `false` is unchecked.
-         */
-        checked: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,
-          notify: true,
-          observer: '_checkedChanged'
-        },
-
-        /**
-         * If true, the button toggles the active state with each tap or press
-         * of the spacebar.
-         */
-        toggles: {
-          type: Boolean,
-          value: true,
-          reflectToAttribute: true
+        ariaActiveAttribute: {
+          value: 'aria-checked'
         }
       },
 
@@ -18495,24 +18571,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
-      _checkedChanged: function(checked) {
-        this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
-        this.active = this.checked;
-        this.fire('iron-change');
-      },
-
-      _computeCheckboxClass: function(checked) {
+      _computeCheckboxClass: function(checked, invalid) {
+        var className = '';
         if (checked) {
-          return 'checked';
+          className += 'checked ';
         }
-        return '';
+        if (invalid) {
+          className += 'invalid';
+        }
+        return className;
       },
 
       _computeCheckmarkClass: function(checked) {
-        if (!checked) {
-          return 'hidden';
-        }
-        return '';
+        return checked ? '' : 'hidden';
       }
     })
   </script>

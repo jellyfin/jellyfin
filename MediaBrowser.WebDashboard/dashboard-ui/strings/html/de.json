@@ -1509,13 +1509,14 @@
     "HeaderRecordingOptions": "Aufnahme Einstellungen",
     "ButtonShare": "Teilen",
     "HeaderUpcomingForKids": "Vorschau f\u00fcr Kinder",
-    "HeaderSetupLiveTV": "Setup Live TV",
-    "LabelTunerType": "Tuner type:",
-    "HelpMoreTunersCanBeAdded": "Additional tuners can be added later within the Live TV section.",
-    "MessageActiveSupporterMembershipRequiredSeriesRecordings": "An active Emby Supporter membership is required in order to create automated series recordings.",
-    "HeaderSetupTVGuide": "Setup TV Guide",
-    "LabelDataProvider": "Data provider:",
-    "OptionSendRecordingsToAutoOrganize": "Enable Auto-Organize for new recordings",
-    "OptionSendRecordingsToAutoOrganizeHelp": "New recordings will be sent to the Auto-Organize feature and imported into your media library.",
-    "HeaderDefaultPadding": "Default Padding"
+    "HeaderSetupLiveTV": "Live TV einrichten",
+    "LabelTunerType": "Tuner Typ:",
+    "HelpMoreTunersCanBeAdded": "Weitere Tuner k\u00f6nnen sp\u00e4ter \u00fcber die Live TV Einstellungen hinzugef\u00fcgt werden.",
+    "MessageActiveSupporterMembershipRequiredSeriesRecordings": "Eine aktive Emby Unterst\u00fctzer-Mitgliedschaft wird f\u00fcr das automatisierte Erstellen von Aufnahmen ben\u00f6tigt.",
+    "HeaderSetupTVGuide": "TV Guide einrichten",
+    "LabelDataProvider": "Datenquelle:",
+    "OptionSendRecordingsToAutoOrganize": "Aktiviere Auto-Organisation f\u00fcr neue Aufnahmen",
+    "OptionSendRecordingsToAutoOrganizeHelp": "Neue Aufnahmen werden mittels automatischer Organisation in Ihrer Bibliothek importiert.",
+    "HeaderDefaultPadding": "Standard Vor\/ Nachlauf",
+    "HeaderSubtitles": "Untertitel"
 }

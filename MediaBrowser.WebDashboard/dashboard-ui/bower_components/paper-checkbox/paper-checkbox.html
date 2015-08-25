@@ -11,8 +11,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../paper-styles/default-theme.html">
+<link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
-
+<link rel="import" href="../iron-checked-element-behavior/iron-checked-element-behavior.html">
 <!--
 
 `paper-checkbox` is a button that can be either checked or unchecked.  User
@@ -40,6 +41,7 @@ Custom property | Description | Default
 `--paper-checkbox-checked-ink-color` | Selected/focus ripple color when the input is checked | `--default-primary-color`
 `--paper-checkbox-checkmark-color` | Checkmark color | `white`
 `--paper-checkbox-label-color` | Label color | `--primary-text-color`
+`--paper-checkbox-error-color` | Checkbox color when invalid | `--google-red-500`
 
 @demo demo/index.html
 -->
@@ -51,7 +53,7 @@ Custom property | Description | Default
 
     <div id="checkboxContainer">
       <paper-ripple id="ink" class="circle" center checked$="[[checked]]"></paper-ripple>
-      <div id="checkbox" class$="[[_computeCheckboxClass(checked)]]">
+      <div id="checkbox" class$="[[_computeCheckboxClass(checked, invalid)]]">
         <div id="checkmark" class$="[[_computeCheckmarkClass(checked)]]"></div>
       </div>
     </div>
@@ -65,7 +67,8 @@ Custom property | Description | Default
       is: 'paper-checkbox',
 
       behaviors: [
-        Polymer.PaperInkyFocusBehavior
+        Polymer.PaperInkyFocusBehavior,
+        Polymer.IronCheckedElementBehavior
       ],
 
       hostAttributes: {
@@ -87,25 +90,8 @@ Custom property | Description | Default
          * @event iron-change
          */
 
-        /**
-         * Gets or sets the state, `true` is checked and `false` is unchecked.
-         */
-        checked: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,
-          notify: true,
-          observer: '_checkedChanged'
-        },
-
-        /**
-         * If true, the button toggles the active state with each tap or press
-         * of the spacebar.
-         */
-        toggles: {
-          type: Boolean,
-          value: true,
-          reflectToAttribute: true
+        ariaActiveAttribute: {
+          value: 'aria-checked'
         }
       },
 
@@ -141,24 +127,19 @@ Custom property | Description | Default
         }
       },
 
-      _checkedChanged: function(checked) {
-        this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
-        this.active = this.checked;
-        this.fire('iron-change');
-      },
-
-      _computeCheckboxClass: function(checked) {
+      _computeCheckboxClass: function(checked, invalid) {
+        var className = '';
         if (checked) {
-          return 'checked';
+          className += 'checked ';
         }
-        return '';
+        if (invalid) {
+          className += 'invalid';
+        }
+        return className;
       },
 
       _computeCheckmarkClass: function(checked) {
-        if (!checked) {
-          return 'hidden';
-        }
-        return '';
+        return checked ? '' : 'hidden';
       }
     })
   </script>

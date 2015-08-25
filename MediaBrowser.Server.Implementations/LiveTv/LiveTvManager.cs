@@ -251,13 +251,14 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             var now = DateTime.UtcNow;
 
-            var programs = _libraryManager.QueryItems(new InternalItemsQuery
+            var programs = query.AddCurrentProgram ? _libraryManager.QueryItems(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
                 MaxStartDate = now,
-                MinEndDate = now
+                MinEndDate = now,
+                ChannelIds = internalResult.Items.Select(i => i.Id.ToString("N")).ToArray()
 
-            }).Items.Cast<LiveTvProgram>().OrderBy(i => i.StartDate).ToList();
+            }).Items.Cast<LiveTvProgram>().OrderBy(i => i.StartDate).ToList() : new List<LiveTvProgram>();
 
             foreach (var channel in internalResult.Items)
             {
@@ -776,7 +777,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 IsMovie = query.IsMovie,
                 IsSports = query.IsSports,
                 IsKids = query.IsKids,
-                Genres = query.Genres
+                Genres = query.Genres,
+                StartIndex = query.StartIndex,
+                Limit = query.Limit,
+                SortBy = query.SortBy,
+                SortOrder = query.SortOrder ?? SortOrder.Ascending
             };
 
             var user = string.IsNullOrEmpty(query.UserId) ? null : _userManager.GetUserById(query.UserId);
@@ -802,29 +807,10 @@ namespace MediaBrowser.Server.Implementations.LiveTv
                 }
             }
 
-            IEnumerable<LiveTvProgram> programs = _libraryManager.QueryItems(internalQuery).Items.Cast<LiveTvProgram>();
+            var queryResult = _libraryManager.QueryItems(internalQuery);
 
-            programs = _libraryManager.Sort(programs, user, query.SortBy, query.SortOrder ?? SortOrder.Ascending)
-                .Cast<LiveTvProgram>();
-
-            var programList = programs.ToList();
-            IEnumerable<LiveTvProgram> returnPrograms = programList;
-
-            if (query.StartIndex.HasValue)
-            {
-                returnPrograms = returnPrograms.Skip(query.StartIndex.Value);
-            }
-
-            if (query.Limit.HasValue)
-            {
-                returnPrograms = returnPrograms.Take(query.Limit.Value);
-            }
-
-            var returnArray = returnPrograms
-                .Select(i =>
-                {
-                    return _dtoService.GetBaseItemDto(i, options, user);
-                })
+            var returnArray = queryResult.Items
+                .Select(i => _dtoService.GetBaseItemDto(i, options, user))
                 .ToArray();
 
             await AddRecordingInfo(returnArray, cancellationToken).ConfigureAwait(false);
@@ -832,7 +818,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var result = new QueryResult<BaseItemDto>
             {
                 Items = returnArray,
-                TotalRecordCount = programList.Count
+                TotalRecordCount = queryResult.TotalRecordCount
             };
 
             return result;

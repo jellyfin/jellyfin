@@ -928,7 +928,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
 .itemMiscInfo {
-    color: #ddd;
     text-overflow: ellipsis;
     overflow: hidden;
 }
@@ -1253,10 +1252,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 .selectedCharacter {
     color: #4d90fe !important;
-}
-
-.itemOverlayContent {
-    max-width: 300px;
 }
 
 .itemOverlayHtml {

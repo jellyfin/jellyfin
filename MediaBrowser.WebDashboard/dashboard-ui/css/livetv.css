@@ -376,3 +376,28 @@
 .channelList, .programGrid {
     height: auto !important;
 }
+
+.itemOverlayContent {
+    width: 200px;
+}
+
+@media (min-width: 800px) {
+
+    .itemOverlayContent {
+        width: 300px;
+    }
+}
+
+@media (min-width: 1000px) {
+
+    .itemOverlayContent {
+        width: 400px;
+    }
+}
+
+@media (min-width: 1200px) {
+
+    .itemOverlayContent {
+        width: 500px;
+    }
+}

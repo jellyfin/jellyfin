@@ -2187,6 +2187,7 @@ $(document).on('pagecreate', ".page", function () {
 
     var dependencies = this.getAttribute('data-require');
     dependencies = dependencies ? dependencies.split(',') : null;
+
     Dashboard.firePageEvent(page, 'pageinitdepends', dependencies);
 
 }).on('pagebeforeshow', ".page", function () {

@@ -95,9 +95,56 @@
         html += (item.Overview || '');
         html += '</p>';
 
+        html += '<div style="text-align:center;padding-bottom:.5em;">';
+
+        var endDate;
+        var startDate;
+        var now = new Date().getTime();
+
+        try {
+
+            endDate = parseISO8601Date(item.EndDate, { toLocal: true });
+
+        } catch (err) {
+            endDate = now;
+        }
+
+        try {
+
+            startDate = parseISO8601Date(item.StartDate, { toLocal: true });
+
+        } catch (err) {
+            startDate = now;
+        }
+
+
+        if (now < endDate && now >= startDate) {
+            html += '<paper-button data-id="' + item.ChannelId + '" raised class="accent mini btnPlay"><iron-icon icon="play-arrow"></iron-icon><span>' + Globalize.translate('ButtonPlay') + '</span></paper-button>';
+        }
+
+        if (!item.TimerId && !item.SeriesTimerId) {
+            html += '<paper-button data-id="' + item.Id + '" raised class="mini btnRecord" style="background-color:#cc3333;"><iron-icon icon="videocam"></iron-icon><span>' + Globalize.translate('ButtonRecord') + '</span></paper-button>';
+        }
+
+        html += '<div>';
+
         html += '</div>';
 
         return html;
+    }
+
+    function onPlayClick() {
+
+        $('.itemFlyout').popup('close');
+
+        MediaController.play({
+            ids: [this.getAttribute('data-id')]
+        });
+    }
+
+    function onRecordClick() {
+        $('.itemFlyout').popup('close');
+        Dashboard.navigate('livetvnewrecording.html?programid=' + this.getAttribute('data-id'));
     }
 
     function showOverlay(elem, item) {
@@ -107,7 +154,7 @@
         var html = '<div data-role="popup" class="itemFlyout" data-theme="b" data-arrow="true" data-history="false">';
 
         html += '<div class="ui-bar-b" style="text-align:center;">';
-        html += '<h3 style="margin: .5em 0;padding:0 1em;font-weight:normal;">' + item.Name + '</h3>';
+        html += '<h3 style="margin: .5em 0;padding:.5em 1em;font-weight:normal;">' + item.Name + '</h3>';
         html += '</div>';
 
         html += '<div style="padding: 0 1em;">';
@@ -128,6 +175,9 @@
 
             $(this).off("popupafterclose").off("mouseenter").off("mouseleave").remove();
         });
+
+        $('.btnPlay', popup).on('click', onPlayClick);
+        $('.btnRecord', popup).on('click', onRecordClick);
 
         LibraryBrowser.renderGenres($('.itemGenres', popup), item, 3);
         $('.miscTvProgramInfo', popup).html(LibraryBrowser.getMiscInfoHtml(item)).trigger('create');

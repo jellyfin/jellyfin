@@ -1517,5 +1517,6 @@
     "LabelDataProvider": "Data provider:",
     "OptionSendRecordingsToAutoOrganize": "Enable Auto-Organize for new recordings",
     "OptionSendRecordingsToAutoOrganizeHelp": "New recordings will be sent to the Auto-Organize feature and imported into your media library.",
-    "HeaderDefaultPadding": "Default Padding"
+    "HeaderDefaultPadding": "Default Padding",
+    "HeaderSubtitles": "Sottotitoli"
 }

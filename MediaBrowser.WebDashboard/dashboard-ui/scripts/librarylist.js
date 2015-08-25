@@ -315,6 +315,14 @@
                 });
             }
 
+            if (commands.indexOf('record') != -1) {
+                items.push({
+                    name: Globalize.translate('ButtonRecord'),
+                    id: 'record',
+                    ironIcon: 'videocam'
+                });
+            }
+
             if (commands.indexOf('removefromplaylist') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonRemoveFromPlaylist'),
@@ -415,6 +423,8 @@
                                 break;
                             case 'album':
                                 Dashboard.navigate('itemdetails.html?id=' + albumid);
+                            case 'record':
+                                Dashboard.navigate('livetvnewrecording.html?programid=' + itemId);
                                 break;
                             case 'artist':
                                 Dashboard.navigate('itemdetails.html?context=music&id=' + artistid);

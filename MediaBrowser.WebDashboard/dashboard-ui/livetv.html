@@ -7,7 +7,7 @@
     <div id="liveTvSuggestedPage" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="scripts/livetvsuggested,livetvcss,scripts/livetvcomponents">
 
         <div class="libraryViewNav libraryViewNavWithMinHeight">
-            <paper-tabs style="display:none;min-width:660px;margin:auto;">
+            <paper-tabs style="min-width:660px;margin:auto;">
                 <paper-tab><iron-icon icon="info"></iron-icon>${TabSuggestions}</paper-tab>
                 <paper-tab><iron-icon icon="grid-on"></iron-icon>${TabGuide}</paper-tab>
                 <paper-tab><iron-icon icon="live-tv"></iron-icon>${TabChannels}</paper-tab>
@@ -15,7 +15,7 @@
                 <paper-tab><iron-icon icon="schedule"></iron-icon>${TabScheduled}</paper-tab>
                 <paper-tab><iron-icon icon="refresh"></iron-icon>${TabSeries}</paper-tab>
             </paper-tabs>
-            <div class="legacyTabs" style="display:none;">
+            <div class="legacyTabs">
                 <a href="livetv.html" class="ui-btn-active"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
                 <a href="livetv.html?tab=1"><iron-icon icon="grid-on"></iron-icon>${TabGuide}</a>
                 <a href="livetv.html?tab=2"><iron-icon icon="live-tv"></iron-icon>${TabChannels}</a>

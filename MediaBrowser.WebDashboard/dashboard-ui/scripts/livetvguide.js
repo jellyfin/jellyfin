@@ -44,9 +44,10 @@
 
         Dashboard.showModalLoadingMsg();
 
-        channelQuery.userId = Dashboard.getCurrentUserId();
+        channelQuery.UserId = Dashboard.getCurrentUserId();
 
         channelQuery.Limit = Math.min(channelQuery.Limit || defaultChannels, channelLimit);
+        channelQuery.AddCurrentProgram = false;
 
         channelsPromise = channelsPromise || ApiClient.getLiveTvChannels(channelQuery);
 

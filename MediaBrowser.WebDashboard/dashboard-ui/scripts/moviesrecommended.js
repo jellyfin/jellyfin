@@ -244,6 +244,7 @@
         }
 
         if (LibraryBrowser.needsRefresh(tabContent)) {
+            console.log('loadSuggestionsTab');
             loadResume(tabContent, userId, parentId);
             loadLatest(tabContent, userId, parentId);
 
@@ -330,10 +331,15 @@
 
             if (LibraryBrowser.navigateOnLibraryTabSelect()) {
 
+                var url = 'movies.html';
+                var topParentId = LibraryMenu.getTopParentId();
+                if (topParentId) {
+                    url += '?topParentId=' + topParentId;
+                }
                 if (selected) {
-                    Dashboard.navigate('movies.html?tab=' + selected);
+                    Dashboard.navigate(url + '&tab=' + selected);
                 } else {
-                    Dashboard.navigate('movies.html');
+                    Dashboard.navigate(url);
                 }
 
             } else {

@@ -7,11 +7,11 @@
     <div id="channelsPage" data-role="page" class="page libraryPage channelsPage pageWithAbsoluteTabs" data-contextname="${HeaderChannels}" data-require="scripts/channels,scripts/channelslatest,scripts/sections">
 
         <div class="libraryViewNav scopedLibraryViewNav libraryViewNavWithMinHeight">
-            <paper-tabs style="display:none;">
+            <paper-tabs>
                 <paper-tab><iron-icon icon="new-releases"></iron-icon>${TabLatest}</paper-tab>
                 <paper-tab><iron-icon icon="live-tv"></iron-icon>${TabChannels}</paper-tab>
             </paper-tabs>
-            <div class="legacyTabs" style="display:none;">
+            <div class="legacyTabs">
                 <a href="channels.html"><iron-icon icon="new-releases"></iron-icon>${TabLatest}</a>
                 <a href="channels.html?tab=1" class="ui-btn-active"><iron-icon icon="live-tv"></iron-icon>${TabChannels}</a>
             </div>
