@@ -2,6 +2,7 @@
 using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using System;
 using System.Collections.Generic;
@@ -52,7 +53,10 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var itemIds = _libraryManager.GetItemIds(new InternalItemsQuery
             {
                 IsCurrentSchema = false,
-                Limit = 50000
+                Limit = 100000,
+
+                // These are constantly getting regenerated so don't bother with them here
+                ExcludeItemTypes = new[] { typeof(LiveTvProgram).Name }
             });
 
             var numComplete = 0;
@@ -62,6 +66,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             foreach (var itemId in itemIds)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var item = _libraryManager.GetItemById(itemId);
 
                 if (item != null)

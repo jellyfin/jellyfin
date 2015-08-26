@@ -72,7 +72,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deletePeopleCommand;
         private IDbCommand _savePersonCommand;
 
-        private const int LatestSchemaVersion = 2;
+        private const int LatestSchemaVersion = 4;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -163,6 +163,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "Genres", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "ParentalRatingValue", "INT");
             _connection.AddColumn(_logger, "TypedBaseItems", "SchemaVersion", "INT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "SortName", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "RunTimeTicks", "BIGINT");
+
+            _connection.AddColumn(_logger, "TypedBaseItems", "OfficialRatingDescription", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "HomePageUrl", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "VoteCount", "INT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "DisplayMediaType", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "DateCreated", "DATETIME");
+            _connection.AddColumn(_logger, "TypedBaseItems", "DateModified", "DATETIME");
 
             PrepareStatements();
 
@@ -206,14 +215,30 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "ParentId",
                 "Genres",
                 "ParentalRatingValue",
-                "SchemaVersion"
+                "SchemaVersion",
+                "SortName",
+                "RunTimeTicks",
+                "OfficialRatingDescription",
+                "HomePageUrl",
+                "VoteCount",
+                "DisplayMediaType",
+                "DateCreated",
+                "DateModified"
             };
             _saveItemCommand = _connection.CreateCommand();
-            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22, @23, @24, @25)";
+            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
+
             for (var i = 1; i <= saveColumns.Count; i++)
             {
+                if (i > 1)
+                {
+                    _saveItemCommand.CommandText += ",";
+                }
+                _saveItemCommand.CommandText += "@" + i.ToString(CultureInfo.InvariantCulture);
+
                 _saveItemCommand.Parameters.Add(_saveItemCommand, "@" + i.ToString(CultureInfo.InvariantCulture));
             }
+            _saveItemCommand.CommandText += ")";
 
             _deleteChildrenCommand = _connection.CreateCommand();
             _deleteChildrenCommand.CommandText = "delete from ChildrenIds where ParentId=@ParentId";
@@ -356,7 +381,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.GetParentalRatingValue();
 
                     _saveItemCommand.GetParameter(index++).Value = LatestSchemaVersion;
-                    
+                    _saveItemCommand.GetParameter(index++).Value = item.SortName;
+                    _saveItemCommand.GetParameter(index++).Value = item.RunTimeTicks;
+
+                    _saveItemCommand.GetParameter(index++).Value = item.OfficialRatingDescription;
+                    _saveItemCommand.GetParameter(index++).Value = item.HomePageUrl;
+                    _saveItemCommand.GetParameter(index++).Value = item.VoteCount;
+                    _saveItemCommand.GetParameter(index++).Value = item.DisplayMediaType;
+                    _saveItemCommand.GetParameter(index++).Value = item.DateCreated;
+                    _saveItemCommand.GetParameter(index++).Value = item.DateModified;
+
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -729,7 +763,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 cmd.CommandText += "; select count (guid) from TypedBaseItems" + whereTextWithoutPaging;
 
                 _logger.Debug(cmd.CommandText);
-                
+
                 var list = new List<BaseItem>();
                 var count = 0;
 
@@ -772,11 +806,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private string MapOrderByField(string name)
         {
-            if (string.Equals(name, "sortname", StringComparison.OrdinalIgnoreCase))
-            {
-                return "name";
-            }
-
             return name;
         }
 
