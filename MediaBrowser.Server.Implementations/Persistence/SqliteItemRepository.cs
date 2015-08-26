@@ -71,6 +71,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
         private IDbCommand _deletePeopleCommand;
         private IDbCommand _savePersonCommand;
+
+        private const int LatestSchemaVersion = 2;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
         /// </summary>
@@ -159,6 +162,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "ParentId", "GUID");
             _connection.AddColumn(_logger, "TypedBaseItems", "Genres", "Text");
             _connection.AddColumn(_logger, "TypedBaseItems", "ParentalRatingValue", "INT");
+            _connection.AddColumn(_logger, "TypedBaseItems", "SchemaVersion", "INT");
 
             PrepareStatements();
 
@@ -201,10 +205,11 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "ProductionYear",
                 "ParentId",
                 "Genres",
-                "ParentalRatingValue"
+                "ParentalRatingValue",
+                "SchemaVersion"
             };
             _saveItemCommand = _connection.CreateCommand();
-            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22, @23, @24)";
+            _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (@1, @2, @3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22, @23, @24, @25)";
             for (var i = 1; i <= saveColumns.Count; i++)
             {
                 _saveItemCommand.Parameters.Add(_saveItemCommand, "@" + i.ToString(CultureInfo.InvariantCulture));
@@ -350,6 +355,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = string.Join("|", item.Genres.ToArray());
                     _saveItemCommand.GetParameter(index++).Value = item.GetParentalRatingValue();
 
+                    _saveItemCommand.GetParameter(index++).Value = LatestSchemaVersion;
+                    
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -883,6 +890,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
         {
             var whereClauses = new List<string>();
 
+            if (query.IsCurrentSchema.HasValue)
+            {
+                if (query.IsCurrentSchema.Value)
+                {
+                    whereClauses.Add("(SchemaVersion not null AND SchemaVersion=@SchemaVersion)");
+                }
+                else
+                {
+                    whereClauses.Add("(SchemaVersion is null or SchemaVersion<>@SchemaVersion)");
+                }
+                cmd.Parameters.Add(cmd, "@SchemaVersion", DbType.Int32).Value = LatestSchemaVersion;
+            }
             if (query.IsMovie.HasValue)
             {
                 whereClauses.Add("IsMovie=@IsMovie");
