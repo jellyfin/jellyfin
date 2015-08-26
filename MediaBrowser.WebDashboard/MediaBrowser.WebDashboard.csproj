@@ -368,7 +368,7 @@
     <Content Include="dashboard-ui\thirdparty\viblast\viblast.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="dashboard-ui\thirdparty\viblast\viblast.msp.js">
+    <Content Include="dashboard-ui\thirdparty\viblast\viblast.remuxer.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="dashboard-ui\thirdparty\viblast\worker.html">

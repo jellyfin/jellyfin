@@ -281,7 +281,7 @@
                 if (isViblastStarted) {
                     _currentTime = mediaElement.currentTime;
 
-                    viblast(mediaElement).stop();
+                    viblast('#' + mediaElement.id).stop();
                     isViblastStarted = false;
                 }
             }
@@ -347,7 +347,7 @@
             else {
 
                 if (isViblastStarted) {
-                    viblast(elem).stop();
+                    viblast('#' + elem.id).stop();
                     isViblastStarted = false;
                 }
 
@@ -367,7 +367,7 @@
 
                     setTracks(elem, tracks);
 
-                    viblast(elem).setup({
+                    viblast('#' + elem.id).setup({
                         key: getViblastKey(),
                         stream: val
                     });
