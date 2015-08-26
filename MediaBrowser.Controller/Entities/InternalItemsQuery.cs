@@ -96,6 +96,8 @@ namespace MediaBrowser.Controller.Entities
         internal List<Guid> ItemIdsFromPersonFilters { get; set; }
         public int? MaxParentalRating { get; set; }
 
+        public bool? IsCurrentSchema { get; set; }
+        
         public InternalItemsQuery()
         {
             Tags = new string[] { };

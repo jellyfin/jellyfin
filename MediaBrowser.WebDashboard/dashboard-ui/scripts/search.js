@@ -138,7 +138,7 @@
 
             requestSearchHintsForOverlay(elem, searchTerm);
 
-        }, 100);
+        }, 300);
     }
 
     function getSearchOverlay(createIfNeeded) {
