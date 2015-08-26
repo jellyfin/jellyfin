@@ -1512,6 +1512,7 @@
     "HeaderSetupLiveTV": "Configuration de la TV Live",
     "LabelTunerType": "Type de tuner :",
     "HelpMoreTunersCanBeAdded": "D'autres tuners peuvent \u00eatre ajout\u00e9s plus tard dans la section TV Live",
+    "AdditionalLiveTvProvidersCanBeInstalledLater": "Additional Live TV providers can be added later within the Live TV section.",
     "MessageActiveSupporterMembershipRequiredSeriesRecordings": "Une adh\u00e9sion active au programme de soutien Emby est requise pour cr\u00e9er des enregistrements automatiques de s\u00e9ries.",
     "HeaderSetupTVGuide": "Configuration du Guide TV",
     "LabelDataProvider": "Fournisseur de donn\u00e9es :",

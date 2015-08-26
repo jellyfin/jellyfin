@@ -5,7 +5,7 @@
 .tvGuideHeader {
     white-space: nowrap;
     position: fixed;
-    top: 96px;
+    top: 95px;
     left: 0;
     z-index: 100;
     max-width: 100%;
@@ -221,9 +221,9 @@
     border-bottom: 0 !important;
 }
 
-    .channelHeaderCellContainer + .channelHeaderCellContainer .channelHeaderCell {
-        border-top: 6px solid #161616;
-    }
+.channelHeaderCellContainer + .channelHeaderCellContainer .channelHeaderCell {
+    border-top: 6px solid #161616;
+}
 
 .channelTimeslotHeader {
     border-right: 1px solid #38c;
@@ -303,7 +303,7 @@
 }
 
 .guideProgramName {
-    padding: .45em .5em .35em;
+    padding: .5em .5em .35em;
 }
 
 .guideProgramTime {

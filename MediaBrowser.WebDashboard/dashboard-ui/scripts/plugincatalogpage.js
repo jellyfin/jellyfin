@@ -101,11 +101,11 @@
             html += '<div class="detailSectionHeader">' + currentCategory + '</div>';
             var topPlugins = allPlugins.slice(0).sort(function (a, b) {
 
-                if (a.installs < b.installs) {
-                    return 1;
+                if (a.installs > b.installs) {
+                    return -1;
                 }
                 if (b.installs > a.installs) {
-                    return -1;
+                    return 1;
                 }
 
                 var aName = (a.name);
@@ -122,7 +122,6 @@
             });
 
             var limit = screen.availWidth >= 1920 ? 15 : 12;
-
             for (i = 0, length = Math.min(topPlugins.length, limit) ; i < length; i++) {
                 html += getPluginHtml(topPlugins[i], options, installedPlugins);
             }

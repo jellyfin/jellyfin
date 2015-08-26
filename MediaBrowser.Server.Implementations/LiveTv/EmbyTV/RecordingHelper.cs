@@ -44,13 +44,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             if (info.IsSeries)
             {
+                var addHyphen = true;
+
                 if (info.SeasonNumber.HasValue && info.EpisodeNumber.HasValue)
                 {
                     name += string.Format(" S{0}E{1}", info.SeasonNumber.Value.ToString("00", CultureInfo.InvariantCulture), info.EpisodeNumber.Value.ToString("00", CultureInfo.InvariantCulture));
+                    addHyphen = false;
                 }
                 else if (info.OriginalAirDate.HasValue)
                 {
                     name += " " + info.OriginalAirDate.Value.ToString("yyyy-MM-dd");
+                }
+
+                if (addHyphen)
+                {
+                    name += " -";
                 }
 
                 if (!string.IsNullOrWhiteSpace(info.EpisodeTitle))

@@ -49,6 +49,7 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
+                viewIcon: 'filter-list',
                 showLimit: false,
                 updatePageSizeSetting: false,
                 pageSizeKey: pageSizeKey,

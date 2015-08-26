@@ -57,8 +57,11 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
+                viewIcon: 'filter-list',
+                sortButton: true,
                 showLimit: false,
-                viewPanelClass: 'trailerViewPanel'
+                viewPanelClass: 'trailerViewPanel',
+                updatePageSizeSetting: false
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
@@ -86,6 +89,44 @@
                 reloadItems(page, viewPanel);
             });
 
+            // On callback make sure to set StartIndex = 0
+            $('.btnSort', page).on('click', function () {
+                LibraryBrowser.showSortMenu({
+                    items: [{
+                        name: Globalize.translate('OptionNameSort'),
+                        id: 'SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionImdbRating'),
+                        id: 'CommunityRating,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionDateAdded'),
+                        id: 'DateCreated,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionDatePlayed'),
+                        id: 'DatePlayed,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionParentalRating'),
+                        id: 'OfficialRating,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionPlayCount'),
+                        id: 'PlayCount,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionReleaseDate'),
+                        id: 'PremiereDate,SortName'
+                    }],
+                    callback: function () {
+                        reloadItems(page, viewPanel);
+                    },
+                    query: query
+                });
+            });
+
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             Dashboard.hideLoadingMsg();
@@ -95,18 +136,6 @@
     function updateFilterControls(tabContent, viewPanel) {
 
         var query = getQuery();
-        // Reset form values using the last used query
-        $('.radioSortBy', viewPanel).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', viewPanel).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
 
         $('.chkStandardFilter', viewPanel).each(function () {
 
@@ -118,24 +147,9 @@
         }).checkboxradio('refresh');
 
         $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
-        $('select.selectPageSize', viewPanel).val(query.Limit).selectmenu('refresh');
     }
 
     function initPage(page, tabContent, viewPanel) {
-
-        $('.radioSortBy', viewPanel).on('click', function () {
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.SortBy = this.getAttribute('data-sortby');
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.radioSortOrder', viewPanel).on('click', function () {
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.SortOrder = this.getAttribute('data-sortorder');
-            reloadItems(tabContent, viewPanel);
-        });
 
         $('.chkStandardFilter', viewPanel).on('change', function () {
 
@@ -175,13 +189,6 @@
 
             reloadItems(tabContent, viewPanel);
 
-        });
-
-        $('select.selectPageSize', viewPanel).on('change', function () {
-            var query = getQuery();
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(tabContent, viewPanel);
         });
     }
 

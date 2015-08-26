@@ -314,17 +314,14 @@ paper-slider {
 
 paper-menu-item {
     padding: .35em .5em;
+    cursor: pointer;
 }
 
     paper-menu-item iron-icon {
         margin-right: 1.5em;
     }
 
-.actionSheetMenuItem {
-    cursor: pointer;
-}
-
-    .actionSheetMenuItem:hover {
+    paper-menu-item:hover {
         background: #eee;
     }
 
@@ -452,3 +449,7 @@ paper-dropdown-menu {
     paper-dropdown-menu paper-item {
         display: block;
     }
+
+paper-dialog paper-radio-group paper-radio-button {
+    padding: 6px 12px;
+}

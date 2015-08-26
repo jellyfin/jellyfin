@@ -145,32 +145,9 @@
             <form>
 
                 <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabSort">${TabSort}</a>
                     <a href="#" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
                 </div>
 
-                <div class="tabView viewTab">
-
-                    <div>
-                        <label for="selectMovieView">${LabelView}</label>
-                        <select id="selectMovieView" class="selectView">
-                            <option value="Banner">${OptionBanner}</option>
-                            <option value="List">${OptionList}</option>
-                            <option value="Poster">${OptionPoster}</option>
-                            <option value="PosterCard">${OptionPosterCard}</option>
-                            <option value="Thumb">${OptionThumb}</option>
-                            <option value="ThumbCard">${OptionThumbCard}</option>
-                            <option value="Timeline">${OptionTimeline}</option>
-                        </select>
-                    </div>
-                    <br />
-                    <div>
-                        <label for="selectMoviePageSize">${LabelPageSize}</label>
-                        <select id="selectMoviePageSize" class="selectPageSize"></select>
-                    </div>
-
-                </div>
                 <div class="tabFilter viewTab">
                     <fieldset data-role="controlgroup">
                         <legend>
@@ -195,28 +172,6 @@
                         <label for="chkDislikesMovie">${OptionDislikes}</label>
                     </fieldset>
                     <br />
-
-                    <div data-role="collapsible" data-collapsed="true" data-mini="true">
-                        <h2>${HeaderFeatures}</h2>
-
-                        <div data-role="controlgroup">
-
-                            <input class="chkFeatureFilter chkSubtitle" type="checkbox" id="chkSubtitleMovie" data-mini="true">
-                            <label for="chkSubtitleMovie">${OptionHasSubtitles}</label>
-
-                            <input class="chkFeatureFilter chkTrailer" type="checkbox" id="chkTrailerMovie" data-mini="true">
-                            <label for="chkTrailerMovie">${OptionHasTrailer}</label>
-
-                            <input class="chkFeatureFilter chkSpecialFeature" type="checkbox" id="chkSpecialFeatureMovie" data-mini="true">
-                            <label for="chkSpecialFeatureMovie">${OptionHasSpecialFeatures}</label>
-
-                            <input class="chkFeatureFilter chkThemeSong" type="checkbox" id="chkThemeSongMovie" data-mini="true">
-                            <label for="chkThemeSongMovie">${OptionHasThemeSong}</label>
-
-                            <input class="chkFeatureFilter chkThemeVideo" type="checkbox" id="chkThemeVideoMovie" data-mini="true">
-                            <label for="chkThemeVideoMovie">${OptionHasThemeVideo}</label>
-                        </div>
-                    </div>
 
                     <div data-role="collapsible" data-collapsed="true" data-mini="true" class="genreFilters">
                         <h2>${HeaderGenres}</h2>
@@ -272,64 +227,6 @@
                     </div>
 
                 </div>
-                <div class="tabSort viewTab">
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            ${HeaderSortBy}
-                        </legend>
-
-                        <input class="radioSortBy defaultSort radioSortName" type="radio" id="radioSortNameMovie" value="on" checked="checked" data-sortby="SortName" data-mini="true">
-                        <label for="radioSortNameMovie">${OptionNameSort}</label>
-
-                        <input class="radioSortBy radioBudget" type="radio" id="radioBudgetMovie" value="off" data-sortby="Budget,SortName" data-mini="true">
-                        <label for="radioBudgetMovie">${OptionBudget}</label>
-
-                        <input class="radioSortBy radioCommunityRating" type="radio" id="radioCommunityRatingMovie" value="off" data-sortby="CommunityRating,SortName" data-mini="true">
-                        <label for="radioCommunityRatingMovie">${OptionImdbRating}</label>
-
-                        <input class="radioSortBy radioCriticRating" type="radio" id="radioCriticRatingMovie" value="off" data-sortby="CriticRating,SortName" data-mini="true">
-                        <label for="radioCriticRatingMovie">${OptionCriticRating}</label>
-
-                        <input class="radioSortBy radioDateCreated" type="radio" id="radioDateCreatedMovie" value="off" data-sortby="DateCreated,SortName" data-mini="true">
-                        <label for="radioDateCreatedMovie">${OptionDateAdded}</label>
-
-                        <input class="radioSortBy radioDatePlayed" type="radio" id="radioDatePlayedMovie" value="off" data-sortby="DatePlayed,SortName" data-mini="true">
-                        <label for="radioDatePlayedMovie">${OptionDatePlayed}</label>
-
-                        <input class="radioSortBy radioMetascore" type="radio" id="radioMetascoreMovie" value="off" data-sortby="Metascore,SortName" data-mini="true">
-                        <label for="radioMetascoreMovie">${OptionMetascore}</label>
-
-                        <input class="radioSortBy radioContentRating" type="radio" id="radioContentRatingMovie" value="off" data-sortby="OfficialRating,SortName" data-mini="true">
-                        <label for="radioContentRatingMovie">${OptionParentalRating}</label>
-
-                        <input class="radioSortBy radioPlayCount" type="radio" id="radioPlayCountMovie" value="off" data-sortby="PlayCount,SortName" data-mini="true">
-                        <label for="radioPlayCountMovie">${OptionPlayCount}</label>
-
-                        <input class="radioSortBy radioPremiereDate" type="radio" id="radioPremiereDateMovie" value="off" data-sortby="PremiereDate,SortName" data-mini="true">
-                        <label for="radioPremiereDateMovie">${OptionReleaseDate}</label>
-
-                        <input class="radioSortBy radioRevenue" type="radio" id="radioRevenueMovie" value="off" data-sortby="Revenue,SortName" data-mini="true">
-                        <label for="radioRevenueMovie">${OptionRevenue}</label>
-
-                        <input class="radioSortBy radioRuntime" type="radio" id="radioRuntimeMovie" value="off" data-sortby="Runtime,SortName" data-mini="true">
-                        <label for="radioRuntimeMovie">${OptionRuntime}</label>
-
-                        <input class="radioSortBy radioVideoBitRate" type="radio" id="radioVideoBitRateMovie" value="off" data-sortby="VideoBitRate,SortName" data-mini="true">
-                        <label for="radioVideoBitRateMovie">${OptionVideoBitrate}</label>
-                    </fieldset>
-
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            ${HeaderSortOrder}
-                        </legend>
-
-                        <input class="radioSortOrder radioAscending" type="radio" id="radioAscendingMovie" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
-                        <label for="radioAscendingMovie">${OptionAscending}</label>
-
-                        <input class="radioSortOrder radioDescending" type="radio" id="radioDescendingMovie" value="off" data-sortorder="Descending" data-mini="true">
-                        <label for="radioDescendingMovie">${OptionDescending}</label>
-                    </fieldset>
-                </div>
             </form>
         </div>
 
@@ -337,19 +234,9 @@
             <form>
 
                 <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabSort">${TabSort}</a>
                     <a href="#" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
                 </div>
 
-                <div class="tabView viewTab">
-
-                    <div>
-                        <label for="selectTrailerPageSize">${LabelPageSize}</label>
-                        <select id="selectTrailerPageSize" class="selectPageSize"></select>
-                    </div>
-
-                </div>
                 <div class="tabFilter viewTab">
                     <fieldset data-role="controlgroup">
                         <legend>
@@ -374,46 +261,6 @@
                         <label for="chkDislikesTrailer">${OptionDislikes}</label>
                     </fieldset>
 
-                </div>
-                <div class="tabSort viewTab">
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            ${HeaderSortBy}
-                        </legend>
-
-                        <input class="radioSortBy defaultSort" type="radio" id="radioSortNameTrailer" value="on" checked="checked" data-sortby="SortName" data-mini="true">
-                        <label for="radioSortNameTrailer">${OptionNameSort}</label>
-
-                        <input class="radioSortBy" type="radio" id="radioCommunityRatingTrailer" value="off" data-sortby="CommunityRating,SortName" data-mini="true">
-                        <label for="radioCommunityRatingTrailer">${OptionImdbRating}</label>
-
-                        <input class="radioSortBy" type="radio" id="radioDateCreatedTrailer" value="off" data-sortby="DateCreated,SortName" data-mini="true">
-                        <label for="radioDateCreatedTrailer">${OptionDateAdded}</label>
-
-                        <input class="radioSortBy" type="radio" id="radioDatePlayedTrailer" value="off" data-sortby="DatePlayed,SortName" data-mini="true">
-                        <label for="radioDatePlayedTrailer">${OptionDatePlayed}</label>
-
-                        <input class="radioSortBy" type="radio" id="radioContentRatingTrailer" value="off" data-sortby="OfficialRating,SortName" data-mini="true">
-                        <label for="radioContentRatingTrailer">${OptionParentalRating}</label>
-
-                        <input class="radioSortBy" type="radio" id="radioPlayCountTrailer" value="off" data-sortby="PlayCount,SortName" data-mini="true">
-                        <label for="radioPlayCountTrailer">${OptionPlayCount}</label>
-
-                        <input class="radioSortBy" type="radio" id="radioPremiereDateTrailer" value="off" data-sortby="PremiereDate,SortName" data-mini="true">
-                        <label for="radioPremiereDateTrailer">${OptionReleaseDate}</label>
-                    </fieldset>
-
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            ${HeaderSortOrder}
-                        </legend>
-
-                        <input class="radioSortOrder radioAscending" type="radio" id="radioAscendingTrailer" value="on" checked="checked" data-sortorder="Ascending" data-mini="true">
-                        <label for="radioAscendingTrailer">${OptionAscending}</label>
-
-                        <input class="radioSortOrder radioDescending" type="radio" id="radioDescendingTrailer" value="off" data-sortorder="Descending" data-mini="true">
-                        <label for="radioDescendingTrailer">${OptionDescending}</label>
-                    </fieldset>
                 </div>
             </form>
         </div>

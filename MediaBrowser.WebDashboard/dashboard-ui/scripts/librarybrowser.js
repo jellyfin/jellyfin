@@ -2419,7 +2419,7 @@
                 html += '</span>';
             }
 
-            if (showControls || options.viewButton || options.addLayoutButton || options.addSelectionButton || options.additionalButtonsHtml) {
+            if (showControls || options.viewButton || options.sortButton || options.addLayoutButton || options.addSelectionButton || options.additionalButtonsHtml) {
 
                 html += '<div style="display:inline-block;margin-left:10px;">';
 
@@ -2440,11 +2440,17 @@
                     html += '<paper-button raised class="subdued notext btnChangeLayout" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');"><iron-icon icon="view-comfy"></iron-icon></paper-button>';
                 }
 
+                if (options.sortButton) {
+
+                    html += '<paper-button raised class="subdued notext btnSort" title="' + Globalize.translate('ButtonSort') + '"><iron-icon icon="sort-by-alpha"></iron-icon></paper-button>';
+                }
+
                 if (options.viewButton) {
 
                     //html += '<paper-button raised class="subdued notext"><iron-icon icon="view-comfy"></iron-icon></paper-button>';
                     var viewPanelClass = options.viewPanelClass || 'viewPanel';
-                    html += '<paper-button raised class="subdued notext" onclick="require([\'jqmicons\']);jQuery(\'.' + viewPanelClass + '\', jQuery(this).parents(\'.page\')).panel(\'toggle\');"><iron-icon icon="' + AppInfo.moreIcon + '"></iron-icon></paper-button>';
+                    var title = options.viewIcon == 'filter-list' ? Globalize.translate('ButtonFilter') : Globalize.translate('ButtonMenu');
+                    html += '<paper-button raised class="subdued notext" title="' + title + '" onclick="require([\'jqmicons\']);jQuery(\'.' + viewPanelClass + '\', jQuery(this).parents(\'.page\')).panel(\'toggle\');"><iron-icon icon="' + (options.viewIcon || AppInfo.moreIcon) + '"></iron-icon></paper-button>';
                 }
 
                 html += '</div>';
@@ -2475,6 +2481,85 @@
             html += '</div>';
 
             return html;
+        },
+
+        showSortMenu: function (options) {
+
+            var id = 'dlg' + new Date().getTime();
+            var html = '';
+
+            html += '<paper-dialog id="' + id + '" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop>';
+
+            // There seems to be a bug with this in safari causing it to immediately roll up to 0 height
+            var isScrollable = !$.browser.safari;
+
+            html += '<h2>';
+            html += Globalize.translate('HeaderSortBy');
+            html += '</h2>';
+
+            if (isScrollable) {
+                html += '<paper-dialog-scrollable>';
+            }
+
+            html += '<paper-radio-group class="groupSortBy" selected="' + (options.query.SortBy || '').replace(',', '_') + '">';
+            for (var i = 0, length = options.items.length; i < length; i++) {
+
+                var option = options.items[i];
+
+                html += '<paper-radio-button class="menuSortBy block" data-id="' + option.id + '" name="' + option.id.replace(',', '_') + '">' + option.name + '</paper-radio-button>';
+            }
+            html += '</paper-radio-group>';
+
+            html += '<p>';
+            html += Globalize.translate('HeaderSortOrder');
+            html += '</p>';
+            html += '<paper-radio-group class="groupSortOrder" selected="' + (options.query.SortOrder || 'Ascending') + '">';
+            html += '<paper-radio-button name="Ascending" class="menuSortOrder block">' + Globalize.translate('OptionAscending') + '</paper-radio-button>';
+            html += '<paper-radio-button name="Descending" class="menuSortOrder block">' + Globalize.translate('OptionDescending') + '</paper-radio-button>';
+            html += '</paper-radio-group>';
+
+            if (isScrollable) {
+                html += '</paper-dialog-scrollable>';
+            }
+
+            html += '<div class="buttons">';
+            html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonClose') + '</paper-button>';
+            html += '</div>';
+
+            html += '</paper-dialog>';
+
+            $(document.body).append(html);
+
+            setTimeout(function () {
+                var dlg = document.getElementById(id);
+
+                dlg.open();
+
+                $(dlg).on('iron-overlay-closed', function () {
+                    $(this).remove();
+                });
+
+                $('.groupSortBy', dlg).on('iron-select', function () {
+                    options.query.SortBy = this.selected.replace('_', ',');
+                    options.query.StartIndex = 0;
+
+                    if (options.callback) {
+                        options.callback();
+                    }
+                });
+
+                $('.groupSortOrder', dlg).on('iron-select', function () {
+
+                    options.query.SortOrder = this.selected;
+                    options.query.StartIndex = 0;
+
+                    if (options.callback) {
+                        options.callback();
+                    }
+                });
+
+            }, 100);
+
         },
 
         getRatingHtml: function (item, metascore) {

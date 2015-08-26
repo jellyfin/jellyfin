@@ -104,7 +104,9 @@
         ApiClient.getLiveTvPrograms({
 
             ChannelIds: channelId,
-            UserId: Dashboard.getCurrentUserId()
+            UserId: Dashboard.getCurrentUserId(),
+            HasAired: false,
+            SortBy: "StartDate"
 
         }).done(function (result) {
 

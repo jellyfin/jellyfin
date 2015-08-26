@@ -412,6 +412,11 @@
         //    id: 'emby'
         //});
 
+        menuItems.push({
+            name: Globalize.translate('ButtonOther'),
+            id: 'other'
+        });
+
         require(['actionsheet'], function () {
 
             ActionSheetElement.show({
@@ -419,7 +424,13 @@
                 positionTo: button,
                 callback: function (id) {
 
-                    Dashboard.navigate(getProviderConfigurationUrl(id));
+                    if (id == 'other') {
+                        Dashboard.alert({
+                            message: Globalize.translate('ForAdditionalLiveTvOptions')
+                        });
+                    } else {
+                        Dashboard.navigate(getProviderConfigurationUrl(id));
+                    }
                 }
             });
 
@@ -440,6 +451,11 @@
             id: 'm3u'
         });
 
+        menuItems.push({
+            name: Globalize.translate('ButtonOther'),
+            id: 'other'
+        });
+
         require(['actionsheet'], function () {
 
             ActionSheetElement.show({
@@ -447,7 +463,13 @@
                 positionTo: button,
                 callback: function (id) {
 
-                    Dashboard.navigate('livetvtunerprovider-' + id + '.html');
+                    if (id == 'other') {
+                        Dashboard.alert({
+                            message: Globalize.translate('ForAdditionalLiveTvOptions')
+                        });
+                    } else {
+                        Dashboard.navigate('livetvtunerprovider-' + id + '.html');
+                    }
                 }
             });
 

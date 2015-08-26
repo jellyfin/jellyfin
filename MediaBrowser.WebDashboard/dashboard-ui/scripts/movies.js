@@ -61,8 +61,12 @@
                 viewButton: true,
                 showLimit: false,
                 addSelectionButton: true,
-                viewPanelClass: 'movieViewPanel'
-
+                viewPanelClass: 'movieViewPanel',
+                updatePageSizeSetting: false,
+                addLayoutButton: true,
+                viewIcon: 'filter-list',
+                sortButton: true,
+                currentLayout: view
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
@@ -160,6 +164,73 @@
                 reloadItems(page, viewPanel);
             });
 
+            $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
+                getPageData().view = layout;
+                reloadItems(page);
+            });
+
+            // On callback make sure to set StartIndex = 0
+            $('.btnSort', page).on('click', function () {
+                LibraryBrowser.showSortMenu({
+                    items: [{
+                        name: Globalize.translate('OptionNameSort'),
+                        id: 'SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionBudget'),
+                        id: 'Budget,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionImdbRating'),
+                        id: 'CommunityRating,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionCriticRating'),
+                        id: 'CriticRating,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionDateAdded'),
+                        id: 'DateCreated,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionDatePlayed'),
+                        id: 'DatePlayed,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionMetascore'),
+                        id: 'Metascore,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionParentalRating'),
+                        id: 'OfficialRating,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionPlayCount'),
+                        id: 'PlayCount,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionReleaseDate'),
+                        id: 'PremiereDate,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionRevenue'),
+                        id: 'Revenue,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionRuntime'),
+                        id: 'Runtime,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionVideoBitrate'),
+                        id: 'VideoBitRate,SortName'
+                    }],
+                    callback: function () {
+                        reloadItems(page, viewPanel);
+                    },
+                    query: query
+                });
+            });
+
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
 
             LibraryBrowser.setLastRefreshed(page);
@@ -179,18 +250,6 @@
     function updateFilterControls(tabContent, viewPanel) {
 
         var query = getQuery();
-        // Reset form values using the last used query
-        $('.radioSortBy', viewPanel).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', viewPanel).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
 
         $('.chkStandardFilter', viewPanel).each(function () {
 
@@ -210,20 +269,11 @@
 
         }).checkboxradio('refresh');
 
-        $('select.selectView', viewPanel).val(getPageData().view).selectmenu('refresh');
-
         $('.chk3D', viewPanel).checked(query.Is3D == true).checkboxradio('refresh');
         $('.chkHD', viewPanel).checked(query.IsHD == true).checkboxradio('refresh');
         $('.chkSD', viewPanel).checked(query.IsHD == false).checkboxradio('refresh');
 
-        $('.chkSubtitle', viewPanel).checked(query.HasSubtitles == true).checkboxradio('refresh');
-        $('.chkTrailer', viewPanel).checked(query.HasTrailer == true).checkboxradio('refresh');
-        $('.chkSpecialFeature', viewPanel).checked(query.HasSpecialFeature == true).checkboxradio('refresh');
-        $('.chkThemeSong', viewPanel).checked(query.HasThemeSong == true).checkboxradio('refresh');
-        $('.chkThemeVideo', viewPanel).checked(query.HasThemeVideo == true).checkboxradio('refresh');
-
         $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
-        $('select.selectPageSize', viewPanel).val(query.Limit).selectmenu('refresh');
     }
 
     var filtersLoaded;
@@ -248,20 +298,6 @@
             reloadFiltersIfNeeded(tabContent, viewPanel);
         });
 
-        $('.radioSortBy', viewPanel).on('click', function () {
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.SortBy = this.getAttribute('data-sortby');
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.radioSortOrder', viewPanel).on('click', function () {
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.SortOrder = this.getAttribute('data-sortorder');
-            reloadItems(tabContent, viewPanel);
-        });
-
         $('.chkStandardFilter', viewPanel).on('change', function () {
 
             var query = getQuery();
@@ -278,26 +314,6 @@
             query.Filters = filters;
 
             reloadItems(tabContent, viewPanel);
-        });
-
-        $('select.selectView', viewPanel).on('change', function () {
-
-            var newView = this.value;
-            getPageData().view = newView;
-
-            var query = getQuery();
-            if (newView == "Timeline") {
-
-                query.SortBy = "PremiereDate";
-                query.SortOrder = "Descending";
-                query.StartIndex = 0;
-                $('.radioPremiereDate', viewPanel)[0].click();
-
-            } else {
-                reloadItems(tabContent, viewPanel);
-            }
-
-            LibraryBrowser.saveViewSetting(getSavedQueryKey(), newView);
         });
 
         $('.chkVideoTypeFilter', viewPanel).on('change', function () {
@@ -345,51 +361,6 @@
             reloadItems(tabContent, viewPanel);
         });
 
-        $('.chkSubtitle', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.HasSubtitles = this.checked ? true : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.chkTrailer', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.HasTrailer = this.checked ? true : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.chkSpecialFeature', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.HasSpecialFeature = this.checked ? true : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.chkThemeSong', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.HasThemeSong = this.checked ? true : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
-        $('.chkThemeVideo', viewPanel).on('change', function () {
-
-            var query = getQuery();
-            query.StartIndex = 0;
-            query.HasThemeVideo = this.checked ? true : null;
-
-            reloadItems(tabContent, viewPanel);
-        });
-
         $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
 
             var query = getQuery();
@@ -430,13 +401,6 @@
 
             reloadItems(tabContent, viewPanel);
 
-        });
-
-        $('select.selectPageSize', viewPanel).on('change', function () {
-            var query = getQuery();
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(tabContent, viewPanel);
         });
     }
 

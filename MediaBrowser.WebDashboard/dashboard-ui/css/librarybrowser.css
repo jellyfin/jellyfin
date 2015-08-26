@@ -172,8 +172,14 @@
 
 .listPaging {
     text-align: center;
-    margin: .5em 0 .25em;
+    margin: .5em 0 .5em;
 }
+
+    .listPaging paper-fab {
+        width: 40px;
+        height: 40px;
+        vertical-align: middle;
+    }
 
 .viewControls + .listTopPaging {
     margin-left: .5em !important;
