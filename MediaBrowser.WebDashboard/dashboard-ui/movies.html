@@ -233,75 +233,63 @@
         <div data-role="panel" class="viewPanel trailerViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
             <form>
 
-                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
-                </div>
+                <fieldset data-role="controlgroup">
+                    <legend>
+                        ${HeaderFilters}
+                    </legend>
+                    <input class="chkStandardFilter" type="checkbox" id="chkPlayedTrailer" data-filter="IsPlayed" data-mini="true">
+                    <label for="chkPlayedTrailer">${OptionPlayed}</label>
 
-                <div class="tabFilter viewTab">
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            ${HeaderFilters}
-                        </legend>
-                        <input class="chkStandardFilter" type="checkbox" id="chkPlayedTrailer" data-filter="IsPlayed" data-mini="true">
-                        <label for="chkPlayedTrailer">${OptionPlayed}</label>
+                    <input class="chkStandardFilter" type="checkbox" id="chkUnplayedTrailer" data-filter="IsUnPlayed" data-mini="true">
+                    <label for="chkUnplayedTrailer">${OptionUnplayed}</label>
 
-                        <input class="chkStandardFilter" type="checkbox" id="chkUnplayedTrailer" data-filter="IsUnPlayed" data-mini="true">
-                        <label for="chkUnplayedTrailer">${OptionUnplayed}</label>
+                    <input class="chkStandardFilter" type="checkbox" id="chkResumableTrailer" data-filter="IsResumable" data-mini="true">
+                    <label for="chkResumableTrailer">${OptionResumable}</label>
 
-                        <input class="chkStandardFilter" type="checkbox" id="chkResumableTrailer" data-filter="IsResumable" data-mini="true">
-                        <label for="chkResumableTrailer">${OptionResumable}</label>
+                    <input class="chkStandardFilter" type="checkbox" id="chkIsFavoriteTrailer" data-filter="IsFavorite" data-mini="true">
+                    <label for="chkIsFavoriteTrailer">${OptionFavorite}</label>
 
-                        <input class="chkStandardFilter" type="checkbox" id="chkIsFavoriteTrailer" data-filter="IsFavorite" data-mini="true">
-                        <label for="chkIsFavoriteTrailer">${OptionFavorite}</label>
+                    <input class="chkStandardFilter" type="checkbox" id="chkLikesTrailer" data-filter="Likes" data-mini="true">
+                    <label for="chkLikesTrailer">${OptionLikes}</label>
 
-                        <input class="chkStandardFilter" type="checkbox" id="chkLikesTrailer" data-filter="Likes" data-mini="true">
-                        <label for="chkLikesTrailer">${OptionLikes}</label>
+                    <input class="chkStandardFilter" type="checkbox" id="chkDislikesTrailer" data-filter="Dislikes" data-mini="true">
+                    <label for="chkDislikesTrailer">${OptionDislikes}</label>
+                </fieldset>
 
-                        <input class="chkStandardFilter" type="checkbox" id="chkDislikesTrailer" data-filter="Dislikes" data-mini="true">
-                        <label for="chkDislikesTrailer">${OptionDislikes}</label>
-                    </fieldset>
-
-                </div>
             </form>
         </div>
         <div data-role="panel" class="viewPanel peopleViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
             <form>
 
-                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
-                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
-                </div>
+                <fieldset data-role="controlgroup">
+                    <legend>
+                        ${HeaderFilters}
+                    </legend>
+                    <input class="chkStandardFilter" type="checkbox" id="chkIsFavoritePerson" data-filter="IsFavorite" data-mini="true">
+                    <label for="chkIsFavoritePerson">${OptionFavorite}</label>
 
-                <div class="tabFilter viewTab">
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            ${HeaderFilters}
-                        </legend>
-                        <input class="chkStandardFilter" type="checkbox" id="chkIsFavoritePerson" data-filter="IsFavorite" data-mini="true">
-                        <label for="chkIsFavoritePerson">${OptionFavorite}</label>
+                    <input class="chkStandardFilter" type="checkbox" id="chkLikesPerson" data-filter="Likes" data-mini="true">
+                    <label for="chkLikesPerson">${OptionLikes}</label>
 
-                        <input class="chkStandardFilter" type="checkbox" id="chkLikesPerson" data-filter="Likes" data-mini="true">
-                        <label for="chkLikesPerson">${OptionLikes}</label>
+                    <input class="chkStandardFilter" type="checkbox" id="chkDislikesPerson" data-filter="Dislikes" data-mini="true">
+                    <label for="chkDislikesPerson">${OptionDislikes}</label>
+                </fieldset>
+                <fieldset data-role="controlgroup">
+                    <legend>
+                        ${HeaderPersonTypes}
+                    </legend>
+                    <input class="chkPersonTypeFilter" type="checkbox" id="chkActorPerson" data-filter="Actor" data-mini="true">
+                    <label for="chkActorPerson">${OptionActors}</label>
 
-                        <input class="chkStandardFilter" type="checkbox" id="chkDislikesPerson" data-filter="Dislikes" data-mini="true">
-                        <label for="chkDislikesPerson">${OptionDislikes}</label>
-                    </fieldset>
-                    <fieldset data-role="controlgroup">
-                        <legend>
-                            ${HeaderPersonTypes}
-                        </legend>
-                        <input class="chkPersonTypeFilter" type="checkbox" id="chkActorPerson" data-filter="Actor" data-mini="true">
-                        <label for="chkActorPerson">${OptionActors}</label>
+                    <input class="chkPersonTypeFilter" type="checkbox" id="chkDirectorPerson" data-filter="Director" data-mini="true">
+                    <label for="chkDirectorPerson">${OptionDirectors}</label>
 
-                        <input class="chkPersonTypeFilter" type="checkbox" id="chkDirectorPerson" data-filter="Director" data-mini="true">
-                        <label for="chkDirectorPerson">${OptionDirectors}</label>
+                    <input class="chkPersonTypeFilter" type="checkbox" id="chkProducerPerson" data-filter="Producer" data-mini="true">
+                    <label for="chkProducerPerson">${OptionProducers}</label>
 
-                        <input class="chkPersonTypeFilter" type="checkbox" id="chkProducerPerson" data-filter="Producer" data-mini="true">
-                        <label for="chkProducerPerson">${OptionProducers}</label>
-
-                        <input class="chkPersonTypeFilter" type="checkbox" id="chkWriterPerson" data-filter="Writer" data-mini="true">
-                        <label for="chkWriterPerson">${OptionWriters}</label>
-                    </fieldset>
-                </div>
+                    <input class="chkPersonTypeFilter" type="checkbox" id="chkWriterPerson" data-filter="Writer" data-mini="true">
+                    <label for="chkWriterPerson">${OptionWriters}</label>
+                </fieldset>
             </form>
         </div>
         <div data-role="content">
