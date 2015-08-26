@@ -317,7 +317,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             {
                 info.OfficialRating = details.contentRating[0].code.Replace("TV", "TV-").Replace("--", "-");
 
-                var invalid = new[] { "N/A", "Approved", "Not Rated" };
+                var invalid = new[] { "N/A", "Approved", "Not Rated", "Passed" };
                 if (invalid.Contains(info.OfficialRating, StringComparer.OrdinalIgnoreCase))
                 {
                     info.OfficialRating = null;

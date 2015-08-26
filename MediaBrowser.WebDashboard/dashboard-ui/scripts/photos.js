@@ -63,7 +63,6 @@
                     overlayText: tabIndex != 0,
                     lazy: true,
                     coverImage: true,
-                    useSecondaryItemsPage: true,
                     showTitle: tabIndex == 0,
                     centerText: true
                 });

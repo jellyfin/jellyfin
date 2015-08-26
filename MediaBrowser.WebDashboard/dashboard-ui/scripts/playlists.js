@@ -159,6 +159,7 @@
 
             $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
                 getPageData().view = layout;
+                LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
                 reloadItems(page);
             });
 

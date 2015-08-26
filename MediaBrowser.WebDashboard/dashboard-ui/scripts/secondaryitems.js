@@ -36,7 +36,7 @@
                 query: {
                     SortBy: "SortName",
                     SortOrder: "Ascending",
-                    Recursive: true,
+                    Recursive: getParameterByName('recursive') !== 'false',
                     Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
                     ImageTypeLimit: 1,
                     EnableImageTypes: "Primary,Backdrop,Banner,Thumb",

@@ -785,8 +785,8 @@
                 return 'itemlist.html?topParentId=' + item.Id + '&parentid=' + item.Id;
             }
 
-            if (item.Type == "PhotoAlbum" && context == 'photos') {
-                return "photos.html?parentId=" + id;
+            if (item.Type == "PhotoAlbum") {
+                return "itemlist.html?context=photos&parentId=" + id;
             }
             if (item.Type == "Playlist") {
                 return "itemdetails.html?id=" + id;
@@ -1688,10 +1688,7 @@
 
             var mediaSourceCount = item.MediaSourceCount || 1;
 
-            var href = options.linkItem === false ? '#' :
-                (options.useSecondaryItemsPage && item.IsFolder) ?
-                    ('secondaryitems.html?parentid=' + item.Id) :
-                    LibraryBrowser.getHref(item, options.context);
+            var href = options.linkItem === false ? '#' : LibraryBrowser.getHref(item, options.context);
 
             if (item.UserData) {
                 cssClass += ' ' + LibraryBrowser.getUserDataCssClass(item.UserData.Key);

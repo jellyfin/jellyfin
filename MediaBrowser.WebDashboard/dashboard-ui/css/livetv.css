@@ -213,7 +213,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     border-right: 1px solid #161616;
-    width: 189px;
+    width: 199px;
     background: #303030;
 }
 
@@ -261,7 +261,7 @@
 }
 
 .programGrid, .timeslotHeaders {
-    margin-left: 190px;
+    margin-left: 200px;
 }
 
 .timeslotHeader {
