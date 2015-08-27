@@ -72,7 +72,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private IDbCommand _deletePeopleCommand;
         private IDbCommand _savePersonCommand;
 
-        private const int LatestSchemaVersion = 4;
+        private const int LatestSchemaVersion = 6;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqliteItemRepository"/> class.
@@ -173,6 +173,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.AddColumn(_logger, "TypedBaseItems", "DateCreated", "DATETIME");
             _connection.AddColumn(_logger, "TypedBaseItems", "DateModified", "DATETIME");
 
+            _connection.AddColumn(_logger, "TypedBaseItems", "ForcedSortName", "Text");
+            _connection.AddColumn(_logger, "TypedBaseItems", "IsOffline", "BIT");
+
             PrepareStatements();
 
             _mediaStreamsRepository.Initialize();
@@ -223,7 +226,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 "VoteCount",
                 "DisplayMediaType",
                 "DateCreated",
-                "DateModified"
+                "DateModified",
+                "ForcedSortName",
+                "IsOffline"
             };
             _saveItemCommand = _connection.CreateCommand();
             _saveItemCommand.CommandText = "replace into TypedBaseItems (" + string.Join(",", saveColumns.ToArray()) + ") values (";
@@ -391,6 +396,9 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveItemCommand.GetParameter(index++).Value = item.DateCreated;
                     _saveItemCommand.GetParameter(index++).Value = item.DateModified;
 
+                    _saveItemCommand.GetParameter(index++).Value = item.ForcedSortName;
+                    _saveItemCommand.GetParameter(index++).Value = item.IsOffline;
+                    
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -948,7 +956,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             }
 
             var includeTypes = query.IncludeItemTypes.SelectMany(MapIncludeItemTypes).ToArray();
-
             if (includeTypes.Length == 1)
             {
                 whereClauses.Add("type=@type");
@@ -959,6 +966,19 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 var inClause = string.Join(",", includeTypes.Select(i => "'" + i + "'").ToArray());
                 whereClauses.Add(string.Format("type in ({0})", inClause));
             }
+
+            var excludeTypes = query.ExcludeItemTypes.SelectMany(MapIncludeItemTypes).ToArray();
+            if (excludeTypes.Length == 1)
+            {
+                whereClauses.Add("type<>@type");
+                cmd.Parameters.Add(cmd, "@type", DbType.String).Value = excludeTypes[0];
+            }
+            else if (excludeTypes.Length > 1)
+            {
+                var inClause = string.Join(",", excludeTypes.Select(i => "'" + i + "'").ToArray());
+                whereClauses.Add(string.Format("type not in ({0})", inClause));
+            }
+
             if (query.ChannelIds.Length == 1)
             {
                 whereClauses.Add("ChannelId=@ChannelId");

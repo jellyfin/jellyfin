@@ -438,8 +438,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 return lineups;
             }
 
-            _logger.Info("Headends on account ");
-
             var options = new HttpRequestOptions()
             {
                 Url = ApiUrl + "/headends?country=" + country + "&postalcode=" + location,
@@ -454,16 +452,13 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 using (Stream responce = await _httpClient.Get(options).ConfigureAwait(false))
                 {
                     var root = _jsonSerializer.DeserializeFromStream<List<ScheduleDirect.Headends>>(responce);
-                    _logger.Info("Lineups on account ");
+
                     if (root != null)
                     {
                         foreach (ScheduleDirect.Headends headend in root)
                         {
-                            _logger.Info("Headend: " + headend.headend);
                             foreach (ScheduleDirect.Lineup lineup in headend.lineups)
                             {
-                                _logger.Info("Headend: " + lineup.uri);
-
                                 lineups.Add(new NameIdPair
                                 {
                                     Name = string.IsNullOrWhiteSpace(lineup.name) ? lineup.lineup : lineup.name,
@@ -474,7 +469,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                     }
                     else
                     {
-                        _logger.Info("No lineups on account");
+                        _logger.Info("No lineups available");
                     }
                 }
             }

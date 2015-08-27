@@ -1,14 +1,15 @@
 ﻿using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Server.Implementations.Persistence
 {
@@ -17,12 +18,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
         private readonly ILibraryManager _libraryManager;
         private readonly IItemRepository _itemRepo;
         private readonly ILogger _logger;
+        private readonly IServerConfigurationManager _config;
 
-        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger)
+        public CleanDatabaseScheduledTask(ILibraryManager libraryManager, IItemRepository itemRepo, ILogger logger, IServerConfigurationManager config)
         {
             _libraryManager = libraryManager;
             _itemRepo = itemRepo;
             _logger = logger;
+            _config = config;
         }
 
         public string Name
@@ -53,7 +56,6 @@ namespace MediaBrowser.Server.Implementations.Persistence
             var itemIds = _libraryManager.GetItemIds(new InternalItemsQuery
             {
                 IsCurrentSchema = false,
-                Limit = 100000,
 
                 // These are constantly getting regenerated so don't bother with them here
                 ExcludeItemTypes = new[] { typeof(LiveTvProgram).Name }
@@ -79,6 +81,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 double percent = numComplete;
                 percent /= numItems;
                 progress.Report(percent * 100);
+            }
+
+            if (!_config.Configuration.DisableStartupScan)
+            {
+                _config.Configuration.DisableStartupScan = true;
+                _config.SaveConfiguration();
             }
 
             progress.Report(100);

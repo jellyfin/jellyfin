@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.ScheduledTasks;
+﻿using System.Linq;
+using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Server.Implementations.Library;
 using System;
@@ -17,14 +19,16 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// The _library manager
         /// </summary>
         private readonly ILibraryManager _libraryManager;
+        private readonly IServerConfigurationManager _config;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RefreshMediaLibraryTask" /> class.
         /// </summary>
         /// <param name="libraryManager">The library manager.</param>
-        public RefreshMediaLibraryTask(ILibraryManager libraryManager)
+        public RefreshMediaLibraryTask(ILibraryManager libraryManager, IServerConfigurationManager config)
         {
             _libraryManager = libraryManager;
+            _config = config;
         }
 
         /// <summary>
@@ -33,12 +37,18 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         /// <returns>IEnumerable{BaseTaskTrigger}.</returns>
         public IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
-            return new ITaskTrigger[] { 
-
-                new StartupTrigger(),
+            var list = new ITaskTrigger[] { 
 
                 new IntervalTrigger{ Interval = TimeSpan.FromHours(8)}
-            };
+
+            }.ToList();
+
+            if (!_config.Configuration.DisableStartupScan)
+            {
+                list.Add(new StartupTrigger());
+            }
+
+            return list;
         }
 
         /// <summary>

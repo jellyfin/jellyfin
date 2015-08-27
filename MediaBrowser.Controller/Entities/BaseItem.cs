@@ -142,7 +142,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual string Path { get; set; }
 
         [IgnoreDataMember]
-        protected internal bool IsOffline { get; set; }
+        public bool IsOffline { get; set; }
 
         /// <summary>
         /// Returns the folder containing the item.
