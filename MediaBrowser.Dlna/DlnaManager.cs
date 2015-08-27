@@ -530,6 +530,7 @@ namespace MediaBrowser.Dlna
                 new SonyBravia2011Profile(),
                 new SonyBravia2012Profile(),
                 new SonyBravia2013Profile(),
+                new SonyBravia2014Profile(),
                 new SonyBlurayPlayer2013Profile(),
                 new SonyBlurayPlayerProfile(),
                 new PanasonicVieraProfile(),
@@ -548,7 +549,7 @@ namespace MediaBrowser.Dlna
                 new PopcornHourProfile(),
                 new VlcProfile(),
                 new BubbleUpnpProfile(),
-                new KodiProfile()
+                new KodiProfile(),
             };
 
             foreach (var item in list)
