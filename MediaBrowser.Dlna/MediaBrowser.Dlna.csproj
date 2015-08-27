@@ -81,7 +81,9 @@
     <Compile Include="Profiles\DefaultProfile.cs" />
     <Compile Include="Profiles\DirectTvProfile.cs" />
     <Compile Include="Profiles\DishHopperJoeyProfile.cs" />
+    <Compile Include="Profiles\KodiProfile.cs" />
     <Compile Include="Profiles\PopcornHourProfile.cs" />
+    <Compile Include="Profiles\SonyBravia2014Profile.cs" />
     <Compile Include="Profiles\SonyPs4Profile.cs" />
     <Compile Include="Profiles\VlcProfile.cs" />
     <Compile Include="Ssdp\DeviceDiscoveryInfo.cs" />
@@ -222,6 +224,9 @@
     <EmbeddedResource Include="Profiles\Xml\Kodi.xml">
       <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282014%29.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
