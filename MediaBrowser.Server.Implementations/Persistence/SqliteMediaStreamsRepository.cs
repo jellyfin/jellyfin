@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Persistence;
+﻿using System.Globalization;
+using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -38,7 +39,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             // Add PixelFormat column
 
-            createTableCommand += "(ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, IsCabac BIT NULL, PRIMARY KEY (ItemId, StreamIndex))";
+            createTableCommand += "(ItemId GUID, StreamIndex INT, StreamType TEXT, Codec TEXT, Language TEXT, ChannelLayout TEXT, Profile TEXT, AspectRatio TEXT, Path TEXT, IsInterlaced BIT, BitRate INT NULL, Channels INT NULL, SampleRate INT NULL, IsDefault BIT, IsForced BIT, IsExternal BIT, Height INT NULL, Width INT NULL, AverageFrameRate FLOAT NULL, RealFrameRate FLOAT NULL, Level FLOAT NULL, PixelFormat TEXT, BitDepth INT NULL, IsAnamorphic BIT NULL, RefFrames INT NULL, IsCabac BIT NULL, KeyFrames TEXT NULL, PRIMARY KEY (ItemId, StreamIndex))";
 
             string[] queries = {
 
@@ -58,6 +59,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             AddBitDepthCommand();
             AddIsAnamorphicColumn();
             AddIsCabacColumn();
+            AddKeyFramesColumn();
             AddRefFramesCommand();
 
             PrepareStatements();
@@ -187,6 +189,37 @@ namespace MediaBrowser.Server.Implementations.Persistence
             _connection.RunQueries(new[] { builder.ToString() }, _logger);
         }
 
+        private void AddKeyFramesColumn()
+        {
+            using (var cmd = _connection.CreateCommand())
+            {
+                cmd.CommandText = "PRAGMA table_info(mediastreams)";
+
+                using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult))
+                {
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(1))
+                        {
+                            var name = reader.GetString(1);
+
+                            if (string.Equals(name, "KeyFrames", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var builder = new StringBuilder();
+
+            builder.AppendLine("alter table mediastreams");
+            builder.AppendLine("add column KeyFrames TEXT NULL");
+
+            _connection.RunQueries(new[] { builder.ToString() }, _logger);
+        }
+
         private void AddIsAnamorphicColumn()
         {
             using (var cmd = _connection.CreateCommand())
@@ -245,7 +278,8 @@ namespace MediaBrowser.Server.Implementations.Persistence
             "BitDepth",
             "IsAnamorphic",
             "RefFrames",
-            "IsCabac"
+            "IsCabac",
+            "KeyFrames"
         };
 
         /// <summary>
@@ -429,6 +463,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 item.IsCabac = reader.GetBoolean(25);
             }
 
+            if (!reader.IsDBNull(26))
+            {
+                var frames = reader.GetString(26);
+                if (!string.IsNullOrWhiteSpace(frames))
+                {
+                    item.KeyFrames = frames.Split(',').Select(i => int.Parse(i, CultureInfo.InvariantCulture)).ToList();
+                }
+            }
+
             return item;
         }
 
@@ -497,6 +540,15 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     _saveStreamCommand.GetParameter(index++).Value = stream.IsAnamorphic;
                     _saveStreamCommand.GetParameter(index++).Value = stream.RefFrames;
                     _saveStreamCommand.GetParameter(index++).Value = stream.IsCabac;
+
+                    if (stream.KeyFrames == null || stream.KeyFrames.Count == 0)
+                    {
+                        _saveStreamCommand.GetParameter(index++).Value = null;
+                    }
+                    else
+                    {
+                        _saveStreamCommand.GetParameter(index++).Value = string.Join(",", stream.KeyFrames.Select(i => i.ToString(CultureInfo.InvariantCulture)).ToArray());
+                    }
 
                     _saveStreamCommand.Transaction = transaction;
                     _saveStreamCommand.ExecuteNonQuery();
