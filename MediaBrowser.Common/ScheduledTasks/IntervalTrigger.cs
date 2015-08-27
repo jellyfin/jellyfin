@@ -31,6 +31,17 @@ namespace MediaBrowser.Common.ScheduledTasks
         public TaskExecutionOptions TaskOptions { get; set; }
 
         /// <summary>
+        /// Gets or sets the first run delay.
+        /// </summary>
+        /// <value>The first run delay.</value>
+        public TimeSpan FirstRunDelay { get; set; }
+
+        public IntervalTrigger()
+        {
+            FirstRunDelay = TimeSpan.FromHours(1);
+        }
+
+        /// <summary>
         /// Stars waiting for the trigger action
         /// </summary>
         /// <param name="lastResult">The last result.</param>
@@ -41,7 +52,7 @@ namespace MediaBrowser.Common.ScheduledTasks
 
             var triggerDate = lastResult != null ?
                 lastResult.EndTimeUtc.Add(Interval) :
-                DateTime.UtcNow.Add(Interval);
+                DateTime.UtcNow.Add(FirstRunDelay);
 
             if (DateTime.UtcNow > triggerDate)
             {

@@ -131,7 +131,7 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             return new ITaskTrigger[]
                 {
-                    new DailyTrigger { TimeOfDay = TimeSpan.FromHours(3) },
+                new IntervalTrigger{ Interval = TimeSpan.FromHours(8)}
                 };
         }
     }

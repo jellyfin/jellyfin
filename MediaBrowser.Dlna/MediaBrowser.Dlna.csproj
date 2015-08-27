@@ -166,7 +166,9 @@
     <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282010%29.xml" />
     <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282011%29.xml" />
     <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282012%29.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282013%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282013%29.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 3.xml" />
     <EmbeddedResource Include="Profiles\Xml\WDTV Live.xml" />
     <EmbeddedResource Include="Profiles\Xml\Xbox 360.xml">

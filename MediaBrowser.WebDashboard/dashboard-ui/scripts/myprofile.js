@@ -277,7 +277,7 @@
 
         ApiClient.getUser(userId).done(function (user) {
 
-            user.Configuration.EnableLocalPassword = page.queryselector('.chkEnableLocalEasyPassword').checked;
+            user.Configuration.EnableLocalPassword = page.querySelector('.chkEnableLocalEasyPassword').checked;
 
             ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
 
