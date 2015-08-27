@@ -329,6 +329,46 @@ paper-menu-item {
     display: none !important;
 }
 
+.libraryViewNav #tabsContainer {
+    margin: auto;
+    -ms-flex: auto;
+    -webkit-flex: auto;
+    flex: auto;
+    -ms-flex: none;
+    -webkit-flex: none;
+    flex: none;
+    flex-shrink: 0;
+}
+
+.libraryViewNav paper-tabs {
+    /*display: block !important;*/
+    flex: none;
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+.libraryViewNav paper-tab {
+    display: inline-block !important;
+    flex: none;
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+.papertabs-800 {
+    min-width: 800px;
+}
+
+.scrollingPaperTabs #tabsContainer {
+    margin: 0;
+}
+
+@media all and (min-width: 800px) {
+
+    .papertabs-800 #tabsContainer {
+        margin: auto;
+    }
+}
+
 /*.scrollablePaperTabs #tabsContainer {
     text-align: center;
     overflow-x: scroll;

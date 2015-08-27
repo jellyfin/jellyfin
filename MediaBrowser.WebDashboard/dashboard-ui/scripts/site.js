@@ -1887,7 +1887,7 @@ var AppInfo = {};
             var apiClient = window.ApiClient;
 
             // Close the connection gracefully when possible
-            if (apiClient && apiClient.isWebSocketOpen()) {
+            if (apiCblient && apiClient.isWebSocketOpen()) {
 
                 var localActivePlayers = MediaController.getPlayers().filter(function (p) {
 
