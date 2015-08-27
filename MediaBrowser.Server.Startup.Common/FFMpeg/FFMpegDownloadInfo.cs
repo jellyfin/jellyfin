@@ -42,7 +42,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                     switch (environment.SystemArchitecture)
                     {
                         case Architecture.X86_X64:
-                            info.Version = "20150110";
+                            info.Version = "20150827";
                             break;
                         case Architecture.X86:
                             info.Version = "20150110";
@@ -102,7 +102,7 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                         case Architecture.X86_X64:
                             return new[]
                             {
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x64-2.5.3.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/osx/ffmpeg-x64-2.7.2.7z"
                             };
                         case Architecture.X86:
                             return new[]
