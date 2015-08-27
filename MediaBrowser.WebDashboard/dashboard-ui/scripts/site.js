@@ -492,11 +492,14 @@ var Dashboard = {
 
         } else {
 
-            elem = document.createElement("paper-spinner");
-            elem.classList.add('docspinner');
+            // IE renders it incorrectly
+            if (!$.browser.msie) {
+                elem = document.createElement("paper-spinner");
+                elem.classList.add('docspinner');
 
-            document.body.appendChild(elem);
-            elem.active = true;
+                document.body.appendChild(elem);
+                elem.active = true;
+            }
         }
     },
 

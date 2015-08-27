@@ -187,6 +187,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
         /// </summary>
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1, 1);
 
+        private string[] _retriveItemColumns =
+        {
+            "type",
+            "data",
+            "IsOffline"
+        };
+
         /// <summary>
         /// Prepares the statements.
         /// </summary>
@@ -398,7 +405,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                     _saveItemCommand.GetParameter(index++).Value = item.ForcedSortName;
                     _saveItemCommand.GetParameter(index++).Value = item.IsOffline;
-                    
+
                     _saveItemCommand.Transaction = transaction;
 
                     _saveItemCommand.ExecuteNonQuery();
@@ -455,7 +462,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select type,data from TypedBaseItems where guid = @guid";
+                cmd.CommandText = "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems where guid = @guid";
                 cmd.Parameters.Add(cmd, "@guid", DbType.Guid).Value = id;
 
                 using (var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess | CommandBehavior.SingleResult | CommandBehavior.SingleRow))
@@ -482,11 +489,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 return null;
             }
 
+            BaseItem item;
+
             using (var stream = reader.GetMemoryStream(1))
             {
                 try
                 {
-                    return _jsonSerializer.DeserializeFromStream(stream, type) as BaseItem;
+                    item = _jsonSerializer.DeserializeFromStream(stream, type) as BaseItem;
+
+                    if (item == null)
+                    {
+                        return null;
+                    }
                 }
                 catch (SerializationException ex)
                 {
@@ -494,6 +508,13 @@ namespace MediaBrowser.Server.Implementations.Persistence
                     return null;
                 }
             }
+
+            if (!reader.IsDBNull(2))
+            {
+                item.IsOffline = reader.GetBoolean(2);
+            }
+
+            return item;
         }
 
         /// <summary>
@@ -685,7 +706,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select type,data from TypedBaseItems where guid in (select ItemId from ChildrenIds where ParentId = @ParentId)";
+                cmd.CommandText = "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems where guid in (select ItemId from ChildrenIds where ParentId = @ParentId)";
 
                 cmd.Parameters.Add(cmd, "@ParentId", DbType.Guid).Value = parentId;
 
@@ -715,7 +736,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select type,data from TypedBaseItems where type = @type";
+                cmd.CommandText = "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems where type = @type";
 
                 cmd.Parameters.Add(cmd, "@type", DbType.String).Value = type.FullName;
 
@@ -745,7 +766,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
             using (var cmd = _connection.CreateCommand())
             {
-                cmd.CommandText = "select type,data from TypedBaseItems";
+                cmd.CommandText = "select " + string.Join(",", _retriveItemColumns) + " from TypedBaseItems";
 
                 var whereClauses = GetWhereClauses(query, cmd, false);
 

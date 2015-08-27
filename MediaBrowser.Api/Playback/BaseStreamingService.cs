@@ -1634,11 +1634,6 @@ namespace MediaBrowser.Api.Playback
 
         private void TryStreamCopy(StreamState state, VideoStreamRequest videoRequest)
         {
-            if (!EnableStreamCopy)
-            {
-                return;
-            }
-
             if (state.VideoStream != null && CanStreamCopyVideo(videoRequest, state.VideoStream))
             {
                 state.OutputVideoCodec = "copy";
@@ -1647,14 +1642,6 @@ namespace MediaBrowser.Api.Playback
             if (state.AudioStream != null && CanStreamCopyAudio(videoRequest, state.AudioStream, state.SupportedAudioCodecs))
             {
                 state.OutputAudioCodec = "copy";
-            }
-        }
-
-        protected virtual bool EnableStreamCopy
-        {
-            get
-            {
-                return true;
             }
         }
 
@@ -1741,7 +1728,7 @@ namespace MediaBrowser.Api.Playback
             state.MediaSource = mediaSource;
         }
 
-        private bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream)
+        protected virtual bool CanStreamCopyVideo(VideoStreamRequest request, MediaStream videoStream)
         {
             if (videoStream.IsInterlaced)
             {
@@ -1889,7 +1876,7 @@ namespace MediaBrowser.Api.Playback
             return Array.FindIndex(list.ToArray(), t => string.Equals(t, profile, StringComparison.OrdinalIgnoreCase));
         }
 
-        private bool CanStreamCopyAudio(VideoStreamRequest request, MediaStream audioStream, List<string> supportedAudioCodecs)
+        protected virtual bool CanStreamCopyAudio(VideoStreamRequest request, MediaStream audioStream, List<string> supportedAudioCodecs)
         {
             // Source and target codecs must match
             if (string.IsNullOrEmpty(audioStream.Codec) || !supportedAudioCodecs.Contains(audioStream.Codec, StringComparer.OrdinalIgnoreCase))

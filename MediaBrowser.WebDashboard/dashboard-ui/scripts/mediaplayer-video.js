@@ -1091,8 +1091,6 @@
 
             }).on("error.mediaplayerevent", function () {
 
-                self.stop();
-
                 var errorMsg = Globalize.translate('MessageErrorPlayingVideo');
 
                 if (item.Type == "TvChannel") {
@@ -1105,6 +1103,9 @@
                     title: Globalize.translate('HeaderVideoError'),
                     message: errorMsg
                 });
+
+                self.onPlaybackStopped.call(mediaRenderer);
+                self.nextTrack();
 
             }).on("click.mediaplayerevent", function (e) {
 
