@@ -62,6 +62,10 @@
     background-color: #333;
 }
 
+.homeTopViews .cardImage {
+    border-radius: 6px;
+}
+
 .cardOverlayPlayButton {
     position: absolute;
     bottom: 0;

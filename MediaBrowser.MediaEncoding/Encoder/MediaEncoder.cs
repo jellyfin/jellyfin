@@ -244,7 +244,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         {
                             foreach (var stream in mediaInfo.MediaStreams)
                             {
-                                if (stream.Type == MediaStreamType.Video && string.Equals(stream.Codec, "h264", StringComparison.OrdinalIgnoreCase))
+                                if (stream.Type == MediaStreamType.Video && string.Equals(stream.Codec, "h264", StringComparison.OrdinalIgnoreCase) && !stream.IsInterlaced)
                                 {
                                     try
                                     {
@@ -282,7 +282,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private async Task<List<int>> GetKeyFrames(string inputPath, int videoStreamIndex, CancellationToken cancellationToken)
         {
-            const string args = "-i {0} -select_streams v:{1} -show_packets -print_format compact -show_entries packet=flags -show_entries packet=pts_time";
+            inputPath = inputPath.Split(new[] { ':' }, 2).Last().Trim('"');
+
+            const string args = "-show_packets -print_format compact -select_streams v:{1} -show_entries packet=flags -show_entries packet=pts_time \"{0}\"";
 
             var process = new Process
             {
@@ -330,7 +332,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     StopProcess(processWrapper, 100, true);
                 }
-
+                //_logger.Debug("Found keyframes {0}", string.Join(",", lines.ToArray()));
                 return lines;
             }
         }
@@ -347,7 +349,12 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                         var line = await reader.ReadLineAsync().ConfigureAwait(false);
 
-                        var values = (line ?? string.Empty).Split('|')
+                        if (string.IsNullOrWhiteSpace(line))
+                        {
+                            continue;
+                        }
+
+                        var values = line.Split('|')
                             .Where(i => !string.IsNullOrWhiteSpace(i))
                             .Select(i => i.Split('='))
                             .Where(i => i.Length == 2)

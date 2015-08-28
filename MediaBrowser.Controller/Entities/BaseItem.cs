@@ -419,6 +419,10 @@ namespace MediaBrowser.Controller.Entities
 
                 return _sortName ?? (_sortName = CreateSortName());
             }
+            set
+            {
+                _sortName = value;
+            }
         }
 
         public string GetInternalMetadataPath()

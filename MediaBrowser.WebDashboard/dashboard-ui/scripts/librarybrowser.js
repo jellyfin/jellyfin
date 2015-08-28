@@ -242,9 +242,8 @@
                 console.log('iron-select');
                 // When transition animations are used, add a content loading delay to allow the animations to finish
                 // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
-                var enablePaperTabs = LibraryBrowser.enableFullPaperTabs();
-                var delay = enablePaperTabs ? 500 : 0;
                 var pgs = this;
+                var delay = pgs.entryAnimation ? 500 : 0;
                 setTimeout(function () {
 
                     $(pgs).trigger('tabchange');
@@ -274,7 +273,24 @@
                 }
 
             } else {
-                Events.trigger(page.querySelector('neon-animated-pages'), 'tabchange');
+                var pages = page.querySelector('neon-animated-pages');
+                if (!NavHelper.isBack()) {
+                    if (pages.selected) {
+
+                        var entryAnimation = pages.entryAnimation;
+                        var exitAnimation = pages.exitAnimation;
+                        pages.entryAnimation = null;
+                        pages.exitAnimation = null;
+
+                        tabs.selected = 0;
+
+                        pages.entryAnimation = entryAnimation;
+                        pages.exitAnimation = exitAnimation;
+
+                        return;
+                    }
+                }
+                Events.trigger(pages, 'tabchange');
             }
         },
 
@@ -718,16 +734,16 @@
 
             var href = LibraryBrowser.getHrefInternal(item, context);
 
-            if (context != 'livetv') {
-                if (topParentId == null && context != 'playlists') {
-                    topParentId = LibraryMenu.getTopParentId();
-                }
+            //if (context != 'livetv') {
+            //    if (topParentId == null && context != 'playlists') {
+            //        topParentId = LibraryMenu.getTopParentId();
+            //    }
 
-                if (topParentId) {
-                    href += href.indexOf('?') == -1 ? "?topParentId=" : "&topParentId=";
-                    href += topParentId;
-                }
-            }
+            //    if (topParentId) {
+            //        href += href.indexOf('?') == -1 ? "?topParentId=" : "&topParentId=";
+            //        href += topParentId;
+            //    }
+            //}
 
             return href;
         },
@@ -983,11 +999,6 @@
 
                 var cssClass = options.smallIcon ? 'ui-li-has-icon listItem' : 'ui-li-has-thumb listItem';
 
-                if (item.UserData) {
-                    cssClass += ' ' + LibraryBrowser.getUserDataCssClass(item.UserData.Key);
-                }
-
-
                 var href = LibraryBrowser.getHref(item, options.context);
                 html += '<li class="' + cssClass + '"' + dataAttributes + ' data-itemid="' + item.Id + '" data-playlistitemid="' + (item.PlaylistItemId || '') + '" data-href="' + href + '" data-icon="false">';
 
@@ -1219,7 +1230,7 @@
                 itemCommands.push('trailer');
             }
 
-            if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicGenre") {
+            if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist" || item.Type == "MusicGenre" || item.CollectionType == "music") {
                 itemCommands.push('instantmix');
             }
 
@@ -1689,10 +1700,6 @@
             var mediaSourceCount = item.MediaSourceCount || 1;
 
             var href = options.linkItem === false ? '#' : LibraryBrowser.getHref(item, options.context);
-
-            if (item.UserData) {
-                cssClass += ' ' + LibraryBrowser.getUserDataCssClass(item.UserData.Key);
-            }
 
             if (options.showChildCountIndicator && item.ChildCount && options.showLatestItemsPopup !== false) {
                 cssClass += ' groupedCard';

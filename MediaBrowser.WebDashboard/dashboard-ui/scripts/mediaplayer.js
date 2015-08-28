@@ -1411,56 +1411,11 @@
                 var promise;
                 var itemLimit = 100;
 
-                if (item.Type == "MusicArtist") {
-
-                    promise = ApiClient.getInstantMixFromArtist({
-                        UserId: Dashboard.getCurrentUserId(),
-                        Fields: getItemFields,
-                        Limit: itemLimit,
-                        Id: id
-                    });
-
-                }
-                else if (item.Type == "MusicGenre") {
-
-                    promise = ApiClient.getInstantMixFromMusicGenre({
-                        UserId: Dashboard.getCurrentUserId(),
-                        Fields: getItemFields,
-                        Limit: itemLimit,
-                        Id: id
-                    });
-
-                }
-                else if (item.Type == "MusicAlbum") {
-
-                    promise = ApiClient.getInstantMixFromAlbum(id, {
-                        UserId: Dashboard.getCurrentUserId(),
-                        Fields: getItemFields,
-                        Limit: itemLimit
-                    });
-
-                }
-                else if (item.Type == "Playlist") {
-
-                    promise = ApiClient.getInstantMixFromPlaylist(id, {
-                        UserId: Dashboard.getCurrentUserId(),
-                        Fields: getItemFields,
-                        Limit: itemLimit
-                    });
-
-                }
-                else if (item.Type == "Audio") {
-
-                    promise = ApiClient.getInstantMixFromSong(id, {
-                        UserId: Dashboard.getCurrentUserId(),
-                        Fields: getItemFields,
-                        Limit: itemLimit
-                    });
-
-                }
-                else {
-                    return;
-                }
+                promise = ApiClient.getInstantMixFromItem(id, {
+                    UserId: Dashboard.getCurrentUserId(),
+                    Fields: getItemFields,
+                    Limit: itemLimit
+                });
 
                 promise.done(function (result) {
 
@@ -1760,7 +1715,12 @@
 
         function canPlayH264() {
 
-            if (navigator.userAgent.toLowerCase().indexOf('firefox') != -1) {
+            var userAgent = navigator.userAgent.toLowerCase();
+
+            if (userAgent.indexOf('firefox') != -1) {
+                if (userAgent.indexOf('windows') != -1) {
+                    return true;
+                }
                 return false;
             }
 

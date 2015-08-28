@@ -1163,14 +1163,14 @@
 
     function playAllFromHere(index, itemsContainer, method) {
 
-        var ids = $('.mediaItem', itemsContainer).get().map(function(i) {
+        var ids = $('.mediaItem', itemsContainer).get().map(function (i) {
             return i.getAttribute('data-itemid') || i.parentNode.getAttribute('data-itemid');
         });
 
         ids = ids.slice(index);
 
         ApiClient.getItems(Dashboard.getCurrentUserId(), {
-            
+
             Ids: ids.join(','),
             Fields: 'MediaSources,Chapters',
             Limit: 100
@@ -1281,13 +1281,7 @@
 
     function onUserDataChanged(userData) {
 
-        var cssClass = LibraryBrowser.getUserDataCssClass(userData.Key);
-
-        if (!cssClass) {
-            return;
-        }
-
-        $('.' + cssClass).each(function () {
+        $(document.querySelectorAll("*[data-itemid='" + userData.ItemId + "']")).each(function () {
 
             var mediaType = this.getAttribute('data-mediatype');
 

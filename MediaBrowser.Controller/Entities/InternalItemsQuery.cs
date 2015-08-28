@@ -97,7 +97,8 @@ namespace MediaBrowser.Controller.Entities
         public int? MaxParentalRating { get; set; }
 
         public bool? IsCurrentSchema { get; set; }
-        
+        public bool? HasDeadParentId { get; set; }
+    
         public InternalItemsQuery()
         {
             Tags = new string[] { };
