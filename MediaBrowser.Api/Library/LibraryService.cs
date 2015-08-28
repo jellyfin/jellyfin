@@ -270,6 +270,7 @@ namespace MediaBrowser.Api.Library
         private readonly ILiveTvManager _liveTv;
         private readonly IChannelManager _channelManager;
         private readonly ITVSeriesManager _tvManager;
+        private readonly ILibraryMonitor _libraryMonitor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
@@ -422,7 +423,25 @@ namespace MediaBrowser.Api.Library
 
         public void Post(PostUpdatedSeries request)
         {
-            Task.Run(() => _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None));
+            var series = _libraryManager.GetItems(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Series).Name }
+
+            }).Items;
+
+            series = series.Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+
+            if (series.Length > 0)
+            {
+                foreach (var item in series)
+                {
+                    _libraryMonitor.ReportFileSystemChanged(item.Path);
+                }
+            }
+            else
+            {
+                Task.Run(() => _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None));
+            }
         }
 
         public object Get(GetDownload request)
