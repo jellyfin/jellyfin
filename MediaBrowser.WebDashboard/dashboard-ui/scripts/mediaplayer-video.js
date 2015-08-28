@@ -33,11 +33,28 @@
         };
 
         self.resetEnhancements = function () {
-            $("#mediaPlayer").hide();
+
+            fadeOut(document.querySelector('#mediaPlayer'));
             $('#videoPlayer').removeClass('fullscreenVideo').removeClass('idlePlayer');
             $('.hiddenOnIdle').removeClass("inactive");
             $("video").remove();
+
+            document.querySelector('.mediaButton.infoButton').classList.remove('active');
+            document.querySelector('.videoControls .nowPlayingInfo').classList.add('hide');
+            document.querySelector('.videoControls').classList.add('hiddenOnIdle');
         };
+
+        function fadeOut(elem) {
+            $(elem).hide();
+            return;
+            var keyframes = [
+              { opacity: '1', offset: 0 },
+              { opacity: '0', offset: 1 }];
+            var timing = { duration: 300, iterations: 1 };
+            elem.animate(keyframes, timing).onfinish = function () {
+                $(elem).hide();
+            };
+        }
 
         self.exitFullScreen = function () {
 
@@ -610,6 +627,42 @@
             });
         };
 
+        self.toggleInfo = function () {
+
+            var button = document.querySelector('.mediaButton.infoButton');
+            var nowPlayingInfo = document.querySelector('.videoControls .nowPlayingInfo');
+
+            if (button.classList.contains('active')) {
+                button.classList.remove('active');
+                document.querySelector('.videoControls').classList.add('hiddenOnIdle');
+
+                fadeOutDown(nowPlayingInfo);
+
+            } else {
+                button.classList.add('active');
+                document.querySelector('.videoControls').classList.remove('hiddenOnIdle');
+                nowPlayingInfo.classList.remove('hide');
+                fadeInUp(nowPlayingInfo);
+            }
+        };
+
+        function fadeInUp(elem) {
+            var keyframes = [
+              { transform: 'translate3d(0, 100%, 0)', offset: 0 },
+              { transform: 'none', offset: 1 }];
+            var timing = { duration: 300, iterations: 1 };
+            elem.animate(keyframes, timing);
+        }
+
+        function fadeOutDown(elem) {
+            var keyframes = [{ transform: 'none', offset: 0 },
+              { transform: 'translate3d(0, 100%, 0)', offset: 1 }];
+            var timing = { duration: 300, iterations: 1 };
+            elem.animate(keyframes, timing).onfinish = function () {
+                elem.classList.add('hide');
+            };
+        }
+
         function ensureVideoPlayerElements() {
 
             var html = '<div id="mediaPlayer" style="display: none;">';
@@ -647,11 +700,12 @@
             // Create controls
             html += '<div class="videoControls hiddenOnIdle">';
 
-            html += '<div class="nowPlayingInfo hiddenOnIdle">';
+            html += '<div class="nowPlayingInfo hide">';
             html += '<div class="nowPlayingImage"></div>';
             html += '<div class="nowPlayingTabs"></div>';
             html += '</div>'; // nowPlayingInfo
 
+            html += '<div class="videoControlButtons">';
             html += '<paper-icon-button icon="skip-previous" class="previousTrackButton mediaButton videoTrackControl hide" onclick="MediaPlayer.previousTrack();"></paper-icon-button>';
 
             html += '<paper-icon-button id="video-playButton" icon="play-arrow" class="mediaButton unpauseButton" onclick="MediaPlayer.unpause();"></paper-icon-button>';
@@ -669,6 +723,8 @@
             html += '<paper-slider pin step="1" min="0" max="100" value="0" class="videoVolumeSlider" style="width:100px;vertical-align:middle;margin-left:-1em;"></paper-slider>';
 
             html += '<paper-icon-button icon="fullscreen" class="mediaButton fullscreenButton" onclick="MediaPlayer.toggleFullscreen();" id="video-fullscreenButton"></paper-icon-button>';
+            html += '<paper-icon-button icon="info" class="mediaButton infoButton" onclick="MediaPlayer.toggleInfo();"></paper-icon-button>';
+            html += '</div>';
 
             html += '</div>'; // videoControls
 

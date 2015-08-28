@@ -37,14 +37,20 @@
 }
 
 .videoControls {
-    padding: 0 .5em;
-    background-color: rgba(0, 0, 0, .7);
     position: fixed;
     left: 0;
     bottom: 0;
     right: 0;
     z-index: 99998;
     text-align: center;
+}
+
+    .videoControls > div {
+        background-color: rgba(0, 0, 0, .7);
+    }
+
+.videoControlButtons {
+    padding: 0 .5em;
 }
 
 .videoTopControls {
@@ -69,8 +75,8 @@
     }
 
 .nowPlayingInfo {
-    text-align: center;
-    padding: 1.5em 1em 2em 1em;
+    text-align: left;
+    padding: 1.5em 1em 2em 3em;
 }
 
 #videoPlayer .nowPlayingImage img {
@@ -88,7 +94,7 @@
     vertical-align: top;
     color: #eee;
     display: inline-block;
-    width: 70%;
+    width: 80%;
     font-weight: normal;
     font-size: 14px;
 }
@@ -202,9 +208,9 @@
 
 @media all and (max-width: 1400px), all and (max-height: 900px) {
 
-    #mediaPlayer .nowPlayingInfo {
+    /*#mediaPlayer .nowPlayingInfo {
         display: none !important;
-    }
+    }*/
 }
 
 @media all and (max-width: 555px) {
