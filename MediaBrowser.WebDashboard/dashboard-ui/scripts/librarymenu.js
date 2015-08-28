@@ -389,6 +389,7 @@
 
                     view.ImageTags = {};
                     view.icon = 'live-tv';
+                    view.onclick = "LibraryBrowser.showTab('livetv.html', 0);";
 
                     var guideView = $.extend({}, view);
                     guideView.Name = Globalize.translate('ButtonGuide');

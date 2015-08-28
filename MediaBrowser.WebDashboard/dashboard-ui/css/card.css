@@ -67,7 +67,7 @@
 }
 
 .homeTopViews .cardImage {
-    border-radius: 6px;
+    border-radius: 5px;
 }
 
 .cardOverlayPlayButton {
@@ -322,10 +322,10 @@
         position: absolute;
         left: 0;
         right: 0;
-        width: 64px;
-        height: 64px;
+        width: 50%;
+        height:  50%;
         margin: auto;
-        top: 25%;
+        top: 22%;
     }
 
 .bannerCard {

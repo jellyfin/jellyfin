@@ -186,7 +186,6 @@
         },
 
         enableFullPaperTabs: function () {
-
             return AppInfo.isNativeApp;
         },
 
@@ -306,8 +305,7 @@
                 return;
             }
 
-            $(document).one('pageshowready', '.page', function () {
-
+            var afterNavigate = function () {
                 if (getWindowUrl().toLowerCase().indexOf(url.toLowerCase()) != -1) {
 
                     var pages = this.querySelector('neon-animated-pages');
@@ -329,9 +327,15 @@
                         tabs.noSlide = noSlide;
                     }
                 }
-            });
+            };
 
-            Dashboard.navigate(url);
+            if (getWindowUrl().toLowerCase().indexOf(url.toLowerCase()) != -1) {
+
+                afterNavigate.call($($.mobile.activePage)[0]);
+            } else {
+                $(document).one('pageshowready', '.page', afterNavigate);
+                Dashboard.navigate(url);
+            }
         },
 
         canShare: function (item, user) {
