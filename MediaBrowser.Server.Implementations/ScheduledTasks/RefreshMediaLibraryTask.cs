@@ -39,7 +39,7 @@ namespace MediaBrowser.Server.Implementations.ScheduledTasks
         {
             var list = new ITaskTrigger[] { 
 
-                new IntervalTrigger{ Interval = TimeSpan.FromHours(8)}
+                new IntervalTrigger{ Interval = TimeSpan.FromHours(12)}
 
             }.ToList();
 

@@ -272,6 +272,9 @@
 
             config.SaveMetadataHidden = $('#chkSaveMetadataHidden', form).checked();
 
+            config.EnableVideoFrameAnalysis = $('.chkEnableVideoFrameAnalysis', form).checked();
+            config.VideoFrameAnalysisLimitBytes = parseInt(parseFloat(($('.txtVideoFrameAnalysisLimit', form).val() || '0')) * 1000000);
+
             config.EnableTvDbUpdates = $('#chkEnableTvdbUpdates', form).checked();
             config.EnableTmdbUpdates = $('#chkEnableTmdbUpdates', form).checked();
             config.EnableFanArtUpdates = $('#chkEnableFanartUpdates', form).checked();
