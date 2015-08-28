@@ -150,7 +150,6 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 CollectionType.Games,
                 CollectionType.Music,
                 CollectionType.BoxSets,
-                CollectionType.Playlists,
                 CollectionType.Channels,
                 CollectionType.Books,
                 CollectionType.Photos,

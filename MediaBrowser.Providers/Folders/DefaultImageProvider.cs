@@ -107,6 +107,10 @@ namespace MediaBrowser.Providers.Folders
             {
                 //return urlPrefix + "movies.png";
             }
+            if (string.Equals(viewType, CollectionType.Playlists, StringComparison.OrdinalIgnoreCase))
+            {
+                return urlPrefix + "playlists.png";
+            }
 
             return null;
             //return urlPrefix + "generic.png";
