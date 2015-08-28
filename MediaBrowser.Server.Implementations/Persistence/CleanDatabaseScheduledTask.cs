@@ -46,9 +46,16 @@ namespace MediaBrowser.Server.Implementations.Persistence
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             var innerProgress = new ActionableProgress<double>();
-            innerProgress.RegisterAction(progress.Report);
+            innerProgress.RegisterAction(p => progress.Report(.95 * p));
 
             await UpdateToLatestSchema(cancellationToken, innerProgress).ConfigureAwait(false);
+
+            innerProgress = new ActionableProgress<double>();
+            innerProgress.RegisterAction(p => progress.Report(95 + (.05 * p)));
+
+            //await CleanDeadItems(cancellationToken, innerProgress).ConfigureAwait(false);
+
+            progress.Report(100);
         }
 
         private async Task UpdateToLatestSchema(CancellationToken cancellationToken, IProgress<double> progress)
@@ -87,6 +94,43 @@ namespace MediaBrowser.Server.Implementations.Persistence
             {
                 _config.Configuration.DisableStartupScan = true;
                 _config.SaveConfiguration();
+            }
+
+            progress.Report(100);
+        }
+
+        private async Task CleanDeadItems(CancellationToken cancellationToken, IProgress<double> progress)
+        {
+            var itemIds = _libraryManager.GetItemIds(new InternalItemsQuery
+            {
+                HasDeadParentId = true
+            });
+
+            var numComplete = 0;
+            var numItems = itemIds.Count;
+
+            _logger.Debug("Cleaning {0} items with dead parent links", numItems);
+
+            foreach (var itemId in itemIds)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var item = _libraryManager.GetItemById(itemId);
+
+                if (item != null)
+                {
+                    _logger.Debug("Cleaning item {0} type: {1} path: {2}", item.Name, item.GetType().Name, item.Path ?? string.Empty);
+
+                    await _libraryManager.DeleteItem(item, new DeleteOptions
+                    {
+                        DeleteFileLocation = false
+                    });
+                }
+
+                numComplete++;
+                double percent = numComplete;
+                percent /= numItems;
+                progress.Report(percent * 100);
             }
 
             progress.Report(100);

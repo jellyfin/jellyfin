@@ -1096,6 +1096,14 @@ namespace MediaBrowser.Server.Implementations.Persistence
                 }
             }
 
+            if (query.HasDeadParentId.HasValue)
+            {
+                if (query.HasDeadParentId.Value)
+                {
+                    whereClauses.Add("ParentId NOT NULL AND ParentId NOT IN (select guid from TypedBaseItems)");
+                }
+            }
+
             if (addPaging)
             {
                 if (query.StartIndex.HasValue && query.StartIndex.Value > 0)

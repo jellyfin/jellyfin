@@ -11,8 +11,6 @@ using MediaBrowser.Server.Implementations.Photos;
 using MoreLinq;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -154,7 +152,6 @@ namespace MediaBrowser.Server.Implementations.UserViews
                 CollectionType.BoxSets,
                 CollectionType.Playlists,
                 CollectionType.Channels,
-                CollectionType.LiveTv,
                 CollectionType.Books,
                 CollectionType.Photos,
                 CollectionType.HomeVideos,
@@ -170,7 +167,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
             var view = (UserView)item;
             if (imageType == ImageType.Primary && IsUsingCollectionStrip(view))
             {
-                if (itemsWithImages.Count == 0 && !string.Equals(view.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
+                if (itemsWithImages.Count == 0)
                 {
                     return false;
                 }
@@ -179,40 +176,6 @@ namespace MediaBrowser.Server.Implementations.UserViews
             }
 
             return await base.CreateImage(item, itemsWithImages, outputPath, imageType, imageIndex).ConfigureAwait(false);
-        }
-
-        protected override IEnumerable<String> GetStripCollageImagePaths(IHasImages primaryItem, IEnumerable<BaseItem> items)
-        {
-            var userView = primaryItem as UserView;
-
-            if (userView != null && string.Equals(userView.ViewType, CollectionType.LiveTv, StringComparison.OrdinalIgnoreCase))
-            {
-                var list = new List<string>();
-                for (int i = 1; i <= 8; i++)
-                {
-                    list.Add(ExtractLiveTvResource(i.ToString(CultureInfo.InvariantCulture), ApplicationPaths));
-                }
-                return list;
-            }
-
-            return base.GetStripCollageImagePaths(primaryItem, items);
-        }
-
-        private string ExtractLiveTvResource(string name, IApplicationPaths paths)
-        {
-            var namespacePath = GetType().Namespace + ".livetv." + name + ".jpg";
-            var tempPath = Path.Combine(paths.TempDirectory, Guid.NewGuid().ToString("N") + ".jpg");
-            Directory.CreateDirectory(Path.GetDirectoryName(tempPath));
-
-            using (var stream = GetType().Assembly.GetManifestResourceStream(namespacePath))
-            {
-                using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.Read))
-                {
-                    stream.CopyTo(fileStream);
-                }
-            }
-
-            return tempPath;
         }
     }
 }

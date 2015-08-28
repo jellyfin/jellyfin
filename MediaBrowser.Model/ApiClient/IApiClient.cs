@@ -320,32 +320,11 @@ namespace MediaBrowser.Model.ApiClient
         Task<ItemsResult> GetUserViews(string userId, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Gets the instant mix from song async.
+        /// Gets the instant mix from item asynchronous.
         /// </summary>
         /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetInstantMixFromSongAsync(SimilarItemsQuery query);
-
-        /// <summary>
-        /// Gets the instant mix from album async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetInstantMixFromAlbumAsync(SimilarItemsQuery query);
-
-        /// <summary>
-        /// Gets the instant mix from artist async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetInstantMixFromArtistAsync(SimilarItemsQuery query);
-
-        /// <summary>
-        /// Gets the instant mix from music genre async.
-        /// </summary>
-        /// <param name="query">The query.</param>
-        /// <returns>Task{ItemsResult}.</returns>
-        Task<ItemsResult> GetInstantMixFromMusicGenreAsync(SimilarItemsQuery query);
+        /// <returns>Task&lt;ItemsResult&gt;.</returns>
+        Task<ItemsResult> GetInstantMixFromItemAsync(SimilarItemsQuery query);
 
         /// <summary>
         /// Gets the similar movies async.
