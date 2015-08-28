@@ -1519,5 +1519,9 @@
     "OptionSendRecordingsToAutoOrganize": "Schakel Automatisch Organiseren in voor nieuwe opnamen",
     "OptionSendRecordingsToAutoOrganizeHelp": "Nieuwe opnamen zullen door de Automatisch Organiseren functionaliteit in uw media bilbiliotheek ge\u00efmporteerd worden.",
     "HeaderDefaultPadding": "Standaard 'Padding'",
-    "HeaderSubtitles": "Ondertitels"
+    "HeaderSubtitles": "Ondertitels",
+    "HeaderVideos": "Videos",
+    "OptionEnableVideoFrameAnalysis": "Enable frame by frame video analysis",
+    "OptionEnableVideoFrameAnalysisHelp": "Extract detailed information about videos that can be used to make transcoding as efficient as possible. This will cause library scans to take longer.",
+    "chkEnableVideoFrameAnalysis": "Limit frame by frame analysis to videos less than:"
 }

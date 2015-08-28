@@ -1519,5 +1519,9 @@
     "OptionSendRecordingsToAutoOrganize": "Activer l'auto-organisation pour les nouveaux enregistrements",
     "OptionSendRecordingsToAutoOrganizeHelp": "Les nouveaux enregistrements seront envoy\u00e9s au service d'auto-organisation et import\u00e9s dans votre biblioth\u00e8que de m\u00e9dias.",
     "HeaderDefaultPadding": "Temporisation par d\u00e9faut",
-    "HeaderSubtitles": "Sous-titres"
+    "HeaderSubtitles": "Sous-titres",
+    "HeaderVideos": "Videos",
+    "OptionEnableVideoFrameAnalysis": "Enable frame by frame video analysis",
+    "OptionEnableVideoFrameAnalysisHelp": "Extract detailed information about videos that can be used to make transcoding as efficient as possible. This will cause library scans to take longer.",
+    "chkEnableVideoFrameAnalysis": "Limit frame by frame analysis to videos less than:"
 }

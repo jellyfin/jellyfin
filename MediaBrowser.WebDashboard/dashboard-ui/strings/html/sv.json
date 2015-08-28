@@ -1519,5 +1519,9 @@
     "OptionSendRecordingsToAutoOrganize": "Enable Auto-Organize for new recordings",
     "OptionSendRecordingsToAutoOrganizeHelp": "New recordings will be sent to the Auto-Organize feature and imported into your media library.",
     "HeaderDefaultPadding": "Default Padding",
-    "HeaderSubtitles": "Undertexter"
+    "HeaderSubtitles": "Undertexter",
+    "HeaderVideos": "Videos",
+    "OptionEnableVideoFrameAnalysis": "Enable frame by frame video analysis",
+    "OptionEnableVideoFrameAnalysisHelp": "Extract detailed information about videos that can be used to make transcoding as efficient as possible. This will cause library scans to take longer.",
+    "chkEnableVideoFrameAnalysis": "Limit frame by frame analysis to videos less than:"
 }
