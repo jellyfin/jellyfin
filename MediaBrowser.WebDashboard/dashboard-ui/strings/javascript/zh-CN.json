@@ -857,5 +857,8 @@
     "OptionVideoBitrate": "\u89c6\u9891\u6bd4\u7279\u7387",
     "OptionMetascore": "\u8bc4\u5206",
     "OptionRevenue": "\u6536\u5165",
-    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options."
+    "OptionBudget": "\u9884\u7b97",
+    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
+    "ButtonGuide": "Guide",
+    "ButtonRecordedTv": "Recorded TV"
 }

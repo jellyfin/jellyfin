@@ -840,7 +840,7 @@
     "OptionBackdropSlideshow": "Diaporama d'illustrations",
     "HeaderTopPlugins": "Meilleurs plugins",
     "ButtonRecord": "Enregistrer",
-    "ButtonOther": "Other",
+    "ButtonOther": "Autre",
     "HeaderSortBy": "Trier par:",
     "HeaderSortOrder": "Ordre de tri :",
     "OptionAscending": "Ascendant",
@@ -857,5 +857,8 @@
     "OptionVideoBitrate": "D\u00e9bit vid\u00e9o",
     "OptionMetascore": "Metascore",
     "OptionRevenue": "Recettes",
-    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options."
+    "OptionBudget": "Budget",
+    "ForAdditionalLiveTvOptions": "Pour d'autres fournisseurs de TV Live, cliquez sur l'onglet Services Externes pour voir les options disponibles.",
+    "ButtonGuide": "Guide",
+    "ButtonRecordedTv": "Recorded TV"
 }

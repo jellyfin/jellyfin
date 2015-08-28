@@ -857,5 +857,8 @@
     "OptionVideoBitrate": "Video bitrate",
     "OptionMetascore": "Metascore",
     "OptionRevenue": "Inntjening",
-    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options."
+    "OptionBudget": "Budsjett",
+    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
+    "ButtonGuide": "Guide",
+    "ButtonRecordedTv": "Recorded TV"
 }

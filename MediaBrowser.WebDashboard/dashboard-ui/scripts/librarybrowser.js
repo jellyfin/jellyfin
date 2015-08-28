@@ -186,6 +186,7 @@
         },
 
         enableFullPaperTabs: function () {
+
             return AppInfo.isNativeApp;
         },
 
@@ -292,6 +293,45 @@
                 }
                 Events.trigger(pages, 'tabchange');
             }
+        },
+
+        showTab: function (url, index) {
+
+            if (!LibraryBrowser.enableFullPaperTabs()) {
+
+                if (index) {
+                    url = replaceQueryString(url, 'tab', index);
+                }
+                Dashboard.navigate(url);
+                return;
+            }
+
+            $(document).one('pageshowready', '.page', function () {
+
+                if (getWindowUrl().toLowerCase().indexOf(url.toLowerCase()) != -1) {
+
+                    var pages = this.querySelector('neon-animated-pages');
+
+                    if (pages) {
+
+                        var entryAnimation = pages.entryAnimation;
+                        var exitAnimation = pages.exitAnimation;
+                        pages.entryAnimation = null;
+                        pages.exitAnimation = null;
+
+                        var tabs = this.querySelector('paper-tabs');
+                        var noSlide = tabs.noSlide;
+                        tabs.noSlide = true;
+                        tabs.selected = index;
+
+                        pages.entryAnimation = entryAnimation;
+                        pages.exitAnimation = exitAnimation;
+                        tabs.noSlide = noSlide;
+                    }
+                }
+            });
+
+            Dashboard.navigate(url);
         },
 
         canShare: function (item, user) {
@@ -1503,6 +1543,8 @@
                 cssClass += " fullWidthCardOnMobile";
             }
 
+            var showTitle = options.showTitle == 'auto' ? true : options.showTitle;
+
             if (options.autoThumb && item.ImageTags && item.ImageTags.Primary && item.PrimaryImageAspectRatio && item.PrimaryImageAspectRatio >= 1.5) {
 
                 width = posterWidth;
@@ -1664,37 +1706,38 @@
 
             } else if (item.MediaType == "Audio" || item.Type == "MusicAlbum" || item.Type == "MusicArtist") {
 
-                if (item.Name && options.showTitle) {
+                if (item.Name && showTitle) {
                     icon = 'library-music';
                 }
                 cssClass += " defaultBackground";
 
             } else if (item.Type == "Recording" || item.Type == "Program" || item.Type == "TvChannel") {
 
-                if (item.Name && options.showTitle) {
+                if (item.Name && showTitle) {
                     icon = 'folder-open';
                 }
 
                 cssClass += " defaultBackground";
             } else if (item.MediaType == "Video" || item.Type == "Season" || item.Type == "Series") {
 
-                if (item.Name && options.showTitle) {
+                if (item.Name && showTitle) {
                     icon = 'videocam';
                 }
                 cssClass += " defaultBackground";
             } else if (item.Type == "Person") {
 
-                if (item.Name && options.showTitle) {
+                if (item.Name && showTitle) {
                     icon = 'person';
                 }
                 cssClass += " defaultBackground";
             } else {
-                if (item.Name && options.showTitle) {
+                if (item.Name && showTitle) {
                     icon = 'folder-open';
                 }
                 cssClass += " defaultBackground";
             }
 
+            icon = item.icon || icon;
             cssClass += ' ' + options.shape + 'Card';
 
             var mediaSourceCount = item.MediaSourceCount || 1;
@@ -1705,7 +1748,7 @@
                 cssClass += ' groupedCard';
             }
 
-            if (options.showTitle && !options.overlayText) {
+            if (showTitle && !options.overlayText) {
                 cssClass += ' bottomPaddedCard';
             }
 
@@ -1766,7 +1809,8 @@
             }
 
             var transition = options.transition === false || !AppInfo.enableSectionTransitions ? '' : ' data-transition="slide"';
-            html += '<a' + transition + ' class="' + anchorCssClass + '" href="' + href + '"' + defaultActionAttribute + '>';
+            var onclick = item.onclick ? ' onclick="' + item.onclick + '"' : '';
+            html += '<a' + onclick + transition + ' class="' + anchorCssClass + '" href="' + href + '"' + defaultActionAttribute + '>';
             html += '<div class="' + imageCssClass + '" style="' + style + '"' + dataSrc + '>';
             if (icon) {
                 html += '<iron-icon icon="' + icon + '"></iron-icon>';
@@ -1791,18 +1835,18 @@
                 html += '<div class="mediaSourceIndicator">' + mediaSourceCount + '</div>';
             }
             if (item.IsUnidentified) {
-                html += '<div class="unidentifiedIndicator"><i class="fa fa-exclamation"></i></div>';
+                html += '<div class="unidentifiedIndicator"><iron-icon icon="error"></iron-icon></div>';
             }
 
             var progressHtml = options.showProgress === false || item.IsFolder ? '' : LibraryBrowser.getItemProgressBarHtml((item.Type == 'Recording' ? item : item.UserData));
 
             var footerOverlayed = false;
 
-            if (options.overlayText || (forceName && !options.showTitle)) {
+            if (options.overlayText || (forceName && !showTitle)) {
 
                 var footerCssClass = progressHtml ? 'cardFooter fullCardFooter' : 'cardFooter';
 
-                html += LibraryBrowser.getCardFooterText(item, options, imgUrl, forceName, footerCssClass, progressHtml);
+                html += LibraryBrowser.getCardFooterText(item, options, showTitle, imgUrl, forceName, footerCssClass, progressHtml);
                 footerOverlayed = true;
             }
             else if (progressHtml) {
@@ -1830,7 +1874,7 @@
             html += '</div>';
 
             if (!options.overlayText && !footerOverlayed) {
-                html += LibraryBrowser.getCardFooterText(item, options, imgUrl, forceName, 'cardFooter outerCardFooter', progressHtml);
+                html += LibraryBrowser.getCardFooterText(item, options, showTitle, imgUrl, forceName, 'cardFooter outerCardFooter', progressHtml);
             }
 
             // cardBox
@@ -1842,7 +1886,7 @@
             return html;
         },
 
-        getCardFooterText: function (item, options, imgUrl, forceName, footerClass, progressHtml) {
+        getCardFooterText: function (item, options, showTitle, imgUrl, forceName, footerClass, progressHtml) {
 
             var html = '';
 
@@ -1854,9 +1898,9 @@
                 html += "</div>";
             }
 
-            var name = LibraryBrowser.getPosterViewDisplayName(item, options.displayAsSpecial);
+            var name = options.showTitle == 'auto' && !item.IsFolder && item.MediaType == 'Photo' ? '' : LibraryBrowser.getPosterViewDisplayName(item, options.displayAsSpecial);
 
-            if (!imgUrl && !options.showTitle) {
+            if (!imgUrl && !showTitle) {
                 html += "<div class='cardDefaultText'>";
                 html += htmlEncode(name);
                 html += "</div>";
@@ -1871,7 +1915,7 @@
                 lines.push(item.EpisodeTitle ? item.Name : (item.SeriesName || item.Album || item.AlbumArtist || item.GameSystem || ""));
             }
 
-            if (options.showTitle || forceName) {
+            if (showTitle || forceName) {
 
                 lines.push(htmlEncode(name));
             }

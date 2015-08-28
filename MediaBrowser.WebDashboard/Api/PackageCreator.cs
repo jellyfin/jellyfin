@@ -423,7 +423,6 @@ namespace MediaBrowser.WebDashboard.Api
 
             var files = new[]
                             {
-                                "thirdparty/fontawesome/css/font-awesome.min.css" + versionString,
                                 "css/all.css" + versionString
                             };
 

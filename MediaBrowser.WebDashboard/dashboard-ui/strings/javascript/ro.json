@@ -857,5 +857,8 @@
     "OptionVideoBitrate": "Bitrate Video",
     "OptionMetascore": "Metascore",
     "OptionRevenue": "Incasari",
-    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options."
+    "OptionBudget": "Buget",
+    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
+    "ButtonGuide": "Guide",
+    "ButtonRecordedTv": "Recorded TV"
 }

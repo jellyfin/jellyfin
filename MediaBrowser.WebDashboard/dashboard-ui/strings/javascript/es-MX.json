@@ -840,7 +840,7 @@
     "OptionBackdropSlideshow": "Presentaci\u00f3n de Im\u00e1genes de Fondo",
     "HeaderTopPlugins": "Complementos Destacados",
     "ButtonRecord": "Grabar",
-    "ButtonOther": "Other",
+    "ButtonOther": "Otros",
     "HeaderSortBy": "Ordenar Por:",
     "HeaderSortOrder": "Ordenado Por:",
     "OptionAscending": "Ascendente",
@@ -851,11 +851,14 @@
     "OptionDateAdded": "Fecha de Adici\u00f3n",
     "OptionPlayCount": "Contador",
     "ButtonSort": "Ordenar",
-    "ButtonMenu": "Menu",
+    "ButtonMenu": "Men\u00fa",
     "ButtonFilter": "Filtro",
     "OptionCriticRating": "Calificaci\u00f3n de la Cr\u00edtica",
     "OptionVideoBitrate": "Tasa de bits de Video",
     "OptionMetascore": "Metascore",
     "OptionRevenue": "Recaudaci\u00f3n",
-    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options."
+    "OptionBudget": "Presupuesto",
+    "ForAdditionalLiveTvOptions": "Para proveedores adicionales de TV en Vivo, de clic en la pesta\u00f1a de Servicios Externos para ver las opciones disponibles.",
+    "ButtonGuide": "Guide",
+    "ButtonRecordedTv": "Recorded TV"
 }

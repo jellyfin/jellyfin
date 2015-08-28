@@ -62,6 +62,10 @@
     background-color: #333;
 }
 
+.homeTopViews .defaultBackground .cardImage {
+    background-color: #181818;
+}
+
 .homeTopViews .cardImage {
     border-radius: 6px;
 }
@@ -233,6 +237,11 @@
     padding: 5px 5px 2px;
     font-weight: 400;
     line-height: 1.4;
+}
+
+.homeTopViews .cardText {
+    font-size: 15px;
+    padding-top: 10px;
 }
 
 .cardButtonContainer {

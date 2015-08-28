@@ -479,6 +479,8 @@
             return;
         }
 
+        require(['fontawesome']);
+
         var html = '';
 
         var getCommandsPromise = getSampleCommands();

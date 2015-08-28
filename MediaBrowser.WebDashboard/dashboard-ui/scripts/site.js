@@ -2013,6 +2013,10 @@ var AppInfo = {};
             Dashboard.importCss('css/livetv.css');
             return {};
         });
+        define("fontawesome", [], function () {
+            Dashboard.importCss('thirdparty/fontawesome/css/font-awesome.min.css');
+            return {};
+        });
         define("detailtablecss", [], function () {
             Dashboard.importCss('css/detailtable.css');
             return {};
@@ -2083,7 +2087,7 @@ var AppInfo = {};
             capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
             createConnectionManager(capabilities).done(function () { onConnectionManagerCreated(deferred); });
 
-            //$(document.body).append('<div style="background:#3F51B5;position:fixed;z-index:999999;top:0;right:0;left:0;bottom:0;padding:50px;"><iron-icon icon="live-tv" style="width:640px;height:640px;color:#fff;"></iron-icon></div>');
+            //$(document.body).append('<div style="background:#009688;position:fixed;z-index:999999;top:0;right:0;left:0;bottom:0;padding:50px;"><iron-icon icon="queue-music" style="width:640px;height:640px;color:#fff;"></iron-icon></div>');
         });
     }
 

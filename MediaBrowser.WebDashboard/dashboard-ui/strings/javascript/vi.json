@@ -857,5 +857,8 @@
     "OptionVideoBitrate": "T\u1ed1c \u0111\u1ed9 Bit c\u1ee7a Video",
     "OptionMetascore": "Metascore",
     "OptionRevenue": "Doanh thu",
-    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options."
+    "OptionBudget": "Ng\u00e2n s\u00e1ch",
+    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
+    "ButtonGuide": "Guide",
+    "ButtonRecordedTv": "Recorded TV"
 }

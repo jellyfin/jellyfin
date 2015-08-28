@@ -21,7 +21,7 @@
         html += '<div class="viewMenuSearch hide">';
         html += '<form class="viewMenuSearchForm">';
         html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
-        html += '<div class="searchInputIcon fa fa-search"></div>';
+        html += '<iron-icon class="searchInputIcon" icon="search"></iron-icon>';
         html += '<paper-icon-button icon="close" class="btnCloseSearch"></paper-icon-button>';
         html += '</form>';
         html += '</div>';
@@ -348,7 +348,7 @@
         html += '<a class="sidebarLink lnkMediaFolder lnkMySync" data-itemid="mysync" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mysync.html"><iron-icon icon="refresh" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSync') + '</span></a>';
 
         if (Dashboard.isConnectMode()) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="return LibraryMenu.onLinkClicked(event, this);" href="selectserver.html"><span class="fa fa-globe sidebarLinkIcon"></span><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="return LibraryMenu.onLinkClicked(event, this);" href="selectserver.html"><iron-icon icon="wifi" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
         }
 
         if (showUserAtTop()) {
@@ -369,6 +369,51 @@
         LibraryMenu.setTitle(text);
     }
 
+    function getUserViews(apiClient, userId) {
+
+        var deferred = $.Deferred();
+
+        apiClient.getUserViews({}, userId).done(function (result) {
+
+            var items = result.Items;
+
+            var list = [];
+
+            for (var i = 0, length = items.length; i < length; i++) {
+
+                var view = items[i];
+
+                list.push(view);
+
+                if (view.CollectionType == 'livetv') {
+
+                    view.ImageTags = {};
+                    view.icon = 'live-tv';
+
+                    var guideView = $.extend({}, view);
+                    guideView.Name = Globalize.translate('ButtonGuide');
+                    guideView.ImageTags = {};
+                    guideView.icon = 'dvr';
+                    guideView.url = 'livetv.html?tab=1';
+                    guideView.onclick = "LibraryBrowser.showTab('livetv.html', 1);";
+                    list.push(guideView);
+
+                    var recordedTvView = $.extend({}, view);
+                    recordedTvView.Name = Globalize.translate('ButtonRecordedTv');
+                    recordedTvView.ImageTags = {};
+                    recordedTvView.icon = 'video-library';
+                    recordedTvView.url = 'livetv.html?tab=3';
+                    recordedTvView.onclick = "LibraryBrowser.showTab('livetv.html', 3);";
+                    list.push(recordedTvView);
+                }
+            }
+
+            deferred.resolveWith(null, [list]);
+        });
+
+        return deferred.promise();
+    }
+
     function updateLibraryMenu(user) {
 
         if (!user) {
@@ -383,9 +428,9 @@
 
         var apiClient = window.ApiClient;
 
-        apiClient.getUserViews({}, userId).done(function (result) {
+        getUserViews(apiClient, userId).done(function (result) {
 
-            var items = result.Items;
+            var items = result;
 
             var html = '';
             html += '<div class="sidebarHeader">';
@@ -445,7 +490,10 @@
                     color = "#293AAE";
                 }
 
-                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder sidebarLink" onclick="return LibraryMenu.onLinkClicked(event, this);" href="' + getItemHref(i, i.CollectionType) + '"><iron-icon icon="' + icon + '" class="sidebarLinkIcon" style="color:' + color + '"></iron-icon><span class="sectionName">' + i.Name + '</span></a>';
+                icon = i.icon || icon;
+
+                var onclick = i.onclick ? ' function(){' + i.onclick + '}' : 'null';
+                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder sidebarLink" onclick="return LibraryMenu.onLinkClicked(event, this, ' + onclick + ');" href="' + getItemHref(i, i.CollectionType) + '"><iron-icon icon="' + icon + '" class="sidebarLinkIcon" style="color:' + color + '"></iron-icon><span class="sectionName">' + i.Name + '</span></a>';
 
             }).join('');
 
@@ -497,7 +545,7 @@
     window.LibraryMenu = {
         getTopParentId: getTopParentId,
 
-        onLinkClicked: function (event, link) {
+        onLinkClicked: function (event, link, action) {
 
             if (event.which != 1) {
                 return true;
@@ -510,7 +558,11 @@
                     closeMainDrawer();
 
                     setTimeout(function () {
-                        Dashboard.navigate(link.href);
+                        if (action) {
+                            action();
+                        } else {
+                            Dashboard.navigate(link.href);
+                        }
                     }, 400);
                 }, 50);
             }

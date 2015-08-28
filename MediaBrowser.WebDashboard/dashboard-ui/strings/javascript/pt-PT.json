@@ -857,5 +857,8 @@
     "OptionVideoBitrate": "Qualidade do v\u00eddeo",
     "OptionMetascore": "Metascore",
     "OptionRevenue": "Receita",
-    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options."
+    "OptionBudget": "Or\u00e7amento",
+    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
+    "ButtonGuide": "Guide",
+    "ButtonRecordedTv": "Recorded TV"
 }

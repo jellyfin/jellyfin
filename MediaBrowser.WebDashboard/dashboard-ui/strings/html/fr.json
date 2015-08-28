@@ -1512,12 +1512,12 @@
     "HeaderSetupLiveTV": "Configuration de la TV Live",
     "LabelTunerType": "Type de tuner :",
     "HelpMoreTunersCanBeAdded": "D'autres tuners peuvent \u00eatre ajout\u00e9s plus tard dans la section TV Live",
-    "AdditionalLiveTvProvidersCanBeInstalledLater": "Additional Live TV providers can be added later within the Live TV section.",
+    "AdditionalLiveTvProvidersCanBeInstalledLater": "D'autres fournisseurs de TV Live peuvent \u00eatre ajout\u00e9s plus tard dans la section TV Live.",
     "MessageActiveSupporterMembershipRequiredSeriesRecordings": "Une adh\u00e9sion active au programme de soutien Emby est requise pour cr\u00e9er des enregistrements automatiques de s\u00e9ries.",
     "HeaderSetupTVGuide": "Configuration du Guide TV",
     "LabelDataProvider": "Fournisseur de donn\u00e9es :",
     "OptionSendRecordingsToAutoOrganize": "Activer l'auto-organisation pour les nouveaux enregistrements",
-    "OptionSendRecordingsToAutoOrganizeHelp": "Les nouveaux enregistrements seront envoy\u00e9s au service d'auto-organisation et import\u00e9s dans votre biblioth\u00e8que de m\u00e9dias TV.",
-    "HeaderDefaultPadding": "Default Padding",
+    "OptionSendRecordingsToAutoOrganizeHelp": "Les nouveaux enregistrements seront envoy\u00e9s au service d'auto-organisation et import\u00e9s dans votre biblioth\u00e8que de m\u00e9dias.",
+    "HeaderDefaultPadding": "Temporisation par d\u00e9faut",
     "HeaderSubtitles": "Sous-titres"
 }

@@ -840,7 +840,7 @@
     "OptionBackdropSlideshow": "Achtergrondafbeelding voorstelling",
     "HeaderTopPlugins": "Top Plugins",
     "ButtonRecord": "Opnemen",
-    "ButtonOther": "Other",
+    "ButtonOther": "Andere",
     "HeaderSortBy": "Sorteren op:",
     "HeaderSortOrder": "Sorteer volgorde:",
     "OptionAscending": "Oplopend",
@@ -857,5 +857,8 @@
     "OptionVideoBitrate": "Video Bitrate",
     "OptionMetascore": "Metascore",
     "OptionRevenue": "Inkomsten",
-    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options."
+    "OptionBudget": "Budget",
+    "ForAdditionalLiveTvOptions": "Klik op de Externe Services tab om de opties voor andere Live TV aanbieders te zien.",
+    "ButtonGuide": "Guide",
+    "ButtonRecordedTv": "Recorded TV"
 }
