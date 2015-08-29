@@ -3051,8 +3051,6 @@
                 elem.classList.add('portraitDetailImageContainer');
                 elem.classList.remove('squareDetailImageContainer');
             }
-
-            ImageLoader.lazyChildren(elem);
         },
 
         refreshDetailImageUserData: function (elem, item) {
