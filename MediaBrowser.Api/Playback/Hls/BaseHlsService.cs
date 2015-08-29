@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using MediaBrowser.Common.IO;
+﻿using MediaBrowser.Common.IO;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Devices;
 using MediaBrowser.Controller.Dlna;
@@ -317,6 +316,7 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             if (videoStream.KeyFrames == null || videoStream.KeyFrames.Count == 0)
             {
+                Logger.Debug("Cannot stream copy video due to missing keyframe info");
                 return false;
             }
 
@@ -328,6 +328,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 // Don't allow really long segments because this could result in long download times
                 if (length > 10000)
                 {
+                    Logger.Debug("Cannot stream copy video due to long segment length of {0}ms", length);
                     return false;
                 }
                 previousSegment = frame;

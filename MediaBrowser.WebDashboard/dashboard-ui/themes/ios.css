@@ -50,6 +50,10 @@ html, body, .ui-btn, .pageTitle {
     margin: 0 auto 6px;
 }
 
+.libraryViewNav paper-tabs iron-icon {
+    margin: 6px auto 6px;
+}
+
 .libraryViewNav #selectionBar {
     background-color: transparent !important;
 }
@@ -137,6 +141,13 @@ paper-tab {
         padding: 0;
     }
 
+.cardBox {
+    margin: 5px;
+}
+
+.cardImage {
+    border-radius: 10px;
+}
 
 .viewMenuSearch {
     background: #1c1c1c;

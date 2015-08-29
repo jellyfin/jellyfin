@@ -270,9 +270,9 @@
 
         }).checkboxradio('refresh');
 
-        $('.chk3D', viewPanel).checked(query.Is3D == true).checkboxradio('refresh');
-        $('.chkHD', viewPanel).checked(query.IsHD == true).checkboxradio('refresh');
-        $('.chkSD', viewPanel).checked(query.IsHD == false).checkboxradio('refresh');
+        $('.chk3DFilter', viewPanel).checked(query.Is3D == true).checkboxradio('refresh');
+        $('.chkHDFilter', viewPanel).checked(query.IsHD == true).checkboxradio('refresh');
+        $('.chkSDFilter', viewPanel).checked(query.IsHD == false).checkboxradio('refresh');
 
         $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
     }
@@ -335,7 +335,7 @@
             reloadItems(tabContent, viewPanel);
         });
 
-        $('.chk3D', viewPanel).on('change', function () {
+        $('.chk3DFilter', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
@@ -344,16 +344,15 @@
             reloadItems(tabContent, viewPanel);
         });
 
-        $('.chkHD', viewPanel).on('change', function () {
+        $('.chkHDFilter', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;
             query.IsHD = this.checked ? true : null;
-
             reloadItems(tabContent, viewPanel);
         });
 
-        $('.chkSD', viewPanel).on('change', function () {
+        $('.chkSDFilter', viewPanel).on('change', function () {
 
             var query = getQuery();
             query.StartIndex = 0;

@@ -376,7 +376,7 @@
                 throw new Error("null accessToken");
             }
 
-            var url = "https://connect.mediabrowser.tv/service/user?id=" + userId;
+            var url = "https://connect.emby.media/service/user?id=" + userId;
 
             return HttpClient.send({
                 type: "GET",
@@ -632,7 +632,7 @@
                 return deferred.promise();
             }
 
-            var url = "https://connect.mediabrowser.tv/service/servers?userId=" + credentials.ConnectUserId;
+            var url = "https://connect.emby.media/service/servers?userId=" + credentials.ConnectUserId;
 
             HttpClient.send({
                 type: "GET",
@@ -1085,7 +1085,7 @@
 
                 HttpClient.send({
                     type: "POST",
-                    url: "https://connect.mediabrowser.tv/service/user/authenticate",
+                    url: "https://connect.emby.media/service/user/authenticate",
                     data: {
                         nameOrEmail: username,
                         password: md5
@@ -1148,7 +1148,7 @@
 
                 HttpClient.send({
                     type: "POST",
-                    url: "https://connect.mediabrowser.tv/service/register",
+                    url: "https://connect.emby.media/service/register",
                     data: {
                         email: email,
                         userName: username,
@@ -1216,7 +1216,7 @@
                 throw new Error("null connectUserId");
             }
 
-            var url = "https://connect.mediabrowser.tv/service/servers?userId=" + self.connectUserId() + "&status=Waiting";
+            var url = "https://connect.emby.media/service/servers?userId=" + self.connectUserId() + "&status=Waiting";
 
             return HttpClient.send({
                 type: "GET",
@@ -1256,7 +1256,7 @@
                 return deferred.promise();
             }
 
-            var url = "https://connect.mediabrowser.tv/service/serverAuthorizations?serverId=" + serverId + "&userId=" + self.connectUserId();
+            var url = "https://connect.emby.media/service/serverAuthorizations?serverId=" + serverId + "&userId=" + self.connectUserId();
 
             HttpClient.send({
                 type: "DELETE",
@@ -1285,7 +1285,7 @@
                 throw new Error("null connectUserId");
             }
 
-            var url = "https://connect.mediabrowser.tv/service/serverAuthorizations?serverId=" + serverId + "&userId=" + self.connectUserId();
+            var url = "https://connect.emby.media/service/serverAuthorizations?serverId=" + serverId + "&userId=" + self.connectUserId();
 
             return HttpClient.send({
                 type: "DELETE",
@@ -1312,7 +1312,7 @@
                 throw new Error("null connectUserId");
             }
 
-            var url = "https://connect.mediabrowser.tv/service/ServerAuthorizations/accept?serverId=" + serverId + "&userId=" + self.connectUserId();
+            var url = "https://connect.emby.media/service/ServerAuthorizations/accept?serverId=" + serverId + "&userId=" + self.connectUserId();
 
             return HttpClient.send({
                 type: "GET",

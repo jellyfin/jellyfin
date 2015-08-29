@@ -371,7 +371,7 @@ namespace MediaBrowser.Server.Implementations.Connect
 
         private string GetConnectUrl(string handler)
         {
-            return "https://connect.mediabrowser.tv/service/" + handler;
+            return "https://connect.emby.media/service/" + handler;
         }
 
         public async Task<UserLinkResult> LinkUser(string userId, string connectUsername)

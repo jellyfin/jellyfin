@@ -7,7 +7,7 @@
     <div id="liveTvSuggestedPage" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="scripts/livetvsuggested,livetvcss,scripts/livetvcomponents">
 
         <div class="libraryViewNav libraryViewNavWithMinHeight">
-            <paper-tabs style="min-width:660px;margin:auto;">
+            <paper-tabs class="papertabs-800 scrollingPaperTabs">
                 <paper-tab><iron-icon icon="info"></iron-icon>${TabSuggestions}</paper-tab>
                 <paper-tab><iron-icon icon="grid-on"></iron-icon>${TabGuide}</paper-tab>
                 <paper-tab><iron-icon icon="live-tv"></iron-icon>${TabChannels}</paper-tab>
@@ -100,12 +100,12 @@
                 </neon-animatable>
                 <neon-animatable>
                     <div class="pageTabContent recordingsTabContent" data-index="3">
-                        <div id="activeRecordings" style="display: none;">
+                        <div id="activeRecordings" style="display: none;" class="homePageSection">
                             <h1 class="listHeader">${HeaderActiveRecordings}</h1>
                             <div class="recordingItems itemsContainer"></div>
                             <br />
                         </div>
-                        <div id="latestRecordings" style="display: none;">
+                        <div id="latestRecordings" style="display: none;" class="homePageSection">
                             <div>
                                 <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestRecordings}</h1>
                                 <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
@@ -113,7 +113,7 @@
                             <div class="recordingItems itemsContainer"></div>
                             <br />
                         </div>
-                        <div id="recordingGroups" style="display: none;">
+                        <div id="recordingGroups" style="display: none;" class="homePageSection">
                             <h1 class="listHeader"><a href="livetvrecordinglist.html">${HeaderAllRecordings}<img src="css/images/rightarrow.png" class="headerArrowImage" /></a></h1>
                             <div id="recordingGroupItems"></div>
                         </div>

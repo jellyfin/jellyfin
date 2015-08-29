@@ -868,5 +868,7 @@
     "OptionMetascore": "Metascore",
     "OptionRevenue": "Revenue",
     "OptionBudget": "Budget",
-    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options."
+    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
+    "ButtonGuide": "Guide",
+    "ButtonRecordedTv": "Recorded TV"
 }

@@ -62,6 +62,14 @@
     background-color: #333;
 }
 
+.homeTopViews .defaultBackground .cardImage {
+    background-color: #181818;
+}
+
+.homeTopViews .cardImage {
+    border-radius: 5px;
+}
+
 .cardOverlayPlayButton {
     position: absolute;
     bottom: 0;
@@ -231,6 +239,11 @@
     line-height: 1.4;
 }
 
+.homeTopViews .cardText {
+    font-size: 15px;
+    padding-top: 10px;
+}
+
 .cardButtonContainer {
     text-align: right;
     float: right;
@@ -309,10 +322,10 @@
         position: absolute;
         left: 0;
         right: 0;
-        width: 64px;
-        height: 64px;
+        width: 50%;
+        height:  50%;
         margin: auto;
-        top: 25%;
+        top: 22%;
     }
 
 .bannerCard {
@@ -649,17 +662,24 @@
     }
 }
 
-@media all and (min-width: 1100px) {
+@media all and (min-width: 800px) {
 
     .homePageSmallBackdropCard {
         width: 20%;
     }
 }
 
+@media all and (min-width: 1100px) {
+
+    .homePageSmallBackdropCard {
+        width: 16.66666666666667%;
+    }
+}
+
 @media all and (min-width: 1440px) {
 
     .homePageSmallBackdropCard {
-        width: 14.285714285714285714285714285714%;
+        width: 12.5%;
     }
 }
 

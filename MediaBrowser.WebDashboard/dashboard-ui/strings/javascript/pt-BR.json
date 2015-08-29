@@ -857,5 +857,8 @@
     "OptionVideoBitrate": "Taxa do V\u00eddeo",
     "OptionMetascore": "Metascore",
     "OptionRevenue": "Faturamento",
-    "ForAdditionalLiveTvOptions": "Para provedores de TV ao Vivo adicionais, clique na guia Servi\u00e7os Externos para ver as op\u00e7\u00f5es dispon\u00edveis."
+    "OptionBudget": "Or\u00e7amento",
+    "ForAdditionalLiveTvOptions": "Para provedores de TV ao Vivo adicionais, clique na guia Servi\u00e7os Externos para ver as op\u00e7\u00f5es dispon\u00edveis.",
+    "ButtonGuide": "Guide",
+    "ButtonRecordedTv": "Recorded TV"
 }

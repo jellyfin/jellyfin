@@ -1197,53 +1197,9 @@
             }, false);
         };
 
-        self.getInstantMixFromSong = function (itemId, options) {
+        self.getInstantMixFromItem = function (itemId, options) {
 
-            var url = self.getUrl("Songs/" + itemId + "/InstantMix", options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getInstantMixFromAlbum = function (itemId, options) {
-
-            var url = self.getUrl("Albums/" + itemId + "/InstantMix", options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getInstantMixFromArtist = function (options) {
-
-            var url = self.getUrl("Artists/InstantMix", options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getInstantMixFromMusicGenre = function (options) {
-
-            var url = self.getUrl("MusicGenres/InstantMix", options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getInstantMixFromPlaylist = function (itemId, options) {
-
-            var url = self.getUrl("Playlists/" + itemId + "/InstantMix", options);
+            var url = self.getUrl("Items/" + itemId + "/InstantMix", options);
 
             return self.ajax({
                 type: "GET",

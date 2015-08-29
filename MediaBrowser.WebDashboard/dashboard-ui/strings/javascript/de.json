@@ -840,7 +840,7 @@
     "OptionBackdropSlideshow": "Hintergrund Diashow",
     "HeaderTopPlugins": "Top Plugins",
     "ButtonRecord": "Aufnehmen",
-    "ButtonOther": "Other",
+    "ButtonOther": "Andere",
     "HeaderSortBy": "Sortiert nach",
     "HeaderSortOrder": "Sortierreihenfolge",
     "OptionAscending": "Aufsteigend",
@@ -857,5 +857,8 @@
     "OptionVideoBitrate": "Video Bitrate",
     "OptionMetascore": "Metascore",
     "OptionRevenue": "Einnahme",
-    "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options."
+    "OptionBudget": "Budget",
+    "ForAdditionalLiveTvOptions": "F\u00fcr weitere TV Quellen klicken Sie bitte auf den \"Externe Dienste\"-Reiter um weitere Optionen anzuzeigen.",
+    "ButtonGuide": "Guide",
+    "ButtonRecordedTv": "Recorded TV"
 }

@@ -1887,7 +1887,7 @@ var AppInfo = {};
             var apiClient = window.ApiClient;
 
             // Close the connection gracefully when possible
-            if (apiClient && apiClient.isWebSocketOpen()) {
+            if (apiCblient && apiClient.isWebSocketOpen()) {
 
                 var localActivePlayers = MediaController.getPlayers().filter(function (p) {
 
@@ -2013,6 +2013,10 @@ var AppInfo = {};
             Dashboard.importCss('css/livetv.css');
             return {};
         });
+        define("fontawesome", [], function () {
+            Dashboard.importCss('thirdparty/fontawesome/css/font-awesome.min.css');
+            return {};
+        });
         define("detailtablecss", [], function () {
             Dashboard.importCss('css/detailtable.css');
             return {};
@@ -2082,6 +2086,8 @@ var AppInfo = {};
 
             capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
             createConnectionManager(capabilities).done(function () { onConnectionManagerCreated(deferred); });
+
+            //$(document.body).append('<div style="background:#3F51B5;position:fixed;z-index:999999;top:1px;left:1px;width:800px;height:450px;display:flex;align-items:center;justify-content:center;"><iron-icon icon="live-tv" style="width:320px;height:320px;color:#fff;"></iron-icon></div>');
         });
     }
 

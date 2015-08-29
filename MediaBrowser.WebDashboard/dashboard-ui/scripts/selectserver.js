@@ -67,8 +67,8 @@
         } else {
             html += '<div class="cardImage" style="text-align:center;">';
 
-            var icon = server.Id == 'new' ? 'plus-circle' : 'server';
-            html += '<i class="fa fa-' + icon + '" style="color:#fff;vertical-align:middle;font-size:100px;margin-top:40px;"></i>';
+            var icon = server.Id == 'new' ? 'add' : 'wifi';
+            html += '<iron-icon icon="' + icon + '" style="color:#fff;vertical-align:middle;margin-top:30%;height:64px;width:64px;"></iron-icon>';
         }
 
         html += "</div>";
@@ -298,7 +298,7 @@
         html += '<a class="cardContent" href="' + href + '">';
 
         html += '<div class="cardImage" style="text-align:center;">';
-        html += '<i class="fa fa-globe" style="color:#fff;vertical-align:middle;font-size:100px;margin-top:40px;"></i>';
+        html += '<iron-icon icon="wifi" style="color:#fff;vertical-align:middle;margin-top:30%;height:64px;width:64px;"></iron-icon>';
         html += "</div>";
 
         // cardContent

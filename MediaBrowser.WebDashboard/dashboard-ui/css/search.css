@@ -125,8 +125,7 @@
 .searchInputIcon {
     position: absolute;
     left: 20px;
-    top: 15px;
-    font-size: 16px !important;
+    top: 12px;
     color: #ddd !important;
 }
 

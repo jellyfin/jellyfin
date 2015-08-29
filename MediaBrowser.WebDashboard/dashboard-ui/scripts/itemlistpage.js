@@ -92,7 +92,8 @@
             }
             else if (view == "Poster") {
 
-                posterOptions.showTitle = context != 'photos';
+                posterOptions.showTitle = context == 'photos' ? 'auto' : true;
+                posterOptions.overlayText = context == 'photos';
 
                 html = LibraryBrowser.getPosterViewHtml(posterOptions);
             }
@@ -180,7 +181,9 @@
         var info = LibraryBrowser.getListItemInfo(this);
 
         if (info.mediaType == 'Photo') {
-            Photos.startSlideshow(page, query, info.id);
+            require(['scripts/photos'], function () {
+                Photos.startSlideshow(page, query, info.id);
+            });
             return false;
         }
     }

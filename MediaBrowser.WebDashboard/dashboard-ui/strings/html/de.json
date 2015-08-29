@@ -1512,12 +1512,16 @@
     "HeaderSetupLiveTV": "Live TV einrichten",
     "LabelTunerType": "Tuner Typ:",
     "HelpMoreTunersCanBeAdded": "Weitere Tuner k\u00f6nnen sp\u00e4ter \u00fcber die Live TV Einstellungen hinzugef\u00fcgt werden.",
-    "AdditionalLiveTvProvidersCanBeInstalledLater": "Additional Live TV providers can be added later within the Live TV section.",
+    "AdditionalLiveTvProvidersCanBeInstalledLater": "Weitere TV Quellen k\u00f6nnen sp\u00e4ter in den Live TV Einstellungen hinzugef\u00fcgt werden.",
     "MessageActiveSupporterMembershipRequiredSeriesRecordings": "Eine aktive Emby Unterst\u00fctzer-Mitgliedschaft wird f\u00fcr das automatisierte Erstellen von Aufnahmen ben\u00f6tigt.",
     "HeaderSetupTVGuide": "TV Guide einrichten",
     "LabelDataProvider": "Datenquelle:",
     "OptionSendRecordingsToAutoOrganize": "Aktiviere Auto-Organisation f\u00fcr neue Aufnahmen",
     "OptionSendRecordingsToAutoOrganizeHelp": "Neue Aufnahmen werden mittels automatischer Organisation in Ihrer Bibliothek importiert.",
     "HeaderDefaultPadding": "Standard Vor\/ Nachlauf",
-    "HeaderSubtitles": "Untertitel"
+    "HeaderSubtitles": "Untertitel",
+    "HeaderVideos": "Videos",
+    "OptionEnableVideoFrameAnalysis": "Enable frame by frame video analysis",
+    "OptionEnableVideoFrameAnalysisHelp": "Extract detailed information about videos that can be used to make transcoding as efficient as possible. This will cause library scans to take longer.",
+    "chkEnableVideoFrameAnalysis": "Limit frame by frame analysis to videos less than:"
 }
