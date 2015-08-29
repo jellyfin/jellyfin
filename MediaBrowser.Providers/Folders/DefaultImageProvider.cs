@@ -127,7 +127,7 @@ namespace MediaBrowser.Providers.Folders
 
             if (view != null)
             {
-                return !view.UserId.HasValue;
+                return true;
             }
 
             return item is ICollectionFolder;
