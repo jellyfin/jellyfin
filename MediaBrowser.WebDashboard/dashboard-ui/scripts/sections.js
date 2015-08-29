@@ -474,11 +474,9 @@
 
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderLatestTvRecordings') + '</h1>';
-                html += '<a href="livetv.html?tab=3" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
+                html += '<a href="livetv.html?tab=3" onclick="LibraryManager.showTab(\'livetv.html\',3);" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
                 html += '</div>';
             }
-
-            var screenWidth = $(window).width();
 
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
