@@ -41,7 +41,7 @@ namespace MediaBrowser.Server.Implementations.Connect
             _timer = new Timer(TimerCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromHours(3));
         }
 
-        private readonly string[] _ipLookups = { "http://bot.whatismyipaddress.com", "https://connect.mediabrowser.tv/service/ip" };
+        private readonly string[] _ipLookups = { "http://bot.whatismyipaddress.com", "https://connect.emby.media/service/ip" };
 
         private async void TimerCallback(object state)
         {
