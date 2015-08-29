@@ -811,14 +811,22 @@
 
         var title = page.getAttribute('data-title') || page.getAttribute('data-contextname');
 
-        if (title) {
-            LibraryMenu.setTitle(title);
+        if (!title) {
+            var titleKey = getParameterByName('titlekey');
+
+            if (titleKey) {
+                title = Globalize.translate(titleKey);
+            }
         }
 
-        var titleKey = getParameterByName('titlekey');
+        if (!title) {
+            if (page.classList.contains('type-interior')) {
+                title = Globalize.translate('ButtonHome');
+            }
+        }
 
-        if (titleKey) {
-            LibraryMenu.setTitle(Globalize.translate(titleKey));
+        if (title) {
+            LibraryMenu.setTitle(title);
         }
 
         var mainDrawerButton = document.querySelector('.mainDrawerButton');

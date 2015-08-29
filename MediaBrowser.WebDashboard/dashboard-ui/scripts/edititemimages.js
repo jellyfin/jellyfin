@@ -52,7 +52,6 @@
     }
 
     function renderRemoteImages(page, item, imagesResult, imageType, startIndex, limit) {
-
         $('.availableImagesPaging', page).html(getPagingHtml(startIndex, limit, imagesResult.TotalRecordCount)).trigger('create');
 
         var html = '';

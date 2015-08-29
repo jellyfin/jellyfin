@@ -662,17 +662,24 @@
     }
 }
 
-@media all and (min-width: 1100px) {
+@media all and (min-width: 800px) {
 
     .homePageSmallBackdropCard {
         width: 20%;
     }
 }
 
+@media all and (min-width: 1100px) {
+
+    .homePageSmallBackdropCard {
+        width: 16.66666666666667%;
+    }
+}
+
 @media all and (min-width: 1440px) {
 
     .homePageSmallBackdropCard {
-        width: 14.285714285714285714285714285714%;
+        width: 12.5%;
     }
 }
 

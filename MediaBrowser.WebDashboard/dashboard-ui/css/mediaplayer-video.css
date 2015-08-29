@@ -208,9 +208,9 @@
 
 @media all and (max-width: 1400px), all and (max-height: 900px) {
 
-    /*#mediaPlayer .nowPlayingInfo {
+    .mediaButton.infoButton {
         display: none !important;
-    }*/
+    }
 }
 
 @media all and (max-width: 555px) {

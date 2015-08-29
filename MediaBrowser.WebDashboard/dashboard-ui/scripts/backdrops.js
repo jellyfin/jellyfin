@@ -110,7 +110,7 @@
     function setDefault(page) {
 
         getElement().style.backgroundImage = "url(css/images/splash.jpg)";
-
+        page = $(page)[0];
         page.classList.add('backdropPage');
         page.classList.add('staticBackdropPage');
     }

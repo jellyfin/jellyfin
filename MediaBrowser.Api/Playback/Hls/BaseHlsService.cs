@@ -326,7 +326,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 var length = frame - previousSegment;
 
                 // Don't allow really long segments because this could result in long download times
-                if (length > 12000)
+                if (length > 10000)
                 {
                     Logger.Debug("Cannot stream copy video due to long segment length of {0}ms", length);
                     return false;
