@@ -928,17 +928,7 @@ $.ui.plugin = {
 			}
 		},
 
-		loading: function() {
-			// If this is the first call to this function, instantiate a loader widget
-			var loader = this.loading._widget || $( $.mobile.loader.prototype.defaultHtml ).loader(),
-
-				// Call the appropriate method on the loader
-				returnValue = loader.loader.apply( loader, arguments );
-
-			// Make sure the loader is retained for future calls to this function.
-			this.loading._widget = loader;
-
-			return returnValue;
+		loading: function () {
 		}
 	});
 
@@ -3009,8 +2999,9 @@ $.widget.extend = function( target ) {
 	return target;
 };
 
-$.widget.bridge = function( name, object ) {
-	var fullName = object.prototype.widgetFullName || name;
+$.widget.bridge = function (name, object) {
+
+    var fullName = object.prototype.widgetFullName || name;
 	$.fn[ name ] = function( options ) {
 		var isMethodCall = typeof options === "string",
 			args = slice.call( arguments, 1 ),
@@ -3467,44 +3458,42 @@ $.widget( "mobile.page", {
 		});
 
 		this.element.enhanceWithin();
-		// Dialog widget is deprecated in 1.4 remove this in 1.5
-		if ( $.mobile.getAttribute( this.element[0], "role" ) === "dialog" && $.mobile.dialog ) {
-			this.element.dialog();
-		}
 	},
 
 	_enhance: function () {
 		var attrPrefix = "data-" + $.mobile.ns,
 			self = this;
 
+		var element = this.element[0];
+
 		if ( this.options.role ) {
-			this.element.attr( "data-" + $.mobile.ns + "role", this.options.role );
+		    element.setAttribute("data-" + $.mobile.ns + "role", this.options.role);
 		}
 
-		this.element
-			.attr( "tabindex", "0" )
-			.addClass( "ui-page ui-page-theme-" + this.options.theme );
+	    element.setAttribute("tabindex", "0");
+	    element.classList.add("ui-page");
+	    element.classList.add("ui-page-theme-" + this.options.theme);
 
-		// Manipulation of content os Deprecated as of 1.4 remove in 1.5
-		this.element.find( "[" + attrPrefix + "role='content']" ).each( function() {
-			var $this = $( this ),
-				theme = this.getAttribute( attrPrefix + "theme" ) || undefined;
-				self.options.contentTheme = theme || self.options.contentTheme || ( self.options.dialog && self.options.theme ) || ( self.element.jqmData("role") === "dialog" &&  self.options.theme );
-				$this.addClass( "ui-content" );
-				if ( self.options.contentTheme ) {
-					$this.addClass( "ui-body-" + ( self.options.contentTheme ) );
-				}
-				// Add ARIA role
-				$this.attr( "role", "main" ).addClass( "ui-content" );
-		});
+	    var content = element.querySelector("div[data-role='content']");
+
+	    if (content) {
+	        var theme = content.getAttribute(attrPrefix + "theme") || undefined;
+	        self.options.contentTheme = theme || self.options.contentTheme || (self.options.dialog && self.options.theme) || (self.element.jqmData("role") === "dialog" && self.options.theme);
+	        content.classList.add("ui-content");
+	        if (self.options.contentTheme) {
+	            content.classList.add("ui-body-" + (self.options.contentTheme));
+	        }
+	        // Add ARIA role
+	        content.setAttribute("role", "main");
+	        content.classList.add("ui-content");
+	    }
 	},
 
 	bindRemove: function( callback ) {
 		var page = this.element;
 
 		// when dom caching is not enabled or the page is embedded bind to remove the page on hide
-		if ( !page.data( "mobile-page" ).options.domCache &&
-			page.is( ":jqmData(external-page='true')" ) ) {
+		if ( !page.data( "mobile-page" ).options.domCache ) {
 
 			// TODO use _on - that is, sort out why it doesn't work in this case
 			page.bind( "pagehide.remove", callback || function( e, data ) {
@@ -3539,13 +3528,13 @@ $.widget( "mobile.page", {
 		this.setContainerBackground();
 	},
 	// Deprecated in 1.4 remove in 1.5
-	removeContainerBackground: function() {
-		this.element.closest( ":mobile-pagecontainer" ).pagecontainer({ "theme": "none" });
+	removeContainerBackground: function () {
+	    $(this.element[0].parentNode).pagecontainer({ "theme": "none" });
 	},
 	// Deprecated in 1.4 remove in 1.5
 	// set the page container background to the page theme
 	setContainerBackground: function( theme ) {
-		this.element.parent().pagecontainer( { "theme": theme || this.options.theme } );
+	    $(this.element[0].parentNode).pagecontainer({ "theme": theme || this.options.theme });
 	},
 	// Deprecated in 1.4 remove in 1.5
 	keepNativeSelector: function() {
@@ -5164,15 +5153,16 @@ $.fn.grid = function( options ) {
 			return content.page({ role: role });
 		},
 
-		_include: function( page, settings ) {
-			// append to page and enhance
-			page.appendTo( this.element );
+		_include: function (page, jPage, settings) {
+
+		    // append to page and enhance
+		    this.element[0].appendChild(page);
 
 			// use the page widget to enhance
-			this._enhance( page, settings.role );
+		    this._enhance(jPage, settings.role);
 
 			// remove page on hide
-			page.page( "bindRemove" );
+		    jPage.page("bindRemove");
 		},
 
 		_find: function( absUrl ) {
@@ -5219,25 +5209,9 @@ $.fn.grid = function( options ) {
 		},
 
 		_showLoading: function( delay, theme, msg, textonly ) {
-			// This configurable timeout allows cached pages a brief
-			// delay to load without showing a message
-			if ( this._loadMsg ) {
-				return;
-			}
-
-			this._loadMsg = setTimeout($.proxy(function() {
-				this._getLoader().loader( "show", theme, msg, textonly );
-				this._loadMsg = 0;
-			}, this), delay );
 		},
 
 		_hideLoading: function() {
-			// Stop message show timer
-			clearTimeout( this._loadMsg );
-			this._loadMsg = 0;
-
-			// Hide loading message
-			this._getLoader().loader( "hide" );
 		},
 
 		_showError: function() {
@@ -5254,36 +5228,41 @@ $.fn.grid = function( options ) {
 
 		_parse: function( html, fileUrl ) {
 			// TODO consider allowing customization of this method. It's very JQM specific
-			var page, all = $( "<div></div>" );
+			var page, all = document.createElement('div');
 
 			//workaround to allow scripts to execute when included in page divs
-			all.get( 0 ).innerHTML = html;
+			all.innerHTML = html;
 
-			page = all.find( ":jqmData(role='page'), :jqmData(role='dialog')" ).first();
+			page = all.querySelector("*[data-role='page'],*[data-role='dialog']");
 
 			//if page elem couldn't be found, create one and insert the body element's contents
-			if ( !page.length ) {
+			if ( !page ) {
 				page = $( "<div data-" + this._getNs() + "role='page'>" +
 					( html.split( /<\/?body[^>]*>/gmi )[1] || "" ) +
-					"</div>" );
+					"</div>" )[0];
 			}
 
 			// TODO tagging a page with external to make sure that embedded pages aren't
 			// removed by the various page handling code is bad. Having page handling code
 			// in many places is bad. Solutions post 1.0
-			page.attr( "data-" + this._getNs() + "url", this._createDataUrl( fileUrl ) )
-				.attr( "data-" + this._getNs() + "external-page", true );
+		    page.setAttribute("data-" + this._getNs() + "url", this._createDataUrl(fileUrl));
+			page.setAttribute("data-" + this._getNs() + "external-page", true);
 
 			return page;
 		},
 
 		_setLoadedTitle: function( page, html ) {
 			//page title regexp
-			var newPageTitle = html.match( /<title[^>]*>([^<]*)/ ) && RegExp.$1;
+			if ( !page.jqmData("title") ) {
 
-			if ( newPageTitle && !page.jqmData("title") ) {
-				newPageTitle = $( "<div>" + newPageTitle + "</div>" ).text();
-				page.jqmData( "title", newPageTitle );
+			    var newPageTitle = html.match(/<title[^>]*>([^<]*)/) && RegExp.$1;
+
+			    if (newPageTitle) {
+			        var temp = document.createElement('div');
+			        temp.innerHTML = newPageTitle;
+			        newPageTitle = temp.innerText || $(temp).text();
+			        page.jqmData("title", newPageTitle);
+			    }
 			}
 		},
 
@@ -5327,36 +5306,14 @@ $.fn.grid = function( options ) {
                 if ($.mobile.filterHtml) {
                     html = $.mobile.filterHtml(html);
                 }
-				//pre-parse html to check for a data-url,
-				//use it as the new fileUrl, base path, etc
-				var content,
-
-					// TODO handle dialogs again
-					pageElemRegex = new RegExp( "(<[^>]+\\bdata-" + this._getNs() + "role=[\"']?page[\"']?[^>]*>)" ),
-
-					dataUrlRegex = new RegExp( "\\bdata-" + this._getNs() + "url=[\"']?([^\"'>]*)[\"']?" );
-
-				// data-url must be provided for the base tag so resource requests
-				// can be directed to the correct url. loading into a temprorary
-				// element makes these requests immediately
-				if ( pageElemRegex.test( html ) &&
-					RegExp.$1 &&
-					dataUrlRegex.test( RegExp.$1 ) &&
-					RegExp.$1 ) {
-					fileUrl = $.mobile.path.getFilePath( $("<div>" + RegExp.$1 + "</div>").text() );
-
-					// We specify that, if a data-url attribute is given on the page div, its value
-					// must be given non-URL-encoded. However, in this part of the code, fileUrl is
-					// assumed to be URL-encoded, so we URL-encode the retrieved value here
-					fileUrl = this.window[ 0 ].encodeURIComponent( fileUrl );
-				}
 
 				//dont update the base tag if we are prefetching
 				if ( settings.prefetch === undefined ) {
 					this._getBase().set( fileUrl );
 				}
 
-				content = this._parse( html, fileUrl );
+			    var contentElem = this._parse(html, fileUrl);
+			    var content = $(contentElem);
 
 				this._setLoadedTitle( content, html );
 
@@ -5371,25 +5328,12 @@ $.fn.grid = function( options ) {
 
 				triggerData.toPage = content;
 
-				// If the default behavior is prevented, stop here!
-				// Note that it is the responsibility of the listener/handler
-				// that called preventDefault(), to resolve/reject the
-				// deferred object within the triggerData.
-				if ( this._triggerWithDeprecated( "load", triggerData ).event.isDefaultPrevented() ) {
-					return;
-				}
-
 				// rewrite src and href attrs to use a base url if the base tag won't work
 				if ( this._isRewritableBaseTag() && content ) {
 					this._getBase().rewrite( fileUrl, content );
 				}
 
-				this._include( content, settings );
-
-				// Remove loading message.
-				if ( settings.showLoadMsg ) {
-					this._hideLoading();
-				}
+				this._include(contentElem, content, settings);
 
 				deferred.resolve( absUrl, settings, content );
 			}, this);
@@ -6470,142 +6414,6 @@ $.fn.grid = function( options ) {
 
 	$.when( domreadyDeferred, $.mobile.navreadyDeferred ).done( function() { $.mobile._registerInternalEvents(); } );
 })( jQuery );
-
-
-(function( $ ) {
-	// TODO move loader class down into the widget settings
-	var loaderClass = "ui-loader", $html = $( "html" );
-
-	$.widget( "mobile.loader", {
-		// NOTE if the global config settings are defined they will override these
-		//      options
-		options: {
-			// the theme for the loading message
-			theme: "a",
-
-			// whether the text in the loading message is shown
-			textVisible: false,
-
-			// custom html for the inner content of the loading message
-			html: "",
-
-			// the text to be displayed when the popup is shown
-			text: "loading"
-		},
-
-		defaultHtml: "<div class='" + loaderClass + "'>" +
-			"<span class='ui-icon-loading'></span>" +
-			"<h1></h1>" +
-			"</div>",
-
-		// For non-fixed supportin browsers. Position at y center (if scrollTop supported), above the activeBtn (if defined), or just 100px from top
-		fakeFixLoader: function() {
-			var activeBtn = $( "." + $.mobile.activeBtnClass ).first();
-
-			this.element
-				.css({
-					top: $.support.scrollTop && this.window.scrollTop() + this.window.height() / 2 ||
-						activeBtn.length && activeBtn.offset().top || 100
-				});
-		},
-
-		// check position of loader to see if it appears to be "fixed" to center
-		// if not, use abs positioning
-		checkLoaderPosition: function() {
-			var offset = this.element.offset(),
-				scrollTop = this.window.scrollTop(),
-				screenHeight = $.mobile.getScreenHeight();
-
-			if ( offset.top < scrollTop || ( offset.top - scrollTop ) > screenHeight ) {
-				this.element.addClass( "ui-loader-fakefix" );
-				this.fakeFixLoader();
-				this.window
-					.unbind( "scroll", this.checkLoaderPosition )
-					.bind( "scroll", $.proxy( this.fakeFixLoader, this ) );
-			}
-		},
-
-		resetHtml: function() {
-			this.element.html( $( this.defaultHtml ).html() );
-		},
-
-		// Turn on/off page loading message. Theme doubles as an object argument
-		// with the following shape: { theme: '', text: '', html: '', textVisible: '' }
-		// NOTE that the $.mobile.loading* settings and params past the first are deprecated
-		// TODO sweet jesus we need to break some of this out
-		show: function( theme, msgText, textonly ) {
-			var textVisible, message, loadSettings;
-
-			this.resetHtml();
-
-			// use the prototype options so that people can set them globally at
-			// mobile init. Consistency, it's what's for dinner
-			if ( $.type( theme ) === "object" ) {
-				loadSettings = $.extend( {}, this.options, theme );
-
-				theme = loadSettings.theme;
-			} else {
-				loadSettings = this.options;
-
-				// here we prefer the theme value passed as a string argument, then
-				// we prefer the global option because we can't use undefined default
-				// prototype options, then the prototype option
-				theme = theme || loadSettings.theme;
-			}
-
-			// set the message text, prefer the param, then the settings object
-			// then loading message
-			message = msgText || ( loadSettings.text === false ? "" : loadSettings.text );
-
-			// prepare the dom
-			$html.addClass( "ui-loading" );
-
-			textVisible = loadSettings.textVisible;
-
-			// add the proper css given the options (theme, text, etc)
-			// Force text visibility if the second argument was supplied, or
-			// if the text was explicitly set in the object args
-			this.element.attr("class", loaderClass +
-				" ui-corner-all ui-body-" + theme +
-				" ui-loader-" + ( textVisible || msgText || theme.text ? "verbose" : "default" ) +
-				( loadSettings.textonly || textonly ? " ui-loader-textonly" : "" ) );
-
-			// TODO verify that jquery.fn.html is ok to use in both cases here
-			//      this might be overly defensive in preventing unknowing xss
-			// if the html attribute is defined on the loading settings, use that
-			// otherwise use the fallbacks from above
-			if ( loadSettings.html ) {
-				this.element.html( loadSettings.html );
-			} else {
-				this.element.find( "h1" ).text( message );
-			}
-
-			// If the pagecontainer widget has been defined we may use the :mobile-pagecontainer
-			// and attach to the element on which the pagecontainer widget has been defined. If not,
-			// we attach to the body.
-			this.element.appendTo( $.mobile.pagecontainer ?
-				$( ":mobile-pagecontainer" ) : $( "body" ) );
-
-			// check that the loader is visible
-			this.checkLoaderPosition();
-
-			// on scroll check the loader position
-			this.window.bind( "scroll", $.proxy( this.checkLoaderPosition, this ) );
-		},
-
-		hide: function() {
-			$html.removeClass( "ui-loading" );
-
-			if ( this.options.text ) {
-				this.element.removeClass( "ui-loader-fakefix" );
-			}
-
-			this.window.unbind( "scroll", this.fakeFixLoader );
-			this.window.unbind( "scroll", this.checkLoaderPosition );
-		}
-	});
-
-})(jQuery, this);
 
 
 (function( $, window, undefined ) {

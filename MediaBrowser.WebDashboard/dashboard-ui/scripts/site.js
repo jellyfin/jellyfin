@@ -48,16 +48,17 @@ var Dashboard = {
         $.mobile.panel.prototype.options.classes.panel = "largePanel ui-panel";
 
         $.event.special.swipe.verticalDistanceThreshold = 40;
-        $.mobile.loader.prototype.options.disabled = true;
-
-
         $.mobile.page.prototype.options.domCache = true;
 
+
+
+
         $.mobile.loadingMessage = false;
-        $.mobile.loader.prototype.options.html = "";
-        $.mobile.loader.prototype.options.textVisible = false;
-        $.mobile.loader.prototype.options.textOnly = true;
-        $.mobile.loader.prototype.options.text = "";
+        //$.mobile.loader.prototype.options.disabled = true;
+        //$.mobile.loader.prototype.options.html = "";
+        //$.mobile.loader.prototype.options.textVisible = false;
+        //$.mobile.loader.prototype.options.textOnly = true;
+        //$.mobile.loader.prototype.options.text = "";
 
         $.mobile.hideUrlBar = false;
         $.mobile.autoInitializePage = false;
