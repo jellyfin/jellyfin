@@ -75,14 +75,14 @@
     }
 
 .nowPlayingInfo {
-    text-align: left;
-    padding: 1.5em 1em 2em 3em;
+    text-align: center;
+    padding: 1.5em 1em 2em 1em;
 }
 
 #videoPlayer .nowPlayingImage img {
     height: auto !important;
-    max-width: 100px;
-    max-height: 200px;
+    max-width: 180px;
+    max-height: 220px;
 }
 
 #videoPlayer .nowPlayingTabs {
@@ -94,7 +94,7 @@
     vertical-align: top;
     color: #eee;
     display: inline-block;
-    width: 80%;
+    width: 70%;
     font-weight: normal;
     font-size: 14px;
 }
