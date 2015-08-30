@@ -850,6 +850,7 @@
     "OptionDatePlayed": "Dato for afspilning",
     "OptionDateAdded": "Dato for tilf\u00f8jelse",
     "OptionPlayCount": "Gange afspillet",
+    "ButtonDisconnect": "Disconnect",
     "ButtonSort": "Sort\u00e9r",
     "ButtonMenu": "Menu",
     "ButtonFilter": "Filter",
@@ -860,5 +861,9 @@
     "OptionBudget": "Budget",
     "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
     "ButtonGuide": "Guide",
-    "ButtonRecordedTv": "Recorded TV"
+    "ButtonRecordedTv": "Recorded TV",
+    "HeaderDisconnectFromPlayer": "Disconnect from Player",
+    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
+    "ButtonYes": "Yes",
+    "ButtonNo": "No"
 }

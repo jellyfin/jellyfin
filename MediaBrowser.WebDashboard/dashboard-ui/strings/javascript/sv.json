@@ -850,6 +850,7 @@
     "OptionDatePlayed": "Senast visad",
     "OptionDateAdded": "Inlagd den",
     "OptionPlayCount": "Antal visningar",
+    "ButtonDisconnect": "Disconnect",
     "ButtonSort": "Sortera",
     "ButtonMenu": "Menu",
     "ButtonFilter": "Filtrera",
@@ -860,5 +861,9 @@
     "OptionBudget": "Budget",
     "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
     "ButtonGuide": "Guide",
-    "ButtonRecordedTv": "Recorded TV"
+    "ButtonRecordedTv": "Recorded TV",
+    "HeaderDisconnectFromPlayer": "Disconnect from Player",
+    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
+    "ButtonYes": "Yes",
+    "ButtonNo": "No"
 }

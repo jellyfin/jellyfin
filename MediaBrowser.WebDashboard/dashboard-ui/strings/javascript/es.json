@@ -415,7 +415,7 @@
     "ButtonScenes": "Escenas",
     "ButtonQuality": "Quality",
     "HeaderNotifications": "Notifications",
-    "HeaderSelectPlayer": "Select Player:",
+    "HeaderSelectPlayer": "Select Player",
     "ButtonSelect": "Seleccionar",
     "ButtonNew": "Nuevo",
     "MessageInternetExplorerWebm": "For best results with Internet Explorer please install the WebM playback plugin.",
@@ -850,6 +850,7 @@
     "OptionDatePlayed": "Fecha de reproducci\u00f3n",
     "OptionDateAdded": "A\u00f1adido el",
     "OptionPlayCount": "N\u00famero de reproducc.",
+    "ButtonDisconnect": "Disconnect",
     "ButtonSort": "Ordenar",
     "ButtonMenu": "Menu",
     "ButtonFilter": "Filtro",
@@ -860,5 +861,9 @@
     "OptionBudget": "Presupuesto",
     "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
     "ButtonGuide": "Guide",
-    "ButtonRecordedTv": "Recorded TV"
+    "ButtonRecordedTv": "Recorded TV",
+    "HeaderDisconnectFromPlayer": "Disconnect from Player",
+    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
+    "ButtonYes": "Yes",
+    "ButtonNo": "No"
 }

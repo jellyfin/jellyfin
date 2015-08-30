@@ -850,6 +850,7 @@
     "OptionDatePlayed": "Visto il",
     "OptionDateAdded": "Aggiunto il",
     "OptionPlayCount": "Visto N\u00b0",
+    "ButtonDisconnect": "Disconnect",
     "ButtonSort": "Ordina",
     "ButtonMenu": "Menu",
     "ButtonFilter": "Filtro",
@@ -860,5 +861,9 @@
     "OptionBudget": "Budget",
     "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
     "ButtonGuide": "Guide",
-    "ButtonRecordedTv": "Recorded TV"
+    "ButtonRecordedTv": "Recorded TV",
+    "HeaderDisconnectFromPlayer": "Disconnect from Player",
+    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
+    "ButtonYes": "Yes",
+    "ButtonNo": "No"
 }

@@ -415,7 +415,7 @@
     "ButtonScenes": "Scenes",
     "ButtonQuality": "Quality",
     "HeaderNotifications": "Notifications",
-    "HeaderSelectPlayer": "Select Player:",
+    "HeaderSelectPlayer": "Select Player",
     "ButtonSelect": "Select",
     "ButtonNew": "New",
     "MessageInternetExplorerWebm": "For best results with Internet Explorer please install the WebM playback plugin.",
@@ -850,6 +850,7 @@
     "OptionDatePlayed": "Data odtworzenia",
     "OptionDateAdded": "Data dodania",
     "OptionPlayCount": "Ilo\u015b\u0107 odtworze\u0144",
+    "ButtonDisconnect": "Disconnect",
     "ButtonSort": "Sortuj",
     "ButtonMenu": "Menu",
     "ButtonFilter": "Filtr",
@@ -860,5 +861,9 @@
     "OptionBudget": "Bud\u017cet",
     "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
     "ButtonGuide": "Guide",
-    "ButtonRecordedTv": "Recorded TV"
+    "ButtonRecordedTv": "Recorded TV",
+    "HeaderDisconnectFromPlayer": "Disconnect from Player",
+    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
+    "ButtonYes": "Yes",
+    "ButtonNo": "No"
 }

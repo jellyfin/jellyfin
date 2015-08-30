@@ -850,6 +850,7 @@
     "OptionDatePlayed": "Date lu",
     "OptionDateAdded": "Date d'ajout",
     "OptionPlayCount": "Nombre de lectures",
+    "ButtonDisconnect": "Disconnect",
     "ButtonSort": "Tri",
     "ButtonMenu": "Menu",
     "ButtonFilter": "Filtre",
@@ -860,5 +861,9 @@
     "OptionBudget": "Budget",
     "ForAdditionalLiveTvOptions": "Pour d'autres fournisseurs de TV Live, cliquez sur l'onglet Services Externes pour voir les options disponibles.",
     "ButtonGuide": "Guide",
-    "ButtonRecordedTv": "TV enregistr\u00e9e"
+    "ButtonRecordedTv": "TV enregistr\u00e9e",
+    "HeaderDisconnectFromPlayer": "Disconnect from Player",
+    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
+    "ButtonYes": "Yes",
+    "ButtonNo": "No"
 }

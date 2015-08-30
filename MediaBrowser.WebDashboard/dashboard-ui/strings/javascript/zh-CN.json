@@ -850,6 +850,7 @@
     "OptionDatePlayed": "\u64ad\u653e\u65e5\u671f",
     "OptionDateAdded": "\u52a0\u5165\u65e5\u671f",
     "OptionPlayCount": "\u64ad\u653e\u6b21\u6570",
+    "ButtonDisconnect": "Disconnect",
     "ButtonSort": "\u6392\u5e8f",
     "ButtonMenu": "Menu",
     "ButtonFilter": "\u7b5b\u9009",
@@ -860,5 +861,9 @@
     "OptionBudget": "\u9884\u7b97",
     "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
     "ButtonGuide": "Guide",
-    "ButtonRecordedTv": "Recorded TV"
+    "ButtonRecordedTv": "Recorded TV",
+    "HeaderDisconnectFromPlayer": "Disconnect from Player",
+    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
+    "ButtonYes": "Yes",
+    "ButtonNo": "No"
 }

@@ -415,7 +415,7 @@
     "ButtonScenes": "Sahneler",
     "ButtonQuality": "Quality",
     "HeaderNotifications": "Notifications",
-    "HeaderSelectPlayer": "Select Player:",
+    "HeaderSelectPlayer": "Select Player",
     "ButtonSelect": "Se\u00e7im",
     "ButtonNew": "Yeni",
     "MessageInternetExplorerWebm": "For best results with Internet Explorer please install the WebM playback plugin.",
@@ -850,6 +850,7 @@
     "OptionDatePlayed": "Oynatma Tarihi",
     "OptionDateAdded": "Eklenme Tarihi",
     "OptionPlayCount": "Oynatma sayac\u0131",
+    "ButtonDisconnect": "Disconnect",
     "ButtonSort": "S\u0131rala",
     "ButtonMenu": "Menu",
     "ButtonFilter": "Filtre",
@@ -860,5 +861,9 @@
     "OptionBudget": "Budget",
     "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
     "ButtonGuide": "Guide",
-    "ButtonRecordedTv": "Recorded TV"
+    "ButtonRecordedTv": "Recorded TV",
+    "HeaderDisconnectFromPlayer": "Disconnect from Player",
+    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
+    "ButtonYes": "Yes",
+    "ButtonNo": "No"
 }

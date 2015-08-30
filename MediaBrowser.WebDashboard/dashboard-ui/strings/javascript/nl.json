@@ -850,6 +850,7 @@
     "OptionDatePlayed": "Datum afgespeeld",
     "OptionDateAdded": "Datum toegevoegd",
     "OptionPlayCount": "Afspeel telling",
+    "ButtonDisconnect": "Disconnect",
     "ButtonSort": "Sorteren",
     "ButtonMenu": "Menu",
     "ButtonFilter": "Filter",
@@ -860,5 +861,9 @@
     "OptionBudget": "Budget",
     "ForAdditionalLiveTvOptions": "Klik op de Externe Services tab om de opties voor andere Live TV aanbieders te zien.",
     "ButtonGuide": "Guide",
-    "ButtonRecordedTv": "Recorded TV"
+    "ButtonRecordedTv": "Recorded TV",
+    "HeaderDisconnectFromPlayer": "Disconnect from Player",
+    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
+    "ButtonYes": "Yes",
+    "ButtonNo": "No"
 }

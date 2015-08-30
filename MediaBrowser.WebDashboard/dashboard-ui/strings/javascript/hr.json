@@ -415,7 +415,7 @@
     "ButtonScenes": "Scene",
     "ButtonQuality": "Quality",
     "HeaderNotifications": "Notifications",
-    "HeaderSelectPlayer": "Select Player:",
+    "HeaderSelectPlayer": "Select Player",
     "ButtonSelect": "Odaberi",
     "ButtonNew": "Novo",
     "MessageInternetExplorerWebm": "For best results with Internet Explorer please install the WebM playback plugin.",
@@ -850,6 +850,7 @@
     "OptionDatePlayed": "Datumu izvo\u0111enja",
     "OptionDateAdded": "Datumu dodavanja",
     "OptionPlayCount": "Broju izvo\u0111enja",
+    "ButtonDisconnect": "Disconnect",
     "ButtonSort": "Slo\u017ei",
     "ButtonMenu": "Menu",
     "ButtonFilter": "Filter",
@@ -860,5 +861,9 @@
     "OptionBudget": "Bud\u017eet",
     "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
     "ButtonGuide": "Guide",
-    "ButtonRecordedTv": "Recorded TV"
+    "ButtonRecordedTv": "Recorded TV",
+    "HeaderDisconnectFromPlayer": "Disconnect from Player",
+    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
+    "ButtonYes": "Yes",
+    "ButtonNo": "No"
 }

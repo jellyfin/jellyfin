@@ -415,7 +415,7 @@
     "ButtonScenes": "Sc\u00e9ny",
     "ButtonQuality": "Quality",
     "HeaderNotifications": "Notifications",
-    "HeaderSelectPlayer": "Select Player:",
+    "HeaderSelectPlayer": "Select Player",
     "ButtonSelect": "Vybrat",
     "ButtonNew": "Nov\u00e9",
     "MessageInternetExplorerWebm": "For best results with Internet Explorer please install the WebM playback plugin.",
@@ -850,6 +850,7 @@
     "OptionDatePlayed": "Datum p\u0159ehr\u00e1n\u00ed",
     "OptionDateAdded": "Datum p\u0159id\u00e1n\u00ed",
     "OptionPlayCount": "Po\u010det p\u0159ehr\u00e1n\u00ed",
+    "ButtonDisconnect": "Disconnect",
     "ButtonSort": "Se\u0159adit",
     "ButtonMenu": "Menu",
     "ButtonFilter": "Filtr",
@@ -860,5 +861,9 @@
     "OptionBudget": "Rozpo\u010det",
     "ForAdditionalLiveTvOptions": "For additional Live TV providers, click on the External Services tab to see the available options.",
     "ButtonGuide": "Guide",
-    "ButtonRecordedTv": "Recorded TV"
+    "ButtonRecordedTv": "Recorded TV",
+    "HeaderDisconnectFromPlayer": "Disconnect from Player",
+    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
+    "ButtonYes": "Yes",
+    "ButtonNo": "No"
 }
