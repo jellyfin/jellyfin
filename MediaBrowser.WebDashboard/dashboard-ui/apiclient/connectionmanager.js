@@ -1232,11 +1232,14 @@
 
         self.deleteServer = function (serverId) {
 
-            var connectToken = self.connectToken();
-
             if (!serverId) {
                 throw new Error("null serverId");
             }
+
+            var server = credentialProvider.credentials().Servers.filter(function (s) {
+                return s.Id == serverId;
+            });
+            server = server.length ? server[0] : null;
 
             var deferred = DeferredBuilder.Deferred();
 
@@ -1244,19 +1247,27 @@
                 var credentials = credentialProvider.credentials();
 
                 credentials.Servers = credentials.Servers.filter(function (s) {
-                    return s.ConnectServerId != serverId;
+                    return s.Id != serverId;
                 });
 
                 credentialProvider.credentials(credentials);
                 deferred.resolve();
             }
 
-            if (!connectToken || !self.connectUserId()) {
+            if (!server.ConnectServerId) {
                 onDone();
                 return deferred.promise();
             }
 
-            var url = "https://connect.emby.media/service/serverAuthorizations?serverId=" + serverId + "&userId=" + self.connectUserId();
+            var connectToken = self.connectToken();
+            var connectUserId = self.connectUserId();
+
+            if (!connectToken || !connectUserId) {
+                onDone();
+                return deferred.promise();
+            }
+
+            var url = "https://connect.emby.media/service/serverAuthorizations?serverId=" + server.ConnectServerId + "&userId=" + connectUserId;
 
             HttpClient.send({
                 type: "DELETE",

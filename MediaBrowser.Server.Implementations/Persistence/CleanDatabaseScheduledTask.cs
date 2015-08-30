@@ -81,7 +81,18 @@ namespace MediaBrowser.Server.Implementations.Persistence
 
                 if (item != null)
                 {
-                    await _itemRepo.SaveItem(item, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        await _itemRepo.SaveItem(item, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorException("Error saving item", ex);
+                    }
                 }
 
                 numComplete++;

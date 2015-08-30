@@ -651,13 +651,11 @@ namespace MediaBrowser.WebDashboard.Api
         private async Task<Stream> GetAllCss(bool enableMinification)
         {
             var memoryStream = new MemoryStream();
-            var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
-
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.min.css", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.structure.min.css", newLineBytes).ConfigureAwait(false);
 
             var files = new[]
                                   {
+                                      "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css",
+                                      "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.structure.css",
                                       "css/site.css",
                                       "css/chromecast.css",
                                       "css/nowplayingbar.css",
@@ -668,7 +666,6 @@ namespace MediaBrowser.WebDashboard.Api
                                       "css/card.css",
                                       "css/notifications.css",
                                       "css/search.css",
-                                      "css/pluginupdates.css",
                                       "css/remotecontrol.css",
                                       "css/userimage.css",
                                       "css/nowplaying.css",

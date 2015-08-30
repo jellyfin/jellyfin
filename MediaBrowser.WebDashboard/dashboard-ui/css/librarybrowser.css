@@ -525,6 +525,11 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 .primaryDetailsContainer {
     float: left;
     padding: .75em 0 0 1.5em;
+    width: 68%;
+}
+
+.portraitDetailImageContainer + .primaryDetailsContainer {
+    width: 75%;
 }
 
 .parentName {
@@ -557,8 +562,20 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 @media all and (max-width: 1000px) {
 
+    .primaryDetailsContainer {
+        width: 64%;
+    }
+
+    .portraitDetailImageContainer + .primaryDetailsContainer {
+        width: 72%;
+    }
+
     .detailImageContainer img {
         max-width: 240px;
+    }
+
+    .portraitDetailImageContainer img {
+        max-width: 180px;
     }
 }
 

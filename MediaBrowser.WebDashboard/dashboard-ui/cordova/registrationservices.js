@@ -49,11 +49,19 @@
         return ConnectionManager.getRegistrationInfo(feature, ApiClient);
     }
 
+    var validatedFeatures = [];
+
     function validateFeature(id, deferred) {
+
+        if (validatedFeatures.indexOf(id) != -1) {
+            deferred.resolve();
+            return;
+        }
 
         var info = IapManager.getProductInfo(id) || {};
 
         if (info.owned) {
+            validatedFeatures.push(id);
             deferred.resolve();
             return;
         }
@@ -71,6 +79,7 @@
         getRegistrationInfo(prefix + 'appunlock', productInfo.enableSupporterUnlock).done(function (registrationInfo) {
 
             if (registrationInfo.IsRegistered) {
+                validatedFeatures.push(id);
                 deferred.resolve();
                 return;
             }

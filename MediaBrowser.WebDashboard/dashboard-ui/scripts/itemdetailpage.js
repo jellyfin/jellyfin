@@ -411,7 +411,7 @@
         var topOverview = page.querySelector('.topOverview');
         var bottomOverview = page.querySelector('.bottomOverview');
 
-        var seasonOnBottom = screen.availHeight < 1080 || screen.availWidth < 1920;
+        var seasonOnBottom = screen.availHeight < 600 || screen.availWidth < 600;
 
         if (item.Type == 'MusicAlbum' || item.Type == 'MusicArtist' || (item.Type == 'Season' && seasonOnBottom) || (item.Type == 'Series' && seasonOnBottom)) {
             LibraryBrowser.renderOverview([bottomOverview], item);
