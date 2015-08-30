@@ -495,8 +495,6 @@ namespace MediaBrowser.WebDashboard.Api
 
             await AppendResource(memoryStream, "bower_components/jquery/dist/jquery.min.js", newLineBytes).ConfigureAwait(false);
 
-            await AppendResource(memoryStream, "bower_components/requirejs/require.js", newLineBytes).ConfigureAwait(false);
-
             //await AppendLocalization(memoryStream, culture, excludePhrases).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
@@ -517,6 +515,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             var commonFiles = new[]
             {
+                "bower_components/requirejs/require.js",
                 "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js",
                 "thirdparty/browser.js",
                 "thirdparty/jquery.unveil-custom.js",
