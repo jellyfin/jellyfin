@@ -68,10 +68,13 @@
             renderDetails(page, item, context);
 
             var hasBackdrop = LibraryBrowser.renderDetailPageBackdrop(page, item);
-            //$('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
-            //Backdrops.setBackdrops(page, [item]);
+
             // For these types, make the backdrop a little smaller so that the items are more quickly accessible
-            if (item.Type == "Season" || item.Type == "MusicArtist" || item.Type == "MusicAlbum" || item.Type == "Series" || item.Type == "Playlist" || item.Type == "BoxSet") {
+            if (item.Type == 'MusicArtist' || item.Type == "MusicAlbum" || item.Type == "Playlist" || item.Type == "BoxSet" || item.Type == "Audio") {
+                $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
+                Backdrops.setBackdrops(page, [item]);
+            }
+            else if (item.Type == "Season" || item.Type == "Series") {
                 page.querySelector('#itemBackdrop').classList.add('smallBackdrop');
             } else {
                 page.querySelector('#itemBackdrop').classList.remove('smallBackdrop');
@@ -411,7 +414,7 @@
         var topOverview = page.querySelector('.topOverview');
         var bottomOverview = page.querySelector('.bottomOverview');
 
-        var seasonOnBottom = screen.availHeight < 600 || screen.availWidth < 600;
+        var seasonOnBottom = screen.availHeight < 800 || screen.availWidth < 600;
 
         if (item.Type == 'MusicAlbum' || item.Type == 'MusicArtist' || (item.Type == 'Season' && seasonOnBottom) || (item.Type == 'Series' && seasonOnBottom)) {
             LibraryBrowser.renderOverview([bottomOverview], item);
@@ -647,13 +650,19 @@
             return;
         }
 
+        var shape = item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? "detailPageSquare" : "detailPagePortrait";
         var screenWidth = $(window).width();
+        var screenHeight = $(window).height();
 
         var options = {
             userId: Dashboard.getCurrentUserId(),
-            limit: screenWidth > 800 ? 5 : 4,
+            limit: screenWidth > 800 && shape == "detailPagePortrait" ? 5 : 4,
             fields: "PrimaryImageAspectRatio,UserData,SyncInfo"
         };
+
+        if (screenWidth >= 800 && screenHeight >= 1000) {
+            options.limit *= 2;
+        }
 
         ApiClient.getSimilarItems(item.Id, options).done(function (result) {
 
@@ -669,7 +678,7 @@
 
             var html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
-                shape: item.Type == "MusicAlbum" || item.Type == "MusicArtist" ? "detailPageSquare" : "detailPagePortrait",
+                shape: shape,
                 showParentTitle: item.Type == "MusicAlbum",
                 centerText: true,
                 showTitle: item.Type == "MusicAlbum" || item.Type == "Game" || item.Type == "MusicArtist",

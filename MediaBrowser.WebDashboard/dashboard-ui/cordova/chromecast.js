@@ -282,7 +282,8 @@
                 "SetAudioStreamIndex",
                 "SetSubtitleStreamIndex",
                 "DisplayContent",
-                "SetRepeatMode"
+                "SetRepeatMode",
+                "EndSession"
             ];
 
             return target;
@@ -664,6 +665,17 @@
             }
         };
 
+        self.endSession = function () {
+
+            if (currentDevice) {
+                currentDevice.disconnect();
+            }
+
+            cleanupSession();
+            currentDevice = null;
+            currentDeviceId = null;
+        };
+
         $(MediaController).on('playerchange', function (e, newPlayer, newTarget) {
 
             if (newTarget.id != currentDeviceId) {
@@ -675,7 +687,6 @@
                     cleanupSession();
                     currentDevice = null;
                     currentDeviceId = null;
-                    self.lastPlayerData = {};
                 }
             }
         });

@@ -20,7 +20,6 @@ $.support.cors = true;
 $(document).one('click', WebNotifications.requestPermission);
 
 var Dashboard = {
-
     jQueryMobileInit: function () {
 
         // Page
@@ -96,7 +95,7 @@ var Dashboard = {
         var url = getWindowUrl().toLowerCase();
 
         return url.indexOf('mediabrowser.tv') != -1 ||
-			url.indexOf('emby.media') != -1;
+            url.indexOf('emby.media') != -1;
     },
 
     isRunningInCordova: function () {
@@ -244,8 +243,7 @@ var Dashboard = {
 
         if (document.createStyleSheet) {
             document.createStyleSheet(url);
-        }
-        else {
+        } else {
             var link = document.createElement('link');
             link.setAttribute('rel', 'stylesheet');
             link.setAttribute('type', 'text/css');
@@ -599,6 +597,75 @@ var Dashboard = {
         }
     },
 
+    dialog: function (options) {
+
+        var title = options.title;
+        var message = options.message;
+        var buttons = options.buttons;
+        var callback = options.callback;
+
+        // Cordova
+        if (navigator.notification && navigator.notification.confirm && message.indexOf('<') == -1) {
+
+            navigator.notification.confirm(message, function (index) {
+
+                callback(index);
+
+            }, title, buttons.join(','));
+
+        } else {
+            Dashboard.dialogInternal(message, title, buttons, callback);
+        }
+    },
+
+    dialogInternal: function (message, title, buttons, callback) {
+
+        var id = 'paperdlg' + new Date().getTime();
+
+        var html = '<paper-dialog id="' + id + '" role="alertdialog" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop>';
+        html += '<h2>' + title + '</h2>';
+        html += '<div>' + message + '</div>';
+        html += '<div class="buttons">';
+
+        var index = 0;
+        html += buttons.map(function (b) {
+
+            var dataIndex = ' data-index="' + index + '"';
+            index++;
+            return '<paper-button class="dialogButton"' + dataIndex + ' dialog-dismiss>' + b + '</paper-button>';
+
+        }).join('');
+
+        html += '</div>';
+        html += '</paper-dialog>';
+
+        $(document.body).append(html);
+
+        // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
+        // element onload never fires
+        setTimeout(function () {
+
+            var dlg = document.getElementById(id);
+
+            $('.dialogButton', dlg).on('click', function () {
+
+                if (callback) {
+                    callback(parseInt(this.getAttribute('data-index')));
+                }
+
+            });
+
+            // Has to be assigned a z-index after the call to .open() 
+            $(dlg).on('iron-overlay-closed', function (e) {
+
+                this.parentNode.removeChild(this);
+            });
+
+            dlg.open();
+
+        }, 300);
+    },
+
     confirm: function (message, title, callback) {
 
         // Cordova
@@ -619,46 +686,43 @@ var Dashboard = {
 
     confirmInternal: function (message, title, showCancel, callback) {
 
-        require(['paperbuttonstyle'], function () {
+        var id = 'paperdlg' + new Date().getTime();
 
-            var id = 'paperdlg' + new Date().getTime();
+        var html = '<paper-dialog id="' + id + '" role="alertdialog" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop>';
+        html += '<h2>' + title + '</h2>';
+        html += '<div>' + message + '</div>';
+        html += '<div class="buttons">';
 
-            var html = '<paper-dialog id="' + id + '" role="alertdialog" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop>';
-            html += '<h2>' + title + '</h2>';
-            html += '<div>' + message + '</div>';
-            html += '<div class="buttons">';
+        html += '<paper-button class="btnConfirm" dialog-confirm autofocus>' + Globalize.translate('ButtonOk') + '</paper-button>';
 
-            if (showCancel) {
-                html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonCancel') + '</paper-button>';
-            }
+        if (showCancel) {
+            html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonCancel') + '</paper-button>';
+        }
 
-            html += '<paper-button class="btnConfirm" dialog-confirm autofocus>' + Globalize.translate('ButtonOk') + '</paper-button>';
+        html += '</div>';
+        html += '</paper-dialog>';
 
-            html += '</div>';
-            html += '</paper-dialog>';
+        $(document.body).append(html);
 
-            $(document.body).append(html);
+        // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
+        // element onload never fires
+        setTimeout(function () {
 
-            // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
-            // element onload never fires
-            setTimeout(function () {
+            var dlg = document.getElementById(id);
 
-                var dlg = document.getElementById(id);
+            // Has to be assigned a z-index after the call to .open() 
+            $(dlg).on('iron-overlay-closed', function (e) {
+                var confirmed = this.closingReason.confirmed;
+                this.parentNode.removeChild(this);
 
-                // Has to be assigned a z-index after the call to .open() 
-                $(dlg).on('iron-overlay-closed', function (e) {
-                    var confirmed = this.closingReason.confirmed;
-                    this.parentNode.removeChild(this);
+                if (callback) {
+                    callback(confirmed);
+                }
+            });
 
-                    if (callback) {
-                        callback(confirmed);
-                    }
-                });
+            dlg.open();
 
-                dlg.open();
-
-            }, 300);
-        });
+        }, 300);
     },
 
     refreshSystemInfoFromServer: function () {

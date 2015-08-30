@@ -421,6 +421,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-top: 0 !important;
 }
 
+.backdropPage .noBackdrop {
+    background-color: transparent;
+}
+
 .itemBackdropContent {
     position: absolute;
     bottom: 0;

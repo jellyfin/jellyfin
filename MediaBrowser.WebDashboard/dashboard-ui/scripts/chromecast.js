@@ -705,7 +705,8 @@
                                     "SetAudioStreamIndex",
                                     "SetSubtitleStreamIndex",
                                     "DisplayContent",
-                                    "SetRepeatMode"]
+                                    "SetRepeatMode",
+                                    "EndSession"]
             };
         };
 
@@ -776,6 +777,11 @@
                 options: {},
                 command: 'VolumeDown'
             });
+        };
+
+        self.endSession = function () {
+
+            castPlayer.stopApp();
         };
 
         self.volumeUp = function () {
