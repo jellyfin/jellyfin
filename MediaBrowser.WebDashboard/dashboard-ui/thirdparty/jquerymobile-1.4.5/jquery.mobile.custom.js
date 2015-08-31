@@ -967,16 +967,16 @@ $.ui.plugin = {
 				$.mobile.degradeInputsWithin( this );
 			}
 
+		    var thisElem = this[0];
+
 			// Run buttonmarkup
 			if ( $.fn.buttonMarkup ) {
-				this.find( $.fn.buttonMarkup.initSelector ).not( keepNative )
-				.jqmEnhanceable().buttonMarkup();
+			    $(thisElem.querySelectorAll($.fn.buttonMarkup.initSelector)).not(keepNative).jqmEnhanceable().buttonMarkup();
 			}
 
 			// Add classes for fieldContain
 			if ( $.fn.fieldcontain ) {
-				this.find( ":jqmData(role='fieldcontain')" ).not( keepNative )
-				.jqmEnhanceable().fieldcontain();
+			    $(thisElem.querySelectorAll("*[data-role='fieldcontain']")).not(keepNative).jqmEnhanceable().fieldcontain();
 			}
 
 			// Enhance widgets
@@ -986,7 +986,7 @@ $.ui.plugin = {
 				if ( constructor.initSelector ) {
 
 					// Filter elements that should not be enhanced based on parents
-					var elements = $.mobile.enhanceable( that.find( constructor.initSelector ) );
+				    var elements = $.mobile.enhanceable(that.find(constructor.initSelector));
 
 					// If any matching elements remain filter ones with keepNativeSelector
 					if ( elements.length > 0 ) {
@@ -2827,7 +2827,7 @@ $.fn.buttonMarkup.defaults = {
 };
 
 $.extend( $.fn.buttonMarkup, {
-	initSelector: "a:jqmData(role='button'), .ui-bar > a, .ui-bar > :jqmData(role='controlgroup') > a, button:not(:jqmData(role='navbar') button)"
+    initSelector: "a[data-role='button'], .ui-bar > a, .ui-bar > *[data-role='controlgroup'] > a, button"
 });
 
 })( jQuery );
@@ -3406,7 +3406,7 @@ $.widget = (function( orig ) {
 			name = constructor.prototype.widgetName;
 
 		constructor.initSelector = ( ( constructor.prototype.initSelector !== undefined ) ?
-			constructor.prototype.initSelector : ":jqmData(role='" + name + "')" );
+			constructor.prototype.initSelector : "*[data-role='" + name + "']" );
 
 		$.mobile.widgets[ name ] = constructor;
 
@@ -4548,7 +4548,7 @@ $.fn.grid = function( options ) {
 		element: ( baseElement.length ? baseElement :
 			$( "<base>", { href: $.mobile.path.documentBase.hrefNoHash } ).prependTo( $( "head" ) ) ),
 
-		linkSelector: "[src], link[href], a[rel='external'], :jqmData(ajax='false'), a[target]",
+		linkSelector: "[src], link[href], a[rel='external'], *[data-ajax='false'], a[target]",
 
 		// set the generated BASE element's href to a new page's base path
 		set: function( href ) {
@@ -5540,7 +5540,7 @@ $.fn.grid = function( options ) {
 					samePage = true;
 				}
 
-				//trigger before show/hide events
+			    //trigger before show/hide events
 				// TODO deprecate nextPage in favor of next
 				this._triggerWithDeprecated( prefix + "hide", {
 
@@ -5563,7 +5563,6 @@ $.fn.grid = function( options ) {
 		_cssTransition: function( to, from, options ) {
 			var transition = options.transition,
 				reverse = options.reverse,
-				deferred = options.deferred,
 				TransitionHandler,
 				promise;
 
@@ -5579,11 +5578,6 @@ $.fn.grid = function( options ) {
 			promise.done( $.proxy( function() {
 				this._triggerCssTransitionEvents( to, from );
 			}, this ));
-
-			// TODO temporary accomodation of argument deferred
-			promise.done(function() {
-				deferred.resolve.apply( deferred, arguments );
-			});
 		},
 
 		_releaseTransitionLock: function() {
@@ -5722,20 +5716,7 @@ $.fn.grid = function( options ) {
 				return;
 			}
 
-			// DEPRECATED - this call only, in favor of the before transition
-			// if the page beforechange default is prevented return early
-			if ( !this._triggerPageBeforeChange(toPage, triggerData, settings) ) {
-				return;
-			}
-
 			triggerData.prevPage = settings.fromPage;
-			// if the (content|page)beforetransition default is prevented return early
-			// Note, we have to check for both the deprecated and new events
-			beforeTransition = this._triggerWithDeprecated( "beforetransition", triggerData );
-			if (beforeTransition.deprecatedEvent.isDefaultPrevented() ||
-				beforeTransition.event.isDefaultPrevented() ) {
-				return;
-			}
 
 			// Set the isPageTransitioning flag to prevent any requests from
 			// entering this method while we are in the midst of loading a page
@@ -5806,23 +5787,6 @@ $.fn.grid = function( options ) {
 				historyDir = settings.direction === "back" ? -1 : 1;
 			}
 
-			// Kill the keyboard.
-			// XXX_jblas: We need to stop crawling the entire document to kill focus.
-			//            Instead, we should be tracking focus with a delegate()
-			//            handler so we already have the element in hand at this
-			//            point.
-			// Wrap this in a try/catch block since IE9 throw "Unspecified error" if
-			// document.activeElement is undefined when we are in an IFrame.
-			try {
-				if ( document.activeElement &&
-					document.activeElement.nodeName.toLowerCase() !== "body" ) {
-
-					$( document.activeElement ).blur();
-				} else {
-					$( "input:focus, textarea:focus, select:focus" ).blur();
-				}
-			} catch( e ) {}
-
 			// Record whether we are at a place in history where a dialog used to be -
 			// if so, do not add a new history entry and do not change the hash either
 			alreadyThere = false;
@@ -5867,8 +5831,7 @@ $.fn.grid = function( options ) {
 			// if title element wasn't found, try the page div data attr too
 			// If this is a deep-link or a reload ( active === undefined ) then just
 			// use pageTitle
-			newPageTitle = ( !active ) ? pageTitle : toPage.jqmData( "title" ) ||
-				toPage.children( ":jqmData(role='header')" ).find( ".ui-title" ).text();
+			newPageTitle = ( !active ) ? pageTitle : toPage.jqmData( "title" );
 			if ( !!newPageTitle && pageTitle === document.title ) {
 				pageTitle = newPageTitle;
 			}
@@ -5922,32 +5885,27 @@ $.fn.grid = function( options ) {
 			// If we're navigating back in the URL history, set reverse accordingly.
 			settings.reverse = settings.reverse || historyDir < 0;
 
-			cssTransitionDeferred = $.Deferred();
-
 			this._cssTransition(toPage, fromPage, {
 				transition: settings.transition,
-				reverse: settings.reverse,
-				deferred: cssTransitionDeferred
+				reverse: settings.reverse
 			});
 
-			cssTransitionDeferred.done($.proxy(function( name, reverse, $to, $from, alreadyFocused ) {
-				$.mobile.removeActiveLinkClass();
+			$.mobile.removeActiveLinkClass();
 
-				//if there's a duplicateCachedPage, remove it from the DOM now that it's hidden
-				if ( settings.duplicateCachedPage ) {
-					settings.duplicateCachedPage.remove();
-				}
+		    //if there's a duplicateCachedPage, remove it from the DOM now that it's hidden
+			if (settings.duplicateCachedPage) {
+			    settings.duplicateCachedPage.remove();
+			}
 
-				// despite visibility: hidden addresses issue #2965
-				// https://github.com/jquery/jquery-mobile/issues/2965
-				if ( !alreadyFocused ) {
-					$.mobile.focusPage( toPage );
-				}
+		    // despite visibility: hidden addresses issue #2965
+		    // https://github.com/jquery/jquery-mobile/issues/2965
+			//if (!alreadyFocused) {
+			//    $.mobile.focusPage(toPage);
+			//}
 
-				this._releaseTransitionLock();
-				this._triggerWithDeprecated( "transition", triggerData );
-				this._triggerWithDeprecated( "change", triggerData );
-			}, this));
+			this._releaseTransitionLock();
+			this._triggerWithDeprecated("transition", triggerData);
+			this._triggerWithDeprecated("change", triggerData);
 		},
 
 		// determine the current base url
@@ -6293,7 +6251,7 @@ $.fn.grid = function( options ) {
 			}
 
 			//if there's a data-rel=back attr, go back in history
-			if ( $link.is( ":jqmData(rel='back')" ) ) {
+			if ( $link.is( "[data-rel='back']" ) ) {
 				$.mobile.back();
 				return false;
 			}
@@ -6337,7 +6295,7 @@ $.fn.grid = function( options ) {
 			}
 
 			// Should we handle this link, or let the browser deal with it?
-			useDefaultUrlHandling = $link.is( "[rel='external']" ) || $link.is( ":jqmData(ajax='false')" ) || $link.is( "[target]" );
+			useDefaultUrlHandling = $link.is( "[rel='external']" ) || $link.is( "[data-ajax='false']" ) || $link.is( "[target]" );
 
 			// Some embedded browsers, like the web view in Phone Gap, allow cross-domain XHR
 			// requests if the document doing the request was loaded via the file:// protocol.
@@ -6373,7 +6331,7 @@ $.fn.grid = function( options ) {
 		//prefetch pages when anchors with data-prefetch are encountered
 		$.mobile.document.delegate( ".ui-page", "pageshow.prefetch", function() {
 			var urls = [];
-			$( this ).find( "a:jqmData(prefetch)" ).each(function() {
+			$( this ).find( "a[data-prefetch]" ).each(function() {
 				var $link = $( this ),
 					url = $link.attr( "href" );
 
@@ -6453,7 +6411,7 @@ $.fn.grid = function( options ) {
 		initializePage: function() {
 			// find present pages
 			var path = $.mobile.path,
-				$pages = $( ":jqmData(role='page'), :jqmData(role='dialog')" ),
+				$pages = $("*[data-role='page'], *[data-role='dialog']"),
 				hash = path.stripHash( path.stripQueryParams(path.parseLocation().hash) ),
 				theLocation = $.mobile.path.parseLocation(),
 				hashPage = hash ? document.getElementById( hash ) : undefined;
@@ -6503,7 +6461,7 @@ $.fn.grid = function( options ) {
 			// Remember, however, that the hash can also be a path!
 			if ( ! ( $.mobile.hashListeningEnabled &&
 				$.mobile.path.isHashValid( location.hash ) &&
-				( $( hashPage ).is( ":jqmData(role='page')" ) ||
+				( $( hashPage ).is( "[data-role='page']" ) ||
 					$.mobile.path.isPath( hash ) ||
 					hash === $.mobile.dialogHashKey ) ) ) {
 
@@ -6588,7 +6546,7 @@ $.mobile.links = function( target ) {
 	$( target )
 		.find( "a" )
 		.jqmEnhanceable()
-		.filter( ":jqmData(rel='popup')[href][href!='']" )
+		.filter( "[data-rel='popup'][href][href!='']" )
 		.each( function() {
 			// Accessibility info for popups
 			var element = this,
@@ -6601,7 +6559,7 @@ $.mobile.links = function( target ) {
 			}
 		})
 		.end()
-		.not( ".ui-btn, :jqmData(role='none'), :jqmData(role='nojs')" )
+		.not( ".ui-btn, [data-role='none'], [data-role='nojs']" )
 		.addClass( "ui-link" );
 
 };
@@ -7219,9 +7177,9 @@ $.widget( "mobile.controlgroup", $.extend( {
 $.widget( "mobile.textinput", {
 	initSelector: "input[type='text']," +
 		"input[type='search']," +
-		":jqmData(type='search')," +
+		"*[data-type='search']," +
 		"input[type='number']," +
-		":jqmData(type='number')," +
+		"*[data-type='number']," +
 		"input[type='password']," +
 		"input[type='email']," +
 		"input[type='url']," +
@@ -7725,7 +7683,7 @@ var escapeId = $.mobile.path.hashToSelector;
 
 $.widget( "mobile.checkboxradio", $.extend( {
 
-	initSelector: "input:not( :jqmData(role='flipswitch' ) )[type='checkbox'],input[type='radio']:not( :jqmData(role='flipswitch' ))",
+    initSelector: "input[type='checkbox'],input[type='radio']",
 
 	options: {
 		theme: "inherit",
@@ -8069,230 +8027,8 @@ $.widget( "mobile.checkboxradio", $.extend( {
 
 (function( $, undefined ) {
 
-$.widget( "mobile.flipswitch", $.extend({
-
-	options: {
-		onText: "On",
-		offText: "Off",
-		theme: null,
-		enhanced: false,
-		wrapperClass: null,
-		corners: true,
-		mini: false
-	},
-
-	_create: function() {
-			if ( !this.options.enhanced ) {
-				this._enhance();
-			} else {
-				$.extend( this, {
-					flipswitch: this.element.parent(),
-					on: this.element.find( ".ui-flipswitch-on" ).eq( 0 ),
-					off: this.element.find( ".ui-flipswitch-off" ).eq(0),
-					type: this.element.get( 0 ).tagName
-				});
-			}
-
-			this._handleFormReset();
-
-			// Transfer tabindex to "on" element and make input unfocusable
-			this._originalTabIndex = this.element.attr( "tabindex" );
-			if ( this._originalTabIndex != null ) {
-				this.on.attr( "tabindex", this._originalTabIndex );
-			}
-			this.element.attr( "tabindex", "-1" );
-			this._on({
-				"focus" : "_handleInputFocus"
-			});
-
-			if ( this.element.is( ":disabled" ) ) {
-				this._setOptions({
-					"disabled": true
-				});
-			}
-
-			this._on( this.flipswitch, {
-				"click": "_toggle",
-				"swipeleft": "_left",
-				"swiperight": "_right"
-			});
-
-			this._on( this.on, {
-				"keydown": "_keydown"
-			});
-
-			this._on( {
-				"change": "refresh"
-			});
-	},
-
-	_handleInputFocus: function() {
-		this.on.focus();
-	},
-
-	widget: function() {
-		return this.flipswitch;
-	},
-
-	_left: function() {
-		this.flipswitch.removeClass( "ui-flipswitch-active" );
-		if ( this.type === "SELECT" ) {
-			this.element.get( 0 ).selectedIndex = 0;
-		} else {
-			this.element.prop( "checked", false );
-		}
-		this.element.trigger( "change" );
-	},
-
-	_right: function() {
-		this.flipswitch.addClass( "ui-flipswitch-active" );
-		if ( this.type === "SELECT" ) {
-			this.element.get( 0 ).selectedIndex = 1;
-		} else {
-			this.element.prop( "checked", true );
-		}
-		this.element.trigger( "change" );
-	},
-
-	_enhance: function() {
-		var flipswitch = $( "<div>" ),
-			options = this.options,
-			element = this.element,
-			theme = options.theme ? options.theme : "inherit",
-
-			// The "on" button is an anchor so it's focusable
-			on = $( "<a></a>", {
-				"href": "#"
-			}),
-			off = $( "<span></span>" ),
-			type = element.get( 0 ).tagName,
-			onText = ( type === "INPUT" ) ?
-				options.onText : element.find( "option" ).eq( 1 ).text(),
-			offText = ( type === "INPUT" ) ?
-				options.offText : element.find( "option" ).eq( 0 ).text();
-
-			on
-				.addClass( "ui-flipswitch-on ui-btn ui-shadow ui-btn-inherit" )
-				.text( onText );
-			off
-				.addClass( "ui-flipswitch-off" )
-				.text( offText );
-
-			flipswitch
-				.addClass( "ui-flipswitch ui-shadow-inset " +
-					"ui-bar-" + theme + " " +
-					( options.wrapperClass ? options.wrapperClass : "" ) + " " +
-					( ( element.is( ":checked" ) ||
-						element
-							.find( "option" )
-							.eq( 1 )
-							.is( ":selected" ) ) ? "ui-flipswitch-active" : "" ) +
-					( element.is(":disabled") ? " ui-state-disabled": "") +
-					( options.corners ? " ui-corner-all": "" ) +
-					( options.mini ? " ui-mini": "" ) )
-				.append( on, off );
-
-			element
-				.addClass( "ui-flipswitch-input" )
-				.after( flipswitch )
-				.appendTo( flipswitch );
-
-		$.extend( this, {
-			flipswitch: flipswitch,
-			on: on,
-			off: off,
-			type: type
-		});
-	},
-
-	_reset: function() {
-		this.refresh();
-	},
-
-	refresh: function() {
-		var direction,
-			existingDirection = this.flipswitch.hasClass( "ui-flipswitch-active" ) ? "_right" : "_left";
-
-		if ( this.type === "SELECT" ) {
-			direction = ( this.element.get( 0 ).selectedIndex > 0 ) ? "_right": "_left";
-		} else {
-			direction = this.element.prop( "checked" ) ? "_right": "_left";
-		}
-
-		if ( direction !== existingDirection ) {
-			this[ direction ]();
-		}
-	},
-
-	_toggle: function() {
-		var direction = this.flipswitch.hasClass( "ui-flipswitch-active" ) ? "_left" : "_right";
-
-		this[ direction ]();
-	},
-
-	_keydown: function( e ) {
-		if ( e.which === $.mobile.keyCode.LEFT ) {
-			this._left();
-		} else if ( e.which === $.mobile.keyCode.RIGHT ) {
-			this._right();
-		} else if ( e.which === $.mobile.keyCode.SPACE ) {
-			this._toggle();
-			e.preventDefault();
-		}
-	},
-
-	_setOptions: function( options ) {
-		if ( options.theme !== undefined ) {
-			var currentTheme = options.theme ? options.theme : "inherit",
-				newTheme = options.theme ? options.theme : "inherit";
-
-			this.widget()
-				.removeClass( "ui-bar-" + currentTheme )
-				.addClass( "ui-bar-" + newTheme );
-		}
-		if ( options.onText !== undefined ) {
-			this.on.text( options.onText );
-		}
-		if ( options.offText !== undefined ) {
-			this.off.text( options.offText );
-		}
-		if ( options.disabled !== undefined ) {
-			this.widget().toggleClass( "ui-state-disabled", options.disabled );
-		}
-		if ( options.mini !== undefined ) {
-			this.widget().toggleClass( "ui-mini", options.mini );
-		}
-		if ( options.corners !== undefined ) {
-			this.widget().toggleClass( "ui-corner-all", options.corners );
-		}
-
-		this._super( options );
-	},
-
-	_destroy: function() {
-		if ( this.options.enhanced ) {
-			return;
-		}
-		if ( this._originalTabIndex != null ) {
-			this.element.attr( "tabindex", this._originalTabIndex );
-		} else {
-			this.element.removeAttr( "tabindex" );
-		}
-		this.on.remove();
-		this.off.remove();
-		this.element.unwrap();
-		this.flipswitch.remove();
-		this.removeClass( "ui-flipswitch-input" );
-	}
-
-}, $.mobile.behaviors.formReset ) );
-
-})( jQuery );
-
-(function( $, undefined ) {
-
 $.widget( "mobile.slider", $.extend( {
-	initSelector: "input[type='range'], :jqmData(type='range'), :jqmData(role='slider')",
+	initSelector: "input[type='range'], *[data-type='range'], *[data-role='slider']",
 
 	widgetEventPrefix: "slide",
 
@@ -9133,7 +8869,7 @@ $.widget( "mobile.slider", $.extend( {
 (function( $, undefined ) {
 
 $.widget( "mobile.selectmenu", $.extend( {
-	initSelector: "select:not( :jqmData(role='slider')):not( :jqmData(role='flipswitch') )",
+    initSelector: "select:not( [data-role='slider'])",
 
 	options: {
 		theme: null,
@@ -9744,70 +9480,6 @@ $.widget( "mobile.listview", $.extend( {
 		this._addFirstLastClasses( li, this._getVisibles( li, create ), create );
 	}
 }, $.mobile.behaviors.addFirstLastClasses ) );
-
-})( jQuery );
-
-(function( $, undefined ) {
-
-$.widget( "mobile.navbar", {
-	options: {
-		iconpos: "top",
-		grid: null
-	},
-
-	_create: function() {
-
-		var $navbar = this.element,
-			$navbtns = $navbar.find( "a, button" ),
-			iconpos = $navbtns.filter( ":jqmData(icon)" ).length ? this.options.iconpos : undefined;
-
-		$navbar.addClass( "ui-navbar" )
-			.attr( "role", "navigation" )
-			.find( "ul" )
-			.jqmEnhanceable()
-			.grid({ grid: this.options.grid });
-
-		$navbtns
-			.each( function() {
-				var icon = $.mobile.getAttribute( this, "icon" ),
-					theme = $.mobile.getAttribute( this, "theme" ),
-					classes = "ui-btn";
-
-				if ( theme ) {
-					classes += " ui-btn-" + theme;
-				}
-				if ( icon ) {
-					classes += " ui-icon-" + icon + " ui-btn-icon-" + iconpos;
-				}
-				$( this ).addClass( classes );
-			});
-
-		$navbar.delegate( "a", "vclick", function( /* event */ ) {
-			var activeBtn = $( this );
-
-			if ( !( activeBtn.hasClass( "ui-state-disabled" ) ||
-
-				// DEPRECATED as of 1.4.0 - remove after 1.4.0 release
-				// only ui-state-disabled should be present thereafter
-				activeBtn.hasClass( "ui-disabled" ) ||
-				activeBtn.hasClass( $.mobile.activeBtnClass ) ) ) {
-
-				$navbtns.removeClass( $.mobile.activeBtnClass );
-				activeBtn.addClass( $.mobile.activeBtnClass );
-
-				// The code below is a workaround to fix #1181
-				$( document ).one( "pagehide", function() {
-					activeBtn.removeClass( $.mobile.activeBtnClass );
-				});
-			}
-		});
-
-		// Buttons in the navbar with ui-state-persist class should regain their active state before page show
-		$navbar.closest( ".ui-page" ).bind( "pagebeforeshow", function() {
-			$navbtns.filter( ".ui-state-persist" ).addClass( $.mobile.activeBtnClass );
-		});
-	}
-});
 
 })( jQuery );
 
