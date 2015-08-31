@@ -94,8 +94,6 @@
     }
     function loadMode(page, mode) {
 
-        Backdrops.setDefault(page);
-
         if (mode == 'welcome') {
             $('.connectLoginForm', page).hide();
             $('.welcomeContainer', page).show();

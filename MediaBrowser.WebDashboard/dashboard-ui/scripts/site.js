@@ -2107,6 +2107,11 @@ var AppInfo = {};
             define("searchmenu", ["scripts/searchmenu"]);
         }
 
+        define("jqmtable", ["thirdparty/jquerymobile-1.4.5/jqm.table"], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.table.css');
+            return {};
+        });
+
         $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
 
         var drawer = document.querySelector('.mainDrawerPanel');
