@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>MediaBrowser.Server.Mac</RootNamespace>
     <MonoMacResourcePrefix>Resources</MonoMacResourcePrefix>
-    <AssemblyName>MediaBrowser.Server.Mac</AssemblyName>
+    <AssemblyName>Emby.Server.Mac</AssemblyName>
     <ApplicationIcon>..\MediaBrowser.WebDashboard\dashboard-ui\css\images\favicon.ico</ApplicationIcon>
     <ReleaseVersion>
     </ReleaseVersion>
@@ -3249,9 +3249,6 @@
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\nowplayingbar.css">
       <Link>Resources\dashboard-ui\css\nowplayingbar.css</Link>
-    </BundleResource>
-    <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\pluginupdates.css">
-      <Link>Resources\dashboard-ui\css\pluginupdates.css</Link>
     </BundleResource>
     <BundleResource Include="..\MediaBrowser.WebDashboard\dashboard-ui\css\remotecontrol.css">
       <Link>Resources\dashboard-ui\css\remotecontrol.css</Link>
