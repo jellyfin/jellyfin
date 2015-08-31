@@ -1195,6 +1195,10 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The timer identifier.</value>
         public string TimerId { get; set; }
-
+        /// <summary>
+        /// Gets or sets the current program.
+        /// </summary>
+        /// <value>The current program.</value>
+        public BaseItemDto CurrentProgram { get; set; }
     }
 }

@@ -98,7 +98,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 var byName = item as IItemByName;
 
-                if (byName != null && !(item is LiveTvChannel))
+                if (byName != null)
                 {
                     if (options.Fields.Contains(ItemFields.ItemCounts))
                     {
@@ -140,7 +140,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             var byName = item as IItemByName;
 
-            if (byName != null && !(item is LiveTvChannel))
+            if (byName != null)
             {
                 if (options.Fields.Contains(ItemFields.ItemCounts))
                 {
@@ -350,6 +350,12 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
 
             AttachBasicFields(dto, item, owner, options);
+
+            var tvChannel = item as LiveTvChannel;
+            if (tvChannel != null)
+            {
+                _livetvManager().AddChannelInfo(dto, tvChannel, options, user);
+            }
 
             var collectionFolder = item as ICollectionFolder;
             if (collectionFolder != null)
@@ -1518,12 +1524,6 @@ namespace MediaBrowser.Server.Implementations.Dto
             if (photo != null)
             {
                 SetPhotoProperties(dto, photo);
-            }
-
-            var tvChannel = item as LiveTvChannel;
-            if (tvChannel != null)
-            {
-                dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(tvChannel, true).ToList();
             }
 
             dto.ChannelId = item.ChannelId;

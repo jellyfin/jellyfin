@@ -1040,6 +1040,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                _logger.Debug("Refreshing guide from {0}", service.Name);
+
                 try
                 {
                     var innerProgress = new ActionableProgress<double>();
@@ -1719,6 +1721,32 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var dto = _tvDtoService.GetChannelInfoDto(channel, new DtoOptions(), currentProgram, user);
 
             return dto;
+        }
+
+        public void AddChannelInfo(BaseItemDto dto, LiveTvChannel channel, DtoOptions options, User user)
+        {
+            dto.MediaSources = channel.GetMediaSources(true).ToList();
+
+            var now = DateTime.UtcNow;
+
+            var programs = _libraryManager.GetItems(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(LiveTvProgram).Name },
+                ChannelIds = new[] { channel.Id.ToString("N") },
+                MaxStartDate = now,
+                MinEndDate = now,
+                Limit = 1
+
+            }).Items.Cast<LiveTvProgram>();
+
+            var currentProgram = programs
+                .OrderBy(i => i.StartDate)
+                .FirstOrDefault();
+
+            if (currentProgram != null)
+            {
+                dto.CurrentProgram = _dtoService.GetBaseItemDto(currentProgram, options, user);
+            }
         }
 
         private async Task<Tuple<SeriesTimerInfo, ILiveTvService>> GetNewTimerDefaultsInternal(CancellationToken cancellationToken, LiveTvProgram program = null)
