@@ -120,6 +120,9 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       this.bindValue = this.value;
     },
 
+    /**
+     * @suppress {checkTypes}
+     */
     _bindValueChanged: function() {
       if (this.value !== this.bindValue) {
         this.value = !(this.bindValue || this.bindValue === 0) ? '' : this.bindValue;

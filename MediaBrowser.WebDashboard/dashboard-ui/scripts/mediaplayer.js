@@ -418,16 +418,20 @@
                         Format: 'srt',
                         Method: 'Embed'
                     });
-                    //profile.SubtitleProfiles.push({
-                    //    Format: 'ass',
-                    //    Method: 'Embed'
-                    //});
-                    //profile.SubtitleProfiles.push({
-                    //    Format: 'ssa',
-                    //    Method: 'Embed'
-                    //});
+                    profile.SubtitleProfiles.push({
+                        Format: 'ass',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'ssa',
+                        Method: 'Embed'
+                    });
                     profile.SubtitleProfiles.push({
                         Format: 'pgs',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'pgssub',
                         Method: 'Embed'
                     });
                     profile.SubtitleProfiles.push({

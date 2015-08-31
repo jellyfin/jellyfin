@@ -962,11 +962,6 @@ $.ui.plugin = {
 				$.mobile.links( this );
 			}
 
-			// Degrade inputs for styleing
-			if ( $.mobile.degradeInputsWithin ) {
-				$.mobile.degradeInputsWithin( this );
-			}
-
 		    var thisElem = this[0];
 
 			// Run buttonmarkup
@@ -3513,14 +3508,21 @@ $.widget( "mobile.page", {
 		}
 	},
 
-	_setOptions: function( o ) {
+	_setOptions: function (o) {
+
+	    var elem = this.element[0];
 		if ( o.theme !== undefined ) {
-			this.element.removeClass( "ui-page-theme-" + this.options.theme ).addClass( "ui-page-theme-" + o.theme );
+		    elem.classList.remove("ui-page-theme-" + this.options.theme);
+		    elem.classList.add("ui-page-theme-" + o.theme);
 		}
 
-		if ( o.contentTheme !== undefined ) {
-			this.element.find( "[data-" + $.mobile.ns + "='content']" ).removeClass( "ui-body-" + this.options.contentTheme )
-				.addClass( "ui-body-" + o.contentTheme );
+		if (o.contentTheme !== undefined) {
+		    var elems = elem.querySelectorAll("*[data-" + $.mobile.ns + "='content']");
+		    for (var i = 0, length = elems.length; i < length; i++) {
+		        var el = elems[i];
+		        el.classList.remove("ui-body-" + this.options.contentTheme);
+		        el.classList.add("ui-body-" + o.contentTheme);
+            }
 		}
 	},
 
@@ -3558,53 +3560,6 @@ $.widget( "mobile.page", {
 			.join( ", " ) );
 	}
 });
-})( jQuery );
-
-(function( $, undefined ) {
-
-$.mobile.degradeInputs = {
-	color: false,
-	date: false,
-	datetime: false,
-	"datetime-local": false,
-	email: false,
-	month: false,
-	number: false,
-	range: "number",
-	search: "text",
-	tel: false,
-	time: false,
-	url: false,
-	week: false
-};
-// Backcompat remove in 1.5
-$.mobile.page.prototype.options.degradeInputs = $.mobile.degradeInputs;
-
-// Auto self-init widgets
-$.mobile.degradeInputsWithin = function( target ) {
-
-	target = $( target );
-
-	// Degrade inputs to avoid poorly implemented native functionality
-	target.find( "input" ).not( $.mobile.page.prototype.keepNativeSelector() ).each(function() {
-		var element = $( this ),
-			type = this.getAttribute( "type" ),
-			optType = $.mobile.degradeInputs[ type ] || "text",
-			html, hasType, findstr, repstr;
-
-		if ( $.mobile.degradeInputs[ type ] ) {
-			html = $( "<div>" ).html( element.clone() ).html();
-			// In IE browsers, the type sometimes doesn't exist in the cloned markup, so we replace the closing tag instead
-			hasType = html.indexOf( " type=" ) > -1;
-			findstr = hasType ? /\s+type=["']?\w+['"]?/ : /\/?>/;
-			repstr = " type=\"" + optType + "\" data-" + $.mobile.ns + "type=\"" + type + "\"" + ( hasType ? "" : ">" );
-
-			element.replaceWith( html.replace( findstr, repstr ) );
-		}
-	});
-
-};
-
 })( jQuery );
 
 
@@ -4537,18 +4492,21 @@ $.fn.grid = function( options ) {
 (function( $, undefined ) {
 
 	// existing base tag?
-	var baseElement = $( "head" ).children( "base" ),
+    var baseElement = document.querySelector('head base');
 
+    if (!baseElement) {
+        baseElement = $( "<base>", { href: $.mobile.path.documentBase.hrefNoHash } ).prependTo( $( "head" ) ) ;
+        baseElement = baseElement[0];
+    }
 	// base element management, defined depending on dynamic base tag support
 	// TODO move to external widget
-	base = {
+	var base = {
 
 		// define base element, for use in routing asset urls that are referenced
 		// in Ajax-requested markup
-		element: ( baseElement.length ? baseElement :
-			$( "<base>", { href: $.mobile.path.documentBase.hrefNoHash } ).prependTo( $( "head" ) ) ),
+	    element: baseElement,
 
-		linkSelector: "[src], link[href], a[rel='external'], *[data-ajax='false'], a[target]",
+		linkSelector: "*[src], link[href], a[rel='external'], *[data-ajax='false'], a[target]",
 
 		// set the generated BASE element's href to a new page's base path
 		set: function( href ) {
@@ -4561,35 +4519,17 @@ $.fn.grid = function( options ) {
 
 			// we should use the base tag if we can manipulate it dynamically
 			if ( $.support.dynamicBaseTag ) {
-				base.element.attr( "href",
+			    base.element.setAttribute("href",
 					$.mobile.path.makeUrlAbsolute( href, $.mobile.path.documentBase ) );
 			}
 		},
 
 		rewrite: function( href, page ) {
-			var newPath = $.mobile.path.get( href );
-
-			page.find( base.linkSelector ).each(function( i, link ) {
-				var thisAttr = $( link ).is( "[href]" ) ? "href" :
-					$( link ).is( "[src]" ) ? "src" : "action",
-				theLocation = $.mobile.path.parseLocation(),
-				thisUrl = $( link ).attr( thisAttr );
-
-				// XXX_jblas: We need to fix this so that it removes the document
-				//            base URL, and then prepends with the new page URL.
-				// if full path exists and is same, chop it - helps IE out
-				thisUrl = thisUrl.replace( theLocation.protocol + theLocation.doubleSlash +
-					theLocation.host + theLocation.pathname, "" );
-
-				if ( !/^(\w+:|#|\/)/.test( thisUrl ) ) {
-					$( link ).attr( thisAttr, newPath + thisUrl );
-				}
-			});
 		},
 
 		// set the generated BASE element's href to a new page's base path
 		reset: function(/* href */) {
-			base.element.attr( "href", $.mobile.path.documentBase.hrefNoSearch );
+			base.element.setAttribute( "href", $.mobile.path.documentBase.hrefNoSearch );
 		}
 	};
 
@@ -6012,19 +5952,6 @@ $.fn.grid = function( options ) {
 
 	// Direct focus to the page title, or otherwise first focusable element
 	$.mobile.focusPage = function ( page ) {
-		var autofocus = page.find( "[autofocus]" ),
-			pageTitle = page.find( ".ui-title:eq(0)" );
-
-		if ( autofocus.length ) {
-			autofocus.focus();
-			return;
-		}
-
-		if ( pageTitle.length ) {
-			pageTitle.focus();
-		} else{
-			page.focus();
-		}
 	};
 
 	// No-op implementation of transition degradation
@@ -6330,17 +6257,18 @@ $.fn.grid = function( options ) {
 
 		//prefetch pages when anchors with data-prefetch are encountered
 		$.mobile.document.delegate( ".ui-page", "pageshow.prefetch", function() {
-			var urls = [];
-			$( this ).find( "a[data-prefetch]" ).each(function() {
-				var $link = $( this ),
-					url = $link.attr( "href" );
+		    var urls = [];
+		    var prefetchLinks = this.querySelectorAll("a[data-prefetch]");
+		    for (var i = 0, length = prefetchLinks.length; i < length; i++) {
+		        var prefetchLink = prefetchLinks[i];
+		        var url = prefetchLink.getAttribute("href");
 
-				if ( url && $.inArray( url, urls ) === -1 ) {
-					urls.push( url );
+		        if (url && $.inArray(url, urls) === -1) {
+		            urls.push(url);
 
-					$.mobile.loadPage( url, { role: $link.attr( "data-" + $.mobile.ns + "rel" ),prefetch: true } );
-				}
-			});
+		            $.mobile.loadPage(url, { role: prefetchLink.getAttribute("data-" + $.mobile.ns + "rel"), prefetch: true });
+		        }
+		    }
 		});
 
 		// TODO ensure that the navigate binding in the content widget happens at the right time
@@ -6542,24 +6470,26 @@ $.fn.grid = function( options ) {
 
 $.mobile.links = function( target ) {
 
+    target = target.length ? target[0] : target;
+
+    var links = $(target.getElementsByTagName('a'))
+        .jqmEnhanceable()
+        .filter("[data-rel='popup'][href][href!='']");
+
 	//links within content areas, tests included with page
-	$( target )
-		.find( "a" )
-		.jqmEnhanceable()
-		.filter( "[data-rel='popup'][href][href!='']" )
-		.each( function() {
+    links.each(function () {
 			// Accessibility info for popups
 			var element = this,
 				idref = element.getAttribute( "href" ).substring( 1 );
 
-			if ( idref ) {
+			if (idref) {
 				element.setAttribute( "aria-haspopup", true );
 				element.setAttribute( "aria-owns", idref );
 				element.setAttribute( "aria-expanded", false );
 			}
 		})
 		.end()
-		.not( ".ui-btn, [data-role='none'], [data-role='nojs']" )
+		.not( ".ui-btn, [data-role='none']" )
 		.addClass( "ui-link" );
 
 };
