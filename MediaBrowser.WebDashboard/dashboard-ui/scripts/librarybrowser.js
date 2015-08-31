@@ -1153,6 +1153,12 @@
                 else if (item.Type == 'MusicArtist') {
                     textlines.push('&nbsp;');
                 }
+                else if (item.Type == 'TvChannel') {
+                    
+                    if (item.CurrentProgram) {
+                        textlines.push(LibraryBrowser.getPosterViewDisplayName(item.CurrentProgram));
+                    }
+                }
                 else {
                     textlines.push(LibraryBrowser.getMiscInfoHtml(item));
                 }
