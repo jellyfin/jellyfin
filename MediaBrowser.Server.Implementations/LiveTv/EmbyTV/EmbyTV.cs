@@ -482,6 +482,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
         {
             var timer = e.Argument;
 
+            _logger.Info("Recording timer fired.");
+            
             try
             {
                 var cancellationTokenSource = new CancellationTokenSource();
@@ -502,7 +504,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 if (DateTime.UtcNow < timer.EndDate)
                 {
                     const int retryIntervalSeconds = 60;
-                    _logger.Debug("Retrying recording in {0} seconds.", retryIntervalSeconds);
+                    _logger.Info("Retrying recording in {0} seconds.", retryIntervalSeconds);
 
                     _timerProvider.StartTimer(timer, TimeSpan.FromSeconds(retryIntervalSeconds));
                 }
@@ -594,6 +596,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             recording.DateLastUpdated = DateTime.UtcNow;
             _recordingProvider.Update(recording);
 
+            _logger.Info("Beginning recording.");
+            
             try
             {
                 httpRequestOptions.BufferContent = false;
