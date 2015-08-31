@@ -372,5 +372,14 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="feature">The feature.</param>
         /// <returns>Task&lt;MBRegistrationRecord&gt;.</returns>
         Task<MBRegistrationRecord> GetRegistrationInfo(string channelId, string programId, string feature);
+
+        /// <summary>
+        /// Adds the channel information.
+        /// </summary>
+        /// <param name="dto">The dto.</param>
+        /// <param name="channel">The channel.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="user">The user.</param>
+        void AddChannelInfo(BaseItemDto dto, LiveTvChannel channel, DtoOptions options, User user);
     }
 }

@@ -480,8 +480,6 @@ var Dashboard = {
 
     showLoadingMsg: function () {
 
-        console.log('showLoadingMsg');
-
         var elem = document.querySelector('.docspinner');
 
         if (elem) {
@@ -503,8 +501,6 @@ var Dashboard = {
     },
 
     hideLoadingMsg: function () {
-
-        console.log('hideLoadingMsg');
 
         var elem = document.querySelector('.docspinner');
 

@@ -361,7 +361,7 @@
 
             var mediaControls = $("#videoPlayer");
 
-            var state = self.getPlayerStateInternal(self.currentMediaRenderer, item, self.currentMediaSource);
+            var state = self.getPlayerStateInternal(self.currentMediaRenderer, item.CurrentProgram || item, self.currentMediaSource);
 
             var url = "";
             var imageWidth = 400;
@@ -421,7 +421,7 @@
                 $('.videoTopControlsLogo', mediaControls).html('');
             }
 
-            var elem = $('.nowPlayingTabs', mediaControls).html(getNowPlayingTabsHtml(item)).lazyChildren();
+            var elem = $('.nowPlayingTabs', mediaControls).html(getNowPlayingTabsHtml(item.CurrentProgram || item)).lazyChildren();
 
             $('.nowPlayingTabButton', elem).on('click', function () {
 
