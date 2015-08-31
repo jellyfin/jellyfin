@@ -1,8 +1,8 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Extensions;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.XbmcMetadata.Configuration;
 using MediaBrowser.XbmcMetadata.Savers;
@@ -12,6 +12,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 
@@ -117,7 +118,15 @@ namespace MediaBrowser.XbmcMetadata.Parsers
 
                 var xml = streamReader.ReadToEnd();
 
-                var index = xml.LastIndexOf('>');
+                // Find last closing Tag
+                // Need to do this in two steps to account for random > characters after the closing xml
+                var index = xml.LastIndexOf(@"</", StringComparison.Ordinal);
+
+                // If closing tag exists, move to end of Tag
+                if (index != -1)
+                {
+                    index = xml.IndexOf('>', index);
+                }
 
                 if (index != -1)
                 {
@@ -149,35 +158,41 @@ namespace MediaBrowser.XbmcMetadata.Parsers
                     ms.Write(bytes, 0, bytes.Length);
                     ms.Position = 0;
 
-                    // Use XmlReader for best performance
-                    using (var reader = XmlReader.Create(ms, settings))
+                    // These are not going to be valid xml so no sense in causing the provider to fail and spamming the log with exceptions
+                    try
                     {
-                        reader.MoveToContent();
-
-                        // Loop through each element
-                        while (reader.Read())
+                        // Use XmlReader for best performance
+                        using (var reader = XmlReader.Create(ms, settings))
                         {
-                            cancellationToken.ThrowIfCancellationRequested();
+                            reader.MoveToContent();
 
-                            if (reader.NodeType == XmlNodeType.Element)
+                            // Loop through each element
+                            while (reader.Read())
                             {
-                                FetchDataFromXmlNode(reader, item);
+                                cancellationToken.ThrowIfCancellationRequested();
+
+                                if (reader.NodeType == XmlNodeType.Element)
+                                {
+                                    FetchDataFromXmlNode(reader, item);
+                                }
                             }
                         }
                     }
-
+                    catch (XmlException)
+                    {
+                        
+                    }
                 }
             }
         }
 
         private void ParseProviderLinks(T item, string xml)
         {
-            var imdbId = xml.Split('/')
-                .FirstOrDefault(i => i.StartsWith("tt", StringComparison.OrdinalIgnoreCase));
-
-            if (!string.IsNullOrWhiteSpace(imdbId))
+            //Look for a match for the Regex pattern "tt" followed by 7 digits
+            Match m = Regex.Match(xml, @"tt([0-9]{7})", RegexOptions.IgnoreCase);
+            if (m.Success)
             {
-                item.SetProviderId(MetadataProviders.Imdb, imdbId);
+                item.SetProviderId(MetadataProviders.Imdb, m.Value);
             }
 
             // TODO: Support Tmdb
