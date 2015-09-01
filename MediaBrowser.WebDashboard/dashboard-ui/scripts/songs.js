@@ -176,7 +176,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#songsPage", function () {
+    }).on('pagebeforeshow', "#songsPage", function () {
 
         var page = this;
 

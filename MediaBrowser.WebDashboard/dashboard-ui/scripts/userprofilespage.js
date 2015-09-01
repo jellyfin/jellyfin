@@ -472,7 +472,7 @@
 
         $('.addUserForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pagebeforeshowready', "#userProfilesPage", function () {
+    }).on('pagebeforeshow', "#userProfilesPage", function () {
 
         var page = this;
 

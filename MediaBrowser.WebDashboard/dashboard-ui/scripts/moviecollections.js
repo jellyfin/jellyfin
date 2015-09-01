@@ -217,7 +217,7 @@
 
         initPage(content);
 
-    }).on('pagebeforeshowready', "#boxsetsPage", function () {
+    }).on('pagebeforeshow', "#boxsetsPage", function () {
 
         var page = this;
 

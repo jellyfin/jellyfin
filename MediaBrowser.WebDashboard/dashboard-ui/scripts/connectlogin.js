@@ -244,7 +244,7 @@
             Dashboard.navigate('connectlogin.html?mode=connect');
         });
 
-    }).on('pagebeforeshowready', "#connectLoginPage", function () {
+    }).on('pagebeforeshow', "#connectLoginPage", function () {
 
         var page = this;
 

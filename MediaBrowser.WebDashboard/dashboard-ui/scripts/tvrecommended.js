@@ -170,7 +170,7 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#tvRecommendedPage", function () {
+    $(document).on('pagebeforeshow', "#tvRecommendedPage", function () {
 
         var page = this;
 

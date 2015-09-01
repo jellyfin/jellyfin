@@ -1519,7 +1519,7 @@
         tabs.noSlide = true;
         tabs.noink = true;
 
-        $(ownerpage).on('pagebeforeshowready', function () {
+        $(ownerpage).on('pagebeforeshow', function () {
 
             var selected = tabs.selected;
 

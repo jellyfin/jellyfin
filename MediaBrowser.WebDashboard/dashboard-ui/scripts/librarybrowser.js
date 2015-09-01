@@ -235,7 +235,7 @@
                 $('.libraryViewNav', ownerpage).removeClass('libraryViewNavWithMinHeight');
             }
 
-            $(ownerpage).on('pagebeforeshowready', LibraryBrowser.onTabbedPageBeforeShowReady);
+            $(ownerpage).on('pagebeforeshow', LibraryBrowser.onTabbedpagebeforeshow);
 
             $(pages).on('iron-select', function () {
 
@@ -251,7 +251,7 @@
             });
         },
 
-        onTabbedPageBeforeShowReady: function () {
+        onTabbedpagebeforeshow: function () {
 
             var page = this;
             var tabs = page.querySelector('paper-tabs');

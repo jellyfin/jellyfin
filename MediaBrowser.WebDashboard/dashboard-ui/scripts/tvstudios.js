@@ -85,7 +85,7 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#tvStudiosPage", function () {
+    $(document).on('pagebeforeshow', "#tvStudiosPage", function () {
 
         var page = this;
 

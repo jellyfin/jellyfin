@@ -254,7 +254,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#channelItemsPage", function () {
+    }).on('pagebeforeshow', "#channelItemsPage", function () {
 
         var page = this;
         var limit = LibraryBrowser.getDefaultPageSize();

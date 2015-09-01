@@ -100,7 +100,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#gameStudiosPage", function () {
+    }).on('pagebeforeshow', "#gameStudiosPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

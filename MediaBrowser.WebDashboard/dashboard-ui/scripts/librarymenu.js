@@ -780,7 +780,7 @@
         }
     }
 
-    $(document).on('pagebeforeshowready', ".page", function () {
+    $(document).on('pagebeforeshow', ".page", function () {
 
         var page = this;
 

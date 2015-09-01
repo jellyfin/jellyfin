@@ -95,7 +95,7 @@
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Notifications');
         }
 
-    }).on('pagebeforeshowready', "#appServicesPage", function () {
+    }).on('pagebeforeshow', "#appServicesPage", function () {
 
         // This needs both events for the helpurl to get done at the right time
 

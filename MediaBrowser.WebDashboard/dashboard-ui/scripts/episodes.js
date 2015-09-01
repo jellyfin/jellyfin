@@ -318,7 +318,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#episodesPage", function () {
+    }).on('pagebeforeshow', "#episodesPage", function () {
 
         var page = this;
         query.ParentId = LibraryMenu.getTopParentId();

@@ -220,7 +220,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#musicAlbumArtistsPage", function () {
+    }).on('pagebeforeshow', "#musicAlbumArtistsPage", function () {
 
         var page = this;
         var query = getQuery();

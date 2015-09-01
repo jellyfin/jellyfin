@@ -197,7 +197,7 @@
 
         $('.editUserProfileForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pagebeforeshowready', "#editUserPage", function () {
+    }).on('pagebeforeshow', "#editUserPage", function () {
 
         var page = this;
 

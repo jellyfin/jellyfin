@@ -77,7 +77,7 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#tvNextUpPage", function () {
+    $(document).on('pagebeforeshow', "#tvNextUpPage", function () {
 
         var page = this;
         if (LibraryBrowser.needsRefresh(page)) {

@@ -123,7 +123,7 @@
         ImageLoader.lazyChildren(elem);
     }
 
-    $(document).on('pagebeforeshowready', "#tvUpcomingPage", function () {
+    $(document).on('pagebeforeshow', "#tvUpcomingPage", function () {
 
         var page = this;
 

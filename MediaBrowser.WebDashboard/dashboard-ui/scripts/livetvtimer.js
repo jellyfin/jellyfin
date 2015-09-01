@@ -113,7 +113,7 @@
 
         $('.liveTvTimerForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pagebeforeshowready', "#liveTvTimerPage", function () {
+    }).on('pagebeforeshow', "#liveTvTimerPage", function () {
 
         var page = this;
 

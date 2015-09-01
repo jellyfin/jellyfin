@@ -1244,7 +1244,7 @@
             $(itemsContainers[i]).createCardMenus();
         }
 
-    }).on('pagebeforeshowready', ".libraryPage", function () {
+    }).on('pagebeforeshow', ".libraryPage", function () {
 
         var page = this;
 

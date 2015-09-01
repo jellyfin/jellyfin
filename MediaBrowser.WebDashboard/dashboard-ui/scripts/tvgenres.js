@@ -132,7 +132,7 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#tvGenresPage", function () {
+    $(document).on('pagebeforeshow', "#tvGenresPage", function () {
 
         var page = this;
         reloadItems(page);

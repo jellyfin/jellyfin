@@ -400,7 +400,7 @@
 
         updateEditorNode(this, item);
 
-    }).on('pagebeforeshowready', ".metadataEditorPage", function () {
+    }).on('pagebeforeshow', ".metadataEditorPage", function () {
 
         var page = this;
 

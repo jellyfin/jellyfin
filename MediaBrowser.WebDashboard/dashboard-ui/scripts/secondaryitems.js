@@ -173,7 +173,7 @@
 
         $(page).on('click', '.mediaItem', onListItemClick);
 
-    }).on('pagebeforeshowready', "#secondaryItemsPage", function () {
+    }).on('pagebeforeshow', "#secondaryItemsPage", function () {
 
         var page = this;
 

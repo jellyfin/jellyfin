@@ -185,7 +185,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#musicVideosPage", function () {
+    }).on('pagebeforeshow', "#musicVideosPage", function () {
 
         var page = this;
 

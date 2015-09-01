@@ -140,7 +140,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#liveTvItemsPage", function () {
+    }).on('pagebeforeshow', "#liveTvItemsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

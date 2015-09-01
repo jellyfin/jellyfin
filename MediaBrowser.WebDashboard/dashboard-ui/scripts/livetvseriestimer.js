@@ -272,7 +272,7 @@
 
         $('.liveTvSeriesTimerForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pagebeforeshowready', "#liveTvSeriesTimerPage", function () {
+    }).on('pagebeforeshow', "#liveTvSeriesTimerPage", function () {
 
         var page = this;
 

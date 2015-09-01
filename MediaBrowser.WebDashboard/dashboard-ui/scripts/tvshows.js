@@ -393,7 +393,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#tvShowsPage", function () {
+    }).on('pagebeforeshow', "#tvShowsPage", function () {
 
         var query = getQuery();
 

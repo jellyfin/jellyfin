@@ -241,7 +241,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#gamesPage", function () {
+    }).on('pagebeforeshow', "#gamesPage", function () {
 
         var page = this;
         query.ParentId = LibraryMenu.getTopParentId();

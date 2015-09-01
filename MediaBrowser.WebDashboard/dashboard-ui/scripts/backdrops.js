@@ -194,7 +194,7 @@
         }
     }
 
-    Events.on(document, 'pagebeforeshowready', ".page", function () {
+    Events.on(document, 'pagebeforeshow', ".page", function () {
 
         var page = this;
 

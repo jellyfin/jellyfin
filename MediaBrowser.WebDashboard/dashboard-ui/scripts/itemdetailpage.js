@@ -1800,7 +1800,7 @@
             btnMore[i].icon = AppInfo.moreIcon;
         }
 
-    }).on('pagebeforeshowready', "#itemDetailPage", function () {
+    }).on('pagebeforeshow', "#itemDetailPage", function () {
 
         var page = this;
 

@@ -169,7 +169,7 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#playlistsPage", function () {
+    $(document).on('pagebeforeshow', "#playlistsPage", function () {
 
         var page = this;
         reloadItems(page);

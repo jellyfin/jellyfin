@@ -241,7 +241,7 @@
 
         $('.liveTvNewRecordingForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pagebeforeshowready', "#liveTvNewRecordingPage", function () {
+    }).on('pagebeforeshow', "#liveTvNewRecordingPage", function () {
 
         var page = this;
         hideSeriesRecordingFields(page);

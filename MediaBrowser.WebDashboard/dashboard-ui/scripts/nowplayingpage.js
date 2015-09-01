@@ -770,7 +770,7 @@
             updateCastIcon(page);
         });
 
-    }).on('pagebeforeshowready', "#nowPlayingPage", function () {
+    }).on('pagebeforeshow', "#nowPlayingPage", function () {
 
         $(document.body).addClass('hiddenViewMenuBar').addClass('hiddenNowPlayingBar');
         var page = this;

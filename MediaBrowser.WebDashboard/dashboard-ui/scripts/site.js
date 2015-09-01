@@ -2277,12 +2277,6 @@ $(document).on('pagecreate', ".page", function () {
     var page = this;
     Events.trigger(page, 'pageinitdepends');
 
-}).on('pagebeforeshow', ".page", function () {
-
-    var page = this;
-    Dashboard.ensurePageTitle(page);
-    Events.trigger(page, 'pagebeforeshowready');
-
 }).on('pageshow', ".page", function () {
 
     var page = this;

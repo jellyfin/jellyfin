@@ -278,7 +278,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#musicAlbumsPage", function () {
+    }).on('pagebeforeshow', "#musicAlbumsPage", function () {
 
         var page = this;
 
