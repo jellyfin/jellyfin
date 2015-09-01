@@ -235,7 +235,7 @@
                 $('.libraryViewNav', ownerpage).removeClass('libraryViewNavWithMinHeight');
             }
 
-            $(ownerpage).on('pagebeforeshow', LibraryBrowser.onTabbedpagebeforeshow);
+            $(ownerpage).on('pageshowready', LibraryBrowser.onTabbedpagebeforeshow);
 
             pages.addEventListener('iron-select', function () {
                 // When transition animations are used, add a content loading delay to allow the animations to finish

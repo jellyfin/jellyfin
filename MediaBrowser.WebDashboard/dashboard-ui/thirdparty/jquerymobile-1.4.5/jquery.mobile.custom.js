@@ -1243,38 +1243,6 @@ $.mobile.browser.oldIE = (function() {
 	return v > 4 ? v : !v;
 })();
 
-function fixedPosition() {
-	var w = window,
-		ua = navigator.userAgent,
-		platform = navigator.platform,
-		// Rendering engine is Webkit, and capture major version
-		wkmatch = ua.match( /AppleWebKit\/([0-9]+)/ ),
-		wkversion = !!wkmatch && wkmatch[ 1 ],
-		ffmatch = ua.match( /Fennec\/([0-9]+)/ ),
-		ffversion = !!ffmatch && ffmatch[ 1 ],
-		operammobilematch = ua.match( /Opera Mobi\/([0-9]+)/ ),
-		omversion = !!operammobilematch && operammobilematch[ 1 ];
-
-	if (
-		// iOS 4.3 and older : Platform is iPhone/Pad/Touch and Webkit version is less than 534 (ios5)
-		( ( platform.indexOf( "iPhone" ) > -1 || platform.indexOf( "iPad" ) > -1  || platform.indexOf( "iPod" ) > -1 ) && wkversion && wkversion < 534 ) ||
-		// Opera Mini
-		( w.operamini && ({}).toString.call( w.operamini ) === "[object OperaMini]" ) ||
-		( operammobilematch && omversion < 7458 )	||
-		//Android lte 2.1: Platform is Android and Webkit version is less than 533 (Android 2.2)
-		( ua.indexOf( "Android" ) > -1 && wkversion && wkversion < 533 ) ||
-		// Firefox Mobile before 6.0 -
-		( ffversion && ffversion < 6 ) ||
-		// WebOS less than 3
-		( "palmGetResource" in window && wkversion && wkversion < 534 )	||
-		// MeeGo
-		( ua.indexOf( "MeeGo" ) > -1 && ua.indexOf( "NokiaBrowser/8.5.0" ) > -1 ) ) {
-		return false;
-	}
-
-	return true;
-}
-
 $.extend( $.support, {
 	// Note, Chrome for iOS has an extremely quirky implementation of popstate.
 	// We've chosen to take the shortest path to a bug fix here for issue #5426
@@ -1291,7 +1259,7 @@ $.extend( $.support, {
 	touchOverflow: !!propExists( "overflowScrolling" ),
 	cssTransform3d: transform3dTest(),
 	boxShadow: !!propExists( "boxShadow" ) && !bb,
-	fixedPosition: fixedPosition(),
+	fixedPosition: true,
 	scrollTop: ("pageXOffset" in window ||
 		"scrollTop" in document.documentElement ||
 		"scrollTop" in fakeBody[ 0 ]) && !webos && !operamini,
@@ -1304,21 +1272,6 @@ $.extend( $.support, {
 
 fakeBody.remove();
 
-// $.mobile.ajaxBlacklist is used to override ajaxEnabled on platforms that have known conflicts with hash history updates (BB5, Symbian)
-// or that generally work better browsing in regular http for full page refreshes (Opera Mini)
-// Note: This detection below is used as a last resort.
-// We recommend only using these detection methods when all other more reliable/forward-looking approaches are not possible
-nokiaLTE7_3 = (function() {
-
-	var ua = window.navigator.userAgent;
-
-	//The following is an attempt to match Nokia browsers that are running Symbian/s60, with webkit, version 7.3 or older
-	return ua.indexOf( "Nokia" ) > -1 &&
-			( ua.indexOf( "Symbian/3" ) > -1 || ua.indexOf( "Series60/5" ) > -1 ) &&
-			ua.indexOf( "AppleWebKit" ) > -1 &&
-			ua.match( /(BrowserNG|NokiaBrowser)\/7\.[0-3]/ );
-})();
-
 // Support conditions that must be met in order to proceed
 // default enhanced qualifications are media query support OR IE 7+
 
@@ -1330,18 +1283,7 @@ $.mobile.ajaxBlacklist =
 			// BlackBerry browsers, pre-webkit
 			window.blackberry && !window.WebKitPoint ||
 			// Opera Mini
-			operamini ||
-			// Symbian webkits pre 7.3
-			nokiaLTE7_3;
-
-// Lastly, this workaround is the only way we've found so far to get pre 7.3 Symbian webkit devices
-// to render the stylesheets when they're referenced before this script, as we'd recommend doing.
-// This simply reappends the CSS in place, which for some reason makes it apply
-if ( nokiaLTE7_3 ) {
-	$(function() {
-		$( "head link[rel='stylesheet']" ).attr( "rel", "alternate stylesheet" ).attr( "rel", "stylesheet" );
-	});
-}
+			operamini;
 
 // For ruling out shadows via css
 if ( !$.support.boxShadow ) {
