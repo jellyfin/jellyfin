@@ -248,22 +248,11 @@
                 }, delay);
             });
 
-            tabs.addEventListener('iron-select', function() {
-                var selected = this.selected;
-
-                if (LibraryBrowser.navigateOnLibraryTabSelect()) {
-
-                    if (selected) {
-                        var url = replaceQueryString(baseUrl, 'tab', selected);
-                        Dashboard.navigate(url);
-                    } else {
-                        Dashboard.navigate(baseUrl);
-                    }
-
-                } else {
-                    pages.selected = selected;
-                }
-            });
+            if (!LibraryBrowser.navigateOnLibraryTabSelect()) {
+                tabs.addEventListener('iron-select', function () {
+                    pages.selected = this.selected;
+                });
+            }
         },
 
         onTabbedpagebeforeshow: function () {
@@ -307,8 +296,11 @@
                 }
 
             } else {
+
                 var pages = page.querySelector('neon-animated-pages');
-                if (!NavHelper.isBack()) {
+
+                // Go back to the first tab
+                if (LibraryBrowser.enableFullPaperTabs() && !NavHelper.isBack()) {
                     if (pages.selected) {
 
                         var entryAnimation = pages.entryAnimation;
