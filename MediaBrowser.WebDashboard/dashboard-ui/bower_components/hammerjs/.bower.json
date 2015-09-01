@@ -1,0 +1,20 @@
+{
+  "name": "hammerjs",
+  "version": "2.0.4",
+  "main": "hammer.js",
+  "ignore": [
+    "tests",
+    "src"
+  ],
+  "homepage": "https://github.com/hammerjs/hammer.js",
+  "_release": "2.0.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "2.0.4",
+    "commit": "7fc11efb37d6f2334ce957e26e9cf53690e10fa5"
+  },
+  "_source": "git://github.com/hammerjs/hammer.js.git",
+  "_target": "~2.0.4",
+  "_originalSource": "hammer.js",
+  "_direct": true
+}

@@ -610,9 +610,24 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
+@media all and (max-width: 600px) {
+
+    .primaryDetailsContainer {
+        width: 68%;
+    }
+
+    .portraitDetailImageContainer + .primaryDetailsContainer {
+        width: 68%;
+    }
+}
+
 @media all and (max-width: 400px) {
 
     .primaryDetailsContainer {
+        width: 60%;
+    }
+
+    .portraitDetailImageContainer + .primaryDetailsContainer {
         width: 60%;
     }
 }

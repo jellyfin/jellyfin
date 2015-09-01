@@ -160,28 +160,32 @@
                 return true;
             }
 
-            $(pages).on('swipeleft', function (e) {
+            require(['hammer'], function (Hammer) {
 
-                if (allowSwipe(e)) {
-                    var selected = parseInt(pages.selected || '0');
-                    if (selected < (pageCount - 1)) {
-                        pages.entryAnimation = 'slide-from-right-animation';
-                        pages.exitAnimation = 'slide-left-animation';
-                        tabs.selectNext();
+                var hammertime = new Hammer(pages);
+                hammertime.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
+
+                hammertime.on('swipeleft', function (e) {
+                    if (allowSwipe(e)) {
+                        var selected = parseInt(pages.selected || '0');
+                        if (selected < (pageCount - 1)) {
+                            pages.entryAnimation = 'slide-from-right-animation';
+                            pages.exitAnimation = 'slide-left-animation';
+                            tabs.selectNext();
+                        }
                     }
-                }
-            });
+                });
 
-            $(pages).on('swiperight', function (e) {
-
-                if (allowSwipe(e)) {
-                    var selected = parseInt(pages.selected || '0');
-                    if (selected > 0) {
-                        pages.entryAnimation = 'slide-from-left-animation';
-                        pages.exitAnimation = 'slide-right-animation';
-                        tabs.selectPrevious();
+                hammertime.on('swiperight', function (e) {
+                    if (allowSwipe(e)) {
+                        var selected = parseInt(pages.selected || '0');
+                        if (selected > 0) {
+                            pages.entryAnimation = 'slide-from-left-animation';
+                            pages.exitAnimation = 'slide-right-animation';
+                            tabs.selectPrevious();
+                        }
                     }
-                }
+                });
             });
         },
 

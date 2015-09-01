@@ -47,8 +47,8 @@ var Dashboard = {
         $.mobile.panel.prototype.options.classes.modalOpen = "largePanelModalOpen ui-panel-dismiss-open";
         $.mobile.panel.prototype.options.classes.panel = "largePanel ui-panel";
 
-        $.event.special.swipe.verticalDistanceThreshold = 40;
-        $.mobile.page.prototype.options.domCache = true;
+        //$.event.special.swipe.verticalDistanceThreshold = 40;
+        //$.mobile.page.prototype.options.domCache = true;
 
 
 
@@ -2108,6 +2108,10 @@ var AppInfo = {};
             return {};
         });
 
+        define("hammer", ["bower_components/hammerjs/hammer.min"], function (Hammer) {
+            return Hammer;
+        });
+
         $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
 
         var drawer = document.querySelector('.mainDrawerPanel');
@@ -2285,6 +2289,7 @@ $(document).on('pagecreate', ".page", function () {
         var isSettingsPage = page.classList.contains('type-interior');
 
         if (isSettingsPage) {
+            require(['jqmicons']);
             Dashboard.ensureToolsMenu(page);
 
             Dashboard.getCurrentUser().done(function (user) {

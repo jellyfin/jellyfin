@@ -377,6 +377,8 @@ namespace MediaBrowser.Server.Implementations.LiveTv.TunerHosts.HdHomerun
 
         protected override async Task<MediaSourceInfo> GetChannelStream(TunerHostInfo info, string channelId, string streamId, CancellationToken cancellationToken)
         {
+            Logger.Debug("GetChannelStream: channel id: {0}. stream id: {1}", channelId, streamId ?? string.Empty);
+
             if (!channelId.StartsWith(ChannelIdPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 return null;

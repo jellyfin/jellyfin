@@ -56,7 +56,7 @@
                                 <div id="fldDateAdded" style="display: none;">
                                     <paper-input id="txtDateAdded" type="date" label="${LabelDateAdded}"></paper-input>
                                 </div>
-                                <div id="fldStatus" style="display: none;">
+                                <div id="fldStatus" style="display: none;margin:1em 0;">
                                     <label for="selectStatus">${LabelStatus}</label>
                                     <select id="selectStatus" data-mini="true"></select>
                                 </div>
@@ -100,13 +100,16 @@
                                     <paper-input id="txtTagline" type="text" label="${LabelTagline}"></paper-input>
                                 </div>
                                 <div>
-                                    <paper-textarea id="txtOverview" label="${LabelOverview}"></paper-textarea>
+                                    <label for="txtOverview" class="likePaperLabel">${LabelOverview}</label>
+                                    <textarea id="txtOverview" class="likePaperText" data-role="none"></textarea>
+                                    <br />
                                 </div>
                                 <div id="fldShortOverview" style="display: none;">
                                     <paper-input id="txtShortOverview" type="text" label="${LabelShortOverview}"></paper-input>
                                 </div>
                                 <div id="fldPremiereDate" style="display: none;">
-                                    <paper-input id="txtPremiereDate" type="date" label="${LabelReleaseDate}"></paper-input>
+                                    <label for="txtPremiereDate" class="likePaperLabel">${LabelReleaseDate}</label>
+                                    <input id="txtPremiereDate" type="date" class="likePaperText" data-role="none" />
                                 </div>
                                 <div id="fldYear" style="display: none;">
                                     <paper-input id="txtProductionYear" type="number" label="${LabelYear}"></paper-input>
@@ -115,7 +118,8 @@
                                     <paper-input id="txtPlaceOfBirth" type="text" label="${LabelPlaceOfBirth}"></paper-input>
                                 </div>
                                 <div id="fldEndDate" style="display: none;">
-                                    <paper-input id="txtEndDate" type="date" label="${LabelEndDate}"></paper-input>
+                                    <label for="txtEndDate" class="likePaperLabel">${LabelEndDate}</label>
+                                    <input id="txtEndDate" type="date" class="likePaperText" data-role="none" />
                                 </div>
                                 <div id="fldAirDays" style="display: none;">
                                     <p>${LabelAirDays}</p>
@@ -133,7 +137,7 @@
 
                                 </div>
                                 <div id="fldAirTime" style="display: none;">
-                                    <paper-input id="txtAirTime" type="time" label="${LabelAirTime}"></paper-input>
+                                    <paper-input id="txtAirTime" type="text" label="${LabelAirTime}"></paper-input>
                                 </div>
                                 <div id="fldSeriesRuntime" style="display: none;">
                                     <paper-input id="txtSeriesRuntime" type="number" label="${LabelRuntimeMinutes}"></paper-input>

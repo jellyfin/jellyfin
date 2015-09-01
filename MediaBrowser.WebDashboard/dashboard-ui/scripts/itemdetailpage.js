@@ -67,17 +67,15 @@
             setInitialCollapsibleState(page, item, context, user);
             renderDetails(page, item, context);
 
-            var hasBackdrop = LibraryBrowser.renderDetailPageBackdrop(page, item);
+            var hasBackdrop = false;
 
             // For these types, make the backdrop a little smaller so that the items are more quickly accessible
             if (item.Type == 'MusicArtist' || item.Type == "MusicAlbum" || item.Type == "Playlist" || item.Type == "BoxSet" || item.Type == "Audio") {
                 $('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
                 Backdrops.setBackdrops(page, [item]);
             }
-            else if (item.Type == "Season" || item.Type == "Series") {
-                page.querySelector('#itemBackdrop').classList.add('smallBackdrop');
-            } else {
-                page.querySelector('#itemBackdrop').classList.remove('smallBackdrop');
+            else {
+                hasBackdrop = LibraryBrowser.renderDetailPageBackdrop(page, item);
             }
 
             var transparentHeader = hasBackdrop && page.classList.contains('noSecondaryNavPage');

@@ -334,6 +334,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv
             var service = GetService(item);
 
             var sources = await service.GetChannelStreamMediaSources(item.ExternalId, cancellationToken).ConfigureAwait(false);
+
+            if (sources.Count == 0)
+            {
+                throw new NotImplementedException();
+            }
+
             var list = sources.ToList();
 
             foreach (var source in list)

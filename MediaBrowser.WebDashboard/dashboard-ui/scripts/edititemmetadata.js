@@ -185,7 +185,7 @@
             $('#fldPlayers', page).hide();
         }
 
-        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "MusicVideo" || item.Type == "Series" || item.Type == "Game") {
+        if (item.Type == "Movie" || item.Type == "Trailer") {
             $('#fldCriticRating', page).show();
             $('#fldCriticRatingSummary', page).show();
         } else {
@@ -320,14 +320,14 @@
         }
 
         if (item.Type == "Person") {
-            page.querySelector('#txtPremiereDate').label = Globalize.translate('LabelBirthDate');
             page.querySelector('#txtProductionYear').label = Globalize.translate('LabelBirthYear');
-            page.querySelector('#txtEndDate').label = Globalize.translate('LabelDeathDate');
+            page.querySelector("label[for='txtPremiereDate']").innerHTML = Globalize.translate('LabelBirthDate');
+            page.querySelector("label[for='txtEndDate']").innerHTML = Globalize.translate('LabelDeathDate');
             $('#fldPlaceOfBirth', page).show();
         } else {
-            page.querySelector('#txtPremiereDate').label = Globalize.translate('LabelReleaseDate');
             page.querySelector('#txtProductionYear').label = Globalize.translate('LabelYear');
-            page.querySelector('#txtEndDate').label = Globalize.translate('LabelEndDate');
+            page.querySelector("label[for='txtPremiereDate']").innerHTML = Globalize.translate('LabelReleaseDate');
+            page.querySelector("label[for='txtEndDate']").innerHTML = Globalize.translate('LabelEndDate');
             $('#fldPlaceOfBirth', page).hide();
         }
 
@@ -444,7 +444,7 @@
 
         $('#txtPath', page).val(item.Path || '');
         $('#txtName', page).val(item.Name || "");
-        $('#txtOverview', page).val(item.Overview || "");
+        page.querySelector('#txtOverview').value = item.Overview || '';
         $('#txtShortOverview', page).val(item.ShortOverview || "");
         $('#txtTagline', page).val((item.Taglines && item.Taglines.length ? item.Taglines[0] : ''));
         $('#txtSortName', page).val(item.ForcedSortName || "");
@@ -528,7 +528,8 @@
         }
 
         $('#txtProductionYear', page).val(item.ProductionYear || "");
-        $('#txtAirTime', page).val(item.AirTime || "");
+
+        $('#txtAirTime', page).val(item.AirTime || '');
 
         var placeofBirth = item.ProductionLocations && item.ProductionLocations.length ? item.ProductionLocations[0] : '';
         $('#txtPlaceOfBirth', page).val(placeofBirth);
@@ -1484,6 +1485,7 @@
 
         }).on('tabchange', function () {
             var selected = this.selected;
+
             showTab(page, selected);
             loadTab(page, parseInt(this.selected));
         });
@@ -1519,7 +1521,7 @@
         tabs.noSlide = true;
         tabs.noink = true;
 
-        $(ownerpage).on('pagebeforeshow', function () {
+        $(ownerpage).on('pageshowready', function () {
 
             var selected = tabs.selected;
 
@@ -1532,7 +1534,6 @@
                 Logger.log('selected tab will be ' + selected);
 
                 tabs.selected = selected;
-                Events.trigger(tabs, 'tabchange');
 
             } else {
                 Events.trigger(tabs, 'tabchange');
