@@ -153,7 +153,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinitdepends', "#episodesPage", function () {
+    $(document).on('pageinit', "#episodesPage", function () {
 
         var page = this;
 

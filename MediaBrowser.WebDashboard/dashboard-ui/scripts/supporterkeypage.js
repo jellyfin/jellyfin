@@ -255,7 +255,7 @@ $(document).on('pageshowready', "#supporterKeyPage", SupporterKeyPage.onPageShow
 
     }
 
-    $(document).on('pageinitdepends', "#supporterKeyPage", function () {
+    $(document).on('pageinit', "#supporterKeyPage", function () {
 
         var page = this;
         $('#btnAddConnectUser', page).on('click', function () {

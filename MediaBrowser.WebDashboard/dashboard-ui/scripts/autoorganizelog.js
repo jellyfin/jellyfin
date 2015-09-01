@@ -338,7 +338,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#libraryFileOrganizerLogPage", function () {
+    $(document).on('pageinit', "#libraryFileOrganizerLogPage", function () {
 
         var page = this;
 

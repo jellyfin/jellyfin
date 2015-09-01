@@ -341,7 +341,7 @@
         }
     }
 
-    $(document).on('pageinitdepends pagebeforeshow', "#selectServerPage", function () {
+    $(document).on('pageinit pagebeforeshow', "#selectServerPage", function () {
 
         var page = this;
         updatePageStyle(page);

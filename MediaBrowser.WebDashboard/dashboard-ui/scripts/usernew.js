@@ -125,7 +125,7 @@
         loadUser(page);
     }
 
-    $(document).on('pageinitdepends', "#newUserPage", function () {
+    $(document).on('pageinit', "#newUserPage", function () {
 
         var page = this;
 

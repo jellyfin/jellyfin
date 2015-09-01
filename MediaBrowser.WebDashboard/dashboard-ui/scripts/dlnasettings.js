@@ -28,7 +28,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#dlnaSettingsPage", function () {
+    $(document).on('pageinit', "#dlnaSettingsPage", function () {
 
         $('.dlnaSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
 

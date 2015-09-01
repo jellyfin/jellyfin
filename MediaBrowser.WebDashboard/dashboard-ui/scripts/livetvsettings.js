@@ -41,7 +41,7 @@
             return false;
     }
 
-    $(document).on('pageinitdepends', "#liveTvSettingsPage", function () {
+    $(document).on('pageinit', "#liveTvSettingsPage", function () {
 
         var page = this;
 

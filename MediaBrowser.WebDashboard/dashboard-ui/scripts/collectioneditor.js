@@ -130,7 +130,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', ".collectionEditorPage", function () {
+    $(document).on('pageinit', ".collectionEditorPage", function () {
 
         var page = this;
 

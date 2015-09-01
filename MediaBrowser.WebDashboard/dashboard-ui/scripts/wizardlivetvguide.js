@@ -80,7 +80,7 @@
         $('#selectType', page).trigger('change');
     }
 
-    $(document).on('pageinitdepends', "#wizardGuidePage", function () {
+    $(document).on('pageinit', "#wizardGuidePage", function () {
 
         var page = this;
 

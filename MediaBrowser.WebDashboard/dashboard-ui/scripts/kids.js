@@ -91,7 +91,7 @@
 
         $('.kidsBackdropContainer').css('background-image', 'url(css/images/kids/bg.jpg)');
 
-    }).on('pageinitdepends', "#kidsPage", function () {
+    }).on('pageinit', "#kidsPage", function () {
 
         var page = this;
 

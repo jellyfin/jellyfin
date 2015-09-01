@@ -23,7 +23,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#streamingSettingsPage", function () {
+    $(document).on('pageinit', "#streamingSettingsPage", function () {
 
         var page = this;
 

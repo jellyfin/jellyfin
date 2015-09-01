@@ -59,7 +59,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', ".libraryPage", function () {
+    $(document).on('pageinit', ".libraryPage", function () {
 
         var page = this;
 

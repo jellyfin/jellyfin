@@ -55,7 +55,7 @@
 
         });
 
-    }).on('pageinitdepends', "#librarySettingsPage", function () {
+    }).on('pageinit', "#librarySettingsPage", function () {
 
         var page = this;
 

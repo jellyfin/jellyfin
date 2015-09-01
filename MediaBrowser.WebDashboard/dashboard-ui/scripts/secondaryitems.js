@@ -167,7 +167,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#secondaryItemsPage", function () {
+    $(document).on('pageinit', "#secondaryItemsPage", function () {
 
         var page = this;
 

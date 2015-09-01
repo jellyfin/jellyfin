@@ -386,7 +386,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', ".syncJobPage", function () {
+    $(document).on('pageinit', ".syncJobPage", function () {
 
         $('.syncJobForm').off('submit', onSubmit).on('submit', onSubmit);
 

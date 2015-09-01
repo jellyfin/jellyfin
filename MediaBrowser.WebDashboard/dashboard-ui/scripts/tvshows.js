@@ -222,7 +222,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#tvShowsPage", function () {
+    $(document).on('pageinit', "#tvShowsPage", function () {
 
         var page = this;
 

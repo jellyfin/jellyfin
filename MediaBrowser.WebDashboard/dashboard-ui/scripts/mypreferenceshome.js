@@ -230,7 +230,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#homeScreenPreferencesPage", function () {
+    $(document).on('pageinit', "#homeScreenPreferencesPage", function () {
 
         var page = this;
 

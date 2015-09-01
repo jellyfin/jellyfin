@@ -1710,7 +1710,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#itemDetailPage", function () {
+    $(document).on('pageinit', "#itemDetailPage", function () {
 
         var page = this;
 

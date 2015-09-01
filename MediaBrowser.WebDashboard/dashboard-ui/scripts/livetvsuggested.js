@@ -209,7 +209,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#liveTvSuggestedPage", function () {
+    $(document).on('pageinit', "#liveTvSuggestedPage", function () {
 
         var page = this;
 

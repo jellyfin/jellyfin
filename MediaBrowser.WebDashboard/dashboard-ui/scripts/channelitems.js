@@ -201,7 +201,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinitdepends', "#channelItemsPage", function () {
+    $(document).on('pageinit', "#channelItemsPage", function () {
 
         var page = this;
 

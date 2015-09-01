@@ -119,7 +119,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#serverSecurityPage", function () {
+    $(document).on('pageinit', "#serverSecurityPage", function () {
 
         var page = this;
 

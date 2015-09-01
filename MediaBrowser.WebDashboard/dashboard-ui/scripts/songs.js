@@ -132,7 +132,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#songsPage", function () {
+    $(document).on('pageinit', "#songsPage", function () {
 
         var page = this;
 

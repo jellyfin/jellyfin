@@ -170,7 +170,7 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageinitdepends', "#addPluginPage", function () {
+    $(document).on('pageinit', "#addPluginPage", function () {
 
         $('.addPluginForm').off('submit', AddPluginPage.onSubmit).on('submit', AddPluginPage.onSubmit);
 

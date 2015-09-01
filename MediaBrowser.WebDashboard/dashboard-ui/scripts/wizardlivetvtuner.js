@@ -81,7 +81,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#wizardTunerPage", function () {
+    $(document).on('pageinit', "#wizardTunerPage", function () {
 
         var page = this;
 

@@ -70,7 +70,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#wizardSettingsPage", function () {
+    $(document).on('pageinit', "#wizardSettingsPage", function () {
 
         var page = this;
 

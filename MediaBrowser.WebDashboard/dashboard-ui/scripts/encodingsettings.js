@@ -39,7 +39,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#encodingSettingsPage", function () {
+    $(document).on('pageinit', "#encodingSettingsPage", function () {
 
         var page = this;
 

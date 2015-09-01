@@ -170,7 +170,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#musicAlbumsPage", function () {
+    $(document).on('pageinit', "#musicAlbumsPage", function () {
 
         var page = this;
 

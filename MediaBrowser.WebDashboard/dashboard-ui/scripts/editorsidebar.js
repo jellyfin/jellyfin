@@ -425,7 +425,7 @@
 
         });
 
-    }).on('pageinitdepends', ".metadataEditorPage", function () {
+    }).on('pageinit', ".metadataEditorPage", function () {
 
         Dashboard.importCss('css/metadataeditor.css');
         window.MetadataEditor = new metadataEditor();

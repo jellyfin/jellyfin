@@ -1354,7 +1354,7 @@ $(document).on('pageshowready', "#dashboardPage", DashboardPage.onPageShow).on('
         }
     }
 
-    $(document).on('pageinitdepends', "#dashboardPage", function () {
+    $(document).on('pageinit', "#dashboardPage", function () {
 
         var page = this;
 

@@ -201,7 +201,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#photosPage", function () {
+    $(document).on('pageinit', "#photosPage", function () {
 
         var page = this;
 

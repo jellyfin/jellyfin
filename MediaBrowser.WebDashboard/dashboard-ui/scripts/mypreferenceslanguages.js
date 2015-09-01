@@ -116,7 +116,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#languagePreferencesPage", function () {
+    $(document).on('pageinit', "#languagePreferencesPage", function () {
 
         var page = this;
 

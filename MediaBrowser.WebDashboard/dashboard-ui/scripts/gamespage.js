@@ -154,7 +154,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#gamesPage", function () {
+    $(document).on('pageinit', "#gamesPage", function () {
 
         var page = this;
 

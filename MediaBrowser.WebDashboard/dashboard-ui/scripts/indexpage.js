@@ -228,7 +228,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#indexPage", function () {
+    $(document).on('pageinit', "#indexPage", function () {
 
         var page = this;
 

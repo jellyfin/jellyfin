@@ -244,7 +244,7 @@
         return html;
     }
 
-    $(document).on('pageinitdepends', "#pluginCatalogPage", function () {
+    $(document).on('pageinit', "#pluginCatalogPage", function () {
 
         var page = this;
 

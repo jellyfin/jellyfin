@@ -70,7 +70,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#channelsPage", function () {
+    $(document).on('pageinit', "#channelsPage", function () {
 
         var page = this;
 

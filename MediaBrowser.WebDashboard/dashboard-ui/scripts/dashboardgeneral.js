@@ -77,7 +77,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#dashboardGeneralPage", function () {
+    $(document).on('pageinit', "#dashboardGeneralPage", function () {
 
         var page = this;
 

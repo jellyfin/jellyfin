@@ -73,7 +73,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinitdepends', "#gameStudiosPage", function () {
+    $(document).on('pageinit', "#gameStudiosPage", function () {
 
         var page = this;
 

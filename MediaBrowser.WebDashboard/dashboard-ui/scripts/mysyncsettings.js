@@ -37,7 +37,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#syncPreferencesPage", function () {
+    $(document).on('pageinit', "#syncPreferencesPage", function () {
 
         var page = this;
 

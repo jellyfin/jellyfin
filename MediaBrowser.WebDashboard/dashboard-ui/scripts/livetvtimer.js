@@ -101,7 +101,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#liveTvTimerPage", function () {
+    $(document).on('pageinit', "#liveTvTimerPage", function () {
 
         var page = this;
 

@@ -56,7 +56,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#wizardUserPage", function () {
+    $(document).on('pageinit', "#wizardUserPage", function () {
 
         $('.wizardUserForm').off('submit', onSubmit).on('submit', onSubmit);
 

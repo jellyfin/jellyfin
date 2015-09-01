@@ -181,7 +181,7 @@
 
     window.MyProfilePage = new myProfilePage();
 
-    $(document).on('pageinitdepends', "#userImagePage", function () {
+    $(document).on('pageinit', "#userImagePage", function () {
 
         var page = this;
 
@@ -406,7 +406,7 @@
 
     window.UpdatePasswordPage = new updatePasswordPage();
 
-    $(document).on('pageinitdepends', ".userPasswordPage", function () {
+    $(document).on('pageinit', ".userPasswordPage", function () {
 
         var page = this;
 

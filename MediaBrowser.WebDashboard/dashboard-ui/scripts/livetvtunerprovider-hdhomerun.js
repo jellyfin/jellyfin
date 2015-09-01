@@ -58,7 +58,7 @@
 
     }
 
-    $(document).on('pageinitdepends', "#liveTvTunerProviderHdHomerunPage", function () {
+    $(document).on('pageinit', "#liveTvTunerProviderHdHomerunPage", function () {
 
         var page = this;
 

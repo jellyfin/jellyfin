@@ -71,7 +71,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinitdepends', "#gameGenresPage", function () {
+    $(document).on('pageinit', "#gameGenresPage", function () {
 
         var page = this;
 

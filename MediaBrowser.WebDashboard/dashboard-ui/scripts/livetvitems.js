@@ -95,7 +95,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#liveTvItemsPage", function () {
+    $(document).on('pageinit', "#liveTvItemsPage", function () {
 
         var page = this;
 

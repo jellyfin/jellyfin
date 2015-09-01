@@ -540,7 +540,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#libraryReportManagerPage", function () {
+    $(document).on('pageinit', "#libraryReportManagerPage", function () {
 
         var page = this;
 

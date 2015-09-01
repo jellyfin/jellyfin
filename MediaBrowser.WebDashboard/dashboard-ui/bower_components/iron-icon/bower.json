@@ -1,7 +1,7 @@
 {
   "name": "iron-icon",
   "private": true,
-  "version": "1.0.3",
+  "version": "1.0.4",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "An element that supports displaying an icon",
   "main": "iron-icon.html",

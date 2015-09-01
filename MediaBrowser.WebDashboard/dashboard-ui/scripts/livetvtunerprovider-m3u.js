@@ -51,7 +51,7 @@
 
     }
 
-    $(document).on('pageinitdepends', "#liveTvTunerProviderM3UPage", function () {
+    $(document).on('pageinit', "#liveTvTunerProviderM3UPage", function () {
 
         var page = this;
 

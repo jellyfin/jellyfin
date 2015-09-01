@@ -209,7 +209,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#boxsetsPage", function () {
+    $(document).on('pageinit', "#boxsetsPage", function () {
 
         var page = this;
 

@@ -1420,7 +1420,7 @@
         $('.editorTab', page).addClass('hide')[index].classList.remove('hide');
     }
 
-    $(document).on('pageinitdepends', "#editItemMetadataPage", function () {
+    $(document).on('pageinit', "#editItemMetadataPage", function () {
 
         var page = this;
 

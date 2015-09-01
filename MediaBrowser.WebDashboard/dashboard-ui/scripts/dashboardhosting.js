@@ -52,7 +52,7 @@
 
         });
 
-    }).on('pageinitdepends', "#dashboardHostingPage", function () {
+    }).on('pageinit', "#dashboardHostingPage", function () {
 
         var page = this;
 

@@ -17,7 +17,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', '#wizardAgreementPage', function () {
+    $(document).on('pageinit', '#wizardAgreementPage', function () {
 
         $('.wizardAgreementForm').off('submit', onSubmit).on('submit', onSubmit);
     });

@@ -121,7 +121,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#supporterPage", function () {
+    $(document).on('pageinit', "#supporterPage", function () {
 
         var page = this;
 

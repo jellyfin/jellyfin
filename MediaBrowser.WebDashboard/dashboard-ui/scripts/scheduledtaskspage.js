@@ -194,7 +194,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#scheduledTasksPage", function () {
+    $(document).on('pageinit', "#scheduledTasksPage", function () {
 
         var page = this;
 

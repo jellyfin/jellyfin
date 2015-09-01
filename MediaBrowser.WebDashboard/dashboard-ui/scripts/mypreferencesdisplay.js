@@ -53,7 +53,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#displayPreferencesPage", function () {
+    $(document).on('pageinit', "#displayPreferencesPage", function () {
 
         var page = this;
 

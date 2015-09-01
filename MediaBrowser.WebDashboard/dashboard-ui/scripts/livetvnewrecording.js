@@ -218,7 +218,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#liveTvNewRecordingPage", function () {
+    $(document).on('pageinit', "#liveTvNewRecordingPage", function () {
 
         var page = this;
 

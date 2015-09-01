@@ -50,33 +50,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         r1 = fixture('NoLabel');
       });
 
-      test('check button via click', function() {
+      test('check button via click', function(done) {
         r1.addEventListener('click', function() {
-          assert.isTrue(r1.getAttribute('aria-checked'));
+          assert.isTrue(r1.getAttribute('aria-checked') == 'true');
           assert.isTrue(r1.checked);
           done();
         });
-        MockInteractions.down(r1);
+        MockInteractions.tap(r1);
       });
 
-      test('toggle button via click', function() {
+      test('toggle button via click', function(done) {
         r1.checked = true;
         r1.addEventListener('click', function() {
-          assert.isFalse(r1.getAttribute('aria-checked'));
+          assert.isFalse(r1.getAttribute('aria-checked') == 'true');
           assert.isFalse(r1.checked);
           done();
         });
-        MockInteractions.down(r1);
+        MockInteractions.tap(r1);
       });
 
-      test('disabled button cannot be clicked', function() {
+      test('disabled button cannot be clicked', function(done) {
         r1.disabled = true;
-        r1.addEventListener('click', function() {
-          assert.isTrue(r1.getAttribute('aria-checked'));
+        r1.checked = true;
+        MockInteractions.tap(r1);
+
+        setTimeout(function() {
+          assert.isTrue(r1.getAttribute('aria-checked') == 'true');
           assert.isTrue(r1.checked);
           done();
-        });
-        MockInteractions.down(r1);
+        }, 1);
       });
     });
 
@@ -106,6 +108,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var c = fixture('AriaLabel');
         assert.isTrue(c.getAttribute('aria-label') == "Batman");
       });
+
+      a11ySuite('NoLabel');
+      a11ySuite('WithLabel');
+      a11ySuite('AriaLabel');
     });
   </script>
 </body>

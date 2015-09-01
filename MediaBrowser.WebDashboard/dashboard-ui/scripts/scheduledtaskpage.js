@@ -310,7 +310,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#scheduledTaskPage", function () {
+    $(document).on('pageinit', "#scheduledTaskPage", function () {
 
         $('.addTriggerForm').off('submit', onSubmit).on('submit', onSubmit);
 

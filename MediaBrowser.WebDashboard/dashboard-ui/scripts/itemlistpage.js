@@ -188,7 +188,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#itemListPage", function () {
+    $(document).on('pageinit', "#itemListPage", function () {
 
         var page = this;
 

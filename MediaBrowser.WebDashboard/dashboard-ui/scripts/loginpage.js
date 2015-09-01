@@ -216,7 +216,7 @@
     }
 };
 
-$(document).on('pageinitdepends', "#loginPage", function () {
+$(document).on('pageinit', "#loginPage", function () {
 
     var page = this;
 

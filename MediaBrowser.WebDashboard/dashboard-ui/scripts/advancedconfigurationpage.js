@@ -84,7 +84,7 @@
 
         });
 
-    }).on('pageinitdepends', "#advancedConfigurationPage", function () {
+    }).on('pageinit', "#advancedConfigurationPage", function () {
 
         var page = this;
 

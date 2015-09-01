@@ -29,7 +29,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#syncSettingsPage", function () {
+    $(document).on('pageinit', "#syncSettingsPage", function () {
 
         var page = this;
 

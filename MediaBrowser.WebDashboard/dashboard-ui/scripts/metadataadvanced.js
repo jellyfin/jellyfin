@@ -168,7 +168,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#advancedMetadataConfigurationPage", function () {
+    $(document).on('pageinit', "#advancedMetadataConfigurationPage", function () {
 
         var page = this;
 

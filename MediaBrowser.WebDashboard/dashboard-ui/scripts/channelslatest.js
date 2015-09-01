@@ -21,7 +21,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#channelsPage", function () {
+    $(document).on('pageinit', "#channelsPage", function () {
 
         var page = this;
         var pages = page.querySelector('neon-animated-pages');

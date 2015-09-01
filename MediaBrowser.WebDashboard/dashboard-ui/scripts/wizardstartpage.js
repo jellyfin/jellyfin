@@ -42,7 +42,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#wizardStartPage", function () {
+    $(document).on('pageinit', "#wizardStartPage", function () {
 
         $('.wizardStartForm').off('submit', onSubmit).on('submit', onSubmit);
 

@@ -111,7 +111,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#devicesUploadPage", function () {
+    $(document).on('pageinit', "#devicesUploadPage", function () {
 
         var page = this;
 

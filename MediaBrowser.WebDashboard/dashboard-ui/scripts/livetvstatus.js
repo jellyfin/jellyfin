@@ -476,7 +476,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#liveTvStatusPage", function () {
+    $(document).on('pageinit', "#liveTvStatusPage", function () {
 
         var page = this;
 

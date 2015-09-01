@@ -157,7 +157,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#musicAlbumArtistsPage", function () {
+    $(document).on('pageinit', "#musicAlbumArtistsPage", function () {
 
         var page = this;
 

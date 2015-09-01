@@ -81,7 +81,7 @@
 
     }
 
-    $(document).on('pageinitdepends', "#liveTvRecordingListPage", function () {
+    $(document).on('pageinit', "#liveTvRecordingListPage", function () {
 
         var page = this;
 

@@ -210,7 +210,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#connectLoginPage", function () {
+    $(document).on('pageinit', "#connectLoginPage", function () {
 
         var page = this;
 

@@ -25,7 +25,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#channelSettingsPage", function () {
+    $(document).on('pageinit', "#channelSettingsPage", function () {
 
         var page = this;
 

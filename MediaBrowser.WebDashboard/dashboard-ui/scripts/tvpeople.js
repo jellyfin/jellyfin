@@ -96,7 +96,7 @@
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
 
-    $(document).on('pageinitdepends', "#tvPeoplePage", function () {
+    $(document).on('pageinit', "#tvPeoplePage", function () {
 
         var page = this;
 

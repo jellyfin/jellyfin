@@ -14379,7 +14379,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </style>
 
   <template>
-    <iron-meta id="meta" type="iconset"></iron-meta>
   </template>
 
   <script>
@@ -14416,7 +14415,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         src: {
           type: String,
           observer: '_srcChanged'
+        },
+        
+        _meta: {
+          value: Polymer.Base.create('iron-meta', {type: 'iconset'})
         }
+        
       },
 
       _DEFAULT_ICONSET: 'icons',
@@ -14440,7 +14444,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _updateIcon: function() {
         if (this._usesIconset()) {
           if (this._iconsetName) {
-            this._iconset = this.$.meta.byKey(this._iconsetName);
+            this._iconset = this._meta.byKey(this._iconsetName);
             if (this._iconset) {
               this._iconset.applyIcon(this, this._iconName, this.theme);
             } else {
@@ -18762,7 +18766,8 @@ paper-ripple {
 <dom-module id="paper-radio-button" assetpath="bower_components/paper-radio-button/">
 
   <style>
-/*
+/**
+@license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
@@ -18886,7 +18891,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <paper-ripple id="ink" class="circle" center="" checked$="[[checked]]"></paper-ripple>
     </div>
 
-    <div id="radioLabel" aria-hidden="true"><content></content></div>
+    <div id="radioLabel"><content></content></div>
 
   </template>
 
@@ -18895,7 +18900,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       is: 'paper-radio-button',
 
       behaviors: [
-        Polymer.PaperInkyFocusBehavior
+        Polymer.PaperInkyFocusBehavior,
+        Polymer.IronCheckedElementBehavior
       ],
 
       hostAttributes: {
@@ -18917,38 +18923,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          * @event iron-change
          */
 
-        /**
-         * Gets or sets the state, `true` is checked and `false` is unchecked.
-         */
-        checked: {
-          type: Boolean,
-          value: false,
-          reflectToAttribute: true,
-          notify: true,
-          observer: '_checkedChanged'
-        },
-
-        /**
-         * If true, the button toggles the active state with each tap or press
-         * of the spacebar.
-         */
-        toggles: {
-          type: Boolean,
-          value: true,
-          reflectToAttribute: true
-        }
+         ariaActiveAttribute: {
+           value: 'aria-checked'
+         }
       },
 
       attached: function() {
-        var trimmedText = Polymer.dom(this).textContent.trim();
-        if (trimmedText === '') {
-          this.$.radioLabel.hidden = true;
-        }
-        // Don't stomp over a user-set aria-label.
-        if (trimmedText !== '' && !this.getAttribute('aria-label')) {
-          this.setAttribute('aria-label', trimmedText);
-        }
         this._isReady = true;
+
+        // Don't stomp over a user-set aria-label.
+        if (!this.getAttribute('aria-label')) {
+          this.updateAriaLabel();
+        }
+      },
+
+      /**
+       * Update the checkbox aria-label. This is a temporary workaround not
+       * being able to observe changes in <content>
+       * (see: https://github.com/Polymer/polymer/issues/1773)
+       *
+       * Call this if you manually change the contents of the checkbox
+       * and want the aria-label to match the new contents.
+       */
+      updateAriaLabel: function() {
+        this.setAttribute('aria-label', Polymer.dom(this).textContent.trim());
       },
 
       _buttonStateChanged: function() {
@@ -18958,12 +18956,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (this._isReady) {
           this.checked = this.active;
         }
-      },
-
-      _checkedChanged: function() {
-        this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
-        this.active = this.checked;
-        this.fire('iron-change');
       }
     })
   </script>
@@ -19181,6 +19173,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <g id="filter-list"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"></path></g>
             <g id="error"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></g>
             <g id="wifi"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"></path></g>
+            <g id="ondemand-video"><path d="M21 3H3c-1.11 0-2 .89-2 2v12c0 1.1.89 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.11-.9-2-2-2zm0 14H3V5h18v12zm-5-6l-7 4V7z"></path></g>
         </defs>
     </svg>
 </iron-iconset-svg>

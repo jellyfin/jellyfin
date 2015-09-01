@@ -316,7 +316,7 @@
     window.MoviesPage = window.MoviesPage || {};
     window.MoviesPage.renderSuggestedTab = loadSuggestionsTab;
 
-    $(document).on('pageinitdepends', "#moviesPage", function () {
+    $(document).on('pageinit', "#moviesPage", function () {
 
         var page = this;
 

@@ -461,7 +461,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#userProfilesPage", function () {
+    $(document).on('pageinit', "#userProfilesPage", function () {
 
         var page = this;
 

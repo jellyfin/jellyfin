@@ -61,7 +61,7 @@
         LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, '#');
     }
 
-    $(document).on('pageinitdepends', "#publicSharedItemPage", function () {
+    $(document).on('pageinit', "#publicSharedItemPage", function () {
 
         var page = this;
 

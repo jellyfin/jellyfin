@@ -193,7 +193,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#editUserPage", function () {
+    $(document).on('pageinit', "#editUserPage", function () {
 
         $('.editUserProfileForm').off('submit', onSubmit).on('submit', onSubmit);
 

@@ -127,7 +127,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#musicVideosPage", function () {
+    $(document).on('pageinit', "#musicVideosPage", function () {
 
         var page = this;
 

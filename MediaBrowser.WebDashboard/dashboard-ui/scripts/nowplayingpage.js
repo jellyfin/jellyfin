@@ -742,7 +742,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#nowPlayingPage", function () {
+    $(document).on('pageinit', "#nowPlayingPage", function () {
 
         var page = this;
 

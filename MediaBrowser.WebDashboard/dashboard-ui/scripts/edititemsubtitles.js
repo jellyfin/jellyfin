@@ -281,7 +281,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#editItemMetadataPage", function () {
+    $(document).on('pageinit', "#editItemMetadataPage", function () {
 
         var page = this;
 

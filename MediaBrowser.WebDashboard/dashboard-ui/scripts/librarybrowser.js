@@ -193,10 +193,7 @@
             return !LibraryBrowser.enableFullPaperTabs();
         },
 
-        configurePaperLibraryTabs: function (ownerpage, tabs, pages, defaultTabIndex) {
-
-            tabs.hideScrollButtons = true;
-            tabs.noink = true;
+        configurePaperLibraryTabs: function (ownerpage, tabs, pages) {
 
             if (AppInfo.enableBottomTabs) {
                 tabs.alignBottom = true;
@@ -210,7 +207,6 @@
                     // Not very iOS-like I suppose
                     tabs.noSlide = true;
                     tabs.noBar = true;
-                    tabs.noink = true;
                 }
                 else {
                     LibraryBrowser.configureSwipeTabs(ownerpage, tabs, pages);
@@ -222,7 +218,6 @@
 
                 tabs.noSlide = true;
                 tabs.noBar = true;
-                tabs.scrollable = true;
 
                 var legacyTabs = $('.legacyTabs', ownerpage);
 
@@ -254,6 +249,20 @@
         onTabbedpagebeforeshow: function () {
 
             var page = this;
+            var delay = 0;
+
+            if (!page.getAttribute('data-firstload')) {
+                delay = 300;
+                page.setAttribute('data-firstload', '1');
+            }
+
+            setTimeout(function () {
+                LibraryBrowser.onTabbedpagebeforeshowInternal(page);
+            }, delay);
+        },
+
+        onTabbedpagebeforeshowInternal: function (page) {
+
             var tabs = page.querySelector('paper-tabs');
             var selected = tabs.selected;
 
@@ -1154,7 +1163,7 @@
                     textlines.push('&nbsp;');
                 }
                 else if (item.Type == 'TvChannel') {
-                    
+
                     if (item.CurrentProgram) {
                         textlines.push(LibraryBrowser.getPosterViewDisplayName(item.CurrentProgram));
                     }

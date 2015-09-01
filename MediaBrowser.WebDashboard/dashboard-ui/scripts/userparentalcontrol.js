@@ -367,7 +367,7 @@
         $('#txtBlockedTag', page).val('').focus();
     }
 
-    $(document).on('pageinitdepends', "#userParentalControlPage", function () {
+    $(document).on('pageinit', "#userParentalControlPage", function () {
 
         var page = this;
 

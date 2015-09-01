@@ -165,7 +165,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#userLibraryAccessPage", function () {
+    $(document).on('pageinit', "#userLibraryAccessPage", function () {
 
         var page = this;
 

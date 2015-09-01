@@ -34,7 +34,7 @@
 
     var interval;
 
-    $(document).on('pageinitdepends', "#mySyncActivityPage", function () {
+    $(document).on('pageinit', "#mySyncActivityPage", function () {
 
         var page = this;
 
