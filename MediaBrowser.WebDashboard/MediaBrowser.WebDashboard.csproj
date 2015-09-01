@@ -324,6 +324,9 @@
     <Content Include="dashboard-ui\thirdparty\emby-icons.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.popup.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.slider.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -2662,6 +2665,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.table.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="dashboard-ui\thirdparty\jquerymobile-1.4.5\jqm.popup.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="dashboard-ui\thirdparty\jquerymobile-1.4.5\jquery.mobile-1.4.5.min.map">

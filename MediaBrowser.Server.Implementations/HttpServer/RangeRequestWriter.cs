@@ -235,62 +235,6 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
         }
 
-        /// <summary>
-        /// Writes to async.
-        /// </summary>
-        /// <param name="responseStream">The response stream.</param>
-        /// <returns>Task.</returns>
-        private async Task WriteToAsync(Stream responseStream)
-        {
-            try
-            {
-                // Headers only
-                if (IsHeadRequest)
-                {
-                    return;
-                }
-
-                using (var source = SourceStream)
-                {
-                    // If the requested range is "0-", we can optimize by just doing a stream copy
-                    if (RangeEnd >= TotalContentLength - 1)
-                    {
-                        await source.CopyToAsync(responseStream, BufferSize).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        await CopyToAsyncInternal(source, responseStream, Convert.ToInt32(RangeLength), CancellationToken.None).ConfigureAwait(false);
-                    }
-                }
-            }
-            finally
-            {
-                if (OnComplete != null)
-                {
-                    OnComplete();
-                }
-            }
-        }
-
-        private async Task CopyToAsyncInternal(Stream source, Stream destination, int copyLength, CancellationToken cancellationToken)
-        {
-            var array = new byte[BufferSize];
-            int count;
-            while ((count = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
-            {
-                var bytesToCopy = Math.Min(count, copyLength);
-
-                await destination.WriteAsync(array, 0, bytesToCopy, cancellationToken).ConfigureAwait(false);
-
-                copyLength -= bytesToCopy;
-
-                if (copyLength <= 0)
-                {
-                    break;
-                }
-            }
-        }
-
         public string ContentType { get; set; }
 
         public IRequest RequestContext { get; set; }
