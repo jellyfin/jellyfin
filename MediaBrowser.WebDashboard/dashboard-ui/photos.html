@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="photosPage" data-role="page" class="page libraryPage pageWithAbsoluteTabs" data-require="scripts/photos">
+    <div id="photosPage" data-role="page" data-dom-cache="true" class="page libraryPage pageWithAbsoluteTabs" data-require="scripts/photos">
 
         <div class="libraryViewNav scopedLibraryViewNav libraryViewNavWithMinHeight">
             <paper-tabs hidescrollbuttons noink>
@@ -13,7 +13,7 @@
                 <paper-tab><iron-icon icon="videocam"></iron-icon>${TabVideos}</paper-tab>
             </paper-tabs>
             <div class="legacyTabs">
-                <a href="photos.html" class="ui-btn-active lnkPhotoAlbums"><iron-icon icon="photo-album"></iron-icon>${TabAlbums}</a>
+                <a href="photos.html" class="lnkPhotoAlbums"><iron-icon icon="photo-album"></iron-icon>${TabAlbums}</a>
                 <a href="photos.html?tab=1" class="lnkPhotos"><iron-icon icon="photo"></iron-icon>${TabPhotos}</a>
                 <a href="photos.html?tab=2" class="lnkVideos"><iron-icon icon="videocam"></iron-icon>${TabVideos}</a>
             </div>

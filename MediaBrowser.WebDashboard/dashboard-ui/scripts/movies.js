@@ -66,7 +66,8 @@
                 addLayoutButton: true,
                 viewIcon: 'filter-list',
                 sortButton: true,
-                currentLayout: view
+                currentLayout: view,
+                layouts: 'List,Poster,PosterCard,Thumb,ThumbCard,Timeline'
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;

@@ -402,6 +402,11 @@
 
     }).on('pagebeforeshow', ".metadataEditorPage", function () {
 
+        Dashboard.importCss('css/metadataeditor.css');
+        window.MetadataEditor = new metadataEditor();
+
+    }).on('pagebeforeshow', ".metadataEditorPage", function () {
+
         var page = this;
 
         Dashboard.getCurrentUser().done(function (user) {
@@ -424,11 +429,6 @@
             }
 
         });
-
-    }).on('pageinit', ".metadataEditorPage", function () {
-
-        Dashboard.importCss('css/metadataeditor.css');
-        window.MetadataEditor = new metadataEditor();
 
     }).on('pagebeforehide', ".metadataEditorPage", function () {
 

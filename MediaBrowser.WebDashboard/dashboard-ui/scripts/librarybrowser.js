@@ -2450,7 +2450,9 @@
         showLayoutMenu: function (button, currentLayout) {
 
             // Add banner and list once all screens support them
-            var views = ['List', 'Poster', 'PosterCard', 'Thumb', 'ThumbCard'];
+            var views = button.getAttribute('data-layouts');
+
+            views = views ? views.split(',') : ['List', 'Poster', 'PosterCard', 'Thumb', 'ThumbCard'];
 
             var menuItems = views.map(function (v) {
                 return {
@@ -2525,7 +2527,7 @@
 
                 if (options.addLayoutButton) {
 
-                    html += '<paper-button raised class="subdued notext btnChangeLayout" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');"><iron-icon icon="view-comfy"></iron-icon></paper-button>';
+                    html += '<paper-button raised class="subdued notext btnChangeLayout" data-layouts="' + (options.layouts || '') + '" onclick="LibraryBrowser.showLayoutMenu(this, \'' + (options.currentLayout || '') + '\');"><iron-icon icon="view-comfy"></iron-icon></paper-button>';
                 }
 
                 if (options.sortButton) {

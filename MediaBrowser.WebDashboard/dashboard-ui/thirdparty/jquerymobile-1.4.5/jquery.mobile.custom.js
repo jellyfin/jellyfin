@@ -2986,7 +2986,7 @@ $.widget( "mobile.page", {
 		// when dom caching is not enabled or the page is embedded bind to remove the page on hide
 		if ( !page.data( "mobile-page" ).options.domCache ) {
 
-			// TODO use _on - that is, sort out why it doesn't work in this case
+		    // TODO use _on - that is, sort out why it doesn't work in this case
 			page.bind( "pagehide.remove", callback || function( e, data ) {
 
 				//check if this is a same page transition and if so don't remove the page

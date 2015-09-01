@@ -364,6 +364,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         {
             await _liveStreamSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
+            if (string.Equals(id, mediaSourceId, StringComparison.OrdinalIgnoreCase))
+            {
+                mediaSourceId = null;
+            }
+
             try
             {
                 MediaSourceInfo info;
