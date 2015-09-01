@@ -2112,6 +2112,11 @@ var AppInfo = {};
             return {};
         });
 
+        define("jqmslider", ["thirdparty/jquerymobile-1.4.5/jqm.slider"], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.slider.css');
+            return {};
+        });
+
         $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
 
         var drawer = document.querySelector('.mainDrawerPanel');
@@ -2263,6 +2268,11 @@ $(document).on('pagecreate', ".page", function () {
     var dependencies = this.getAttribute('data-require');
     dependencies = dependencies ? dependencies.split(',') : null;
 
+    if (!page.classList.contains('libraryPage')) {
+        dependencies = dependencies || [];
+        dependencies.push('jqmicons');
+    }
+
     Dashboard.firePageEvent(page, 'pageinitdepends', dependencies);
 
 }).on('pagebeforeshow', ".page", function () {
@@ -2330,9 +2340,5 @@ $(document).on('pagecreate', ".page", function () {
 
     if (apiClient && !apiClient.isWebSocketOpen()) {
         Dashboard.refreshSystemInfoFromServer();
-    }
-
-    if (!page.classList.contains('libraryPage')) {
-        require(['jqmicons']);
     }
 });

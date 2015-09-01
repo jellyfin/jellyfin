@@ -116,7 +116,7 @@
 
         if (AppInfo.isTouchPreferred) {
 
-            $('.mainDrawerButton').on('touchend', openMainDrawer).on('click', openMainDrawer);
+            $('.mainDrawerButton').on('click', openMainDrawer);
 
         } else {
             $('.mainDrawerButton').createHoverTouch().on('hovertouch', openMainDrawer);
