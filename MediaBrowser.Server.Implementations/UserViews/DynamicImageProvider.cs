@@ -147,15 +147,7 @@ namespace MediaBrowser.Server.Implementations.UserViews
             {
                 CollectionType.Movies,
                 CollectionType.TvShows,
-                CollectionType.Games,
-                CollectionType.Music,
-                CollectionType.BoxSets,
-                CollectionType.Channels,
-                CollectionType.Books,
-                CollectionType.Photos,
-                CollectionType.HomeVideos,
-                CollectionType.MusicVideos,
-                string.Empty
+                CollectionType.Music
             };
 
             return collectionStripViewTypes.Contains(view.ViewType ?? string.Empty);
