@@ -218,34 +218,36 @@
 
     function showPendingUserMenu(elem) {
 
-        var card = $(elem).parents('.card');
-        var page = $(elem).parents('.page');
-        var id = card.attr('data-id');
+        require(['jqmpopup'], function() {
+            var card = $(elem).parents('.card');
+            var page = $(elem).parents('.page');
+            var id = card.attr('data-id');
 
-        $('.userMenu', page).popup("close").remove();
-
-        var html = '<div data-role="popup" class="userMenu tapHoldMenu" data-theme="a">';
-
-        html += '<ul data-role="listview" style="min-width: 180px;">';
-        html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
-
-        html += '<li><a href="#" class="btnDelete" data-id="' + id + '">' + Globalize.translate('ButtonCancel') + '</a></li>';
-
-        html += '</ul>';
-
-        html += '</div>';
-
-        page.append(html);
-
-        var flyout = $('.userMenu', page).popup({ positionTo: elem || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
-
-            $(this).off("popupafterclose").remove();
-
-        });
-
-        $('.btnDelete', flyout).on('click', function () {
-            cancelAuthorization(page, this.getAttribute('data-id'));
             $('.userMenu', page).popup("close").remove();
+
+            var html = '<div data-role="popup" class="userMenu tapHoldMenu" data-theme="a">';
+
+            html += '<ul data-role="listview" style="min-width: 180px;">';
+            html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
+
+            html += '<li><a href="#" class="btnDelete" data-id="' + id + '">' + Globalize.translate('ButtonCancel') + '</a></li>';
+
+            html += '</ul>';
+
+            html += '</div>';
+
+            page.append(html);
+
+            var flyout = $('.userMenu', page).popup({ positionTo: elem || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
+
+                $(this).off("popupafterclose").remove();
+
+            });
+
+            $('.btnDelete', flyout).on('click', function () {
+                cancelAuthorization(page, this.getAttribute('data-id'));
+                $('.userMenu', page).popup("close").remove();
+            });
         });
     }
 

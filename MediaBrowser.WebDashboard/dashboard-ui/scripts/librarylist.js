@@ -787,9 +787,11 @@
 
         var context = options.context;
 
-        var elem = getItemsOverlay(options.ids, context);
+        require(['jqmpopup'], function () {
+            var elem = getItemsOverlay(options.ids, context);
 
-        setItemIntoOverlay(elem, 0);
+            setItemIntoOverlay(elem, 0);
+        });
     }
 
     function onCardClick(e) {

@@ -688,7 +688,6 @@
             html += '<paper-icon-button icon="subtitles" class="mediaButton videoSubtitleButton" onclick="MediaPlayer.showSubtitleMenu();"></paper-icon-button>';
 
             html += '<paper-icon-button icon="videocam" class="mediaButton videoChaptersButton" onclick="MediaPlayer.showChaptersFlyout();"></paper-icon-button>';
-            html += '<div data-role="popup" class="videoChaptersPopup videoPlayerPopup" data-history="false" data-theme="b"></div>';
 
             html += '<paper-icon-button icon="settings" class="mediaButton videoQualityButton" onclick="MediaPlayer.showQualityFlyout();"></paper-icon-button>';
 
@@ -1069,7 +1068,7 @@
             }
 
             if (item.Chapters && item.Chapters.length && supportsContentOverVideoPlayer()) {
-                $('.videoChaptersButton').show();
+                $('.videoChaptersButton').hide();
             } else {
                 $('.videoChaptersButton').hide();
             }

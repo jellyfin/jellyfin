@@ -32,7 +32,7 @@ var Dashboard = {
         //$.mobile.listview.prototype.options.dividerTheme = "b";
 
         //$.mobile.popup.prototype.options.theme = "c";
-        $.mobile.popup.prototype.options.transition = "none";
+        //$.mobile.popup.prototype.options.transition = "none";
 
         //$.mobile.keepNative = "textarea";
 
@@ -1657,20 +1657,6 @@ var Dashboard = {
         Dashboard.initPromise.done(fn);
     },
 
-    firePageEvent: function (page, name, dependencies) {
-
-        Dashboard.ready(function () {
-
-            if (dependencies && dependencies.length) {
-                require(dependencies, function () {
-                    Events.trigger(page, name);
-                });
-            } else {
-                Events.trigger(page, name);
-            }
-        });
-    },
-
     loadExternalPlayer: function () {
 
         var deferred = DeferredBuilder.Deferred();
@@ -2117,6 +2103,11 @@ var AppInfo = {};
             return {};
         });
 
+        define("jqmpopup", ["thirdparty/jquerymobile-1.4.5/jqm.popup"], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.popup.css');
+            return {};
+        });
+
         $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
 
         var drawer = document.querySelector('.mainDrawerPanel');
@@ -2175,15 +2166,35 @@ var AppInfo = {};
                     var newHtml = mainDrawerPanelContent.innerHTML.substring(4);
                     newHtml = newHtml.substring(0, newHtml.length - 3);
 
-                    mainDrawerPanelContent.innerHTML = Globalize.translateDocument(newHtml, 'html');
+                    var srch = 'data-require=';
+                    var index = newHtml.indexOf(srch);
+
+                    if (index != -1) {
+
+                        var requireAttribute = newHtml.substring(index + srch.length + 1);
+
+                        requireAttribute = requireAttribute.substring(0, requireAttribute.indexOf('"'));
+                        var depends = requireAttribute.split(',');
+
+                        require(depends, function () {
+                            mainDrawerPanelContent.innerHTML = Globalize.translateDocument(newHtml, 'html');
+                            onAppReady(deferred);
+                        });
+                        return;
+
+                    }
                 }
 
-                onDocumentReady();
-                Dashboard.initPromiseDone = true;
-                $.mobile.initializePage();
-                deferred.resolve();
+                onAppReady(deferred);
             });
         });
+    }
+
+    function onAppReady(deferred) {
+        onDocumentReady();
+        Dashboard.initPromiseDone = true;
+        $.mobile.initializePage();
+        deferred.resolve();
     }
 
     function initCordovaWithDeviceId(deferred, deviceId) {
@@ -2264,34 +2275,15 @@ $(document).on('pagecreate', ".page", function () {
 }).on('pageinit', ".page", function () {
 
     var page = this;
-
-    var dependencies = this.getAttribute('data-require');
-    dependencies = dependencies ? dependencies.split(',') : null;
-
-    if (!page.classList.contains('libraryPage')) {
-        dependencies = dependencies || [];
-        dependencies.push('jqmicons');
-    }
-
-    Dashboard.firePageEvent(page, 'pageinitdepends', dependencies);
+    Events.trigger(page, 'pageinitdepends');
 
 }).on('pagebeforeshow', ".page", function () {
 
     var page = this;
-    var dependencies = this.getAttribute('data-require');
-
     Dashboard.ensurePageTitle(page);
-    dependencies = dependencies ? dependencies.split(',') : null;
-    Dashboard.firePageEvent(page, 'pagebeforeshowready', dependencies);
+    Events.trigger(page, 'pagebeforeshowready');
 
 }).on('pageshow', ".page", function () {
-
-    var page = this;
-    var dependencies = this.getAttribute('data-require');
-    dependencies = dependencies ? dependencies.split(',') : null;
-    Dashboard.firePageEvent(page, 'pageshowbeginready', dependencies);
-
-}).on('pageshowbeginready', ".page", function () {
 
     var page = this;
 
@@ -2334,7 +2326,7 @@ $(document).on('pagecreate', ".page", function () {
         }
     }
 
-    Dashboard.firePageEvent(page, 'pageshowready');
+    Events.trigger(page, 'pageshowready');
 
     Dashboard.ensureHeader(page);
 

@@ -149,41 +149,43 @@
 
     function showOverlay(elem, item) {
 
-        $('.itemFlyout').popup('close').remove();
+        require(['jqmpopup'], function () {
+            $('.itemFlyout').popup('close').remove();
 
-        var html = '<div data-role="popup" class="itemFlyout" data-theme="b" data-arrow="true" data-history="false">';
+            var html = '<div data-role="popup" class="itemFlyout" data-theme="b" data-arrow="true" data-history="false">';
 
-        html += '<div class="ui-bar-b" style="text-align:center;">';
-        html += '<h3 style="margin: .5em 0;padding:.5em 1em;font-weight:normal;">' + item.Name + '</h3>';
-        html += '</div>';
+            html += '<div class="ui-bar-b" style="text-align:center;">';
+            html += '<h3 style="margin: .5em 0;padding:.5em 1em;font-weight:normal;">' + item.Name + '</h3>';
+            html += '</div>';
 
-        html += '<div style="padding: 0 1em;">';
-        html += getOverlayHtml(item);
-        html += '</div>';
+            html += '<div style="padding: 0 1em;">';
+            html += getOverlayHtml(item);
+            html += '</div>';
 
-        html += '</div>';
+            html += '</div>';
 
-        $('.itemFlyout').popup('close').popup('destroy').remove();
+            $('.itemFlyout').popup('close').popup('destroy').remove();
 
-        $(document.body).append(html);
+            $(document.body).append(html);
 
-        var popup = $('.itemFlyout').on('mouseenter', onOverlayMouseOver).on('mouseleave', onOverlayMouseOut).popup({
+            var popup = $('.itemFlyout').on('mouseenter', onOverlayMouseOver).on('mouseleave', onOverlayMouseOut).popup({
 
-            positionTo: elem
+                positionTo: elem
 
-        }).trigger('create').popup("open").on("popupafterclose", function () {
+            }).trigger('create').popup("open").on("popupafterclose", function () {
 
-            $(this).off("popupafterclose").off("mouseenter").off("mouseleave").remove();
+                $(this).off("popupafterclose").off("mouseenter").off("mouseleave").remove();
+            });
+
+            $('.btnPlay', popup).on('click', onPlayClick);
+            $('.btnRecord', popup).on('click', onRecordClick);
+
+            LibraryBrowser.renderGenres($('.itemGenres', popup), item, 3);
+            $('.miscTvProgramInfo', popup).html(LibraryBrowser.getMiscInfoHtml(item)).trigger('create');
+
+            popup.parents().prev('.ui-popup-screen').remove();
+            currentPosterItem = elem;
         });
-
-        $('.btnPlay', popup).on('click', onPlayClick);
-        $('.btnRecord', popup).on('click', onRecordClick);
-
-        LibraryBrowser.renderGenres($('.itemGenres', popup), item, 3);
-        $('.miscTvProgramInfo', popup).html(LibraryBrowser.getMiscInfoHtml(item)).trigger('create');
-
-        popup.parents().prev('.ui-popup-screen').remove();
-        currentPosterItem = elem;
     }
 
     function onProgramClicked() {

@@ -118,13 +118,6 @@ label.ui-btn {
 	-webkit-background-clip: padding;
 	background-clip: padding-box;
 }
-/* Popup arrow */
-.ui-popup.ui-corner-all > .ui-popup-arrow-guide {
-	left: .6em /*{global-radii-blocks}*/;
-	right: .6em /*{global-radii-blocks}*/;
-	top: .6em /*{global-radii-blocks}*/;
-	bottom: .6em /*{global-radii-blocks}*/;
-}
 
 /* Shadow
 -----------------------------------------------------------------------------------------------------------*/

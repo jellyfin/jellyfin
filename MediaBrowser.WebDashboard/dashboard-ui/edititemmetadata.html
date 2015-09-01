@@ -4,7 +4,7 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="editItemMetadataPage" data-role="page" class="page libraryPage metadataEditorPage noSecondaryNavPage" data-contextname="${HeaderMetadataManager}" data-require="scripts/editorsidebar,scripts/edititemmetadata,jqmicons,scripts/edititemsubtitles,scripts/editcollectionitems,scripts/edititemimages">
+    <div id="editItemMetadataPage" data-role="page" class="page libraryPage metadataEditorPage noSecondaryNavPage" data-contextname="${HeaderMetadataManager}" data-require="jqmpopup,scripts/editorsidebar,scripts/edititemmetadata,jqmicons,scripts/edititemsubtitles,scripts/editcollectionitems,scripts/edititemimages">
         <div>
             <div class="editPageSidebar" style="overflow:auto;">
                 <div class="libraryTree">
@@ -227,7 +227,7 @@
                                         <paper-input id="txtDisplayMediaType" type="text" label="${LabelTreatImageAs}"></paper-input>
                                     </div>
                                     <div id="fldDisplaySpecialsInline" class="fldDisplaySetting">
-                                        <br/>
+                                        <br />
                                         <paper-checkbox id="chkDisplaySpecialsInline">${LabelDisplaySpecialsWithinSeasons}</paper-checkbox>
                                     </div>
                                     <div id="fldDisplayOrder" class="fldDisplaySetting">
@@ -343,7 +343,7 @@
                     <div class="readOnlyContent" style="max-width: 700px;">
                         <div class="subtitleList"></div>
                     </div>
-                    <br/>
+                    <br />
                     <h1>${HeaderSearchForSubtitles}</h1>
 
                     <form class="subtitleSearchForm">
@@ -556,7 +556,7 @@
 
         </div>
 
-        <div data-role="popup" class="ui-content popupSubtitleViewer">
+        <div data-role="popup" class="popup popupSubtitleViewer">
             <a href="#" data-rel="back" data-role="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
             <div class="subtitleViewerContent">
                 <pre class="subtitleContent" style="margin: 0; border-radius: 0;"></pre>

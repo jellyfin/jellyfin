@@ -214,7 +214,10 @@
         self.show = function (options) {
 
             getSystemInfo().done(function (systemInfo) {
-                show(self, page, options, systemInfo);
+
+                require(['jqmpopup'], function() {
+                    show(self, page, options, systemInfo);
+                });
             });
         };
 
