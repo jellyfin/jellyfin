@@ -235,23 +235,7 @@
         var tabs = page.querySelector('paper-tabs');
         var pages = page.querySelector('neon-animated-pages');
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages);
-
-        $(tabs).on('iron-select', function () {
-            var selected = this.selected;
-
-            if (LibraryBrowser.navigateOnLibraryTabSelect()) {
-
-                if (selected) {
-                    Dashboard.navigate('index.html?tab=' + selected);
-                } else {
-                    Dashboard.navigate('index.html');
-                }
-
-            } else {
-                page.querySelector('neon-animated-pages').selected = selected;
-            }
-        });
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, 'index.html');
 
         $(pages).on('tabchange', function () {
             loadTab(page, parseInt(this.selected));

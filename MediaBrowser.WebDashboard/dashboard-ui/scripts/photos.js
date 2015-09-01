@@ -206,27 +206,14 @@
         var page = this;
 
         var tabs = page.querySelector('paper-tabs');
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, page.querySelector('neon-animated-pages'));
 
-        $(tabs).on('iron-select', function () {
-            var selected = this.selected;
-            if (LibraryBrowser.navigateOnLibraryTabSelect()) {
+        var baseUrl = 'photos.html';
+        var topParentId = LibraryMenu.getTopParentId();
+        if (topParentId) {
+            baseUrl += '?topParentId=' + topParentId;
+        }
 
-                var url = 'photos.html';
-                var topParentId = LibraryMenu.getTopParentId();
-                if (topParentId) {
-                    url += '?topParentId=' + topParentId;
-                }
-                if (selected) {
-                    Dashboard.navigate(url + '&tab=' + selected);
-                } else {
-                    Dashboard.navigate(url);
-                }
-
-            } else {
-                page.querySelector('neon-animated-pages').selected = selected;
-            }
-        });
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, page.querySelector('neon-animated-pages'), baseUrl);
 
         $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
             loadTab(page, parseInt(this.selected));

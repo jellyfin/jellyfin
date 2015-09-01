@@ -354,10 +354,6 @@ paper-menu-item {
     flex-grow: 0;
 }
 
-.scrollingPaperTabs #tabsContainer {
-    margin: 0 auto;
-}
-
 /*.scrollablePaperTabs #tabsContainer {
     text-align: center;
     overflow-x: scroll;

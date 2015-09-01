@@ -193,7 +193,12 @@
             return !LibraryBrowser.enableFullPaperTabs();
         },
 
-        configurePaperLibraryTabs: function (ownerpage, tabs, pages) {
+        configurePaperLibraryTabs: function (ownerpage, tabs, pages, baseUrl) {
+
+            // Causing iron-select to not fire in IE and safari
+            if ($.browser.chrome) {
+                tabs.noink = true;
+            }
 
             if (AppInfo.enableBottomTabs) {
                 tabs.alignBottom = true;
@@ -205,7 +210,7 @@
                 if ($.browser.safari) {
 
                     // Not very iOS-like I suppose
-                    tabs.noSlide = true;
+                    //tabs.noSlide = true;
                     tabs.noBar = true;
                 }
                 else {
@@ -232,9 +237,7 @@
 
             $(ownerpage).on('pagebeforeshow', LibraryBrowser.onTabbedpagebeforeshow);
 
-            $(pages).on('iron-select', function () {
-
-                console.log('iron-select');
+            pages.addEventListener('iron-select', function () {
                 // When transition animations are used, add a content loading delay to allow the animations to finish
                 // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
                 var pgs = this;
@@ -244,39 +247,61 @@
                     $(pgs).trigger('tabchange');
                 }, delay);
             });
+
+            tabs.addEventListener('iron-select', function() {
+                var selected = this.selected;
+
+                if (LibraryBrowser.navigateOnLibraryTabSelect()) {
+
+                    if (selected) {
+                        var url = replaceQueryString(baseUrl, 'tab', selected);
+                        Dashboard.navigate(url);
+                    } else {
+                        Dashboard.navigate(baseUrl);
+                    }
+
+                } else {
+                    pages.selected = selected;
+                }
+            });
         },
 
         onTabbedpagebeforeshow: function () {
 
             var page = this;
             var delay = 0;
+            var isFirstLoad = false;
 
             if (!page.getAttribute('data-firstload')) {
                 delay = 300;
+                isFirstLoad = true;
                 page.setAttribute('data-firstload', '1');
             }
 
-            setTimeout(function () {
-                LibraryBrowser.onTabbedpagebeforeshowInternal(page);
-            }, delay);
+            if (delay) {
+                setTimeout(function () {
+
+                    LibraryBrowser.onTabbedpagebeforeshowInternal(page, isFirstLoad);
+                }, delay);
+            } else {
+                LibraryBrowser.onTabbedpagebeforeshowInternal(page, isFirstLoad);
+            }
         },
 
-        onTabbedpagebeforeshowInternal: function (page) {
+        onTabbedpagebeforeshowInternal: function (page, isFirstLoad) {
 
-            var tabs = page.querySelector('paper-tabs');
-            var selected = tabs.selected;
-
-            if (selected == null) {
+            if (isFirstLoad) {
 
                 Logger.log('selected tab is null, checking query string');
 
-                selected = parseInt(getParameterByName('tab') || '0');
+                var selected = parseInt(getParameterByName('tab') || '0');
 
                 Logger.log('selected tab will be ' + selected);
 
-
                 if (LibraryBrowser.enableFullPaperTabs()) {
-                    tabs.selected = selected;
+
+                    page.querySelector('paper-tabs').selected = selected;
+
                 } else {
                     page.querySelector('neon-animated-pages').selected = selected;
                 }
@@ -291,7 +316,7 @@
                         pages.entryAnimation = null;
                         pages.exitAnimation = null;
 
-                        tabs.selected = 0;
+                        page.querySelector('paper-tabs').selected = 0;
 
                         pages.entryAnimation = entryAnimation;
                         pages.exitAnimation = exitAnimation;

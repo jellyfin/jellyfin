@@ -325,28 +325,13 @@
         var tabs = page.querySelector('paper-tabs');
         var pages = page.querySelector('neon-animated-pages');
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages);
+        var baseUrl = 'movies.html';
+        var topParentId = LibraryMenu.getTopParentId();
+        if (topParentId) {
+            baseUrl += '?topParentId=' + topParentId;
+        }
 
-        $(tabs).on('iron-select', function () {
-            var selected = this.selected;
-
-            if (LibraryBrowser.navigateOnLibraryTabSelect()) {
-
-                var url = 'movies.html';
-                var topParentId = LibraryMenu.getTopParentId();
-                if (topParentId) {
-                    url += '?topParentId=' + topParentId;
-                }
-                if (selected) {
-                    Dashboard.navigate(url + '&tab=' + selected);
-                } else {
-                    Dashboard.navigate(url);
-                }
-
-            } else {
-                page.querySelector('neon-animated-pages').selected = selected;
-            }
-        });
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, baseUrl);
 
         $(pages).on('tabchange', function () {
             loadTab(page, parseInt(this.selected));
