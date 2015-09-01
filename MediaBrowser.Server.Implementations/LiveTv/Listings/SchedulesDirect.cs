@@ -64,7 +64,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
         {
             List<ProgramInfo> programsInfo = new List<ProgramInfo>();
 
-            var token = await GetToken(info, cancellationToken);
+            var token = await GetToken(info, cancellationToken).ConfigureAwait(false);
 
             if (string.IsNullOrWhiteSpace(token))
             {
@@ -482,7 +482,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
         }
 
         private readonly ConcurrentDictionary<string, NameValuePair> _tokens = new ConcurrentDictionary<string, NameValuePair>();
-
+        private DateTime _lastErrorResponse;
         private async Task<string> GetToken(ListingsProviderInfo info, CancellationToken cancellationToken)
         {
             var username = info.Username;
@@ -495,6 +495,12 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
 
             var password = info.Password;
             if (string.IsNullOrWhiteSpace(password))
+            {
+                return null;
+            }
+
+            // Avoid hammering SD
+            if ((DateTime.UtcNow - _lastErrorResponse).TotalMinutes < 1)
             {
                 return null;
             }
@@ -526,6 +532,18 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
                 savedToken.Name = result;
                 savedToken.Value = DateTime.UtcNow.Ticks.ToString(CultureInfo.InvariantCulture);
                 return result;
+            }
+            catch (HttpException ex)
+            {
+                if (ex.StatusCode.HasValue)
+                {
+                    if ((int)ex.StatusCode.Value == 400)
+                    {
+                        _tokens.Clear();
+                        _lastErrorResponse = DateTime.UtcNow;
+                    }
+                }
+                throw;
             }
             finally
             {
