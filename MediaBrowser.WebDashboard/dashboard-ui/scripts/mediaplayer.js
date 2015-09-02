@@ -605,6 +605,12 @@
                     self.currentMediaSource = result.MediaSources[0];
                     var streamInfo = self.createStreamInfo(self.currentItem.MediaType, self.currentItem, self.currentMediaSource, ticks);
 
+                    if (!streamInfo.url) {
+                        MediaController.showPlaybackInfoErrorMessage('NoCompatibleStream');
+                        self.stop();
+                        return false;
+                    }
+
                     self.currentSubtitleStreamIndex = subtitleStreamIndex;
 
                     currentSrc = streamInfo.url;
@@ -893,7 +899,7 @@
                         mediaUrl += seekParam;
 
                         playMethod = 'DirectStream';
-                    } else {
+                    } else if (mediaSource.SupportsTranscoding) {
 
                         mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
 
@@ -938,7 +944,8 @@
                         mediaUrl += "&static=true" + seekParam;
 
                         playMethod = 'DirectStream';
-                    } else {
+
+                    } else if (mediaSource.SupportsTranscoding) {
 
                         mediaUrl = ApiClient.getUrl(mediaSource.TranscodingUrl);
 
