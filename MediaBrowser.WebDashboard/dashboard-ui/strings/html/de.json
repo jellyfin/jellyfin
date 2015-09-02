@@ -1521,7 +1521,7 @@
     "HeaderDefaultPadding": "Standard Vor\/ Nachlauf",
     "HeaderSubtitles": "Untertitel",
     "HeaderVideos": "Videos",
-    "OptionEnableVideoFrameAnalysis": "Enable frame by frame video analysis",
-    "OptionEnableVideoFrameAnalysisHelp": "Extract detailed information about videos that can be used to make transcoding as efficient as possible. This will cause library scans to take longer.",
-    "LabelVideoFrameAnalysisLimit": "Limit frame by frame analysis to videos less than:"
+    "OptionEnableVideoFrameAnalysis": "Aktiviere Bild per Bild Videoanalyse.",
+    "OptionEnableVideoFrameAnalysisHelp": "Extrahiere detaillierte Videoinformationen um die Videotranskodierung so effizient wie m\u00f6glich zu machen. Das Erstellen der Bibliothek wird dadurch l\u00e4nger dauern. ",
+    "LabelVideoFrameAnalysisLimit": "Limitiere die Bild per Bild Analyse auf weniger als:"
 }

@@ -27,7 +27,7 @@
 
     var lifeTimeAmount = 79.99;
     var dailyAmount = 1;
-    var monthlyAmount = 5.99;
+    var monthlyAmount = 4.99;
     var yearlyAmount = 37.99;
     function getDonationAmount(page) {
 

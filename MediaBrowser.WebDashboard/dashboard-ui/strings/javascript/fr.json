@@ -831,6 +831,7 @@
     "MessageSyncStarted": "Synchronisation d\u00e9marr\u00e9e",
     "OptionPoster": "Affiche",
     "OptionPosterCard": "Carte Affiche",
+    "OptionTimeline": "Chronologie",
     "OptionList": "Liste",
     "OptionThumb": "Vignette",
     "OptionThumbCard": "Carte Vignette",
@@ -850,7 +851,7 @@
     "OptionDatePlayed": "Date lu",
     "OptionDateAdded": "Date d'ajout",
     "OptionPlayCount": "Nombre de lectures",
-    "ButtonDisconnect": "Disconnect",
+    "ButtonDisconnect": "D\u00e9connexion",
     "ButtonSort": "Tri",
     "ButtonMenu": "Menu",
     "ButtonFilter": "Filtre",
@@ -862,8 +863,8 @@
     "ForAdditionalLiveTvOptions": "Pour d'autres fournisseurs de TV Live, cliquez sur l'onglet Services Externes pour voir les options disponibles.",
     "ButtonGuide": "Guide",
     "ButtonRecordedTv": "TV enregistr\u00e9e",
-    "HeaderDisconnectFromPlayer": "Disconnect from Player",
-    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
-    "ButtonYes": "Yes",
-    "ButtonNo": "No"
+    "HeaderDisconnectFromPlayer": "D\u00e9connexion du lecteur",
+    "ConfirmEndPlayerSession": "Voulez-vous \u00e9teindre l'application sur l'appareil distant",
+    "ButtonYes": "Oui",
+    "ButtonNo": "Non"
 }

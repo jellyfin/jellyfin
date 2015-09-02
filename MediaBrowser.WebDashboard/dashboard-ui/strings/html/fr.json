@@ -1523,5 +1523,5 @@
     "HeaderVideos": "Vid\u00e9os",
     "OptionEnableVideoFrameAnalysis": "Activer l'analyse vid\u00e9o image par image",
     "OptionEnableVideoFrameAnalysisHelp": "Extraire des informations d\u00e9taill\u00e9es sur les vid\u00e9os pour rendre le transcodage le plus efficace possible. Cette option ralentira le scan de la biblioth\u00e8que.",
-    "LabelVideoFrameAnalysisLimit": "Limit frame by frame analysis to videos less than:"
+    "LabelVideoFrameAnalysisLimit": "Limiter l'analyse image par image aux vid\u00e9os inf\u00e9rieures \u00e0 :"
 }

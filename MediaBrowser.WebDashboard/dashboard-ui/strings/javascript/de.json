@@ -831,6 +831,7 @@
     "MessageSyncStarted": "Synchronisation gestartet",
     "OptionPoster": "Poster",
     "OptionPosterCard": "Poster Karte",
+    "OptionTimeline": "Zeitlinie",
     "OptionList": "List",
     "OptionThumb": "Thumb",
     "OptionThumbCard": "Thumb Karte",
@@ -850,7 +851,7 @@
     "OptionDatePlayed": "Abgespielt am",
     "OptionDateAdded": "Hinzugef\u00fcgt am",
     "OptionPlayCount": "Z\u00e4hler",
-    "ButtonDisconnect": "Disconnect",
+    "ButtonDisconnect": "Verbindung trennen",
     "ButtonSort": "Sortieren",
     "ButtonMenu": "Menu",
     "ButtonFilter": "Filter",
@@ -860,10 +861,10 @@
     "OptionRevenue": "Einnahme",
     "OptionBudget": "Budget",
     "ForAdditionalLiveTvOptions": "F\u00fcr weitere TV Quellen klicken Sie bitte auf den \"Externe Dienste\"-Reiter um weitere Optionen anzuzeigen.",
-    "ButtonGuide": "Guide",
-    "ButtonRecordedTv": "Recorded TV",
-    "HeaderDisconnectFromPlayer": "Disconnect from Player",
-    "ConfirmEndPlayerSession": "Would you like to shutdown the app on the remote device?",
-    "ButtonYes": "Yes",
-    "ButtonNo": "No"
+    "ButtonGuide": "TV Guide",
+    "ButtonRecordedTv": "TV Aufnahmen",
+    "HeaderDisconnectFromPlayer": "Trenne von Player",
+    "ConfirmEndPlayerSession": "M\u00f6chten Sie die App auf dem entfernten Ger\u00e4t beenden?",
+    "ButtonYes": "Ja",
+    "ButtonNo": "Nein"
 }

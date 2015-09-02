@@ -1502,7 +1502,7 @@
     "LabelTranscodingThreadCountHelp": "Selecteer het maximale aantal threads die gebruikt mogen worden om te transcoderen. Bij een lager aantal zal het CPU gebruik lager zijn, maar kan de afspeelkwaliteit minder zijn.",
     "OptionMax": "Max",
     "HeaderEmbyGuide": "Emby gids",
-    "LabelSyncPath": "Synchroniseerpad:",
+    "LabelSyncPath": "Gesynchroniseerde inhoud pad:",
     "OptionSyncOnlyOnWifi": "Synchroniseer alleen via Wifi",
     "OptionSyncLosslessAudioOriginal": "Synchroniseer lossless geluid in originele kwaliteit",
     "HeaderMetadata": "Metadata",
@@ -1511,7 +1511,7 @@
     "HeaderUpcomingForKids": "Binnenkort voor kinderen",
     "HeaderSetupLiveTV": "Configureer Live TV",
     "LabelTunerType": "Soort Tuner:",
-    "HelpMoreTunersCanBeAdded": "In de Live TV sectie kunnen later meer tuners toegevoegd worden.",
+    "HelpMoreTunersCanBeAdded": "Extra tuners kunnen later in de Live TV sectie worden toegevoegd.",
     "AdditionalLiveTvProvidersCanBeInstalledLater": "Andere Live TV aanbieders kunnen later in de LIVE TV sectie toegevoegd worden.",
     "MessageActiveSupporterMembershipRequiredSeriesRecordings": "Er is een actief Emby Supporter lidmaatschap benodigd om een automatische serie opname aan te maken.",
     "HeaderSetupTVGuide": "TV Gids configureren",
@@ -1520,8 +1520,8 @@
     "OptionSendRecordingsToAutoOrganizeHelp": "Nieuwe opnamen zullen door de Automatisch Organiseren functionaliteit in uw media bilbiliotheek ge\u00efmporteerd worden.",
     "HeaderDefaultPadding": "Standaard 'Padding'",
     "HeaderSubtitles": "Ondertitels",
-    "HeaderVideos": "Videos",
-    "OptionEnableVideoFrameAnalysis": "Enable frame by frame video analysis",
-    "OptionEnableVideoFrameAnalysisHelp": "Extract detailed information about videos that can be used to make transcoding as efficient as possible. This will cause library scans to take longer.",
-    "LabelVideoFrameAnalysisLimit": "Limit frame by frame analysis to videos less than:"
+    "HeaderVideos": "Video's",
+    "OptionEnableVideoFrameAnalysis": "Frame voor frame video-analyse inschakelen",
+    "OptionEnableVideoFrameAnalysisHelp": "Extraheer informatie over video die gebruikt kan worden om transcodering zo effici\u00ebnt mogelijk te maken. Dit zal leiden tot langer durende bibliotheek scans .",
+    "LabelVideoFrameAnalysisLimit": "Beperk frame voor frame analyse voor video's kleiner dan:"
 }

@@ -1004,7 +1004,7 @@
     "HeaderServerLogFiles": "Archivos de registro del servidor:",
     "TabBranding": "Establecer Marca",
     "HeaderBrandingHelp": "Personaliza la apariencia de Emby para ajustarla a su grupo u organizaci\u00f3n.",
-    "LabelLoginDisclaimer": "Aviso legal de Inicio de Sesi\u00f3n:",
+    "LabelLoginDisclaimer": "Aviso legal:",
     "LabelLoginDisclaimerHelp": "Esto se mostrara al final de la pagina de inicio de sesi\u00f3n.",
     "LabelAutomaticallyDonate": "Donar autom\u00e1ticamente este monto cada mes",
     "LabelAutomaticallyDonateHelp": "Puedes cancelarlo en cualquier momento por medio de tu cuenta PayPal.",
@@ -1523,5 +1523,5 @@
     "HeaderVideos": "Videos",
     "OptionEnableVideoFrameAnalysis": "Habilitar an\u00e1lisis de video cuadro por cuadro",
     "OptionEnableVideoFrameAnalysisHelp": "Extrae informaci\u00f3n detallada de los videos que puede ser empleada para hacer la transcodificaci\u00f3n lo m\u00e1s eficiente posible. Esto ocasionar\u00e1 que la exploraci\u00f3n de la biblioteca tome m\u00e1s tiempo.",
-    "LabelVideoFrameAnalysisLimit": "Limit frame by frame analysis to videos less than:"
+    "LabelVideoFrameAnalysisLimit": "Limitar el an\u00e1lisis cuadro por cuadro a videos menores a:"
 }

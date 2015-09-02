@@ -1546,7 +1546,7 @@
 
                     if (newIndexValue != currentIndexValue) {
 
-                        html += '<h2 class="timelineHeader detailSectionHeader" style="text-align:center;">' + newIndexValue + '</h2>';
+                        html += '<h1 class="timelineHeader" style="text-align:center;">' + newIndexValue + '</h1>';
                         currentIndexValue = newIndexValue;
                     }
                 } else if (options.timeline) {
@@ -1554,7 +1554,7 @@
 
                     if (year != currentIndexValue) {
 
-                        html += '<h2 class="timelineHeader detailSectionHeader">' + year + '</h2>';
+                        html += '<h1 class="timelineHeader">' + year + '</h1>';
                         currentIndexValue = year;
                     }
                 }

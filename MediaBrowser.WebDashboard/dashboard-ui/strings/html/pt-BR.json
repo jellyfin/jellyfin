@@ -1520,8 +1520,8 @@
     "OptionSendRecordingsToAutoOrganizeHelp": "Novas grava\u00e7\u00f5es ser\u00e3o enviadas para o recurso Auto-Organizar e importadas para sua biblioteca de m\u00eddias.",
     "HeaderDefaultPadding": "Padding Padr\u00e3o",
     "HeaderSubtitles": "Legendas",
-    "HeaderVideos": "Videos",
-    "OptionEnableVideoFrameAnalysis": "Enable frame by frame video analysis",
-    "OptionEnableVideoFrameAnalysisHelp": "Extract detailed information about videos that can be used to make transcoding as efficient as possible. This will cause library scans to take longer.",
-    "LabelVideoFrameAnalysisLimit": "Limit frame by frame analysis to videos less than:"
+    "HeaderVideos": "V\u00eddeos",
+    "OptionEnableVideoFrameAnalysis": "Habilitar an\u00e1lise de v\u00eddeo quadro a quadro",
+    "OptionEnableVideoFrameAnalysisHelp": "Extrair informa\u00e7\u00f5es detalhadas sobre v\u00eddeos que podem ser usadas para tornar a transcodifica\u00e7\u00e3o mais eficiente. Os exames da biblioteca demorar\u00e3o mais tempo.",
+    "LabelVideoFrameAnalysisLimit": "Habilitar an\u00e1lise quadro a quadro apenas para v\u00eddeos menores que:"
 }
