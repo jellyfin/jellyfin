@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -40,6 +40,7 @@ namespace MediaBrowser.Controller.Entities
         public string NameStartsWithOrGreater { get; set; }
         public string NameStartsWith { get; set; }
         public string NameLessThan { get; set; }
+        public string NameContains { get; set; }
 
         public string Person { get; set; }
         public string[] PersonIds { get; set; }
@@ -93,7 +94,11 @@ namespace MediaBrowser.Controller.Entities
         public string[] ChannelIds { get; set; }
 
         internal List<Guid> ItemIdsFromPersonFilters { get; set; }
+        public int? MaxParentalRating { get; set; }
 
+        public bool? IsCurrentSchema { get; set; }
+        public bool? HasDeadParentId { get; set; }
+    
         public InternalItemsQuery()
         {
             Tags = new string[] { };

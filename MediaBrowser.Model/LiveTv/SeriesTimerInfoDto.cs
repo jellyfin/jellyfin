@@ -6,6 +6,9 @@ using System.Runtime.Serialization;
 
 namespace MediaBrowser.Model.LiveTv
 {
+    /// <summary>
+    /// Class SeriesTimerInfoDto.
+    /// </summary>
     [DebuggerDisplay("Name = {Name}")]
     public class SeriesTimerInfoDto : BaseTimerInfoDto
     {

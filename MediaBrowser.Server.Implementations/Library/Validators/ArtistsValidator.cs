@@ -48,26 +48,22 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 .Cast<IHasArtist>()
                 .ToList();
 
-            var allArtists = allSongs.SelectMany(i => i.AllArtists)
-                .DistinctNames()
-                .ToList();
+            var allArtists = _libraryManager.GetArtists(allSongs).ToList();
 
             var numComplete = 0;
             var numArtists = allArtists.Count;
 
-            foreach (var artist in allArtists)
+            foreach (var artistItem in allArtists)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 try
                 {
-                    var artistItem = _libraryManager.GetArtist(artist);
-
                     await artistItem.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                 }
                 catch (IOException ex)
                 {
-                    _logger.ErrorException("Error validating Artist {0}", ex, artist);
+                    _logger.ErrorException("Error validating Artist {0}", ex, artistItem.Name);
                 }
 
                 // Update progress

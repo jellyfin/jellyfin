@@ -16,6 +16,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The series timer identifier.</value>
         public string SeriesTimerId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timer identifier.
+        /// </summary>
+        /// <value>The timer identifier.</value>
+        public string TimerId { get; set; }
         
         /// <summary>
         /// ChannelId of the recording.
@@ -179,7 +185,17 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>null</c> if [has image] contains no value, <c>true</c> if [has image]; otherwise, <c>false</c>.</value>
         public bool? HasImage { get; set; }
+        /// <summary>
+        /// Gets or sets the show identifier.
+        /// </summary>
+        /// <value>The show identifier.</value>
+        public string ShowId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the date last updated.
+        /// </summary>
+        /// <value>The date last updated.</value>
+        public DateTime DateLastUpdated { get; set; }
 
         public RecordingInfo()
         {

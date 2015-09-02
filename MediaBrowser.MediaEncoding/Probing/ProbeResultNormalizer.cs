@@ -114,11 +114,18 @@ namespace MediaBrowser.MediaEncoding.Probing
         /// <summary>
         /// Converts ffprobe stream info to our MediaStream class
         /// </summary>
+        /// <param name="isAudio">if set to <c>true</c> [is audio].</param>
         /// <param name="streamInfo">The stream info.</param>
         /// <param name="formatInfo">The format info.</param>
         /// <returns>MediaStream.</returns>
         private MediaStream GetMediaStream(bool isAudio, MediaStreamInfo streamInfo, MediaFormatInfo formatInfo)
         {
+            // These are mp4 chapters
+            if (string.Equals(streamInfo.codec_name, "mov_text", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
             var stream = new MediaStream
             {
                 Codec = streamInfo.codec_name,

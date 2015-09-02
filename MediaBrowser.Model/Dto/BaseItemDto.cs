@@ -646,6 +646,7 @@ namespace MediaBrowser.Model.Dto
         /// Gets or sets a value indicating whether [supports playlists].
         /// </summary>
         /// <value><c>true</c> if [supports playlists]; otherwise, <c>false</c>.</value>
+        [IgnoreDataMember]
         public bool SupportsPlaylists
         {
             get
@@ -1080,6 +1081,15 @@ namespace MediaBrowser.Model.Dto
             get { return StringHelper.EqualsIgnoreCase(Type, "Studio"); }
         }
 
+        [IgnoreDataMember]
+        public bool SupportsSimilarItems
+        {
+            get
+            {
+                return IsType("Movie") || IsType("Series") || IsType("MusicAlbum") || IsType("MusicArtist") || IsType("Program") || IsType("Recording") || IsType("ChannelVideoItem") || IsType("Game");
+            }
+        }
+
         /// <summary>
         /// Occurs when [property changed].
         /// </summary>
@@ -1185,6 +1195,10 @@ namespace MediaBrowser.Model.Dto
         /// </summary>
         /// <value>The timer identifier.</value>
         public string TimerId { get; set; }
-
+        /// <summary>
+        /// Gets or sets the current program.
+        /// </summary>
+        /// <value>The current program.</value>
+        public BaseItemDto CurrentProgram { get; set; }
     }
 }

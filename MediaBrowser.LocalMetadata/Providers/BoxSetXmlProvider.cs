@@ -21,7 +21,7 @@ namespace MediaBrowser.LocalMetadata.Providers
             _logger = logger;
         }
 
-        protected override void Fetch(LocalMetadataResult<BoxSet> result, string path, CancellationToken cancellationToken)
+        protected override void Fetch(MetadataResult<BoxSet> result, string path, CancellationToken cancellationToken)
         {
             new BoxSetXmlParser(_logger).Fetch(result, path, cancellationToken);
         }

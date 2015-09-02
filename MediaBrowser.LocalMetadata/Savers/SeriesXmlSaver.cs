@@ -12,12 +12,12 @@ using System.Threading;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
-    public class SeriesXmlSaver : IMetadataFileSaver
+    public class SeriesXmlProvider : IMetadataFileSaver, IConfigurableProvider
     {
         private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _libraryManager;
 
-        public SeriesXmlSaver(IServerConfigurationManager config, ILibraryManager libraryManager)
+        public SeriesXmlProvider(IServerConfigurationManager config, ILibraryManager libraryManager)
         {
             _config = config;
             _libraryManager = libraryManager;
@@ -45,6 +45,11 @@ namespace MediaBrowser.LocalMetadata.Savers
             }
 
             return item is Series && updateType >= ItemUpdateType.MetadataDownload;
+        }
+
+        public bool IsEnabled
+        {
+            get { return !_config.Configuration.DisableXmlSavers; }
         }
 
         private static readonly CultureInfo UsCulture = new CultureInfo("en-US");

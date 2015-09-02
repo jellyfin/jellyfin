@@ -88,5 +88,17 @@ namespace MediaBrowser.Model.Session
         /// </summary>
         /// <value>The play session identifier.</value>
         public string PlaySessionId { get; set; }
+        /// <summary>
+        /// Gets or sets the repeat mode.
+        /// </summary>
+        /// <value>The repeat mode.</value>
+        public RepeatMode RepeatMode { get; set; }
+    }
+
+    public enum RepeatMode
+    {
+        RepeatNone = 0,
+        RepeatAll = 1,
+        RepeatOne = 2
     }
 }

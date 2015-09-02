@@ -53,7 +53,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
         }
 
-        public async Task<Stream> ConvertSubtitles(Stream stream,
+        private async Task<Stream> ConvertSubtitles(Stream stream,
             string inputFormat,
             string outputFormat,
             long startTimeTicks,
@@ -64,7 +64,9 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             try
             {
-                var trackInfo = await GetTrackInfo(stream, inputFormat, cancellationToken).ConfigureAwait(false);
+                var reader = GetReader(inputFormat, true);
+
+                var trackInfo = reader.Parse(stream, cancellationToken);
 
                 FilterEvents(trackInfo, startTimeTicks, endTimeTicks, false);
 
@@ -190,7 +192,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             {
                 throw new ArgumentNullException("charset");
             }
-
+            
             try
             {
                 return Encoding.GetEncoding(charset);
@@ -255,15 +257,6 @@ namespace MediaBrowser.MediaEncoding.Subtitles
             }
 
             return new Tuple<string, MediaProtocol, string, bool>(subtitleStream.Path, protocol, currentFormat, true);
-        }
-
-        private async Task<SubtitleTrackInfo> GetTrackInfo(Stream stream,
-            string inputFormat,
-            CancellationToken cancellationToken)
-        {
-            var reader = GetReader(inputFormat, true);
-
-            return reader.Parse(stream, cancellationToken);
         }
 
         private ISubtitleParser GetReader(string format, bool throwIfMissing)
@@ -593,7 +586,7 @@ namespace MediaBrowser.MediaEncoding.Subtitles
 
             process.StandardError.BaseStream.CopyToAsync(logFileStream);
 
-            var ranToCompletion = process.WaitForExit(60000);
+            var ranToCompletion = process.WaitForExit(120000);
 
             if (!ranToCompletion)
             {

@@ -3,12 +3,14 @@ using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.IO;
 using MediaBrowser.Common.Progress;
 using MediaBrowser.Common.ScheduledTasks;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.IO;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
@@ -244,10 +246,6 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         /// <summary>
-        /// The _items by name path
-        /// </summary>
-        private string _itemsByNamePath;
-        /// <summary>
         /// The _season zero display name
         /// </summary>
         private string _seasonZeroDisplayName;
@@ -260,7 +258,6 @@ namespace MediaBrowser.Server.Implementations.Library
         private void RecordConfigurationValues(ServerConfiguration configuration)
         {
             _seasonZeroDisplayName = configuration.SeasonZeroDisplayName;
-            _itemsByNamePath = ConfigurationManager.ApplicationPaths.ItemsByNamePath;
             _wizardCompleted = configuration.IsStartupWizardCompleted;
         }
 
@@ -273,56 +270,24 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var config = ConfigurationManager.Configuration;
 
-            var ibnPathChanged = !string.Equals(_itemsByNamePath, ConfigurationManager.ApplicationPaths.ItemsByNamePath, StringComparison.Ordinal);
-
-            if (ibnPathChanged)
-            {
-                RemoveItemsByNameFromCache();
-            }
-
             var newSeasonZeroName = ConfigurationManager.Configuration.SeasonZeroDisplayName;
             var seasonZeroNameChanged = !string.Equals(_seasonZeroDisplayName, newSeasonZeroName, StringComparison.Ordinal);
             var wizardChanged = config.IsStartupWizardCompleted != _wizardCompleted;
 
             RecordConfigurationValues(config);
 
-            Task.Run(async () =>
+            if (seasonZeroNameChanged || wizardChanged)
             {
-                if (seasonZeroNameChanged)
+                _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
+            }
+
+            if (seasonZeroNameChanged)
+            {
+                Task.Run(async () =>
                 {
                     await UpdateSeasonZeroNames(newSeasonZeroName, CancellationToken.None).ConfigureAwait(false);
-                }
 
-                if (seasonZeroNameChanged || ibnPathChanged || wizardChanged)
-                {
-                    _taskManager.CancelIfRunningAndQueue<RefreshMediaLibraryTask>();
-                }
-            });
-        }
-
-        private void RemoveItemsByNameFromCache()
-        {
-            RemoveItemsFromCache(i => i is Person);
-            RemoveItemsFromCache(i => i is Year);
-            RemoveItemsFromCache(i => i is Genre);
-            RemoveItemsFromCache(i => i is MusicGenre);
-            RemoveItemsFromCache(i => i is GameGenre);
-            RemoveItemsFromCache(i => i is Studio);
-            RemoveItemsFromCache(i =>
-            {
-                var artist = i as MusicArtist;
-                return artist != null && artist.IsAccessedByName;
-            });
-        }
-
-        private void RemoveItemsFromCache(Func<BaseItem, bool> remove)
-        {
-            var items = _libraryItemsCache.ToList().Where(i => remove(i.Value)).ToList();
-
-            foreach (var item in items)
-            {
-                BaseItem value;
-                _libraryItemsCache.TryRemove(item.Key, out value);
+                });
             }
         }
 
@@ -374,6 +339,21 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void RegisterItem(Guid id, BaseItem item)
         {
+            if (item is LiveTvProgram)
+            {
+                return;
+            }
+            if (item is IChannelItem)
+            {
+                return;
+            }
+            if (item is IItemByName)
+            {
+                if (!(item is MusicArtist))
+                {
+                    return;
+                }
+            }
             LibraryItemsCache.AddOrUpdate(id, item, delegate { return item; });
         }
 
@@ -939,26 +919,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 }
             }
 
-            var fileInfo = new DirectoryInfo(path);
-
-            var isNew = false;
-
-            if (!fileInfo.Exists)
-            {
-                try
-                {
-                    fileInfo = Directory.CreateDirectory(path);
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    _logger.Error("Error creating directory {0}", ex, path);
-                    throw new Exception(string.Format("Error creating directory {0}", path), ex);
-                }
-
-                isNew = true;
-            }
-
-            var item = isNew ? null : GetItemById(id) as T;
+            var item = GetItemById(id) as T;
 
             if (item == null)
             {
@@ -966,20 +927,76 @@ namespace MediaBrowser.Server.Implementations.Library
                 {
                     Name = name,
                     Id = id,
-                    DateCreated = _fileSystem.GetCreationTimeUtc(fileInfo),
-                    DateModified = _fileSystem.GetLastWriteTimeUtc(fileInfo),
+                    DateCreated = DateTime.UtcNow,
+                    DateModified = DateTime.UtcNow,
                     Path = path
                 };
-            }
 
-            if (isArtist)
-            {
-                (item as MusicArtist).IsAccessedByName = true;
+                if (isArtist)
+                {
+                    (item as MusicArtist).IsAccessedByName = true;
+                }
+
+                var task = CreateItem(item, CancellationToken.None);
+                Task.WaitAll(task);
             }
 
             return item;
         }
 
+        public IEnumerable<MusicArtist> GetAlbumArtists(IEnumerable<IHasAlbumArtist> items)
+        {
+            var names = items
+                .SelectMany(i => i.AlbumArtists)
+                .DistinctNames()
+                .Select(i =>
+                {
+                    try
+                    {
+                        var artist = GetArtist(i);
+
+                        return artist;
+                    }
+                    catch
+                    {
+                        // Already logged at lower levels
+                        return null;
+                    }
+                })
+                .Where(i => i != null);
+
+            return names;
+        }
+
+        public IEnumerable<MusicArtist> GetArtists(IEnumerable<IHasArtist> items)
+        {
+            var names = items
+                .SelectMany(i => i.AllArtists)
+                .DistinctNames()
+                .Select(i =>
+                {
+                    try
+                    {
+                        var artist = GetArtist(i);
+
+                        return artist;
+                    }
+                    catch
+                    {
+                        // Already logged at lower levels
+                        return null;
+                    }
+                })
+                .Where(i => i != null);
+
+            return names;
+        }
+
+        private void SetPropertiesFromSongs(MusicArtist artist, IEnumerable<IHasMetadata> items)
+        {
+            
+        }
+        
         /// <summary>
         /// Validate and refresh the People sub-set of the IBN.
         /// The items are stored in the db but not loaded into memory until actually requested by an operation.
@@ -1217,12 +1234,17 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             var result = ItemRepository.GetItemIdsList(query);
 
-            var items = result.Select(GetItemById).ToArray();
+            var items = result.Select(GetItemById).Where(i => i != null).ToArray();
 
             return new QueryResult<BaseItem>
             {
                 Items = items
             };
+        }
+
+        public QueryResult<BaseItem> QueryItems(InternalItemsQuery query)
+        {
+            return ItemRepository.GetItems(query);
         }
 
         public List<Guid> GetItemIds(InternalItemsQuery query)
@@ -1617,7 +1639,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private readonly TimeSpan _viewRefreshInterval = TimeSpan.FromHours(24);
 
-        public async Task<UserView> GetNamedView(User user,
+        public Task<UserView> GetNamedView(User user,
             string name,
             string viewType,
             string sortName,
@@ -1625,12 +1647,18 @@ namespace MediaBrowser.Server.Implementations.Library
         {
             if (ConfigurationManager.Configuration.EnableUserSpecificUserViews)
             {
-                return await GetNamedViewInternal(user, name, null, viewType, sortName, null, cancellationToken)
-                            .ConfigureAwait(false);
+                return GetNamedViewInternal(user, name, null, viewType, sortName, null, cancellationToken);
             }
 
-            var path = Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath,
-                            "views");
+            return GetNamedView(name, viewType, sortName, cancellationToken);
+        }
+
+        public async Task<UserView> GetNamedView(string name,
+            string viewType,
+            string sortName,
+            CancellationToken cancellationToken)
+        {
+            var path = Path.Combine(ConfigurationManager.ApplicationPaths.ItemsByNamePath, "views");
 
             path = Path.Combine(path, _fileSystem.GetValidFilename(viewType));
 
@@ -1666,7 +1694,7 @@ namespace MediaBrowser.Server.Implementations.Library
                 await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
             }
 
-            if (!refresh && item != null)
+            if (!refresh)
             {
                 refresh = (DateTime.UtcNow - item.DateLastSaved) >= _viewRefreshInterval;
             }
@@ -1739,8 +1767,77 @@ namespace MediaBrowser.Server.Implementations.Library
                     DateCreated = DateTime.UtcNow,
                     Name = name,
                     ViewType = viewType,
-                    ForcedSortName = sortName,
-                    UserId = user.Id
+                    ForcedSortName = sortName
+                };
+
+                if (!string.IsNullOrWhiteSpace(parentId))
+                {
+                    item.ParentId = new Guid(parentId);
+                }
+
+                await CreateItem(item, cancellationToken).ConfigureAwait(false);
+
+                isNew = true;
+            }
+
+            if (!string.Equals(viewType, item.ViewType, StringComparison.OrdinalIgnoreCase))
+            {
+                item.ViewType = viewType;
+                await item.UpdateToRepository(ItemUpdateType.MetadataEdit, cancellationToken).ConfigureAwait(false);
+            }
+
+            var refresh = isNew || (DateTime.UtcNow - item.DateLastSaved) >= _viewRefreshInterval;
+
+            if (refresh)
+            {
+                _providerManagerFactory().QueueRefresh(item.Id, new MetadataRefreshOptions
+                {
+                    // Need to force save to increment DateLastSaved
+                    ForceSave = true
+                });
+            }
+
+            return item;
+        }
+
+        public async Task<UserView> GetNamedView(string name,
+            string parentId,
+            string viewType,
+            string sortName,
+            string uniqueId,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentNullException("name");
+            }
+
+            var idValues = "37_namedview_" + name + (parentId ?? string.Empty) + (viewType ?? string.Empty);
+            if (!string.IsNullOrWhiteSpace(uniqueId))
+            {
+                idValues += uniqueId;
+            }
+
+            var id = GetNewItemId(idValues, typeof(UserView));
+
+            var path = Path.Combine(ConfigurationManager.ApplicationPaths.InternalMetadataPath, "views", id.ToString("N"));
+
+            var item = GetItemById(id) as UserView;
+
+            var isNew = false;
+
+            if (item == null)
+            {
+                Directory.CreateDirectory(path);
+
+                item = new UserView
+                {
+                    Path = path,
+                    Id = id,
+                    DateCreated = DateTime.UtcNow,
+                    Name = name,
+                    ViewType = viewType,
+                    ForcedSortName = sortName
                 };
 
                 if (!string.IsNullOrWhiteSpace(parentId))
@@ -2071,14 +2168,17 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public List<PersonInfo> GetPeople(BaseItem item)
         {
-            var people = GetPeople(new InternalPeopleQuery
+            if (item.SupportsPeople)
             {
-                ItemId = item.Id
-            });
+                var people = GetPeople(new InternalPeopleQuery
+                {
+                    ItemId = item.Id
+                });
 
-            if (people.Count > 0)
-            {
-                return people;
+                if (people.Count > 0)
+                {
+                    return people;
+                }
             }
 
             return item.People ?? new List<PersonInfo>();
@@ -2115,6 +2215,11 @@ namespace MediaBrowser.Server.Implementations.Library
 
         public Task UpdatePeople(BaseItem item, List<PersonInfo> people)
         {
+            if (!item.SupportsPeople)
+            {
+                return Task.FromResult(true);
+            }
+
             return ItemRepository.UpdatePeople(item.Id, people);
         }
     }

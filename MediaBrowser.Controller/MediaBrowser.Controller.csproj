@@ -113,6 +113,7 @@
     <Compile Include="Dlna\EventSubscriptionResponse.cs" />
     <Compile Include="Dlna\IConnectionManager.cs" />
     <Compile Include="Dlna\IContentDirectory.cs" />
+    <Compile Include="Dlna\IDeviceDiscovery.cs" />
     <Compile Include="Dlna\IDlnaManager.cs" />
     <Compile Include="Dlna\IEventManager.cs" />
     <Compile Include="Dlna\IMediaReceiverRegistrar.cs" />
@@ -198,7 +199,10 @@
     <Compile Include="Library\NameExtensions.cs" />
     <Compile Include="Library\PlaybackStopEventArgs.cs" />
     <Compile Include="Library\UserDataSaveEventArgs.cs" />
+    <Compile Include="LiveTv\IHasRegistrationInfo.cs" />
+    <Compile Include="LiveTv\IListingsProvider.cs" />
     <Compile Include="LiveTv\ILiveTvItem.cs" />
+    <Compile Include="LiveTv\ITunerHost.cs" />
     <Compile Include="LiveTv\RecordingGroup.cs" />
     <Compile Include="LiveTv\RecordingStatusChangedEventArgs.cs" />
     <Compile Include="LiveTv\ILiveTvRecording.cs" />
@@ -309,7 +313,6 @@
     <Compile Include="Providers\ItemInfo.cs" />
     <Compile Include="Providers\LiveTvProgramLookupInfo.cs" />
     <Compile Include="Providers\LocalImageInfo.cs" />
-    <Compile Include="Providers\LocalMetadataResult.cs" />
     <Compile Include="Providers\MetadataRefreshMode.cs" />
     <Compile Include="Providers\MetadataResult.cs" />
     <Compile Include="Providers\MovieInfo.cs" />

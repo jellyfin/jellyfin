@@ -32,13 +32,13 @@ namespace MediaBrowser.Dlna.PlayTo
         private readonly IUserDataManager _userDataManager;
         private readonly ILocalizationManager _localization;
 
-        private readonly DeviceDiscovery _deviceDiscovery;
+        private readonly IDeviceDiscovery _deviceDiscovery;
         private readonly IMediaSourceManager _mediaSourceManager;
 
         private readonly List<string> _nonRendererUrls = new List<string>();
         private Timer _clearNonRenderersTimer;
 
-        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, DeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager)
+        public PlayToManager(ILogger logger, ISessionManager sessionManager, ILibraryManager libraryManager, IUserManager userManager, IDlnaManager dlnaManager, IServerApplicationHost appHost, IImageProcessor imageProcessor, IDeviceDiscovery deviceDiscovery, IHttpClient httpClient, IServerConfigurationManager config, IUserDataManager userDataManager, ILocalizationManager localization, IMediaSourceManager mediaSourceManager)
         {
             _logger = logger;
             _sessionManager = sessionManager;

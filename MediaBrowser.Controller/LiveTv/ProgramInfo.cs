@@ -33,6 +33,11 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The overview.</value>
         public string Overview { get; set; }
+        /// <summary>
+        /// Gets or sets the short overview.
+        /// </summary>
+        /// <value>The short overview.</value>
+        public string ShortOverview { get; set; }
 
         /// <summary>
         /// The start date of the program, in UTC.
@@ -150,6 +155,36 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value>The production year.</value>
         public int? ProductionYear { get; set; }
+        /// <summary>
+        /// Gets or sets the home page URL.
+        /// </summary>
+        /// <value>The home page URL.</value>
+        public string HomePageUrl { get; set; }
+        /// <summary>
+        /// Gets or sets the series identifier.
+        /// </summary>
+        /// <value>The series identifier.</value>
+        public string SeriesId { get; set; }
+        /// <summary>
+        /// Gets or sets the show identifier.
+        /// </summary>
+        /// <value>The show identifier.</value>
+        public string ShowId { get; set; }
+        /// <summary>
+        /// Gets or sets the season number.
+        /// </summary>
+        /// <value>The season number.</value>
+        public int? SeasonNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the episode number.
+        /// </summary>
+        /// <value>The episode number.</value>
+        public int? EpisodeNumber { get; set; }
+        /// <summary>
+        /// Gets or sets the etag.
+        /// </summary>
+        /// <value>The etag.</value>
+        public string Etag { get; set; }
         
         public ProgramInfo()
         {

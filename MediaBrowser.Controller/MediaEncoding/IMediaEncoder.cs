@@ -116,5 +116,12 @@ namespace MediaBrowser.Controller.MediaEncoding
         Task<string> EncodeVideo(EncodingJobOptions options,
             IProgress<double> progress,
             CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Escapes the subtitle filter path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>System.String.</returns>
+        string EscapeSubtitleFilterPath(string path);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Common.ScheduledTasks;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Model.Tasks;
+using MediaBrowser.Controller.Library;
+using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,11 +10,17 @@ namespace MediaBrowser.Server.Implementations.Channels
 {
     class RefreshChannelsScheduledTask : IScheduledTask, IConfigurableScheduledTask
     {
-        private readonly IChannelManager _manager;
+        private readonly IChannelManager _channelManager;
+        private readonly IUserManager _userManager;
+        private readonly ILogger _logger;
+        private readonly ILibraryManager _libraryManager;
 
-        public RefreshChannelsScheduledTask(IChannelManager manager)
+        public RefreshChannelsScheduledTask(IChannelManager channelManager, IUserManager userManager, ILogger logger, ILibraryManager libraryManager)
         {
-            _manager = manager;
+            _channelManager = channelManager;
+            _userManager = userManager;
+            _logger = logger;
+            _libraryManager = libraryManager;
         }
 
         public string Name
@@ -31,28 +38,27 @@ namespace MediaBrowser.Server.Implementations.Channels
             get { return "Channels"; }
         }
 
-        public Task Execute(System.Threading.CancellationToken cancellationToken, IProgress<double> progress)
+        public async Task Execute(System.Threading.CancellationToken cancellationToken, IProgress<double> progress)
         {
-            var manager = (ChannelManager)_manager;
+            var manager = (ChannelManager)_channelManager;
 
-            return manager.RefreshChannels(progress, cancellationToken);
+            await manager.RefreshChannels(new Progress<double>(), cancellationToken).ConfigureAwait(false);
+
+            await new ChannelPostScanTask(_channelManager, _userManager, _logger, _libraryManager).Run(progress, cancellationToken)
+                    .ConfigureAwait(false);
         }
 
         public IEnumerable<ITaskTrigger> GetDefaultTriggers()
         {
             return new ITaskTrigger[] 
             { 
-                new StartupTrigger{DelayMs = 10000},
-
-                new SystemEventTrigger{ SystemEvent = SystemEvent.WakeFromSleep},
-
                 new IntervalTrigger{ Interval = TimeSpan.FromHours(24)}
             };
         }
 
         public bool IsHidden
         {
-            get { return true; }
+            get { return false; }
         }
 
         public bool IsEnabled

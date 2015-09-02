@@ -63,7 +63,7 @@ namespace MediaBrowser.WebDashboard.Api
                 {
                     if (IsCoreHtml(path))
                     {
-                        resourceStream = await ModifyHtml(resourceStream, mode, localizationCulture, enableMinification).ConfigureAwait(false);
+                        resourceStream = await ModifyHtml(resourceStream, mode, appVersion, localizationCulture, enableMinification).ConfigureAwait(false);
                     }
                 }
                 else if (IsFormat(path, "js"))
@@ -222,9 +222,14 @@ namespace MediaBrowser.WebDashboard.Api
             }
         }
 
-        private bool IsCoreHtml(string path)
+        public bool IsCoreHtml(string path)
         {
             if (path.IndexOf("vulcanize", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return false;
+            }
+
+            if (path.IndexOf(".template.html", StringComparison.OrdinalIgnoreCase) != -1)
             {
                 return false;
             }
@@ -243,10 +248,11 @@ namespace MediaBrowser.WebDashboard.Api
         /// </summary>
         /// <param name="sourceStream">The source stream.</param>
         /// <param name="mode">The mode.</param>
+        /// <param name="appVersion">The application version.</param>
         /// <param name="localizationCulture">The localization culture.</param>
         /// <param name="enableMinification">if set to <c>true</c> [enable minification].</param>
         /// <returns>Task{Stream}.</returns>
-        public async Task<Stream> ModifyHtml(Stream sourceStream, string mode, string localizationCulture, bool enableMinification)
+        public async Task<Stream> ModifyHtml(Stream sourceStream, string mode, string appVersion, string localizationCulture, bool enableMinification)
         {
             using (sourceStream)
             {
@@ -267,13 +273,8 @@ namespace MediaBrowser.WebDashboard.Api
                     {
                         var lang = localizationCulture.Split('-').FirstOrDefault();
 
-                        html = _localization.LocalizeDocument(html, localizationCulture, GetLocalizationToken);
-
-                        html = html.Replace("<html>", "<html lang=\"" + lang + "\">");
+                        html = html.Replace("<html>", "<html data-culture=\"" + localizationCulture + "\" lang=\"" + lang + "\">");
                     }
-
-                    html = html.Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div main><div class=\"pageContainer\">")
-                        .Replace("</body>", "</div></div></paper-drawer-panel></body>");
 
                     if (enableMinification)
                     {
@@ -301,13 +302,16 @@ namespace MediaBrowser.WebDashboard.Api
                             _logger.ErrorException("Error minifying html", ex);
                         }
                     }
+
+                    html = html.Replace("<body>", "<body><paper-drawer-panel class=\"mainDrawerPanel mainDrawerPanelPreInit\" forceNarrow><div class=\"mainDrawer\" drawer></div><div class=\"mainDrawerPanelContent\" main><!--<div class=\"pageContainer\">")
+                        .Replace("</body>", "</div>--></div></paper-drawer-panel></body>");
                 }
 
-                var version = GetType().Assembly.GetName().Version;
+                var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + appVersion : string.Empty;
 
-                var imports = new string[]
+                var imports = new[]
                 {
-                    "vulcanize-out.html"
+                    "vulcanize-out.html" + versionString
                 };
                 var importsHtml = string.Join("", imports.Select(i => "<link rel=\"import\" href=\"" + i + "\">").ToArray());
 
@@ -315,7 +319,9 @@ namespace MediaBrowser.WebDashboard.Api
                 // In chrome it is causing the body to be hidden while loading, which leads to width-check methods to return 0 for everything
                 //imports = "";
 
-                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, version) + GetInitialJavascript(mode, version) + importsHtml + GetCommonJavascript(mode, version));
+                html = html.Replace("<head>", "<head>" + GetMetaTags(mode) + GetCommonCss(mode, appVersion));
+
+                html = html.Replace("</body>", GetInitialJavascript(mode, appVersion) + importsHtml + GetCommonJavascript(mode, appVersion) + "</body>");
 
                 var bytes = Encoding.UTF8.GetBytes(html);
 
@@ -411,13 +417,12 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="mode">The mode.</param>
         /// <param name="version">The version.</param>
         /// <returns>System.String.</returns>
-        private string GetCommonCss(string mode, Version version)
+        private string GetCommonCss(string mode, string version)
         {
             var versionString = !string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase) ? "?v=" + version : string.Empty;
 
             var files = new[]
                             {
-                                "thirdparty/fontawesome/css/font-awesome.min.css" + versionString,
                                 "css/all.css" + versionString
                             };
 
@@ -432,7 +437,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="mode">The mode.</param>
         /// <param name="version">The version.</param>
         /// <returns>System.String.</returns>
-        private string GetInitialJavascript(string mode, Version version)
+        private string GetInitialJavascript(string mode, string version)
         {
             var builder = new StringBuilder();
 
@@ -456,7 +461,7 @@ namespace MediaBrowser.WebDashboard.Api
         /// <param name="mode">The mode.</param>
         /// <param name="version">The version.</param>
         /// <returns>System.String.</returns>
-        private string GetCommonJavascript(string mode, Version version)
+        private string GetCommonJavascript(string mode, string version)
         {
             var builder = new StringBuilder();
 
@@ -490,22 +495,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             await AppendResource(memoryStream, "bower_components/jquery/dist/jquery.min.js", newLineBytes).ConfigureAwait(false);
 
-            await AppendResource(memoryStream, "bower_components/requirejs/require.js", newLineBytes).ConfigureAwait(false);
-
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.min.js", newLineBytes).ConfigureAwait(false);
-
-            await AppendResource(memoryStream, "thirdparty/browser.js", newLineBytes).ConfigureAwait(false);
-
-            await AppendResource(memoryStream, "thirdparty/jquery.unveil-custom.js", newLineBytes).ConfigureAwait(false);
-
-            var excludePhrases = new List<string>();
-
-            if (string.Equals(mode, "cordova", StringComparison.OrdinalIgnoreCase))
-            {
-                excludePhrases.Add("paypal");
-            }
-
-            await AppendLocalization(memoryStream, culture, excludePhrases).ConfigureAwait(false);
+            //await AppendLocalization(memoryStream, culture, excludePhrases).ConfigureAwait(false);
             await memoryStream.WriteAsync(newLineBytes, 0, newLineBytes.Length).ConfigureAwait(false);
 
             if (!string.IsNullOrWhiteSpace(mode))
@@ -523,8 +513,12 @@ namespace MediaBrowser.WebDashboard.Api
 
             var builder = new StringBuilder();
 
-            var apiClientFiles = new[]
+            var commonFiles = new[]
             {
+                "bower_components/requirejs/require.js",
+                "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.js",
+                "thirdparty/browser.js",
+                "thirdparty/jquery.unveil-custom.js",
                 "apiclient/logger.js",
                 "apiclient/md5.js",
                 "apiclient/sha1.js",
@@ -537,9 +531,9 @@ namespace MediaBrowser.WebDashboard.Api
                 "apiclient/apiclient.js"
             }.ToList();
 
-            apiClientFiles.Add("apiclient/connectionmanager.js");
+            commonFiles.Add("apiclient/connectionmanager.js");
 
-            foreach (var file in apiClientFiles)
+            foreach (var file in commonFiles)
             {
                 using (var fs = _fileSystem.GetFileStream(GetDashboardResourcePath(file), FileMode.Open, FileAccess.Read, FileShare.ReadWrite, true))
                 {
@@ -601,6 +595,7 @@ namespace MediaBrowser.WebDashboard.Api
             return new[]
                             {
                                 "extensions.js",
+                                "globalize.js",
                                 "site.js",
                                 "librarybrowser.js",
                                 "librarylist.js",
@@ -615,40 +610,12 @@ namespace MediaBrowser.WebDashboard.Api
                                 "nowplayingbar.js",
                                 "alphapicker.js",
                                 "directorybrowser.js",
-                                "moviecollections.js",
+                                "collectioneditor.js",
                                 "notifications.js",
                                 "remotecontrol.js",
                                 "search.js",
                                 "thememediaplayer.js"
                             };
-        }
-
-        private async Task AppendLocalization(Stream stream, string culture, List<string> excludePhrases)
-        {
-            var dictionary = _localization.GetJavaScriptLocalizationDictionary(culture);
-
-            if (excludePhrases.Count > 0)
-            {
-                var removes = new List<string>();
-
-                foreach (var pair in dictionary)
-                {
-                    if (excludePhrases.Any(i => pair.Key.IndexOf(i, StringComparison.OrdinalIgnoreCase) != -1 || pair.Value.IndexOf(i, StringComparison.OrdinalIgnoreCase) != -1))
-                    {
-                        removes.Add(pair.Key);
-                    }
-                }
-
-                foreach (var remove in removes)
-                {
-                    dictionary.Remove(remove);
-                }
-            }
-
-            var js = "window.localizationGlossary=" + _jsonSerializer.SerializeToString(dictionary);
-
-            var bytes = Encoding.UTF8.GetBytes(js);
-            await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -683,13 +650,11 @@ namespace MediaBrowser.WebDashboard.Api
         private async Task<Stream> GetAllCss(bool enableMinification)
         {
             var memoryStream = new MemoryStream();
-            var newLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
-
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.min.css", newLineBytes).ConfigureAwait(false);
-            await AppendResource(memoryStream, "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.structure.min.css", newLineBytes).ConfigureAwait(false);
 
             var files = new[]
                                   {
+                                      "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.theme.css",
+                                      "thirdparty/jquerymobile-1.4.5/jquery.mobile.custom.structure.css",
                                       "css/site.css",
                                       "css/chromecast.css",
                                       "css/nowplayingbar.css",
@@ -700,7 +665,6 @@ namespace MediaBrowser.WebDashboard.Api
                                       "css/card.css",
                                       "css/notifications.css",
                                       "css/search.css",
-                                      "css/pluginupdates.css",
                                       "css/remotecontrol.css",
                                       "css/userimage.css",
                                       "css/nowplaying.css",

@@ -10,11 +10,6 @@ namespace MediaBrowser.Api.Sync
         {
             List<SyncJobOption> options = new List<SyncJobOption>();
 
-            if (items.Count > 1)
-            {
-                options.Add(SyncJobOption.Name);
-            }
-            
             foreach (BaseItemDto item in items)
             {
                 if (item.SupportsSync ?? false)
@@ -65,7 +60,6 @@ namespace MediaBrowser.Api.Sync
         {
             List<SyncJobOption> options = new List<SyncJobOption>();
 
-            options.Add(SyncJobOption.Name);
             options.Add(SyncJobOption.Quality);
             options.Add(SyncJobOption.Profile);
             options.Add(SyncJobOption.UnwatchedOnly);

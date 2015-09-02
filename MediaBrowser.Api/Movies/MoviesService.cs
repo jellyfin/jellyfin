@@ -28,6 +28,14 @@ namespace MediaBrowser.Api.Movies
     {
     }
 
+    /// <summary>
+    /// Class GetSimilarTrailers
+    /// </summary>
+    [Route("/Trailers/{Id}/Similar", "GET", Summary = "Finds movies and trailers similar to a given trailer.")]
+    public class GetSimilarTrailers : BaseGetSimilarItemsFromItem
+    {
+    }
+
     [Route("/Movies/Recommendations", "GET", Summary = "Gets movie recommendations")]
     public class GetMovieRecommendations : IReturn<RecommendationDto[]>, IHasItemFields
     {
@@ -117,6 +125,17 @@ namespace MediaBrowser.Api.Movies
             return ToOptimizedSerializedResultUsingCache(result);
         }
 
+        public async Task<object> Get(GetSimilarTrailers request)
+        {
+            var result = await GetSimilarItemsResult(
+                // Strip out secondary versions
+                request, item => (item is Movie) && !((Video)item).PrimaryVersionId.HasValue,
+
+                SimilarItemsHelper.GetSimiliarityScore).ConfigureAwait(false);
+
+            return ToOptimizedSerializedResultUsingCache(result);
+        }
+
         public async Task<object> Get(GetMovieRecommendations request)
         {
             var user = _userManager.GetUserById(request.UserId);
@@ -126,7 +145,7 @@ namespace MediaBrowser.Api.Movies
             movies = _libraryManager.ReplaceVideosWithPrimaryVersions(movies);
 
             var listEligibleForCategories = new List<BaseItem>();
-            var listEligibleForSuggestion = new List<BaseItem> ();
+            var listEligibleForSuggestion = new List<BaseItem>();
 
             var list = movies.ToList();
 
@@ -159,7 +178,7 @@ namespace MediaBrowser.Api.Movies
             var dtoOptions = GetDtoOptions(request);
 
             dtoOptions.Fields = request.GetItemFields().ToList();
-            
+
             var result = GetRecommendationCategories(user, listEligibleForCategories, listEligibleForSuggestion, request.CategoryLimit, request.ItemLimit, dtoOptions);
 
             return ToOptimizedResult(result);
@@ -174,14 +193,14 @@ namespace MediaBrowser.Api.Movies
                 _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
 
             Func<BaseItem, bool> filter = i => i.Id != item.Id && includeInSearch(i);
-            
+
             var inputItems = user == null
                                  ? _libraryManager.RootFolder.GetRecursiveChildren(filter)
                                  : user.RootFolder.GetRecursiveChildren(user, filter);
 
             var list = inputItems.ToList();
 
-            if (item is Movie && user != null && user.Configuration.IncludeTrailersInSuggestions)
+            if (user != null && user.Configuration.IncludeTrailersInSuggestions)
             {
                 var trailerResult = await _channelManager.GetAllMediaInternal(new AllChannelMediaQuery
                 {
@@ -224,7 +243,7 @@ namespace MediaBrowser.Api.Movies
             }
 
             var dtoOptions = GetDtoOptions(request);
-          
+
             var result = new ItemsResult
             {
                 Items = _dtoService.GetBaseItemDtos(returnItems, dtoOptions, user).ToArray(),

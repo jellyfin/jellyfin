@@ -185,6 +185,9 @@ namespace MediaBrowser.Api.UserLibrary
 
         [ApiMember(Name = "PlaySessionId", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
         public string PlaySessionId { get; set; }
+
+        [ApiMember(Name = "RepeatMode", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "POST")]
+        public RepeatMode RepeatMode { get; set; }
     }
 
     /// <summary>
@@ -325,7 +328,8 @@ namespace MediaBrowser.Api.UserLibrary
                 VolumeLevel = request.VolumeLevel,
                 PlayMethod = request.PlayMethod,
                 PlaySessionId = request.PlaySessionId,
-                LiveStreamId = request.LiveStreamId
+                LiveStreamId = request.LiveStreamId,
+                RepeatMode = request.RepeatMode
             });
         }
 

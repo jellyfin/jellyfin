@@ -94,6 +94,12 @@ namespace MediaBrowser.Controller.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance is post padding required; otherwise, <c>false</c>.</value>
         public bool IsPostPaddingRequired { get; set; }
+
+        /// <summary>
+        /// Gets or sets the series identifier.
+        /// </summary>
+        /// <value>The series identifier.</value>
+        public string SeriesId { get; set; }
         
         public SeriesTimerInfo()
         {

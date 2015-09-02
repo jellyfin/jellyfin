@@ -221,7 +221,9 @@ namespace MediaBrowser.Api
         /// <returns>IEnumerable{FileSystemEntryInfo}.</returns>
         private IEnumerable<FileSystemEntryInfo> GetFileSystemEntries(GetDirectoryContents request)
         {
-            var entries = new DirectoryInfo(request.Path).EnumerateFileSystemInfos().Where(i =>
+            // using EnumerateFileSystemInfos doesn't handle reparse points (symlinks)
+            var entries = new DirectoryInfo(request.Path).EnumerateDirectories("*", SearchOption.TopDirectoryOnly)
+                .Concat<FileSystemInfo>(new DirectoryInfo(request.Path).EnumerateFiles("*", SearchOption.TopDirectoryOnly)).Where(i =>
             {
                 if (!request.IncludeHidden && i.Attributes.HasFlag(FileAttributes.Hidden))
                 {

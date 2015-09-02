@@ -96,10 +96,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             TryStreamCopy(state, request);
 
-            state.Quality = options.Context == EncodingContext.Static ? 
-                EncodingQuality.MaxQuality :
-                GetQualitySetting();
-
             return state;
         }
 
@@ -197,25 +193,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
 
             state.MediaSource = mediaSource;
-        }
-
-        protected EncodingQuality GetQualitySetting()
-        {
-            var quality = GetEncodingOptions().EncodingQuality;
-
-            if (quality == EncodingQuality.Auto)
-            {
-                var cpuCount = Environment.ProcessorCount;
-
-                if (cpuCount >= 4)
-                {
-                    //return EncodingQuality.HighQuality;
-                }
-
-                return EncodingQuality.HighSpeed;
-            }
-
-            return quality;
         }
 
         protected EncodingOptions GetEncodingOptions()

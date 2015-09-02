@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Dto;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LiveTv;
 using MediaBrowser.Model.Querying;
 using System.Collections.Generic;
@@ -56,20 +57,23 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="id">The identifier.</param>
         /// <returns>Task.</returns>
         Task CancelSeriesTimer(string id);
-        
+
         /// <summary>
         /// Adds the parts.
         /// </summary>
         /// <param name="services">The services.</param>
-        void AddParts(IEnumerable<ILiveTvService> services);
+        /// <param name="tunerHosts">The tuner hosts.</param>
+        /// <param name="listingProviders">The listing providers.</param>
+        void AddParts(IEnumerable<ILiveTvService> services, IEnumerable<ITunerHost> tunerHosts, IEnumerable<IListingsProvider> listingProviders);
 
         /// <summary>
         /// Gets the channels.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>IEnumerable{Channel}.</returns>
-        Task<QueryResult<ChannelInfoDto>> GetChannels(LiveTvChannelQuery query, CancellationToken cancellationToken);
+        Task<QueryResult<ChannelInfoDto>> GetChannels(LiveTvChannelQuery query, DtoOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the recording.
@@ -171,14 +175,15 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="user">The user.</param>
         /// <returns>Task{ProgramInfoDto}.</returns>
         Task<BaseItemDto> GetProgram(string id, CancellationToken cancellationToken, User user = null);
-        
+
         /// <summary>
         /// Gets the programs.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>IEnumerable{ProgramInfo}.</returns>
-        Task<QueryResult<BaseItemDto>> GetPrograms(ProgramQuery query, CancellationToken cancellationToken);
+        Task<QueryResult<BaseItemDto>> GetPrograms(ProgramQuery query, DtoOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the timer.
@@ -238,10 +243,10 @@ namespace MediaBrowser.Controller.LiveTv
         /// Gets the recommended programs.
         /// </summary>
         /// <param name="query">The query.</param>
+        /// <param name="options">The options.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task{QueryResult{ProgramInfoDto}}.</returns>
-        Task<QueryResult<BaseItemDto>> GetRecommendedPrograms(RecommendedProgramQuery query,
-            CancellationToken cancellationToken);
+        Task<QueryResult<BaseItemDto>> GetRecommendedPrograms(RecommendedProgramQuery query, DtoOptions options, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the recommended programs internal.
@@ -249,8 +254,7 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="query">The query.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task&lt;QueryResult&lt;LiveTvProgram&gt;&gt;.</returns>
-        Task<QueryResult<LiveTvProgram>> GetRecommendedProgramsInternal(RecommendedProgramQuery query,
-            CancellationToken cancellationToken);
+        Task<QueryResult<LiveTvProgram>> GetRecommendedProgramsInternal(RecommendedProgramQuery query, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the live tv information.
@@ -270,10 +274,9 @@ namespace MediaBrowser.Controller.LiveTv
         /// <summary>
         /// Gets the live tv folder.
         /// </summary>
-        /// <param name="userId">The user identifier.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>BaseItemDto.</returns>
-        Task<Folder> GetInternalLiveTvFolder(string userId, CancellationToken cancellationToken);
+        Task<Folder> GetInternalLiveTvFolder(CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the live tv folder.
@@ -337,5 +340,46 @@ namespace MediaBrowser.Controller.LiveTv
         /// <param name="dto">The dto.</param>
         /// <param name="user">The user.</param>
         void AddInfoToProgramDto(BaseItem item, BaseItemDto dto, User user = null);
+        /// <summary>
+        /// Saves the tuner host.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <returns>Task.</returns>
+        Task<TunerHostInfo> SaveTunerHost(TunerHostInfo info);
+        /// <summary>
+        /// Saves the listing provider.
+        /// </summary>
+        /// <param name="info">The information.</param>
+        /// <param name="validateLogin">if set to <c>true</c> [validate login].</param>
+        /// <param name="validateListings">if set to <c>true</c> [validate listings].</param>
+        /// <returns>Task.</returns>
+        Task<ListingsProviderInfo> SaveListingProvider(ListingsProviderInfo info, bool validateLogin, bool validateListings);
+        /// <summary>
+        /// Gets the lineups.
+        /// </summary>
+        /// <param name="providerType">Type of the provider.</param>
+        /// <param name="providerId">The provider identifier.</param>
+        /// <param name="country">The country.</param>
+        /// <param name="location">The location.</param>
+        /// <returns>Task&lt;List&lt;NameIdPair&gt;&gt;.</returns>
+        Task<List<NameIdPair>> GetLineups(string providerType, string providerId, string country, string location);
+
+        /// <summary>
+        /// Gets the registration information.
+        /// </summary>
+        /// <param name="channelId">The channel identifier.</param>
+        /// <param name="programId">The program identifier.</param>
+        /// <param name="feature">The feature.</param>
+        /// <returns>Task&lt;MBRegistrationRecord&gt;.</returns>
+        Task<MBRegistrationRecord> GetRegistrationInfo(string channelId, string programId, string feature);
+
+        /// <summary>
+        /// Adds the channel information.
+        /// </summary>
+        /// <param name="dto">The dto.</param>
+        /// <param name="channel">The channel.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="user">The user.</param>
+        void AddChannelInfo(BaseItemDto dto, LiveTvChannel channel, DtoOptions options, User user);
     }
 }

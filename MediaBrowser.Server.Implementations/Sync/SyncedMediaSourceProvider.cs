@@ -90,15 +90,18 @@ namespace MediaBrowser.Server.Implementations.Sync
                 keyList.Add(provider.GetType().FullName.GetMD5().ToString("N"));
                 keyList.Add(target.Id.GetMD5().ToString("N"));
                 keyList.Add(item.Id);
-                mediaSource.OpenToken = string.Join("|", keyList.ToArray());
+                mediaSource.OpenToken = string.Join(StreamIdDelimeterString, keyList.ToArray());
             }
 
             list.Add(mediaSource);
         }
 
+        // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
+        private const string StreamIdDelimeterString = "_";
+
         public async Task<MediaSourceInfo> OpenMediaSource(string openToken, CancellationToken cancellationToken)
         {
-            var openKeys = openToken.Split(new[] { '|' }, 3);
+            var openKeys = openToken.Split(new[] { StreamIdDelimeterString[0] }, 3);
 
             var provider = _syncManager.ServerSyncProviders
                 .FirstOrDefault(i => string.Equals(openKeys[0], i.GetType().FullName.GetMD5().ToString("N"), StringComparison.OrdinalIgnoreCase));

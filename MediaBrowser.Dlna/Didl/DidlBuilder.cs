@@ -120,7 +120,7 @@ namespace MediaBrowser.Dlna.Didl
                 }
             }
 
-            AddCover(item, null, element);
+            AddCover(item, context, null, element);
 
             return element;
         }
@@ -193,6 +193,9 @@ namespace MediaBrowser.Dlna.Didl
 
             if (string.Equals(subtitleMode, "CaptionInfoEx", StringComparison.OrdinalIgnoreCase))
             {
+                // <sec:CaptionInfoEx sec:type="srt">http://192.168.1.3:9999/video.srt</sec:CaptionInfoEx>
+                // <sec:CaptionInfo sec:type="srt">http://192.168.1.3:9999/video.srt</sec:CaptionInfo>
+
                 //var res = container.OwnerDocument.CreateElement("SEC", "CaptionInfoEx");
 
                 //res.InnerText = info.Url;
@@ -200,6 +203,16 @@ namespace MediaBrowser.Dlna.Didl
                 //// TODO: attribute needs SEC:
                 //res.SetAttribute("type", info.Format.ToLower());
                 //container.AppendChild(res);
+            }
+            else if (string.Equals(subtitleMode, "smi", StringComparison.OrdinalIgnoreCase))
+            {
+                var res = container.OwnerDocument.CreateElement(string.Empty, "res", NS_DIDL);
+
+                res.InnerText = info.Url;
+
+                res.SetAttribute("protocolInfo", "http-get:*:smi/caption:*");
+
+                container.AppendChild(res);
             }
             else
             {
@@ -481,7 +494,7 @@ namespace MediaBrowser.Dlna.Didl
 
             AddCommonFields(folder, stubType, null, container, filter);
 
-            AddCover(folder, stubType, container);
+            AddCover(folder, context, stubType, container);
 
             return container;
         }
@@ -764,7 +777,7 @@ namespace MediaBrowser.Dlna.Didl
             }
         }
 
-        private void AddCover(BaseItem item, StubType? stubType, XmlElement element)
+        private void AddCover(BaseItem item, BaseItem context, StubType? stubType, XmlElement element)
         {
             if (stubType.HasValue && stubType.Value == StubType.People)
             {
@@ -772,7 +785,26 @@ namespace MediaBrowser.Dlna.Didl
                 return;
             }
 
-            var imageInfo = GetImageInfo(item);
+            ImageDownloadInfo imageInfo = null;
+
+            if (context is UserView)
+            {
+                var episode = item as Episode;
+                if (episode != null)
+                {
+                    var parent = (BaseItem)episode.Series ?? episode.Season;
+                    if (parent != null)
+                    {
+                        imageInfo = GetImageInfo(parent);
+                    }
+                }
+            }
+
+            // Finally, just use the image from the item
+            if (imageInfo == null)
+            {
+                imageInfo = GetImageInfo(item);
+            }
 
             if (imageInfo == null)
             {
@@ -850,7 +882,7 @@ namespace MediaBrowser.Dlna.Didl
         private void AddEmbeddedImageAsCover(string name, XmlElement element)
         {
             var result = element.OwnerDocument;
-            
+
             var icon = result.CreateElement("upnp", "albumArtURI", NS_UPNP);
             var profile = result.CreateAttribute("dlna", "profileID", NS_DLNA);
             profile.InnerText = _profile.AlbumArtPn;
@@ -925,14 +957,11 @@ namespace MediaBrowser.Dlna.Didl
                 }
             }
 
-            if (item is Audio || item is Episode)
-            {
-                item = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Primary));
+            item = item.Parents.FirstOrDefault(i => i.HasImage(ImageType.Primary));
 
-                if (item != null)
-                {
-                    return GetImageInfo(item, ImageType.Primary);
-                }
+            if (item != null)
+            {
+                return GetImageInfo(item, ImageType.Primary);
             }
 
             return null;
@@ -955,17 +984,17 @@ namespace MediaBrowser.Dlna.Didl
             int? width = null;
             int? height = null;
 
-            try
-            {
-                var size = _imageProcessor.GetImageSize(imageInfo);
+            //try
+            //{
+            //    var size = _imageProcessor.GetImageSize(imageInfo);
 
-                width = Convert.ToInt32(size.Width);
-                height = Convert.ToInt32(size.Height);
-            }
-            catch
-            {
+            //    width = Convert.ToInt32(size.Width);
+            //    height = Convert.ToInt32(size.Height);
+            //}
+            //catch
+            //{
 
-            }
+            //}
 
             return new ImageDownloadInfo
             {

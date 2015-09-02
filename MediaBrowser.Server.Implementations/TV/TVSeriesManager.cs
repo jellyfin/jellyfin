@@ -137,6 +137,8 @@ namespace MediaBrowser.Server.Implementations.TV
             var lastWatchedDate = DateTime.MinValue;
             Episode nextUp = null;
 
+            var includeMissing = user.Configuration.DisplayMissingEpisodes;
+
             // Go back starting with the most recent episodes
             foreach (var episode in allEpisodes)
             {
@@ -154,7 +156,7 @@ namespace MediaBrowser.Server.Implementations.TV
                 }
                 else
                 {
-                    if (episode.LocationType != LocationType.Virtual)
+                    if (!episode.IsVirtualUnaired && (!episode.IsMissingEpisode || includeMissing))
                     {
                         nextUp = episode;
                     }
@@ -166,7 +168,7 @@ namespace MediaBrowser.Server.Implementations.TV
                 return new Tuple<Episode, DateTime, bool>(nextUp, lastWatchedDate, false);
             }
 
-            var firstEpisode = allEpisodes.LastOrDefault(i => i.LocationType != LocationType.Virtual && !i.IsPlayed(user));
+            var firstEpisode = allEpisodes.LastOrDefault(i => !i.IsVirtualUnaired && (!i.IsMissingEpisode || includeMissing) && !i.IsPlayed(user));
 
             // Return the first episode
             return new Tuple<Episode, DateTime, bool>(firstEpisode, DateTime.MinValue, true);

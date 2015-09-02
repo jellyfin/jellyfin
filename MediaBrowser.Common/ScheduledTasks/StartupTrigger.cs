@@ -1,6 +1,7 @@
-﻿using System;
+﻿using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Tasks;
+using System;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Common.ScheduledTasks
 {
@@ -27,8 +28,9 @@ namespace MediaBrowser.Common.ScheduledTasks
         /// <summary>
         /// Stars waiting for the trigger action
         /// </summary>
+        /// <param name="lastResult">The last result.</param>
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
-        public async void Start(bool isApplicationStartup)
+        public async void Start(TaskResult lastResult, bool isApplicationStartup)
         {
             if (isApplicationStartup)
             {

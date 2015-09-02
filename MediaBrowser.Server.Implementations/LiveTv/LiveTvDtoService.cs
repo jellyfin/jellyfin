@@ -198,10 +198,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv
         /// Gets the channel info dto.
         /// </summary>
         /// <param name="info">The info.</param>
+        /// <param name="options">The options.</param>
         /// <param name="currentProgram">The current program.</param>
         /// <param name="user">The user.</param>
         /// <returns>ChannelInfoDto.</returns>
-        public ChannelInfoDto GetChannelInfoDto(LiveTvChannel info, LiveTvProgram currentProgram, User user = null)
+        public ChannelInfoDto GetChannelInfoDto(LiveTvChannel info, DtoOptions options, LiveTvProgram currentProgram, User user = null)
         {
             var dto = new ChannelInfoDto
             {
@@ -238,7 +239,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv
 
             if (currentProgram != null)
             {
-                dto.CurrentProgram = _dtoService.GetBaseItemDto(currentProgram, new DtoOptions(), user);
+                dto.CurrentProgram = _dtoService.GetBaseItemDto(currentProgram, options, user);
             }
 
             return dto;

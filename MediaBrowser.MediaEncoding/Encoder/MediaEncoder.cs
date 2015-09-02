@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Session;
 using MediaBrowser.MediaEncoding.Probing;
 using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Extensions;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
@@ -242,22 +243,27 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                         if (extractKeyFrameInterval && mediaInfo.RunTimeTicks.HasValue)
                         {
-                            foreach (var stream in mediaInfo.MediaStreams)
+                            if (ConfigurationManager.Configuration.EnableVideoFrameAnalysis && mediaInfo.Size.HasValue && mediaInfo.Size.Value <= ConfigurationManager.Configuration.VideoFrameAnalysisLimitBytes)
                             {
-                                if (stream.Type == MediaStreamType.Video && string.Equals(stream.Codec, "h264", StringComparison.OrdinalIgnoreCase))
+                                foreach (var stream in mediaInfo.MediaStreams)
                                 {
-                                    try
+                                    if (stream.Type == MediaStreamType.Video &&
+                                        string.Equals(stream.Codec, "h264", StringComparison.OrdinalIgnoreCase) &&
+                                        !stream.IsInterlaced &&
+                                        !(stream.IsAnamorphic ?? false))
                                     {
-                                        //stream.KeyFrames = await GetKeyFrames(inputPath, stream.Index, cancellationToken)
-                                        //            .ConfigureAwait(false);
-                                    }
-                                    catch (OperationCanceledException)
-                                    {
+                                        try
+                                        {
+                                            stream.KeyFrames = await GetKeyFrames(inputPath, stream.Index, cancellationToken).ConfigureAwait(false);
+                                        }
+                                        catch (OperationCanceledException)
+                                        {
 
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        _logger.ErrorException("Error getting key frame interval", ex);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            _logger.ErrorException("Error getting key frame interval", ex);
+                                        }
                                     }
                                 }
                             }
@@ -283,7 +289,9 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
         private async Task<List<int>> GetKeyFrames(string inputPath, int videoStreamIndex, CancellationToken cancellationToken)
         {
-            const string args = "-i {0} -select_streams v:{1} -show_frames -show_entries frame=pkt_dts,key_frame -print_format compact";
+            inputPath = inputPath.Split(new[] { ':' }, 2).Last().Trim('"');
+
+            const string args = "-show_packets -print_format compact -select_streams v:{1} -show_entries packet=flags -show_entries packet=pts_time \"{0}\"";
 
             var process = new Process
             {
@@ -295,7 +303,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                     // Must consume both or ffmpeg may hang due to deadlocks. See comments below.   
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    RedirectStandardInput = true,
                     FileName = FFProbePath,
                     Arguments = string.Format(args, inputPath, videoStreamIndex.ToString(CultureInfo.InvariantCulture)).Trim(),
 
@@ -308,9 +315,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
             _logger.Debug("{0} {1}", process.StartInfo.FileName, process.StartInfo.Arguments);
 
-            using (var processWrapper = new ProcessWrapper(process, this, _logger))
+            using (process)
             {
-                StartProcess(processWrapper);
+                var start = DateTime.UtcNow;
+
+                process.Start();
 
                 var lines = new List<int>();
 
@@ -318,7 +327,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 {
                     process.BeginErrorReadLine();
 
-                    await StartReadingOutput(process.StandardOutput.BaseStream, lines, 120000, cancellationToken).ConfigureAwait(false);
+                    await StartReadingOutput(process.StandardOutput.BaseStream, lines, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -327,41 +336,46 @@ namespace MediaBrowser.MediaEncoding.Encoder
                         throw;
                     }
                 }
-                finally
-                {
-                    StopProcess(processWrapper, 100, true);
-                }
 
+                process.WaitForExit();
+
+                _logger.Debug("Keyframe extraction took {0} seconds", (DateTime.UtcNow - start).TotalSeconds);
+                //_logger.Debug("Found keyframes {0}", string.Join(",", lines.ToArray()));
                 return lines;
             }
         }
 
-        private async Task StartReadingOutput(Stream source, List<int> lines, int timeoutMs, CancellationToken cancellationToken)
+        private async Task StartReadingOutput(Stream source, List<int> keyframes, CancellationToken cancellationToken)
         {
             try
             {
                 using (var reader = new StreamReader(source))
                 {
-                    while (!reader.EndOfStream)
+                    var text = await reader.ReadToEndAsync().ConfigureAwait(false);
+
+                    var lines = StringHelper.RegexSplit(text, "\r\n");
+                    foreach (var line in lines)
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
+                        if (string.IsNullOrWhiteSpace(line))
+                        {
+                            continue;
+                        }
 
-                        var line = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                        var values = (line ?? string.Empty).Split('|')
+                        var values = line.Split('|')
                             .Where(i => !string.IsNullOrWhiteSpace(i))
                             .Select(i => i.Split('='))
                             .Where(i => i.Length == 2)
                             .ToDictionary(i => i[0], i => i[1]);
 
-                        string pktDts;
-                        int frameMs;
-                        if (values.TryGetValue("pkt_dts", out pktDts) && int.TryParse(pktDts, NumberStyles.Any, CultureInfo.InvariantCulture, out frameMs))
+                        string flags;
+                        if (values.TryGetValue("flags", out flags) && string.Equals(flags, "k", StringComparison.OrdinalIgnoreCase))
                         {
-                            string keyFrame;
-                            if (values.TryGetValue("key_frame", out keyFrame) && string.Equals(keyFrame, "1", StringComparison.OrdinalIgnoreCase))
+                            string pts_time;
+                            double frameSeconds;
+                            if (values.TryGetValue("pts_time", out pts_time) && double.TryParse(pts_time, NumberStyles.Any, CultureInfo.InvariantCulture, out frameSeconds))
                             {
-                                lines.Add(frameMs);
+                                var ms = frameSeconds * 1000;
+                                keyframes.Add(Convert.ToInt32(ms));
                             }
                         }
                     }
@@ -376,7 +390,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 _logger.ErrorException("Error reading ffprobe output", ex);
             }
         }
-
         /// <summary>
         /// The us culture
         /// </summary>
@@ -765,6 +778,11 @@ namespace MediaBrowser.MediaEncoding.Encoder
             }
         }
 
+        public string EscapeSubtitleFilterPath(string path)
+        {
+            return path.Replace('\\', '/').Replace(":/", "\\:/").Replace("'", "'\\\\\\''");
+        }
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
@@ -797,7 +815,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
             public ProcessWrapper(Process process, MediaEncoder mediaEncoder, ILogger logger)
             {
                 Process = process;
-                this._mediaEncoder = mediaEncoder;
+                _mediaEncoder = mediaEncoder;
                 _logger = logger;
                 Process.Exited += Process_Exited;
             }
@@ -814,7 +832,6 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 }
                 catch (Exception ex)
                 {
-                    _logger.ErrorException("Error determing process exit code", ex);
                 }
 
                 lock (_mediaEncoder._runningProcesses)

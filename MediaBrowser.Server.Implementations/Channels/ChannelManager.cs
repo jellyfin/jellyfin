@@ -23,7 +23,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -255,7 +254,7 @@ namespace MediaBrowser.Server.Implementations.Channels
                 sources.InsertRange(0, cachedVersions);
             }
 
-            return sources.Where(IsValidMediaSource);
+            return sources;
         }
 
         public async Task<IEnumerable<MediaSourceInfo>> GetDynamicMediaSources(IChannelMediaItem item, CancellationToken cancellationToken)
@@ -279,7 +278,6 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             var list = SortMediaInfoResults(results)
                 .Select(i => GetMediaSource(item, i))
-                .Where(IsValidMediaSource)
                 .ToList();
 
             var cachedVersions = GetCachedChannelItemMediaSources(item);
@@ -478,7 +476,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
         public Channel GetChannel(string id)
         {
-            return (Channel)_libraryManager.GetItemById(new Guid(id));
+            return _libraryManager.GetItemById(new Guid(id)) as Channel;
         }
 
         public IEnumerable<ChannelFeatures> GetAllChannelFeatures()
@@ -916,7 +914,7 @@ namespace MediaBrowser.Server.Implementations.Channels
 
                 if (query.Limit.HasValue && query.Limit.Value > channelInfo.MaxPageSize.Value)
                 {
-                    throw new ArgumentException(string.Format("{0} channel only supports a maximum of {1} records at a time.", channel.Name, channelInfo.MaxPageSize.Value));
+                    query.Limit = Math.Min(query.Limit.Value, channelInfo.MaxPageSize.Value);
                 }
                 providerLimit = query.Limit;
 
@@ -1401,17 +1399,16 @@ namespace MediaBrowser.Server.Implementations.Channels
         {
             var user = string.IsNullOrEmpty(userId) ? null : _userManager.GetUserById(userId);
 
-            var folder = await GetInternalChannelFolder(userId, cancellationToken).ConfigureAwait(false);
+            var folder = await GetInternalChannelFolder(cancellationToken).ConfigureAwait(false);
 
             return _dtoService.GetBaseItemDto(folder, new DtoOptions(), user);
         }
 
-        public async Task<Folder> GetInternalChannelFolder(string userId, CancellationToken cancellationToken)
+        public async Task<Folder> GetInternalChannelFolder(CancellationToken cancellationToken)
         {
             var name = _localization.GetLocalizedString("ViewTypeChannels");
-            var user = _userManager.GetUserById(userId);
 
-            return await _libraryManager.GetNamedView(user, name, "channels", "zz_" + name, cancellationToken).ConfigureAwait(false);
+            return await _libraryManager.GetNamedView(name, "channels", "zz_" + name, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task DownloadChannelItem(IChannelMediaItem item, string destination,
@@ -1424,18 +1421,8 @@ namespace MediaBrowser.Server.Implementations.Channels
 
             foreach (var source in list)
             {
-                try
-                {
-                    await TryDownloadChannelItem(source, item, destination, progress, cancellationToken).ConfigureAwait(false);
-                    return;
-                }
-                catch (HttpException ex)
-                {
-                    if (ex.StatusCode.HasValue && ex.StatusCode.Value == HttpStatusCode.NotFound)
-                    {
-                        MarkBadMediaSource(source);
-                    }
-                }
+                await TryDownloadChannelItem(source, item, destination, progress, cancellationToken).ConfigureAwait(false);
+                return;
             }
         }
 
@@ -1523,81 +1510,6 @@ namespace MediaBrowser.Server.Implementations.Channels
             {
 
             }
-        }
-
-        private readonly ReaderWriterLockSlim _mediaSourceHistoryLock = new ReaderWriterLockSlim();
-        private bool IsValidMediaSource(MediaSourceInfo source)
-        {
-            if (source.Protocol == MediaProtocol.Http)
-            {
-                return !GetBadMediaSourceHistory().Contains(source.Path, StringComparer.OrdinalIgnoreCase);
-            }
-            return true;
-        }
-
-        private void MarkBadMediaSource(MediaSourceInfo source)
-        {
-            var list = GetBadMediaSourceHistory();
-            list.Add(source.Path);
-
-            var path = GetMediaSourceHistoryPath();
-
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-            if (_mediaSourceHistoryLock.TryEnterWriteLock(TimeSpan.FromSeconds(5)))
-            {
-                try
-                {
-                    File.WriteAllLines(path, list.ToArray(), Encoding.UTF8);
-                }
-                catch (Exception ex)
-                {
-                    _logger.ErrorException("Error saving file", ex);
-                }
-                finally
-                {
-                    _mediaSourceHistoryLock.ExitWriteLock();
-                }
-            }
-        }
-
-        private ConcurrentBag<string> _badMediaSources = null;
-        private ConcurrentBag<string> GetBadMediaSourceHistory()
-        {
-            if (_badMediaSources == null)
-            {
-                var path = GetMediaSourceHistoryPath();
-
-                if (_mediaSourceHistoryLock.TryEnterReadLock(TimeSpan.FromSeconds(1)))
-                {
-                    if (_badMediaSources == null)
-                    {
-                        try
-                        {
-                            _badMediaSources = new ConcurrentBag<string>(File.ReadAllLines(path, Encoding.UTF8));
-                        }
-                        catch (IOException)
-                        {
-                            _badMediaSources = new ConcurrentBag<string>();
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ErrorException("Error reading file", ex);
-                            _badMediaSources = new ConcurrentBag<string>();
-                        }
-                        finally
-                        {
-                            _mediaSourceHistoryLock.ExitReadLock();
-                        }
-                    }
-                }
-            }
-            return _badMediaSources;
-        }
-
-        private string GetMediaSourceHistoryPath()
-        {
-            return Path.Combine(_config.ApplicationPaths.DataPath, "channels", "failures.txt");
         }
 
         private void IncrementDownloadCount(string key, int? limit)

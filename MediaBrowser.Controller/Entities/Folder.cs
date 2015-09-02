@@ -1,7 +1,6 @@
 ﻿using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
@@ -14,7 +13,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Users;
 
 namespace MediaBrowser.Controller.Entities
 {
@@ -50,7 +48,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public virtual bool IsPreSorted
         {
-            get { return false; }
+            get { return ConfigurationManager.Configuration.EnableWindowsShortcuts; }
         }
 
         /// <summary>
@@ -122,7 +120,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         protected virtual bool SupportsShortcutChildren
         {
-            get { return true; }
+            get { return false; }
         }
 
         /// <summary>
@@ -176,7 +174,7 @@ namespace MediaBrowser.Controller.Entities
         protected void AddChildInternal(BaseItem child)
         {
             var actualChildren = ActualChildren;
-            
+
             lock (_childrenSyncLock)
             {
                 var newChildren = actualChildren.ToList();
@@ -1070,7 +1068,7 @@ namespace MediaBrowser.Controller.Entities
         {
             var changesFound = false;
 
-            if (SupportsShortcutChildren && LocationType == LocationType.FileSystem)
+            if (LocationType == LocationType.FileSystem)
             {
                 if (RefreshLinkedChildren(fileSystemChildren))
                 {
@@ -1092,37 +1090,43 @@ namespace MediaBrowser.Controller.Entities
             var currentManualLinks = LinkedChildren.Where(i => i.Type == LinkedChildType.Manual).ToList();
             var currentShortcutLinks = LinkedChildren.Where(i => i.Type == LinkedChildType.Shortcut).ToList();
 
-            var newShortcutLinks = fileSystemChildren
-                .Where(i => (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory && FileSystem.IsShortcut(i.FullName))
-                .Select(i =>
-                {
-                    try
+            List<LinkedChild> newShortcutLinks;
+
+            if (SupportsShortcutChildren)
+            {
+                newShortcutLinks = fileSystemChildren
+                    .Where(i => (i.Attributes & FileAttributes.Directory) != FileAttributes.Directory && FileSystem.IsShortcut(i.FullName))
+                    .Select(i =>
                     {
-                        Logger.Debug("Found shortcut at {0}", i.FullName);
-
-                        var resolvedPath = FileSystem.ResolveShortcut(i.FullName);
-
-                        if (!string.IsNullOrEmpty(resolvedPath))
+                        try
                         {
-                            return new LinkedChild
+                            Logger.Debug("Found shortcut at {0}", i.FullName);
+
+                            var resolvedPath = FileSystem.ResolveShortcut(i.FullName);
+
+                            if (!string.IsNullOrEmpty(resolvedPath))
                             {
-                                Path = resolvedPath,
-                                Type = LinkedChildType.Shortcut
-                            };
+                                return new LinkedChild
+                                {
+                                    Path = resolvedPath,
+                                    Type = LinkedChildType.Shortcut
+                                };
+                            }
+
+                            Logger.Error("Error resolving shortcut {0}", i.FullName);
+
+                            return null;
                         }
-
-                        Logger.Error("Error resolving shortcut {0}", i.FullName);
-
-                        return null;
-                    }
-                    catch (IOException ex)
-                    {
-                        Logger.ErrorException("Error resolving shortcut {0}", ex, i.FullName);
-                        return null;
-                    }
-                })
-                .Where(i => i != null)
-                .ToList();
+                        catch (IOException ex)
+                        {
+                            Logger.ErrorException("Error resolving shortcut {0}", ex, i.FullName);
+                            return null;
+                        }
+                    })
+                    .Where(i => i != null)
+                    .ToList();
+            }
+            else { newShortcutLinks = new List<LinkedChild>(); }
 
             if (!newShortcutLinks.SequenceEqual(currentShortcutLinks, new LinkedChildComparer()))
             {

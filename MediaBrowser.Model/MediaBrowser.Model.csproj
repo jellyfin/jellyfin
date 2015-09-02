@@ -159,7 +159,6 @@
     <Compile Include="FileOrganization\TvFileOrganizationOptions.cs" />
     <Compile Include="Configuration\BaseApplicationConfiguration.cs" />
     <Compile Include="Configuration\DlnaOptions.cs" />
-    <Compile Include="Configuration\EncodingQuality.cs" />
     <Compile Include="Configuration\ImageOption.cs" />
     <Compile Include="Configuration\ImageSavingConvention.cs" />
     <Compile Include="LiveTv\LiveTvOptions.cs" />
@@ -169,6 +168,8 @@
     <Compile Include="Configuration\MetadataPluginType.cs" />
     <Compile Include="Dlna\SubtitleProfile.cs" />
     <Compile Include="MediaInfo\MediaProtocol.cs" />
+    <Compile Include="MediaInfo\SubtitleTrackEvent.cs" />
+    <Compile Include="MediaInfo\SubtitleTrackInfo.cs" />
     <Compile Include="Net\HttpResponse.cs" />
     <Compile Include="Net\MimeTypes.cs" />
     <Compile Include="Notifications\NotificationOption.cs" />

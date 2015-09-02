@@ -27,10 +27,8 @@ namespace MediaBrowser.Server.Implementations.Library
             return list.Concat(GetInstantMixFromGenres(item.Genres, user));
         }
 
-        public IEnumerable<Audio> GetInstantMixFromArtist(string name, User user)
+        public IEnumerable<Audio> GetInstantMixFromArtist(MusicArtist artist, User user)
         {
-            var artist = _libraryManager.GetArtist(name);
-
             var genres = user.RootFolder
                 .GetRecursiveChildren(user, i => i is Audio)
                 .Cast<Audio>()
@@ -43,6 +41,18 @@ namespace MediaBrowser.Server.Implementations.Library
         }
 
         public IEnumerable<Audio> GetInstantMixFromAlbum(MusicAlbum item, User user)
+        {
+            var genres = item
+                .GetRecursiveChildren(user, i => i is Audio)
+               .Cast<Audio>()
+               .SelectMany(i => i.Genres)
+               .Concat(item.Genres)
+               .DistinctNames();
+
+            return GetInstantMixFromGenres(genres, user);
+        }
+
+        public IEnumerable<Audio> GetInstantMixFromFolder(Folder item, User user)
         {
             var genres = item
                 .GetRecursiveChildren(user, i => i is Audio)
@@ -107,13 +117,19 @@ namespace MediaBrowser.Server.Implementations.Library
             var artist = item as MusicArtist;
             if (artist != null)
             {
-                return GetInstantMixFromArtist(artist.Name, user);
+                return GetInstantMixFromArtist(artist, user);
             }
 
             var song = item as Audio;
             if (song != null)
             {
                 return GetInstantMixFromSong(song, user);
+            }
+
+            var folder = item as Folder;
+            if (folder != null)
+            {
+                return GetInstantMixFromFolder(folder, user);
             }
             
             return new Audio[] { };

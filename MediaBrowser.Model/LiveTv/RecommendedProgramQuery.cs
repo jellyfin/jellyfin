@@ -1,7 +1,19 @@
-﻿namespace MediaBrowser.Model.LiveTv
+﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
+
+namespace MediaBrowser.Model.LiveTv
 {
     public class RecommendedProgramQuery
     {
+        /// <summary>
+        /// Fields to return within the items, in addition to basic information
+        /// </summary>
+        /// <value>The fields.</value>
+        public ItemFields[] Fields { get; set; }
+        public bool? EnableImages { get; set; }
+        public int? ImageTypeLimit { get; set; }
+        public ImageType[] EnableImageTypes { get; set; }
+        
         /// <summary>
         /// Gets or sets the user identifier.
         /// </summary>
@@ -31,6 +43,11 @@
         /// </summary>
         /// <value><c>null</c> if [is movie] contains no value, <c>true</c> if [is movie]; otherwise, <c>false</c>.</value>
         public bool? IsMovie { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is kids.
+        /// </summary>
+        /// <value><c>null</c> if [is kids] contains no value, <c>true</c> if [is kids]; otherwise, <c>false</c>.</value>
+        public bool? IsKids { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether this instance is sports.
         /// </summary>

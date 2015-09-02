@@ -92,15 +92,25 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
 
             foreach (var person in people)
             {
-                bool current;
-                if (!dict.TryGetValue(person.Name, out current) || !current)
+                var isMetadataEnabled = DownloadMetadata(person, peopleOptions);
+
+                bool currentValue;
+                if (dict.TryGetValue(person.Name, out currentValue))
                 {
-                    dict[person.Name] = DownloadMetadata(person, peopleOptions);
+                    if (!currentValue && isMetadataEnabled)
+                    {
+                        dict[person.Name] = true;
+                    }
+                }
+                else
+                {
+                    dict[person.Name] = isMetadataEnabled;
                 }
             }
 
             var numComplete = 0;
-
+            var validIds = new List<Guid>();
+            
             foreach (var person in dict)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -109,6 +119,8 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 {
                     var item = _libraryManager.GetPerson(person.Key);
 
+                    validIds.Add(item.Id);
+                    
                     var options = new MetadataRefreshOptions
                     {
                          MetadataRefreshMode = person.Value ? MetadataRefreshMode.Default : MetadataRefreshMode.ValidationOnly,
@@ -128,6 +140,28 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 percent /= people.Count;
 
                 progress.Report(100 * percent);
+            }
+
+            var allIds = _libraryManager.GetItemIds(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Person).Name }
+            });
+
+            var invalidIds = allIds
+                .Except(validIds)
+                .ToList();
+
+            foreach (var id in invalidIds)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var item = _libraryManager.GetItemById(id);
+
+                await _libraryManager.DeleteItem(item, new DeleteOptions
+                {
+                    DeleteFileLocation = false
+
+                }).ConfigureAwait(false);
             }
 
             progress.Report(100);

@@ -136,7 +136,7 @@ namespace MediaBrowser.WebDashboard.Api
         {
             var page = ServerEntryPoint.Instance.PluginConfigurationPages.First(p => p.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase));
 
-            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml(page.GetHtmlStream(), null, null, false));
+            return ResultFactory.GetStaticResult(Request, page.Plugin.Version.ToString().GetMD5(), null, null, MimeTypes.GetMimeType("page.html"), () => GetPackageCreator().ModifyHtml(page.GetHtmlStream(), null, _appHost.ApplicationVersion.ToString(), null, false));
         }
 
         /// <summary>
@@ -198,10 +198,8 @@ namespace MediaBrowser.WebDashboard.Api
 
             var contentType = MimeTypes.GetMimeType(path);
 
-            var isHtml = IsHtml(path);
-
             // Bounce them to the startup wizard if it hasn't been completed yet
-            if (isHtml && !_serverConfigurationManager.Configuration.IsStartupWizardCompleted && path.IndexOf("wizard", StringComparison.OrdinalIgnoreCase) == -1)
+            if (!_serverConfigurationManager.Configuration.IsStartupWizardCompleted && path.IndexOf("wizard", StringComparison.OrdinalIgnoreCase) == -1 && GetPackageCreator().IsCoreHtml(path))
             {
                 // But don't redirect if an html import is being requested.
                 if (path.IndexOf("vulcanize", StringComparison.OrdinalIgnoreCase) == -1 && path.IndexOf("bower_components", StringComparison.OrdinalIgnoreCase) == -1)
@@ -298,7 +296,7 @@ namespace MediaBrowser.WebDashboard.Api
 
             CopyDirectory(creator.DashboardUIPath, path);
 
-            var culture = "en-US";
+            string culture = null;
 
             var appVersion = _appHost.ApplicationVersion.ToString();
 
@@ -327,10 +325,14 @@ namespace MediaBrowser.WebDashboard.Api
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "requirejs", "require.js"), Path.Combine(path, "bower_components", "requirejs", "require.js"));
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "fastclick", "lib", "fastclick.js"), Path.Combine(path, "bower_components", "fastclick", "lib", "fastclick.js"));
                 CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "jquery", "dist", "jquery.min.js"), Path.Combine(path, "bower_components", "jquery", "dist", "jquery.min.js"));
-    
+
+                CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "jstree", "dist", "jstree.min.js"), Path.Combine(path, "bower_components", "jstree", "dist", "jstree.min.js"));
+                
                 CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "css"), Path.Combine(path, "bower_components", "swipebox", "src", "css"));
                 CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "js"), Path.Combine(path, "bower_components", "swipebox", "src", "js"));
                 CopyDirectory(Path.Combine(creator.DashboardUIPath, "bower_components", "swipebox", "src", "img"), Path.Combine(path, "bower_components", "swipebox", "src", "img"));
+
+                CopyFile(Path.Combine(creator.DashboardUIPath, "bower_components", "hammerjs", "hammer.min.js"), Path.Combine(path, "bower_components", "hammerjs", "hammer.min.js"));
             }
             
             MinifyCssDirectory(Path.Combine(path, "css"));

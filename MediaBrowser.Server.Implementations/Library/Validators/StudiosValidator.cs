@@ -1,6 +1,8 @@
-﻿using MediaBrowser.Controller.Library;
+﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,11 +43,15 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
             var numComplete = 0;
             var count = items.Count;
 
+            var validIds = new List<Guid>();
+
             foreach (var name in items)
             {
                 try
                 {
                     var itemByName = _libraryManager.GetStudio(name);
+
+                    validIds.Add(itemByName.Id);
 
                     await itemByName.RefreshMetadata(cancellationToken).ConfigureAwait(false);
                 }
@@ -65,6 +71,28 @@ namespace MediaBrowser.Server.Implementations.Library.Validators
                 percent *= 100;
 
                 progress.Report(percent);
+            }
+
+            var allIds = _libraryManager.GetItemIds(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Studio).Name }
+            });
+
+            var invalidIds = allIds
+                .Except(validIds)
+                .ToList();
+
+            foreach (var id in invalidIds)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                
+                var item = _libraryManager.GetItemById(id);
+
+                await _libraryManager.DeleteItem(item, new DeleteOptions
+                {
+                    DeleteFileLocation = false
+
+                }).ConfigureAwait(false);
             }
 
             progress.Report(100);

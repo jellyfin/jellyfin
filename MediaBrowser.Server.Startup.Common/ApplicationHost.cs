@@ -493,10 +493,10 @@ namespace MediaBrowser.Server.Startup.Common
             CollectionManager = new CollectionManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("CollectionManager"));
             RegisterSingleInstance(CollectionManager);
 
-            PlaylistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("PlaylistManager"), UserManager);
+            PlaylistManager = new PlaylistManager(LibraryManager, FileSystemManager, LibraryMonitor, LogManager.GetLogger("PlaylistManager"), UserManager, ProviderManager);
             RegisterSingleInstance<IPlaylistManager>(PlaylistManager);
 
-            LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, ProviderManager);
+            LiveTvManager = new LiveTvManager(this, ServerConfigurationManager, Logger, ItemRepository, ImageProcessor, UserDataManager, DtoService, UserManager, LibraryManager, TaskManager, LocalizationManager, JsonSerializer, ProviderManager, FileSystemManager);
             RegisterSingleInstance(LiveTvManager);
 
             UserViewManager = new UserViewManager(LibraryManager, LocalizationManager, UserManager, ChannelManager, LiveTvManager, PlaylistManager, CollectionManager, ServerConfigurationManager);
@@ -514,6 +514,8 @@ namespace MediaBrowser.Server.Startup.Common
             SubtitleManager = new SubtitleManager(LogManager.GetLogger("SubtitleManager"), FileSystemManager, LibraryMonitor, LibraryManager, MediaSourceManager);
             RegisterSingleInstance(SubtitleManager);
 
+            RegisterSingleInstance<IDeviceDiscovery>(new DeviceDiscovery(LogManager.GetLogger("IDeviceDiscovery"), ServerConfigurationManager, this));
+
             ChapterManager = new ChapterManager(LibraryManager, LogManager.GetLogger("ChapterManager"), ServerConfigurationManager, ItemRepository);
             RegisterSingleInstance(ChapterManager);
 
@@ -527,7 +529,7 @@ namespace MediaBrowser.Server.Startup.Common
             var sharingRepo = new SharingRepository(LogManager, ApplicationPaths);
             await sharingRepo.Initialize().ConfigureAwait(false);
             RegisterSingleInstance<ISharingManager>(new SharingManager(sharingRepo, ServerConfigurationManager, LibraryManager, this));
-            
+
             RegisterSingleInstance<ISsdpHandler>(new SsdpHandler(LogManager.GetLogger("SsdpHandler"), ServerConfigurationManager, this));
 
             var activityLogRepo = await GetActivityLogRepository().ConfigureAwait(false);
@@ -784,7 +786,7 @@ namespace MediaBrowser.Server.Startup.Common
 
             ImageProcessor.AddParts(GetExports<IImageEnhancer>());
 
-            LiveTvManager.AddParts(GetExports<ILiveTvService>());
+            LiveTvManager.AddParts(GetExports<ILiveTvService>(), GetExports<ITunerHost>(), GetExports<IListingsProvider>());
 
             SubtitleManager.AddParts(GetExports<ISubtitleProvider>());
             ChapterManager.AddParts(GetExports<IChapterProvider>());
@@ -1053,7 +1055,8 @@ namespace MediaBrowser.Server.Startup.Common
                 HttpServerPortNumber = HttpPort,
                 SupportsHttps = SupportsHttps,
                 HttpsPortNumber = HttpsPort,
-                OperatingSystem = OperatingSystemDisplayName,
+                OperatingSystem = NativeApp.Environment.OperatingSystem.ToString(),
+                OperatingSystemDisplayName = OperatingSystemDisplayName,
                 CanSelfRestart = CanSelfRestart,
                 CanSelfUpdate = CanSelfUpdate,
                 WanAddress = ConnectManager.WanApiAddress,
@@ -1085,15 +1088,24 @@ namespace MediaBrowser.Server.Startup.Common
         {
             get
             {
-                // Return the first matched address, if found, or the first known local address
-                var address = LocalIpAddress;
-
-                if (!string.IsNullOrWhiteSpace(address))
+                try
                 {
-                    address = GetLocalApiUrl(address);
+                    // Return the first matched address, if found, or the first known local address
+                    var address = LocalIpAddress;
+
+                    if (!string.IsNullOrWhiteSpace(address))
+                    {
+                        address = GetLocalApiUrl(address);
+                    }
+
+                    return address;
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorException("Error getting local Ip address information", ex);
                 }
 
-                return address;
+                return null;
             }
         }
 

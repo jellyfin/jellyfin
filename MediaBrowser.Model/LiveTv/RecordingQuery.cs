@@ -1,4 +1,7 @@
-﻿namespace MediaBrowser.Model.LiveTv
+﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
+
+namespace MediaBrowser.Model.LiveTv
 {
     /// <summary>
     /// Class RecordingQuery.
@@ -58,5 +61,14 @@
         /// </summary>
         /// <value>The series timer identifier.</value>
         public string SeriesTimerId { get; set; }
+
+        /// <summary>
+        /// Fields to return within the items, in addition to basic information
+        /// </summary>
+        /// <value>The fields.</value>
+        public ItemFields[] Fields { get; set; }
+        public bool? EnableImages { get; set; }
+        public int? ImageTypeLimit { get; set; }
+        public ImageType[] EnableImageTypes { get; set; }
     }
 }

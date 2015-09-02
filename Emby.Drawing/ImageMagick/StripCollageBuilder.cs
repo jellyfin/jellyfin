@@ -285,14 +285,14 @@ namespace Emby.Drawing.ImageMagick
 
         private MagickWand BuildThumbCollageWand(List<string> paths, int width, int height)
         {
-            var inputPaths = ImageHelpers.ProjectPaths(paths, 8);
+            var inputPaths = ImageHelpers.ProjectPaths(paths, 4);
             using (var wandImages = new MagickWand(inputPaths.ToArray()))
             {
                 var wand = new MagickWand(width, height);
                 wand.OpenImage("gradient:#111111-#111111");
                 using (var draw = new DrawingWand())
                 {
-                    var iSlice = Convert.ToInt32(width * .1166666667);
+                    var iSlice = Convert.ToInt32(width * .1166666667 * 2);
                     int iTrans = Convert.ToInt32(height * .25);
                     int iHeight = Convert.ToInt32(height * .62);
                     var horizontalImagePadding = Convert.ToInt32(width * 0.0125);

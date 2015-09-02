@@ -2,15 +2,12 @@
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Net;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
 using ServiceStack;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -18,23 +15,9 @@ using System.Threading.Tasks;
 
 namespace MediaBrowser.Api.Movies
 {
-    /// <summary>
-    /// Class GetSimilarTrailers
-    /// </summary>
-    [Route("/Trailers/{Id}/Similar", "GET", Summary = "Finds movies and trailers similar to a given trailer.")]
-    public class GetSimilarTrailers : BaseGetSimilarItemsFromItem
-    {
-    }
-
     [Route("/Trailers", "GET", Summary = "Finds movies and trailers similar to a given trailer.")]
     public class Getrailers : BaseItemsRequest, IReturn<ItemsResult>
     {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "User Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
-        public string UserId { get; set; }
     }
 
     /// <summary>
@@ -57,7 +40,6 @@ namespace MediaBrowser.Api.Movies
         /// </summary>
         private readonly ILibraryManager _libraryManager;
 
-        private readonly IItemRepository _itemRepo;
         private readonly IDtoService _dtoService;
         private readonly IChannelManager _channelManager;
 
@@ -67,38 +49,13 @@ namespace MediaBrowser.Api.Movies
         /// <param name="userManager">The user manager.</param>
         /// <param name="userDataRepository">The user data repository.</param>
         /// <param name="libraryManager">The library manager.</param>
-        public TrailersService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IItemRepository itemRepo, IDtoService dtoService, IChannelManager channelManager)
+        public TrailersService(IUserManager userManager, IUserDataManager userDataRepository, ILibraryManager libraryManager, IDtoService dtoService, IChannelManager channelManager)
         {
             _userManager = userManager;
             _userDataRepository = userDataRepository;
             _libraryManager = libraryManager;
-            _itemRepo = itemRepo;
             _dtoService = dtoService;
             _channelManager = channelManager;
-        }
-
-        /// <summary>
-        /// Gets the specified request.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <returns>System.Object.</returns>
-        public object Get(GetSimilarTrailers request)
-        {
-            var dtoOptions = GetDtoOptions(request);
-
-            var result = SimilarItemsHelper.GetSimilarItemsResult(dtoOptions, _userManager,
-                _itemRepo,
-                _libraryManager,
-                _userDataRepository,
-                _dtoService,
-                Logger,
-
-                // Strip out secondary versions
-                request, item => (item is Movie) && !((Video)item).PrimaryVersionId.HasValue,
-
-                SimilarItemsHelper.GetSimiliarityScore);
-
-            return ToOptimizedSerializedResultUsingCache(result);
         }
 
         public async Task<object> Get(Getrailers request)

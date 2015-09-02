@@ -37,10 +37,12 @@ namespace MediaBrowser.Controller.LiveTv
 
         string ExternalId { get; set; }
         string EpisodeTitle { get; set; }
-        bool IsSeries { get; set; }
         string SeriesTimerId { get; set; }
         RecordingStatus Status { get; set; }
         DateTime? EndDate { get; set; }
         ChannelType ChannelType { get; set; }
+        DateTime DateLastSaved { get; set; }
+        DateTime DateCreated { get; set; }
+        DateTime DateModified { get; set; }
     }
 }

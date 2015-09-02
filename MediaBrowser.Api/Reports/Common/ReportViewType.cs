@@ -6,20 +6,9 @@ namespace MediaBrowser.Api.Reports
 {
 	public enum ReportViewType
 	{
-		MusicArtist,
-		MusicAlbum,
-		Book,
-		BoxSet,
-		Episode,
-		Game,
-		Video,
-		Movie,
-		MusicVideo,
-		Trailer,
-		Season,
-		Series,
-		Audio,
-		BaseItem,
-		Artist
+        ReportData,
+        ReportStatistics,
+        ReportActivities
+
 	}
 }
