@@ -912,8 +912,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         margin-top: -80px;
     }
 
+    .portraitDetailImageContainer + .primaryDetailsContainer {
+        width: 70%;
+    }
+
     .detailImageContainer img {
-        max-width: 120px;
+        max-width: 140px;
     }
 
     .inlineItemName {
@@ -935,12 +939,11 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 
 @media all and (max-width: 600px) {
 
-    .detailImageContainer img {
-        max-width: 100px;
+    .primaryDetailsContainer {
     }
 
-    .thumbDetailImageContainer img {
-        max-width: 180px;
+    .portraitDetailImageContainer + .primaryDetailsContainer {
+        width: 65%;
     }
 }
 
