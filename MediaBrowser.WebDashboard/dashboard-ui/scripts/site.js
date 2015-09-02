@@ -2290,9 +2290,14 @@ $(document).on('pagecreate', ".page", function () {
 
     var page = this;
 
+    var isWizardPage = page.classList.contains('wizardPage');
     Dashboard.ensurePageTitle(page);
 
     var apiClient = window.ApiClient;
+
+    if (isWizardPage) {
+        require(['jqmicons']);
+    }
 
     if (apiClient && apiClient.accessToken() && Dashboard.getCurrentUserId()) {
 
@@ -2323,7 +2328,7 @@ $(document).on('pagecreate', ".page", function () {
             }
         }
 
-        if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !page.classList.contains('wizardPage') && this.id !== 'publicSharedItemPage') {
+        if (!isConnectMode && this.id !== "loginPage" && !page.classList.contains('forgotPasswordPage') && !isWizardPage && this.id !== 'publicSharedItemPage') {
 
             Logger.log('Not logged into server. Redirecting to login.');
             Dashboard.logout();
