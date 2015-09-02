@@ -484,7 +484,6 @@ namespace MediaBrowser.Controller.Entities
 
         public Guid ParentId { get; set; }
 
-        private Folder _parent;
         /// <summary>
         /// Gets or sets the parent.
         /// </summary>
@@ -494,11 +493,6 @@ namespace MediaBrowser.Controller.Entities
         {
             get
             {
-                if (_parent != null)
-                {
-                    return _parent;
-                }
-
                 if (ParentId != Guid.Empty)
                 {
                     return LibraryManager.GetItemById(ParentId) as Folder;
@@ -506,12 +500,10 @@ namespace MediaBrowser.Controller.Entities
 
                 return null;
             }
-            set { _parent = value; }
         }
 
         public void SetParent(Folder parent)
         {
-            Parent = parent;
             ParentId = parent == null ? Guid.Empty : parent.Id;
         }
 
