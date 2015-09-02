@@ -287,7 +287,7 @@ namespace MediaBrowser.Api.Library
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization, ILiveTvManager liveTv, IChannelManager channelManager, ITVSeriesManager tvManager)
+                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization, ILiveTvManager liveTv, IChannelManager channelManager, ITVSeriesManager tvManager, ILibraryMonitor libraryMonitor)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
@@ -300,6 +300,7 @@ namespace MediaBrowser.Api.Library
             _liveTv = liveTv;
             _channelManager = channelManager;
             _tvManager = tvManager;
+            _libraryMonitor = libraryMonitor;
         }
 
         public object Get(GetSimilarItems request)
