@@ -439,9 +439,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .detailNameContainer {
-    position: absolute;
-    bottom: 15px;
-    margin-bottom: 0;
+    margin-top: -120px;
+    height: 110px;
 }
 
 .desktopMiscInfoContainer {
@@ -595,7 +594,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
     .detailNameContainer {
-        position: static;
+        margin-top: auto;
+        height: auto;
     }
 
     .itemBackdropContent {

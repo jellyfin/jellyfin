@@ -2167,26 +2167,36 @@ var AppInfo = {};
                 var mainDrawerPanelContent = document.querySelector('.mainDrawerPanelContent');
 
                 if (mainDrawerPanelContent) {
+
                     var newHtml = mainDrawerPanelContent.innerHTML.substring(4);
                     newHtml = newHtml.substring(0, newHtml.length - 3);
 
                     var srch = 'data-require=';
                     var index = newHtml.indexOf(srch);
+                    var depends;
 
                     if (index != -1) {
 
                         var requireAttribute = newHtml.substring(index + srch.length + 1);
 
                         requireAttribute = requireAttribute.substring(0, requireAttribute.indexOf('"'));
-                        var depends = requireAttribute.split(',');
-
-                        require(depends, function () {
-                            mainDrawerPanelContent.innerHTML = Globalize.translateDocument(newHtml, 'html');
-                            onAppReady(deferred);
-                        });
-                        return;
-
+                        depends = requireAttribute.split(',');
                     }
+
+                    depends = depends || [];
+
+                    if (newHtml.indexOf('type-interior') != -1) {
+                        depends.push('jqmicons');
+                        depends.push('jqmpopup');
+                    }
+
+                    require(depends, function () {
+
+                        // Don't like having to use jQuery here, but it takes care of making sure that embedded script executes
+                        $(mainDrawerPanelContent).html(Globalize.translateDocument(newHtml, 'html'));
+                        onAppReady(deferred);
+                    });
+                    return;
                 }
 
                 onAppReady(deferred);

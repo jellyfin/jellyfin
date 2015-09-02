@@ -80,7 +80,9 @@ namespace MediaBrowser.Server.Implementations.LiveTv.Listings
             {
                 Url = ApiUrl + "/schedules",
                 UserAgent = UserAgent,
-                CancellationToken = cancellationToken
+                CancellationToken = cancellationToken,
+                // The data can be large so give it some extra time
+                TimeoutMs = 60000
             };
 
             httpOptions.RequestHeaders["token"] = token;
