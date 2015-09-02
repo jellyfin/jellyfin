@@ -869,7 +869,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 // Add resolution params, if specified
                 if (!hasGraphicalSubs)
                 {
-                    args += GetOutputSizeParam(state, codec, false);
+                    args += GetOutputSizeParam(state, codec, EnableCopyTs(state));
                 }
 
                 // This is for internal graphical subs
@@ -878,10 +878,15 @@ namespace MediaBrowser.Api.Playback.Hls
                     args += GetGraphicalSubtitleParam(state, codec);
                 }
 
-                args += " -flags +loop-global_header -sc_threshold 0";
+                args += " -flags -global_header -sc_threshold 0";
             }
 
             return args;
+        }
+
+        private bool EnableCopyTs(StreamState state)
+        {
+            return state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream;
         }
 
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
@@ -896,7 +901,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var toTimeParam = string.Empty;
             var timestampOffsetParam = string.Empty;
 
-            if (state.IsOutputVideo && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) && (state.Request.StartTimeTicks ?? 0) > 0)
+            if (state.IsOutputVideo && !EnableCopyTs(state) && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) && (state.Request.StartTimeTicks ?? 0) > 0)
             {
                 timestampOffsetParam = " -output_ts_offset " + MediaEncoder.GetTimeParameter(state.Request.StartTimeTicks ?? 0).ToString(CultureInfo.InvariantCulture);
             }
