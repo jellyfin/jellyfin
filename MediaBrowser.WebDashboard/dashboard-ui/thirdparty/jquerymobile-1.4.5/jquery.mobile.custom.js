@@ -2965,19 +2965,20 @@ $.widget( "mobile.page", {
 	    element.classList.add("ui-page");
 	    element.classList.add("ui-page-theme-" + this.options.theme);
 
-	    var content = element.querySelector("div[data-role='content']");
+	    var contents = element.querySelectorAll("div[data-role='content']");
 
-	    if (content) {
-	        var theme = content.getAttribute(attrPrefix + "theme") || undefined;
-	        self.options.contentTheme = theme || self.options.contentTheme || (self.options.dialog && self.options.theme) || (self.element.jqmData("role") === "dialog" && self.options.theme);
-	        content.classList.add("ui-content");
-	        if (self.options.contentTheme) {
-	            content.classList.add("ui-body-" + (self.options.contentTheme));
-	        }
-	        // Add ARIA role
-	        content.setAttribute("role", "main");
-	        content.classList.add("ui-content");
-	    }
+        for (var i = 0, length = contents.length; i < length; i++) {
+            var content = contents[i];
+            var theme = content.getAttribute(attrPrefix + "theme") || undefined;
+            self.options.contentTheme = theme || self.options.contentTheme || (self.options.dialog && self.options.theme) || (self.element.jqmData("role") === "dialog" && self.options.theme);
+            content.classList.add("ui-content");
+            if (self.options.contentTheme) {
+                content.classList.add("ui-body-" + (self.options.contentTheme));
+            }
+            // Add ARIA role
+            content.setAttribute("role", "main");
+            content.classList.add("ui-content");
+        }
 	},
 
 	bindRemove: function( callback ) {
