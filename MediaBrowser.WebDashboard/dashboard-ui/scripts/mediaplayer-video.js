@@ -620,8 +620,6 @@
 
             AppSettings.maxStreamingBitrate(bitrate);
 
-            $('.videoQualityPopup').popup('close');
-
             self.changeStream(self.getCurrentTicks(), {
                 Bitrate: bitrate
             });
