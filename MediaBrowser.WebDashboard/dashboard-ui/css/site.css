@@ -304,7 +304,7 @@ html {
     -ms-touch-action: manipulation;
     touch-action: manipulation;
     /* Prevent white flickering */
-    background-color: #1f1f1f;
+    background-color: #262626;
     /* Normalize for different browsers */
     margin: 0;
     padding: 0;
@@ -657,10 +657,20 @@ h1 .imageLink {
     white-space: normal !important;
 }
 
+.paperCheckboxFieldDescription {
+    padding-left: 30px;
+    padding-top: 5px;
+}
+
+paper-input + .fieldDescription {
+    padding-top: 5px;
+    opacity: .9;
+}
+
 .warningFieldDescription {
     padding: 5px;
     border: 1px solid #f4c63f;
-    background: #ffefaa;
+    background: #fff3a5;
     border-radius: 5px;
 }
 
@@ -706,7 +716,7 @@ h1 .imageLink {
 }
 
 .ui-page-theme-a {
-    background: #f2f2f2;
+    background: #f5f5f5;
 }
 
     .ui-page-theme-a .content-secondary {
@@ -868,15 +878,8 @@ h1 .imageLink {
 }
 
 .directoryPickerHeadline {
-    border: 1px solid #f7c942;
-    color: #222;
-    background: #fff9df;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#fffadf),to(#fff3a5));
-    background-image: -webkit-linear-gradient(#fffadf,#fff3a5);
-    background-image: -moz-linear-gradient(#fffadf,#fff3a5);
-    background-image: -ms-linear-gradient(#fffadf,#fff3a5);
-    background-image: -o-linear-gradient(#fffadf,#fff3a5);
-    background-image: linear-gradient(#fffadf,#fff3a5);
+    color: #000;
+    background: #fff3a5;
     padding: 1em;
     border-radius: 5px;
 }
@@ -894,7 +897,7 @@ h1 .imageLink {
     max-width: 800px;
     padding: .5em 2em 1em;
     margin: 0 auto;
-    background: #e8e8e8;
+    background: #fff;
 }
 
 .wizardNavigation {
@@ -903,10 +906,6 @@ h1 .imageLink {
 
 .wizardContent form {
     max-width: 100%;
-}
-
-.wizardContent p {
-    margin: 2em 0;
 }
 
 .wizardContent h2 img {
@@ -931,7 +930,7 @@ h1 .imageLink {
 }
 
 .footerOverBottomTabs {
-    bottom: 49px !important;
+    bottom: 52px !important;
 }
 
 .footerNotification {
@@ -1354,11 +1353,15 @@ progress {
 
 @media all and (min-width: 800px) {
 
-    .supporterPromotion {
+    .supporterPromotion:not(.inlineSupporterPromotion) {
         position: absolute;
         top: 70px;
         right: 20px;
         margin: 0;
+    }
+
+    .inlineSupporterPromotion {
+        display: inline-block;
     }
 }
 
