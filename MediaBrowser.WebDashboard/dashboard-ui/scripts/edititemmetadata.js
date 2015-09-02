@@ -12,8 +12,8 @@
         Dashboard.showLoadingMsg();
 
         var promise1 = MetadataEditor.getItemPromise();
-        var promise2 = MetadataEditor.currentItemId ?
-            ApiClient.getJSON(ApiClient.getUrl('Items/' + MetadataEditor.currentItemId + '/MetadataEditor')) :
+        var promise2 = MetadataEditor.getCurrentItemId() ?
+            ApiClient.getJSON(ApiClient.getUrl('Items/' + MetadataEditor.getCurrentItemId() + '/MetadataEditor')) :
             {};
 
         $.when(promise1, promise2).done(function (response1, response2) {
@@ -1455,8 +1455,6 @@
 
             if (data.id != currentItem.Id) {
 
-                MetadataEditor.currentItemId = data.id;
-                MetadataEditor.currentItemType = data.itemType;
                 //Dashboard.navigate('edititemmetadata.html?id=' + data.id);
 
                 //$.mobile.urlHistory.ignoreNextHashChange = true;
@@ -1481,7 +1479,12 @@
         configurePaperLibraryTabs(page, tabs);
 
         $(tabs).on('iron-select', function () {
-            Events.trigger(this, 'tabchange');
+
+            var self = this;
+
+            setTimeout(function () {
+                Events.trigger(self, 'tabchange');
+            }, 400);
 
         }).on('tabchange', function () {
             var selected = this.selected;
@@ -1519,7 +1522,9 @@
 
         tabs.hideScrollButtons = true;
         tabs.noSlide = true;
-        tabs.noink = true;
+
+        // Unfortunately we can't disable this because it causes iron-select to not fire in IE and Safari.
+        //tabs.noink = true;
 
         $(ownerpage).on('pageshowready', function () {
 

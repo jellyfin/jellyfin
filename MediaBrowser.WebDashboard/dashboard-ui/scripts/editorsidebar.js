@@ -262,9 +262,23 @@
         }
     }
 
+    function loadJsTree() {
+
+        var deferred = DeferredBuilder.Deferred();
+
+        require([
+            'bower_components/jstree/dist/jstree.min'
+        ], function () {
+
+            Dashboard.importCss('thirdparty/jstree/themes/default/style.min.css');
+            deferred.resolve();
+        });
+        return deferred.promise();
+    }
+
     function initializeTree(page, currentUser, openItems, selectedId) {
 
-        MetadataEditor.loadJsTree().done(function () {
+        loadJsTree().done(function () {
             initializeTreeInternal(page, currentUser, openItems, selectedId);
         });
     }
@@ -403,7 +417,6 @@
     }).on('pagebeforeshow', ".metadataEditorPage", function () {
 
         Dashboard.importCss('css/metadataeditor.css');
-        window.MetadataEditor = new metadataEditor();
 
     }).on('pagebeforeshow', ".metadataEditorPage", function () {
 
@@ -411,7 +424,7 @@
 
         Dashboard.getCurrentUser().done(function (user) {
 
-            var id = MetadataEditor.currentItemId;
+            var id = getCurrentItemId();
 
             if (id) {
 
@@ -438,64 +451,24 @@
 
     });
 
-    function metadataEditor() {
+    function getCurrentItemId() {
 
-        var self = this;
+        var url = window.location.hash || getWindowUrl();
 
-        function ensureInitialValues() {
+        return getParameterByName('id', url);
+    }
 
-            if (self.currentItemType || self.currentItemId) {
-                return;
-            }
-
-            var url = window.location.hash || getWindowUrl();
-
-            var id = getParameterByName('id', url);
-
-            if (id) {
-                self.currentItemId = id;
-                self.currentItemType = null;
-            }
-        };
-
-        self.getItemPromise = function () {
-
-            var currentItemType = self.currentItemType;
-            var currentItemId = self.currentItemId;
-
-            if (currentItemType == "TvChannel") {
-                return ApiClient.getLiveTvChannel(currentItemId);
-            }
+    window.MetadataEditor = {
+        getItemPromise: function() {
+            var currentItemId = getCurrentItemId();
 
             if (currentItemId) {
                 return ApiClient.getItem(Dashboard.getCurrentUserId(), currentItemId);
             }
 
             return ApiClient.getRootFolder(Dashboard.getCurrentUserId());
-        };
-
-        self.getEditQueryString = function (item) {
-
-            var query = "id=" + item.Id;
-
-            return query;
-        };
-
-        self.loadJsTree = function () {
-
-            var deferred = DeferredBuilder.Deferred();
-
-            require([
-                'bower_components/jstree/dist/jstree.min'
-            ], function () {
-
-                Dashboard.importCss('thirdparty/jstree/themes/default/style.min.css');
-                deferred.resolve();
-            });
-            return deferred.promise();
-        };
-
-        ensureInitialValues();
-    }
+        },
+        getCurrentItemId: getCurrentItemId
+    };
 
 })(jQuery, document, window);
