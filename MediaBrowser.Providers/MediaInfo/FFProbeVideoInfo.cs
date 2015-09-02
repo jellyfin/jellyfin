@@ -132,7 +132,7 @@ namespace MediaBrowser.Providers.MediaInfo
             return ItemUpdateType.MetadataImport;
         }
 
-        private const string SchemaVersion = "5";
+        private const string SchemaVersion = "6";
 
         private async Task<Model.MediaInfo.MediaInfo> GetMediaInfo(Video item,
             IIsoMount isoMount,
@@ -140,14 +140,14 @@ namespace MediaBrowser.Providers.MediaInfo
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var idString = item.Id.ToString("N");
-            var cachePath = Path.Combine(_appPaths.CachePath,
-                "ffprobe-video",
-                idString.Substring(0, 2), idString, "v" + SchemaVersion + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
+            //var idString = item.Id.ToString("N");
+            //var cachePath = Path.Combine(_appPaths.CachePath,
+            //    "ffprobe-video",
+            //    idString.Substring(0, 2), idString, "v" + SchemaVersion + _mediaEncoder.Version + item.DateModified.Ticks.ToString(_usCulture) + ".json");
 
             try
             {
-                return _json.DeserializeFromFile<Model.MediaInfo.MediaInfo>(cachePath);
+                //return _json.DeserializeFromFile<Model.MediaInfo.MediaInfo>(cachePath);
             }
             catch (FileNotFoundException)
             {
@@ -174,8 +174,8 @@ namespace MediaBrowser.Providers.MediaInfo
 
             }, cancellationToken).ConfigureAwait(false);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
-            _json.SerializeToFile(result, cachePath);
+            //Directory.CreateDirectory(Path.GetDirectoryName(cachePath));
+            //_json.SerializeToFile(result, cachePath);
 
             return result;
         }

@@ -2,39 +2,31 @@
 
     function loadForm(page, user) {
 
-        $('#chkDisplayMissingEpisodes', page).checked(user.Configuration.DisplayMissingEpisodes || false).checkboxradio("refresh");
-        $('#chkDisplayUnairedEpisodes', page).checked(user.Configuration.DisplayUnairedEpisodes || false).checkboxradio("refresh");
-
-        $('#chkDisplayTrailersWithinMovieSuggestions', page).checked(user.Configuration.IncludeTrailersInSuggestions || false).checkboxradio("refresh");
-
-        $('#chkGroupMoviesIntoCollections', page).checked(user.Configuration.GroupMoviesIntoBoxSets || false).checkboxradio("refresh");
+        page.querySelector('.chkDisplayMissingEpisodes').checked = user.Configuration.DisplayMissingEpisodes || false;
+        page.querySelector('.chkDisplayUnairedEpisodes').checked = user.Configuration.DisplayUnairedEpisodes || false;
+        page.querySelector('.chkGroupMoviesIntoCollections').checked = user.Configuration.GroupMoviesIntoBoxSets || false;
 
         $('#selectThemeSong', page).val(appStorage.getItem('enableThemeSongs-' + user.Id) || '').selectmenu("refresh");
         $('#selectBackdrop', page).val(appStorage.getItem('enableBackdrops-' + user.Id) || '').selectmenu("refresh");
 
-        $('#selectEnableItemPreviews', page).val(AppSettings.enableItemPreviews().toString().toLowerCase()).selectmenu("refresh");
+        $('#selectLanguage', page).val(AppSettings.displayLanguage()).selectmenu("refresh");
 
-        $('#chkEnableFullScreen', page).checked(AppSettings.enableFullScreen()).checkboxradio("refresh");
-
-        $('#txtSyncPath', page).val(AppSettings.syncPath());
+        page.querySelector('.chkEnableFullScreen').checked = AppSettings.enableFullScreen();
 
         Dashboard.hideLoadingMsg();
     }
 
     function saveUser(page, user) {
 
-        user.Configuration.DisplayMissingEpisodes = $('#chkDisplayMissingEpisodes', page).checked();
-        user.Configuration.DisplayUnairedEpisodes = $('#chkDisplayUnairedEpisodes', page).checked();
-        user.Configuration.GroupMoviesIntoBoxSets = $('#chkGroupMoviesIntoCollections', page).checked();
-        user.Configuration.IncludeTrailersInSuggestions = $('#chkDisplayTrailersWithinMovieSuggestions', page).checked();
+        user.Configuration.DisplayMissingEpisodes = page.querySelector('.chkDisplayMissingEpisodes').checked;
+        user.Configuration.DisplayUnairedEpisodes = page.querySelector('.chkDisplayUnairedEpisodes').checked;
+        user.Configuration.GroupMoviesIntoBoxSets = page.querySelector('.chkGroupMoviesIntoCollections').checked;
 
-        AppSettings.enableItemPreviews($('#selectEnableItemPreviews', page).val() == 'true');
-        AppSettings.enableFullScreen($('#chkEnableFullScreen', page).checked());
+        AppSettings.enableFullScreen(page.querySelector('.chkEnableFullScreen').checked);
+        AppSettings.displayLanguage(page.querySelector('#selectLanguage').value);
 
         appStorage.setItem('enableThemeSongs-' + user.Id, $('#selectThemeSong', page).val());
         appStorage.setItem('enableBackdrops-' + user.Id, $('#selectBackdrop', page).val());
-
-        AppSettings.syncPath($('#txtSyncPath', page).val());
 
         ApiClient.updateUserConfiguration(user.Id, user.Configuration).done(function () {
             Dashboard.alert(Globalize.translate('SettingsSaved'));
@@ -45,7 +37,7 @@
 
     function onSubmit() {
 
-        var page = $(this).parents('.page');
+        var page = $(this).parents('.page')[0];
 
         Dashboard.showLoadingMsg();
 
@@ -61,20 +53,11 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#displayPreferencesPage", function () {
+    $(document).on('pageinit', "#displayPreferencesPage", function () {
 
         var page = this;
 
         $('.displayPreferencesForm').off('submit', onSubmit).on('submit', onSubmit);
-
-        $('.btnSelectSyncPath', page).on('click', function () {
-
-            require(['nativedirectorychooser'], function () {
-                NativeDirectoryChooser.chooseDirectory().done(function (path) {
-                    $('#txtSyncPath', page).val(path);
-                });
-            });
-        });
 
     }).on('pageshowready', "#displayPreferencesPage", function () {
 
@@ -103,10 +86,10 @@
             $('.fldFullscreen', page).hide();
         }
 
-        if (AppInfo.supportsSyncPathSetting) {
-            $('.syncSettingsSection', page).show();
+        if (AppInfo.supportsUserDisplayLanguageSetting) {
+            $('.languageSection', page).show();
         } else {
-            $('.syncSettingsSection', page).hide();
+            $('.languageSection', page).hide();
         }
     });
 

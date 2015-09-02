@@ -81,7 +81,9 @@
     <Compile Include="Profiles\DefaultProfile.cs" />
     <Compile Include="Profiles\DirectTvProfile.cs" />
     <Compile Include="Profiles\DishHopperJoeyProfile.cs" />
+    <Compile Include="Profiles\KodiProfile.cs" />
     <Compile Include="Profiles\PopcornHourProfile.cs" />
+    <Compile Include="Profiles\SonyBravia2014Profile.cs" />
     <Compile Include="Profiles\SonyPs4Profile.cs" />
     <Compile Include="Profiles\VlcProfile.cs" />
     <Compile Include="Ssdp\DeviceDiscoveryInfo.cs" />
@@ -166,7 +168,9 @@
     <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282010%29.xml" />
     <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282011%29.xml" />
     <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282012%29.xml" />
-    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282013%29.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282013%29.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 3.xml" />
     <EmbeddedResource Include="Profiles\Xml\WDTV Live.xml" />
     <EmbeddedResource Include="Profiles\Xml\Xbox 360.xml">
@@ -175,7 +179,9 @@
     <EmbeddedResource Include="Profiles\Xml\Xbox One.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Profiles\Xml\Default.xml" />
+    <EmbeddedResource Include="Profiles\Xml\Default.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Images\logo120.jpg" />
@@ -213,6 +219,16 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Profiles\Xml\Sony PlayStation 4.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Kodi.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\Xml\Sony Bravia %282014%29.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

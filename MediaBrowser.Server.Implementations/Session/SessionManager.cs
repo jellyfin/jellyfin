@@ -161,6 +161,7 @@ namespace MediaBrowser.Server.Implementations.Session
 
                 if (capabilities != null)
                 {
+                    info.AppIconUrl = capabilities.IconUrl;
                     ReportCapabilities(info, capabilities, false);
                 }
             }
@@ -366,6 +367,7 @@ namespace MediaBrowser.Server.Implementations.Session
             session.PlayState.AudioStreamIndex = info.AudioStreamIndex;
             session.PlayState.SubtitleStreamIndex = info.SubtitleStreamIndex;
             session.PlayState.PlayMethod = info.PlayMethod;
+            session.PlayState.RepeatMode = info.RepeatMode;
         }
 
         /// <summary>
@@ -1475,6 +1477,7 @@ namespace MediaBrowser.Server.Implementations.Session
                 NowPlayingItem = session.NowPlayingItem,
                 SupportsRemoteControl = session.SupportsMediaControl,
                 PlayState = session.PlayState,
+                AppIconUrl = session.AppIconUrl,
                 TranscodingInfo = session.NowPlayingItem == null ? null : session.TranscodingInfo
             };
 

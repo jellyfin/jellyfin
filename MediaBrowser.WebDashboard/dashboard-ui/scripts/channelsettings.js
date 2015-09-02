@@ -1,55 +1,8 @@
 ﻿(function ($, document, window) {
 
-    function populateDownloadList(page, config, downloadableList) {
+    function loadPage(page, config) {
 
-        if (downloadableList.length) {
-            $('.channelDownloading', page).show();
-        } else {
-            $('.channelDownloading', page).hide();
-        }
-
-        var html = '';
-        
-        html += '<div data-role="controlgroup">';
-
-        for (var i = 0, length = downloadableList.length; i < length; i++) {
-
-            var channel = downloadableList[i];
-
-            var id = 'chkChannelDownload' + i;
-
-            var isChecked = config.DownloadingChannels.indexOf(channel.Id) != -1 ? ' checked="checked"' : '';
-
-            html += '<input class="chkChannelDownload" type="checkbox" name="' + id + '" id="' + id + '" data-channelid="' + channel.Id + '"' + isChecked + '>';
-            html += '<label for="' + id + '">' + channel.Name + '</label>';
-        }
-
-        html += '</div>';
-
-        $('.channelDownloadingList', page).html(html).trigger('create');
-    }
-    
-    function loadPage(page, config, allChannelFeatures) {
-
-        if (allChannelFeatures.length) {
-            $('.noChannelsHeader', page).hide();
-        } else {
-            $('.noChannelsHeader', page).show();
-        }
-        
-        var downloadableList = allChannelFeatures.filter(function (i) {
-            return i.SupportsContentDownloading;
-        });
-
-        populateDownloadList(page, config, downloadableList);
-
-        $('#selectChannelResolution', page).val(config.PreferredStreamingWidth || '')
-            .selectmenu("refresh");
-
-        $('#txtDownloadAge', page).val(config.MaxDownloadAge || '');
-        $('#txtDownloadSizeLimit', page).val(config.DownloadSizeLimit || '');
-
-        $('#txtCachePath', page).val(config.DownloadPath || '');
+        $('#selectChannelResolution', page).val(config.PreferredStreamingWidth || '').selectmenu("refresh");
 
         Dashboard.hideLoadingMsg();
     }
@@ -64,16 +17,6 @@
 
             // This should be null if empty
             config.PreferredStreamingWidth = $('#selectChannelResolution', form).val() || null;
-            config.MaxDownloadAge = $('#txtDownloadAge', form).val() || null;
-            config.DownloadSizeLimit = $('#txtDownloadSizeLimit', form).val() || null;
-
-            config.DownloadPath = $('#txtCachePath', form).val() || null;
-
-            config.DownloadingChannels = $('.chkChannelDownload:checked', form)
-                .get()
-                .map(function (i) {
-                    return i.getAttribute('data-channelid');
-                });
 
             ApiClient.updateNamedConfiguration("channels", config).done(Dashboard.processServerConfigurationUpdateResult);
         });
@@ -82,31 +25,11 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#channelSettingsPage", function () {
+    $(document).on('pageinit', "#channelSettingsPage", function () {
 
         var page = this;
 
-        $('#btnSelectCachePath', page).on("click.selectDirectory", function () {
-
-            var picker = new DirectoryBrowser(page);
-
-            picker.show({
-
-                callback: function (path) {
-
-                    if (path) {
-                        $('#txtCachePath', page).val(path);
-                    }
-                    picker.close();
-                },
-
-                header: Globalize.translate('HeaderSelectChannelDownloadPath'),
-
-                instruction: Globalize.translate('HeaderSelectChannelDownloadPathHelp')
-            });
-        });
-
-        $('.channelSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
+        $('.channelSettingsForm', page).off('submit', onSubmit).on('submit', onSubmit);
 
     }).on('pageshowready', "#channelSettingsPage", function () {
 
@@ -114,15 +37,9 @@
 
         var page = this;
 
-        var promise1 = ApiClient.getNamedConfiguration("channels");
-        var promise2 = ApiClient.getJSON(ApiClient.getUrl("Channels/Features"));
+        ApiClient.getNamedConfiguration("channels").done(function (config) {
 
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            var config = response1[0];
-            var allFeatures = response2[0];
-
-            loadPage(page, config, allFeatures);
+            loadPage(page, config);
 
         });
 

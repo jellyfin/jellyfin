@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.6
+// @version 0.7.12
 if (typeof WeakMap === "undefined") {
   (function() {
     var defineProperty = Object.defineProperty;
@@ -1745,8 +1745,8 @@ window.ShadowDOMPolyfill = {};
   var originalInsertBefore = OriginalNode.prototype.insertBefore;
   var originalRemoveChild = OriginalNode.prototype.removeChild;
   var originalReplaceChild = OriginalNode.prototype.replaceChild;
-  var isIe = /Trident|Edge/.test(navigator.userAgent);
-  var removeChildOriginalHelper = isIe ? function(parent, child) {
+  var isIEOrEdge = /Trident|Edge/.test(navigator.userAgent);
+  var removeChildOriginalHelper = isIEOrEdge ? function(parent, child) {
     try {
       originalRemoveChild.call(parent, child);
     } catch (ex) {

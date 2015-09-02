@@ -4,17 +4,36 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="channelsPage" data-role="page" class="page libraryPage channelsPage" data-contextname="${HeaderChannels}" data-require="scripts/channels">
+    <div id="channelsPage" data-role="page" data-dom-cache="true" class="page libraryPage channelsPage pageWithAbsoluteTabs" data-contextname="${HeaderChannels}" data-require="scripts/channels,scripts/channelslatest,scripts/sections">
 
-        <div class="libraryViewNav scopedLibraryViewNav">
-            <a href="channelslatest.html" class="latestChannelItemsTab"><iron-icon icon="new-releases"></iron-icon>${TabLatest}</a>
-            <a href="#" class="ui-btn-active"><iron-icon icon="live-tv"></iron-icon>${TabChannels}</a>
+        <div class="libraryViewNav scopedLibraryViewNav libraryViewNavWithMinHeight">
+            <paper-tabs hidescrollbuttons noink>
+                <paper-tab><iron-icon icon="new-releases"></iron-icon>${TabLatest}</paper-tab>
+                <paper-tab><iron-icon icon="live-tv"></iron-icon>${TabChannels}</paper-tab>
+            </paper-tabs>
+            <div class="legacyTabs">
+                <a href="channels.html"><iron-icon icon="new-releases"></iron-icon>${TabLatest}</a>
+                <a href="channels.html?tab=1"><iron-icon icon="live-tv"></iron-icon>${TabChannels}</a>
+            </div>
+        </div>
+        <div class="ehsContent fullWidth">
+            <neon-animated-pages>
+                <neon-animatable>
+                    <div class="pageTabContent latestContent">
+                        <div class="latestItems"></div>
+                    </div>
+                </neon-animatable>
+                <neon-animatable>
+                    <div class="pageTabContent channelsContent">
+                        <div class="viewSettings">
+                        </div>
+                        <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
+                    </div>
+                </neon-animatable>
+            </neon-animated-pages>
         </div>
 
         <div data-role="content">
-            <div class="viewSettings">
-            </div>
-            <div id="items" class="itemsContainer paddedItemsContainer" style="text-align:center;"></div>
         </div>
     </div>
 </body>

@@ -1,7 +1,6 @@
 ﻿(function () {
 
-	var serverList = [];
-	function connectToServer(page, server) {
+    function connectToServer(page, server) {
 
         Dashboard.showLoadingMsg();
 
@@ -49,73 +48,41 @@
 
         var html = '';
 
-        var cssClass = "card squareCard bottomPaddedCard";
+        html += '<paper-icon-item class="serverItem" data-id="' + server.Id + '">';
 
-        html += "<div data-id='" + server.Id + "' data-connectserverid='" + (server.ConnectServerId || '') + "' class='" + cssClass + "'>";
+        html += '<paper-fab class="listAvatar blue lnkServer" icon="wifi" item-icon></paper-fab>';
 
-        html += '<div class="cardBox visualCardBox">';
-        html += '<div class="cardScalable">';
+        html += '<paper-item-body class="lnkServer" two-line>';
+        html += '<a class="clearLink" href="#">';
 
-        html += '<div class="cardPadder"></div>';
-
-        var href = server.href || "#";
-        html += '<a class="cardContent lnkServer" data-serverid="' + server.Id + '" href="' + href + '">';
-
-        var imgUrl = server.Id == 'connect' ? 'css/images/logo536.png' : '';
-
-        if (imgUrl) {
-            html += '<div class="cardImage" style="background-image:url(\'' + imgUrl + '\');">';
-        } else {
-            html += '<div class="cardImage" style="text-align:center;">';
-
-            var icon = server.Id == 'new' ? 'plus-circle' : 'server';
-            html += '<i class="fa fa-' + icon + '" style="color:#fff;vertical-align:middle;font-size:100px;margin-top:40px;"></i>';
-        }
-
-        html += "</div>";
-
-        // cardContent'
-        html += "</a>";
-
-        // cardScalable
-        html += "</div>";
-
-        html += '<div class="cardFooter outerCardFooter">';
-
-        if (server.showOptions !== false) {
-            html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
-            html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnServerMenu"></paper-icon-button>';
-            html += "</div>";
-        }
-
-        html += '<div class="cardText">';
+        html += '<div>';
         html += server.Name;
-        html += "</div>";
+        html += '</div>';
 
-        html += '<div class="cardText">';
-        html += '&nbsp;';
-        html += "</div>";
+        html += '<div secondary>';
+        html += MediaBrowser.ServerInfo.getServerAddress(server, server.LastConnectionMode);
+        html += '</div>';
 
-        // cardFooter
-        html += "</div>";
+        html += '</a>';
+        html += '</paper-item-body>';
 
-        // cardBox
-        html += "</div>";
+        if (server.Id) {
+            html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnServerMenu"></paper-icon-button>';
+        }
 
-        // card
-        html += "</div>";
+        html += '</paper-icon-item>';
 
         return html;
     }
 
     function renderServers(page, servers) {
 
-    	serverList = servers;
-
         if (servers.length) {
             $('.noServersMessage', page).hide();
+            $('.serverList', page).show();
         } else {
             $('.noServersMessage', page).show();
+            $('.serverList', page).hide();
         }
 
         var html = '';
@@ -126,16 +93,14 @@
 
         $('.lnkServer', elem).on('click', function () {
 
-            var id = this.getAttribute('data-serverid');
+            var item = $(this).parents('.serverItem')[0];
+            var id = item.getAttribute('data-id');
 
-            if (id != 'new' && id != 'connect') {
+            var server = servers.filter(function (s) {
+                return s.Id == id;
+            })[0];
 
-                var server = servers.filter(function (s) {
-                    return s.Id == id;
-                })[0];
-
-                connectToServer(page, server);
-            }
+            connectToServer(page, server);
 
         });
 
@@ -173,21 +138,16 @@
         });
     }
 
-    function deleteServer(page, id) {
+    function deleteServer(page, serverId) {
 
         Dashboard.showModalLoadingMsg();
 
         // Add/Update connect info
-        ConnectionManager.deleteServer(id).done(function () {
+        ConnectionManager.deleteServer(serverId).done(function () {
 
             Dashboard.hideModalLoadingMsg();
 
-            // Just re-render the servers without discovering them again
-            // If we re-discover then the one they deleted may just come back
-            var newServerList = serverList.filter(function(s){
-            	return s.Id != id;
-            });
-            renderServers(page, newServerList);
+            loadPage(page);
 
         }).fail(function () {
 
@@ -216,10 +176,9 @@
 
     function showServerMenu(elem) {
 
-        var card = $(elem).parents('.card');
+        var card = $(elem).parents('.serverItem');
         var page = $(elem).parents('.page');
         var serverId = card.attr('data-id');
-        var connectserverid = card.attr('data-connectserverid');
 
         var menuItems = [];
 
@@ -239,7 +198,7 @@
                     switch (id) {
 
                         case 'delete':
-                            deleteServer(page, connectserverid);
+                            deleteServer(page, serverId);
                             break;
                         default:
                             break;
@@ -252,40 +211,45 @@
 
     function showPendingInviteMenu(elem) {
 
-        var card = $(elem).parents('.card');
+        var card = $(elem).parents('.inviteItem');
         var page = $(elem).parents('.page');
-        var id = card.attr('data-id');
+        var invitationId = card.attr('data-id');
 
-        $('.inviteMenu', page).popup("close").remove();
+        var menuItems = [];
 
-        var html = '<div data-role="popup" class="inviteMenu" data-theme="a">';
-
-        html += '<ul data-role="listview" style="min-width: 180px;">';
-        html += '<li data-role="list-divider">' + Globalize.translate('HeaderMenu') + '</li>';
-
-        html += '<li><a href="#" class="btnAccept" data-id="' + id + '">' + Globalize.translate('ButtonAccept') + '</a></li>';
-        html += '<li><a href="#" class="btnReject" data-id="' + id + '">' + Globalize.translate('ButtonReject') + '</a></li>';
-
-        html += '</ul>';
-
-        html += '</div>';
-
-        page.append(html);
-
-        var flyout = $('.inviteMenu', page).popup({ positionTo: elem || "window" }).trigger('create').popup("open").on("popupafterclose", function () {
-
-            $(this).off("popupafterclose").remove();
-
+        menuItems.push({
+            name: Globalize.translate('ButtonAccept'),
+            id: 'accept',
+            ironIcon: 'add'
         });
 
-        $('.btnAccept', flyout).on('click', function () {
-            acceptInvitation(page, this.getAttribute('data-id'));
-            $('.inviteMenu', page).popup("close").remove();
+        menuItems.push({
+            name: Globalize.translate('ButtonReject'),
+            id: 'reject',
+            ironIcon: 'cancel'
         });
 
-        $('.btnReject', flyout).on('click', function () {
-            rejectInvitation(page, this.getAttribute('data-id'));
-            $('.inviteMenu', page).popup("close").remove();
+        require(['actionsheet'], function () {
+
+            ActionSheetElement.show({
+                items: menuItems,
+                positionTo: elem,
+                callback: function (id) {
+
+                    switch (id) {
+
+                        case 'accept':
+                            acceptInvitation(page, invitationId);
+                            break;
+                        case 'reject':
+                            rejectInvitation(page, invitationId);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+
         });
     }
 
@@ -293,50 +257,21 @@
 
         var html = '';
 
-        var cssClass = "card squareCard alternateHover bottomPaddedCard";
+        html += '<paper-icon-item class="inviteItem" data-id="' + invite.Id + '">';
 
-        html += "<div data-id='" + invite.Id + "' class='" + cssClass + "'>";
+        html += '<paper-fab class="listAvatar blue lnkServer" icon="wifi" item-icon></paper-fab>';
 
-        html += '<div class="cardBox visualCardBox">';
-        html += '<div class="cardScalable">';
+        html += '<paper-item-body two-line>';
 
-        html += '<div class="cardPadder"></div>';
-
-        var href = "#";
-        html += '<a class="cardContent" href="' + href + '">';
-
-        html += '<div class="cardImage" style="text-align:center;">';
-        html += '<i class="fa fa-globe" style="color:#fff;vertical-align:middle;font-size:100px;margin-top:40px;"></i>';
-        html += "</div>";
-
-        // cardContent
-        html += "</a>";
-
-        // cardScalable
-        html += "</div>";
-
-        html += '<div class="cardFooter outerCardFooter">';
-
-        html += '<div class="cardText" style="text-align:right; float:right;padding:0;">';
-        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnInviteMenu"></paper-icon-button>';
-        html += "</div>";
-
-        html += '<div class="cardText">';
+        html += '<div>';
         html += invite.Name;
-        html += "</div>";
+        html += '</div>';
 
-        html += '<div class="cardText">';
-        html += '&nbsp;';
-        html += "</div>";
+        html += '</paper-item-body>';
 
-        // cardFooter
-        html += "</div>";
+        html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnInviteMenu"></paper-icon-button>';
 
-        // cardBox
-        html += "</div>";
-
-        // card
-        html += "</div>";
+        html += '</paper-icon-item>';
 
         return html;
     }
@@ -379,8 +314,6 @@
 
         Dashboard.showLoadingMsg();
 
-        Backdrops.setDefault(page);
-
         ConnectionManager.getAvailableServers().done(function (servers) {
 
             servers = servers.slice(0);
@@ -406,15 +339,9 @@
         } else {
             $(page).removeClass('libraryPage').removeClass('noSecondaryNavPage').addClass('standalonePage');
         }
-
-        if (AppInfo.isNativeApp) {
-            $('.addServer', page).show();
-        } else {
-            $('.addServer', page).hide();
-        }
     }
 
-    $(document).on('pageinitdepends pagebeforeshowready', "#selectServerPage", function () {
+    $(document).on('pageinit pagebeforeshow', "#selectServerPage", function () {
 
         var page = this;
         updatePageStyle(page);

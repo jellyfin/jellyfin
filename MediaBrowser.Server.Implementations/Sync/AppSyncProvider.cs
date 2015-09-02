@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace MediaBrowser.Server.Implementations.Sync
 {
-    public class AppSyncProvider : ISyncProvider, IHasUniqueTargetIds, IHasSyncQuality
+    public class AppSyncProvider : ISyncProvider, IHasUniqueTargetIds, IHasSyncQuality, IHasDuplicateCheck
     {
         private readonly IDeviceManager _deviceManager;
 
@@ -103,6 +103,11 @@ namespace MediaBrowser.Server.Implementations.Sync
                 DeviceProfile = GetDeviceProfile(target, profile, quality),
                 IsConverting = isConverting
             };
+        }
+
+        public bool AllowDuplicateJobItem(SyncJobItem original, SyncJobItem duplicate)
+        {
+            return false;
         }
     }
 }

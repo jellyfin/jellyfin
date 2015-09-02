@@ -17,10 +17,26 @@
 
             var userId = Dashboard.getCurrentUserId();
 
-            query.Limit = query.Limit || 100;
-            query.ExcludeLocationTypes = "Virtual";
+            if (query.Ids && query.Ids.split(',').length == 1) {
+                var deferred = DeferredBuilder.Deferred();
 
-            return ApiClient.getItems(userId, query);
+                ApiClient.getItem(userId, query.Ids.split(',')).done(function (item) {
+                    deferred.resolveWith(null, [
+                    {
+                        Items: [item],
+                        TotalRecordCount: 1
+                    }]);
+                });
+
+                return deferred.promise();
+            }
+            else {
+
+                query.Limit = query.Limit || 100;
+                query.ExcludeLocationTypes = "Virtual";
+
+                return ApiClient.getItems(userId, query);
+            }
         };
 
         var castPlayer = {};
@@ -84,7 +100,7 @@
 
             getEndpointInfo().done(function (endpoint) {
 
-                if (endpoint.IsLocal || endpoint.IsInNetwork) {
+                if (endpoint.IsInNetwork) {
                     ApiClient.getPublicSystemInfo().done(function (info) {
 
                         message.serverAddress = info.LocalAddress;
@@ -265,7 +281,9 @@
                 "SetVolume",
                 "SetAudioStreamIndex",
                 "SetSubtitleStreamIndex",
-                "DisplayContent"
+                "DisplayContent",
+                "SetRepeatMode",
+                "EndSession"
             ];
 
             return target;
@@ -285,8 +303,8 @@
 
             name = (name || '').toLowerCase();
             var validTokens = ['nexusplayer'];
-            //validTokens.push('chromecast');
-            //validTokens.push('eurekadongle');
+            validTokens.push('chromecast');
+            validTokens.push('eurekadongle');
 
             return validTokens.filter(function (t) {
 
@@ -369,6 +387,15 @@
             sendMessageToDevice({
                 options: {},
                 command: 'VolumeDown'
+            });
+        };
+
+        self.setRepeatMode = function (mode) {
+            sendMessageToDevice({
+                options: {
+                    RepeatMode: mode
+                },
+                command: 'SetRepeatMode'
             });
         };
 
@@ -638,6 +665,17 @@
             }
         };
 
+        self.endSession = function () {
+
+            if (currentDevice) {
+                currentDevice.disconnect();
+            }
+
+            cleanupSession();
+            currentDevice = null;
+            currentDeviceId = null;
+        };
+
         $(MediaController).on('playerchange', function (e, newPlayer, newTarget) {
 
             if (newTarget.id != currentDeviceId) {
@@ -649,7 +687,6 @@
                     cleanupSession();
                     currentDevice = null;
                     currentDeviceId = null;
-                    self.lastPlayerData = {};
                 }
             }
         });

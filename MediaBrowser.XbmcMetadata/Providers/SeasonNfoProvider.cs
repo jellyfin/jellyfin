@@ -21,7 +21,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             _config = config;
         }
 
-        protected override void Fetch(LocalMetadataResult<Season> result, string path, CancellationToken cancellationToken)
+        protected override void Fetch(MetadataResult<Season> result, string path, CancellationToken cancellationToken)
         {
             new SeasonNfoParser(_logger, _config).Fetch(result, path, cancellationToken);
         }

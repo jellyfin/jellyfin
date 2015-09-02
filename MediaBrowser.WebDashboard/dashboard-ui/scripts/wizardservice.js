@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    $(document).on('pageinitdepends', "#wizardServicePage", function () {
+    $(document).on('pageinit', "#wizardServicePage", function () {
 
         var page = this;
 

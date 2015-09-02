@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Controller.Providers;
+﻿using System.Runtime.Serialization;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Library;
 using MediaBrowser.Model.Querying;
@@ -36,6 +37,16 @@ namespace MediaBrowser.Controller.Entities
             return PostFilterAndSort(result.Where(filter), query);
         }
 
+        [IgnoreDataMember]
+        protected override bool SupportsShortcutChildren
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        [IgnoreDataMember]
         public override bool IsPreSorted
         {
             get

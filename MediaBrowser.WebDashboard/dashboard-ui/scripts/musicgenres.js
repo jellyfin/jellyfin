@@ -91,7 +91,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinitdepends', "#musicGenresPage", function () {
+    $(document).on('pageinit', "#musicGenresPage", function () {
 
         var page = this;
 
@@ -118,7 +118,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#musicGenresPage", function () {
+    }).on('pagebeforeshow', "#musicGenresPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 

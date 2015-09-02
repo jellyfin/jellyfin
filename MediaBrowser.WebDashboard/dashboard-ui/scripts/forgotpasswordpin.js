@@ -51,7 +51,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', '#forgotPasswordPinPage', function () {
+    $(document).on('pageinit', '#forgotPasswordPinPage', function () {
         $('.forgotPasswordPinForm').off('submit', onSubmit).on('submit', onSubmit);
     });
 

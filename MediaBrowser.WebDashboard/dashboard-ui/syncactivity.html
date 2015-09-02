@@ -15,23 +15,21 @@
                     <a href="syncsettings.html" data-role="button">${TabSettings}</a>
                 </div>
 
-                <div style="text-align:right;margin-top:-30px;">
+                <div style="text-align:right;margin-top:-10px;">
                     <button type="button" class="btnSync" data-icon="refresh" data-mini="true" data-inline="true">${ButtonConvertMedia}</button>
                     <progress max="100" min="0" style="width:100px;display:none;" class="syncProgress"></progress>
                 </div>
                 <br />
-                <div class="staticSupporterPromotion supporterPromotion syncPromotion" style="display:none;">
-                    <a class="btn btnActionAccent" href="supporter.html" style="font-size:14px;">
-                        <div>
-                            ${HeaderSyncRequiresSupporterMembership}
-                        </div>
-                        <div>
-                            ${HeaderEnjoyDayTrial}
-                        </div>
-                        <div style="font-weight:normal;font-size:90%;margin-top:5px;">
-                            ${ButtonLearnMore}
-                        </div>
-                    </a>
+                <div class="supporterPromotionContainer" style="display:none;">
+                    <div class="customSupporterPromotion supporterPromotion">
+                        <a class="btn btnActionAccent" href="http://emby.media/donate" target="_blank" style="font-size:14px;">
+                            <div class="mainText">
+                            </div>
+                            <div class="btnLearnMore" style="font-weight:normal;font-size:90%;margin-top:5px;">
+                                ${ButtonLearnMore}
+                            </div>
+                        </a>
+                    </div>
                 </div>
                 <div class="syncActivity">
 

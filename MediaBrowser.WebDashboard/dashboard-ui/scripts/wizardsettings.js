@@ -11,8 +11,8 @@
 
             config.PreferredMetadataLanguage = $('#selectLanguage', page).val();
             config.MetadataCountryCode = $('#selectCountry', page).val();
-            config.SaveLocalMeta = $('#chkSaveLocalMetadata', page).checked();
-            config.EnableInternetProviders = $('#chkEnableInternetProviders', page).checked();
+            config.SaveLocalMeta = page.querySelector('.chkSaveLocalMetadata').checked;
+            config.EnableInternetProviders = page.querySelector('.chkEnableInternetProviders').checked;
 
             apiClient.ajax({
 
@@ -59,17 +59,7 @@
 
     function navigateToNextPage() {
 
-        var apiClient = ApiClient;
-
-        apiClient.getJSON(apiClient.getUrl('Startup/Info')).done(function (info) {
-
-            if (info.SupportsRunningAsService) {
-                Dashboard.navigate('wizardservice.html');
-
-            } else {
-                Dashboard.navigate('wizardagreement.html');
-            }
-        });
+        Dashboard.navigate('wizardlivetvtuner.html');
     }
 
     function onSubmit() {
@@ -80,7 +70,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#wizardSettingsPage", function () {
+    $(document).on('pageinit', "#wizardSettingsPage", function () {
 
         var page = this;
 

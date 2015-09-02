@@ -125,9 +125,7 @@
 
         self.setVolume = function (vol) {
             sendCommandByName('SetVolume', {
-
                 Volume: vol
-
             });
         };
 
@@ -152,6 +150,13 @@
         self.setSubtitleStreamIndex = function (index) {
             sendCommandByName('SetSubtitleStreamIndex', {
                 Index: index
+            });
+        };
+
+        self.setRepeatMode = function (mode) {
+
+            sendCommandByName('SetRepeatMode', {
+                RepeatMode: mode
             });
         };
 

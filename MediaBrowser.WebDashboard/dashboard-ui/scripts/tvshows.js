@@ -1,6 +1,6 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
+    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Thumb');
 
     var data = {};
 
@@ -67,8 +67,7 @@
                     shape: "backdrop",
                     preferThumb: true,
                     context: 'tv',
-                    lazy: true,
-                    overlayText: true
+                    lazy: true
                 });
 
             }
@@ -123,8 +122,7 @@
                     shape: "portrait",
                     context: 'tv',
                     centerText: true,
-                    lazy: true,
-                    overlayText: true
+                    lazy: true
                 });
             }
 
@@ -224,7 +222,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#tvShowsPage", function () {
+    $(document).on('pageinit', "#tvShowsPage", function () {
 
         var page = this;
 
@@ -395,7 +393,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#tvShowsPage", function () {
+    }).on('pagebeforeshow', "#tvShowsPage", function () {
 
         var query = getQuery();
 

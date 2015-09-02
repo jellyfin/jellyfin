@@ -46,6 +46,8 @@ namespace MediaBrowser.Server.Implementations.EntryPoints
             data["guests"] = users.Count(i => i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.Guest).ToString(CultureInfo.InvariantCulture);
             data["linkedusers"] = users.Count(i => i.ConnectLinkType.HasValue && i.ConnectLinkType.Value == UserLinkType.LinkedUser).ToString(CultureInfo.InvariantCulture);
 
+            data["plugins"] = string.Join(",", _applicationHost.Plugins.Select(i => i.Id).ToArray());
+            
             return _httpClient.Post(MbAdminUrl + "service/registration/ping", data, cancellationToken);
         }
 

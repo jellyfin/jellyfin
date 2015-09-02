@@ -35,17 +35,9 @@
         return html;
     }
 
-    $(document).on('pageinitdepends', ".libraryPage", function () {
+    function init(container, picker) {
 
-        var page = this;
-
-        var picker = page.querySelector('.alphabetPicker');
-
-        if (!picker) {
-            return;
-        }
-
-        $('.itemsContainer', page).addClass('itemsContainerWithAlphaPicker');
+        $('.itemsContainer', container).addClass('itemsContainerWithAlphaPicker');
 
         picker.innerHTML = getPickerHtml();
 
@@ -65,6 +57,28 @@
                 Events.trigger(picker, 'alphaclear');
             }
         });
+    }
+
+    $(document).on('pageinit', ".libraryPage", function () {
+
+        var page = this;
+
+        var pickers = page.querySelectorAll('.alphabetPicker');
+
+        if (!pickers.length) {
+            return;
+        }
+
+        if (page.classList.contains('pageWithAbsoluteTabs')) {
+
+            for (var i = 0, length = pickers.length; i < length; i++) {
+                init($(pickers[i]).parents('.pageTabContent'), pickers[i]);
+            }
+
+        } else {
+            init(page, pickers[0]);
+        }
+
     });
 
     $.fn.alphaValue = function (val) {

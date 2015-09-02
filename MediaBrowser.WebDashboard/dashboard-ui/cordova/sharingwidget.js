@@ -2,25 +2,16 @@
 
     function showMenu(options, successCallback, cancelCallback) {
 
-        Dashboard.confirm(Globalize.translate('ButtonShareHelp'), Globalize.translate('HeaderConfirm'), function (confirmed) {
+        var shareInfo = options.share;
 
-            if (!confirmed) {
-                cancelCallback(options);
-                return;
-            }
+        window.plugins.socialsharing.share(shareInfo.Overview, shareInfo.Name, shareInfo.ImageUrl, shareInfo.Url, function () {
 
-            var shareInfo = options.share;
+            successCallback(options);
 
-            window.plugins.socialsharing.share(shareInfo.Overview, shareInfo.Name, shareInfo.ImageUrl, shareInfo.Url, function () {
+        }, function () {
 
-                successCallback(options);
-
-            }, function () {
-
-                cancelCallback(options);
-            });
+            cancelCallback(options);
         });
-
     }
 
     window.SharingWidget = {

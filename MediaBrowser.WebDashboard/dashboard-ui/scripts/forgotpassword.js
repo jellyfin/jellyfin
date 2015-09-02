@@ -62,8 +62,10 @@
     }
 
 
-    $(document).on('pageinitdepends', '#forgotPasswordPage', function () {
-        $('.forgotPasswordForm').off('submit', onSubmit).on('submit', onSubmit);
+    $(document).on('pageinit', '#forgotPasswordPage', function () {
+
+        var page = this;
+        $('.forgotPasswordForm', page).off('submit', onSubmit).on('submit', onSubmit);
     });
 
 })(window);

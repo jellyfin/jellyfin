@@ -14,7 +14,7 @@
 
                     Dashboard.alert(Globalize.translate('MessageRecordingCancelled'));
 
-                    Dashboard.navigate('livetvtimers.html');
+                    Dashboard.navigate('livetv.html');
                 });
             }
 
@@ -23,7 +23,6 @@
 
     function renderTimer(page, item) {
 
-        var context = 'livetv';
         currentItem = item;
 
         var programInfo = item.ProgramInfo || {};
@@ -34,7 +33,7 @@
 
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(programInfo));
 
-        LibraryBrowser.renderGenres($('.itemGenres', page), programInfo, context);
+        LibraryBrowser.renderGenres($('.itemGenres', page), programInfo);
         LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), programInfo);
 
         if (programInfo.ImageTags && programInfo.ImageTags.Primary) {
@@ -53,16 +52,16 @@
             $('.timerPageImageContainer', page).hide();
         }
 
-        $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(item));
-
-        LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), programInfo);
+        $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(programInfo));
 
         $('#txtPrePaddingMinutes', page).val(item.PrePaddingSeconds / 60);
         $('#txtPostPaddingMinutes', page).val(item.PostPaddingSeconds / 60);
-        $('#chkPrePaddingRequired', page).checked(item.IsPrePaddingRequired).checkboxradio('refresh');
-        $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired).checkboxradio('refresh');
 
-        $('.timerStatus', page).html('Status:&nbsp;&nbsp;&nbsp;' + item.Status);
+        if (item.Status == 'New') {
+            $('.timerStatus', page).hide();
+        } else {
+            $('.timerStatus', page).show().html('Status:&nbsp;&nbsp;&nbsp;' + item.Status);
+        }
 
         Dashboard.hideLoadingMsg();
     }
@@ -77,10 +76,9 @@
 
             item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
             item.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
-            item.IsPrePaddingRequired = $('#chkPrePaddingRequired', form).checked();
-            item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 
             ApiClient.updateLiveTvTimer(item).done(function () {
+                Dashboard.hideLoadingMsg();
                 Dashboard.alert(Globalize.translate('MessageRecordingSaved'));
             });
         });
@@ -103,7 +101,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#liveTvTimerPage", function () {
+    $(document).on('pageinit', "#liveTvTimerPage", function () {
 
         var page = this;
 
@@ -115,7 +113,7 @@
 
         $('.liveTvTimerForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pagebeforeshowready', "#liveTvTimerPage", function () {
+    }).on('pagebeforeshow', "#liveTvTimerPage", function () {
 
         var page = this;
 

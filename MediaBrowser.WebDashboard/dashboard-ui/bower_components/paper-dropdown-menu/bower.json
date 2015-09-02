@@ -1,0 +1,43 @@
+{
+  "name": "paper-dropdown-menu",
+  "version": "1.0.2",
+  "description": "An element that works similarly to a native browser select",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "keywords": [
+    "web-components",
+    "web-component",
+    "polymer",
+    "dropdown",
+    "select"
+  ],
+  "main": "paper-dropdown-menu.html",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/paper-dropdown-menu"
+  },
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/PolymerElements/paper-dropdown-menu",
+  "dependencies": {
+    "polymer": "polymer/polymer#^1.0.0",
+    "iron-a11y-keys-behavior": "polymerelements/iron-a11y-keys-behavior#^1.0.0",
+    "iron-icon": "polymerelements/iron-icon#^1.0.0",
+    "iron-icons": "polymerelements/iron-icons#^1.0.0",
+    "paper-input": "polymerelements/paper-input#^1.0.9",
+    "paper-menu-button": "polymerelements/paper-menu-button#^1.0.0",
+    "paper-ripple": "polymerelements/paper-ripple#^1.0.0",
+    "paper-styles": "polymerelements/paper-styles#^1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "test-fixture": "polymerelements/test-fixture#^1.0.0",
+    "iron-test-helpers": "polymerelements/iron-test-helpers#^1.0.0",
+    "paper-item": "polymerelements/paper-item#^1.0.0",
+    "paper-menu": "polymerelements/paper-menu#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
+    "web-component-tester": "*",
+    "paper-tabs": "polymerelements/paper-tabs#^1.0.0"
+  }
+}

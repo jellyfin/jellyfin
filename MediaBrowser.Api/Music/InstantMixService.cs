@@ -54,6 +54,11 @@ namespace MediaBrowser.Api.Music
         public string Id { get; set; }
     }
 
+    [Route("/Items/{Id}/InstantMix", "GET", Summary = "Creates an instant playlist based on a given item")]
+    public class GetInstantMixFromItem : BaseGetSimilarItemsFromItem
+    {
+    }
+
     [Authenticated]
     public class InstantMixService : BaseApiService
     {
@@ -69,6 +74,17 @@ namespace MediaBrowser.Api.Music
             _dtoService = dtoService;
             _musicManager = musicManager;
             _libraryManager = libraryManager;
+        }
+
+        public object Get(GetInstantMixFromItem request)
+        {
+            var item = _libraryManager.GetItemById(request.Id);
+
+            var user = _userManager.GetUserById(request.UserId);
+
+            var items = _musicManager.GetInstantMixFromItem(item, user);
+
+            return GetResult(items, user, request);
         }
 
         public object Get(GetInstantMixFromArtistId request)
@@ -138,8 +154,9 @@ namespace MediaBrowser.Api.Music
         public object Get(GetInstantMixFromArtist request)
         {
             var user = _userManager.GetUserById(request.UserId);
+            var artist = _libraryManager.GetArtist(request.Name);
 
-            var items = _musicManager.GetInstantMixFromArtist(request.Name, user);
+            var items = _musicManager.GetInstantMixFromArtist(artist, user);
 
             return GetResult(items, user, request);
         }

@@ -1,7 +1,19 @@
-﻿namespace MediaBrowser.Model.Channels
+﻿using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
+
+namespace MediaBrowser.Model.Channels
 {
     public class ChannelQuery
     {
+        /// <summary>
+        /// Fields to return within the items, in addition to basic information
+        /// </summary>
+        /// <value>The fields.</value>
+        public ItemFields[] Fields { get; set; }
+        public bool? EnableImages { get; set; }
+        public int? ImageTypeLimit { get; set; }
+        public ImageType[] EnableImageTypes { get; set; }
+        
         /// <summary>
         /// Gets or sets the user identifier.
         /// </summary>

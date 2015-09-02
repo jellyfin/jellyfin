@@ -13,7 +13,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Serialization;
 using ServiceStack;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -161,7 +160,6 @@ namespace MediaBrowser.Api.Playback.Hls
             var playlistPath = Path.ChangeExtension(state.OutputFilePath, ".m3u8");
 
             var segmentPath = GetSegmentPath(state, playlistPath, requestedIndex);
-            var segmentLength = state.SegmentLength;
 
             var segmentExtension = GetSegmentFileExtension(state);
 
@@ -170,7 +168,7 @@ namespace MediaBrowser.Api.Playback.Hls
             if (File.Exists(segmentPath))
             {
                 job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-                return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
+                return await GetSegmentResult(state, playlistPath, segmentPath, requestedIndex, job, cancellationToken).ConfigureAwait(false);
             }
 
             await ApiEntryPoint.Instance.TranscodingStartLock.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
@@ -179,7 +177,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 if (File.Exists(segmentPath))
                 {
                     job = ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-                    return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
+                    return await GetSegmentResult(state, playlistPath, segmentPath, requestedIndex, job, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -210,14 +208,12 @@ namespace MediaBrowser.Api.Playback.Hls
                         {
                             ApiEntryPoint.Instance.KillTranscodingJobs(request.DeviceId, request.PlaySessionId, p => false);
 
-                            await ReadSegmentLengths(playlistPath).ConfigureAwait(false);
-
                             if (currentTranscodingIndex.HasValue)
                             {
                                 DeleteLastFile(playlistPath, segmentExtension, 0);
                             }
 
-                            request.StartTimeTicks = GetSeekPositionTicks(state, playlistPath, requestedIndex);
+                            request.StartTimeTicks = GetStartPositionTicks(state, requestedIndex);
 
                             job = await StartFfMpeg(state, playlistPath, cancellationTokenSource).ConfigureAwait(false);
                         }
@@ -252,82 +248,74 @@ namespace MediaBrowser.Api.Playback.Hls
 
             Logger.Info("returning {0}", segmentPath);
             job = job ?? ApiEntryPoint.Instance.OnTranscodeBeginRequest(playlistPath, TranscodingJobType);
-            return await GetSegmentResult(playlistPath, segmentPath, requestedIndex, segmentLength, job, cancellationToken).ConfigureAwait(false);
+            return await GetSegmentResult(state, playlistPath, segmentPath, requestedIndex, job, cancellationToken).ConfigureAwait(false);
         }
 
-        private static readonly ConcurrentDictionary<string, double> SegmentLengths = new ConcurrentDictionary<string, double>(StringComparer.OrdinalIgnoreCase);
-        private async Task ReadSegmentLengths(string playlist)
-        {
-            try
-            {
-                using (var fileStream = GetPlaylistFileStream(playlist))
-                {
-                    using (var reader = new StreamReader(fileStream))
-                    {
-                        double duration = -1;
+        // 256k
+        private const int BufferSize = 262144;
 
-                        while (!reader.EndOfStream)
-                        {
-                            var text = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                            if (text.StartsWith("#EXTINF", StringComparison.OrdinalIgnoreCase))
-                            {
-                                var parts = text.Split(new[] { ':' }, 2);
-                                if (parts.Length == 2)
-                                {
-                                    var time = parts[1].Trim(new[] { ',' }).Trim();
-                                    double timeValue;
-                                    if (double.TryParse(time, NumberStyles.Any, CultureInfo.InvariantCulture, out timeValue))
-                                    {
-                                        duration = timeValue;
-                                        continue;
-                                    }
-                                }
-                            }
-                            else if (duration != -1)
-                            {
-                                SegmentLengths.AddOrUpdate(text, duration, (k, v) => duration);
-                                Logger.Debug("Added segment length of {0} for {1}", duration, text);
-                            }
-
-                            duration = -1;
-                        }
-                    }
-                }
-            }
-            catch (DirectoryNotFoundException)
-            {
-
-            }
-            catch (FileNotFoundException)
-            {
-
-            }
-        }
-
-        private long GetSeekPositionTicks(StreamState state, string playlist, int requestedIndex)
+        private long GetStartPositionTicks(StreamState state, int requestedIndex)
         {
             double startSeconds = 0;
+            var lengths = GetSegmentLengths(state);
 
             for (var i = 0; i < requestedIndex; i++)
             {
-                var segmentPath = GetSegmentPath(state, playlist, i);
-
-                //double length;
-                //if (SegmentLengths.TryGetValue(Path.GetFileName(segmentPath), out length))
-                //{
-                //    Logger.Debug("Found segment length of {0} for index {1}", length, i);
-                //    startSeconds += length;
-                //}
-                //else
-                //{
-                //    startSeconds += state.SegmentLength;
-                //}
-                startSeconds += state.SegmentLength;
+                startSeconds += lengths[requestedIndex];
             }
 
             var position = TimeSpan.FromSeconds(startSeconds).Ticks;
             return position;
+        }
+
+        private long GetEndPositionTicks(StreamState state, int requestedIndex)
+        {
+            double startSeconds = 0;
+            var lengths = GetSegmentLengths(state);
+
+            for (var i = 0; i <= requestedIndex; i++)
+            {
+                startSeconds += lengths[requestedIndex];
+            }
+
+            var position = TimeSpan.FromSeconds(startSeconds).Ticks;
+            return position;
+        }
+
+        private double[] GetSegmentLengths(StreamState state)
+        {
+            var result = new List<double>();
+            var encoder = GetVideoEncoder(state);
+
+            if (string.Equals(encoder, "copy", StringComparison.OrdinalIgnoreCase))
+            {
+                var videoStream = state.VideoStream;
+                if (videoStream.KeyFrames != null && videoStream.KeyFrames.Count > 0)
+                {
+                    foreach (var frame in videoStream.KeyFrames)
+                    {
+                        var seconds = TimeSpan.FromMilliseconds(frame).TotalSeconds;
+                        seconds -= result.Sum();
+                        result.Add(seconds);
+                    }
+                    return result.ToArray();
+                }
+            }
+
+            var ticks = state.RunTimeTicks ?? 0;
+
+            var segmentLengthTicks = TimeSpan.FromSeconds(state.SegmentLength).Ticks;
+
+            while (ticks > 0)
+            {
+                var length = ticks >= segmentLengthTicks ? segmentLengthTicks : ticks;
+
+                result.Add(TimeSpan.FromTicks(length).TotalSeconds);
+
+                ticks -= length;
+            }
+
+            return result.ToArray();
         }
 
         public int? GetCurrentTranscodingIndex(string playlist, string segmentExtension)
@@ -434,17 +422,16 @@ namespace MediaBrowser.Api.Playback.Hls
             return Path.Combine(folder, filename + index.ToString(UsCulture) + GetSegmentFileExtension(state));
         }
 
-        private async Task<object> GetSegmentResult(string playlistPath,
+        private async Task<object> GetSegmentResult(StreamState state, string playlistPath,
             string segmentPath,
             int segmentIndex,
-            int segmentLength,
             TranscodingJob transcodingJob,
             CancellationToken cancellationToken)
         {
             // If all transcoding has completed, just return immediately
             if (transcodingJob != null && transcodingJob.HasExited && File.Exists(segmentPath))
             {
-                return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
+                return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
             }
 
             var segmentFilename = Path.GetFileName(segmentPath);
@@ -455,21 +442,18 @@ namespace MediaBrowser.Api.Playback.Hls
                 {
                     using (var fileStream = GetPlaylistFileStream(playlistPath))
                     {
-                        using (var reader = new StreamReader(fileStream))
+                        using (var reader = new StreamReader(fileStream, Encoding.UTF8, true, BufferSize))
                         {
-                            while (!reader.EndOfStream)
-                            {
-                                var text = await reader.ReadLineAsync().ConfigureAwait(false);
+                            var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-                                // If it appears in the playlist, it's done
-                                if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                            // If it appears in the playlist, it's done
+                            if (text.IndexOf(segmentFilename, StringComparison.OrdinalIgnoreCase) != -1)
+                            {
+                                if (File.Exists(segmentPath))
                                 {
-                                    if (File.Exists(segmentPath))
-                                    {
-                                        return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
-                                    }
-                                    break;
+                                    return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
                                 }
+                                //break;
                             }
                         }
                     }
@@ -518,13 +502,12 @@ namespace MediaBrowser.Api.Playback.Hls
             //}
 
             cancellationToken.ThrowIfCancellationRequested();
-            return GetSegmentResult(segmentPath, segmentIndex, segmentLength, transcodingJob);
+            return GetSegmentResult(state, segmentPath, segmentIndex, transcodingJob);
         }
 
-        private object GetSegmentResult(string segmentPath, int index, int segmentLength, TranscodingJob transcodingJob)
+        private object GetSegmentResult(StreamState state, string segmentPath, int index, TranscodingJob transcodingJob)
         {
-            var segmentEndingSeconds = (1 + index) * segmentLength;
-            var segmentEndingPositionTicks = TimeSpan.FromSeconds(segmentEndingSeconds).Ticks;
+            var segmentEndingPositionTicks = GetEndPositionTicks(state, index);
 
             return ResultFactory.GetStaticFileResult(Request, new StaticFileResultOptions
             {
@@ -751,25 +734,23 @@ namespace MediaBrowser.Api.Playback.Hls
         {
             var state = await GetState(request, CancellationToken.None).ConfigureAwait(false);
 
+            var segmentLengths = GetSegmentLengths(state);
+
             var builder = new StringBuilder();
 
             builder.AppendLine("#EXTM3U");
             builder.AppendLine("#EXT-X-VERSION:3");
-            builder.AppendLine("#EXT-X-TARGETDURATION:" + (state.SegmentLength).ToString(UsCulture));
+            builder.AppendLine("#EXT-X-TARGETDURATION:" + Math.Ceiling((segmentLengths.Length > 0 ? segmentLengths.Max() : state.SegmentLength)).ToString(UsCulture));
             builder.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
 
             var queryStringIndex = Request.RawUrl.IndexOf('?');
             var queryString = queryStringIndex == -1 ? string.Empty : Request.RawUrl.Substring(queryStringIndex);
 
-            var seconds = TimeSpan.FromTicks(state.RunTimeTicks ?? 0).TotalSeconds;
-
             var index = 0;
 
-            while (seconds > 0)
+            foreach (var length in segmentLengths)
             {
-                var length = seconds >= state.SegmentLength ? state.SegmentLength : seconds;
-
-                builder.AppendLine("#EXTINF:" + length.ToString(UsCulture) + ",");
+                builder.AppendLine("#EXTINF:" + length.ToString("0.000000", UsCulture) + ",");
 
                 builder.AppendLine(string.Format("hlsdynamic/{0}/{1}{2}{3}",
 
@@ -778,7 +759,6 @@ namespace MediaBrowser.Api.Playback.Hls
                     GetSegmentFileExtension(isOutputVideo),
                     queryString));
 
-                seconds -= state.SegmentLength;
                 index++;
             }
 
@@ -791,7 +771,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override string GetAudioArguments(StreamState state)
         {
-            var codec = GetAudioEncoder(state.Request);
+            var codec = GetAudioEncoder(state);
 
             if (!state.IsOutputVideo)
             {
@@ -856,7 +836,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 return string.Empty;
             }
 
-            var codec = GetVideoEncoder(state.VideoRequest);
+            var codec = GetVideoEncoder(state);
 
             var args = "-codec:v:0 " + codec;
 
@@ -877,7 +857,7 @@ namespace MediaBrowser.Api.Playback.Hls
             }
             else
             {
-                var keyFrameArg = string.Format(" -force_key_frames expr:gte(t,n_forced*{0})",
+                var keyFrameArg = string.Format(" -force_key_frames \"expr:gte(t,n_forced*{0})\"",
                     state.SegmentLength.ToString(UsCulture));
 
                 var hasGraphicalSubs = state.SubtitleStream != null && !state.SubtitleStream.IsTextSubtitleStream;
@@ -889,7 +869,7 @@ namespace MediaBrowser.Api.Playback.Hls
                 // Add resolution params, if specified
                 if (!hasGraphicalSubs)
                 {
-                    args += GetOutputSizeParam(state, codec, false);
+                    args += GetOutputSizeParam(state, codec, EnableCopyTs(state));
                 }
 
                 // This is for internal graphical subs
@@ -898,15 +878,15 @@ namespace MediaBrowser.Api.Playback.Hls
                     args += GetGraphicalSubtitleParam(state, codec);
                 }
 
-                args += " -flags +loop-global_header -sc_threshold 0";
-            }
-
-            if (!EnableSplitTranscoding(state))
-            {
-                //args += " -copyts";
+                args += " -flags -global_header -sc_threshold 0";
             }
 
             return args;
+        }
+
+        private bool EnableCopyTs(StreamState state)
+        {
+            return state.SubtitleStream != null && state.SubtitleStream.IsTextSubtitleStream;
         }
 
         protected override string GetCommandLineArguments(string outputPath, StreamState state, bool isEncoding)
@@ -921,22 +901,7 @@ namespace MediaBrowser.Api.Playback.Hls
             var toTimeParam = string.Empty;
             var timestampOffsetParam = string.Empty;
 
-            if (EnableSplitTranscoding(state))
-            {
-                var startTime = state.Request.StartTimeTicks ?? 0;
-                var durationSeconds = ApiEntryPoint.Instance.GetEncodingOptions().ThrottleThresholdInSeconds;
-
-                var endTime = startTime + TimeSpan.FromSeconds(durationSeconds).Ticks;
-                endTime = Math.Min(endTime, state.RunTimeTicks.Value);
-
-                if (endTime < state.RunTimeTicks.Value)
-                {
-                    //toTimeParam = " -to " + MediaEncoder.GetTimeParameter(endTime);
-                    toTimeParam = " -t " + MediaEncoder.GetTimeParameter(TimeSpan.FromSeconds(durationSeconds).Ticks);
-                }
-            }
-
-            if (state.IsOutputVideo && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) && (state.Request.StartTimeTicks ?? 0) > 0)
+            if (state.IsOutputVideo && !EnableCopyTs(state) && !string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase) && (state.Request.StartTimeTicks ?? 0) > 0)
             {
                 timestampOffsetParam = " -output_ts_offset " + MediaEncoder.GetTimeParameter(state.Request.StartTimeTicks ?? 0).ToString(CultureInfo.InvariantCulture);
             }
@@ -978,36 +943,7 @@ namespace MediaBrowser.Api.Playback.Hls
 
         protected override bool EnableThrottling(StreamState state)
         {
-            return !EnableSplitTranscoding(state);
-        }
-
-        private bool EnableSplitTranscoding(StreamState state)
-        {
-            return false;
-            if (string.Equals(Request.QueryString["EnableSplitTranscoding"], "false", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (string.Equals(state.OutputVideoCodec, "copy", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (string.Equals(state.OutputAudioCodec, "copy", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            return state.RunTimeTicks.HasValue && state.IsOutputVideo;
-        }
-
-        protected override bool EnableStreamCopy
-        {
-            get
-            {
-                return false;
-            }
+            return true;
         }
 
         /// <summary>

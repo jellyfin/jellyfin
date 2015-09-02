@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace MediaBrowser.LocalMetadata.Savers
 {
-    public class EpisodeXmlSaver : IMetadataFileSaver
+    public class EpisodeXmlProvider : IMetadataFileSaver, IConfigurableProvider
     {
         private readonly IItemRepository _itemRepository;
 
@@ -20,7 +20,7 @@ namespace MediaBrowser.LocalMetadata.Savers
         private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _libraryManager;
 
-        public EpisodeXmlSaver(IItemRepository itemRepository, IServerConfigurationManager config, ILibraryManager libraryManager)
+        public EpisodeXmlProvider(IItemRepository itemRepository, IServerConfigurationManager config, ILibraryManager libraryManager)
         {
             _itemRepository = itemRepository;
             _config = config;
@@ -49,6 +49,11 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 return XmlProviderUtils.Name;
             }
+        }
+
+        public bool IsEnabled
+        {
+            get { return !_config.Configuration.DisableXmlSavers; }
         }
 
         /// <summary>

@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.6
+// @version 0.7.12
 window.WebComponents = window.WebComponents || {};
 
 (function(scope) {
@@ -1781,8 +1781,8 @@ if (WebComponents.flags.shadow) {
     var originalInsertBefore = OriginalNode.prototype.insertBefore;
     var originalRemoveChild = OriginalNode.prototype.removeChild;
     var originalReplaceChild = OriginalNode.prototype.replaceChild;
-    var isIe = /Trident|Edge/.test(navigator.userAgent);
-    var removeChildOriginalHelper = isIe ? function(parent, child) {
+    var isIEOrEdge = /Trident|Edge/.test(navigator.userAgent);
+    var removeChildOriginalHelper = isIEOrEdge ? function(parent, child) {
       try {
         originalRemoveChild.call(parent, child);
       } catch (ex) {
@@ -4694,7 +4694,7 @@ if (WebComponents.flags.shadow) {
         }
       }
     };
-    var selectorRe = /([^{]*)({[\s\S]*?})/gim, cssCommentRe = /\/\*[^*]*\*+([^\/*][^*]*\*+)*\//gim, cssCommentNextSelectorRe = /\/\*\s*@polyfill ([^*]*\*+([^\/*][^*]*\*+)*\/)([^{]*?){/gim, cssContentNextSelectorRe = /polyfill-next-selector[^}]*content\:[\s]*?['"](.*?)['"][;\s]*}([^{]*?){/gim, cssCommentRuleRe = /\/\*\s@polyfill-rule([^*]*\*+([^\/*][^*]*\*+)*)\//gim, cssContentRuleRe = /(polyfill-rule)[^}]*(content\:[\s]*['"](.*?)['"])[;\s]*[^}]*}/gim, cssCommentUnscopedRuleRe = /\/\*\s@polyfill-unscoped-rule([^*]*\*+([^\/*][^*]*\*+)*)\//gim, cssContentUnscopedRuleRe = /(polyfill-unscoped-rule)[^}]*(content\:[\s]*['"](.*?)['"])[;\s]*[^}]*}/gim, cssPseudoRe = /::(x-[^\s{,(]*)/gim, cssPartRe = /::part\(([^)]*)\)/gim, polyfillHost = "-shadowcsshost", polyfillHostContext = "-shadowcsscontext", parenSuffix = ")(?:\\((" + "(?:\\([^)(]*\\)|[^)(]*)+?" + ")\\))?([^,{]*)";
+    var selectorRe = /([^{]*)({[\s\S]*?})/gim, cssCommentRe = /\/\*[^*]*\*+([^/*][^*]*\*+)*\//gim, cssCommentNextSelectorRe = /\/\*\s*@polyfill ([^*]*\*+([^/*][^*]*\*+)*\/)([^{]*?){/gim, cssContentNextSelectorRe = /polyfill-next-selector[^}]*content\:[\s]*?['"](.*?)['"][;\s]*}([^{]*?){/gim, cssCommentRuleRe = /\/\*\s@polyfill-rule([^*]*\*+([^/*][^*]*\*+)*)\//gim, cssContentRuleRe = /(polyfill-rule)[^}]*(content\:[\s]*['"](.*?)['"])[;\s]*[^}]*}/gim, cssCommentUnscopedRuleRe = /\/\*\s@polyfill-unscoped-rule([^*]*\*+([^/*][^*]*\*+)*)\//gim, cssContentUnscopedRuleRe = /(polyfill-unscoped-rule)[^}]*(content\:[\s]*['"](.*?)['"])[;\s]*[^}]*}/gim, cssPseudoRe = /::(x-[^\s{,(]*)/gim, cssPartRe = /::part\(([^)]*)\)/gim, polyfillHost = "-shadowcsshost", polyfillHostContext = "-shadowcsscontext", parenSuffix = ")(?:\\((" + "(?:\\([^)(]*\\)|[^)(]*)+?" + ")\\))?([^,{]*)";
     var cssColonHostRe = new RegExp("(" + polyfillHost + parenSuffix, "gim"), cssColonHostContextRe = new RegExp("(" + polyfillHostContext + parenSuffix, "gim"), selectorReSuffix = "([>\\s~+[.,{:][\\s\\S]*)?$", colonHostRe = /\:host/gim, colonHostContextRe = /\:host-context/gim, polyfillHostNoCombinator = polyfillHost + "-no-combinator", polyfillHostRe = new RegExp(polyfillHost, "gim"), polyfillHostContextRe = new RegExp(polyfillHostContext, "gim"), shadowDOMSelectorsRe = [ />>>/g, /::shadow/g, /::content/g, /\/deep\//g, /\/shadow\//g, /\/shadow-deep\//g, /\^\^/g, /\^/g ];
     function stylesToCssText(styles, preserveComments) {
       var cssText = "";
@@ -5678,7 +5678,7 @@ if (WebComponents.flags.shadow) {
   };
   global.JsMutationObserver = JsMutationObserver;
   if (!global.MutationObserver) global.MutationObserver = JsMutationObserver;
-})(this);
+})(window);
 
 window.HTMLImports = window.HTMLImports || {
   flags: {}
@@ -6034,7 +6034,7 @@ window.HTMLImports.addModule(function(scope) {
   var IMPORT_SELECTOR = "link[rel=" + IMPORT_LINK_TYPE + "]";
   var importParser = {
     documentSelectors: IMPORT_SELECTOR,
-    importsSelectors: [ IMPORT_SELECTOR, "link[rel=stylesheet]", "style", "script:not([type])", 'script[type="application/javascript"]', 'script[type="text/javascript"]' ].join(","),
+    importsSelectors: [ IMPORT_SELECTOR, "link[rel=stylesheet]:not([type])", "style:not([type])", "script:not([type])", 'script[type="application/javascript"]', 'script[type="text/javascript"]' ].join(","),
     map: {
       link: "parseLink",
       script: "parseScript",
@@ -6085,6 +6085,7 @@ window.HTMLImports.addModule(function(scope) {
       }
     },
     parseImport: function(elt) {
+      elt.import = elt.__doc;
       if (window.HTMLImports.__importsParsingHook) {
         window.HTMLImports.__importsParsingHook(elt);
       }
@@ -6147,6 +6148,8 @@ window.HTMLImports.addModule(function(scope) {
     trackElement: function(elt, callback) {
       var self = this;
       var done = function(e) {
+        elt.removeEventListener("load", done);
+        elt.removeEventListener("error", done);
         if (callback) {
           callback(e);
         }
@@ -6202,7 +6205,7 @@ window.HTMLImports.addModule(function(scope) {
         for (var i = 0, l = nodes.length, p = 0, n; i < l && (n = nodes[i]); i++) {
           if (!this.isParsed(n)) {
             if (this.hasResource(n)) {
-              return nodeIsImport(n) ? this.nextToParseInDoc(n.import, n) : n;
+              return nodeIsImport(n) ? this.nextToParseInDoc(n.__doc, n) : n;
             } else {
               return;
             }
@@ -6225,7 +6228,7 @@ window.HTMLImports.addModule(function(scope) {
       return this.dynamicElements.indexOf(elt) >= 0;
     },
     hasResource: function(node) {
-      if (nodeIsImport(node) && node.import === undefined) {
+      if (nodeIsImport(node) && node.__doc === undefined) {
         return false;
       }
       return true;
@@ -6299,7 +6302,7 @@ window.HTMLImports.addModule(function(scope) {
           }
           this.documents[url] = doc;
         }
-        elt.import = doc;
+        elt.__doc = doc;
       }
       parser.parseNext();
     },
@@ -6441,6 +6444,7 @@ window.CustomElements = window.CustomElements || {
   scope.addModule = addModule;
   scope.initializeModules = initializeModules;
   scope.hasNative = Boolean(document.registerElement);
+  scope.isIE = /Trident/.test(navigator.userAgent);
   scope.useNative = !flags.register && scope.hasNative && !window.ShadowDOMPolyfill && (!window.HTMLImports || window.HTMLImports.useNative);
 })(window.CustomElements);
 
@@ -6681,6 +6685,7 @@ window.CustomElements.addModule(function(scope) {
   }
   scope.watchShadow = watchShadow;
   scope.upgradeDocumentTree = upgradeDocumentTree;
+  scope.upgradeDocument = upgradeDocument;
   scope.upgradeSubtree = addedSubtree;
   scope.upgradeAll = addedNode;
   scope.attached = attached;
@@ -6692,11 +6697,9 @@ window.CustomElements.addModule(function(scope) {
   function upgrade(node, isAttached) {
     if (!node.__upgraded__ && node.nodeType === Node.ELEMENT_NODE) {
       var is = node.getAttribute("is");
-      var definition = scope.getRegisteredDefinition(is || node.localName);
+      var definition = scope.getRegisteredDefinition(node.localName) || scope.getRegisteredDefinition(is);
       if (definition) {
-        if (is && definition.tag == node.localName) {
-          return upgradeWithDefinition(node, definition, isAttached);
-        } else if (!is && !definition.extends) {
+        if (is && definition.tag == node.localName || !is && !definition.extends) {
           return upgradeWithDefinition(node, definition, isAttached);
         }
       }
@@ -6750,7 +6753,7 @@ window.CustomElements.addModule(function(scope) {
 });
 
 window.CustomElements.addModule(function(scope) {
-  var isIE11OrOlder = scope.isIE11OrOlder;
+  var isIE = scope.isIE;
   var upgradeDocumentTree = scope.upgradeDocumentTree;
   var upgradeAll = scope.upgradeAll;
   var upgradeWithDefinition = scope.upgradeWithDefinition;
@@ -6841,16 +6844,22 @@ window.CustomElements.addModule(function(scope) {
       var nativePrototype = HTMLElement.prototype;
       if (definition.is) {
         var inst = document.createElement(definition.tag);
-        var expectedPrototype = Object.getPrototypeOf(inst);
-        if (expectedPrototype === definition.prototype) {
-          nativePrototype = expectedPrototype;
-        }
+        nativePrototype = Object.getPrototypeOf(inst);
       }
       var proto = definition.prototype, ancestor;
-      while (proto && proto !== nativePrototype) {
+      var foundPrototype = false;
+      while (proto) {
+        if (proto == nativePrototype) {
+          foundPrototype = true;
+        }
         ancestor = Object.getPrototypeOf(proto);
-        proto.__proto__ = ancestor;
+        if (ancestor) {
+          proto.__proto__ = ancestor;
+        }
         proto = ancestor;
+      }
+      if (!foundPrototype) {
+        console.warn(definition.tag + " prototype not found in prototype chain for " + definition.is);
       }
       definition.native = nativePrototype;
     }
@@ -6913,6 +6922,9 @@ window.CustomElements.addModule(function(scope) {
   var isInstance;
   if (!Object.__proto__ && !useNative) {
     isInstance = function(obj, ctor) {
+      if (obj instanceof ctor) {
+        return true;
+      }
       var p = obj;
       while (p) {
         if (p === ctor.prototype) {
@@ -6937,7 +6949,7 @@ window.CustomElements.addModule(function(scope) {
   }
   wrapDomMethodToForceUpgrade(Node.prototype, "cloneNode");
   wrapDomMethodToForceUpgrade(document, "importNode");
-  if (isIE11OrOlder) {
+  if (isIE) {
     (function() {
       var importNode = document.importNode;
       document.importNode = function() {
@@ -6965,7 +6977,7 @@ window.CustomElements.addModule(function(scope) {
 (function(scope) {
   var useNative = scope.useNative;
   var initializeModules = scope.initializeModules;
-  var isIE11OrOlder = /Trident/.test(navigator.userAgent);
+  var isIE = scope.isIE;
   if (useNative) {
     var nop = function() {};
     scope.watchShadow = nop;
@@ -6981,6 +6993,7 @@ window.CustomElements.addModule(function(scope) {
     initializeModules();
   }
   var upgradeDocumentTree = scope.upgradeDocumentTree;
+  var upgradeDocument = scope.upgradeDocument;
   if (!window.wrap) {
     if (window.ShadowDOMPolyfill) {
       window.wrap = window.ShadowDOMPolyfill.wrapIfNeeded;
@@ -6991,25 +7004,32 @@ window.CustomElements.addModule(function(scope) {
       };
     }
   }
+  if (window.HTMLImports) {
+    window.HTMLImports.__importsParsingHook = function(elt) {
+      if (elt.import) {
+        upgradeDocument(wrap(elt.import));
+      }
+    };
+  }
   function bootstrap() {
     upgradeDocumentTree(window.wrap(document));
-    if (window.HTMLImports) {
-      window.HTMLImports.__importsParsingHook = function(elt) {
-        upgradeDocumentTree(window.wrap(elt.import));
-      };
-    }
     window.CustomElements.ready = true;
-    setTimeout(function() {
-      window.CustomElements.readyTime = Date.now();
-      if (window.HTMLImports) {
-        window.CustomElements.elapsed = window.CustomElements.readyTime - window.HTMLImports.readyTime;
-      }
-      document.dispatchEvent(new CustomEvent("WebComponentsReady", {
-        bubbles: true
-      }));
+    var requestAnimationFrame = window.requestAnimationFrame || function(f) {
+      setTimeout(f, 16);
+    };
+    requestAnimationFrame(function() {
+      setTimeout(function() {
+        window.CustomElements.readyTime = Date.now();
+        if (window.HTMLImports) {
+          window.CustomElements.elapsed = window.CustomElements.readyTime - window.HTMLImports.readyTime;
+        }
+        document.dispatchEvent(new CustomEvent("WebComponentsReady", {
+          bubbles: true
+        }));
+      });
     });
   }
-  if (isIE11OrOlder && typeof window.CustomEvent !== "function") {
+  if (isIE && typeof window.CustomEvent !== "function") {
     window.CustomEvent = function(inType, params) {
       params = params || {};
       var e = document.createEvent("CustomEvent");
@@ -7033,7 +7053,6 @@ window.CustomElements.addModule(function(scope) {
     var loadEvent = window.HTMLImports && !window.HTMLImports.ready ? "HTMLImportsLoaded" : "DOMContentLoaded";
     window.addEventListener(loadEvent, bootstrap);
   }
-  scope.isIE11OrOlder = isIE11OrOlder;
 })(window.CustomElements);
 
 (function(scope) {
@@ -7078,35 +7097,6 @@ window.CustomElements.addModule(function(scope) {
         clearTimeout(id);
       };
     }();
-  }
-  var elementDeclarations = [];
-  var polymerStub = function(name, dictionary) {
-    if (typeof name !== "string" && arguments.length === 1) {
-      Array.prototype.push.call(arguments, document._currentScript);
-    }
-    elementDeclarations.push(arguments);
-  };
-  window.Polymer = polymerStub;
-  scope.consumeDeclarations = function(callback) {
-    scope.consumeDeclarations = function() {
-      throw "Possible attempt to load Polymer twice";
-    };
-    if (callback) {
-      callback(elementDeclarations);
-    }
-    elementDeclarations = null;
-  };
-  function installPolymerWarning() {
-    if (window.Polymer === polymerStub) {
-      window.Polymer = function() {
-        throw new Error("You tried to use polymer without loading it first. To " + 'load polymer, <link rel="import" href="' + 'components/polymer/polymer.html">');
-      };
-    }
-  }
-  if (HTMLImports.useNative) {
-    installPolymerWarning();
-  } else {
-    window.addEventListener("DOMContentLoaded", installPolymerWarning);
   }
 })(window.WebComponents);
 

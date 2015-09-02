@@ -23,7 +23,7 @@ namespace MediaBrowser.XbmcMetadata.Providers
             _config = config;
         }
 
-        protected override void Fetch(LocalMetadataResult<Episode> result, string path, CancellationToken cancellationToken)
+        protected override void Fetch(MetadataResult<Episode> result, string path, CancellationToken cancellationToken)
         {
             var images = new List<LocalImageInfo>();
 

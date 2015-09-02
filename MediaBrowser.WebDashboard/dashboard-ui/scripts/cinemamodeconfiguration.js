@@ -51,7 +51,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#cinemaModeConfigurationPage", function () {
+    $(document).on('pageinit', "#cinemaModeConfigurationPage", function () {
 
         var page = this;
 

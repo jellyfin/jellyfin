@@ -23,8 +23,6 @@
 
         var html = '';
 
-        html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
-
         var index = '';
 
         for (var i = 0, length = timers.length; i < length; i++) {
@@ -34,15 +32,24 @@
             var startDateText = LibraryBrowser.getFutureDateText(parseISO8601Date(timer.StartDate, { toLocal: true }));
 
             if (startDateText != index) {
-                html += '<li data-role="list-divider">' + startDateText + '</li>';
+
+                if (index) {
+                    html += '</div>';
+                    html += '</div>';
+                }
+
+                html += '<div class="homePageSection">';
+                html += '<h1>' + startDateText + '</h1>';
+                //html += '<ul data-role="listview" data-split-icon="delete">';
+                html += '<div class="paperList">';
                 index = startDateText;
             }
 
-            html += '<li><a href="livetvtimer.html?id=' + timer.Id + '">';
+            html += '<paper-icon-item>';
 
             var program = timer.ProgramInfo || {};
             var imgUrl;
-            
+
             if (program.ImageTags && program.ImageTags.Primary) {
 
                 imgUrl = ApiClient.getScaledImageUrl(program.Id, {
@@ -50,22 +57,41 @@
                     tag: program.ImageTags.Primary,
                     type: "Primary"
                 });
-            } else {
-                imgUrl = "css/images/items/searchhintsv2/tv.png";
             }
 
-            html += '<img src="css/images/items/searchhintsv2/tv.png" style="display:none;">';
-            html += '<div class="ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');width:5em;height:5em;background-repeat:no-repeat;background-position:center center;background-size: cover;"></div>';
+            if (imgUrl) {
+                html += '<paper-fab class="listAvatar blue" style="background-image:url(\'' + imgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
+            }
+            else if (program.IsKids) {
+                html += '<paper-fab class="listAvatar" style="background:#2196F3;" icon="person" item-icon></paper-fab>';
+            }
+            else if (program.IsSports) {
+                html += '<paper-fab class="listAvatar" style="background:#8BC34A;" icon="person" item-icon></paper-fab>';
+            }
+            else if (program.IsMovie) {
+                html += '<paper-fab class="listAvatar" icon="movie" item-icon></paper-fab>';
+            }
+            else if (program.IsNews) {
+                html += '<paper-fab class="listAvatar" style="background:#673AB7;" icon="new-releases" item-icon></paper-fab>';
+            }
+            else {
+                html += '<paper-fab class="listAvatar blue" icon="live-tv" item-icon></paper-fab>';
+            }
 
-            html += '<h3>';
+            html += '<paper-item-body two-line>';
+            html += '<a class="clearLink" href="livetvtimer.html?id=' + timer.Id + '">';
+
+            html += '<div>';
             html += timer.Name;
-            html += '</h3>';
+            html += '</div>';
 
-            html += '<p>';
+            html += '<div secondary>';
             html += LibraryBrowser.getDisplayTime(timer.StartDate);
             html += ' - ' + LibraryBrowser.getDisplayTime(timer.EndDate);
-            html += '</p>';
+            html += '</div>';
 
+            html += '</a>';
+            html += '</paper-item-body>';
 
             if (timer.SeriesTimerId) {
                 html += '<div class="ui-li-aside" style="right:0;">';
@@ -75,14 +101,15 @@
                 html += '</div>';
             }
 
-            html += '</a>';
+            html += '<paper-icon-button icon="cancel" data-timerid="' + timer.Id + '" title="' + Globalize.translate('ButonCancelRecording') + '" class="btnDeleteTimer"></paper-icon-button>';
 
-            html += '<a data-timerid="' + timer.Id + '" href="#" title="' + Globalize.translate('ButonCancelRecording') + '" class="btnDeleteTimer">' + Globalize.translate('ButonCancelRecording') + '</a>';
-
-            html += '</li>';
+            html += '</paper-icon-item>';
         }
 
-        html += '</ul>';
+        if (timers.length) {
+            html += '</div>';
+            html += '</div>';
+        }
 
         var elem = $('#items', page).html(html).trigger('create');
 
@@ -103,18 +130,14 @@
         ApiClient.getLiveTvTimers().done(function (result) {
 
             renderTimers(page, result.Items);
-
-            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
-    $(document).on('pagebeforeshowready', "#liveTvTimersPage", function () {
+    window.LiveTvPage.renderTimersTab = function (page, tabContent) {
 
-        var page = this;
-
-        if (LibraryBrowser.needsRefresh(page)) {
-            reload(page);
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reload(tabContent);
         }
-    });
+    };
 
 })(jQuery, document);

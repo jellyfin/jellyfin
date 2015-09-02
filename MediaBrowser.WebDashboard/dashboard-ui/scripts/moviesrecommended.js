@@ -62,12 +62,13 @@
                     shape: getPortraitShape(),
                     centerText: true,
                     lazy: true,
-                    overlayText: true,
+                    overlayText: false,
                     showDetailsMenu: true
                 });
             }
 
             $('#recentlyAddedItems', page).html(html).lazyChildren();
+            LibraryBrowser.setLastRefreshed(page);
         });
     }
 
@@ -124,7 +125,8 @@
                     overlayText: true,
                     showTitle: true,
                     lazy: true,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    overlayPlayButton: true
                 });
             }
 
@@ -189,7 +191,6 @@
                 shape: getPortraitShape(),
                 centerText: true,
                 lazy: true,
-                overlayText: true,
                 showDetailsMenu: true
             });
         }
@@ -229,32 +230,133 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#moviesRecommendedPage", function () {
-
-        var page = this;
-
-        $('.recommendations', page).createCardMenus();
-
-    }).on('pagebeforeshowready', "#moviesRecommendedPage", function () {
+    function loadSuggestionsTab(page, tabContent) {
 
         var parentId = LibraryMenu.getTopParentId();
 
-        var page = this;
         var userId = Dashboard.getCurrentUserId();
 
-        var containers = page.querySelectorAll('.itemsContainer');
+        var containers = tabContent.querySelectorAll('.itemsContainer');
         if (enableScrollX()) {
             $(containers).addClass('hiddenScrollX');
         } else {
             $(containers).removeClass('hiddenScrollX');
         }
 
-        if (LibraryBrowser.needsRefresh(page)) {
-            loadResume(page, userId, parentId);
-            loadLatest(page, userId, parentId);
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            console.log('loadSuggestionsTab');
+            loadResume(tabContent, userId, parentId);
+            loadLatest(tabContent, userId, parentId);
 
             if (AppInfo.enableMovieHomeSuggestions) {
-                loadSuggestions(page, userId, parentId);
+                loadSuggestions(tabContent, userId, parentId);
+            }
+        }
+    }
+
+    function loadTab(page, index) {
+
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var depends = [];
+        var scope = 'MoviesPage';
+        var renderMethod = '';
+        var initMethod = '';
+
+        switch (index) {
+
+            case 0:
+                renderMethod = 'renderSuggestedTab';
+                break;
+            case 1:
+                depends.push('scripts/movies');
+                depends.push('scripts/queryfilters');
+                renderMethod = 'renderMoviesTab';
+                initMethod = 'initMoviesTab';
+                break;
+            case 2:
+                depends.push('scripts/movietrailers');
+                renderMethod = 'renderTrailerTab';
+                initMethod = 'initTrailerTab';
+                break;
+            case 3:
+                depends.push('scripts/moviecollections');
+                renderMethod = 'renderCollectionsTab';
+                initMethod = 'initCollectionsTab';
+                break;
+            case 4:
+                depends.push('scripts/moviegenres');
+                renderMethod = 'renderGenresTab';
+                break;
+            case 5:
+                depends.push('scripts/moviepeople');
+                renderMethod = 'renderPeopleTab';
+                initMethod = 'initPeopleTab';
+                break;
+            case 6:
+                depends.push('scripts/moviestudios');
+                renderMethod = 'renderStudiosTab';
+                break;
+            default:
+                break;
+        }
+
+        require(depends, function () {
+
+            if (initMethod && !tabContent.initComplete) {
+
+                window[scope][initMethod](page, tabContent);
+                tabContent.initComplete = true;
+            }
+
+            window[scope][renderMethod](page, tabContent);
+
+        });
+    }
+
+    window.MoviesPage = window.MoviesPage || {};
+    window.MoviesPage.renderSuggestedTab = loadSuggestionsTab;
+
+    $(document).on('pageinit', "#moviesPage", function () {
+
+        var page = this;
+
+        $('.recommendations', page).createCardMenus();
+
+        var tabs = page.querySelector('paper-tabs');
+        var pages = page.querySelector('neon-animated-pages');
+
+        var baseUrl = 'movies.html';
+        var topParentId = LibraryMenu.getTopParentId();
+        if (topParentId) {
+            baseUrl += '?topParentId=' + topParentId;
+        }
+
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, baseUrl);
+
+        $(pages).on('tabchange', function () {
+            loadTab(page, parseInt(this.selected));
+        });
+
+    }).on('pageshowready', "#moviesPage", function () {
+
+        var page = this;
+
+        if (!page.getAttribute('data-title')) {
+
+            var parentId = LibraryMenu.getTopParentId();
+
+            if (parentId) {
+
+                ApiClient.getItem(Dashboard.getCurrentUserId(), parentId).done(function (item) {
+
+                    page.setAttribute('data-title', item.Name);
+                    LibraryMenu.setTitle(item.Name);
+                });
+
+
+            } else {
+                page.setAttribute('data-title', Globalize.translate('TabMovies'));
+                LibraryMenu.setTitle(Globalize.translate('TabMovies'));
             }
         }
 

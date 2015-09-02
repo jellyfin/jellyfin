@@ -160,7 +160,7 @@
                     auth += ', UserId="' + userId + '"';
                 }
 
-                headers.Authorization = auth;
+                headers["X-Emby-Authorization"] = auth;
             }
 
             var accessToken = currentServerInfo.AccessToken;
@@ -1197,53 +1197,9 @@
             }, false);
         };
 
-        self.getInstantMixFromSong = function (itemId, options) {
+        self.getInstantMixFromItem = function (itemId, options) {
 
-            var url = self.getUrl("Songs/" + itemId + "/InstantMix", options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getInstantMixFromAlbum = function (itemId, options) {
-
-            var url = self.getUrl("Albums/" + itemId + "/InstantMix", options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getInstantMixFromArtist = function (options) {
-
-            var url = self.getUrl("Artists/InstantMix", options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getInstantMixFromMusicGenre = function (options) {
-
-            var url = self.getUrl("MusicGenres/InstantMix", options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getInstantMixFromPlaylist = function (itemId, options) {
-
-            var url = self.getUrl("Playlists/" + itemId + "/InstantMix", options);
+            var url = self.getUrl("Items/" + itemId + "/InstantMix", options);
 
             return self.ajax({
                 type: "GET",
@@ -1303,53 +1259,9 @@
             });
         };
 
-        self.getSimilarMovies = function (itemId, options) {
+        self.getSimilarItems = function (itemId, options) {
 
-            var url = self.getUrl("Movies/" + itemId + "/Similar", options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getSimilarTrailers = function (itemId, options) {
-
-            var url = self.getUrl("Trailers/" + itemId + "/Similar", options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getSimilarShows = function (itemId, options) {
-
-            var url = self.getUrl("Shows/" + itemId + "/Similar", options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getSimilarAlbums = function (itemId, options) {
-
-            var url = self.getUrl("Albums/" + itemId + "/Similar", options);
-
-            return self.ajax({
-                type: "GET",
-                url: url,
-                dataType: "json"
-            });
-        };
-
-        self.getSimilarGames = function (itemId, options) {
-
-            var url = self.getUrl("Games/" + itemId + "/Similar", options);
+            var url = self.getUrl("Items/" + itemId + "/Similar", options);
 
             return self.ajax({
                 type: "GET",
@@ -2617,8 +2529,9 @@
          */
         self.authenticateUserByName = function (name, password) {
 
+            var deferred = DeferredBuilder.Deferred();
+
             if (!name) {
-                var deferred = DeferredBuilder.Deferred();
                 deferred.reject();
                 return deferred.promise();
             }
@@ -2630,7 +2543,7 @@
                 Username: name
             };
 
-            return self.ajax({
+            self.ajax({
                 type: "POST",
                 url: url,
                 data: JSON.stringify(postData),
@@ -2639,8 +2552,18 @@
 
             }).done(function (result) {
 
-                Events.trigger(self, 'authenticated', [result]);
+                if (self.onAuthenticated) {
+                    self.onAuthenticated(self, result);
+                }
+
+                deferred.resolveWith(null, [result]);
+
+            }).fail(function () {
+
+                deferred.reject();
             });
+
+            return deferred.promise();
         };
 
         /**
@@ -2984,15 +2907,16 @@
             });
         };
 
-        self.getUserViews = function (userId, options) {
+        self.getChannels = function (query) {
 
-            if (!userId) {
-                throw new Error("null userId");
-            }
+            return self.getJSON(self.getUrl("Channels", query || {}));
+        };
+
+        self.getUserViews = function (options, userId) {
 
             options = options || {};
 
-            var url = self.getUrl("Users/" + userId + "/Views", options);
+            var url = self.getUrl("Users/" + (userId || self.getCurrentUserId()) + "/Views", options);
 
             return self.ajax({
                 type: "GET",

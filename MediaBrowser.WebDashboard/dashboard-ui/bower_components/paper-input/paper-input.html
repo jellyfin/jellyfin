@@ -25,6 +25,16 @@ It may include an optional error message or character counter.
     <paper-input error-message="Invalid input!" label="Input label"></paper-input>
     <paper-input char-counter label="Input label"></paper-input>
 
+It can also include custom prefix or suffix elements, which are displayed
+before or after the text input itself. In order for an element to be
+considered as a prefix, it must have the `prefix` attribute (and similarly
+for `suffix`).
+
+    <paper-input label="total">
+      <div prefix>$</div>
+      <paper-icon-button suffix icon="clear"></paper-icon-button>
+    </paper-input>
+
 See `Polymer.PaperInputBehavior` for more API docs.
 
 ### Styling
@@ -68,6 +78,8 @@ style this element.
 
     <paper-input-container no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
 
+      <content select="[prefix]"></content>
+
       <label hidden$="[[!label]]">[[label]]</label>
 
       <input is="iron-input" id="input"
@@ -81,12 +93,15 @@ style this element.
         validator="[[validator]]"
         type$="[[type]]"
         pattern$="[[pattern]]"
-        maxlength$="[[maxlength]]"
         required$="[[required]]"
         autocomplete$="[[autocomplete]]"
         autofocus$="[[autofocus]]"
         inputmode$="[[inputmode]]"
         minlength$="[[minlength]]"
+        maxlength$="[[maxlength]]"
+        min$="[[min]]"
+        max$="[[max]]"
+        step$="[[step]]"
         name$="[[name]]"
         placeholder$="[[placeholder]]"
         readonly$="[[readonly]]"
@@ -94,6 +109,8 @@ style this element.
         size$="[[size]]"
         autocapitalize$="[[autocapitalize]]"
         autocorrect$="[[autocorrect]]">
+
+      <content select="[suffix]"></content>
 
       <template is="dom-if" if="[[errorMessage]]">
         <paper-input-error>[[errorMessage]]</paper-input-error>

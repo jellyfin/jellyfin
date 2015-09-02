@@ -1,12 +1,10 @@
 ﻿using MediaBrowser.Common.Configuration;
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
-using System.Collections.Generic;
 using System.Xml;
 
 namespace MediaBrowser.XbmcMetadata.Parsers
@@ -22,7 +20,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <param name="itemResult">The item result.</param>
-        protected override void FetchDataFromXmlNode(XmlReader reader, LocalMetadataResult<Series> itemResult)
+        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Series> itemResult)
         {
             var item = itemResult.Item;
 

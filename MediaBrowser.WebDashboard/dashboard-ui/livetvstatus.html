@@ -4,34 +4,38 @@
     <title>${TitleLiveTV}</title>
 </head>
 <body>
-    <div id="liveTvStatusPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="scripts/livetvstatus,scripts/taskbutton,detailtablecss">
+    <div id="liveTvStatusPage" data-role="page" class="page type-interior liveTvSettingsPage" data-helpurl="https://github.com/MediaBrowser/Wiki/wiki/Live%20TV" data-require="jqmtable,scripts/livetvstatus,scripts/taskbutton,detailtablecss">
 
         <div data-role="content">
             <div class="content-primary">
 
                 <div data-role="controlgroup" data-type="horizontal" class="localnav" data-mini="true">
-                    <a href="#" data-role="button" class="ui-btn-active">${TabStatus}</a>
-                    <a href="appservices.html?context=livetv" data-role="button">${TabServices}</a>
+                    <a href="#" data-role="button" class="ui-btn-active">${TabTuners}</a>
                     <a href="livetvsettings.html" data-role="button">${TabSettings}</a>
+                    <a href="appservices.html?context=livetv" data-role="button">${TabExternalServices}</a>
                 </div>
 
                 <div class="readOnlyContent" style="margin-top: 2em;">
 
                     <div class="liveTvStatusContent" style="display: none;">
 
-                        <h2>${HeaderServices}</h2>
-                        <div class="servicesList">
-                        </div>
-                        <br />
-
-                        <div class="refreshGuidePanel">
-                            <button type="button" class="btnRefreshGuide" data-icon="refresh" data-mini="true">${ButtonRefreshGuideData}</button>
-                            <progress max="100" min="0" style="width: 100%;" class="refreshGuideProgress"></progress>
-                            <div style="margin-top: 5px;">${LabelLastResult} <span class="lastRefreshGuideResult"></span></div>
+                        <h1>${HeaderTunerDevices}</h1>
+                        <paper-button raised class="submit btnAddDevice block"><iron-icon icon="add"></iron-icon><span>${ButtonAdd}</span></paper-button>
+                        <div class="devicesList">
                         </div>
 
+                        <div>
+                            <br />
+                            <h1>${HeaderGuideProviders}</h1>
+                            <p>${AddGuideProviderHelp}</p>
+                            <paper-button raised class="submit btnAddProvider block"><iron-icon icon="add"></iron-icon><span>${ButtonAdd}</span></paper-button>
+                            <div class="providerList">
+                            </div>
+
+                        </div>
+
                         <br />
-                        <h2>${HeaderTvTuners}</h2>
+                        <h1>${HeaderTvTuners}</h1>
 
                         <table data-role="table" data-mode="reflow" class="tblTuners stripedTable ui-responsive table-stroke">
                             <thead>
@@ -48,11 +52,11 @@
                         </table>
                     </div>
 
-                    <div class="noLiveTvServices" style="display: none;">
-
-                        <p>${LiveTvPluginRequired}</p>
-
-                        <p><a href="plugincatalog.html">${LiveTvPluginRequiredHelp}</a></p>
+                    <div class="servicesSection" style="display:none;">
+                        <br />
+                        <h1>${HeaderExternalServices}</h1>
+                        <div class="servicesList">
+                        </div>
                     </div>
                 </div>
             </div>

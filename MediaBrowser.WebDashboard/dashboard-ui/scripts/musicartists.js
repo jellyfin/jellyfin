@@ -155,7 +155,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#musicArtistsPage", function () {
+    $(document).on('pageinit', "#musicArtistsPage", function () {
 
         var page = this;
 
@@ -214,7 +214,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#musicArtistsPage", function () {
+    }).on('pagebeforeshow', "#musicArtistsPage", function () {
 
         var page = this;
 

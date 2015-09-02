@@ -39,7 +39,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#metadataNfoPage", function () {
+    $(document).on('pageinit', "#metadataNfoPage", function () {
 
         $('.metadataNfoForm').off('submit', onSubmit).on('submit', onSubmit);
 

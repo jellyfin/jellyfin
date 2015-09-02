@@ -1,20 +1,19 @@
 ﻿(function ($, document, window) {
 
-    function loadPage(page, config, liveTvInfo) {
+    function loadPage(page, config) {
 
-        if (liveTvInfo.IsEnabled) {
-
-            $('.liveTvSettingsForm', page).show();
-            $('.noLiveTvServices', page).hide();
-
-        } else {
-            $('.liveTvSettingsForm', page).hide();
-            $('.noLiveTvServices', page).show();
-        }
+        $('.liveTvSettingsForm', page).show();
+        $('.noLiveTvServices', page).hide();
 
         $('#selectGuideDays', page).val(config.GuideDays || '').selectmenu('refresh');
 
-        $('#chkMovies', page).checked(config.EnableMovieProviders).checkboxradio("refresh");
+        $('#chkMovies', page).checked(config.EnableMovieProviders);
+        $('#chkOrganize', page).checked(config.EnableAutoOrganize);
+
+        $('#txtRecordingPath', page).val(config.RecordingPath || '');
+
+        $('#txtPrePaddingMinutes', page).val(config.PrePaddingSeconds / 60);
+        $('#txtPostPaddingMinutes', page).val(config.PostPaddingSeconds / 60);
 
         Dashboard.hideLoadingMsg();
     }
@@ -29,6 +28,11 @@
 
                 config.GuideDays = $('#selectGuideDays', form).val() || null;
                 config.EnableMovieProviders = $('#chkMovies', form).checked();
+                config.EnableAutoOrganize = $('#chkOrganize', form).checked();
+                config.RecordingPath = $('#txtRecordingPath', form).val() || null;
+
+                config.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
+                config.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
 
                 ApiClient.updateNamedConfiguration("livetv", config).done(Dashboard.processServerConfigurationUpdateResult);
             });
@@ -37,9 +41,27 @@
             return false;
     }
 
-    $(document).on('pageinitdepends', "#liveTvSettingsPage", function () {
+    $(document).on('pageinit', "#liveTvSettingsPage", function () {
+
+        var page = this;
 
         $('.liveTvSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
+
+        $('#btnSelectRecordingPath', page).on("click.selectDirectory", function () {
+
+            var picker = new DirectoryBrowser(page);
+
+            picker.show({
+
+                callback: function (path) {
+
+                    if (path) {
+                        $('#txtRecordingPath', page).val(path);
+                    }
+                    picker.close();
+                }
+            });
+        });
 
     }).on('pageshowready', "#liveTvSettingsPage", function () {
 
@@ -47,13 +69,9 @@
 
         var page = this;
 
-        var promise1 = ApiClient.getNamedConfiguration("livetv");
+        ApiClient.getNamedConfiguration("livetv").done(function (config) {
 
-        var promise2 = ApiClient.getLiveTvInfo();
-
-        $.when(promise1, promise2).done(function (response1, response2) {
-
-            loadPage(page, response1[0], response2[0]);
+            loadPage(page, config);
 
         });
 

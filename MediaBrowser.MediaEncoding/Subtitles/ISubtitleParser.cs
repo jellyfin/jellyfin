@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Threading;
+using MediaBrowser.Model.MediaInfo;
 
 namespace MediaBrowser.MediaEncoding.Subtitles
 {

@@ -16,15 +16,19 @@
         $('#ppItemNo', page).val(itemNumber);
     }
 
+    function setItemName(page, itemName) {
+        $('#ppItemName', page).val(itemName);
+    }
+
     function getDonationType(page) {
 
         return $(".radioDonationType:checked", page).val();
     }
 
-    var lifeTimeAmount = 69.99;
+    var lifeTimeAmount = 79.99;
     var dailyAmount = 1;
     var monthlyAmount = 4.99;
-    var yearlyAmount = 35.99;
+    var yearlyAmount = 37.99;
     function getDonationAmount(page) {
 
         var type = getDonationType(page);
@@ -121,7 +125,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#supporterPage", function () {
+    $(document).on('pageinit', "#supporterPage", function () {
 
         var page = this;
 
@@ -142,6 +146,7 @@
                 $('.fldOneTimeDonationAmount', page).hide();
                 addRecurringFields('Y', page);
                 setItemNumber(page, 'MBSClubYearly');
+                setItemName(page, 'Emby Supporter Annual');
                 $('#oneTimeDescription').hide();
             }
             else if (donationType == 'monthly') {
@@ -149,6 +154,7 @@
                 $('.fldOneTimeDonationAmount', page).hide();
                 addRecurringFields('M', page);
                 setItemNumber(page, 'MBSClubMonthly');
+                setItemName(page, 'Emby Supporter Monthly');
                 $('#oneTimeDescription').hide();
             }
             else if (donationType == 'daily') {

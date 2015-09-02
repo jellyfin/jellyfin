@@ -1,8 +1,5 @@
 ﻿(function ($, document) {
 
-    var currentItem;
-    var programs;
-
     function renderPrograms(page, result) {
 
         var html = '';
@@ -22,11 +19,11 @@
 
             if (startDateText != currentIndexValue) {
 
-                html += '<h2 class="detailSectionHeader tvProgramSectionHeader">' + startDateText + '</h2>';
+                html += '<h1 tvProgramSectionHeader" style="margin-bottom:1em;margin-top:2em;">' + startDateText + '</h1>';
                 currentIndexValue = startDateText;
             }
 
-            html += '<a href="livetvprogram.html?id=' + program.Id + '" class="tvProgram">';
+            html += '<a href="itemdetails.html?id=' + program.Id + '" class="tvProgram">';
 
             var cssClass = "tvProgramTimeSlot";
 
@@ -62,13 +59,13 @@
             html += '<div class="tvProgramTime">';
 
             if (program.IsLive) {
-                html += '<span class="liveTvProgram">'+Globalize.translate('LabelLiveProgram')+'&nbsp;&nbsp;</span>';
+                html += '<span class="liveTvProgram">' + Globalize.translate('LabelLiveProgram') + '&nbsp;&nbsp;</span>';
             }
             else if (program.IsPremiere) {
-                html += '<span class="premiereTvProgram">'+Globalize.translate('LabelPremiereProgram')+'&nbsp;&nbsp;</span>';
+                html += '<span class="premiereTvProgram">' + Globalize.translate('LabelPremiereProgram') + '&nbsp;&nbsp;</span>';
             }
             else if (program.IsSeries && !program.IsRepeat) {
-                html += '<span class="newTvProgram">'+Globalize.translate('LabelNewProgram')+'&nbsp;&nbsp;</span>';
+                html += '<span class="newTvProgram">' + Globalize.translate('LabelNewProgram') + '&nbsp;&nbsp;</span>';
             }
 
             var minutes = program.RunTimeTicks / 600000000;
@@ -93,99 +90,34 @@
             }
 
             html += '</div>';
+            html += '<div class="programAccent"></div>';
             html += '</div>';
 
             html += '</a>';
         }
 
-        $('#programList', page).html(html).trigger('create').createGuideHoverMenu('.tvProgramInfo');
+        $('#childrenContent', page).html(html).trigger('create').createGuideHoverMenu('.tvProgramInfo');
     }
 
-    function loadPrograms(page) {
+    function loadPrograms(page, channelId) {
 
         ApiClient.getLiveTvPrograms({
 
-            ChannelIds: currentItem.Id,
-            UserId: Dashboard.getCurrentUserId()
+            ChannelIds: channelId,
+            UserId: Dashboard.getCurrentUserId(),
+            HasAired: false,
+            SortBy: "StartDate"
 
         }).done(function (result) {
 
             renderPrograms(page, result);
-            programs = result.Items;
 
             Dashboard.hideLoadingMsg();
         });
     }
 
-    function reload(page) {
-
-        Dashboard.showLoadingMsg();
-
-        ApiClient.getLiveTvChannel(getParameterByName('id'), Dashboard.getCurrentUserId()).done(function (item) {
-
-            currentItem = item;
-
-            var name = item.Name;
-
-            $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item));
-
-            Dashboard.setPageTitle(name);
-
-            $('.itemName', page).html(item.Number + ' ' + name);
-
-            $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item));
-
-            $(page).trigger('displayingitem', [{
-
-                item: item,
-                context: 'livetv'
-            }]);
-
-            Dashboard.getCurrentUser().done(function (user) {
-
-                if (MediaController.canPlay(item)) {
-                    $('#playButtonContainer', page).show();
-                } else {
-                    $('#playButtonContainer', page).hide();
-                }
-
-                if (user.Policy.IsAdministrator && item.LocationType !== "Offline") {
-                    $('#editButtonContainer', page).show();
-                } else {
-                    $('#editButtonContainer', page).hide();
-                }
-
-            });
-
-            loadPrograms(page);
-
-        });
-    }
-
-    $(document).on('pageinitdepends', "#liveTvChannelPage", function () {
-
-        var page = this;
-
-        $('.btnPlay', page).on('click', function () {
-            var userdata = currentItem.UserData || {};
-            LibraryBrowser.showPlayMenu(null, currentItem.Id, currentItem.Type, false, currentItem.MediaType, userdata.PlaybackPositionTicks);
-        });
-
-        $('.btnEdit', page).on('click', function () {
-
-            Dashboard.navigate("edititemmetadata.html?channelid=" + currentItem.Id);
-        });
-
-    }).on('pagebeforeshowready', "#liveTvChannelPage", function () {
-
-        var page = this;
-
-        reload(page);
-
-    }).on('pagebeforehide', "#liveTvChannelPage", function () {
-
-        currentItem = null;
-        programs = null;
-    });
+    window.LiveTvChannelPage = {
+        renderPrograms: loadPrograms
+    };
 
 })(jQuery, document);

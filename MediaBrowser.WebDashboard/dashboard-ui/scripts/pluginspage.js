@@ -108,16 +108,16 @@
         return html;
     }
 
-    function renderPlugins(page, plugins) {
+    function renderPlugins(page, plugins, showNoPluginsMessage) {
 
         ApiClient.getJSON(ApiClient.getUrl("dashboard/configurationpages") + "?pageType=PluginConfiguration").done(function (configPages) {
 
-            populateList(page, plugins, configPages);
+            populateList(page, plugins, configPages, showNoPluginsMessage);
 
         });
     }
 
-    function populateList(page, plugins, pluginConfigurationPages) {
+    function populateList(page, plugins, pluginConfigurationPages, showNoPluginsMessage) {
 
         plugins = plugins.sort(function (plugin1, plugin2) {
 
@@ -132,12 +132,14 @@
 
         if (!plugins.length) {
 
-            html += '<div style="padding:5px;">';
-            html += '<p>' + Globalize.translate('MessageNoPluginsInstalled') + '</p>';
-            html += '<p><a href="plugincatalog.html">';
-            html += Globalize.translate('BrowsePluginCatalogMessage');
-            html += '</a></p>';
-            html += '</div>';
+            if (showNoPluginsMessage) {
+                html += '<div style="padding:5px;">';
+                html += '<p>' + Globalize.translate('MessageNoPluginsInstalled') + '</p>';
+                html += '<p><a href="plugincatalog.html">';
+                html += Globalize.translate('BrowsePluginCatalogMessage');
+                html += '</a></p>';
+                html += '</div>';
+            }
 
             $('.installedPlugins', page).html(html).trigger('create');
         } else {
@@ -187,7 +189,7 @@
 
             ActionSheetElement.show({
                 items: menuItems,
-                positionTo: card,
+                positionTo: elem,
                 callback: function (resultId) {
 
                     switch (resultId) {
@@ -213,7 +215,7 @@
 
         ApiClient.getInstalledPlugins().done(function (plugins) {
 
-            renderPlugins(page, plugins);
+            renderPlugins(page, plugins, true);
         });
     }
 

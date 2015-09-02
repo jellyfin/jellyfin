@@ -141,6 +141,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           });
         });
 
+        test('close an overlay in proximity to another overlay', function(done) {
+          var secondOverlay = fixture('basic');
+          // Open and close a separate overlay.
+          secondOverlay.open();
+          secondOverlay.close();
+
+          // Open the overlay we care about.
+          overlay.open();
+
+          // Wait for infinite recursion, otherwise we win:
+          overlay.addEventListener('iron-overlay-closed', function() {
+            done();
+          });
+
+          // Immediately close the first overlay:
+          overlay.close();
+        });
+
         test('clicking an overlay does not close it', function(done) {
           runAfterOpen(overlay, function() {
             overlay.addEventListener('iron-overlay-closed', function() {

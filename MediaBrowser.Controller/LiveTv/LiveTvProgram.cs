@@ -1,4 +1,5 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.LiveTv;
@@ -17,9 +18,24 @@ namespace MediaBrowser.Controller.LiveTv
         /// <returns>System.String.</returns>
         protected override string CreateUserDataKey()
         {
+            if (IsMovie)
+            {
+                var key = Movie.GetMovieUserDataKey(this);
+
+                if (!string.IsNullOrWhiteSpace(key))
+                {
+                    return key;
+                }
+            }
             return GetClientTypeName() + "-" + Name;
         }
 
+        /// <summary>
+        /// Gets or sets the etag.
+        /// </summary>
+        /// <value>The etag.</value>
+        public string Etag { get; set; }
+        
         /// <summary>
         /// Id of the program.
         /// </summary>
@@ -226,6 +242,20 @@ namespace MediaBrowser.Controller.LiveTv
             var info = GetItemLookupInfo<LiveTvProgramLookupInfo>();
             info.IsMovie = IsMovie; 
             return info;
+        }
+
+        public override bool SupportsPeople
+        {
+            get
+            {
+                // Optimization
+                if (IsNews || IsSports)
+                {
+                    return false;
+                }
+
+                return base.SupportsPeople;
+            }
         }
     }
 }

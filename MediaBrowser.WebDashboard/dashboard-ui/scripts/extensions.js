@@ -55,7 +55,7 @@ $.fn.checked = function (value) {
         });
     } else {
         // Return check state
-        return $(this).is(':checked');
+        return this.length && this[0].checked;
     }
 };
 
@@ -251,7 +251,7 @@ function humane_date(date_str) {
         return Math.round(seconds / 4730400000) + ' centuries' + token;
 
     return date_str;
-};
+}
 
 function humane_elapsed(firstDateStr, secondDateStr) {
     var dt1 = new Date(firstDateStr);
@@ -502,29 +502,6 @@ function ticks_to_human(str) {
     return time;
 };
 
-(function (window) {
-
-    // Mimic Globalize api
-    // https://github.com/jquery/globalize
-    // Maybe later switch to it
-
-    window.Globalize = {
-        translate: function (key) {
-
-            var val = window.localizationGlossary[key] || key;
-
-            for (var i = 1; i < arguments.length; i++) {
-
-                val = val.replace('{' + (i - 1) + '}', arguments[i]);
-
-            }
-
-            return val;
-        }
-    };
-
-})(window);
-
 (function () {
     var supportTouch = $.support.touch,
             scrollEvent = "touchmove scroll",
@@ -595,7 +572,7 @@ function ticks_to_human(str) {
 })();
 
 // This only exists because the polymer elements get distorted when using regular jquery show/hide
-$.fn.visible = function(visible) {
+$.fn.visible = function (visible) {
 
     if (visible) {
         return this.removeClass('hide');

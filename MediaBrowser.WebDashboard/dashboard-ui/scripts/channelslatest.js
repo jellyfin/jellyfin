@@ -2,12 +2,33 @@
 
     function reloadItems(page) {
 
-        Sections.loadLatestChannelItems(page.querySelector('.items'), Dashboard.getCurrentUserId());
+        Dashboard.showLoadingMsg();
+
+        Sections.loadLatestChannelItems(page.querySelector('.latestItems'), Dashboard.getCurrentUserId()).always(function() {
+            Dashboard.hideLoadingMsg();
+        });
     }
 
-    $(document).on('pagebeforeshowready', "#channelsLatestPage", function () {
+    function loadTab(page, index) {
 
-        reloadItems(this);
+        switch (index) {
+
+            case 0:
+                reloadItems(page);
+                break;
+            default:
+                break;
+        }
+    }
+
+    $(document).on('pageinit', "#channelsPage", function () {
+
+        var page = this;
+        var pages = page.querySelector('neon-animated-pages');
+
+        $(pages).on('tabchange', function () {
+            loadTab(page, parseInt(this.selected));
+        });
 
     });
 

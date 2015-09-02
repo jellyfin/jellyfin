@@ -1,0 +1,348 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-styles/default-theme.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../paper-ripple/paper-ripple.html">
+<link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+<link rel="import" href="../iron-behaviors/iron-control-state.html">
+<link rel="import" href="../iron-behaviors/iron-button-state.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-selector/iron-selectable.html">
+
+<!--
+`paper-dropdown-menu` is similar to a native browser select element.
+`paper-dropdown-menu` works with selectable content. The currently selected
+item is displayed in the control. If no item is selected, the `label` is
+displayed instead.
+
+The child element with the class `dropdown-content` will be used as the dropdown
+menu. It could be a `paper-menu` or element that triggers `iron-select` when
+selecting its children.
+
+Example:
+
+    <paper-dropdown-menu label="Your favourite pastry">
+      <paper-menu class="dropdown-content">
+        <paper-item>Croissant</paper-item>
+        <paper-item>Donut</paper-item>
+        <paper-item>Financier</paper-item>
+        <paper-item>Madeleine</paper-item>
+      </paper-menu>
+    </paper-dropdown-menu>
+
+This example renders a dropdown menu with 4 options.
+
+### Styling
+
+The following custom properties and mixins are also available for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--paper-dropdown-menu` | A mixin that is applied to the element host | `{}`
+`--paper-dropdown-menu-disabled` | A mixin that is applied to the element host when disabled | `{}`
+`--paper-dropdown-menu-ripple` | A mixin that is applied to the internal ripple | `{}`
+`--paper-dropdown-menu-button` | A mixin that is applied to the internal menu button | `{}`
+`--paper-dropdown-menu-input` | A mixin that is applied to the internal paper input | `{}`
+`--paper-dropdown-menu-icon` | A mixin that is applied to the internal icon | `{}`
+
+You can also use any of the `paper-input-container` and `paper-menu-button`
+style mixins and custom properties to style the internal input and menu button
+respectively.
+
+@group Paper Elements
+@element paper-dropdown-menu
+@hero hero.svg
+@demo demo/index.html
+-->
+
+<dom-module id="paper-dropdown-menu">
+  <style>
+    :host {
+      display: inline-block;
+      position: relative;
+      text-align: left;
+      cursor: pointer;
+
+      --paper-input-container-input: {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        max-width: 100%;
+        box-sizing: border-box;
+        cursor: pointer;
+      };
+
+      @apply(--paper-dropdown-menu);
+    }
+
+    :host([disabled]) {
+      @apply(--paper-dropdown-menu-disabled);
+    }
+
+    :host([noink]) paper-ripple {
+      display: none;
+    }
+
+    :host([no-label-float]) paper-ripple {
+      top: 8px;
+    }
+
+    paper-ripple {
+      top: 20px;
+      left: 8px;
+      bottom: 16px;
+      right: 8px;
+
+      @apply(--paper-dropdown-menu-ripple);
+    }
+
+    paper-menu-button {
+      @apply(--paper-dropdown-menu-button);
+    }
+
+    paper-input {
+      @apply(--paper-dropdown-menu-input);
+    }
+
+    iron-icon {
+      color: var(--disabled-text-color);
+
+      @apply(--paper-dropdown-menu-icon);
+    }
+
+  </style>
+  <template>
+    <paper-menu-button
+      id="menuButton"
+      vertical-align="top"
+      horizontal-align="right"
+      vertical-offset="[[_computeMenuVerticalOffset(noLabelFloat)]]"
+      disabled="[[disabled]]"
+      no-animations="[[noAnimations]]"
+      on-iron-select="_onIronSelect"
+      opened="{{opened}}">
+      <div class="dropdown-trigger">
+        <paper-ripple></paper-ripple>
+        <paper-input
+          readonly
+          disabled="[[disabled]]"
+          value="[[selectedItemLabel]]"
+          placeholder="[[placeholder]]"
+          always-float-label="[[alwaysFloatLabel]]"
+          no-label-float="[[noLabelFloat]]"
+          label="[[label]]">
+          <iron-icon icon="arrow-drop-down" suffix></iron-icon>
+        </paper-input>
+      </div>
+      <content id="content" select=".dropdown-content"></content>
+    </paper-menu-button>
+  </template>
+</dom-module>
+<script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'paper-dropdown-menu',
+
+      /**
+       * Fired when the dropdown opens.
+       *
+       * @event paper-dropdown-open
+       */
+
+      /**
+       * Fired when the dropdown closes.
+       *
+       * @event paper-dropdown-close
+       */
+
+      behaviors: [
+        Polymer.IronControlState,
+        Polymer.IronButtonState
+      ],
+
+      properties: {
+        /**
+         * The derived "label" of the currently selected item. This value
+         * is the `label` property on the selected item if set, or else the
+         * trimmed text content of the selected item.
+         */
+        selectedItemLabel: {
+          type: String,
+          notify: true,
+          computed: '_computeSelectedItemLabel(selectedItem)'
+        },
+
+        /**
+         * The last selected item. An item is selected if the dropdown menu has
+         * a child with class `dropdown-content`, and that child triggers an
+         * `iron-select` event with the selected `item` in the `detail`.
+         */
+        selectedItem: {
+          type: Object,
+          notify: true,
+          readOnly: true
+        },
+
+        /**
+         * The label for the dropdown.
+         */
+        label: {
+          type: String
+        },
+
+        /**
+         * The placeholder for the dropdown.
+         */
+        placeholder: {
+          type: String
+        },
+
+        /**
+         * True if the dropdown is open. Otherwise, false.
+         */
+        opened: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+
+        /**
+         * Set to true to disable the floating label. Bind this to the
+         * `<paper-input-container>`'s `noLabelFloat` property.
+         */
+        noLabelFloat: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
+
+        /**
+         * Set to true to always float the label. Bind this to the
+         * `<paper-input-container>`'s `alwaysFloatLabel` property.
+         */
+        alwaysFloatLabel: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * Set to true to disable animations when opening and closing the
+         * dropdown.
+         */
+        noAnimations: {
+          type: Boolean,
+          value: false
+        }
+      },
+
+      listeners: {
+        'tap': '_onTap'
+      },
+
+      keyBindings: {
+        'up down': 'open',
+        'esc': 'close'
+      },
+
+      hostAttributes: {
+        role: 'group',
+        'aria-haspopup': 'true'
+      },
+
+      attached: function() {
+        // NOTE(cdata): Due to timing, a preselected value in a `IronSelectable`
+        // child will cause an `iron-select` event to fire while the element is
+        // still in a `DocumentFragment`. This has the effect of causing
+        // handlers not to fire. So, we double check this value on attached:
+        var contentElement = this.contentElement;
+        if (contentElement && contentElement.selectedItem) {
+          this._setSelectedItem(contentElement.selectedItem);
+        }
+      },
+
+      /**
+       * The content element that is contained by the dropdown menu, if any.
+       */
+      get contentElement() {
+        return Polymer.dom(this.$.content).getDistributedNodes()[0];
+      },
+
+      /**
+       * Show the dropdown content.
+       */
+      open: function() {
+        this.$.menuButton.open();
+      },
+
+      /**
+       * Hide the dropdown content.
+       */
+      close: function() {
+        this.$.menuButton.close();
+      },
+
+      /**
+       * A handler that is called when `iron-select` is fired.
+       *
+       * @param {CustomEvent} event An `iron-select` event.
+       */
+      _onIronSelect: function(event) {
+        this._setSelectedItem(event.detail.item);
+      },
+
+      /**
+       * A handler that is called when the dropdown is tapped.
+       *
+       * @param {CustomEvent} event A tap event.
+       */
+      _onTap: function(event) {
+        if (Polymer.Gestures.findOriginalTarget(event) === this) {
+          this.open();
+        }
+      },
+
+      /**
+       * Compute the label for the dropdown given a selected item.
+       *
+       * @param {Element} selectedItem A selected Element item, with an
+       * optional `label` property.
+       */
+      _computeSelectedItemLabel: function(selectedItem) {
+        if (!selectedItem) {
+          return '';
+        }
+
+        return selectedItem.label || selectedItem.textContent.trim();
+      },
+
+      /**
+       * Compute the vertical offset of the menu based on the value of
+       * `noLabelFloat`.
+       *
+       * @param {boolean} noLabelFloat True if the label should not float
+       * above the input, otherwise false.
+       */
+      _computeMenuVerticalOffset: function(noLabelFloat) {
+        // NOTE(cdata): These numbers are somewhat magical because they are
+        // derived from the metrics of elements internal to `paper-input`'s
+        // template. The metrics will change depending on whether or not the
+        // input has a floating label.
+        return noLabelFloat ? -4 : 16;
+      }
+    });
+  })();
+</script>
+

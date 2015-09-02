@@ -149,6 +149,8 @@ paper-button .fa {
     color: inherit;
     width: 100%;
     vertical-align: middle;
+    font-family: inherit;
+    font-weight: inherit;
 }
 
 .clearLink {
@@ -163,11 +165,18 @@ paper-button.mini {
 }
 
     paper-button.mini .content {
-        padding: 0.3em 0.7em;
+        padding: 0.5em 0.7em;
     }
 
     paper-button.mini.noIcon .content {
         padding: 0.5em 0.7em;
+    }
+
+
+
+    paper-button.mini iron-icon {
+        height: 20px;
+        width: 20px;
     }
 
 
@@ -204,7 +213,7 @@ paper-button.notext {
 }*/
 
 .bottomFab {
-    bottom: 30px;
+    bottom: 90px;
 }
 
 paper-dialog {
@@ -305,22 +314,44 @@ paper-slider {
 
 paper-menu-item {
     padding: .35em .5em;
+    cursor: pointer;
 }
 
     paper-menu-item iron-icon {
         margin-right: 1.5em;
     }
 
-.actionSheetMenuItem {
-    cursor: pointer;
-}
-
-    .actionSheetMenuItem:hover {
+    paper-menu-item:hover {
         background: #eee;
     }
 
 .scrollablePaperTabs paper-icon-button {
     display: none !important;
+}
+
+.libraryViewNav #tabsContainer {
+    margin: auto;
+    -ms-flex: auto;
+    -webkit-flex: auto;
+    flex: auto;
+    -ms-flex: none;
+    -webkit-flex: none;
+    flex: none;
+    flex-shrink: 0;
+}
+
+.libraryViewNav paper-tabs {
+    flex: none;
+    flex-shrink: 0;
+    flex-grow: 0;
+    overflow-x: visible !important;
+}
+
+.libraryViewNav paper-tab {
+    display: inline-block !important;
+    flex: none;
+    flex-shrink: 0;
+    flex-grow: 0;
 }
 
 /*.scrollablePaperTabs #tabsContainer {
@@ -341,3 +372,139 @@ paper-menu-item {
 .scrollablePaperTabs #tabsContent {
     position: static !important;
 }*/
+
+.ui-page-theme-b paper-item-body [secondary] {
+    color: #aaa;
+}
+
+.ui-page-theme-b paper-checkbox {
+    color: #fff;
+}
+
+    .ui-page-theme-b paper-checkbox paper-ripple {
+        color: inherit !important;
+    }
+
+    .ui-page-theme-b paper-checkbox #checkboxLabel.paper-checkbox {
+        color: inherit;
+    }
+
+.ui-page-theme-b .paperCheckboxFieldDescription {
+    color: #ccc;
+}
+
+.ui-page-theme-b paper-checkbox #checkbox.paper-checkbox {
+    border-color: #ccc;
+}
+
+.ui-page-theme-b paper-checkbox #checkbox.checked.paper-checkbox {
+    background-color: #2ad;
+    border-color: #2ad;
+}
+
+.paperCheckboxList paper-checkbox {
+    display: block;
+    padding: .5em 0;
+}
+
+paper-input label, paper-textarea label {
+    font-size: 18px !important;
+    font-family: inherit !important;
+}
+
+.ui-page-theme-b paper-input label, .ui-page-theme-b paper-textarea label {
+    color: #858585 !important;
+}
+
+.ui-page-theme-a paper-input label, .ui-page-theme-a paper-textarea label {
+    color: #333 !important;
+}
+
+.ui-page-theme-a .label-is-highlighted label {
+    color: green !important;
+}
+
+.ui-page-theme-b .label-is-highlighted label {
+    color: #52B54B !important;
+}
+
+.ui-page-theme-b paper-input input, .ui-page-theme-b paper-textarea textarea {
+    color: #fff !important;
+}
+
+paper-input .focused-line, paper-textarea .focused-line {
+    background-color: #52B54B !important;
+}
+
+.ui-page-theme-b .unfocused-line.paper-input-container, .ui-page-theme-b .unfocused-line.paper-textarea-container {
+    background: #454545;
+}
+
+paper-textarea.mono textarea {
+    font-family: monospace !important;
+}
+
+.listAvatar {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #ccc;
+}
+
+.paperList {
+    padding-top: 12px;
+    margin: 12px auto;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+    background-color: #fff;
+}
+
+.ui-page-theme-b .paperList {
+    background-color: #303030;
+}
+
+paper-dropdown-menu {
+    text-align: left;
+    margin: auto;
+    width: 100%;
+    display: inline-block;
+}
+
+    paper-dropdown-menu paper-item {
+        display: block;
+    }
+
+paper-dialog paper-radio-group paper-radio-button {
+    padding: 6px 12px;
+}
+
+.likePaperText {
+    -webkit-appearance: none;
+    -webkit-font-smoothing: antialiased;
+    -webkit-rtl-ordering: logical;
+    -webkit-user-select: text;
+    background: none !important;
+    background-color: transparent !important;
+    border: 1px solid gray !important;
+    border-width: 0 0 1px 0 !important;
+    color: #fff !important;
+    box-shadow: none;
+    outline: none !important;
+    padding: 0 !important;
+    position: relative;
+    text-indent: 0px !important;
+    width: 100%;
+    -webkit-writing-mode: horizontal-tb;
+    margin: 0 0 1em 0 !important;
+}
+
+    .likePaperText:focus {
+        border-color: #52B54B !important;
+    }
+
+.likePaperLabel {
+    margin: 1em 0 .5em !important;
+    color: #858585 !important;
+    display: block;
+}

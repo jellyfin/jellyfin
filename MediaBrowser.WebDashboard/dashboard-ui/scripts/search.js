@@ -50,6 +50,10 @@
 
             return [Globalize.translate('LabelCollection')];
         }
+        else if (hint.ChannelName) {
+
+            return [hint.ChannelName];
+        }
 
         return [hint.Type];
     }
@@ -86,8 +90,8 @@
             lazy: true,
             overlayText: false,
             showTitle: true,
-            coverImage: true,
             centerImage: true,
+            centerText: true,
             textLines: getAdditionalTextLines
         });
 
@@ -101,7 +105,13 @@
         var currentTimeout = searchHintTimeout;
         Dashboard.showLoadingMsg();
 
-        ApiClient.getSearchHints({ userId: Dashboard.getCurrentUserId(), searchTerm: searchTerm, limit: 30 }).done(function (result) {
+        ApiClient.getSearchHints({
+
+            userId: Dashboard.getCurrentUserId(),
+            searchTerm: searchTerm,
+            limit: 30
+
+        }).done(function (result) {
 
             if (currentTimeout == searchHintTimeout) {
                 renderSearchResultsInOverlay(elem, result.SearchHints);
@@ -128,7 +138,7 @@
 
             requestSearchHintsForOverlay(elem, searchTerm);
 
-        }, 100);
+        }, 300);
     }
 
     function getSearchOverlay(createIfNeeded) {

@@ -4,6 +4,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Search;
@@ -171,6 +172,8 @@ namespace MediaBrowser.Api
                 ProductionYear = item.ProductionYear
             };
 
+            result.ChannelId = item.ChannelId;
+
             var primaryImageTag = _imageProcessor.GetImageCacheTag(item, ImageType.Primary);
 
             if (primaryImageTag != null)
@@ -181,24 +184,19 @@ namespace MediaBrowser.Api
             SetThumbImageInfo(result, item);
             SetBackdropImageInfo(result, item);
 
-            var episode = item as Episode;
-
-            if (episode != null)
+            var hasSeries = item as IHasSeries;
+            if (hasSeries != null)
             {
-                result.Series = episode.Series.Name;
+                result.Series = hasSeries.SeriesName;
             }
 
             var season = item as Season;
-
             if (season != null)
             {
-                result.Series = season.Series.Name;
-
                 result.EpisodeCount = season.GetRecursiveChildren(i => i is Episode).Count;
             }
 
             var series = item as Series;
-
             if (series != null)
             {
                 result.EpisodeCount = series.GetRecursiveChildren(i => i is Episode).Count;
@@ -221,6 +219,12 @@ namespace MediaBrowser.Api
                 result.Album = song.Album;
                 result.AlbumArtist = song.AlbumArtists.FirstOrDefault();
                 result.Artists = song.Artists.ToArray();
+            }
+
+            if (!string.IsNullOrWhiteSpace(item.ChannelId))
+            {
+                var channel = _libraryManager.GetItemById(item.ChannelId);
+                result.ChannelName = channel == null ? null : channel.Name;
             }
 
             return result;

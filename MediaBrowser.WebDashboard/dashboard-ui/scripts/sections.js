@@ -4,11 +4,43 @@
 
         var deferred = $.Deferred();
 
-        ApiClient.getUserViews(userId).done(function (result) {
+        ApiClient.getUserViews({}, userId).done(function (result) {
 
             var items = result.Items;
 
-            deferred.resolveWith(null, [items]);
+            var list = [];
+
+            for (var i = 0, length = items.length; i < length; i++) {
+
+                var view = items[i];
+
+                list.push(view);
+
+                if (view.CollectionType == 'livetv') {
+
+                    view.ImageTags = {};
+                    view.icon = 'live-tv';
+                    view.onclick = "LibraryBrowser.showTab('livetv.html', 0);return false;";
+
+                    var guideView = $.extend({}, view);
+                    guideView.Name = Globalize.translate('ButtonGuide');
+                    guideView.ImageTags = {};
+                    guideView.icon = 'dvr';
+                    guideView.url = 'livetv.html?tab=1';
+                    guideView.onclick = "LibraryBrowser.showTab('livetv.html', 1);return false;";
+                    list.push(guideView);
+
+                    var recordedTvView = $.extend({}, view);
+                    recordedTvView.Name = Globalize.translate('ButtonRecordedTv');
+                    recordedTvView.ImageTags = {};
+                    recordedTvView.icon = 'video-library';
+                    recordedTvView.url = 'livetv.html?tab=3';
+                    recordedTvView.onclick = "LibraryBrowser.showTab('livetv.html', 3);return false;";
+                    list.push(recordedTvView);
+                }
+            }
+
+            deferred.resolveWith(null, [list]);
         });
 
         return deferred.promise();
@@ -36,53 +68,53 @@
 
             switch (item.CollectionType) {
                 case "movies":
-                    icon = "fa-film";
+                    icon = "local-movies";
                     backgroundColor = 'rgba(176, 94, 81, 0.9)';
                     break;
                 case "music":
-                    icon = "fa-music";
+                    icon = "library-music";
                     backgroundColor = 'rgba(217, 145, 67, 0.9)';
                     break;
                 case "photos":
-                    icon = "fa-photo";
+                    icon = "photo";
                     backgroundColor = 'rgba(127, 0, 0, 0.9)';
                     break;
                 case "livetv":
-                    icon = "fa-video-camera";
+                    icon = "live-tv";
                     backgroundColor = 'rgba(217, 145, 67, 0.9)';
                     break;
                 case "tvshows":
-                    icon = "fa-video-camera";
+                    icon = "live-tv";
                     backgroundColor = 'rgba(77, 88, 164, 0.9)';
                     break;
                 case "games":
-                    icon = "fa-gamepad";
+                    icon = "folder";
                     backgroundColor = 'rgba(183, 202, 72, 0.9)';
                     break;
                 case "trailers":
-                    icon = "fa-film";
+                    icon = "local-movies";
                     backgroundColor = 'rgba(176, 94, 81, 0.9)';
                     break;
                 case "homevideos":
-                    icon = "fa-video-camera";
+                    icon = "video-library";
                     backgroundColor = 'rgba(110, 52, 32, 0.9)';
                     break;
                 case "musicvideos":
-                    icon = "fa-video-camera";
+                    icon = "video-library";
                     backgroundColor = 'rgba(143, 54, 168, 0.9)';
                     break;
                 case "books":
-                    icon = "fa-book";
+                    icon = "folder";
                     break;
                 case "channels":
-                    icon = "fa-globe";
+                    icon = "folder";
                     backgroundColor = 'rgba(51, 136, 204, 0.9)';
                     break;
                 case "playlists":
-                    icon = "fa-list";
+                    icon = "folder";
                     break;
                 default:
-                    icon = "fa-folder-o";
+                    icon = "folder";
                     break;
             }
 
@@ -93,12 +125,15 @@
             }
 
             var href = item.url || LibraryBrowser.getHref(item);
+            var onclick = item.onclick ? ' onclick="' + item.onclick + '"' : '';
 
-            html += '<a data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
+            icon = item.icon || icon;
+
+            html += '<a' + onclick + ' data-itemid="' + item.Id + '" class="' + cssClass + '" href="' + href + '">';
             html += '<div class="cardBox" style="background-color:' + backgroundColor + ';margin:4px;border-radius:4px;">';
 
             html += "<div class='cardText' style='padding:8px 10px;color:#fff;font-size:14px;'>";
-            html += '<i class="fa ' + icon + '"></i>';
+            html += '<iron-icon icon="' + icon + '"></iron-icon>';
             html += '<span style="margin-left:.7em;">' + item.Name + '</span>';
             html += "</div>";
 
@@ -129,7 +164,7 @@
         });
     }
 
-    function loadRecentlyAdded(elem, user, context) {
+    function loadRecentlyAdded(elem, user) {
 
         var limit = AppInfo.hasLowImageBandwidth ?
          16 :
@@ -161,14 +196,14 @@
                     items: items,
                     preferThumb: true,
                     shape: 'backdrop',
-                    context: context || 'home',
                     showUnplayedIndicator: false,
                     showChildCountIndicator: true,
                     lazy: true,
                     cardLayout: cardLayout,
                     showTitle: cardLayout,
                     showYear: cardLayout,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    context: 'home'
                 });
                 html += '</div>';
             }
@@ -308,10 +343,11 @@
                     overlayText: screenWidth >= 800 && !cardLayout,
                     showTitle: true,
                     showParentTitle: true,
-                    context: 'home',
                     lazy: true,
                     cardLayout: cardLayout,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    overlayPlayButton: true,
+                    context: 'home'
                 });
                 html += '</div>';
             }
@@ -389,26 +425,28 @@
 
             if (result.Items.length) {
 
-                var cssClass = index !== 0 ? 'listHeader' : 'listHeader';
+                html += '<div class="homePageSection">';
 
                 html += '<div>';
                 var text = Globalize.translate('HeaderLatestFromChannel').replace('{0}', channel.Name);
-                html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + text + '</h1>';
-                html += '<a href="channelitems.html?context=channels&id=' + channel.Id + '" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
+                html += '<h1 style="display:inline-block; vertical-align:middle;" class="listHeader">' + text + '</h1>';
+                html += '<a href="channelitems.html?id=' + channel.Id + '" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
+                html += '</div>';
+
+                html += '<div class="itemsContainer">';
+                html += LibraryBrowser.getPosterViewHtml({
+                    items: result.Items,
+                    shape: 'autohome',
+                    defaultShape: 'square',
+                    showTitle: true,
+                    centerText: true,
+                    lazy: true,
+                    showDetailsMenu: true,
+                    overlayPlayButton: true
+                });
+                html += '</div>';
                 html += '</div>';
             }
-            html += '<div class="itemsContainer">';
-            html += LibraryBrowser.getPosterViewHtml({
-                items: result.Items,
-                shape: 'autohome',
-                defaultShape: 'square',
-                showTitle: true,
-                centerText: true,
-                context: 'channels',
-                lazy: true,
-                showDetailsMenu: true
-            });
-            html += '</div>';
 
             var elem = page.querySelector('#channel' + channel.Id + '');
             elem.innerHTML = html;
@@ -436,21 +474,19 @@
 
                 html += '<div>';
                 html += '<h1 style="display:inline-block; vertical-align:middle;" class="' + cssClass + '">' + Globalize.translate('HeaderLatestTvRecordings') + '</h1>';
-                html += '<a href="livetvrecordings.html?context=livetv" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
+                html += '<a href="livetv.html?tab=3" onclick="LibraryManager.showTab(\'livetv.html\',3);" class="clearLink" style="margin-left:2em;"><paper-button raised class="more mini"><span>' + Globalize.translate('ButtonMore') + '</span></paper-button></a>';
                 html += '</div>';
             }
-
-            var screenWidth = $(window).width();
 
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "autohome",
                 showTitle: true,
                 showParentTitle: true,
-                overlayText: screenWidth >= 600,
                 coverImage: true,
                 lazy: true,
-                showDetailsMenu: true
+                showDetailsMenu: true,
+                centerText: true
             });
 
             elem.innerHTML = html;

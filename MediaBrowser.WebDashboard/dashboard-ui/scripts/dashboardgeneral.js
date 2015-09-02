@@ -13,7 +13,8 @@
 
         refreshPageTitle(page);
 
-        $('#txtServerName', page).val(config.ServerName || '');
+        page.querySelector('#txtServerName').value = config.ServerName || '';
+        page.querySelector('#txtCachePath').value = config.CachePath || '';
 
         $('#selectLocalizationLanguage', page).html(languageOptions.map(function (l) {
 
@@ -22,8 +23,6 @@
         })).val(config.UICulture).selectmenu('refresh');
 
         currentLanguage = config.UICulture;
-
-        $('#txtCachePath', page).val(config.CachePath || '');
 
         Dashboard.hideLoadingMsg();
     }
@@ -44,10 +43,10 @@
 
         ApiClient.getServerConfiguration().done(function (config) {
 
-            config.ServerName = $('#txtServerName', form).val();
+            config.ServerName = form.querySelector('#txtServerName').value;
             config.UICulture = $('#selectLocalizationLanguage', form).val();
 
-            config.CachePath = $('#txtCachePath', form).val();
+            config.CachePath = form.querySelector('#txtCachePath').value;
 
             if (config.UICulture != currentLanguage) {
                 Dashboard.showDashboardRefreshNotification();
@@ -59,8 +58,8 @@
 
                 ApiClient.getNamedConfiguration(brandingConfigKey).done(function (brandingConfig) {
 
-                    brandingConfig.LoginDisclaimer = $('#txtLoginDisclaimer', form).val();
-                    brandingConfig.CustomCss = $('#txtCustomCss', form).val();
+                    brandingConfig.LoginDisclaimer = form.querySelector('#txtLoginDisclaimer').value;
+                    brandingConfig.CustomCss = form.querySelector('#txtCustomCss').value;
 
                     var cssChanged = currentBrandingOptions && brandingConfig.CustomCss != currentBrandingOptions.CustomCss;
 
@@ -78,7 +77,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#dashboardGeneralPage", function () {
+    $(document).on('pageinit', "#dashboardGeneralPage", function () {
 
         var page = this;
 
@@ -91,7 +90,7 @@
                 callback: function (path) {
 
                     if (path) {
-                        $('#txtCachePath', page).val(path);
+                        page.querySelector('#txtCachePath').value = path;
                     }
                     picker.close();
                 },
@@ -124,8 +123,8 @@
 
             currentBrandingOptions = config;
 
-            $('#txtLoginDisclaimer', page).val(config.LoginDisclaimer || '');
-            $('#txtCustomCss', page).val(config.CustomCss || '');
+            page.querySelector('#txtLoginDisclaimer').value = config.LoginDisclaimer || '';
+            page.querySelector('#txtCustomCss').value = config.CustomCss || '';
         });
 
     });

@@ -53,5 +53,11 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value>The limit.</value>
         public int? Limit { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [add current program].
+        /// </summary>
+        /// <value><c>true</c> if [add current program]; otherwise, <c>false</c>.</value>
+        public bool AddCurrentProgram { get; set; }
     }
 }

@@ -72,6 +72,16 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private bool InternalTextStreamSupportsExternalStream(MediaStream stream)
         {
+            // These usually have styles and fonts that won't convert to text very well
+            if (string.Equals(stream.Codec, "ass", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+            if (string.Equals(stream.Codec, "ssa", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -230,7 +240,7 @@ namespace MediaBrowser.Server.Implementations.Library
 
         private void SetKeyProperties(IMediaSourceProvider provider, MediaSourceInfo mediaSource)
         {
-            var prefix = provider.GetType().FullName.GetMD5().ToString("N") + "|";
+            var prefix = provider.GetType().FullName.GetMD5().ToString("N") + LiveStreamIdDelimeter;
 
             if (!string.IsNullOrWhiteSpace(mediaSource.OpenToken) && !mediaSource.OpenToken.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
@@ -464,13 +474,24 @@ namespace MediaBrowser.Server.Implementations.Library
             }
         }
 
+        // Do not use a pipe here because Roku http requests to the server will fail, without any explicit error message.
+        private const char LiveStreamIdDelimeter = '_';
+
         private Tuple<IMediaSourceProvider, string> GetProvider(string key)
         {
-            var keys = key.Split(new[] { '|' }, 2);
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new ArgumentException("key");
+            }
+
+            var keys = key.Split(new[] { LiveStreamIdDelimeter }, 2);
 
             var provider = _providers.FirstOrDefault(i => string.Equals(i.GetType().FullName.GetMD5().ToString("N"), keys[0], StringComparison.OrdinalIgnoreCase));
 
-            return new Tuple<IMediaSourceProvider, string>(provider, keys[1]);
+            var splitIndex = key.IndexOf(LiveStreamIdDelimeter);
+            var keyId = key.Substring(splitIndex + 1);
+
+            return new Tuple<IMediaSourceProvider, string>(provider, keyId);
         }
 
         private Timer _closeTimer;

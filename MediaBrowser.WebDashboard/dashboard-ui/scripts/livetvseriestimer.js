@@ -29,19 +29,17 @@
 
         $('#txtPrePaddingMinutes', page).val(item.PrePaddingSeconds / 60);
         $('#txtPostPaddingMinutes', page).val(item.PostPaddingSeconds / 60);
-        $('#chkPrePaddingRequired', page).checked(item.IsPrePaddingRequired).checkboxradio('refresh');
-        $('#chkPostPaddingRequired', page).checked(item.IsPostPaddingRequired).checkboxradio('refresh');
 
-        $('#chkNewOnly', page).checked(item.RecordNewOnly).checkboxradio('refresh');
-        $('#chkAllChannels', page).checked(item.RecordAnyChannel).checkboxradio('refresh');
-        $('#chkAnyTime', page).checked(item.RecordAnyTime).checkboxradio('refresh');
+        $('#chkNewOnly', page).checked(item.RecordNewOnly);
+        $('#chkAllChannels', page).checked(item.RecordAnyChannel);
+        $('#chkAnyTime', page).checked(item.RecordAnyTime);
 
         var channelHtml = '';
         if (item.RecordAnyChannel) {
             channelHtml += Globalize.translate('LabelAllChannels');
         }
         else if (item.ChannelId) {
-            channelHtml += '<a href="livetvchannel.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>';
+            channelHtml += '<a href="itemdetails.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>';
         }
 
         $('.channel', page).html(channelHtml).trigger('create');
@@ -75,7 +73,7 @@
 
             var day = daysOfWeek[i];
 
-            $('#chk' + day, page).checked(days.indexOf(day) != -1).checkboxradio('refresh');
+            $('#chk' + day, page).checked(days.indexOf(day) != -1);
 
         }
 
@@ -109,8 +107,6 @@
 
             item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
             item.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
-            item.IsPrePaddingRequired = $('#chkPrePaddingRequired', form).checked();
-            item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 
             item.RecordNewOnly = $('#chkNewOnly', form).checked();
             item.RecordAnyChannel = $('#chkAllChannels', form).checked();
@@ -135,7 +131,7 @@
             items: result.Items,
             shape: "detailPageSquare",
             showTitle: true,
-            overlayText: true,
+            centerText: true,
             coverImage: true
 
         }));
@@ -263,7 +259,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#liveTvSeriesTimerPage", function () {
+    $(document).on('pageinit', "#liveTvSeriesTimerPage", function () {
 
         var page = this;
 
@@ -276,7 +272,7 @@
 
         $('.liveTvSeriesTimerForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pagebeforeshowready', "#liveTvSeriesTimerPage", function () {
+    }).on('pagebeforeshow', "#liveTvSeriesTimerPage", function () {
 
         var page = this;
 

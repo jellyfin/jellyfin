@@ -49,11 +49,8 @@
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
-                viewButton: true,
                 showLimit: false
             }));
-
-            updateFilterControls(page);
 
             html += LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
@@ -88,62 +85,13 @@
         });
     }
 
-    function updateFilterControls(page) {
-
-        var query = getQuery();
-
-        $('.chkStandardFilter', page).each(function () {
-
-            var filters = "," + (query.Filters || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        }).checkboxradio('refresh');
-
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
-    }
-
-    $(document).on('pageinitdepends', "#tvStudiosPage", function () {
-
-        var page = this;
-
-        $('.chkStandardFilter', this).on('change', function () {
-
-            var query = getQuery();
-
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.Filters || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.Filters = filters;
-
-            reloadItems(page);
-        });
-
-        $('#selectPageSize', page).on('change', function () {
-            var query = getQuery();
-
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
-
-    }).on('pagebeforeshowready', "#tvStudiosPage", function () {
+    $(document).on('pagebeforeshow', "#tvStudiosPage", function () {
 
         var page = this;
 
         if (LibraryBrowser.needsRefresh(page)) {
             reloadItems(page);
         }
-
-        updateFilterControls(page);
     });
 
 })(jQuery, document);

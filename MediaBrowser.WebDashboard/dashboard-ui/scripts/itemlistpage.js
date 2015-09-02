@@ -75,39 +75,35 @@
 
             var context = getParameterByName('context');
 
-            if (context == 'home') {
-                context = 'folders';
-            }
+            var posterOptions = {
+                items: result.Items,
+                shape: "auto",
+                centerText: true,
+                lazy: true
+            };
 
             if (view == "Backdrop") {
 
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "backdrop",
-                    showTitle: true,
-                    centerText: true,
-                    preferBackdrop: true,
-                    context: context
-                });
+                posterOptions.shape = 'backdrop';
+                posterOptions.showTitle = true;
+                posterOptions.preferBackdrop = true;
+
+                html = LibraryBrowser.getPosterViewHtml(posterOptions);
             }
             else if (view == "Poster") {
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "auto",
-                    showTitle: true,
-                    centerText: true,
-                    context: context
-                });
+
+                posterOptions.showTitle = context == 'photos' ? 'auto' : true;
+                posterOptions.overlayText = context == 'photos';
+
+                html = LibraryBrowser.getPosterViewHtml(posterOptions);
             }
             else if (view == "PosterCard") {
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "auto",
-                    showTitle: true,
-                    context: context,
-                    cardLayout: true,
-                    showYear: true
-                });
+
+                posterOptions.showTitle = true;
+                posterOptions.showYear = true;
+                posterOptions.cardLayout = true;
+
+                html = LibraryBrowser.getPosterViewHtml(posterOptions);
             }
 
             var elem = page.querySelector('#items');
@@ -185,12 +181,14 @@
         var info = LibraryBrowser.getListItemInfo(this);
 
         if (info.mediaType == 'Photo') {
-            Photos.startSlideshow(page, query, info.id);
+            require(['scripts/photos'], function () {
+                Photos.startSlideshow(page, query, info.id);
+            });
             return false;
         }
     }
 
-    $(document).on('pageinitdepends', "#itemListPage", function () {
+    $(document).on('pageinit', "#itemListPage", function () {
 
         var page = this;
 
@@ -260,7 +258,7 @@
 
         $(page).on('click', '.mediaItem', onListItemClick);
 
-    }).on('pagebeforeshowready', "#itemListPage", function () {
+    }).on('pagebeforeshow', "#itemListPage", function () {
 
         var page = this;
 
@@ -276,6 +274,7 @@
         }
 
         updateFilterControls(page);
+        LibraryMenu.setBackButtonVisible(getParameterByName('context'));
 
     }).on('pagebeforehide', "#itemListPage", function () {
 

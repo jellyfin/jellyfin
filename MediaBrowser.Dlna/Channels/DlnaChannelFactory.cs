@@ -24,7 +24,7 @@ namespace MediaBrowser.Dlna.Channels
         private readonly ILogger _logger;
         private readonly IHttpClient _httpClient;
 
-        private DeviceDiscovery _deviceDiscovery;
+        private readonly IDeviceDiscovery _deviceDiscovery;
 
         private readonly SemaphoreSlim _syncLock = new SemaphoreSlim(1, 1);
         private List<Device> _servers = new List<Device>();
@@ -33,21 +33,21 @@ namespace MediaBrowser.Dlna.Channels
 
         private Func<List<string>> _localServersLookup;
 
-        public DlnaChannelFactory(IServerConfigurationManager config, IHttpClient httpClient, ILogger logger)
+        public DlnaChannelFactory(IServerConfigurationManager config, IHttpClient httpClient, ILogger logger, IDeviceDiscovery deviceDiscovery)
         {
             _config = config;
             _httpClient = httpClient;
             _logger = logger;
+            _deviceDiscovery = deviceDiscovery;
             Instance = this;
         }
 
-        internal void Start(DeviceDiscovery deviceDiscovery, Func<List<string>> localServersLookup)
+        internal void Start(Func<List<string>> localServersLookup)
         {
             _localServersLookup = localServersLookup;
 
-            _deviceDiscovery = deviceDiscovery;
             //deviceDiscovery.DeviceDiscovered += deviceDiscovery_DeviceDiscovered;
-            deviceDiscovery.DeviceLeft += deviceDiscovery_DeviceLeft;
+            _deviceDiscovery.DeviceLeft += deviceDiscovery_DeviceLeft;
         }
 
         async void deviceDiscovery_DeviceDiscovered(object sender, SsdpMessageEventArgs e)

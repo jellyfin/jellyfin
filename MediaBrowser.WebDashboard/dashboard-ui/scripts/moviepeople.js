@@ -1,29 +1,43 @@
 ﻿(function ($, document) {
 
     var pageSizeKey = 'people';
+    var data = {};
 
-    // The base query options
-    var query = {
+    function getQuery() {
 
-        SortBy: "SortName",
-        SortOrder: "Ascending",
-        IncludeItemTypes: "Movie,Trailer",
-        Recursive: true,
-        Fields: "DateCreated,ItemCounts",
-        PersonTypes: "",
-        StartIndex: 0,
-        Limit: 100
-    };
+        var key = getSavedQueryKey();
+        var pageData = data[key];
+
+        if (!pageData) {
+            pageData = data[key] = {
+                query: {
+                    SortBy: "SortName",
+                    SortOrder: "Ascending",
+                    IncludeItemTypes: "Movie,Trailer",
+                    Recursive: true,
+                    Fields: "DateCreated,ItemCounts",
+                    PersonTypes: "",
+                    StartIndex: 0,
+                    Limit: 100
+                }
+            };
+
+            pageData.query.ParentId = LibraryMenu.getTopParentId();
+            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+        }
+        return pageData.query;
+    }
 
     function getSavedQueryKey() {
 
-        return 'moviepeople' + (query.ParentId || '');
+        return getWindowUrl();
     }
 
-    function reloadItems(page) {
+    function reloadItems(page, viewPanel) {
 
         Dashboard.showLoadingMsg();
 
+        var query = getQuery();
         ApiClient.getPeople(Dashboard.getCurrentUserId(), query).done(function (result) {
 
             // Scroll back up so they can see the results from the beginning
@@ -35,14 +49,16 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
+                viewIcon: 'filter-list',
                 showLimit: false,
                 updatePageSizeSetting: false,
-                pageSizeKey: pageSizeKey
+                pageSizeKey: pageSizeKey,
+                viewPanelClass: 'peopleViewPanel'
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
-            updateFilterControls(page);
+            updateFilterControls(page, viewPanel);
 
             html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
@@ -54,18 +70,18 @@
                 lazy: true
             });
 
-            var elem = page.querySelector('#items');
+            var elem = page.querySelector('.itemsContainer');
             elem.innerHTML = html + pagingHtml;
             ImageLoader.lazyChildren(elem);
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
@@ -74,9 +90,10 @@
         });
     }
 
-    function updateFilterControls(page) {
+    function updateFilterControls(tabContent, viewPanel) {
 
-        $('.chkPersonTypeFilter', page).each(function () {
+        var query = getQuery();
+        $('.chkPersonTypeFilter', viewPanel).each(function () {
 
             var filters = "," + (query.PersonTypes || "");
             var filterName = this.getAttribute('data-filter');
@@ -85,15 +102,14 @@
 
         }).checkboxradio('refresh');
 
-        $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
+        $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
     }
 
-    $(document).on('pageinitdepends', "#moviePeoplePage", function () {
+    function initPage(tabContent, viewPanel) {
 
-        var page = this;
+        $('.chkStandardFilter', viewPanel).on('change', function () {
 
-        $('.chkStandardFilter', this).on('change', function () {
-
+            var query = getQuery();
             var filterName = this.getAttribute('data-filter');
             var filters = query.Filters || "";
 
@@ -106,11 +122,12 @@
             query.StartIndex = 0;
             query.Filters = filters;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.chkPersonTypeFilter', this).on('change', function () {
+        $('.chkPersonTypeFilter', viewPanel).on('change', function () {
 
+            var query = getQuery();
             var filterName = this.getAttribute('data-filter');
             var filters = query.PersonTypes || "";
 
@@ -123,40 +140,39 @@
             query.StartIndex = 0;
             query.PersonTypes = filters;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+        $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
 
+            var query = getQuery();
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
 
         }).on('alphaclear', function (e) {
 
+            var query = getQuery();
             query.NameStartsWithOrGreater = '';
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
+    }
 
-    }).on('pagebeforeshowready', "#moviePeoplePage", function () {
+    window.MoviesPage.initPeopleTab = function (page, tabContent) {
 
-        query.ParentId = LibraryMenu.getTopParentId();
+        var viewPanel = page.querySelector('.peopleViewPanel');
+        initPage(tabContent, viewPanel);
+    };
 
-        var limit = LibraryBrowser.getDefaultPageSize(pageSizeKey, 100);
+    window.MoviesPage.renderPeopleTab = function (page, tabContent) {
 
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            var viewPanel = page.querySelector('.peopleViewPanel');
+            reloadItems(tabContent, viewPanel);
+            updateFilterControls(tabContent, viewPanel);
         }
-
-        LibraryBrowser.loadSavedQueryValues(getSavedQueryKey(), query);
-
-        reloadItems(this);
-
-        updateFilterControls(this);
-    });
+    };
 
 })(jQuery, document);

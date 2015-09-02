@@ -169,6 +169,7 @@
                 AndroidVlcPlayer.playVideoVlc(val,
                     startPosMs,
                     item.Name,
+                    JSON.stringify(item),
                     JSON.stringify(mediaSource),
                     JSON.stringify(playbackStartInfo),
                     ApiClient.serverInfo().Id,

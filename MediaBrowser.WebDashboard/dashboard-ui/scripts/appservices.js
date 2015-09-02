@@ -81,7 +81,6 @@
         var context = getParameterByName('context');
 
         $('.sectionTabs', page).hide();
-        $('.' + context + 'SectionTabs', page).show();
 
         if (context == 'sync') {
             Dashboard.setPageTitle(Globalize.translate('TitleSync'));
@@ -96,6 +95,17 @@
             page.setAttribute('data-helpurl', 'https://github.com/MediaBrowser/Wiki/wiki/Notifications');
         }
 
+    }).on('pagebeforeshow', "#appServicesPage", function () {
+
+        // This needs both events for the helpurl to get done at the right time
+
+        var page = this;
+
+        var context = getParameterByName('context');
+
+        $('.sectionTabs', page).hide();
+        $('.' + context + 'SectionTabs', page).show();
+
     }).on('pageshowready', "#appServicesPage", function () {
 
         // This needs both events for the helpurl to get done at the right time
@@ -103,18 +113,6 @@
         var page = this;
 
         reloadList(page);
-
-        var context = getParameterByName('context');
-
-        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
-
-            if (pluginSecurityInfo.IsMBSupporter || context != 'sync' || !AppInfo.enableSupporterMembership) {
-                $('.syncPromotion', page).hide();
-            } else {
-                $('.syncPromotion', page).show();
-            }
-        });
-
     });
 
 })(jQuery, document);

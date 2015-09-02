@@ -36,6 +36,11 @@
 
         commands.push('show my tv guide');
         commands.push('pull up my recordings');
+        commands.push('control chromecast');
+        commands.push('control [device name]');
+        commands.push('turn on display mirroring');
+        commands.push('turn off display mirroring');
+        commands.push('toggle display mirroring');
 
         deferred.resolveWith(null, [shuffleArray(commands)]);
 
@@ -74,6 +79,8 @@
                 text = text.substring(removeAtStart[i].length);
             }
         }
+
+        result.what = text;
 
         text = text.trim();
         var words = text.toLowerCase().split(' ');
@@ -146,9 +153,18 @@
             userId: Dashboard.getCurrentUserId()
         };
 
+        var textLower = text.toLowerCase();
         var words = text.toLowerCase().split(' ');
 
-        if (words.indexOf('show') != -1 || words.indexOf('pull') != -1 || words.indexOf('display') != -1 || words.indexOf('go') != -1) {
+        var displayWords = [
+            'show',
+            'pull up',
+            'display',
+            'go to',
+            'view'
+        ];
+
+        if (displayWords.filter(function (w) { return textLower.indexOf(w) == 0; }).length) {
 
             if (words.indexOf('guide') != -1) {
                 result.action = 'show';
@@ -160,31 +176,92 @@
                 result.category = 'recordings';
             }
 
-            result.removeWords.push('show');
-            result.removeWords.push('pull up');
-            result.removeWords.push('pull');
-            result.removeWords.push('display');
-            result.removeWords.push('go to');
+            result.removeWords = displayWords;
             return result;
         }
 
-        if (words.indexOf('search') != -1 || words.indexOf('find') != -1) {
+        var searchWords = [
+         'search',
+         'search for',
+         'find',
+         'query'
+        ];
+
+        if (searchWords.filter(function (w) { return textLower.indexOf(w) == 0; }).length) {
 
             // Search
             result.action = 'search';
 
-            result.removeWords.push('search for');
-            result.removeWords.push('search');
-            result.removeWords.push('find');
+            result.removeWords = searchWords;
             return result;
         }
 
-        if (words.indexOf('play') != -1) {
+        var playWords = [
+         'play',
+         'watch'
+        ];
+
+        if (playWords.filter(function (w) { return textLower.indexOf(w) == 0; }).length) {
 
             // Play
             result.action = 'play';
 
-            result.removeWords.push('play');
+            result.removeWords = playWords;
+            return result;
+        }
+
+        var controlWords = [
+         'use',
+         'control'
+        ];
+
+        if (controlWords.filter(function (w) { return textLower.indexOf(w) == 0; }).length) {
+
+            // Play
+            result.action = 'control';
+
+            result.removeWords = controlWords;
+            return result;
+        }
+
+        var enableWords = [
+         'enable',
+         'turn on'
+        ];
+
+        if (enableWords.filter(function (w) { return textLower.indexOf(w) == 0; }).length) {
+
+            // Play
+            result.action = 'enable';
+
+            result.removeWords = enableWords;
+            return result;
+        }
+
+        var disableWords = [
+         'disable',
+         'turn off'
+        ];
+
+        if (disableWords.filter(function (w) { return textLower.indexOf(w) == 0; }).length) {
+
+            // Play
+            result.action = 'disable';
+
+            result.removeWords = disableWords;
+            return result;
+        }
+
+        var toggleWords = [
+         'toggle'
+        ];
+
+        if (toggleWords.filter(function (w) { return textLower.indexOf(w) == 0; }).length) {
+
+            // Play
+            result.action = 'toggle';
+
+            result.removeWords = toggleWords;
             return result;
         }
 
@@ -237,6 +314,22 @@
                 parseContext(text, result);
                 playCommand(result);
                 break;
+            case 'control':
+                parseContext(text, result);
+                controlCommand(result);
+                break;
+            case 'enable':
+                parseContext(text, result);
+                enableCommand(result);
+                break;
+            case 'disable':
+                parseContext(text, result);
+                disableCommand(result);
+                break;
+            case 'toggle':
+                parseContext(text, result);
+                toggleCommand(result);
+                break;
             default:
                 deferred.reject();
                 return;
@@ -248,14 +341,46 @@
     function showCommand(result) {
 
         if (result.category == 'tvguide') {
-            Dashboard.navigate('livetvguide.html');
+            Dashboard.navigate('livetv.html?tab=1');
             return;
         }
 
         if (result.category == 'recordings') {
-            Dashboard.navigate('livetvrecordings.html');
+            Dashboard.navigate('livetv.html?tab=3');
             return;
         }
+    }
+
+    function enableCommand(result) {
+
+        var what = result.what.toLowerCase();
+
+        if (what.indexOf('mirror') != -1) {
+            MediaController.enableDisplayMirroring(true);
+        }
+    }
+
+    function disableCommand(result) {
+
+        var what = result.what.toLowerCase();
+
+        if (what.indexOf('mirror') != -1) {
+            MediaController.enableDisplayMirroring(false);
+        }
+    }
+
+    function toggleCommand(result) {
+
+        var what = result.what.toLowerCase();
+
+        if (what.indexOf('mirror') != -1) {
+            MediaController.toggleDisplayMirroring();
+        }
+    }
+
+    function controlCommand(result) {
+
+        MediaController.trySetActiveDeviceName(result.what);
     }
 
     function playCommand(result, shuffle) {
@@ -354,6 +479,8 @@
             return;
         }
 
+        require(['fontawesome']);
+
         var html = '';
 
         var getCommandsPromise = getSampleCommands();
@@ -379,12 +506,12 @@
         html += '<p>' + Globalize.translate('MessageWeDidntRecognizeCommand') + '</p>';
 
         html += '<br/>';
-        html += '<button class="btn btnRetry" data-role="none" type="button"><span>' + Globalize.translate('ButtonTryAgain') + '</span><i class="fa fa-microphone"></i></button>';
+        html += '<paper-button raised class="submit block btnRetry"><iron-icon icon="mic"></iron-icon><span>' + Globalize.translate('ButtonTryAgain') + '</span></paper-button>';
         html += '<p class="blockedMessage" style="display:none;">' + Globalize.translate('MessageIfYouBlockedVoice') + '<br/><br/></p>';
 
         html += '</div>';
 
-        html += '<button class="btn btnCancel" data-role="none" type="button"><span>' + Globalize.translate('ButtonCancel') + '</span><i class="fa fa-close"></i></button>';
+        html += '<paper-button raised class="block btnCancel" style="background-color:#444;"><iron-icon icon="close"></iron-icon><span>' + Globalize.translate('ButtonCancel') + '</span></paper-button>';
 
         // voiceHelpContent
         html += '</div>';

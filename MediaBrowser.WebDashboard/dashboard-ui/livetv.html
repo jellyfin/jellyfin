@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Emby</title>
+</head>
+<body>
+    <div id="liveTvSuggestedPage" data-dom-cache="true" data-role="page" class="page libraryPage liveTvPage pageWithAbsoluteTabs" data-contextname="${HeaderLiveTv}" data-backdroptype="series,movie" data-require="scripts/livetvsuggested,livetvcss,scripts/livetvcomponents">
+
+        <div class="libraryViewNav libraryViewNavWithMinHeight">
+            <paper-tabs hidescrollbuttons>
+                <paper-tab><iron-icon icon="info"></iron-icon>${TabSuggestions}</paper-tab>
+                <paper-tab><iron-icon icon="grid-on"></iron-icon>${TabGuide}</paper-tab>
+                <paper-tab><iron-icon icon="live-tv"></iron-icon>${TabChannels}</paper-tab>
+                <paper-tab><iron-icon icon="slideshow"></iron-icon>${TabRecordings}</paper-tab>
+                <paper-tab><iron-icon icon="schedule"></iron-icon>${TabScheduled}</paper-tab>
+                <paper-tab><iron-icon icon="refresh"></iron-icon>${TabSeries}</paper-tab>
+            </paper-tabs>
+            <div class="legacyTabs">
+                <a href="livetv.html"><iron-icon icon="info"></iron-icon>${TabSuggestions}</a>
+                <a href="livetv.html?tab=1"><iron-icon icon="grid-on"></iron-icon>${TabGuide}</a>
+                <a href="livetv.html?tab=2"><iron-icon icon="live-tv"></iron-icon>${TabChannels}</a>
+                <a href="livetv.html?tab=3"><iron-icon icon="slideshow"></iron-icon>${TabRecordings}</a>
+                <a href="livetv.html?tab=4"><iron-icon icon="schedule"></iron-icon>${TabScheduled}</a>
+                <a href="livetv.html?tab=5"><iron-icon icon="refresh"></iron-icon>${TabSeries}</a>
+            </div>
+        </div>
+
+        <div class="pageBackground"></div>
+        <div class="ehsContent fullWidth">
+            <neon-animated-pages>
+                <neon-animatable>
+                    <div class="pageTabContent suggestedTabContent" data-index="0">
+                        <div id="activePrograms" class="homePageSection">
+                            <h1 class="listHeader">${HeaderWhatsOnTV}</h1>
+                            <div class="activeProgramItems itemsContainer"></div>
+                            <br />
+                        </div>
+                        <div id="upcomingPrograms" class="homePageSection" style="margin-top:1em;">
+                            <h1 class="listHeader">${HeaderUpcomingPrograms}</h1>
+                            <div class="upcomingProgramItems itemsContainer"></div>
+                            <br />
+                        </div>
+                        <div id="upcomingTvMovies" class="homePageSection" style="margin-top:1em;">
+                            <div>
+                                <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderUpcomingMovies}</h1>
+                                <a href="livetvitems.html?type=movies" class="clearLink" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
+                            </div>
+                            <div class="upcomingTvMovieItems itemsContainer"></div>
+                            <br />
+                        </div>
+                        <div id="upcomingSports" class="homePageSection" style="margin-top:1em;">
+                            <div>
+                                <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderUpcomingSports}</h1>
+                                <a href="livetvitems.html?type=sports" class="clearLink" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
+                            </div>
+                            <div class="upcomingSportsItems itemsContainer"></div>
+                            <br />
+                        </div>
+                        <div id="upcomingKids" class="homePageSection" style="margin-top:1em;">
+                            <div>
+                                <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderUpcomingForKids}</h1>
+                                <a href="livetvitems.html?type=kids" class="clearLink" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more mini noIcon">${ButtonMoreItems}</paper-button></a>
+                            </div>
+                            <div class="upcomingKidsItems itemsContainer"></div>
+                            <br />
+                        </div>
+                    </div>
+                </neon-animatable>
+                <neon-animatable>
+                    <div class="pageTabContent guideTabContent" style="width:auto;" data-index="1">
+                        <div class="tvGuide">
+                            <div class="tvGuideHeader">
+                                <div class="channelTimeslotHeader">
+                                    <div class="timeslotHeaderInner">
+                                        <a class="btnSelectDate" href="#" style="display:block;padding-left:5px;color:#fff;text-decoration:none;font-weight:normal!important;padding:4px 10px 4px 0;"><iron-icon icon="schedule" style="margin-right:3px;width:18px;height:18px;"></iron-icon><span class="currentDate" style="vertical-align: middle;"></span></a>
+                                    </div>
+                                </div>
+                                <div class="timeslotHeaders hiddenScrollX"></div>
+                            </div>
+                            <div class="programContainer">
+                                <div class="channelList"></div>
+                                <div class="programGrid hiddenScrollX"></div>
+                            </div>
+                            <div class="channelPaging"></div>
+                        </div>
+                        <div class="guideRequiresUnlock readOnlyContent" style="margin:1em auto;text-align:center;display:none;padding:1em;">
+                            <p class="unlockText"></p>
+                            <paper-button raised class="secondary block btnUnlockGuide"><iron-icon icon="check"></iron-icon><span>${ButtonUnlockGuide}</span></paper-button>
+                        </div>
+                    </div>
+                </neon-animatable>
+                <neon-animatable>
+                    <div class="pageTabContent channelsTabContent" data-index="2">
+                        <div class="viewSettings">
+                            <div class="listTopPaging">
+                            </div>
+                        </div>
+                        <div id="items" class="itemsContainer" style="max-width:800px;margin: 0 auto;"></div>
+                    </div>
+                </neon-animatable>
+                <neon-animatable>
+                    <div class="pageTabContent recordingsTabContent" data-index="3">
+                        <div id="activeRecordings" style="display: none;" class="homePageSection">
+                            <h1 class="listHeader">${HeaderActiveRecordings}</h1>
+                            <div class="recordingItems itemsContainer"></div>
+                            <br />
+                        </div>
+                        <div id="latestRecordings" style="display: none;" class="homePageSection">
+                            <div>
+                                <h1 class="listHeader" style="display:inline-block;vertical-align:middle;">${HeaderLatestRecordings}</h1>
+                                <paper-button raised class="submit mini categorySyncButton" data-category="Latest"><iron-icon icon="refresh"></iron-icon><span>${ButtonSync}</span></paper-button>
+                            </div>
+                            <div class="recordingItems itemsContainer"></div>
+                            <br />
+                        </div>
+                        <div id="recordingGroups" style="display: none;" class="homePageSection">
+                            <h1 class="listHeader"><a href="livetvrecordinglist.html">${HeaderAllRecordings}<img src="css/images/rightarrow.png" class="headerArrowImage" /></a></h1>
+                            <div id="recordingGroupItems"></div>
+                        </div>
+                    </div>
+                </neon-animatable>
+                <neon-animatable>
+                    <div class="pageTabContent timersTabContent" data-index="4">
+                        <div style="max-width: 700px; margin: 0 auto;" id="items">
+                        </div>
+                    </div>
+                </neon-animatable>
+                <neon-animatable>
+                    <div class="pageTabContent seriesTimersTabContent" data-index="5">
+                        <div style="max-width: 700px; margin: 0 auto;" id="items">
+                        </div>
+                    </div>
+                </neon-animatable>
+            </neon-animated-pages>
+        </div>
+
+        <div data-role="panel" class="viewPanel channelViewPanel" data-theme="a" data-position="right" data-display="overlay" data-position-fixed="true">
+            <form>
+                <div data-role="controlgroup" data-type="horizontal" data-mini="true" class="viewPanelTabs">
+                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabView">${TabView}</a>
+                    <a href="#" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
+                </div>
+                <div class="tabView viewTab">
+                    <div>
+                        <label for="selectPageSize">${LabelPageSize}</label>
+                        <select id="selectPageSize" class="selectPageSize"></select>
+                    </div>
+                </div>
+                <div class="tabFilter viewTab">
+                    <fieldset data-role="controlgroup">
+                        <legend>${HeaderFilters}</legend>
+                        <input class="chkStandardFilter" type="checkbox" id="chkFavorite" data-filter="IsFavorite" data-mini="true">
+                        <label for="chkFavorite">${OptionFavorite}</label>
+                        <input class="chkStandardFilter" type="checkbox" id="chkLikes" data-filter="Likes" data-mini="true">
+                        <label for="chkLikes">${OptionLikes}</label>
+                        <input class="chkStandardFilter" type="checkbox" id="chkDislikes" data-filter="Dislikes" data-mini="true">
+                        <label for="chkDislikes">${OptionDislikes}</label>
+                    </fieldset>
+                </div>
+            </form>
+        </div>
+        <div data-role="content">
+        </div>
+    </div>
+</body>
+</html>

@@ -20,7 +20,7 @@
             $('#fldConnectInfo', page).show();
         }
 
-        $('.lnkEditUserPreferences', page).attr('href', 'mypreferencesdisplay.html?userId=' + user.Id);
+        $('.lnkEditUserPreferences', page).attr('href', 'mypreferencesmenu.html?userId=' + user.Id);
 
         Dashboard.setPageTitle(user.Name);
 
@@ -193,11 +193,11 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#editUserPage", function () {
+    $(document).on('pageinit', "#editUserPage", function () {
 
         $('.editUserProfileForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pagebeforeshowready', "#editUserPage", function () {
+    }).on('pagebeforeshow', "#editUserPage", function () {
 
         var page = this;
 

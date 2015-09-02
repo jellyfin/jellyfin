@@ -4,456 +4,406 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="editItemMetadataPage" data-role="page" class="page libraryPage metadataEditorPage noSecondaryNavPage" data-contextname="${HeaderMetadataManager}" data-require="scripts/editorsidebar,scripts/edititemmetadata,jqmicons,scripts/edititemsubtitles,scripts/editcollectionitems,scripts/edititemimages">
+    <div id="editItemMetadataPage" data-role="page" class="page libraryPage metadataEditorPage noSecondaryNavPage" data-contextname="${HeaderMetadataManager}" data-require="jqmpopup,scripts/editorsidebar,scripts/edititemmetadata,jqmicons,scripts/edititemsubtitles,scripts/editcollectionitems,scripts/edititemimages">
         <div>
             <div class="editPageSidebar" style="overflow:auto;">
                 <div class="libraryTree">
                     <ul></ul>
                 </div>
             </div>
-            <div class="editPageInnerContent" style="display: none;">
+            <div class="editPageInnerContent" style="visibility:hidden;">
                 <h1 class="itemName editPageName">&nbsp;</h1>
                 <br />
-                <paper-tabs>
+                <paper-tabs hidescrollbuttons noink>
                     <paper-tab class="metadataTabButton">${TabMetadata}</paper-tab>
-                    <paper-tab class="subtitleTabButton">${TabSubtitles}</paper-tab>
-                    <paper-tab class="collectionItemsTabButton">${TabCollectionTitles}</paper-tab>
+                    <paper-tab class="subtitleTabButton hide">${TabSubtitles}</paper-tab>
+                    <paper-tab class="collectionItemsTabButton hide">${TabCollectionTitles}</paper-tab>
                     <paper-tab class="imagesTabButton">${TabImages}</paper-tab>
                 </paper-tabs>
 
-                <neon-animated-pages>
-                    <neon-animatable>
-                        <div class="editorTab">
+                <div class="editorTab">
 
-                            <form class="editItemMetadataForm editMetadataForm">
-                                <div class="metadataFormFields">
+                    <form class="editItemMetadataForm editMetadataForm">
+                        <div class="metadataFormFields">
 
-                                    <div style="margin:2em 0 .5em;">
+                            <div style="margin:2em 0 .5em;text-align:center;">
 
-                                        <paper-button raised class="submit">
-                                            <button class="btnSave clearButton" type="submit" data-role="none" style="display:inline-block;">
-                                                <iron-icon icon="check"></iron-icon><span>${ButtonSave}</span>
-                                            </button>
-                                        </paper-button>
-
-                                        <paper-button raised class="subdued btnRefresh btnSimpleRefresh" style="background-color:#673AB7;"><iron-icon icon="refresh"></iron-icon><span>${ButtonRefresh}</span></paper-button>
-                                        <paper-button id="btnIdentify" raised style="background-color:#009688;"><iron-icon icon="info"></iron-icon><span>${ButtonIdentify}</span></paper-button>
-                                        <paper-button raised class="subdued notext btnMore"><iron-icon icon="more-vert"></iron-icon></paper-button>
-                                    </div>
-
-                                    <div style="padding: 10px 0;">
-                                        <div data-role="fieldcontain" id="fldContentType" style="display:none;">
-                                            <label for="selectContentType">${LabelContentType}</label>
-                                            <select id="selectContentType" data-mini="true"></select>
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldPath">
-                                            <label for="txtPath">${LabelPath}</label>
-                                            <input type="text" id="txtPath" readonly="readonly" />
-                                        </div>
-                                        <div data-role="fieldcontain">
-                                            <label for="txtName">${LabelName}</label>
-                                            <input type="text" id="txtName" required="required" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldSortName" style="display: none;">
-                                            <label for="txtSortName">${LabelSortName}</label>
-                                            <input type="text" id="txtSortName" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldDateAdded" style="display: none;">
-                                            <label for="txtDateAdded">${LabelDateAdded}</label>
-                                            <input type="date" id="txtDateAdded" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldStatus" style="display: none;">
-                                            <label for="selectStatus">${LabelStatus}</label>
-                                            <select id="selectStatus" data-mini="true"></select>
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldArtist" style="display: none;">
-                                            <label for="txtArtist">${LabelArtists}</label>
-                                            <input type="text" id="txtArtist" placeholder="${LabelArtistsHelp}" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldAlbumArtist" style="display: none;">
-                                            <label for="txtAlbumArtist">${LabelAlbumArtists}</label>
-                                            <input type="text" id="txtAlbumArtist" placeholder="${LabelArtistsHelp}" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldAlbum" style="display: none;">
-                                            <label for="txtAlbum">${LabelAlbum}</label>
-                                            <input type="text" id="txtAlbum" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldParentIndexNumber" style="display: none;">
-                                            <label id="lblParentIndexNumber" for="txtParentIndexNumber"></label>
-                                            <input type="number" id="txtParentIndexNumber" pattern="[0-9]*" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldIndexNumber" style="display: none;">
-                                            <label id="lblIndexNumber" for="txtIndexNumber"></label>
-                                            <input type="number" id="txtIndexNumber" pattern="[0-9]*" />
-                                        </div>
-                                        <div id="fldCommunityRating" style="display: none;" data-role="fieldcontain">
-                                            <label for="txtCommunityRating">${LabelCommunityRating}</label>
-                                            <input type="number" id="txtCommunityRating" step=".1" min="0" max="10" />
-                                        </div>
-                                        <div id="fldCommunityVoteCount" style="display: none;" data-role="fieldcontain">
-                                            <label for="txtCommunityVoteCount">${LabelVoteCount}</label>
-                                            <input type="number" id="txtCommunityVoteCount" />
-                                        </div>
-                                        <div id="fldMetascore" style="display: none;" data-role="fieldcontain">
-                                            <label for="txtMetascore">${LabelMetascore}</label>
-                                            <input type="number" id="txtMetascore" step="1" min="0" max="100" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldCriticRating" style="display: none;">
-                                            <label for="txtCriticRating">${LabelCriticRating}</label>
-                                            <input type="number" id="txtCriticRating" step=".1" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldCriticRatingSummary" style="display: none;">
-                                            <label for="txtCriticRatingSummary">${LabelCriticRatingSummary}</label>
-                                            <input type="text" id="txtCriticRatingSummary" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldAwardSummary" style="display: none;">
-                                            <label for="txtAwardSummary">${LabelAwardSummary}</label>
-                                            <input type="text" id="txtAwardSummary" />
-                                        </div>
-                                        <div data-role="fieldcontain">
-                                            <label for="txtHomePageUrl">${LabelWebsite}</label>
-                                            <input type="url" id="txtHomePageUrl" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldTagline" style="display: none;">
-                                            <label for="txtTagline">${LabelTagline}</label>
-                                            <input type="text" id="txtTagline" />
-                                        </div>
-                                        <div data-role="fieldcontain">
-                                            <label for="txtOverview">${LabelOverview}</label>
-                                            <textarea id="txtOverview"></textarea>
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldShortOverview" style="display: none;">
-                                            <label for="txtShortOverview">${LabelShortOverview}</label>
-                                            <textarea id="txtShortOverview"></textarea>
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldPremiereDate" style="display: none;">
-                                            <label id="lblPremiereDate" for="txtPremiereDate">${LabelReleaseDate}</label>
-                                            <input type="date" id="txtPremiereDate" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldYear" style="display: none;">
-                                            <label id="lblYear" for="txtProductionYear">${LabelYear}</label>
-                                            <input type="number" id="txtProductionYear" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldPlaceOfBirth" style="display: none;">
-                                            <label for="txtPlaceOfBirth">${LabelPlaceOfBirth}</label>
-                                            <input type="text" id="txtPlaceOfBirth" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldEndDate" style="display: none;">
-                                            <label id="lblEndDate" for="txtEndDate">${LabelEndDate}</label>
-                                            <input type="date" id="txtEndDate" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldAirDays" style="display: none;">
-                                            <label for="selectAirDays">${LabelAirDays}</label>
-
-                                            <div data-role="controlgroup" data-mini="true">
-                                                <input type="checkbox" class="chkAirDay" id="chkSunday" data-day="Sunday">
-                                                <label for="chkSunday">${OptionSunday}</label>
-                                                <input type="checkbox" class="chkAirDay" id="chkMonday" data-day="Monday">
-                                                <label for="chkMonday">${OptionMonday}</label>
-                                                <input type="checkbox" class="chkAirDay" id="chkTuesday" data-day="Tuesday">
-                                                <label for="chkTuesday">${OptionTuesday}</label>
-                                                <input type="checkbox" class="chkAirDay" id="chkWednesday" data-day="Wednesday">
-                                                <label for="chkWednesday">${OptionWednesday}</label>
-                                                <input type="checkbox" class="chkAirDay" id="chkThursday" data-day="Thursday">
-                                                <label for="chkThursday">${OptionThursday}</label>
-                                                <input type="checkbox" class="chkAirDay" id="chkFriday" data-day="Friday">
-                                                <label for="chkFriday">${OptionFriday}</label>
-                                                <input type="checkbox" class="chkAirDay" id="chkSaturday" data-day="Saturday">
-                                                <label for="chkSaturday">${OptionSaturday}</label>
-                                            </div>
-
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldAirTime" style="display: none;">
-                                            <label for="txtAirTime">${LabelAirTime}</label>
-                                            <input type="time" id="txtAirTime" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldSeriesRuntime" style="display: none;">
-                                            <label for="txtSeriesRuntime">${LabelRuntimeMinutes}</label>
-                                            <input type="number" id="txtSeriesRuntime" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldOfficialRating" style="display: none;">
-                                            <label for="selectOfficialRating">${LabelParentalRating}</label>
-                                            <select id="selectOfficialRating" data-mini="true"></select>
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldCustomRating" style="display: none;">
-                                            <label for="selectCustomRating">${LabelCustomRating}</label>
-                                            <select id="selectCustomRating" data-mini="true"></select>
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldBudget" style="display: none;">
-                                            <label for="txtBudget">${LabelBudget}</label>
-                                            <input type="number" id="txtBudget" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldRevenue" style="display: none;">
-                                            <label for="txtRevenue">${LabelRevenue}</label>
-                                            <input type="number" id="txtRevenue" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldOriginalAspectRatio" style="display: none;">
-                                            <label for="txtOriginalAspectRatio">${LabelOriginalAspectRatio}</label>
-                                            <input type="text" id="txtOriginalAspectRatio" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fldPlayers" style="display: none;">
-                                            <label for="txtPlayers">${LabelPlayers}</label>
-                                            <input type="number" id="txtPlayers" pattern="[0-9]*" />
-                                        </div>
-                                        <div data-role="fieldcontain" id="fld3dFormat" style="display: none;">
-                                            <label for="select3dFormat">${Label3DFormat}</label>
-                                            <select id="select3dFormat" data-mini="true">
-                                                <option value=""></option>
-                                                <option value="HalfSideBySide">HSBS</option>
-                                                <option value="HalfTopAndBottom">HTAB</option>
-                                                <option value="FullSideBySide">FSBS</option>
-                                                <option value="FullTopAndBottom">FTAB</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <br />
-
-                                    <div class="detailSection" id="collapsibleDvdEpisodeInfo" style="display: none;">
-                                        <div class="detailSectionHeader">
-                                            ${HeaderAlternateEpisodeNumbers}
-                                        </div>
-                                        <div class="detailSectionContent" style="padding: 0 .5em;">
-                                            <br />
-                                            <div>
-                                                <label for="txtDvdSeasonNumber">${LabelDvdSeasonNumber}</label>
-                                                <input type="number" id="txtDvdSeasonNumber" pattern="[0-9]*" />
-                                            </div>
-                                            <div>
-                                                <label for="txtDvdEpisodeNumber">${LabelDvdEpisodeNumber}</label>
-                                                <input type="number" id="txtDvdEpisodeNumber" pattern="[0-9]*" />
-                                            </div>
-                                            <div>
-                                                <label for="txtAbsoluteEpisodeNumber">${LabelAbsoluteEpisodeNumber}</label>
-                                                <input type="number" id="txtAbsoluteEpisodeNumber" pattern="[0-9]*" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="detailSection" id="collapsibleSpecialEpisodeInfo" style="display: none;">
-                                        <div class="detailSectionHeader">
-                                            ${HeaderSpecialEpisodeInfo}
-                                        </div>
-                                        <div class="detailSectionContent" style="padding: 0 .5em;">
-                                            <br />
-                                            <div>
-                                                <label for="txtAirsBeforeSeason">${LabelAirsBeforeSeason}</label>
-                                                <input type="number" id="txtAirsBeforeSeason" pattern="[0-9]*" />
-                                            </div>
-                                            <div>
-                                                <label for="txtAirsAfterSeason">${LabelAirsAfterSeason}</label>
-                                                <input type="number" id="txtAirsAfterSeason" pattern="[0-9]*" />
-                                            </div>
-                                            <div>
-                                                <label for="txtAirsBeforeEpisode">${LabelAirsBeforeEpisode}</label>
-                                                <input type="number" id="txtAirsBeforeEpisode" pattern="[0-9]*" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="detailSection">
-                                        <div class="detailSectionHeader">
-                                            ${HeaderExternalIds}
-                                        </div>
-                                        <div class="detailSectionContent" style="padding: 0 .5em;">
-                                            <div class="externalIds editorFieldset">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="detailSection" id="collapsibleDisplaySettings" style="display:none;">
-                                        <div class="detailSectionHeader">
-                                            ${HeaderDisplaySettings}
-                                        </div>
-                                        <div class="detailSectionContent" style="padding: 0 .5em;">
-                                            <br />
-                                            <div id="fldSourceType" style="display: none;" class="fldDisplaySetting">
-                                                <label for="txtDisplayMediaType">${LabelTreatImageAs}</label>
-                                                <input type="text" id="txtDisplayMediaType" />
-                                            </div>
-                                            <div id="fldDisplaySpecialsInline" class="fldDisplaySetting">
-                                                <label for="chkDisplaySpecialsInline">${LabelDisplaySpecialsWithinSeasons}</label>
-                                                <input data-mini="true" type="checkbox" id="chkDisplaySpecialsInline" />
-                                            </div>
-                                            <div id="fldDisplayOrder" class="fldDisplaySetting">
-                                                <label for="selectDisplayOrder" id="labelDisplayOrder">${LabelDisplayOrder}</label>
-                                                <select id="selectDisplayOrder" data-mini="true"></select>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div data-role="collapsible" data-mini="true" id="countriesCollapsible" style="display: none; margin-top: 1em;">
-                                        <h3>${HeaderCountries}</h3>
-                                        <div data-role="editableListviewContainer">
-                                            <div>
-                                                <div style="display: inline-block; width: 80%;">
-                                                    <input type="text" class="txtEditableListview" />
-                                                </div>
-                                                <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
-                                            </div>
-                                            <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listCountries"></ul>
-                                        </div>
-                                    </div>
-                                    <div data-role="collapsible" data-mini="true" id="genresCollapsible" style="display: none; margin-top: 1em;">
-                                        <h3>${HeaderGenres}</h3>
-                                        <div data-role="editableListviewContainer">
-                                            <div>
-                                                <div style="display: inline-block; width: 80%;">
-                                                    <input type="text" class="txtEditableListview" />
-                                                </div>
-                                                <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
-                                            </div>
-                                            <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listGenres"></ul>
-                                        </div>
-                                    </div>
-                                    <div data-mini="true" data-role="collapsible" id="peopleCollapsible" style="display: none; margin-top: 1em;">
-                                        <h3>${HeaderPeople}</h3>
-                                        <div>
-                                            <br />
-                                            <button type="button" id="btnAddPerson" data-icon="plus" data-mini="true" data-theme="a">${ButtonAdd}</button>
-                                            <br />
-                                            <ul data-role="listview" data-inset="true" data-split-icon="delete" id="peopleList"></ul>
-                                        </div>
-                                    </div>
-                                    <div data-mini="true" data-role="collapsible" id="keywordsCollapsible" style="display: none; margin-top: 1em;">
-                                        <h3>${HeaderPlotKeywords}</h3>
-                                        <div data-role="editableListviewContainer">
-                                            <div>
-                                                <div style="display: inline-block; width: 80%;">
-                                                    <input type="text" class="txtEditableListview" />
-                                                </div>
-                                                <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
-                                            </div>
-                                            <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listKeywords"></ul>
-                                        </div>
-                                    </div>
-                                    <div data-role="collapsible" data-mini="true" id="studiosCollapsible" style="display: none; margin-top: 1em;">
-                                        <h3>${HeaderStudios}</h3>
-                                        <div data-role="editableListviewContainer">
-                                            <div>
-                                                <div style="display: inline-block; width: 80%;">
-                                                    <input type="text" class="txtEditableListview" />
-                                                </div>
-                                                <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
-                                            </div>
-                                            <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listStudios"></ul>
-                                        </div>
-                                    </div>
-                                    <div data-mini="true" data-role="collapsible" id="tagsCollapsible" style="display: none; margin-top: 1em;">
-                                        <h3>${HeaderTags}</h3>
-                                        <div data-role="editableListviewContainer">
-                                            <div>
-                                                <div style="display: inline-block; width: 80%;">
-                                                    <input type="text" class="txtEditableListview" />
-                                                </div>
-                                                <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
-                                            </div>
-                                            <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listTags"></ul>
-                                        </div>
-                                    </div>
-                                    <div data-role="collapsible" data-mini="true" id="metadataSettingsCollapsible" style="display: none; margin-top: 1em;">
-                                        <h3>${HeaderMetadataSettings}</h3>
-                                        <div>
-                                            <br />
-                                            <div>
-                                                <label for="selectLanguage">${LabelMetadataDownloadLanguage}</label>
-                                                <select id="selectLanguage" data-mini="true"></select>
-                                            </div>
-                                            <div class="fieldDescription editorfieldDescription">${MessageLeaveEmptyToInherit}</div>
-                                            <br />
-                                            <div>
-                                                <label for="selectCountry">${LabelCountry}</label>
-                                                <select id="selectCountry" data-mini="true"></select>
-                                            </div>
-                                            <div class="fieldDescription editorfieldDescription">${MessageLeaveEmptyToInherit}</div>
-
-                                            <p>
-                                                <br />
-                                                <label for="chkLockData">${LabelLockItemToPreventChanges}</label>
-                                                <input data-mini="true" type="checkbox" id="chkLockData" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)" />
-                                            </p>
-                                            <br />
-                                            <div id="providerSettingsContainer" style="display: none">
-                                            </div>
-                                            <br />
-                                        </div>
-                                    </div>
-                                    <br />
-                                    <button type="submit" data-role="none" class="clearButton btnSave">
-                                        <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                                <paper-button raised class="submit">
+                                    <button class="btnSave clearButton" type="submit" data-role="none" style="display:inline-block;">
+                                        <iron-icon icon="check"></iron-icon><span>${ButtonSave}</span>
                                     </button>
-                                </div>
+                                </paper-button>
 
-                            </form>
-                        </div>
-                    </neon-animatable>
-                    <neon-animatable>
-                        <div class="editorTab subtitleTabContent">
+                                <paper-button raised class="subdued btnRefresh btnSimpleRefresh" style="background-color:#673AB7;"><iron-icon icon="refresh"></iron-icon><span>${ButtonRefresh}</span></paper-button>
+                                <paper-button id="btnIdentify" raised style="background-color:#009688;"><iron-icon icon="info"></iron-icon><span>${ButtonIdentify}</span></paper-button>
+                                <paper-button raised class="subdued notext btnMore"><iron-icon icon="more-vert"></iron-icon></paper-button>
+                            </div>
+
+                            <div style="padding: 0 0 10px;">
+                                <div id="fldContentType" style="display:none;">
+                                    <label for="selectContentType">${LabelContentType}</label>
+                                    <select id="selectContentType" data-mini="true"></select>
+                                </div>
+                                <div id="fldPath">
+                                    <paper-input id="txtPath" type="text" label="${LabelPath}" readonly></paper-input>
+                                </div>
+                                <div>
+                                    <paper-input id="txtName" type="text" label="${LabelName}" required="required"></paper-input>
+                                </div>
+                                <div id="fldSortName" style="display: none;">
+                                    <paper-input id="txtSortName" type="text" label="${LabelSortName}"></paper-input>
+                                </div>
+                                <div id="fldDateAdded" style="display: none;">
+                                    <paper-input id="txtDateAdded" type="date" label="${LabelDateAdded}"></paper-input>
+                                </div>
+                                <div id="fldStatus" style="display: none;margin:1em 0;">
+                                    <label for="selectStatus">${LabelStatus}</label>
+                                    <select id="selectStatus" data-mini="true"></select>
+                                </div>
+                                <div id="fldArtist" style="display: none;">
+                                    <paper-input id="txtArtist" type="text" label="${LabelArtists}" placeholder="${LabelArtistsHelp}"></paper-input>
+                                </div>
+                                <div id="fldAlbumArtist" style="display: none;">
+                                    <paper-input id="txtAlbumArtist" type="text" label="${LabelAlbumArtists}" placeholder="${LabelArtistsHelp}"></paper-input>
+                                </div>
+                                <div id="fldAlbum" style="display: none;">
+                                    <paper-input id="txtAlbum" type="text" label="${LabelAlbum}"></paper-input>
+                                </div>
+                                <div id="fldParentIndexNumber" style="display: none;">
+                                    <paper-input id="txtParentIndexNumber" type="number"></paper-input>
+                                </div>
+                                <div id="fldIndexNumber" style="display: none;">
+                                    <paper-input id="txtIndexNumber" type="number" pattern="[0-9]*"></paper-input>
+                                </div>
+                                <div id="fldCommunityRating" style="display: none;">
+                                    <paper-input id="txtCommunityRating" type="number" step=".1" min="0" max="10" label="${LabelCommunityRating}"></paper-input>
+                                </div>
+                                <div id="fldCommunityVoteCount" style="display: none;">
+                                    <paper-input id="txtCommunityVoteCount" type="number" step="1" label="${LabelVoteCount}"></paper-input>
+                                </div>
+                                <div id="fldMetascore" style="display: none;">
+                                    <paper-input id="txtMetascore" type="number" step="1" min="0" max="100" label="${LabelMetascore}"></paper-input>
+                                </div>
+                                <div id="fldCriticRating" style="display: none;">
+                                    <paper-input id="txtCriticRating" type="number" step=".1" label="${LabelCriticRating}"></paper-input>
+                                </div>
+                                <div id="fldCriticRatingSummary" style="display: none;">
+                                    <paper-input id="txtCriticRatingSummary" type="text" label="${LabelCriticRatingSummary}"></paper-input>
+                                </div>
+                                <div id="fldAwardSummary" style="display: none;">
+                                    <paper-input id="txtAwardSummary" type="text" label="${LabelAwardSummary}"></paper-input>
+                                </div>
+                                <div>
+                                    <paper-input id="txtHomePageUrl" type="text" label="${LabelWebsite}"></paper-input>
+                                </div>
+                                <div id="fldTagline" style="display: none;">
+                                    <paper-input id="txtTagline" type="text" label="${LabelTagline}"></paper-input>
+                                </div>
+                                <div>
+                                    <label for="txtOverview" class="likePaperLabel">${LabelOverview}</label>
+                                    <textarea id="txtOverview" class="likePaperText" data-role="none"></textarea>
+                                    <br />
+                                </div>
+                                <div id="fldShortOverview" style="display: none;">
+                                    <paper-input id="txtShortOverview" type="text" label="${LabelShortOverview}"></paper-input>
+                                </div>
+                                <div id="fldPremiereDate" style="display: none;">
+                                    <label for="txtPremiereDate" class="likePaperLabel">${LabelReleaseDate}</label>
+                                    <input id="txtPremiereDate" type="date" class="likePaperText" data-role="none" />
+                                </div>
+                                <div id="fldYear" style="display: none;">
+                                    <paper-input id="txtProductionYear" type="number" label="${LabelYear}"></paper-input>
+                                </div>
+                                <div id="fldPlaceOfBirth" style="display: none;">
+                                    <paper-input id="txtPlaceOfBirth" type="text" label="${LabelPlaceOfBirth}"></paper-input>
+                                </div>
+                                <div id="fldEndDate" style="display: none;">
+                                    <label for="txtEndDate" class="likePaperLabel">${LabelEndDate}</label>
+                                    <input id="txtEndDate" type="date" class="likePaperText" data-role="none" />
+                                </div>
+                                <div id="fldAirDays" style="display: none;">
+                                    <p>${LabelAirDays}</p>
+
+                                    <div>
+                                        <paper-checkbox class="chkAirDay" data-day="Sunday">${OptionSunday}</paper-checkbox>
+                                        <paper-checkbox class="chkAirDay" data-day="Monday">${OptionMonday}</paper-checkbox>
+                                        <paper-checkbox class="chkAirDay" data-day="Tuesday">${OptionTuesday}</paper-checkbox>
+                                        <paper-checkbox class="chkAirDay" data-day="Wednesday">${OptionWednesday}</paper-checkbox>
+                                        <paper-checkbox class="chkAirDay" data-day="Thursday">${OptionThursday}</paper-checkbox>
+                                        <paper-checkbox class="chkAirDay" data-day="Friday">${OptionFriday}</paper-checkbox>
+                                        <paper-checkbox class="chkAirDay" data-day="Saturday">${OptionSaturday}</paper-checkbox>
+                                    </div>
+                                    <br />
+
+                                </div>
+                                <div id="fldAirTime" style="display: none;">
+                                    <paper-input id="txtAirTime" type="text" label="${LabelAirTime}"></paper-input>
+                                </div>
+                                <div id="fldSeriesRuntime" style="display: none;">
+                                    <paper-input id="txtSeriesRuntime" type="number" label="${LabelRuntimeMinutes}"></paper-input>
+                                </div>
+                                <div id="fldOfficialRating" style="display: none;">
+                                    <br />
+                                    <label for="selectOfficialRating">${LabelParentalRating}</label>
+                                    <select id="selectOfficialRating" data-mini="true"></select>
+                                </div>
+                                <div id="fldCustomRating" style="display: none;">
+                                    <br />
+                                    <label for="selectCustomRating">${LabelCustomRating}</label>
+                                    <select id="selectCustomRating" data-mini="true"></select>
+                                </div>
+                                <div id="fldBudget" style="display: none;">
+                                    <paper-input id="txtBudget" type="number" label="${LabelBudget}"></paper-input>
+                                </div>
+                                <div id="fldRevenue" style="display: none;">
+                                    <paper-input id="txtRevenue" type="number" label="${LabelRevenue}"></paper-input>
+                                </div>
+                                <div id="fldOriginalAspectRatio" style="display: none;">
+                                    <paper-input id="txtOriginalAspectRatio" type="text" label="${LabelOriginalAspectRatio}"></paper-input>
+                                </div>
+                                <div id="fldPlayers" style="display: none;">
+                                    <paper-input id="txtPlayers" type="number" pattern="[0-9]*" label="${LabelPlayers}"></paper-input>
+                                </div>
+                                <div id="fld3dFormat" style="display: none;">
+                                    <br />
+                                    <label for="select3dFormat">${Label3DFormat}</label>
+                                    <select id="select3dFormat" data-mini="true">
+                                        <option value=""></option>
+                                        <option value="HalfSideBySide">HSBS</option>
+                                        <option value="HalfTopAndBottom">HTAB</option>
+                                        <option value="FullSideBySide">FSBS</option>
+                                        <option value="FullTopAndBottom">FTAB</option>
+                                    </select>
+                                </div>
+                            </div>
                             <br />
-                            <div class="readOnlyContent" style="max-width: 700px;">
-                                <div class="subtitleList"></div>
-                            </div>
-                            <h1>${HeaderSearchForSubtitles}</h1>
 
-                            <form class="subtitleSearchForm">
-                                <div style="display: inline-block; width: 85%;">
-                                    <label for="selectLanguage">${LabelLanguage}</label>
-                                    <select id="selectLanguage" required="required" data-mini="true"></select>
+                            <div class="detailSection" id="collapsibleDvdEpisodeInfo" style="display: none;">
+                                <h1>
+                                    ${HeaderAlternateEpisodeNumbers}
+                                </h1>
+                                <div class="detailSectionContent">
+                                    <div>
+                                        <paper-input id="txtDvdSeasonNumber" type="number" pattern="[0-9]*" label="${LabelDvdSeasonNumber}"></paper-input>
+                                    </div>
+                                    <div>
+                                        <paper-input id="txtDvdEpisodeNumber" type="number" pattern="[0-9]*" label="${LabelDvdEpisodeNumber}"></paper-input>
+                                    </div>
+                                    <div>
+                                        <paper-input id="txtAbsoluteEpisodeNumber" type="number" pattern="[0-9]*" label="${LabelAbsoluteEpisodeNumber}"></paper-input>
+                                    </div>
                                 </div>
-                                <button type="submit" data-icon="search" class="btnSearchSubtitles" data-inline="true" data-iconpos="notext" data-mini="true" style="vertical-align: bottom;">${ButtonSearch}</button>
-                            </form>
+                            </div>
+
+                            <div class="detailSection" id="collapsibleSpecialEpisodeInfo" style="display: none;">
+                                <h1>
+                                    ${HeaderSpecialEpisodeInfo}
+                                </h1>
+                                <div class="detailSectionContent">
+                                    <div>
+                                        <paper-input id="txtAirsBeforeSeason" type="number" pattern="[0-9]*" label="${LabelAirsBeforeSeason}"></paper-input>
+                                    </div>
+                                    <div>
+                                        <paper-input id="txtAirsAfterSeason" type="number" pattern="[0-9]*" label="${LabelAirsAfterSeason}"></paper-input>
+                                    </div>
+                                    <div>
+                                        <paper-input id="txtAirsBeforeEpisode" type="number" pattern="[0-9]*" label="${LabelAirsBeforeEpisode}"></paper-input>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="detailSection">
+                                <h1>
+                                    ${HeaderExternalIds}
+                                </h1>
+                                <div class="detailSectionContent">
+                                    <div class="externalIds editorFieldset">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="detailSection" id="collapsibleDisplaySettings" style="display:none;">
+                                <h1>
+                                    ${HeaderDisplaySettings}
+                                </h1>
+                                <div class="detailSectionContent">
+                                    <div id="fldSourceType" style="display: none;" class="fldDisplaySetting">
+                                        <paper-input id="txtDisplayMediaType" type="text" label="${LabelTreatImageAs}"></paper-input>
+                                    </div>
+                                    <div id="fldDisplaySpecialsInline" class="fldDisplaySetting">
+                                        <br />
+                                        <paper-checkbox id="chkDisplaySpecialsInline">${LabelDisplaySpecialsWithinSeasons}</paper-checkbox>
+                                    </div>
+                                    <div id="fldDisplayOrder" class="fldDisplaySetting">
+                                        <label for="selectDisplayOrder" id="labelDisplayOrder">${LabelDisplayOrder}</label>
+                                        <select id="selectDisplayOrder" data-mini="true"></select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div data-role="collapsible" data-mini="true" id="countriesCollapsible" style="display: none; margin-top: 1em;">
+                                <h3>${HeaderCountries}</h3>
+                                <div data-role="editableListviewContainer">
+                                    <div>
+                                        <div style="display: inline-block; width: 80%;">
+                                            <input type="text" class="txtEditableListview" />
+                                        </div>
+                                        <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
+                                    </div>
+                                    <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listCountries"></ul>
+                                </div>
+                            </div>
+                            <div data-role="collapsible" data-mini="true" id="genresCollapsible" style="display: none; margin-top: 1em;">
+                                <h3>${HeaderGenres}</h3>
+                                <div data-role="editableListviewContainer">
+                                    <div>
+                                        <div style="display: inline-block; width: 80%;">
+                                            <input type="text" class="txtEditableListview" />
+                                        </div>
+                                        <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
+                                    </div>
+                                    <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listGenres"></ul>
+                                </div>
+                            </div>
+                            <div data-mini="true" data-role="collapsible" id="peopleCollapsible" style="display: none; margin-top: 1em;">
+                                <h3>${HeaderPeople}</h3>
+                                <div>
+                                    <br />
+                                    <button type="button" id="btnAddPerson" data-icon="plus" data-mini="true" data-theme="a">${ButtonAdd}</button>
+                                    <br />
+                                    <ul data-role="listview" data-inset="true" data-split-icon="delete" id="peopleList"></ul>
+                                </div>
+                            </div>
+                            <div data-mini="true" data-role="collapsible" id="keywordsCollapsible" style="display: none; margin-top: 1em;">
+                                <h3>${HeaderPlotKeywords}</h3>
+                                <div data-role="editableListviewContainer">
+                                    <div>
+                                        <div style="display: inline-block; width: 80%;">
+                                            <input type="text" class="txtEditableListview" />
+                                        </div>
+                                        <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
+                                    </div>
+                                    <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listKeywords"></ul>
+                                </div>
+                            </div>
+                            <div data-role="collapsible" data-mini="true" id="studiosCollapsible" style="display: none; margin-top: 1em;">
+                                <h3>${HeaderStudios}</h3>
+                                <div data-role="editableListviewContainer">
+                                    <div>
+                                        <div style="display: inline-block; width: 80%;">
+                                            <input type="text" class="txtEditableListview" />
+                                        </div>
+                                        <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
+                                    </div>
+                                    <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listStudios"></ul>
+                                </div>
+                            </div>
+                            <div data-mini="true" data-role="collapsible" id="tagsCollapsible" style="display: none; margin-top: 1em;">
+                                <h3>${HeaderTags}</h3>
+                                <div data-role="editableListviewContainer">
+                                    <div>
+                                        <div style="display: inline-block; width: 80%;">
+                                            <input type="text" class="txtEditableListview" />
+                                        </div>
+                                        <a data-role="button" data-inline="true" data-mini="true" data-icon="plus" data-iconpos="notext" onclick="EditItemMetadataPage.addElementToEditableListview(this)" style="vertical-align: top;">${ButtonAdd}</a>
+                                    </div>
+                                    <ul data-role="listview" data-inset="true" data-split-icon="delete" id="listTags"></ul>
+                                </div>
+                            </div>
+                            <div id="metadataSettingsCollapsible" style="display: none; margin-top: 3em;">
+                                <h1>${HeaderMetadataSettings}</h1>
+                                <div>
+                                    <div>
+                                        <label for="selectLanguage">${LabelMetadataDownloadLanguage}</label>
+                                        <select id="selectLanguage" data-mini="true"></select>
+                                    </div>
+                                    <div class="fieldDescription editorfieldDescription">${MessageLeaveEmptyToInherit}</div>
+                                    <br />
+                                    <div>
+                                        <label for="selectCountry">${LabelCountry}</label>
+                                        <select id="selectCountry" data-mini="true"></select>
+                                    </div>
+                                    <div class="fieldDescription editorfieldDescription">${MessageLeaveEmptyToInherit}</div>
+
+                                    <div>
+                                        <br /><br />
+                                        <paper-checkbox id="chkLockData" onchange="EditItemMetadataPage.setProviderSettingsContainerVisibility(this)">${LabelLockItemToPreventChanges}</paper-checkbox>
+                                    </div>
+                                    <br />
+                                    <div id="providerSettingsContainer" style="display: none">
+                                    </div>
+                                </div>
+                            </div>
                             <br />
-                            <div class="readOnlyContent" style="max-width: 700px;">
-                                <div class="subtitleResults"></div>
-                                <div class="noSearchResults" style="display: none;">
-                                    ${MessageNoSubtitleSearchResultsFound}
-                                </div>
-                            </div>
+                            <button type="submit" data-role="none" class="clearButton btnSave">
+                                <paper-button raised class="submit block"><iron-icon icon="check"></iron-icon><span>${ButtonSave}</span></paper-button>
+                            </button>
                         </div>
-                    </neon-animatable>
-                    <neon-animatable>
-                        <div class="editorTab collectionItemsTabContent">
-                            <p style="margin:1.5em 0;">
-                                ${EditCollectionItemsHelp}
-                            </p>
 
-                            <div>
-                                <button type="button" id="btnAddItem" data-icon="plus" data-inline="true" data-mini="true">${ButtonAdd}</button>
-                                <button type="button" id="btnRemoveItems" data-icon="delete" data-inline="true" data-mini="true" disabled="disabled">${ButtonRemove}</button>
-                            </div>
-                            <br />
-                            <div class="collectionItems"></div>
+                    </form>
+                </div>
+                <div class="editorTab subtitleTabContent">
+                    <br />
+                    <div class="readOnlyContent" style="max-width: 700px;">
+                        <div class="subtitleList"></div>
+                    </div>
+                    <br />
+                    <h1>${HeaderSearchForSubtitles}</h1>
+
+                    <form class="subtitleSearchForm">
+                        <div style="display: inline-block; width: 85%;">
+                            <label for="selectLanguage">${LabelLanguage}</label>
+                            <select id="selectLanguage" required="required" data-mini="true"></select>
                         </div>
-                    </neon-animatable>
-                    <neon-animatable>
-                        <div class="editorTab imageEditorTab">
-                            <div style="margin:2em 0 .5em;">
-
-                                <paper-button raised class="subdued btnBrowseAllImages"><iron-icon icon="cloud"></iron-icon><span>${ButtonBrowseImages}</span></paper-button>
-                                <paper-button raised class="subdued btnOpenUploadMenu"><iron-icon icon="add"></iron-icon><span>${ButtonUpload}</span></paper-button>
-                            </div>
-
-                            <div id="imagesContainer" style="display: none;">
-                                <h1>${HeaderImages}</h1>
-                                <div id="images">
-                                </div>
-                                <br />
-                            </div>
-
-                            <div id="backdropsContainer" style="display: none;">
-                                <h1>${HeaderBackdrops}</h1>
-                                <div id="backdrops">
-                                </div>
-                                <br />
-                            </div>
-
-                            <div id="screenshotsContainer" style="display: none;">
-                                <h1>${Screenshots}</h1>
-                                <div id="screenshots">
-                                </div>
-                            </div>
+                        <button type="submit" data-icon="search" class="btnSearchSubtitles" data-inline="true" data-iconpos="notext" data-mini="true" style="vertical-align: bottom;">${ButtonSearch}</button>
+                    </form>
+                    <br />
+                    <div class="readOnlyContent" style="max-width: 700px;">
+                        <div class="subtitleResults"></div>
+                        <div class="noSearchResults" style="display: none;">
+                            ${MessageNoSubtitleSearchResultsFound}
                         </div>
-                    </neon-animatable>
-                </neon-animated-pages>
+                    </div>
+                </div>
+                <div class="editorTab collectionItemsTabContent">
+                    <p style="margin:1.5em 0;">
+                        ${EditCollectionItemsHelp}
+                    </p>
+
+                    <div>
+                        <button type="button" id="btnAddItem" data-icon="plus" data-inline="true" data-mini="true">${ButtonAdd}</button>
+                        <button type="button" id="btnRemoveItems" data-icon="delete" data-inline="true" data-mini="true" disabled="disabled">${ButtonRemove}</button>
+                    </div>
+                    <br />
+                    <div class="collectionItems"></div>
+                </div>
+                <div class="editorTab imageEditorTab">
+                    <div style="margin:2em 0 .5em;text-align:center;">
+
+                        <paper-button raised class="subdued btnBrowseAllImages"><iron-icon icon="cloud"></iron-icon><span>${ButtonBrowseImages}</span></paper-button>
+                        <paper-button raised class="subdued btnOpenUploadMenu"><iron-icon icon="add"></iron-icon><span>${ButtonUpload}</span></paper-button>
+                    </div>
+
+                    <div id="imagesContainer" style="display: none;">
+                        <h1>${HeaderImages}</h1>
+                        <div id="images">
+                        </div>
+                        <br />
+                    </div>
+
+                    <div id="backdropsContainer" style="display: none;">
+                        <h1>${HeaderBackdrops}</h1>
+                        <div id="backdrops">
+                        </div>
+                        <br />
+                    </div>
+
+                    <div id="screenshotsContainer" style="display: none;">
+                        <h1>${Screenshots}</h1>
+                        <div id="screenshots">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div data-role="content">
@@ -610,7 +560,7 @@
 
         </div>
 
-        <div data-role="popup" class="ui-content popupSubtitleViewer">
+        <div data-role="popup" class="popup popupSubtitleViewer">
             <a href="#" data-rel="back" data-role="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
             <div class="subtitleViewerContent">
                 <pre class="subtitleContent" style="margin: 0; border-radius: 0;"></pre>

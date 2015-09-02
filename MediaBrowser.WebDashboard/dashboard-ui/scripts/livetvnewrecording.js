@@ -1,12 +1,50 @@
 ﻿(function ($, document) {
 
     var currentProgram;
+    var registrationInfo;
+    var lastRegId;
+
+    function getRegistration(programId) {
+
+        var deferred = DeferredBuilder.Deferred();
+
+        if (registrationInfo && (lastRegId == programId)) {
+            deferred.resolveWith(null, [registrationInfo]);
+            return deferred.promise();
+        }
+
+        registrationInfo = null;
+        Dashboard.showLoadingMsg();
+
+        ApiClient.getJSON(ApiClient.getUrl('LiveTv/Registration', {
+
+            ProgramId: programId,
+            Feature: 'seriesrecordings'
+        })).done(function (result) {
+
+            lastRegId = programId;
+            registrationInfo = result;
+            deferred.resolveWith(null, [registrationInfo]);
+            Dashboard.hideLoadingMsg();
+
+        }).fail(function () {
+
+            deferred.resolveWith(null, [
+            {
+                TrialVersion: true,
+                IsValid: true,
+                IsRegistered: false
+            }]);
+
+            Dashboard.hideLoadingMsg();
+        });
+
+        return deferred.promise();
+    }
 
     function renderRecording(page, defaultTimer, program) {
 
         currentProgram = program;
-
-        var context = 'livetv';
 
         $('.itemName', page).html(program.Name);
 
@@ -14,21 +52,17 @@
 
         $('.itemCommunityRating', page).html(LibraryBrowser.getRatingHtml(program));
 
-        LibraryBrowser.renderGenres($('.itemGenres', page), program, context);
+        LibraryBrowser.renderGenres($('.itemGenres', page), program);
         LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), program);
 
         $('.itemMiscInfo', page).html(LibraryBrowser.getMiscInfoHtml(program));
 
-        LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', page), program);
-
-        $('#chkNewOnly', page).checked(defaultTimer.RecordNewOnly).checkboxradio('refresh');
-        $('#chkAllChannels', page).checked(defaultTimer.RecordAnyChannel).checkboxradio('refresh');
-        $('#chkAnyTime', page).checked(defaultTimer.RecordAnyTime).checkboxradio('refresh');
+        $('#chkNewOnly', page).checked(defaultTimer.RecordNewOnly);
+        $('#chkAllChannels', page).checked(defaultTimer.RecordAnyChannel);
+        $('#chkAnyTime', page).checked(defaultTimer.RecordAnyTime);
 
         $('#txtPrePaddingMinutes', page).val(defaultTimer.PrePaddingSeconds / 60);
         $('#txtPostPaddingMinutes', page).val(defaultTimer.PostPaddingSeconds / 60);
-        $('#chkPrePaddingRequired', page).checked(defaultTimer.IsPrePaddingRequired).checkboxradio('refresh');
-        $('#chkPostPaddingRequired', page).checked(defaultTimer.IsPostPaddingRequired).checkboxradio('refresh');
 
         if (program.IsSeries) {
             $('#eligibleForSeriesFields', page).show();
@@ -67,7 +101,7 @@
 
             var day = daysOfWeek[i];
 
-            $('#chk' + day, page).checked(days.indexOf(day) != -1).checkboxradio('refresh');
+            $('#chk' + day, page).checked(days.indexOf(day) != -1);
 
         }
 
@@ -112,8 +146,6 @@
 
             item.PrePaddingSeconds = $('#txtPrePaddingMinutes', form).val() * 60;
             item.PostPaddingSeconds = $('#txtPostPaddingMinutes', form).val() * 60;
-            item.IsPrePaddingRequired = $('#chkPrePaddingRequired', form).checked();
-            item.IsPostPaddingRequired = $('#chkPostPaddingRequired', form).checked();
 
             item.RecordNewOnly = $('#chkNewOnly', form).checked();
             item.RecordAnyChannel = $('#chkAllChannels', form).checked();
@@ -126,7 +158,7 @@
                 ApiClient.createLiveTvSeriesTimer(item).done(function () {
 
                     Dashboard.hideLoadingMsg();
-                    Dashboard.navigate('livetvseriestimers.html');
+                    Dashboard.navigate('livetv.html');
 
                 });
 
@@ -134,7 +166,7 @@
                 ApiClient.createLiveTvTimer(item).done(function () {
 
                     Dashboard.hideLoadingMsg();
-                    Dashboard.navigate('livetvtimers.html');
+                    Dashboard.navigate('livetv.html');
 
                 });
             }
@@ -145,34 +177,74 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#liveTvNewRecordingPage", function () {
+    function hideSeriesRecordingFields(page) {
+        $('#seriesFields', page).hide();
+        page.querySelector('.btnSubmitContainer').classList.remove('hide');
+        page.querySelector('.supporterContainer').classList.add('hide');
+    }
+
+    function showSeriesRecordingFields(page) {
+        $('#seriesFields', page).show();
+        page.querySelector('.btnSubmitContainer').classList.remove('hide');
+
+        getRegistration(getParameterByName('programid')).done(function (regInfo) {
+
+            if (regInfo.IsValid) {
+                page.querySelector('.btnSubmitContainer').classList.remove('hide');
+            } else {
+                page.querySelector('.btnSubmitContainer').classList.add('hide');
+            }
+
+            if (regInfo.IsRegistered) {
+
+                page.querySelector('.supporterContainer').classList.add('hide');
+
+            } else {
+
+                page.querySelector('.supporterContainer').classList.remove('hide');
+
+                if (AppInfo.enableSupporterMembership) {
+                    page.querySelector('.btnSupporter').classList.remove('hide');
+                } else {
+                    page.querySelector('.btnSupporter').classList.add('hide');
+                }
+
+                if (regInfo.TrialVersion) {
+                    page.querySelector('.supporterTrial').classList.remove('hide');
+                } else {
+                    page.querySelector('.supporterTrial').classList.add('hide');
+                }
+            }
+        });
+    }
+
+    $(document).on('pageinit', "#liveTvNewRecordingPage", function () {
 
         var page = this;
 
         $('#chkRecordSeries', page).on('change', function () {
 
             if (this.checked) {
-                $('#seriesFields', page).show();
+                showSeriesRecordingFields(page);
             } else {
-                $('#seriesFields', page).hide();
+                hideSeriesRecordingFields(page);
             }
-
         });
 
         $('#btnCancel', page).on('click', function () {
 
             var programId = getParameterByName('programid');
 
-            Dashboard.navigate('livetvprogram.html?id=' + programId);
+            Dashboard.navigate('itemdetails.html?id=' + programId);
 
         });
 
         $('.liveTvNewRecordingForm').off('submit', onSubmit).on('submit', onSubmit);
 
-    }).on('pagebeforeshowready', "#liveTvNewRecordingPage", function () {
+    }).on('pagebeforeshow', "#liveTvNewRecordingPage", function () {
 
         var page = this;
-
+        hideSeriesRecordingFields(page);
         reload(page);
 
     }).on('pagebeforehide', "#liveTvNewRecordingPage", function () {

@@ -50,7 +50,6 @@
 
                 html = LibraryBrowser.getListViewHtml({
                     items: result.Items,
-                    context: 'tv',
                     sortBy: query.SortBy
                 });
                 trigger = true;
@@ -63,7 +62,6 @@
                     showParentTitle: true,
                     overlayText: true,
                     lazy: true,
-                    context: 'tv',
                     showDetailsMenu: true
                 });
             }
@@ -74,7 +72,6 @@
                     showTitle: true,
                     showParentTitle: true,
                     lazy: true,
-                    context: 'tv',
                     cardLayout: true,
                     showDetailsMenu: true
                 });
@@ -156,7 +153,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinitdepends', "#episodesPage", function () {
+    $(document).on('pageinit', "#episodesPage", function () {
 
         var page = this;
 
@@ -321,7 +318,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#episodesPage", function () {
+    }).on('pagebeforeshow', "#episodesPage", function () {
 
         var page = this;
         query.ParentId = LibraryMenu.getTopParentId();

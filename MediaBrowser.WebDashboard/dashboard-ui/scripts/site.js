@@ -20,7 +20,6 @@ $.support.cors = true;
 $(document).one('click', WebNotifications.requestPermission);
 
 var Dashboard = {
-
     jQueryMobileInit: function () {
 
         // Page
@@ -33,7 +32,7 @@ var Dashboard = {
         //$.mobile.listview.prototype.options.dividerTheme = "b";
 
         //$.mobile.popup.prototype.options.theme = "c";
-        $.mobile.popup.prototype.options.transition = "none";
+        //$.mobile.popup.prototype.options.transition = "none";
 
         //$.mobile.keepNative = "textarea";
 
@@ -48,17 +47,18 @@ var Dashboard = {
         $.mobile.panel.prototype.options.classes.modalOpen = "largePanelModalOpen ui-panel-dismiss-open";
         $.mobile.panel.prototype.options.classes.panel = "largePanel ui-panel";
 
-        $.event.special.swipe.verticalDistanceThreshold = 40;
-        $.mobile.loader.prototype.options.disabled = true;
+        //$.event.special.swipe.verticalDistanceThreshold = 40;
+        //$.mobile.page.prototype.options.domCache = true;
 
 
-        $.mobile.page.prototype.options.domCache = true;
+
 
         $.mobile.loadingMessage = false;
-        $.mobile.loader.prototype.options.html = "";
-        $.mobile.loader.prototype.options.textVisible = false;
-        $.mobile.loader.prototype.options.textOnly = true;
-        $.mobile.loader.prototype.options.text = "";
+        //$.mobile.loader.prototype.options.disabled = true;
+        //$.mobile.loader.prototype.options.html = "";
+        //$.mobile.loader.prototype.options.textVisible = false;
+        //$.mobile.loader.prototype.options.textOnly = true;
+        //$.mobile.loader.prototype.options.text = "";
 
         $.mobile.hideUrlBar = false;
         $.mobile.autoInitializePage = false;
@@ -67,7 +67,24 @@ var Dashboard = {
         // These are not needed. Nulling them out can help reduce dom querying when pages are loaded
         $.mobile.nojs = null;
         $.mobile.degradeInputsWithin = null;
-        $.mobile.keepNative = ":jqmData(role='none'),.paper-input";
+        $.mobile.keepNative = ":jqmData(role='none'),.paper-input,textarea.style-scope";
+
+        $.mobile.filterHtml = Dashboard.filterHtml;
+    },
+
+    filterHtml: function (html) {
+
+        // replace the first instance
+        html = html.replace('<!--', '');
+
+        // replace the last instance
+        var lastIndex = html.lastIndexOf('-->');
+
+        if (lastIndex != -1) {
+            html = html.substring(0, lastIndex) + html.substring(lastIndex + 3);
+        }
+
+        return Globalize.translateDocument(html, 'html');
     },
 
     isConnectMode: function () {
@@ -79,7 +96,7 @@ var Dashboard = {
         var url = getWindowUrl().toLowerCase();
 
         return url.indexOf('mediabrowser.tv') != -1 ||
-			url.indexOf('emby.media') != -1;
+            url.indexOf('emby.media') != -1;
     },
 
     isRunningInCordova: function () {
@@ -112,8 +129,8 @@ var Dashboard = {
                 }
             }
             return;
+            Dashboard.hideLoadingMsg();
         }
-        Dashboard.hideLoadingMsg();
     },
 
     getCurrentUser: function () {
@@ -227,8 +244,7 @@ var Dashboard = {
 
         if (document.createStyleSheet) {
             document.createStyleSheet(url);
-        }
-        else {
+        } else {
             var link = document.createElement('link');
             link.setAttribute('rel', 'stylesheet');
             link.setAttribute('type', 'text/css');
@@ -331,7 +347,7 @@ var Dashboard = {
         var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRestart') + '</span>';
 
         if (systemInfo.CanSelfRestart) {
-            html += '<button type="button" data-icon="refresh" onclick="this.disabled=\'disabled\';Dashboard.restartServer();" data-theme="b" data-inline="true" data-mini="true">' + Globalize.translate('ButtonRestart') + '</button>';
+            html += '<paper-button raised class="submit mini" onclick="this.disabled=\'disabled\';Dashboard.restartServer();"><iron-icon icon="refresh"></iron-icon><span>' + Globalize.translate('ButtonRestart') + '</span></paper-button>';
         }
 
         Dashboard.showFooterNotification({ id: "serverRestartWarning", html: html, forceShow: true, allowHide: false });
@@ -349,7 +365,7 @@ var Dashboard = {
 
         var html = '<span style="margin-right: 1em;">' + Globalize.translate('MessagePleaseRefreshPage') + '</span>';
 
-        html += '<button type="button" data-icon="refresh" onclick="this.disabled=\'disabled\';Dashboard.reloadPage();" data-theme="b" data-inline="true" data-mini="true">' + Globalize.translate('ButtonRefresh') + '</button>';
+        html += '<paper-button raised class="submit mini" onclick="this.disabled=\'disabled\';Dashboard.reloadPage();"><iron-icon icon="refresh"></iron-icon><span>' + Globalize.translate('ButtonRefresh') + '</span></paper-button>';
 
         Dashboard.showFooterNotification({ id: "dashboardVersionWarning", html: html, forceShow: true, allowHide: false });
     },
@@ -464,44 +480,38 @@ var Dashboard = {
 
     showLoadingMsg: function () {
 
-        console.log('showLoadingMsg');
+        var elem = document.querySelector('.docspinner');
 
-        require(['paperbuttonstyle'], function () {
-            var elem = document.querySelector('.docspinner');
+        if (elem) {
 
-            if (elem) {
+            // This is just an attempt to prevent the fade-in animation from running repeating and causing flickering
+            elem.active = true;
 
-                // This is just an attempt to prevent the fade-in animation from running repeating and causing flickering
-                elem.active = true;
+        } else {
 
-            } else {
-
+            // IE renders it incorrectly
+            if (!$.browser.msie) {
                 elem = document.createElement("paper-spinner");
                 elem.classList.add('docspinner');
 
                 document.body.appendChild(elem);
                 elem.active = true;
             }
-        });
+        }
     },
 
     hideLoadingMsg: function () {
 
-        console.log('hideLoadingMsg');
+        var elem = document.querySelector('.docspinner');
 
-        require(['paperbuttonstyle'], function () {
+        if (elem) {
 
-            var elem = document.querySelector('.docspinner');
+            elem.active = false;
 
-            if (elem) {
-
+            setTimeout(function () {
                 elem.active = false;
-
-                setTimeout(function () {
-                    elem.active = false;
-                }, 100);
-            }
-        });
+            }, 100);
+        }
     },
 
     getModalLoadingMsg: function () {
@@ -518,8 +528,8 @@ var Dashboard = {
     },
 
     showModalLoadingMsg: function () {
-        Dashboard.showLoadingMsg();
         Dashboard.getModalLoadingMsg().show();
+        Dashboard.showLoadingMsg();
     },
 
     hideModalLoadingMsg: function () {
@@ -584,6 +594,75 @@ var Dashboard = {
         }
     },
 
+    dialog: function (options) {
+
+        var title = options.title;
+        var message = options.message;
+        var buttons = options.buttons;
+        var callback = options.callback;
+
+        // Cordova
+        if (navigator.notification && navigator.notification.confirm && message.indexOf('<') == -1) {
+
+            navigator.notification.confirm(message, function (index) {
+
+                callback(index);
+
+            }, title, buttons.join(','));
+
+        } else {
+            Dashboard.dialogInternal(message, title, buttons, callback);
+        }
+    },
+
+    dialogInternal: function (message, title, buttons, callback) {
+
+        var id = 'paperdlg' + new Date().getTime();
+
+        var html = '<paper-dialog id="' + id + '" role="alertdialog" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop>';
+        html += '<h2>' + title + '</h2>';
+        html += '<div>' + message + '</div>';
+        html += '<div class="buttons">';
+
+        var index = 0;
+        html += buttons.map(function (b) {
+
+            var dataIndex = ' data-index="' + index + '"';
+            index++;
+            return '<paper-button class="dialogButton"' + dataIndex + ' dialog-dismiss>' + b + '</paper-button>';
+
+        }).join('');
+
+        html += '</div>';
+        html += '</paper-dialog>';
+
+        $(document.body).append(html);
+
+        // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
+        // element onload never fires
+        setTimeout(function () {
+
+            var dlg = document.getElementById(id);
+
+            $('.dialogButton', dlg).on('click', function () {
+
+                if (callback) {
+                    callback(parseInt(this.getAttribute('data-index')));
+                }
+
+            });
+
+            // Has to be assigned a z-index after the call to .open() 
+            $(dlg).on('iron-overlay-closed', function (e) {
+
+                this.parentNode.removeChild(this);
+            });
+
+            dlg.open();
+
+        }, 300);
+    },
+
     confirm: function (message, title, callback) {
 
         // Cordova
@@ -604,46 +683,43 @@ var Dashboard = {
 
     confirmInternal: function (message, title, showCancel, callback) {
 
-        require(['paperbuttonstyle'], function () {
+        var id = 'paperdlg' + new Date().getTime();
 
-            var id = 'paperdlg' + new Date().getTime();
+        var html = '<paper-dialog id="' + id + '" role="alertdialog" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop>';
+        html += '<h2>' + title + '</h2>';
+        html += '<div>' + message + '</div>';
+        html += '<div class="buttons">';
 
-            var html = '<paper-dialog id="' + id + '" role="alertdialog" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop>';
-            html += '<h2>' + title + '</h2>';
-            html += '<div>' + message + '</div>';
-            html += '<div class="buttons">';
+        html += '<paper-button class="btnConfirm" dialog-confirm autofocus>' + Globalize.translate('ButtonOk') + '</paper-button>';
 
-            if (showCancel) {
-                html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonCancel') + '</paper-button>';
-            }
+        if (showCancel) {
+            html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonCancel') + '</paper-button>';
+        }
 
-            html += '<paper-button class="btnConfirm" dialog-confirm autofocus>' + Globalize.translate('ButtonOk') + '</paper-button>';
+        html += '</div>';
+        html += '</paper-dialog>';
 
-            html += '</div>';
-            html += '</paper-dialog>';
+        $(document.body).append(html);
 
-            $(document.body).append(html);
+        // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
+        // element onload never fires
+        setTimeout(function () {
 
-            // This timeout is obviously messy but it's unclear how to determine when the webcomponent is ready for use
-            // element onload never fires
-            setTimeout(function () {
+            var dlg = document.getElementById(id);
 
-                var dlg = document.getElementById(id);
+            // Has to be assigned a z-index after the call to .open() 
+            $(dlg).on('iron-overlay-closed', function (e) {
+                var confirmed = this.closingReason.confirmed;
+                this.parentNode.removeChild(this);
 
-                // Has to be assigned a z-index after the call to .open() 
-                $(dlg).on('iron-overlay-closed', function (e) {
-                    var confirmed = this.closingReason.confirmed;
-                    this.parentNode.removeChild(this);
+                if (callback) {
+                    callback(confirmed);
+                }
+            });
 
-                    if (callback) {
-                        callback(confirmed);
-                    }
-                });
+            dlg.open();
 
-                dlg.open();
-
-            }, 300);
-        });
+        }, 300);
     },
 
     refreshSystemInfoFromServer: function () {
@@ -761,7 +837,7 @@ var Dashboard = {
         html = '';
 
         if (user.localUser && user.localUser.Policy.EnableUserPreferenceAccess) {
-            html += '<p><a data-mini="true" data-role="button" href="mypreferencesdisplay.html?userId=' + user.localUser.Id + '" data-icon="gear">' + Globalize.translate('ButtonSettings') + '</button></a>';
+            html += '<p><a data-mini="true" data-role="button" href="mypreferencesmenu.html?userId=' + user.localUser.Id + '" data-icon="gear">' + Globalize.translate('ButtonSettings') + '</button></a>';
         }
 
         $('.preferencesContainer', elem).html(html).trigger('create');
@@ -1065,6 +1141,7 @@ var Dashboard = {
             case 'SetAudioStreamIndex':
             case 'SetSubtitleStreamIndex':
             case 'ToggleFullscreen':
+            case 'SetRepeatMode':
                 break;
             default:
                 Logger.log('Unrecognized command: ' + cmd.Name);
@@ -1155,22 +1232,22 @@ var Dashboard = {
         var type = (cmd.ItemType || "").toLowerCase();
 
         if (type == "genre") {
-            url = "itembynamedetails.html?id=" + cmd.ItemId;
+            url = "itemdetails.html?id=" + cmd.ItemId;
         }
         else if (type == "musicgenre") {
-            url = "itembynamedetails.html?id=" + cmd.ItemId;
+            url = "itemdetails.html?id=" + cmd.ItemId;
         }
         else if (type == "gamegenre") {
-            url = "itembynamedetails.html?id=" + cmd.ItemId;
+            url = "itemdetails.html?id=" + cmd.ItemId;
         }
         else if (type == "studio") {
-            url = "itembynamedetails.html?id=" + cmd.ItemId;
+            url = "itemdetails.html?id=" + cmd.ItemId;
         }
         else if (type == "person") {
-            url = "itembynamedetails.html?id=" + cmd.ItemId;
+            url = "itemdetails.html?id=" + cmd.ItemId;
         }
         else if (type == "musicartist") {
-            url = "itembynamedetails.html?id=" + cmd.ItemId;
+            url = "itemdetails.html?id=" + cmd.ItemId;
         }
 
         if (url) {
@@ -1229,8 +1306,7 @@ var Dashboard = {
             html += '</progress>';
 
             if (percentComplete < 100) {
-                var btnId = "btnCancel" + installation.Id;
-                html += '<button id="' + btnId + '" type="button" data-icon="delete" onclick="$(\'' + btnId + '\').buttonEnabled(false);Dashboard.cancelInstallation(\'' + installation.Id + '\');" data-theme="b" data-inline="true" data-mini="true">' + Globalize.translate('ButtonCancel') + '</button>';
+                html += '<paper-button raised class="cancelDark mini" onclick="this.disabled=\'disabled\';Dashboard.cancelInstallation(\'' + installation.Id + '\');"><iron-icon icon="cancel"></iron-icon><span>' + Globalize.translate('ButtonCancel') + '</span></paper-button>';
             }
         }
 
@@ -1318,7 +1394,7 @@ var Dashboard = {
         html += '<h1 class="pageTitle" style="display:inline-block;">' + (document.title || '&nbsp;') + '</h1>';
 
         if (helpUrl) {
-            html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-top:-10px;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><i class="fa fa-info-circle"></i>' + Globalize.translate('ButtonHelp') + '</paper-button></a>';
+            html += '<a href="' + helpUrl + '" target="_blank" class="clearLink" style="margin-top:-10px;display:inline-block;vertical-align:middle;margin-left:1em;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>' + Globalize.translate('ButtonHelp') + '</span></paper-button></a>';
         }
 
         html += '</div>';
@@ -1430,7 +1506,8 @@ var Dashboard = {
             "SetSubtitleStreamIndex",
             "DisplayContent",
             "GoToSearch",
-            "DisplayMessage"
+            "DisplayMessage",
+            "SetRepeatMode"
         ];
 
     },
@@ -1477,10 +1554,10 @@ var Dashboard = {
             // The native app can handle a little bit more than safari
             if (AppInfo.isNativeApp) {
 
-                quality -= 15;
+                quality -= 10;
 
                 if (isBackdrop) {
-                    quality -= 20;
+                    quality -= 15;
                 }
 
             } else {
@@ -1580,20 +1657,6 @@ var Dashboard = {
         Dashboard.initPromise.done(fn);
     },
 
-    firePageEvent: function (page, name, dependencies) {
-
-        Dashboard.ready(function () {
-
-            if (dependencies && dependencies.length) {
-                require(dependencies, function () {
-                    Events.trigger(page, name);
-                });
-            } else {
-                Events.trigger(page, name);
-            }
-        });
-    },
-
     loadExternalPlayer: function () {
 
         var deferred = DeferredBuilder.Deferred();
@@ -1658,7 +1721,6 @@ var AppInfo = {};
 
             if (isCordova) {
                 AppInfo.enableBottomTabs = true;
-                AppInfo.cardMargin = 'mediumCardMargin';
                 //AppInfo.enableSectionTransitions = true;
 
             } else {
@@ -1711,14 +1773,10 @@ var AppInfo = {};
 
         AppInfo.supportsFullScreen = isCordova && isAndroid;
         AppInfo.supportsSyncPathSetting = isCordova && isAndroid;
+        AppInfo.supportsUserDisplayLanguageSetting = Dashboard.isConnectMode() && !isCordova;
 
-        if (isCordova && isAndroid) {
-            AppInfo.directPlayAudioContainers = "flac,aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape".split(',');
-            AppInfo.directPlayVideoContainers = "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm".split(',');
-        } else {
-            AppInfo.directPlayAudioContainers = [];
-            AppInfo.directPlayVideoContainers = [];
-        }
+        AppInfo.directPlayAudioContainers = [];
+        AppInfo.directPlayVideoContainers = [];
 
         if (isCordova && isIOS) {
             AppInfo.moreIcon = 'more-horiz';
@@ -1782,6 +1840,7 @@ var AppInfo = {};
             ConnectionManager.addApiClient(apiClient);
             Dashboard.importCss(apiClient.getUrl('Branding/Css'));
             window.ApiClient = apiClient;
+            deferred.resolve();
         }
         return deferred.promise();
     }
@@ -1812,8 +1871,6 @@ var AppInfo = {};
 
         if (AppInfo.isTouchPreferred) {
             elem.classList.add('touch');
-        } else {
-            elem.classList.add('pointerInput');
         }
 
         if (AppInfo.cardMargin) {
@@ -1984,6 +2041,13 @@ var AppInfo = {};
             define("videorenderer", ["scripts/htmlmediarenderer"]);
         }
 
+        if (Dashboard.isRunningInCordova() && $.browser.android) {
+            define("localsync", ["cordova/android/localsync"]);
+        }
+        else {
+            define("localsync", ["scripts/localsync"]);
+        }
+
         define("connectservice", ["apiclient/connectservice"]);
         define("paperbuttonstyle", [], function () {
             return {};
@@ -1994,6 +2058,10 @@ var AppInfo = {};
         });
         define("livetvcss", [], function () {
             Dashboard.importCss('css/livetv.css');
+            return {};
+        });
+        define("fontawesome", [], function () {
+            Dashboard.importCss('thirdparty/fontawesome/css/font-awesome.min.css');
             return {};
         });
         define("detailtablecss", [], function () {
@@ -2025,6 +2093,25 @@ var AppInfo = {};
             define("searchmenu", ["scripts/searchmenu"]);
         }
 
+        define("jqmtable", ["thirdparty/jquerymobile-1.4.5/jqm.table"], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.table.css');
+            return {};
+        });
+
+        define("jqmslider", ["thirdparty/jquerymobile-1.4.5/jqm.slider"], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.slider.css');
+            return {};
+        });
+
+        define("jqmpopup", ["thirdparty/jquerymobile-1.4.5/jqm.popup"], function () {
+            Dashboard.importCss('thirdparty/jquerymobile-1.4.5/jqm.popup.css');
+            return {};
+        });
+
+        define("hammer", ["bower_components/hammerjs/hammer.min"], function (Hammer) {
+            return Hammer;
+        });
+
         $.extend(AppInfo, Dashboard.getAppInfo(appName, deviceId, deviceName));
 
         var drawer = document.querySelector('.mainDrawerPanel');
@@ -2035,42 +2122,93 @@ var AppInfo = {};
         drawerWidth = Math.max(drawerWidth, 240);
         // But not exceeding 310
         drawerWidth = Math.min(drawerWidth, 310);
+
         drawer.drawerWidth = drawerWidth + "px";
 
         if ($.browser.safari && !AppInfo.isNativeApp) {
             drawer.disableEdgeSwipe = true;
         }
 
-        if (Dashboard.isConnectMode()) {
+        var deps = [];
 
-            if (AppInfo.isNativeApp && $.browser.android) {
-                require(['cordova/android/logging']);
+        if (AppInfo.isNativeApp && $.browser.android) {
+            deps.push('cordova/android/logging');
+        }
+
+        deps.push('appstorage');
+
+        require(deps, function () {
+
+            if (Dashboard.isRunningInCordova() && $.browser.android) {
+                AppInfo.directPlayAudioContainers = "aac,mp3,mpa,wav,wma,mp2,ogg,oga,webma,ape,opus".split(',');
+
+                // TODO: This is going to exclude it from both playback and sync, so improve on this
+                if (AppSettings.syncLosslessAudio()) {
+                    AppInfo.directPlayAudioContainers.push('flac');
+                }
+
+                AppInfo.directPlayVideoContainers = "m4v,3gp,ts,mpegts,mov,xvid,vob,mkv,wmv,asf,ogm,ogv,m2v,avi,mpg,mpeg,mp4,webm".split(',');
             }
 
-            require(['appstorage'], function () {
+            capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
+            createConnectionManager(capabilities).done(function () { onConnectionManagerCreated(deferred); });
 
-                capabilities.DeviceProfile = MediaPlayer.getDeviceProfile(Math.max(screen.height, screen.width));
-                createConnectionManager(capabilities).done(function () {
-                    $(function () {
-                        onDocumentReady();
-                        Dashboard.initPromiseDone = true;
-                        $.mobile.initializePage();
-                        deferred.resolve();
-                    });
-                });
-            });
+            //$(document.body).append('<div style="background:#00ACC1;position:fixed;z-index:999999;top:1px;left:1px;width:800px;height:450px;display:flex;align-items:center;justify-content:center;"><iron-icon icon="ondemand-video" style="width:320px;height:320px;color:#fff;"></iron-icon></div>');
+        });
+    }
 
-        } else {
-            createConnectionManager(capabilities);
+    function onConnectionManagerCreated(deferred) {
+
+        Globalize.ensure().done(function () {
+            document.title = Globalize.translateDocument(document.title, 'html');
 
             $(function () {
 
-                onDocumentReady();
-                Dashboard.initPromiseDone = true;
-                $.mobile.initializePage();
-                deferred.resolve();
+                var mainDrawerPanelContent = document.querySelector('.mainDrawerPanelContent');
+
+                if (mainDrawerPanelContent) {
+
+                    var newHtml = mainDrawerPanelContent.innerHTML.substring(4);
+                    newHtml = newHtml.substring(0, newHtml.length - 3);
+
+                    var srch = 'data-require=';
+                    var index = newHtml.indexOf(srch);
+                    var depends;
+
+                    if (index != -1) {
+
+                        var requireAttribute = newHtml.substring(index + srch.length + 1);
+
+                        requireAttribute = requireAttribute.substring(0, requireAttribute.indexOf('"'));
+                        depends = requireAttribute.split(',');
+                    }
+
+                    depends = depends || [];
+
+                    if (newHtml.indexOf('type-interior') != -1) {
+                        depends.push('jqmicons');
+                        depends.push('jqmpopup');
+                    }
+
+                    require(depends, function () {
+
+                        // Don't like having to use jQuery here, but it takes care of making sure that embedded script executes
+                        $(mainDrawerPanelContent).html(Globalize.translateDocument(newHtml, 'html'));
+                        onAppReady(deferred);
+                    });
+                    return;
+                }
+
+                onAppReady(deferred);
             });
-        }
+        });
+    }
+
+    function onAppReady(deferred) {
+        onDocumentReady();
+        Dashboard.initPromiseDone = true;
+        $.mobile.initializePage();
+        deferred.resolve();
     }
 
     function initCordovaWithDeviceId(deferred, deviceId) {
@@ -2079,7 +2217,9 @@ var AppInfo = {};
 
         var capablities = Dashboard.capabilities();
 
-        init(deferred, capablities, "Emby Mobile", deviceId, device.model);
+        var name = $.browser.android ? "Emby for Android" : ($.browser.safari ? "Emby for iOS" : "Emby Mobile");
+
+        init(deferred, capablities, name, deviceId, device.model);
     }
 
     function initCordova(deferred) {
@@ -2146,33 +2286,11 @@ $(document).on('pagecreate', ".page", function () {
         document.body.classList.remove('darkScrollbars');
     }
 
-}).on('pageinit', ".page", function () {
-
-    var page = this;
-
-    var dependencies = this.getAttribute('data-require');
-    dependencies = dependencies ? dependencies.split(',') : null;
-    Dashboard.firePageEvent(page, 'pageinitdepends', dependencies);
-
-}).on('pagebeforeshow', ".page", function () {
-
-    var page = this;
-    var dependencies = this.getAttribute('data-require');
-
-    Dashboard.ensurePageTitle(page);
-    dependencies = dependencies ? dependencies.split(',') : null;
-    Dashboard.firePageEvent(page, 'pagebeforeshowready', dependencies);
-
 }).on('pageshow', ".page", function () {
 
     var page = this;
-    var dependencies = this.getAttribute('data-require');
-    dependencies = dependencies ? dependencies.split(',') : null;
-    Dashboard.firePageEvent(page, 'pageshowbeginready', dependencies);
 
-}).on('pageshowbeginready', ".page", function () {
-
-    var page = this;
+    Dashboard.ensurePageTitle(page);
 
     var apiClient = window.ApiClient;
 
@@ -2181,13 +2299,13 @@ $(document).on('pagecreate', ".page", function () {
         var isSettingsPage = page.classList.contains('type-interior');
 
         if (isSettingsPage) {
+            require(['jqmicons']);
             Dashboard.ensureToolsMenu(page);
 
             Dashboard.getCurrentUser().done(function (user) {
 
                 if (!user.Policy.IsAdministrator) {
                     Dashboard.logout();
-                    return;
                 }
             });
         }
@@ -2213,15 +2331,11 @@ $(document).on('pagecreate', ".page", function () {
         }
     }
 
-    Dashboard.firePageEvent(page, 'pageshowready');
+    Events.trigger(page, 'pageshowready');
 
     Dashboard.ensureHeader(page);
 
     if (apiClient && !apiClient.isWebSocketOpen()) {
         Dashboard.refreshSystemInfoFromServer();
-    }
-
-    if (!page.classList.contains('libraryPage')) {
-        require(['jqmicons']);
     }
 });

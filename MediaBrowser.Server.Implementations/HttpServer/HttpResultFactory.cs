@@ -335,7 +335,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <returns>Stream.</returns>
         private Stream GetFileStream(string path, FileShare fileShare)
         {
-            return _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, fileShare, true);
+            return _fileSystem.GetFileStream(path, FileMode.Open, FileAccess.Read, fileShare);
         }
 
         public object GetStaticResult(IRequest requestContext,
@@ -459,7 +459,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
 
                 if (!string.IsNullOrEmpty(rangeHeader))
                 {
-                    return new RangeRequestWriter(rangeHeader, stream, contentType, isHeadRequest)
+                    return new RangeRequestWriter(rangeHeader, stream, contentType, isHeadRequest, _logger)
                     {
                         OnComplete = options.OnComplete
                     };

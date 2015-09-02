@@ -2,9 +2,7 @@
 
     function isAndroid() {
 
-        var platform = (device.platform || '').toLowerCase();
-
-        return platform.indexOf('android') != -1;
+        return $.browser.android;
     }
 
     function getPremiumUnlockFeatureId() {
@@ -51,11 +49,19 @@
         return ConnectionManager.getRegistrationInfo(feature, ApiClient);
     }
 
+    var validatedFeatures = [];
+
     function validateFeature(id, deferred) {
+
+        if (validatedFeatures.indexOf(id) != -1) {
+            deferred.resolve();
+            return;
+        }
 
         var info = IapManager.getProductInfo(id) || {};
 
         if (info.owned) {
+            validatedFeatures.push(id);
             deferred.resolve();
             return;
         }
@@ -73,6 +79,7 @@
         getRegistrationInfo(prefix + 'appunlock', productInfo.enableSupporterUnlock).done(function (registrationInfo) {
 
             if (registrationInfo.IsRegistered) {
+                validatedFeatures.push(id);
                 deferred.resolve();
                 return;
             }
@@ -212,6 +219,43 @@
         }
     }
 
+    function validateSync(deferred) {
+
+        Dashboard.getPluginSecurityInfo().done(function (pluginSecurityInfo) {
+
+            if (pluginSecurityInfo.IsMBSupporter) {
+                deferred.resolve();
+                return;
+            }
+
+            Dashboard.showLoadingMsg();
+
+            ApiClient.getRegistrationInfo('Sync').done(function (registrationInfo) {
+
+                Dashboard.hideLoadingMsg();
+
+                if (registrationInfo.IsRegistered) {
+                    deferred.resolve();
+                    return;
+                }
+
+                Dashboard.alert({
+                    message: Globalize.translate('HeaderSyncRequiresSupporterMembershipAppVersion'),
+                    title: Globalize.translate('HeaderSync')
+                });
+
+            }).fail(function () {
+
+                Dashboard.hideLoadingMsg();
+
+                Dashboard.alert({
+                    message: Globalize.translate('ErrorValidatingSupporterInfo')
+                });
+            });
+
+        });
+    }
+
     window.RegistrationServices = {
 
         renderPluginInfo: function (page, pkg, pluginSecurityInfo) {
@@ -237,6 +281,8 @@
                 validateLiveTV(deferred);
             } else if (name == 'manageserver') {
                 validateServerManagement(deferred);
+            } else if (name == 'sync') {
+                validateSync(deferred);
             } else {
                 deferred.resolve();
             }

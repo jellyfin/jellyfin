@@ -4,11 +4,7 @@
     <title>${TitleSync}</title>
 </head>
 <body>
-    <div id="mySyncJobPage" data-role="page" class="page libraryPage syncJobPage mySyncPage" data-contextname="${TitleSync}" data-require="scripts/syncjob">
-
-        <div class="libraryViewNav">
-            <a href="mysync.html" class="ui-btn-active"><iron-icon icon="refresh"></iron-icon>${TabSyncJobs}</a>
-        </div>
+    <div id="mySyncJobPage" data-role="page" class="page libraryPage syncJobPage mySyncPage noSecondaryNavPage" data-contextname="${TitleSync}" data-require="scripts/syncjob" data-backbutton="true" data-menubutton="false">
 
         <div data-role="content">
 

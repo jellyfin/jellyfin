@@ -63,9 +63,9 @@
         $('.manualLoginForm', page).show();
 
         if (focusPassword) {
-            $('#txtManualPassword', page).focus();
+            $('#txtManualPassword input', page).focus();
         } else {
-            $('#txtManualName', page).focus();
+            $('#txtManualName input', page).focus();
         }
 
         if (showCancel) {
@@ -89,7 +89,7 @@
         return "Last seen " + humane_date(lastActivityDate);
     },
 
-    authenticateUserByName: function (apiClient, username, password) {
+    authenticateUserByName: function (page, apiClient, username, password) {
 
         Dashboard.showLoadingMsg();
 
@@ -114,9 +114,9 @@
 
         }).fail(function () {
 
-            $('#pw', '#loginPage').val('');
-            $('#txtManualName', '#loginPage').val('');
-            $('#txtManualPassword', '#loginPage').val('');
+            $('#pw', page).val('');
+            $('#txtManualName', page).val('');
+            $('#txtManualPassword', page).val('');
 
             Dashboard.hideLoadingMsg();
 
@@ -182,7 +182,7 @@
             html += '</div>';
         }
 
-        var elem = $('#divUsers', '#loginPage').html(html);
+        var elem = $('#divUsers', page).html(html);
 
         $('a', elem).on('click', function () {
 
@@ -194,10 +194,10 @@
                 LoginPage.showManualForm(page, true);
             }
             else if (haspw == 'false') {
-                LoginPage.authenticateUserByName(apiClient, name, '');
+                LoginPage.authenticateUserByName(page, apiClient, name, '');
             } else {
                 $('#txtManualName', page).val(name);
-                $('#txtManualPassword', '#loginPage').val('');
+                $('#txtManualPassword', page).val('');
                 LoginPage.showManualForm(page, true, true);
             }
         });
@@ -205,8 +205,10 @@
 
     onManualSubmit: function () {
 
+    	var page = $(this).parents('.page');
+
         LoginPage.getApiClient().done(function (apiClient) {
-            LoginPage.authenticateUserByName(apiClient, $('#txtManualName', '#loginPage').val(), $('#txtManualPassword', '#loginPage').val());
+            LoginPage.authenticateUserByName(page, apiClient, $('#txtManualName', page).val(), $('#txtManualPassword', page).val());
         });
 
         // Disable default form submission
@@ -214,7 +216,7 @@
     }
 };
 
-$(document).on('pageinitdepends', "#loginPage", function () {
+$(document).on('pageinit', "#loginPage", function () {
 
     var page = this;
 

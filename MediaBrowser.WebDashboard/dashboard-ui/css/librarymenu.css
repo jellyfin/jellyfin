@@ -35,7 +35,7 @@
     border-radius: 1000px;
 }
 
-.viewMenuBar .fa, .viewMenuBar paper-icon-button {
+.viewMenuBar paper-icon-button {
     color: #fff;
     vertical-align: middle;
 }
@@ -49,11 +49,6 @@
 
 .mainDrawerPanelPreInit #drawer {
     display: none !important;
-}
-
-.mainDrawerPanelPreInit #main {
-    left: 0 !important;
-    position: static !important;
 }
 
 .mainDrawerPanel #drawer {
@@ -201,8 +196,12 @@
 }
 
 .viewMenuBar, .libraryViewNav {
-    background-color: #111;
+    background-color: #121212;
 }
+
+    .viewMenuBar.semiTransparent {
+        background-color: rgba(18, 18, 18, .75);
+    }
 
 .paperLibraryViewNav {
     background-color: transparent !important;
@@ -288,11 +287,15 @@
     display: none;
 }
 
+.fullPaperLibraryTabs .legacyTabs {
+    display: none;
+}
+
 .libraryViewNav a:not(.ui-btn-active):hover {
     color: #2ad;
 }
 
-@media all and (max-width: 440px) {
+@media all and (max-width: 400px) {
 
     .libraryMenuButtonText {
         display: none;
@@ -364,11 +367,19 @@
     display: none !important;
 }
 
+.libraryDocument .sidebarLinkNotifications {
+    display: none !important;
+}
+
 .dashboardDocument .lnkMySync {
     display: none !important;
 }
 
 .dashboardDocument .lnkManageServer {
+    display: none !important;
+}
+
+.dashboardDocument .headerVoiceButton {
     display: none !important;
 }
 

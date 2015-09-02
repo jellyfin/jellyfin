@@ -1,14 +1,20 @@
-﻿using MediaBrowser.Controller.Activity;
+﻿using MediaBrowser.Api.Movies;
+using MediaBrowser.Api.Music;
+using MediaBrowser.Controller.Activity;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Controller.Localization;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.TV;
 using MediaBrowser.Model.Activity;
+using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Querying;
@@ -225,6 +231,17 @@ namespace MediaBrowser.Api.Library
         public string TvdbId { get; set; }
     }
 
+    [Route("/Library/Movies/Added", "POST", Summary = "Reports that new movies have been added by an external source")]
+    [Route("/Library/Movies/Updated", "POST", Summary = "Reports that new movies have been added by an external source")]
+    [Authenticated]
+    public class PostUpdatedMovies : IReturnVoid
+    {
+        [ApiMember(Name = "TmdbId", Description = "Tmdb Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string TmdbId { get; set; }
+        [ApiMember(Name = "ImdbId", Description = "Imdb Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string ImdbId { get; set; }
+    }
+
     [Route("/Items/{Id}/Download", "GET", Summary = "Downloads item media")]
     [Authenticated(Roles = "download")]
     public class GetDownload
@@ -235,6 +252,12 @@ namespace MediaBrowser.Api.Library
         /// <value>The id.</value>
         [ApiMember(Name = "Id", Description = "Item Id", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "GET")]
         public string Id { get; set; }
+    }
+
+    [Route("/Items/{Id}/Similar", "GET", Summary = "Gets similar items")]
+    [Authenticated]
+    public class GetSimilarItems : BaseGetSimilarItemsFromItem
+    {
     }
 
     /// <summary>
@@ -255,12 +278,16 @@ namespace MediaBrowser.Api.Library
         private readonly IAuthorizationContext _authContext;
         private readonly IActivityManager _activityManager;
         private readonly ILocalizationManager _localization;
+        private readonly ILiveTvManager _liveTv;
+        private readonly IChannelManager _channelManager;
+        private readonly ITVSeriesManager _tvManager;
+        private readonly ILibraryMonitor _libraryMonitor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LibraryService" /> class.
         /// </summary>
         public LibraryService(IItemRepository itemRepo, ILibraryManager libraryManager, IUserManager userManager,
-                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization)
+                              IDtoService dtoService, IUserDataManager userDataManager, IAuthorizationContext authContext, IActivityManager activityManager, ILocalizationManager localization, ILiveTvManager liveTv, IChannelManager channelManager, ITVSeriesManager tvManager, ILibraryMonitor libraryMonitor)
         {
             _itemRepo = itemRepo;
             _libraryManager = libraryManager;
@@ -270,6 +297,117 @@ namespace MediaBrowser.Api.Library
             _authContext = authContext;
             _activityManager = activityManager;
             _localization = localization;
+            _liveTv = liveTv;
+            _channelManager = channelManager;
+            _tvManager = tvManager;
+            _libraryMonitor = libraryMonitor;
+        }
+
+        public object Get(GetSimilarItems request)
+        {
+            var user = !string.IsNullOrWhiteSpace(request.UserId) ? _userManager.GetUserById(request.UserId) : null;
+
+            var item = string.IsNullOrEmpty(request.Id) ?
+                (!string.IsNullOrWhiteSpace(request.UserId) ? user.RootFolder :
+                _libraryManager.RootFolder) : _libraryManager.GetItemById(request.Id);
+
+            if (item is Game)
+            {
+                return new GamesService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService)
+                {
+                    AuthorizationContext = AuthorizationContext,
+                    Logger = Logger,
+                    Request = Request,
+                    SessionContext = SessionContext,
+                    ResultFactory = ResultFactory
+
+                }.Get(new GetSimilarGames
+                {
+                    Fields = request.Fields,
+                    Id = request.Id,
+                    Limit = request.Limit,
+                    UserId = request.UserId
+                });
+            }
+            if (item is MusicAlbum)
+            {
+                return new AlbumsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService)
+                {
+                    AuthorizationContext = AuthorizationContext,
+                    Logger = Logger,
+                    Request = Request,
+                    SessionContext = SessionContext,
+                    ResultFactory = ResultFactory
+
+                }.Get(new GetSimilarAlbums
+                {
+                    Fields = request.Fields,
+                    Id = request.Id,
+                    Limit = request.Limit,
+                    UserId = request.UserId
+                });
+            }
+            if (item is MusicArtist)
+            {
+                return new AlbumsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService)
+                {
+                    AuthorizationContext = AuthorizationContext,
+                    Logger = Logger,
+                    Request = Request,
+                    SessionContext = SessionContext,
+                    ResultFactory = ResultFactory
+
+                }.Get(new GetSimilarArtists
+                {
+                    Fields = request.Fields,
+                    Id = request.Id,
+                    Limit = request.Limit,
+                    UserId = request.UserId
+                });
+            }
+
+            var program = item as IHasProgramAttributes;
+            var channelItem = item as ChannelVideoItem;
+
+            if (item is Movie || (program != null && program.IsMovie) || (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Movie) || (channelItem != null && channelItem.ContentType == ChannelMediaContentType.MovieExtra))
+            {
+                return new MoviesService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _channelManager)
+                {
+                    AuthorizationContext = AuthorizationContext,
+                    Logger = Logger,
+                    Request = Request,
+                    SessionContext = SessionContext,
+                    ResultFactory = ResultFactory
+
+                }.Get(new GetSimilarMovies
+                {
+                    Fields = request.Fields,
+                    Id = request.Id,
+                    Limit = request.Limit,
+                    UserId = request.UserId
+                });
+            }
+
+            if (item is Series || (program != null && program.IsSeries) || (channelItem != null && channelItem.ContentType == ChannelMediaContentType.Episode))
+            {
+                return new TvShowsService(_userManager, _userDataManager, _libraryManager, _itemRepo, _dtoService, _tvManager)
+                {
+                    AuthorizationContext = AuthorizationContext,
+                    Logger = Logger,
+                    Request = Request,
+                    SessionContext = SessionContext,
+                    ResultFactory = ResultFactory
+
+                }.Get(new GetSimilarShows
+                {
+                    Fields = request.Fields,
+                    Id = request.Id,
+                    Limit = request.Limit,
+                    UserId = request.UserId
+                });
+            }
+
+            return new ItemsResult();
         }
 
         public object Get(GetMediaFolders request)
@@ -297,7 +435,59 @@ namespace MediaBrowser.Api.Library
 
         public void Post(PostUpdatedSeries request)
         {
-            Task.Run(() => _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None));
+            var series = _libraryManager.GetItems(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Series).Name }
+
+            }).Items;
+
+            series = series.Where(i => string.Equals(request.TvdbId, i.GetProviderId(MetadataProviders.Tvdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+
+            if (series.Length > 0)
+            {
+                foreach (var item in series)
+                {
+                    _libraryMonitor.ReportFileSystemChanged(item.Path);
+                }
+            }
+            else
+            {
+                Task.Run(() => _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None));
+            }
+        }
+
+        public void Post(PostUpdatedMovies request)
+        {
+            var movies = _libraryManager.GetItems(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Movie).Name }
+
+            }).Items;
+
+            if (!string.IsNullOrWhiteSpace(request.ImdbId))
+            {
+                movies = movies.Where(i => string.Equals(request.ImdbId, i.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+            }
+            else if (!string.IsNullOrWhiteSpace(request.TmdbId))
+            {
+                movies = movies.Where(i => string.Equals(request.TmdbId, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+            }
+            else
+            {
+                movies = new BaseItem[] { };
+            }
+
+            if (movies.Length > 0)
+            {
+                foreach (var item in movies)
+                {
+                    _libraryMonitor.ReportFileSystemChanged(item.Path);
+                }
+            }
+            else
+            {
+                Task.Run(() => _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None));
+            }
         }
 
         public object Get(GetDownload request)
@@ -524,7 +714,6 @@ namespace MediaBrowser.Api.Library
         public void Delete(DeleteItem request)
         {
             var item = _libraryManager.GetItemById(request.Id);
-
             var auth = _authContext.GetAuthorizationInfo(Request);
             var user = _userManager.GetUserById(auth.UserId);
 
@@ -533,9 +722,16 @@ namespace MediaBrowser.Api.Library
                 throw new UnauthorizedAccessException();
             }
 
-            var task = _libraryManager.DeleteItem(item);
-
-            Task.WaitAll(task);
+            if (item is ILiveTvRecording)
+            {
+                var task = _liveTv.DeleteRecording(request.Id);
+                Task.WaitAll(task);
+            }
+            else
+            {
+                var task = _libraryManager.DeleteItem(item);
+                Task.WaitAll(task);
+            }
         }
 
         /// <summary>

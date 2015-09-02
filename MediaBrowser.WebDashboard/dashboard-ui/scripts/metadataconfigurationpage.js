@@ -36,7 +36,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#metadataConfigurationPage", function () {
+    $(document).on('pageinit', "#metadataConfigurationPage", function () {
 
         Dashboard.showLoadingMsg();
 

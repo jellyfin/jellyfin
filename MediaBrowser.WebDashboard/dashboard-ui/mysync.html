@@ -4,16 +4,28 @@
     <title>${TitleSync}</title>
 </head>
 <body>
-    <div id="mySyncActivityPage" data-role="page" class="page libraryPage syncActivityPage mySyncPage" data-contextname="${TitleSync}" data-require="scripts/syncactivity,scripts/taskbutton">
-
-        <div class="libraryViewNav">
-            <a href="#" class="ui-btn-active"><iron-icon icon="refresh"></iron-icon>${TabSyncJobs}</a>
-        </div>
+    <div id="mySyncActivityPage" data-role="page" class="page libraryPage syncActivityPage mySyncPage noSecondaryNavPage" data-contextname="${TitleSync}" data-require="scripts/syncactivity,scripts/taskbutton,scripts/mysync">
 
         <div data-role="content">
 
-            <div class="ehsContent">
+            <div class="supporterPromotionContainer" style="display:none;text-align: right;">
+                <div class="customSupporterPromotion supporterPromotion inlineSupporterPromotion">
+                    <a class="btn btnActionAccent" href="http://emby.media/donate" target="_blank" style="font-size:14px;">
+                        <div class="mainText">
+                        </div>
+                        <div class="btnLearnMore" style="font-weight:normal;font-size:90%;margin-top:5px;">
+                            ${ButtonLearnMore}
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="ehsContent" style="clear:both;">
                 <br />
+                <div class="localSyncStatus hide" style="text-align:right;margin:0 0 1em;">
+                    <span style="vertical-align: middle;margin-right:.5em;" class="labelSyncStatus">${LabelSyncStatus}</span>
+                    <paper-spinner class="syncSpinner" active style="vertical-align: middle;"></paper-spinner>
+                    <paper-fab class="btnSyncNow bottomFab" icon="refresh" style="position:fixed;right:20px;background-color:#2ad;z-index:10;"></paper-fab>
+                </div>
                 <div class="syncActivity">
 
                 </div>

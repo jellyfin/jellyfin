@@ -48,6 +48,42 @@ namespace MediaBrowser.Api.UserLibrary
             DtoService = dtoService;
         }
 
+        protected BaseItem GetParentItem(GetItemsByName request)
+        {
+            BaseItem parentItem;
+
+            if (!string.IsNullOrWhiteSpace(request.UserId))
+            {
+                var user = UserManager.GetUserById(request.UserId);
+                parentItem = string.IsNullOrEmpty(request.ParentId) ? user.RootFolder : LibraryManager.GetItemById(request.ParentId);
+            }
+            else
+            {
+                parentItem = string.IsNullOrEmpty(request.ParentId) ? LibraryManager.RootFolder : LibraryManager.GetItemById(request.ParentId);
+            }
+
+            return parentItem;
+        }
+
+        protected string GetParentItemViewType(GetItemsByName request)
+        {
+            var parent = GetParentItem(request);
+
+            var collectionFolder = parent as ICollectionFolder;
+            if (collectionFolder != null)
+            {
+                return collectionFolder.CollectionType;
+            }
+
+            var view = parent as UserView;
+            if (view != null)
+            {
+                return view.ViewType;
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Gets the specified request.
         /// </summary>
@@ -114,13 +150,13 @@ namespace MediaBrowser.Api.UserLibrary
 
             var filteredItems = FilterItems(request, extractedItems, user);
 
-            filteredItems = FilterByLibraryItems(request, filteredItems, user, libraryItems);
+            filteredItems = FilterByLibraryItems(request, filteredItems.Cast<IItemByName>(), user, libraryItems).Cast<BaseItem>();
 
-            filteredItems = LibraryManager.Sort(filteredItems, user, request.GetOrderBy(), request.SortOrder ?? SortOrder.Ascending).Cast<TItemType>();
+            filteredItems = LibraryManager.Sort(filteredItems, user, request.GetOrderBy(), request.SortOrder ?? SortOrder.Ascending);
 
             var ibnItemsArray = filteredItems.ToList();
 
-            IEnumerable<TItemType> ibnItems = ibnItemsArray;
+            IEnumerable<BaseItem> ibnItems = ibnItemsArray;
 
             var result = new ItemsResult
             {
@@ -141,14 +177,14 @@ namespace MediaBrowser.Api.UserLibrary
 
             }
 
-            IEnumerable<Tuple<TItemType, List<BaseItem>>> tuples;
+            IEnumerable<Tuple<BaseItem, List<BaseItem>>> tuples;
             if (dtoOptions.Fields.Contains(ItemFields.ItemCounts))
             {
-                tuples = ibnItems.Select(i => new Tuple<TItemType, List<BaseItem>>(i, i.GetTaggedItems(libraryItems).ToList()));
+                tuples = ibnItems.Select(i => new Tuple<BaseItem, List<BaseItem>>(i, ((IItemByName)i).GetTaggedItems(libraryItems).ToList()));
             }
             else
             {
-                tuples = ibnItems.Select(i => new Tuple<TItemType, List<BaseItem>>(i, new List<BaseItem>()));
+                tuples = ibnItems.Select(i => new Tuple<BaseItem, List<BaseItem>>(i, new List<BaseItem>()));
             }
 
             var dtos = tuples.Select(i => DtoService.GetItemByNameDto(i.Item1, dtoOptions, i.Item2, user));
@@ -180,7 +216,7 @@ namespace MediaBrowser.Api.UserLibrary
             return options.Fields.Contains(ItemFields.ItemCounts);
         }
 
-        private IEnumerable<TItemType> FilterByLibraryItems(GetItemsByName request, IEnumerable<TItemType> items, User user, IEnumerable<BaseItem> libraryItems)
+        private IEnumerable<IItemByName> FilterByLibraryItems(GetItemsByName request, IEnumerable<IItemByName> items, User user, IEnumerable<BaseItem> libraryItems)
         {
             var filters = request.GetFilters().ToList();
 
@@ -211,7 +247,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="items">The items.</param>
         /// <param name="user">The user.</param>
         /// <returns>IEnumerable{`0}.</returns>
-        private IEnumerable<TItemType> FilterItems(GetItemsByName request, IEnumerable<TItemType> items, User user)
+        private IEnumerable<BaseItem> FilterItems(GetItemsByName request, IEnumerable<BaseItem> items, User user)
         {
             if (!string.IsNullOrEmpty(request.NameStartsWithOrGreater))
             {
@@ -375,7 +411,7 @@ namespace MediaBrowser.Api.UserLibrary
         /// <param name="request">The request.</param>
         /// <param name="items">The items.</param>
         /// <returns>IEnumerable{Task{`0}}.</returns>
-        protected abstract IEnumerable<TItemType> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items);
+        protected abstract IEnumerable<BaseItem> GetAllItems(GetItemsByName request, IEnumerable<BaseItem> items);
     }
 
     /// <summary>
@@ -383,22 +419,6 @@ namespace MediaBrowser.Api.UserLibrary
     /// </summary>
     public class GetItemsByName : BaseItemsRequest, IReturn<ItemsResult>
     {
-        /// <summary>
-        /// Gets or sets the user id.
-        /// </summary>
-        /// <value>The user id.</value>
-        [ApiMember(Name = "UserId", Description = "Optional. Filter by user id, and attach user data", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string UserId { get; set; }
-
-        [ApiMember(Name = "NameStartsWithOrGreater", Description = "Optional filter by items whose name is sorted equally or greater than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string NameStartsWithOrGreater { get; set; }
-
-        [ApiMember(Name = "NameStartsWith", Description = "Optional filter by items whose name is sorted equally than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string NameStartsWith { get; set; }
-
-        [ApiMember(Name = "NameLessThan", Description = "Optional filter by items whose name is sorted less than a given input string.", IsRequired = false, DataType = "string", ParameterType = "query", Verb = "GET")]
-        public string NameLessThan { get; set; }
-
         public GetItemsByName()
         {
             Recursive = true;

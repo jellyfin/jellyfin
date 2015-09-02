@@ -58,7 +58,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#devicePage", function () {
+    $(document).on('pageinit', "#devicePage", function () {
 
         var page = this;
 

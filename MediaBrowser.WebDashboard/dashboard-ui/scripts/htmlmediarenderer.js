@@ -76,8 +76,6 @@
             }
         }
 
-        var viblastKey = 'N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=';
-
         function requireViblast(callback) {
             require(['thirdparty/viblast/viblast.js'], function () {
 
@@ -91,6 +89,15 @@
 
         function downloadViblastKey(callback) {
 
+            var savedKeyPropertyName = 'vbk';
+            var savedKey = appStorage.getItem(savedKeyPropertyName);
+
+            if (savedKey) {
+                htmlMediaRenderer.customViblastKey = savedKey;
+                callback();
+                return;
+            }
+
             var headers = {};
             headers['X-Emby-Token'] = 'EMBY_SERVER';
 
@@ -101,6 +108,7 @@
 
             }).done(function (key) {
 
+                appStorage.setItem(savedKeyPropertyName, key);
                 htmlMediaRenderer.customViblastKey = key;
                 callback();
             }).fail(function () {
@@ -109,7 +117,8 @@
         }
 
         function getViblastKey() {
-            return htmlMediaRenderer.customViblastKey || viblastKey;
+
+            return htmlMediaRenderer.customViblastKey || 'N8FjNTQ3NDdhZqZhNGI5NWU5ZTI=';
         }
 
         function getStartTime(url) {
@@ -272,7 +281,7 @@
                 if (isViblastStarted) {
                     _currentTime = mediaElement.currentTime;
 
-                    viblast(mediaElement).stop();
+                    viblast('#' + mediaElement.id).stop();
                     isViblastStarted = false;
                 }
             }
@@ -327,17 +336,18 @@
 
             requiresSettingStartTimeOnStart = false;
             var startTime = getStartTime(val);
+            var playNow = false;
 
             if (elem.tagName.toLowerCase() == 'audio') {
 
                 elem.src = val;
-                elem.play();
+                playNow = true;
 
             }
             else {
 
                 if (isViblastStarted) {
-                    viblast(elem).stop();
+                    viblast('#' + elem.id).stop();
                     isViblastStarted = false;
                 }
 
@@ -351,11 +361,13 @@
                     requiresSettingStartTimeOnStart = elem.currentTime == 0;
                 }
 
+                tracks = tracks || [];
+
                 if (enableViblast(val)) {
 
-                    setTracks(elem, tracks || []);
+                    setTracks(elem, tracks);
 
-                    viblast(elem).setup({
+                    viblast('#' + elem.id).setup({
                         key: getViblastKey(),
                         stream: val
                     });
@@ -365,14 +377,30 @@
                 } else {
 
                     elem.src = val;
+                    elem.autoplay = true;
 
-                    setTracks(elem, tracks || []);
+                    setTracks(elem, tracks);
 
                     $(elem).one("loadedmetadata", onLoadedMetadata);
+                    playNow = true;
                 }
+
+                var currentTrackIndex = -1;
+                for (var i = 0, length = tracks.length; i < length; i++) {
+                    if (tracks[i].isDefault) {
+                        currentTrackIndex = i;
+                        break;
+                    }
+                }
+
+                self.setCurrentTrackElement(currentTrackIndex);
             }
 
             currentSrc = val;
+
+            if (playNow) {
+                elem.play();
+            }
         };
 
         function setTracks(elem, tracks) {

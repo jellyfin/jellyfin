@@ -19,8 +19,6 @@
 
             var html = '';
 
-            updateFilterControls(page);
-
             var view = 'Thumb';
 
             if (view == "Thumb") {
@@ -59,17 +57,32 @@
         });
     }
 
-    function updateFilterControls(page) {
+    function loadTab(page, index) {
 
+        switch (index) {
+
+            case 1:
+                LibraryBrowser.loadSavedQueryValues('channels', query);
+                reloadItems(page);
+                break;
+            default:
+                break;
+        }
     }
 
-    $(document).on('pagebeforeshowready', "#channelsPage", function () {
+    $(document).on('pageinit', "#channelsPage", function () {
 
-        LibraryBrowser.loadSavedQueryValues('channels', query);
+        var page = this;
 
-        reloadItems(this);
+        var tabs = page.querySelector('paper-tabs');
+        var pages = page.querySelector('neon-animated-pages');
 
-        updateFilterControls(this);
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, 'channels.html');
+
+        $(pages).on('tabchange', function () {
+            loadTab(page, parseInt(this.selected));
+        });
+
     });
 
 })(jQuery, document);

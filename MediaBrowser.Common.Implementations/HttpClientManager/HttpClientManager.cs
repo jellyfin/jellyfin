@@ -68,6 +68,9 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
             // http://stackoverflow.com/questions/566437/http-post-returns-the-error-417-expectation-failed-c
             ServicePointManager.Expect100Continue = false;
+
+            // Trakt requests sometimes fail without this
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls;
         }
 
         /// <summary>
@@ -124,7 +127,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
         private WebRequest GetRequest(HttpRequestOptions options, string method, bool enableHttpCompression)
         {
-            var request = WebRequest.Create(options.Url);
+            var request = CreateWebRequest(options.Url);
             var httpWebRequest = request as HttpWebRequest;
 
             if (httpWebRequest != null)
@@ -432,7 +435,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
 
                     var httpResponse = (HttpWebResponse)response;
 
-                    EnsureSuccessStatusCode(httpResponse, options);
+                    EnsureSuccessStatusCode(client, httpResponse, options);
 
                     options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -443,7 +446,7 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 {
                     var httpResponse = (HttpWebResponse)response;
 
-                    EnsureSuccessStatusCode(httpResponse, options);
+                    EnsureSuccessStatusCode(client, httpResponse, options);
 
                     options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -629,7 +632,8 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
                 {
                     var httpResponse = (HttpWebResponse)response;
 
-                    EnsureSuccessStatusCode(httpResponse, options);
+                    var client = GetHttpClient(GetHostFromUrl(options.Url), options.EnableHttpCompression);
+                    EnsureSuccessStatusCode(client, httpResponse, options);
 
                     options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -803,13 +807,20 @@ namespace MediaBrowser.Common.Implementations.HttpClientManager
             return exception;
         }
 
-        private void EnsureSuccessStatusCode(HttpWebResponse response, HttpRequestOptions options)
+        private void EnsureSuccessStatusCode(HttpClientInfo client, HttpWebResponse response, HttpRequestOptions options)
         {
             var statusCode = response.StatusCode;
+
             var isSuccessful = statusCode >= HttpStatusCode.OK && statusCode <= (HttpStatusCode)299;
 
             if (!isSuccessful)
             {
+                if ((int) statusCode == 429)
+                {
+                    client.LastTimeout = DateTime.UtcNow;
+                }
+
+                if (statusCode == HttpStatusCode.RequestEntityTooLarge)
                 if (options.LogErrorResponseBody)
                 {
                     try

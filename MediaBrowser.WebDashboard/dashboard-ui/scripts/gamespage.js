@@ -154,7 +154,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#gamesPage", function () {
+    $(document).on('pageinit', "#gamesPage", function () {
 
         var page = this;
 
@@ -241,7 +241,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#gamesPage", function () {
+    }).on('pagebeforeshow', "#gamesPage", function () {
 
         var page = this;
         query.ParentId = LibraryMenu.getTopParentId();

@@ -1,0 +1,171 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>paper-radio-group basic tests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../test-fixture/test-fixture-mocha.js"></script>
+    <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+    <link rel="import" href="../../test-fixture/test-fixture.html">
+    <link rel="import" href="../paper-radio-group.html">
+
+  </head>
+  <body>
+
+    <test-fixture id="NoSelection">
+      <template>
+        <paper-radio-group>
+          <paper-radio-button name="r1">r1</paper-radio-button>
+          <paper-radio-button name="r2">r2</paper-radio-button>
+          <paper-radio-button name="r3">r3</paper-radio-button>
+        </paper-radio-group>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="WithSelection">
+      <template>
+        <paper-radio-group selected="r1">
+          <paper-radio-button name="r1">r1</paper-radio-button>
+          <paper-radio-button name="r2">r2</paper-radio-button>
+          <paper-radio-button name="r3">r3</paper-radio-button>
+        </paper-radio-group>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="WithDisabled">
+      <template>
+        <paper-radio-group selected="r1">
+          <paper-radio-button name="r1">r1</paper-radio-button>
+          <paper-radio-button name="r2" disabled>r2</paper-radio-button>
+          <paper-radio-button name="r3">r3</paper-radio-button>
+        </paper-radio-group>
+      </template>
+    </test-fixture>
+
+    <script>
+      suite('defaults', function() {
+        var LEFT_ARROW = 37;
+        var RIGHT_ARROW = 39;
+
+        test('group can have no selection', function () {
+          var g = fixture('NoSelection');
+          expect(g.selected).to.not.be.ok;
+          var items = g.items;
+          expect(items.length).to.be.equal(3);
+          expect(items[0].checked).to.be.equal(false);
+          expect(items[1].checked).to.be.equal(false);
+          expect(items[2].checked).to.be.equal(false);
+        });
+
+        test('group can have a selection', function () {
+          var g = fixture('WithSelection');
+          expect(g.selected).to.be.ok;
+          var items = g.items;
+          expect(items.length).to.be.equal(3);
+
+          expect(items[0].checked).to.be.equal(true);
+          expect(items[1].checked).to.be.equal(false);
+          expect(items[2].checked).to.be.equal(false);
+          expect(items[0].getAttribute('name')).to.be.equal(g.selected);
+        });
+
+        test('right arrow advances the selection', function (done) {
+          var g = fixture('WithSelection');
+          var items = g.items;
+
+          expect(items[0].checked).to.be.equal(true);
+
+          g.addEventListener('paper-radio-group-changed', function () {
+            expect(items[0].checked).to.be.equal(false);
+            expect(items[1].checked).to.be.equal(true);
+            expect(items[2].checked).to.be.equal(false);
+            done();
+          });
+
+          MockInteractions.keyDownOn(g, RIGHT_ARROW);
+        });
+
+        test('left arrow reverses the selection', function (done) {
+          var g = fixture('WithSelection');
+          var items = g.items;
+
+          expect(items[0].checked).to.be.equal(true);
+
+          g.addEventListener('paper-radio-group-changed', function () {
+            expect(items[0].checked).to.be.equal(false);
+            expect(items[1].checked).to.be.equal(false);
+            expect(items[2].checked).to.be.equal(true);
+            done();
+          });
+          MockInteractions.keyDownOn(g, LEFT_ARROW);
+        });
+
+        test('selection should skip disabled items', function (done) {
+          var g = fixture('WithDisabled');
+          var items = g.items;
+
+          expect(items[0].checked).to.be.equal(true);
+
+          g.addEventListener('paper-radio-group-changed', function () {
+            expect(items[0].checked).to.be.equal(false);
+            expect(items[1].checked).to.be.equal(false);
+            expect(items[2].checked).to.be.equal(true);
+            done();
+          });
+          MockInteractions.keyDownOn(g, RIGHT_ARROW);
+        });
+
+        test('clicking should change the selection', function (done) {
+          var g = fixture('WithSelection');
+          var items = g.items;
+
+          expect(items[0].checked).to.be.equal(true);
+
+          g.addEventListener('paper-radio-group-changed', function () {
+            expect(items[0].checked).to.be.equal(false);
+            expect(items[1].checked).to.be.equal(true);
+            expect(items[2].checked).to.be.equal(false);
+            done();
+          });
+
+          MockInteractions.tap(items[1]);
+        });
+
+        test('clicking the selected item should not deselect', function (done) {
+          var g = fixture('WithSelection');
+          var items = g.items;
+
+          expect(items[0].checked).to.be.equal(true);
+          MockInteractions.tap(items[0]);
+
+          // The selection should not change, but wait for a little bit just
+          // in case it would and an event would be fired.
+          setTimeout(function() {
+            try {
+              expect(items[0].checked).to.be.equal(true);
+              expect(items[1].checked).to.be.equal(false);
+              expect(items[2].checked).to.be.equal(false);
+              done();
+            } catch (e) {
+              done(e)
+            }
+          }, 200);
+        });
+
+      });
+    </script>
+  </body>
+</html>

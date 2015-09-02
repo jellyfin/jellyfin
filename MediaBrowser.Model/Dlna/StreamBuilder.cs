@@ -735,7 +735,12 @@ namespace MediaBrowser.Model.Dlna
                         continue;
                     }
 
-                    if (profile.Method == SubtitleDeliveryMethod.Embed && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
+                    if (profile.Method != SubtitleDeliveryMethod.Embed)
+                    {
+                        continue;
+                    }
+
+                    if (subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format) && StringHelper.EqualsIgnoreCase(profile.Format, subtitleStream.Codec))
                     {
                         return profile;
                     }
@@ -769,20 +774,6 @@ namespace MediaBrowser.Model.Dlna
                     {
                         return profile;
                     }
-                }
-            }
-
-            // Look for supported embedded subs that we can just mux into the output
-            foreach (SubtitleProfile profile in subtitleProfiles)
-            {
-                if (!profile.SupportsLanguage(subtitleStream.Language))
-                {
-                    continue;
-                }
-
-                if (profile.Method == SubtitleDeliveryMethod.Embed && subtitleStream.IsTextSubtitleStream == MediaStream.IsTextFormat(profile.Format))
-                {
-                    return profile;
                 }
             }
 

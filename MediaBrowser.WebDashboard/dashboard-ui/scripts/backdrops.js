@@ -110,7 +110,7 @@
     function setDefault(page) {
 
         getElement().style.backgroundImage = "url(css/images/splash.jpg)";
-
+        page = $(page)[0];
         page.classList.add('backdropPage');
         page.classList.add('staticBackdropPage');
     }
@@ -122,11 +122,7 @@
             return false;
         }
 
-        if ($.browser.mobile) {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     function enabled() {
@@ -198,7 +194,7 @@
         }
     }
 
-    Events.on(document, 'pagebeforeshowready', ".page", function () {
+    Events.on(document, 'pagebeforeshow', ".page", function () {
 
         var page = this;
 

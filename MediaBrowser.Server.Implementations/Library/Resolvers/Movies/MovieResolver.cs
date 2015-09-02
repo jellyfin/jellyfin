@@ -47,6 +47,24 @@ namespace MediaBrowser.Server.Implementations.Library.Resolvers.Movies
             string collectionType,
             IDirectoryService directoryService)
         {
+            var result = ResolveMultipleInternal(parent, files, collectionType, directoryService);
+
+            if (result != null)
+            {
+                foreach (var item in result.Items)
+                {
+                    SetInitialItemValues((Video)item, null);
+                }
+            }
+
+            return result;
+        }
+
+        private MultiItemResolverResult ResolveMultipleInternal(Folder parent,
+            List<FileSystemInfo> files,
+            string collectionType,
+            IDirectoryService directoryService)
+        {
             if (IsInvalid(parent, collectionType, files))
             {
                 return null;

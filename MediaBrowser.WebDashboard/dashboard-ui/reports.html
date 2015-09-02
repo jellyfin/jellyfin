@@ -4,19 +4,20 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="libraryReportManagerPage" data-role="page" class="page libraryPage noSecondaryNavPage reportsPage" data-contextname="${HeaderReports}" data-require="scripts/reports,detailtablecss,jqmicons">
+    <div id="libraryReportManagerPage" data-role="page" class="page libraryPage noSecondaryNavPage reportsPage" data-contextname="${HeaderReports}" data-require="jqmtable,scripts/reports,detailtablecss,jqmicons">
         <div data-role="content">
             <div style="text-align: center;">
                 <div class="viewControls">
                     <span style="margin-right: 10px; vertical-align: middle;">${LabelReport}</span>
                     <div style="display: inline-block;">
-                        <select data-mini="true" data-inline="true" id="selectReportType">
+                        <select data-mini="true" data-inline="true" id="selectViewType">
                             <option value="ReportData">${OptionReportList}</option>
-                            <option value="ReportStatistic">${OptionReportStatistics}</option>
+                            <option value="ReportStatistics">${OptionReportStatistics}</option>
+                            <option value="ReportActivities">${OptionReportActivities}</option>
                         </select>
                     </div>
-                    <div style="display: inline-block;">
-                        <select data-mini="true" data-inline="true" id="selectView" name="selectView">
+                    <div style="display: inline-block;" id="selectIncludeItemTypesBox">
+                        <select data-mini="true" data-inline="true" id="selectIncludeItemTypes" name="selectIncludeItemTypes">
                             <option value="MusicAlbum">${OptionReportAlbums}</option>
                             <option value="MusicArtist">${OptionReportArtists}</option>
                             <option value="Book">${OptionReportBooks}</option>
@@ -49,7 +50,7 @@
                         <a href="#" id="tabFilter" data-role="button" class="viewTabButton" data-tab="tabFilter">${TabFilter}</a>
                     </div>
 
-                    <div class="tabView viewTab">
+                    <div class="tabView viewTab" id="tabViewBox">
                         <div id="selectReportGroupingBox">
                             <label for="selectViewGrouping">${OptionReportGrouping}</label>
                             <select id="selectReportGroup"></select>
@@ -58,7 +59,7 @@
 
                         <div id="selectPageSizeBox" style="display: none;">
                             <label for="selectPageSize">${LabelPageSize}</label>
-                            <select id="selectPageSize">
+                            <select id="selectPageSize" class="selectPageSize">
                                 <option value="20">20</option>
                                 <option value="50">50</option>
                                 <option value="100">100</option>
@@ -73,8 +74,8 @@
                         <div id="exportReportBox">
                             <fieldset>
                                 <label>${HeaderExport}</label>
-                                <button type="button" name="btnReportExportCsv" id="btnReportExportCsv" data-icon="arrow-d">CSV</button>
                                 <button type="button" name="btnReportExportExcel" id="btnReportExportExcel" data-icon="arrow-d">Excel</button>
+                                <button type="button" name="btnReportExportCsv" id="btnReportExportCsv" data-icon="arrow-d">CSV</button>
                             </fieldset>
                             <br />
                         </div>
@@ -88,7 +89,7 @@
                         </div>
                     </div>
 
-                    <div class="tabFilter viewTab">
+                    <div class="tabFilter viewTab" id="tabFilterBox">
                         <fieldset data-role="controlgroup">
                             <legend>
                                 ${HeaderFilters}
@@ -182,6 +183,9 @@
 
                                 <input class="chkFeatureFilter" type="checkbox" name="chkTrailer" id="chkTrailer">
                                 <label for="chkTrailer">${OptionHasTrailer}</label>
+
+                                <input class="chkFeatureFilter" type="checkbox" name="chkMissingTrailer" id="chkMissingTrailer">
+                                <label for="chkMissingTrailer">${OptionNoTrailer}</label>
 
                                 <input class="chkFeatureFilter" type="checkbox" name="chkSpecialFeature" id="chkSpecialFeature">
                                 <label for="chkSpecialFeature">${OptionHasSpecialFeatures}</label>

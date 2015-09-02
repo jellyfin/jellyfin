@@ -109,7 +109,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#libraryFileOrganizerPage", function () {
+    $(document).on('pageinit', "#libraryFileOrganizerPage", function () {
 
         var page = this;
 

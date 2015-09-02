@@ -45,9 +45,6 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks.Tasks
             // Until we can vary these default triggers per server and MBT, we need something that makes sense for both
             return new ITaskTrigger[] { 
             
-                // At startup
-                new StartupTrigger {DelayMs = 60000},
-
                 // Every so often
                 new IntervalTrigger { Interval = TimeSpan.FromHours(24)}
             };

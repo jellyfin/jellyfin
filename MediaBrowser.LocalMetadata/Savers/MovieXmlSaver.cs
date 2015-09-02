@@ -15,13 +15,13 @@ namespace MediaBrowser.LocalMetadata.Savers
     /// <summary>
     /// Saves movie.xml for movies, trailers and music videos
     /// </summary>
-    public class MovieXmlSaver : IMetadataFileSaver
+    public class MovieXmlProvider : IMetadataFileSaver, IConfigurableProvider
     {
         private readonly IItemRepository _itemRepository;
         private readonly IServerConfigurationManager _config;
         private readonly ILibraryManager _libraryManager;
 
-        public MovieXmlSaver(IItemRepository itemRepository, IServerConfigurationManager config, ILibraryManager libraryManager)
+        public MovieXmlProvider(IItemRepository itemRepository, IServerConfigurationManager config, ILibraryManager libraryManager)
         {
             _itemRepository = itemRepository;
             _config = config;
@@ -34,6 +34,11 @@ namespace MediaBrowser.LocalMetadata.Savers
             {
                 return XmlProviderUtils.Name;
             }
+        }
+
+        public bool IsEnabled
+        {
+            get { return !_config.Configuration.DisableXmlSavers; }
         }
 
         /// <summary>

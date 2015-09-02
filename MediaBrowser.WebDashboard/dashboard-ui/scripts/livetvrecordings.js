@@ -52,12 +52,12 @@
         }
 
         $('.recordingItems', elem).html(LibraryBrowser.getPosterViewHtml({
-            
+
             items: recordings,
             shape: "auto",
             showTitle: true,
             showParentTitle: true,
-            overlayText: screenWidth >= 600,
+            centerText: true,
             coverImage: true,
             lazy: true
 
@@ -88,8 +88,6 @@
         }).done(function (result) {
 
             renderRecordings($('#latestRecordings', page), result.Items);
-
-            LibraryBrowser.setLastRefreshed(page);
         });
 
         ApiClient.getLiveTvRecordingGroups({
@@ -103,14 +101,11 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#liveTvRecordingsPage", function () {
+    window.LiveTvPage.renderRecordingsTab = function (page, tabContent) {
 
-        var page = this;
-
-        if (LibraryBrowser.needsRefresh(page)) {
-            reload(page);
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reload(tabContent);
         }
-
-    });
+    };
 
 })(jQuery, document);

@@ -18,7 +18,7 @@ namespace MediaBrowser.LocalMetadata.Providers
             _logger = logger;
         }
 
-        protected override void Fetch(LocalMetadataResult<MusicVideo> result, string path, CancellationToken cancellationToken)
+        protected override void Fetch(MetadataResult<MusicVideo> result, string path, CancellationToken cancellationToken)
         {
             new MusicVideoXmlParser(_logger).Fetch(result, path, cancellationToken);
         }

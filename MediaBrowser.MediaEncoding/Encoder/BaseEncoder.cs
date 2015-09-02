@@ -521,42 +521,18 @@ namespace MediaBrowser.MediaEncoding.Encoder
             var isVc1 = state.VideoStream != null &&
                 string.Equals(state.VideoStream.Codec, "vc1", StringComparison.OrdinalIgnoreCase);
 
-            var qualitySetting = state.Quality;
-
             if (string.Equals(videoCodec, "libx264", StringComparison.OrdinalIgnoreCase))
             {
                 param = "-preset superfast";
 
-                switch (qualitySetting)
-                {
-                    case EncodingQuality.HighSpeed:
-                        param += " -crf 28";
-                        break;
-                    case EncodingQuality.HighQuality:
-                        param += " -crf 25";
-                        break;
-                    case EncodingQuality.MaxQuality:
-                        param += " -crf 21";
-                        break;
-                }
+                param += " -crf 28";
             }
 
             else if (string.Equals(videoCodec, "libx265", StringComparison.OrdinalIgnoreCase))
             {
                 param = "-preset fast";
 
-                switch (qualitySetting)
-                {
-                    case EncodingQuality.HighSpeed:
-                        param += " -crf 28";
-                        break;
-                    case EncodingQuality.HighQuality:
-                        param += " -crf 25";
-                        break;
-                    case EncodingQuality.MaxQuality:
-                        param += " -crf 21";
-                        break;
-                }
+                param += " -crf 28";
             }
 
             // webm
@@ -569,20 +545,7 @@ namespace MediaBrowser.MediaEncoding.Encoder
                 var qmin = "0";
                 var qmax = "50";
 
-                switch (qualitySetting)
-                {
-                    case EncodingQuality.HighSpeed:
-                        crf = "10";
-                        break;
-                    case EncodingQuality.HighQuality:
-                        crf = "6";
-                        break;
-                    case EncodingQuality.MaxQuality:
-                        crf = "4";
-                        break;
-                    default:
-                        throw new ArgumentException("Unrecognized quality setting");
-                }
+                crf = "10";
 
                 if (isVc1)
                 {
@@ -902,13 +865,13 @@ namespace MediaBrowser.MediaEncoding.Encoder
 
                 // TODO: Perhaps also use original_size=1920x800 ??
                 return string.Format("subtitles=filename='{0}'{1},setpts=PTS -{2}/TB",
-                    subtitlePath.Replace('\\', '/').Replace("'", "\\'").Replace(":/", "\\:/"),
+                    MediaEncoder.EscapeSubtitleFilterPath(subtitlePath),
                     charsetParam,
                     seconds.ToString(UsCulture));
             }
 
             return string.Format("subtitles='{0}:si={1}',setpts=PTS -{2}/TB",
-                state.MediaPath.Replace('\\', '/').Replace("'", "\\'").Replace(":/", "\\:/"),
+                MediaEncoder.EscapeSubtitleFilterPath(state.MediaPath),
                 state.InternalSubtitleStreamOffset.ToString(UsCulture),
                 seconds.ToString(UsCulture));
         }

@@ -81,7 +81,7 @@
                 }
 
                 currentGroupName = dateText;
-                currentGroup = [];
+                currentGroup = [item];
             } else {
                 currentGroup.push(item);
             }
@@ -109,9 +109,9 @@
                 showTitle: true,
                 showPremiereDate: true,
                 preferThumb: true,
-                context: 'tv',
                 lazy: true,
-                showDetailsMenu: true
+                showDetailsMenu: true,
+                centerText: true
 
             });
             html += '</div>';
@@ -123,7 +123,7 @@
         ImageLoader.lazyChildren(elem);
     }
 
-    $(document).on('pagebeforeshowready', "#tvUpcomingPage", function () {
+    $(document).on('pagebeforeshow', "#tvUpcomingPage", function () {
 
         var page = this;
 

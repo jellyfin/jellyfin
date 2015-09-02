@@ -42,7 +42,7 @@
 }
 
 .ui-page-theme-b:not(.pageWithAbsoluteTabs), .pageWithAbsoluteTabs .pageBackground {
-    background-color: #1f1f1f;
+    background-color: #242424;
 }
 
 .backdropContainer {
@@ -72,8 +72,8 @@
     }
 
     .pageWithAbsoluteTabs .pageTabContent {
-        padding-left: .3em !important;
-        padding-right: .3em !important;
+        padding-left: .25em !important;
+        padding-right: .25em !important;
     }
 }
 
@@ -92,7 +92,7 @@
         margin-left: 2em;
     }
 
-.ehsContent {
+.ehsContent, .ehsContent .pageTabContent {
     margin: 0 auto;
 }
 
@@ -131,8 +131,9 @@
 
 @media all and (min-width: 500px) {
 
-    .ehsContent {
+    .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
         width: 98%;
+        margin: 0 auto;
     }
 }
 
@@ -145,15 +146,15 @@
 
 @media all and (min-width: 1200px) {
 
-    .ehsContent {
-        width: 97%;
+    .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
+        width: 95%;
     }
 }
 
 @media all and (min-width: 1920px) {
 
-    .ehsContent {
-        width: 97%;
+    .ehsContent:not(.fullWidth), .ehsContent .pageTabContent {
+        width: 95%;
     }
 }
 
@@ -164,15 +165,6 @@
     border-collapse: collapse;
 }
 
-.detailButtonsContainer {
-    padding: 0 0 1em;
-    text-align: center;
-}
-
-    .detailButtonsContainer a, .detailButtonsContainer button {
-        margin-top: 0;
-    }
-
 .viewSettings {
     margin: 0 0 .25em;
     text-align: center;
@@ -180,8 +172,14 @@
 
 .listPaging {
     text-align: center;
-    margin: .5em 0 .25em;
+    margin: .5em 0 .5em;
 }
+
+    .listPaging paper-fab {
+        width: 40px;
+        height: 40px;
+        vertical-align: middle;
+    }
 
 .viewControls + .listTopPaging {
     margin-left: .5em !important;
@@ -395,6 +393,12 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-left: 1.25em;
 }
 
+.userDataIcons paper-fab {
+    background: #444;
+    width: 40px;
+    height: 40px;
+}
+
 .itemBackdrop {
     background-size: cover;
     background-position: center 15%;
@@ -403,31 +407,50 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     position: relative;
 }
 
+.smallBackdrop {
+    height: 500px;
+}
+
+.noSecondaryNavPage .itemBackdrop {
+    margin-top: -50px;
+}
+
+.noBackdrop {
+    height: 170px;
+    background: #181818;
+    margin-top: 0 !important;
+}
+
+.backdropPage .noBackdrop {
+    background-color: transparent;
+}
+
 .itemBackdropContent {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
     background-color: rgba(0,0,0,0.7);
+    min-height: 120px;
 }
 
-.noBackdrop {
-    height: auto;
-    margin: 3em 0 0;
+.noBackdrop .itemBackdropContent {
+    background-color: transparent;
 }
 
-    .noBackdrop .itemBackdropContent {
-        background-color: transparent;
-    }
+.detailNameContainer {
+    margin-top: -120px;
+    height: 110px;
+}
 
-    .noBackdrop .itemBackdropContent {
-        position: static;
-    }
-
+.desktopMiscInfoContainer {
+    position: absolute;
+    bottom: 10px;
+}
 
 .lnkSibling {
     position: absolute;
-    top: 15px;
+    bottom: 0;
     text-decoration: none;
     font-weight: normal !important;
     display: none;
@@ -445,6 +468,23 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         display: block;
     }
 
+.detailUserDataIcons {
+    display: inline-block;
+}
+
+@media all and (min-width: 540px) {
+
+    .detailUserDataIcons {
+        margin-left: 1em;
+    }
+}
+
+@media all and (max-width: 1200px) {
+
+    .lnkSibling {
+        display: none !important;
+    }
+}
 
 .lnkPreviousItem {
     left: 10px;
@@ -455,26 +495,8 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .detailImageContainer {
-    position: absolute;
-    top: -66px;
-}
-
-.portraitDetailImageContainer {
-    top: -26px;
-}
-
-.thumbDetailImageContainer {
-    top: -26px;
-}
-
-.noBackdrop .squareDetailImageContainer {
-    top: 0;
-}
-
-.noBackdrop .detailImageContainer {
-    position: static;
-    display: inline-block;
-    vertical-align: top;
+    float: left;
+    margin-top: -140px;
 }
 
 .itemDetailImage {
@@ -484,19 +506,17 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     border: solid 1px #222;
 }
 
-.thumbDetailImageContainer img {
-    max-width: 360px;
-    max-height: 203px;
-}
-
-.squareDetailImageContainer img {
-    max-width: 240px;
-    max-height: 240px;
-}
-
-.portraitDetailImageContainer img {
-    max-width: 210px;
+.detailImageContainer img {
+    max-width: 280px;
     max-height: 300px;
+}
+
+.squareDetailImageContainer {
+    margin-top: -150px;
+}
+
+.thumbDetailImageContainer {
+    margin-top: -130px;
 }
 
 .itemDetailGalleryLink img:hover {
@@ -505,39 +525,14 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     box-shadow: 0 0 20px 3px #38c;
 }
 
-.detailContentEffectedByThumbImage:not(.lastDetailContentEffectedByImage) {
-    margin-left: 380px;
+.primaryDetailsContainer {
+    float: left;
+    padding: .75em 0 0 1.5em;
+    width: 68%;
 }
 
-.detailContentEffectedBySquareImage:not(.lastDetailContentEffectedByImage) {
-    margin-left: 260px;
-}
-
-.detailContentEffectedByPortraitImage {
-    margin-left: 220px;
-}
-
-.lastDetailContentEffectedByImage.detailContentEffectedByThumbImage {
-    padding: 0 .5em;
-}
-
-.lastDetailContentEffectedByImage.detailContentEffectedBySquareImage {
-    padding: 0 .5em;
-}
-
-.lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
-    min-height: 115px;
-}
-
-.noBackdrop .detailContentEffectedByImage {
-    display: inline-block;
-    margin-left: 10px;
-}
-
-.noBackdrop + .ui-content .lastDetailContentEffectedByImage {
-    margin-top: 0;
-    margin-left: 0;
-    min-height: initial;
+.portraitDetailImageContainer + .primaryDetailsContainer {
+    width: 75%;
 }
 
 .parentName {
@@ -546,98 +541,121 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     margin-bottom: .5em;
 }
 
-@media all and (min-width: 800px) {
-    .lastDetailContentEffectedByImage.detailContentEffectedBySquareImage {
-        margin-top: 2em;
-    }
+.detailButtonsContainer {
+    font-size: 90%;
+}
+
+.detailFloatingButton {
+    width: 56px;
+    height: 56px;
+    top: -28px;
+    position: absolute;
+    right: 25%;
+    background-color: #52B54B !important;
+}
+
+.btnFloatingRecord {
+    background-color: #cc3333 !important;
+}
+
+.detailFloatingButton iron-icon {
+    width: 40px;
+    height: 40px;
 }
 
 @media all and (max-width: 1000px) {
-    .detailImageContainer {
-        margin-left: 20px;
+
+    .primaryDetailsContainer {
+        width: 64%;
     }
 
-    .thumbDetailImageContainer img {
-        max-width: 340px;
+    .portraitDetailImageContainer + .primaryDetailsContainer {
+        width: 72%;
     }
 
-    .squareDetailImageContainer img {
-        max-width: 220px;
+    .detailImageContainer img {
+        max-width: 240px;
     }
 
     .portraitDetailImageContainer img {
-        max-width: 185px;
-    }
-
-    .lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
-        min-height: 85px;
+        max-width: 180px;
     }
 }
 
 @media all and (max-width: 800px) {
-    .detailContentEffectedByThumbImage {
-        margin-left: 0 !important;
-        padding: 0 1em;
-    }
-
-    .detailContentEffectedBySquareImage {
-        margin-left: 0 !important;
-        padding: 0 1em;
-    }
-
-    .detailContentEffectedByPortraitImage {
-        margin-left: 0 !important;
-        padding: 0 1em;
-    }
-
-    .portraitDetailImageContainer img {
-        max-height: 120px;
-    }
-
-    .lastDetailContentEffectedByImage.detailContentEffectedByPortraitImage {
-        min-height: initial;
-    }
-
 
     .parentName {
         margin-bottom: 1em;
     }
+
+    .primaryDetailsContainer {
+        padding-top: 2.5em;
+        padding-left: 1em;
+    }
+
+    .detailNameContainer {
+        margin-top: auto;
+        height: auto;
+    }
+
+    .itemBackdropContent {
+        min-height: 0;
+    }
+}
+
+@media all and (max-width: 600px) {
+
+    .detailFloatingButton {
+        right: 15px;
+    }
+}
+
+@media all and (max-width: 600px) {
+
+    .primaryDetailsContainer {
+        width: 68%;
+    }
+
+    .portraitDetailImageContainer + .primaryDetailsContainer {
+        width: 68%;
+    }
+}
+
+@media all and (max-width: 400px) {
+
+    .primaryDetailsContainer {
+        width: 60%;
+    }
+
+    .portraitDetailImageContainer + .primaryDetailsContainer {
+        width: 60%;
+    }
+}
+
+@media all and (min-width: 500px) {
+
+    .mobileDetails {
+        display: none;
+    }
+}
+
+@media all and (max-width: 500px) {
+
+    .desktopDetails {
+        display: none;
+    }
 }
 
 .inlineItemName {
-    font-size: 22px;
+    font-size: 30px;
 }
 
 .itemName + .itemMiscInfo {
     margin-left: 1em;
 }
 
-.itemOverview {
-    text-overflow: ellipsis;
-    max-height: 100px;
-    padding-right: .5em;
-}
-
-.desktopOverview {
-    min-width: 500px;
-}
-
-.mobileOverview {
-    display: none;
-    padding: 0 1em;
-}
-
 .empty {
     margin: 0;
-}
-
-.mobileGenres {
-    display: none;
-    padding: 0 1em;
-}
-
-.mobileDetailButtons {
-    display: none;
 }
 
 .darkScrollbars ::-webkit-scrollbar {
@@ -681,6 +699,11 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         padding-bottom: .75em;
     }
 
+.detailSection h1 {
+    margin-bottom: .25em;
+    position: relative;
+}
+
 .detailSectionHeader {
     background-clip: border-box;
     padding: .75em 0 .75em 1em;
@@ -714,11 +737,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
 }
 
 .detailSectionHeaderButton {
-    position: absolute;
-    right: 0;
-    top: 7px;
-    margin-top: 0;
-    margin-bottom: 0;
+    margin-left: 1em;
 }
 
 .lblDetailTab {
@@ -780,31 +799,94 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 }
 
-@media all and (max-width: 800px) {
+@media all and (max-height: 900px), (max-width: 800px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 500px;
+        height: 550px;
+    }
+
+    .smallBackdrop:not(.noBackdrop) {
+        height: 300px;
     }
 }
 
 @media all and (max-height: 800px), (max-width: 700px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 400px;
+        height: 450px;
+    }
+
+    .smallBackdrop:not(.noBackdrop) {
+        height: 300px;
     }
 }
 
 @media all and (max-height: 700px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 340px;
+        height: 350px;
+    }
+
+    .smallBackdrop:not(.noBackdrop) {
+        height: 300px;
     }
 }
 
-@media all and (max-height: 540px), (max-width: 540px) {
+@media all and (max-width: 540px) {
 
     .itemBackdrop:not(.noBackdrop) {
-        height: 280px;
+        height: 290px;
+    }
+
+    .smallBackdrop:not(.noBackdrop) {
+        height: 200px;
+    }
+}
+
+@media all and (max-height: 540px) {
+
+    .itemBackdrop:not(.noBackdrop) {
+        height: 250px;
+    }
+
+    .smallBackdrop:not(.noBackdrop) {
+        height: 200px;
+    }
+}
+
+@media all and (max-height: 460px) {
+
+    .itemBackdrop:not(.noBackdrop) {
+        height: 200px;
+    }
+
+    .smallBackdrop:not(.noBackdrop) {
+        height: 120px;
+    }
+}
+
+@media all and (max-height: 300px) {
+
+    .itemBackdrop:not(.noBackdrop) {
+        height: 150px;
+    }
+
+    .smallBackdrop:not(.noBackdrop) {
+        height: 120px;
+    }
+}
+
+@media all and (max-height: 250px) {
+
+    .itemBackdrop:not(.noBackdrop) {
+        height: 120px;
+    }
+}
+
+@media all and (max-width: 1000px) {
+
+    .detailImageContainer {
+        padding-left: 15px;
     }
 }
 
@@ -814,21 +896,32 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         display: none;
     }
 
-    .itemDetailImage {
-        max-height: 240px;
-        max-width: 100px;
+    .noBackdrop {
+        height: 80px;
     }
 
-    .mobileOverview:not(.hide), .mobileGenres, .mobileDetailButtons {
-        display: block;
+    .detailImageContainer {
+        margin-top: -55px;
     }
 
-    .desktopOverview, .desktopGenres, .desktopDetailButtons {
-        display: none;
+    .squareDetailImageContainer {
+        margin-top: -40px;
+    }
+
+    .thumbDetailImageContainer {
+        margin-top: -80px;
+    }
+
+    .portraitDetailImageContainer + .primaryDetailsContainer {
+        width: 70%;
+    }
+
+    .detailImageContainer img {
+        max-width: 140px;
     }
 
     .inlineItemName {
-        font-size: 18px;
+        font-size: 22px;
     }
 
     .primaryDetailPageContent p {
@@ -839,21 +932,35 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         text-align: center;
     }
 
-    .detailImageContainer {
-        display: none;
+    .thumbDetailImageContainer img {
+        max-width: 180px;
+    }
+}
+
+@media all and (max-width: 600px) {
+
+    .primaryDetailsContainer {
     }
 
-    .noBackdrop .detailImageContainer {
-        display: block;
-        position: static;
-        text-align: center;
+    .portraitDetailImageContainer + .primaryDetailsContainer {
+        width: 65%;
+    }
+}
+
+@media all and (max-width: 500px) {
+
+    .detailImageContainer img {
+        max-width: 80px;
+    }
+
+    .thumbDetailImageContainer img {
+        max-width: 180px;
     }
 }
 
 @media all and (min-width: 750px) {
     .detailPageContent {
         max-width: 950px;
-        width: auto;
     }
 }
 
@@ -866,7 +973,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     }
 
 .itemMiscInfo {
-    color: #ddd;
     text-overflow: ellipsis;
     overflow: hidden;
 }
@@ -934,8 +1040,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     text-align: center;
     vertical-align: middle;
     width: 24px;
-    height: 19px;
-    padding-top: 3px;
+    height: 24px;
     border-radius: 50%;
     color: #fff;
     background: rgba(82, 181, 75, .8);
@@ -966,11 +1071,10 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     z-index: 1;
 }
 
-.pieIndicator .fa {
-    color: #fff;
-    z-index: 4;
+.pieIndicator iron-icon {
     position: absolute;
-    margin: 4px 0 0 6px;
+    z-index: 4;
+    color: #fff;
 }
 
 .pie {
@@ -982,7 +1086,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     -o-border-radius: 50px;
     border-radius: 50px;
     clip: rect(0px, 12px, 24px, 0px);
-    background-color: rgba(10, 10, 10, .9);
+    background-color: rgba(10, 10, 10, 1);
     z-index: 2;
 }
 
@@ -1195,10 +1299,6 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     color: #4d90fe !important;
 }
 
-.itemOverlayContent {
-    max-width: 300px;
-}
-
 .itemOverlayHtml {
     max-height: 100px;
     margin-top: 1.5em;
@@ -1228,7 +1328,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
         margin-right: auto;
     }
 
-@media all and (min-height: 520px) {
+@media all and (min-height: 480px) {
 
     .alphabetPicker {
         display: block;
@@ -1438,7 +1538,7 @@ span.itemCommunityRating:not(:empty) + .userDataIcons {
     width: 70px;
     height: 70px;
     background-repeat: no-repeat;
-    background-size: cover;
+    background-size: contain;
     background-position: center center;
 }
 
@@ -1565,23 +1665,6 @@ paper-icon-button.listviewMenuButton {
     .userProfileSettingsForm .detailSection {
         margin-left: .5em;
         margin-right: .5em;
-    }
-}
-
-.smallDetailImageContainer img {
-    -moz-box-shadow: 0px 0 20px #000;
-    -webkit-box-shadow: 0px 0 20px #000;
-    box-shadow: 0px 0 20px #000;
-    border: solid 1px #222;
-    max-width: 240px;
-    max-height: 240px;
-}
-
-@media all and (max-width: 800px) {
-
-    .smallDetailImageContainer img {
-        max-width: 120px;
-        max-height: 120px;
     }
 }
 
@@ -1749,5 +1832,61 @@ paper-icon-button.listviewMenuButton {
 
     .detailsMenuOverview {
         max-height: 160px;
+    }
+}
+
+.slideshowContainer {
+    background: #000;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.slideshowImage {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1001;
+    background-position: center center;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+    .slideshowImage.cover {
+        background-size: cover;
+    }
+
+.slideshowImageText {
+    position: fixed;
+    bottom: .25em;
+    right: .5em;
+    color: #fff;
+    z-index: 1002;
+    font-size: 100px;
+}
+
+.btnStopSlideshow {
+    position: fixed;
+    top: 1em;
+    right: 1em;
+    color: #fff;
+    z-index: 1002;
+}
+
+    .btnStopSlideshow iron-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+@media all and (max-width:1200px) {
+
+    .slideshowImageText {
+        font-size: 40px;
     }
 }

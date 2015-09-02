@@ -10,7 +10,8 @@
         UserId: Dashboard.getCurrentUserId(),
         SortBy: "StartDate,SortName",
         SortOrder: "Ascending",
-        StartIndex: 0
+        StartIndex: 0,
+        HasAired: false
     };
 
     function getSavedQueryKey() {
@@ -49,14 +50,15 @@
             if (view == "Poster") {
                 html = LibraryBrowser.getPosterViewHtml({
                     items: result.Items,
-                    shape: "portrait",
+                    shape: query.IsMovie ? 'portrait' : "auto",
                     context: 'livetv',
                     showTitle: false,
                     centerText: true,
                     lazy: true,
                     showStartDateIndex: true,
                     overlayText: false,
-                    showProgramAirInfo: true
+                    showProgramAirInfo: true,
+                    overlayMoreButton: true
                 });
             }
             else if (view == "PosterCard") {
@@ -68,7 +70,8 @@
                     showStartDateIndex: true,
                     lazy: true,
                     cardLayout: true,
-                    showProgramAirInfo: true
+                    showProgramAirInfo: true,
+                    overlayMoreButton: true
                 });
             }
 
@@ -92,7 +95,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#liveTvItemsPage", function () {
+    $(document).on('pageinit', "#liveTvItemsPage", function () {
 
         var page = this;
 
@@ -137,7 +140,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#liveTvItemsPage", function () {
+    }).on('pagebeforeshow', "#liveTvItemsPage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
@@ -152,6 +155,7 @@
 
         query.IsMovie = getParameterByName('type') == 'movies' ? true : null;
         query.IsSports = getParameterByName('type') == 'sports' ? true : null;
+        query.IsKids = getParameterByName('type') == 'kids' ? true : null;
 
         var viewkey = getSavedQueryKey();
 

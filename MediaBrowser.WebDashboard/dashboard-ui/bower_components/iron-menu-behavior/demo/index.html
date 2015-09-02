@@ -1,12 +1,12 @@
 <!doctype html>
 <!--
-  @license
-  Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-  This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-  The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-  The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-  Code distributed by Google as part of the polymer project is also
-  subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <html>
 <head>
@@ -19,82 +19,94 @@
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
 
+  <link rel="import" href="../../paper-styles/paper-styles.html">
+  <link rel="import" href="../../paper-styles/demo-pages.html">
   <link rel="import" href="simple-menu.html">
   <link rel="import" href="simple-menubar.html">
 
-  <link rel="stylesheet" href="../../paper-styles/demo.css">
-
-  <style>
-
-    .list {
+  <style is="custom-style">
+    simple-menu,
+    simple-menubar {
       display: inline-block;
-      border: 1px solid #ccc;
-      padding: 8px 0;
+      width: 100%;
     }
 
-    .list li {
+    simple-menu li {
       display: block;
-      padding: 8px;
+      padding: 15px 20px;
     }
 
-    .list li[disabled] {
-      color: #ccc;
+    simple-menubar li {
+      padding: 15px 20px;
     }
 
+    simple-menu li[disabled],
+    simple-menubar li[disabled] {
+      color: var(--google-grey-300);
+    }
+
+    .horizontal-section {
+      padding: 0;
+      margin-bottom: 20px;
+    }
+
+    .row {
+      height: 120px;
+    }
   </style>
 </head>
 <body>
 
-  <section>
+  <div class="horizontal center-justified layout">
+    <div>
+      <h3>Simple menu</h3>
+      <div class="horizontal-section">
+        <simple-menu>
+          <li>item 0</li>
+          <li>item 1</li>
+          <li disabled>item 2</li>
+          <li>item 3</li>
+        </simple-menu>
+      </div>
+    </div>
 
-    <div>Simple menu</div>
+    <div>
+      <h3>Multi-select menu</h3>
+      <div class="horizontal-section">
+        <simple-menu multi>
+          <li>item 0</li>
+          <li>item 1</li>
+          <li>item 2</li>
+          <li>item 3</li>
+        </simple-menu>
+      </div>
+    </div>
 
-    <simple-menu class="list">
-      <li>item 0</li>
-      <li>item 1</li>
-      <li disabled>item 2</li>
-      <li>item 3</li>
-    </simple-menu>
+    <div>
+      <div class="row">
+        <h3>Simple menubar</h3>
+        <div class="horizontal-section">
+          <simple-menubar>
+            <li>item 0</li>
+            <li>item 1</li>
+            <li disabled>item 2</li>
+            <li>item 3</li>
+          </simple-menubar>
+        </div>
+      </div>
+      <div class="row">
+        <h3>Multi-select menubar</h3>
+        <div class="horizontal-section">
+          <simple-menubar multi>
+            <li>item 0</li>
+            <li>item 1</li>
+            <li>item 2</li>
+            <li>item 3</li>
+          </simple-menubar>
+        </div>
+      </div>
+    </div>
 
-  </section>
-
-  <section>
-
-    <div>Multi-select menu</div>
-
-    <simple-menu class="list" multi>
-      <li>item 0</li>
-      <li>item 1</li>
-      <li>item 2</li>
-      <li>item 3</li>
-      <li>item 4</li>
-    </simple-menu>
-
-  </section>
-
-  <section>
-
-    <div>Simple menubar</div>
-
-    <simple-menubar class="list">
-      <li>item 0</li>
-      <li>item 1</li>
-      <li disabled>item 2</li>
-      <li>item 3</li>
-    </simple-menubar>
-
-  </section>
-
-  <section>
-    <div>Multi-select menubar</div>
-
-    <simple-menubar class="list" multi>
-      <li>item 0</li>
-      <li>item 1</li>
-      <li>item 2</li>
-      <li>item 3</li>
-      <li>item 4</li>
-    </simple-menubar>
-  </section>
+  </div>
 </body>
 </html>

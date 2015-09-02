@@ -18,7 +18,7 @@ namespace MediaBrowser.XbmcMetadata.Parsers
         /// </summary>
         /// <param name="reader">The reader.</param>
         /// <param name="itemResult">The item result.</param>
-        protected override void FetchDataFromXmlNode(XmlReader reader, LocalMetadataResult<Season> itemResult)
+        protected override void FetchDataFromXmlNode(XmlReader reader, MetadataResult<Season> itemResult)
         {
             var item = itemResult.Item;
 

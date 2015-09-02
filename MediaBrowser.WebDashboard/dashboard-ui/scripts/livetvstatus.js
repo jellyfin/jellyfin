@@ -43,7 +43,7 @@
             if (tuner.Status == 'RecordingTv') {
                 if (tuner.ChannelName) {
 
-                    html += '<a href="livetvchannel.html?id=' + tuner.ChannelId + '">';
+                    html += '<a href="itemdetails.html?id=' + tuner.ChannelId + '">';
                     html += Globalize.translate('StatusRecordingProgram').replace('{0}', tuner.ChannelName);
                     html += '</a>';
                 } else {
@@ -55,7 +55,7 @@
 
                 if (tuner.ChannelName) {
 
-                    html += '<a href="livetvchannel.html?id=' + tuner.ChannelId + '">';
+                    html += '<a href="itemdetails.html?id=' + tuner.ChannelId + '">';
                     html += Globalize.translate('StatusWatchingProgram').replace('{0}', tuner.ChannelName);
                     html += '</a>';
                 } else {
@@ -143,14 +143,24 @@
         if (liveTvInfo.IsEnabled) {
 
             $('.liveTvStatusContent', page).show();
-            $('.noLiveTvServices', page).hide();
 
         } else {
             $('.liveTvStatusContent', page).hide();
-            $('.noLiveTvServices', page).show();
         }
 
-        $('.servicesList', page).html(liveTvInfo.Services.map(getServiceHtml).join('')).trigger('create');
+        var servicesToDisplay = liveTvInfo.Services.filter(function (s) {
+
+            return s.IsVisible;
+
+        });
+
+        if (servicesToDisplay.length) {
+            $('.servicesSection', page).show();
+        } else {
+            $('.servicesSection', page).hide();
+        }
+
+        $('.servicesList', page).html(servicesToDisplay.map(getServiceHtml).join('')).trigger('create');
 
         var tuners = [];
         for (var i = 0, length = liveTvInfo.Services.length; i < length; i++) {
@@ -162,7 +172,83 @@
 
         renderTuners(page, tuners);
 
+        ApiClient.getNamedConfiguration("livetv").done(function (config) {
+
+            renderDevices(page, config.TunerHosts);
+            renderProviders(page, config.ListingProviders);
+        });
+
         Dashboard.hideLoadingMsg();
+    }
+
+    function renderDevices(page, devices) {
+
+        var html = '';
+
+        if (devices.length) {
+            html += '<div class="paperList">';
+
+            for (var i = 0, length = devices.length; i < length; i++) {
+
+                var device = devices[i];
+
+                var href = 'livetvtunerprovider-' + device.Type + '.html?id=' + device.Id;
+
+                html += '<paper-icon-item>';
+
+                html += '<paper-fab class="listAvatar" style="background:#52B54B;" icon="live-tv" item-icon></paper-fab>';
+
+                html += '<paper-item-body two-line>';
+                html += '<a class="clearLink" href="' + href + '">';
+                html += '<div>';
+                html += getTunerName(device.Type);
+                html += '</div>';
+
+                html += '<div secondary>';
+                html += device.Url;
+                html += '</div>';
+                html += '</a>';
+                html += '</paper-item-body>';
+
+                html += '<paper-icon-button icon="delete" data-id="' + device.Id + '" title="' + Globalize.translate('ButtonDelete') + '" class="btnDeleteDevice"></paper-icon-button>';
+                html += '</paper-icon-item>';
+            }
+
+            html += '</div>';
+        }
+
+        var elem = $('.devicesList', page).html(html);
+
+        $('.btnDeleteDevice', elem).on('click', function () {
+
+            var id = this.getAttribute('data-id');
+
+            deleteDevice(page, id);
+        });
+    }
+
+    function deleteDevice(page, id) {
+
+        var message = Globalize.translate('MessageConfirmDeleteTunerDevice');
+
+        Dashboard.confirm(message, Globalize.translate('HeaderDeleteDevice'), function (confirmResult) {
+
+            if (confirmResult) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.ajax({
+                    type: "DELETE",
+                    url: ApiClient.getUrl('LiveTv/TunerHosts', {
+                        Id: id
+                    })
+
+                }).done(function () {
+
+                    reload(page);
+                });
+            }
+        });
     }
 
     function reload(page) {
@@ -176,29 +262,242 @@
         });
     }
 
-    $(document).on('pageshowready', "#liveTvStatusPage", function () {
+    function submitAddDeviceForm(page) {
+
+        page.querySelector('.dlgAddDevice').close();
+        Dashboard.showLoadingMsg();
+
+        ApiClient.ajax({
+            type: "POST",
+            url: ApiClient.getUrl('LiveTv/TunerHosts'),
+            data: JSON.stringify({
+                Type: $('#selectTunerDeviceType', page).val(),
+                Url: $('#txtDevicePath', page).val()
+            }),
+            contentType: "application/json"
+
+        }).done(function () {
+
+            reload(page);
+
+        }).fail(function () {
+            Dashboard.alert({
+                message: Globalize.translate('ErrorAddingTunerDevice')
+            });
+        });
+
+    }
+
+    function renderProviders(page, providers) {
+
+        var html = '';
+
+        if (providers.length) {
+            html += '<div class="paperList">';
+
+            for (var i = 0, length = providers.length; i < length; i++) {
+
+                var provider = providers[i];
+                html += '<paper-icon-item>';
+
+                html += '<paper-fab class="listAvatar" style="background:#52B54B;" icon="dvr" item-icon></paper-fab>';
+
+                html += '<paper-item-body two-line>';
+
+                html += '<a class="clearLink" href="' + getProviderConfigurationUrl(provider.Type) + '&id=' + provider.Id + '">';
+
+                html += '<div>';
+                html += getProviderName(provider.Type);
+                html += '</div>';
+
+                html += '</a>';
+                html += '</paper-item-body>';
+                html += '<paper-icon-button icon="delete" data-id="' + provider.Id + '" title="' + Globalize.translate('ButtonDelete') + '" class="btnDelete"></paper-icon-button>';
+                html += '</paper-icon-item>';
+            }
+
+            html += '</div>';
+        }
+
+        var elem = $('.providerList', page).html(html);
+
+        $('.btnDelete', elem).on('click', function () {
+
+            var id = this.getAttribute('data-id');
+
+            deleteProvider(page, id);
+        });
+    }
+
+    function deleteProvider(page, id) {
+
+        var message = Globalize.translate('MessageConfirmDeleteGuideProvider');
+
+        Dashboard.confirm(message, Globalize.translate('HeaderDeleteProvider'), function (confirmResult) {
+
+            if (confirmResult) {
+
+                Dashboard.showLoadingMsg();
+
+                ApiClient.ajax({
+                    type: "DELETE",
+                    url: ApiClient.getUrl('LiveTv/ListingProviders', {
+                        Id: id
+                    })
+
+                }).always(function () {
+
+                    reload(page);
+                });
+            }
+        });
+    }
+
+    function getTunerName(providerId) {
+
+        providerId = providerId.toLowerCase();
+
+        switch (providerId) {
+
+            case 'm3u':
+                return 'M3U Playlist';
+            case 'hdhomerun':
+                return 'HDHomerun';
+            default:
+                return 'Unknown';
+        }
+    }
+
+    function getProviderName(providerId) {
+
+        providerId = providerId.toLowerCase();
+
+        switch (providerId) {
+
+            case 'schedulesdirect':
+                return 'Schedules Direct';
+            case 'emby':
+                return 'Emby Guide';
+            default:
+                return 'Unknown';
+        }
+    }
+
+    function getProviderConfigurationUrl(providerId) {
+
+        providerId = providerId.toLowerCase();
+
+        switch (providerId) {
+
+            case 'schedulesdirect':
+                return 'livetvguideprovider.html?type=schedulesdirect';
+            case 'emby':
+                return 'livetvguideprovider.html?type=emby';
+            default:
+                break;
+        }
+    }
+
+    function addProvider(button) {
+
+        var menuItems = [];
+
+        menuItems.push({
+            name: 'Schedules Direct',
+            id: 'SchedulesDirect'
+        });
+
+        //menuItems.push({
+        //    name: 'Emby Guide',
+        //    id: 'emby'
+        //});
+
+        menuItems.push({
+            name: Globalize.translate('ButtonOther'),
+            id: 'other'
+        });
+
+        require(['actionsheet'], function () {
+
+            ActionSheetElement.show({
+                items: menuItems,
+                positionTo: button,
+                callback: function (id) {
+
+                    if (id == 'other') {
+                        Dashboard.alert({
+                            message: Globalize.translate('ForAdditionalLiveTvOptions')
+                        });
+                    } else {
+                        Dashboard.navigate(getProviderConfigurationUrl(id));
+                    }
+                }
+            });
+
+        });
+    }
+
+    function addDevice(button) {
+
+        var menuItems = [];
+
+        menuItems.push({
+            name: 'HDHomerun',
+            id: 'hdhomerun'
+        });
+
+        menuItems.push({
+            name: getTunerName('m3u'),
+            id: 'm3u'
+        });
+
+        menuItems.push({
+            name: Globalize.translate('ButtonOther'),
+            id: 'other'
+        });
+
+        require(['actionsheet'], function () {
+
+            ActionSheetElement.show({
+                items: menuItems,
+                positionTo: button,
+                callback: function (id) {
+
+                    if (id == 'other') {
+                        Dashboard.alert({
+                            message: Globalize.translate('ForAdditionalLiveTvOptions')
+                        });
+                    } else {
+                        Dashboard.navigate('livetvtunerprovider-' + id + '.html');
+                    }
+                }
+            });
+
+        });
+    }
+
+    $(document).on('pageinit', "#liveTvStatusPage", function () {
+
+        var page = this;
+
+        $('.btnAddDevice', page).on('click', function () {
+            addDevice(this);
+        });
+
+        $('.formAddDevice', page).on('submit', function () {
+            submitAddDeviceForm(page);
+            return false;
+        });
+
+        $('.btnAddProvider', page).on('click', function () {
+            addProvider(this);
+        });
+
+    }).on('pageshowready', "#liveTvStatusPage", function () {
 
         var page = this;
 
         reload(page);
-
-        // on here
-        $('.btnRefreshGuide', page).taskButton({
-            mode: 'on',
-            progressElem: $('.refreshGuideProgress', page),
-            lastResultElem: $('.lastRefreshGuideResult', page),
-            taskKey: 'RefreshGuide'
-        });
-
-    }).on('pagebeforehide', "#liveTvStatusPage", function () {
-
-        var page = this;
-
-        // off here
-        $('.btnRefreshGuide', page).taskButton({
-            mode: 'off'
-        });
-
     });
 
 })(jQuery, document, window);

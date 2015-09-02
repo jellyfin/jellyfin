@@ -21,7 +21,7 @@
         html += '<div class="viewMenuSearch hide">';
         html += '<form class="viewMenuSearchForm">';
         html += '<input type="text" data-role="none" data-type="search" class="headerSearchInput" autocomplete="off" spellcheck="off" />';
-        html += '<div class="searchInputIcon fa fa-search"></div>';
+        html += '<iron-icon class="searchInputIcon" icon="search"></iron-icon>';
         html += '<paper-icon-button icon="close" class="btnCloseSearch"></paper-icon-button>';
         html += '</form>';
         html += '</div>';
@@ -32,7 +32,7 @@
             html += '<paper-icon-button icon="person" class="headerButton headerButtonRight headerUserButton" onclick="return Dashboard.showUserFlyout(this);"></paper-icon-button>';
         }
 
-        if (!$.browser.mobile && !AppInfo.isNativeApp) {
+        if (!$.browser.mobile && !Dashboard.isConnectMode()) {
             html += '<paper-icon-button icon="settings" class="headerButton headerButtonRight dashboardEntryHeaderButton hide" onclick="return LibraryMenu.onSettingsClicked(event);"></paper-icon-button>';
         }
 
@@ -116,7 +116,7 @@
 
         if (AppInfo.isTouchPreferred) {
 
-            $('.mainDrawerButton').on('touchend', openMainDrawer).on('click', openMainDrawer);
+            $('.mainDrawerButton').on('click', openMainDrawer);
 
         } else {
             $('.mainDrawerButton').createHoverTouch().on('hovertouch', openMainDrawer);
@@ -203,7 +203,7 @@
     }
     function closeMainDrawer() {
 
-        document.getElementsByClassName('mainDrawerPanel')[0].closeDrawer();
+        document.querySelector('.mainDrawerPanel').closeDrawer();
     }
 
     function ensureDrawerStructure(drawer) {
@@ -253,7 +253,7 @@
                     html += '<div class="lazy drawerUserPanelUserImage" data-src="' + url + '" style="width:' + imgWidth + 'px;height:' + imgWidth + 'px;"></div>';
                 }
             } else {
-                html += '<div class="fa fa-user drawerUserPanelUserImage" style="font-size:' + imgWidth + 'px;"></div>';
+                html += '<div class="drawerUserPanelUserImage"><iron-icon icon="person" style="width:' + imgWidth + 'px;height:' + imgWidth + 'px;"></iron-icon></div>';
             }
 
             html += '<div class="drawerUserPanelUserName">';
@@ -327,27 +327,28 @@
         html += '<a class="sidebarLink lnkMediaFolder lnkManageServer" data-itemid="dashboard" href="#"><iron-icon icon="dashboard" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonManageServer') + '</span></a>';
         html += '<a class="sidebarLink lnkMediaFolder editorViewMenu" data-itemid="editor" onclick="return LibraryMenu.onLinkClicked(event, this);" href="edititemmetadata.html"><iron-icon icon="mode-edit" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonMetadataManager') + '</span></a>';
 
-        if (!$.browser.mobile && !AppInfo.isTouchPreferred) {
+        if (!$.browser.mobile) {
             html += '<a class="sidebarLink lnkMediaFolder" data-itemid="reports" onclick="return LibraryMenu.onLinkClicked(event, this);" href="reports.html"><iron-icon icon="insert-chart" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonReports') + '</span></a>';
         }
         html += '</div>';
 
         html += '<div class="userMenuOptions">';
+
         html += '<div class="sidebarDivider"></div>';
 
-        html += '<a class="sidebarLink lnkMediaFolder" data-itemid="inbox" onclick="return LibraryMenu.onLinkClicked(event, this);" href="notificationlist.html"><iron-icon icon="inbox" class="sidebarLinkIcon"></iron-icon>';
+        html += '<a class="sidebarLink lnkMediaFolder sidebarLinkNotifications" data-itemid="inbox" onclick="return LibraryMenu.onLinkClicked(event, this);" href="notificationlist.html"><iron-icon icon="inbox" class="sidebarLinkIcon"></iron-icon>';
         html += Globalize.translate('ButtonInbox');
         html += '<div class="btnNotifications"><div class="btnNotificationsInner">0</div></div>';
         html += '</a>';
 
         if (user.localUser && showUserAtTop()) {
-            html += '<a class="sidebarLink lnkMediaFolder lnkMySettings" onclick="return LibraryMenu.onLinkClicked(event, this);" data-itemid="mysync" href="mypreferencesdisplay.html?userId=' + user.localUser.Id + '"><iron-icon icon="settings" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSettings') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder lnkMySettings" onclick="return LibraryMenu.onLinkClicked(event, this);" data-itemid="mysync" href="mypreferencesmenu.html?userId=' + user.localUser.Id + '"><iron-icon icon="settings" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSettings') + '</span></a>';
         }
 
         html += '<a class="sidebarLink lnkMediaFolder lnkMySync" data-itemid="mysync" onclick="return LibraryMenu.onLinkClicked(event, this);" href="mysync.html"><iron-icon icon="refresh" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSync') + '</span></a>';
 
         if (Dashboard.isConnectMode()) {
-            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="return LibraryMenu.onLinkClicked(event, this);" href="selectserver.html"><span class="fa fa-globe sidebarLinkIcon"></span><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
+            html += '<a class="sidebarLink lnkMediaFolder" data-itemid="selectserver" onclick="return LibraryMenu.onLinkClicked(event, this);" href="selectserver.html"><iron-icon icon="wifi" class="sidebarLinkIcon"></iron-icon><span class="sidebarLinkText">' + Globalize.translate('ButtonSelectServer') + '</span></a>';
         }
 
         if (showUserAtTop()) {
@@ -368,6 +369,52 @@
         LibraryMenu.setTitle(text);
     }
 
+    function getUserViews(apiClient, userId) {
+
+        var deferred = $.Deferred();
+
+        apiClient.getUserViews({}, userId).done(function (result) {
+
+            var items = result.Items;
+
+            var list = [];
+
+            for (var i = 0, length = items.length; i < length; i++) {
+
+                var view = items[i];
+
+                list.push(view);
+
+                if (view.CollectionType == 'livetv') {
+
+                    view.ImageTags = {};
+                    view.icon = 'live-tv';
+                    view.onclick = "LibraryBrowser.showTab('livetv.html', 0);";
+
+                    var guideView = $.extend({}, view);
+                    guideView.Name = Globalize.translate('ButtonGuide');
+                    guideView.ImageTags = {};
+                    guideView.icon = 'dvr';
+                    guideView.url = 'livetv.html?tab=1';
+                    guideView.onclick = "LibraryBrowser.showTab('livetv.html', 1);";
+                    list.push(guideView);
+
+                    var recordedTvView = $.extend({}, view);
+                    recordedTvView.Name = Globalize.translate('ButtonRecordedTv');
+                    recordedTvView.ImageTags = {};
+                    recordedTvView.icon = 'video-library';
+                    recordedTvView.url = 'livetv.html?tab=3';
+                    recordedTvView.onclick = "LibraryBrowser.showTab('livetv.html', 3);";
+                    list.push(recordedTvView);
+                }
+            }
+
+            deferred.resolveWith(null, [list]);
+        });
+
+        return deferred.promise();
+    }
+
     function updateLibraryMenu(user) {
 
         if (!user) {
@@ -382,9 +429,9 @@
 
         var apiClient = window.ApiClient;
 
-        apiClient.getUserViews(userId).done(function (result) {
+        getUserViews(apiClient, userId).done(function (result) {
 
-            var items = result.Items;
+            var items = result;
 
             var html = '';
             html += '<div class="sidebarHeader">';
@@ -444,7 +491,10 @@
                     color = "#293AAE";
                 }
 
-                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder sidebarLink" onclick="return LibraryMenu.onLinkClicked(event, this);" href="' + getItemHref(i, i.CollectionType) + '"><iron-icon icon="' + icon + '" class="sidebarLinkIcon" style="color:' + color + '"></iron-icon><span class="sectionName">' + i.Name + '</span></a>';
+                icon = i.icon || icon;
+
+                var onclick = i.onclick ? ' function(){' + i.onclick + '}' : 'null';
+                return '<a data-itemid="' + itemId + '" class="lnkMediaFolder sidebarLink" onclick="return LibraryMenu.onLinkClicked(event, this, ' + onclick + ');" href="' + getItemHref(i, i.CollectionType) + '"><iron-icon icon="' + icon + '" class="sidebarLinkIcon" style="color:' + color + '"></iron-icon><span class="sectionName">' + i.Name + '</span></a>';
 
             }).join('');
 
@@ -469,7 +519,7 @@
     }
 
     function showUserAtTop() {
-        return AppInfo.isNativeApp;
+        return Dashboard.isConnectMode() || $.browser.mobile;
     }
 
     var requiresLibraryMenuRefresh = false;
@@ -496,7 +546,7 @@
     window.LibraryMenu = {
         getTopParentId: getTopParentId,
 
-        onLinkClicked: function (event, link) {
+        onLinkClicked: function (event, link, action) {
 
             if (event.which != 1) {
                 return true;
@@ -509,8 +559,12 @@
                     closeMainDrawer();
 
                     setTimeout(function () {
-                        Dashboard.navigate(link.href);
-                    }, 350);
+                        if (action) {
+                            action();
+                        } else {
+                            Dashboard.navigate(link.href);
+                        }
+                    }, 400);
                 }, 50);
             }
 
@@ -525,7 +579,7 @@
 
                 setTimeout(function () {
                     Dashboard.logout();
-                }, 350);
+                }, 400);
             }
 
             return false;
@@ -548,6 +602,44 @@
 
         setTitle: function (title) {
             document.querySelector('.libraryMenuButtonText').innerHTML = title;
+        },
+
+        setBackButtonVisible: function (visible) {
+
+            var backButton = document.querySelector('.headerBackButton');
+
+            if (backButton) {
+                if (visible) {
+                    backButton.classList.remove('hide');
+                } else {
+                    backButton.classList.add('hide');
+                }
+            }
+        },
+
+        setMenuButtonVisible: function (visible) {
+
+            var mainDrawerButton = document.querySelector('.mainDrawerButton');
+
+            if (mainDrawerButton) {
+                if (!visible && $.browser.mobile) {
+                    mainDrawerButton.classList.remove('hide');
+                } else {
+                    mainDrawerButton.classList.remove('hide');
+                }
+            }
+        },
+        setTransparentMenu: function (transparent) {
+
+            var viewMenuBar = document.querySelector('.viewMenuBar');
+
+            if (viewMenuBar) {
+                if (transparent) {
+                    viewMenuBar.classList.add('semiTransparent');
+                } else {
+                    viewMenuBar.classList.remove('semiTransparent');
+                }
+            }
         }
     };
 
@@ -688,7 +780,7 @@
         }
     }
 
-    $(document).on('pagebeforeshowready', ".page", function () {
+    $(document).on('pagebeforeshow', ".page", function () {
 
         var page = this;
 
@@ -719,21 +811,29 @@
 
         var title = page.getAttribute('data-title') || page.getAttribute('data-contextname');
 
-        if (title) {
-            LibraryMenu.setTitle(title);
+        if (!title) {
+            var titleKey = getParameterByName('titlekey');
+
+            if (titleKey) {
+                title = Globalize.translate(titleKey);
+            }
         }
 
-        var titleKey = getParameterByName('titlekey');
+        if (!title) {
+            if (page.classList.contains('type-interior')) {
+                title = Globalize.translate('ButtonHome');
+            }
+        }
 
-        if (titleKey) {
-            LibraryMenu.setTitle(Globalize.translate(titleKey));
+        if (title) {
+            LibraryMenu.setTitle(title);
         }
 
         var mainDrawerButton = document.querySelector('.mainDrawerButton');
 
         if (mainDrawerButton) {
             if (page.getAttribute('data-menubutton') == 'false' && $.browser.mobile) {
-                mainDrawerButton.classList.add('hide');
+                mainDrawerButton.classList.remove('hide');
             } else {
                 mainDrawerButton.classList.remove('hide');
             }
@@ -771,7 +871,7 @@
             document.body.classList.add('hideMainDrawer');
         }
 
-        if (!AppInfo.isNativeApp) {
+        if (!Dashboard.isConnectMode() && !$.browser.mobile) {
             darkDrawer = true;
         }
 

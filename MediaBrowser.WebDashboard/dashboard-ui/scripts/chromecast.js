@@ -264,8 +264,11 @@
      * Stops the running receiver application associated with the session.
      */
     CastPlayer.prototype.stopApp = function () {
-        this.session.stop(this.onStopAppSuccess.bind(this, 'Session stopped'),
-            this.errorHandler);
+
+        if (this.session) {
+            this.session.stop(this.onStopAppSuccess.bind(this, 'Session stopped'),
+                this.errorHandler);
+        }
 
     };
 
@@ -350,7 +353,7 @@
 
         getEndpointInfo().done(function (endpoint) {
 
-            if (endpoint.IsLocal || endpoint.IsInNetwork) {
+            if (endpoint.IsInNetwork) {
                 ApiClient.getPublicSystemInfo().done(function (info) {
 
                     message.serverAddress = info.LocalAddress;
@@ -458,10 +461,26 @@
 
             var userId = Dashboard.getCurrentUserId();
 
-            query.Limit = query.Limit || 100;
-            query.ExcludeLocationTypes = "Virtual";
+            if (query.Ids && query.Ids.split(',').length == 1) {
+                var deferred = DeferredBuilder.Deferred();
 
-            return ApiClient.getItems(userId, query);
+                ApiClient.getItem(userId, query.Ids.split(',')).done(function (item) {
+                    deferred.resolveWith(null, [
+                    {
+                        Items: [item],
+                        TotalRecordCount: 1
+                    }]);
+                });
+
+                return deferred.promise();
+            }
+            else {
+
+                query.Limit = query.Limit || 100;
+                query.ExcludeLocationTypes = "Virtual";
+
+                return ApiClient.getItems(userId, query);
+            }
         };
 
         $(castPlayer).on("connect", function (e) {
@@ -628,6 +647,15 @@
             self.setVolume(getCurrentVolume() + 2);
         };
 
+        self.setRepeatMode = function (mode) {
+            castPlayer.sendMessage({
+                options: {
+                    RepeatMode: mode
+                },
+                command: 'SetRepeatMode'
+            });
+        };
+
         self.toggleMute = function () {
 
             var state = self.lastPlayerData || {};
@@ -676,7 +704,9 @@
                                     "SetVolume",
                                     "SetAudioStreamIndex",
                                     "SetSubtitleStreamIndex",
-                                    "DisplayContent"]
+                                    "DisplayContent",
+                                    "SetRepeatMode",
+                                    "EndSession"]
             };
         };
 
@@ -747,6 +777,11 @@
                 options: {},
                 command: 'VolumeDown'
             });
+        };
+
+        self.endSession = function () {
+
+            castPlayer.stopApp();
         };
 
         self.volumeUp = function () {

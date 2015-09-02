@@ -39,7 +39,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#dlnaServerSettingsPage", function () {
+    $(document).on('pageinit', "#dlnaServerSettingsPage", function () {
 
         $('.dlnaServerSettingsForm').off('submit', onSubmit).on('submit', onSubmit);
 

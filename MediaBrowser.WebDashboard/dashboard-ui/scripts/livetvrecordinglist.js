@@ -81,12 +81,12 @@
 
     }
 
-    $(document).on('pageinitdepends', "#liveTvRecordingListPage", function () {
+    $(document).on('pageinit', "#liveTvRecordingListPage", function () {
 
         var page = this;
 
 
-    }).on('pagebeforeshowready', "#liveTvRecordingListPage", function () {
+    }).on('pagebeforeshow', "#liveTvRecordingListPage", function () {
 
         var page = this;
 

@@ -44,13 +44,9 @@
 
         var html = '';
 
-        var cssClass = 'ui-li-has-thumb listItem';
-
-        html += '<li class="' + cssClass + '"' + ' data-itemid="' + jobItem.Id + '" data-status="' + jobItem.Status + '" data-remove="' + jobItem.IsMarkedForRemoval + '">';
+        html += '<paper-icon-item data-itemid="' + jobItem.Id + '" data-status="' + jobItem.Status + '" data-remove="' + jobItem.IsMarkedForRemoval + '">';
 
         var hasActions = ['Queued', 'Cancelled', 'Failed', 'ReadyToTransfer', 'Transferring', 'Converting', 'Synced'].indexOf(jobItem.Status) != -1;
-
-        html += '<a href="#">';
 
         var imgUrl;
 
@@ -65,41 +61,40 @@
         }
 
         if (imgUrl) {
-
-            if (index < 10) {
-                html += '<div class="listviewImage ui-li-thumb" style="background-image:url(\'' + imgUrl + '\');"></div>';
-            } else {
-                html += '<div class="listviewImage ui-li-thumb lazy" data-src="' + imgUrl + '"></div>';
-            }
+            html += '<paper-fab class="listAvatar blue" style="background-image:url(\'' + imgUrl + '\');background-repeat:no-repeat;background-position:center center;background-size: cover;" item-icon></paper-fab>';
+        }
+        else {
+            html += '<paper-fab class="listAvatar blue" icon="refresh" item-icon></paper-fab>';
         }
 
-        html += '<h3>';
+        html += '<paper-item-body three-line>';
+
+        html += '<div>';
         html += jobItem.ItemName;
-        html += '</h3>';
+        html += '</div>';
 
         if (jobItem.Status == 'Failed') {
-            html += '<p style="color:red;">';
+            html += '<div secondary style="color:red;">';
         } else {
-            html += '<p>';
+            html += '<div secondary>';
         }
         html += Globalize.translate('SyncJobItemStatus' + jobItem.Status);
         if (jobItem.Status == 'Synced' && jobItem.IsMarkedForRemoval) {
             html += '<br/>';
             html += Globalize.translate('SyncJobItemStatusSyncedMarkForRemoval');
         }
-        html += '</p>';
+        html += '</div>';
 
-        html += '</a>';
+        html += '</paper-item-body>';
 
         if (hasActions) {
 
-            html += '<a href="#" data-icon="ellipsis-v" class="listviewMenuButton btnJobItemMenu">';
+            html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnJobItemMenu"></paper-icon-button>';
         } else {
-            html += '<a href="#" data-icon="ellipsis-v" class="listviewMenuButton btnJobItemMenu" style="visibility:hidden;">';
+            html += '<paper-icon-button icon="' + AppInfo.moreIcon + '" class="btnJobItemMenu" disabled></paper-icon-button>';
         }
-        html += '</a>';
 
-        html += '</li>';
+        html += '</paper-icon-item>';
         return html;
     }
 
@@ -107,11 +102,9 @@
 
         var html = '';
 
-        html += '<ul data-role="listview" class="itemsListview">';
+        html += '<h1>' + Globalize.translate('HeaderItems') + '</h1>';
 
-        html += '<li data-role="list-divider">';
-        html += Globalize.translate('HeaderItems');
-        html += '</li>';
+        html += '<div class="paperList">';
 
         var index = 0;
         html += items.map(function (i) {
@@ -120,7 +113,7 @@
 
         }).join('');
 
-        html += '</ul>';
+        html += '</div>';
 
         var elem = $('.jobItems', page).html(html).trigger('create').lazyChildren();
 
@@ -132,7 +125,7 @@
     function showJobItemMenu(elem) {
 
         var page = $(elem).parents('.page');
-        var listItem = $(elem).parents('li');
+        var listItem = $(elem).parents('paper-icon-item');
         var jobItemId = listItem.attr('data-itemid');
         var status = listItem.attr('data-status');
         var remove = listItem.attr('data-remove').toLowerCase() == 'true';
@@ -393,7 +386,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', ".syncJobPage", function () {
+    $(document).on('pageinit', ".syncJobPage", function () {
 
         $('.syncJobForm').off('submit', onSubmit).on('submit', onSubmit);
 

@@ -113,7 +113,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#libraryPathMappingPage", function () {
+    $(document).on('pageinit', "#libraryPathMappingPage", function () {
 
         $('.libraryPathMappingForm').off('submit', onSubmit).on('submit', onSubmit);
 

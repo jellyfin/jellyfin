@@ -27,7 +27,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#playbackConfigurationPage", function () {
+    $(document).on('pageinit', "#playbackConfigurationPage", function () {
 
         $('.playbackConfigurationForm').off('submit', onSubmit).on('submit', onSubmit);
 

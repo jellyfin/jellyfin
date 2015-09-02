@@ -56,16 +56,41 @@
 
             return appStorage.getItem('enableFullScreen') == 'true';
         },
+        syncOnlyOnWifi: function (val) {
+
+            if (val != null) {
+                update('syncOnlyOnWifi', val.toString());
+            }
+
+            return appStorage.getItem('syncOnlyOnWifi') != 'false';
+        },
+        syncLosslessAudio: function (val) {
+
+            if (val != null) {
+                update('syncLosslessAudio', val.toString());
+            }
+
+            return appStorage.getItem('syncLosslessAudio') != 'false';
+        },
         syncPath: function (val) {
 
             if (val != null) {
-                update('syncPath', val.toString());
+                update('syncPath', val);
             }
 
             return appStorage.getItem('syncPath');
         },
 
-        displayPreferencesKey: function() {
+        displayLanguage: function (val) {
+
+            if (val != null) {
+                update('displayLanguage', val);
+            }
+
+            return appStorage.getItem('displayLanguage') || 'en-US';
+        },
+
+        displayPreferencesKey: function () {
             if (AppInfo.isNativeApp) {
                 return 'Emby Mobile';
             }

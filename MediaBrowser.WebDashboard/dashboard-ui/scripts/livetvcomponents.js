@@ -24,57 +24,6 @@
             });
         },
 
-        renderMiscProgramInfo: function (elem, obj) {
-
-            var html = [];
-
-            if (obj.IsSeries && !obj.IsRepeat) {
-
-                html.push('<span class="newTvProgram">' + Globalize.translate('LabelNewProgram') + '</span>');
-
-            }
-
-            if (obj.IsLive) {
-
-                html.push('<span class="liveTvProgram">' + Globalize.translate('LabelLiveProgram') + '</span>');
-
-            }
-
-            if (obj.ChannelId) {
-                html.push('<a class="textlink" href="livetvchannel.html?id=' + obj.ChannelId + '">' + obj.ChannelName + '</a>');
-            }
-
-            if (obj.IsHD) {
-
-                html.push(Globalize.translate('LabelHDProgram'));
-
-            }
-
-            if (obj.Audio) {
-
-                html.push(obj.Audio);
-
-            }
-
-            html = html.join('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
-
-            if (obj.SeriesTimerId) {
-                html += '<a href="livetvseriestimer.html?id=' + obj.SeriesTimerId + '" title="' + Globalize.translate('ButtonViewSeriesRecording') + '">';
-                html += '<div class="timerCircle seriesTimerCircle"></div>';
-                html += '<div class="timerCircle seriesTimerCircle"></div>';
-                html += '<div class="timerCircle seriesTimerCircle"></div>';
-                html += '</a>';
-            }
-            else if (obj.TimerId) {
-
-                html += '<a href="livetvtimer.html?id=' + obj.TimerId + '">';
-                html += '<div class="timerCircle"></div>';
-                html += '</a>';
-            }
-
-            elem.html(html).trigger('create');
-        },
-
         renderOriginalAirDate: function (elem, item) {
 
             var airDate = item.OriginalAirDate;
@@ -146,45 +95,97 @@
         html += (item.Overview || '');
         html += '</p>';
 
+        html += '<div style="text-align:center;padding-bottom:.5em;">';
+
+        var endDate;
+        var startDate;
+        var now = new Date().getTime();
+
+        try {
+
+            endDate = parseISO8601Date(item.EndDate, { toLocal: true });
+
+        } catch (err) {
+            endDate = now;
+        }
+
+        try {
+
+            startDate = parseISO8601Date(item.StartDate, { toLocal: true });
+
+        } catch (err) {
+            startDate = now;
+        }
+
+
+        if (now < endDate && now >= startDate) {
+            html += '<paper-button data-id="' + item.ChannelId + '" raised class="accent mini btnPlay"><iron-icon icon="play-arrow"></iron-icon><span>' + Globalize.translate('ButtonPlay') + '</span></paper-button>';
+        }
+
+        if (!item.TimerId && !item.SeriesTimerId) {
+            html += '<paper-button data-id="' + item.Id + '" raised class="mini btnRecord" style="background-color:#cc3333;"><iron-icon icon="videocam"></iron-icon><span>' + Globalize.translate('ButtonRecord') + '</span></paper-button>';
+        }
+
+        html += '<div>';
+
         html += '</div>';
 
         return html;
     }
 
+    function onPlayClick() {
+
+        $('.itemFlyout').popup('close');
+
+        MediaController.play({
+            ids: [this.getAttribute('data-id')]
+        });
+    }
+
+    function onRecordClick() {
+        $('.itemFlyout').popup('close');
+        Dashboard.navigate('livetvnewrecording.html?programid=' + this.getAttribute('data-id'));
+    }
+
     function showOverlay(elem, item) {
 
-        $('.itemFlyout').popup('close').remove();
+        require(['jqmpopup'], function () {
+            $('.itemFlyout').popup('close').remove();
 
-        var html = '<div data-role="popup" class="itemFlyout" data-theme="b" data-arrow="true" data-history="false">';
+            var html = '<div data-role="popup" class="itemFlyout" data-theme="b" data-arrow="true" data-history="false">';
 
-        html += '<div class="ui-bar-b" style="text-align:center;">';
-        html += '<h3 style="margin: .5em 0;padding:0 1em;font-weight:normal;">' + item.Name + '</h3>';
-        html += '</div>';
+            html += '<div class="ui-bar-b" style="text-align:center;">';
+            html += '<h3 style="margin: .5em 0;padding:.5em 1em;font-weight:normal;">' + item.Name + '</h3>';
+            html += '</div>';
 
-        html += '<div style="padding: 0 1em;">';
-        html += getOverlayHtml(item);
-        html += '</div>';
+            html += '<div style="padding: 0 1em;">';
+            html += getOverlayHtml(item);
+            html += '</div>';
 
-        html += '</div>';
+            html += '</div>';
 
-        $('.itemFlyout').popup('close').popup('destroy').remove();
+            $('.itemFlyout').popup('close').popup('destroy').remove();
 
-        $(document.body).append(html);
+            $(document.body).append(html);
 
-        var popup = $('.itemFlyout').on('mouseenter', onOverlayMouseOver).on('mouseleave', onOverlayMouseOut).popup({
+            var popup = $('.itemFlyout').on('mouseenter', onOverlayMouseOver).on('mouseleave', onOverlayMouseOut).popup({
 
-            positionTo: elem
+                positionTo: elem
 
-        }).trigger('create').popup("open").on("popupafterclose", function () {
+            }).trigger('create').popup("open").on("popupafterclose", function () {
 
-            $(this).off("popupafterclose").off("mouseenter").off("mouseleave").remove();
+                $(this).off("popupafterclose").off("mouseenter").off("mouseleave").remove();
+            });
+
+            $('.btnPlay', popup).on('click', onPlayClick);
+            $('.btnRecord', popup).on('click', onRecordClick);
+
+            LibraryBrowser.renderGenres($('.itemGenres', popup), item, 3);
+            $('.miscTvProgramInfo', popup).html(LibraryBrowser.getMiscInfoHtml(item)).trigger('create');
+
+            popup.parents().prev('.ui-popup-screen').remove();
+            currentPosterItem = elem;
         });
-
-        LibraryBrowser.renderGenres($('.itemGenres', popup), item, 'livetv', 3);
-        LiveTvHelpers.renderMiscProgramInfo($('.miscTvProgramInfo', popup), item);
-
-        popup.parents().prev('.ui-popup-screen').remove();
-        currentPosterItem = elem;
     }
 
     function onProgramClicked() {

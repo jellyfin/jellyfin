@@ -80,6 +80,10 @@ namespace MediaBrowser.Model.Users
             EnableLiveTvManagement = true;
             EnableLiveTvAccess = true;
 
+            // Without this on by default, admins won't be able to do this
+            // Improve in the future
+            EnableLiveTvManagement = true;
+
             EnableSharedDeviceControl = true;
 
             BlockedTags = new string[] { };

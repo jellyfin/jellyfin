@@ -6,13 +6,13 @@
         $('#txtPublicPort', page).val(config.PublicPort);
         $('#txtPublicHttpsPort', page).val(config.PublicHttpsPort);
 
-        $('#chkEnableHttps', page).checked(config.EnableHttps).checkboxradio('refresh');
+        $('#chkEnableHttps', page).checked(config.EnableHttps);
         $('#txtHttpsPort', page).val(config.HttpsPortNumber);
 
         $('#txtDdns', page).val(config.WanDdns || '');
         $('#txtCertificatePath', page).val(config.CertificatePath || '');
 
-        $('#chkEnableUpnp', page).checked(config.EnableUPnP).checkboxradio('refresh');
+        $('#chkEnableUpnp', page).checked(config.EnableUPnP);
 
         Dashboard.hideLoadingMsg();
     }
@@ -52,7 +52,7 @@
 
         });
 
-    }).on('pageinitdepends', "#dashboardHostingPage", function () {
+    }).on('pageinit', "#dashboardHostingPage", function () {
 
         var page = this;
 

@@ -18,9 +18,7 @@
 
                 Logger.log('credentials initialized with: ' + json);
                 credentials = JSON.parse(json);
-                credentials.Servers = credentials.Servers || credentials.servers || [];
-
-                credentials.servers = null;
+                credentials.Servers = credentials.Servers || [];
             }
         }
 
@@ -97,6 +95,9 @@
                 }
                 if (server.LastConnectionMode != null) {
                     existing.LastConnectionMode = server.LastConnectionMode;
+                }
+                if (server.ConnectServerId) {
+                    existing.ConnectServerId = server.ConnectServerId;
                 }
                 existing.DateLastLocalConnection = Math.max(existing.DateLastLocalConnection || 0, server.DateLastLocalConnection || 0);
 

@@ -26,10 +26,12 @@
     */
     var $w = $(window);
 
-    function visibleInViewport(elem, partial, hidden, direction, threshold) {
+    var thresholdX = Math.max(screen.availWidth * 1.5, 1000);
+    var thresholdY = Math.max(screen.availHeight * 1.5, 1000);
 
-        var $t = $(elem),
-            t = elem,
+    function visibleInViewport(elem, partial, hidden, direction) {
+
+        var t = elem,
             vpWidth = $w.width(),
             vpHeight = $w.height(),
             direction = (direction) ? direction : 'both',
@@ -39,10 +41,10 @@
 
             // Use this native browser method, if available.
             var rec = t.getBoundingClientRect(),
-                tViz = rec.top >= 0 && rec.top < vpHeight + threshold,
-                bViz = rec.bottom > 0 && rec.bottom <= vpHeight + threshold,
-                lViz = rec.left >= 0 && rec.left < vpWidth + threshold,
-                rViz = rec.right > 0 && rec.right <= vpWidth + threshold,
+                tViz = rec.top >= 0 && rec.top < vpHeight + thresholdY,
+                bViz = rec.bottom > 0 && rec.bottom <= vpHeight + thresholdY,
+                lViz = rec.left >= 0 && rec.left < vpWidth + thresholdX,
+                rViz = rec.right > 0 && rec.right <= vpWidth + thresholdX,
                 vVisible = partial ? tViz || bViz : tViz && bViz,
                 hVisible = partial ? lViz || rViz : lViz && rViz;
 
@@ -54,6 +56,7 @@
                 return clientSize && hVisible;
         } else {
 
+            var $t = $(elem);
             var viewTop = $w.scrollTop(),
                 viewBottom = viewTop + vpHeight,
                 viewLeft = $w.scrollLeft(),
@@ -79,26 +82,8 @@
 
     var unveilId = 0;
 
-    function getThreshold() {
-
-        // If less than 100, the search window ends up not getting images
-        // If less than 200, this happens on the home page
-        // Need to fix those before this can be set to 0
-
-        //if (window.AppInfo && AppInfo.isNativeApp && $.browser.safari) {
-        //    return 7000;
-        //}
-
-        var screens = $.browser.mobile ? 2.5 : 1;
-
-        // This helps eliminate the draw-in effect as you scroll
-        return Math.max(screen.availHeight * screens, 1000);
-    }
-
-    var threshold = getThreshold();
-
     function isVisible(elem) {
-        return visibleInViewport(elem, true, false, 'both', threshold);
+        return visibleInViewport(elem, true, false, 'both');
     }
 
     function fillImage(elem) {
@@ -136,12 +121,12 @@
             images = remaining;
 
             if (!images.length) {
-                Events.off(window, 'scroll.' + eventNamespace);
+                Events.off(document, 'scroll.' + eventNamespace);
                 Events.off(window, 'resize.' + eventNamespace);
             }
         }
 
-        Events.on(window, 'scroll.' + eventNamespace, unveil);
+        Events.on(document, 'scroll.' + eventNamespace, unveil);
         Events.on(window, 'resize.' + eventNamespace, unveil);
 
         unveil();

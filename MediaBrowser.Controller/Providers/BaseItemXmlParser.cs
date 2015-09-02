@@ -74,6 +74,8 @@ namespace MediaBrowser.Controller.Providers
         /// <param name="cancellationToken">The cancellation token.</param>
         private void Fetch(MetadataResult<T> item, string metadataFile, XmlReaderSettings settings, Encoding encoding, CancellationToken cancellationToken)
         {
+            item.ResetPeople();
+
             using (var streamReader = new StreamReader(metadataFile, encoding))
             {
                 // Use XmlReader for best performance
@@ -492,7 +494,7 @@ namespace MediaBrowser.Controller.Providers
                             {
                                 continue;
                             }
-                            PeopleHelper.AddPerson(itemResult.People, p);
+                            itemResult.AddPerson(p);
                         }
                         break;
                     }
@@ -504,7 +506,7 @@ namespace MediaBrowser.Controller.Providers
                             {
                                 continue;
                             }
-                            PeopleHelper.AddPerson(itemResult.People, p);
+                            itemResult.AddPerson(p);
                         }
                         break;
                     }
@@ -529,7 +531,7 @@ namespace MediaBrowser.Controller.Providers
                                 {
                                     continue;
                                 }
-                                PeopleHelper.AddPerson(itemResult.People, p);
+                                itemResult.AddPerson(p);
                             }
                         }
                         break;
@@ -543,7 +545,7 @@ namespace MediaBrowser.Controller.Providers
                             {
                                 continue;
                             }
-                            PeopleHelper.AddPerson(itemResult.People, p);
+                            itemResult.AddPerson(p);
                         }
                         break;
                     }
@@ -1156,7 +1158,7 @@ namespace MediaBrowser.Controller.Providers
                                         {
                                             continue;
                                         }
-                                        PeopleHelper.AddPerson(item.People, person);
+                                        item.AddPerson(person);
                                     }
                                 }
                                 break;

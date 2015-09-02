@@ -63,7 +63,8 @@
                     overlayText: false,
                     centerText: true,
                     lazy: true,
-                    showTitle: false
+                    showTitle: false,
+                    overlayPlayButton: AppInfo.enableAppLayouts
                 });
             }
 
@@ -76,7 +77,7 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#tvNextUpPage", function () {
+    $(document).on('pagebeforeshow', "#tvNextUpPage", function () {
 
         var page = this;
         if (LibraryBrowser.needsRefresh(page)) {

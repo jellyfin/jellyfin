@@ -6,6 +6,13 @@
 
         self.show = function (options) {
 
+            require(['jqmpopup'], function () {
+                self.showInternal(options);
+            });
+        };
+
+        self.showInternal = function (options) {
+
             options = options || {};
 
             options.header = options.header || Globalize.translate('HeaderRateAndReview');

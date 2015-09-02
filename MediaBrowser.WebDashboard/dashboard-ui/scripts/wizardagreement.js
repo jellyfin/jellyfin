@@ -2,9 +2,9 @@
 
     function onSubmit() {
 
-        var page = $(this).parents('.page');
+        var page = $(this).parents('.page')[0];
 
-        if ($('#chkAccept', page).checked()) {
+        if (page.querySelector('.chkAccept').checked) {
             Dashboard.navigate('wizardfinish.html');
         } else {
 
@@ -17,9 +17,9 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', '#wizardAgreementPage', function(){
+    $(document).on('pageinit', '#wizardAgreementPage', function () {
 
-    	$('.wizardAgreementForm').off('submit', onSubmit).on('submit', onSubmit);
+        $('.wizardAgreementForm').off('submit', onSubmit).on('submit', onSubmit);
     });
 
 })(window, jQuery);

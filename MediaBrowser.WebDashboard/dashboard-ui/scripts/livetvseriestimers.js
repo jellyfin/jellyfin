@@ -29,21 +29,26 @@
 
         var html = '';
 
-        html += '<ul data-role="listview" data-inset="true" data-split-icon="delete">';
-
-        html += '<li data-role="list-divider">' + Globalize.translate('HeaderSeriesRecordings') + '</li>';
+        if (timers.length) {
+            html += '<div class="paperList">';
+        }
 
         for (var i = 0, length = timers.length; i < length; i++) {
 
             var timer = timers[i];
 
-            html += '<li><a href="livetvseriestimer.html?id=' + timer.Id + '">';
+            html += '<paper-icon-item>';
 
-            html += '<h3>';
+            html += '<paper-fab class="listAvatar" icon="live-tv" item-icon></paper-fab>';
+
+            html += '<paper-item-body three-line>';
+            html += '<a class="clearLink" href="livetvseriestimer.html?id=' + timer.Id + '">';
+
+            html += '<div>';
             html += timer.Name;
-            html += '</h3>';
+            html += '</div>';
 
-            html += '<p>';
+            html += '<div secondary>';
             if (timer.DayPattern) {
                 html += timer.DayPattern;
             }
@@ -59,24 +64,28 @@
             } else {
                 html += ' - ' + LibraryBrowser.getDisplayTime(timer.StartDate);
             }
-            html += '</p>';
+            html += '</div>';
 
-            html += '<p>';
+            html += '<div secondary>';
             if (timer.RecordAnyChannel) {
                 html += Globalize.translate('LabelAllChannels');
             }
             else if (timer.ChannelId) {
                 html += timer.ChannelName;
             }
-            html += '</p>';
+            html += '</div>';
             html += '</a>';
 
-            html += '<a data-seriestimerid="' + timer.Id + '" href="#" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries">' + Globalize.translate('ButtonCancelSeries') + '</a>';
+            html += '</paper-item-body>';
 
-            html += '</li>';
+            html += '<paper-icon-button icon="cancel" data-seriestimerid="' + timer.Id + '" title="' + Globalize.translate('ButtonCancelSeries') + '" class="btnCancelSeries"></paper-icon-button>';
+
+            html += '</paper-icon-item>';
         }
 
-        html += '</ul>';
+        if (timers.length) {
+            html += '</div>';
+        }
 
         var elem = $('#items', page).html(html).trigger('create');
 
@@ -101,47 +110,11 @@
         });
     }
 
-    function updateFilterControls(page) {
+    window.LiveTvPage.renderSeriesTimersTab = function (page, tabContent) {
 
-        // Reset form values using the last used query
-        $('.radioSortBy', page).each(function () {
-
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', page).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
-    }
-
-    $(document).on('pagebeforeshowready', "#liveTvSeriesTimersPage", function () {
-
-        var page = this;
-
-        if (LibraryBrowser.needsRefresh(page)) {
-            reload(page);
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reload(tabContent);
         }
-
-    }).on('pageinit', "#liveTvSeriesTimersPage", function () {
-
-        var page = this;
-
-        $('.radioSortBy', this).on('click', function () {
-            query.StartIndex = 0;
-            query.SortBy = this.getAttribute('data-sortby');
-            reload(page);
-        });
-
-        $('.radioSortOrder', this).on('click', function () {
-            query.StartIndex = 0;
-            query.SortOrder = this.getAttribute('data-sortorder');
-            reload(page);
-        });
-
-        updateFilterControls(this);
-    });
+    };
 
 })(jQuery, document);

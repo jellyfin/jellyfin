@@ -37,14 +37,20 @@
 }
 
 .videoControls {
-    padding: 0 .5em;
-    background-color: rgba(0, 0, 0, .7);
     position: fixed;
     left: 0;
     bottom: 0;
     right: 0;
     z-index: 99998;
     text-align: center;
+}
+
+    .videoControls > div {
+        background-color: rgba(0, 0, 0, .7);
+    }
+
+.videoControlButtons {
+    padding: 0 .5em;
 }
 
 .videoTopControls {
@@ -75,8 +81,8 @@
 
 #videoPlayer .nowPlayingImage img {
     height: auto !important;
-    max-width: 100px;
-    max-height: 200px;
+    max-width: 180px;
+    max-height: 220px;
 }
 
 #videoPlayer .nowPlayingTabs {
@@ -202,7 +208,7 @@
 
 @media all and (max-width: 1400px), all and (max-height: 900px) {
 
-    #mediaPlayer .nowPlayingInfo {
+    .mediaButton.infoButton {
         display: none !important;
     }
 }
@@ -305,43 +311,5 @@
     100% {
         -webkit-transform: scale(1);
         opacity: 0;
-    }
-}
-
-.videoPlayerPopupContent {
-    width: 200px;
-}
-
-.videoChaptersPopup .videoPlayerPopupContent {
-    width: 300px;
-}
-
-.videoChapterPopupImage {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 80px;
-    height: 80px;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center center;
-}
-
-.videoPlayerPopupScroller {
-    overflow-y: auto;
-    overflow-x: hidden;
-    max-height: 180px;
-}
-
-@media all and (min-height: 500px) {
-    .videoPlayerPopupScroller {
-        max-height: 300px;
-    }
-}
-
-
-@media all and (min-height: 600px) {
-    .videoPlayerPopupScroller {
-        max-height: 400px;
     }
 }

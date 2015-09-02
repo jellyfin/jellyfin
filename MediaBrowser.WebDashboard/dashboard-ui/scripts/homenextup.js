@@ -12,7 +12,7 @@
         loadNextUp(page, 'home-nextup');
     }
 
-    function loadNextUp(page, context) {
+    function loadNextUp(page) {
 
         var limit = AppInfo.hasLowImageBandwidth ?
          16 :
@@ -27,8 +27,6 @@
             ImageTypeLimit: 1,
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
-
-        query.ParentId = LibraryMenu.getTopParentId();
 
         ApiClient.getNextUpEpisodes(query).done(function (result) {
 
@@ -50,8 +48,8 @@
                     showParentTitle: true,
                     lazy: true,
                     cardLayout: true,
-                    context: 'tv',
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    context: 'home-nextup'
                 });
 
             } else if (view == 'Thumb') {
@@ -62,10 +60,12 @@
                     showTitle: true,
                     showParentTitle: true,
                     overlayText: false,
-                    context: context,
                     lazy: true,
                     preferThumb: true,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    centerText: true,
+                    overlayPlayButton: AppInfo.enableAppLayouts,
+                    context: 'home-nextup'
                 });
             }
 
@@ -78,20 +78,10 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#indexPage", function () {
-
-        var page = this;
-        var tabContent = page.querySelector('.homeNextUpTabContent');
-
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-            
-            if (parseInt(this.selected) == 1) {
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-
-                    reload(tabContent);
-                }
-            }
-        });
-    });
+    window.HomePage.renderNextUp = function (page, tabContent) {
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reload(tabContent);
+        }
+    };
 
 })(jQuery, document);

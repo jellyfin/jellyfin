@@ -16,16 +16,6 @@
             EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
         };
 
-        query.ParentId = LibraryMenu.getTopParentId();
-
-        var context = '';
-
-        if (query.ParentId) {
-
-            context = 'tv';
-
-        }
-
         ApiClient.getJSON(ApiClient.getUrl("Shows/Upcoming", query)).done(function (result) {
 
             var items = result.Items;
@@ -87,7 +77,7 @@
                 }
 
                 currentGroupName = dateText;
-                currentGroup = [];
+                currentGroup = [item];
             } else {
                 currentGroup.push(item);
             }
@@ -115,9 +105,10 @@
                 showTitle: true,
                 showPremiereDate: true,
                 preferThumb: true,
-                context: 'tv',
                 lazy: true,
-                showDetailsMenu: true
+                showDetailsMenu: true,
+                centerText: true,
+                context: 'home-upcoming'
 
             });
             html += '</div>';
@@ -129,20 +120,10 @@
         ImageLoader.lazyChildren(elem);
     }
 
-    $(document).on('pageinitdepends', "#indexPage", function () {
-
-        var page = this;
-
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-
-            if (parseInt(this.selected) == 3) {
-                var tabContent = page.querySelector('.homeUpcomingTabContent');
-
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-                    loadUpcoming(tabContent);
-                }
-            }
-        });
-    });
+    window.HomePage.renderUpcoming = function (page, tabContent) {
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            loadUpcoming(tabContent);
+        }
+    };
 
 })(jQuery, document);

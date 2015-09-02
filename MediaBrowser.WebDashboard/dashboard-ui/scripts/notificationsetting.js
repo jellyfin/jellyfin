@@ -161,7 +161,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#notificationSettingPage", function () {
+    $(document).on('pageinit', "#notificationSettingPage", function () {
 
         var page = this;
 

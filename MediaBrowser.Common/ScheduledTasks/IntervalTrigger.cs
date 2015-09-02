@@ -1,6 +1,7 @@
-﻿using System;
+﻿using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Tasks;
+using System;
 using System.Threading;
-using MediaBrowser.Model.Events;
 
 namespace MediaBrowser.Common.ScheduledTasks
 {
@@ -30,14 +31,42 @@ namespace MediaBrowser.Common.ScheduledTasks
         public TaskExecutionOptions TaskOptions { get; set; }
 
         /// <summary>
+        /// Gets or sets the first run delay.
+        /// </summary>
+        /// <value>The first run delay.</value>
+        public TimeSpan FirstRunDelay { get; set; }
+
+        public IntervalTrigger()
+        {
+            FirstRunDelay = TimeSpan.FromHours(1);
+        }
+
+        /// <summary>
         /// Stars waiting for the trigger action
         /// </summary>
+        /// <param name="lastResult">The last result.</param>
         /// <param name="isApplicationStartup">if set to <c>true</c> [is application startup].</param>
-        public void Start(bool isApplicationStartup)
+        public void Start(TaskResult lastResult, bool isApplicationStartup)
         {
             DisposeTimer();
 
-            Timer = new Timer(state => OnTriggered(), null, Interval, TimeSpan.FromMilliseconds(-1));
+            var triggerDate = lastResult != null ?
+                lastResult.EndTimeUtc.Add(Interval) :
+                DateTime.UtcNow.Add(FirstRunDelay);
+
+            if (DateTime.UtcNow > triggerDate)
+            {
+                if (isApplicationStartup)
+                {
+                    triggerDate = DateTime.UtcNow.AddMinutes(5);
+                }
+                else
+                {
+                    triggerDate = DateTime.UtcNow.Add(Interval);
+                }
+            }
+
+            Timer = new Timer(state => OnTriggered(), null, triggerDate - DateTime.UtcNow, TimeSpan.FromMilliseconds(-1));
         }
 
         /// <summary>

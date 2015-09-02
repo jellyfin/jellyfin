@@ -1,0 +1,140 @@
+<!doctype html>
+<!--
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>paper-checkbox basic tests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+  <link rel="import" href="../paper-checkbox.html">
+
+</head>
+<body>
+
+  <test-fixture id="NoLabel">
+    <template>
+      <paper-checkbox id="check1"></paper-checkbox>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="WithLabel">
+    <template>
+      <paper-checkbox id="check2">Batman</paper-checkbox>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="AriaLabel">
+    <template>
+      <paper-checkbox id="check3" aria-label="Batman">Robin</paper-checkbox>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('defaults', function() {
+      var c1;
+
+      setup(function() {
+        c1 = fixture('NoLabel');
+      });
+
+      test('check checkbox via click', function(done) {
+        c1.addEventListener('click', function() {
+          assert.isTrue(c1.getAttribute('aria-checked') == 'true');
+          assert.isTrue(c1.checked);
+          done();
+        });
+        MockInteractions.tap(c1);
+      });
+
+      test('toggle checkbox via click', function(done) {
+        c1.checked = true;
+        c1.addEventListener('click', function() {
+          assert.isFalse(c1.getAttribute('aria-checked') != 'false');
+          assert.isFalse(c1.checked);
+          done();
+        });
+        MockInteractions.tap(c1);
+      });
+
+      test('disabled checkbox cannot be clicked', function(done) {
+        c1.disabled = true;
+        c1.checked = true;
+        MockInteractions.tap(c1);
+        setTimeout(function() {
+          assert.isTrue(c1.getAttribute('aria-checked') == 'true');
+          assert.isTrue(c1.checked);
+          done();
+        }, 1);
+      });
+
+      test('checkbox can be validated', function() {
+        c1.required = true;
+        assert.isFalse(c1.validate());
+
+        c1.checked = true;
+        assert.isTrue(c1.validate());
+      });
+
+      test('disabled checkbox is always valid', function() {
+        c1.disabled = true;
+        c1.required = true;
+        assert.isTrue(c1.validate());
+
+        c1.checked = true;
+        assert.isTrue(c1.validate());
+      });
+
+      test('checkbox label can be updated', function() {
+        Polymer.dom(c1).textContent = 'Batman';
+        c1.updateAriaLabel();
+        assert.isTrue(c1.getAttribute('aria-label') == 'Batman');
+
+        Polymer.dom(c1).textContent = 'Robin';
+        c1.updateAriaLabel();
+        assert.isTrue(c1.getAttribute('aria-label') == 'Robin');
+      });
+    });
+
+    suite('a11y', function() {
+      var c1;
+      var c2;
+
+      setup(function() {
+        c1 = fixture('NoLabel');
+        c2 = fixture('WithLabel');
+      });
+
+      test('has aria role "checkbox"', function() {
+        assert.isTrue(c1.getAttribute('role') == 'checkbox');
+        assert.isTrue(c2.getAttribute('role') == 'checkbox');
+      });
+
+      test('checkbox with no label has no aria label', function() {
+        assert.isTrue(!c1.getAttribute('aria-label'));
+      });
+
+      test('checkbox with a label sets an aria label', function() {
+        assert.isTrue(c2.getAttribute('aria-label') == "Batman");
+      });
+
+      test('checkbox respects the user set aria-label', function() {
+        var c = fixture('AriaLabel');
+        assert.isTrue(c.getAttribute('aria-label') == "Batman");
+      });
+    });
+  </script>
+</body>
+</html>

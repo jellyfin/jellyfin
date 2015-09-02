@@ -144,7 +144,7 @@
 
         if (pkg.richDescUrl) {
             $('#pViewWebsite', page).show();
-            $('#pViewWebsite a', page)[0].href = pkg.richDescUrl;
+            $('#pViewWebsite a', page).attr('href', pkg.richDescUrl);
         } else {
             $('#pViewWebsite', page).hide();
         }
@@ -170,7 +170,7 @@
         Dashboard.hideLoadingMsg();
     }
 
-    $(document).on('pageinitdepends', "#addPluginPage", function () {
+    $(document).on('pageinit', "#addPluginPage", function () {
 
         $('.addPluginForm').off('submit', AddPluginPage.onSubmit).on('submit', AddPluginPage.onSubmit);
 

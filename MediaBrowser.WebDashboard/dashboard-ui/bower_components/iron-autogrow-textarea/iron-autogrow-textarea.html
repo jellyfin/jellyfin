@@ -21,9 +21,7 @@ never scroll.
 
 Example:
 
-    <iron-autogrow-textarea id="a1">
-      <textarea id="t1"></textarea>
-    </iron-autogrow-textarea>
+    <iron-autogrow-textarea></iron-autogrow-textarea>
 
 Because the `textarea`'s `value` property is not observable, you should use
 this element's `bind-value` instead for imperative updates.
@@ -63,6 +61,7 @@ this element's `bind-value` instead for imperative updates.
       height: 100%;
       font-size: inherit;
       font-family: inherit;
+      line-height: inherit;
     }
 
     ::content textarea:invalid {
@@ -150,8 +149,8 @@ this element's `bind-value` instead for imperative updates.
        * Bound to the textarea's `autofocus` attribute.
        */
       autofocus: {
-        type: String,
-        value: 'off'
+        type: Boolean,
+        value: false
       },
 
       /**
@@ -302,5 +301,5 @@ this element's `bind-value` instead for imperative updates.
     _computeValue: function() {
       return this.bindValue;
     }
-  })
+  });
 </script>

@@ -1,26 +1,44 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Thumb', 'Thumb');
+    var data = {};
+    function getPageData() {
+        var key = getSavedQueryKey();
+        var pageData = data[key];
 
-    // The base query options
-    var query = {
+        if (!pageData) {
+            pageData = data[key] = {
+                query: {
+                    SortBy: "SortName",
+                    SortOrder: "Ascending",
+                    IncludeItemTypes: "Series",
+                    Recursive: true,
+                    Fields: "DateCreated,SyncInfo,ItemCounts",
+                    StartIndex: 0,
+                    Limit: LibraryBrowser.getDefaultPageSize()
+                },
+                view: LibraryBrowser.getSavedView(key) || LibraryBrowser.getDefaultItemsView('Thumb', 'Thumb')
+            };
 
-        SortBy: "SortName",
-        SortOrder: "Ascending",
-        IncludeItemTypes: "Series",
-        Recursive: true,
-        Fields: "DateCreated,SyncInfo,ItemCounts",
-        StartIndex: 0
-    };
+            pageData.query.ParentId = LibraryMenu.getTopParentId();
+            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+        }
+        return pageData;
+    }
+
+    function getQuery() {
+
+        return getPageData().query;
+    }
 
     function getSavedQueryKey() {
 
-        return 'tvgenres' + (query.ParentId || '');
+        return getWindowUrl();
     }
 
     function reloadItems(page) {
 
         Dashboard.showLoadingMsg();
+        var query = getQuery();
 
         ApiClient.getGenres(Dashboard.getCurrentUserId(), query).done(function (result) {
 
@@ -29,15 +47,18 @@
 
             var html = '';
 
+            var view = getPageData().view;
+
             $('.listTopPaging', page).html(LibraryBrowser.getQueryPagingHtml({
                 startIndex: query.StartIndex,
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
-                viewButton: true,
-                showLimit: false
+                viewButton: false,
+                showLimit: false,
+                updatePageSizeSetting: false,
+                addLayoutButton: true,
+                currentLayout: view
             }));
-
-            updateFilterControls(page);
 
             if (view == "Thumb") {
                 html = LibraryBrowser.getPosterViewHtml({
@@ -99,9 +120,9 @@
                 reloadItems(page);
             });
 
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
+            $('.btnChangeLayout', page).on('layoutchange', function (e, layout) {
+                getPageData().view = layout;
+                LibraryBrowser.saveViewSetting(getSavedQueryKey(), layout);
                 reloadItems(page);
             });
 
@@ -111,92 +132,10 @@
         });
     }
 
-    function updateFilterControls(page) {
-
-        $('.chkStandardFilter', page).each(function () {
-
-            var filters = "," + (query.Filters || "");
-            var filterName = this.getAttribute('data-filter');
-
-            this.checked = filters.indexOf(',' + filterName) != -1;
-
-        }).checkboxradio('refresh');
-
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
-        $('#selectView', page).val(view).selectmenu('refresh');
-    }
-
-    $(document).on('pageinitdepends', "#tvGenresPage", function () {
+    $(document).on('pagebeforeshow', "#tvGenresPage", function () {
 
         var page = this;
-
-        $('.chkStandardFilter', this).on('change', function () {
-
-            var filterName = this.getAttribute('data-filter');
-            var filters = query.Filters || "";
-
-            filters = (',' + filters).replace(',' + filterName, '').substring(1);
-
-            if (this.checked) {
-                filters = filters ? (filters + ',' + filterName) : filterName;
-            }
-
-            query.StartIndex = 0;
-            query.Filters = filters;
-
-            reloadItems(page);
-        });
-
-        $('#selectPageSize', page).on('change', function () {
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
-
-        $('#selectView', this).on('change', function () {
-
-            view = this.value;
-
-            if (view == "Timeline") {
-
-                query.SortBy = "PremiereDate";
-                query.SortOrder = "Descending";
-                query.StartIndex = 0;
-                $('#radioPremiereDate', page)[0].click();
-
-            } else {
-                reloadItems(page);
-            }
-
-            LibraryBrowser.saveViewSetting(getSavedQueryKey(), view);
-        });
-
-    }).on('pagebeforeshowready', "#tvGenresPage", function () {
-
-        query.ParentId = LibraryMenu.getTopParentId();
-        var page = this;
-
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
-        }
-
-        var viewkey = getSavedQueryKey();
-        LibraryBrowser.loadSavedQueryValues(viewkey, query);
-
-        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
-
-            if (val) {
-                Events.trigger($('#selectView', page).val(val).selectmenu('refresh')[0], 'change');
-            } else {
-                reloadItems(page);
-            }
-        });
-
-        updateFilterControls(this);
+        reloadItems(page);
     });
 
 })(jQuery, document);

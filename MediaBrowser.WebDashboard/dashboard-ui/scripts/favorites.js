@@ -60,7 +60,7 @@
                 if (result.TotalRecordCount > result.Items.length) {
                     var href = "secondaryitems.html?type=" + section.types + "&filters=IsFavorite&titlekey=" + section.name;
 
-                    html += '<a class="clearLink" href="' + href + '" style="margin-left:2em;"><paper-button raised class="more mini">' + Globalize.translate('ButtonMoreItems') + '</paper-button></a>';
+                    html += '<a class="clearLink" href="' + href + '" style="margin-left:2em;"><paper-button raised class="more mini">' + Globalize.translate('ButtonMore') + '</paper-button></a>';
                 }
 
                 html += '</div>';
@@ -76,13 +76,13 @@
                     preferThumb: section.preferThumb,
                     shape: section.shape,
                     overlayText: section.overlayText !== false,
-                    context: 'home-favorites',
                     showTitle: section.showTitle,
                     showParentTitle: section.showParentTitle,
                     lazy: true,
                     showDetailsMenu: true,
                     centerText: section.centerText,
-                    overlayPlayButton: section.overlayPlayButton
+                    overlayPlayButton: section.overlayPlayButton,
+                    context: 'home-favorites'
                 });
 
                 html += '</div>';
@@ -141,20 +141,10 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#indexPage", function () {
-
-        var page = this;
-        var tabContent = page.querySelector('.homeFavoritesTabContent');
-
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
-
-            if (parseInt(this.selected) == 2) {
-                if (LibraryBrowser.needsRefresh(tabContent)) {
-                    loadSections(tabContent, Dashboard.getCurrentUserId());
-                }
-            }
-        });
-
-    });
+    window.HomePage.renderFavorites = function (page, tabContent) {
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            loadSections(tabContent, Dashboard.getCurrentUserId());
+        }
+    };
 
 })(jQuery, document);

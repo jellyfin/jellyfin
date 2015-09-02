@@ -7,6 +7,29 @@
         // showCancel
         // title
 
+        // If any items have an icon, give them all an icon just to make sure they're all lined up evenly
+        var renderIcon = options.items.filter(function (o) {
+            return o.ironIcon == 'check';
+        }).length;
+
+        if (renderIcon) {
+
+            for (var i = 0, length = options.items.length; i < length; i++) {
+
+                var option = options.items[i];
+
+                switch (option.ironIcon) {
+
+                    case 'check':
+                        option.name = '• ' + option.name;
+                        break;
+                    default:
+                        option.name = '  ' + option.name;
+                        break;
+                }
+            }
+        }
+
         var innerOptions = {
             'title': options.title,
             'buttonLabels': options.items.map(function (i) {
@@ -27,7 +50,7 @@
 
                 // Results are 1-based
                 if (index >= 1 && options.items.length >= index) {
-                    
+
                     options.callback(options.items[index - 1].id);
                 }
             }

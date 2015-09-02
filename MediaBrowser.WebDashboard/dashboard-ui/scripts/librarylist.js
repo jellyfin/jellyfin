@@ -315,6 +315,14 @@
                 });
             }
 
+            if (commands.indexOf('record') != -1) {
+                items.push({
+                    name: Globalize.translate('ButtonRecord'),
+                    id: 'record',
+                    ironIcon: 'videocam'
+                });
+            }
+
             if (commands.indexOf('removefromplaylist') != -1) {
                 items.push({
                     name: Globalize.translate('ButtonRemoveFromPlaylist'),
@@ -415,15 +423,17 @@
                                 break;
                             case 'album':
                                 Dashboard.navigate('itemdetails.html?id=' + albumid);
+                            case 'record':
+                                Dashboard.navigate('livetvnewrecording.html?programid=' + itemId);
                                 break;
                             case 'artist':
-                                Dashboard.navigate('itembynamedetails.html?context=music&id=' + artistid);
+                                Dashboard.navigate('itemdetails.html?context=music&id=' + artistid);
                                 break;
                             case 'play':
                                 MediaController.play(itemId);
                                 break;
                             case 'playallfromhere':
-                                $(card).parents('.itemsContainer').trigger('playallfromhere', [index]);
+                                playAllFromHere(index, $(card).parents('.itemsContainer'), 'play');
                                 break;
                             case 'queue':
                                 MediaController.queue(itemId);
@@ -440,7 +450,7 @@
                                 });
                                 break;
                             case 'queueallfromhere':
-                                $(card).parents('.itemsContainer').trigger('queueallfromhere', [index]);
+                                playAllFromHere(index, $(card).parents('.itemsContainer'), 'queue');
                                 break;
                             case 'sync':
                                 SyncManager.showMenu({
@@ -492,10 +502,14 @@
         var type = card.getAttribute('data-itemtype');
         var isFolder = card.getAttribute('data-isfolder') == 'true';
         var mediaType = card.getAttribute('data-mediatype');
-        var resumePosition = parseInt(card.getAttribute('data-resumeposition'));
+        var resumePosition = parseInt(card.getAttribute('data-positionticks'));
 
         if (type == 'MusicAlbum' || type == 'MusicArtist' || type == 'MusicGenre' || type == 'Playlist') {
             isFolder = true;
+        }
+
+        if (type == 'Program') {
+            id = card.getAttribute('data-channelid');
         }
 
         LibraryBrowser.showPlayMenu(playButton, id, type, isFolder, mediaType, resumePosition);
@@ -574,9 +588,9 @@
         var html = '<div data-role="popup" class="detailsMenu" style="border:0;padding:0;" data-ids="' + ids.join(',') + '" data-context="' + (context || '') + '">';
 
         html += '<div style="padding:1em 1em;background:rgba(20,20,20,1);margin:0;text-align:center;" class="detailsMenuHeader">';
-        html += '<button type="button" class="imageButton detailsMenuLeftButton" data-role="none"><i class="fa fa-arrow-left"></i></button>';
+        html += '<paper-icon-button icon="keyboard-arrow-left" class="detailsMenuLeftButton"></paper-icon-button>';
         html += '<h3 style="font-weight:400;margin:.5em 0;"></h3>';
-        html += '<button type="button" class="imageButton detailsMenuRightButton" data-role="none"><i class="fa fa-arrow-right"></i></button>';
+        html += '<paper-icon-button icon="keyboard-arrow-right" class="detailsMenuRightButton"></paper-icon-button>';
         html += '</div>';
 
         html += '<div class="detailsMenuContent" style="background-position:center center;background-repeat:no-repeat;background-size:cover;">';
@@ -773,9 +787,11 @@
 
         var context = options.context;
 
-        var elem = getItemsOverlay(options.ids, context);
+        require(['jqmpopup'], function () {
+            var elem = getItemsOverlay(options.ids, context);
 
-        setItemIntoOverlay(elem, 0);
+            setItemIntoOverlay(elem, 0);
+        });
     }
 
     function onCardClick(e) {
@@ -1141,13 +1157,35 @@
             index = elemWithAttributes.getAttribute('data-index');
             itemsContainer = $(elem).parents('.itemsContainer');
 
-            itemsContainer.trigger('playallfromhere', [index]);
+            playAllFromHere(index, itemsContainer, 'play');
         }
 
         return false;
     }
 
-    $(document).on('pageinitdepends', ".libraryPage", function () {
+    function playAllFromHere(index, itemsContainer, method) {
+
+        var ids = $('.mediaItem', itemsContainer).get().map(function (i) {
+            return i.getAttribute('data-itemid') || i.parentNode.getAttribute('data-itemid');
+        });
+
+        ids = ids.slice(index);
+
+        ApiClient.getItems(Dashboard.getCurrentUserId(), {
+
+            Ids: ids.join(','),
+            Fields: 'MediaSources,Chapters',
+            Limit: 100
+
+        }).done(function (result) {
+
+            MediaController[method]({
+                items: result.Items
+            });
+        });
+    }
+
+    $(document).on('pageinit', ".libraryPage", function () {
 
         var page = this;
 
@@ -1181,16 +1219,15 @@
 
         $(page.getElementsByClassName('viewTabButton')).on('click', function () {
 
-            $('.viewTabButton', page).removeClass('ui-btn-active');
+            var parent = $(this).parents('.viewPanel');
+            $('.viewTabButton', parent).removeClass('ui-btn-active');
             this.classList.add('ui-btn-active');
 
-            $('.viewTab', page).hide();
-            $('.' + this.getAttribute('data-tab'), page).show();
+            $('.viewTab', parent).hide();
+            $('.' + this.getAttribute('data-tab'), parent).show();
         });
 
-        var viewPanel = $('.viewPanel', page);
-
-        $('#selectPageSize', viewPanel).html(LibraryBrowser.getDefaultPageSizeSelections().map(function (i) {
+        $('select.selectPageSize', $('.viewPanel', page)).html(LibraryBrowser.getDefaultPageSizeSelections().map(function (i) {
 
             return '<option value="' + i + '">' + i + '</option>';
 
@@ -1207,17 +1244,12 @@
             $(itemsContainers[i]).createCardMenus();
         }
 
-    }).on('pagebeforeshowready', ".libraryPage", function () {
+    }).on('pagebeforeshow', ".libraryPage", function () {
 
         var page = this;
 
         hideSelections(page);
-
-        var elem = page.querySelector('.viewTabButton');
-        if (elem) {
-            Events.trigger(elem, 'click');
-        }
-
+        $(page.querySelectorAll('.viewTabButton:first-child')).trigger('click');
     });
 
     function renderUserDataChanges(card, userData) {
@@ -1251,13 +1283,7 @@
 
     function onUserDataChanged(userData) {
 
-        var cssClass = LibraryBrowser.getUserDataCssClass(userData.Key);
-
-        if (!cssClass) {
-            return;
-        }
-
-        $('.' + cssClass).each(function () {
+        $(document.querySelectorAll("*[data-itemid='" + userData.ItemId + "']")).each(function () {
 
             var mediaType = this.getAttribute('data-mediatype');
 

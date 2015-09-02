@@ -98,7 +98,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
                 var byName = item as IItemByName;
 
-                if (byName != null && !(item is LiveTvChannel))
+                if (byName != null)
                 {
                     if (options.Fields.Contains(ItemFields.ItemCounts))
                     {
@@ -140,7 +140,7 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             var byName = item as IItemByName;
 
-            if (byName != null && !(item is LiveTvChannel))
+            if (byName != null)
             {
                 if (options.Fields.Contains(ItemFields.ItemCounts))
                 {
@@ -187,7 +187,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         {
             if (!options.Fields.Contains(ItemFields.SyncInfo))
             {
-                return new SyncedItemProgress[]{};
+                return new SyncedItemProgress[] { };
             }
 
             var deviceId = options.DeviceId;
@@ -281,7 +281,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             }
         }
 
-        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, Dictionary<string,SyncedItemProgress> syncProgress, User user = null, BaseItem owner = null)
+        private BaseItemDto GetBaseItemDtoInternal(BaseItem item, DtoOptions options, Dictionary<string, SyncedItemProgress> syncProgress, User user = null, BaseItem owner = null)
         {
             var fields = options.Fields;
 
@@ -351,6 +351,20 @@ namespace MediaBrowser.Server.Implementations.Dto
 
             AttachBasicFields(dto, item, owner, options);
 
+            var tvChannel = item as LiveTvChannel;
+            if (tvChannel != null)
+            {
+                _livetvManager().AddChannelInfo(dto, tvChannel, options, user);
+            }
+
+            var collectionFolder = item as ICollectionFolder;
+            if (collectionFolder != null)
+            {
+                dto.CollectionType = user == null ?
+                    collectionFolder.CollectionType :
+                    collectionFolder.GetViewType(user);
+            }
+
             var playlist = item as Playlist;
             if (playlist != null)
             {
@@ -389,8 +403,7 @@ namespace MediaBrowser.Server.Implementations.Dto
             return dto;
         }
 
-        public BaseItemDto GetItemByNameDto<T>(T item, DtoOptions options, List<BaseItem> taggedItems, User user = null)
-            where T : BaseItem, IItemByName
+        public BaseItemDto GetItemByNameDto(BaseItem item, DtoOptions options, List<BaseItem> taggedItems, User user = null)
         {
             var syncProgress = GetSyncedItemProgress(options);
 
@@ -1066,12 +1079,6 @@ namespace MediaBrowser.Server.Implementations.Dto
                 dto.DisplayOrder = hasDisplayOrder.DisplayOrder;
             }
 
-            var collectionFolder = item as ICollectionFolder;
-            if (collectionFolder != null)
-            {
-                dto.CollectionType = collectionFolder.CollectionType;
-            }
-
             var userView = item as UserView;
             if (userView != null)
             {
@@ -1519,16 +1526,11 @@ namespace MediaBrowser.Server.Implementations.Dto
                 SetPhotoProperties(dto, photo);
             }
 
-            var tvChannel = item as LiveTvChannel;
-            if (tvChannel != null)
-            {
-                dto.MediaSources = _mediaSourceManager().GetStaticMediaSources(tvChannel, true).ToList();
-            }
-
+            dto.ChannelId = item.ChannelId;
+            
             var channelItem = item as IChannelItem;
             if (channelItem != null)
             {
-                dto.ChannelId = channelItem.ChannelId;
                 dto.ChannelName = _channelManagerFactory().GetChannel(channelItem.ChannelId).Name;
             }
 
@@ -1629,7 +1631,7 @@ namespace MediaBrowser.Server.Implementations.Dto
         /// <param name="fields">The fields.</param>
         /// <param name="syncProgress">The synchronize progress.</param>
         /// <returns>Task.</returns>
-        private void SetSpecialCounts(Folder folder, User user, BaseItemDto dto, List<ItemFields> fields, Dictionary<string,SyncedItemProgress> syncProgress)
+        private void SetSpecialCounts(Folder folder, User user, BaseItemDto dto, List<ItemFields> fields, Dictionary<string, SyncedItemProgress> syncProgress)
         {
             var recursiveItemCount = 0;
             var unplayed = 0;
@@ -1640,21 +1642,15 @@ namespace MediaBrowser.Server.Implementations.Dto
             double totalSyncPercent = 0;
             var addSyncInfo = fields.Contains(ItemFields.SyncInfo);
 
-            IEnumerable<BaseItem> children;
-
-            var season = folder as Season;
-
-            if (season != null)
+            var children = folder.GetItems(new InternalItemsQuery
             {
-                children = season
-                    .GetEpisodes(user)
-                    .Where(i => i.LocationType != LocationType.Virtual);
-            }
-            else
-            {
-                children = folder
-                    .GetRecursiveChildren(user, i => !i.IsFolder && i.LocationType != LocationType.Virtual);
-            }
+                IsFolder = false,
+                Recursive = true,
+                IsVirtualUnaired = false,
+                IsMissing = false,
+                User = user
+
+            }).Result.Items;
 
             // Loop through each recursive child
             foreach (var child in children)
@@ -1772,14 +1768,9 @@ namespace MediaBrowser.Server.Implementations.Dto
             {
                 size = _imageProcessor.GetImageSize(imageInfo);
             }
-            catch (FileNotFoundException)
-            {
-                _logger.Error("Image file does not exist: {0}", path);
-                return;
-            }
             catch (Exception ex)
             {
-                _logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
+                //_logger.ErrorException("Failed to determine primary image aspect ratio for {0}", ex, path);
                 return;
             }
 

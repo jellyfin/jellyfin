@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Entities;
 using System;
+using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Model.LiveTv
 {
@@ -15,6 +16,15 @@ namespace MediaBrowser.Model.LiveTv
             Genres = new string[] { };
         }
 
+        /// <summary>
+        /// Fields to return within the items, in addition to basic information
+        /// </summary>
+        /// <value>The fields.</value>
+        public ItemFields[] Fields { get; set; }
+        public bool? EnableImages { get; set; }
+        public int? ImageTypeLimit { get; set; }
+        public ImageType[] EnableImageTypes { get; set; }
+        
         /// <summary>
         /// Gets or sets the channel ids.
         /// </summary>
@@ -53,6 +63,11 @@ namespace MediaBrowser.Model.LiveTv
         /// <remarks>If set to null, all programs will be returned</remarks>
         public bool? IsMovie { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is kids.
+        /// </summary>
+        /// <value><c>null</c> if [is kids] contains no value, <c>true</c> if [is kids]; otherwise, <c>false</c>.</value>
+        public bool? IsKids { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether this instance is sports.
         /// </summary>

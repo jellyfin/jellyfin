@@ -5,12 +5,12 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Resolvers;
 using MediaBrowser.Controller.Sorting;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Model.Querying;
 
 namespace MediaBrowser.Controller.Library
 {
@@ -61,7 +61,18 @@ namespace MediaBrowser.Controller.Library
         /// <param name="name">The name.</param>
         /// <returns>Task{Artist}.</returns>
         MusicArtist GetArtist(string name);
-
+        /// <summary>
+        /// Gets the album artists.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns>IEnumerable&lt;MusicArtist&gt;.</returns>
+        IEnumerable<MusicArtist> GetAlbumArtists(IEnumerable<IHasAlbumArtist> items);
+        /// <summary>
+        /// Gets the artists.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        /// <returns>IEnumerable&lt;MusicArtist&gt;.</returns>
+        IEnumerable<MusicArtist> GetArtists(IEnumerable<IHasArtist> items);
         /// <summary>
         /// Gets a Studio
         /// </summary>
@@ -340,7 +351,37 @@ namespace MediaBrowser.Controller.Library
         Task<UserView> GetNamedView(User user,
             string name, 
             string viewType, 
-            string sortName, 
+            string sortName,
+            CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the named view.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="viewType">Type of the view.</param>
+        /// <param name="sortName">Name of the sort.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;UserView&gt;.</returns>
+        Task<UserView> GetNamedView(string name,
+            string viewType,
+            string sortName,
+            CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the named view.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="parentId">The parent identifier.</param>
+        /// <param name="viewType">Type of the view.</param>
+        /// <param name="sortName">Name of the sort.</param>
+        /// <param name="uniqueId">The unique identifier.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task&lt;UserView&gt;.</returns>
+        Task<UserView> GetNamedView(string name,
+            string parentId,
+            string viewType,
+            string sortName,
+            string uniqueId,
             CancellationToken cancellationToken);
 
         /// <summary>
@@ -461,5 +502,12 @@ namespace MediaBrowser.Controller.Library
         /// <param name="query">The query.</param>
         /// <returns>List&lt;System.String&gt;.</returns>
         List<string> GetPeopleNames(InternalPeopleQuery query);
+
+        /// <summary>
+        /// Queries the items.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns>QueryResult&lt;BaseItem&gt;.</returns>
+        QueryResult<BaseItem> QueryItems(InternalItemsQuery query);
     }
 }

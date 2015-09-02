@@ -61,7 +61,7 @@
         LibraryBrowser.renderDetailImage(page.querySelector('.detailImageContainer'), item, '#');
     }
 
-    $(document).on('pageinitdepends', "#publicSharedItemPage", function () {
+    $(document).on('pageinit', "#publicSharedItemPage", function () {
 
         var page = this;
 
@@ -86,14 +86,5 @@
         reload(page);
 
     });
-
-    function itemDetailPage() {
-
-        var self = this;
-
-        self.play = play;
-    }
-
-    window.ItemDetailPage = new itemDetailPage();
 
 })(jQuery, document, LibraryBrowser, window);

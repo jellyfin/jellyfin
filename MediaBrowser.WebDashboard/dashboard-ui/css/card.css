@@ -55,15 +55,19 @@
 }
 
 .largeCardMargin .cardBox {
-    margin: 8px;
-}
-
-.mediumCardMargin .cardBox {
-    margin: 5px;
+    margin: 10px;
 }
 
 .defaultBackground .cardImage {
     background-color: #333;
+}
+
+.homeTopViews .defaultBackground .cardImage {
+    background-color: #181818;
+}
+
+.homeTopViews .cardImage {
+    border-radius: 5px;
 }
 
 .cardOverlayPlayButton {
@@ -235,6 +239,11 @@
     line-height: 1.4;
 }
 
+.homeTopViews .cardText {
+    font-size: 15px;
+    padding-top: 10px;
+}
+
 .cardButtonContainer {
     text-align: right;
     float: right;
@@ -259,6 +268,7 @@
     left: 0;
     right: 0;
     text-align: center;
+    line-height: initial;
 }
 
 .cardContent .cardText {
@@ -295,6 +305,7 @@
 
 .coveredCardImage {
     background-size: cover;
+    background-position: center center;
 }
 
 .centeredCardImage {
@@ -306,14 +317,15 @@
     position: relative;
 }
 
-    .iconCardImage .fa {
+    .iconCardImage iron-icon {
         color: rgb(255, 255, 255);
         position: absolute;
         left: 0;
         right: 0;
-        font-size: 50px;
+        width: 50%;
+        height:  50%;
         margin: auto;
-        top: 25%;
+        top: 22%;
     }
 
 .bannerCard {
@@ -338,10 +350,12 @@
 
 .overflowPortraitCard {
     width: 40%;
+    max-width: 200px;
 }
 
 .overflowBackdropCard {
-    width: 70%;
+    width: 80%;
+    max-width: 400px;
 }
 
 .cardProgress {
@@ -356,6 +370,13 @@
 
 .overflowSquareCard {
     width: 42%;
+}
+
+@media all and (max-width: 420px) {
+
+    .backdropCard {
+        width: 100% !important;
+    }
 }
 
 @media all and (max-width: 1200px) {
@@ -559,10 +580,17 @@
     width: 50%;
 }
 
-@media all and (min-width: 540px) {
+@media all and (min-width: 800px) {
 
     .detailPage169Card {
         width: 33.3%;
+    }
+}
+
+@media all and (max-width: 420px) {
+
+    .detailPage169Card {
+        width: 100% !important;
     }
 }
 
@@ -634,17 +662,24 @@
     }
 }
 
-@media all and (min-width: 1100px) {
+@media all and (min-width: 800px) {
 
     .homePageSmallBackdropCard {
         width: 20%;
     }
 }
 
+@media all and (min-width: 1100px) {
+
+    .homePageSmallBackdropCard {
+        width: 16.66666666666667%;
+    }
+}
+
 @media all and (min-width: 1440px) {
 
     .homePageSmallBackdropCard {
-        width: 14.285714285714285714285714285714%;
+        width: 12.5%;
     }
 }
 

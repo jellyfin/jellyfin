@@ -155,7 +155,7 @@
 
     function loadLiveTvChannels(service, openItems, callback) {
 
-        ApiClient.getLiveTvChannels({ ServiceName: service }).done(function (result) {
+        ApiClient.getLiveTvChannels({ ServiceName: service, AddCurrentProgram: false }).done(function (result) {
 
             var nodes = result.Items.map(function (i) {
 
@@ -400,9 +400,12 @@
 
         updateEditorNode(this, item);
 
-    }).on('pagebeforeshowready', ".metadataEditorPage", function () {
+    }).on('pagebeforeshow', ".metadataEditorPage", function () {
 
+        Dashboard.importCss('css/metadataeditor.css');
         window.MetadataEditor = new metadataEditor();
+
+    }).on('pagebeforeshow', ".metadataEditorPage", function () {
 
         var page = this;
 
@@ -426,10 +429,6 @@
             }
 
         });
-
-    }).on('pageinitdepends', ".metadataEditorPage", function () {
-
-        Dashboard.importCss('css/metadataeditor.css');
 
     }).on('pagebeforehide', ".metadataEditorPage", function () {
 
@@ -479,25 +478,18 @@
 
             var query = "id=" + item.Id;
 
-            var context = getParameterByName('context');
-
-            if (context) {
-                query += "&context=" + context;
-            }
-
             return query;
         };
-
 
         self.loadJsTree = function () {
 
             var deferred = DeferredBuilder.Deferred();
 
             require([
-                'thirdparty/jstree3.0.8/jstree.min'
+                'bower_components/jstree/dist/jstree.min'
             ], function () {
 
-                Dashboard.importCss('thirdparty/jstree3.0.8/themes/default/style.min.css');
+                Dashboard.importCss('thirdparty/jstree/themes/default/style.min.css');
                 deferred.resolve();
             });
             return deferred.promise();

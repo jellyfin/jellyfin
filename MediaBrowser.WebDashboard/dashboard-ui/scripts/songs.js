@@ -132,7 +132,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#songsPage", function () {
+    $(document).on('pageinit', "#songsPage", function () {
 
         var page = this;
 
@@ -176,7 +176,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#songsPage", function () {
+    }).on('pagebeforeshow', "#songsPage", function () {
 
         var page = this;
 

@@ -90,26 +90,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         focusable = fixture('NestedFocusedState');
       });
 
-      test('focus/blur events fired on host element', function(done) {
+      test('focus/blur events fired on host element', function() {
         var nFocusEvents = 0;
         var nBlurEvents = 0;
+
         focusable.addEventListener('focus', function() {
           nFocusEvents += 1;
-          // setTimeout to wait for potentially more, erroneous events
-          setTimeout(function() {
-            assert.equal(nFocusEvents, 1, 'one focus event fired');
-            MockInteractions.blur(focusable.$.input);
-          });
+          expect(focusable.focused).to.be.equal(true);
+          MockInteractions.blur(focusable.$.input);
         });
         focusable.addEventListener('blur', function() {
+          expect(focusable.focused).to.be.equal(false);
           nBlurEvents += 1;
-          // setTimeout to wait for potentially more, erroneous events
-          setTimeout(function() {
-            assert.equal(nBlurEvents, 1, 'one blur event fired');
-            done();
-          });
         });
+
         MockInteractions.focus(focusable.$.input);
+
+        expect(nBlurEvents).to.be.greaterThan(0);
+        expect(nFocusEvents).to.be.greaterThan(0);
       });
 
     });

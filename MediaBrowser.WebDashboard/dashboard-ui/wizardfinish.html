@@ -9,35 +9,42 @@
         <div data-role="content">
 
             <div class="ui-corner-all ui-shadow wizardContent">
-                <h2>
-                    <img src="css/images/checkmarkblack.png" />${LabelYoureDone}</h2>
+                <h1>
+                    ${LabelYoureDone}
+                </h1>
 
-                <p>${WizardCompleted}</p>
+                <p style="margin:2em 0;">${WizardCompleted}</p>
 
-                <p class="appLinks">
+                <p style="margin:2em 0;" class="appLinks">
                     <a href="http://www.amazon.com/Mark-Linton-Mediabrowser-Android-Client/dp/B00GVH9O0I" target="_blank">
-                        <img src="css/images/clients/amazon.png" title="Android via Amazon App Store" /></a>
+                        <img src="css/images/clients/amazon.png" title="Android via Amazon App Store" />
+                    </a>
                     <a href="https://play.google.com/store/apps/details?id=com.mb.android&hl=en" target="_blank">
-                        <img src="css/images/clients/playstore.png" title="Android via Google Play Store" /></a>
+                        <img src="css/images/clients/playstore.png" title="Android via Google Play Store" />
+                    </a>
                     <a href="https://itunes.apple.com/us/app/media-browser-for-ios/id705058087" target="_blank">
-                        <img src="css/images/clients/ios.png" title="iOS" /></a>
+                        <img src="css/images/clients/ios.png" title="iOS" />
+                    </a>
                     <a href="https://www.roku.com/channels#!details/44191/emby" target="_blank">
                         <img src="css/images/clients/roku.jpg" title="Roku" />
                     </a>
                     <a href="http://www.windowsphone.com/s?appid=f4971ed9-f651-4bf6-84bb-94fd98613b86" target="_blank">
-                        <img src="css/images/clients/windowsphone.png" title="Windows Phone" /></a>
+                        <img src="css/images/clients/windowsphone.png" title="Windows Phone" />
+                    </a>
                     <a href="http://apps.microsoft.com/windows/en-us/app/media-browser/ad55a2f0-9897-47bd-8944-bed3aefd5d06" target="_blank">
-                        <img src="css/images/clients/windowsrt.png" title="Windows 8.1" /></a>
+                        <img src="css/images/clients/windowsrt.png" title="Windows 8.1" />
+                    </a>
                     <a href="http://emby.media" target="_blank" title="Windows Media Center">
-                        <img src="css/images/clients/mbc.png" /></a>
+                        <img src="css/images/clients/mbc.png" />
+                    </a>
                     <a href="http://emby.media/download" target="_blank" title="Kodi">
                         <img src="css/images/clients/kodi.png" />
                     </a>
                 </p>
-                
+
                 <div class="wizardNavigation">
-                    <button type="button" data-iconpos="left" data-icon="arrow-l" data-inline="true" onclick="history.back();">${LabelPrevious}</button>
-                    <button type="button" data-iconpos="right" data-icon="check" data-inline="true" class="btnWizardNext" data-theme="b">${LabelFinish}</button>
+                    <button type="button" data-role="none" class="clearButton" style="width:auto;" onclick="history.back();"><paper-button raised class="subdued"><iron-icon icon="arrow-back"></iron-icon><span>${LabelPrevious}</span></paper-button></button>
+                    <button class="btnWizardNext clearButton" type="button" data-role="none" style="width:auto;"><paper-button raised class="accent"><iron-icon icon="check"></iron-icon><span>${LabelFinish}</span></paper-button></button>
                 </div>
             </div>
 

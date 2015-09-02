@@ -74,6 +74,15 @@ namespace MediaBrowser.Controller.Entities.Movies
             }
         }
 
+        [IgnoreDataMember]
+        protected override bool SupportsShortcutChildren
+        {
+            get
+            {
+                return true;
+            }
+        }
+
         public override bool IsAuthorizedToDelete(User user)
         {
             return true;

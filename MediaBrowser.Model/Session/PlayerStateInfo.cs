@@ -55,5 +55,11 @@
         /// </summary>
         /// <value>The play method.</value>
         public PlayMethod? PlayMethod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the repeat mode.
+        /// </summary>
+        /// <value>The repeat mode.</value>
+        public RepeatMode RepeatMode { get; set; }
     }
 }

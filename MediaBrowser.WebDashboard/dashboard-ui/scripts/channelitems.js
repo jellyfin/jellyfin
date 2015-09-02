@@ -106,16 +106,14 @@
 
             ApiClient.getItem(query.UserId, folderId).done(function (item) {
 
-                $('.categoryTitle', page).show().html(item.Name);
-                $('.channelHeader', page).show().html('<a href="channelitems.html?id=' + item.ChannelId + '">' + item.ChannelName + '</a>').trigger('create');
+                LibraryMenu.setTitle(item.Name);
             });
 
         } else {
 
             ApiClient.getItem(query.UserId, channelId).done(function (item) {
 
-                $('.categoryTitle', page).hide().html(item.Name);
-                $('.channelHeader', page).show().html('<a href="channelitems.html?id=' + item.Id + '">' + item.Name + '</a>');
+                LibraryMenu.setTitle(item.Name);
             });
         }
 
@@ -203,7 +201,7 @@
         $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
     }
 
-    $(document).on('pageinitdepends', "#channelItemsPage", function () {
+    $(document).on('pageinit', "#channelItemsPage", function () {
 
         var page = this;
 
@@ -256,7 +254,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#channelItemsPage", function () {
+    }).on('pagebeforeshow', "#channelItemsPage", function () {
 
         var page = this;
         var limit = LibraryBrowser.getDefaultPageSize();

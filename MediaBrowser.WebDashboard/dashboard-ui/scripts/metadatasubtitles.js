@@ -77,7 +77,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#metadataSubtitlesPage", function () {
+    $(document).on('pageinit', "#metadataSubtitlesPage", function () {
 
         $('.metadataSubtitlesForm').off('submit', onSubmit).on('submit', onSubmit);
 

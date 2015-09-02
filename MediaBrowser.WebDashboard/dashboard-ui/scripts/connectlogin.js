@@ -94,8 +94,6 @@
     }
     function loadMode(page, mode) {
 
-        Backdrops.setDefault(page);
-
         if (mode == 'welcome') {
             $('.connectLoginForm', page).hide();
             $('.welcomeContainer', page).show();
@@ -212,7 +210,7 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#connectLoginPage", function () {
+    $(document).on('pageinit', "#connectLoginPage", function () {
 
         var page = this;
 
@@ -246,7 +244,7 @@
             Dashboard.navigate('connectlogin.html?mode=connect');
         });
 
-    }).on('pagebeforeshowready', "#connectLoginPage", function () {
+    }).on('pagebeforeshow', "#connectLoginPage", function () {
 
         var page = this;
 
@@ -254,12 +252,6 @@
         $('#txtSignupUsername', page).val('');
         $('#txtSignupPassword', page).val('');
         $('#txtSignupPasswordConfirm', page).val('');
-
-        if (AppInfo.isNativeApp) {
-            $('.skip', page).show();
-        } else {
-            $('.skip', page).hide();
-        }
 
         var link = '<a href="http://emby.media" target="_blank">http://emby.media</a>';
         $('.embyIntroDownloadMessage', page).html(Globalize.translate('EmbyIntroDownloadMessage', link));

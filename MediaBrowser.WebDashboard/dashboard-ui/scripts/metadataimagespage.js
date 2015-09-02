@@ -518,7 +518,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#metadataImagesConfigurationPage", function () {
+    $(document).on('pageinit', "#metadataImagesConfigurationPage", function () {
 
         var page = this;
 

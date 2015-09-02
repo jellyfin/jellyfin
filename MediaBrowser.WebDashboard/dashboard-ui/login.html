@@ -8,15 +8,15 @@
 
         <div data-role="content">
 
-            <form class="manualLoginForm" style="display: none; text-align: center; margin: 0 auto;">
+            <form class="manualLoginForm" style="display: none; margin: 0 auto;">
 
                 <h1 style="text-align: left;">${HeaderPleaseSignIn}</h1>
 
-                <label for="txtManualName" style="text-align: left;">${LabelUser}</label>
-                <input type="text" name="txtManualName" id="txtManualName" required="required" />
+                <paper-input type="text" id="txtManualName" required="required" label="${LabelUser}" autocomplete="off"></paper-input>
 
-                <label for="txtManualPassword" style="text-align: left;">${LabelPassword}</label>
-                <input type="password" name="txtManualPassword" id="txtManualPassword" placeholder="password" />
+                <paper-input id="txtManualPassword" type="password" label="${LabelPassword}" autocomplete="off"></paper-input>
+
+                <br />
                 <button type="submit" data-role="none" class="clearButton">
                     <paper-button raised class="accent block"><iron-icon icon="check"></iron-icon><span>${ButtonSignIn}</span></paper-button>
                 </button>

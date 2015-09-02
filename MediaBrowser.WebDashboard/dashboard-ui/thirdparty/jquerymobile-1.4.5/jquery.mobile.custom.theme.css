@@ -101,8 +101,6 @@ label.ui-btn {
 .ui-btn.ui-corner-all,
 /* Slider track */
 .ui-slider-track.ui-corner-all,
-/* Flipswitch */
-.ui-flipswitch.ui-corner-all,
 /* Count bubble */
 .ui-li-count {
 	-webkit-border-radius: 				.3125em /*{global-radii-buttons}*/;
@@ -119,13 +117,6 @@ label.ui-btn {
 .ui-corner-all {
 	-webkit-background-clip: padding;
 	background-clip: padding-box;
-}
-/* Popup arrow */
-.ui-popup.ui-corner-all > .ui-popup-arrow-guide {
-	left: .6em /*{global-radii-blocks}*/;
-	right: .6em /*{global-radii-blocks}*/;
-	top: .6em /*{global-radii-blocks}*/;
-	bottom: .6em /*{global-radii-blocks}*/;
 }
 
 /* Shadow
@@ -223,12 +214,6 @@ html .ui-alt-icon .ui-radio-off:after {
 .ui-alt-icon.ui-btn.ui-radio-on:after,
 .ui-alt-icon .ui-btn.ui-radio-on:after {
 	background-color: #000;
-}
-
-/* Loader */
-.ui-icon-loading {
-	background: url("images/ajax-loader.gif");
-	background-size: 2.875em 2.875em;
 }
 
 /* Swatches */
@@ -358,19 +343,7 @@ html head + body .ui-btn.ui-btn-a.ui-btn-active,
 html .ui-bar-a .ui-checkbox-on:after,
 html .ui-body-a .ui-checkbox-on:after,
 html body .ui-group-theme-a .ui-checkbox-on:after,
-.ui-btn.ui-checkbox-on.ui-btn-a:after,
-/* Active flipswitch background */
-.ui-page-theme-a .ui-flipswitch-active,
-html .ui-bar-a .ui-flipswitch-active,
-html .ui-body-a .ui-flipswitch-active,
-html body .ui-group-theme-a .ui-flipswitch-active,
-html body .ui-flipswitch.ui-bar-a.ui-flipswitch-active,
-/* Active slider track */
-.ui-page-theme-a .ui-slider-track .ui-btn-active,
-html .ui-bar-a .ui-slider-track .ui-btn-active,
-html .ui-body-a .ui-slider-track .ui-btn-active,
-html body .ui-group-theme-a .ui-slider-track .ui-btn-active,
-html body div.ui-slider-track.ui-body-a .ui-btn-active {
+.ui-btn.ui-checkbox-on.ui-btn-a:after {
 	background-color: 		#3388cc /*{a-active-background-color}*/;
 	border-color:	 		#3388cc /*{a-active-border}*/;
 	color: 					#fff /*{a-active-color}*/;
@@ -528,19 +501,7 @@ html head + body .ui-btn.ui-btn-b.ui-btn-active,
 html .ui-bar-b .ui-checkbox-on:after,
 html .ui-body-b .ui-checkbox-on:after,
 html body .ui-group-theme-b .ui-checkbox-on:after,
-.ui-btn.ui-checkbox-on.ui-btn-b:after,
-/* Active flipswitch background */
-.ui-page-theme-b .ui-flipswitch-active,
-html .ui-bar-b .ui-flipswitch-active,
-html .ui-body-b .ui-flipswitch-active,
-html body .ui-group-theme-b .ui-flipswitch-active,
-html body .ui-flipswitch.ui-bar-b.ui-flipswitch-active,
-/* Active slider track */
-.ui-page-theme-b .ui-slider-track .ui-btn-active,
-html .ui-bar-b .ui-slider-track .ui-btn-active,
-html .ui-body-b .ui-slider-track .ui-btn-active,
-html body .ui-group-theme-b .ui-slider-track .ui-btn-active,
-html body div.ui-slider-track.ui-body-b .ui-btn-active {
+.ui-btn.ui-checkbox-on.ui-btn-b:after {
 	background-color: 		#22aadd /*{b-active-background-color}*/;
 	border-color:	 		#22aadd /*{b-active-border}*/;
 	color: 					#fff /*{b-active-color}*/;

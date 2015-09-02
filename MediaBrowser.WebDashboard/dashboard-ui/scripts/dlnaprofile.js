@@ -940,7 +940,7 @@
         profile.UserId = $('#selectUser', page).val();
     }
 
-    $(document).on('pageinitdepends', "#dlnaProfilePage", function () {
+    $(document).on('pageinit', "#dlnaProfilePage", function () {
 
         var page = this;
 

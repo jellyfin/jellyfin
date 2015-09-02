@@ -106,9 +106,15 @@ namespace MediaBrowser.Providers.Manager
             _identityProviders = identityProviders.ToArray();
             _identityConverters = identityConverters.ToArray();
             _metadataProviders = metadataProviders.ToArray();
-            _savers = metadataSavers.ToArray();
             _imageSavers = imageSavers.ToArray();
             _externalIds = externalIds.OrderBy(i => i.Name).ToArray();
+
+            _savers = metadataSavers.Where(i =>
+            {
+                var configurable = i as IConfigurableProvider;
+
+                return configurable == null || configurable.IsEnabled;
+            }).ToArray();
         }
 
         public Task<ItemUpdateType> RefreshSingleItem(IHasMetadata item, MetadataRefreshOptions options, CancellationToken cancellationToken)
@@ -183,7 +189,7 @@ namespace MediaBrowser.Providers.Manager
 
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            var images = results.SelectMany(i => i);
+            var images = results.SelectMany(i => i.ToList());
 
             return images;
         }
@@ -912,6 +918,9 @@ namespace MediaBrowser.Providers.Manager
                 {
                     try
                     {
+                        // Try to throttle this a little bit.
+                        await Task.Delay(100).ConfigureAwait(false);
+
                         var artist = item as MusicArtist;
                         var task = artist == null
                             ? RefreshItem(item, refreshItem.Item2, CancellationToken.None)

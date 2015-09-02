@@ -11,6 +11,7 @@
 
         }).checkboxradio('refresh');
 
+        $('#selectThreadCount', page).val(config.EncodingThreadCount).selectmenu('refresh');
         $('#txtDownMixAudioBoost', page).val(config.DownMixAudioBoost);
         $('#txtTranscodingTempPath', page).val(config.TranscodingTempPath || '');
 
@@ -29,6 +30,7 @@
             config.DownMixAudioBoost = $('#txtDownMixAudioBoost', form).val();
             config.TranscodingTempPath = $('#txtTranscodingTempPath', form).val();
             config.EnableThrottling = $('#chkEnableThrottle', form).checked();
+            config.EncodingThreadCount = $('#selectThreadCount', form).val();
 
             ApiClient.updateNamedConfiguration("encoding", config).done(Dashboard.processServerConfigurationUpdateResult);
         });
@@ -37,7 +39,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#encodingSettingsPage", function () {
+    $(document).on('pageinit', "#encodingSettingsPage", function () {
 
         var page = this;
 

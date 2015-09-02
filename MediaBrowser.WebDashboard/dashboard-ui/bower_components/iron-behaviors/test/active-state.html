@@ -41,6 +41,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         activeTarget = fixture('TrivialActiveState');
       });
 
+      suite('non-primary pointer input source', function() {
+        test('does not cause state to change', function() {
+          var rightClickMouseEvent = new CustomEvent('mousedown');
+          rightClickMouseEvent.buttons = 2;
+          activeTarget.dispatchEvent(rightClickMouseEvent);
+          expect(activeTarget.pressed).to.be.equal(false);
+        });
+      });
+
       suite('active state with toggles attribute', function() {
         setup(function() {
           activeTarget = fixture('ToggleActiveState');
@@ -51,6 +60,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             MockInteractions.downAndUp(activeTarget, function() {
               try {
                 expect(activeTarget.hasAttribute('active')).to.be.eql(true);
+                expect(activeTarget.hasAttribute('aria-pressed')).to.be.eql(true);
+                expect(activeTarget.getAttribute('aria-pressed')).to.be.eql('true');
                 done();
               } catch (e) {
                 done(e);
@@ -63,11 +74,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               MockInteractions.downAndUp(activeTarget, function() {
                 try {
                   expect(activeTarget.hasAttribute('active')).to.be.eql(false);
+                  expect(activeTarget.hasAttribute('aria-pressed')).to.be.eql(true);
+                  expect(activeTarget.getAttribute('aria-pressed')).to.be.eql('false');
                   done();
                 } catch (e) {
                   done(e);
                 }
               });
+            });
+          });
+
+          test('the correct aria attribute is set', function(done) {
+            activeTarget.ariaActiveAttribute = 'aria-checked';
+            MockInteractions.downAndUp(activeTarget, function() {
+              try {
+                expect(activeTarget.hasAttribute('active')).to.be.eql(true);
+                expect(activeTarget.hasAttribute('aria-checked')).to.be.eql(true);
+                expect(activeTarget.getAttribute('aria-checked')).to.be.eql('true');
+                done();
+              } catch (e) {
+                done(e);
+              }
+            });
+          });
+
+          test('the aria attribute is updated correctly', function(done) {
+            activeTarget.ariaActiveAttribute = 'aria-checked';
+            MockInteractions.downAndUp(activeTarget, function() {
+              try {
+                expect(activeTarget.hasAttribute('active')).to.be.eql(true);
+                expect(activeTarget.hasAttribute('aria-checked')).to.be.eql(true);
+                expect(activeTarget.getAttribute('aria-checked')).to.be.eql('true');
+
+                activeTarget.ariaActiveAttribute = 'aria-pressed';
+                expect(activeTarget.hasAttribute('aria-checked')).to.be.eql(false);
+                expect(activeTarget.hasAttribute('aria-pressed')).to.be.eql(true);
+                expect(activeTarget.getAttribute('aria-pressed')).to.be.eql('true');
+                done();
+              } catch (e) {
+                done(e);
+              }
             });
           });
         });

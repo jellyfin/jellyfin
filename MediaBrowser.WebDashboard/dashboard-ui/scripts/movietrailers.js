@@ -1,28 +1,42 @@
 ﻿(function ($, document) {
 
-    var view = LibraryBrowser.getDefaultItemsView('Poster', 'Poster');
+    var data = {};
 
-    // The base query options
-    var query = {
+    function getQuery() {
 
-        SortBy: "SortName",
-        SortOrder: "Ascending",
-        Recursive: true,
-        Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
-        StartIndex: 0,
-        ImageTypeLimit: 1,
-        EnableImageTypes: "Primary,Backdrop,Banner,Thumb"
-    };
+        var key = getSavedQueryKey();
+        var pageData = data[key];
+
+        if (!pageData) {
+            pageData = data[key] = {
+                query: {
+                    SortBy: "SortName",
+                    SortOrder: "Ascending",
+                    Recursive: true,
+                    Fields: "PrimaryImageAspectRatio,SortName,SyncInfo",
+                    ImageTypeLimit: 1,
+                    EnableImageTypes: "Primary,Backdrop,Banner,Thumb",
+                    StartIndex: 0,
+                    Limit: LibraryBrowser.getDefaultPageSize()
+                }
+            };
+
+            pageData.query.ParentId = LibraryMenu.getTopParentId();
+            LibraryBrowser.loadSavedQueryValues(key, pageData.query);
+        }
+        return pageData.query;
+    }
 
     function getSavedQueryKey() {
 
-        return 'trailers' + (query.ParentId || '');
+        return getWindowUrl();
     }
 
-    function reloadItems(page) {
+    function reloadItems(page, viewPanel) {
 
         Dashboard.showLoadingMsg();
 
+        var query = getQuery();
         query.UserId = Dashboard.getCurrentUserId();
 
         ApiClient.getJSON(ApiClient.getUrl('Trailers', query)).done(function (result) {
@@ -43,17 +57,20 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
-                showLimit: false
+                viewIcon: 'filter-list',
+                sortButton: true,
+                showLimit: false,
+                viewPanelClass: 'trailerViewPanel',
+                updatePageSizeSetting: false
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
 
-            updateFilterControls(page);
+            updateFilterControls(page, viewPanel);
 
             html = LibraryBrowser.getPosterViewHtml({
                 items: result.Items,
                 shape: "portrait",
-                context: 'movies-trailers',
                 lazy: true,
                 showDetailsMenu: true
             });
@@ -64,45 +81,63 @@
 
             $('.btnNextPage', page).on('click', function () {
                 query.StartIndex += query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
             });
 
             $('.btnPreviousPage', page).on('click', function () {
                 query.StartIndex -= query.Limit;
-                reloadItems(page);
+                reloadItems(page, viewPanel);
+            });
+
+            // On callback make sure to set StartIndex = 0
+            $('.btnSort', page).on('click', function () {
+                LibraryBrowser.showSortMenu({
+                    items: [{
+                        name: Globalize.translate('OptionNameSort'),
+                        id: 'SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionImdbRating'),
+                        id: 'CommunityRating,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionDateAdded'),
+                        id: 'DateCreated,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionDatePlayed'),
+                        id: 'DatePlayed,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionParentalRating'),
+                        id: 'OfficialRating,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionPlayCount'),
+                        id: 'PlayCount,SortName'
+                    },
+                    {
+                        name: Globalize.translate('OptionReleaseDate'),
+                        id: 'PremiereDate,SortName'
+                    }],
+                    callback: function () {
+                        reloadItems(page, viewPanel);
+                    },
+                    query: query
+                });
             });
 
             LibraryBrowser.saveQueryValues(getSavedQueryKey(), query);
-
-            Dashboard.getCurrentUser().done(function (user) {
-
-                if (user.Policy.EnableMediaPlayback && result.Items.length) {
-                    $('.btnTrailerReel', page).show();
-                } else {
-                    $('.btnTrailerReel', page).hide();
-                }
-            });
 
             Dashboard.hideLoadingMsg();
         });
     }
 
-    function updateFilterControls(page) {
+    function updateFilterControls(tabContent, viewPanel) {
 
-        // Reset form values using the last used query
-        $('.radioSortBy', page).each(function () {
+        var query = getQuery();
 
-            this.checked = (query.SortBy || '').toLowerCase() == this.getAttribute('data-sortby').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.radioSortOrder', page).each(function () {
-
-            this.checked = (query.SortOrder || '').toLowerCase() == this.getAttribute('data-sortorder').toLowerCase();
-
-        }).checkboxradio('refresh');
-
-        $('.chkStandardFilter', page).each(function () {
+        $('.chkStandardFilter', viewPanel).each(function () {
 
             var filters = "," + (query.Filters || "");
             var filterName = this.getAttribute('data-filter');
@@ -111,58 +146,14 @@
 
         }).checkboxradio('refresh');
 
-        $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
     }
 
-    function playReel(page) {
+    function initPage(page, tabContent, viewPanel) {
 
-        $('.popupTrailerReel', page).popup('close');
+        $('.chkStandardFilter', viewPanel).on('change', function () {
 
-        var reelQuery = {
-            UserId: Dashboard.getCurrentUserId(),
-            SortBy: 'Random',
-            Limit: 50,
-            Fields: "MediaSources,Chapters"
-        };
-
-        if ($('#chkUnwatchedOnly', page).checked()) {
-            reelQuery.Filters = "IsPlayed";
-        }
-
-        ApiClient.getJSON(ApiClient.getUrl('Trailers', reelQuery)).done(function (result) {
-
-            MediaController.play({
-                items: result.Items
-            });
-        });
-    }
-
-    function onSubmit() {
-        var page = $(this).parents('.page');
-
-        playReel(page);
-        return false;
-    }
-
-    $(document).on('pageinitdepends', "#movieTrailersPage", function () {
-
-        var page = this;
-
-        $('.radioSortBy', this).on('click', function () {
-            query.StartIndex = 0;
-            query.SortBy = this.getAttribute('data-sortby');
-            reloadItems(page);
-        });
-
-        $('.radioSortOrder', this).on('click', function () {
-            query.StartIndex = 0;
-            query.SortOrder = this.getAttribute('data-sortorder');
-            reloadItems(page);
-        });
-
-        $('.chkStandardFilter', this).on('change', function () {
-
+            var query = getQuery();
             var filterName = this.getAttribute('data-filter');
             var filters = query.Filters || "";
 
@@ -175,70 +166,45 @@
             query.StartIndex = 0;
             query.Filters = filters;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.alphabetPicker', this).on('alphaselect', function (e, character) {
+        $('.alphabetPicker', tabContent).on('alphaselect', function (e, character) {
 
+            var query = getQuery();
             query.NameStartsWithOrGreater = character;
             query.StartIndex = 0;
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
 
         }).on('alphaclear', function (e) {
 
+            var query = getQuery();
             query.NameStartsWithOrGreater = '';
 
-            reloadItems(page);
+            reloadItems(tabContent, viewPanel);
         });
 
-        $('.itemsContainer', page).on('needsrefresh', function () {
+        $('.itemsContainer', tabContent).on('needsrefresh', function () {
 
-            reloadItems(page);
-
-        });
-
-        $('#selectPageSize', page).on('change', function () {
-            query.Limit = parseInt(this.value);
-            query.StartIndex = 0;
-            reloadItems(page);
-        });
-
-        $('.btnTrailerReel', page).on('click', function () {
-
-            $('.popupTrailerReel', page).popup('open');
+            reloadItems(tabContent, viewPanel);
 
         });
+    }
 
-        $('.popupTrailerReelForm').off('submit', onSubmit).on('submit', onSubmit);
+    window.MoviesPage.initTrailerTab = function (page, tabContent) {
 
-    }).on('pagebeforeshowready', "#movieTrailersPage", function () {
+        var viewPanel = page.querySelector('.trailerViewPanel');
+        initPage(page, tabContent, viewPanel);
+    };
 
-        query.ParentId = LibraryMenu.getTopParentId();
+    window.MoviesPage.renderTrailerTab = function (page, tabContent) {
 
-        var page = this;
-        var limit = LibraryBrowser.getDefaultPageSize();
-
-        // If the default page size has changed, the start index will have to be reset
-        if (limit != query.Limit) {
-            query.Limit = limit;
-            query.StartIndex = 0;
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            var viewPanel = page.querySelector('.trailerViewPanel');
+            reloadItems(tabContent, viewPanel);
+            updateFilterControls(tabContent, viewPanel);
         }
-
-        var viewkey = getSavedQueryKey();
-
-        LibraryBrowser.loadSavedQueryValues(viewkey, query);
-
-        LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
-
-            if (val) {
-                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
-            } else {
-                reloadItems(page);
-            }
-        });
-
-        updateFilterControls(this);
-    });
+    };
 
 })(jQuery, document);

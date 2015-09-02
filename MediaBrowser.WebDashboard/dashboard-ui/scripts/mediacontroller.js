@@ -1,16 +1,5 @@
 ﻿(function ($, window) {
 
-    function setMirrorModeEnabled(enabled) {
-
-        var val = enabled ? '1' : '0';
-
-        appStorage.setItem('displaymirror--' + Dashboard.getCurrentUserId(), val);
-
-    }
-    function isMirrorModeEnabled() {
-        return (appStorage.getItem('displaymirror--' + Dashboard.getCurrentUserId()) || '') != '0';
-    }
-
     var currentDisplayInfo;
     function mirrorItem(info) {
 
@@ -25,9 +14,11 @@
         });
     }
 
-    function mirrorIfEnabled(info) {
+    function mirrorIfEnabled() {
 
-        if (isMirrorModeEnabled()) {
+        var info = currentDisplayInfo;
+
+        if (info && MediaController.enableDisplayMirroring()) {
 
             var player = MediaController.getPlayerInfo();
 
@@ -73,128 +64,110 @@
         });
     }
 
-    function getTargetsHtml(targets) {
+    function showPlayerSelection() {
 
         var playerInfo = MediaController.getPlayerInfo();
 
-        var html = '';
-        html += '<form>';
-
-        html += '<h3>' + Globalize.translate('HeaderSelectPlayer') + '</h3>';
-        html += '<fieldset data-role="controlgroup" data-mini="true">';
-
-        var checkedHtml;
-
-        for (var i = 0, length = targets.length; i < length; i++) {
-
-            var target = targets[i];
-
-            var id = 'radioPlayerTarget' + i;
-
-            var isChecked = target.id == playerInfo.id;
-            checkedHtml = isChecked ? ' checked="checked"' : '';
-
-            var mirror = (!target.isLocalPlayer && target.supportedCommands.indexOf('DisplayContent') != -1) ? 'true' : 'false';
-
-            html += '<input type="radio" class="radioSelectPlayerTarget" name="radioSelectPlayerTarget" data-mirror="' + mirror + '" data-commands="' + target.supportedCommands.join(',') + '" data-mediatypes="' + target.playableMediaTypes.join(',') + '" data-playername="' + target.playerName + '" data-targetid="' + target.id + '" data-targetname="' + target.name + '" data-devicename="' + (target.deviceName || '') + '" id="' + id + '" value="' + target.id + '"' + checkedHtml + '>';
-            html += '<label for="' + id + '" style="font-weight:normal;">' + target.name;
-
-            if (target.appName && target.appName != target.name) {
-                html += '<br/><span>' + target.appName + '</span>';
-            }
-
-            html += '</label>';
+        if (!playerInfo.isLocalPlayer) {
+            showActivePlayerMenu(playerInfo);
+            return;
         }
 
-        html += '</fieldset>';
+        Dashboard.showModalLoadingMsg();
 
-        html += '<p class="fieldDescription">' + Globalize.translate('LabelAllPlaysSentToPlayer') + '</p>';
+        MediaController.getTargets().done(function (targets) {
 
-        checkedHtml = isMirrorModeEnabled() ? ' checked="checked"' : '';
+            var menuItems = targets.map(function (t) {
 
-        html += '<div style="margin-top:1.5em;" class="fldMirrorMode"><label for="chkEnableMirrorMode">Enable display mirroring</label><input type="checkbox" class="chkEnableMirrorMode" id="chkEnableMirrorMode" data-mini="true"' + checkedHtml + ' /></div>';
+                var name = t.name;
 
-        html += '</form>';
+                if (t.appName && t.appName != t.name) {
+                    name += " - " + t.appName;
+                }
 
-        return html;
+                return {
+                    name: name,
+                    id: t.id,
+                    ironIcon: 'tablet-android'
+                };
+
+            });
+
+            require(['actionsheet'], function () {
+
+                Dashboard.hideModalLoadingMsg();
+
+                ActionSheetElement.show({
+                    title: Globalize.translate('HeaderSelectPlayer'),
+                    items: menuItems,
+                    callback: function (id) {
+
+                        var target = targets.filter(function (t) {
+                            return t.id == id;
+                        })[0];
+
+                        MediaController.trySetActivePlayer(target.playerName, target);
+
+                        mirrorIfEnabled();
+                    }
+                });
+            });
+        });
     }
 
-    function showPlayerSelection() {
+    function showActivePlayerMenu(playerInfo) {
 
-        var promise = MediaController.getTargets();
+        var id = 'dlg' + new Date().getTime();
+        var html = '';
 
-        var html = '<div data-role="panel" data-position="right" data-display="overlay" data-position-fixed="true" id="playerSelectionPanel" data-theme="a">';
+        var style = "";
 
-        html += '<div class="players"></div>';
+        html += '<paper-dialog id="' + id + '" entry-animation="fade-in-animation" exit-animation="fade-out-animation" with-backdrop style="' + style + '">';
 
-        html += '<br/>';
-        html += '<p><a href="nowplaying.html" class="clearLink"><paper-button raised class="block"><iron-icon icon="tablet-android"></iron-icon><span>' + Globalize.translate('ButtonRemoteControl') + '</span></paper-button></a></p>';
+        html += '<h2>';
+        html += (playerInfo.deviceName || playerInfo.name);
+        html += '</h2>';
+
+        html += '<div style="padding:0 2em;">';
+
+        if (playerInfo.supportedCommands.indexOf('DisplayContent') != -1) {
+
+            html += '<div>';
+            var checkedHtml = MediaController.enableDisplayMirroring() ? ' checked' : '';
+            html += '<paper-checkbox class="chkMirror"' + checkedHtml + '>' + Globalize.translate('OptionEnableDisplayMirroring') + '</paper-checkbox>';
+            html += '</div>';
+        }
 
         html += '</div>';
 
+        html += '<div class="buttons">';
+        html += '<paper-button onclick="Dashboard.navigate(\'nowplaying.html\');" dialog-dismiss>' + Globalize.translate('ButtonRemoteControl') + '</paper-button>';
+        html += '<paper-button dialog-dismiss onclick="MediaController.disconnectFromPlayer();">' + Globalize.translate('ButtonDisconnect') + '</paper-button>';
+        html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonCancel') + '</paper-button>';
+        html += '</div>';
+
+        html += '</paper-dialog>';
+
         $(document.body).append(html);
 
-        require(['jqmicons']);
+        setTimeout(function () {
 
-        var elem = $('#playerSelectionPanel').panel({}).trigger('create').panel("open").on("panelclose", function () {
+            var dlg = document.getElementById(id);
 
-            $(this).off("panelclose").remove();
-        });
+            $('.chkMirror', dlg).on('change', onMirrorChange);
 
-        promise.done(function (targets) {
+            dlg.open();
 
-            $('.players', elem).html(getTargetsHtml(targets)).trigger('create');
-
-            $('.chkEnableMirrorMode', elem).on('change', function () {
-                setMirrorModeEnabled(this.checked);
-
-                if (this.checked && currentDisplayInfo) {
-
-                    mirrorItem(currentDisplayInfo);
-
-                }
-
+            // Has to be assigned a z-index after the call to .open() 
+            $(dlg).on('iron-overlay-closed', function () {
+                $(this).remove();
             });
 
-            $('.radioSelectPlayerTarget', elem).off('change').on('change', function () {
+        }, 100);
+    }
 
-                var supportsMirror = this.getAttribute('data-mirror') == 'true';
-
-                if (supportsMirror) {
-                    $('.fldMirrorMode', elem).show();
-                } else {
-                    $('.fldMirrorMode', elem).hide();
-                }
-
-                var playerName = this.getAttribute('data-playername');
-                var targetId = this.getAttribute('data-targetid');
-                var targetName = this.getAttribute('data-targetname');
-                var deviceName = this.getAttribute('data-deviceName');
-                var playableMediaTypes = this.getAttribute('data-mediatypes').split(',');
-                var supportedCommands = this.getAttribute('data-commands').split(',');
-
-                MediaController.trySetActivePlayer(playerName, {
-                    id: targetId,
-                    name: targetName,
-                    playableMediaTypes: playableMediaTypes,
-                    supportedCommands: supportedCommands,
-                    deviceName: deviceName
-
-                });
-
-                if (currentDisplayInfo) {
-
-                    mirrorIfEnabled(currentDisplayInfo);
-                }
-
-            });
-
-            if ($('.radioSelectPlayerTarget:checked', elem)[0].getAttribute('data-mirror') == 'true') {
-                $('.fldMirrorMode', elem).show();
-            } else {
-                $('.fldMirrorMode', elem).hide();
-            }
-        });
+    function onMirrorChange() {
+        MediaController.enableDisplayMirroring(this.checked);
     }
 
     function bindKeys(controller) {
@@ -343,6 +316,27 @@
             });
         };
 
+        self.trySetActiveDeviceName = function (name) {
+
+            function normalizeName(t) {
+                return t.toLowerCase().replace(' ', '');
+            }
+
+            name = normalizeName(name);
+
+            self.getTargets().done(function (result) {
+
+                var target = result.filter(function (p) {
+                    return normalizeName(p.name) == name;
+                })[0];
+
+                if (target) {
+                    self.trySetActivePlayer(target.playerName, target);
+                }
+
+            });
+        };
+
         self.setDefaultPlayerActive = function () {
 
             var player = self.getDefaultPlayer();
@@ -362,6 +356,36 @@
         self.removeActiveTarget = function (id) {
 
             if (self.getPlayerInfo().id == id) {
+                self.setDefaultPlayerActive();
+            }
+        };
+
+        self.disconnectFromPlayer = function () {
+
+            var playerInfo = self.getPlayerInfo();
+
+            if (playerInfo.supportedCommands.indexOf('EndSession') != -1) {
+
+                var options = {
+                    callback: function (result) {
+
+                        if (result == 0) {
+                            MediaController.getCurrentPlayer().endSession();
+                        }
+
+                        if (result != 2) {
+                            self.setDefaultPlayerActive();
+                        }
+                    },
+                    message: Globalize.translate('ConfirmEndPlayerSession'),
+                    title: Globalize.translate('HeaderDisconnectFromPlayer'),
+                    buttons: [Globalize.translate('ButtonYes'), Globalize.translate('ButtonNo'), Globalize.translate('ButtonCancel')]
+                };
+
+                Dashboard.dialog(options);
+
+            } else {
+
                 self.setDefaultPlayerActive();
             }
         };
@@ -416,6 +440,26 @@
                 RegistrationServices.validateFeature('playback').done(fn);
             });
         }
+
+        self.toggleDisplayMirroring = function () {
+            self.enableDisplayMirroring(!self.enableDisplayMirroring());
+        };
+
+        self.enableDisplayMirroring = function (enabled) {
+
+            if (enabled != null) {
+
+                var val = enabled ? '1' : '0';
+                appStorage.setItem('displaymirror--' + Dashboard.getCurrentUserId(), val);
+
+                if (enabled) {
+                    mirrorIfEnabled();
+                }
+                return;
+            }
+
+            return (appStorage.getItem('displaymirror--' + Dashboard.getCurrentUserId()) || '') != '0';
+        };
 
         self.play = function (options) {
 
@@ -573,6 +617,10 @@
             currentPlayer.volumeUp();
         };
 
+        self.setRepeatMode = function (mode) {
+            currentPlayer.setRepeatMode(mode);
+        };
+
         self.playlist = function () {
             return currentPlayer.playlist || [];
         };
@@ -586,6 +634,9 @@
             Logger.log('MediaController received command: ' + cmd.Name);
             switch (cmd.Name) {
 
+                case 'SetRepeatMode':
+                    player.setRepeatMode(cmd.Arguments.RepeatMode);
+                    break;
                 case 'VolumeUp':
                     player.volumeUp();
                     break;

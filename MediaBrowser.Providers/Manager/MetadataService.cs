@@ -194,6 +194,15 @@ namespace MediaBrowser.Providers.Manager
             return updateType;
         }
 
+        protected async Task SaveItem(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
+        {
+            if (result.Item.SupportsPeople && result.People != null)
+            {
+                await LibraryManager.UpdatePeople(result.Item as BaseItem, result.People.ToList());
+            }
+            await result.Item.UpdateToRepository(reason, cancellationToken).ConfigureAwait(false);
+        }
+
         private readonly Task _cachedTask = Task.FromResult(true);
         protected virtual Task AfterMetadataRefresh(TItemType item, MetadataRefreshOptions refreshOptions, CancellationToken cancellationToken)
         {
@@ -328,15 +337,6 @@ namespace MediaBrowser.Providers.Manager
             return providers;
         }
 
-        protected async Task SaveItem(MetadataResult<TItemType> result, ItemUpdateType reason, CancellationToken cancellationToken)
-        {
-            if (result.Item.SupportsPeople)
-            {
-                await LibraryManager.UpdatePeople(result.Item as BaseItem, result.People);
-            }
-            await result.Item.UpdateToRepository(reason, cancellationToken).ConfigureAwait(false);
-        }
-
         public bool CanRefresh(IHasMetadata item)
         {
             return item is TItemType;
@@ -408,7 +408,10 @@ namespace MediaBrowser.Providers.Manager
                             refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.ImageUpdate;
                         }
 
-                        userDataList = localItem.UserDataLIst;
+                        if (localItem.UserDataList != null)
+                        {
+                            userDataList.AddRange(localItem.UserDataList);
+                        }
 
                         MergeData(localItem, temp, new List<MetadataFields>(), !options.ReplaceAllMetadata, true);
                         refreshResult.UpdateType = refreshResult.UpdateType | ItemUpdateType.MetadataImport;

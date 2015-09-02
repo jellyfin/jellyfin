@@ -347,7 +347,7 @@
     }
 };
 
-$(document).on('pageinitdepends', ".mediaLibraryPage", MediaLibraryPage.onPageInit).on('pageshowready', ".mediaLibraryPage", MediaLibraryPage.onPageShow);
+$(document).on('pageinit', ".mediaLibraryPage", MediaLibraryPage.onPageInit).on('pageshowready', ".mediaLibraryPage", MediaLibraryPage.onPageShow);
 
 var WizardLibraryPage = {
 

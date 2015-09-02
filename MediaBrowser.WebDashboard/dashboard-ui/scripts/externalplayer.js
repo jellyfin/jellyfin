@@ -299,106 +299,108 @@
 
     function showPostPlayMenu(item) {
 
-        $('.externalPlayerPostPlayFlyout').popup("close").remove();
-
-        var html = '<div data-role="popup" class="externalPlayerPostPlayFlyout" data-history="false" data-theme="a" data-dismissible="false">';
-
-        html += '<ul data-role="listview" style="min-width: 220px;">';
-        html += '<li data-role="list-divider" style="padding: 1em;text-align:center;">' + Globalize.translate('HeaderExternalPlayerPlayback') + '</li>';
-        html += '</ul>';
-
-        html += '<div style="padding:1em;">';
-
-        var autoMarkWatched = item.RunTimeTicks;
-
-        if (item.RunTimeTicks && item.RunTimeTicks >= 3000000000) {
-
-            autoMarkWatched = false;
-
-            html += '<fieldset data-role="controlgroup">';
-            html += '<legend>' + Globalize.translate('LabelMarkAs') + '</legend>';
-            html += '<label for="radioMarkUnwatched">' + Globalize.translate('OptionUnwatched') + '</label>';
-            html += '<input type="radio" id="radioMarkUnwatched" name="radioGroupMarkPlaystate" class="radioPlaystate" />';
-            html += '<label for="radioMarkWatched">' + Globalize.translate('OptionWatched') + '</label>';
-            html += '<input type="radio" id="radioMarkWatched" checked="checked" name="radioGroupMarkPlaystate" class="radioPlaystate" />';
-            html += '<label for="radioMarkInProgress">' + Globalize.translate('OptionInProgress') + '</label>';
-            html += '<input type="radio" id="radioMarkInProgress" name="radioGroupMarkPlaystate" class="radioPlaystate" />';
-            html += '</fieldset>';
-
-            html += '<br/>';
-
-            html += '<p style="margin-top: 0;">' + Globalize.translate('LabelResumePoint') + '</p>';
-
-            html += '<div class="sliderContainer" style="display:block;margin-top:4px;">';
-            html += '<input class="playstateSlider" type="range" step=".001" min="0" max="100" value="0" style="display:none;" data-theme="a" data-highlight="true" />';
-            html += '</div>';
-            html += '<div class="sliderValue" style="text-align:center;margin:2px 0 4px;">0:00:00</div>';
-
-            html += '<br/>';
-        }
-
-        html += '<button type="button" class="btnDone" data-theme="b" data-icon="check">' + Globalize.translate('ButtonImDone') + '</button>';
-
-        html += '</div>';
-
-        html += '</div>';
-
-        $(document.body).append(html);
-
-        var elem = $('.externalPlayerPostPlayFlyout').popup({}).trigger('create').popup("open").on("popupafterclose", function () {
-
-            $(this).off("popupafterclose").remove();
-
-        });
-
-        $('.radioPlaystate', elem).on('change', function () {
-
-            if ($('#radioMarkInProgress', elem).checked()) {
-
-                $('.playstateSlider', elem).slider('enable');
-
-            } else {
-                $('.playstateSlider', elem).slider('disable');
-            }
-
-        }).trigger('change');
-
-        $('.btnDone', elem).on('click', function () {
-
+        require(['jqmpopup'], function() {
             $('.externalPlayerPostPlayFlyout').popup("close").remove();
 
-            var position = 0;
+            var html = '<div data-role="popup" class="externalPlayerPostPlayFlyout" data-history="false" data-theme="a" data-dismissible="false">';
 
-            if ($('#radioMarkInProgress', elem).checked()) {
+            html += '<ul data-role="listview" style="min-width: 220px;">';
+            html += '<li data-role="list-divider" style="padding: 1em;text-align:center;">' + Globalize.translate('HeaderExternalPlayerPlayback') + '</li>';
+            html += '</ul>';
 
-                var pct = $(".playstateSlider", elem).val();
-                var ticks = item.RunTimeTicks * (Number(pct) * .01);
+            html += '<div style="padding:1em;">';
 
-                position = ticks;
+            var autoMarkWatched = item.RunTimeTicks;
+
+            if (item.RunTimeTicks && item.RunTimeTicks >= 3000000000) {
+
+                autoMarkWatched = false;
+
+                html += '<fieldset data-role="controlgroup">';
+                html += '<legend>' + Globalize.translate('LabelMarkAs') + '</legend>';
+                html += '<label for="radioMarkUnwatched">' + Globalize.translate('OptionUnwatched') + '</label>';
+                html += '<input type="radio" id="radioMarkUnwatched" name="radioGroupMarkPlaystate" class="radioPlaystate" />';
+                html += '<label for="radioMarkWatched">' + Globalize.translate('OptionWatched') + '</label>';
+                html += '<input type="radio" id="radioMarkWatched" checked="checked" name="radioGroupMarkPlaystate" class="radioPlaystate" />';
+                html += '<label for="radioMarkInProgress">' + Globalize.translate('OptionInProgress') + '</label>';
+                html += '<input type="radio" id="radioMarkInProgress" name="radioGroupMarkPlaystate" class="radioPlaystate" />';
+                html += '</fieldset>';
+
+                html += '<br/>';
+
+                html += '<p style="margin-top: 0;">' + Globalize.translate('LabelResumePoint') + '</p>';
+
+                html += '<div class="sliderContainer" style="display:block;margin-top:4px;">';
+                html += '<input class="playstateSlider" type="range" step=".001" min="0" max="100" value="0" style="display:none;" data-theme="a" data-highlight="true" />';
+                html += '</div>';
+                html += '<div class="sliderValue" style="text-align:center;margin:2px 0 4px;">0:00:00</div>';
+
+                html += '<br/>';
             }
-            else if (autoMarkWatched || $('#radioMarkWatched', elem).checked()) {
 
-                position = currentMediaSource.RunTimeTicks;
-            }
-            else if ($('#radioMarkUnwatched', elem).checked()) {
+            html += '<button type="button" class="btnDone" data-theme="b" data-icon="check">' + Globalize.translate('ButtonImDone') + '</button>';
 
-                position = 0;
-            }
-            onPlaybackStopped(position);
-        });
+            html += '</div>';
 
-        $(".playstateSlider", elem).on("change", function (e) {
+            html += '</div>';
 
-            var pct = $(this).val();
+            $(document.body).append(html);
 
-            var time = item.RunTimeTicks * (Number(pct) * .01);
+            var elem = $('.externalPlayerPostPlayFlyout').popup({}).trigger('create').popup("open").on("popupafterclose", function () {
 
-            var tooltext = Dashboard.getDisplayTime(time);
+                $(this).off("popupafterclose").remove();
 
-            $('.sliderValue', elem).html(tooltext);
+            });
 
-            Logger.log("slidin", pct, self.currentDurationTicks, time);
+            $('.radioPlaystate', elem).on('change', function () {
 
+                if ($('#radioMarkInProgress', elem).checked()) {
+
+                    $('.playstateSlider', elem).slider('enable');
+
+                } else {
+                    $('.playstateSlider', elem).slider('disable');
+                }
+
+            }).trigger('change');
+
+            $('.btnDone', elem).on('click', function () {
+
+                $('.externalPlayerPostPlayFlyout').popup("close").remove();
+
+                var position = 0;
+
+                if ($('#radioMarkInProgress', elem).checked()) {
+
+                    var pct = $(".playstateSlider", elem).val();
+                    var ticks = item.RunTimeTicks * (Number(pct) * .01);
+
+                    position = ticks;
+                }
+                else if (autoMarkWatched || $('#radioMarkWatched', elem).checked()) {
+
+                    position = currentMediaSource.RunTimeTicks;
+                }
+                else if ($('#radioMarkUnwatched', elem).checked()) {
+
+                    position = 0;
+                }
+                onPlaybackStopped(position);
+            });
+
+            $(".playstateSlider", elem).on("change", function (e) {
+
+                var pct = $(this).val();
+
+                var time = item.RunTimeTicks * (Number(pct) * .01);
+
+                var tooltext = Dashboard.getDisplayTime(time);
+
+                $('.sliderValue', elem).html(tooltext);
+
+                Logger.log("slidin", pct, self.currentDurationTicks, time);
+
+            });
         });
     }
 
@@ -408,37 +410,39 @@
 
     function showMenuForItem(item, players) {
 
-        closePlayMenu();
+        require(['jqmpopup'], function () {
+            closePlayMenu();
 
-        var html = '<div data-role="popup" class="externalPlayerFlyout" data-theme="a" data-dismissible="false">';
+            var html = '<div data-role="popup" class="externalPlayerFlyout" data-theme="a" data-dismissible="false">';
 
-        html += '<ul data-role="listview" style="min-width: 200px;">';
-        html += '<li data-role="list-divider" style="padding: 1em;text-align:center;">' + Globalize.translate('HeaderSelectExternalPlayer') + '</li>';
-        html += '</ul>';
+            html += '<ul data-role="listview" style="min-width: 200px;">';
+            html += '<li data-role="list-divider" style="padding: 1em;text-align:center;">' + Globalize.translate('HeaderSelectExternalPlayer') + '</li>';
+            html += '</ul>';
 
-        html += '<div style="padding:1em;">';
+            html += '<div style="padding:1em;">';
 
-        html += players.map(function (p) {
+            html += players.map(function (p) {
 
-            return '<a href="' + p.url + '" data-role="button" data-icon="play" class="btnExternalPlayer" data-theme="b" data-mini="true">' + p.name + '</a>';
+                return '<a href="' + p.url + '" data-role="button" data-icon="play" class="btnExternalPlayer" data-theme="b" data-mini="true">' + p.name + '</a>';
 
-        }).join('');
+            }).join('');
 
-        html += '</div>';
+            html += '</div>';
 
-        html += '</div>';
+            html += '</div>';
 
-        $(document.body).append(html);
+            $(document.body).append(html);
 
-        var elem = $('.externalPlayerFlyout').popup({}).trigger('create').popup("open").on("popupafterclose", function () {
+            var elem = $('.externalPlayerFlyout').popup({}).trigger('create').popup("open").on("popupafterclose", function () {
 
-            $(this).off("popupafterclose").remove();
+                $(this).off("popupafterclose").remove();
 
-        });
+            });
 
-        $('.btnExternalPlayer', elem).on('click', function () {
+            $('.btnExternalPlayer', elem).on('click', function () {
 
-            ExternalPlayer.onPlaybackStart();
+                ExternalPlayer.onPlaybackStart();
+            });
         });
     }
 

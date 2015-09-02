@@ -105,9 +105,9 @@ namespace MediaBrowser.Providers.Manager
 
             if (!lockedFields.Contains(MetadataFields.Cast))
             {
-                if (replaceData || targetResult.People.Count == 0)
+                if (replaceData || targetResult.People == null || targetResult.People.Count == 0)
                 {
-                    targetResult.People = sourceResult.People;
+                    targetResult.People = sourceResult.People ?? new List<PersonInfo>();
                 }
             }
 

@@ -6,6 +6,8 @@
 
     function reload(page) {
 
+        page = $(page)[0];
+
         unbindItemChanged(page);
         Dashboard.showLoadingMsg();
 
@@ -22,11 +24,11 @@
             currentItem = item;
 
             if (item.Type == "UserRootFolder") {
-                $('.editPageInnerContent', page).hide();
+                $('.editPageInnerContent', page)[0].style.visibility = 'hidden';
                 Dashboard.hideLoadingMsg();
                 return;
             } else {
-                $('.editPageInnerContent', page).show();
+                $('.editPageInnerContent', page)[0].style.visibility = 'visible';
             }
 
             var languages = metadataEditorInfo.Cultures;
@@ -45,15 +47,15 @@
             fillItemInfo(page, item, metadataEditorInfo.ParentalRatingOptions);
 
             if (item.Type == "BoxSet") {
-                $('.collectionItemsTabButton', page).show();
+                page.querySelector('.collectionItemsTabButton').classList.remove('hide');
             } else {
-                $('.collectionItemsTabButton', page).hide();
+                page.querySelector('.collectionItemsTabButton').classList.add('hide');
             }
 
             if (item.MediaType == "Video" && item.LocationType == "FileSystem" && item.Type !== 'TvChannel') {
-                $('.subtitleTabButton', page).show();
+                page.querySelector('.subtitleTabButton').classList.remove('hide');
             } else {
-                $('.subtitleTabButton', page).hide();
+                page.querySelector('.subtitleTabButton').classList.add('hide');
             }
 
             if (item.MediaType == 'Photo') {
@@ -123,20 +125,16 @@
             var buttonId = "btnOpen1" + idInfo.Key;
             var formatString = idInfo.UrlFormatString || '';
 
-            html += '<div data-role="fieldcontain">';
-            var idLabel = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
-            html += '<label for="' + id + '">' + idLabel + '</label>';
+            var labelText = Globalize.translate('LabelDynamicExternalId').replace('{0}', idInfo.Name);
 
-            html += '<div style="display: inline-block; width: 80%;">';
+            html += '<div>';
 
             var value = providerIds[idInfo.Key] || '';
 
-            html += '<input class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" />';
-
-            html += '</div>';
+            html += '<paper-input style="display:inline-block;width:80%;" class="txtExternalId" value="' + value + '" data-providerkey="' + idInfo.Key + '" data-formatstring="' + formatString + '" data-buttonclass="' + buttonId + '" id="' + id + '" label="' + labelText + '"></paper-input>';
 
             if (formatString) {
-                html += '<a class="' + buttonId + '" href="#" target="_blank" data-icon="arrow-r" data-inline="true" data-iconpos="notext" data-role="button" style="float: none; width: 1.75em"></a>';
+                html += '<a class="clearLink ' + buttonId + '" href="#" target="_blank" data-role="none" style="float: none; width: 1.75em"><paper-icon-button icon="open-in-browser"></paper-icon-button></a>';
             }
 
             html += '</div>';
@@ -187,7 +185,7 @@
             $('#fldPlayers', page).hide();
         }
 
-        if (item.Type == "Movie" || item.Type == "Trailer" || item.Type == "MusicVideo" || item.Type == "Series" || item.Type == "Game") {
+        if (item.Type == "Movie" || item.Type == "Trailer") {
             $('#fldCriticRating', page).show();
             $('#fldCriticRatingSummary', page).show();
         } else {
@@ -322,14 +320,14 @@
         }
 
         if (item.Type == "Person") {
-            $('#lblPremiereDate', page).html(Globalize.translate('LabelBirthDate'));
-            $('#lblYear', page).html(Globalize.translate('LabelBirthYear'));
-            $('#lblEndDate', page).html(Globalize.translate('LabelDeathDate'));
+            page.querySelector('#txtProductionYear').label = Globalize.translate('LabelBirthYear');
+            page.querySelector("label[for='txtPremiereDate']").innerHTML = Globalize.translate('LabelBirthDate');
+            page.querySelector("label[for='txtEndDate']").innerHTML = Globalize.translate('LabelDeathDate');
             $('#fldPlaceOfBirth', page).show();
         } else {
-            $('#lblPremiereDate', page).html(Globalize.translate('LabelReleaseDate'));
-            $('#lblYear', page).html(Globalize.translate('LabelYear'));
-            $('#lblEndDate', page).html(Globalize.translate('LabelEndDate'));
+            page.querySelector('#txtProductionYear').label = Globalize.translate('LabelYear');
+            page.querySelector("label[for='txtPremiereDate']").innerHTML = Globalize.translate('LabelReleaseDate');
+            page.querySelector("label[for='txtEndDate']").innerHTML = Globalize.translate('LabelEndDate');
             $('#fldPlaceOfBirth', page).hide();
         }
 
@@ -343,13 +341,13 @@
             $('#fldIndexNumber', page).show();
 
             if (item.Type == "Episode") {
-                $('#lblIndexNumber', page).html(Globalize.translate('LabelEpisodeNumber'));
+                page.querySelector('#txtIndexNumber').label = Globalize.translate('LabelEpisodeNumber');
             } else if (item.Type == "Season") {
-                $('#lblIndexNumber', page).html(Globalize.translate('LabelSeasonNumber'));
+                page.querySelector('#txtIndexNumber').label = Globalize.translate('LabelSeasonNumber');
             } else if (item.Type == "Audio") {
-                $('#lblIndexNumber', page).html(Globalize.translate('LabelTrackNumber'));
+                page.querySelector('#txtIndexNumber').label = Globalize.translate('LabelTrackNumber');
             } else {
-                $('#lblIndexNumber', page).html(Globalize.translate('LabelNumber'));
+                page.querySelector('#txtIndexNumber').label = Globalize.translate('LabelNumber');
             }
         } else {
             $('#fldIndexNumber', page).hide();
@@ -359,11 +357,11 @@
             $('#fldParentIndexNumber', page).show();
 
             if (item.Type == "Episode") {
-                $('#lblParentIndexNumber', page).html(Globalize.translate('LabelSeasonNumber'));
+                page.querySelector('#txtParentIndexNumber').label = Globalize.translate('LabelSeasonNumber');
             } else if (item.Type == "Audio") {
-                $('#lblParentIndexNumber', page).html(Globalize.translate('LabelDiscNumber'));
+                page.querySelector('#txtParentIndexNumber').label = Globalize.translate('LabelDiscNumber');
             } else {
-                $('#lblParentIndexNumber', page).html(Globalize.translate('LabelParentNumber'));
+                page.querySelector('#txtParentIndexNumber').label = Globalize.translate('LabelParentNumber');
             }
         } else {
             $('#fldParentIndexNumber', page).hide();
@@ -421,7 +419,7 @@
 
             this.checked = (item.AirDays || []).indexOf(this.getAttribute('data-day')) != -1;
 
-        }).checkboxradio('refresh');
+        });
 
         populateListView($('#listCountries', page), item.ProductionLocations || []);
         populateListView($('#listGenres', page), item.Genres);
@@ -433,19 +431,20 @@
         populateListView($('#listKeywords', page), item.Keywords);
 
         var lockData = (item.LockData || false);
-        var chkLockData = $("#chkLockData", page).attr('checked', lockData).checkboxradio('refresh');
-        if (chkLockData.checked()) {
+        var chkLockData = page.querySelector("#chkLockData");
+        chkLockData.checked = lockData;
+        if (chkLockData.checked) {
             $('#providerSettingsContainer', page).hide();
         } else {
             $('#providerSettingsContainer', page).show();
         }
         populateInternetProviderSettings(page, item, item.LockedFields);
 
-        $("#chkDisplaySpecialsInline", page).checked(item.DisplaySpecialsWithSeasons || false).checkboxradio('refresh');
+        page.querySelector('#chkDisplaySpecialsInline').checked = item.DisplaySpecialsWithSeasons || false;
 
         $('#txtPath', page).val(item.Path || '');
         $('#txtName', page).val(item.Name || "");
-        $('#txtOverview', page).val(item.Overview || "");
+        page.querySelector('#txtOverview').value = item.Overview || '';
         $('#txtShortOverview', page).val(item.ShortOverview || "");
         $('#txtTagline', page).val((item.Taglines && item.Taglines.length ? item.Taglines[0] : ''));
         $('#txtSortName', page).val(item.ForcedSortName || "");
@@ -529,7 +528,8 @@
         }
 
         $('#txtProductionYear', page).val(item.ProductionYear || "");
-        $('#txtAirTime', page).val(item.AirTime || "");
+
+        $('#txtAirTime', page).val(item.AirTime || '');
 
         var placeofBirth = item.ProductionLocations && item.ProductionLocations.length ? item.ProductionLocations[0] : '';
         $('#txtPlaceOfBirth', page).val(placeofBirth);
@@ -708,20 +708,16 @@
         return list.find('a.data').map(function () { return $(this).text(); }).get();
     }
 
-    function generateSliders(fields, type) {
+    function generateSliders(fields, currentFields) {
+
         var html = '';
         for (var i = 0; i < fields.length; i++) {
 
             var field = fields[i];
             var name = field.name;
             var value = field.value || field.name;
-            html += '<div data-role="fieldcontain">';
-            html += '<label for="lock' + value + '">' + name + '</label>';
-            html += '<select class="selectLockedField" id="lock' + value + '" data-role="slider" data-mini="true">';
-            html += '<option value="' + value + '">' + Globalize.translate('OptionOff') + '</option>';
-            html += '<option value="" selected="selected">' + Globalize.translate('OptionOn') + '</option>';
-            html += '</select>';
-            html += '</div>';
+            var checkedHtml = currentFields.indexOf(value) == -1 ? ' checked' : '';
+            html += '<paper-checkbox class="selectLockedField" data-value="' + value + '" style="display:block;margin:1em 0;"' + checkedHtml + '>' + name + '</paper-checkbox>';
         }
         return html;
     }
@@ -760,14 +756,10 @@
 
         var html = '';
 
-        html += "<h1>" + Globalize.translate('HeaderFields') + "</h1>";
-        html += "<p>" + Globalize.translate('HeaderFieldsHelp') + "</p>";
-        html += generateSliders(metadatafields, 'Fields');
-        container.html(html).trigger('create');
-        for (var fieldIndex = 0; fieldIndex < lockedFields.length; fieldIndex++) {
-            var field = lockedFields[fieldIndex];
-            $('#lock' + field).val(field).slider('refresh');
-        }
+        html += "<h1>" + Globalize.translate('HeaderEnabledFields') + "</h1>";
+        html += "<p>" + Globalize.translate('HeaderEnabledFieldsHelp') + "</p>";
+        html += generateSliders(metadatafields, lockedFields);
+        container.html(html);
     }
 
     function getSelectedAirDays(form) {
@@ -833,7 +825,7 @@
                 CriticRating: $('#txtCriticRating', form).val(),
                 CriticRatingSummary: $('#txtCriticRatingSummary', form).val(),
                 IndexNumber: $('#txtIndexNumber', form).val() || null,
-                DisplaySpecialsWithSeasons: $('#chkDisplaySpecialsInline', form).checked(),
+                DisplaySpecialsWithSeasons: form.querySelector('#chkDisplaySpecialsInline').checked,
                 AbsoluteEpisodeNumber: $('#txtAbsoluteEpisodeNumber', form).val(),
                 DvdEpisodeNumber: $('#txtDvdEpisodeNumber', form).val(),
                 DvdSeasonNumber: $('#txtDvdSeasonNumber', form).val(),
@@ -869,11 +861,12 @@
                 OfficialRating: $('#selectOfficialRating', form).val(),
                 CustomRating: $('#selectCustomRating', form).val(),
                 People: currentItem.People,
-                LockData: $("#chkLockData", form).prop('checked'),
-                LockedFields: $('.selectLockedField', form).map(function () {
-                    var value = $(this).val();
-                    if (value != '') return value;
-                }).get()
+                LockData: form.querySelector("#chkLockData").checked,
+                LockedFields: $('.selectLockedField', form).get().filter(function (c) {
+                    return !c.checked;
+                }).map(function (c) {
+                    return c.getAttribute('data-value');
+                })
             };
 
             item.ProviderIds = $.extend({}, currentItem.ProviderIds || {});
@@ -1375,8 +1368,8 @@
         }
     }
 
-    function showMoreMenu(page) {
-        
+    function showMoreMenu(page, elem) {
+
         Dashboard.getCurrentUser().done(function (user) {
 
             var moreCommands = LibraryBrowser.getMoreCommands(currentItem, user);
@@ -1401,6 +1394,7 @@
 
                 ActionSheetElement.show({
                     items: menuItems,
+                    positionTo: elem,
                     callback: function (id) {
 
                         switch (id) {
@@ -1422,7 +1416,12 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#editItemMetadataPage", function () {
+    function showTab(page, index) {
+
+        $('.editorTab', page).addClass('hide')[index].classList.remove('hide');
+    }
+
+    $(document).on('pageinit', "#editItemMetadataPage", function () {
 
         var page = this;
 
@@ -1462,7 +1461,7 @@
 
                 //$.mobile.urlHistory.ignoreNextHashChange = true;
                 window.location.hash = 'editItemMetadataPage?id=' + data.id;
-                $(page.querySelector('neon-animated-pages')).trigger('tabchange');
+                $(page.querySelector('paper-tabs')).trigger('tabchange');
             }
         });
 
@@ -1477,29 +1476,24 @@
         $('.popupAdvancedRefreshForm').off('submit', EditItemMetadataPage.onRefreshFormSubmit).on('submit', EditItemMetadataPage.onRefreshFormSubmit);
         $('.identifyOptionsForm').off('submit', EditItemMetadataPage.onIdentificationOptionsSubmit).on('submit', EditItemMetadataPage.onIdentificationOptionsSubmit);
 
-        $(page.querySelector('paper-tabs')).on('iron-select', function () {
-            page.querySelector('neon-animated-pages').selected = this.selected;
-        });
-
         var tabs = page.querySelector('paper-tabs');
-        var pages = page.querySelector('neon-animated-pages');
 
-        configurePaperLibraryTabs(page, tabs, pages);
+        configurePaperLibraryTabs(page, tabs);
 
         $(tabs).on('iron-select', function () {
+            Events.trigger(this, 'tabchange');
+
+        }).on('tabchange', function () {
             var selected = this.selected;
 
-            page.querySelector('neon-animated-pages').selected = selected;
-        });
-
-        $(pages).on('tabchange', function () {
+            showTab(page, selected);
             loadTab(page, parseInt(this.selected));
         });
 
         page.querySelector('.btnMore iron-icon').icon = AppInfo.moreIcon;
 
         $('.btnMore', page).on('click', function () {
-            showMoreMenu(page);
+            showMoreMenu(page, this);
         });
 
     }).on('pageshowready', "#editItemMetadataPage", function () {
@@ -1510,15 +1504,7 @@
 
         var selected = parseInt(getParameterByName('tab') || '0');
 
-        if (selected) {
-
-            page.querySelector('paper-tabs').selected = 0;
-
-            // Looks like a bug in paper-tabs. It won't set the tab if we try to do it too quickly
-            setTimeout(function () {
-                page.querySelectorAll('paper-tab')[selected].click();
-            }, 700);
-        }
+        page.querySelector('paper-tabs').selected = selected;
 
     }).on('pagebeforehide', "#editItemMetadataPage", function () {
 
@@ -1529,21 +1515,29 @@
 
     });
 
-    function configurePaperLibraryTabs(ownerpage, tabs, pages) {
+    function configurePaperLibraryTabs(ownerpage, tabs) {
 
         tabs.hideScrollButtons = true;
+        tabs.noSlide = true;
+        tabs.noink = true;
 
-        $(ownerpage).on('pagebeforeshowready', LibraryBrowser.onTabbedPageBeforeShowReady);
+        $(ownerpage).on('pageshowready', function () {
 
-        $(pages).on('iron-select', function () {
+            var selected = tabs.selected;
 
-            // When transition animations are used, add a content loading delay to allow the animations to finish
-            // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
-            var delay = 500;
-            var pgs = this;
-            setTimeout(function () {
-                $(pgs).trigger('tabchange');
-            }, delay);
+            if (selected == null) {
+
+                Logger.log('selected tab is null, checking query string');
+
+                selected = parseInt(getParameterByName('tab') || '0');
+
+                Logger.log('selected tab will be ' + selected);
+
+                tabs.selected = selected;
+
+            } else {
+                Events.trigger(tabs, 'tabchange');
+            }
         });
     }
 
@@ -1555,6 +1549,7 @@
                 reload(page);
                 break;
             default:
+                reload(page);
                 break;
         }
     }

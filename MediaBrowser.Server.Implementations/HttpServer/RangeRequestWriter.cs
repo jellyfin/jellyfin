@@ -1,4 +1,5 @@
-﻿using ServiceStack.Web;
+﻿using MediaBrowser.Model.Logging;
+using ServiceStack.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -25,6 +26,10 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         private long TotalContentLength { get; set; }
 
         public Action OnComplete { get; set; }
+        private readonly ILogger _logger;
+
+        // 256k
+        private const int BufferSize = 262144;
 
         /// <summary>
         /// The _options
@@ -61,7 +66,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
         /// <param name="source">The source.</param>
         /// <param name="contentType">Type of the content.</param>
         /// <param name="isHeadRequest">if set to <c>true</c> [is head request].</param>
-        public RangeRequestWriter(string rangeHeader, Stream source, string contentType, bool isHeadRequest)
+        public RangeRequestWriter(string rangeHeader, Stream source, string contentType, bool isHeadRequest, ILogger logger)
         {
             if (string.IsNullOrEmpty(contentType))
             {
@@ -71,6 +76,7 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             RangeHeader = rangeHeader;
             SourceStream = source;
             IsHeadRequest = isHeadRequest;
+            this._logger = logger;
 
             ContentType = contentType;
             Options["Content-Type"] = contentType;
@@ -184,13 +190,22 @@ namespace MediaBrowser.Server.Implementations.HttpServer
                     // If the requested range is "0-", we can optimize by just doing a stream copy
                     if (RangeEnd >= TotalContentLength - 1)
                     {
-                        source.CopyTo(responseStream);
+                        source.CopyTo(responseStream, BufferSize);
                     }
                     else
                     {
-                        CopyToInternal(source, responseStream, Convert.ToInt32(RangeLength));
+                        CopyToInternal(source, responseStream, RangeLength);
                     }
                 }
+            }
+            catch (IOException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.ErrorException("Error in range request writer", ex);
+                throw;
             }
             finally
             {
@@ -201,73 +216,15 @@ namespace MediaBrowser.Server.Implementations.HttpServer
             }
         }
 
-        private void CopyToInternal(Stream source, Stream destination, int copyLength)
+        private void CopyToInternal(Stream source, Stream destination, long copyLength)
         {
-            const int bufferSize = 81920;
-            var array = new byte[bufferSize];
+            var array = new byte[BufferSize];
             int count;
             while ((count = source.Read(array, 0, array.Length)) != 0)
             {
                 var bytesToCopy = Math.Min(count, copyLength);
 
-                destination.Write(array, 0, bytesToCopy);
-
-                copyLength -= bytesToCopy;
-
-                if (copyLength <= 0)
-                {
-                    break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Writes to async.
-        /// </summary>
-        /// <param name="responseStream">The response stream.</param>
-        /// <returns>Task.</returns>
-        private async Task WriteToAsync(Stream responseStream)
-        {
-            try
-            {
-                // Headers only
-                if (IsHeadRequest)
-                {
-                    return;
-                }
-
-                using (var source = SourceStream)
-                {
-                    // If the requested range is "0-", we can optimize by just doing a stream copy
-                    if (RangeEnd >= TotalContentLength - 1)
-                    {
-                        await source.CopyToAsync(responseStream).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        await CopyToAsyncInternal(source, responseStream, Convert.ToInt32(RangeLength), CancellationToken.None).ConfigureAwait(false);
-                    }
-                }
-            }
-            finally
-            {
-                if (OnComplete != null)
-                {
-                    OnComplete();
-                }
-            }
-        }
-
-        private async Task CopyToAsyncInternal(Stream source, Stream destination, int copyLength, CancellationToken cancellationToken)
-        {
-            const int bufferSize = 81920;
-            var array = new byte[bufferSize];
-            int count;
-            while ((count = await source.ReadAsync(array, 0, array.Length, cancellationToken).ConfigureAwait(false)) != 0)
-            {
-                var bytesToCopy = Math.Min(count, copyLength);
-
-                await destination.WriteAsync(array, 0, bytesToCopy, cancellationToken).ConfigureAwait(false);
+                destination.Write(array, 0, Convert.ToInt32(bytesToCopy));
 
                 copyLength -= bytesToCopy;
 

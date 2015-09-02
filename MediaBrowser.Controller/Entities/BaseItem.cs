@@ -142,7 +142,7 @@ namespace MediaBrowser.Controller.Entities
         public virtual string Path { get; set; }
 
         [IgnoreDataMember]
-        protected internal bool IsOffline { get; set; }
+        public bool IsOffline { get; set; }
 
         /// <summary>
         /// Returns the folder containing the item.
@@ -419,6 +419,10 @@ namespace MediaBrowser.Controller.Entities
 
                 return _sortName ?? (_sortName = CreateSortName());
             }
+            set
+            {
+                _sortName = value;
+            }
         }
 
         public string GetInternalMetadataPath()
@@ -485,6 +489,7 @@ namespace MediaBrowser.Controller.Entities
         /// Gets or sets the parent.
         /// </summary>
         /// <value>The parent.</value>
+        [IgnoreDataMember]
         public Folder Parent
         {
             get
@@ -1113,6 +1118,23 @@ namespace MediaBrowser.Controller.Entities
             }
 
             return value.Value <= maxAllowedRating.Value;
+        }
+
+        public int? GetParentalRatingValue()
+        {
+            var rating = CustomRatingForComparison;
+
+            if (string.IsNullOrWhiteSpace(rating))
+            {
+                rating = OfficialRatingForComparison;
+            }
+
+            if (string.IsNullOrWhiteSpace(rating))
+            {
+                return null;
+            }
+
+            return LocalizationManager.GetRatingLevel(rating);
         }
 
         private bool IsVisibleViaTags(User user)

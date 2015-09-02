@@ -7,7 +7,7 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-// @version 0.7.6
+// @version 0.7.12
 if (typeof WeakMap === "undefined") {
   (function() {
     var defineProperty = Object.defineProperty;
@@ -341,7 +341,7 @@ if (typeof WeakMap === "undefined") {
   };
   global.JsMutationObserver = JsMutationObserver;
   if (!global.MutationObserver) global.MutationObserver = JsMutationObserver;
-})(this);
+})(window);
 
 window.HTMLImports = window.HTMLImports || {
   flags: {}
@@ -697,7 +697,7 @@ window.HTMLImports.addModule(function(scope) {
   var IMPORT_SELECTOR = "link[rel=" + IMPORT_LINK_TYPE + "]";
   var importParser = {
     documentSelectors: IMPORT_SELECTOR,
-    importsSelectors: [ IMPORT_SELECTOR, "link[rel=stylesheet]", "style", "script:not([type])", 'script[type="application/javascript"]', 'script[type="text/javascript"]' ].join(","),
+    importsSelectors: [ IMPORT_SELECTOR, "link[rel=stylesheet]:not([type])", "style:not([type])", "script:not([type])", 'script[type="application/javascript"]', 'script[type="text/javascript"]' ].join(","),
     map: {
       link: "parseLink",
       script: "parseScript",
@@ -748,6 +748,7 @@ window.HTMLImports.addModule(function(scope) {
       }
     },
     parseImport: function(elt) {
+      elt.import = elt.__doc;
       if (window.HTMLImports.__importsParsingHook) {
         window.HTMLImports.__importsParsingHook(elt);
       }
@@ -810,6 +811,8 @@ window.HTMLImports.addModule(function(scope) {
     trackElement: function(elt, callback) {
       var self = this;
       var done = function(e) {
+        elt.removeEventListener("load", done);
+        elt.removeEventListener("error", done);
         if (callback) {
           callback(e);
         }
@@ -865,7 +868,7 @@ window.HTMLImports.addModule(function(scope) {
         for (var i = 0, l = nodes.length, p = 0, n; i < l && (n = nodes[i]); i++) {
           if (!this.isParsed(n)) {
             if (this.hasResource(n)) {
-              return nodeIsImport(n) ? this.nextToParseInDoc(n.import, n) : n;
+              return nodeIsImport(n) ? this.nextToParseInDoc(n.__doc, n) : n;
             } else {
               return;
             }
@@ -888,7 +891,7 @@ window.HTMLImports.addModule(function(scope) {
       return this.dynamicElements.indexOf(elt) >= 0;
     },
     hasResource: function(node) {
-      if (nodeIsImport(node) && node.import === undefined) {
+      if (nodeIsImport(node) && node.__doc === undefined) {
         return false;
       }
       return true;
@@ -962,7 +965,7 @@ window.HTMLImports.addModule(function(scope) {
           }
           this.documents[url] = doc;
         }
-        elt.import = doc;
+        elt.__doc = doc;
       }
       parser.parseNext();
     },

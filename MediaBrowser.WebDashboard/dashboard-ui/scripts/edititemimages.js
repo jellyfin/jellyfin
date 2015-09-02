@@ -52,7 +52,6 @@
     }
 
     function renderRemoteImages(page, item, imagesResult, imageType, startIndex, limit) {
-
         $('.availableImagesPaging', page).html(getPagingHtml(startIndex, limit, imagesResult.TotalRecordCount)).trigger('create');
 
         var html = '';
@@ -145,7 +144,7 @@
 
             html += '<div class="remoteImageDetails">';
 
-            if (image.Width || image.Height) {
+            if (image.Width && image.Height) {
                 html += image.Width + ' x ' + image.Height;
 
                 if (image.Language) {
@@ -275,7 +274,11 @@
 
             html += '<div class="editorTileInner">';
 
-            html += '<p>' + image.Width + ' X ' + image.Height + '</p>';
+            if (image.Width && image.Height) {
+                html += '<p>' + image.Width + ' X ' + image.Height + '</p>';
+            } else {
+                html += '<p>&nbsp;</p>';
+            }
 
             html += '<p>';
 
@@ -497,7 +500,7 @@
 
     window.EditItemImagesPage = new editItemImages();
 
-    $(document).on('pageinitdepends', "#editItemMetadataPage", function () {
+    $(document).on('pageinit', "#editItemMetadataPage", function () {
 
         var page = this;
 
@@ -527,7 +530,7 @@
 
         $('.uploadItemImageForm').off('submit', onSubmit).on('submit', onSubmit);
 
-        $('.btnOpenUploadMenu', page).on('click', function() {
+        $('.btnOpenUploadMenu', page).on('click', function () {
 
             $('#popupUpload', page).popup('open');
         });
@@ -561,7 +564,7 @@
             return false;
         });
 
-        $(page.querySelector('neon-animated-pages')).on('tabchange', function () {
+        $(page.querySelector('paper-tabs')).on('tabchange', function () {
 
             if (parseInt(this.selected) == 3) {
                 var tabContent = page.querySelector('.imageEditorTab');

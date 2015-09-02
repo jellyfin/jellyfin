@@ -44,9 +44,10 @@
 
         Dashboard.showModalLoadingMsg();
 
-        channelQuery.userId = Dashboard.getCurrentUserId();
+        channelQuery.UserId = Dashboard.getCurrentUserId();
 
         channelQuery.Limit = Math.min(channelQuery.Limit || defaultChannels, channelLimit);
+        channelQuery.AddCurrentProgram = false;
 
         channelsPromise = channelsPromise || ApiClient.getLiveTvChannels(channelQuery);
 
@@ -62,7 +63,9 @@
                 MinEndDate: date.toISOString(),
                 channelIds: channelsResult.Items.map(function (c) {
                     return c.Id;
-                }).join(',')
+                }).join(','),
+                ImageTypeLimit: 1,
+                EnableImageTypes: "Primary"
 
             }).done(function (programsResult) {
 
@@ -200,6 +203,7 @@
             html += '<div class="programCell" style="left:' + startPercent + '%;width:' + endPercent + '%;">';
 
             var cssClass = "programCellInner";
+            var addAccent = true;
 
             if (program.IsKids) {
                 cssClass += " childProgramInfo";
@@ -212,9 +216,10 @@
             }
             else {
                 cssClass += " plainProgramInfo";
+                addAccent = false;
             }
 
-            html += '<a href="livetvprogram.html?id=' + program.Id + '" class="' + cssClass + '" data-programid="' + program.Id + '">';
+            html += '<a href="itemdetails.html?id=' + program.Id + '" class="' + cssClass + '" data-programid="' + program.Id + '">';
 
             html += '<div class="guideProgramName">';
             html += program.Name;
@@ -245,6 +250,10 @@
                 html += '<div class="timerCircle"></div>';
             }
             html += '</div>';
+
+            if (addAccent) {
+                html += '<div class="programAccent"></div>';
+            }
 
             html += '</a>';
 
@@ -283,11 +292,14 @@
             html += '<div class="channelHeaderCellContainer">';
 
             html += '<div class="channelHeaderCell">';
-            html += '<a class="channelHeaderCellInner" href="livetvchannel.html?id=' + channel.Id + '">';
+            html += '<a class="channelHeaderCellInner" href="itemdetails.html?id=' + channel.Id + '">';
 
-            html += '<div class="guideChannelInfo">' + channel.Name + '<br/>' + channel.Number + '</div>';
+            var hasChannelImage = channel.ImageTags.Primary;
+            var cssClass = hasChannelImage ? 'guideChannelInfo guideChannelInfoWithImage' : 'guideChannelInfo';
 
-            if (channel.ImageTags.Primary) {
+            html += '<div class="' + cssClass + '">' + channel.Name + '<br/>' + channel.Number + '</div>';
+
+            if (hasChannelImage) {
 
                 var url = ApiClient.getScaledImageUrl(channel.Id, {
                     maxHeight: 35,
@@ -441,24 +453,22 @@
         });
     }
 
-    $(document).on('pageinitdepends', "#liveTvGuidePage", function () {
+    window.LiveTvPage.initGuideTab = function (page, tabContent) {
 
-        var page = this;
+        Events.on(tabContent.querySelector('.programGrid'), 'scroll', function () {
 
-        Events.on(page.querySelector('.programGrid'), 'scroll', function () {
-
-            onProgramGridScroll(page, this);
+            onProgramGridScroll(tabContent, this);
         });
 
         if ($.browser.mobile) {
-            page.querySelector('.tvGuide').classList.add('mobileGuide');
+            tabContent.querySelector('.tvGuide').classList.add('mobileGuide');
         } else {
 
-            page.querySelector('.tvGuide').classList.remove('mobileGuide');
+            tabContent.querySelector('.tvGuide').classList.remove('mobileGuide');
 
-            Events.on(page.querySelector('.timeslotHeaders'), 'scroll', function () {
+            Events.on(tabContent.querySelector('.timeslotHeaders'), 'scroll', function () {
 
-                onTimeslotHeadersScroll(page, this);
+                onTimeslotHeadersScroll(tabContent, this);
             });
         }
 
@@ -466,29 +476,28 @@
             requirejs(["thirdparty/headroom"], function () {
 
                 // construct an instance of Headroom, passing the element
-                var headroom = new Headroom(page.querySelector('.tvGuideHeader'));
+                var headroom = new Headroom(tabContent.querySelector('.tvGuideHeader'));
                 // initialise
                 headroom.init();
             });
         }
 
-        $('.btnUnlockGuide', page).on('click', function () {
+        $('.btnUnlockGuide', tabContent).on('click', function () {
 
-            reloadPage(page);
+            reloadPage(tabContent);
         });
 
-        $('.btnSelectDate', page).on('click', function () {
+        $('.btnSelectDate', tabContent).on('click', function () {
 
-            selectDate(page);
+            selectDate(tabContent);
         });
+    };
 
-    }).on('pagebeforeshowready', "#liveTvGuidePage", function () {
+    window.LiveTvPage.renderGuideTab = function (page, tabContent) {
 
-        var page = this;
-
-        if (LibraryBrowser.needsRefresh(page)) {
-            reloadPage(page);
+        if (LibraryBrowser.needsRefresh(tabContent)) {
+            reloadPage(tabContent);
         }
-    });
+    };
 
 })(jQuery, document);

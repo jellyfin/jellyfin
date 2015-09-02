@@ -4,14 +4,17 @@
     <title>Emby</title>
 </head>
 <body>
-    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="scripts/nowplayingpage,paperbuttonstyle,jqmicons">
+    <div id="nowPlayingPage" data-role="page" class="page libraryPage nowPlayingPage noSecondaryNavPage" data-contextname="${TitleRemoteControl}" data-theme="b" data-require="scripts/nowplayingpage,paperbuttonstyle">
 
         <div data-role="content" style="overflow:visible;">
 
             <paper-fab mini icon="arrow-back" class="white" onclick="history.back()" style="position:relative;top:5px;left:5px;"></paper-fab>
-            <div style="float:right;position:relative;top:5px;right:5px;">
-                <span class="nowPlayingSelectedPlayer"></span>
-                <paper-fab mini icon="cast" class="blue nowPlayingCastIcon" onclick="MediaController.showPlayerSelection();" style="vertical-align:middle;"></paper-fab>
+            <div style="float:right;position:relative;top:5px;right:5px;text-align:right;">
+                <div>
+                    <span class="nowPlayingSelectedPlayer"></span>
+                    <paper-fab mini icon="slideshow" class="btnSlideshow" style="vertical-align:middle;background:#888;z-index:1;margin-right:.5em;"></paper-fab>
+                    <paper-fab mini icon="cast" class="blue nowPlayingCastIcon" onclick="MediaController.showPlayerSelection();" style="vertical-align:middle;"></paper-fab>
+                </div>
             </div>
 
             <neon-animated-pages selected="{{selected}}">
@@ -44,16 +47,19 @@
                                 <paper-fab icon="skip-next" class="btnPlayStateCommand btnNextTrack subdued" title="${ButtonNextTrack}"></paper-fab>
                             </div>
                             <div class="buttonsRow2">
-                                <paper-fab icon="volume-up" class="btnCommand subdued volumeButton" title="${ButtonVolumeUp}" data-command="VolumeUp"></paper-fab>
-                                <paper-fab icon="volume-off" class="btnCommand subdued volumeButton" title="${ButtonMute}" data-command="ToggleMute"></paper-fab>
-                                <paper-fab icon="info" class="btnCommand videoButton subdued" title="${ButtonOsd}" data-command="ToggleOsdMenu"></paper-fab>
-                                <paper-fab icon="fullscreen" class="btnToggleFullscreen videoButton btnPlayStateCommand subdued" title="${ButtonFullscreen}" data-command="ToggleFullscreen"></paper-fab>
-                            </div>
-                            <div class="buttonsRow3">
-                                <paper-fab icon="volume-down" class="btnCommand subdued volumeButton" title="${ButtonVolumeDown}" data-command="VolumeDown"></paper-fab>
                                 <paper-fab icon="audiotrack" class="btnAudioTracks videoButton btnPlayStateCommand subdued" title="${ButtonAudioTracks}" data-command="GoToSearch"></paper-fab>
                                 <paper-fab icon="subtitles" class="btnSubtitles videoButton btnPlayStateCommand subdued" title="${ButtonSubtitles}" data-command="GoToSearch"></paper-fab>
                                 <paper-fab icon="movie" class="btnChapters videoButton btnPlayStateCommand subdued" title="${ButtonScenes}" data-command="GoToSearch"></paper-fab>
+                                <paper-fab icon="fullscreen" class="btnToggleFullscreen videoButton btnPlayStateCommand subdued" title="${ButtonFullscreen}" data-command="ToggleFullscreen"></paper-fab>
+                            </div>
+                            <!--<div class="buttonsRow3">
+                                <paper-fab icon="info" class="btnCommand videoButton subdued" title="${ButtonOsd}" data-command="ToggleOsdMenu"></paper-fab>
+                            </div>-->
+                            <div>
+                                <paper-fab icon="repeat" class="btnCommand subdued repeatToggleButton" title="${ButtonRepeat}" data-command="SetRepeatMode"></paper-fab>
+                                <paper-fab icon="volume-off" class="btnCommand subdued volumeButton" title="${ButtonMute}" data-command="ToggleMute"></paper-fab>
+                                <paper-fab icon="volume-down" class="btnCommand subdued volumeButton" title="${ButtonVolumeDown}" data-command="VolumeDown"></paper-fab>
+                                <paper-fab icon="volume-up" class="btnCommand subdued volumeButton" title="${ButtonVolumeUp}" data-command="VolumeUp"></paper-fab>
                             </div>
                             <div class="nowPlayingPageUserDataButtons" style="margin-top:1em;">
 
@@ -143,7 +149,7 @@
                 </neon-animatable>
             </neon-animated-pages>
 
-            <paper-tabs selected="{{selected}}" style="position:fixed;bottom:0;left:0;right:0;" class="bottomTabs">
+            <paper-tabs selected="{{selected}}" style="position:fixed;bottom:0;left:0;right:0;" class="bottomTabs" hidescrollbuttons noink>
 
                 <paper-tab>${TabNowPlaying}</paper-tab>
                 <paper-tab>${TabControls}</paper-tab>

@@ -1,391 +1,301 @@
 ﻿(function ($, document, LibraryBrowser) {
 
-    var currentItem;
-    var shape;
-    var _childrenItemsFunction;
+    function renderItems(page, item) {
 
-    function getPromise() {
-
-        var id = getParameterByName('id');
-
-        if (id) {
-            return ApiClient.getItem(Dashboard.getCurrentUserId(), id);
-        }
-
-        var name = getParameterByName('genre');
-
-        if (name) {
-            return ApiClient.getGenre(name, Dashboard.getCurrentUserId());
-        }
-
-        name = getParameterByName('musicgenre');
-
-        if (name) {
-            return ApiClient.getMusicGenre(name, Dashboard.getCurrentUserId());
-        }
-
-        name = getParameterByName('gamegenre');
-
-        if (name) {
-            return ApiClient.getGameGenre(name, Dashboard.getCurrentUserId());
-        }
-
-        name = getParameterByName('musicartist');
-
-        if (name) {
-            return ApiClient.getArtist(name, Dashboard.getCurrentUserId());
-        }
-        else {
-            throw new Error('Invalid request');
-        }
-    }
-
-    function reload(page) {
-
-        Dashboard.showLoadingMsg();
-
-        getPromise().done(function (item) {
-
-            var context = getParameterByName('context');
-
-            var editQuery = '?id=' + item.Id;
-            if (context) {
-                editQuery += '&context=' + context;
-            }
-
-            currentItem = item;
-
-            Backdrops.setBackdrops(page, [item]);
-
-            renderHeader(page, item, context);
-
-            var name = item.Name;
-
-            Dashboard.setPageTitle(name);
-
-            $('.itemName', page).html(name);
-
-            renderDetails(page, item, context);
-            renderTabs(page, item, context);
-
-            $(page).trigger('displayingitem', [{
-
-                item: item,
-                context: context
-            }]);
-
-            Dashboard.getCurrentUser().done(function (user) {
-
-                if (MediaController.canPlay(item)) {
-                    $('.btnPlay', page).visible(true);
-                } else {
-                    $('.btnPlay', page).visible(false);
-                }
-
-                if (SyncManager.isAvailable(item, user)) {
-                    $('.btnSync', page).removeClass('hide');
-                } else {
-                    $('.btnSync', page).addClass('hide');
-                }
-
-                var editImagesHref = user.Policy.IsAdministrator ? 'edititemmetadata.html' + (editQuery + "&tab=3") : null;
-
-                $('#itemImage', page).html(LibraryBrowser.getDetailImageHtml(item, editImagesHref, true));
-
-                if (LibraryBrowser.getMoreCommands(item, user).length) {
-                    $('.btnMoreCommands', page).visible(true);
-                } else {
-                    $('.btnMoreCommands', page).visible(false);
-                }
-
-            });
-
-            Dashboard.hideLoadingMsg();
-        });
-    }
-
-    function renderHeader(page, item, context) {
-
-        $('.itemTabs', page).hide();
-
-        if (context == "movies" && item.Type == "Genre") {
-            $('#movieGenreTabs', page).show();
-        }
-
-        if (context == "movies" && item.Type == "Person") {
-            $('#moviePeopleTabs', page).show();
-        }
-
-        if (context == "movies" && item.Type == "Studio") {
-            $('#movieStudioTabs', page).show();
-        }
-
-        if (context == "tv" && item.Type == "Studio") {
-            $('#tvStudioTabs', page).show();
-        }
-
-        if (context == "tv" && item.Type == "Genre") {
-            $('#tvGenreTabs', page).show();
-        }
-
-        if (context == "tv" && item.Type == "Person") {
-            $('#tvPeopleTabs', page).show();
-        }
-
-        if (context == "music" && item.Type == "MusicGenre") {
-            $('#musicGenreTabs', page).show();
-        }
-        if (context == "music" && item.Type == "MusicArtist") {
-            $('#artistTabs', page).show();
-        }
-        if (context == "games" && item.Type == "GameGenre") {
-            $('#gameGenreTabs', page).show();
-        }
-        if (context == "games" && item.Type == "Studio") {
-            $('#gameStudioTabs', page).show();
-        }
-    }
-
-    function renderTabs(page, item, context) {
-
-        var html = '<fieldset data-role="controlgroup" data-type="horizontal" class="libraryTabs">';
-
-        html += '<legend></legend>';
+        var sections = [];
 
         if (item.MovieCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioMovies" class="context-movies" value="on">';
-            html += '<label for="radioMovies">' + Globalize.translate('TabMovies') + '</label>';
+            sections.push({
+                name: Globalize.translate('TabMovies'),
+                type: 'Movie'
+            });
         }
 
         if (item.SeriesCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioShows" class="context-tv" value="on">';
-            html += '<label for="radioShows">' + Globalize.translate('TabSeries') + '</label>';
+            sections.push({
+                name: Globalize.translate('TabSeries'),
+                type: 'Series'
+            });
         }
 
         if (item.EpisodeCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioEpisodes" class="context-tv" value="on">';
-            html += '<label for="radioEpisodes">' + Globalize.translate('TabEpisodes') + '</label>';
+            sections.push({
+                name: Globalize.translate('TabEpisodes'),
+                type: 'Episode'
+            });
         }
 
         if (item.TrailerCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioTrailers" class="context-movies" value="on">';
-            html += '<label for="radioTrailers">' + Globalize.translate('TabTrailers') + '</label>';
+            sections.push({
+                name: Globalize.translate('TabTrailers'),
+                type: 'Trailer'
+            });
         }
 
         if (item.GameCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioGames" class="context-games" value="on">';
-            html += '<label for="radioGames">' + Globalize.translate('TabGames') + '</label>';
+            sections.push({
+                name: Globalize.translate('TabGames'),
+                type: 'Game'
+            });
         }
 
         if (item.AlbumCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioAlbums" class="context-music" value="on">';
-            html += '<label for="radioAlbums">' + Globalize.translate('TabAlbums') + '</label>';
+            sections.push({
+                name: Globalize.translate('TabAlbums'),
+                type: 'MusicAlbum'
+            });
         }
 
         if (item.SongCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioSongs" class="context-music" value="on">';
-            html += '<label for="radioSongs">' + Globalize.translate('TabSongs') + '</label>';
+            sections.push({
+                name: Globalize.translate('TabSongs'),
+                type: 'Audio'
+            });
         }
 
         if (item.MusicVideoCount) {
 
-            html += '<input type="radio" name="ibnItems" id="radioMusicVideos" class="context-music" value="on">';
-            html += '<label for="radioMusicVideos">' + Globalize.translate('TabMusicVideos') + '</label>';
+            sections.push({
+                name: Globalize.translate('TabMusicVideos'),
+                type: 'MusicVideo'
+            });
         }
 
-        html += '</fieldset>';
+        var elem = page.querySelector('#childrenContent');
 
-        var elem = $('#itemTabs', page).html(html).trigger('create');
+        elem.innerHTML = sections.map(function (section) {
 
-        bindRadioEvents(page);
+            var html = '';
 
-        var selectedRadio = null;
+            html += '<div class="homePageSection" data-type="' + section.type + '">';
 
-        if (context) {
-            selectedRadio = $('.context-' + context + ':first', elem);
+            html += '<div>';
+            html += '<h1 class="listHeader" style="display:inline-block;vertical-align:middle;">';
+            html += section.name;
+            html += '</h1>';
+            html += '<a href="#" class="clearLink hide" style="margin-left:1em;vertical-align:middle;"><paper-button raised class="more mini noIcon">' + Globalize.translate('ButtonMore') + '</paper-button></a>';
+            html += '</div>';
+
+            html += '<div class="itemsContainer">';
+            html += '</div>';
+
+            html += '</div>';
+
+            return html;
+
+        }).join('');
+
+        var sectionElems = elem.querySelectorAll('.homePageSection');
+        for (var i = 0, length = sectionElems.length; i < length; i++) {
+            renderSection(page, item, sectionElems[i], sectionElems[i].getAttribute('data-type'));
         }
-
-        if (selectedRadio && selectedRadio.length) {
-            selectedRadio.attr("checked", "checked").checkboxradio("refresh").trigger('click');
-        } else {
-            $('input:first', elem).attr("checked", "checked").checkboxradio("refresh").trigger('click');
-        }
-
     }
 
-    function bindRadioEvents(page) {
+    function renderSection(page, item, element, type) {
 
-        $("#radioMusicVideos", page).on("click", function () {
+        switch (type) {
 
-            shape = "poster";
-            loadItems(page, {
-                MediaTypes: "",
-                IncludeItemTypes: "MusicVideo",
-                PersonTypes: "",
-                ArtistIds: ""
-            });
+            case 'Movie':
+                loadItems(element, item, type, {
+                    MediaTypes: "",
+                    IncludeItemTypes: "Movie",
+                    PersonTypes: "",
+                    ArtistIds: "",
+                    Limit: 10
+                }, {
+                    shape: "detailPagePortrait",
+                    showTitle: true,
+                    centerText: true,
+                    overlayMoreButton: true
+                });
+                break;
 
-        });
+            case 'MusicVideo':
+                loadItems(element, item, type, {
+                    MediaTypes: "",
+                    IncludeItemTypes: "MusicVideo",
+                    PersonTypes: "",
+                    ArtistIds: "",
+                    Limit: 10
+                }, {
+                    shape: "detailPagePortrait",
+                    showTitle: true,
+                    centerText: true,
+                    overlayPlayButton: true
+                });
+                break;
 
-        $("#radioMovies", page).on("click", function () {
+            case 'Game':
+                loadItems(element, item, type, {
+                    MediaTypes: "",
+                    IncludeItemTypes: "Game",
+                    PersonTypes: "",
+                    ArtistIds: "",
+                    Limit: 10
+                }, {
+                    shape: "detailPagePortrait",
+                    showTitle: true,
+                    centerText: true,
+                    overlayMoreButton: true
+                });
+                break;
 
-            shape = "poster";
-            loadItems(page, {
-                MediaTypes: "",
-                IncludeItemTypes: "Movie",
-                PersonTypes: "",
-                ArtistIds: ""
-            });
+            case 'Trailer':
+                loadItems(element, item, type, {
+                    MediaTypes: "",
+                    IncludeItemTypes: "Trailer",
+                    PersonTypes: "",
+                    ArtistIds: "",
+                    Limit: 10
+                }, {
+                    shape: "detailPagePortrait",
+                    showTitle: true,
+                    centerText: true,
+                    overlayPlayButton: true
+                });
+                break;
 
-        });
+            case 'Series':
+                loadItems(element, item, type, {
+                    MediaTypes: "",
+                    IncludeItemTypes: "Series",
+                    PersonTypes: "",
+                    ArtistIds: "",
+                    Limit: 10
+                }, {
+                    shape: "detailPagePortrait",
+                    showTitle: true,
+                    centerText: true,
+                    overlayMoreButton: true
+                });
+                break;
 
-        $("#radioShows", page).on("click", function () {
+            case 'MusicAlbum':
+                loadItems(element, item, type, {
+                    MediaTypes: "",
+                    IncludeItemTypes: "MusicAlbum",
+                    PersonTypes: "",
+                    ArtistIds: "",
+                    Limit: 8
+                }, {
+                    shape: "detailPageSquare",
+                    playFromHere: true,
+                    showTitle: true,
+                    showParentTitle: true,
+                    centerText: true,
+                    overlayPlayButton: true
+                });
+                break;
 
-            shape = "poster";
-            loadItems(page, {
-                MediaTypes: "",
-                IncludeItemTypes: "Series",
-                PersonTypes: "",
-                ArtistIds: ""
-            });
-        });
+            case 'Episode':
+                loadItems(element, item, type, {
+                    MediaTypes: "",
+                    IncludeItemTypes: "Episode",
+                    PersonTypes: "",
+                    ArtistIds: "",
+                    Limit: 6
+                }, {
+                    shape: "detailPage169",
+                    showTitle: true,
+                    showParentTitle: true,
+                    centerText: true,
+                    overlayPlayButton: true
+                });
+                break;
 
-        $("#radioTrailers", page).on("click", function () {
+            case 'Audio':
+                loadItems(element, item, type, {
+                    MediaTypes: "",
+                    IncludeItemTypes: "Audio",
+                    PersonTypes: "",
+                    ArtistIds: "",
+                    Limit: 30
+                }, {
+                    playFromHere: true,
+                    defaultAction: 'playallfromhere',
+                    smallIcon: true
+                });
+                break;
 
-            shape = "poster";
-            loadItems(page, {
-                MediaTypes: "",
-                IncludeItemTypes: "Trailer",
-                PersonTypes: "",
-                ArtistIds: ""
-            });
-        });
-
-        $("#radioGames", page).on("click", function () {
-
-            shape = "poster";
-            loadItems(page, {
-                IncludeItemTypes: "",
-                MediaTypes: "Game",
-                PersonTypes: "",
-                ArtistIds: ""
-            });
-        });
-
-        $("#radioEpisodes", page).on("click", function () {
-
-            shape = "backdrop";
-            loadItems(page, {
-                MediaTypes: "",
-                IncludeItemTypes: "Episode",
-                PersonTypes: "",
-                ArtistIds: ""
-            });
-        });
-
-        $("#radioAlbums", page).on("click", function () {
-
-            shape = "square";
-            loadItems(page, {
-                MediaTypes: "",
-                IncludeItemTypes: "MusicAlbum",
-                PersonTypes: "",
-                ArtistIds: ""
-            });
-        });
-
-        $("#radioSongs", page).on("click", function () {
-
-            loadItems(page, {
-                MediaTypes: "",
-                IncludeItemTypes: "Audio",
-                PersonTypes: "",
-                ArtistIds: ""
-            });
-        });
+            default:
+                break;
+        }
     }
 
-    function renderDetails(page, item, context) {
+    function loadItems(element, item, type, query, listOptions) {
 
-        //LibraryBrowser.renderDetailPageBackdrop(page, item);
-        LibraryBrowser.renderOverview(page.querySelectorAll('.itemOverview'), item);
+        query = getQuery(query, item);
 
-        renderUserDataIcons(page, item);
-        LibraryBrowser.renderLinks(page.querySelector('#itemLinks'), item);
+        getItemsFunction(query, item)(query.StartIndex, query.Limit, query.Fields).done(function (result) {
 
-        LibraryBrowser.renderGenres($('.itemGenres', page), item, context);
+            var html = '';
 
-        if (item.Type == "Person" && item.PremiereDate) {
-
-            try {
-                var birthday = parseISO8601Date(item.PremiereDate, { toLocal: true }).toDateString();
-
-                $('#itemBirthday', page).show().html(Globalize.translate('BirthDateValue').replace('{0}', birthday));
+            if (query.Limit && result.TotalRecordCount > query.Limit) {
+                // Add more button
+                var link = element.querySelector('a');
+                link.classList.remove('hide');
+                link.setAttribute('href', getMoreItemsHref(item, type));
+            } else {
+                element.querySelector('a').classList.add('hide');
             }
-            catch (err) {
-                $('#itemBirthday', page).hide();
+
+            listOptions.items = result.Items;
+            var trigger = false;
+
+            if (type == 'Audio') {
+                html = LibraryBrowser.getListViewHtml(listOptions);
+                trigger = true;
+            } else {
+                html = LibraryBrowser.getPosterViewHtml(listOptions);
             }
-        } else {
-            $('#itemBirthday', page).hide();
+
+            var itemsContainer = element.querySelector('.itemsContainer');
+            itemsContainer.innerHTML = html;
+
+            $(itemsContainer).createCardMenus();
+
+            if (trigger) {
+                $(itemsContainer).trigger('create');
+            }
+            ImageLoader.lazyChildren(itemsContainer);
+        });
+    }
+
+    function getMoreItemsHref(item, type) {
+
+        return 'secondaryitems.html?type=' + type + '&parentid=' + item.Id;
+    }
+
+    function addCurrentItemToQuery(query, item) {
+
+        if (item.Type == "Person") {
+            query.PersonIds = item.Id;
         }
-
-        if (item.Type == "Person" && item.EndDate) {
-
-            try {
-                var deathday = parseISO8601Date(item.EndDate, { toLocal: true }).toDateString();
-
-                $('#itemDeathDate', page).show().html(Globalize.translate('DeathDateValue').replace('{0}', deathday));
-            }
-            catch (err) {
-                $('#itemBirthday', page).hide();
-            }
-        } else {
+        else if (item.Type == "Genre") {
+            query.Genres = item.Name;
         }
-
-        if (item.Type == "Person" && item.ProductionLocations && item.ProductionLocations.length) {
-
-            var gmap = '<a class="textlink" target="_blank" href="https://maps.google.com/maps?q=' + item.ProductionLocations[0] + '">' + item.ProductionLocations[0] + '</a>';
-
-            $('#itemBirthLocation', page).show().html(Globalize.translate('BirthPlaceValue').replace('{0}', gmap)).trigger('create');
-        } else {
-            $('#itemBirthLocation', page).hide();
+        else if (item.Type == "MusicGenre") {
+            query.Genres = item.Name;
+        }
+        else if (item.Type == "GameGenre") {
+            query.Genres = item.Name;
+        }
+        else if (item.Type == "Studio") {
+            query.StudioIds = item.Id;
+        }
+        else if (item.Type == "MusicArtist") {
+            query.ArtistIds = item.Id;
         }
     }
 
-    function renderUserDataIcons(page, item) {
-        $('.userDataIcons', page).html(LibraryBrowser.getUserDataIconsHtml(item));
-    }
-
-    function addCurrentItemToQuery(query) {
-
-        if (currentItem.Type == "Person") {
-            query.PersonIds = currentItem.Id;
-        }
-        else if (currentItem.Type == "Genre") {
-            query.Genres = currentItem.Name;
-        }
-        else if (currentItem.Type == "MusicGenre") {
-            query.Genres = currentItem.Name;
-        }
-        else if (currentItem.Type == "GameGenre") {
-            query.Genres = currentItem.Name;
-        }
-        else if (currentItem.Type == "Studio") {
-            query.StudioIds = currentItem.Id;
-        }
-        else if (currentItem.Type == "MusicArtist") {
-            query.ArtistIds = currentItem.Id;
-        }
-    }
-
-    function getQuery(options) {
+    function getQuery(options, item) {
 
         var query = {
 
@@ -405,14 +315,14 @@
             query.SortBy = "AlbumArtist,Album,SortName";
         }
 
-        addCurrentItemToQuery(query);
+        addCurrentItemToQuery(query, item);
 
         return query;
     }
 
-    function getItemsFunction(options) {
+    function getItemsFunction(options, item) {
 
-        var query = getQuery(options);
+        var query = getQuery(options, item);
 
         return function (index, limit, fields) {
 
@@ -429,187 +339,8 @@
 
     }
 
-    function loadItems(page, options) {
-
-        Dashboard.showLoadingMsg();
-
-        _childrenItemsFunction = getItemsFunction(options);
-
-        var query = getQuery(options);
-
-        getItemsFunction(options)(options.StartIndex, options.Limit, options.Fields).done(function (result) {
-
-            var html = '';
-
-            if (result.TotalRecordCount > query.Limit) {
-
-                var pagingHtml = LibraryBrowser.getQueryPagingHtml({
-                    startIndex: query.StartIndex,
-                    limit: query.Limit,
-                    totalRecordCount: result.TotalRecordCount,
-                    showLimit: false,
-                    updatePageSizeSetting: false
-                });
-
-                page.querySelector('.listTopPaging').innerHTML = pagingHtml;
-
-                $('.viewSettings', page).show();
-            } else {
-                $('.listTopPaging', page).html('');
-                $('.viewSettings', page).hide();
-            }
-
-            var screenWidth = $(window).width();
-
-            if (query.IncludeItemTypes == "Audio") {
-
-                html = "<div style='max-width:1000px;margin:auto;'>" + LibraryBrowser.getListViewHtml({
-                    items: result.Items,
-                    playFromHere: true,
-                    defaultAction: 'playallfromhere',
-                    smallIcon: true
-                }) + "</div>";
-            }
-            else if (query.IncludeItemTypes == "Movie" || query.IncludeItemTypes == "Trailer") {
-
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "portrait",
-                    context: 'movies',
-                    showTitle: true,
-                    centerText: true
-                });
-
-            }
-            else if (query.IncludeItemTypes == "Episode") {
-
-                html += LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "backdrop",
-                    showTitle: true,
-                    showParentTitle: true,
-                    overlayText: screenWidth >= 600
-                });
-
-            }
-            else if (query.IncludeItemTypes == "Series") {
-
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "backdrop",
-                    preferThumb: true,
-                    context: 'tv'
-                });
-
-            }
-            else if (query.IncludeItemTypes == "MusicAlbum") {
-
-                html = LibraryBrowser.getPosterViewHtml({
-                    items: result.Items,
-                    shape: "square",
-                    context: 'music',
-                    playFromHere: true,
-                    showTitle: true,
-                    showParentTitle: true
-                });
-
-            }
-            else {
-
-                html = "<div style='max-width:1000px;margin:auto;'>" + LibraryBrowser.getListViewHtml({
-                    items: result.Items,
-                    smallIcon: true
-                }) + "</div>";
-            }
-
-            html += LibraryBrowser.getQueryPagingHtml({
-                startIndex: query.StartIndex,
-                limit: query.Limit,
-                totalRecordCount: result.TotalRecordCount,
-                showLimit: false,
-                updatePageSizeSetting: false
-            });
-
-            var elem = page.querySelector('#items');
-            elem.innerHTML = html;
-            ImageLoader.lazyChildren(elem);
-
-            // Do we still need this?
-            $(elem).trigger('create');
-
-            $('.btnNextPage', page).on('click', function () {
-
-                query.StartIndex = query.StartIndex + query.Limit;
-                loadItems(page, query);
-            });
-
-            $('.btnPreviousPage', page).on('click', function () {
-
-                query.StartIndex = query.StartIndex - query.Limit;
-                loadItems(page, query);
-            });
-
-            $('.selectPageSize', page).on('change', function () {
-                query.Limit = parseInt(this.value);
-                query.StartIndex = 0;
-                loadItems(page, query);
-            });
-
-            Dashboard.hideLoadingMsg();
-        });
-    }
-
-    $(document).on('pageinitdepends', "#itemByNameDetailPage", function () {
-
-        var page = this;
-
-        $('.btnPlay', page).on('click', function () {
-            var userdata = currentItem.UserData || {};
-            LibraryBrowser.showPlayMenu(this, currentItem.Id, currentItem.Type, false, "Audio", userdata.PlaybackPositionTicks);
-        });
-
-        $('.itemsContainer', page).on('playallfromhere', function (e, index) {
-
-            LibraryBrowser.playAllFromHere(_childrenItemsFunction, index);
-
-        }).on('queueallfromhere', function (e, index) {
-
-            LibraryBrowser.queueAllFromHere(_childrenItemsFunction, index);
-
-        });
-
-        $('.btnMoreCommands', page).on('click', function () {
-
-            var button = this;
-
-            Dashboard.getCurrentUser().done(function (user) {
-
-                LibraryBrowser.showMoreCommands(button, currentItem.Id, LibraryBrowser.getMoreCommands(currentItem, user));
-            });
-        });
-
-        $('.btnSync', page).on('click', function () {
-
-            SyncManager.showMenu({
-                items: [currentItem]
-            });
-        });
-
-        var btnMore = page.querySelectorAll('.btnMoreCommands iron-icon');
-        for (var i = 0, length = btnMore.length; i < length; i++) {
-            btnMore[i].icon = AppInfo.moreIcon;
-        }
-
-    }).on('pagebeforeshowready', "#itemByNameDetailPage", function () {
-
-        var page = this;
-
-        reload(page);
-
-    }).on('pagebeforehide', "#itemByNameDetailPage", function () {
-
-        currentItem = null;
-    });
-
+    window.ItemsByName = {
+        renderItems: renderItems
+    };
 
 })(jQuery, document, LibraryBrowser);

@@ -21,6 +21,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script src="../../test-fixture/test-fixture-mocha.js"></script>
 
     <link rel="import" href="../paper-tabs.html">
+    <link rel="import" href="../../iron-test-helpers/iron-test-helpers.html">
     <link rel="import" href="../../test-fixture/test-fixture.html">
 
   </head>
@@ -149,10 +150,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       suite('select tab via click', function() {
 
         var tabs, index = 1;
+        var tab;
 
         setup(function () {
           tabs = fixture('basic');
-          var tab = tabs.querySelectorAll('paper-tab')[index];
+          tab = tabs.querySelectorAll('paper-tab')[index];
           tab.dispatchEvent(new CustomEvent('click', {bubbles: true}));
         });
 
@@ -172,6 +174,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }, 1000);
         });
 
+        test('pressing enter on tab causes a click', function(done) {
+          var clickCount = 0;
+          tab.addEventListener('click', function onTabClick() {
+            clickCount++;
+            tab.removeEventListener('click', onTabClick);
+
+            expect(clickCount).to.be.equal(1);
+            done();
+          });
+
+          MockInteractions.pressEnter(tab);
+        });
       });
 
     </script>

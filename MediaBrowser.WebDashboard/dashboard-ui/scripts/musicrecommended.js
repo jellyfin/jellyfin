@@ -39,10 +39,11 @@
                 showLatestItemsPopup: false,
                 shape: getSquareShape(),
                 showTitle: true,
+                defaultAction: 'play',
                 showParentTitle: true,
                 lazy: true,
                 centerText: true,
-                overlayPlayButton: true
+                overlayMoreButton: true
 
             });
             ImageLoader.lazyChildren(elem);
@@ -185,7 +186,7 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#musicRecommendedPage", function () {
+    $(document).on('pagebeforeshow', "#musicRecommendedPage", function () {
 
         var parentId = LibraryMenu.getTopParentId();
 

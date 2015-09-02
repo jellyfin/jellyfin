@@ -12,15 +12,15 @@
                 <form class="wizardStartForm">
 
                     <div>
-                        <h2 style="float:left;">
-                            <img src="css/images/mblogoicon.png" />${WelcomeToProject}
-                        </h2>
-                        <a href="https://github.com/MediaBrowser/Wiki/wiki/Quick%20start" target="_blank" class="clearLink" style="float:right;margin-top:20px;"><paper-button raised class="secondary mini"><i class="fa fa-info-circle"></i>${ButtonQuickStartGuide}</paper-button></a>
+                        <h1 style="float:left;">
+                            ${WelcomeToProject}
+                        </h1>
+                        <a href="https://github.com/MediaBrowser/Wiki/wiki/Quick%20start" target="_blank" class="clearLink" style="float:right;margin-top:20px;"><paper-button raised class="secondary mini"><iron-icon icon="info"></iron-icon><span>${ButtonQuickStartGuide}</span></paper-button></a>
                     </div>
 
                     <br style="clear:both;" />
                     <p>${ThisWizardWillGuideYou}</p>
-
+                    <br />
                     <ul data-role="listview" class="ulForm">
                         <li>
                             <label for="selectLocalizationLanguage">${LabelPreferredDisplayLanguage}</label>
@@ -28,8 +28,8 @@
                         </li>
                     </ul>
 
-                    <div class="wizardNavigation">
-                        <button type="submit" data-iconpos="right" data-icon="arrow-r" data-inline="true">${LabelNext}</button>
+                    <div class="wizardNavigation" style="text-align:right;">
+                        <button type="submit" data-role="none" class="clearButton" style="width:auto;"><paper-button raised class="accent"><iron-icon icon="arrow-forward"></iron-icon><span>${LabelNext}</span></paper-button></button>
                     </div>
                 </form>
             </div>

@@ -12,6 +12,7 @@
     var unpauseButton;
     var pauseButton;
     var positionSlider;
+    var toggleRepeatButton;
 
     var lastPlayerState;
 
@@ -52,6 +53,8 @@
         html += '<paper-icon-button icon="volume-off" class="unmuteButton mediaButton"></paper-icon-button>';
 
         html += '<paper-slider pin step="1" min="0" max="100" value="0" class="nowPlayingBarVolumeSlider" style="width:100px;vertical-align:middle;"></paper-slider>';
+
+        html += '<paper-icon-button icon="repeat" class="mediaButton toggleRepeatButton"></paper-icon-button>';
 
         html += '<div class="nowPlayingBarUserDataButtons">';
         html += '</div>';
@@ -135,8 +138,27 @@
             });
         });
 
+        toggleRepeatButton = $('.toggleRepeatButton', elem).on('click', function () {
+
+            if (currentPlayer) {
+                var state = lastPlayerState || {};
+
+                switch ((state.PlayState || {}).RepeatMode) {
+                    case 'RepeatAll':
+                        currentPlayer.setRepeatMode('RepeatOne');
+                        break;
+                    case 'RepeatOne':
+                        currentPlayer.setRepeatMode('RepeatNone');
+                        break;
+                    default:
+                        currentPlayer.setRepeatMode('RepeatAll');
+                        break;
+                }
+            }
+        })[0];
+
         // Unfortunately this is necessary because the polymer elements might not be ready immediately and there doesn't seem to be an event-driven way to find out when
-        setTimeout(function() {
+        setTimeout(function () {
             volumeSlider = $('.nowPlayingBarVolumeSlider', elem).on('change', function () {
 
                 if (currentPlayer) {
@@ -312,6 +334,24 @@
         } else {
 
             showUnmuteButton = false;
+        }
+
+        if (supportedCommands.indexOf('SetRepeatMode') == -1) {
+            toggleRepeatButton.classList.add('hide');
+        } else {
+            toggleRepeatButton.classList.remove('hide');
+        }
+
+        if (playState.RepeatMode == 'RepeatAll') {
+            toggleRepeatButton.icon = "repeat";
+            toggleRepeatButton.classList.add('repeatActive');
+        }
+        else if (playState.RepeatMode == 'RepeatOne') {
+            toggleRepeatButton.icon = "repeat-one";
+            toggleRepeatButton.classList.add('repeatActive');
+        } else {
+            toggleRepeatButton.icon = "repeat";
+            toggleRepeatButton.classList.remove('repeatActive');
         }
 
         if (supportedCommands.indexOf('SetVolume') == -1) {

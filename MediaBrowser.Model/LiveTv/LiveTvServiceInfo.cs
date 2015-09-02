@@ -42,6 +42,11 @@ namespace MediaBrowser.Model.LiveTv
         /// </summary>
         /// <value><c>true</c> if this instance has update available; otherwise, <c>false</c>.</value>
         public bool HasUpdateAvailable { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is visible.
+        /// </summary>
+        /// <value><c>true</c> if this instance is visible; otherwise, <c>false</c>.</value>
+        public bool IsVisible { get; set; }
 
         public List<LiveTvTunerInfoDto> Tuners { get; set; }
 

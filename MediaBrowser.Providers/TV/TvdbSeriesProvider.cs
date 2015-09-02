@@ -180,6 +180,8 @@ namespace MediaBrowser.Providers.TV
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            result.ResetPeople();
+            
             FetchActors(result, actorsXmlPath);
         }
 
@@ -721,7 +723,7 @@ namespace MediaBrowser.Providers.TV
 
             if (!string.IsNullOrWhiteSpace(personInfo.Name))
             {
-                PeopleHelper.AddPerson(result.People, personInfo);
+                result.AddPerson(personInfo);
             }
         }
 

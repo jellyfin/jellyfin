@@ -58,6 +58,7 @@
                 options.push({ name: '1080p - 8Mbps', maxHeight: 1080, bitrate: 8000001 });
                 options.push({ name: '1080p - 6Mbps', maxHeight: 1080, bitrate: 6000001 });
                 options.push({ name: '1080p - 5Mbps', maxHeight: 1080, bitrate: 5000001 });
+                options.push({ name: '1080p - 4Mbps', maxHeight: 1080, bitrate: 4000002 });
 
             } else if (maxAllowedWidth >= 1260) {
                 options.push({ name: '720p - 10Mbps', maxHeight: 720, bitrate: 10000000 });
@@ -119,6 +120,7 @@
                 })[0].maxHeight;
             }
 
+            var isVlc = AppInfo.isNativeApp && $.browser.android;
             var bitrateSetting = AppSettings.maxStreamingBitrate();
 
             var canPlayWebm = self.canPlayWebm();
@@ -126,16 +128,19 @@
             var profile = {};
 
             profile.MaxStreamingBitrate = bitrateSetting;
-            profile.MaxStaticBitrate = 40000000;
+            profile.MaxStaticBitrate = 4000000;
             profile.MusicStreamingTranscodingBitrate = Math.min(bitrateSetting, 192000);
 
             profile.DirectPlayProfiles = [];
-            profile.DirectPlayProfiles.push({
-                Container: 'mp4,m4v',
-                Type: 'Video',
-                VideoCodec: 'h264',
-                AudioCodec: 'aac,mp3'
-            });
+
+            if (canPlayH264()) {
+                profile.DirectPlayProfiles.push({
+                    Container: 'mp4,m4v',
+                    Type: 'Video',
+                    VideoCodec: 'h264',
+                    AudioCodec: 'aac,mp3'
+                });
+            }
 
             if ($.browser.chrome) {
                 profile.DirectPlayProfiles.push({
@@ -303,8 +308,6 @@
                 }]
             });
 
-            var isVlc = AppInfo.isNativeApp && $.browser.android;
-
             if (!isVlc) {
                 profile.CodecProfiles.push({
                     Type: 'VideoAudio',
@@ -425,6 +428,14 @@
                     });
                     profile.SubtitleProfiles.push({
                         Format: 'pgs',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'pgssub',
+                        Method: 'Embed'
+                    });
+                    profile.SubtitleProfiles.push({
+                        Format: 'vtt',
                         Method: 'Embed'
                     });
                 } else {
@@ -548,6 +559,11 @@
                 return true;
             }
 
+            // Don't use viblast with windows phone, not working at the moment.
+            if ($.browser.msie && $.browser.mobile) {
+                return false;
+            }
+
             // viblast can help us here
             //return true;
             return window.MediaSource != null;
@@ -621,7 +637,7 @@
                 ApiClient.stopActiveEncodings(playSessionId).done(function () {
 
                     //self.startTimeTicksOffset = newPositionTicks;
-                    mediaRenderer.setCurrentSrc(url, self.currentItem, self.currentMediaSource);
+                    self.setSrcIntoRenderer(mediaRenderer, url, self.currentItem, self.currentMediaSource);
 
                 });
 
@@ -629,9 +645,36 @@
                 self.updateTextStreamUrls(newPositionTicks || 0);
             } else {
                 self.startTimeTicksOffset = newPositionTicks || 0;
-                mediaRenderer.setCurrentSrc(url, self.currentItem, self.currentMediaSource);
+                self.setSrcIntoRenderer(mediaRenderer, url, self.currentItem, self.currentMediaSource);
             }
         }
+
+        self.setSrcIntoRenderer = function (mediaRenderer, url, item, mediaSource) {
+
+            var subtitleStreams = mediaSource.MediaStreams.filter(function (s) {
+                return s.Type == 'Subtitle';
+            });
+
+            var textStreams = subtitleStreams.filter(function (s) {
+                return s.DeliveryMethod == 'External';
+            });
+
+            var tracks = [];
+
+            for (var i = 0, length = textStreams.length; i < length; i++) {
+
+                var textStream = textStreams[i];
+                var textStreamUrl = !textStream.IsExternalUrl ? ApiClient.getUrl(textStream.DeliveryUrl) : textStream.DeliveryUrl;
+
+                tracks.push({
+                    url: textStreamUrl,
+                    language: (textStream.Language || 'und'),
+                    isDefault: textStream.Index == mediaSource.DefaultSubtitleStreamIndex
+                });
+            }
+
+            mediaRenderer.setCurrentSrc(url, item, mediaSource, tracks);
+        };
 
         self.setCurrentTime = function (ticks, positionSlider, currentTimeElement) {
 
@@ -1108,7 +1151,24 @@
 
         self.nextTrack = function () {
 
-            var newIndex = currentPlaylistIndex + 1;
+            var newIndex;
+
+            switch (self.getRepeatMode()) {
+
+                case 'RepeatOne':
+                    newIndex = currentPlaylistIndex;
+                    break;
+                case 'RepeatAll':
+                    newIndex = currentPlaylistIndex + 1;
+                    if (newIndex >= self.playlist.length) {
+                        newIndex = 0;
+                    }
+                    break;
+                default:
+                    newIndex = currentPlaylistIndex + 1;
+                    break;
+            }
+
             var newItem = self.playlist[newIndex];
 
             if (newItem) {
@@ -1355,56 +1415,11 @@
                 var promise;
                 var itemLimit = 100;
 
-                if (item.Type == "MusicArtist") {
-
-                    promise = ApiClient.getInstantMixFromArtist({
-                        UserId: Dashboard.getCurrentUserId(),
-                        Fields: getItemFields,
-                        Limit: itemLimit,
-                        Id: id
-                    });
-
-                }
-                else if (item.Type == "MusicGenre") {
-
-                    promise = ApiClient.getInstantMixFromMusicGenre({
-                        UserId: Dashboard.getCurrentUserId(),
-                        Fields: getItemFields,
-                        Limit: itemLimit,
-                        Id: id
-                    });
-
-                }
-                else if (item.Type == "MusicAlbum") {
-
-                    promise = ApiClient.getInstantMixFromAlbum(id, {
-                        UserId: Dashboard.getCurrentUserId(),
-                        Fields: getItemFields,
-                        Limit: itemLimit
-                    });
-
-                }
-                else if (item.Type == "Playlist") {
-
-                    promise = ApiClient.getInstantMixFromPlaylist(id, {
-                        UserId: Dashboard.getCurrentUserId(),
-                        Fields: getItemFields,
-                        Limit: itemLimit
-                    });
-
-                }
-                else if (item.Type == "Audio") {
-
-                    promise = ApiClient.getInstantMixFromSong(id, {
-                        UserId: Dashboard.getCurrentUserId(),
-                        Fields: getItemFields,
-                        Limit: itemLimit
-                    });
-
-                }
-                else {
-                    return;
-                }
+                promise = ApiClient.getInstantMixFromItem(id, {
+                    UserId: Dashboard.getCurrentUserId(),
+                    Fields: getItemFields,
+                    Limit: itemLimit
+                });
 
                 promise.done(function (result) {
 
@@ -1479,6 +1494,7 @@
                 state.PlayState.IsMuted = mediaRenderer.volume() == 0;
                 state.PlayState.IsPaused = mediaRenderer.paused();
                 state.PlayState.PositionTicks = self.getCurrentTicks(mediaRenderer);
+                state.PlayState.RepeatMode = self.getRepeatMode();
 
                 var currentSrc = mediaRenderer.currentSrc();
 
@@ -1689,7 +1705,7 @@
             };
 
             info = $.extend(info, state.PlayState);
-
+            console.log('repeat mode ' + info.RepeatMode);
             ApiClient.reportPlaybackProgress(info);
         }
 
@@ -1701,11 +1717,25 @@
             }
         }
 
+        function canPlayH264() {
+
+            var userAgent = navigator.userAgent.toLowerCase();
+
+            if (userAgent.indexOf('firefox') != -1) {
+                if (userAgent.indexOf('windows') != -1) {
+                    return true;
+                }
+                return false;
+            }
+
+            return true;
+        }
+
         self._canPlayWebm = null;
         self.canPlayWebm = function () {
 
             if (self._canPlayWebm == null) {
-                self._canPlayWebm = ($.browser.android && AppInfo.isNativeApp) || document.createElement('video').canPlayType('video/webm').replace(/no/, '');
+                self._canPlayWebm = document.createElement('video').canPlayType('video/webm').replace(/no/, '');
             }
             return self._canPlayWebm;
         };
@@ -1721,6 +1751,15 @@
             }
 
             return true;
+        };
+
+        var repeatMode = 'RepeatNone';
+        self.getRepeatMode = function () {
+            return repeatMode;
+        };
+
+        self.setRepeatMode = function (mode) {
+            repeatMode = mode;
         };
 
         function onTimeUpdate() {

@@ -66,7 +66,7 @@ namespace MediaBrowser.Controller.Entities
                     {
                         var result = await _channelManager.GetChannelsInternal(new ChannelQuery
                         {
-                            UserId = user.Id.ToString("N"),
+                            UserId = user == null ? null : user.Id.ToString("N"),
                             Limit = query.Limit,
                             StartIndex = query.StartIndex
 
@@ -264,10 +264,7 @@ namespace MediaBrowser.Controller.Entities
 
         private async Task<QueryResult<BaseItem>> FindPlaylists(Folder parent, User user, InternalItemsQuery query)
         {
-            var collectionFolders = user.RootFolder.GetChildren(user, true).Select(i => i.Id).ToList();
-
-            var list = _playlistManager.GetPlaylists(user.Id.ToString("N"))
-                .Where(i => i.GetChildren(user, true).Any(media => _libraryManager.GetCollectionFolders(media).Select(c => c.Id).Any(collectionFolders.Contains)));
+            var list = _playlistManager.GetPlaylists(user.Id.ToString("N"));
 
             return GetResult(list, parent, query);
         }
@@ -288,14 +285,14 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            list.Add(await GetUserView(SpecialFolder.MusicLatest, user, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicPlaylists, user, "1", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicAlbums, user, "2", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicAlbumArtists, user, "3", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicLatest, "0", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicPlaylists, "1", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicAlbums, "2", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicAlbumArtists, "3", parent).ConfigureAwait(false));
             //list.Add(await GetUserView(SpecialFolder.MusicArtists, user, "4", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicSongs, user, "5", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicGenres, user, "6", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicFavorites, user, "7", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicSongs, "5", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicGenres, "6", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicFavorites, "7", parent).ConfigureAwait(false));
 
             return GetResult(list, parent, query);
         }
@@ -304,9 +301,9 @@ namespace MediaBrowser.Controller.Entities
         {
             var list = new List<BaseItem>();
 
-            list.Add(await GetUserView(SpecialFolder.MusicFavoriteAlbums, user, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicFavoriteArtists, user, "1", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MusicFavoriteSongs, user, "2", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicFavoriteAlbums, "0", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicFavoriteArtists, "1", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MusicFavoriteSongs, "2", parent).ConfigureAwait(false));
 
             return GetResult(list, parent, query);
         }
@@ -332,7 +329,7 @@ namespace MediaBrowser.Controller.Entities
 
                 })
                 .Where(i => i != null)
-                .Select(i => GetUserView(i.Name, SpecialFolder.MusicGenre, user, i.SortName, parent));
+                .Select(i => GetUserView(i.Name, SpecialFolder.MusicGenre, i.SortName, parent));
 
             var genres = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -344,94 +341,42 @@ namespace MediaBrowser.Controller.Entities
             var items = GetRecursiveChildren(queryParent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
                 .Where(i => !i.IsFolder)
                 .Where(i => i.Genres.Contains(displayParent.Name, StringComparer.OrdinalIgnoreCase))
-                .OfType<IHasAlbumArtist>()
-                .SelectMany(i => i.AlbumArtists)
-                .DistinctNames()
-                .Select(i =>
-                {
-                    try
-                    {
-                        return _libraryManager.GetArtist(i);
-                    }
-                    catch
-                    {
-                        // Already logged at lower levels
-                        return null;
-                    }
-                })
-                .Where(i => i != null);
+                .OfType<IHasAlbumArtist>();
 
-            return GetResult(items, queryParent, query);
+            var artists = _libraryManager.GetAlbumArtists(items);
+
+            return GetResult(artists, queryParent, query);
         }
 
         private QueryResult<BaseItem> GetMusicAlbumArtists(Folder parent, User user, InternalItemsQuery query)
         {
-            var artists = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
+            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
                 .Where(i => !i.IsFolder)
-                .OfType<IHasAlbumArtist>()
-                .SelectMany(i => i.AlbumArtists)
-                .DistinctNames()
-                .Select(i =>
-                {
-                    try
-                    {
-                        return _libraryManager.GetArtist(i);
-                    }
-                    catch
-                    {
-                        // Already logged at lower levels
-                        return null;
-                    }
-                })
-                .Where(i => i != null);
+                .OfType<IHasAlbumArtist>();
+
+            var artists = _libraryManager.GetAlbumArtists(items);
 
             return GetResult(artists, parent, query);
         }
 
         private QueryResult<BaseItem> GetMusicArtists(Folder parent, User user, InternalItemsQuery query)
         {
-            var artists = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
+            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
                 .Where(i => !i.IsFolder)
-                .OfType<IHasArtist>()
-                .SelectMany(i => i.Artists)
-                .DistinctNames()
-                .Select(i =>
-                {
-                    try
-                    {
-                        return _libraryManager.GetArtist(i);
-                    }
-                    catch
-                    {
-                        // Already logged at lower levels
-                        return null;
-                    }
-                })
-                .Where(i => i != null);
+                .OfType<IHasArtist>();
+
+            var artists = _libraryManager.GetArtists(items);
 
             return GetResult(artists, parent, query);
         }
 
         private QueryResult<BaseItem> GetFavoriteArtists(Folder parent, User user, InternalItemsQuery query)
         {
-            var artists = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
+            var items = GetRecursiveChildren(parent, user, new[] { CollectionType.Music, CollectionType.MusicVideos })
                 .Where(i => !i.IsFolder)
-                .OfType<IHasAlbumArtist>()
-                .SelectMany(i => i.AlbumArtists)
-                .DistinctNames()
-                .Select(i =>
-                {
-                    try
-                    {
-                        return _libraryManager.GetArtist(i);
-                    }
-                    catch
-                    {
-                        // Already logged at lower levels
-                        return null;
-                    }
-                })
-                .Where(i => i != null && _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite);
+                .OfType<IHasAlbumArtist>();
+
+            var artists = _libraryManager.GetAlbumArtists(items).Where(i => _userDataManager.GetUserData(user.Id, i.GetUserDataKey()).IsFavorite);
 
             return GetResult(artists, parent, query);
         }
@@ -498,12 +443,12 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            list.Add(await GetUserView(SpecialFolder.MovieResume, user, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MovieLatest, user, "1", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MovieMovies, user, "2", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MovieCollections, user, "3", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MovieFavorites, user, "4", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.MovieGenres, user, "5", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MovieResume, "0", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MovieLatest, "1", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MovieMovies, "2", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MovieCollections, "3", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MovieFavorites, "4", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.MovieGenres, "5", parent).ConfigureAwait(false));
 
             return GetResult(list, parent, query);
         }
@@ -609,7 +554,7 @@ namespace MediaBrowser.Controller.Entities
 
                 })
                 .Where(i => i != null)
-                .Select(i => GetUserView(i.Name, SpecialFolder.MovieGenre, user, i.SortName, parent));
+                .Select(i => GetUserView(i.Name, SpecialFolder.MovieGenre, i.SortName, parent));
 
             var genres = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -671,13 +616,13 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            list.Add(await GetUserView(SpecialFolder.TvResume, user, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.TvNextUp, user, "1", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.TvLatest, user, "2", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.TvShowSeries, user, "3", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.TvFavoriteSeries, user, "4", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.TvFavoriteEpisodes, user, "5", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.TvGenres, user, "6", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.TvResume, "0", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.TvNextUp, "1", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.TvLatest, "2", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.TvShowSeries, "3", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.TvFavoriteSeries, "4", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.TvFavoriteEpisodes, "5", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.TvGenres, "6", parent).ConfigureAwait(false));
 
             return GetResult(list, parent, query);
         }
@@ -692,11 +637,11 @@ namespace MediaBrowser.Controller.Entities
 
             var list = new List<BaseItem>();
 
-            list.Add(await GetUserView(SpecialFolder.LatestGames, user, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.RecentlyPlayedGames, user, "1", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.GameFavorites, user, "2", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.GameSystems, user, "3", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.GameGenres, user, "4", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.LatestGames, "0", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.RecentlyPlayedGames, "1", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.GameFavorites, "2", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.GameSystems, "3", parent).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.GameGenres, "4", parent).ConfigureAwait(false));
 
             return GetResult(list, parent, query);
         }
@@ -794,7 +739,7 @@ namespace MediaBrowser.Controller.Entities
 
                 })
                 .Where(i => i != null)
-                .Select(i => GetUserView(i.Name, SpecialFolder.TvGenre, user, i.SortName, parent));
+                .Select(i => GetUserView(i.Name, SpecialFolder.TvGenre, i.SortName, parent));
 
             var genres = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -846,7 +791,7 @@ namespace MediaBrowser.Controller.Entities
 
                 })
                 .Where(i => i != null)
-                .Select(i => GetUserView(i.Name, SpecialFolder.GameGenre, user, i.SortName, parent));
+                .Select(i => GetUserView(i.Name, SpecialFolder.GameGenre, i.SortName, parent));
 
             var genres = await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -1926,26 +1871,20 @@ namespace MediaBrowser.Controller.Entities
             var list = new List<BaseItem>();
 
             //list.Add(await GetUserSubView(SpecialFolder.LiveTvNowPlaying, user, "0", parent).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.LiveTvChannels, user, string.Empty, user.RootFolder).ConfigureAwait(false));
-            list.Add(await GetUserView(SpecialFolder.LiveTvRecordingGroups, user, string.Empty, user.RootFolder).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.LiveTvChannels, string.Empty, user.RootFolder).ConfigureAwait(false));
+            list.Add(await GetUserView(SpecialFolder.LiveTvRecordingGroups, string.Empty, user.RootFolder).ConfigureAwait(false));
 
             return GetResult(list, queryParent, query);
         }
 
-        private async Task<UserView> GetUserView(string name, string type, User user, string sortName, BaseItem parent)
+        private Task<UserView> GetUserView(string name, string type, string sortName, BaseItem parent)
         {
-            var view = await _userViewManager.GetUserSubView(name, parent.Id.ToString("N"), type, user, sortName, CancellationToken.None)
-                        .ConfigureAwait(false);
-
-            return view;
+            return _userViewManager.GetUserSubView(name, parent.Id.ToString("N"), type, sortName, CancellationToken.None);
         }
 
-        private async Task<UserView> GetUserView(string type, User user, string sortName, BaseItem parent)
+        private Task<UserView> GetUserView(string type, string sortName, BaseItem parent)
         {
-            var view = await _userViewManager.GetUserSubView(parent.Id.ToString("N"), type, user, sortName, CancellationToken.None)
-                        .ConfigureAwait(false);
-
-            return view;
+            return _userViewManager.GetUserSubView(parent.Id.ToString("N"), type, sortName, CancellationToken.None);
         }
 
         public static bool IsYearMismatched(BaseItem item, ILibraryManager libraryManager)

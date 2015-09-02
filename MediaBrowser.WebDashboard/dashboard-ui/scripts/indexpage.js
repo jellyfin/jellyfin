@@ -164,9 +164,7 @@
         });
     }
 
-    function loadHomeTab(page) {
-
-        var tabContent = page.querySelector('.homeTabContent');
+    function loadHomeTab(page, tabContent) {
 
         if (LibraryBrowser.needsRefresh(tabContent)) {
             if (window.ApiClient) {
@@ -196,40 +194,48 @@
 
     function loadTab(page, index) {
 
+        var tabContent = page.querySelector('.pageTabContent[data-index=\'' + index + '\']');
+        var depends = [];
+        var scope = 'HomePage';
+        var method = '';
+
         switch (index) {
 
             case 0:
-                loadHomeTab(page);
+                depends.push('scripts/sections');
+                method = 'renderHomeTab';
+                break;
+            case 1:
+                depends.push('scripts/homenextup');
+                method = 'renderNextUp';
+                break;
+            case 2:
+                depends.push('scripts/favorites');
+                method = 'renderFavorites';
+                break;
+            case 3:
+                depends.push('scripts/homeupcoming');
+                method = 'renderUpcoming';
                 break;
             default:
                 break;
         }
+
+        require(depends, function () {
+
+            window[scope][method](page, tabContent);
+
+        });
     }
 
-    $(document).on('pageinitdepends', "#indexPage", function () {
+    $(document).on('pageinit', "#indexPage", function () {
 
         var page = this;
 
         var tabs = page.querySelector('paper-tabs');
         var pages = page.querySelector('neon-animated-pages');
 
-        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages);
-
-        $(tabs).on('iron-select', function () {
-            var selected = this.selected;
-
-            if (LibraryBrowser.navigateOnLibraryTabSelect()) {
-
-                if (selected) {
-                    Dashboard.navigate('index.html?tab=' + selected);
-                } else {
-                    Dashboard.navigate('index.html');
-                }
-
-            } else {
-                page.querySelector('neon-animated-pages').selected = selected;
-            }
-        });
+        LibraryBrowser.configurePaperLibraryTabs(page, tabs, pages, 'index.html');
 
         $(pages).on('tabchange', function () {
             loadTab(page, parseInt(this.selected));
@@ -247,5 +253,9 @@
 
         });
     }
+
+    window.HomePage = {
+        renderHomeTab: loadHomeTab
+    };
 
 })(jQuery, document);

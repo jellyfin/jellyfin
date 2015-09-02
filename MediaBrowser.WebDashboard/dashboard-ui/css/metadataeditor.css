@@ -91,6 +91,9 @@
     padding-right: 0 !important;
 }
 
+.chkAirDay {
+    padding: 0 2em 1em 0;
+}
 
 .searchImage {
     background-position: center bottom;

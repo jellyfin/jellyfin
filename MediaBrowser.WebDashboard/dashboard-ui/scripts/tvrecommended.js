@@ -14,12 +14,9 @@
 
         Dashboard.showLoadingMsg();
 
-        var context = '';
-
         if (LibraryMenu.getTopParentId()) {
 
             $('.scopedContent', page).show();
-            context = 'tv';
 
             loadResume(page);
 
@@ -27,10 +24,10 @@
             $('.scopedContent', page).hide();
         }
 
-        loadNextUp(page, context || 'home-nextup');
+        loadNextUp(page);
     }
 
-    function loadNextUp(page, context) {
+    function loadNextUp(page) {
 
         var limit = AppInfo.hasLowImageBandwidth ?
          16 :
@@ -69,7 +66,6 @@
                     showParentTitle: true,
                     lazy: true,
                     cardLayout: true,
-                    context: 'tv',
                     showDetailsMenu: true
                 });
 
@@ -81,10 +77,11 @@
                     showTitle: true,
                     showParentTitle: true,
                     overlayText: false,
-                    context: context,
                     lazy: true,
                     preferThumb: true,
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    centerText: true,
+                    overlayPlayButton: AppInfo.enableAppLayouts
                 });
             }
 
@@ -148,8 +145,8 @@
                     showParentTitle: true,
                     lazy: true,
                     cardLayout: true,
-                    context: 'tv',
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    preferThumb: true
                 });
 
             } else if (view == 'Poster') {
@@ -159,10 +156,11 @@
                     shape: getThumbShape(),
                     showTitle: true,
                     showParentTitle: true,
-                    overlayText: screenWidth >= 800 && !AppInfo.hasLowImageBandwidth,
                     lazy: true,
-                    context: 'tv',
-                    showDetailsMenu: true
+                    showDetailsMenu: true,
+                    overlayPlayButton: true,
+                    preferThumb: true,
+                    centerText: true
                 });
             }
 
@@ -172,7 +170,7 @@
         });
     }
 
-    $(document).on('pagebeforeshowready', "#tvRecommendedPage", function () {
+    $(document).on('pagebeforeshow', "#tvRecommendedPage", function () {
 
         var page = this;
 

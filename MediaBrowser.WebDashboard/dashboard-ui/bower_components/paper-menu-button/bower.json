@@ -1,0 +1,44 @@
+{
+  "name": "paper-menu-button",
+  "version": "1.0.3",
+  "description": "",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "keywords": [
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "main": "paper-menu-button.html",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/paper-menu-button"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/PolymerElements/paper-menu-button",
+  "dependencies": {
+    "polymer": "polymer/polymer#^1.0.0",
+    "neon-animation": "polymerelements/neon-animation#^1.0.0",
+    "paper-material": "polymerelements/paper-material#^1.0.0",
+    "paper-styles": "polymerelements/paper-styles#^1.0.0",
+    "iron-dropdown": "polymerelements/iron-dropdown#^1.0.0",
+    "iron-a11y-keys-behavior": "polymerelements/iron-a11y-keys-behavior#^1.0.0",
+    "iron-behaviors": "polymerelements/iron-behaviors#^1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "test-fixture": "polymerelements/test-fixture#^1.0.0",
+    "iron-test-helpers": "polymerelements/iron-test-helpers#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
+    "web-component-tester": "*",
+    "paper-menu": "polymerelements/paper-menu#^1.0.0",
+    "paper-icon-button": "polymerelements/paper-icon-button#^1.0.0",
+    "iron-icons": "polymerelements/iron-icons#^1.0.0",
+    "paper-button": "polymerelements/paper-button#^1.0.0",
+    "paper-item": "polymerelements/paper-item#^1.0.0",
+    "iron-image": "polymerelements/iron-image#^1.0.0",
+    "iron-icon": "polymerelements/iron-icon#^1.0.0"
+  }
+}

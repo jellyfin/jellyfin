@@ -38,8 +38,8 @@
             type: 'POST',
             data: {
 
-                Name: $('#txtUsername', form).val(),
-                ConnectUserName: $('#txtConnectUserName', form).val()
+                Name: form.querySelector('#txtUsername').value,
+                ConnectUserName: form.querySelector('#txtConnectUserName').value
 
             },
             url: apiClient.getUrl('Startup/User'),
@@ -56,7 +56,7 @@
         return false;
     }
 
-    $(document).on('pageinitdepends', "#wizardUserPage", function () {
+    $(document).on('pageinit', "#wizardUserPage", function () {
 
         $('.wizardUserForm').off('submit', onSubmit).on('submit', onSubmit);
 
@@ -70,8 +70,8 @@
 
         apiClient.getJSON(apiClient.getUrl('Startup/User')).done(function (user) {
 
-            $('#txtUsername', page).val(user.Name);
-            $('#txtConnectUserName', page).val(user.ConnectUserName);
+            page.querySelector('#txtUsername').value = user.Name;
+            page.querySelector('#txtConnectUserName').value = user.ConnectUserName;
 
             Dashboard.hideLoadingMsg();
         });

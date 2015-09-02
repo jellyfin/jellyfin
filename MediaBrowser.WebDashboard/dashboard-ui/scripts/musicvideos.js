@@ -127,7 +127,7 @@
         }
     }
 
-    $(document).on('pageinitdepends', "#musicVideosPage", function () {
+    $(document).on('pageinit', "#musicVideosPage", function () {
 
         var page = this;
 
@@ -185,7 +185,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#musicVideosPage", function () {
+    }).on('pagebeforeshow', "#musicVideosPage", function () {
 
         var page = this;
 

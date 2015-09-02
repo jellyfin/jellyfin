@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Model.Serialization;
+﻿using MediaBrowser.Model.MediaInfo;
+using MediaBrowser.Model.Serialization;
 using System.IO;
 using System.Text;
 using System.Threading;

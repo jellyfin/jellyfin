@@ -35,6 +35,7 @@
                 limit: query.Limit,
                 totalRecordCount: result.TotalRecordCount,
                 viewButton: true,
+                viewIcon: 'filter-list',
                 showLimit: false
             });
 
@@ -95,7 +96,7 @@
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
     }
 
-    $(document).on('pageinitdepends', "#tvPeoplePage", function () {
+    $(document).on('pageinit', "#tvPeoplePage", function () {
 
         var page = this;
 
@@ -147,7 +148,7 @@
             reloadItems(page);
         });
 
-    }).on('pagebeforeshowready', "#tvPeoplePage", function () {
+    }).on('pagebeforeshow', "#tvPeoplePage", function () {
 
         query.ParentId = LibraryMenu.getTopParentId();
 
