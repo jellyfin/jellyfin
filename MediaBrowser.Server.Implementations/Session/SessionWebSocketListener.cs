@@ -85,16 +85,23 @@ namespace MediaBrowser.Server.Implementations.Session
 
         async void _httpServer_WebSocketConnecting(object sender, WebSocketConnectingEventArgs e)
         {
-            var token = e.QueryString["api_key"];
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                var session = await GetSession(e.QueryString, e.Endpoint).ConfigureAwait(false);
+            //var token = e.QueryString["api_key"];
+            //if (!string.IsNullOrWhiteSpace(token))
+            //{
+            //    try
+            //    {
+            //        var session = await GetSession(e.QueryString, e.Endpoint).ConfigureAwait(false);
 
-                if (session == null)
-                {
-                    //e.AllowConnection = false;
-                }
-            }
+            //        if (session == null)
+            //        {
+            //            e.AllowConnection = false;
+            //        }
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        _logger.ErrorException("Error getting session info", ex);
+            //    }
+            //}
         }
 
         private Task<SessionInfo> GetSession(NameValueCollection queryString, string remoteEndpoint)

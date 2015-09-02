@@ -84,13 +84,13 @@ namespace MediaBrowser.Server.Startup.Common.FFMpeg
                             return new[]
                             {
                                 "http://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20150717-git-8250943-win64-static.7z",
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20150717-git-8250943-win64-static.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20150901-git-b54e03c-win64-static.7z"
                             };
                         case Architecture.X86:
                             return new[]
                             {
                                 "http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-20150717-git-8250943-win32-static.7z",
-                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20150717-git-8250943-win32-static.7z"
+                                "https://github.com/MediaBrowser/Emby.Resources/raw/master/ffmpeg/windows/ffmpeg-20150901-git-b54e03c-win32-static.7z"
                             };
                     }
                     break;

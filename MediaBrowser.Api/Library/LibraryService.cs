@@ -231,6 +231,17 @@ namespace MediaBrowser.Api.Library
         public string TvdbId { get; set; }
     }
 
+    [Route("/Library/Movies/Added", "POST", Summary = "Reports that new movies have been added by an external source")]
+    [Route("/Library/Movies/Updated", "POST", Summary = "Reports that new movies have been added by an external source")]
+    [Authenticated]
+    public class PostUpdatedMovies : IReturnVoid
+    {
+        [ApiMember(Name = "TmdbId", Description = "Tmdb Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string TmdbId { get; set; }
+        [ApiMember(Name = "ImdbId", Description = "Imdb Id", IsRequired = false, DataType = "string", ParameterType = "path", Verb = "GET")]
+        public string ImdbId { get; set; }
+    }
+
     [Route("/Items/{Id}/Download", "GET", Summary = "Downloads item media")]
     [Authenticated(Roles = "download")]
     public class GetDownload
@@ -434,6 +445,40 @@ namespace MediaBrowser.Api.Library
             if (series.Length > 0)
             {
                 foreach (var item in series)
+                {
+                    _libraryMonitor.ReportFileSystemChanged(item.Path);
+                }
+            }
+            else
+            {
+                Task.Run(() => _libraryManager.ValidateMediaLibrary(new Progress<double>(), CancellationToken.None));
+            }
+        }
+
+        public void Post(PostUpdatedMovies request)
+        {
+            var movies = _libraryManager.GetItems(new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { typeof(Movie).Name }
+
+            }).Items;
+
+            if (!string.IsNullOrWhiteSpace(request.ImdbId))
+            {
+                movies = movies.Where(i => string.Equals(request.ImdbId, i.GetProviderId(MetadataProviders.Imdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+            }
+            else if (!string.IsNullOrWhiteSpace(request.TmdbId))
+            {
+                movies = movies.Where(i => string.Equals(request.TmdbId, i.GetProviderId(MetadataProviders.Tmdb), StringComparison.OrdinalIgnoreCase)).ToArray();
+            }
+            else
+            {
+                movies = new BaseItem[] { };
+            }
+
+            if (movies.Length > 0)
+            {
+                foreach (var item in movies)
                 {
                     _libraryMonitor.ReportFileSystemChanged(item.Path);
                 }
