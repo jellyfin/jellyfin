@@ -77,7 +77,6 @@
         // This needs both events for the helpurl to get done at the right time
 
         var page = this;
-        alert(0);
 
         var context = getParameterByName('context');
 
