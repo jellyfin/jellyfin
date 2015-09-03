@@ -136,7 +136,8 @@ namespace MediaBrowser.Server.Implementations.Library
 
             if (parents.Count > 0)
             {
-                list.Add(await GetUserView(parents, list, CollectionType.Playlists, string.Empty, user, cancellationToken).ConfigureAwait(false));
+                var name = _localizationManager.GetLocalizedString("ViewType" + CollectionType.Playlists);
+                list.Add(await _libraryManager.GetNamedView(name, CollectionType.Playlists, string.Empty, cancellationToken).ConfigureAwait(false));
             }
 
             if (user.Configuration.DisplayFoldersView)
