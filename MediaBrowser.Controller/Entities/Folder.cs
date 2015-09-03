@@ -48,7 +48,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         public virtual bool IsPreSorted
         {
-            get { return ConfigurationManager.Configuration.EnableWindowsShortcuts; }
+            get { return false; }
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace MediaBrowser.Controller.Entities
         [IgnoreDataMember]
         protected virtual bool SupportsShortcutChildren
         {
-            get { return false; }
+            get { return ConfigurationManager.Configuration.EnableWindowsShortcuts; }
         }
 
         /// <summary>

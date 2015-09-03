@@ -53,7 +53,7 @@ namespace MediaBrowser.Server.Implementations.Persistence
             innerProgress = new ActionableProgress<double>();
             innerProgress.RegisterAction(p => progress.Report(95 + (.05 * p)));
 
-            //await CleanDeadItems(cancellationToken, innerProgress).ConfigureAwait(false);
+            await CleanDeadItems(cancellationToken, innerProgress).ConfigureAwait(false);
 
             progress.Report(100);
         }
@@ -76,6 +76,12 @@ namespace MediaBrowser.Server.Implementations.Persistence
             foreach (var itemId in itemIds)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                if (itemId == Guid.Empty)
+                {
+                    // Somehow some invalid data got into the db. It probably predates the boundary checking
+                    continue;
+                }
 
                 var item = _libraryManager.GetItemById(itemId);
 

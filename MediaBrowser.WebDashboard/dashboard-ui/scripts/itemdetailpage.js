@@ -75,6 +75,8 @@
                 Backdrops.setBackdrops(page, [item]);
             }
             else {
+                //$('#itemBackdrop', page).addClass('noBackdrop').css('background-image', 'none');
+                //Backdrops.setBackdrops(page, [item]);
                 hasBackdrop = LibraryBrowser.renderDetailPageBackdrop(page, item);
             }
 
