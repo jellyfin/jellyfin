@@ -25,7 +25,7 @@
 }
 
 .backdropPage.lightBackdropPage.ui-page-theme-b:not(.pageWithAbsoluteTabs), .backdropPage.lightBackdropPage.pageWithAbsoluteTabs .pageBackground {
-    background-color: rgba(20, 20,20, .88) !important;
+    background-color: rgba(20, 20,20, .90) !important;
 }
 
 .pageWithAbsoluteTabs .pageBackground {

@@ -141,7 +141,12 @@
         html += '</div>';
 
         html += '<div class="buttons">';
-        html += '<paper-button onclick="Dashboard.navigate(\'nowplaying.html\');" dialog-dismiss>' + Globalize.translate('ButtonRemoteControl') + '</paper-button>';
+
+        // On small layouts papepr dialog doesn't respond very well. this button isn't that important here anyway.
+        if (screen.availWidth >= 600) {
+            html += '<paper-button onclick="Dashboard.navigate(\'nowplaying.html\');" dialog-dismiss>' + Globalize.translate('ButtonRemoteControl') + '</paper-button>';
+        }
+
         html += '<paper-button dialog-dismiss onclick="MediaController.disconnectFromPlayer();">' + Globalize.translate('ButtonDisconnect') + '</paper-button>';
         html += '<paper-button dialog-dismiss>' + Globalize.translate('ButtonCancel') + '</paper-button>';
         html += '</div>';
