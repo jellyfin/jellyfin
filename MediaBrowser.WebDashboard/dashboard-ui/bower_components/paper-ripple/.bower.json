@@ -26,14 +26,14 @@
     "web-component-tester": "*",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
-  "homepage": "https://github.com/polymerelements/paper-ripple",
+  "homepage": "https://github.com/PolymerElements/paper-ripple",
   "_release": "1.0.1",
   "_resolution": {
     "type": "version",
     "tag": "v1.0.1",
     "commit": "af19d904802437c305390bb03415c11661de3d0a"
   },
-  "_source": "git://github.com/polymerelements/paper-ripple.git",
+  "_source": "git://github.com/PolymerElements/paper-ripple.git",
   "_target": "^1.0.0",
-  "_originalSource": "polymerelements/paper-ripple"
+  "_originalSource": "PolymerElements/paper-ripple"
 }

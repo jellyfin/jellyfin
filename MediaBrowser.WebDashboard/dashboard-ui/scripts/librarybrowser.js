@@ -122,9 +122,13 @@
             elem.classList.add('hasrefreshtime');
         },
 
+        animatePaperTabs: function () {
+            return !$.browser.safari;
+        },
+
         configureSwipeTabs: function (ownerpage, tabs, pages) {
 
-            if (!$.browser.safari) {
+            if (LibraryBrowser.animatePaperTabs()) {
                 // Safari doesn't handle the horizontal swiping very well
                 pages.entryAnimation = 'slide-from-right-animation';
                 pages.exitAnimation = 'slide-left-animation';
@@ -211,10 +215,9 @@
 
             if (LibraryBrowser.enableFullPaperTabs()) {
 
-                if ($.browser.safari) {
+                tabs.noSlide = true;
 
-                    // Not very iOS-like I suppose
-                    //tabs.noSlide = true;
+                if ($.browser.safari) {
                     tabs.noBar = true;
                 }
                 else {
@@ -245,7 +248,8 @@
                 // When transition animations are used, add a content loading delay to allow the animations to finish
                 // Otherwise with both operations happening at the same time, it can cause the animation to not run at full speed.
                 var pgs = this;
-                var delay = pgs.entryAnimation ? 500 : 0;
+                var delay = LibraryBrowser.animatePaperTabs() ? 500 : 0;
+
                 setTimeout(function () {
 
                     $(pgs).trigger('tabchange');
