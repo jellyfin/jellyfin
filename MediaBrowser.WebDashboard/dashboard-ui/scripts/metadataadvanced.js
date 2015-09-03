@@ -22,7 +22,7 @@
 
     function loadMetadataConfig(page, config) {
 
-        $('#selectDateAdded', page).val((config.UseFileCreationTimeForDateAdded ? '1' : '0')).selectmenu("refresh");
+        $('#selectDateAdded', page).val((config.UseFileCreationTimeForDateAdded ? '1' : '0'));
     }
 
     function loadTmdbConfig(page, config) {

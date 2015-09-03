@@ -258,8 +258,8 @@
     function fillJobValues(page, job, editOptions) {
 
         $('#txtSyncJobName', page).val(job.Name);
-        $('#selectProfile', page).val(job.Profile || '').trigger('change').selectmenu('refresh');
-        $('#selectQuality', page).val(job.Quality || '').trigger('change').selectmenu('refresh');
+        $('#selectProfile', page).val(job.Profile || '').trigger('change');
+        $('#selectQuality', page).val(job.Quality || '').trigger('change');
         $('#chkUnwatchedOnly', page).checked(job.UnwatchedOnly).checkboxradio('refresh');
         $('#chkSyncNewContent', page).checked(job.SyncNewContent).checkboxradio('refresh');
         $('#txtItemLimit', page).val(job.ItemLimit);

@@ -189,13 +189,13 @@
 
         if (showCollectionType) {
             $('#fldCollectionType', popup).show();
-            $('#selectCollectionType', popup).attr('required', 'required').selectmenu('refresh');
+            $('#selectCollectionType', popup).attr('required', 'required');
         } else {
             $('#fldCollectionType', popup).hide();
-            $('#selectCollectionType', popup).removeAttr('required').selectmenu('refresh');
+            $('#selectCollectionType', popup).removeAttr('required');
         }
 
-        $('#selectCollectionType', popup).html(MediaLibraryPage.getCollectionTypeOptionsHtml()).val('').selectmenu('refresh');
+        $('#selectCollectionType', popup).html(MediaLibraryPage.getCollectionTypeOptionsHtml()).val('');
 
         popup.on("popupafterclose", function () {
             $(this).off("popupafterclose").off("click");

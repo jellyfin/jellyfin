@@ -49,12 +49,10 @@
             })[0];
         }
 
-        selectmenu.selectmenu('refresh');
-
         if (packageVersion) {
             var val = packageVersion.versionStr + '|' + packageVersion.classification;
 
-            selectmenu.val(val).selectmenu('refresh');
+            selectmenu.val(val);
         }
     }
 

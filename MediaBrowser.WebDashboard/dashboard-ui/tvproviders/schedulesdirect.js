@@ -17,7 +17,7 @@
                 })[0] || {};
 
                 listingsId = info.ListingsId;
-                $('#selectListing', page).val(info.ListingsId || '').selectmenu('refresh');
+                $('#selectListing', page).val(info.ListingsId || '');
                 page.querySelector('.txtUser').value = info.Username || '';
                 page.querySelector('.txtPass').value = info.Username || '';
 
@@ -62,7 +62,7 @@
 
                     return '<option value="' + c.value + '">' + c.name + '</option>';
 
-                }).join('')).val(info.Country || '').selectmenu('refresh');
+                }).join('')).val(info.Country || '');
 
                 $(page.querySelector('.txtZipCode')).trigger('change');
 
@@ -168,7 +168,7 @@
         function refreshListings(value) {
 
             if (!value) {
-                $('#selectListing', page).html('').selectmenu('refresh');
+                $('#selectListing', page).html('');
                 return;
             }
 
@@ -189,10 +189,10 @@
 
                     return '<option value="' + o.Id + '">' + o.Name + '</option>';
 
-                })).selectmenu('refresh');
+                }));
 
                 if (listingsId) {
-                    $('#selectListing', page).val(listingsId).selectmenu('refresh');
+                    $('#selectListing', page).val(listingsId);
                 }
 
                 Dashboard.hideModalLoadingMsg();

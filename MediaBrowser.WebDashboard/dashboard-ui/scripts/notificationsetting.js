@@ -90,7 +90,7 @@
 
             $('#txtTitle', page).val(notificationConfig.Title || typeInfo.DefaultTitle);
 
-            $('#selectUsers', page).val(notificationConfig.SendToUserMode).selectmenu('refresh').trigger('change');
+            $('#selectUsers', page).val(notificationConfig.SendToUserMode).trigger('change');
 
         });
     }

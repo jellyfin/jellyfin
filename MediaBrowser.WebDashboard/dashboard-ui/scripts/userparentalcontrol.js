@@ -35,7 +35,7 @@
             html += "<option value='" + rating.Value + "'>" + rating.Name + "</option>";
         }
 
-        $('#selectMaxParentalRating', page).html(html).selectmenu("refresh");
+        $('#selectMaxParentalRating', page).html(html);
     }
 
     function loadUnratedItems(page, user) {
@@ -99,7 +99,7 @@
             }
         }
 
-        $('#selectMaxParentalRating', page).val(ratingValue).selectmenu("refresh");
+        $('#selectMaxParentalRating', page).val(ratingValue);
 
         if (user.Policy.IsAdministrator) {
             $('.accessScheduleSection', page).hide();
@@ -279,8 +279,8 @@
 
         html += '<option value="24">' + getDisplayTime(0) + '</option>';
 
-        $('#selectStart', page).html(html).selectmenu('refresh');
-        $('#selectEnd', page).html(html).selectmenu('refresh');
+        $('#selectStart', page).html(html);
+        $('#selectEnd', page).html(html);
     }
 
     function showSchedulePopup(page, schedule, index) {
@@ -291,9 +291,9 @@
 
         $('#fldScheduleIndex', page).val(index);
 
-        $('#selectDay', page).val(schedule.DayOfWeek || 'Sunday').selectmenu('refresh');
-        $('#selectStart', page).val(schedule.StartHour || 0).selectmenu('refresh');
-        $('#selectEnd', page).val(schedule.EndHour || 0).selectmenu('refresh');
+        $('#selectDay', page).val(schedule.DayOfWeek || 'Sunday');
+        $('#selectStart', page).val(schedule.StartHour || 0);
+        $('#selectEnd', page).val(schedule.EndHour || 0);
     }
 
     function saveSchedule(page) {

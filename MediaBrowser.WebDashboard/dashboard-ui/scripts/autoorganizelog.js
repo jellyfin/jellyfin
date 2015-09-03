@@ -88,7 +88,7 @@
 
         seriesHtml = '<option value=""></option>' + seriesHtml;
 
-        $('#selectSeries', popup).html(seriesHtml).selectmenu('refresh');
+        $('#selectSeries', popup).html(seriesHtml);
     }
 
     function organizeFile(page, id) {

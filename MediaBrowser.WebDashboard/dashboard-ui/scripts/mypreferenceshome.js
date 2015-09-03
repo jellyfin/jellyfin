@@ -130,10 +130,10 @@
         page.querySelector('.chkHidePlayedFromLatest').checked = user.Configuration.HidePlayedInLatest || false;
         page.querySelector('.chkDisplayChannelsInline').checked = user.Configuration.DisplayChannelsInline || false;
 
-        $('#selectHomeSection1', page).val(displayPreferences.CustomPrefs.home0 || '').selectmenu("refresh");
-        $('#selectHomeSection2', page).val(displayPreferences.CustomPrefs.home1 || '').selectmenu("refresh");
-        $('#selectHomeSection3', page).val(displayPreferences.CustomPrefs.home2 || '').selectmenu("refresh");
-        $('#selectHomeSection4', page).val(displayPreferences.CustomPrefs.home3 || '').selectmenu("refresh");
+        $('#selectHomeSection1', page).val(displayPreferences.CustomPrefs.home0 || '');
+        $('#selectHomeSection2', page).val(displayPreferences.CustomPrefs.home1 || '');
+        $('#selectHomeSection3', page).val(displayPreferences.CustomPrefs.home2 || '');
+        $('#selectHomeSection4', page).val(displayPreferences.CustomPrefs.home3 || '');
 
         var promise1 = ApiClient.getItems(user.Id, {
             sortBy: "SortName"

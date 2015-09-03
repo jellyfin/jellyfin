@@ -135,7 +135,7 @@
 
         }).checkboxradio('refresh');
 
-        $('#selectView', page).val(view).selectmenu('refresh');
+        $('#selectView', page).val(view);
 
         $('#chkHD', page).checked(query.IsHD == true).checkboxradio('refresh');
         $('#chkSD', page).checked(query.IsHD == false).checkboxradio('refresh');
@@ -150,7 +150,7 @@
         $('#chkFutureEpisode', page).checked(query.IsUnaired == true).checkboxradio('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('#selectPageSize', page).val(query.Limit);
     }
 
     $(document).on('pageinit', "#episodesPage", function () {
@@ -353,7 +353,7 @@
         LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
 
             if (val) {
-                Events.trigger($('#selectView', page).val(val).selectmenu('refresh')[0], 'change');
+                Events.trigger($('#selectView', page).val(val)[0], 'change');
             } else {
                 reloadItems(page);
             }

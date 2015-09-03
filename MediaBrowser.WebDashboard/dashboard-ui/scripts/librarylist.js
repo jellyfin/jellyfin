@@ -1231,7 +1231,7 @@
 
             return '<option value="' + i + '">' + i + '</option>';
 
-        }).join('')).selectmenu('refresh');
+        }).join(''));
 
         $(page).on('click', '.btnToggleSelections', function () {
 

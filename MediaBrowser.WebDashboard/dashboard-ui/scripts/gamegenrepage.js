@@ -68,7 +68,7 @@
 
     function updateFilterControls(page) {
 
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('#selectPageSize', page).val(query.Limit);
     }
 
     $(document).on('pageinit', "#gameGenresPage", function () {

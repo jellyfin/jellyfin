@@ -101,9 +101,9 @@
 
             }).join('');
 
-            select.html(selectHtml).selectmenu('refresh');
+            select.html(selectHtml);
 
-            select.val(lastPlaylistId || '').selectmenu('refresh').trigger('change');
+            select.val(lastPlaylistId || '').trigger('change');
             Dashboard.hideLoadingMsg();
         });
 
@@ -151,7 +151,7 @@
                 return '<option value="' + i.Id + '">' + i.Name + '</option>';
             });
 
-            select.html(html).val('').selectmenu('refresh').trigger('change');
+            select.html(html).val('').trigger('change');
 
         });
     }

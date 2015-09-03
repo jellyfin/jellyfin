@@ -298,7 +298,7 @@
                     }
                 }
             });
-            $('#selectPageSize', page).val(selected).selectmenu('refresh');
+            $('#selectPageSize', page).val(selected);
 
         });
     }
@@ -504,7 +504,7 @@
         $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
         $('#chkThemeVideo', page).checked(query.HasThemeVideo == true).checkboxradio('refresh');
 
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('#selectPageSize', page).val(query.Limit);
 
         //Management
         $('#chkMissingRating', page).checked(query.HasOfficialRating == false).checkboxradio('refresh');
@@ -519,7 +519,7 @@
         $('#chkMissingEpisode', page).checked(query.IsMissing == true).checkboxradio('refresh');
         $('#chkFutureEpisode', page).checked(query.IsUnaired == true).checkboxradio('refresh');
 
-        $('#selectIncludeItemTypes').val(query.IncludeItemTypes).selectmenu('refresh');
+        $('#selectIncludeItemTypes').val(query.IncludeItemTypes);
     }
 
     var filtersLoaded;
@@ -855,7 +855,7 @@
 
 	    QueryReportFilters.onPageShow(page, query);
 	    QueryReportColumns.onPageShow(page, query);
-	    $('#selectIncludeItemTypes', page).val(query.IncludeItemTypes).selectmenu('refresh').trigger('change');
+	    $('#selectIncludeItemTypes', page).val(query.IncludeItemTypes).trigger('change');
 
 	    updateFilterControls(page);
 

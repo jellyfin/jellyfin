@@ -67,7 +67,7 @@
         $('#chkFavorite', page).checked(query.IsFavorite == true).checkboxradio('refresh');
         $('#chkLikes', page).checked(query.IsLiked == true).checkboxradio('refresh');
         $('#chkDislikes', page).checked(query.IsDisliked == true).checkboxradio('refresh');
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('#selectPageSize', page).val(query.Limit);
     }
 
     window.LiveTvPage.initChannelsTab = function (page, tabContent) {

@@ -31,7 +31,7 @@
             $('#fldEnableAutomaticRestart', page).hide();
         }
 
-        $('#selectAutomaticUpdateLevel', page).val(config.SystemUpdateLevel).selectmenu('refresh').trigger('change');
+        $('#selectAutomaticUpdateLevel', page).val(config.SystemUpdateLevel).trigger('change');
         $('#chkDebugLog', page).checked(config.EnableDebugLevelLogging).checkboxradio("refresh");
 
         $('#chkRunAtStartup', page).checked(config.RunAtStartup).checkboxradio("refresh");

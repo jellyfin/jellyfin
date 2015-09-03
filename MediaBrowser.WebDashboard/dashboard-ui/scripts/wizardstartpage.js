@@ -6,7 +6,7 @@
 
             return '<option value="' + l.Value + '">' + l.Name + '</option>';
 
-        })).val(config.UICulture).selectmenu('refresh');
+        })).val(config.UICulture);
 
         Dashboard.hideLoadingMsg();
     }

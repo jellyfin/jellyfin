@@ -15,7 +15,7 @@
             html += '<option value="' + tab.type + '"' + isChecked + '>' + Globalize.translate(tab.name) + '</option>';
         }
 
-        $('#selectItemType', page).html(html).selectmenu('refresh').trigger('change');
+        $('#selectItemType', page).html(html).trigger('change');
 
         Dashboard.hideLoadingMsg();
     }

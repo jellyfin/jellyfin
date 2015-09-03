@@ -20,9 +20,9 @@
 
     function updateFilterControls(page) {
 
-        $('#selectView', page).val(view).selectmenu('refresh');
+        $('#selectView', page).val(view);
         $('.alphabetPicker', page).alphaValue(query.NameStartsWithOrGreater);
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('#selectPageSize', page).val(query.Limit);
     }
 
     function reloadItems(page) {
@@ -166,7 +166,7 @@
         LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
 
             if (val) {
-                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+                $('#selectView', page).val(val).trigger('change');
             } else {
                 reloadItems(page);
             }

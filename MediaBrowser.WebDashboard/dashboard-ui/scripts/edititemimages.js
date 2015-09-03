@@ -38,13 +38,13 @@
 
             renderRemoteImages(page, currentItem, result, browsableImageType, options.startIndex, options.limit);
 
-            $('#selectBrowsableImageType', page).val(browsableImageType).selectmenu('refresh');
+            $('#selectBrowsableImageType', page).val(browsableImageType);
 
             var providersHtml = result.Providers.map(function (p) {
                 return '<option value="' + p + '">' + p + '</option>';
             });
 
-            $('#selectImageProvider', page).html('<option value="">' + Globalize.translate('LabelAll') + '</option>' + providersHtml).val(provider).selectmenu('refresh');
+            $('#selectImageProvider', page).html('<option value="">' + Globalize.translate('LabelAll') + '</option>' + providersHtml).val(provider);
 
             Dashboard.hideLoadingMsg();
         });

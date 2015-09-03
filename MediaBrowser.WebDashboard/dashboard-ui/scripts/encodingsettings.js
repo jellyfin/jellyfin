@@ -11,7 +11,7 @@
 
         }).checkboxradio('refresh');
 
-        $('#selectThreadCount', page).val(config.EncodingThreadCount).selectmenu('refresh');
+        $('#selectThreadCount', page).val(config.EncodingThreadCount);
         $('#txtDownMixAudioBoost', page).val(config.DownMixAudioBoost);
         $('#txtTranscodingTempPath', page).val(config.TranscodingTempPath || '');
 

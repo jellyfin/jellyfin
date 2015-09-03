@@ -96,7 +96,7 @@
 
         }).join('');
 
-        $('#selectContentType', page).html(html).val(metadataInfo.ContentType || '').selectmenu('refresh');
+        $('#selectContentType', page).html(html).val(metadataInfo.ContentType || '');
     }
 
     function onExternalIdChange() {
@@ -377,9 +377,9 @@
             $('#fldDisplayOrder', page).show();
 
             $('#labelDisplayOrder', page).html(Globalize.translate('LabelTitleDisplayOrder'));
-            $('#selectDisplayOrder', page).html('<option value="SortName">' + Globalize.translate('OptionSortName') + '</option><option value="PremiereDate">' + Globalize.translate('OptionReleaseDate') + '</option>').selectmenu('refresh');
+            $('#selectDisplayOrder', page).html('<option value="SortName">' + Globalize.translate('OptionSortName') + '</option><option value="PremiereDate">' + Globalize.translate('OptionReleaseDate') + '</option>');
         } else {
-            $('#selectDisplayOrder', page).html('').selectmenu('refresh');
+            $('#selectDisplayOrder', page).html('');
             $('#fldDisplayOrder', page).hide();
         }
 
@@ -401,19 +401,19 @@
 
         populateRatings(parentalRatingOptions, select, item.OfficialRating);
 
-        select.val(item.OfficialRating || "").selectmenu('refresh');
+        select.val(item.OfficialRating || "");
 
         select = $('#selectCustomRating', page);
 
         populateRatings(parentalRatingOptions, select, item.CustomRating);
 
-        select.val(item.CustomRating || "").selectmenu('refresh');
+        select.val(item.CustomRating || "");
 
         var selectStatus = $('#selectStatus', page);
         populateStatus(selectStatus);
-        selectStatus.val(item.Status || "").selectmenu('refresh');
+        selectStatus.val(item.Status || "");
 
-        $('#select3dFormat', page).val(item.Video3DFormat || "").selectmenu('refresh');
+        $('#select3dFormat', page).val(item.Video3DFormat || "");
 
         $('.chkAirDay', page).each(function () {
 
@@ -481,7 +481,7 @@
 
         }).join(';'));
 
-        $('#selectDisplayOrder', page).val(item.DisplayOrder).selectmenu('refresh');
+        $('#selectDisplayOrder', page).val(item.DisplayOrder);
 
         $('#txtArtist', page).val((item.ArtistItems || []).map(function (a) {
 
@@ -536,8 +536,8 @@
 
         $('#txtOriginalAspectRatio', page).val(item.AspectRatio || "");
 
-        $('#selectLanguage', page).val(item.PreferredMetadataLanguage || "").selectmenu('refresh');
-        $('#selectCountry', page).val(item.PreferredMetadataCountryCode || "").selectmenu('refresh');
+        $('#selectLanguage', page).val(item.PreferredMetadataLanguage || "");
+        $('#selectCountry', page).val(item.PreferredMetadataCountryCode || "");
 
         if (item.RunTimeTicks) {
 
@@ -604,7 +604,7 @@
         $('#popupEditPerson', page).popup("open");
 
         $('#txtPersonName', page).val(person.Name || '');
-        $('#selectPersonType', page).val(person.Type || '').selectmenu('refresh');
+        $('#selectPersonType', page).val(person.Type || '');
         $('#txtPersonRole', page).val(person.Role || '');
 
         if (index == null) {
@@ -678,7 +678,7 @@
             html += "<option value='" + rating.Value + "'>" + rating.Name + "</option>";
         }
 
-        select.html(html).selectmenu("refresh");
+        select.html(html);
     }
 
     function populateStatus(select) {
@@ -687,7 +687,7 @@
         html += "<option value=''></option>";
         html += "<option value='Continuing'>" + Globalize.translate('OptionContinuing') + "</option>";
         html += "<option value='Ended'>" + Globalize.translate('OptionEnded') + "</option>";
-        select.html(html).selectmenu("refresh");
+        select.html(html);
     }
 
     function populateListView(list, items, sortCallback) {
@@ -1283,8 +1283,8 @@
 
         $('.popupAdvancedRefresh', page).popup('open');
 
-        $('#selectMetadataRefreshMode', page).val('all').selectmenu('refresh');
-        $('#selectImageRefreshMode', page).val('missing').selectmenu('refresh');
+        $('#selectMetadataRefreshMode', page).val('all');
+        $('#selectImageRefreshMode', page).val('missing');
     }
 
     function performSimpleRefresh(page) {

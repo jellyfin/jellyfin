@@ -74,7 +74,7 @@
 
         $('#txtDeleteLeftOverFiles', page).val(tvOptions.LeftOverFileExtensionsToDelete.join(';'));
 
-        $('#copyOrMoveFile', page).val(tvOptions.CopyOriginalFile.toString()).selectmenu('refresh');
+        $('#copyOrMoveFile', page).val(tvOptions.CopyOriginalFile.toString());
 
     }
 

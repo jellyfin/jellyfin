@@ -465,6 +465,32 @@ input:not(.paper-input):not(.likePaperText):not([type='checkbox']):not([type='ra
     border-radius: 4px;
 }
 
+select {
+    width: 100%;
+    margin: 0 0 .5em 0;
+    background: none;
+    border: 1px solid rgb(221, 221, 221);
+    border-radius: 3px;
+    /* Prefixed box-sizing rules necessary for older browsers */
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    /* Remove select styling */
+    /* Font size must the 16px or larger to prevent iOS page zoom on focus */
+    font-size: inherit;
+    /* General select styles: change as needed */
+    font-family: inherit;
+    font-weight: bold;
+    color: inherit;
+    padding: .6em 1.9em .5em .8em;
+    line-height: 1.3;
+    text-align: center;
+}
+
+.ui-page-theme-b select {
+    border-color: #444;
+}
+
 .smoothScrollX {
     overflow-x: scroll;
     -webkit-overflow-scrolling: touch;

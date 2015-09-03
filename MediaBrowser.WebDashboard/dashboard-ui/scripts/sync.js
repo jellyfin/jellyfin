@@ -351,14 +351,14 @@
             var selectedAttribute = o.IsDefault ? ' selected="selected"' : '';
             return '<option value="' + o.Id + '"' + selectedAttribute + '>' + o.Name + '</option>';
 
-        }).join('')).trigger('change').selectmenu('refresh');
+        }).join('')).trigger('change');
 
         $('#selectQuality', form).html(options.QualityOptions.map(function (o) {
 
             var selectedAttribute = o.IsDefault ? ' selected="selected"' : '';
             return '<option value="' + o.Id + '"' + selectedAttribute + '>' + o.Name + '</option>';
 
-        }).join('')).trigger('change').selectmenu('refresh');
+        }).join('')).trigger('change');
     }
 
     function isAvailable(item, user) {

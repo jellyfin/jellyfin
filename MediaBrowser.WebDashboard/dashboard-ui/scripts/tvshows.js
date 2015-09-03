@@ -195,7 +195,7 @@
 
         var query = getQuery();
 
-        $('#selectView', page).val(view).selectmenu('refresh');
+        $('#selectView', page).val(view);
 
         $('#chkTrailer', page).checked(query.HasTrailer == true).checkboxradio('refresh');
         $('#chkThemeSong', page).checked(query.HasThemeSong == true).checkboxradio('refresh');
@@ -203,7 +203,7 @@
         $('#chkSpecialFeature', page).checked(query.HasSpecialFeature == true).checkboxradio('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('#selectPageSize', page).val(query.Limit);
     }
 
     var filtersLoaded;
@@ -407,7 +407,7 @@
             LibraryBrowser.getSavedViewSetting(viewKey).done(function (val) {
 
                 if (val) {
-                    Events.trigger($('#selectView', page).val(val).selectmenu('refresh')[0], 'change');
+                    Events.trigger($('#selectView', page).val(val)[0], 'change');
                 } else {
                     reloadItems(page);
                 }

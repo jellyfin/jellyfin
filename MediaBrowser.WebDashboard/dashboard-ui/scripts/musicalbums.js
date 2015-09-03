@@ -135,7 +135,7 @@
 
         var query = getQuery();
 
-        $('#selectView', page).val(view).selectmenu('refresh');
+        $('#selectView', page).val(view);
 
         // Reset form values using the last used query
         $('.radioSortBy', page).each(function () {
@@ -151,7 +151,7 @@
         }).checkboxradio('refresh');
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('#selectPageSize', page).val(query.Limit);
     }
 
     var filtersLoaded;
@@ -289,7 +289,7 @@
             LibraryBrowser.getSavedViewSetting(getSavedQueryKey()).done(function (val) {
 
                 if (val) {
-                    $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+                    $('#selectView', page).val(val).trigger('change');
                 } else {
                     reloadItems(page);
                 }

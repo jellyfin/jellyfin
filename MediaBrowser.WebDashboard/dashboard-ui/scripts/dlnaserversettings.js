@@ -12,7 +12,7 @@
             return '<option value="' + u.Id + '">' + u.Name + '</option>';
         }).join('');
 
-        $('#selectUser', page).html(usersHtml).val(config.DefaultUserId || '').selectmenu("refresh");
+        $('#selectUser', page).html(usersHtml).val(config.DefaultUserId || '');
 
         Dashboard.hideLoadingMsg();
     }

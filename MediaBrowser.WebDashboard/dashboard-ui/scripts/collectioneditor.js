@@ -81,7 +81,7 @@
             populateCollections(panel);
         } else {
             $('.fldSelectCollection', panel).hide();
-            $('#selectCollectionToAddTo', panel).html('').val('').selectmenu('refresh').trigger('change');
+            $('#selectCollectionToAddTo', panel).html('').val('').trigger('change');
         }
     }
 
@@ -109,7 +109,7 @@
                 return '<option value="' + i.Id + '">' + i.Name + '</option>';
             });
 
-            select.html(html).val('').selectmenu('refresh').trigger('change');
+            select.html(html).val('').trigger('change');
 
         });
     }

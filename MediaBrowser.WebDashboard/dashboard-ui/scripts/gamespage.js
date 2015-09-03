@@ -134,10 +134,10 @@
 
         }).checkboxradio('refresh');
 
-        $('#selectView', page).val(view).selectmenu('refresh');
+        $('#selectView', page).val(view);
 
         $('.alphabetPicker', page).alphaValue(query.NameStartsWith);
-        $('#selectPageSize', page).val(query.Limit).selectmenu('refresh');
+        $('#selectPageSize', page).val(query.Limit);
     }
 
     var filtersLoaded;
@@ -262,7 +262,7 @@
         LibraryBrowser.getSavedViewSetting(viewkey).done(function (val) {
 
             if (val) {
-                $('#selectView', page).val(val).selectmenu('refresh').trigger('change');
+                $('#selectView', page).val(val).trigger('change');
             } else {
                 reloadItems(page);
             }

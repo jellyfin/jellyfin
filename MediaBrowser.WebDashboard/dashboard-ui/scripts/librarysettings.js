@@ -10,7 +10,7 @@
 
         $('#txtSeasonZeroName', page).val(config.SeasonZeroDisplayName);
 
-        $('#selectEnableRealtimeMonitor', page).val(config.EnableLibraryMonitor).selectmenu("refresh");
+        $('#selectEnableRealtimeMonitor', page).val(config.EnableLibraryMonitor);
 
         $('#txtItemsByNamePath', page).val(config.ItemsByNamePath || '');
 

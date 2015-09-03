@@ -167,14 +167,14 @@
 
             return '<option value="' + l.ThreeLetterISOLanguageName + '">' + l.DisplayName + '</option>';
 
-        })).selectmenu('refresh');
+        }));
 
         Dashboard.getCurrentUser().done(function (user) {
 
             var lang = user.Configuration.SubtitleLanguagePreference;
 
             if (lang) {
-                $('#selectLanguage', page).val(lang).selectmenu('refresh');
+                $('#selectLanguage', page).val(lang);
             }
         });
     }

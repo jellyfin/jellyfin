@@ -5,7 +5,7 @@
         $('.liveTvSettingsForm', page).show();
         $('.noLiveTvServices', page).hide();
 
-        $('#selectGuideDays', page).val(config.GuideDays || '').selectmenu('refresh');
+        $('#selectGuideDays', page).val(config.GuideDays || '');
 
         $('#chkMovies', page).checked(config.EnableMovieProviders);
         $('#chkOrganize', page).checked(config.EnableAutoOrganize);

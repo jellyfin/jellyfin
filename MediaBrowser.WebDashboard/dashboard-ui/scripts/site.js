@@ -67,7 +67,7 @@ var Dashboard = {
         // These are not needed. Nulling them out can help reduce dom querying when pages are loaded
         $.mobile.nojs = null;
         $.mobile.degradeInputsWithin = null;
-        $.mobile.keepNative = ":jqmData(role='none'),.paper-input,textarea.style-scope";
+        $.mobile.keepNative = ":jqmData(role='none')";
 
         $.mobile.filterHtml = Dashboard.filterHtml;
     },
@@ -1470,7 +1470,7 @@ var Dashboard = {
             html += "<option value='" + culture.TwoLetterISOLanguageName + "'>" + culture.DisplayName + "</option>";
         }
 
-        $(select).html(html).selectmenu("refresh");
+        $(select).html(html);
     },
 
     populateCountries: function (select, allCountries) {
@@ -1486,7 +1486,7 @@ var Dashboard = {
             html += "<option value='" + culture.TwoLetterISORegionName + "'>" + culture.DisplayName + "</option>";
         }
 
-        $(select).html(html).selectmenu("refresh");
+        $(select).html(html);
     },
 
     getSupportedRemoteCommands: function () {

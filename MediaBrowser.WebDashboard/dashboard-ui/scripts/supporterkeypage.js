@@ -134,7 +134,7 @@ $(document).on('pageshowready', "#supporterKeyPage", SupporterKeyPage.onPageShow
 
             return '<option value="' + u.ConnectUserId + '">' + u.Name + '</option>';
 
-        }).join('')).selectmenu('refresh');
+        }).join(''));
     }
 
     function addUser(page, id) {

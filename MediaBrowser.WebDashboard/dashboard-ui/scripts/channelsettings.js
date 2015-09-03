@@ -2,7 +2,7 @@
 
     function loadPage(page, config) {
 
-        $('#selectChannelResolution', page).val(config.PreferredStreamingWidth || '').selectmenu("refresh");
+        $('#selectChannelResolution', page).val(config.PreferredStreamingWidth || '');
 
         Dashboard.hideLoadingMsg();
     }
