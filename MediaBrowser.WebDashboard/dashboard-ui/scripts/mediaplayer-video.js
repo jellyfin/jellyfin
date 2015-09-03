@@ -75,25 +75,6 @@
             return document.fullscreen || document.mozFullScreen || document.webkitIsFullScreen || document.msFullscreenElement ? true : false;
         };
 
-        self.showChaptersFlyout = function () {
-
-            function onFlyoutClose() {
-                $('.itemVideo').css('visibility', 'visible');
-            }
-
-            require(['jqmicons']);
-
-            var html = getChaptersFlyoutHtml();
-
-            var elem = $('.videoChaptersPopup').html(html)
-                .trigger('create')
-                .popup("option", "positionTo", $('.videoChaptersButton'))
-                .off('popupafterclose', onFlyoutClose)
-                .on('popupafterclose', onFlyoutClose);
-
-            elem.popup("open").parents(".ui-popup-container").css("margin-top", 30);
-        };
-
         self.showSubtitleMenu = function () {
 
             var streams = self.currentMediaSource.MediaStreams.filter(function (currentStream) {
@@ -596,16 +577,6 @@
             self.changeStream(Math.floor(newPositionTicks));
         }
 
-        self.onChapterOptionSelected = function (elem) {
-
-            if (!$(elem).hasClass('selectedMediaPopupOption')) {
-                var ticks = parseInt(elem.getAttribute('data-value') || '0');
-
-                self.changeStream(ticks);
-            }
-            $('.videoChaptersPopup').popup('close');
-        };
-
         self.onAudioOptionSelected = function (index) {
 
             self.setAudioStreamIndex(index);
@@ -684,8 +655,6 @@
             html += '<paper-icon-button icon="audiotrack" class="mediaButton videoAudioButton" onclick="MediaPlayer.showAudioTracksFlyout();"></paper-icon-button>';
 
             html += '<paper-icon-button icon="subtitles" class="mediaButton videoSubtitleButton" onclick="MediaPlayer.showSubtitleMenu();"></paper-icon-button>';
-
-            html += '<paper-icon-button icon="videocam" class="mediaButton videoChaptersButton" onclick="MediaPlayer.showChaptersFlyout();"></paper-icon-button>';
 
             html += '<paper-icon-button icon="settings" class="mediaButton videoQualityButton" onclick="MediaPlayer.showQualityFlyout();"></paper-icon-button>';
 
@@ -827,86 +796,6 @@
             var player = $("#videoPlayer");
 
             player.removeClass("fullscreenVideo");
-        }
-
-        function getChaptersFlyoutHtml() {
-
-            var item = self.currentItem;
-            var currentTicks = self.getCurrentTicks();
-            var chapters = item.Chapters || [];
-
-            var html = '';
-            html += '<div class="videoPlayerPopupContent">';
-            html += '<ul data-role="listview" data-inset="true"><li data-role="list-divider">' + Globalize.translate('HeaderScenes') + '</li>';
-            html += '</ul>';
-
-            html += '<div class="videoPlayerPopupScroller">';
-            html += '<ul data-role="listview" data-inset="true">';
-
-            var index = 0;
-
-            html += chapters.map(function (chapter) {
-
-                var cssClass = "mediaPopupOption";
-
-                var selected = false;
-                // Need to embed onclick handler due to delegation not working in iOS cordova
-                var onclick = '';
-
-                if (currentTicks >= chapter.StartPositionTicks) {
-                    var nextChapter = chapters[index + 1];
-                    selected = !nextChapter || currentTicks < nextChapter.StartPositionTicks;
-                }
-
-                if (!selected) {
-                    onclick = ' onclick="MediaPlayer.onChapterOptionSelected(this);"';
-                }
-
-                var optionHtml = '<li><a' + onclick + ' data-value="' + chapter.StartPositionTicks + '" class="' + cssClass + '" href="#" style="padding-top:0;padding-bottom:0;">';
-
-                var imgUrl = "css/images/media/chapterflyout.png";
-
-                if (chapter.ImageTag) {
-
-                    optionHtml += '<img src="' + imgUrl + '" style="visibility:hidden;" />';
-                    imgUrl = ApiClient.getScaledImageUrl(item.Id, {
-                        width: 160,
-                        tag: chapter.ImageTag,
-                        type: "Chapter",
-                        index: index
-                    });
-                    optionHtml += '<div class="videoChapterPopupImage" style="background-image:url(\'' + imgUrl + '\');"></div>';
-
-                } else {
-                    optionHtml += '<img src="' + imgUrl + '" />';
-                }
-
-                // TODO: Add some indicator if selected = true
-
-                optionHtml += '<p style="margin:12px 0 0;">';
-
-                var textLines = [];
-                textLines.push(chapter.Name);
-                textLines.push(Dashboard.getDisplayTime(chapter.StartPositionTicks));
-
-                optionHtml += textLines.join('<br/>');
-
-                optionHtml += '</p>';
-
-                optionHtml += '</a></li>';
-
-                index++;
-
-                return optionHtml;
-
-            }).join('');
-
-            html += '</ul>';
-            html += '</div>';
-
-            html += '</div>';
-
-            return html;
         }
 
         function onPopState() {
@@ -1063,12 +952,6 @@
                 $('.videoSubtitleButton').show();
             } else {
                 $('.videoSubtitleButton').hide();
-            }
-
-            if (item.Chapters && item.Chapters.length && supportsContentOverVideoPlayer()) {
-                $('.videoChaptersButton').hide();
-            } else {
-                $('.videoChaptersButton').hide();
             }
 
             var mediaRenderer = new VideoRenderer({

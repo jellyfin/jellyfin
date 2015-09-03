@@ -17,18 +17,13 @@ html {
 	font-size: 100%;
 }
 body,
-input,
-select,
-textarea,
 button,
 .ui-btn {
 	font-size: 1em;
 	line-height: 1.3;
 	font-family: sans-serif /*{global-font-family}*/;
 }
-legend,
-.ui-input-text input,
-.ui-input-search input {
+legend {
 	color: inherit;
 	text-shadow: inherit;
 }
@@ -44,7 +39,7 @@ div.ui-controlgroup-label {
 /* Field contain separator (< 28em) */
 .ui-field-contain {
 	border-bottom-color: #828282;
-	border-bottom-color: rgba(0,0,0,.15);
+	border-bottom-color: rgba(0,0,0,.15);te
 	border-bottom-width: 1px;
 	border-bottom-style: solid;
 }
@@ -542,8 +537,7 @@ html head + body .ui-body-b.ui-focus {
 
 .ui-disabled,
 .ui-state-disabled,
-button[disabled],
-.ui-select .ui-btn.ui-state-disabled {
+button[disabled] {
 	filter: Alpha(Opacity=30);
 	opacity: .3;
 	cursor: default !important;

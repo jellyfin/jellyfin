@@ -429,7 +429,7 @@ h1 a:hover {
     margin: -10px 0 0 -10px;
 }
 
-input:not(.paper-input):not(.likePaperText):not([type='checkbox']):not([type='radio']) {
+input:not(.paper-input):not(.likePaperText):not([type='checkbox']):not([type='radio']):not([type='file']) {
     -webkit-appearance: none;
     -webkit-font-smoothing: antialiased;
     -webkit-rtl-ordering: logical;
@@ -482,13 +482,17 @@ select {
     font-family: inherit;
     font-weight: bold;
     color: inherit;
-    padding: .6em 1.9em .5em .8em;
-    line-height: 1.3;
+    padding: .6em .8em .5em .8em;
     text-align: center;
 }
 
 .ui-page-theme-b select {
-    border-color: #444;
+    border-color: #1f1f1f;
+    background: #373737;
+}
+
+.ui-page-theme-b select option {
+    color: #fff;
 }
 
 .smoothScrollX {
