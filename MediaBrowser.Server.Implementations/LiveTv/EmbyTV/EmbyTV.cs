@@ -500,14 +500,6 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             catch (Exception ex)
             {
                 _logger.ErrorException("Error recording stream", ex);
-
-                if (DateTime.UtcNow < timer.EndDate)
-                {
-                    const int retryIntervalSeconds = 60;
-                    _logger.Info("Retrying recording in {0} seconds.", retryIntervalSeconds);
-
-                    _timerProvider.StartTimer(timer, TimeSpan.FromSeconds(retryIntervalSeconds));
-                }
             }
         }
 
@@ -597,7 +589,7 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
             _recordingProvider.Update(recording);
 
             _logger.Info("Beginning recording.");
-            
+
             try
             {
                 httpRequestOptions.BufferContent = false;
@@ -629,12 +621,21 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
 
             recording.DateLastUpdated = DateTime.UtcNow;
             _recordingProvider.Update(recording);
-            _timerProvider.Delete(timer);
-            _logger.Info("Recording was a success");
 
             if (recording.Status == RecordingStatus.Completed)
             {
                 OnSuccessfulRecording(recording);
+                _timerProvider.Delete(timer);
+            }
+            else
+            {
+                if (DateTime.UtcNow < timer.EndDate)
+                {
+                    const int retryIntervalSeconds = 60;
+                    _logger.Info("Retrying recording in {0} seconds.", retryIntervalSeconds);
+
+                    _timerProvider.StartTimer(timer, TimeSpan.FromSeconds(retryIntervalSeconds));
+                }
             }
         }
 
