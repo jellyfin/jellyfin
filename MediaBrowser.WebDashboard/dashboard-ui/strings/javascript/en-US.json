@@ -315,7 +315,7 @@
     "LabelSeasonNumber": "Season number:",
     "HeaderChannels": "Channels",
     "HeaderMediaFolders": "Media Folders",
-    "HeaderBlockItemsWithNoRating": "Block content with no rating information:",
+    "HeaderBlockItemsWithNoRating": "Block content with no or unrecognized rating information:",
     "OptionBlockOthers": "Others",
     "OptionBlockTvShows": "TV Shows",
     "OptionBlockTrailers": "Trailers",
