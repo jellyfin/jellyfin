@@ -67,7 +67,7 @@
 			currentOptions.history = currentOptions.history && $.mobile.ajaxEnabled && $.mobile.hashListeningEnabled;
 
 			this._on(this.document, {
-				"vmousedown": "_handleDocumentVmousedown"
+				"mousedown": "_handleDocumentVmousedown"
 			});
 
 			// Define instance variables
@@ -104,7 +104,7 @@
 				._ui.focusElement = this._ui.container;
 
 			// Event handlers
-			this._on(this._ui.screen, { "vclick": "_eatEventAndClose" });
+			this._on(this._ui.screen, { "click": "_eatEventAndClose" });
 			this._on(this.window, {
 				orientationchange: $.proxy(this, "_handleWindowOrientationchange"),
 				resize: $.proxy(this, "_handleWindowResize"),

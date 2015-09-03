@@ -135,7 +135,7 @@
             });
 
             slider.bind("vmousedown", $.proxy(this._sliderVMouseDown, this))
-                .bind("vclick", false);
+                .bind("click", false);
 
             // We have to instantiate a new function object for the unbind to work properly
             // since the method itself is defined in the prototype (causing it to unbind everything)
@@ -158,7 +158,7 @@
                 "keyup": "_handleKeyup"
             });
 
-            this.handle.bind("vclick", false);
+            this.handle.bind("click", false);
 
             this._handleFormReset();
 
