@@ -30,7 +30,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return getWindowUrl() + 'people';
     }
 
     function reloadItems(page, viewPanel) {

@@ -32,7 +32,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return getWindowUrl() + 'genres';
     }
 
     function reloadItems(page) {

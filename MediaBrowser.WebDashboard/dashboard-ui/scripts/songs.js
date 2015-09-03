@@ -35,7 +35,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return getWindowUrl() + 'songs';
     }
 
     function reloadItems(page, viewPanel) {
@@ -89,20 +89,20 @@
             $('.btnSort', page).on('click', function () {
                 LibraryBrowser.showSortMenu({
                     items: [{
-                        name: Globalize.translate('OptionNameSort'),
-                        id: 'SortName'
+                        name: Globalize.translate('OptionTrackName'),
+                        id: 'Name'
                     },
                     {
-                        name: Globalize.translate('OptionBudget'),
-                        id: 'Budget,SortName'
+                        name: Globalize.translate('OptionAlbum'),
+                        id: 'Album,SortName'
                     },
                     {
-                        name: Globalize.translate('OptionImdbRating'),
-                        id: 'CommunityRating,SortName'
+                        name: Globalize.translate('OptionAlbumArtist'),
+                        id: 'AlbumArtist,Album,SortName'
                     },
                     {
-                        name: Globalize.translate('OptionCriticRating'),
-                        id: 'CriticRating,SortName'
+                        name: Globalize.translate('OptionArtist'),
+                        id: 'Artist,Album,SortName'
                     },
                     {
                         name: Globalize.translate('OptionDateAdded'),
@@ -113,32 +113,16 @@
                         id: 'DatePlayed,SortName'
                     },
                     {
-                        name: Globalize.translate('OptionMetascore'),
-                        id: 'Metascore,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionParentalRating'),
-                        id: 'OfficialRating,SortName'
-                    },
-                    {
                         name: Globalize.translate('OptionPlayCount'),
                         id: 'PlayCount,SortName'
                     },
                     {
                         name: Globalize.translate('OptionReleaseDate'),
-                        id: 'PremiereDate,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionRevenue'),
-                        id: 'Revenue,SortName'
+                        id: 'PremiereDate,AlbumArtist,Album,SortName'
                     },
                     {
                         name: Globalize.translate('OptionRuntime'),
-                        id: 'Runtime,SortName'
-                    },
-                    {
-                        name: Globalize.translate('OptionVideoBitrate'),
-                        id: 'VideoBitRate,SortName'
+                        id: 'Runtime,AlbumArtist,Album,SortName'
                     }],
                     callback: function () {
                         reloadItems(page, viewPanel);
@@ -153,12 +137,11 @@
         });
     }
 
-    var filtersLoaded;
     function reloadFiltersIfNeeded(page, viewPanel) {
 
-        if (!filtersLoaded) {
+        if (!getPageData().filtersLoaded) {
 
-            filtersLoaded = true;
+            getPageData().filtersLoaded = true;
 
             var query = getQuery();
             QueryFilters.loadFilters(viewPanel, Dashboard.getCurrentUserId(), query, function () {

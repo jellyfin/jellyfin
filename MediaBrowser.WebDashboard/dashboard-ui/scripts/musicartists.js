@@ -33,7 +33,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return getWindowUrl() + 'artists';
     }
 
     function reloadItems(page) {
@@ -140,13 +140,12 @@
         $('#selectPageSize', page).val(query.Limit);
     }
 
-    var filtersLoaded;
     function reloadFiltersIfNeeded(page) {
 
         var query = getQuery();
-        if (!filtersLoaded) {
+        if (!getPageData().filtersLoaded) {
 
-            filtersLoaded = true;
+            getPageData().filtersLoaded = true;
 
             QueryFilters.loadFilters(page, Dashboard.getCurrentUserId(), query, function () {
 

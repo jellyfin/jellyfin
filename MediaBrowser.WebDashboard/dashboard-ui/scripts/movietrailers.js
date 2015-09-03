@@ -29,7 +29,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return getWindowUrl() + 'trailers';
     }
 
     function reloadItems(page, viewPanel) {

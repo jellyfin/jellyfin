@@ -220,10 +220,10 @@
                 renderMethod = 'renderSuggestedTab';
                 break;
             case 1:
-                depends.push('scripts/movies');
+                depends.push('scripts/musicalbums');
+                renderMethod = 'renderAlbumsTab';
+                initMethod = 'initAlbumsTab';
                 depends.push('scripts/queryfilters');
-                renderMethod = 'renderMoviesTab';
-                initMethod = 'initMoviesTab';
                 break;
             case 2:
                 depends.push('scripts/movietrailers');

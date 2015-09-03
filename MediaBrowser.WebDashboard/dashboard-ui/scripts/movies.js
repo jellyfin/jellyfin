@@ -35,7 +35,7 @@
 
     function getSavedQueryKey() {
 
-        return getWindowUrl();
+        return getWindowUrl() + 'movies';
     }
 
     function reloadItems(page, viewPanel) {
@@ -278,12 +278,11 @@
         $('.alphabetPicker', tabContent).alphaValue(query.NameStartsWithOrGreater);
     }
 
-    var filtersLoaded;
     function reloadFiltersIfNeeded(tabContent, viewPanel) {
 
-        if (!filtersLoaded) {
+        if (!getPageData().filtersLoaded) {
 
-            filtersLoaded = true;
+            getPageData().filtersLoaded = true;
 
             var query = getQuery();
             QueryFilters.loadFilters(viewPanel, Dashboard.getCurrentUserId(), query, function () {
