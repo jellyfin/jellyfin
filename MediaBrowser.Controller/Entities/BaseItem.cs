@@ -1106,7 +1106,7 @@ namespace MediaBrowser.Controller.Entities
             // Could not determine the integer value
             if (!value.HasValue)
             {
-                return true;
+                return !GetBlockUnratedValue(user.Policy);
             }
 
             return value.Value <= maxAllowedRating.Value;
