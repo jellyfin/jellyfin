@@ -226,14 +226,16 @@
                 depends.push('scripts/queryfilters');
                 break;
             case 2:
-                depends.push('scripts/movietrailers');
-                renderMethod = 'renderTrailerTab';
-                initMethod = 'initTrailerTab';
+                depends.push('scripts/musicalbumartists');
+                renderMethod = 'renderAlbumArtistsTab';
+                initMethod = 'initAlbumArtistsTab';
+                depends.push('scripts/queryfilters');
                 break;
             case 3:
-                depends.push('scripts/moviecollections');
-                renderMethod = 'renderCollectionsTab';
-                initMethod = 'initCollectionsTab';
+                depends.push('scripts/musicartists');
+                renderMethod = 'renderArtistsTab';
+                initMethod = 'initArtistsTab';
+                depends.push('scripts/queryfilters');
                 break;
             case 4:
                 depends.push('scripts/songs');
@@ -274,7 +276,7 @@
         var tabs = page.querySelector('paper-tabs');
         var pages = page.querySelector('neon-animated-pages');
 
-        var baseUrl = 'musicrecommended.html';
+        var baseUrl = 'music.html';
         var topParentId = LibraryMenu.getTopParentId();
         if (topParentId) {
             baseUrl += '?topParentId=' + topParentId;

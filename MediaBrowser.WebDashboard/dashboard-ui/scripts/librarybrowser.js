@@ -858,7 +858,7 @@
                 }
 
                 if (item.CollectionType == 'music') {
-                    return 'musicrecommended.html?topParentId=' + item.Id;
+                    return 'music.html?topParentId=' + item.Id;
                 }
 
                 if (item.CollectionType == 'games') {

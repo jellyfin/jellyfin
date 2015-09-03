@@ -57,7 +57,8 @@
                 showLimit: false,
                 sortButton: true,
                 viewPanelClass: 'songsViewPanel',
-                updatePageSizeSetting: false
+                updatePageSizeSetting: false,
+                viewIcon: 'filter-list'
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;

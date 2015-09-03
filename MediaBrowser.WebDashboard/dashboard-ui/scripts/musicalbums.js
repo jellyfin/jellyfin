@@ -61,7 +61,8 @@
                 viewPanelClass: 'albumsViewPanel',
                 addLayoutButton: true,
                 currentLayout: view,
-                updatePageSizeSetting: false
+                updatePageSizeSetting: false,
+                viewIcon: 'filter-list'
             });
 
             page.querySelector('.listTopPaging').innerHTML = pagingHtml;
