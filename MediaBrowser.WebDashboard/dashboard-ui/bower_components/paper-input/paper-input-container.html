@@ -89,183 +89,180 @@ This element is `display:block` by default, but you can set the `inline` attribu
 `display:inline-block`.
 -->
 <dom-module id="paper-input-container">
-
-  <style>
-
-    :host {
-      display: block;
-      padding: 8px 0;
-
-      @apply(--paper-input-container);
-    }
-
-    :host[inline] {
-      display: inline-block;
-    }
-
-    :host([disabled]) {
-      pointer-events: none;
-      opacity: 0.33;
-
-      @apply(--paper-input-container-disabled);
-    }
-
-    .floated-label-placeholder {
-      @apply(--paper-font-caption);
-    }
-
-    .underline {
-      position: relative;
-    }
-
-    .focused-line {
-      height: 2px;
-
-      -webkit-transform-origin: center center;
-      transform-origin: center center;
-      -webkit-transform: scale3d(0,1,1);
-      transform: scale3d(0,1,1);
-
-      background: var(--paper-input-container-focus-color, --default-primary-color);
-
-      @apply(--paper-input-container-underline-focus);
-    }
-
-    .underline.is-highlighted .focused-line {
-      -webkit-transform: none;
-      transform: none;
-      -webkit-transition: -webkit-transform 0.25s;
-      transition: transform 0.25s;
-
-      @apply(--paper-transition-easing);
-    }
-
-    .underline.is-invalid .focused-line {
-      background: var(--paper-input-container-invalid-color, --google-red-500);
-
-      -webkit-transform: none;
-      transform: none;
-      -webkit-transition: -webkit-transform 0.25s;
-      transition: transform 0.25s;
-
-      @apply(--paper-transition-easing);
-    }
-
-    .unfocused-line {
-      height: 1px;
-      background: var(--paper-input-container-color, --secondary-text-color);
-
-      @apply(--paper-input-container-underline);
-    }
-
-    :host([disabled]) .unfocused-line {
-      border-bottom: 1px dashed;
-      border-color: var(--paper-input-container-color, --secondary-text-color);
-      background: transparent;
-
-      @apply(--paper-input-container-underline-disabled);
-    }
-
-    .label-and-input-container {
-      @apply(--layout-flex);
-      @apply(--layout-relative);
-    }
-
-    .input-content {
-      position: relative;
-      @apply(--layout-horizontal);
-      @apply(--layout-end);
-    }
-
-    .input-content ::content label,
-    .input-content ::content .paper-input-label {
-      position: absolute;
-      top: 0;
-      right: 0;
-      left: 0;
-      font: inherit;
-      color: var(--paper-input-container-color, --secondary-text-color);
-
-      @apply(--paper-font-subhead);
-      @apply(--paper-input-container-label);
-    }
-
-    .input-content.label-is-floating ::content label,
-    .input-content.label-is-floating ::content .paper-input-label {
-      -webkit-transform: translate3d(0, -75%, 0) scale(0.75);
-      transform: translate3d(0, -75%, 0) scale(0.75);
-      -webkit-transform-origin: left top;
-      transform-origin: left top;
-      -webkit-transition: -webkit-transform 0.25s;
-      transition: transform 0.25s;
-
-      @apply(--paper-transition-easing);
-    }
-
-    .input-content.label-is-highlighted ::content label,
-    .input-content.label-is-highlighted ::content .paper-input-label {
-      color: var(--paper-input-container-focus-color, --default-primary-color);
-
-      @apply(--paper-input-container-label-focus);
-    }
-
-    .input-content.is-invalid ::content label,
-    .input-content.is-invalid ::content .paper-input-label {
-      color: var(--paper-input-container-invalid-color, --google-red-500);
-    }
-
-    .input-content.label-is-hidden ::content label,
-    .input-content.label-is-hidden ::content .paper-input-label {
-      visibility: hidden;
-    }
-
-    .input-content ::content input,
-    .input-content ::content textarea,
-    .input-content ::content iron-autogrow-textarea,
-    .input-content ::content .paper-input-input {
-      position: relative; /* to make a stacking context */
-      outline: none;
-      box-shadow: none;
-      padding: 0;
-      width: 100%;
-      background: transparent;
-      border: none;
-      color: var(--paper-input-container-input-color, --primary-text-color);
-
-      @apply(--paper-font-subhead);
-      @apply(--paper-input-container-input);
-    }
-
-    ::content [prefix] {
-      @apply(--paper-font-subhead);
-      @apply(--paper-input-prefix);
-    }
-
-    ::content [suffix] {
-      @apply(--paper-font-subhead);
-      @apply(--paper-input-suffix);
-    }
-
-    /* Firefox sets a min-width on the input, which can cause layout issues */
-    .input-content ::content input {
-      min-width: 0;
-    }
-
-    .input-content ::content textarea {
-      resize: none;
-    }
-
-    .add-on-content.is-invalid ::content * {
-      color: var(--paper-input-container-invalid-color, --google-red-500);
-    }
-
-    .add-on-content.is-highlighted ::content * {
-      color: var(--paper-input-container-focus-color, --default-primary-color);
-    }
-
-  </style>
-
   <template>
+
+    <style>
+      :host {
+        display: block;
+        padding: 8px 0;
+
+        @apply(--paper-input-container);
+      }
+
+      :host[inline] {
+        display: inline-block;
+      }
+
+      :host([disabled]) {
+        pointer-events: none;
+        opacity: 0.33;
+
+        @apply(--paper-input-container-disabled);
+      }
+
+      .floated-label-placeholder {
+        @apply(--paper-font-caption);
+      }
+
+      .underline {
+        position: relative;
+      }
+
+      .focused-line {
+        height: 2px;
+
+        -webkit-transform-origin: center center;
+        transform-origin: center center;
+        -webkit-transform: scale3d(0,1,1);
+        transform: scale3d(0,1,1);
+
+        background: var(--paper-input-container-focus-color, --default-primary-color);
+
+        @apply(--paper-input-container-underline-focus);
+      }
+
+      .underline.is-highlighted .focused-line {
+        -webkit-transform: none;
+        transform: none;
+        -webkit-transition: -webkit-transform 0.25s;
+        transition: transform 0.25s;
+
+        @apply(--paper-transition-easing);
+      }
+
+      .underline.is-invalid .focused-line {
+        background: var(--paper-input-container-invalid-color, --google-red-500);
+
+        -webkit-transform: none;
+        transform: none;
+        -webkit-transition: -webkit-transform 0.25s;
+        transition: transform 0.25s;
+
+        @apply(--paper-transition-easing);
+      }
+
+      .unfocused-line {
+        height: 1px;
+        background: var(--paper-input-container-color, --secondary-text-color);
+
+        @apply(--paper-input-container-underline);
+      }
+
+      :host([disabled]) .unfocused-line {
+        border-bottom: 1px dashed;
+        border-color: var(--paper-input-container-color, --secondary-text-color);
+        background: transparent;
+
+        @apply(--paper-input-container-underline-disabled);
+      }
+
+      .label-and-input-container {
+        @apply(--layout-flex);
+        @apply(--layout-relative);
+      }
+
+      .input-content {
+        position: relative;
+        @apply(--layout-horizontal);
+        @apply(--layout-end);
+      }
+
+      .input-content ::content label,
+      .input-content ::content .paper-input-label {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        font: inherit;
+        color: var(--paper-input-container-color, --secondary-text-color);
+
+        @apply(--paper-font-subhead);
+        @apply(--paper-input-container-label);
+      }
+
+      .input-content.label-is-floating ::content label,
+      .input-content.label-is-floating ::content .paper-input-label {
+        -webkit-transform: translate3d(0, -75%, 0) scale(0.75);
+        transform: translate3d(0, -75%, 0) scale(0.75);
+        -webkit-transform-origin: left top;
+        transform-origin: left top;
+        -webkit-transition: -webkit-transform 0.25s;
+        transition: transform 0.25s;
+
+        @apply(--paper-transition-easing);
+      }
+
+      .input-content.label-is-highlighted ::content label,
+      .input-content.label-is-highlighted ::content .paper-input-label {
+        color: var(--paper-input-container-focus-color, --default-primary-color);
+
+        @apply(--paper-input-container-label-focus);
+      }
+
+      .input-content.is-invalid ::content label,
+      .input-content.is-invalid ::content .paper-input-label {
+        color: var(--paper-input-container-invalid-color, --google-red-500);
+      }
+
+      .input-content.label-is-hidden ::content label,
+      .input-content.label-is-hidden ::content .paper-input-label {
+        visibility: hidden;
+      }
+
+      .input-content ::content input,
+      .input-content ::content textarea,
+      .input-content ::content iron-autogrow-textarea,
+      .input-content ::content .paper-input-input {
+        position: relative; /* to make a stacking context */
+        outline: none;
+        box-shadow: none;
+        padding: 0;
+        width: 100%;
+        background: transparent;
+        border: none;
+        color: var(--paper-input-container-input-color, --primary-text-color);
+
+        @apply(--paper-font-subhead);
+        @apply(--paper-input-container-input);
+      }
+
+      ::content [prefix] {
+        @apply(--paper-font-subhead);
+        @apply(--paper-input-prefix);
+      }
+
+      ::content [suffix] {
+        @apply(--paper-font-subhead);
+        @apply(--paper-input-suffix);
+      }
+
+      /* Firefox sets a min-width on the input, which can cause layout issues */
+      .input-content ::content input {
+        min-width: 0;
+      }
+
+      .input-content ::content textarea {
+        resize: none;
+      }
+
+      .add-on-content.is-invalid ::content * {
+        color: var(--paper-input-container-invalid-color, --google-red-500);
+      }
+
+      .add-on-content.is-highlighted ::content * {
+        color: var(--paper-input-container-focus-color, --default-primary-color);
+      }
+    </style>
 
     <template is="dom-if" if="[[!noLabelFloat]]">
       <div class="floated-label-placeholder">&nbsp;</div>
@@ -289,18 +286,13 @@ This element is `display:block` by default, but you can set the `inline` attribu
     </div>
 
   </template>
-
 </dom-module>
 
 <script>
-(function() {
-
   Polymer({
-
     is: 'paper-input-container',
 
     properties: {
-
       /**
        * Set to true to disable the floating label. The label disappears when the input value is
        * not null.
@@ -398,7 +390,6 @@ This element is `display:block` by default, but you can set the `inline` attribu
           return this._onValueChanged.bind(this);
         }
       }
-
     },
 
     listeners: {
@@ -577,8 +568,5 @@ This element is `display:block` by default, but you can set the `inline` attribu
       }
       return cls;
     }
-
   });
-
-})();
 </script>

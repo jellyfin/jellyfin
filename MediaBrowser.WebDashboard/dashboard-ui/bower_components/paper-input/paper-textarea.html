@@ -34,9 +34,9 @@ style this element.
 <dom-module id="paper-textarea">
   <template>
     <style>
-    :host {
-      display: block;
-    }
+      :host {
+        display: block;
+      }
     </style>
 
     <paper-input-container no-label-float$="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
@@ -68,15 +68,10 @@ style this element.
     </paper-input-container>
 
   </template>
-
 </dom-module>
 
 <script>
-
-(function() {
-
   Polymer({
-
     is: 'paper-textarea',
 
     behaviors: [
@@ -84,7 +79,6 @@ style this element.
     ],
 
     properties: {
-
       _ariaLabelledBy: {
         observer: '_ariaLabelledByChanged',
         type: String
@@ -118,8 +112,7 @@ style this element.
       maxRows: {
        type: Number,
        value: 0
-      },
-
+      }
     },
 
     _ariaLabelledByChanged: function(ariaLabelledBy) {
@@ -129,9 +122,5 @@ style this element.
     _ariaDescribedByChanged: function(ariaDescribedBy) {
       this.$.input.textarea.setAttribute('aria-describedby', ariaDescribedBy);
     }
-
   });
-
-})();
-
 </script>

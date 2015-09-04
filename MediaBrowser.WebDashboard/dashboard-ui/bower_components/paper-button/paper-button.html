@@ -72,62 +72,60 @@ Custom property | Description | Default
 -->
 
 <dom-module id="paper-button">
-
-  <style>
-
-    :host {
-      display: inline-block;
-      position: relative;
-      box-sizing: border-box;
-      min-width: 5.14em;
-      margin: 0 0.29em;
-      background: transparent;
-      text-align: center;
-      font: inherit;
-      text-transform: uppercase;
-      outline: none;
-      border-radius: 3px;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      -webkit-user-select: none;
-      user-select: none;
-      cursor: pointer;
-      z-index: 0;
-
-      @apply(--paper-button);
-    }
-
-    .keyboard-focus {
-      font-weight: bold;
-    }
-
-    :host([disabled]) {
-      background: #eaeaea;
-      color: #a8a8a8;
-      cursor: auto;
-      pointer-events: none;
-
-      @apply(--paper-button-disabled);
-    }
-
-    :host([noink]) paper-ripple {
-      display: none;
-    }
-
-    paper-material {
-      border-radius: inherit;
-    }
-
-    .content > ::content * {
-      text-transform: inherit;
-    }
-
-    .content {
-      padding: 0.7em 0.57em
-    }
-  </style>
-
   <template>
+
+    <style>
+      :host {
+        display: inline-block;
+        position: relative;
+        box-sizing: border-box;
+        min-width: 5.14em;
+        margin: 0 0.29em;
+        background: transparent;
+        text-align: center;
+        font: inherit;
+        text-transform: uppercase;
+        outline-width: 0;
+        border-radius: 3px;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: pointer;
+        z-index: 0;
+
+        @apply(--paper-button);
+      }
+
+      .keyboard-focus {
+        font-weight: bold;
+      }
+
+      :host([disabled]) {
+        background: #eaeaea;
+        color: #a8a8a8;
+        cursor: auto;
+        pointer-events: none;
+
+        @apply(--paper-button-disabled);
+      }
+
+      :host([noink]) paper-ripple {
+        display: none;
+      }
+
+      paper-material {
+        border-radius: inherit;
+      }
+
+      .content > ::content * {
+        text-transform: inherit;
+      }
+
+      .content {
+        padding: 0.7em 0.57em
+      }
+    </style>
 
     <paper-ripple></paper-ripple>
 
@@ -136,13 +134,10 @@ Custom property | Description | Default
     </paper-material>
 
   </template>
-
 </dom-module>
 
 <script>
-
   Polymer({
-
     is: 'paper-button',
 
     behaviors: [
@@ -150,7 +145,6 @@ Custom property | Description | Default
     ],
 
     properties: {
-
       /**
        * If true, the button should be styled with a shadow.
        */
@@ -178,5 +172,4 @@ Custom property | Description | Default
       return className;
     }
   });
-
 </script>

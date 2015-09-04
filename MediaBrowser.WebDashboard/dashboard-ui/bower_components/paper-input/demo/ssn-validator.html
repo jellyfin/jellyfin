@@ -12,9 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../iron-validator-behavior/iron-validator-behavior.html">
 
 <script>
-
   Polymer({
-
     is: 'ssn-validator',
 
     behaviors: [
@@ -25,7 +23,5 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // this regex validates incomplete ssn's (by design)
       return !value || value.match(/^[0-9]{0,3}-[0-9]{0,2}-[0-9]{0,4}$/);
     }
-
   });
-
 </script>

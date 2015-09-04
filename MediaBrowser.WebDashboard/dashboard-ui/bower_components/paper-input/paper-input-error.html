@@ -31,40 +31,32 @@ Custom property | Description | Default
 `--paper-input-error`                   | Mixin applied to the error        | `{}`
 -->
 <dom-module id="paper-input-error">
-
-  <style>
-
-    :host {
-      display: inline-block;
-      visibility: hidden;
-      float: left;
-
-      color: var(--paper-input-container-invalid-color, --google-red-500);
-
-      @apply(--paper-font-caption);
-      @apply(--paper-input-error);
-    }
-
-    :host([invalid]) {
-      visibility: visible;
-    };
-
-  </style>
-
   <template>
+
+    <style>
+      :host {
+        display: inline-block;
+        visibility: hidden;
+        float: left;
+
+        color: var(--paper-input-container-invalid-color, --google-red-500);
+
+        @apply(--paper-font-caption);
+        @apply(--paper-input-error);
+      }
+
+      :host([invalid]) {
+        visibility: visible;
+      };
+    </style>
 
     <content></content>
 
   </template>
-
 </dom-module>
 
 <script>
-
-(function() {
-
   Polymer({
-
     is: 'paper-input-error',
 
     behaviors: [
@@ -72,7 +64,6 @@ Custom property | Description | Default
     ],
 
     properties: {
-
       /**
        * True if the error is showing.
        */
@@ -81,15 +72,10 @@ Custom property | Description | Default
         reflectToAttribute: true,
         type: Boolean
       }
-
     },
 
     update: function(state) {
       this._setInvalid(state.invalid);
     }
-
-  })
-
-})();
-
+  });
 </script>

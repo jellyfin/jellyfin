@@ -76,73 +76,73 @@ Apply `circle` class to make the rippling effect within a circle.
   @param {Object} detail
   @param {Object} detail.node The animated node
   -->
-
-  <style>
-    :host {
-      display: block;
-      position: absolute;
-      border-radius: inherit;
-      overflow: hidden;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-    }
-
-    :host([animating]) {
-      /* This resolves a rendering issue in Chrome (as of 40) where the
-         ripple is not properly clipped by its parent (which may have
-         rounded corners). See: http://jsbin.com/temexa/4
-
-         Note: We only apply this style conditionally. Otherwise, the browser
-         will create a new compositing layer for every ripple element on the
-         page, and that would be bad. */
-      -webkit-transform: translate(0, 0);
-      transform: translate3d(0, 0, 0);
-    }
-
-    :host([noink]) {
-      pointer-events: none;
-    }
-
-    #background,
-    #waves,
-    .wave-container,
-    .wave {
-      pointer-events: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    #background,
-    .wave {
-      opacity: 0;
-    }
-
-    #waves,
-    .wave {
-      overflow: hidden;
-    }
-
-    .wave-container,
-    .wave {
-      border-radius: 50%;
-    }
-
-    :host(.circle) #background,
-    :host(.circle) #waves {
-      border-radius: 50%;
-    }
-
-    :host(.circle) .wave-container {
-      overflow: hidden;
-    }
-
-  </style>
+  
   <template>
+    <style>
+      :host {
+        display: block;
+        position: absolute;
+        border-radius: inherit;
+        overflow: hidden;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+  
+      :host([animating]) {
+        /* This resolves a rendering issue in Chrome (as of 40) where the
+           ripple is not properly clipped by its parent (which may have
+           rounded corners). See: http://jsbin.com/temexa/4
+  
+           Note: We only apply this style conditionally. Otherwise, the browser
+           will create a new compositing layer for every ripple element on the
+           page, and that would be bad. */
+        -webkit-transform: translate(0, 0);
+        transform: translate3d(0, 0, 0);
+      }
+  
+      :host([noink]) {
+        pointer-events: none;
+      }
+  
+      #background,
+      #waves,
+      .wave-container,
+      .wave {
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+  
+      #background,
+      .wave {
+        opacity: 0;
+      }
+  
+      #waves,
+      .wave {
+        overflow: hidden;
+      }
+  
+      .wave-container,
+      .wave {
+        border-radius: 50%;
+      }
+  
+      :host(.circle) #background,
+      :host(.circle) #waves {
+        border-radius: 50%;
+      }
+  
+      :host(.circle) .wave-container {
+        overflow: hidden;
+      }
+    </style>
+    
     <div id="background"></div>
     <div id="waves"></div>
   </template>
@@ -150,20 +150,6 @@ Apply `circle` class to make the rippling effect within a circle.
 <script>
   (function() {
     var Utility = {
-      cssColorWithAlpha: function(cssColor, alpha) {
-        var parts = cssColor.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-
-        if (typeof alpha == 'undefined') {
-          alpha = 1;
-        }
-
-        if (!parts) {
-          return 'rgba(255, 255, 255, ' + alpha + ')';
-        }
-
-        return 'rgba(' + parts[1] + ', ' + parts[2] + ', ' + parts[3] + ', ' + alpha + ')';
-      },
-
       distance: function(x1, y1, x2, y2) {
         var xDelta = (x1 - x2);
         var yDelta = (y1 - y2);
@@ -171,13 +157,8 @@ Apply `circle` class to make the rippling effect within a circle.
         return Math.sqrt(xDelta * xDelta + yDelta * yDelta);
       },
 
-      now: (function() {
-        if (window.performance && window.performance.now) {
-          return window.performance.now.bind(window.performance);
-        }
-
-        return Date.now;
-      })()
+      now: window.performance && window.performance.now ?
+          window.performance.now.bind(window.performance) : Date.now
     };
 
     /**

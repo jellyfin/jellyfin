@@ -1,6 +1,6 @@
 {
   "name": "paper-fab",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A material design floating action button",
   "authors": [
     "The Polymer Authors"
@@ -36,11 +36,11 @@
     "web-component-tester": "*",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
   },
-  "_release": "1.0.3",
+  "_release": "1.0.4",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.3",
-    "commit": "0371767ba859a842ffd07dfbdf574206c1d7294f"
+    "tag": "v1.0.4",
+    "commit": "7eddddad90a5ca962209fa7241435459ebb9b6b7"
   },
   "_source": "git://github.com/PolymerElements/paper-fab.git",
   "_target": "~1.0.2",
