@@ -500,6 +500,10 @@ namespace MediaBrowser.Controller.Entities
 
                 return null;
             }
+            set
+            {
+                
+            }
         }
 
         public void SetParent(Folder parent)

@@ -618,6 +618,11 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 _logger.ErrorException("Error recording", ex);
                 recording.Status = RecordingStatus.Error;
             }
+            finally
+            {
+                CancellationTokenSource removed;
+                _activeRecordings.TryRemove(timer.Id, out removed);
+            }
 
             recording.DateLastUpdated = DateTime.UtcNow;
             _recordingProvider.Update(recording);
@@ -627,15 +632,17 @@ namespace MediaBrowser.Server.Implementations.LiveTv.EmbyTV
                 OnSuccessfulRecording(recording);
                 _timerProvider.Delete(timer);
             }
+            else if (DateTime.UtcNow < timer.EndDate)
+            {
+                const int retryIntervalSeconds = 60;
+                _logger.Info("Retrying recording in {0} seconds.", retryIntervalSeconds);
+
+                _timerProvider.StartTimer(timer, TimeSpan.FromSeconds(retryIntervalSeconds));
+            }
             else
             {
-                if (DateTime.UtcNow < timer.EndDate)
-                {
-                    const int retryIntervalSeconds = 60;
-                    _logger.Info("Retrying recording in {0} seconds.", retryIntervalSeconds);
-
-                    _timerProvider.StartTimer(timer, TimeSpan.FromSeconds(retryIntervalSeconds));
-                }
+                _timerProvider.Delete(timer);
+                _recordingProvider.Delete(recording);
             }
         }
 

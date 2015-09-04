@@ -5,6 +5,7 @@
     var libraryBrowser = {
         getDefaultPageSize: function (key, defaultValue) {
 
+            return 100;
             var saved = appStorage.getItem(key || pageSizeKey);
 
             if (saved) {

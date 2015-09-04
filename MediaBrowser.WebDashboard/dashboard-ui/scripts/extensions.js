@@ -453,33 +453,33 @@ function parseISO8601Date(s, options) {
     // The query params for the embedded page are also added as a property/value
     // object on the options object. You can access it from your page notifications
     // via data.options.pageData.
-    $(document).bind("pagebeforechange", function (e, data) {
+    //$(document).bind("pagebeforechange", function (e, data) {
 
-        // We only want to handle the case where we are being asked
-        // to go to a page by URL, and only if that URL is referring
-        // to an internal page by id.
+    //    // We only want to handle the case where we are being asked
+    //    // to go to a page by URL, and only if that URL is referring
+    //    // to an internal page by id.
 
-        if (typeof data.toPage === "string") {
-            var u = $.mobile.path.parseUrl(data.toPage);
-            if ($.mobile.path.isEmbeddedPage(u)) {
+    //    if (typeof data.toPage === "string") {
+    //        var u = $.mobile.path.parseUrl(data.toPage);
+    //        if ($.mobile.path.isEmbeddedPage(u)) {
 
-                // The request is for an internal page, if the hash
-                // contains query (search) params, strip them off the
-                // toPage URL and then set options.dataUrl appropriately
-                // so the location.hash shows the originally requested URL
-                // that hash the query params in the hash.
+    //            // The request is for an internal page, if the hash
+    //            // contains query (search) params, strip them off the
+    //            // toPage URL and then set options.dataUrl appropriately
+    //            // so the location.hash shows the originally requested URL
+    //            // that hash the query params in the hash.
 
-                var u2 = $.mobile.path.parseUrl(u.hash.replace(/^#/, ""));
-                if (u2.search) {
-                    if (!data.options.dataUrl) {
-                        data.options.dataUrl = data.toPage;
-                    }
-                    data.options.pageData = queryStringToObject(u2.search);
-                    data.toPage = u.hrefNoHash + "#" + u2.pathname;
-                }
-            }
-        }
-    });
+    //            var u2 = $.mobile.path.parseUrl(u.hash.replace(/^#/, ""));
+    //            if (u2.search) {
+    //                if (!data.options.dataUrl) {
+    //                    data.options.dataUrl = data.toPage;
+    //                }
+    //                data.options.pageData = queryStringToObject(u2.search);
+    //                data.toPage = u.hrefNoHash + "#" + u2.pathname;
+    //            }
+    //        }
+    //    }
+    //});
 
 })(jQuery, window);
 
