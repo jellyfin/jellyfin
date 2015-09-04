@@ -106,9 +106,16 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         public void QueueScheduledTask<T>(TaskExecutionOptions options)
             where T : IScheduledTask
         {
-            var scheduledTask = ScheduledTasks.First(t => t.ScheduledTask.GetType() == typeof(T));
+            var scheduledTask = ScheduledTasks.FirstOrDefault(t => t.ScheduledTask.GetType() == typeof(T));
 
-            QueueScheduledTask(scheduledTask, options);
+            if (scheduledTask == null)
+            {
+                Logger.Error("Unable to find scheduled task of type {0} in QueueScheduledTask.", typeof(T).Name);
+            }
+            else
+            {
+                QueueScheduledTask(scheduledTask, options);
+            }
         }
 
         public void QueueScheduledTask<T>()
@@ -124,9 +131,16 @@ namespace MediaBrowser.Common.Implementations.ScheduledTasks
         /// <param name="options">The task options.</param>
         public void QueueScheduledTask(IScheduledTask task, TaskExecutionOptions options)
         {
-            var scheduledTask = ScheduledTasks.First(t => t.ScheduledTask.GetType() == task.GetType());
+            var scheduledTask = ScheduledTasks.FirstOrDefault(t => t.ScheduledTask.GetType() == task.GetType());
 
-            QueueScheduledTask(scheduledTask, options);
+            if (scheduledTask == null)
+            {
+                Logger.Error("Unable to find scheduled task of type {0} in QueueScheduledTask.", task.GetType().Name);
+            }
+            else
+            {
+                QueueScheduledTask(scheduledTask, options);
+            }
         }
 
         /// <summary>
