@@ -41,7 +41,7 @@
     z-index: 2;
 }
 
-.ui-page-theme-b:not(.pageWithAbsoluteTabs), .pageWithAbsoluteTabs .pageBackground {
+html, .ui-page-theme-b:not(.pageWithAbsoluteTabs), .pageWithAbsoluteTabs .pageBackground {
     background-color: #242424;
 }
 

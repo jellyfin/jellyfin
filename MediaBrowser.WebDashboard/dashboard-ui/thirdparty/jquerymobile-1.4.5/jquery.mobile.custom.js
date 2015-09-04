@@ -4328,14 +4328,6 @@ $.fn.fieldcontain = function(/* options */) {
 			}, this ));
 		},
 
-		_releaseTransitionLock: function() {
-			//release transition lock so navigation is free again
-			isPageTransitioning = false;
-			if ( pageTransitionQueue.length > 0 ) {
-				$.mobile.changePage.apply( null, pageTransitionQueue.pop() );
-			}
-		},
-
 		_removeActiveLinkClass: function( force ) {
 			//clear out the active button state
 			$.mobile.removeActiveLinkClass( force );
@@ -4353,7 +4345,6 @@ $.fn.fieldcontain = function(/* options */) {
 			this.load( to, settings );
 
 			settings.deferred.done($.proxy(function( url, options, content ) {
-				isPageTransitioning = false;
 
 				// store the original absolute url so that it can be provided
 				// to events in the triggerData of the subsequent changePage call
@@ -4364,7 +4355,6 @@ $.fn.fieldcontain = function(/* options */) {
 
 			settings.deferred.fail($.proxy(function(/* url, options */) {
 				this._removeActiveLinkClass( true );
-				this._releaseTransitionLock();
 				this._triggerWithDeprecated( "changefailed", triggerData );
 			}, this));
 		},
@@ -4392,28 +4382,12 @@ $.fn.fieldcontain = function(/* options */) {
 				triggerData.absUrl = settings.absUrl;
 			}
 
-			// Let listeners know we're about to change the current page.
-			returnEvents = this._triggerWithDeprecated( "beforechange", triggerData );
-
-			// If the default behavior is prevented, stop here!
-			if ( returnEvents.event.isDefaultPrevented() ||
-				returnEvents.deprecatedEvent.isDefaultPrevented() ) {
-				return false;
-			}
-
 			return true;
 		},
 
 		change: function( to, options ) {
-			// If we are in the midst of a transition, queue the current request.
-			// We'll call changePage() once we're done with the current transition
-			// to service the request.
-			if ( isPageTransitioning ) {
-				pageTransitionQueue.unshift( arguments );
-				return;
-			}
 
-			var settings = $.extend( {}, $.mobile.changePage.defaults, options ),
+		    var settings = $.extend({}, $.mobile.changePage.defaults, options),
 				triggerData = {};
 
 			// Make sure we have a fromPage.
@@ -4435,11 +4409,6 @@ $.fn.fieldcontain = function(/* options */) {
 			// to the promise object it returns so we know when
 			// it is done loading or if an error ocurred.
 			if ( $.type(to) === "string" ) {
-				// Set the isPageTransitioning flag to prevent any requests from
-				// entering this method while we are in the midst of loading a page
-				// or transitioning.
-				isPageTransitioning = true;
-
 				this._loadUrl( to, triggerData, settings );
 			} else {
 				this.transition( to, triggerData, settings );
@@ -4454,22 +4423,7 @@ $.fn.fieldcontain = function(/* options */) {
 				params,	cssTransitionDeferred,
 				beforeTransition;
 
-			// If we are in the midst of a transition, queue the current request.
-			// We'll call changePage() once we're done with the current transition
-			// to service the request.
-			if ( isPageTransitioning ) {
-				// make sure to only queue the to and settings values so the arguments
-				// work with a call to the change method
-				pageTransitionQueue.unshift( [toPage, settings] );
-				return;
-			}
-
 			triggerData.prevPage = settings.fromPage;
-
-			// Set the isPageTransitioning flag to prevent any requests from
-			// entering this method while we are in the midst of loading a page
-			// or transitioning.
-			isPageTransitioning = true;
 
 			// If we are going to the first-page of the application, we need to make
 			// sure settings.dataUrl is set to the application document url. This allows
@@ -4511,7 +4465,6 @@ $.fn.fieldcontain = function(/* options */) {
 			if ( fromPage && fromPage[0] === toPage[0] &&
 				!settings.allowSamePageTransition ) {
 
-				isPageTransitioning = false;
 				this._triggerWithDeprecated( "transition", triggerData );
 				this._triggerWithDeprecated( "change", triggerData );
 
@@ -4588,9 +4541,7 @@ $.fn.fieldcontain = function(/* options */) {
 			}
 
 			// Make sure we have a transition defined.
-			settings.transition = settings.transition ||
-				( ( historyDir && !activeIsInitialPage ) ? active.transition : undefined ) ||
-				( isDialog ? $.mobile.defaultDialogTransition : $.mobile.defaultPageTransition );
+			settings.transition = "none";
 
 			//add page to history stack if it's not back or forward
 			if ( !historyDir && alreadyThere ) {
@@ -4639,20 +4590,6 @@ $.fn.fieldcontain = function(/* options */) {
 			});
 
 			$.mobile.removeActiveLinkClass();
-
-		    //if there's a duplicateCachedPage, remove it from the DOM now that it's hidden
-			if (settings.duplicateCachedPage) {
-			    settings.duplicateCachedPage.remove();
-			}
-
-		    // despite visibility: hidden addresses issue #2965
-		    // https://github.com/jquery/jquery-mobile/issues/2965
-			//if (!alreadyFocused) {
-			//    $.mobile.focusPage(toPage);
-			//}
-
-			this._releaseTransitionLock();
-			this._triggerWithDeprecated("transition", triggerData);
 		},
 
 		// determine the current base url
@@ -4670,10 +4607,7 @@ $.fn.fieldcontain = function(/* options */) {
 
 	//these variables make all page containers use the same queue and only navigate one at a time
 	// queue to hold simultanious page transitions
-	var pageTransitionQueue = [],
-
-		// indicates whether or not page is in process of transitioning
-		isPageTransitioning = false;
+	var pageTransitionQueue = [];
 
 })( jQuery );
 

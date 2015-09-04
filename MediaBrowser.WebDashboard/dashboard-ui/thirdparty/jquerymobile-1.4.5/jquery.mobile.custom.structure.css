@@ -58,6 +58,9 @@ div.ui-mobile-viewport {
 	display: none;
 	border: 0;
 }
+.ui-page {
+    position: static !important;
+}
 /* On ios4, setting focus on the page element causes flashing during transitions when there is an outline, so we turn off outlines */
 .ui-page {
 	outline: none;

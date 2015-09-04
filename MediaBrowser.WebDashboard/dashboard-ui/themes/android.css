@@ -1,4 +1,4 @@
-﻿.viewMenuBar, .libraryViewNav:not(.paperLibraryViewNav), paper-tabs {
+﻿.viewMenuBar, .libraryViewNav:not(.paperLibraryViewNav), paper-tabs, html {
     background-color: #1b1b1b;
 }
 

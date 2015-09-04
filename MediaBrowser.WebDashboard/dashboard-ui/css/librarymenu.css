@@ -45,6 +45,7 @@
     width: auto !important;
     height: auto !important;
     touch-action: auto !important;
+    overflow: visible;
 }
 
 .mainDrawerPanelPreInit #drawer {
